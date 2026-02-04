@@ -97,6 +97,8 @@ public class ContractExportService extends BaseExportService {
         systemFiledMap.put("updateUser", data.getUpdateUserName());
         systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
         systemFiledMap.put("voidReason", data.getVoidReason());
+		systemFiledMap.put("startTime", TimeUtils.getDateTimeStr(data.getStartTime()));
+		systemFiledMap.put("endTime", TimeUtils.getDateTimeStr(data.getEndTime()));
         return systemFiledMap;
     }
 }

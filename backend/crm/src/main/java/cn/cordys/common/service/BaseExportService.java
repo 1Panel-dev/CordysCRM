@@ -355,7 +355,14 @@ public abstract class BaseExportService {
         return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
     }
 
-    @SuppressWarnings("unchecked")
+	/**
+	 * 构建含有子表格的导出数据
+	 * @param moduleFieldValues 自定义字段值
+	 * @param exportFieldParam 导出参数
+	 * @param heads 导出表头信息
+	 * @param systemFieldMap 系统字段值
+	 * @return 导出数据列表
+	 */
     protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues, ExportFieldParam exportFieldParam, List<String> heads, LinkedHashMap<String, Object> systemFieldMap) {
         List<List<Object>> dataList = new ArrayList<>();
         if (org.apache.commons.collections4.CollectionUtils.isEmpty(moduleFieldValues)) {
@@ -366,11 +373,11 @@ public abstract class BaseExportService {
         }
 
         List<BaseModuleFieldValue> subFvs = new ArrayList<>();
-        if (StringUtils.isNotEmpty(exportFieldParam.getSubId())) {
-            subFvs = moduleFieldValues.stream().filter(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId())).toList();
+        if (CollectionUtils.isNotEmpty(exportFieldParam.getSubIds())) {
+            subFvs = moduleFieldValues.stream().filter(fv -> exportFieldParam.getSubIds().contains(fv.getFieldId())).toList();
         }
-        if (CollectionUtils.isEmpty(subFvs) || org.apache.commons.collections4.CollectionUtils.isEmpty((List<?>) subFvs.getFirst().getFieldValue())) {
-            // 无子表格字段值或者有子表格字段值但未导出(无合并行), 也是单行导出
+        if (isNullSubValue(subFvs)) {
+            // 子表格缺失, 无需合并, 单行导出.
             Map<String, Object> normalFvs = moduleFieldValues
                     .stream()
                     .filter(moduleFieldValue -> moduleFieldValue.getFieldValue() != null)
@@ -379,13 +386,12 @@ public abstract class BaseExportService {
             dataList.add(data);
             return dataList;
         }
-        moduleFieldValues.removeIf(fv -> Strings.CS.equals(fv.getFieldId(), exportFieldParam.getSubId()));
-        List<?> subFvList = (List<?>) subFvs.getFirst().getFieldValue();
-        subFvList.forEach(subFv -> {
+        moduleFieldValues.removeIf(fv -> exportFieldParam.getSubIds().contains(fv.getFieldId()));
+
+		List<Map<String, Object>> alignSubFvs = alignSubFvs(subFvs);
+		alignSubFvs.forEach(subFvMap -> {
             // 包含子表格行数据, 需多行合并导出
-            Map<String, Object> subFvMap = (Map<String, Object>) subFv;
-            Map<String, Object> normalFvs = moduleFieldValues
-                    .stream()
+            Map<String, Object> normalFvs = moduleFieldValues.stream()
                     .filter(moduleFieldValue -> moduleFieldValue.getFieldValue() != null)
                     .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue, (p, n) -> p));
             subFvMap.putAll(normalFvs);
@@ -517,10 +523,9 @@ public abstract class BaseExportService {
                 .getBusinessFormConfig(exportParam.getFormKey(), exportParam.getOrgId());
         List<String> exportTitles = exportParam.getHeadList().stream().map(ExportHeadDTO::getTitle).toList();
         List<BaseField> flattenFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).flattenFormAllFields(formConfig);
-        Optional<String> subOptional = flattenFields.stream().filter(f -> f instanceof SubField && exportTitles.contains(f.getName())).map(BaseField::getId).findFirst();
-        String subId = subOptional.orElse(StringUtils.EMPTY);
+		List<String> subTableIds = flattenFields.stream().filter(f -> f instanceof SubField && exportTitles.contains(f.getName())).map(BaseField::getId).toList();
         Map<String, BaseField> fieldConfigMap = flattenFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
-        return ExportFieldParam.builder().subId(subId).fieldConfigMap(fieldConfigMap)
+        return ExportFieldParam.builder().subIds(subTableIds).fieldConfigMap(fieldConfigMap)
                 .formConfig(formConfig)
                 .build();
     }
@@ -691,4 +696,60 @@ public abstract class BaseExportService {
         }
         return null;
     }
+
+	/**
+	 * 是否为空子表格
+	 * @param subFvs 子表格字段值
+	 * @return 是否为空子表格
+	 */
+	private boolean isNullSubValue(List<BaseModuleFieldValue> subFvs) {
+		if (CollectionUtils.isEmpty(subFvs)) {
+			return true;
+		}
+		boolean allNull = true;
+		for (BaseModuleFieldValue subFv : subFvs) {
+			if (CollectionUtils.isNotEmpty((List<?>) subFv.getFieldValue())) {
+				allNull = false;
+				break;
+			}
+		}
+		return allNull;
+	}
+
+	/**
+	 * 合并对齐多个子表格的值
+	 * @param subFvs 多子表格字段值
+	 * @return 合并后的子表格值列表
+	 */
+	@SuppressWarnings("unchecked")
+	private List<Map<String, Object>> alignSubFvs(List<BaseModuleFieldValue> subFvs) {
+		BaseModuleFieldValue longSubFv = subFvs.stream()
+				.max(Comparator.comparingInt(fv -> {
+					List<?> v = (List<?>) fv.getFieldValue();
+					return v != null ? v.size() : 0;
+				}))
+				.orElse(null);
+		if (longSubFv == null) {
+			return new ArrayList<>();
+		}
+		List<?> longFvs = (List<?>) longSubFv.getFieldValue();
+		List<Map<String, Object>> alignedList = new ArrayList<>(longFvs.size());
+		for (int i = 0; i < longFvs.size(); i++) {
+			Map<String, Object> longFvMap = (Map<String, Object>) longFvs.get(i);
+			for (BaseModuleFieldValue subFv : subFvs) {
+				if (Strings.CS.equals(subFv.getFieldId(), longSubFv.getFieldId())) {
+					continue;
+				}
+				List<?> shortFvs = (List<?>) subFv.getFieldValue();
+				if (CollectionUtils.isNotEmpty(shortFvs) && shortFvs.size() > i) {
+					// 合并跨区子表格
+					Map<String, Object> shortFvMap = (Map<String, Object>) shortFvs.get(i);
+					longFvMap.putAll(shortFvMap);
+				}
+			}
+			alignedList.add(longFvMap);
+		}
+		return alignedList;
+	}
+
 }
