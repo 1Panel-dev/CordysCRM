@@ -164,6 +164,7 @@
     viewId?: string;
   }>();
   const emit = defineEmits<{
+    (e: 'init', total: number): void;
     (e: 'fail', item: OpportunityItem): void;
     (e: 'change', stage: string): void;
     (e: 'openDetail', type: 'customer' | 'opportunity', item: any): void;
@@ -235,6 +236,7 @@
         list.value = list.value.concat(res.list);
         pageNation.value.total = res.total;
         optionMap.value = res.optionMap || {};
+        emit('init', res.total);
       }
     } catch (error) {
       // eslint-disable-next-line no-console

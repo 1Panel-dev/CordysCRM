@@ -112,7 +112,7 @@
       class="crm-table-bottom-tip flex text-center"
     >
       <div :class="`flex flex-1 items-start`">
-        <div v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)">
+        <div v-if="(!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)) && !attrs.customTotal">
           {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
         </div>
         <slot name="totalRight"></slot>
