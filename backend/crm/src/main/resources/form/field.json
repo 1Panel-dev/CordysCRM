@@ -1545,7 +1545,7 @@
       "type": "FORMULA",
       "showLabel": true,
       "readable": true,
-      "editable": true,
+      "editable": false,
       "fieldWidth": 1,
       "rules": [
         {
@@ -1839,7 +1839,7 @@
       "type": "FORMULA",
       "showLabel": true,
       "readable": true,
-      "editable": true,
+      "editable": false,
       "fieldWidth": 1,
       "rules": [
         {
