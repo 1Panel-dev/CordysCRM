@@ -1203,15 +1203,15 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   function initForm(linkScenario?: FormLinkScenarioEnum) {
     fieldList.value.forEach((item) => {
-      const initLine: Record<string, any> = {};
+      // const initLine: Record<string, any> = {};
       if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
         item.subFields?.forEach((subField) => {
           subFieldInit(subField);
           replaceRule(subField, item.id);
-          initLine[subField.businessKey || subField.id] = subField.defaultValue;
+          // initLine[subField.businessKey || subField.id] = subField.defaultValue;
         });
         if (!formDetail.value[item.id]) {
-          formDetail.value[item.id] = [initLine];
+          formDetail.value[item.id] = [];
         }
         return;
       }

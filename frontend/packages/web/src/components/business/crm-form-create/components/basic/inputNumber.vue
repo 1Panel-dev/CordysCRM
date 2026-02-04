@@ -5,7 +5,7 @@
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
     :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
-    :show-label="!props.isSubTableRender"
+    :show-label="!props.isSubTableRender && !props.isDefaultValueRender"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
@@ -55,6 +55,7 @@
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    isDefaultValueRender?: boolean; // 是否是默认值渲染
   }>();
   const emit = defineEmits<{
     (e: 'change', value: number | null): void;

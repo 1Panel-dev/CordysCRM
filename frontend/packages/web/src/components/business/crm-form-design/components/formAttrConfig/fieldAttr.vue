@@ -799,6 +799,20 @@
             rules: [],
           }"
           path=""
+          isDefaultValueRender
+        />
+        <CrmTextArea
+          v-else-if="fieldConfig.type === FieldTypeEnum.TEXTAREA"
+          v-model:value="fieldConfig.defaultValue"
+          :show-button="false"
+          :min="0"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
+          :fieldConfig="{
+            ...fieldConfig,
+            rules: [],
+          }"
+          path=""
+          isDefaultValueRender
         />
         <template v-else-if="fieldConfig.type === FieldTypeEnum.DATE_TIME">
           <n-select
@@ -1239,6 +1253,7 @@
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import CrmFormCreateInputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
+  import CrmTextArea from '@/components/business/crm-form-create/components/basic/textarea.vue';
   import { fullFormSettingList, rules, showRulesMap } from '@/components/business/crm-form-create/config';
   import {
     DataSourceFilterCombine,
