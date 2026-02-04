@@ -55,7 +55,6 @@
               v-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY"
               ref="opportunityTableRef"
               readonly
-              hidden-total
               is-limit-show-detail
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY"
@@ -70,7 +69,6 @@
               v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER"
               ref="customerTableRef"
               readonly
-              hidden-total
               is-limit-show-detail
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER"
@@ -85,7 +83,6 @@
               v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT"
               ref="contactTableRef"
               readonly
-              hidden-total
               hidden-advance-filter
               :form-key="FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT"
               @init="setFilterConfigList"
@@ -98,7 +95,6 @@
               v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC"
               ref="openSeaTableRef"
               readonly
-              hidden-total
               hidden-pool-select
               hidden-advance-filter
               is-limit-show-detail
@@ -113,7 +109,6 @@
               v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_CLUE"
               ref="clueTableRef"
               readonly
-              hidden-total
               is-limit-show-detail
               hidden-advance-filter
               :table-form-key="FormDesignKeyEnum.SEARCH_ADVANCED_CLUE"
@@ -127,7 +122,6 @@
               v-else-if="activeTab === FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL"
               ref="cluePoolTableRef"
               readonly
-              hidden-total
               hidden-pool-select
               hidden-advance-filter
               is-limit-show-detail
