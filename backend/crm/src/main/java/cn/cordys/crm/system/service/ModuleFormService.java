@@ -1130,9 +1130,9 @@ public class ModuleFormService {
      */
     private ModuleField supplyFieldInfo(Map<String, Object> fieldMap, String formId, Long pos, Map<String, String> controlKeyPreMap) {
         ModuleField field = new ModuleField();
+		field.setInternalKey(fieldMap.get("internalKey").toString());
         field.setId(controlKeyPreMap.containsKey(field.getInternalKey()) ? controlKeyPreMap.get(field.getInternalKey()) : IDGenerator.nextStr());
         field.setFormId(formId);
-        field.setInternalKey(fieldMap.get("internalKey").toString());
         field.setType(fieldMap.get("type").toString());
         field.setName(fieldMap.get("name").toString());
         field.setMobile((Boolean) fieldMap.getOrDefault("mobile", false));
