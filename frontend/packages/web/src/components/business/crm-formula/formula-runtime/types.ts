@@ -3,7 +3,7 @@ export type IRNode = IRNumberNode | IRFieldNode | IRBinaryNode | IRFunctionNode;
 
 export interface ResolveContext {
   /** 是否允许出现列字段 */
-  allowColumn: boolean;
+  expectScalar: boolean;
 }
 
 export interface IRNumberNode {
