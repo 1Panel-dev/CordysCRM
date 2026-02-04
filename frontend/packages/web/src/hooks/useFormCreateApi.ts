@@ -243,10 +243,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         key: 'departmentName',
       },
       {
-        title: t('opportunity.quotation.amount'),
-        key: 'amount',
-      },
-      {
         title: t('contract.alreadyPayAmount'),
         key: 'alreadyPayAmount',
       },

@@ -28,6 +28,7 @@ import {
   updateCustomerFollowPlanStatus,
   updateOptFollowPlanStatus,
 } from '@/api/modules';
+import useModal from '@/hooks/useModal';
 
 import useHighlight from './useHighlight';
 
@@ -140,8 +141,10 @@ export default function useFollowApi(followProps: {
   followApiKey: followEnumType;
   type: Ref<'followRecord' | 'followPlan'>;
   sourceId: Ref<string>;
+  onDeleteSuccess?: () => void;
 }) {
   const { t } = useI18n();
+  const { openModal } = useModal();
 
   const Message = useMessage();
 
@@ -260,14 +263,26 @@ export default function useFollowApi(followProps: {
 
   // 删除
   async function handleDelete(item: FollowDetailItem) {
-    try {
-      await followApiMap[getApiKey(item)].delete?.[type.value]?.(item.id);
-      Message.success(t('common.deleteSuccess'));
-      loadFollowList();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirm'),
+      positiveText: t('common.confirmDelete'),
+      content: t('common.deleteConfirmContent'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await followApiMap[getApiKey(item)].delete?.[type.value]?.(item.id);
+          Message.success(t('common.deleteSuccess'));
+          loadFollowList();
+          if (followProps.onDeleteSuccess) {
+            followProps.onDeleteSuccess();
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      },
+    });
   }
 
   return {

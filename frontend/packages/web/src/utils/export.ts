@@ -30,14 +30,14 @@ export function getExportColumns(
           : ColumnTypeEnum.SYSTEM,
       };
     });
-  const subCol = fieldList?.find((i) => [FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(i.type));
-  if (subCol) {
+  const subCol = fieldList?.filter((i) => [FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(i.type));
+  subCol?.forEach((j) => {
     result.push({
-      key: subCol.businessKey ?? subCol.id,
-      title: subCol.name,
+      key: j.businessKey ?? j.id,
+      title: j.name,
       columnType: ColumnTypeEnum.CUSTOM,
     });
-  }
+  });
   return result;
 }
 
