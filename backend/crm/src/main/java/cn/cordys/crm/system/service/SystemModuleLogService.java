@@ -71,7 +71,9 @@ public class SystemModuleLogService extends BaseModuleLogService {
 
             handlePoolConfig(differ);
 
-            searchSetting(differ);
+            if (differ.getColumn().contains("searchAdvanced")) {
+                searchSetting(differ);
+            }
         });
 
         return differences;
