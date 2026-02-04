@@ -2,6 +2,9 @@ package cn.cordys.common.interceptor;
 
 import cn.cordys.common.util.CompressUtils;
 import cn.cordys.config.MybatisInterceptorConfig;
+import cn.cordys.crm.contract.domain.ContractInvoiceSnapshot;
+import cn.cordys.crm.contract.domain.ContractSnapshot;
+import cn.cordys.crm.opportunity.domain.OpportunityQuotationSnapshot;
 import cn.cordys.crm.system.domain.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +38,11 @@ public class SystemInterceptor {
         configList.add(new MybatisInterceptorConfig(Notification.class, "content", CompressUtils.class, "zip", "unzip"));
 
         configList.add(new MybatisInterceptorConfig(OperationLogBlob.class, "originalValue", CompressUtils.class, "zip", "unzip"));
+
+        configList.add(new MybatisInterceptorConfig(OpportunityQuotationSnapshot.class, "quotationProp", CompressUtils.class, "zipString", "unzipString"));
+        configList.add(new MybatisInterceptorConfig(ContractSnapshot.class, "contractProp", CompressUtils.class, "zipString", "unzipString"));
+        configList.add(new MybatisInterceptorConfig(ContractInvoiceSnapshot.class, "invoiceProp", CompressUtils.class, "zipString", "unzipString"));
+
 
         // 添加自定义拦截器配置，例如压缩和解压缩功能
         // configList.add(new MybatisInterceptorConfig(TestResourcePoolBlob.class, "configuration", CompressUtils.class, "zip", "unzip"));
