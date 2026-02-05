@@ -622,6 +622,7 @@
     });
 
     const saveResult = serializeFormulaFromAst(ast, fieldMap);
+    console.log(saveResult, 'saveResult debugger todo');
     const result = JSON.stringify(saveResult);
     return result;
   }

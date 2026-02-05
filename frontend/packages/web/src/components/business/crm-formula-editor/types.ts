@@ -131,7 +131,7 @@ export interface FormulaSerializeResult {
   source: string; // SUM(${123}, ${456}) + DAYS(...)
   display: string; // SUM(报价产品.价格, 订阅表格.价格)
   fields: FormulaFieldMeta[];
-  ir: IRNode; // 公式 IR
+  ir: IRNode | null; // 公式 IR
 }
 
 export interface DiagnoseContext {

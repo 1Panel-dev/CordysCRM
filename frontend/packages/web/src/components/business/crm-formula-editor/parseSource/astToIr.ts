@@ -39,7 +39,10 @@ function resolveNode(node: ASTNode, ctx: ResolveContext): IRNode {
       // eslint-disable-next-line no-use-before-define
       return resolveFunction(node, ctx);
     default:
-      throw new Error('unknown node type');
+      return {
+        type: 'invalid',
+        reason: `unknown node type`,
+      };
   }
 }
 function resolveFunction(node: FunctionNode, _ctx: ResolveContext): IRNode {
@@ -53,7 +56,10 @@ function resolveFunction(node: FunctionNode, _ctx: ResolveContext): IRNode {
 
     case 'DAYS':
       if (node.args.length !== 2) {
-        throw new Error('DAYS function must have 2 arguments');
+        return {
+          type: 'invalid',
+          reason: 'DAYS function must have 2 arguments',
+        };
       }
       return {
         type: 'function',
@@ -62,11 +68,16 @@ function resolveFunction(node: FunctionNode, _ctx: ResolveContext): IRNode {
       };
 
     default:
-      throw new Error(`unknown function ${node.name}`);
+      return {
+        type: 'invalid',
+        reason: `unknown function ${node.name}`,
+      };
   }
 }
 
 // 解析 AST -> IR,用于运行执行器计算
-export default function resolveASTToIR(ast: ASTNode): IRNode {
+export default function resolveASTToIR(ast: ASTNode): IRNode | null {
+  if (!ast) return null;
+
   return resolveNode(ast, { expectScalar: true });
 }
