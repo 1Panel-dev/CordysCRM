@@ -101,6 +101,9 @@ public class OpportunityQuotationService {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
+
+
     /**
      * 新增商机报价单
      * 新增报价单会自动将报价单状态设置为“提审”，此时需要保存报价单值快照，报价单表单设置快照
@@ -595,6 +598,9 @@ public class OpportunityQuotationService {
     private void setAmount(String amount, OpportunityQuotation opportunityQuotation) {
         if (StringUtils.isNotBlank(amount)) {
             opportunityQuotation.setAmount(new BigDecimal(amount));
+            if (opportunityQuotation.getAmount().compareTo(MAX_AMOUNT) > 0) {
+                throw new GenericException(Translator.get("opportunity.quotation.amount.exceed.max"));
+            }
         } else {
             opportunityQuotation.setAmount(BigDecimal.ZERO);
         }
