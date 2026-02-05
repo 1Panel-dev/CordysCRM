@@ -304,7 +304,7 @@
         }
         nextTick(() => {
           // 等待行添加完成后，给新增的行补充行号和选中价格表数据源
-          for (let i = data.value.length - 1; i > rowIndex; i--) {
+          for (let i = rowIndex + 1; i < rowIndex + children.length; i++) {
             const newRow = data.value[i];
             newRow.price_sub = children[i - rowIndex]?.id;
             newRow[key] = [children[i - rowIndex]?.parentId, newRow.price_sub]; // 选中值为父项以及当前行
