@@ -50,9 +50,44 @@
     default: 0,
   });
 
-  const formulaTooltip = computed(
-    () => safeParseFormula(props.fieldConfig.formula ?? '').display || t('crmFormDesign.formulaTooltip')
-  );
+  function buildFormFieldKeySet(formulaFields: { fieldId: string }[], formDetail: Record<string, any>): Set<string> {
+    const keys = new Set<string>();
+
+    Object.keys(formDetail).forEach((key) => {
+      keys.add(key);
+    });
+
+    formulaFields.forEach((f) => {
+      if (f.fieldId.includes('.')) {
+        const [tableKey] = f.fieldId.split('.');
+        if (Array.isArray(formDetail[tableKey])) {
+          keys.add(f.fieldId);
+        }
+      }
+    });
+
+    return keys;
+  }
+
+  const formulaTooltip = computed(() => {
+    const { formula } = props.fieldConfig;
+    if (!formula) {
+      return t('crmFormDesign.formulaTooltip');
+    }
+
+    const parsed = safeParseFormula(formula);
+    const { display, fields } = parsed;
+
+    const fieldKeySet = buildFormFieldKeySet(fields, props.formDetail as Record<string, any>);
+
+    const hasInvalidField = fields.some((f: any) => !fieldKeySet.has(f.fieldId));
+
+    if (hasInvalidField) {
+      return t('crmFormDesign.formulaFieldChanged');
+    }
+
+    return display || t('crmFormDesign.formulaTooltip');
+  });
 
   function getScalarFieldValue(
     fieldId: string,
@@ -112,7 +147,7 @@
     if (Object.is(next, value.value)) return;
     value.value = next;
     emit('change', next);
-  }, 0);
+  }, 100);
 
   watch(
     () => props.fieldConfig.defaultValue,
