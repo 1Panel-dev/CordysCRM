@@ -1,6 +1,6 @@
 import { mapTree } from '@lib/shared/method';
 
-import { provinceAndCityData, regionData } from 'element-china-area-data';
+import { provinceAndCityData, regionData } from './utils';
 import type { CascaderOption } from 'naive-ui';
 
 export const GAT = [
