@@ -9,6 +9,7 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
+import cn.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import cn.cordys.crm.follow.dto.request.RecordHomePageRequest;
 import cn.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
@@ -79,8 +80,14 @@ public class FollowUpRecordController {
         return followUpRecordService.get(id, OrganizationContext.getOrganizationId());
     }
 
+	@PostMapping("/add")
+	@Operation(summary = "添加跟进记录")
+	public FollowUpRecord add(@Validated @RequestBody FollowUpRecordAddRequest request) {
+		return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
     @PostMapping("/update")
-    @Operation(summary = "更新线索跟进记录")
+    @Operation(summary = "更新跟进记录")
     public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
         followUpRecordService.checkRecordPermission(request.getId(), OrganizationContext.getOrganizationId());
         return followUpRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
