@@ -178,6 +178,8 @@ export default {
   'crmFormDesign.calculation': 'Calculation',
   'crmFormDesign.formula': 'Formula',
   'crmFormDesign.formulaTooltip': 'Calculation method not set, please contact the administrator',
+  'crmFormDesign.formulaFieldChanged':
+    'Formula field has been modified not exist, please contact the administrator to update the formula!',
   'crmFormDesign.formulaSetting': 'Formula Settings',
   'crmFormDesign.formulaEquals': 'Formula =',
   'crmFormDesign.formulaPricing': 'Price',

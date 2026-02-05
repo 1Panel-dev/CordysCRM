@@ -176,6 +176,7 @@ export default {
   'crmFormDesign.calculation': '计算',
   'crmFormDesign.formula': '公式',
   'crmFormDesign.formulaTooltip': '未设置计算方式，请联系管理员',
+  'crmFormDesign.formulaFieldChanged': '字段已变更不存在，请联系管理员更新公式！',
   'crmFormDesign.formulaSetting': '公式设置',
   'crmFormDesign.formulaPricing': '定价',
   'crmFormDesign.formulaDiscount': '折扣',
