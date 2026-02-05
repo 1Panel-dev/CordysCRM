@@ -594,11 +594,6 @@
           type: 'department',
         },
       },
-      {
-        title: t('opportunity.quotation.amount'),
-        dataIndex: 'amount',
-        type: FieldTypeEnum.INPUT_NUMBER,
-      },
       ...baseFilterConfigList,
     ] as FilterFormItem[];
   });

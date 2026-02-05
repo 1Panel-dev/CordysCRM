@@ -1,5 +1,5 @@
 // ---- IR 类型 ----
-export type IRNode = IRNumberNode | IRFieldNode | IRBinaryNode | IRFunctionNode;
+export type IRNode = IRNumberNode | IRFieldNode | IRBinaryNode | IRFunctionNode | IRInvalidNode;
 
 export interface ResolveContext {
   /** 是否允许出现列字段 */
@@ -29,6 +29,11 @@ export interface IRFunctionNode {
   type: 'function';
   name: string;
   args: IRNode[];
+}
+
+interface IRInvalidNode {
+  type: 'invalid';
+  reason: string;
 }
 
 // -------- Runtime Context --------

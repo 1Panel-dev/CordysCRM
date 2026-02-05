@@ -104,17 +104,22 @@ export default function evaluateIR(node: IRNode, ctx: EvaluateContext): any {
         case '/':
           return right === 0 ? 0 : left / right;
         default:
-          throw new Error(`Unknown operator ${node.operator}`);
+          ctx.warn?.(`Unknown operator ${node.operator}`);
+          return null;
       }
     }
 
     case 'function': {
       const fn = FUNCTION_IMPL[node.name];
-      if (!fn) throw new Error(`Function ${node.name} not implemented`);
+      if (!fn) {
+        ctx.warn?.(`Function ${node.name} not implemented`);
+        return null;
+      }
       const args = node.args.map((arg) => evaluateIR(arg, ctx));
       return fn(...args);
     }
     default:
-      throw new Error(`Unknown node type ${(node as IRNode).type}`);
+      ctx.warn?.(`Unknown node type ${(node as IRNode).type}`);
+      return null;
   }
 }
