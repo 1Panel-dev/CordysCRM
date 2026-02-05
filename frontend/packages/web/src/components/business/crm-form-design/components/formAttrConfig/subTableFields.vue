@@ -16,19 +16,13 @@
       <n-input
         v-model:value="item.name"
         :maxlength="50"
-        :disabled="props.disabled || !!item.resourceFieldId"
-        :status="
-          fieldConfig.subFields.some(
-            (e) => e.id !== item.id && e.name === item.name && !item.resourceFieldId && !e.resourceFieldId
-          )
-            ? 'error'
-            : undefined
-        "
+        :disabled="props.disabled"
+        :status="fieldConfig.subFields.some((e) => e.id !== item.id && e.name === item.name) ? 'error' : undefined"
         class="flex-1"
         clearable
       >
         <template #prefix>
-          <CrmIcon :type="item.icon" />
+          <CrmIcon :type="getFieldIcon(item.type) || ''" />
         </template>
       </n-input>
       <template v-if="!item.businessKey || item.resourceFieldId">
@@ -71,11 +65,7 @@
         <div class="w-[52px]"></div>
       </template>
       <div
-        v-if="
-          fieldConfig.subFields.some(
-            (e) => e.id !== item.id && e.name === item.name && !item.resourceFieldId && !e.resourceFieldId
-          )
-        "
+        v-if="fieldConfig.subFields.some((e) => e.id !== item.id && e.name === item.name)"
         class="ml-[24px] w-full text-[12px] text-[var(--error-red)]"
       >
         {{ t('crmFormDesign.repeatFieldName') }}
@@ -104,6 +94,7 @@
   import {
     dataSourceDefaultFieldConfig,
     formulaDefaultFieldConfig,
+    getFieldIcon,
     inputDefaultFieldConfig,
     inputNumberDefaultFieldConfig,
     pictureDefaultFieldConfig,
