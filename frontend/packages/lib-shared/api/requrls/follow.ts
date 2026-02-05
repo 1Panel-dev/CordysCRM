@@ -4,6 +4,7 @@ export const GetFollowRecordTabUrl = '/follow/record/tab'; // 数据权限TAB
 export const DeleteFollowRecordUrl = '/follow/record/delete'; // 删除跟进记录
 export const GetFollowRecordUrl = '/follow/record/get'; // 跟进记录详情
 export const UpdateFollowRecordUrl = '/follow/record/update';
+export const AddFollowRecordUrl = '/follow/record/add';
 
 // 跟进计划
 export const UpdateFollowPlanStatusUrl = '/follow/plan/status/update'; // 更新跟进计划状态
@@ -12,6 +13,7 @@ export const GetFollowPlanTabUrl = '/follow/plan/tab'; // 数据权限TAB
 export const DeleteFollowPlanUrl = '/follow/plan/delete'; // 删除跟进计划
 export const GetFollowPlanUrl = '/follow/plan/get'; // 跟进计划详情
 export const UpdateFollowPlanUrl = '/follow/plan/update';
+export const AddFollowPlanUrl = '/follow/plan/add';
 
 // 视图
 export const AddFollowRecordViewUrl = '/follow/record/view/add';

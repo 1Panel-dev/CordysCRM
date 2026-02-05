@@ -55,6 +55,8 @@ export const {
   deleteFollowRecord,
   getFollowRecordTab,
   updateFollowRecord,
+  addFollowRecord,
+  addFollowPlan,
   dragFollowPlanView,
   getFollowPlanDetail,
   getFollowRecordPage,
