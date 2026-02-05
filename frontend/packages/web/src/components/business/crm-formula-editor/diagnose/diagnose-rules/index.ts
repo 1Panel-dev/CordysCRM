@@ -2,7 +2,7 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { FormulaErrorCode } from '../../config';
 import { DiagnoseRule } from '../../types';
-import { isIllegalFunctionCall, isValueEnd, isValueStart } from './utils';
+import { isIllegalFunctionCall, isInsideFunctionArgs, isValueEnd, isValueStart } from './utils';
 
 const { t } = useI18n();
 
@@ -125,20 +125,43 @@ const commaPositionRule: DiagnoseRule = {
   },
 };
 
+export const illegalCommaRule: DiagnoseRule = {
+  name: 'illegal-comma',
+
+  check(ctx) {
+    const { cur, index, tokens } = ctx;
+    if (!cur) return;
+    const inFunctionArgs = isInsideFunctionArgs(tokens, index);
+    if (cur.type === 'comma' && !inFunctionArgs) {
+      ctx.push({
+        type: 'error',
+        code: FormulaErrorCode.SYNTAX_ERROR,
+        message: t('formulaEditor.diagnostics.missingOperatorUsedAsSeparator'),
+        highlight: {
+          tokenRange: [index, index],
+        },
+      });
+    }
+  },
+};
+
 // 相邻规则
 const adjacentValueRule: DiagnoseRule = {
   name: 'adjacent-value',
 
   check(ctx) {
-    const { prev, cur, index } = ctx;
+    const { prev, cur, index, tokens } = ctx;
     if (!prev || !cur) return;
     //  illegal-function-call 处理
     if (isIllegalFunctionCall(prev, cur)) return;
     if (isValueEnd(prev) && isValueStart(cur)) {
+      const inFunctionArgs = isInsideFunctionArgs(tokens, index);
       ctx.push({
         type: 'error',
         code: FormulaErrorCode.SYNTAX_ERROR,
-        message: t('formulaEditor.diagnostics.missingOperator'),
+        message: inFunctionArgs
+          ? t('formulaEditor.diagnostics.missingSeparator')
+          : t('formulaEditor.diagnostics.missingOperator'),
         highlight: {
           tokenRange: [index - 1, index],
         },
@@ -233,7 +256,8 @@ const RULES: DiagnoseRule[] = [
   leadingOperatorRule, // 放在最前面
   duplicateOperatorRule, // 连续操作符
   illegalTextRule, //  非法字符
-  illegalCommaCharRule, // 非法逗号字符
+  illegalCommaRule, // 非法逗号
+  illegalCommaCharRule, // 非法字符
   duplicateCommaRule, // 连续逗号
   commaPositionRule, // 逗号位置
   adjacentValueRule, // 相邻值
