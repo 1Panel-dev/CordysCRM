@@ -30,6 +30,7 @@ import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.BeanUtils;
@@ -61,14 +62,13 @@ public class ModuleService {
     private BaseMapper<OrganizationConfig> organizationConfigMapper;
     @Resource
     private BaseMapper<OrganizationConfigDetail> organizationConfigDetailMapper;
-	@Resource
-	private BaseMapper<Parameter> parameterMapper;
+    @Resource
+    private BaseMapper<Parameter> parameterMapper;
 
     /**
      * 获取系统模块配置列表
      *
      * @param request 请求参数
-     *
      * @return 模块配置列表
      */
     public List<ModuleDTO> getModuleList(ModuleRequest request) {
@@ -181,7 +181,6 @@ public class ModuleService {
      * 获取角色树
      *
      * @param orgId 组织ID
-     *
      * @return 角色树
      */
     public List<RoleUserTreeNode> getRoleTree(String orgId) {
@@ -198,46 +197,47 @@ public class ModuleService {
         return BaseTreeNode.buildTree(treeNodes);
     }
 
-	/**
-	 * 高级搜索开关设置
-	 * @return 是否开启高级搜索
-	 */
-	public boolean getAdvancedSetting() {
-		Parameter parameter = parameterMapper.selectByPrimaryKey("advance.search.setting");
-		return parameter != null && !Strings.CI.equals(parameter.getParamValue(), BooleanUtils.FALSE);
-	}
+    /**
+     * 高级搜索开关设置
+     *
+     * @return 是否开启高级搜索
+     */
+    public boolean getAdvancedSetting() {
+        Parameter parameter = parameterMapper.selectByPrimaryKey("advance.search.setting");
+        return parameter != null && !Strings.CI.equals(parameter.getParamValue(), BooleanUtils.FALSE);
+    }
 
-	/**
-	 * 切换高级搜索开关设置
-	 */
-	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, operator = "{#currentUser}")
-	public void switchAdvanced(String currentUser) {
-		Parameter parameter = parameterMapper.selectByPrimaryKey("advance.search.setting");
+    /**
+     * 切换高级搜索开关设置
+     */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, operator = "{#currentUser}")
+    public void switchAdvanced(String currentUser) {
+        Parameter parameter = parameterMapper.selectByPrimaryKey("advance.search.setting");
 
-		Map<String, String> originalVal = new HashMap<>(1);
-		originalVal.put("module.switch", parameter != null && Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-		if (parameter != null) {
-			parameterMapper.deleteByPrimaryKey("advance.search.setting");
-			boolean current = Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE);
-			parameter.setParamValue(Boolean.toString(!current));
-		} else {
-			parameter = new Parameter();
-			parameter.setParamKey("advance.search.setting");
-			parameter.setParamValue(BooleanUtils.FALSE);
-			parameter.setType("TEXT");
-		}
-		parameterMapper.insert(parameter);
+        Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("module.switch", parameter != null && Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        if (parameter != null) {
+            parameterMapper.deleteByPrimaryKey("advance.search.setting");
+            boolean current = Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE);
+            parameter.setParamValue(Boolean.toString(!current));
+        } else {
+            parameter = new Parameter();
+            parameter.setParamKey("advance.search.setting");
+            parameter.setParamValue(BooleanUtils.FALSE);
+            parameter.setType("TEXT");
+        }
+        parameterMapper.insert(parameter);
 
-		//日志上下文
-		Map<String, String> modifiedVal = new HashMap<>(1);
-		modifiedVal.put("module.switch", Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-		OperationLogContext.setContext(LogContextInfo.builder()
-				.originalValue(originalVal)
-				.resourceName(Translator.get("log.global.search"))
-				.modifiedValue(modifiedVal)
-				.resourceId(parameter.getParamKey())
-				.build());
-	}
+        //日志上下文
+        Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("module.switch", Strings.CI.equals(parameter.getParamValue(), BooleanUtils.TRUE) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(originalVal)
+                .resourceName(Translator.get("log.global.search"))
+                .modifiedValue(modifiedVal)
+                .resourceId(parameter.getParamKey())
+                .build());
+    }
 
     /**
      * 初始化系统(组织或公司)模块数据
@@ -270,7 +270,6 @@ public class ModuleService {
      * 获取排序之后的模块菜单
      *
      * @param organizationId 组织ID
-     *
      * @return 模块列表
      */
     private List<String> getModuleSortKeys(String organizationId) {
@@ -284,7 +283,6 @@ public class ModuleService {
      * 检查仪表盘功能是否启用
      *
      * @param organizationId 组织ID
-     *
      * @return 仪表盘是否启用
      */
     private boolean isDashboardEnabled(String organizationId) {
@@ -315,4 +313,13 @@ public class ModuleService {
                 .map(OrganizationConfigDetail::getEnable)
                 .orElse(false);
     }
+
+    //删除多余模块
+    public void deleteExtraModules() {
+        List<Module> contractFormList = extModuleMapper.selectModuleListByKeyOrderPosDesc(DEFAULT_ORGANIZATION_ID, "contract");
+        if (CollectionUtils.isNotEmpty(contractFormList) && contractFormList.size() > 1) {
+            moduleMapper.deleteByPrimaryKey(contractFormList.getFirst().getId());
+        }
+    }
+
 }

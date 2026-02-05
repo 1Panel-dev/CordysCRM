@@ -46,7 +46,7 @@ public class SendModuleService {
             if (Strings.CI.equals(enabledModule, ModuleKey.CLUE.getKey())) {
                 modules.add(NotificationConstants.Module.CLUE);
             }
-            if (Strings.CI.equals(enabledModule, NotificationConstants.Module.CONTRACT)) {
+            if (Strings.CI.equals(enabledModule, "contract")) {
                 modules.add(NotificationConstants.Module.CONTRACT);
             }
         }
