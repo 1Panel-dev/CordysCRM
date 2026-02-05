@@ -28,11 +28,7 @@ public enum ModuleKey {
     /**
      * 系统设置
      */
-    SETTING("setting"),
-    /**
-     * 合同
-     */
-    CONTRACT("contract");
+    SETTING("setting");
 
     private final String key;
 
