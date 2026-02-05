@@ -82,6 +82,7 @@
   const updateValue = debounce(() => {
     const { formula } = props.fieldConfig;
     const { ir } = safeParseFormula(formula ?? '');
+    console.log('ir: debugger todo', ir);
 
     if (!ir) {
       value.value = 0;
@@ -111,7 +112,7 @@
     if (Object.is(next, value.value)) return;
     value.value = next;
     emit('change', next);
-  }, 100);
+  }, 0);
 
   watch(
     () => props.fieldConfig.defaultValue,
