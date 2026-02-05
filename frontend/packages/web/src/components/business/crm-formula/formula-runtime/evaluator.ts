@@ -1,19 +1,59 @@
 import FUNCTION_IMPL from './functions';
 import { EvaluateContext, IRFieldNode, IRNode } from './types';
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const EXCEL_EPOCH = new Date('1899-12-30').getTime();
+
+function dateToSerial(date: string | number | Date): number {
+  let t: number;
+  if (typeof date === 'number') {
+    t = date;
+  } else if (typeof date === 'string') {
+    t = Date.parse(date);
+  } else {
+    t = date.getTime();
+  }
+
+  if (Number.isNaN(t)) return 0;
+
+  return (t - EXCEL_EPOCH) / DAY_MS;
+}
+
+function parseDateWithPrecision(raw: string | number | Date): number {
+  // number 可能是毫秒，也可能是 serial
+  if (typeof raw === 'number') {
+    // 明显是毫秒时间戳
+    if (raw > 1e10) {
+      return dateToSerial(raw);
+    }
+    // 否则认为是 serial
+    return raw;
+  }
+
+  if (raw instanceof Date) {
+    return dateToSerial(raw);
+  }
+
+  if (typeof raw === 'string') {
+    // YYYY-MM
+    if (/^\d{4}-\d{2}$/.test(raw)) {
+      return dateToSerial(`${raw}-01`);
+    }
+
+    // YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return dateToSerial(raw);
+    }
+  }
+
+  return 0;
+}
 export function resolveFieldValue(rawVal: any, node: IRNode): number {
   if (rawVal == null || rawVal === '') return 0;
 
   // 日期
   if ((node as IRFieldNode)?.numberType === 'date') {
-    // 时间戳
-    if (typeof rawVal === 'number') return rawVal;
-
-    // 字符串日期
-    if (typeof rawVal === 'string') {
-      const t = Date.parse(rawVal);
-      return Number.isNaN(t) ? 0 : t;
-    }
+    return parseDateWithPrecision(rawVal);
   }
 
   // 数字统一解析

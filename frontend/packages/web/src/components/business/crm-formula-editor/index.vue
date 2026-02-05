@@ -133,6 +133,7 @@
 
 <script setup lang="ts">
   import { NButton, NDivider, NScrollbar, NTooltip } from 'naive-ui';
+  import { debounce } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -355,7 +356,7 @@
     }
   }
 
-  function validateCurrentFormula() {
+  const validateCurrentFormula = debounce(() => {
     if (!editor.value) return;
 
     const tokens = tokenizeFromEditor(editor.value);
@@ -364,7 +365,7 @@
     formulaDiagnostics.value = diagnoseFormula(tokens, ast);
     // TODO 高亮先不做
     // applyDiagnosticsHighlight(editor.value, diagnostics);
-  }
+  }, 200);
 
   type FormulaNodeMeta = {
     text: string;
@@ -438,7 +439,7 @@
     /** 参数区（真正可编辑） */
     const argsNode = document.createElement('span');
     argsNode.className = 'formula-args';
-    argsNode.appendChild(document.createTextNode('\u200B'));
+    argsNode.appendChild(document.createTextNode(''));
 
     /** 右括号 */
     const rightParen = document.createTextNode(')');
@@ -451,8 +452,8 @@
     /** 光标放入参数区 */
     const caretRange = document.createRange();
     const text = argsNode.firstChild!;
-    caretRange.setStart(text, 1);
-    caretRange.setEnd(text, 1);
+    caretRange.setStart(text, 0);
+    caretRange.setEnd(text, 0);
 
     const sel = window.getSelection();
     sel?.removeAllRanges();

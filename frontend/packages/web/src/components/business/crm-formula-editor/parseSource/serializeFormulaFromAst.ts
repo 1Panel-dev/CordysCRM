@@ -1,9 +1,12 @@
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { FormulaFormCreateField } from '../index.vue';
 
 import { ASTNode, FormulaSerializeResult, Token, TokenType } from '../types';
 import resolveASTToIR from './astToIr';
+
+const { t } = useI18n();
 
 export function serializeNode(
   node: ASTNode,
@@ -151,7 +154,7 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
         tokens.push({
           type: 'field',
           fieldId,
-          name: field?.name ?? `字段${fieldId}`,
+          name: field?.name ?? t('common.optionNotExist'),
           fieldType: field?.type,
           numberType,
           start: i,

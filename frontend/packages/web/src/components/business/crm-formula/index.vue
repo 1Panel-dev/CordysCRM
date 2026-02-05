@@ -95,6 +95,7 @@
           rowIndex: Number(contextMatch[2]),
         }
       : undefined;
+
     const result = evaluateIR(ir, {
       context,
       getScalarFieldValue,
@@ -110,7 +111,7 @@
     if (Object.is(next, value.value)) return;
     value.value = next;
     emit('change', next);
-  }, 300);
+  }, 100);
 
   watch(
     () => props.fieldConfig.defaultValue,
