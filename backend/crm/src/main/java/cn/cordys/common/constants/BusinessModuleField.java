@@ -275,15 +275,15 @@ public enum BusinessModuleField {
 
 
     /*------ start: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
-    CONTRACT_PAYMENT_RECORD_NO("contractPaymentRecordNo", "no", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_NO("contractPaymentRecordNo", "no", Set.of("rules.required"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_NAME("contractPaymentRecordName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_OWNER("contractPaymentRecordOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_CONTRACT("contractPaymentRecordContract", "contractId", Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_PLAN("contractPaymentRecordPlan", "paymentPlanId", Set.of("dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_AMOUNT("contractPaymentRecordAmount", "recordAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_END_TIME("contractPaymentRecordEndTime", "recordEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_BANK("contractPaymentRecordBank", "recordBank", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_BANK_NO("contractPaymentRecordBankNo", "recordBankNo", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+    CONTRACT_PAYMENT_RECORD_BANK("contractPaymentRecordBank", "recordBank", Set.of(), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
+    CONTRACT_PAYMENT_RECORD_BANK_NO("contractPaymentRecordBankNo", "recordBankNo", Set.of(), FormKey.CONTRACT_PAYMENT_RECORD.getKey());
     /*------ end: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
 
 
