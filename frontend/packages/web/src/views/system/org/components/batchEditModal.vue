@@ -8,7 +8,13 @@
   >
     <n-form ref="formRef" :model="form" label-placement="left" label-width="auto">
       <n-form-item
-        :rule="[{ required: true, message: t('common.notNull', { value: `${t('org.attributes')}` }) }]"
+        :rule="[
+          {
+            required: true,
+            trigger: ['input', 'blur'],
+            message: t('common.notNull', { value: `${t('org.attributes')}` }),
+          },
+        ]"
         require-mark-placement="left"
         label-placement="left"
         path="attributes"
@@ -22,7 +28,13 @@
       </n-form-item>
       <n-form-item
         v-if="!form.attributes"
-        :rule="[{ required: true, message: t('common.value.notNull') }]"
+        :rule="[
+          {
+            required: true,
+            trigger: ['input', 'blur'],
+            message: t('common.value.notNull'),
+          },
+        ]"
         require-mark-placement="left"
         label-placement="left"
         path="value"
@@ -32,7 +44,7 @@
       </n-form-item>
       <n-form-item
         v-else-if="form.attributes === 'departmentId'"
-        :rule="[{ required: true, message: t('common.value.notNull') }]"
+        :rule="[{ required: true, trigger: ['input', 'blur'], message: t('common.value.notNull') }]"
         require-mark-placement="left"
         label-placement="left"
         path="value"
@@ -71,7 +83,7 @@
       </n-form-item>
       <n-form-item
         v-else-if="form.attributes === 'workCity'"
-        :rule="[{ required: true, message: t('common.value.notNull') }]"
+        :rule="[{ required: true, trigger: ['input', 'blur'], message: t('common.value.notNull') }]"
         require-mark-placement="left"
         label-placement="left"
         path="value"
@@ -81,7 +93,7 @@
       </n-form-item>
       <n-form-item
         v-else-if="form.attributes === 'onboardingDate'"
-        :rule="[{ required: true, message: t('common.value.notNull') }]"
+        :rule="[{ required: true, trigger: ['input', 'blur'], type: 'number', message: t('common.value.notNull') }]"
         require-mark-placement="left"
         label-placement="left"
         path="onboardingDate"

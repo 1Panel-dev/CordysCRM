@@ -46,6 +46,8 @@ export const {
   updateFollowPlanStatus,
   updateFollowPlan,
   updateFollowRecord,
+  addFollowRecord,
+  addFollowPlan,
 } = followApi;
 
 export const {
