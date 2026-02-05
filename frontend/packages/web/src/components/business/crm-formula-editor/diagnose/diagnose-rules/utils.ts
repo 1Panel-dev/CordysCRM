@@ -55,3 +55,24 @@ export function isValueStart(token?: Token): boolean {
 export function isIllegalFunctionCall(prev?: Token, cur?: Token): boolean {
   return prev?.type === 'paren' && prev.value === ')' && cur?.type === 'paren' && cur.value === '(';
 }
+
+// 是否在函数参数内
+export function isInsideFunctionArgs(tokens: any[], index: number): boolean {
+  let depth = 0;
+
+  for (let i = index - 1; i >= 0; i--) {
+    const t = tokens[i];
+
+    if (t.type === 'paren' && t.value === ')') {
+      depth++;
+    } else if (t.type === 'paren' && t.value === '(') {
+      if (depth === 0) {
+        // 看左边是不是 function
+        return tokens[i - 1]?.type === 'function';
+      }
+      depth--;
+    }
+  }
+
+  return false;
+}

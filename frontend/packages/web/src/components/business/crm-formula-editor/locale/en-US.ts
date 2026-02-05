@@ -23,4 +23,5 @@ export default {
   'formulaEditor.diagnostics.missingOperator': 'Missing operator',
   'formulaEditor.diagnostics.invalidArgOfDAYS':
     'The {index}th parameter type error, parameter must be of number or date type',
+  'c': 'Commas cannot be used between fields, please use operators',
 };
