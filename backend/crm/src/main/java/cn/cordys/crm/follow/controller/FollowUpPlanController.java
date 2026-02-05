@@ -9,6 +9,7 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
+import cn.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
 import cn.cordys.crm.follow.dto.request.PlanHomePageRequest;
@@ -88,9 +89,15 @@ public class FollowUpPlanController {
     }
 
     @PostMapping("/update")
-    @Operation(summary = "更新线索跟进计划")
+    @Operation(summary = "更新跟进计划")
     public FollowUpPlan update(@Validated @RequestBody FollowUpPlanUpdateRequest request) {
         followUpPlanService.checkPlanPermission(request.getId(), OrganizationContext.getOrganizationId());
         return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
+
+	@PostMapping("/add")
+	@Operation(summary = "添加跟进计划")
+	public FollowUpPlan add(@Validated @RequestBody FollowUpPlanAddRequest request) {
+		return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
 }
