@@ -40,14 +40,6 @@ public class ContractPaymentRecordAddRequest {
 	@Schema(description = "回款时间")
 	private Long recordEndTime;
 
-	@Size(max = 32)
-	@Schema(description = "回款银行")
-	private String recordBank;
-
-	@Size(max = 32)
-	@Schema(description = "回款银行账号")
-	private String recordBankNo;
-
 	@Schema(description = "自定义字段值")
 	private List<BaseModuleFieldValue> moduleFields;
 }

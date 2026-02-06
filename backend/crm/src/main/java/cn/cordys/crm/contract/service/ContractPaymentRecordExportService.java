@@ -65,10 +65,6 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 		systemFiledMap.put("recordAmount", data.getRecordAmount());
 		systemFiledMap.put("recordEndTime", getInternalDateStr(data.getRecordEndTime(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
 				data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_END_TIME.getKey()));
-		systemFiledMap.put("recordBank", processInternalOptions(data.getRecordBank(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
-				data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_BANK.getKey()));
-		systemFiledMap.put("recordBankNo", processInternalOptions(data.getRecordBankNo(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
-				data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_BANK_NO.getKey()));
 
 		systemFiledMap.put("createUser", data.getCreateUserName());
 		systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
