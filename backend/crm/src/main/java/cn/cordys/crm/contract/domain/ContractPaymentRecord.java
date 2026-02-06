@@ -37,12 +37,6 @@ public class ContractPaymentRecord extends BaseModel {
 	@Schema(description = "回款时间")
 	private Long recordEndTime;
 
-	@Schema(description = "收款银行")
-	private String recordBank;
-
-	@Schema(description = "收款账号")
-	private String recordBankNo;
-
 	@Schema(description = "组织id")
 	private String organizationId;
 }

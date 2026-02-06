@@ -4,8 +4,8 @@
 <mapper namespace="cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper">
     <select id="list" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse">
         select cpr.id, cpr.owner, cpr.no, cpr.name, cpr.contract_id, cpr.payment_plan_id,
-               cpr.record_amount, cpr.record_end_time, cpr.record_bank, cpr.record_bank_no,
-               cpr.create_time, cpr.update_time, cpr.create_user, cpr.update_user, cpr.organization_id, ifnull(c.name, '') as contractName
+               cpr.record_amount, cpr.record_end_time, cpr.create_time, cpr.update_time,
+               cpr.create_user, cpr.update_user, cpr.organization_id, ifnull(c.name, '') as contractName
         from contract_payment_record cpr left join contract c on c.id = cpr.contract_id
 
         <include refid="fieldConditionJoin">
@@ -73,8 +73,8 @@
 
     <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse">
         select cpr.id, cpr.owner, cpr.no, cpr.name, cpr.contract_id, cpr.payment_plan_id,
-            cpr.record_amount, cpr.record_end_time, cpr.record_bank, cpr.record_bank_no,
-            cpr.create_time, cpr.update_time, cpr.create_user, cpr.update_user, cpr.organization_id, c.name as contractName
+            cpr.record_amount, cpr.record_end_time, cpr.create_time, cpr.update_time,
+            cpr.create_user, cpr.update_user, cpr.organization_id, c.name as contractName
         from contract_payment_record cpr
         join contract c on c.id = cpr.contract_id
 
@@ -135,7 +135,7 @@
                 order by
                 <choose>
                     <when test="${sort}.name in
-                        {'name', 'no', 'owner', 'payment_plan_id', 'contract_id', 'record_amount', 'record_end_time', 'record_bank', 'record_bank_no', 'create_time', 'update_time', 'create_user', 'update_user'}">
+                        {'name', 'no', 'owner', 'payment_plan_id', 'contract_id', 'record_amount', 'record_end_time', 'create_time', 'update_time', 'create_user', 'update_user'}">
                         cpr.${sortName} ${sortType}, cpr.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
@@ -161,7 +161,7 @@
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
-                {'name', 'no', 'owner', 'paymentPlanId', 'contractId', 'createTime', 'updateTime', 'recordAmount', 'recordEndTime', 'recordBank', 'recordBankNo', 'createUser', 'updateUser', 'departmentId'}">
+                {'name', 'no', 'owner', 'paymentPlanId', 'contractId', 'createTime', 'updateTime', 'recordAmount', 'recordEndTime', 'createUser', 'updateUser', 'departmentId'}">
                     <if test="condition.multipleValue">
                         left join contract_payment_record_field_blob ${tablePrefix}_${i}
                         on cpr.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -187,7 +187,7 @@
                     left join sys_organization_user sou_sort on cpr.owner = sou_sort.user_id
                 </when>
                 <when test="${sort}.name not in
-                        {'name', 'no', 'owner', 'create_time', 'update_time', 'contract_id', 'payment_plan_id', 'create_user', 'update_user', 'record_amount', 'record_end_time', 'record_bank', 'record_bank_no'}">
+                        {'name', 'no', 'owner', 'create_time', 'update_time', 'contract_id', 'payment_plan_id', 'create_user', 'update_user', 'record_amount', 'record_end_time'}">
                     left join contract_payment_record_field sort_table
                     on cpr.id = sort_table.resource_id and sort_table.field_id = #{sortName}
                     left join sys_module_field module_table on sort_table.field_id = module_table.id
@@ -289,18 +289,6 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="cpr.record_end_time"/>
-                </include>
-            </when>
-            <when test="condition.name == 'recordBank'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="cpr.record_bank"/>
-                </include>
-            </when>
-            <when test="condition.name == 'recordBankNo'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="cpr.record_bank_no"/>
                 </include>
             </when>
             <when test="condition.name == 'createTime'">
