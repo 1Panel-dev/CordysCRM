@@ -1,7 +1,5 @@
 on:
-  issue_comment:
-    types:
-      - created
+  workflow_dispatch:
 
 name: Add Labels to PR
 
@@ -13,18 +11,6 @@ jobs:
       # Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Add release note block
-        run: |
-          PR_NUMBER=$(gh pr list --head ${{ github.ref_name }} --json number -q '.[0].number')
-          gh pr edit $PR_NUMBER --add-body "
-          
-          \`\`\`release-note
-          NONE
-          \`\`\`
-          "
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # Extract and format the labels from the comment as "username: label"
       - name: Extract reviewer and labels
