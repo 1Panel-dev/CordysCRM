@@ -428,7 +428,7 @@
     const fnNode = document.createElement('span');
     fnNode.className = 'formula-fn';
     fnNode.style.color = FUN_COLOR;
-    fnNode.contentEditable = 'false';
+    fnNode.contentEditable = 'true';
     fnNode.dataset.nodeType = 'function';
     fnNode.dataset.fnName = item.id;
     fnNode.textContent = item.name;
@@ -504,7 +504,7 @@
     }
 
     wrapper.className = 'formula-tag-wrapper';
-    wrapper.contentEditable = 'false';
+    wrapper.contentEditable = 'true';
     wrapper.dataset.value = item.id;
     wrapper.dataset.nodeType = 'field';
     wrapper.dataset.fieldType = item.type;
@@ -541,7 +541,7 @@
     const fnNode = document.createElement('span');
     fnNode.className = 'formula-fn';
     fnNode.style.color = FUN_COLOR;
-    fnNode.contentEditable = 'false';
+    fnNode.contentEditable = 'true';
     fnNode.dataset.nodeType = 'function';
     fnNode.dataset.fnName = fnName;
     fnNode.textContent = fnName;
@@ -622,7 +622,6 @@
     });
 
     const saveResult = serializeFormulaFromAst(ast, fieldMap);
-    console.log(saveResult, 'saveResult debugger todo');
     const result = JSON.stringify(saveResult);
     return result;
   }
