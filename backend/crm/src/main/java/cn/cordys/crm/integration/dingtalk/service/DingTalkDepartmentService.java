@@ -17,10 +17,19 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Slf4j
 public class DingTalkDepartmentService {
+
+    // 钉钉API限流配置
+    private static final int DINGTALK_API_RATE_LIMIT = 20; // 每秒最多20次请求
+    private static final long MIN_REQUEST_INTERVAL = 1000L / DINGTALK_API_RATE_LIMIT; // 最小请求间隔(毫秒)
+
+    // 请求计数器（用于监控）
+    private final AtomicInteger apiRequestCount = new AtomicInteger(0);
 
 
     public ThirdOrgDataDTO convertToThirdOrgDataDTO(String accessToken) {
@@ -96,9 +105,32 @@ public class DingTalkDepartmentService {
             List<DingTalkDepartment> departments = new ArrayList<>();
             Map<Long, List<DingTalkUser>> usersByDept = new HashMap<>();
 
-            for (Long deptId : allDepartmentIds) {
+            log.info("开始处理{}个部门的数据同步", allDepartmentIds.size());
+
+            // 批量处理部门信息，添加限流控制
+            for (int i = 0; i < allDepartmentIds.size(); i++) {
+                Long deptId = allDepartmentIds.get(i);
+
+                // 每批次请求后添加延迟，避免触发限流
+                if (i > 0) {
+                    try {
+                        // 根据请求频率动态调整延迟
+                        long delay = calculateDelay(i);
+                        if (delay > 0) {
+                            log.info("添加延迟：{}毫秒", delay);
+                            TimeUnit.MILLISECONDS.sleep(delay);
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+
+                log.info("正在处理部门ID: {} ({}/{})", deptId, i + 1, allDepartmentIds.size());
+
                 // 获取部门详情
                 getDepartmentDetail(accessToken, deptId).ifPresent(departments::add);
+
                 // 获取部门用户
                 List<DingTalkUser> users = getUsersByDepartment(accessToken, deptId);
                 List<DingTalkUser> filteredUsers = new ArrayList<>();
@@ -114,6 +146,9 @@ public class DingTalkDepartmentService {
 
             response.setDepartments(departments);
             response.setUsers(usersByDept);
+
+            log.info("数据同步完成，共处理{}个部门，API请求数: {}",
+                    allDepartmentIds.size(), apiRequestCount.get());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -122,40 +157,77 @@ public class DingTalkDepartmentService {
 
 
     /**
-     * 递归获取所有子部门ID
+     * 使用队列方式获取所有子部门ID（避免递归，更好的限流控制）
      *
      * @param accessToken 访问令牌
-     * @param deptId      部门ID
+     * @param rootDeptId  根部门ID
      * @return 部门ID列表
      */
-    private List<Long> getAllSubDepartmentIds(String accessToken, Long deptId) {
+    private List<Long> getAllSubDepartmentIds(String accessToken, Long rootDeptId) {
         List<Long> departmentIds = new ArrayList<>();
-        departmentIds.add(deptId);
+        Queue<Long> deptQueue = new LinkedList<>();
+        deptQueue.offer(rootDeptId);
 
-        String url = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_DEPARTMENT_IDS, accessToken);
-        String requestBody = JSON.toJSONString(Collections.singletonMap("dept_id", deptId));
+        while (!deptQueue.isEmpty()) {
+            Long currentDeptId = deptQueue.poll();
+            departmentIds.add(currentDeptId);
 
-        try {
-            String responseBody = HttpRequestUtil.sendPostRequest(url, requestBody, null);
-            SubDeptIdListResponse response = JSON.parseObject(responseBody, SubDeptIdListResponse.class);
+            String url = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_DEPARTMENT_IDS, accessToken);
+            String requestBody = JSON.toJSONString(Collections.singletonMap("dept_id", currentDeptId));
 
-            if (response != null && response.getErrCode() == 0 && response.getResult() != null) {
-                for (Long subDeptId : response.getResult().getDeptIdList()) {
-                    departmentIds.addAll(getAllSubDepartmentIds(accessToken, subDeptId));
-                }
-            } else {
-                if (response != null) {
-                    log.error("获取子部门ID失败，错误码：{}，错误信息：{}", response.getErrCode(), response.getErrMsg());
+            try {
+                // 限流控制
+                applyRateLimit();
+
+                String responseBody = HttpRequestUtil.sendPostRequest(url, requestBody, null);
+                SubDeptIdListResponse response = JSON.parseObject(responseBody, SubDeptIdListResponse.class);
+
+                if (response != null && response.getErrCode() == 0 && response.getResult() != null) {
+                    List<Long> subDeptIds = response.getResult().getDeptIdList();
+                    log.info("部门{}包含{}个子部门", currentDeptId, subDeptIds.size());
+
+                    // 将子部门加入队列继续处理
+                    for (Long subDeptId : subDeptIds) {
+                        deptQueue.offer(subDeptId);
+                    }
                 } else {
-                    log.info("获取子部门ID失败，响应为空");
+                    if (response != null) {
+                        log.error("获取部门{}的子部门ID失败，错误码：{}，错误信息：{}",
+                                currentDeptId, response.getErrCode(), response.getErrMsg());
+                    } else {
+                        log.info("获取部门{}的子部门ID失败，响应为空", currentDeptId);
+                    }
                 }
+            } catch (IOException | InterruptedException e) {
+                log.error("获取部门{}的子部门ID失败", currentDeptId, e);
+                Thread.currentThread().interrupt();
+                break;
             }
-        } catch (IOException | InterruptedException e) {
-            log.error("获取子部门ID失败", e);
-            // 适当处理异常，例如记录日志
-            Thread.currentThread().interrupt();
         }
         return departmentIds;
+    }
+
+
+    /**
+     * 应用API限流控制
+     */
+    private void applyRateLimit() throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(MIN_REQUEST_INTERVAL);
+        apiRequestCount.incrementAndGet();
+    }
+
+    /**
+     * 根据请求进度动态计算延迟时间
+     *
+     * @param requestIndex 请求索引
+     * @return 延迟时间（毫秒）
+     */
+    private long calculateDelay(int requestIndex) {
+        // 每10个请求增加额外延迟，确保不会触发限流
+        if (requestIndex % 10 == 0) {
+            return 200; // 额外200ms延迟
+        }
+        return MIN_REQUEST_INTERVAL;
     }
 
 
