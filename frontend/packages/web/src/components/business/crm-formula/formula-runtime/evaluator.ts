@@ -2,29 +2,34 @@ import FUNCTION_IMPL from './functions';
 import { EvaluateContext, IRFieldNode, IRNode } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const EXCEL_EPOCH = new Date('1899-12-30').getTime();
+const EXCEL_EPOCH = new Date(1899, 11, 30).getTime(); // Excel 的日期序列号是从 1900-01-01 开始的，但为了兼容 Lotus 1-2-3 的错误，Excel 实际上把 1900-02-29 也当成了一个有效日期，所以 Excel 的 epoch 是 1899-12-30
 
-function dateToSerial(date: string | number | Date): number {
+function dateToSerial(date: Date | string): number {
   let t: number;
-  if (typeof date === 'number') {
-    t = date;
-  } else if (typeof date === 'string') {
-    t = Date.parse(date);
-  } else {
-    t = date.getTime();
-  }
 
-  if (Number.isNaN(t)) return 0;
+  if (date instanceof Date) {
+    t = date.getTime();
+  } else {
+    // YYYY-MM-DD / YYYY-MM-DD HH:mm:ss
+    const m = date.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+    if (!m) return 0;
+
+    const [, y, mo, d, h = '0', mi = '0', s = '0'] = m;
+    // 月份在 Date 构造函数里是从 0 开始的，所以要减 1
+    const localDate = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s));
+
+    t = localDate.getTime();
+  }
 
   return (t - EXCEL_EPOCH) / DAY_MS;
 }
 
 function parseDateWithPrecision(raw: string | number | Date): number {
-  // number 可能是毫秒，也可能是 serial
+  //  number 在 date 语义里，只允许是 Excel serial
   if (typeof raw === 'number') {
     // 明显是毫秒时间戳
     if (raw > 1e10) {
-      return dateToSerial(raw);
+      return (raw - EXCEL_EPOCH) / DAY_MS;
     }
     // 否则认为是 serial
     return raw;
@@ -39,9 +44,8 @@ function parseDateWithPrecision(raw: string | number | Date): number {
     if (/^\d{4}-\d{2}$/.test(raw)) {
       return dateToSerial(`${raw}-01`);
     }
-
     // YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
       return dateToSerial(raw);
     }
   }
@@ -53,7 +57,9 @@ export function resolveFieldValue(rawVal: any, node: IRNode): number {
 
   // 日期
   if ((node as IRFieldNode)?.numberType === 'date') {
-    return parseDateWithPrecision(rawVal);
+    const serial = parseDateWithPrecision(rawVal);
+    // 在这里统一 day精度
+    return Math.floor(serial);
   }
 
   // 数字统一解析
