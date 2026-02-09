@@ -80,6 +80,7 @@ public class DataHandleUtils {
         request.setWeComEnable(false);
         request.setEmailEnable(false);
         request.setLarkEnable(false);
+        request.setDingTalkEnable(false);
         messageTaskService.batchSaveMessageTask(request, orgId, operatorId);
     }
 
