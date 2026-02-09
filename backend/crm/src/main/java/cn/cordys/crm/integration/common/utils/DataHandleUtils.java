@@ -63,7 +63,7 @@ public class DataHandleUtils {
      */
     public void handleAddData(List<ThirdDepartment> thirdDepartments, String operatorId, String orgId, String type) {
         this.thirdDepartmentTree = ThirdDepartment.buildDepartmentTree(internalDepartment.getId(), thirdDepartments);
-        organizationUserService.deleteUser(orgId, operatorId);
+        organizationUserService.deleteUser(orgId);
         departmentService.deleteByOrgId(orgId);
 
         clearMessageConfig(orgId, operatorId);
