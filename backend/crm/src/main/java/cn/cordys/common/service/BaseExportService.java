@@ -729,9 +729,11 @@ public abstract class BaseExportService {
 					return v != null ? v.size() : 0;
 				}))
 				.orElse(null);
+
 		if (longSubFv == null) {
 			return new ArrayList<>();
 		}
+
 		List<?> longFvs = (List<?>) longSubFv.getFieldValue();
 		List<Map<String, Object>> alignedList = new ArrayList<>(longFvs.size());
 		for (int i = 0; i < longFvs.size(); i++) {
