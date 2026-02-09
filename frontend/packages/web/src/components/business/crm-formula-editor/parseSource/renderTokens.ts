@@ -7,7 +7,7 @@ export function createFunctionNode(fnName: string) {
   const node = document.createElement('span');
   node.className = 'formula-fn';
   node.style.color = FUN_COLOR;
-  node.contentEditable = 'false';
+  node.contentEditable = 'true';
   node.dataset.nodeType = 'function';
   node.dataset.fnName = fnName;
   node.textContent = fnName;
@@ -41,7 +41,7 @@ export function createFieldNode(token: Token) {
   const parsedToken = token as FieldToken;
   const node = document.createElement('span');
   node.className = 'formula-tag-wrapper';
-  node.contentEditable = 'false';
+  node.contentEditable = 'true';
   node.dataset.nodeType = 'field';
   if ((token as FieldToken)?.fieldType) {
     node.dataset.fieldType = (token as FieldToken)?.fieldType;
