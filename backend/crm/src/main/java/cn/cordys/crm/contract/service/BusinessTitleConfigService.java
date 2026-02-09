@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -25,6 +26,7 @@ public class BusinessTitleConfigService {
      * 获取工商抬头配置
      *
      * @param orgId
+     *
      * @return
      */
     public List<BusinessTitleConfig> getConfigs(String orgId) {
@@ -42,8 +44,10 @@ public class BusinessTitleConfigService {
      * @param id
      */
     public void switchRequired(String id) {
-        BusinessTitleConfig businessTitleConfig = businessTitleConfigMapper.selectByPrimaryKey(id);
-        businessTitleConfig.setRequired(!businessTitleConfig.getRequired());
-        businessTitleConfigMapper.update(businessTitleConfig);
+        Optional.ofNullable(businessTitleConfigMapper.selectByPrimaryKey(id))
+                .ifPresent(config -> {
+                    config.setRequired(!config.getRequired());
+                    businessTitleConfigMapper.update(config);
+                });
     }
 }

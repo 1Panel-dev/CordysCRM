@@ -129,9 +129,8 @@ public class CustomerContactExportService extends BaseExportService {
         LinkedHashMap<String, Object> systemFiledMap = CustomerContactFieldUtils.getSystemFieldMap(data);
         //自定义字段map
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
-        Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields -> {
-            moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue)));
-        });
+        Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields ->
+                moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue))));
         //处理数据转换
         transModuleFieldValue(headList, systemFiledMap, moduleFieldMap.get(), dataList, fieldConfigMap);
         return dataList;
