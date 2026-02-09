@@ -1,43 +1,76 @@
-# local env files
+############################
+# Environment & Config
+############################
+
+# Local env files
+.env
 .env.local
 .env.*.local
+.venv
 
-# Log files
+# Maven
+.mvn
+!.mvn/maven-wrapper.properties
+.flattened-pom.xml
+
+############################
+# Logs
+############################
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-error.log*
 
-# Editor directories and files
+############################
+# IDE / Editor
+############################
+
+# macOS
 .DS_Store
+
+# IntelliJ IDEA
 .idea/*
 !.idea/icon.png
 **/*.iml
+
+# Eclipse
+.settings
+.project
+.classpath
+.factorypath
+
+# VS Code
+.vscode
+
+# Visual Studio
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
+
+# Other
 *.sw?
-.mvn
-!.mvn/maven-wrapper.properties
 .history
 
-# VS Code
-.vscode
-*.project
-*.factorypath
+############################
+# Build Output
+############################
+
+target
+.jython_cache
+
+############################
+# Static Resources (ignored)
+############################
 
 src/main/resources/static
 src/main/resources/templates
-target
-.settings
-.project
-.classpath
-.jython_cache
-qywx.json
-### flattened
-.flattened-pom.xml
 /backend/crm/src/main/resources/static/
 /backend/app/src/main/resources/static/
-.venv
-.env
+
+############################
+# Custom Files
+############################
+
+qywx.json
