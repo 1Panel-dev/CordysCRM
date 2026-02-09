@@ -31,7 +31,6 @@ public class BusinessTitleExportService extends BaseExportService {
     @Resource
     private BaseService baseService;
 
-
     /**
      * 选中工商抬头数据
      *
@@ -39,51 +38,51 @@ public class BusinessTitleExportService extends BaseExportService {
      */
     @Override
     public List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {
-        String orgId = exportDTO.getOrgId();
-        String userId = exportDTO.getUserId();
-        //获取数据
-        List<BusinessTitleListResponse> allList = extBusinessTitleMapper.getListByIds(ids, userId, orgId);
+        var orgId = exportDTO.getOrgId();
+        var userId = exportDTO.getUserId();
+        var allList = extBusinessTitleMapper.getListByIds(ids, userId, orgId);
         baseService.setCreateAndUpdateUserName(allList);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (BusinessTitleListResponse response : allList) {
+        return buildExportResult(allList, taskId, exportDTO);
+    }
+
+    private List<List<Object>> buildExportResult(List<BusinessTitleListResponse> responses, String taskId, ExportDTO exportDTO) throws InterruptedException {
+        var headList = exportDTO.getHeadList();
+        var result = new ArrayList<List<Object>>(responses.size());
+        for (var response : responses) {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(exportDTO.getHeadList(), response);
-            data.add(value);
+            result.add(buildData(headList, response));
         }
-        return data;
+        return result;
     }
 
     private List<Object> buildData(List<ExportHeadDTO> headList, BusinessTitleListResponse data) {
-        List<Object> dataList = new ArrayList<>();
-        //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = getSystemFieldMap(data);
-        //处理数据转换
-        return transModuleFieldValue(headList, systemFiledMap, new HashMap<>(), dataList, new HashMap<>());
+        var dataList = new ArrayList<Object>(headList.size());
+        var systemFieldMap = getSystemFieldMap(data);
+        return transModuleFieldValue(headList, systemFieldMap, new HashMap<>(), dataList, new HashMap<>());
 
     }
 
     public LinkedHashMap<String, Object> getSystemFieldMap(BusinessTitleListResponse data) {
-        LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-        systemFiledMap.put("name", data.getName());
-        systemFiledMap.put("identificationNumber", data.getIdentificationNumber());
-        systemFiledMap.put("openingBank", data.getOpeningBank());
-        systemFiledMap.put("type", Translator.get(data.getType()));
-        systemFiledMap.put("bankAccount", data.getBankAccount());
-        systemFiledMap.put("registrationAddress", data.getRegistrationAddress());
-        systemFiledMap.put("phoneNumber", data.getPhoneNumber());
-        systemFiledMap.put("registeredCapital", data.getRegisteredCapital());
-        systemFiledMap.put("companySize", data.getCompanySize());
-        systemFiledMap.put("registrationNumber", data.getRegistrationNumber());
-        systemFiledMap.put("unapprovedReason", data.getUnapprovedReason());
+        LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
+        systemFieldMap.put("name", data.getName());
+        systemFieldMap.put("identificationNumber", data.getIdentificationNumber());
+        systemFieldMap.put("openingBank", data.getOpeningBank());
+        systemFieldMap.put("type", Translator.get(data.getType()));
+        systemFieldMap.put("bankAccount", data.getBankAccount());
+        systemFieldMap.put("registrationAddress", data.getRegistrationAddress());
+        systemFieldMap.put("phoneNumber", data.getPhoneNumber());
+        systemFieldMap.put("registeredCapital", data.getRegisteredCapital());
+        systemFieldMap.put("companySize", data.getCompanySize());
+        systemFieldMap.put("registrationNumber", data.getRegistrationNumber());
+        systemFieldMap.put("unapprovedReason", data.getUnapprovedReason());
 
-        systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
-        systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
-        return systemFiledMap;
+        systemFieldMap.put("createUser", data.getCreateUserName());
+        systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
+        systemFieldMap.put("updateUser", data.getUpdateUserName());
+        systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+        return systemFieldMap;
     }
 
 
@@ -94,22 +93,11 @@ public class BusinessTitleExportService extends BaseExportService {
      */
     @Override
     public List<List<Object>> getExportData(String taskId, ExportDTO exportDTO) throws InterruptedException {
-        BusinessTitlePageRequest pageRequest = (BusinessTitlePageRequest) exportDTO.getPageRequest();
-        String orgId = exportDTO.getOrgId();
+        var pageRequest = (BusinessTitlePageRequest) exportDTO.getPageRequest();
+        var orgId = exportDTO.getOrgId();
         PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize());
-        //获取数据
-        List<BusinessTitleListResponse> dataList = extBusinessTitleMapper.list(pageRequest, orgId, exportDTO.getUserId());
+        var dataList = extBusinessTitleMapper.list(pageRequest, orgId, exportDTO.getUserId());
         baseService.setCreateAndUpdateUserName(dataList);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (BusinessTitleListResponse response : dataList) {
-            if (ExportThreadRegistry.isInterrupted(taskId)) {
-                throw new InterruptedException("线程已被中断，主动退出");
-            }
-            List<Object> value = buildData(exportDTO.getHeadList(), response);
-            data.add(value);
-        }
-
-        return data;
+        return buildExportResult(dataList, taskId, exportDTO);
     }
 }
