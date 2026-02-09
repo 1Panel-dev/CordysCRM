@@ -200,16 +200,16 @@ public abstract class BaseExportService {
      * 根据数据value 转换对应值
      *
      * @param headList       头集合信息
-     * @param systemFiledMap 系统字段值
+     * @param systemFieldMap 系统字段值
      * @param moduleFieldMap 模块字段值
      * @param dataList       数据列表
      * @param fieldConfigMap 字段配置集合
      */
-    public List<Object> transModuleFieldValue(List<ExportHeadDTO> headList, LinkedHashMap<String, Object> systemFiledMap, Map<String, Object> moduleFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
+    public List<Object> transModuleFieldValue(List<ExportHeadDTO> headList, LinkedHashMap<String, Object> systemFieldMap, Map<String, Object> moduleFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
         headList.forEach(head -> {
-            if (systemFiledMap.containsKey(head.getKey())) {
+            if (systemFieldMap.containsKey(head.getKey())) {
                 //固定字段
-                dataList.add(systemFiledMap.get(head.getKey()));
+                dataList.add(systemFieldMap.get(head.getKey()));
             } else if (moduleFieldMap.containsKey(head.getKey())) {
                 //自定义字段
                 Map<String, Object> collect = moduleFieldMap.entrySet().stream()

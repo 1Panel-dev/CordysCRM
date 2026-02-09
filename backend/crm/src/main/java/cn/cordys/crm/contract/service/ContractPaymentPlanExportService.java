@@ -62,27 +62,27 @@ public class ContractPaymentPlanExportService extends BaseExportService {
     private List<Object> buildData(List<ExportHeadDTO> headList, ContractPaymentPlanListResponse data, Map<String, BaseField> fieldConfigMap) {
         List<Object> dataList = new ArrayList<>();
         //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = getSystemFieldMap(data);
+        LinkedHashMap<String, Object> systemFieldMap = getSystemFieldMap(data);
         //自定义字段map
         Map<String, Object> moduleFieldMap = getFieldIdValueMap(data.getModuleFields());
         //处理数据转换
-        return transModuleFieldValue(headList, systemFiledMap, moduleFieldMap, dataList, fieldConfigMap);
+        return transModuleFieldValue(headList, systemFieldMap, moduleFieldMap, dataList, fieldConfigMap);
     }
 
     public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentPlanListResponse data) {
-        LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-        systemFiledMap.put("contractId", data.getContractName());
-        systemFiledMap.put("owner", data.getOwnerName());
-        systemFiledMap.put("departmentId", data.getDepartmentName());
-        systemFiledMap.put("planAmount", data.getPlanAmount());
-        systemFiledMap.put("planEndTime", TimeUtils.getDateTimeStr(data.getPlanEndTime()));
-        systemFiledMap.put("planStatus", Translator.get("contract.payment_plan.status." + data.getPlanStatus().toLowerCase()));
+        LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
+        systemFieldMap.put("contractId", data.getContractName());
+        systemFieldMap.put("owner", data.getOwnerName());
+        systemFieldMap.put("departmentId", data.getDepartmentName());
+        systemFieldMap.put("planAmount", data.getPlanAmount());
+        systemFieldMap.put("planEndTime", TimeUtils.getDateTimeStr(data.getPlanEndTime()));
+        systemFieldMap.put("planStatus", Translator.get("contract.payment_plan.status." + data.getPlanStatus().toLowerCase()));
 
-        systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
-        systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
-        return systemFiledMap;
+        systemFieldMap.put("createUser", data.getCreateUserName());
+        systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
+        systemFieldMap.put("updateUser", data.getUpdateUserName());
+        systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+        return systemFieldMap;
     }
 
 

@@ -16,23 +16,23 @@ import java.util.stream.Collectors;
 public class ClueFieldUtils {
 
     public static LinkedHashMap<String, Object> getSystemFieldMap(ClueListResponse data, Map<String, List<OptionDTO>> optionMap) {
-        LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-        systemFiledMap.put("name", data.getName());
-        systemFiledMap.put("owner", data.getOwnerName());
-        systemFiledMap.put("contact", data.getContact());
-        systemFiledMap.put("phone", data.getPhone());
-        systemFiledMap.put("products", getProducts(optionMap, data.getProducts()));
-        systemFiledMap.put("collectionTime", TimeUtils.getDateTimeStr(data.getCollectionTime()));
-        systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
-        systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
-        systemFiledMap.put("follower", data.getFollowerName());
-        systemFiledMap.put("followTime", TimeUtils.getDateTimeStr(data.getFollowTime()));
-        systemFiledMap.put("reservedDays", data.getReservedDays());
-        systemFiledMap.put("recyclePoolName", data.getRecyclePoolName());
-        systemFiledMap.put("departmentId", data.getDepartmentName());
-        return systemFiledMap;
+        LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
+        systemFieldMap.put("name", data.getName());
+        systemFieldMap.put("owner", data.getOwnerName());
+        systemFieldMap.put("contact", data.getContact());
+        systemFieldMap.put("phone", data.getPhone());
+        systemFieldMap.put("products", getProducts(optionMap, data.getProducts()));
+        systemFieldMap.put("collectionTime", TimeUtils.getDateTimeStr(data.getCollectionTime()));
+        systemFieldMap.put("createUser", data.getCreateUserName());
+        systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
+        systemFieldMap.put("updateUser", data.getUpdateUserName());
+        systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+        systemFieldMap.put("follower", data.getFollowerName());
+        systemFieldMap.put("followTime", TimeUtils.getDateTimeStr(data.getFollowTime()));
+        systemFieldMap.put("reservedDays", data.getReservedDays());
+        systemFieldMap.put("recyclePoolName", data.getRecyclePoolName());
+        systemFieldMap.put("departmentId", data.getDepartmentName());
+        return systemFieldMap;
     }
 
     public static Object getProducts(Map<String, List<OptionDTO>> optionMap, List<String> products) {

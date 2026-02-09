@@ -67,37 +67,37 @@ public class ContractInvoiceExportService extends BaseExportService {
     private List<Object> buildData(List<ExportHeadDTO> headList, ContractInvoiceListResponse data,
                                    Map<String, BaseField> fieldConfigMap) {
         //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = getSystemFieldMap(data, fieldConfigMap);
+        LinkedHashMap<String, Object> systemFieldMap = getSystemFieldMap(data, fieldConfigMap);
         //自定义字段map
         Map<String, Object> moduleFieldMap = getFieldIdValueMap(data.getModuleFields());
         //处理数据转换
-        return transModuleFieldValue(headList, systemFiledMap, moduleFieldMap, new ArrayList<>(), fieldConfigMap);
+        return transModuleFieldValue(headList, systemFieldMap, moduleFieldMap, new ArrayList<>(), fieldConfigMap);
     }
 
     public LinkedHashMap<String, Object> getSystemFieldMap(ContractInvoiceListResponse data, Map<String, BaseField> fieldConfigMap) {
-        LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-        systemFiledMap.put("contractId", data.getContractName());
-        systemFiledMap.put("owner", data.getOwnerName());
-        systemFiledMap.put("name", data.getName());
-        systemFiledMap.put("departmentId", data.getDepartmentName());
-        systemFiledMap.put("amount", data.getAmount());
-        systemFiledMap.put("taxRate", data.getTaxRate());
-        systemFiledMap.put("businessTitleId", data.getBusinessTitleId());
-        systemFiledMap.put("approvalStatus", data.getApprovalStatus() == null ? null : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+        LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
+        systemFieldMap.put("contractId", data.getContractName());
+        systemFieldMap.put("owner", data.getOwnerName());
+        systemFieldMap.put("name", data.getName());
+        systemFieldMap.put("departmentId", data.getDepartmentName());
+        systemFieldMap.put("amount", data.getAmount());
+        systemFieldMap.put("taxRate", data.getTaxRate());
+        systemFieldMap.put("businessTitleId", data.getBusinessTitleId());
+        systemFieldMap.put("approvalStatus", data.getApprovalStatus() == null ? null : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
 
         for (BaseField field : fieldConfigMap.values()) {
             if (Strings.CS.equals(BusinessModuleField.INVOICE_INVOICE_TYPE.getBusinessKey(), field.getBusinessKey())
                 && field instanceof SelectField invoiceTypeField) {
                 String invoiceTypeName = getOptionLabel(data.getInvoiceType(), invoiceTypeField.getOptions());
-                systemFiledMap.put("invoiceType", invoiceTypeName);
+                systemFieldMap.put("invoiceType", invoiceTypeName);
             }
         }
 
-        systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
-        systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
-        return systemFiledMap;
+        systemFieldMap.put("createUser", data.getCreateUserName());
+        systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
+        systemFieldMap.put("updateUser", data.getUpdateUserName());
+        systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+        return systemFieldMap;
     }
 
 

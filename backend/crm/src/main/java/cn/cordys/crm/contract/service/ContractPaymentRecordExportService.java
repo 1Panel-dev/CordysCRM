@@ -55,22 +55,22 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 	 * @return 字段值映射
 	 */
 	public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentRecordResponse data) {
-		LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-		systemFiledMap.put("name", data.getName());
-		systemFiledMap.put("no", data.getNo());
-		systemFiledMap.put("contractId", data.getContractName());
-		systemFiledMap.put("paymentPlanId", data.getPaymentPlanName());
-		systemFiledMap.put("owner", data.getOwnerName());
-		systemFiledMap.put("departmentId", data.getDepartmentName());
-		systemFiledMap.put("recordAmount", data.getRecordAmount());
-		systemFiledMap.put("recordEndTime", getInternalDateStr(data.getRecordEndTime(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
+		LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
+		systemFieldMap.put("name", data.getName());
+		systemFieldMap.put("no", data.getNo());
+		systemFieldMap.put("contractId", data.getContractName());
+		systemFieldMap.put("paymentPlanId", data.getPaymentPlanName());
+		systemFieldMap.put("owner", data.getOwnerName());
+		systemFieldMap.put("departmentId", data.getDepartmentName());
+		systemFieldMap.put("recordAmount", data.getRecordAmount());
+		systemFieldMap.put("recordEndTime", getInternalDateStr(data.getRecordEndTime(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
 				data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_END_TIME.getKey()));
 
-		systemFiledMap.put("createUser", data.getCreateUserName());
-		systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
-		systemFiledMap.put("updateUser", data.getUpdateUserName());
-		systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
-		return systemFiledMap;
+		systemFieldMap.put("createUser", data.getCreateUserName());
+		systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
+		systemFieldMap.put("updateUser", data.getUpdateUserName());
+		systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+		return systemFieldMap;
 	}
 
 	/**
@@ -115,9 +115,9 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 	 * @return 导出数据
 	 */
 	private List<Object> buildData(List<ExportHeadDTO> headList, ContractPaymentRecordResponse data, Map<String, BaseField> fieldConfigMap) {
-		LinkedHashMap<String, Object> systemFiledMap = getSystemFieldMap(data);
+		LinkedHashMap<String, Object> systemFieldMap = getSystemFieldMap(data);
 		Map<String, Object> moduleFieldMap = getFieldIdValueMap(data.getModuleFields());
-		return transModuleFieldValue(headList, systemFiledMap, moduleFieldMap, new ArrayList<>(), fieldConfigMap);
+		return transModuleFieldValue(headList, systemFieldMap, moduleFieldMap, new ArrayList<>(), fieldConfigMap);
 	}
 
 	/**

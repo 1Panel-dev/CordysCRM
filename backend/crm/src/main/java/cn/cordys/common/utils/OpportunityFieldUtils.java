@@ -17,31 +17,31 @@ public class OpportunityFieldUtils {
 
 
     public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, String> stageConfigMap) {
-        LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-        systemFiledMap.put("name", data.getName());
-        systemFiledMap.put("customerId", data.getCustomerName());
-        systemFiledMap.put("amount", data.getAmount());
-        systemFiledMap.put("expectedEndTime", TimeUtils.getDateStr(data.getExpectedEndTime()));
-        systemFiledMap.put("actualEndTime", TimeUtils.getDateStr(data.getActualEndTime()));
-        systemFiledMap.put("failureReason", data.getFailureReason());
-        systemFiledMap.put("possible", data.getPossible());
-        systemFiledMap.put("products", getProducts(optionMap, data.getProducts()));
-        systemFiledMap.put("contactId", data.getContactName());
-        systemFiledMap.put("owner", data.getOwnerName());
+        LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
+        systemFieldMap.put("name", data.getName());
+        systemFieldMap.put("customerId", data.getCustomerName());
+        systemFieldMap.put("amount", data.getAmount());
+        systemFieldMap.put("expectedEndTime", TimeUtils.getDateStr(data.getExpectedEndTime()));
+        systemFieldMap.put("actualEndTime", TimeUtils.getDateStr(data.getActualEndTime()));
+        systemFieldMap.put("failureReason", data.getFailureReason());
+        systemFieldMap.put("possible", data.getPossible());
+        systemFieldMap.put("products", getProducts(optionMap, data.getProducts()));
+        systemFieldMap.put("contactId", data.getContactName());
+        systemFieldMap.put("owner", data.getOwnerName());
 
-        systemFiledMap.put("stage", stageConfigMap.get(data.getStage()));
-        systemFiledMap.put("followerName", data.getFollowerName());
-        systemFiledMap.put("followTime", TimeUtils.getDateTimeStr(data.getFollowTime()));
-        systemFiledMap.put("reservedDays", data.getReservedDays());
-        systemFiledMap.put("departmentId", data.getDepartmentName());
+        systemFieldMap.put("stage", stageConfigMap.get(data.getStage()));
+        systemFieldMap.put("followerName", data.getFollowerName());
+        systemFieldMap.put("followTime", TimeUtils.getDateTimeStr(data.getFollowTime()));
+        systemFieldMap.put("reservedDays", data.getReservedDays());
+        systemFieldMap.put("departmentId", data.getDepartmentName());
 
-        systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
-        systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+        systemFieldMap.put("createUser", data.getCreateUserName());
+        systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
+        systemFieldMap.put("updateUser", data.getUpdateUserName());
+        systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
 
 
-        return systemFiledMap;
+        return systemFieldMap;
     }
 
 

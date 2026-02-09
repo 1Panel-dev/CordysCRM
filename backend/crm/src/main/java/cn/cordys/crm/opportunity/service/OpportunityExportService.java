@@ -300,7 +300,7 @@ public class OpportunityExportService extends BaseExportService {
             Map<String, String> stageConfigMap) {
 
         List<Object> dataList = new ArrayList<>();
-        LinkedHashMap<String, Object> systemFiledMap =
+        LinkedHashMap<String, Object> systemFieldMap =
                 OpportunityFieldUtils.getSystemFieldMap(data, optionMap, stageConfigMap);
 
         Map<String, Object> moduleFieldMap = Optional.ofNullable(data.getModuleFields())
@@ -310,7 +310,7 @@ public class OpportunityExportService extends BaseExportService {
                 )))
                 .orElseGet(LinkedHashMap::new);
 
-        transModuleFieldValue(headList, systemFiledMap, moduleFieldMap, dataList, fieldConfigMap);
+        transModuleFieldValue(headList, systemFieldMap, moduleFieldMap, dataList, fieldConfigMap);
         return dataList;
     }
 

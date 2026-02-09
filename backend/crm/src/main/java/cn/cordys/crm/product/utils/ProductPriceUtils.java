@@ -15,14 +15,14 @@ import java.util.Map;
 public class ProductPriceUtils {
 
 	public static LinkedHashMap<String, Object> getSystemFieldMap(ProductPriceResponse data, Map<String, List<OptionDTO>> optionMap) {
-		LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
-		systemFiledMap.put("name", data.getName());
-		systemFiledMap.put("status", getStatusName(data.getStatus(), optionMap));
-		systemFiledMap.put("createUser", data.getCreateUserName());
-		systemFiledMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
-		systemFiledMap.put("updateUser", data.getUpdateUserName());
-		systemFiledMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
-		return systemFiledMap;
+		LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
+		systemFieldMap.put("name", data.getName());
+		systemFieldMap.put("status", getStatusName(data.getStatus(), optionMap));
+		systemFieldMap.put("createUser", data.getCreateUserName());
+		systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
+		systemFieldMap.put("updateUser", data.getUpdateUserName());
+		systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+		return systemFieldMap;
 	}
 
 	public static String getStatusName(String status, Map<String, List<OptionDTO>> optionMap) {

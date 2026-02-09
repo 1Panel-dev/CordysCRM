@@ -126,13 +126,13 @@ public class CustomerContactExportService extends BaseExportService {
     private List<Object> buildData(List<ExportHeadDTO> headList, CustomerContactListResponse data, Map<String, BaseField> fieldConfigMap) {
         List<Object> dataList = new ArrayList<>();
         //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = CustomerContactFieldUtils.getSystemFieldMap(data);
+        LinkedHashMap<String, Object> systemFieldMap = CustomerContactFieldUtils.getSystemFieldMap(data);
         //自定义字段map
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
         Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields ->
                 moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue))));
         //处理数据转换
-        transModuleFieldValue(headList, systemFiledMap, moduleFieldMap.get(), dataList, fieldConfigMap);
+        transModuleFieldValue(headList, systemFieldMap, moduleFieldMap.get(), dataList, fieldConfigMap);
         return dataList;
     }
 
