@@ -15,10 +15,3 @@ jobs:
         uses: jumpserver/action-generic-handler@master
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          body: |
-            Auto generated PR
-
-            ```release-note
-            NONE
-            ```

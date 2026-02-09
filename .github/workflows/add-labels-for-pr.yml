@@ -14,6 +14,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Add release note block
+        run: |
+          PR_NUMBER=$(gh pr list --head ${{ github.ref_name }} --json number -q '.[0].number')
+          gh pr edit $PR_NUMBER --add-body "
+          
+          \`\`\`release-note
+          NONE
+          \`\`\`
+          "
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
       # Extract and format the labels from the comment as "username: label"
       - name: Extract reviewer and labels
         if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/') }}
