@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -25,41 +26,48 @@ public class ContractLogService extends BaseModuleLogService {
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
         differences = super.handleModuleLogField(differences, orgId, FormKey.CONTRACT.getKey());
-
-        for (JsonDifferenceDTO differ : differences) {
-
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_OWNER.getBusinessKey())) {
+        for (var differ : differences) {
+            var column = differ.getColumn();
+            if (Strings.CS.equals(column, BusinessModuleField.CONTRACT_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
                 continue;
             }
-
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey())) {
-                if (differ.getOldValue() != null) {
-                    Customer customer = customerMapper.selectByPrimaryKey(differ.getOldValue().toString());
-                    if (customer != null) {
-                        differ.setOldValueName(customer.getName());
-                    }
-                }
-                if (differ.getNewValue() != null) {
-                    Customer customer = customerMapper.selectByPrimaryKey(differ.getNewValue().toString());
-                    if (customer != null) {
-                        differ.setNewValueName(customer.getName());
-                    }
-                }
+            if (Strings.CS.equals(column, BusinessModuleField.CONTRACT_CUSTOMER_NAME.getBusinessKey())) {
+                resolveCustomerName(differ);
                 continue;
             }
-
-            if (Strings.CI.equals(differ.getColumn(), "approvalStatus") && Arrays.stream(ContractApprovalStatus.values()).anyMatch(status -> status.name().equals(differ.getOldValue()))) {
+            if (Strings.CI.equals(column, "approvalStatus") && isContractApprovalStatus(differ.getOldValue())) {
                 setApprovalName(differ);
             }
-
-
-            if (differ.getColumn().contains("-")) {
-                differ.setColumnName(differ.getColumn());
+            if (column != null && column.contains("-")) {
+                differ.setColumnName(column);
             }
-
         }
-
         return differences;
+    }
+
+    private void resolveCustomerName(JsonDifferenceDTO differ) {
+        if (differ.getOldValue() != null) {
+            resolveCustomer(differ.getOldValue().toString(), differ::setOldValueName);
+        }
+        if (differ.getNewValue() != null) {
+            resolveCustomer(differ.getNewValue().toString(), differ::setNewValueName);
+        }
+    }
+
+    private void resolveCustomer(String id, Consumer<String> nameConsumer) {
+        var customer = customerMapper.selectByPrimaryKey(id);
+        if (customer != null) {
+            nameConsumer.accept(customer.getName());
+        }
+    }
+
+    private boolean isContractApprovalStatus(Object value) {
+        if (value == null) {
+            return false;
+        }
+        var text = value.toString();
+        return Arrays.stream(ContractApprovalStatus.values())
+                     .anyMatch(status -> status.name().equals(text));
     }
 }
