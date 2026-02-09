@@ -96,6 +96,8 @@ public class ThirdDepartmentService {
         try {
             performSync(operatorId, orgId, type);
             clearCaches(orgId);
+        } catch (Exception e) {
+            log.error("同步组织架构失败", e);
         } finally {
             // 同步完成后删除Redis状态
             deleteSyncStatus(syncStatusKey);
