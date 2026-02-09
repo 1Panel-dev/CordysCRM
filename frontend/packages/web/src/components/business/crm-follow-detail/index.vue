@@ -237,6 +237,13 @@
     otherSaveParams: computed(() => otherFollowRecordSaveParams.value),
   });
 
+  onMounted(async () => {
+    if (props.activeType === 'followRecord') {
+      linkFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD;
+      await initFormConfig();
+    }
+  });
+
   function getDescriptionFun(item: FollowDetailItem) {
     const isClue = item.type === 'CLUE' && item.clueId?.length;
     const customerNameKey = isClue ? 'clueName' : 'customerName';
@@ -250,14 +257,23 @@
             },
           ]
         : []),
-      ...descriptionList,
+      ...descriptionList.map((descriptionItem) => {
+        if (!descriptionItem.formConfigField) {
+          return descriptionItem;
+        }
+        const label = fieldList.value.find((field) => field.businessKey === descriptionItem.formConfigField)?.name;
+        return {
+          ...descriptionItem,
+          label,
+        };
+      }),
     ];
 
     if (isClue) {
       lastDescriptionList = lastDescriptionList.filter((e) => !['contactName', 'phone'].includes(e.key));
     }
 
-    return (lastDescriptionList.map((desc: Description) => ({
+    return (lastDescriptionList.map((desc) => ({
       ...desc,
       value: item[desc.key as keyof FollowDetailItem],
     })) || []) as Description[];
