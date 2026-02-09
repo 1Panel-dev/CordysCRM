@@ -228,4 +228,5 @@ public abstract class BaseResourceService {
 
         logService.batchAdd(logs);
     }
+
 }
