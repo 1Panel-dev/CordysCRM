@@ -523,7 +523,7 @@ public class OrganizationUserService {
      *
      * @param orgId
      */
-    public void deleteUser(String orgId, String operatorId) {
+    public void deleteUser(String orgId) {
         List<String> departmentIds = extDepartmentMapper.selectAllDepartmentIds(orgId);
         if (CollectionUtils.isNotEmpty(departmentIds)) {
             extDepartmentCommanderMapper.deleteByDepartmentIds(departmentIds);
@@ -540,11 +540,9 @@ public class OrganizationUserService {
             extUserSearchConfigMapper.deleteByUserIds(ids, orgId);
             //删除用户收到的公告和通知
             extNotificationMapper.deleteByReceivers(ids, orgId);
-            ids.forEach(id -> {
-                // 踢出用户
-                SessionUtils.kickOutUser(operatorId, id);
-            });
         }
+        // 踢出用户
+        userList.forEach(user -> SessionUtils.kickOutUser(user.getName()));
         extOrganizationUserMapper.deleteUserByOrgId(orgId);
 
     }
