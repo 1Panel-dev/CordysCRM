@@ -50,13 +50,13 @@ export const quickAccessList: QuickAccessItem[] = [
     key: FormDesignKeyEnum.FOLLOW_RECORD,
     icon: 'newRecord',
     label: t('workbench.createFollowUpRecord'),
-    permission: [],
+    permission: ['CUSTOMER_MANAGEMENT:UPDATE', 'CLUE_MANAGEMENT:UPDATE'],
   },
   {
     key: FormDesignKeyEnum.FOLLOW_PLAN,
     icon: 'newPlan',
     label: t('workbench.createFollowUpPlan'),
-    permission: [],
+    permission: ['CUSTOMER_MANAGEMENT:UPDATE', 'CLUE_MANAGEMENT:UPDATE'],
   },
 ];
 

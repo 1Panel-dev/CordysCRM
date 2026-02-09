@@ -251,7 +251,7 @@
     }
   }
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.FOLLOW_RECORD,
     containerClass: '.crm-record-table',
     hiddenRefresh: true,
@@ -349,14 +349,23 @@
           value: customerNameKey,
         },
       ],
-      ...descriptionList,
+      ...descriptionList.map((descriptionItem) => {
+        if (!descriptionItem.formConfigField) {
+          return descriptionItem;
+        }
+        const label = fieldList.value.find((field) => field.businessKey === descriptionItem.formConfigField)?.name;
+        return {
+          ...descriptionItem,
+          label,
+        };
+      }),
     ];
 
     if (isClue) {
       lastDescriptionList = lastDescriptionList.filter((e) => !['contactName', 'phone'].includes(e.key));
     }
 
-    return (lastDescriptionList.map((desc: Description) => ({
+    return (lastDescriptionList.map((desc) => ({
       ...desc,
       value: item[desc.key as keyof any],
     })) || []) as Description[];
