@@ -344,6 +344,36 @@
       width: 200,
     },
     {
+      title: t('contract.businessTitle.area'),
+      key: 'area',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+    },
+    {
+      title: t('contract.businessTitle.scale'),
+      key: 'scale',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+    },
+    {
+      title: t('contract.businessTitle.industry'),
+      key: 'industry',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+    },
+    {
       title: t('common.createTime'),
       key: 'createTime',
       width: 200,
@@ -506,6 +536,21 @@
     {
       title: t('contract.businessTitle.registrationAccount'),
       dataIndex: 'registrationNumber',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('contract.businessTitle.area'),
+      dataIndex: 'area',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('contract.businessTitle.scale'),
+      dataIndex: 'scale',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('contract.businessTitle.industry'),
+      dataIndex: 'industry',
       type: FieldTypeEnum.INPUT,
     },
     ...baseFilterConfigList,
