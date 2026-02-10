@@ -428,7 +428,7 @@
     const fnNode = document.createElement('span');
     fnNode.className = 'formula-fn';
     fnNode.style.color = FUN_COLOR;
-    fnNode.contentEditable = 'false';
+    fnNode.contentEditable = 'true';
     fnNode.dataset.nodeType = 'function';
     fnNode.dataset.fnName = item.id;
     fnNode.textContent = item.name;
@@ -504,10 +504,11 @@
     }
 
     wrapper.className = 'formula-tag-wrapper';
-    wrapper.contentEditable = 'false';
+    wrapper.contentEditable = 'true';
     wrapper.dataset.value = item.id;
     wrapper.dataset.nodeType = 'field';
     wrapper.dataset.fieldType = item.type;
+    wrapper.dataset.originText = item.name;
     const numberType = getNumberType(item);
     if (numberType) {
       wrapper.dataset.numberType = numberType;
@@ -541,7 +542,7 @@
     const fnNode = document.createElement('span');
     fnNode.className = 'formula-fn';
     fnNode.style.color = FUN_COLOR;
-    fnNode.contentEditable = 'false';
+    fnNode.contentEditable = 'true';
     fnNode.dataset.nodeType = 'function';
     fnNode.dataset.fnName = fnName;
     fnNode.textContent = fnName;
@@ -606,7 +607,62 @@
     });
   }
 
+  // 字段是否被损坏
+  function isFieldNodeCorrupted(el: HTMLElement) {
+    const originalText = el.dataset.originText;
+    if (!originalText) return false;
+    return el.textContent !== originalText;
+  }
+
+  // 函数节点是否被损坏
+  function isFunctionNodeCorrupted(el: HTMLElement) {
+    const { fnName } = el.dataset;
+    if (!fnName) return false;
+    return el.textContent !== fnName;
+  }
+
+  // 降级成普通文本
+  function downgradeNode(el: HTMLElement) {
+    const text = el.textContent ?? '';
+
+    // 用普通文本替换
+    const textNode = document.createTextNode(text);
+    el.replaceWith(textNode);
+
+    // 光标放到文本末尾
+    const range = document.createRange();
+    range.setStart(textNode, text.length);
+    range.setEnd(textNode, text.length);
+
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  }
+
+  function removeFieldToText(editorEl: HTMLElement) {
+    // 字段降级
+    const fieldNodes = editorEl.querySelectorAll<HTMLElement>('.formula-tag-wrapper');
+    fieldNodes.forEach((el) => {
+      if (isFieldNodeCorrupted(el)) {
+        downgradeNode(el);
+      }
+    });
+  }
+
+  function removeFunToText(editorEl: HTMLElement) {
+    // 函数降级
+    const fnNodes = editorEl.querySelectorAll<HTMLElement>('.formula-fn');
+    fnNodes.forEach((el) => {
+      if (isFunctionNodeCorrupted(el)) {
+        downgradeNode(el);
+      }
+    });
+  }
+
   function handleEditorInput() {
+    const editorEl = editor.value!;
+    removeFieldToText(editorEl);
+    removeFunToText(editorEl);
     upgradePlainFunction(editor.value!);
     validateCurrentFormula();
   }
