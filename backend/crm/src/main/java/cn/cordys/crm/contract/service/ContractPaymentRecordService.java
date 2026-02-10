@@ -30,7 +30,6 @@ import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
-import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -355,23 +354,23 @@ public class ContractPaymentRecordService {
 		if (CollectionUtils.isEmpty(list)) {
 			return list;
 		}
-		List<String> recordIds = list.stream().map(ContractPaymentRecordResponse::getId).collect(Collectors.toList());
-		List<String> refPlanIds = list.stream().map(ContractPaymentRecordResponse::getPaymentPlanId).toList();
-		List<ContractPaymentPlan> contractPaymentPlans = contractPaymentPlanMapper.selectByIds(refPlanIds);
+		List<String> recordIds = list.stream().map(ContractPaymentRecordResponse::getId).filter(StringUtils::isNotBlank).toList();
+		List<String> refPlanIds = distinctNonBlank(list.stream().map(ContractPaymentRecordResponse::getPaymentPlanId).collect(Collectors.toList()));
+		List<ContractPaymentPlan> contractPaymentPlans = CollectionUtils.isEmpty(refPlanIds) ? Collections.emptyList() : contractPaymentPlanMapper.selectByIds(refPlanIds);
 		Map<String, String> paymentPlanMap = contractPaymentPlans.stream().collect(Collectors.toMap(ContractPaymentPlan::getId, ContractPaymentPlan::getName));
-		Map<String, List<BaseModuleFieldValue>> resourceFieldMap = contractPaymentRecordFieldService.getResourceFieldMap(recordIds, true);
+		Map<String, List<BaseModuleFieldValue>> resourceFieldMap = CollectionUtils.isEmpty(recordIds) ? Collections.emptyMap() : contractPaymentRecordFieldService.getResourceFieldMap(recordIds, true);
 		Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = contractPaymentRecordFieldService.setBusinessRefFieldValue(list,
 				moduleFormService.getFlattenFormFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg), resourceFieldMap);
 
-		List<String> ownerIds = list.stream().map(ContractPaymentRecordResponse::getOwner).distinct().toList();
-		List<String> createUserIds = list.stream().map(ContractPaymentRecordResponse::getCreateUser).distinct().toList();
-		List<String> updateUserIds = list.stream().map(ContractPaymentRecordResponse::getUpdateUser).distinct().toList();
+		List<String> ownerIds = distinctNonBlank(list.stream().map(ContractPaymentRecordResponse::getOwner).collect(Collectors.toList()));
+		List<String> createUserIds = distinctNonBlank(list.stream().map(ContractPaymentRecordResponse::getCreateUser).collect(Collectors.toList()));
+		List<String> updateUserIds = distinctNonBlank(list.stream().map(ContractPaymentRecordResponse::getUpdateUser).collect(Collectors.toList()));
 		List<String> userIds = Stream.of(ownerIds, createUserIds, updateUserIds)
 				.flatMap(Collection::stream).distinct().toList();
 		Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
 		Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, currentOrg);
 		list.forEach(item -> {
-			item.setModuleFields(resolvefieldValueMap.get(item.getId()));
+			item.setModuleFields(resolvefieldValueMap.getOrDefault(item.getId(), Collections.emptyList()));
 			item.setCreateUserName(baseService.getAndCheckOptionName(userNameMap.get(item.getCreateUser())));
 			item.setUpdateUserName(baseService.getAndCheckOptionName(userNameMap.get(item.getUpdateUser())));
 			item.setOwnerName(baseService.getAndCheckOptionName(userNameMap.get(item.getOwner())));
@@ -424,8 +423,12 @@ public class ContractPaymentRecordService {
 		List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
 		BigDecimal alreadyPay = contractPaymentRecords.stream().map(ContractPaymentRecord::getRecordAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
 		Contract contract = contractMapper.selectByPrimaryKey(contractId);
-		if ((alreadyPay.add(payAmount)).compareTo(contract.getAmount()) > 0) {
-			throw new GenericException(Translator.getWithArgs("record.amount.exceed", contract.getAmount().subtract(alreadyPay)));
+		if (contract == null) {
+			throw new GenericException(Translator.get("contract.not.exist"));
+		}
+		BigDecimal contractAmount = Optional.ofNullable(contract.getAmount()).orElse(BigDecimal.ZERO);
+		if ((alreadyPay.add(payAmount)).compareTo(contractAmount) > 0) {
+			throw new GenericException(Translator.getWithArgs("record.amount.exceed", contractAmount.subtract(alreadyPay)));
 		}
 	}
 
@@ -449,6 +452,9 @@ public class ContractPaymentRecordService {
 	 * @return 回款记录集合
 	 */
 	public List<ContractPaymentRecord> getRecordListByNames(List<String> names) {
+		if (CollectionUtils.isEmpty(names)) {
+			return Collections.emptyList();
+		}
 		LambdaQueryWrapper<ContractPaymentRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 		lambdaQueryWrapper.in(ContractPaymentRecord::getName, names);
 		return contractPaymentRecordMapper.selectListByLambda(lambdaQueryWrapper);
@@ -460,6 +466,9 @@ public class ContractPaymentRecordService {
 	 * @return 回款记录名称
 	 */
 	public String getRecordNameByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return StringUtils.EMPTY;
+		}
 		List<ContractPaymentRecord> records = contractPaymentRecordMapper.selectByIds(ids);
 		if (CollectionUtils.isNotEmpty(records)) {
 			List<String> names = records.stream().map(ContractPaymentRecord::getName).toList();
@@ -467,4 +476,12 @@ public class ContractPaymentRecordService {
 		}
 		return StringUtils.EMPTY;
 	}
+
+	private List<String> distinctNonBlank(Collection<String> values) {
+		if (CollectionUtils.isEmpty(values)) {
+			return Collections.emptyList();
+		}
+		return values.stream().filter(StringUtils::isNotBlank).distinct().toList();
+	}
+
 }
