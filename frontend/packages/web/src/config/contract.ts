@@ -149,6 +149,18 @@ export const businessTitleFormConfigList: {
     label: t('contract.businessTitle.registrationAccount'),
     value: 'registrationNumber',
   },
+  {
+    label: t('contract.businessTitle.area'),
+    value: 'area',
+  },
+  {
+    label: t('contract.businessTitle.scale'),
+    value: 'scale',
+  },
+  {
+    label: t('contract.businessTitle.industry'),
+    value: 'industry',
+  },
 ];
 
 export const allBusinessTitleFormConfigList: {

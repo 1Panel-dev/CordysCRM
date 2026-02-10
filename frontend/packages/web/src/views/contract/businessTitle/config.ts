@@ -15,6 +15,9 @@ export const initBusinessTitleForm: SaveBusinessTitleParams = {
   companySize: '',
   registrationNumber: '',
   registrationAddress: '',
+  area: '',
+  scale: '',
+  industry: '',
 };
 
 export const businessTitleFieldList: FormCreateField[] = [
