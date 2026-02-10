@@ -378,7 +378,8 @@
       });
       return _col;
     });
-    if (attrs.tableKey) {
+    if (attrs.tableKey && props.columns.length) {
+      // 判断 props.columns.length 避免接口报错导致 columns 是空的写入本地存储数据
       await tableStore.initColumn(attrs.tableKey as TableKeyEnum, columns);
     }
     if (attrs.showSetting) {
@@ -831,6 +832,7 @@
 <style lang="less">
   .n-data-table-th--fixed-left {
     background-color: var(--text-n10) !important;
+    pointer-events: auto;
   }
 
   // 缩小表头区域触发排序，减少拖拽列宽触发排序：官方推荐解决方案：不在排序按钮附近放置拖拽手柄，手动规避冲突区域

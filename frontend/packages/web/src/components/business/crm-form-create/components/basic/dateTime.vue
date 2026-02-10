@@ -5,7 +5,7 @@
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
     :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
-    :show-label="!props.isSubTableRender"
+    :show-label="!props.isSubTableRender && !props.isDescriptionRender"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
@@ -26,6 +26,7 @@
       :placeholder="props.fieldConfig.placeholder"
       :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       class="w-full"
+      :status="props.feedback ? 'error' : 'success'"
       @update-value="($event) => emit('change', $event)"
     >
     </n-date-picker>
@@ -47,6 +48,8 @@
     disabled?: boolean;
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    isDescriptionRender?: boolean; // 是否是描述渲染
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: null | number | (string | number)[]): void;

@@ -10,6 +10,7 @@
       :show-arrow="false"
       :show="false"
       :disabled="props.disabled"
+      :status="props.status"
       max-tag-count="responsive"
       @click="handleShowSelectDrawer"
     />
@@ -60,6 +61,7 @@
     fetchRoleParams?: Record<string, any>; // 角色入参
     fetchMemberParams?: Record<string, any>; // 成员入参
     baseParams?: Record<string, any>; // 基础公共入参
+    status?: 'error' | 'success' | 'warning';
   };
   const props = withDefaults(defineProps<UserTagSelectorProps>(), {
     multiple: true,

@@ -173,7 +173,9 @@
             }"
             :path="item.fieldInfo.id"
             :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
-            @change="handleFormChange"
+            isDescriptionRender
+            :feedback="feedbackMap[item.fieldInfo.id]"
+            @change="handleFormChange(item.fieldInfo)"
           />
         </div>
       </template>
@@ -236,7 +238,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NImage, NImageGroup, NSpace, NSpin, NTooltip } from 'naive-ui';
+  import { NButton, NImage, NImageGroup, NSpace, NSpin, NTooltip, useMessage } from 'naive-ui';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -253,7 +255,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAnyPermission } from '@/utils/permission';
 
-  import { AttachmentInfo } from '../crm-form-create/types';
+  import { AttachmentInfo, type FormCreateField } from '../crm-form-create/types';
 
   const businessTitleDrawer = defineAsyncComponent(
     () => import('@/views/contract/businessTitle/components/detail.vue')
@@ -301,6 +303,7 @@
   }>();
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const needInitDetail = computed(() => true);
   const {
@@ -343,7 +346,9 @@
   });
   const isInit = ref(false);
 
-  function handleFormChange() {
+  const feedbackMap = ref<Record<string, string>>({});
+
+  function handleFormChange(field: FormCreateField) {
     nextTick(async () => {
       try {
         if (!isInit.value) return;
@@ -356,6 +361,20 @@
             formDetail.value[item.id] = formDetail.value[item.id]?.[0];
           }
         });
+        if (field.rules.some((rule) => rule.key === 'required')) {
+          const currentValue = formDetail.value[field.id];
+          if (
+            currentValue === null ||
+            currentValue === undefined ||
+            (Array.isArray(currentValue) && currentValue.length === 0) ||
+            (typeof currentValue === 'string' && currentValue.trim() === '')
+          ) {
+            Message.warning(t('common.notNull', { value: field.name }));
+            feedbackMap.value[field.id] = t('common.notNull', { value: field.name });
+            return;
+          }
+          feedbackMap.value[field.id] = '';
+        }
         await saveForm(formDetail.value, false, () => ({}), true);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -421,7 +440,7 @@
     formDetail.value[activeDescItem.value?.fieldInfo.id] = formDetail.value[activeDescItem.value?.fieldInfo.id].filter(
       (e: string) => e !== id
     );
-    handleFormChange();
+    handleFormChange(activeDescItem.value?.fieldInfo);
   }
 
   watch(
