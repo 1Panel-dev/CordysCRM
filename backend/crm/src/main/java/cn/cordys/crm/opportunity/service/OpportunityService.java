@@ -195,6 +195,7 @@ public class OpportunityService {
         List<String> opportunityIds = list.stream().map(OpportunityListResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(opportunityIds, true);
+		Map<String, List<BaseModuleFieldValue>> fvMap = opportunityFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.OPPORTUNITY.getKey(), orgId), opportunityFiledMap);
 
         List<String> ownerIds = list.stream()
                 .map(OpportunityListResponse::getOwner)
@@ -240,7 +241,7 @@ public class OpportunityService {
 
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
-            List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
+            List<BaseModuleFieldValue> opportunityFields = fvMap.get(opportunityListResponse.getId());
             // 计算保留天数(成功失败阶段不计算)
             opportunityListResponse.setReservedDays(endConfigMaps.containsKey(opportunityListResponse.getStage()) ?
                     null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse.getCreateTime()));
@@ -496,6 +497,8 @@ public class OpportunityService {
             return null;
         }
         List<BaseModuleFieldValue> fieldValueList = opportunityFieldService.getModuleFieldValuesByResourceId(id);
+		fieldValueList = opportunityFieldService.setBusinessRefFieldValue(List.of(response),
+				moduleFormService.getFlattenFormFields(FormKey.OPPORTUNITY.getKey(), response.getOrganizationId()), new HashMap<>(Map.of(id, fieldValueList))).get(id);
         response.setModuleFields(fieldValueList);
         List<String> userIds = Stream.of(Arrays.asList(response.getCreateUser(), response.getUpdateUser(), response.getOwner(), response.getFollower()))
                 .flatMap(Collection::stream)
