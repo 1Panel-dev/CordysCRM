@@ -13,11 +13,13 @@ import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
+import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -179,5 +181,42 @@ public class ModuleFieldExtService {
 			return null;
 		}
 		return fieldBlobMapper.selectByPrimaryKey(moduleField.getId());
+	}
+
+	/**
+	 * 修改报价单产品字段的汇总列（兼容旧版本数据）
+	 */
+	public void modifySubProductSumColumn() {
+		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+		fieldWrapper.in(ModuleField::getInternalKey,
+				List.of(BusinessModuleField.QUOTATION_PRODUCT_TABLE.getKey(), BusinessModuleField.CONTRACT_PRODUCT_TABLE.getKey()));
+		List<ModuleField> fields = fieldMapper.selectListByLambda(fieldWrapper);
+		if (CollectionUtils.isEmpty(fields)) {
+			return;
+		}
+		List<String> ids = fields.stream().map(ModuleField::getId).toList();
+		List<ModuleFieldBlob> fbs = fieldBlobMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(fbs)) {
+			return;
+		}
+		for (ModuleFieldBlob fb : fbs) {
+			SubField subField = JSON.parseObject(fb.getProp(), SubField.class);
+			if (subField == null || CollectionUtils.isEmpty(subField.getSumColumns())) {
+				continue;
+			}
+			List<String> sumColumns = new ArrayList<>();
+			subField.getSumColumns().forEach(col -> {
+				if (Strings.CS.equals(col, BusinessModuleField.QUOTATION_TOTAL_AMOUNT.getBusinessKey())) {
+					sumColumns.add(BusinessModuleField.QUOTATION_PRODUCT_AMOUNT.getBusinessKey());
+				} else if (Strings.CS.contains(col, "_ref_")) {
+					sumColumns.add(col.split("ref_")[1]);
+				} else {
+					sumColumns.add(col);
+				}
+			});
+			subField.setSumColumns(sumColumns);
+			fb.setProp(JSON.toJSONString(subField));
+			fieldBlobMapper.updateById(fb);
+		}
 	}
 }
