@@ -428,7 +428,7 @@
     const fnNode = document.createElement('span');
     fnNode.className = 'formula-fn';
     fnNode.style.color = FUN_COLOR;
-    fnNode.contentEditable = 'true';
+    fnNode.contentEditable = 'false';
     fnNode.dataset.nodeType = 'function';
     fnNode.dataset.fnName = item.id;
     fnNode.textContent = item.name;
@@ -504,7 +504,7 @@
     }
 
     wrapper.className = 'formula-tag-wrapper';
-    wrapper.contentEditable = 'true';
+    wrapper.contentEditable = 'false';
     wrapper.dataset.value = item.id;
     wrapper.dataset.nodeType = 'field';
     wrapper.dataset.fieldType = item.type;
@@ -542,7 +542,7 @@
     const fnNode = document.createElement('span');
     fnNode.className = 'formula-fn';
     fnNode.style.color = FUN_COLOR;
-    fnNode.contentEditable = 'true';
+    fnNode.contentEditable = 'false';
     fnNode.dataset.nodeType = 'function';
     fnNode.dataset.fnName = fnName;
     fnNode.textContent = fnName;
@@ -660,9 +660,10 @@
   }
 
   function handleEditorInput() {
-    const editorEl = editor.value!;
-    removeFieldToText(editorEl);
-    removeFunToText(editorEl);
+    // todo 优化
+    // const editorEl = editor.value!;
+    // removeFieldToText(editorEl);
+    // removeFunToText(editorEl);
     upgradePlainFunction(editor.value!);
     validateCurrentFormula();
   }

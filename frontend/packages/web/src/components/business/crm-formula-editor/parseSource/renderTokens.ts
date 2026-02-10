@@ -7,7 +7,7 @@ export function createFunctionNode(fnName: string) {
   const node = document.createElement('span');
   node.className = 'formula-fn';
   node.style.color = FUN_COLOR;
-  node.contentEditable = 'true';
+  node.contentEditable = 'false';
   node.dataset.nodeType = 'function';
   node.dataset.fnName = fnName;
   node.textContent = fnName;
@@ -41,7 +41,7 @@ export function createFieldNode(token: Token) {
   const parsedToken = token as FieldToken;
   const node = document.createElement('span');
   node.className = 'formula-tag-wrapper';
-  node.contentEditable = 'true';
+  node.contentEditable = 'false';
   node.dataset.nodeType = 'field';
   if ((token as FieldToken)?.fieldType) {
     node.dataset.fieldType = (token as FieldToken)?.fieldType;
@@ -94,7 +94,7 @@ export function renderTokens(tokens: Token[], startIndex = 0): { fragment: Docum
 
       // 空参数兜底
       if (!argsNode.firstChild) {
-        argsNode.appendChild(document.createTextNode('\u200B'));
+        argsNode.appendChild(document.createTextNode(''));
       }
 
       fragment.appendChild(argsNode);
@@ -135,5 +135,5 @@ export function renderTokensToEditor(editor: HTMLElement, tokens: Token[]) {
   editor.appendChild(fragment);
 
   // 结尾放一个空格，保证可继续输入
-  editor.appendChild(document.createTextNode('\u200B'));
+  editor.appendChild(document.createTextNode(''));
 }
