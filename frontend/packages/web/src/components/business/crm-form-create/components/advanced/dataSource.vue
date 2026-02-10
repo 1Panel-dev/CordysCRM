@@ -5,7 +5,7 @@
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
     :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
-    :show-label="!props.isSubTableRender"
+    :show-label="!props.isSubTableRender && !props.isDescriptionRender"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
@@ -30,6 +30,7 @@
       :fieldConfig="props.fieldConfig"
       :disabled-selection="props.disabledSelection"
       :hide-child-tag="props.hideChildTag"
+      :status="props.feedback ? 'error' : 'success'"
       @change="($event, source, fields) => emit('change', $event, source, fields)"
     />
   </n-form-item>
@@ -61,6 +62,8 @@
     formDetail?: Record<string, any>;
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    isDescriptionRender?: boolean; // 是否是描述渲染
+    feedback?: string;
     hideChildTag?: boolean;
     disabledSelection?: (row: Record<string, any>) => boolean;
   }>();

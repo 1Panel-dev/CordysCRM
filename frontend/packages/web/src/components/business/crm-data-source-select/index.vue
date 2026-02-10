@@ -10,6 +10,7 @@
     :show="false"
     :disabled="props.disabled"
     :max-tag-count="props.maxTagCount"
+    :status="props.status"
     @click="showDataSourcesModal"
   />
   <CrmModal
@@ -61,6 +62,7 @@
     filterParams?: FilterResult;
     fieldConfig?: FormCreateField;
     hideChildTag?: boolean;
+    status?: 'error' | 'success' | 'warning';
   }
 
   const props = withDefaults(defineProps<DataSourceTableProps>(), {

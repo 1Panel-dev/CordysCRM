@@ -5,7 +5,7 @@
     :rule="props.fieldConfig.rules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
     :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
-    :show-label="!props.isSubTableRender"
+    :show-label="!props.isSubTableRender && !props.isDescriptionRender"
   >
     <template #label>
       <div v-if="props.fieldConfig.showLabel" class="flex h-[22px] items-center gap-[4px] whitespace-nowrap">
@@ -33,6 +33,7 @@
           : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
       "
       :class="props.isSubTableField ? '!w-[150px]' : ''"
+      :status="props.feedback ? 'error' : 'success'"
       @confirm="handleConfirm"
       @delete-tag="handleConfirm"
     />
@@ -59,6 +60,8 @@
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    isDescriptionRender?: boolean; // 是否是描述渲染
+    feedback?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number | (string | number)[]): void;
