@@ -851,7 +851,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (!subFieldMap.isEmpty()) {
             Set<String> refSubSet = subFieldMap.keySet();
             List<BaseField> subFields = subFieldMap.values().stream().map(subField -> ((SubField) subField).getSubFields()).flatMap(List::stream).toList();
-            Map<String, BaseField> subFieldConfigMap = subFields.stream().collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f, (f1, f2) -> f1));
+            Map<String, BaseField> subFieldConfigMap = subFields.stream().filter(f -> StringUtils.isEmpty(f.getResourceFieldId())).collect(Collectors.toMap(BaseField::idOrBusinessKey, f -> f, (f1, f2) -> f1));
             Map<String, BaseField> subFieldIdConfigMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
 
             Map<String, ? extends List<? extends BaseResourceField>> subResourceMap = resourceFields.stream()
