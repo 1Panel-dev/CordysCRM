@@ -146,11 +146,11 @@
   import { allFunctionSource, ARRAY_COLOR, DATE_TIME_COLOR, FUN_COLOR, INPUT_NUMBER_COLOR } from './config';
   import diagnoseFormula from './diagnose/diagnose';
   import parseTokensToAST from './parser';
-  import { renderTokensToEditor } from './parseSource/renderTokens';
+  import { createFunctionNode, renderTokensToEditor } from './parseSource/renderTokens';
   import { serializeFormulaFromAst, tokenizeFromSource } from './parseSource/serializeFormulaFromAst';
   import tokenizeFromEditor from './tokenizer';
   import { FormulaDiagnostic, FormulaFieldMeta } from './types';
-  import { applyDiagnosticsHighlight, safeParseFormula } from './utils';
+  import { deleteAtomicNode, findLeftAtomicDeep, insertRangeAtomic, safeParseFormula } from './utils';
 
   const { t } = useI18n();
 
@@ -361,7 +361,6 @@
 
     const tokens = tokenizeFromEditor(editor.value);
     const ast = parseTokensToAST(tokens);
-
     formulaDiagnostics.value = diagnoseFormula(tokens, ast);
     // TODO 高亮先不做
     // applyDiagnosticsHighlight(editor.value, diagnostics);
@@ -415,52 +414,28 @@
     }
   }
 
-  // 插入函数节点
+  // 插入函数
   function insertFunction(item: FormCreateField) {
     if (!editor.value) return;
-
     ensureCursor(editor.value);
     handleFocus();
     const range = cursorRange.value!;
     range.deleteContents();
 
-    /** 函数名 */
-    const fnNode = document.createElement('span');
-    fnNode.className = 'formula-fn';
-    fnNode.style.color = FUN_COLOR;
-    fnNode.contentEditable = 'false';
-    fnNode.dataset.nodeType = 'function';
-    fnNode.dataset.fnName = item.id;
-    fnNode.textContent = item.name;
+    const { root, args } = createFunctionNode(item.name);
 
-    /** 左括号 */
-    const leftParen = document.createTextNode('(');
+    range.insertNode(root);
 
-    /** 参数区（真正可编辑） */
-    const argsNode = document.createElement('span');
-    argsNode.className = 'formula-args';
-    argsNode.appendChild(document.createTextNode(''));
-
-    /** 右括号 */
-    const rightParen = document.createTextNode(')');
-
-    range.insertNode(rightParen);
-    range.insertNode(argsNode);
-    range.insertNode(leftParen);
-    range.insertNode(fnNode);
-
-    /** 光标放入参数区 */
-    const caretRange = document.createRange();
-    const text = argsNode.firstChild!;
-    caretRange.setStart(text, 0);
-    caretRange.setEnd(text, 0);
+    // 光标进参数区
+    const caret = document.createRange();
+    caret.setStart(args.firstChild!, 0);
+    caret.collapse(true);
 
     const sel = window.getSelection();
     sel?.removeAllRanges();
-    sel?.addRange(caretRange);
+    sel?.addRange(caret);
 
-    cursorRange.value = caretRange;
-
+    cursorRange.value = caret;
     nextTick(() => {
       validateCurrentFormula();
     });
@@ -478,10 +453,6 @@
 
   // 插入对应的字段
   function insertField(item: FormCreateField & { isFunction?: boolean }) {
-    if (item.isFunction) {
-      activeFun.value = item;
-    }
-
     if (!editor.value) return;
 
     if (item.isFunction) {
@@ -489,46 +460,29 @@
       return;
     }
 
-    if (!editor.value) return;
     ensureCursor(editor.value);
     handleFocus();
 
-    const range = cursorRange.value!;
-    range.deleteContents();
-
     const meta = getFormulaNodeMeta(item);
 
-    const wrapper = document.createElement('span');
-    if (meta.color) {
-      wrapper.style.color = meta.color;
-    }
-
-    wrapper.className = 'formula-tag-wrapper';
-    wrapper.contentEditable = 'false';
-    wrapper.dataset.value = item.id;
-    wrapper.dataset.nodeType = 'field';
-    wrapper.dataset.fieldType = item.type;
-    wrapper.dataset.originText = item.name;
+    const fieldNode = document.createElement('span');
+    fieldNode.className = 'formula-tag-wrapper';
+    fieldNode.contentEditable = 'false';
+    fieldNode.dataset.nodeType = 'field';
+    fieldNode.dataset.value = item.id;
+    fieldNode.dataset.fieldType = item.type;
     const numberType = getNumberType(item);
     if (numberType) {
-      wrapper.dataset.numberType = numberType;
+      fieldNode.dataset.numberType = numberType;
     }
-    wrapper.textContent = item.name;
 
-    range.insertNode(wrapper);
+    if (meta.color) {
+      fieldNode.style.color = meta.color;
+    }
 
-    const space = document.createTextNode('\u200B');
-    wrapper.after(space);
+    fieldNode.textContent = item.name;
 
-    const newRange = document.createRange();
-    newRange.setStart(space, 1);
-    newRange.setEnd(space, 1);
-
-    const sel = window.getSelection();
-    sel?.removeAllRanges();
-    sel?.addRange(newRange);
-
-    cursorRange.value = newRange;
+    insertRangeAtomic(editor.value, fieldNode);
 
     nextTick(() => {
       validateCurrentFormula();
@@ -538,132 +492,59 @@
   function replaceWithFunctionNode(range: Range, fnName: string) {
     range.deleteContents();
 
-    /** 函数名 */
-    const fnNode = document.createElement('span');
-    fnNode.className = 'formula-fn';
-    fnNode.style.color = FUN_COLOR;
-    fnNode.contentEditable = 'false';
-    fnNode.dataset.nodeType = 'function';
-    fnNode.dataset.fnName = fnName;
-    fnNode.textContent = fnName;
+    const { root, args } = createFunctionNode(fnName);
 
-    // 左括号
-    const leftParen = document.createTextNode('(');
+    range.insertNode(root);
 
-    // 参数区
-    const argsNode = document.createElement('span');
-    argsNode.className = 'formula-args';
-    argsNode.appendChild(document.createTextNode('\u200B'));
-
-    // 右括号
-    const rightParen = document.createTextNode(')');
-
-    range.insertNode(rightParen);
-    range.insertNode(argsNode);
-    range.insertNode(leftParen);
-    range.insertNode(fnNode);
-
-    // 光标放进参数区
+    // 光标进入参数区
     const caret = document.createRange();
-    const text = argsNode.firstChild!;
-    caret.setStart(text, 1);
-    caret.setEnd(text, 1);
+    caret.setStart(args.firstChild!, 0);
+    caret.collapse(true);
 
     const sel = window.getSelection();
     sel?.removeAllRanges();
     sel?.addRange(caret);
+
+    cursorRange.value = caret;
   }
 
   function upgradePlainFunction(root: HTMLElement) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-
-    const toProcess: Text[] = [];
+    const textNodes: Text[] = [];
 
     while (walker.nextNode()) {
-      const node = walker.currentNode as Text;
-      if (node.parentElement) {
-        // 已经在函数节点里的不要动
-        if (!(node.parentElement.closest('.formula-fn') || node.parentElement.closest('.formula-args'))) {
-          toProcess.push(node);
-        }
+      const textNode = walker.currentNode as Text;
+      const parent = textNode.parentElement;
+
+      const canProcess = !!parent && !parent.closest('.formula-fn-root') && !parent.closest('.fn-args');
+
+      if (canProcess) {
+        textNodes.push(textNode);
       }
     }
-    toProcess.forEach((textNode) => {
+
+    textNodes.forEach((textNode) => {
       const text = textNode.nodeValue ?? '';
-      FUNCTION_NAMES.forEach((fn) => {
-        const reg = new RegExp(`\\b${fn}\\(`);
+
+      FUNCTION_NAMES.forEach((fnName) => {
+        const reg = new RegExp(`\\b${fnName}\\(`);
         const match = reg.exec(text);
-        if (!match) return;
 
-        const start = match.index;
-        const end = start + fn.length + 1;
+        if (match) {
+          const start = match.index;
+          const end = start + fnName.length + 1; // fn + '('
 
-        const range = document.createRange();
-        range.setStart(textNode, start);
-        range.setEnd(textNode, end);
+          const range = document.createRange();
+          range.setStart(textNode, start);
+          range.setEnd(textNode, end);
 
-        replaceWithFunctionNode(range, fn);
+          replaceWithFunctionNode(range, fnName);
+        }
       });
     });
   }
 
-  // 字段是否被损坏
-  function isFieldNodeCorrupted(el: HTMLElement) {
-    const originalText = el.dataset.originText;
-    if (!originalText) return false;
-    return el.textContent !== originalText;
-  }
-
-  // 函数节点是否被损坏
-  function isFunctionNodeCorrupted(el: HTMLElement) {
-    const { fnName } = el.dataset;
-    if (!fnName) return false;
-    return el.textContent !== fnName;
-  }
-
-  // 降级成普通文本
-  function downgradeNode(el: HTMLElement) {
-    const text = el.textContent ?? '';
-
-    // 用普通文本替换
-    const textNode = document.createTextNode(text);
-    el.replaceWith(textNode);
-
-    // 光标放到文本末尾
-    const range = document.createRange();
-    range.setStart(textNode, text.length);
-    range.setEnd(textNode, text.length);
-
-    const sel = window.getSelection();
-    sel?.removeAllRanges();
-    sel?.addRange(range);
-  }
-
-  function removeFieldToText(editorEl: HTMLElement) {
-    // 字段降级
-    const fieldNodes = editorEl.querySelectorAll<HTMLElement>('.formula-tag-wrapper');
-    fieldNodes.forEach((el) => {
-      if (isFieldNodeCorrupted(el)) {
-        downgradeNode(el);
-      }
-    });
-  }
-
-  function removeFunToText(editorEl: HTMLElement) {
-    // 函数降级
-    const fnNodes = editorEl.querySelectorAll<HTMLElement>('.formula-fn');
-    fnNodes.forEach((el) => {
-      if (isFunctionNodeCorrupted(el)) {
-        downgradeNode(el);
-      }
-    });
-  }
-
   function handleEditorInput() {
-    // todo 优化
-    // const editorEl = editor.value!;
-    // removeFieldToText(editorEl);
-    // removeFunToText(editorEl);
     upgradePlainFunction(editor.value!);
     validateCurrentFormula();
   }
@@ -714,6 +595,37 @@
     });
   }
 
+  function handleBackspaceAtomic(e: KeyboardEvent) {
+    if (e.key !== 'Backspace') return;
+
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    const range = sel.getRangeAt(0);
+
+    // 有选区：整体删
+    if (!range.collapsed) {
+      const el =
+        range.commonAncestorContainer instanceof HTMLElement
+          ? range.commonAncestorContainer.closest('[contenteditable="false"]')
+          : null;
+
+      if (el) {
+        e.preventDefault();
+        deleteAtomicNode(el as HTMLElement);
+      }
+      return;
+    }
+
+    const { startContainer, startOffset } = range;
+
+    const atomic = findLeftAtomicDeep(startContainer, startOffset);
+    if (atomic) {
+      e.preventDefault();
+      deleteAtomicNode(atomic);
+    }
+  }
+
   watch(
     () => props.fieldConfig.formula,
     () => {
@@ -723,6 +635,7 @@
 
   onMounted(() => {
     initFormula();
+    editor.value?.addEventListener('keydown', handleBackspaceAtomic);
   });
 
   defineExpose({
@@ -852,11 +765,18 @@
 
     --n-border-radius: 0 !important;
   }
-  .formula-args {
-    min-width: 4px;
+  .crm-form-design-formula-editor {
+    line-height: 24px;
   }
-  .formula-fn::selection,
-  .formula-args::selection {
-    background: rgb(64 158 255 / 20%);
+  [contenteditable] {
+    :focus {
+      border-radius: 3px;
+      outline: none;
+      line-height: 14px;
+      box-shadow: inset 0 0 0 0.5px var(--primary-8);
+    }
+    :focus-visible {
+      outline: none;
+    }
   }
 </style>
