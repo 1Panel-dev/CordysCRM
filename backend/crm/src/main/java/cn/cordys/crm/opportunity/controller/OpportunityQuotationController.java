@@ -103,7 +103,7 @@ public class OpportunityQuotationController {
     @GetMapping("/revoke/{id}")
     @Operation(summary = "撤销报价单审批")
     public String revoke(@PathVariable("id") String id) {
-        return opportunityQuotationService.revoke(id, SessionUtils.getUserId());
+        return opportunityQuotationService.revoke(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     //作废

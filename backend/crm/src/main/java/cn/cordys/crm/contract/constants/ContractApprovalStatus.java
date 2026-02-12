@@ -24,5 +24,8 @@ public enum ContractApprovalStatus {
      * 撤销
      */
     REVOKED,
-
+    /**
+     * 当关闭审批时，审批状态为 NONE
+     */
+    NONE,
 }
