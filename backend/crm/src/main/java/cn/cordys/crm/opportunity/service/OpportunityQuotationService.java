@@ -4,6 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.CommonResultCode;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
@@ -18,6 +19,7 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.contract.domain.ContractFieldBlob;
 import cn.cordys.crm.opportunity.constants.ApprovalState;
@@ -33,12 +35,14 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationSnapshotMapper;
+import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
+import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -98,6 +102,8 @@ public class OpportunityQuotationService {
     private BaseMapper<OpportunityQuotationApproval> approvalBaseMapper;
     @Resource
     private BaseMapper<Opportunity> opportunityBaseMapper;
+    @Resource
+    private DictService dictService;
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -129,6 +135,11 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setCreateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
+
+        if (!dictService.isDictConfigEnable(DictModule.QUOTATION_APPROVAL.name(), orgId)) {
+            opportunityQuotation.setApprovalStatus(ContractApprovalStatus.NONE.name());
+        }
+
         //判断总金额
         setAmount(request.getAmount(), opportunityQuotation);
         // 设置子表格字段值
@@ -286,11 +297,13 @@ public class OpportunityQuotationService {
      * @param id     报价单ID
      * @param userId 用户ID
      */
-    public String revoke(String id, String userId) {
+    public String revoke(String id, String userId, String orgId) {
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {
             throw new GenericException(Translator.get("opportunity.quotation.not.exist"));
         }
+        checkApprovalConfig(orgId);
+
         if (!Strings.CI.equals(opportunityQuotation.getCreateUser(), userId) || !Strings.CI.equals(opportunityQuotation.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
             return opportunityQuotation.getApprovalStatus();
         }
@@ -305,6 +318,13 @@ public class OpportunityQuotationService {
         //更新快照
         updateSnapshot(id, ApprovalState.REVOKED.toString(), null);
         return opportunityQuotation.getApprovalStatus();
+    }
+
+    private void checkApprovalConfig(String orgId) {
+        if (!dictService.isDictConfigEnable(DictModule.QUOTATION_APPROVAL.name(), orgId)) {
+            // 未开启审批
+            throw new GenericException(CommonResultCode.APPROVAL_NOT_ENABLED_ERROR);
+        }
     }
 
     /**
@@ -360,6 +380,8 @@ public class OpportunityQuotationService {
      * @param userId  用户ID
      */
     public String approve(OpportunityQuotationEditRequest request, String userId, String orgId) {
+        checkApprovalConfig(orgId);
+
         //获取ApprovalState中APPROVED状态的id属性(以后改成获取自定义的审批状态)
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
         List<String> approvalStatusList = Arrays.stream(ApprovalState.values()).map(ApprovalState::getId).filter(status -> ApprovalState.APPROVED.toString().equals(status)).toList();
@@ -696,6 +718,8 @@ public class OpportunityQuotationService {
      * @return 审批状态
      */
     public BatchAffectSkipResponse batchApprove(OpportunityQuotationBatchRequest request, String userId, String orgId) {
+        checkApprovalConfig(orgId);
+
         List<String> ids = request.getIds();
         String approvalStatus = request.getApprovalStatus();
         LambdaQueryWrapper<OpportunityQuotation> wrapper = new LambdaQueryWrapper<>();

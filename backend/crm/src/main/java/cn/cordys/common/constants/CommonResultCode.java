@@ -11,7 +11,8 @@ import cn.cordys.common.exception.IResultCode;
 public enum CommonResultCode implements IResultCode {
 
     FIELD_VALIDATE_ERROR(100001, "field_validate_error"),
-	FIELD_OPTION_VALUE_ERROR(100002, "field_option_value_error");
+	FIELD_OPTION_VALUE_ERROR(100002, "field_option_value_error"),
+    APPROVAL_NOT_ENABLED_ERROR(100003, "approval.not.enabled");
 
 
     private final int code;
