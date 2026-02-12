@@ -13,5 +13,18 @@ public enum DictModule {
     /**
      * 线索池原因
      */
-    CLUE_POOL_RS
+
+    CLUE_POOL_RS,
+    /**
+     * 报价审批
+     */
+    QUOTATION_APPROVAL,
+    /**
+     * 合同审批
+     */
+    CONTRACT_APPROVAL,
+    /**
+     * 发票审批
+     */
+    INVOICE_APPROVAL,
 }

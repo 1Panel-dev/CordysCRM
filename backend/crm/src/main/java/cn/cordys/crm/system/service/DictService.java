@@ -22,6 +22,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -216,5 +217,10 @@ public class DictService {
         configLambdaQueryWrapper.eq(DictConfig::getModule, module).eq(DictConfig::getOrganizationId, orgId);
         List<DictConfig> configs = dictConfigMapper.selectListByLambda(configLambdaQueryWrapper);
         return DictConfigDTO.builder().dictList(dictList).enable(CollectionUtils.isNotEmpty(configs) && configs.getFirst().getEnabled()).build();
+    }
+
+    public boolean isDictConfigEnable(String module, String orgId) {
+        DictConfigDTO dictConf = getDictConf(module, orgId);
+        return  dictConf != null && BooleanUtils.isTrue(dictConf.getEnable());
     }
 }
