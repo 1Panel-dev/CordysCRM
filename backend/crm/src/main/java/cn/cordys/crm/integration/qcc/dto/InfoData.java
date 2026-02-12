@@ -58,5 +58,23 @@ public class InfoData {
      */
     @JsonProperty("No")
     private String no;
+
+    /**
+     * 所属地区
+     */
+    @JsonProperty("Area")
+    private Area area;
+
+    /**
+     * 企业规模
+     */
+    @JsonProperty("Scale")
+    private String scale;
+
+    /**
+     * 国标行业
+     */
+    @JsonProperty("Industry")
+    private Industry industry;
 }
 
