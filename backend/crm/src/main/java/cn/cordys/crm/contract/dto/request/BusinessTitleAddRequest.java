@@ -46,4 +46,16 @@ public class BusinessTitleAddRequest {
     @Schema(description = "来源类型(自定义(CUSTOM)/三方(THIRD_PARTY))")
     private String type;
 
+    @Size(max = 255)
+    @Schema(description = "所属地区")
+    private String area;
+
+    @Size(max = 255)
+    @Schema(description = "企业规模")
+    private String scale;
+
+    @Size(max = 255)
+    @Schema(description = "国标行业")
+    private String industry;
+
 }
