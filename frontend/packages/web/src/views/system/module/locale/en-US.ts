@@ -102,6 +102,8 @@ export default {
   'module.moveLeadPoolReasonConfig': 'Move into cue pool cause setting',
   'module.movePublicPoolReasonConfig': 'Move into the open sea cause setting',
   'module.failReasonConfig': 'Fail reason configuration',
+  'module.approvalSwitch': '{name} approval',
+  'module.invoiceApproval': 'Invoice',
   'module.configReasonTooltip': 'It can be enabled after configuration',
   'module.topNavigationConfig': 'Top Navigation Settings',
   'module.desensitizationSet': 'Desensitization set',

@@ -24,6 +24,7 @@ import {
   contractStatusOptions,
 } from '@/config/contract';
 import { quotationStatusOptions } from '@/config/opportunity';
+import useApprovalConfig from '@/hooks/useApprovalConfig';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import useReasonConfig from '@/hooks/useReasonConfig';
 
@@ -77,6 +78,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const { t } = useI18n();
   const { getFilterListConfig, customFieldsFilterConfig } = useFormCreateAdvanceFilter();
   const { reasonOptions, initReasonConfig } = useReasonConfig(props.formKey);
+  const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(props.formKey);
   const loading = ref(false);
   const showPagination = props.showPagination ?? true;
   let columns: CrmDataTableColumn[] = [];
@@ -125,6 +127,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
 
   // 静态列和高级筛选增加原因配置筛选
   await initReasonConfig();
+  // 审批配置
+  await initApprovalConfig();
   const opportunityInternalColumns: CrmDataTableColumn[] = [
     {
       title: t('org.department'),
@@ -418,16 +422,20 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   ];
 
   const invoiceInternalColumns: CrmDataTableColumn[] = [
-    {
-      title: t('contract.businessTitle.status'),
-      width: 120,
-      key: 'approvalStatus',
-      filterOptions: contractInvoiceStatusOptions,
-      sortOrder: false,
-      sorter: true,
-      filter: true,
-      render: props.specialRender?.approvalStatus,
-    },
+    ...((dicApprovalEnable.value
+      ? [
+          {
+            title: t('contract.businessTitle.status'),
+            width: 120,
+            key: 'approvalStatus',
+            filterOptions: contractInvoiceStatusOptions,
+            sortOrder: false,
+            sorter: true,
+            filter: true,
+            render: props.specialRender?.approvalStatus,
+          },
+        ]
+      : []) as CrmDataTableColumn[]),
     {
       title: t('org.department'),
       width: 120,
@@ -738,16 +746,20 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         sorter: true,
         render: (row: any) => row.departmentName || '-',
       },
-      {
-        title: t('common.status'),
-        width: 120,
-        key: 'approvalStatus',
-        filterOptions: quotationStatusOptions,
-        sortOrder: false,
-        sorter: true,
-        filter: true,
-        render: props.specialRender?.approvalStatus,
-      },
+      ...((dicApprovalEnable.value
+        ? [
+            {
+              title: t('common.status'),
+              width: 120,
+              key: 'approvalStatus',
+              filterOptions: quotationStatusOptions,
+              sortOrder: false,
+              sorter: true,
+              filter: true,
+              render: props.specialRender?.approvalStatus,
+            },
+          ]
+        : []) as CrmDataTableColumn[]),
     ],
     [FormDesignKeyEnum.CONTRACT]: [
       {
@@ -786,16 +798,22 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         sortOrder: false,
         sorter: true,
       },
-      {
-        title: t('contract.approvalStatus'),
-        width: 120,
-        key: 'approvalStatus',
-        filterOptions: quotationStatusOptions.filter((item) => ![QuotationStatusEnum.VOIDED].includes(item.value)),
-        sortOrder: false,
-        sorter: true,
-        filter: true,
-        render: props.specialRender?.approvalStatus,
-      },
+      ...((dicApprovalEnable.value
+        ? [
+            {
+              title: t('contract.approvalStatus'),
+              width: 120,
+              key: 'approvalStatus',
+              filterOptions: quotationStatusOptions.filter(
+                (item) => ![QuotationStatusEnum.VOIDED].includes(item.value)
+              ),
+              sortOrder: false,
+              sorter: true,
+              filter: true,
+              render: props.specialRender?.approvalStatus,
+            },
+          ]
+        : []) as CrmDataTableColumn[]),
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: paymentInternalColumns,
     [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: paymentInternalColumns,
@@ -1327,6 +1345,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     useTableRes,
     customFieldsFilterConfig,
     reasonOptions,
+    dicApprovalEnable,
     fieldList,
   };
 }

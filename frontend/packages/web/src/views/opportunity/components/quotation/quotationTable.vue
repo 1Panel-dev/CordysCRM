@@ -510,7 +510,7 @@
     initOpenSeaOptions();
   });
 
-  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList, dicApprovalEnable } = await useFormCreateTable({
     formKey: props.formKey,
     containerClass: `.crm-quotation-table-${props.formKey}`,
     operationColumn: props.readonly
@@ -572,14 +572,18 @@
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
-      {
-        title: t('common.status'),
-        dataIndex: 'approvalStatus',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        selectProps: {
-          options: quotationStatusOptions,
-        },
-      },
+      ...(dicApprovalEnable.value
+        ? [
+            {
+              title: t('common.status'),
+              dataIndex: 'approvalStatus',
+              type: FieldTypeEnum.SELECT_MULTIPLE,
+              selectProps: {
+                options: quotationStatusOptions,
+              },
+            },
+          ]
+        : []),
       {
         title: t('opportunity.department'),
         dataIndex: 'departmentId',

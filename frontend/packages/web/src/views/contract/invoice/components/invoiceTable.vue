@@ -247,35 +247,6 @@
     }
   }
 
-  // 表格
-  const filterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        type: 'department',
-        checkable: true,
-        showContainChildModule: true,
-        containChildIds: [],
-      },
-    },
-    {
-      title: t('contract.approvalStatus'),
-      dataIndex: 'approvalStatus',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      selectProps: {
-        options: contractInvoiceStatusOptions,
-      },
-    },
-    ...baseFilterConfigList,
-  ]);
-
   function getOperationGroupList(row: ContractInvoiceItem) {
     if (props.readonly) {
       return [];
@@ -412,7 +383,7 @@
     });
   }
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, dicApprovalEnable } = await useFormCreateTable({
     formKey: props.isContractTab ? FormDesignKeyEnum.CONTRACT_INVOICE : FormDesignKeyEnum.INVOICE,
     operationColumn: {
       key: 'operation',
@@ -494,6 +465,39 @@
       contractId: props.sourceId,
     };
   });
+
+  // 表格
+  const filterConfigList = computed<FilterFormItem[]>(() => [
+    {
+      title: t('opportunity.department'),
+      dataIndex: 'departmentId',
+      type: FieldTypeEnum.TREE_SELECT,
+      treeSelectProps: {
+        labelField: 'name',
+        keyField: 'id',
+        multiple: true,
+        clearFilterAfterSelect: false,
+        type: 'department',
+        checkable: true,
+        showContainChildModule: true,
+        containChildIds: [],
+      },
+    },
+    ...(dicApprovalEnable.value
+      ? [
+          {
+            title: t('contract.approvalStatus'),
+            dataIndex: 'approvalStatus',
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            operatorOption: COMMON_SELECTION_OPERATORS,
+            selectProps: {
+              options: contractInvoiceStatusOptions,
+            },
+          },
+        ]
+      : []),
+    ...baseFilterConfigList,
+  ]);
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();

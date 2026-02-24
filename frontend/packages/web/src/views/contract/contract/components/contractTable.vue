@@ -237,54 +237,6 @@
     }
   }
 
-  // 表格
-  const filterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        type: 'department',
-        checkable: true,
-        showContainChildModule: true,
-        containChildIds: [],
-      },
-    },
-    {
-      title: t('contract.status'),
-      dataIndex: 'stage',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      selectProps: {
-        options: contractStatusOptions,
-      },
-    },
-    {
-      title: t('contract.voidReason'),
-      dataIndex: 'voidReason',
-      type: FieldTypeEnum.INPUT,
-    },
-    {
-      title: t('contract.alreadyPayAmount'),
-      dataIndex: 'alreadyPayAmount',
-      type: FieldTypeEnum.INPUT_NUMBER,
-    },
-    {
-      title: t('contract.approvalStatus'),
-      dataIndex: 'approvalStatus',
-      operatorOption: COMMON_SELECTION_OPERATORS,
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options: quotationStatusOptions.filter((item) => ![QuotationStatusEnum.VOIDED].includes(item.value)),
-      },
-    },
-    ...baseFilterConfigList,
-  ]);
-
   function getOperationGroupList(row: ContractItem) {
     if (row.approvalStatus === QuotationStatusEnum.APPROVING) {
       return [
@@ -454,7 +406,7 @@
     }
   }
 
-  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList, dicApprovalEnable } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CONTRACT,
     operationColumn: {
       key: 'operation',
@@ -555,6 +507,58 @@
       ids: checkedRowKeys.value,
     };
   });
+
+  // 表格
+  const filterConfigList = computed<FilterFormItem[]>(() => [
+    {
+      title: t('opportunity.department'),
+      dataIndex: 'departmentId',
+      type: FieldTypeEnum.TREE_SELECT,
+      treeSelectProps: {
+        labelField: 'name',
+        keyField: 'id',
+        multiple: true,
+        clearFilterAfterSelect: false,
+        type: 'department',
+        checkable: true,
+        showContainChildModule: true,
+        containChildIds: [],
+      },
+    },
+    {
+      title: t('contract.status'),
+      dataIndex: 'stage',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      operatorOption: COMMON_SELECTION_OPERATORS,
+      selectProps: {
+        options: contractStatusOptions,
+      },
+    },
+    {
+      title: t('contract.voidReason'),
+      dataIndex: 'voidReason',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('contract.alreadyPayAmount'),
+      dataIndex: 'alreadyPayAmount',
+      type: FieldTypeEnum.INPUT_NUMBER,
+    },
+    ...(dicApprovalEnable.value
+      ? [
+          {
+            title: t('contract.approvalStatus'),
+            dataIndex: 'approvalStatus',
+            operatorOption: COMMON_SELECTION_OPERATORS,
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            selectProps: {
+              options: quotationStatusOptions.filter((item) => ![QuotationStatusEnum.VOIDED].includes(item.value)),
+            },
+          },
+        ]
+      : []),
+    ...baseFilterConfigList,
+  ]);
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();

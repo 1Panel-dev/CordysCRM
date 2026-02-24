@@ -97,6 +97,8 @@ export default {
   'module.moveLeadPoolReasonConfig': '移入线索池原因设置',
   'module.movePublicPoolReasonConfig': '移入公海原因设置',
   'module.failReasonConfig': '商机失败原因设置',
+  'module.approvalSwitch': '{name}审批',
+  'module.invoiceApproval': '发票',
   'module.configReasonTooltip': '配置后可开启',
   'module.topNavigationConfig': '顶部导航配置',
   'module.desensitizationSet': '脱敏设置',
