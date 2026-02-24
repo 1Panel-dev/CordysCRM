@@ -66,6 +66,24 @@ public class BusinessTitleExcelDataUs extends BusinessTitleExcelData {
     @ColumnWidth(255)
     @ExcelProperty("Registration number")
     private String registrationNumber;
+    /**
+     * 所属地区
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("Area")
+    private String area;
+    /**
+     * 企业规模
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("Scale")
+    private String scale;
+    /**
+     * 国标行业
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("Industry")
+    private String industry;
 
     @Override
     public List<List<String>> getHead() {

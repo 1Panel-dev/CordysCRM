@@ -59,6 +59,21 @@ public class BusinessTitleExcelData {
      */
     @ExcelIgnore
     private String registrationNumber;
+    /**
+     * 所属地区
+     */
+    @ExcelIgnore
+    private String area;
+    /**
+     * 企业规模
+     */
+    @ExcelIgnore
+    private String scale;
+    /**
+     * 国标行业
+     */
+    @ExcelIgnore
+    private String industry;
 
 
     public List<List<String>> getHead() {

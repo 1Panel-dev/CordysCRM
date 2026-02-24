@@ -1,5 +1,6 @@
 package cn.cordys.crm.contract.excel.domain;
 
+import cn.idev.excel.annotation.ExcelIgnore;
 import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.annotation.write.style.ColumnWidth;
 import lombok.Data;
@@ -66,6 +67,24 @@ public class BusinessTitleExcelDataCn extends BusinessTitleExcelData {
     @ColumnWidth(255)
     @ExcelProperty("工商注册账号")
     private String registrationNumber;
+    /**
+     * 所属地区
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("所属地区")
+    private String area;
+    /**
+     * 企业规模
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("企业规模")
+    private String scale;
+    /**
+     * 国标行业
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("国标行业")
+    private String industry;
 
 
     @Override
