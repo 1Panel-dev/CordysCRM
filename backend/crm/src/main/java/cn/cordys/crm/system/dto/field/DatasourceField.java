@@ -33,6 +33,9 @@ public class DatasourceField extends BaseField {
 	@Schema(description = "引用的字段集合")
 	private List<BaseField> refFields;
 
-	@Schema(description = "联动字段集合")
+	@Schema(description = "联动配置(外层普通字段)")
 	private List<SourceLink> linkFields;
+
+	@Schema(description = "子表格联动配置")
+	private List<SourceLink> childLinkFields;
 }

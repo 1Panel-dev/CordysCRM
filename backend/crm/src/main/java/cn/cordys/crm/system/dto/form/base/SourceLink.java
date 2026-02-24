@@ -27,6 +27,6 @@ public class SourceLink {
 	@Schema(description = "是否启用联动配置", defaultValue = "true")
 	private boolean enable;
 
-	@Schema(description = "子表格联动配置")
+	@Schema(description = "子表格联动配置(仅为子表格时需要配置)")
 	private List<SourceLink> childLinks;
 }
