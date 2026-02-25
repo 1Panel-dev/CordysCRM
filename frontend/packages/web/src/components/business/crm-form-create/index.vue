@@ -311,6 +311,8 @@
     });
   }
 
+  provide('formFieldsProvider', readonly(fieldList));
+
   function handleFieldChange(
     value: any,
     source: Record<string, any>[],

@@ -50,9 +50,59 @@
     default: 0,
   });
 
-  const formulaTooltip = computed(
-    () => safeParseFormula(props.fieldConfig.formula ?? '').display || t('crmFormDesign.formulaTooltip')
-  );
+  const fieldList = inject('formFieldsProvider', ref([]));
+
+  function resolveFieldId(e: FormCreateField, inSubTable?: boolean) {
+    if (e.resourceFieldId) {
+      return e.id;
+    }
+
+    return inSubTable ? e.businessKey || e.id : e.id;
+  }
+
+  function flatAllFields(fields: FormCreateField[]) {
+    const result: (FormCreateField & { parentId?: string; parentName?: string; inSubTable?: boolean })[] = [];
+    fields?.forEach((field) => {
+      if (field.subFields) {
+        field.subFields.forEach((sub) => {
+          result.push({
+            ...sub,
+            name: `${field.name}.${sub.name}`,
+            parentId: field.id,
+            id: props.isSubTableRender ? sub.id : `${field.id}.${resolveFieldId(sub, true)}`,
+            parentName: field.name,
+            inSubTable: true,
+          });
+        });
+      } else {
+        result.push({
+          ...field,
+          inSubTable: false,
+        });
+      }
+    });
+
+    return result;
+  }
+
+  const allFieldIds = computed(() => {
+    const fields = fieldList.value ?? [];
+    return flatAllFields(fields).map((e) => e.id);
+  });
+  const isFormulaInvalid = computed(() => {
+    const { fields } = safeParseFormula(props.fieldConfig.formula ?? '');
+    const savedFields = fields?.map((e: any) => e.fieldId);
+
+    return savedFields.some((fieldId: string) => !allFieldIds.value.includes(fieldId));
+  });
+
+  const formulaTooltip = computed(() => {
+    const { display } = safeParseFormula(props.fieldConfig.formula ?? '');
+    if (display) {
+      return isFormulaInvalid.value ? t('crmFormDesign.formulaFieldChanged') : display;
+    }
+    return t('crmFormDesign.formulaTooltip');
+  });
 
   function getScalarFieldValue(
     fieldId: string,
