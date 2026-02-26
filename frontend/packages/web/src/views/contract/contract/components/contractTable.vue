@@ -193,21 +193,6 @@
     checkedRowKeys.value = [];
   }
 
-  const actionConfig: BatchActionConfig = {
-    baseAction: [
-      {
-        label: t('common.exportChecked'),
-        key: 'exportChecked',
-        permission: ['CONTRACT:EXPORT'],
-      },
-      {
-        label: t('common.batchApproval'),
-        key: 'approval',
-        permission: ['CONTRACT:APPROVAL'],
-      },
-    ],
-  };
-
   const showApprovalModal = ref(false);
   const batchOperationName = ref('');
   const batchResult = ref<BatchOperationResult>({
@@ -237,7 +222,7 @@
     }
   }
 
-  function getOperationGroupList(row: ContractItem) {
+  function getEnableApprovalGroupList(row: ContractItem) {
     if (row.approvalStatus === QuotationStatusEnum.APPROVING) {
       return [
         {
@@ -292,6 +277,30 @@
         permission: ['CONTRACT:DELETE'],
       },
     ];
+  }
+
+  function getOperationGroupList(row: ContractItem, dicApprovalEnable: boolean) {
+    return dicApprovalEnable
+      ? getEnableApprovalGroupList(row)
+      : [
+          {
+            label: t('common.edit'),
+            key: 'edit',
+            permission: ['CONTRACT:UPDATE'],
+          },
+          {
+            label: t('contract.payment'),
+            key: 'paymentRecord',
+            permission: ['CONTRACT:PAYMENT'],
+            disabled: !row.amount || row.alreadyPayAmount >= row.amount,
+            tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
+          },
+          {
+            label: t('common.delete'),
+            key: 'delete',
+            permission: ['CONTRACT:DELETE'],
+          },
+        ];
   }
 
   const showDetailDrawer = ref(false);
@@ -413,9 +422,9 @@
       width: currentLocale.value === 'en-US' ? 180 : 150,
       fixed: 'right',
       render: (row: ContractItem) =>
-        getOperationGroupList(row).length
+        getOperationGroupList(row, dicApprovalEnable.value).length
           ? h(CrmOperationButton, {
-              groupList: getOperationGroupList(row),
+              groupList: getOperationGroupList(row, dicApprovalEnable.value),
               onSelect: (key: string) => handleActionSelect(row, key),
             })
           : '-',
@@ -505,6 +514,27 @@
     return {
       ...tableQueryParams.value,
       ids: checkedRowKeys.value,
+    };
+  });
+
+  const actionConfig = computed(() => {
+    return {
+      baseAction: [
+        {
+          label: t('common.exportChecked'),
+          key: 'exportChecked',
+          permission: ['CONTRACT:EXPORT'],
+        },
+        ...(dicApprovalEnable.value
+          ? [
+              {
+                label: t('common.batchApproval'),
+                key: 'approval',
+                permission: ['CONTRACT:APPROVAL'],
+              },
+            ]
+          : []),
+      ],
     };
   });
 

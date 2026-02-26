@@ -167,20 +167,6 @@
   const activeTab = ref();
   const keyword = ref('');
   const tableRefreshId = ref(0);
-  const actionConfig: BatchActionConfig = {
-    baseAction: [
-      {
-        label: t('common.batchApproval'),
-        key: 'approval',
-        permission: ['OPPORTUNITY_QUOTATION:APPROVAL'],
-      },
-      {
-        label: t('common.batchVoid'),
-        key: 'voided',
-        permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
-      },
-    ],
-  };
 
   const showApprovalModal = ref(false);
   function handleBatchApproval() {
@@ -420,41 +406,47 @@
     },
   ];
 
-  function getOperationGroupList(row: QuotationItem) {
+  function getOperationGroupList(row: QuotationItem, dicApprovalEnable: boolean) {
     const allGroups = [...groupList, ...moreGroupList];
     const getGroups = (keys: string[]) => {
       return keys.map((key) => allGroups.find((e) => e.key === key)).filter(Boolean) as typeof groupList;
     };
-    const commonGroups = ['voided', 'delete'];
+    if (dicApprovalEnable) {
+      const commonGroups = ['voided', 'delete'];
 
-    switch (row.approvalStatus) {
-      case QuotationStatusEnum.APPROVED:
-        return getGroups(['download', ...commonGroups]);
-      case QuotationStatusEnum.UNAPPROVED:
-      case QuotationStatusEnum.REVOKED:
-        return getGroups(['edit', ...commonGroups]);
-      case QuotationStatusEnum.APPROVING:
-        const operationGroups =
-          row.createUser === useStore.userInfo.id && hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])
-            ? ['approval', 'revoke', 'more']
-            : ['approval', ...commonGroups];
-        return getGroups(operationGroups);
-      case QuotationStatusEnum.VOIDED:
-        return getGroups(['delete']);
-      default:
-        return [];
+      switch (row.approvalStatus) {
+        case QuotationStatusEnum.APPROVED:
+          return getGroups(['download', ...commonGroups]);
+        case QuotationStatusEnum.UNAPPROVED:
+        case QuotationStatusEnum.REVOKED:
+          return getGroups(['edit', ...commonGroups]);
+        case QuotationStatusEnum.APPROVING:
+          const operationGroups =
+            row.createUser === useStore.userInfo.id && hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])
+              ? ['approval', 'revoke', 'more']
+              : ['approval', ...commonGroups];
+          return getGroups(operationGroups);
+        case QuotationStatusEnum.VOIDED:
+          return getGroups(['delete']);
+        default:
+          return [];
+      }
     }
+    return getGroups(['edit', 'download', 'more']);
   }
 
-  function getMoreOperationGroupList(row: QuotationItem) {
-    if (
-      row.approvalStatus === QuotationStatusEnum.APPROVING &&
-      row.createUser === useStore.userInfo.id &&
-      hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])
-    ) {
-      return moreActions;
+  function getMoreOperationGroupList(row: QuotationItem, dicApprovalEnable: boolean) {
+    if (dicApprovalEnable) {
+      if (
+        row.approvalStatus === QuotationStatusEnum.APPROVING &&
+        row.createUser === useStore.userInfo.id &&
+        hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])
+      ) {
+        return moreActions;
+      }
+      return [];
     }
-    return [];
+    return moreActions;
   }
   const showOverviewDrawer = ref<boolean>(false);
   const activeOpportunity = ref();
@@ -520,10 +512,10 @@
           width: currentLocale.value === 'zh-CN' ? 140 : 200,
           fixed: 'right',
           render: (row: QuotationItem) =>
-            getOperationGroupList(row).length
+            getOperationGroupList(row, dicApprovalEnable.value).length
               ? h(CrmOperationButton, {
-                  groupList: getOperationGroupList(row),
-                  moreList: getMoreOperationGroupList(row),
+                  groupList: getOperationGroupList(row, dicApprovalEnable.value),
+                  moreList: getMoreOperationGroupList(row, dicApprovalEnable.value),
                   onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
                 })
               : '-',
@@ -563,6 +555,27 @@
     },
     permission: ['OPPORTUNITY_QUOTATION:APPROVAL', 'OPPORTUNITY_QUOTATION:VOIDED'],
     readonly: props.readonly,
+  });
+
+  const actionConfig = computed(<BatchActionConfig>() => {
+    return {
+      baseAction: [
+        ...(dicApprovalEnable.value
+          ? [
+              {
+                label: t('common.batchApproval'),
+                key: 'approval',
+                permission: ['OPPORTUNITY_QUOTATION:APPROVAL'],
+              },
+            ]
+          : []),
+        {
+          label: t('common.batchVoid'),
+          key: 'voided',
+          permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
+        },
+      ],
+    };
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter, filterItem, advanceFilter } =
     useTableRes;

@@ -21,13 +21,10 @@
 
   import { getReasonConfig, updateReasonEnable } from '@/api/modules';
 
-  const { t } = useI18n();
-  const Message = useMessage();
-
   export type approvalConfigType =
     | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
     | FormDesignKeyEnum.CONTRACT
-    | FormDesignKeyEnum.CONTRACT_INVOICE;
+    | FormDesignKeyEnum.INVOICE;
 
   const props = defineProps<{
     type: approvalConfigType;
@@ -45,7 +42,7 @@
   const apiParamsKey: Record<approvalConfigType, string> = {
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: ReasonTypeEnum.QUOTATION_APPROVAL,
     [FormDesignKeyEnum.CONTRACT]: ReasonTypeEnum.CONTRACT_APPROVAL,
-    [FormDesignKeyEnum.CONTRACT_INVOICE]: ReasonTypeEnum.QUOTATION_APPROVAL,
+    [FormDesignKeyEnum.INVOICE]: ReasonTypeEnum.INVOICE_APPROVAL,
   };
 
   async function initStatus() {

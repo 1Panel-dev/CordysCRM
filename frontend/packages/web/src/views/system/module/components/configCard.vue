@@ -655,7 +655,7 @@
       renderRef: renderContractApprovalConfig,
       name: () => t('module.contract'),
     },
-    [FormDesignKeyEnum.CONTRACT_INVOICE]: {
+    [FormDesignKeyEnum.INVOICE]: {
       renderRef: renderInvoiceApprovalConfig,
       name: () => t('module.invoiceApproval'),
     },
@@ -724,7 +724,7 @@
     initRenderReasonSwitch();
     initRenderApprovalConfig(FormDesignKeyEnum.OPPORTUNITY_QUOTATION);
     initRenderApprovalConfig(FormDesignKeyEnum.CONTRACT);
-    initRenderApprovalConfig(FormDesignKeyEnum.CONTRACT_INVOICE);
+    initRenderApprovalConfig(FormDesignKeyEnum.INVOICE);
     initRenderBusinessNameConfig();
     if (route.query.openCluePoolDrawer === 'Y') {
       clueManagementCluePoolVisible.value = true;

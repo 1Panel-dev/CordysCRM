@@ -55,6 +55,7 @@
 
   import { approvalInvoiced, deleteInvoiced, revokeInvoiced } from '@/api/modules';
   import { deleteInvoiceContentMap } from '@/config/contract';
+  import useApprovalConfig from '@/hooks/useApprovalConfig';
   import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
 
@@ -82,8 +83,9 @@
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     detailInfo.value = detail;
   }
+  const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(FormDesignKeyEnum.INVOICE);
 
-  const buttonList = computed(() => {
+  function getApprovalEnableBtnList() {
     if (detailInfo.value?.approvalStatus === ContractInvoiceStatusEnum.APPROVING) {
       return [
         {
@@ -157,7 +159,31 @@
         permission: ['CONTRACT_INVOICE:DELETE'],
       },
     ];
-  });
+  }
+
+  const buttonList = computed(() =>
+    dicApprovalEnable.value
+      ? getApprovalEnableBtnList()
+      : [
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            permission: ['CONTRACT_INVOICE:UPDATE'],
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+          {
+            label: t('common.delete'),
+            key: 'delete',
+            text: false,
+            ghost: true,
+            danger: true,
+            class: 'n-btn-outline-primary',
+            permission: ['CONTRACT_INVOICE:DELETE'],
+          },
+        ]
+  );
 
   const refreshKey = ref(0);
   function handleSaved() {
@@ -238,4 +264,13 @@
         break;
     }
   }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        initApprovalConfig();
+      }
+    }
+  );
 </script>

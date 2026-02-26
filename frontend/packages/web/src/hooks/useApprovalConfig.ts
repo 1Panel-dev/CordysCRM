@@ -8,11 +8,13 @@ import { FilterOption } from 'naive-ui/es/data-table/src/interface';
 export type ApprovalConfigType =
   | FormDesignKeyEnum.CONTRACT
   | FormDesignKeyEnum.INVOICE
+  | FormDesignKeyEnum.CONTRACT_INVOICE
   | FormDesignKeyEnum.OPPORTUNITY_QUOTATION;
 
 const dicApprovalKeyMap: Record<ApprovalConfigType, ReasonTypeEnum> = {
   [FormDesignKeyEnum.CONTRACT]: ReasonTypeEnum.CONTRACT_APPROVAL,
   [FormDesignKeyEnum.INVOICE]: ReasonTypeEnum.INVOICE_APPROVAL,
+  [FormDesignKeyEnum.CONTRACT_INVOICE]: ReasonTypeEnum.INVOICE_APPROVAL,
   [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: ReasonTypeEnum.QUOTATION_APPROVAL,
 };
 

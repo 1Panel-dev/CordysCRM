@@ -104,6 +104,7 @@
 
   import { approvalContract, deleteContract, revokeContract } from '@/api/modules';
   import { contractStatusOptions } from '@/config/contract';
+  import useApprovalConfig from '@/hooks/useApprovalConfig';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useModal from '@/hooks/useModal';
   import { useUserStore } from '@/store';
@@ -160,7 +161,7 @@
     ].filter((item) => hasAnyPermission(item.permission))
   );
 
-  const buttonList = computed(() => {
+  function getApprovalEnableBtnList() {
     if (detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVING) {
       return [
         {
@@ -249,7 +250,44 @@
         permission: ['CONTRACT:DELETE'],
       },
     ];
-  });
+  }
+
+  const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(FormDesignKeyEnum.CONTRACT);
+
+  const buttonList = computed(() =>
+    dicApprovalEnable.value
+      ? getApprovalEnableBtnList()
+      : [
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            permission: ['CONTRACT:UPDATE'],
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+          {
+            label: t('contract.payment'),
+            key: 'paymentRecord',
+            permission: ['CONTRACT:PAYMENT'],
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+            disabled: !detailInfo.value?.amount || detailInfo.value?.alreadyPayAmount >= detailInfo.value?.amount,
+            tooltipContent:
+              detailInfo.value?.alreadyPayAmount >= detailInfo.value?.amount ? t('contract.noPaymentRequired') : '',
+          },
+          {
+            label: t('common.delete'),
+            key: 'delete',
+            text: false,
+            ghost: true,
+            danger: true,
+            class: 'n-btn-outline-primary',
+            permission: ['CONTRACT:DELETE'],
+          },
+        ]
+  );
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     title.value = name || '';
@@ -368,4 +406,13 @@
   function showBusinessTitleDetail(params: { id: string }) {
     emit('openBusinessTitleDrawer', params);
   }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        initApprovalConfig();
+      }
+    }
+  );
 </script>

@@ -247,10 +247,7 @@
     }
   }
 
-  function getOperationGroupList(row: ContractInvoiceItem) {
-    if (props.readonly) {
-      return [];
-    }
+  function getApprovalEnableGroupList(row: ContractInvoiceItem) {
     if (row.approvalStatus === ContractInvoiceStatusEnum.APPROVING) {
       return [
         {
@@ -281,6 +278,27 @@
           permission: ['CONTRACT_INVOICE:DELETE'],
         },
       ];
+    }
+    return [
+      {
+        label: t('common.edit'),
+        key: 'edit',
+        permission: ['CONTRACT_INVOICE:UPDATE'],
+      },
+      {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['CONTRACT_INVOICE:DELETE'],
+      },
+    ];
+  }
+
+  function getOperationGroupList(row: ContractInvoiceItem, dicApprovalEnable: boolean) {
+    if (props.readonly) {
+      return [];
+    }
+    if (dicApprovalEnable) {
+      return getApprovalEnableGroupList(row);
     }
     return [
       {
@@ -383,15 +401,22 @@
     });
   }
 
+  function getOperationWidth(approvalEnable: boolean) {
+    if (approvalEnable) {
+      return currentLocale.value === 'en-US' ? 180 : 150;
+    }
+    return 120;
+  }
+
   const { useTableRes, customFieldsFilterConfig, dicApprovalEnable } = await useFormCreateTable({
     formKey: props.isContractTab ? FormDesignKeyEnum.CONTRACT_INVOICE : FormDesignKeyEnum.INVOICE,
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 180 : 150,
+      width: computed(() => getOperationWidth(dicApprovalEnable.value)) as unknown as number,
       fixed: 'right',
       render: (row: ContractInvoiceItem) =>
         h(CrmOperationButton, {
-          groupList: getOperationGroupList(row),
+          groupList: getOperationGroupList(row, dicApprovalEnable.value),
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
