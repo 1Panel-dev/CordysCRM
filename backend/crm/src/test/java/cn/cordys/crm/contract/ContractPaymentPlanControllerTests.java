@@ -13,7 +13,6 @@ import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanGetResponse;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.*;
 import cn.cordys.common.util.BeanUtils;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -49,8 +48,6 @@ class ContractPaymentPlanControllerTests extends BaseTest {
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<ContractPaymentPlanListResponse>> pageResult = getPageResult(mvcResult, ContractPaymentPlanListResponse.class);
-        List<ContractPaymentPlanListResponse> contractPaymentPlanList = pageResult.getList();
-        Assertions.assertTrue(CollectionUtils.isEmpty(contractPaymentPlanList));
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ, DEFAULT_PAGE, request);

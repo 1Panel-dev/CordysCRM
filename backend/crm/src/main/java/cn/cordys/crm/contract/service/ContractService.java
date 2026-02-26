@@ -24,6 +24,7 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.Contract;
@@ -41,6 +42,7 @@ import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
+import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -57,6 +59,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.ibatis.session.ExecutorType;
@@ -778,12 +781,15 @@ public class ContractService {
         // 只展示状态为通过且非作废/归档阶段的合同
         List<FilterCondition> conditions = new ArrayList<>();
 
-        FilterCondition statusCondition = new FilterCondition();
-        statusCondition.setMultipleValue(false);
-        statusCondition.setName("approvalStatus");
-        statusCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
-        statusCondition.setValue(List.of(ContractApprovalStatus.APPROVED.name()));
-        conditions.add(statusCondition);
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CONTRACT_APPROVAL.name(), OrganizationContext.getOrganizationId());
+        if (dictConf != null && BooleanUtils.isTrue(dictConf.getEnable())) {
+            FilterCondition statusCondition = new FilterCondition();
+            statusCondition.setMultipleValue(false);
+            statusCondition.setName("approvalStatus");
+            statusCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
+            statusCondition.setValue(List.of(ContractApprovalStatus.APPROVED.name()));
+            conditions.add(statusCondition);
+        }
 
         FilterCondition stageCondition = new FilterCondition();
         stageCondition.setMultipleValue(false);
