@@ -69,7 +69,7 @@
             ...sub,
             name: `${field.name}.${sub.name}`,
             parentId: field.id,
-            id: props.isSubTableRender ? sub.id : `${field.id}.${resolveFieldId(sub, true)}`,
+            id: props.isSubTableRender ? resolveFieldId(sub, true) : `${field.id}.${resolveFieldId(sub, true)}`,
             parentName: field.name,
             inSubTable: true,
           });
