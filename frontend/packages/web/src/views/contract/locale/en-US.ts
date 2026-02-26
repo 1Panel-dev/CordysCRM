@@ -75,4 +75,5 @@ export default {
     'Invoice not approved, deleting does not affect the invoiced amount of the contract, please proceed with caution!',
   'contract.deleteInvoiceRevokedContent':
     'Invoice revoked, deleting does not affect the invoiced amount of the contract, please proceed with caution!',
+  'contract.deleteInvoiceNoneContent': 'Cannot recover after deletion, please careful operation!',
 };

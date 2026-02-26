@@ -44,10 +44,15 @@ export const contractInvoiceStatus = {
     icon: 'iconicon_close_circle_filled',
     color: 'var(--error-red)',
   },
-  [ContractBusinessTitleStatusEnum.REVOKED]: {
+  [ContractInvoiceStatusEnum.REVOKED]: {
     label: t('common.revoke'),
     icon: 'iconicon_skip_planarity',
     color: 'var(--text-n4)',
+  },
+  [ContractInvoiceStatusEnum.NONE]: {
+    label: '-',
+    icon: '',
+    color: '',
   },
 };
 
@@ -187,4 +192,5 @@ export const deleteInvoiceContentMap = {
   [ContractInvoiceStatusEnum.APPROVED]: t('contract.deleteInvoiceApprovedContent'),
   [ContractInvoiceStatusEnum.REVOKED]: t('contract.deleteInvoiceRevokedContent'),
   [ContractInvoiceStatusEnum.UNAPPROVED]: t('contract.deleteInvoiceRejectedContent'),
+  [ContractInvoiceStatusEnum.NONE]: t('contract.deleteInvoiceNoneContent'),
 };

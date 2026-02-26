@@ -44,6 +44,11 @@
       icon: 'iconicon_skip_planarity',
       color: 'var(--text-n4)',
     },
+    [QuotationStatusEnum.NONE]: {
+      label: '-',
+      icon: '',
+      color: '',
+    },
   };
 </script>
 

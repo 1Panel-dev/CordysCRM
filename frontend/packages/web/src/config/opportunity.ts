@@ -117,4 +117,8 @@ export const quotationStatusOptions = [
     value: QuotationStatusEnum.REVOKED,
     label: t('common.revoke'),
   },
+  {
+    value: QuotationStatusEnum.NONE,
+    label: '-',
+  },
 ];

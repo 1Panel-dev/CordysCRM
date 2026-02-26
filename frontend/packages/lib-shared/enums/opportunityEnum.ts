@@ -11,6 +11,7 @@ export enum QuotationStatusEnum {
   APPROVING = 'APPROVING', // 提审
   VOIDED = 'VOIDED', // 作废
   REVOKED = 'REVOKED', // 撤销
+  NONE = 'NONE', // 未开启审批状态
 }
 
 export default {};
