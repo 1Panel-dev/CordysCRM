@@ -149,9 +149,13 @@ public class DictService {
         originalVal.put("module.switch", !request.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
         Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("module.switch", request.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        String resourceName = Translator.get("module." + request.getModule().toLowerCase());
+        if (Strings.CI.equalsAny(request.getModule(), DictModule.CLUE_POOL_RS.name(), DictModule.CUSTOMER_POOL_RS.name(), DictModule.OPPORTUNITY_FAIL_RS.name())) {
+            resourceName += Translator.get("module.reason.setting");
+        }
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(originalVal)
-                .resourceName(Translator.get("module." + request.getModule().toLowerCase()) + Translator.get("module.reason.setting"))
+                .resourceName(resourceName)
                 .modifiedValue(modifiedVal)
                 .resourceId(request.getModule())
                 .build());
