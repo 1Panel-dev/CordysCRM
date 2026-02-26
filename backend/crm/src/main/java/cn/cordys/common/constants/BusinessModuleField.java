@@ -280,9 +280,20 @@ public enum BusinessModuleField {
     CONTRACT_PAYMENT_RECORD_CONTRACT("contractPaymentRecordContract", "contractId", Set.of("rules.required", "dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_PLAN("contractPaymentRecordPlan", "paymentPlanId", Set.of("dataSourceType", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     CONTRACT_PAYMENT_RECORD_AMOUNT("contractPaymentRecordAmount", "recordAmount", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
-    CONTRACT_PAYMENT_RECORD_END_TIME("contractPaymentRecordEndTime", "recordEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+    CONTRACT_PAYMENT_RECORD_END_TIME("contractPaymentRecordEndTime", "recordEndTime", Set.of("rules.required", "mobile", "readable"), FormKey.CONTRACT_PAYMENT_RECORD.getKey()),
     /*------ end: CONTRACT_PAYMENT_RECORD 合同回款记录  ------*/
 
+    /*------ start: ORDER ------*/
+    ORDER_NAME("orderName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
+    ORDER_CUSTOMER_NAME("orderCustomer", "customerId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.ORDER.getKey()),
+    ORDER_CONTRACT_NAME("orderContract", "contractId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.ORDER.getKey()),
+    ORDER_OWNER("orderOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
+    ORDER_NO("orderNo", "number", Set.of("rules.required"), FormKey.ORDER.getKey()),
+    ORDER_TOTAL_AMOUNT("orderTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
+    /*------ end: CONTRACT ------*/
+
+
+    ;
 
     /**
      * 业务字段缓存

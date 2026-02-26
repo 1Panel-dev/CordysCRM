@@ -64,7 +64,11 @@ public enum FormKey {
 	/**
 	 * 回款记录
 	 */
-	CONTRACT_PAYMENT_RECORD("contractPaymentRecord");
+	CONTRACT_PAYMENT_RECORD("contractPaymentRecord"),
+    /**
+     * 订单
+     */
+    ORDER("order");
 
     private final String key;
 

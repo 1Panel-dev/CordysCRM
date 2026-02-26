@@ -647,5 +647,33 @@
         ]
       }
     ]
+  },
+  {
+    "id": "ORDER_MANAGEMENT",
+    "name": "permission.order_management.name",
+    "license": false,
+    "children": [
+      {
+        "id": "ORDER",
+        "name": "permission.order.name",
+        "permissions": [
+          {
+            "id": "ORDER_ORDER:READ"
+          },
+          {
+            "id": "ORDER_ORDER:ADD"
+          },
+          {
+            "id": "ORDER_ORDER:UPDATE"
+          },
+          {
+            "id": "ORDER_ORDER:DELETE"
+          },
+          {
+            "id": "ORDER_ORDER:DOWNLOAD"
+          }
+        ]
+      }
+    ]
   }
 ]
