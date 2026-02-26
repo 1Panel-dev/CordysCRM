@@ -10,6 +10,7 @@ export default {
   'contract.changeStageTip': '修改合同阶段需满足：审批状态为通过 + 合同阶段变更权限',
   'contract.toBeSigned': '待签署',
   'contract.signed': '已签署',
+  'contract.change': '合同变更',
   'contract.inProgress': '履行中',
   'contract.completedPerformance': '履行完毕',
   'contract.uncompleted': '未完成',

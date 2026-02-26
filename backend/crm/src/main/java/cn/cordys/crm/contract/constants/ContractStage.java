@@ -18,6 +18,11 @@ public enum ContractStage {
     SIGNED,
 
     /**
+     * 合同变更
+     */
+    CHANGE,
+
+    /**
      * 履行中
      */
     IN_PROGRESS,

@@ -796,7 +796,7 @@ public class ContractService {
         stageCondition.setName("stage");
         stageCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
         stageCondition.setValue(List.of(ContractStage.PENDING_SIGNING.name(), ContractStage.SIGNED.name(),
-                ContractStage.IN_PROGRESS.name(), ContractStage.COMPLETED_PERFORMANCE.name()));
+                ContractStage.IN_PROGRESS.name(), ContractStage.COMPLETED_PERFORMANCE.name(), ContractStage.CHANGE.name()));
         conditions.add(stageCondition);
 
         return conditions;

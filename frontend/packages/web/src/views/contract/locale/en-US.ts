@@ -10,6 +10,7 @@ export default {
   'contract.changeStageTip': 'The contract stage can be changed only after approval and with the required permission',
   'contract.toBeSigned': 'To be signed',
   'contract.signed': 'Signed',
+  'contract.change': 'Change',
   'contract.inProgress': 'In Progress',
   'contract.completedPerformance': 'Completed',
   'contract.uncompleted': 'Incomplete',

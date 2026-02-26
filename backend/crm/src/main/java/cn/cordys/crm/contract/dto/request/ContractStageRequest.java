@@ -14,7 +14,7 @@ public class ContractStageRequest {
     private String id;
 
 
-    @Schema(description = "阶段: PENDING_SIGNING/SIGNED/IN_PROGRESS/COMPLETED_PERFORMANCE/VOID/ARCHIVED", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "阶段: PENDING_SIGNING/SIGNED/CHANGE/IN_PROGRESS/COMPLETED_PERFORMANCE/VOID/ARCHIVED", requiredMode = Schema.RequiredMode.REQUIRED)
     private String stage;
 
 
