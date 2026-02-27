@@ -69,7 +69,7 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       if (!props.needInitDetail) {
-        value.value = val !== undefined ? val : value.value;
+        value.value = val !== undefined && val !== null ? val : value.value;
         emit('change', value.value);
       }
     },
@@ -100,8 +100,8 @@
     return nums === '' ? null : Number.NaN;
   }
 
-  function format(val: number | null) {
-    if (val === null) return '';
+  function format(val?: number | null) {
+    if (val === null || val === undefined) return '';
     if (
       (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) ||
       props.fieldConfig.type === FieldTypeEnum.FORMULA
@@ -110,7 +110,9 @@
         ? `${val.toLocaleString('en-US').split('.')[0]}.${val.toFixed(props.fieldConfig.precision).split('.')[1]}`
         : val.toLocaleString('en-US');
     }
-    return val.toFixed(props.fieldConfig.precision || 0);
+    return typeof val === 'number'
+      ? val.toFixed(props.fieldConfig.precision || 0)
+      : Number(val).toFixed(props.fieldConfig.precision || 0);
   }
 </script>
 

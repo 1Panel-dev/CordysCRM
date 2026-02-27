@@ -265,7 +265,7 @@ export function transformData({
   const memberFieldIds: string[] = [];
   const departmentFieldIds: string[] = [];
   const timeFieldIds: string[] = [];
-  let subTableFieldInfo: Record<string, any> = {};
+  const fieldOptionMap: Record<string, any[]> = {};
 
   fields.forEach((field) => {
     const fieldId = field.resourceFieldId ? field.id : field.businessKey || field.id;
@@ -283,7 +283,9 @@ export function transformData({
       timeFieldIds.push(fieldId);
     } else if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && needParseSubTable) {
       field.subFields?.forEach((subField) => {
-        const subFieldData = item[fieldId]?.map((subItem: Record<string, any>) => {
+        const subFieldData = (
+          item[fieldId] || item.moduleFields.find((mf: any) => mf.fieldId === fieldId)?.fieldValue
+        )?.map((subItem: Record<string, any>) => {
           if (subField.resourceFieldId) {
             subItem[subField.id] = parseModuleFieldValue(
               subField,
@@ -291,12 +293,15 @@ export function transformData({
               // 数据源显示字段不使用业务 key，直接使用字段 id 去取值
               originalData?.optionMap?.[subField.id]
             );
+            fieldOptionMap[subField.id] = originalData?.optionMap?.[subField.id] || [];
           } else {
             subItem[subField.id] = parseModuleFieldValue(
               subField,
               subItem[subField.businessKey || subField.id],
               originalData?.optionMap?.[subField.businessKey || subField.id]
             );
+            fieldOptionMap[subField.businessKey || subField.id] =
+              originalData?.optionMap?.[subField.businessKey || subField.id] || [];
           }
           return subItem;
         });
@@ -313,6 +318,7 @@ export function transformData({
         ...e,
         name: e.name || t('common.optionNotExist'),
       }));
+      fieldOptionMap[fieldId] = options || [];
       if (addressFieldIds.includes(fieldId)) {
         // 地址类型字段，解析代码替换成省市区
         const addressArr: string[] = item[fieldId]?.split('-')?.filter(Boolean) || [];
@@ -385,6 +391,7 @@ export function transformData({
       ...e,
       name: e.name || t('common.optionNotExist'),
     }));
+    fieldOptionMap[field.fieldId] = options || [];
     if (addressFieldIds.includes(field.fieldId)) {
       // 地址类型字段，解析代码替换成省市区
       const addressArr: string[] = (field?.fieldValue as string)?.split('-')?.filter(Boolean) || [];
@@ -449,7 +456,7 @@ export function transformData({
     ...item,
     ...customFieldAttr,
     ...businessFieldAttr,
-    ...subTableFieldInfo,
+    optionMap: fieldOptionMap,
   };
 }
 
