@@ -585,7 +585,11 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setCreateTime(oldOpportunityQuotation.getCreateTime());
         opportunityQuotation.setCreateUser(oldOpportunityQuotation.getCreateUser());
-        opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
+        if (dictService.isDictConfigEnable(DictModule.QUOTATION_APPROVAL.name(), orgId)) {
+            opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
+        } else {
+            opportunityQuotation.setApprovalStatus(oldOpportunityQuotation.getApprovalStatus());
+        }
         //判断总金额
         setAmount(request.getAmount(), opportunityQuotation);
         // 设置子表格字段值

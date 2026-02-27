@@ -249,7 +249,11 @@ public class ContractInvoiceService {
             // 保留不可更改的字段
             invoice.setCreateUser(originContractInvoice.getCreateUser());
             invoice.setCreateTime(originContractInvoice.getCreateTime());
-            invoice.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
+            if (dictService.isDictConfigEnable(DictModule.INVOICE_APPROVAL.name(), orgId)) {
+                invoice.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
+            } else {
+                invoice.setApprovalStatus(originContractInvoice.getApprovalStatus());
+            }
 
             updateFields(moduleFields, invoice, orgId, userId);
             invoiceMapper.update(invoice);

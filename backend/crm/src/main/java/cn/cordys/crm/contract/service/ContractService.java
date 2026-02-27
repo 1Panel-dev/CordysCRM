@@ -318,7 +318,12 @@ public class ContractService {
             contract.setCreateUser(oldContract.getCreateUser());
             contract.setCreateTime(oldContract.getCreateTime());
             contract.setStage(oldContract.getStage());
-            contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
+            if (dictService.isDictConfigEnable(DictModule.CONTRACT_APPROVAL.name(), orgId)) {
+                contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
+            } else {
+                contract.setApprovalStatus(oldContract.getApprovalStatus());
+            }
+
             //判断总金额
             setAmount(request.getAmount(), contract);
             moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
@@ -781,8 +786,7 @@ public class ContractService {
         // 只展示状态为通过且非作废/归档阶段的合同
         List<FilterCondition> conditions = new ArrayList<>();
 
-        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CONTRACT_APPROVAL.name(), OrganizationContext.getOrganizationId());
-        if (dictConf != null && BooleanUtils.isTrue(dictConf.getEnable())) {
+        if (dictService.isDictConfigEnable(DictModule.CONTRACT_APPROVAL.name(), OrganizationContext.getOrganizationId()))  {
             FilterCondition statusCondition = new FilterCondition();
             statusCondition.setMultipleValue(false);
             statusCondition.setName("approvalStatus");
