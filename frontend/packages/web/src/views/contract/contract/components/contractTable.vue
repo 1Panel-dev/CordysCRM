@@ -468,7 +468,7 @@
       },
       stage: (row: ContractItem) => {
         const disabled = row.approvalStatus !== QuotationStatusEnum.APPROVED || !hasAnyPermission(['CONTRACT:STAGE']);
-        if (disabled) {
+        if (disabled && dicApprovalEnable.value) {
           return h(
             NTooltip,
             { delay: 300 },
@@ -488,7 +488,7 @@
         return h(StatusTagSelect, {
           'status': row.stage as ContractStatusEnum,
           'noRender': true,
-          'disabled': disabled,
+          'disabled': disabled && dicApprovalEnable.value,
           'onUpdate:status': async (val) => {
             // 修改为作废的时候需要填写原因
             if (val === ContractStatusEnum.VOID) {
