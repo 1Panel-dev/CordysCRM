@@ -56,11 +56,12 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getGenerateId } from '@lib/shared/method';
   import { specialBusinessKeyMap } from '@lib/shared/method/formCreate';
   import { FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
-  import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import { type DataSourceSubFieldLinkField, FormCreateField } from '@/components/business/crm-form-create/types';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
@@ -313,6 +314,37 @@
 
   provide('formFieldsProvider', readonly(fieldList));
 
+  function applySubFieldLink(
+    subLinkFieldParents: DataSourceSubFieldLinkField[],
+    currentSource?: Record<string, any>,
+    dataSourceFormFields?: FormCreateField[]
+  ) {
+    subLinkFieldParents.forEach((linkField) => {
+      if (linkField.enable === false) {
+        return;
+      }
+      const currentParentField = fieldList.value.find((f) => f.id === linkField.current); // 被填充的字段
+      const parentLinkField = dataSourceFormFields?.find((f) => f.id === linkField.link); // 填充字段
+      if (currentParentField && parentLinkField && currentSource) {
+        if (linkField.method === 'fill') {
+          const linkFieldInfo = currentSource[parentLinkField.businessKey || parentLinkField.id];
+          const result: Record<string, any>[] = [];
+          linkFieldInfo?.forEach((subData: Record<string, any>) => {
+            const line: Record<string, any> = {
+              id: getGenerateId(),
+            };
+            linkField.childLinks?.forEach((childLink) => {
+              line[childLink.current] = subData[childLink.link];
+              // TODO:填充不同类型值
+            });
+            result.push(line);
+          });
+          formDetail.value[currentParentField.id] = result;
+        }
+      }
+    });
+  }
+
   function handleFieldChange(
     value: any,
     source: Record<string, any>[],
@@ -342,6 +374,14 @@
       applyDatasourceFieldLink(
         value,
         item,
+        source.find((s) => s.id === value[0]), // 当前选中的数据源对象，因为本身字段只能是单选数据源
+        dataSourceFormFields
+      );
+    }
+    // 单选数据源子表格数据联动
+    if (item.childLinkFields?.length && value && value.length) {
+      applySubFieldLink(
+        item.childLinkFields,
         source.find((s) => s.id === value[0]), // 当前选中的数据源对象，因为本身字段只能是单选数据源
         dataSourceFormFields
       );

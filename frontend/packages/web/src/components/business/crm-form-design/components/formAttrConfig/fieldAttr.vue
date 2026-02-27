@@ -1258,6 +1258,7 @@
   import {
     DataSourceFilterCombine,
     type DataSourceLinkField,
+    type DataSourceSubFieldLinkField,
     FieldLinkProp,
     FormCreateField,
     FormCreateFieldRule,
@@ -1604,13 +1605,15 @@
     fieldConfig.value.linkFields = [];
     datasourceLinkClearPop.value = false;
   }
+
   function showDatasourceLinkConfig() {
     tempDataLinkFields.value = fieldConfig.value.linkFields || [];
     showDatasourceLinkConfigVisible.value = true;
   }
 
-  function handleDatasourceLinkConfigSave(value: DataSourceLinkField[]) {
+  function handleDatasourceLinkConfigSave(value: DataSourceLinkField[], subFormValue: DataSourceSubFieldLinkField[]) {
     fieldConfig.value.linkFields = value;
+    fieldConfig.value.childLinkFields = subFormValue;
   }
 
   const showDataSourceFilterModal = ref(false);

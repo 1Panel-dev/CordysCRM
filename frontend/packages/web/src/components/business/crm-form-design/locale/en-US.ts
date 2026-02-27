@@ -232,4 +232,6 @@ export default {
   'crmFormDesign.quotingData': 'Reference other forms',
   'crmFormDesign.currentFormField': 'Current Form Field',
   'crmFormDesign.contract': 'Contract',
+  'crmFormDesign.form': 'Form',
+  'crmFormDesign.subForm': 'Sub Form',
 };

@@ -219,4 +219,6 @@ export default {
   'crmFormDesign.quotingData': '引用其他表单',
   'crmFormDesign.currentFormField': '当前表单字段',
   'crmFormDesign.contract': '合同',
+  'crmFormDesign.form': '表单',
+  'crmFormDesign.subForm': '子表单',
 };

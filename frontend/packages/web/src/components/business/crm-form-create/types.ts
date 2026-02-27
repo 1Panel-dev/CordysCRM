@@ -55,6 +55,10 @@ export interface DataSourceLinkField {
   enable: boolean; // 是否启用
 }
 
+export interface DataSourceSubFieldLinkField extends DataSourceLinkField {
+  childLinks: DataSourceSubFieldLinkField[]; // 子表格联动配置
+}
+
 export interface FormCreateField {
   // 基础属性
   id: string;
@@ -110,6 +114,7 @@ export interface FormCreateField {
   combineSearch?: DataSourceFilterCombine; // 数据源过滤条件
   showFields?: string[]; // 数据源显示字段
   linkFields?: DataSourceLinkField[]; // 数据源联动字段
+  childLinkFields?: DataSourceSubFieldLinkField[]; // 数据源子表格联动配置
   // 成员属性
   hasCurrentUser?: boolean;
   // 部门属性
