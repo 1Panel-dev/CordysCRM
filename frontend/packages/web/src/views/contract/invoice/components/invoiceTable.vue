@@ -316,11 +316,13 @@
 
   const showDetailDrawer = ref(false);
 
-  function handleDelete(row: any) {
+  function handleDelete(row: any, approvalEnable: boolean) {
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: row.name }),
-      content: deleteInvoiceContentMap[row.approvalStatus as ContractInvoiceStatusEnum],
+      content: approvalEnable
+        ? deleteInvoiceContentMap[row.approvalStatus as ContractInvoiceStatusEnum]
+        : deleteInvoiceContentMap[ContractInvoiceStatusEnum.NONE],
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
@@ -358,7 +360,7 @@
     }
   }
 
-  async function handleActionSelect(row: ContractInvoiceItem, actionKey: string) {
+  async function handleActionSelect(row: ContractInvoiceItem, actionKey: string, approvalEnable: boolean) {
     switch (actionKey) {
       case 'edit':
         handleEdit(row.id);
@@ -367,7 +369,7 @@
         handleRevoke(row);
         break;
       case 'delete':
-        handleDelete(row);
+        handleDelete(row, approvalEnable);
         break;
       case 'approval':
         showDetail(row.id);
@@ -417,7 +419,7 @@
       render: (row: ContractInvoiceItem) =>
         h(CrmOperationButton, {
           groupList: getOperationGroupList(row, dicApprovalEnable.value),
-          onSelect: (key: string) => handleActionSelect(row, key),
+          onSelect: (key: string) => handleActionSelect(row, key, dicApprovalEnable.value),
         }),
     },
     specialRender: {

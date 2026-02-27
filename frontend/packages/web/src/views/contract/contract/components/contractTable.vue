@@ -396,7 +396,6 @@
   }
 
   function showCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
-    activeSourceId.value = params.customerId;
     emit(
       'openCustomerDrawer',
       {
