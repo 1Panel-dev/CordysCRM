@@ -613,12 +613,20 @@ public class ContractInvoiceService {
         }
     }
 
-    public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String organizationId) {
-        return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, organizationId);
+    public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String orgId) {
+        if (dictService.isDictConfigEnable(DictModule.INVOICE_APPROVAL.name(), orgId)) {
+            return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, orgId, true);
+        } else {
+            return extContractInvoiceMapper.calculateCustomerInvoiceAmount(customerId, userId, orgId, false);
+        }
     }
 
-    public BigDecimal calculateContractInvoiceAmount(String contractId, String userId, String organizationId) {
-        return extContractInvoiceMapper.calculateContractInvoiceAmount(contractId, userId, organizationId);
+    public BigDecimal calculateContractInvoiceAmount(String contractId, String userId, String orgId) {
+        if (dictService.isDictConfigEnable(DictModule.INVOICE_APPROVAL.name(), orgId)) {
+            return extContractInvoiceMapper.calculateContractInvoiceAmount(contractId, userId, orgId, true);
+        } else {
+            return extContractInvoiceMapper.calculateContractInvoiceAmount(contractId, userId, orgId, false);
+        }
     }
 
     public ModuleFormConfigDTO getBusinessFormConfig(String organizationId) {

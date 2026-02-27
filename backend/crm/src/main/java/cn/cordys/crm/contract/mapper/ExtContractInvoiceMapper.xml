@@ -409,7 +409,9 @@
         where
             c.customer_id = #{customerId}
             and ci.organization_id = #{orgId}
+        <if test="approved">
             and ci.approval_status = 'APPROVED'
+        </if>
     </select>
 
     <select id="calculateContractInvoiceAmount" resultType="java.math.BigDecimal">
@@ -420,7 +422,9 @@
         where
             contract_id = #{contractId}
             and organization_id = #{orgId}
+        <if test="approved">
             and approval_status = 'APPROVED'
+        </if>
     </select>
 
     <select id="calculateContractInvoiceValidAmount" resultType="java.math.BigDecimal">
