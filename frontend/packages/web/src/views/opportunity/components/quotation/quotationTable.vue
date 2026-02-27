@@ -432,6 +432,8 @@
           return [];
       }
     }
+
+    if (row.approvalStatus === QuotationStatusEnum.VOIDED) return getGroups(['delete']);
     return getGroups(['edit', 'download', 'more']);
   }
 
@@ -446,6 +448,7 @@
       }
       return [];
     }
+    if (row.approvalStatus === QuotationStatusEnum.VOIDED) return [];
     return moreActions;
   }
   const showOverviewDrawer = ref<boolean>(false);

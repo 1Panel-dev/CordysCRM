@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="detailInfo?.name ?? ''">
     <template #titleLeft>
       <div class="text-[14px] font-normal">
-        <quotationStatus v-if="detailInfo?.approvalStatus" :status="detailInfo?.approvalStatus" />
+        <quotationStatus v-if="isShowApprovalStatus" :status="detailInfo?.approvalStatus" />
       </div>
     </template>
     <template #titleRight>
@@ -285,15 +285,17 @@
         default:
           return [];
       }
+    } else {
+      if (detailInfo.value?.approvalStatus === QuotationStatusEnum.VOIDED) return [];
+      return [
+        {
+          label: t('common.voided'),
+          key: 'voided',
+          permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
+        },
+        ...deleteActions,
+      ];
     }
-    return [
-      {
-        label: t('common.voided'),
-        key: 'voided',
-        permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
-      },
-      ...deleteActions,
-    ];
   });
 
   const buttonList = computed<ActionsItem[]>(() => {
@@ -311,8 +313,19 @@
         default:
           return [];
       }
+    } else {
+      if (detailInfo.value?.approvalStatus === QuotationStatusEnum.VOIDED) {
+        return deleteActions;
+      }
+      return commonActions.filter((e) => ['edit', 'download'].includes(e.key));
     }
-    return commonActions.filter((e) => ['edit', 'download'].includes(e.key));
+  });
+
+  const isShowApprovalStatus = computed(() => {
+    if (dicApprovalEnable.value) {
+      return !!detailInfo.value?.approvalStatus;
+    }
+    return detailInfo.value?.approvalStatus && [QuotationStatusEnum.VOIDED].includes(detailInfo.value?.approvalStatus);
   });
 
   watch(
