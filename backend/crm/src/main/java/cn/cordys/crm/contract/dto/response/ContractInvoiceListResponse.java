@@ -5,6 +5,7 @@ import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 import cn.cordys.crm.contract.domain.ContractInvoice;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -17,6 +18,9 @@ public class ContractInvoiceListResponse extends ContractInvoice {
 
     @Schema(description = "合同名称")
     private String contractName;
+
+    @Schema(description = "合同金额")
+    private BigDecimal contractAmount;
 
     @Schema(description = "负责人名称")
     private String ownerName;

@@ -116,7 +116,7 @@ export default function useContractTimeline(formKey: TimelineType, sourceId: str
     [FormDesignKeyEnum.INVOICE]: [
       { key: 'createUserName', label: t('invoice.applicant'), value: '' },
       { key: 'contractName', label: t('invoice.contractName'), value: '' },
-      { key: 'contractProductSumAmount', label: t('invoice.contractAmount'), value: '' },
+      { key: 'contractAmount', label: t('invoice.contractAmount'), value: '' },
       { key: 'amount', label: t('invoice.amount'), value: '' },
       { key: 'approvalStatus', label: '', value: '' },
       { key: 'updateTime', label: t('invoice.applicationTime'), value: '' },
