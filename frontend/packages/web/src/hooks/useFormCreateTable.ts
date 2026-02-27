@@ -425,7 +425,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     ...((dicApprovalEnable.value
       ? [
           {
-            title: t('contract.businessTitle.status'),
+            title: t('contract.approvalStatus'),
             width: 120,
             key: 'approvalStatus',
             filterOptions: contractInvoiceStatusOptions,

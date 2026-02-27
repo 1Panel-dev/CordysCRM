@@ -164,6 +164,11 @@
   const showLeadReasonDrawer = ref(false);
   const showOptReasonDrawer = ref(false);
 
+  // 全局审批开关配置
+  const enableConstructApproval = ref(false);
+  const enableInvoiceApproval = ref(false);
+  const enableQuotationApproval = ref(false);
+
   // 配置原因
   function handleConfigReason(e: MouseEvent, type: ReasonTypeEnum) {
     switch (type) {
@@ -646,31 +651,59 @@
     renderValidateConfig.value = hasAnyPermission(['MODULE_SETTING:UPDATE']) ? h(businessTitleValidate) : null;
   }
 
-  const approvalConfigMap: Record<approvalConfigType, { renderRef: Ref<VNode | null>; name: () => string }> = {
+  const approvalConfigMap: Record<
+    approvalConfigType,
+    { renderRef: Ref<VNode | null>; name: () => string; enable: Ref<boolean> }
+  > = {
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: {
       renderRef: renderQuotationApprovalConfig,
       name: () => t('menu.quotation'),
+      enable: enableQuotationApproval,
     },
     [FormDesignKeyEnum.CONTRACT]: {
       renderRef: renderContractApprovalConfig,
       name: () => t('module.contract'),
+      enable: enableConstructApproval,
     },
     [FormDesignKeyEnum.INVOICE]: {
       renderRef: renderInvoiceApprovalConfig,
       name: () => t('module.invoiceApproval'),
+      enable: enableInvoiceApproval,
     },
   };
 
-  function initRenderApprovalConfig(type: approvalConfigType) {
+  const apiParamsKey: Record<approvalConfigType, string> = {
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: ReasonTypeEnum.QUOTATION_APPROVAL,
+    [FormDesignKeyEnum.CONTRACT]: ReasonTypeEnum.CONTRACT_APPROVAL,
+    [FormDesignKeyEnum.INVOICE]: ReasonTypeEnum.INVOICE_APPROVAL,
+  };
+
+  async function initStatus(type: approvalConfigType) {
+    try {
+      const result = await getReasonConfig(apiParamsKey[type] as ReasonTypeEnum);
+      approvalConfigMap[type].enable.value = result.enable;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function initRenderApprovalConfig(type: approvalConfigType) {
     const config = approvalConfigMap[type];
     if (!config) return;
 
+    await initStatus(type);
     config.renderRef.value = hasAnyPermission(['MODULE_SETTING:UPDATE'])
       ? h(approvalSwitch, {
           title: t('module.approvalSwitch', {
             name: config.name(),
           }),
+          value: approvalConfigMap[type].enable.value,
+          apiParamsKey,
           type,
+          onChange: async (val: approvalConfigType) => {
+            initRenderApprovalConfig(val);
+          },
         })
       : null;
   }

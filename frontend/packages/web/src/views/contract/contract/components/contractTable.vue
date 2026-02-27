@@ -288,13 +288,17 @@
             key: 'edit',
             permission: ['CONTRACT:UPDATE'],
           },
-          {
-            label: t('contract.payment'),
-            key: 'paymentRecord',
-            permission: ['CONTRACT:PAYMENT'],
-            disabled: !row.amount || row.alreadyPayAmount >= row.amount,
-            tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
-          },
+          ...(row.stage !== ContractStatusEnum.VOID
+            ? [
+                {
+                  label: t('contract.payment'),
+                  key: 'paymentRecord',
+                  permission: ['CONTRACT:PAYMENT'],
+                  disabled: !row.amount || row.alreadyPayAmount >= row.amount,
+                  tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
+                },
+              ]
+            : []),
           {
             label: t('common.delete'),
             key: 'delete',

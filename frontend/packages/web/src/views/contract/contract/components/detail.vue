@@ -35,10 +35,7 @@
             :sourceId="props.sourceId"
             :sourceName="title"
             isContractTab
-            :readonly="
-              detailInfo?.stage === ContractStatusEnum.VOID ||
-              detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
-            "
+            :readonly="getReadonlyPayment"
           />
         </template>
         <template v-if="activeTab === 'paymentRecord'">
@@ -47,10 +44,7 @@
             :sourceId="props.sourceId"
             :sourceName="title"
             isContractTab
-            :readonly="
-              detailInfo?.stage === ContractStatusEnum.VOID ||
-              detailInfo?.approvalStatus === QuotationStatusEnum.APPROVING
-            "
+            :readonly="getReadonlyPayment"
             @refresh="handleSaved()"
           />
         </template>
@@ -59,11 +53,7 @@
           :sourceId="props.sourceId"
           :sourceName="title"
           is-contract-tab
-          :readonly="
-            detailInfo?.stage === ContractStatusEnum.VOID ||
-            detailInfo?.stage === ContractStatusEnum.ARCHIVED ||
-            detailInfo?.approvalStatus !== QuotationStatusEnum.APPROVED
-          "
+          :readonly="getReadonlyInvoice"
           @open-business-title-drawer="showBusinessTitleDetail"
         />
       </CrmCard>
@@ -377,6 +367,25 @@
     linkFormInfo.value = linkFormFieldMap.value;
     formCreateDrawerVisible.value = true;
   }
+
+  const getReadonlyInvoice = computed(() => {
+    const contractIsVoidOrArchived =
+      detailInfo.value?.stage === ContractStatusEnum.VOID || detailInfo.value?.stage === ContractStatusEnum.ARCHIVED;
+    if (dicApprovalEnable.value) {
+      return contractIsVoidOrArchived || detailInfo.value?.approvalStatus !== QuotationStatusEnum.APPROVED;
+    }
+    return contractIsVoidOrArchived;
+  });
+
+  const getReadonlyPayment = computed(() => {
+    if (dicApprovalEnable.value) {
+      return (
+        detailInfo.value?.stage === ContractStatusEnum.VOID ||
+        detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVING
+      );
+    }
+    return detailInfo.value?.stage === ContractStatusEnum.VOID;
+  });
 
   async function handleButtonClick(actionKey: string) {
     switch (actionKey) {
