@@ -45,7 +45,7 @@ public class ProductController {
 
 
     @GetMapping("/module/form")
-    @Operation(summary = "获取表单配置")
+    @Operation(summary = "获取产品表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), OrganizationContext.getOrganizationId());
     }
