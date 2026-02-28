@@ -417,6 +417,7 @@
   // 插入函数
   function insertFunction(item: FormCreateField) {
     if (!editor.value) return;
+    activeFun.value = item;
     ensureCursor(editor.value);
     handleFocus();
     const range = cursorRange.value!;
