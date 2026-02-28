@@ -283,7 +283,7 @@
             createUser === useStore.userInfo.id ? ['revoke', ...commonActionsKeys] : commonActionsKeys;
           return getActions(reviewStatusGroups);
         default:
-          return [];
+          return getActions(commonActionsKeys);
       }
     } else {
       if (detailInfo.value?.approvalStatus === QuotationStatusEnum.VOIDED) return [];
@@ -311,7 +311,13 @@
         case QuotationStatusEnum.VOIDED:
           return deleteActions;
         default:
-          return [];
+          return [
+            {
+              label: t('common.edit'),
+              key: 'edit',
+              permission: ['OPPORTUNITY_QUOTATION:UPDATE'],
+            },
+          ];
       }
     } else {
       if (detailInfo.value?.approvalStatus === QuotationStatusEnum.VOIDED) {

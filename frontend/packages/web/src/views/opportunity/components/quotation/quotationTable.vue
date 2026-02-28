@@ -429,7 +429,7 @@
         case QuotationStatusEnum.VOIDED:
           return getGroups(['delete']);
         default:
-          return [];
+          return getGroups(['edit', 'voided', 'delete']);
       }
     }
 
@@ -440,16 +440,17 @@
   function getMoreOperationGroupList(row: QuotationItem, dicApprovalEnable: boolean) {
     if (dicApprovalEnable) {
       if (
-        row.approvalStatus === QuotationStatusEnum.APPROVING &&
-        row.createUser === useStore.userInfo.id &&
-        hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])
+        (row.approvalStatus === QuotationStatusEnum.APPROVING &&
+          row.createUser === useStore.userInfo.id &&
+          hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])) ||
+        row.approvalStatus === QuotationStatusEnum.NONE
       ) {
         return moreActions;
       }
       return [];
     }
-    if (row.approvalStatus === QuotationStatusEnum.VOIDED) return [];
-    return moreActions;
+
+    return row.approvalStatus === QuotationStatusEnum.VOIDED ? [] : moreActions;
   }
   const showOverviewDrawer = ref<boolean>(false);
   const activeOpportunity = ref();
