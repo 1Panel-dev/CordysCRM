@@ -29,7 +29,7 @@
     "element-china-area-data": "^6.1.0",
     "html2canvas-pro": "^1.5.8",
     "jsencrypt": "^3.3.2",
-    "jspdf": "^2.5.1",
+    "jspdf": "^4.2.0",
     "localforage": "^1.10.0",
     "lodash-es": "^4.17.21",
     "mitt": "^3.0.1",
