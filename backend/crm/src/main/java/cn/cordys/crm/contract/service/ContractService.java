@@ -42,7 +42,6 @@ import cn.cordys.crm.opportunity.constants.ApprovalState;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
-import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -59,7 +58,6 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.ibatis.session.ExecutorType;
@@ -551,7 +549,7 @@ public class ContractService {
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
-        if (!Strings.CI.equals(contract.getApprovalStatus(), ContractApprovalStatus.APPROVED.name())) {
+        if (dictService.isDictConfigEnable(DictModule.CONTRACT_APPROVAL.name(), orgId) && !Strings.CI.equals(contract.getApprovalStatus(), ContractApprovalStatus.APPROVED.name())) {
             throw new GenericException(Translator.get("contract.unapproved.cannot.edit"));
         }
 
