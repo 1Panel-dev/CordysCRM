@@ -242,6 +242,24 @@
   }
 
   const sumInitialOptions = ref<Record<string, any>[]>([]); // 记录子表格内数据源列的初始选项
+
+  function mergeUniqueOptions(
+    fieldInitialOptions: Record<string, any>[] = [],
+    appendOptions: Record<string, any>[] = []
+  ) {
+    const optionMap = new Map<any, Record<string, any>>();
+    [...fieldInitialOptions, ...appendOptions].forEach((option) => {
+      if (!option) {
+        return;
+      }
+      const optionKey = option.id ?? option.value;
+      if (optionKey !== undefined && !optionMap.has(optionKey)) {
+        optionMap.set(optionKey, option);
+      }
+    });
+    return Array.from(optionMap.values());
+  }
+
   const pictureFields = computed<FormCreateField[]>(() => {
     return props.subFields.filter((field) => field.type === FieldTypeEnum.PICTURE);
   });
@@ -448,7 +466,7 @@
                 value: row[key],
                 fieldConfig: {
                   ...field,
-                  initialOptions: [...(field.initialOptions || []), ...sumInitialOptions.value],
+                  initialOptions: mergeUniqueOptions(field.initialOptions || [], sumInitialOptions.value),
                 },
                 path: `${props.parentId}[${rowIndex}].${key}`,
                 isSubTableRender: true,

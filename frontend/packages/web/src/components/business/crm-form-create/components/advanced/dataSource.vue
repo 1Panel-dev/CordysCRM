@@ -142,7 +142,7 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       if (!props.needInitDetail) {
-        value.value = val || value.value || [];
+        value.value = value.value || val || [];
         emit('change', value.value, props.fieldConfig.initialOptions || []);
       }
     },
