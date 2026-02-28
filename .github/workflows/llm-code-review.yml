@@ -1,7 +1,7 @@
 name: LLM Code Review
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 on:
@@ -12,16 +12,11 @@ jobs:
   llm-code-review:
     runs-on: ubuntu-latest
     steps:
-      # 1️⃣ 拉取代码
+      # 拉取代码
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ 安装依赖（可选，如果 Action 已自带 Python/Node 可忽略）
-      - name: Install dependencies
-        run: |
-          pip install openai
-
-      # 3️⃣ 调用 LLM 做代码 review
+      # LLM Code Review
       - name: Run LLM Code Review
         id: review
         uses: fit2cloud/LLM-CodeReview-Action@main
@@ -32,37 +27,65 @@ jobs:
           OPENAI_API_ENDPOINT: https://dashscope.aliyuncs.com/compatible-mode/v1
           MODEL: qwen3-coder-plus
           PROMPT: |
-            请检查下面的代码差异是否有不规范、潜在的问题或者优化建议，用中文回答。
-            输出 JSON 格式：
+            请作为资深代码审查专家，检查以下代码差异。
+            重点关注：
+            - 潜在 bug
+            - 逻辑错误
+            - 安全问题
+            - 代码规范
+
+            ⚠️ 只允许输出 JSON，不要输出任何额外文本：
             {
               "can_merge": true/false,
               "issues": [
-                {"file": "文件路径", "line": 行号, "problem": "问题描述"}
+                {
+                  "file": "文件路径",
+                  "line": 123,
+                  "problem": "问题描述"
+                }
               ],
-              "suggestions": ["优化建议1","优化建议2"]
+              "suggestions": ["建议1", "建议2"]
             }
-          top_p: 1
           temperature: 0.2
+          top_p: 1
           MAX_PATCH_LENGTH: 50000
           IGNORE_PATTERNS: "/node_modules,*.md,/dist,/.github"
           FILE_PATTERNS: "*.java,*.go,*.py,*.vue,*.ts,*.js,*.css,*.scss,*.html"
 
-      # 4️⃣ 解析 LLM 输出 JSON 并设置 output
+      # 解析 LLM JSON
       - name: Parse LLM JSON
         id: parse
         run: |
-          import json, os
-          review_output = os.environ.get("REVIEW_OUTPUT") or os.environ.get("LLM_OUTPUT")
-          data = json.loads(review_output)
-          can_merge = str(data.get("can_merge", False)).lower()
-          print(f"::set-output name=can_merge::{can_merge}")
-        env:
-          REVIEW_OUTPUT: ${{ steps.review.outputs.review_json }}
+          python << 'EOF'
+          import json, os, re
 
-      # 5️⃣ 自动合并 PR（仅当 can_merge 为 true）
-      - name: Auto merge if approved
+          raw = """${{ steps.review.outputs.review }}"""
+
+          # 兜底：解析失败 = 不允许合并
+          can_merge = "false"
+
+          if raw.strip():
+              match = re.search(r'\{[\s\S]*\}', raw)
+              if match:
+                  try:
+                      data = json.loads(match.group())
+                      can_merge = str(data.get("can_merge", False)).lower()
+                  except Exception as e:
+                      print("JSON parse error:", e)
+
+          print(f"can_merge={can_merge}")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"can_merge={can_merge}\n")
+          EOF
+
+      # 自动 rebase 合并
+      - name: Auto merge PR (rebase)
         if: steps.parse.outputs.can_merge == 'true'
-        uses: peter-evans/merge-pull-request@v5
-        with:
-          merge-method: merge
-          commit-message: "Auto merged by LLM Code Review"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --rebase \
+            --auto \
+            --delete-branch
