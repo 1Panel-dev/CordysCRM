@@ -298,7 +298,14 @@
             placement="right-end"
             @confirm="clearDatasourceLink"
           >
-            <n-button type="primary" text :disabled="!fieldConfig.linkFields?.length || !!fieldConfig.resourceFieldId">
+            <n-button
+              type="primary"
+              text
+              :disabled="
+                (!fieldConfig.linkFields?.length && !fieldConfig.childLinkFields?.length) ||
+                !!fieldConfig.resourceFieldId
+              "
+            >
               {{ t('common.clear') }}
             </n-button>
           </CrmPopConfirm>
