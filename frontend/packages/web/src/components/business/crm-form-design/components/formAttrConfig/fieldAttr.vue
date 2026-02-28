@@ -308,8 +308,10 @@
           @click="showDatasourceLinkConfig"
         >
           {{
-            fieldConfig.linkFields?.length
-              ? t('crmFormDesign.linkSettingTip', { count: fieldConfig.linkFields.length })
+            fieldConfig.linkFields?.length || fieldConfig.childLinkFields?.length
+              ? t('crmFormDesign.linkSettingFieldTip', {
+                  count: (fieldConfig.linkFields?.length || 0) + (fieldConfig.childLinkFields?.length || 0),
+                })
               : t('common.setting')
           }}
         </n-button>
@@ -1204,6 +1206,7 @@
     :field-config="fieldConfig"
     :form-fields="list"
     @save="handleDatasourceLinkConfigSave"
+    @cancel="handleDatasourceLinkConfigCancel"
   />
   <formulaModal
     v-if="fieldConfig"
@@ -1598,22 +1601,31 @@
   }
 
   const showDatasourceLinkConfigVisible = ref(false);
-  const tempDataLinkFields = ref<DataSourceLinkField[]>([]);
+  const backupDataLinkFields = ref<DataSourceLinkField[]>([]);
+  const backupDataSubLinkFields = ref<DataSourceSubFieldLinkField[]>([]);
   const datasourceLinkClearPop = ref(false);
 
   function clearDatasourceLink() {
     fieldConfig.value.linkFields = [];
+    fieldConfig.value.childLinkFields = [];
     datasourceLinkClearPop.value = false;
   }
 
   function showDatasourceLinkConfig() {
-    tempDataLinkFields.value = fieldConfig.value.linkFields || [];
+    backupDataLinkFields.value = fieldConfig.value.linkFields || [];
+    backupDataSubLinkFields.value = fieldConfig.value.childLinkFields || [];
     showDatasourceLinkConfigVisible.value = true;
   }
 
   function handleDatasourceLinkConfigSave(value: DataSourceLinkField[], subFormValue: DataSourceSubFieldLinkField[]) {
     fieldConfig.value.linkFields = value;
     fieldConfig.value.childLinkFields = subFormValue;
+  }
+
+  function handleDatasourceLinkConfigCancel() {
+    fieldConfig.value.linkFields = backupDataLinkFields.value;
+    fieldConfig.value.childLinkFields = backupDataSubLinkFields.value;
+    showDatasourceLinkConfigVisible.value = false;
   }
 
   const showDataSourceFilterModal = ref(false);

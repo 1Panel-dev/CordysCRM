@@ -139,6 +139,7 @@ export default {
   'crmFormDesign.addLink': 'Add Linkage',
   'crmFormDesign.fieldNotExist': 'Field does not exist',
   'crmFormDesign.linkSettingTip': '{count} scenarios set',
+  'crmFormDesign.linkSettingFieldTip': '{count} fields set',
   'crmFormDesign.linkSettingClearTip': 'Are you sure you want to clear the form linkage?',
   'crmFormDesign.linkSettingClearTipContent': 'After clearing, the form will no longer display linked values',
   'crmFormDesign.repeatFieldName': 'A field with the same name already exists, please re-enter',
@@ -234,4 +235,8 @@ export default {
   'crmFormDesign.contract': 'Contract',
   'crmFormDesign.form': 'Form',
   'crmFormDesign.subForm': 'Sub Form',
+  'crmFormDesign.currentSubFormField': 'Current Sub Form Field',
+  'crmFormDesign.linkSubFormField': 'Linked Sub Form Field',
+  'crmFormDesign.addFieldLink': 'Add Field Linkage',
+  'crmFormDesign.subFormUnConfig': '{name} field linkage not configured!',
 };

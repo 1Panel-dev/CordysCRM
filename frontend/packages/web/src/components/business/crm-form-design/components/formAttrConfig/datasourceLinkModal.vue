@@ -4,7 +4,7 @@
     :title="t('crmFormDesign.fieldLinkSetting')"
     :positive-text="t('common.save')"
     @confirm="save"
-    @cancel="handleCancel"
+    @cancel="emit('cancel')"
   >
     <n-radio-group
       v-if="props.formFields.some((e) => [FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(e.type))"
@@ -29,7 +29,7 @@
           <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.currentFormField') }}</div>
           <div class="mx-[12px] text-[var(--text-n1)]"></div>
           <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.linkField') }}</div>
-          <div :class="formModel.length > 1 ? 'w-[110px]' : 'w-[64px] '"></div>
+          <div class="w-[110px]"></div>
         </div>
         <n-scrollbar ref="linkFieldsScrollbar" class="max-h-[40vh] pr-[6px]" content-class="flex flex-col gap-[12px]">
           <div v-for="(line, index) of formModel" :key="index" class="flex items-start justify-between">
@@ -53,6 +53,8 @@
                     ? fallbackOption
                     : false
                 "
+                :render-label="renderLinkOptionLabel"
+                :render-tag="renderLinkOptionTag"
                 max-tag-count="responsive"
                 @update-value="() => (line.link = '')"
               />
@@ -89,7 +91,7 @@
             <n-form-item :path="`${index}.enable`">
               <n-switch v-model:value="line.enable" />
             </n-form-item>
-            <n-button v-if="formModel.length > 1" ghost class="ml-[12px] px-[7px]" @click="handleDeleteListItem(index)">
+            <n-button ghost class="ml-[12px] px-[7px]" @click="handleDeleteListItem(index)">
               <template #icon>
                 <CrmIcon type="iconicon_minus_circle" class="text-[var(--text-n4)]" :size="16" />
               </template>
@@ -109,10 +111,10 @@
       class="flex flex-col gap-[12px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
     >
       <div class="flex items-center justify-between pl-[38px]">
-        <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.currentFormField') }}</div>
+        <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.currentSubFormField') }}</div>
         <div class="mx-[12px] text-[var(--text-n1)]"></div>
-        <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.linkField') }}</div>
-        <div :class="subFormModel.length > 1 ? 'w-[110px]' : 'w-[64px] '"></div>
+        <div class="flex-1 text-[var(--text-n1)]">{{ t('crmFormDesign.linkSubFormField') }}</div>
+        <div class="w-[110px]"></div>
       </div>
       <n-collapse class="crm-form-design-field-link-collapse">
         <n-form
@@ -123,7 +125,7 @@
           require-mark-placement="left"
           class="crm-form-design-link-modal"
         >
-          <n-collapse-item v-for="(line, index) of subFormModel" :key="index" title="" name="">
+          <n-collapse-item v-for="(line, index) of subFormModel" :key="index" title="" :name="line.current">
             <div class="pl-[28px]">
               <n-scrollbar
                 ref="linkSubFieldsScrollbar"
@@ -155,6 +157,8 @@
                           ? fallbackOption
                           : false
                       "
+                      :render-label="renderLinkOptionLabel"
+                      :render-tag="renderLinkOptionTag"
                       max-tag-count="responsive"
                       @update-value="() => (sub.link = '')"
                     />
@@ -208,7 +212,7 @@
                 <template #icon>
                   <n-icon><Add /></n-icon>
                 </template>
-                {{ t('crmFormDesign.addLink') }}
+                {{ t('crmFormDesign.addFieldLink') }}
               </n-button>
             </div>
             <template #header-extra>
@@ -233,6 +237,8 @@
                         ? fallbackOption
                         : false
                     "
+                    :render-label="renderLinkOptionLabel"
+                    :render-tag="renderLinkOptionTag"
                     max-tag-count="responsive"
                     @update-value="() => (line.link = '')"
                   />
@@ -287,7 +293,7 @@
       </n-button>
     </div>
     <template #footerLeft>
-      <n-button secondary @click="handleCancel">{{ t('common.clear') }}</n-button>
+      <n-button secondary @click="handleClear">{{ t('common.clear') }}</n-button>
     </template>
   </CrmModal>
 </template>
@@ -309,6 +315,7 @@
     NSwitch,
     ScrollbarInst,
     type SelectOption,
+    useMessage,
   } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
@@ -341,10 +348,6 @@
 
   import { Option } from 'naive-ui/es/transfer/src/interface';
 
-  const visible = defineModel<boolean>('visible', { required: true });
-
-  const { t } = useI18n();
-
   const props = defineProps<{
     fieldConfig: FormCreateField;
     formFields: FormCreateField[];
@@ -352,23 +355,17 @@
 
   const emit = defineEmits<{
     (e: 'save', value: DataSourceLinkField[], subFormValue: DataSourceSubFieldLinkField[]): void;
+    (e: 'cancel'): void;
+    (e: 'clear'): void;
   }>();
 
-  const linkMode = ref<'form' | 'subForm'>('form');
+  const { t } = useI18n();
+  const message = useMessage();
 
+  const visible = defineModel<boolean>('visible', { required: true });
+  const linkMode = ref<'form' | 'subForm'>('form');
   const linkFieldsScrollbar = ref<ScrollbarInst>();
-  const formModel = ref<DataSourceLinkField[]>(
-    cloneDeep(
-      props.fieldConfig.linkFields || [
-        {
-          current: '',
-          link: '',
-          method: 'fill',
-          enable: true,
-        },
-      ]
-    )
-  );
+  const formModel = ref<DataSourceLinkField[]>(cloneDeep(props.fieldConfig.linkFields || []));
 
   const formRef = ref<FormInst>();
   const formKey = computed<FormDesignKeyEnum>(() => {
@@ -494,19 +491,7 @@
 
   const linkSubFieldsScrollbar = ref<ScrollbarInst>();
   const subFormRef = ref<FormInst>();
-  const subFormModel = ref<DataSourceSubFieldLinkField[]>(
-    cloneDeep(
-      props.fieldConfig.childLinkFields || [
-        {
-          current: '',
-          link: '',
-          method: 'fill',
-          enable: true,
-          childLinks: [],
-        },
-      ]
-    )
-  );
+  const subFormModel = ref<DataSourceSubFieldLinkField[]>(cloneDeep(props.fieldConfig.childLinkFields || []));
 
   const linkSubFieldParents = ref<FormCreateField[]>([]);
   const linkSubFieldParentOptions = computed(() => {
@@ -553,6 +538,8 @@
       .find((f) => f.id === parentFieldId)
       ?.subFields?.filter(
         (f) =>
+          !hiddenTypes.includes(f.type) &&
+          f.type !== FieldTypeEnum.FORMULA &&
           !f.resourceFieldId &&
           (f.id === currentFieldId || !alreadySelectedFields.some((field) => field.current === f.id))
       )
@@ -612,9 +599,15 @@
     return [];
   }
 
-  function handleCancel() {
-    formModel.value = [];
-    subFormModel.value = [];
+  function handleClear() {
+    if (linkMode.value === 'form') {
+      formModel.value = [];
+    } else {
+      subFormModel.value = [];
+    }
+    nextTick(() => {
+      emit('clear');
+    });
   }
 
   function handleAddSubListItem() {
@@ -678,28 +671,9 @@
     (val) => {
       if (val) {
         getDisplayList();
-        formModel.value = cloneDeep(
-          props.fieldConfig.linkFields || [
-            {
-              current: '',
-              link: '',
-              method: 'fill',
-              enable: true,
-            },
-          ]
-        );
+        formModel.value = cloneDeep(props.fieldConfig.linkFields || []);
         initSubTableFields();
-        subFormModel.value = cloneDeep(
-          props.fieldConfig.childLinkFields || [
-            {
-              current: '',
-              link: '',
-              method: 'fill',
-              enable: true,
-              childLinks: [],
-            },
-          ]
-        );
+        subFormModel.value = cloneDeep(props.fieldConfig.childLinkFields || []);
         linkMode.value = 'form';
       }
     },
@@ -713,6 +687,14 @@
       if (!errors) {
         subFormRef.value?.validate((subErrors) => {
           if (!subErrors) {
+            const unConfigSubField = subFormModel.value.find((e) => e.childLinks?.length === 0);
+            if (unConfigSubField) {
+              message.warning(
+                t('crmFormDesign.subFormUnConfig', {
+                  name: props.formFields.find((f) => f.id === unConfigSubField.current)?.name || '',
+                })
+              );
+            }
             emit('save', formModel.value, subFormModel.value);
             visible.value = false;
           }

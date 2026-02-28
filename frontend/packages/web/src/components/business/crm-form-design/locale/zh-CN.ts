@@ -137,6 +137,7 @@ export default {
   'crmFormDesign.addLink': '添加联动',
   'crmFormDesign.fieldNotExist': '字段不存在',
   'crmFormDesign.linkSettingTip': '已设置{count}个场景',
+  'crmFormDesign.linkSettingFieldTip': '已设置{count}个字段',
   'crmFormDesign.linkSettingClearTip': '确定清空表单联动吗？',
   'crmFormDesign.linkSettingClearTipContent': '清空后，表单将不再联动显示值',
   'crmFormDesign.repeatFieldName': '已存在相同的字段名，请重新输入',
@@ -221,4 +222,8 @@ export default {
   'crmFormDesign.contract': '合同',
   'crmFormDesign.form': '表单',
   'crmFormDesign.subForm': '子表单',
+  'crmFormDesign.currentSubFormField': '当前子表单字段',
+  'crmFormDesign.linkSubFormField': '联动子表单字段',
+  'crmFormDesign.addFieldLink': '添加字段联动',
+  'crmFormDesign.subFormUnConfig': '{name} 字段联动未配置！',
 };

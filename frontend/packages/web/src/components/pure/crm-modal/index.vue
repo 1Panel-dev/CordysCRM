@@ -8,7 +8,6 @@
     :style="{ width: props.width ? props.width + 'px' : undefined }"
     @positive-click="positiveClick"
     @negative-click="negativeClick"
-    @after-leave="emit('cancel')"
   >
     <template #header>
       <slot name="title">

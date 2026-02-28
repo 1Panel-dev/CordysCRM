@@ -341,6 +341,9 @@
               id: getGenerateId(),
             };
             linkField.childLinks?.forEach((childLink) => {
+              if (childLink.enable === false) {
+                return;
+              }
               const currentChildLinkField = currentParentField.subFields?.find((f) => f.id === childLink.current); // 被填充的子字段
               const childLinkField = parentLinkField.subFields?.find((f) => f.id === childLink.link); // 填充字段
               if (currentChildLinkField && childLinkField) {
@@ -358,7 +361,7 @@
                     break;
                   case multipleTypes.includes(currentChildLinkField.type):
                     // 多选填充
-                    if (currentChildLinkField.type === FieldTypeEnum.INPUT_MULTIPLE) {
+                    if (childLinkField.type === FieldTypeEnum.INPUT_MULTIPLE) {
                       // 标签直接填充
                       line[currentKey] = Array.isArray(subData[key]) ? subData[key].slice(0, 10) : [subData[key]];
                     } else {
@@ -377,40 +380,38 @@
                   case linkAllAcceptTypes.includes(currentChildLinkField.type):
                     // 文本输入类型可填充任何字段类型值
                     const limitLength = currentChildLinkField.type === FieldTypeEnum.INPUT ? 255 : 3000;
-                    if (dataSourceTypes.includes(currentChildLinkField.type)) {
+                    if (dataSourceTypes.includes(childLinkField.type)) {
                       // 联动的字段是数据源则填充选项名
                       line[currentKey] = subData[key]
                         .map((e: Record<string, any>) => e.name)
                         .join(',')
                         .slice(0, limitLength);
-                    } else if (multipleTypes.includes(currentChildLinkField.type)) {
+                    } else if (multipleTypes.includes(childLinkField.type)) {
                       // 联动的字段是多选则拼接选项名
                       line[currentKey] = subData[key].join(',').slice(0, limitLength);
-                    } else if (currentChildLinkField.type === FieldTypeEnum.DATE_TIME) {
+                    } else if (childLinkField.type === FieldTypeEnum.DATE_TIME) {
                       // 联动的字段是日期时间则转换
-                      if (currentChildLinkField.dateType === 'month') {
+                      if (childLinkField.dateType === 'month') {
                         line[currentKey] = dayjs(subData[key]).format('YYYY-MM');
-                      } else if (currentChildLinkField.dateType === 'date') {
+                      } else if (childLinkField.dateType === 'date') {
                         line[currentKey] = dayjs(subData[key]).format('YYYY-MM-DD');
                       } else {
                         line[currentKey] = dayjs(subData[key]).format('YYYY-MM-DD HH:mm:ss');
                       }
-                    } else if (currentChildLinkField.type === FieldTypeEnum.LOCATION) {
+                    } else if (childLinkField.type === FieldTypeEnum.LOCATION) {
                       // 联动的字段是省市区则填充城市路径
                       const addressArr: string[] = subData[key].split('-') || [];
                       line[currentKey] = addressArr.length
                         ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
                         : '-';
-                    } else if (currentChildLinkField.type === FieldTypeEnum.INDUSTRY) {
+                    } else if (childLinkField.type === FieldTypeEnum.INDUSTRY) {
                       line[currentKey] = subData[key] ? getIndustryPath(subData[key] as string) : '-';
                     } else if (
                       childLinkField.type === FieldTypeEnum.TEXTAREA &&
                       currentChildLinkField.type === FieldTypeEnum.INPUT
                     ) {
                       line[currentKey] = subData[key].slice(0, limitLength);
-                    } else if (
-                      [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(currentChildLinkField.type)
-                    ) {
+                    } else if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(childLinkField.type)) {
                       line[currentKey] = subData[key]?.toString();
                     } else {
                       line[currentKey] = subData[key];
