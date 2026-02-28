@@ -11,30 +11,32 @@ on:
 jobs:
   llm-code-review:
     runs-on: ubuntu-latest
+
     steps:
-      # 拉取代码
+      # 1️⃣ 拉代码
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # LLM Code Review
+      # 2️⃣ LLM Code Review（发表评论）
       - name: Run LLM Code Review
-        id: review
+        id: llm-code-review
         uses: fit2cloud/LLM-CodeReview-Action@main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.ALIYUN_LLM_API_KEY }}
-          LANGUAGE: Chinese
           OPENAI_API_ENDPOINT: https://dashscope.aliyuncs.com/compatible-mode/v1
           MODEL: qwen3-coder-plus
+          LANGUAGE: Chinese
           PROMPT: |
-            请作为资深代码审查专家，检查以下代码差异。
-            重点关注：
-            - 潜在 bug
-            - 逻辑错误
-            - 安全问题
-            - 代码规范
+            你是资深代码审查专家，请严格检查以下代码差异。
 
-            ⚠️ 只允许输出 JSON，不要输出任何额外文本：
+            ⚠️【必须遵守】
+            - 只允许输出 JSON
+            - 不要输出 Markdown
+            - 不要解释
+            - 不要多余文本
+
+            JSON 格式如下：
             {
               "can_merge": true/false,
               "issues": [
@@ -52,34 +54,33 @@ jobs:
           IGNORE_PATTERNS: "/node_modules,*.md,/dist,/.github"
           FILE_PATTERNS: "*.java,*.go,*.py,*.vue,*.ts,*.js,*.css,*.scss,*.html"
 
-      # 解析 LLM JSON
-      - name: Parse LLM JSON
+      # 3️⃣ 从 LLM Code Review 结果解析 JSON（关键）
+      - name: Parse LLM result from LLM Code Review step
         id: parse
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          python << 'EOF'
-          import json, os, re
+          # 获取 LLM Code Review 的结果
+          llm_result="${{ steps.llm-code-review.outputs.result }}"
+          
+          can_merge="false"
+          
+          # 解析 JSON 结果
+          if [[ "$llm_result" =~ \{.*\} ]]; then
+            raw_json=$(echo "$llm_result" | grep -o '\{.*\}')
+            echo "=== PARSED JSON ==="
+            echo "$raw_json"
+          
+            can_merge=$(echo "$raw_json" | jq -r '.can_merge')
+          else
+            echo "No valid JSON found in LLM result"
+          fi
+          
+          echo "can_merge=$can_merge"
+          
+          echo "can_merge=$can_merge" >> $GITHUB_ENV
 
-          raw = """${{ steps.review.outputs.review }}"""
-
-          # 兜底：解析失败 = 不允许合并
-          can_merge = "false"
-
-          if raw.strip():
-              match = re.search(r'\{[\s\S]*\}', raw)
-              if match:
-                  try:
-                      data = json.loads(match.group())
-                      can_merge = str(data.get("can_merge", False)).lower()
-                  except Exception as e:
-                      print("JSON parse error:", e)
-
-          print(f"can_merge={can_merge}")
-
-          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write(f"can_merge={can_merge}\n")
-          EOF
-
-      # 自动 rebase 合并
+      # 4️⃣ 自动 rebase 合并
       - name: Auto merge PR (rebase)
         if: steps.parse.outputs.can_merge == 'true'
         env:
