@@ -123,7 +123,7 @@ public class ProductController {
     }
 
     @PostMapping("/import")
-    @Operation(summary = "导入")
+    @Operation(summary = "导入产品")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_IMPORT)
     public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
         return productService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
