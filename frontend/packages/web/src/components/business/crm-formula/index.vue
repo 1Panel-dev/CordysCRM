@@ -134,7 +134,6 @@
     const { ir } = safeParseFormula(formula ?? '');
 
     if (!ir) {
-      value.value = 0;
       return;
     }
     const contextMatch = props.path.match(/^([^[]+)\[(\d+)\]\./);
