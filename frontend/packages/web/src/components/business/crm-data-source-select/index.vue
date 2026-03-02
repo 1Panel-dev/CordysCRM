@@ -75,6 +75,7 @@
       source: Record<string, any>[],
       dataSourceFormFields: FormCreateField[]
     ): void;
+    (e: 'delete', id?: string | number): void;
   }>();
 
   const { t } = useI18n();
@@ -148,6 +149,7 @@
                 rows.value = rows.value.filter((item) => item.id !== option.value);
                 value.value = value.value.filter((key) => key !== option.value);
               }
+              emit('delete', option.value);
               nextTick(() => {
                 emit('change', value.value, rows.value, dataSourceFormFields.value);
               });
