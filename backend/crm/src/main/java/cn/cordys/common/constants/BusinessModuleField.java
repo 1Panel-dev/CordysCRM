@@ -211,10 +211,9 @@ public enum BusinessModuleField {
      */
     QUOTATION_NAME("quotationName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_OPPORTUNITY("quotationOpportunity", "opportunityId", Set.of("rules.required", "mobile", "dataSourceType", "readable"), FormKey.QUOTATION.getKey()),
-    QUOTATION_PRODUCT_TABLE("quotationProducts", "products", Set.of("mobile", "readable"), FormKey.QUOTATION.getKey()),
+	QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
+	QUOTATION_TOTAL_AMOUNT("quotationTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
     QUOTATION_PRODUCT_AMOUNT("quotationAmount", "sumAmount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
-    QUOTATION_UNTIL_TIME("quotationUntilTime", "untilTime", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
-    QUOTATION_TOTAL_AMOUNT("quotationTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.QUOTATION.getKey()),
 
 
     /*------ start: CONTRACT_PAYMENT_PLAN ------*/
