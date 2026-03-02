@@ -31,6 +31,7 @@
       :disabled-selection="props.disabledSelection"
       :hide-child-tag="props.hideChildTag"
       :status="props.feedback ? 'error' : 'success'"
+      @delete="emit('delete', $event)"
       @change="($event, source, fields) => emit('change', $event, source, fields)"
     />
   </n-form-item>
@@ -69,6 +70,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'change', value: (string | number)[], source: Record<string, any>[], fields?: FormCreateField[]): void;
+    (e: 'delete', id?: string | number): void;
   }>();
 
   const value = defineModel<(string | number)[]>('value', {

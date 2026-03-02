@@ -55,11 +55,17 @@
   import { cloneDeep, isEqual } from 'lodash-es';
   import dayjs from 'dayjs';
 
-  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
+  import {
+    FieldDataSourceTypeEnum,
+    FieldTypeEnum,
+    FormDesignKeyEnum,
+    FormLinkScenarioEnum,
+  } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getCityPath, getGenerateId, getIndustryPath } from '@lib/shared/method';
   import {
     dataSourceTypes,
+    formatNumberValue,
     linkAllAcceptTypes,
     mergeUniqueOptions,
     multipleTypes,
@@ -345,36 +351,35 @@
               if (childLink.enable === false) {
                 return;
               }
-              const currentChildLinkField = currentParentField.subFields?.find((f) => f.id === childLink.current); // 被填充的子字段
+              const currentChildField = currentParentField.subFields?.find((f) => f.id === childLink.current); // 被填充的子字段
               const childLinkField = parentLinkField.subFields?.find((f) => f.id === childLink.link); // 填充字段
-              if (currentChildLinkField && childLinkField) {
+              if (currentChildField && childLinkField) {
                 const key = childLinkField.businessKey || childLinkField.id;
-                const currentKey = currentChildLinkField.businessKey || currentChildLinkField.id;
+                const currentKey = currentChildField.businessKey || currentChildField.id;
                 switch (true) {
-                  case dataSourceTypes.includes(currentChildLinkField.type):
-                    currentChildLinkField.initialOptions = mergeUniqueOptions(
-                      currentChildLinkField.initialOptions || [],
-                      [
+                  case dataSourceTypes.includes(currentChildField.type):
+                    if (subData[`${childLinkField.id}_original`]) {
+                      currentChildField.initialOptions = mergeUniqueOptions(currentChildField.initialOptions || [], [
                         {
                           id: subData[`${childLinkField.id}_original`],
                           name: currentSource.optionMap[key]?.find(
                             (e: any) => e.id === subData[`${childLinkField.id}_original`]
                           )?.name,
                         },
-                      ]
-                    );
-                    line[currentKey] = [subData[`${childLinkField.id}_original`]];
-                    if (subData.price_sub) {
-                      line.price_sub = subData.price_sub; // 价格表子表格特殊处理，price_sub是行号
-                      line[currentKey].push(subData.price_sub);
-                      // 同时在initialOptions里填充行号子项以区分父子
-                      currentChildLinkField.initialOptions?.push({
-                        id: subData.price_sub,
-                        parentId: subData[`${childLinkField.id}_original`],
-                      });
+                      ]);
+                      line[currentKey] = [subData[`${childLinkField.id}_original`]];
+                      if (subData.price_sub && childLinkField.dataSourceType === FieldDataSourceTypeEnum.PRICE) {
+                        line.price_sub = subData.price_sub; // 价格表子表格特殊处理，price_sub是行号
+                        line[currentKey].push(subData.price_sub);
+                        // 同时在initialOptions里填充行号子项以区分父子
+                        currentChildField.initialOptions?.push({
+                          id: subData.price_sub,
+                          parentId: subData[`${childLinkField.id}_original`],
+                        });
+                      }
                     }
                     break;
-                  case multipleTypes.includes(currentChildLinkField.type):
+                  case multipleTypes.includes(currentChildField.type):
                     // 多选填充
                     if (childLinkField.type === FieldTypeEnum.INPUT_MULTIPLE) {
                       // 标签直接填充
@@ -382,19 +387,17 @@
                     } else {
                       // 其他多选类型需匹配名称相等的选项值
                       line[currentKey] =
-                        currentChildLinkField.options
-                          ?.filter((e) => subData[key].includes(e.label))
-                          .map((e) => e.value) || [];
+                        currentChildField.options?.filter((e) => subData[key].includes(e.label)).map((e) => e.value) ||
+                        [];
                     }
                     break;
-                  case singleTypes.includes(currentChildLinkField.type):
+                  case singleTypes.includes(currentChildField.type):
                     // 单选填充需要匹配名称相同的选项值
-                    line[currentKey] =
-                      currentChildLinkField.options?.find((e) => e.label === subData[key])?.value || '';
+                    line[currentKey] = currentChildField.options?.find((e) => e.label === subData[key])?.value || '';
                     break;
-                  case linkAllAcceptTypes.includes(currentChildLinkField.type):
+                  case linkAllAcceptTypes.includes(currentChildField.type):
                     // 文本输入类型可填充任何字段类型值
-                    const limitLength = currentChildLinkField.type === FieldTypeEnum.INPUT ? 255 : 3000;
+                    const limitLength = currentChildField.type === FieldTypeEnum.INPUT ? 255 : 3000;
                     if (dataSourceTypes.includes(childLinkField.type)) {
                       // 联动的字段是数据源则填充选项名
                       line[currentKey] = currentSource.optionMap[key]?.find(
@@ -423,7 +426,7 @@
                       line[currentKey] = subData[key] ? getIndustryPath(subData[key] as string) : '-';
                     } else if (
                       childLinkField.type === FieldTypeEnum.TEXTAREA &&
-                      currentChildLinkField.type === FieldTypeEnum.INPUT
+                      currentChildField.type === FieldTypeEnum.INPUT
                     ) {
                       line[currentKey] = subData[key].slice(0, limitLength);
                     } else if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(childLinkField.type)) {
@@ -432,12 +435,8 @@
                       line[currentKey] = subData[key];
                     }
                     break;
-                  case currentChildLinkField.type === FieldTypeEnum.FORMULA:
-                    // 如果是公式字段则填充公式
-                    currentChildLinkField.formula = childLinkField.formula;
-                    break;
-                  case currentChildLinkField.type === FieldTypeEnum.INPUT_NUMBER:
-                    line[currentKey] = subData[key] === '-' ? null : Number(subData[key]);
+                  case currentChildField.type === FieldTypeEnum.INPUT_NUMBER:
+                    line[currentKey] = subData[`${childLinkField.id}_original`];
                     break;
                   default:
                     line[currentKey] = subData[key];

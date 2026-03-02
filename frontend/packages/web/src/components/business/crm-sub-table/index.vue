@@ -469,6 +469,12 @@
                 onChange: (val, source) => {
                   handleDataSourceChange(val, source, field, row, rowIndex, isPriceSubTableShowSubField);
                 },
+                onDelete: (val) => {
+                  row[key] = row[key].filter((e: any) => e !== val);
+                  if (isPriceSubTableShowSubField) {
+                    row.price_sub = '';
+                  }
+                },
               });
             },
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
