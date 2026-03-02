@@ -28,15 +28,15 @@ jobs:
           MODEL: qwen3-coder-plus
           LANGUAGE: Chinese
           PROMPT: |
-            你是资深代码审查专家，请严格检查以下代码差异。
+            你是资深代码审查专家，严格检查以下代码差异。
 
             ⚠️【必须遵守】
-            - 判断只有当代码质量有问题时才加评论，否则请直接回复“/lgtm”。
-            - 不要解释
-            - 不要多余文本
+            - 只在代码质量存在问题时发表评论。
+            - 不要解释、不添加多余文本。
+            - 审查应专注于以下内容：逻辑错误、代码规范、可读性、性能优化等。
 
           temperature: 0.2
           top_p: 1
           MAX_PATCH_LENGTH: 50000
           IGNORE_PATTERNS: "/node_modules,*.md,/dist,/.github"
-          FILE_PATTERNS: "*.java,*.go,*.py,*.vue,*.ts,*.js,*.css,*.scss,*.html"
+          FILE_PATTERNS: "*.java"
