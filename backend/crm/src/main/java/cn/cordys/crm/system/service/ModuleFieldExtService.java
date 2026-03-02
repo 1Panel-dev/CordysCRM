@@ -187,7 +187,7 @@ public class ModuleFieldExtService {
 	 */
 	public void modifySubProductSumColumn() {
 		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
-		fieldWrapper.in(ModuleField::getInternalKey, List.of("quotationProducts", "contractProducts"));
+		fieldWrapper.like(ModuleField::getType, "SUB_");
 		List<ModuleField> fields = fieldMapper.selectListByLambda(fieldWrapper);
 		if (CollectionUtils.isEmpty(fields)) {
 			return;
