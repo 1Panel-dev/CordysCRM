@@ -287,6 +287,7 @@ export function transformData({
           item[fieldId] || item.moduleFields.find((mf: any) => mf.fieldId === fieldId)?.fieldValue
         )?.map((subItem: Record<string, any>) => {
           if (subField.resourceFieldId) {
+            subItem[`${subField.id}_original`] = subItem[subField.id]; // 备份原始值以供编辑时填充数据源
             subItem[subField.id] = parseModuleFieldValue(
               subField,
               subItem[subField.id],
@@ -295,6 +296,7 @@ export function transformData({
             );
             fieldOptionMap[subField.id] = originalData?.optionMap?.[subField.id] || [];
           } else {
+            subItem[`${subField.id}_original`] = subItem[subField.businessKey || subField.id]; // 备份原始值以供编辑时填充数据源
             subItem[subField.id] = parseModuleFieldValue(
               subField,
               subItem[subField.businessKey || subField.id],
@@ -484,4 +486,25 @@ export function normalizeNumber(val: unknown): number {
   }
 
   return 0;
+}
+
+/**
+ * 合并初始选项和追加选项，去重后返回新的初始选项数组
+ * @param sumInitialOptions
+ * @param appendOptions
+ * @returns
+ */
+export function mergeUniqueOptions(sumInitialOptions: Record<string, any>[], appendOptions: Record<string, any>[]) {
+  const optionMap = new Map<any, Record<string, any>>();
+  [...sumInitialOptions, ...appendOptions].forEach((option) => {
+    if (!option) {
+      return;
+    }
+    const optionKey = option.id ?? option.value;
+    if (optionKey !== undefined && !optionMap.has(optionKey)) {
+      optionMap.set(optionKey, option);
+    }
+  });
+  sumInitialOptions = Array.from(optionMap.values());
+  return sumInitialOptions;
 }
