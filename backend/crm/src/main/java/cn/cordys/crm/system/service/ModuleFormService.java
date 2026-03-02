@@ -385,6 +385,7 @@ public class ModuleFormService {
                 BaseField baseField = JSON.parseObject(fieldBlobMap.get(field.getId()), BaseField.class);
                 baseField.setType(field.getType());
                 baseField.setMobile(field.getMobile());
+				baseField.setInternalKey(field.getInternalKey());
                 if (baseField.needInitialOptions()) {
                     handleInitialOption(baseField);
                 }
@@ -896,9 +897,7 @@ public class ModuleFormService {
      */
     private List<BaseField> getSubFieldsBySourceType(String sourceType) {
         LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
-        if (Strings.CS.equals(sourceType, FieldSourceType.QUOTATION.name())) {
-            fieldWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.QUOTATION_PRODUCT_TABLE.getKey());
-        } else if (Strings.CS.equals(sourceType, FieldSourceType.PRICE.name())) {
+		if (Strings.CS.equals(sourceType, FieldSourceType.PRICE.name())) {
             fieldWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.PRICE_PRODUCT_TABLE.getKey());
         } else if (Strings.CS.equals(sourceType, FieldSourceType.CONTRACT.name())) {
             fieldWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.CONTRACT_PRODUCT_TABLE.getKey());

@@ -646,11 +646,6 @@ public class OpportunityQuotationService {
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("opportunity.quotation.form.config.required"));
         }
-        for (Map<String, Object> product : request) {
-            if (product.get("sumAmount") == null && product.get("amount") == null) {
-                throw new GenericException(Translator.get("opportunity.quotation.product.amount.invalid"));
-            }
-        }
     }
 
     /**
