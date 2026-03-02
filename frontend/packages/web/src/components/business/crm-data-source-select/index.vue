@@ -116,11 +116,13 @@
 
   function handleDataSourceConfirm() {
     const newRows = selectedRows.value;
-    rows.value = newRows;
-    value.value = newRows.map((e) => e.id) as RowKey[];
-    nextTick(() => {
-      emit('change', value.value, newRows, dataSourceFormFields.value);
-    });
+    if (rows.value.length !== newRows.length || rows.value.some((item, index) => item.id !== newRows[index].id)) {
+      rows.value = newRows;
+      value.value = newRows.map((e) => e.id) as RowKey[];
+      nextTick(() => {
+        emit('change', value.value, newRows, dataSourceFormFields.value);
+      });
+    }
     dataSourcesModalVisible.value = false;
   }
 
