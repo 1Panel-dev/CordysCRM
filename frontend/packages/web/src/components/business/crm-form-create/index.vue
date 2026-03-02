@@ -366,8 +366,9 @@
                     line[currentKey] = [subData[`${childLinkField.id}_original`]];
                     if (subData.price_sub) {
                       line.price_sub = subData.price_sub; // 价格表子表格特殊处理，price_sub是行号
+                      line[currentKey].push(subData.price_sub);
                       // 同时在initialOptions里填充行号子项以区分父子
-                      line[currentKey].initialOptions?.push({
+                      currentChildLinkField.initialOptions?.push({
                         id: subData.price_sub,
                         parentId: subData[`${childLinkField.id}_original`],
                       });
