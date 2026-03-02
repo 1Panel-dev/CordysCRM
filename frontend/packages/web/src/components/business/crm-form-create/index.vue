@@ -61,6 +61,7 @@
   import {
     dataSourceTypes,
     linkAllAcceptTypes,
+    mergeUniqueOptions,
     multipleTypes,
     singleTypes,
     specialBusinessKeyMap,
@@ -351,13 +352,26 @@
                 const currentKey = currentChildLinkField.businessKey || currentChildLinkField.id;
                 switch (true) {
                   case dataSourceTypes.includes(currentChildLinkField.type):
-                    currentChildLinkField.initialOptions = [
-                      {
-                        id: subData[key],
-                        name: currentSource.optionMap[key]?.find((e: any) => e.id === subData[key])?.name,
-                      },
-                    ];
-                    line[currentKey] = [subData[key]];
+                    currentChildLinkField.initialOptions = mergeUniqueOptions(
+                      currentChildLinkField.initialOptions || [],
+                      [
+                        {
+                          id: subData[`${childLinkField.id}_original`],
+                          name: currentSource.optionMap[key]?.find(
+                            (e: any) => e.id === subData[`${childLinkField.id}_original`]
+                          )?.name,
+                        },
+                      ]
+                    );
+                    line[currentKey] = [subData[`${childLinkField.id}_original`]];
+                    if (subData.price_sub) {
+                      line.price_sub = subData.price_sub; // 价格表子表格特殊处理，price_sub是行号
+                      // 同时在initialOptions里填充行号子项以区分父子
+                      line[currentKey].initialOptions?.push({
+                        id: subData.price_sub,
+                        parentId: subData[`${childLinkField.id}_original`],
+                      });
+                    }
                     break;
                   case multipleTypes.includes(currentChildLinkField.type):
                     // 多选填充
@@ -382,10 +396,10 @@
                     const limitLength = currentChildLinkField.type === FieldTypeEnum.INPUT ? 255 : 3000;
                     if (dataSourceTypes.includes(childLinkField.type)) {
                       // 联动的字段是数据源则填充选项名
-                      line[currentKey] = subData[key]
-                        .map((e: Record<string, any>) => e.name)
-                        .join(',')
-                        .slice(0, limitLength);
+                      line[currentKey] = currentSource.optionMap[key]?.find(
+                        (e: any) => e.id === subData[`${childLinkField.id}_original`]
+                      )?.name;
+                      line[currentKey] = line[currentKey]?.slice(0, limitLength);
                     } else if (multipleTypes.includes(childLinkField.type)) {
                       // 联动的字段是多选则拼接选项名
                       line[currentKey] = subData[key].join(',').slice(0, limitLength);
@@ -422,7 +436,7 @@
                     currentChildLinkField.formula = childLinkField.formula;
                     break;
                   case currentChildLinkField.type === FieldTypeEnum.INPUT_NUMBER:
-                    line[currentKey] = subData[key] === '-' ? null : subData[key];
+                    line[currentKey] = subData[key] === '-' ? null : Number(subData[key]);
                     break;
                   default:
                     line[currentKey] = subData[key];

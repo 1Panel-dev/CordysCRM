@@ -23,7 +23,12 @@
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
-  import { formatNumberValue, formatNumberValueToString, normalizeNumber } from '@lib/shared/method/formCreate';
+  import {
+    formatNumberValue,
+    formatNumberValueToString,
+    mergeUniqueOptions,
+    normalizeNumber,
+  } from '@lib/shared/method/formCreate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -241,24 +246,7 @@
     }
   }
 
-  const sumInitialOptions = ref<Record<string, any>[]>([]); // 记录子表格内数据源列的初始选项
-
-  function mergeUniqueOptions(
-    fieldInitialOptions: Record<string, any>[] = [],
-    appendOptions: Record<string, any>[] = []
-  ) {
-    const optionMap = new Map<any, Record<string, any>>();
-    [...fieldInitialOptions, ...appendOptions].forEach((option) => {
-      if (!option) {
-        return;
-      }
-      const optionKey = option.id ?? option.value;
-      if (optionKey !== undefined && !optionMap.has(optionKey)) {
-        optionMap.set(optionKey, option);
-      }
-    });
-    return Array.from(optionMap.values());
-  }
+  let sumInitialOptions: Record<string, any>[] = []; // 记录子表格内数据源列的初始选项
 
   const pictureFields = computed<FormCreateField[]>(() => {
     return props.subFields.filter((field) => field.type === FieldTypeEnum.PICTURE);
@@ -354,8 +342,9 @@
         row.price_sub = '';
       }
     }
-    sumInitialOptions.value = sumInitialOptions.value.concat(
-      ...source.filter((s) => !sumInitialOptions.value.some((io) => io.id === s.id))
+    sumInitialOptions = mergeUniqueOptions(
+      sumInitialOptions,
+      source.filter((s) => !sumInitialOptions.some((io) => io.id === s.id))
     );
     nextTick(() => {
       isProcessingDataSourceChange.value = false;
@@ -466,7 +455,7 @@
                 value: row[key],
                 fieldConfig: {
                   ...field,
-                  initialOptions: mergeUniqueOptions(field.initialOptions || [], sumInitialOptions.value),
+                  initialOptions: mergeUniqueOptions(sumInitialOptions, field.initialOptions || []),
                 },
                 path: `${props.parentId}[${rowIndex}].${key}`,
                 isSubTableRender: true,
