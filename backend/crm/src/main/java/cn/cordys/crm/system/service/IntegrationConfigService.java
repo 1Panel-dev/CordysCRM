@@ -667,7 +667,7 @@ public class IntegrationConfigService {
             boolean needResetSync = BooleanUtils.isTrue(organizationConfig.isSync())
                     && StringUtils.isNotBlank(organizationConfig.getSyncResource())
                     && Strings.CI.equals(organizationConfig.getSyncResource(), configDTO.getType())
-                    && syncCorpId(detail.getContent(), configDTO);
+                    && syncCorpId(detail, configDTO);
 
             if (needResetSync) {
                 extOrganizationConfigMapper.updateSyncFlag(
@@ -1318,26 +1318,28 @@ public class IntegrationConfigService {
     /**
      * 同步CorpId
      *
-     * @param content   内容
+     * @param detail    内容
      * @param configDTO 配置DTO
      * @return 是否同步
      */
-    private boolean syncCorpId(byte[] content, ThirdConfigBaseDTO<?> configDTO) {
+    private boolean syncCorpId(OrganizationConfigDetail detail, ThirdConfigBaseDTO<?> configDTO) {
         ThirdConfigTypeConstants typeConstants = ThirdConfigTypeConstants.fromString(configDTO.getType());
         if (typeConstants == null) {
             throw new GenericException("unsupported.third.type");
         }
-        WecomThirdConfigRequest oldConfig = JSON.parseObject(new String(content), WecomThirdConfigRequest.class);
         switch (typeConstants) {
             case WECOM -> {
+                WecomThirdConfigRequest oldConfig = parseOldConfig(detail, WecomThirdConfigRequest.class);
                 WecomThirdConfigRequest weComConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), WecomThirdConfigRequest.class);
                 return !Strings.CI.equals(oldConfig.getCorpId(), weComConfig.getCorpId());
             }
             case DINGTALK -> {
+                DingTalkThirdConfigRequest oldConfig = parseOldConfig(detail, DingTalkThirdConfigRequest.class);
                 DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), DingTalkThirdConfigRequest.class);
                 return !Strings.CI.equals(oldConfig.getCorpId(), dingTalkConfig.getCorpId());
             }
             case LARK -> {
+                LarkThirdConfigRequest oldConfig = parseOldConfig(detail, LarkThirdConfigRequest.class);
                 LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), LarkThirdConfigRequest.class);
                 return !Strings.CI.equals(oldConfig.getCorpId(), larkConfig.getCorpId());
             }
