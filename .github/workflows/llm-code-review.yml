@@ -31,7 +31,7 @@ jobs:
             你是资深代码审查专家，请严格检查以下代码差异。
 
             ⚠️【必须遵守】
-            - 判断只有当代码质量有问题时才加评论，否则请直接回复“/lgtm”。
+            - 判断只有当代码质量有问题时才加评论，否则不用回复。
             - 不要解释
             - 不要多余文本
 
@@ -39,4 +39,4 @@ jobs:
           top_p: 1
           MAX_PATCH_LENGTH: 50000
           IGNORE_PATTERNS: "/node_modules,*.md,/dist,/.github"
-          FILE_PATTERNS: "*.java,*.go,*.py,*.vue,*.ts,*.js,*.css,*.scss,*.html"
+          FILE_PATTERNS: "*.java"
