@@ -252,16 +252,18 @@
     return props.subFields.filter((field) => field.type === FieldTypeEnum.PICTURE);
   });
   const maxPictureCountMap = computed<Record<string, number>>(() => {
-    return data.value.reduce((prev, curr) => {
-      pictureFields.value.forEach((field) => {
-        const key = field.businessKey || field.id;
-        const currCount = Array.isArray(curr[key]) ? curr[key].length : 0;
-        if (!prev[key] || currCount > prev[key]) {
-          prev[key] = currCount;
-        }
-      });
-      return prev;
-    }, {} as Record<string, number>);
+    return (
+      data.value?.reduce((prev, curr) => {
+        pictureFields.value.forEach((field) => {
+          const key = field.businessKey || field.id;
+          const currCount = Array.isArray(curr[key]) ? curr[key].length : 0;
+          if (!prev[key] || currCount > prev[key]) {
+            prev[key] = currCount;
+          }
+        });
+        return prev;
+      }, {} as Record<string, number>) || {}
+    );
   });
 
   const isProcessingDataSourceChange = ref(false);
@@ -273,7 +275,7 @@
     rowIndex: number,
     isPriceSubTableShowSubField?: boolean
   ) {
-    if (isProcessingDataSourceChange.value) {
+    if (isProcessingDataSourceChange.value || row.price_sub) {
       // 子表格添加多行会触发 change，避免重复处理
       return;
     }
