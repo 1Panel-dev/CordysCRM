@@ -19,4 +19,5 @@ export default {
   'crmFormCreate.drawer.price': 'Price Table',
   'crmFormCreate.drawer.invoice': 'Invoice',
   'crmFormCreate.drawer.businessTitle': 'Business Title',
+  'crmFormCreate.drawer.order': 'Order',
 };

@@ -26,6 +26,7 @@ export enum FormDesignKeyEnum {
   INVOICE = 'invoice', // 发票
   INVOICE_SNAPSHOT = 'invoiceSnapshot', // 发票快照
   CONTRACT_INVOICE = 'contractInvoice', // 合同下的发票
+  ORDER = 'order', // 订单
   PRICE = 'price', // 价格表
   OPPORTUNITY_QUOTATION = 'quotation', // 商机报价单
   OPPORTUNITY_QUOTATION_SNAPSHOT = 'quotationSnapshot', // 商机快照报价单
@@ -94,6 +95,7 @@ export enum FieldDataSourceTypeEnum {
   CONTRACT_PAYMENT = 'PAYMENT_PLAN',
   CONTRACT_PAYMENT_RECORD = 'CONTRACT_PAYMENT_RECORD', // 回款记录
   BUSINESS_TITLE = 'BUSINESS_TITLE', // 工商抬头
+  ORDER = 'ORDER', // 订单
 }
 
 export enum FormLinkScenarioEnum {

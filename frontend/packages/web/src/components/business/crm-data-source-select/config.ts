@@ -31,6 +31,7 @@ export const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<C
   [FieldDataSourceTypeEnum.PRICE]: getFieldPriceList,
   [FieldDataSourceTypeEnum.QUOTATION]: getFieldQuotationList,
   [FieldDataSourceTypeEnum.BUSINESS_TITLE]: getFieldBusinessTitleList,
+  [FieldDataSourceTypeEnum.ORDER]: getFieldContactList, // todo xinxinwu
 };
 export const formKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {
   [FieldDataSourceTypeEnum.BUSINESS]: FormDesignKeyEnum.BUSINESS,
