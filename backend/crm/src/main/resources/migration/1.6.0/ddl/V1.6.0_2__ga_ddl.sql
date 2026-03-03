@@ -61,10 +61,10 @@ CREATE INDEX idx_resource_id ON sales_order_field_blob(resource_id ASC);
 CREATE TABLE sales_order_snapshot(
    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
    `order_id` VARCHAR(32) NOT NULL   COMMENT '订单id' ,
-   `order_prop` LONGTEXT    COMMENT '表单属性快照' ,
-   `order_value` TEXT    COMMENT '表单值快照' ,
+   `order_prop` LONGTEXT    COMMENT '订单属性快照' ,
+   `order_value` TEXT    COMMENT '订单值快照' ,
    PRIMARY KEY (id)
-)  COMMENT = '合同快照'
+)  COMMENT = '订单快照'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
