@@ -94,6 +94,7 @@
     [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: 'crmFormCreate.drawer.contractPaymentPlan',
     [FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD]: 'crmFormCreate.drawer.contractPaymentRecord',
     [FieldDataSourceTypeEnum.BUSINESS_TITLE]: 'crmFormCreate.drawer.businessTitle',
+    [FieldDataSourceTypeEnum.ORDER]: 'crmFormCreate.drawer.order',
   };
 
   const value = defineModel<DataTableRowKey[]>('value', {

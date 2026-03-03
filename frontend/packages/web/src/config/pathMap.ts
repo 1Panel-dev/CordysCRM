@@ -108,6 +108,18 @@ export const pathMap: PathMapItem[] = [
     ],
   },
   {
+    key: 'ORDER',
+    route: AppRouteEnum.ORDER,
+    locale: 'module.order',
+    children: [
+      {
+        key: 'ORDER_INDEX',
+        route: AppRouteEnum.ORDER_INDEX,
+        locale: 'module.order',
+      },
+    ],
+  },
+  {
     key: 'CLUE_MANAGEMENT',
     route: AppRouteEnum.CLUE_MANAGEMENT,
     locale: 'module.clueManagement',

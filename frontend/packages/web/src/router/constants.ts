@@ -7,6 +7,7 @@ import {
   CustomerRouteEnum,
   DashboardRouteEnum,
   OpportunityRouteEnum,
+  OrderRouteEnum,
   ProductRouteEnum,
   SystemRouteEnum,
   TenderRouteEnum,
@@ -41,6 +42,7 @@ export const DEFAULT_ROUTE_NAME = 'workbench';
 export const featureRouteMap: Record<string, any> = {
   [WorkbenchRouteEnum.WORKBENCH]: ModuleConfigEnum.HOME,
   [ContractRouteEnum.CONTRACT]: ModuleConfigEnum.CONTRACT,
+  [OrderRouteEnum.ORDER]: ModuleConfigEnum.ORDER,
   [CustomerRouteEnum.CUSTOMER]: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
   [OpportunityRouteEnum.OPPORTUNITY]: ModuleConfigEnum.BUSINESS_MANAGEMENT,
   [ProductRouteEnum.PRODUCT]: ModuleConfigEnum.PRODUCT_MANAGEMENT,

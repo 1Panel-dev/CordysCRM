@@ -186,6 +186,11 @@ export const fullFormSettingList = [
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
   },
   {
+    label: t('module.order'),
+    dataSource: FieldDataSourceTypeEnum.ORDER,
+    formKey: FormDesignKeyEnum.ORDER,
+  },
+  {
     label: t('module.businessTitle'),
     dataSource: FieldDataSourceTypeEnum.BUSINESS_TITLE,
   },
@@ -769,6 +774,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, (id?: string) => Pro
   [FormDesignKeyEnum.INVOICE_SNAPSHOT]: (id) => getInvoicedFormSnapshotConfig(id),
   [FormDesignKeyEnum.CONTRACT_INVOICE]: getInvoicedFormConfig,
   [FormDesignKeyEnum.BUSINESS_TITLE]: getBusinessTitleModuleForm,
+  [FormDesignKeyEnum.ORDER]: getContractFormConfig, // todo xinxinwu
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -809,6 +815,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.INVOICE_SNAPSHOT]: addInvoiced,
   [FormDesignKeyEnum.CONTRACT_INVOICE]: async () => ({}),
   [FormDesignKeyEnum.BUSINESS_TITLE]: async () => ({}),
+  [FormDesignKeyEnum.ORDER]: addContract, // todo xinxinwu
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -849,6 +856,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.INVOICE_SNAPSHOT]: updateInvoiced,
   [FormDesignKeyEnum.CONTRACT_INVOICE]: async () => ({}),
   [FormDesignKeyEnum.BUSINESS_TITLE]: async () => ({}),
+  [FormDesignKeyEnum.ORDER]: updateContract, // todo xinxinwu
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {

@@ -72,7 +72,9 @@
     @load-config="() => getGlobalReasonConfig()"
   />
   <stepSettingDrawer v-model:visible="businessManagementStepSetVisible" />
+  <orderStateFlowDrawer v-model:visible="orderStateFlowVisible" />
   <ContractFormFormDrawer v-model:visible="contractFormVisible" />
+  <OrderFormFormDrawer v-model:visible="orderFormVisible" />
   <ContractPaymentPlanFormDrawer v-model:visible="contractPaymentPlanFormVisible" />
   <ContractPaymentRecordFormDrawer v-model:visible="contractPaymentRecordFormVisible" />
   <contractInvoiceFormDrawer v-model:visible="contractInvoiceFormVisible" />
@@ -111,6 +113,8 @@
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
   import optQuotationFormDrawer from './opportunity/optQuotationFormDrawer.vue';
   import stepSettingDrawer from './opportunity/stepSettingDrawer.vue';
+  import OrderFormFormDrawer from './order/orderFormFormDrawer.vue';
+  import orderStateFlowDrawer from './order/orderStateFlowDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
   import priceTableFormDrawer from './productManagement/priceTableFormDrawer.vue';
 
@@ -443,6 +447,22 @@
         },
       ],
     },
+    {
+      label: t('module.order'),
+      key: ModuleConfigEnum.ORDER,
+      icon: 'iconicon_order_form',
+      enable: true,
+      groupList: [
+        {
+          label: `${t('module.order')}${t('module.formSettings')}`,
+          key: 'newForm',
+        },
+        {
+          label: t('module.order.stateFlow'),
+          key: 'orderStateFlow',
+        },
+      ],
+    },
     // TODO 不上 xxw
     // {
     //   label: t('module.dataManagement'),
@@ -543,6 +563,8 @@
   const opportunityQuotationFormVisible = ref(false);
   const businessManagementBusinessParamsSetVisible = ref(false);
   const businessManagementStepSetVisible = ref(false);
+  const orderFormVisible = ref(false);
+  const orderStateFlowVisible = ref(false);
 
   const productManagementFormVisible = ref(false);
   const priceTableFormVisible = ref(false);
@@ -598,6 +620,13 @@
           productManagementFormVisible.value = true;
         } else if (key === 'newPriceForm') {
           priceTableFormVisible.value = true;
+        }
+        break;
+      case ModuleConfigEnum.ORDER:
+        if (key === 'newForm') {
+          orderFormVisible.value = true;
+        } else if (key === 'orderStateFlow') {
+          orderStateFlowVisible.value = true;
         }
         break;
       default:
