@@ -23,6 +23,7 @@ import {
   addOpportunity,
   addOptFollowPlan,
   addOptFollowRecord,
+  addOrder,
   addPaymentPlan,
   addPaymentRecord,
   addProduct,
@@ -30,6 +31,7 @@ import {
   addQuotation,
   advancedSearchOptPage,
   ClueTransitionCustomer,
+  deleteOrder,
   geAdvancedCustomerList,
   getAdvancedCluePoolList,
   getAdvancedCustomerContactList,
@@ -79,6 +81,12 @@ import {
   getOptFollowPlan,
   getOptFollowRecord,
   getOptFormConfig,
+  getOrderDetail,
+  getOrderDetailSnapshot,
+  getOrderFormConfig,
+  getOrderFormSnapshotConfig,
+  getOrderInContractList,
+  getOrderList,
   getPaymentPlanDetail,
   getPaymentPlanFormConfig,
   getPaymentPlanList,
@@ -111,6 +119,7 @@ import {
   updateOpportunity,
   updateOptFollowPlan,
   updateOptFollowRecord,
+  updateOrder,
   updatePaymentPlan,
   updatePaymentRecord,
   updateProduct,
@@ -774,7 +783,9 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, (id?: string) => Pro
   [FormDesignKeyEnum.INVOICE_SNAPSHOT]: (id) => getInvoicedFormSnapshotConfig(id),
   [FormDesignKeyEnum.CONTRACT_INVOICE]: getInvoicedFormConfig,
   [FormDesignKeyEnum.BUSINESS_TITLE]: getBusinessTitleModuleForm,
-  [FormDesignKeyEnum.ORDER]: getContractFormConfig, // todo xinxinwu
+  [FormDesignKeyEnum.ORDER]: getOrderFormConfig,
+  [FormDesignKeyEnum.CONTRACT_ORDER]: getOrderFormConfig,
+  [FormDesignKeyEnum.ORDER_SNAPSHOT]: (id) => getOrderFormSnapshotConfig(id),
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -815,7 +826,9 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.INVOICE_SNAPSHOT]: addInvoiced,
   [FormDesignKeyEnum.CONTRACT_INVOICE]: async () => ({}),
   [FormDesignKeyEnum.BUSINESS_TITLE]: async () => ({}),
-  [FormDesignKeyEnum.ORDER]: addContract, // todo xinxinwu
+  [FormDesignKeyEnum.ORDER]: addOrder,
+  [FormDesignKeyEnum.ORDER_SNAPSHOT]: addOrder,
+  [FormDesignKeyEnum.CONTRACT_ORDER]: async () => ({}),
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -856,7 +869,9 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.INVOICE_SNAPSHOT]: updateInvoiced,
   [FormDesignKeyEnum.CONTRACT_INVOICE]: async () => ({}),
   [FormDesignKeyEnum.BUSINESS_TITLE]: async () => ({}),
-  [FormDesignKeyEnum.ORDER]: updateContract, // todo xinxinwu
+  [FormDesignKeyEnum.ORDER]: updateOrder,
+  [FormDesignKeyEnum.ORDER_SNAPSHOT]: updateOrder,
+  [FormDesignKeyEnum.CONTRACT_ORDER]: async () => ({}),
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {
@@ -893,6 +908,8 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordDetail,
   [FormDesignKeyEnum.INVOICE]: getInvoicedDetail,
   [FormDesignKeyEnum.INVOICE_SNAPSHOT]: getInvoicedDetailSnapshot,
+  [FormDesignKeyEnum.ORDER]: getOrderDetail,
+  [FormDesignKeyEnum.ORDER_SNAPSHOT]: getOrderDetailSnapshot,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
@@ -923,6 +940,8 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordList,
   [FormDesignKeyEnum.INVOICE]: getInvoicedList,
   [FormDesignKeyEnum.CONTRACT_INVOICE]: getInvoicedInContractList,
+  [FormDesignKeyEnum.ORDER]: getOrderList,
+  [FormDesignKeyEnum.CONTRACT_ORDER]: getOrderInContractList,
 };
 
 export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {

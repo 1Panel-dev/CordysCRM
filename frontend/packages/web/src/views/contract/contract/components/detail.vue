@@ -56,6 +56,14 @@
           :readonly="getReadonlyInvoice"
           @open-business-title-drawer="showBusinessTitleDetail"
         />
+        <OrderTable
+          v-if="activeTab === 'order'"
+          :formKey="FormDesignKeyEnum.CONTRACT_ORDER"
+          :sourceId="props.sourceId"
+          :sourceName="title"
+          is-contract-tab
+          :readonly="getReadonlyOrder"
+        />
       </CrmCard>
     </div>
     <CrmFormCreateDrawer
@@ -91,6 +99,7 @@
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
   import PaymentRecordTable from '@/views/contract/contractPaymentRecord/components/paymentTable.vue';
   import InvoiceTable from '@/views/contract/invoice/components/invoiceTable.vue';
+  import OrderTable from '@/views/order/order/components/orderTable.vue';
 
   import { approvalContract, deleteContract, revokeContract } from '@/api/modules';
   import { contractStatusOptions } from '@/config/contract';
@@ -147,6 +156,11 @@
         name: 'invoice',
         tab: t('module.invoice'),
         permission: ['CONTRACT_INVOICE:READ'],
+      },
+      {
+        name: 'order',
+        tab: t('module.order'),
+        permission: ['CONTRACT_ORDER:READ'], // TODO lmy
       },
     ].filter((item) => hasAnyPermission(item.permission))
   );
@@ -386,6 +400,11 @@
     }
     return detailInfo.value?.stage === ContractStatusEnum.VOID;
   });
+
+  // TODO lmy
+  const getReadonlyOrder = computed(
+    () => detailInfo.value?.stage === ContractStatusEnum.VOID || detailInfo.value?.stage === ContractStatusEnum.ARCHIVED
+  );
 
   async function handleButtonClick(actionKey: string) {
     switch (actionKey) {

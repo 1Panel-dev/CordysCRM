@@ -31,6 +31,8 @@ export enum TableKeyEnum {
   PRICE = 'price',
   INVOICE = 'invoice',
   CONTRACT_INVOICE = 'contractInvoice',
+  ORDER = 'order', // 订单
+  CONTRACT_ORDER = 'contractOrder', // 合同下的订单
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户

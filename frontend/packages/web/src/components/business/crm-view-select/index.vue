@@ -83,6 +83,7 @@
             FormDesignKeyEnum.CONTRACT_PAYMENT,
             FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
             FormDesignKeyEnum.INVOICE,
+            FormDesignKeyEnum.ORDER,
           ].includes(props.type)
         "
         type="default"

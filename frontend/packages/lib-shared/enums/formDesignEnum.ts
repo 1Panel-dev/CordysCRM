@@ -26,11 +26,13 @@ export enum FormDesignKeyEnum {
   INVOICE = 'invoice', // 发票
   INVOICE_SNAPSHOT = 'invoiceSnapshot', // 发票快照
   CONTRACT_INVOICE = 'contractInvoice', // 合同下的发票
-  ORDER = 'order', // 订单
   PRICE = 'price', // 价格表
   OPPORTUNITY_QUOTATION = 'quotation', // 商机报价单
   OPPORTUNITY_QUOTATION_SNAPSHOT = 'quotationSnapshot', // 商机快照报价单
   BUSINESS_TITLE = 'businessTitle', // 工商抬头(数据源，无表单配置入口)
+  ORDER = 'order', // 订单
+  ORDER_SNAPSHOT = 'orderSnapshot', // 订单快照
+  CONTRACT_ORDER = 'contractOrder', // 合同下的订单
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户
