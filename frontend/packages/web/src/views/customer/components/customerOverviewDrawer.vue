@@ -106,6 +106,13 @@
           :form-key="FormDesignKeyEnum.INVOICE"
           :source-id="props.sourceId"
         />
+        <!-- TODO lmy 客户下的订单数据 -->
+        <OrderTable
+          v-else-if="activeTab === 'order'"
+          :formKey="FormDesignKeyEnum.ORDER"
+          :sourceId="props.sourceId"
+          :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+        />
       </div>
       <CrmMoveModal
         v-model:show="showMoveModal"
@@ -140,6 +147,7 @@
   import customerRelation from './customerRelation.vue';
   import ContractTimeline from '@/views/contract/contract/components/contractTimeline.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
+  import OrderTable from '@/views/order/order/components/orderTable.vue';
 
   import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
   import useModal from '@/hooks/useModal';
@@ -281,6 +289,12 @@
         tab: t('module.invoice'),
         enable: true,
         permission: ['CONTRACT_INVOICE:READ'],
+      },
+      {
+        name: 'order',
+        tab: t('module.order'),
+        enable: true,
+        permission: ['CONTRACT_ORDER:READ'], // TODO lmy
       },
     ];
     if (collaborationType.value) {

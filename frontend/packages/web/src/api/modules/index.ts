@@ -7,6 +7,7 @@ import useDashboard from '@lib/shared/api/modules/dashboard';
 import useFollowApi from '@lib/shared/api/modules/follow';
 import useHomeApi from '@lib/shared/api/modules/home';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
+import useOrderApi from '@lib/shared/api/modules/order';
 import useProductApi from '@lib/shared/api/modules/product';
 import useSysApi from '@lib/shared/api/modules/sys';
 import useLicenseApi from '@lib/shared/api/modules/system/authorizedManagement';
@@ -45,6 +46,28 @@ const businessApi = useBusinessApi(CDR);
 const dashboardApi = useDashboard(CDR);
 const opportunityApi = useOpportunityApi(CDR);
 const contractApi = useContractApi(CDR);
+const orderApi = useOrderApi(CDR);
+
+export const {
+  getOrderFormConfig,
+  getOrderFormSnapshotConfig,
+  addOrder,
+  getOrderDetail,
+  getOrderDetailSnapshot,
+  updateOrder,
+  deleteOrder,
+  getOrderList,
+  getOrderInContractList,
+  getOrderTab,
+  addOrderView,
+  updateOrderView,
+  getOrderViewList,
+  getOrderViewDetail,
+  fixedOrderView,
+  enableOrderView,
+  deleteOrderView,
+  dragOrderView,
+} = orderApi;
 
 export const {
   getFollowPlanTab,

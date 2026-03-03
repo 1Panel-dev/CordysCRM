@@ -15,6 +15,7 @@ import {
   getFollowRecordTab,
   getInvoicedTab,
   getOptTab,
+  getOrderTab,
   getPaymentPlanTab,
   getPaymentRecordTab,
   getQuotationTab,
@@ -33,7 +34,8 @@ export type TabType =
   | FormDesignKeyEnum.CONTRACT_PAYMENT
   | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
   | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
-  | FormDesignKeyEnum.INVOICE;
+  | FormDesignKeyEnum.INVOICE
+  | FormDesignKeyEnum.ORDER;
 export default function useHiddenTab(type?: TabType) {
   const { t } = useI18n();
 
@@ -52,6 +54,7 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: getPaymentRecordTab,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: getQuotationTab,
     [FormDesignKeyEnum.INVOICE]: getInvoicedTab,
+    [FormDesignKeyEnum.ORDER]: getOrderTab,
   };
 
   const allClueTabList: TabPaneProps[] = [
@@ -211,6 +214,21 @@ export default function useHiddenTab(type?: TabType) {
     },
   ];
 
+  const allOrderTabList: TabPaneProps[] = [
+    {
+      name: OpportunitySearchTypeEnum.ALL,
+      tab: t('order.all'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.SELF,
+      tab: t('order.my'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.DEPARTMENT,
+      tab: t('order.depart'),
+    },
+  ];
+
   const tabListMap: Record<TabType, TabPaneProps[]> = {
     [FormDesignKeyEnum.CUSTOMER]: allCustomerTabList,
     [FormDesignKeyEnum.CONTACT]: allContactTabList,
@@ -225,6 +243,7 @@ export default function useHiddenTab(type?: TabType) {
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: allQuotationTabList,
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: allRecordTabList,
     [FormDesignKeyEnum.INVOICE]: allInvoiceTabList,
+    [FormDesignKeyEnum.ORDER]: allOrderTabList,
   };
 
   const tabList = ref<TabPaneProps[]>([]);

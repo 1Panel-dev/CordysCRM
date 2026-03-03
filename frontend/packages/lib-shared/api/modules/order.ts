@@ -1,0 +1,142 @@
+
+import type { CordysAxios } from '@lib/shared/api/http/Axios';
+import {
+  AddOrderUrl,
+  AddOrderViewUrl,
+  DeleteOrderUrl,
+  DeleteOrderViewUrl,
+  DragOrderViewUrl,
+  EnableOrderViewUrl,
+  FixedOrderViewUrl,
+  GetOrderDetailUrl,
+  OrderPageUrl,
+  OrderDetailSnapshotUrl,
+  OrderFormConfigUrl,
+  OrderFormConfigSnapshotUrl,
+  OrderInContractPageUrl,
+  GetOrderTabUrl,
+  GetOrderViewDetailUrl,
+  GetOrderViewListUrl,
+  UpdateOrderUrl,
+  UpdateOrderViewUrl,
+} from '@lib/shared/api/requrls/order';
+import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import type { CommonList, TableDraggedParams } from '@lib/shared/models/common';
+import type { CustomerTabHidden } from '@lib/shared/models/customer';
+import type {
+  OrderItem,
+  UpdateOrderParams,
+} from '@lib/shared/models/order';
+import type { TableQueryParams } from '@lib/shared/models/common';
+
+import type { ViewItem, ViewParams } from '@lib/shared/models/view';
+
+export default function useOrderApi(CDR: CordysAxios) {
+  // 列表
+  function getOrderList(data: TableQueryParams) {
+    return CDR.post<CommonList<OrderItem>>({ url: OrderPageUrl, data });
+  }
+
+  // 合同下的列表
+  function getOrderInContractList(data: TableQueryParams) {
+    return CDR.post<CommonList<OrderItem>>({ url: OrderInContractPageUrl, data });
+  }
+
+  // 订单详情
+  function getOrderDetail(id: string) {
+    return CDR.get<OrderItem>({ url: `${GetOrderDetailUrl}/${id}` });
+  }
+
+  // 详情快照
+  function getOrderDetailSnapshot(id: string) {
+    return CDR.get<OrderItem>({ url: `${OrderDetailSnapshotUrl}/${id}` });
+  }
+
+  // 新增订单
+  function addOrder(data: UpdateOrderParams) {
+    return CDR.post({ url: AddOrderUrl, data });
+  }
+
+  // 更新订单
+  function updateOrder(data: UpdateOrderParams) {
+    return CDR.post({ url: UpdateOrderUrl, data });
+  }
+
+  // 删除订单
+  function deleteOrder(id: string) {
+    return CDR.get({ url: `${DeleteOrderUrl}/${id}` });
+  }
+
+  // 获取表单配置
+    function getOrderFormConfig() {
+      return CDR.get<FormDesignConfigDetailParams>({
+        url: OrderFormConfigUrl,
+      });
+    }
+  
+    // 获取表单配置快照
+    function getOrderFormSnapshotConfig(id?: string) {
+      return CDR.get<FormDesignConfigDetailParams>({
+        url: `${OrderFormConfigSnapshotUrl}/${id}`,
+      });
+    }
+
+  // 获取订单tab显隐配置
+  function getOrderTab() {
+    return CDR.get<CustomerTabHidden>({ url: GetOrderTabUrl });
+  }
+
+  // 视图管理
+  function addOrderView(data: ViewParams) {
+    return CDR.post({ url: AddOrderViewUrl, data });
+  }
+
+  function updateOrderView(data: ViewParams) {
+    return CDR.post({ url: UpdateOrderViewUrl, data });
+  }
+
+  function getOrderViewList() {
+    return CDR.get<ViewItem[]>({ url: GetOrderViewListUrl });
+  }
+
+  function getOrderViewDetail(id: string) {
+    return CDR.get({ url: `${GetOrderViewDetailUrl}/${id}` });
+  }
+
+  function fixedOrderView(id: string) {
+    return CDR.get({ url: `${FixedOrderViewUrl}/${id}` });
+  }
+
+  function enableOrderView(id: string) {
+    return CDR.get({ url: `${EnableOrderViewUrl}/${id}` });
+  }
+
+  function deleteOrderView(id: string) {
+    return CDR.get({ url: `${DeleteOrderViewUrl}/${id}` });
+  }
+
+  function dragOrderView(data: TableDraggedParams) {
+    return CDR.post({ url: DragOrderViewUrl, data });
+  }
+
+  return {
+    getOrderFormConfig,
+    getOrderFormSnapshotConfig,
+    addOrder,
+    getOrderDetail,
+    getOrderDetailSnapshot,
+    updateOrder,
+    deleteOrder,
+    getOrderList,
+    getOrderInContractList,
+    getOrderTab,
+    addOrderView,
+    updateOrderView,
+    getOrderViewList,
+    getOrderViewDetail,
+    fixedOrderView,
+    enableOrderView,
+    deleteOrderView,
+    dragOrderView,
+  };
+}

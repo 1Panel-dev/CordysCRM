@@ -19,7 +19,7 @@ const contract: AppRouteRecordRaw = {
     {
       path: 'index',
       name: OrderRouteEnum.ORDER_INDEX,
-      component: () => import('@/views/opportunity/index.vue'), // todo 替换订单页面
+      component: () => import('@/views/order/order/index.vue'),
       meta: {
         locale: 'module.order',
         isTopMenu: true,

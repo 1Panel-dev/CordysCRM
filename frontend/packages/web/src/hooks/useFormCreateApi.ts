@@ -283,6 +283,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
     FormDesignKeyEnum.CONTRACT,
     FormDesignKeyEnum.INVOICE,
+    FormDesignKeyEnum.ORDER,
   ];
 
   function initFormShowControl(value?: any) {
@@ -869,7 +870,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       }
     }
     if (
-      [FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD].includes(props.formKey.value) &&
+      [FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD, FormDesignKeyEnum.ORDER].includes(
+        props.formKey.value
+      ) &&
       props.sourceId?.value
     ) {
       // 合同详情下创建计划，自动带入合同信息
