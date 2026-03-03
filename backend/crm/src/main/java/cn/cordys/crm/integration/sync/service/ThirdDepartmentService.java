@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -79,7 +80,7 @@ public class ThirdDepartmentService {
      * @param type       同步类型(企业微信，钉钉，飞书)
      */
     @Async
-    public void syncUser(String operatorId, String orgId, String type) {
+    public void syncUser(String operatorId, String orgId, String type, Locale locale) {
         Redisson redisson = CommonBeanFactory.getBean(Redisson.class);
         assert redisson != null;
         RLock lock = redisson.getLock(LOCK_PREFIX + orgId);
@@ -94,6 +95,7 @@ public class ThirdDepartmentService {
         setSyncStatus(syncStatusKey, operatorId);
 
         try {
+            LocaleContextHolder.setLocale(locale);
             performSync(operatorId, orgId, type);
             clearCaches(orgId);
         } catch (Exception e) {
