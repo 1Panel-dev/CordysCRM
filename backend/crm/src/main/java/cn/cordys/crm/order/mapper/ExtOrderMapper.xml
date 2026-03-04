@@ -383,4 +383,9 @@
             update_time = #{updateTime}
         where id = #{id}
     </update>
+
+    <select id="countByStage" resultType="java.lang.Integer">
+        select count(id) from sales_order
+        where stage = #{stageId}
+    </select>
 </mapper>
