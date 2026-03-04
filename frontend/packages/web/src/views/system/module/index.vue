@@ -133,6 +133,11 @@
       icon: 'iconicon_contract',
     },
     {
+      label: t('module.order'),
+      key: ModuleConfigEnum.ORDER,
+      icon: 'iconicon_order_form',
+    },
+    {
       label: t('module.clueManagement'),
       key: ModuleConfigEnum.CLUE_MANAGEMENT,
       icon: 'iconicon_clue',
