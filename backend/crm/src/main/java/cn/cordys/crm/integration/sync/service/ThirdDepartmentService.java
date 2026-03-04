@@ -111,6 +111,7 @@ public class ThirdDepartmentService {
      * 获取同步状态
      *
      * @param orgId 组织ID
+     *
      * @return 同步状态信息，如果没有正在同步则返回null
      */
     public Boolean getSyncStatus(String orgId) {
@@ -178,7 +179,8 @@ public class ThirdDepartmentService {
 
                 var departmentIds = departments.stream().map(ThirdDepartment::getId).toList();
                 departmentUserMap = larkDepartmentService.getDepartmentUserList(accessToken, departmentIds);
-                log.info("飞书部门用户数：{}", departmentUserMap.size());
+
+                log.info("飞书部门用户数：{}", departmentUserMap.values().stream().mapToLong(List::size).sum());
             }
             default -> throw new GenericException("不支持的同步类型：" + type);
         }
