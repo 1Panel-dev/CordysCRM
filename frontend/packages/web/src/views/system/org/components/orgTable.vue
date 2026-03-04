@@ -99,7 +99,7 @@ import {cloneDeep} from 'lodash-es';
 import dayjs from 'dayjs';
 
 import {CompanyTypeEnum} from '@lib/shared/enums/commonEnum';
-import {TableKeyEnum} from '@lib/shared/enums/tableEnum';
+import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import {useI18n} from '@lib/shared/hooks/useI18n';
 import useLocale from '@lib/shared/locale/useLocale';
 import {characterLimit, getCityPath} from '@lib/shared/method';
@@ -497,6 +497,15 @@ const columns: CrmDataTableColumn[] = [
   {
     type: 'selection',
     fixed: 'left',
+  },
+  {
+    fixed: 'left',
+    title: t('crmTable.order'),
+    width: 50,
+    key: SpecialColumnEnum.ORDER,
+    resizable: false,
+    columnSelectorDisabled: true,
+    render: (row: any, rowIndex: number) => rowIndex + 1,
   },
   {
     title: t('org.userName'),
