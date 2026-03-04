@@ -162,7 +162,7 @@ public class ThirdDepartmentService {
                         .map(Long::parseLong)
                         .toList();
                 departmentUserMap = weComDepartmentService.getDepartmentUser(accessToken, departmentIds);
-                log.info("企业微信部门用户数：{}", departmentUserMap.size());
+                log.info("企业微信部门用户数：{}", departmentUserMap.values().stream().mapToLong(List::size).sum());
             }
             case DINGTALK -> {
                 var thirdOrgDataDTO = dingTalkDepartmentService.convertToThirdOrgDataDTO(accessToken);
@@ -171,7 +171,7 @@ public class ThirdDepartmentService {
                 }
                 departments = thirdOrgDataDTO.getDepartments();
                 departmentUserMap = thirdOrgDataDTO.getUsers();
-                log.info("钉钉部门数：{}，部门用户数：{}", departments.size(), departmentUserMap.size());
+                log.info("钉钉部门数：{}，部门用户数：{}", departments.size(), departmentUserMap.values().stream().mapToLong(List::size).sum());
             }
             case LARK -> {
                 departments = larkDepartmentService.getDepartmentList(accessToken);
