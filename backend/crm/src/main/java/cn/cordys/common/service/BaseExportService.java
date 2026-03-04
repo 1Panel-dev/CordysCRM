@@ -328,10 +328,11 @@ public abstract class BaseExportService {
                 }
                 return;
             }
+			// resourceFieldId 存在时, 优先匹配字段ID, 兼容子表格引用字段与普通字段同key的情况
             if (sysFieldValMap.containsKey(field.getBusinessKey()) && StringUtils.isEmpty(field.getResourceFieldId())) {
                 //固定字段
                 dataList.add(sysFieldValMap.get(field.getBusinessKey()));
-            } else if (moduleFieldMap.containsKey(field.getBusinessKey())) {
+            } else if (moduleFieldMap.containsKey(field.getBusinessKey()) && StringUtils.isEmpty(field.getResourceFieldId())) {
                 // 子表业务字段
                 Object value = moduleFieldMap.get(field.getBusinessKey());
                 dataList.add(transformFieldValue(field, value));
