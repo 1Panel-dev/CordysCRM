@@ -2324,5 +2324,229 @@
     }
   ],
   "order": [
+    {
+      "name": "基本信息",
+      "internalKey": "orderBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "订单编号",
+      "internalKey": "orderNo",
+      "type": "SERIAL_NUMBER",
+      "placeholder": "无需录入, 自动生成",
+      "showLabel": true,
+      "serialNumberRules": [
+        "XSDD",
+        "-",
+        "yyyyMM",
+        "-",
+        "6"
+      ],
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "mobile": true,
+      "disableProps": [
+        "serialNumberRules"
+      ]
+    },
+    {
+      "name": "关联客户",
+      "internalKey": "orderCustomer",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "关联合同",
+      "internalKey": "orderContract",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTRACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "订单名称",
+      "internalKey": "orderName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ]
+    },
+    {
+      "name": "负责人",
+      "internalKey": "orderOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "销售产品信息",
+      "internalKey": "orderProductInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "产品明细",
+      "internalKey": "orderProducts",
+      "type": "SUB_PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "fixedColumn": 1,
+      "sumColumns": [
+        "amount"
+      ],
+      "subFields": [
+        {
+          "name": "产品名称",
+          "internalKey": "orderProduct",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRODUCT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "mobile": true
+        },
+        {
+          "name": "产品单价",
+          "internalKey": "orderProductAmount",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "number",
+          "decimalPlaces": true,
+          "precision": 2,
+          "showThousandsSeparator": true,
+          "mobile": true
+        },
+        {
+          "name": "数量",
+          "internalKey": "orderProductNumber",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "mobile": true,
+          "numberFormat": "number"
+        },
+        {
+          "name": "金额",
+          "internalKey": "orderProductAmount",
+          "type": "FORMULA",
+          "showLabel": true,
+          "readable": true,
+          "mobile": true,
+          "editable": false,
+          "fieldWidth": 1,
+          "showThousandsSeparator": true
+        }
+      ]
+    },
+    {
+      "name": "订单金额",
+      "internalKey": "orderAmount",
+      "type": "FORMULA",
+      "showLabel": true,
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true,
+      "showThousandsSeparator": true
+    },
+    {
+      "name": "订单收货信息",
+      "internalKey": "orderReceivedInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "收货地址",
+      "internalKey": "orderDeliveryAddress",
+      "type": "LOCATION",
+      "locationType": "detail",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "收货人",
+      "internalKey": "orderConsignee",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "收货人联系方式",
+      "internalKey": "orderPhone",
+      "type": "PHONE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    }
   ]
 }

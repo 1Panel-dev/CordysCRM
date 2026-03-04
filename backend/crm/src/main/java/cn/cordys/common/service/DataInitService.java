@@ -67,6 +67,7 @@ public class DataInitService {
             initOneTime(moduleFieldService::modifyInvoiceShowFields, "init.invoice.show.fields");
             initOneTime(moduleService::deleteExtraModules, "delete.extra.modules");
             initOneTime(moduleFieldExtService::modifySubProductSumColumn, "modify.quotation.product.sum.column");
+            initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.6.0");
         } finally {
             lock.unlock();
         }

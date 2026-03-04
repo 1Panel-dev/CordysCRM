@@ -285,12 +285,12 @@ public enum BusinessModuleField {
 
     /*------ start: ORDER ------*/
     ORDER_NAME("orderName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
-    ORDER_CUSTOMER_NAME("orderCustomer", "customerId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.ORDER.getKey()),
-    ORDER_CONTRACT_NAME("orderContract", "contractId", Set.of("rules.required", "mobile", "readable", "dataSourceType"), FormKey.ORDER.getKey()),
-    ORDER_OWNER("orderOwner", "owner", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
+    ORDER_CUSTOMER_NAME("orderCustomer", "customerId", Set.of("dataSourceType"), FormKey.ORDER.getKey()),
+    ORDER_CONTRACT_NAME("orderContract", "contractId", Set.of("dataSourceType"), FormKey.ORDER.getKey()),
+    ORDER_OWNER("orderOwner", "owner", Set.of("mobile"), FormKey.ORDER.getKey()),
     ORDER_NO("orderNo", "number", Set.of("rules.required"), FormKey.ORDER.getKey()),
-    ORDER_TOTAL_AMOUNT("orderTotalAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
-    /*------ end: CONTRACT ------*/
+    ORDER_TOTAL_AMOUNT("orderAmount", "amount", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
+    /*------ end: ORDER ------*/
 
 
     ;
