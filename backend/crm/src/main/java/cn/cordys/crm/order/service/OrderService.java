@@ -33,7 +33,9 @@ import cn.cordys.crm.order.dto.request.OrderStatusRequest;
 import cn.cordys.crm.order.dto.request.OrderUpdateRequest;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
+import cn.cordys.crm.order.dto.response.OrderStageConfigResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
+import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -84,6 +86,8 @@ public class OrderService {
     private SerialNumGenerator serialNumGenerator;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private ExtOrderStageConfigMapper extOrderStageConfigMapper;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
 
@@ -105,12 +109,13 @@ public class OrderService {
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("order.form.config.required"));
         }
+        List<OrderStageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         Order order = new Order();
         BeanUtils.copyBean(order, request);
         order.setId(IDGenerator.nextStr());
         order.setNumber(createOrderNumber(moduleFormConfigDTO, orgId));
-//        order.setStatus(OrderStage.PENDING_SIGNING.name());
+        order.setStatus(stageConfigList.getFirst().getId());
         order.setOrganizationId(orgId);
         order.setCreateTime(System.currentTimeMillis());
         order.setCreateUser(operatorId);
@@ -495,7 +500,7 @@ public class OrderService {
             snapshotBaseMapper.update(first);
         }
     }
-    
+
     public Order selectByPrimaryKey(String id) {
         return orderMapper.selectByPrimaryKey(id);
     }
@@ -507,7 +512,7 @@ public class OrderService {
         }
 
         Map<String, String> oldMap = new HashMap<>();
-        oldMap.put("contractStage", Translator.get("contract.stage." + order.getStatus().toLowerCase()));
+        oldMap.put("orderStage", Translator.get("order.stage." + order.getStatus().toLowerCase()));
 
         order.setStatus(request.getStatus());
 
@@ -517,9 +522,9 @@ public class OrderService {
 
         updateStatusSnapshot(request.getId(), request.getStatus());
 
-        LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.CONTRACT_INDEX, order.getName());
+        LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.ORDER, order.getName());
         Map<String, String> newMap = new HashMap<>();
-        newMap.put("contractStage", Translator.get("contract.stage." + request.getStatus().toLowerCase()));
+        newMap.put("orderStage", Translator.get("order.stage." + request.getStatus().toLowerCase()));
         logDTO.setOriginalValue(oldMap);
         logDTO.setModifiedValue(newMap);
         logService.add(logDTO);
