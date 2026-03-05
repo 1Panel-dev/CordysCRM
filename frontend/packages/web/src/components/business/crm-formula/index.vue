@@ -1,7 +1,8 @@
 <template>
   <n-tooltip trigger="hover" placement="top">
     <template #trigger>
-      <inputNumber
+      <component
+        :is="currentComponent"
         v-model:value="value"
         :path="props.path"
         :field-config="fieldConfig"
@@ -27,10 +28,11 @@
 
   import { safeParseFormula } from '../crm-formula-editor/utils';
   import evaluateIR from './formula-runtime';
+  import { FormulaResultType } from './formula-runtime/types';
   import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const { t } = useI18n();
-  const { inputNumber } = basicComponents;
+  const { inputNumber, singleText } = basicComponents;
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
@@ -43,11 +45,21 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'change', value: number | null): void;
+    (e: 'change', value: any): void;
   }>();
 
-  const value = defineModel<number | null>('value', {
+  const value = defineModel<any>('value', {
     default: 0,
+  });
+
+  const currentComponent = computed(() => {
+    switch (typeof value.value) {
+      case 'string':
+        return singleText;
+      case 'number':
+      default:
+        return inputNumber;
+    }
   });
 
   const fieldList = inject('formFieldsProvider', ref([]));
@@ -104,6 +116,47 @@
     return t('crmFormDesign.formulaTooltip');
   });
 
+  function normalizeFormulaResult(
+    result: any,
+    options?: {
+      decimalPlaces?: number;
+      expectedType?: FormulaResultType;
+    }
+  ): any {
+    const decimalPlaces = options?.decimalPlaces ?? 2;
+    const expectedType = options?.expectedType;
+
+    if (result == null) {
+      return '';
+    }
+
+    // 根据 expectedType 决定行为
+    if (expectedType === 'string') {
+      return String(result);
+    }
+
+    if (expectedType === 'number') {
+      const num = Number(result);
+      if (Number.isNaN(num)) return 0;
+      return Number(num.toFixed(decimalPlaces));
+    }
+
+    // 自动推断模式（当前默认行为）
+    switch (typeof result) {
+      case 'number':
+        return Number(result.toFixed(decimalPlaces));
+
+      case 'string':
+        return result;
+
+      case 'boolean':
+        return result;
+
+      default:
+        return String(result);
+    }
+  }
+
   function getScalarFieldValue(
     fieldId: string,
     context?: {
@@ -155,7 +208,10 @@
       },
     });
 
-    const next = result != null && typeof result === 'number' ? Number(result.toFixed(2)) : 0;
+    const next = normalizeFormulaResult(result, {
+      decimalPlaces: 2,
+    });
+
     // 如果值未变，不需要更新
     if (Object.is(next, value.value)) return;
     value.value = next;
@@ -194,7 +250,7 @@
     { immediate: true }
   );
 
-  function handleChange(val: number | null) {
+  function handleChange(val: any) {
     emit('change', val);
   }
 </script>

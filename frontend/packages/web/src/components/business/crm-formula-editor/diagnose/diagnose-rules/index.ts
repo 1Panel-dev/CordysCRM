@@ -40,7 +40,7 @@ const illegalTextRule: DiagnoseRule = {
 
   check(ctx) {
     const { cur, prev, index } = ctx;
-    if (cur?.type === 'text' && prev?.type !== 'text') {
+    if (cur?.type === 'unknown' && prev?.type !== 'unknown') {
       ctx.push({
         type: 'error',
         code: FormulaErrorCode.INVALID_CHAR,

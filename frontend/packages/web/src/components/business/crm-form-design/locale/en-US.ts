@@ -197,6 +197,13 @@ export default {
   'crmFormDesign.formulaSelectUsageTip': 'Please select a function from the left',
   'crmFormDesign.formulaSUMDescription': 'Sum',
   'crmFormDesign.formulaDAYSDescription': 'Calculate the difference in days between two dates',
+  'crmFormDesign.formulaCONCATENATEDescription': 'Combines multiple texts into a single text',
+  'crmFormDesign.formulaTEXTDescription': 'Numeric, date, time, to the text in the specified format',
+  'crmFormDesign.formulaIFSDescription':
+    'In order to check multiple conditions, and returns the first meet the conditions of the corresponding results',
+  'crmFormDesign.formulaTODAYDescription': 'Return current system date (excluding time)',
+  'crmFormDesign.formulaNOWDescription': 'Returns the current system date and time (time stamp)',
+  'crmFormDesign.formulaANDDescription': '返回当前系统日期和时间（含时间戳）', // todo
   'crmFormDesign.amount': 'Amount',
   'crmFormDesign.CLUE_TO_CUSTOMER': 'Lead to Account',
   'crmFormDesign.CLUE_TO_OPPORTUNITY': 'Lead to Opportunity',

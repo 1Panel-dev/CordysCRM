@@ -78,13 +78,19 @@
         </div>
         <div class="field-item">
           <div class="field-item-title"> {{ t('crmFormDesign.formulaFunction') }} </div>
-          <div class="field-item-content">
-            <div v-for="fun of allFunctionSource" class="field-fun-item" @mousedown.prevent="insertField(fun)">
-              <div :class="`${activeFun?.name === fun.name ? `text-[${FUN_COLOR}]` : 'text-[var(--text-n1)]'}`">
-                {{ fun.name }}
+          <div class="field-item-content max-h-[428px]">
+            <n-scrollbar>
+              <div v-for="fun of allFunctionSource" class="field-fun-item" @mousedown.prevent="insertField(fun)">
+                <div
+                  :style="{
+                    color: activeFun?.name === fun.name ? FUN_COLOR : 'var(--text-n1)',
+                  }"
+                >
+                  {{ fun.name }}
+                </div>
+                <div class="function-desc-text">{{ fun.description }}</div>
               </div>
-              <div class="text-[12px] text-[var(--text-n4)]">{{ fun.description }}</div>
-            </div>
+            </n-scrollbar>
           </div>
         </div>
         <div class="field-item">
@@ -92,27 +98,85 @@
           <div class="field-item-content">
             <div>
               <div class="field-fun-item-name">{{ activeFun?.name }}</div>
-              <div class="text-[12px] text-[var(--text-n4)]">{{ activeFun?.description }}</div>
+              <div class="function-desc-text">{{ activeFun?.description }}</div>
             </div>
             <div v-if="activeFun">
               <div class="text-[var(--text-n1)]">{{ t('crmFormDesign.formulaUsageMethods') }}</div>
               <div v-if="activeFun?.name === 'DAYS'">
                 <div class="flex items-center">
-                  <div :class="`text-[${FUN_COLOR}]`">DAYS</div>(<div :class="`text-[${DATE_TIME_COLOR}]`">
+                  <div :style="{ color: FUN_COLOR }">DAYS</div>(<div :class="`text-[${DATE_TIME_COLOR}]`">
                     {{ t('crmFormDesign.formulaExampleEndTime') }} </div
                   >, <div :class="`text-[${DATE_TIME_COLOR}]`"> {{ t('crmFormDesign.formulaExampleStartTime') }} </div>)
                 </div>
               </div>
               <div v-if="activeFun?.name === 'SUM'">
                 <div class="flex items-center">
-                  <div :class="`text-[${FUN_COLOR}]`">SUM</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`">
+                  <div :style="{ color: FUN_COLOR }">SUM</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`">
                     {{ t('formulaEditor.function.argFirst') }} </div
                   >, <div :class="`text-[${INPUT_NUMBER_COLOR}]`"> {{ t('formulaEditor.function.argSecond') }} </div>,
                   ... )
                 </div>
               </div>
+              <div v-if="activeFun?.name === 'CONCATENATE'">
+                <div class="flex items-center">
+                  <div :style="{ color: FUN_COLOR }">CONCATENATE</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`">
+                    {{ t('formulaEditor.function.argFirst') }} </div
+                  >, <div :class="`text-[${INPUT_NUMBER_COLOR}]`"> {{ t('formulaEditor.function.argSecond') }} </div>,
+                  ... )
+                </div>
+                <div class="function-desc-text">{{ t('formulaEditor.function.mergeText') }}</div>
+                <div class="flex items-center">
+                  <div :style="{ color: FUN_COLOR }">CONCATENATE</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`">
+                    {{ t('formulaEditor.function.argFirst') }} </div
+                  >,"-",
+                  <div :class="`text-[${INPUT_NUMBER_COLOR}]`"> {{ t('formulaEditor.function.argSecond') }} </div>, ...
+                  )
+                </div>
+                <div class="function-desc-text">{{ t('formulaEditor.function.mergeTextWithSeparator') }}</div>
+              </div>
             </div>
-            <div v-else class="text-[12px] text-[var(--text-n4)]">
+            <div v-if="activeFun?.name === 'TEXT'">
+              <div class="flex items-center">
+                <div :style="{ color: FUN_COLOR }">TEXT</div>(<div :class="`text-[${TEXT_COLOR}]`">
+                  {{ t('formulaEditor.function.formatDateOrNumber') }} </div
+                >, <div :class="`text-[${TEXT_COLOR}]`"> {{ t('formulaEditor.function.formatCodeText') }} </div>, )
+              </div>
+            </div>
+            <div v-if="activeFun?.name === 'IFS'">
+              <div class="flex flex-wrap items-center">
+                <div :style="{ color: FUN_COLOR }">IFS</div>(<div :class="`text-[${TEXT_COLOR}]`"> A1>90 </div>,
+                <div :class="`text-[${TEXT_COLOR}]`"> "优秀" </div>,
+                <div :class="`text-[${TEXT_COLOR}]`"> A1>=60 </div>,
+                <div :class="`text-[${TEXT_COLOR}]`"> "及格" </div>, <div :class="`text-[${TEXT_COLOR}]`"> TRUE </div>,
+                <div :class="`text-[${TEXT_COLOR}]`"> "不及格" </div>
+                )
+              </div>
+            </div>
+            <div v-if="activeFun?.name === 'TODAY'">
+              <div class="function-desc-text">获取当前日期:</div>
+              <div class="flex flex-wrap items-center gap-[2px]">
+                <div :style="{ color: FUN_COLOR }">TODAY</div>( )
+              </div>
+              <div class="function-desc-text">计算日期差:</div>
+              <div class="flex flex-wrap items-center gap-[2px]">
+                <div :style="{ color: FUN_COLOR }">TODAY</div>( )
+                <div> - </div>
+                <div :class="`text-[${TEXT_COLOR}]`"> A1 </div>
+                （A1 为历史日期）
+              </div>
+            </div>
+            <div v-if="activeFun?.name === 'NOW'">
+              <div class="function-desc-text">获取当前日期时间:</div>
+              <div class="flex flex-wrap items-center gap-[2px]"> <div :style="{ color: FUN_COLOR }">NOW</div>( ) </div>
+              <div class="function-desc-text">计算时间差:</div>
+              <div class="flex flex-wrap items-center gap-[2px]">
+                <div :style="{ color: FUN_COLOR }">NOW</div>( )
+                <div> - </div>
+                <div :class="`text-[${TEXT_COLOR}]`"> A1 </div>
+                （A1 为历史日期）
+              </div>
+            </div>
+            <div v-else class="function-desc-text">
               {{ t('crmFormDesign.formulaSelectUsageTip') }}
             </div>
           </div>
@@ -143,7 +207,15 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
 
-  import { allFunctionSource, ARRAY_COLOR, DATE_TIME_COLOR, FUN_COLOR, INPUT_NUMBER_COLOR } from './config';
+  import {
+    allFunctionSource,
+    ARRAY_COLOR,
+    DATE_TIME_COLOR,
+    FUN_COLOR,
+    INPUT_NUMBER_COLOR,
+    TEXT_COLOR,
+    TEXT_TYPE,
+  } from './config';
   import diagnoseFormula from './diagnose/diagnose';
   import parseTokensToAST from './parser';
   import { createFunctionNode, renderTokensToEditor } from './parseSource/renderTokens';
@@ -170,7 +242,7 @@
     (e: 'save', astVal: string): void;
   }>();
 
-  const FUNCTION_NAMES = ['SUM', 'DAYS'];
+  const FUNCTION_NAMES = ['SUM', 'DAYS', 'CONCATENATE'];
 
   const formulaDiagnostics = ref<FormulaDiagnostic[]>([]);
   const keyword = ref('');
@@ -188,6 +260,10 @@
     ARRAY: {
       type: 'warning',
       label: t('common.array'),
+    },
+    TEXT: {
+      type: 'primary',
+      label: t('common.text'),
     },
   };
 
@@ -208,6 +284,7 @@
     field: FormCreateField,
     numberGroup: FormCreateField[],
     dateGroup: FormCreateField[],
+    textGroup: FormCreateField[],
     isSubTable?: boolean
   ) {
     if (field.type === FieldTypeEnum.INPUT_NUMBER) {
@@ -219,6 +296,12 @@
 
     if (field.type === FieldTypeEnum.DATE_TIME) {
       dateGroup.push({
+        ...field,
+        id: resolveFieldId(field, isSubTable),
+      });
+    }
+    if (TEXT_TYPE.includes(field.type)) {
+      textGroup.push({
         ...field,
         id: resolveFieldId(field, isSubTable),
       });
@@ -260,18 +343,19 @@
     const numberGroup: FormulaFormCreateField[] = [];
     const dateGroup: FormulaFormCreateField[] = [];
     const arrayGroup: FormulaFormCreateField[] = [];
+    const textGroup: FormulaFormCreateField[] = [];
     allFields.forEach((field) => {
       // 当前在子表内
       if (props.isSubTableField) {
         if (field.inSubTable && [FieldTypeEnum.INPUT_NUMBER].includes(field.type) && isSameSubTableNumberField(field)) {
-          pushByType(field, numberGroup, dateGroup, true);
+          pushByType(field, numberGroup, dateGroup, textGroup, true);
         }
         return;
       }
 
       // 不在子表内
       if (!field.inSubTable) {
-        pushByType(field, numberGroup, dateGroup);
+        pushByType(field, numberGroup, dateGroup, textGroup);
       }
       if (field.inSubTable && [...allowFormulaType, FieldTypeEnum.FORMULA].includes(field.type)) {
         // 生成路径字段
@@ -283,11 +367,11 @@
       }
     });
 
-    return { numberGroup, dateGroup, arrayGroup };
+    return { numberGroup, dateGroup, arrayGroup, textGroup };
   }
 
   const allFieldListSource = computed(() => {
-    const { numberGroup, dateGroup, arrayGroup } = classifyFields(allFormFields.value);
+    const { numberGroup, dateGroup, arrayGroup, textGroup } = classifyFields(allFormFields.value);
     return [
       {
         name: t('crmFormDesign.inputNumber'),
@@ -303,6 +387,11 @@
         name: t('common.array'),
         type: 'ARRAY',
         children: arrayGroup,
+      },
+      {
+        name: t('common.text'),
+        type: 'TEXT',
+        children: textGroup,
       },
     ];
   });
@@ -403,6 +492,15 @@
         return {
           text: item.name,
           color: DATE_TIME_COLOR,
+          isFunction: false,
+        };
+      case FieldTypeEnum.INPUT:
+      case FieldTypeEnum.DATA_SOURCE:
+      case FieldTypeEnum.DATA_SOURCE_MULTIPLE:
+      case FieldTypeEnum.SERIAL_NUMBER:
+        return {
+          text: item.name,
+          color: TEXT_COLOR,
           isFunction: false,
         };
 
@@ -561,7 +659,9 @@
     });
 
     const saveResult = serializeFormulaFromAst(ast, fieldMap);
+
     const result = JSON.stringify(saveResult);
+    console.log(result, 'result');
     return result;
   }
 
@@ -578,8 +678,8 @@
       if (editor.value) {
         const { source, fields } = safeParseFormula(props.fieldConfig.formula ?? '');
         const fieldMap: Record<string, FormulaFormCreateField> = {};
-        const { numberGroup, dateGroup, arrayGroup } = classifyFields(allFormFields.value);
-        [...numberGroup, ...dateGroup, ...arrayGroup].forEach((item) => {
+        const { numberGroup, dateGroup, arrayGroup, textGroup } = classifyFields(allFormFields.value);
+        [...numberGroup, ...dateGroup, ...arrayGroup, ...textGroup].forEach((item) => {
           if (fields?.map((f: FormulaFieldMeta) => f.fieldId)?.includes(item.id)) {
             fieldMap[item.id] = item;
           }
@@ -779,5 +879,9 @@
     :focus-visible {
       outline: none;
     }
+  }
+  .function-desc-text {
+    font-size: 12px;
+    color: var(--text-n4);
   }
 </style>

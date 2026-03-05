@@ -30,14 +30,14 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'change', value: number | null): void;
+    (e: 'change', value: any): void;
   }>();
 
-  const value = defineModel<number | null>('value', {
+  const value = defineModel<any>('value', {
     default: 0,
   });
 
-  function handleChange(val: number | null) {
+  function handleChange(val: any) {
     emit('change', val);
   }
 </script>

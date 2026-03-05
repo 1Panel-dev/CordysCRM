@@ -9,6 +9,10 @@ export default {
   'formulaEditor.diagnostics.argCountErrorOfDAYS': '参数个数错误，必须为两个参数',
   'formulaEditor.function.argFirst': '参数1',
   'formulaEditor.function.argSecond': '参数2',
+  'formulaEditor.function.mergeText': '合并文本',
+  'formulaEditor.function.mergeTextWithSeparator': '带分隔符合并文本',
+  'formulaEditor.function.formatDateOrNumber': '日期/数值',
+  'formulaEditor.function.formatCodeText': '格式代码',
   'formulaEditor.diagnostics.expressionNotComplete': '参数表达式不完整',
   'formulaEditor.diagnostics.operatorLeftMissingExpression': '运算符左侧缺少表达式',
   'formulaEditor.diagnostics.operatorRightMissingExpression': '运算符右侧缺少表达式',
@@ -22,4 +26,5 @@ export default {
   'formulaEditor.diagnostics.missingOperator': '缺少运算符',
   'formulaEditor.diagnostics.invalidArgOfDAYS': '第{index}个参数类型错误，必须为数字或日期类型',
   'formulaEditor.diagnostics.missingOperatorUsedAsSeparator': '字段之间不能使用逗号，请使用运算符',
+  'formulaEditor.diagnostics.invalidArgOfCONCATENATE': '第{index}个参数类型错误，必须为文本类型',
 };

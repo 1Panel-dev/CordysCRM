@@ -1,7 +1,7 @@
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { FormulaErrorCode } from '../config';
-import { ASTNode, BinaryExpressionNode, FormulaDiagnostic, FunctionNode } from '../types';
+import { ASTNode, BinaryNode, FormulaDiagnostic, FunctionNode } from '../types';
 
 const { t } = useI18n();
 /**
@@ -35,7 +35,7 @@ export default function diagnoseIncompleteExpression(node: ASTNode): FormulaDiag
 
   //  二元表达式不完整
   if (node.type === 'binary') {
-    const binNode = node as BinaryExpressionNode;
+    const binNode = node as BinaryNode;
 
     if (!binNode.left || binNode.left.type === 'empty') {
       diagnostics.push({

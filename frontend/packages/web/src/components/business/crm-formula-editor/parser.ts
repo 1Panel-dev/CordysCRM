@@ -1,8 +1,18 @@
 // token--> AST结构
-import { ASTNode, FieldToken, FunctionNode, FunctionToken, NumberToken, OperatorToken, Token } from './types';
+import {
+  ASTNode,
+  BooleanToken,
+  FieldToken,
+  FunctionNode,
+  FunctionToken,
+  NumberToken,
+  OperatorToken,
+  StringToken,
+  Token,
+} from './types';
 
 export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
-  const meaningfulTokens = tokens.filter((t) => t.type !== 'text');
+  const meaningfulTokens = tokens;
 
   let index = 0;
 
@@ -20,12 +30,34 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
       };
     }
 
+    if (token.type === 'string') {
+      const t = consume() as StringToken;
+      return {
+        type: 'literal',
+        value: t.value,
+        valueType: 'string',
+        startTokenIndex: index - 1,
+        endTokenIndex: index - 1,
+      };
+    }
+
     if (token.type === 'number') {
       const t = consume() as NumberToken;
       return {
-        type: 'number',
+        type: 'literal',
         value: t.value,
-        numberType: 'number',
+        valueType: 'number',
+        startTokenIndex: index - 1,
+        endTokenIndex: index - 1,
+      };
+    }
+
+    if (token.type === 'boolean') {
+      const t = consume() as BooleanToken;
+      return {
+        type: 'literal',
+        value: t.value,
+        valueType: 'boolean',
         startTokenIndex: index - 1,
         endTokenIndex: index - 1,
       };
@@ -54,7 +86,7 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
       consume(); // '('
 
       // eslint-disable-next-line no-use-before-define
-      const expr = parseAdditive();
+      const expr = parseComparison();
 
       const close = peek();
       if (close?.type === 'paren' && close.value === ')') {
@@ -84,7 +116,7 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
 
       node = {
         type: 'binary',
-        operator: op.value,
+        operator: op.value as any,
         left: node,
         right,
         startTokenIndex: node.startTokenIndex,
@@ -107,7 +139,7 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
 
       node = {
         type: 'binary',
-        operator: op.value,
+        operator: op.value as any,
         left: node,
         right,
         startTokenIndex: node.startTokenIndex,
@@ -140,7 +172,8 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
           });
           consume();
         } else {
-          const expr = parseAdditive();
+          // eslint-disable-next-line no-use-before-define
+          const expr = parseComparison();
           args.push(expr);
 
           const after = peek();
@@ -166,11 +199,50 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
     };
   }
 
+  // 2) 新增 compare 判定
+  function isCompareOperator(token?: Token) {
+    return (
+      token?.type === 'operator' &&
+      (token.value === '=' ||
+        token.value === '<>' ||
+        token.value === '>' ||
+        token.value === '>=' ||
+        token.value === '<' ||
+        token.value === '<=')
+    );
+  }
+
+  // 3) 新增 parseComparison（放在 parseAdditive 后面）
+  function parseComparison(): ASTNode {
+    let node = parseAdditive();
+
+    let next = peek();
+    while (isCompareOperator(next)) {
+      const op = consume() as OperatorToken;
+      const right = parseAdditive();
+
+      node = {
+        type: 'compare',
+        operator: op.value as any,
+        left: node,
+        right,
+        startTokenIndex: node.startTokenIndex,
+        endTokenIndex: right.endTokenIndex,
+      };
+
+      next = peek();
+    }
+
+    return node;
+  }
+
   const astList: ASTNode[] = [];
 
   while (index < meaningfulTokens.length) {
-    astList.push(parseAdditive());
+    astList.push(parseComparison());
   }
+
+  console.log(astList, 'astList');
 
   return astList;
 }
