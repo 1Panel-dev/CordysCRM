@@ -27,6 +27,12 @@
         select pos from sys_module_field where form_id = #{formId} order by pos desc limit 1
     </select>
 
+    <select id="getFormSubFields" resultType="cn.cordys.crm.system.domain.ModuleFieldBlob">
+        select * from sys_module_field_blob where id in (
+            select id from sys_module_field where form_id = (select id from sys_module_form where form_key = #{formKey}) and type like '%SUB_%'
+        )
+    </select>
+
     <select id="getSourceOptionsByIds" resultType="cn.cordys.common.dto.OptionDTO">
         select id, name from ${tableName} where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">

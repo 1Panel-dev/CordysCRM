@@ -140,7 +140,7 @@ public class ModuleFieldService {
                 for (int i = 0; i < showFields.size(); i++) {
                     // 合同总金额字段初始化之后，显示字段替换成字段ID
                     if (Strings.CI.equalsAny(showFields.get(i),
-                            BusinessModuleField.CONTRACT_PRODUCT_SUM_AMOUNT.getKey(),
+                            "contractProductSumAmount",
                             BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey())) {
                         ModuleField contractNameField = selectFieldsByInternalKey(BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey());
                         if (contractNameField != null) {

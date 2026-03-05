@@ -205,7 +205,7 @@ public class ModuleFieldExtService {
 			List<String> sumColumns = new ArrayList<>();
 			subField.getSumColumns().forEach(col -> {
 				if (Strings.CS.equals(col, BusinessModuleField.QUOTATION_TOTAL_AMOUNT.getBusinessKey())) {
-					sumColumns.add(BusinessModuleField.QUOTATION_PRODUCT_AMOUNT.getBusinessKey());
+					sumColumns.add("sumAmount");
 				} else if (Strings.CS.contains(col, "_ref_")) {
 					sumColumns.add(col.split("ref_")[1]);
 				} else {
