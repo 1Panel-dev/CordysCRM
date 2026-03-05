@@ -52,7 +52,7 @@
     v-model:visible="showDetailDrawer"
     :source-id="activeSourceId"
     @edit="handleEdit"
-    @refresh="() => searchData()"
+    @refresh="() => searchData(undefined, activeSourceId)"
   />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
@@ -63,7 +63,7 @@
     :other-save-params="otherSaveParams"
     :link-form-info="linkFormInfo"
     :link-form-key="linkFormKey"
-    @saved="() => searchData()"
+    @saved="handleFormCreateSaved"
   />
   <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="batchOperationName" />
 
@@ -92,12 +92,11 @@
   import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
-  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
-  import { formatNumberValue } from '@lib/shared/method/formCreate';
   import { BatchOperationResult, QuotationItem } from '@lib/shared/models/opportunity';
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
@@ -106,9 +105,7 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import { inputNumberDefaultFieldConfig } from '@/components/business/crm-form-create/config';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
@@ -167,6 +164,8 @@
   const activeTab = ref();
   const keyword = ref('');
   const tableRefreshId = ref(0);
+  const tableRemoveRefreshId = ref('');
+  const tableRefreshItemId = ref('');
 
   const showApprovalModal = ref(false);
   function handleBatchApproval() {
@@ -277,7 +276,7 @@
         try {
           await voidQuotation(row.id);
           Message.success(t('common.voidSuccess'));
-          tableRefreshId.value += 1;
+          tableRefreshItemId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -298,7 +297,7 @@
         try {
           await deleteQuotation(row.id);
           Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
+          tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -311,7 +310,7 @@
     try {
       await revokeQuotation(row.id);
       Message.success(t('common.revokeSuccess'));
-      tableRefreshId.value += 1;
+      tableRefreshItemId.value = row.id;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -581,8 +580,7 @@
       ],
     };
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter, filterItem, advanceFilter } =
-    useTableRes;
+  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
   const isAdvancedSearchMode = ref(false);
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
@@ -627,14 +625,16 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
-  function searchData(_keyword?: string) {
+  function searchData(_keyword?: string, refreshId?: string) {
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
       viewId: props.sourceId ? 'ALL' : activeTab.value,
       opportunityId: props.sourceId,
     });
-    loadList();
-    crmTableRef.value?.scrollTo({ top: 0 });
+    loadList(false, refreshId);
+    if (!refreshId) {
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
 
   function searchByKeyword(val: string) {
@@ -643,6 +643,40 @@
       searchData();
     });
   }
+
+  function handleFormCreateSaved() {
+    if (needInitDetail.value) {
+      searchData(undefined, activeSourceId.value);
+    } else {
+      searchData();
+    }
+  }
+
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
+    }
+  );
+
+  watch(
+    () => tableRefreshItemId.value,
+    (val) => {
+      if (val) {
+        searchData(undefined, val);
+      }
+    }
+  );
 
   onBeforeMount(async () => {
     if (props.sourceId) {

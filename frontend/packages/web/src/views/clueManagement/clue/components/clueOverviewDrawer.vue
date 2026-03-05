@@ -73,7 +73,7 @@
         :other-save-params="otherFollowRecordSaveParams"
         :form-key="realFormKey"
         :initial-source-name="sourceName"
-        @saved="closeAndRefresh"
+        @saved="emit('saved')"
       />
     </template>
   </CrmOverviewDrawer>
@@ -82,9 +82,9 @@
     :reason-key="ReasonTypeEnum.CLUE_POOL_RS"
     :source-id="sourceId"
     :name="sourceName"
-    @refresh="() => closeAndRefresh()"
+    @refresh="emit('remove')"
   />
-  <convertClueModal v-model:show="showConvertClueModal" :clue-id="sourceId" @success="() => closeAndRefresh()" />
+  <convertClueModal v-model:show="showConvertClueModal" :clue-id="sourceId" @success="emit('remove')" />
 </template>
 
 <script setup lang="ts">
@@ -123,6 +123,8 @@
 
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'saved'): void;
+    (e: 'remove'): void;
     (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
@@ -183,7 +185,7 @@
         try {
           await deleteClue(sourceId.value);
           Message.success(t('common.deleteSuccess'));
-          closeAndRefresh();
+          emit('remove');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);

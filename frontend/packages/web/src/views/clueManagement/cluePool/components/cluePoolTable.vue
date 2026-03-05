@@ -87,7 +87,7 @@
     :pool-id="poolId"
     :detail="activeClue"
     :hidden-columns="hiddenColumns"
-    @refresh="handleRefresh"
+    @remove="removeItemFromList(activeClue?.id || '')"
   />
   <addOrEditPoolDrawer
     v-model:visible="drawerVisible"
@@ -95,6 +95,7 @@
     :row="cluePoolRow"
     quick
     @refresh="init"
+    @saved="handleFormCreateSaved(cluePoolRow?.id)"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -256,6 +257,7 @@
   };
 
   const tableRefreshId = ref(0);
+  const tableRemoveRefreshId = ref('');
 
   function handleRefresh() {
     checkedRowKeys.value = [];
@@ -338,7 +340,7 @@
         try {
           await deleteCluePool(row.id);
           Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
+          tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -356,7 +358,7 @@
         poolId: poolId.value,
       });
       Message.success(t('common.claimSuccess'));
-      tableRefreshId.value += 1;
+      tableRemoveRefreshId.value = row.id;
       openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
         id: row.id,
         transitionType: row.transitionType,
@@ -386,7 +388,7 @@
           });
           Message.success(t('common.distributeSuccess'));
           distributeForm.value = { ...defaultTransferForm };
-          tableRefreshId.value += 1;
+          tableRemoveRefreshId.value = id;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -574,10 +576,12 @@
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
 
-  function searchData(_keyword?: string, id?: string) {
+  function searchData(_keyword?: string, id?: string, refreshId?: string) {
     setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: id || poolId.value, viewId: activeTab.value });
-    loadList();
-    crmTableRef.value?.scrollTo({ top: 0 });
+    loadList(false, refreshId);
+    if (!refreshId) {
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
 
   handleSearchData.value = searchData;
@@ -596,6 +600,31 @@
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[])
+  );
+
+  function handleFormCreateSaved(res: any) {
+    if (cluePoolRow.value.id) {
+      searchData(undefined, res.id);
+    } else {
+      searchData();
+    }
+  }
+
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
+    }
   );
 
   watch(

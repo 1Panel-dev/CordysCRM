@@ -65,7 +65,6 @@
   import { getCityPath, getGenerateId, getIndustryPath } from '@lib/shared/method';
   import {
     dataSourceTypes,
-    formatNumberValue,
     linkAllAcceptTypes,
     mergeUniqueOptions,
     multipleTypes,

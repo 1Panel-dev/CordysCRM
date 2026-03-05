@@ -87,7 +87,7 @@
       :source-id="activeContactId"
       :need-init-detail="needInitDetail"
       :initial-source-name="props.initialSourceName"
-      @saved="() => searchData()"
+      @saved="handleFormCreateSaved"
     />
     <!-- 停用 -->
     <CrmModal
@@ -229,6 +229,8 @@
   const activeContactName = ref('');
   const needInitDetail = ref(false);
   const tableRefreshId = ref(0);
+  const tableRemoveRefreshId = ref('');
+  const tableItemRefreshId = ref('');
 
   const activeTab = ref();
 
@@ -306,7 +308,7 @@
           try {
             await deleteCustomerContact(row.id);
             Message.success(t('common.deleteSuccess'));
-            tableRefreshId.value += 1;
+            tableRemoveRefreshId.value = row.id;
           } catch (error) {
             // eslint-disable-next-line no-console
             console.log(error);
@@ -354,7 +356,7 @@
           try {
             await enableCustomerContact(row.id);
             Message.success(t('common.activated'));
-            tableRefreshId.value += 1;
+            tableItemRefreshId.value = row.id;
           } catch (error) {
             // eslint-disable-next-line no-console
             console.log(error);
@@ -362,25 +364,6 @@
         },
       });
     }
-  }
-
-  async function handleDeactivate() {
-    formRef.value?.validate(async (error) => {
-      if (!error) {
-        try {
-          deactivateLoading.value = true;
-          await disableCustomerContact(activeContactId.value, form.value.reason);
-          Message.success(t('common.deactivated'));
-          deactivateModalVisible.value = false;
-          tableRefreshId.value += 1;
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log(e);
-        } finally {
-          deactivateLoading.value = false;
-        }
-      }
-    });
   }
 
   function handleActionSelect(row: CustomerContractListItem, actionKey: string) {
@@ -511,7 +494,7 @@
   }
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  async function searchData(val?: string) {
+  async function searchData(val?: string, refreshId?: string) {
     if (props.sourceId) {
       if (val) {
         const lowerCaseVal = val.toLowerCase();
@@ -520,15 +503,17 @@
         });
       } else {
         setLoadListParams({ id: props.sourceId });
-        await loadList(true);
+        await loadList(false, refreshId);
         backupData.value = cloneDeep(propsRes.value.data);
       }
     } else {
       setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
-      await loadList();
+      await loadList(false, refreshId);
       backupData.value = cloneDeep(propsRes.value.data);
     }
-    crmTableRef.value?.scrollTo({ top: 0 });
+    if (!refreshId) {
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
 
   function handleRefresh() {
@@ -537,6 +522,25 @@
   }
 
   handleSearchData.value = searchData;
+
+  async function handleDeactivate() {
+    formRef.value?.validate(async (error) => {
+      if (!error) {
+        try {
+          deactivateLoading.value = true;
+          await disableCustomerContact(activeContactId.value, form.value.reason);
+          Message.success(t('common.deactivated'));
+          deactivateModalVisible.value = false;
+          searchData(undefined, activeContactId.value);
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e);
+        } finally {
+          deactivateLoading.value = false;
+        }
+      }
+    });
+  }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = ref(false);
@@ -558,6 +562,40 @@
   }
 
   handleAdvanceFilter.value = handleAdvSearch;
+
+  function handleFormCreateSaved() {
+    if (needInitDetail.value) {
+      searchData(undefined, activeContactId.value);
+    } else {
+      searchData();
+    }
+  }
+
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
+    }
+  );
+
+  watch(
+    () => tableItemRefreshId.value,
+    (val) => {
+      if (val) {
+        searchData(undefined, val);
+      }
+    }
+  );
 
   watch(
     () => tableRefreshId.value,

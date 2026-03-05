@@ -73,13 +73,14 @@
     :row="openSeaRow"
     quick
     @refresh="init"
+    @saved="searchData(undefined, undefined, openSeaRow?.id)"
   />
   <openSeaOverviewDrawer
     v-model:show="showOverviewDrawer"
     :source-id="activeCustomerId"
     :pool-id="openSea"
     :hidden-columns="hiddenColumns"
-    @change="searchData"
+    @change="searchData(undefined, undefined, activeCustomerId)"
   />
   <TransferModal
     v-model:show="showDistributeModal"
@@ -238,6 +239,7 @@
   };
 
   const tableRefreshId = ref(0);
+  const tableRemoveRefreshId = ref('');
 
   // 批量领取
   function handleBatchClaim() {
@@ -366,7 +368,7 @@
         try {
           await deleteOpenSeaCustomer(row.id);
           Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
+          tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -383,7 +385,7 @@
         poolId: openSea.value,
       });
       Message.success(t('common.claimSuccess'));
-      tableRefreshId.value += 1;
+      tableRemoveRefreshId.value = row.id;
       openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
         id: row.id,
       });
@@ -403,7 +405,7 @@
         assignUserId: distributeForm.value.owner,
       });
       Message.success(t('common.distributeSuccess'));
-      tableRefreshId.value += 1;
+      tableRemoveRefreshId.value = id;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -560,13 +562,13 @@
   handleAdvanceFilter.value = handleAdvSearch;
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  function searchData(_keyword?: string, poolId?: string) {
+  function searchData(_keyword?: string, poolId?: string, refreshId?: string) {
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
       poolId: props.hiddenPoolSelect ? undefined : poolId || openSea.value,
       viewId: activeTab.value,
     });
-    loadList();
+    loadList(false, refreshId);
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
@@ -641,6 +643,23 @@
     checkedRowKeys.value = [];
     searchData();
   }
+
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
+    }
+  );
 
   onBeforeMount(() => {
     if (!props.hiddenPoolSelect) {

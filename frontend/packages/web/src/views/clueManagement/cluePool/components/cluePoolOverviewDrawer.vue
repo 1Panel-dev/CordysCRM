@@ -86,7 +86,7 @@
   });
 
   const emit = defineEmits<{
-    (e: 'refresh'): void;
+    (e: 'remove'): void;
   }>();
 
   const { openModal } = useModal();
@@ -160,7 +160,7 @@
           });
           Message.success(t('common.distributeSuccess'));
           distributeForm.value = { ...defaultTransferForm };
-          emit('refresh');
+          emit('remove');
           show.value = false;
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -185,7 +185,7 @@
           await deleteCluePool(sourceId.value);
           Message.success(t('common.deleteSuccess'));
           show.value = false;
-          emit('refresh');
+          emit('remove');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -203,7 +203,7 @@
         poolId: props.poolId,
       });
       Message.success(t('common.claimSuccess'));
-      emit('refresh');
+      emit('remove');
       show.value = false;
       openNewPage(ClueRouteEnum.CLUE_MANAGEMENT, {
         id: sourceId.value,
