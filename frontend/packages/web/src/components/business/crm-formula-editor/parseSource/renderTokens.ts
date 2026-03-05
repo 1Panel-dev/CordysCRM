@@ -1,6 +1,6 @@
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
-import { ARRAY_COLOR, DATE_TIME_COLOR, FUN_COLOR, INPUT_NUMBER_COLOR } from '../config';
+import { ARRAY_COLOR, DATE_TIME_COLOR, FUN_COLOR, INPUT_NUMBER_COLOR, TEXT_COLOR } from '../config';
 import { FieldToken, Token } from '../types';
 import { createCaretText } from '../utils';
 
@@ -106,6 +106,11 @@ function getFormulaNodeColor(token: Token) {
 
     case FieldTypeEnum.DATE_TIME:
       return DATE_TIME_COLOR;
+    case FieldTypeEnum.INPUT:
+    case FieldTypeEnum.DATA_SOURCE:
+    case FieldTypeEnum.DATA_SOURCE_MULTIPLE:
+    case FieldTypeEnum.SERIAL_NUMBER:
+      return TEXT_COLOR;
 
     default:
       return '';
@@ -172,7 +177,22 @@ export function renderTokens(tokens: Token[], startIndex = 0): { fragment: Docum
       i++;
     } else {
       /** ---------- other ---------- */
-      fragment.appendChild(document.createTextNode(token.type === 'number' ? String(token.value) : token.value!));
+      let text = '';
+      if (token.type === 'number') {
+        text = String(token.value);
+      } else if (token.type === 'string') {
+        text = `"${token.value ?? ''}"`;
+      } else if (token.type === 'boolean') {
+        text = token.value ? 'TRUE' : 'FALSE';
+      } else if (token.type === 'operator') {
+        text = token.value;
+      } else if (token.type === 'comma') {
+        text = ',';
+      } else {
+        text = String(token.value ?? '');
+      }
+
+      fragment.appendChild(document.createTextNode(text));
       i++;
     }
   }

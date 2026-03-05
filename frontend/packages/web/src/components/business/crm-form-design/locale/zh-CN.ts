@@ -192,6 +192,12 @@ export default {
   'crmFormDesign.formulaSelectUsageTip': '请选择左侧函数',
   'crmFormDesign.formulaSUMDescription': '求和',
   'crmFormDesign.formulaDAYSDescription': '计算两个日期之间的天数差',
+  'crmFormDesign.formulaCONCATENATEDescription': '将多个文本合并成一个文本',
+  'crmFormDesign.formulaTEXTDescription': '将数值、日期、时间按指定格式转为文本',
+  'crmFormDesign.formulaIFSDescription': '按顺序检查多个条件，并返回第一个满足条件的对应结果',
+  'crmFormDesign.formulaTODAYDescription': '返回当前系统日期（不含时间）',
+  'crmFormDesign.formulaNOWDescription': '返回当前系统日期和时间（含时间戳）',
+  'crmFormDesign.formulaANDDescription': '返回当前系统日期和时间（含时间戳）', // todo
   'crmFormDesign.amount': '金额',
   'crmFormDesign.CLUE_TO_CUSTOMER': '线索转客户',
   'crmFormDesign.CLUE_TO_OPPORTUNITY': '线索转商机',

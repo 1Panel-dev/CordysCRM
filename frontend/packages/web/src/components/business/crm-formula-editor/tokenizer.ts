@@ -1,5 +1,5 @@
 // editorDom->token
-import { NumberToken, NumberType, Token } from './types';
+import { NumberType, Token } from './types';
 
 /**
  * 判断字符是否为可忽略的空白字符
@@ -103,79 +103,207 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
       if (innerTokens.length > 0) {
         charIndex = innerTokens[innerTokens.length - 1].end;
       }
-      return;
-    }
-
-    if (node.nodeType === Node.TEXT_NODE) {
+    } else if (node.nodeType === Node.TEXT_NODE) {
       const raw = node.textContent || '';
       const text = raw.replace(/[\u200B-\u200D\uFEFF]/g, '');
-      if (!text) return;
+      if (!text) {
+        return;
+      }
 
-      Array.from(text).forEach((char) => {
-        // 不校验空格
+      let i = 0;
+
+      while (i < text.length) {
+        const char = text[i];
+
+        // ===== 空白 =====
         if (isIgnorableWhitespace(char)) {
-          charIndex++; // 遇到空格位置仍然前进
-          return;
+          charIndex++;
+          i++;
         }
-        const start = charIndex;
-        const end = start + 1;
 
-        /** 数字 */
-        if (/\d/.test(char)) {
-          const last = tokens[tokens.length - 1];
-          if (last && last.type === 'number') {
-            (last as NumberToken).value = Number(`${(last as NumberToken).value}${char}`);
-            last.end = end;
-          } else {
+        // ===== 字符串 =====
+        else if (char === '"') {
+          const start = charIndex;
+          let value = '';
+          let j = i + 1;
+          let closed = false;
+
+          while (j < text.length) {
+            if (text[j] === '"') {
+              closed = true;
+              break;
+            }
+            value += text[j];
+            j++;
+          }
+
+          if (closed) {
             tokens.push({
-              type: 'number',
-              value: Number(char),
-              numberType: 'number',
+              type: 'string',
+              value,
               start,
-              end,
+              end: start + (j - i) + 1,
+            });
+
+            charIndex += j - i + 1;
+            i = j + 1;
+          } else {
+            // 未闭合字符串 → unknown
+            tokens.push({
+              type: 'unknown',
+              value: text.slice(i),
+              start,
+              end: start + (text.length - i),
+            });
+
+            charIndex += text.length - i;
+            i = text.length;
+          }
+        }
+
+        // ===== 数字 =====
+        else if (/\d/.test(char)) {
+          const start = charIndex;
+          let numStr = char;
+          let j = i + 1;
+
+          while (j < text.length && /\d/.test(text[j])) {
+            numStr += text[j];
+            j++;
+          }
+
+          tokens.push({
+            type: 'number',
+            value: Number(numStr),
+            numberType: 'number',
+            start,
+            end: start + numStr.length,
+          });
+
+          charIndex += numStr.length;
+          i = j;
+        }
+        // 布尔值
+        else if (/[A-Za-z]/.test(char)) {
+          const start = charIndex;
+
+          let word = char;
+          let j = i + 1;
+
+          while (j < text.length && /[A-Za-z]/.test(text[j])) {
+            word += text[j];
+            j++;
+          }
+
+          const upper = word.toUpperCase();
+
+          if (upper === 'TRUE' || upper === 'FALSE') {
+            tokens.push({
+              type: 'boolean',
+              value: upper === 'TRUE',
+              start,
+              end: start + word.length,
+            });
+          } else {
+            // 不是支持的关键字，就按 unknown 整段报（比逐字符 unknown 更好）
+            tokens.push({
+              type: 'unknown',
+              value: word,
+              start,
+              end: start + word.length,
             });
           }
-          charIndex = end;
-        } else if (['+', '-', '*', '/'].includes(char)) {
-          /** 操作符 */
+
+          charIndex += word.length;
+          i = j;
+        }
+
+        // ===== 比较运算符 =====
+        else if (char === '=' || char === '<' || char === '>') {
+          const start = charIndex;
+          const next = text[i + 1];
+
+          let value = char;
+          let length = 1;
+
+          if (char === '>' && next === '=') {
+            value = '>=';
+            length = 2;
+          } else if (char === '<' && next === '=') {
+            value = '<=';
+            length = 2;
+          } else if (char === '<' && next === '>') {
+            value = '<>';
+            length = 2;
+          }
+
+          tokens.push({
+            type: 'operator',
+            value: value as any,
+            start,
+            end: start + length,
+          });
+
+          charIndex += length;
+          i += length;
+        }
+
+        // ===== 操作符 =====
+        else if (['+', '-', '*', '/'].includes(char)) {
           tokens.push({
             type: 'operator',
             value: char as any,
-            start,
-            end,
+            start: charIndex,
+            end: charIndex + 1,
           });
-          charIndex = end;
-        } else if (char === '(' || char === ')') {
-          /** 括号 */
+
+          charIndex++;
+          i++;
+        }
+
+        // ===== 括号 =====
+        else if (char === '(' || char === ')') {
           tokens.push({
             type: 'paren',
             value: char,
-            start,
-            end,
+            start: charIndex,
+            end: charIndex + 1,
           });
-          charIndex = end;
-        } else if (char === ',' || char === '，') {
-          /** 英文逗号 */
+
+          charIndex++;
+          i++;
+        }
+
+        // ===== 逗号 =====
+        else if (char === ',' || char === '，') {
           tokens.push({
             type: 'comma',
             value: char,
-            start,
-            end,
+            start: charIndex,
+            end: charIndex + 1,
           });
-          charIndex = end;
-        } else {
-          /** 其他字符 */
-          tokens.push({
-            type: 'text',
-            value: char,
-            start,
-            end,
-          });
-          charIndex = end;
+
+          charIndex++;
+          i++;
         }
-      });
+
+        // ===== 其他非法字符 =====
+        else {
+          tokens.push({
+            type: 'unknown',
+            value: char,
+            start: charIndex,
+            end: charIndex + 1,
+          });
+
+          charIndex++;
+          i++;
+        }
+      }
     }
   });
+
+  console.log(tokens, 'tokens:tokenizeFromEditor');
 
   return tokens;
 }

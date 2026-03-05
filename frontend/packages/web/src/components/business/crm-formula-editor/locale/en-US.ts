@@ -9,6 +9,10 @@ export default {
   'formulaEditor.diagnostics.argCountErrorOfDAYS': 'Parameter count error, must be two parameters',
   'formulaEditor.function.argFirst': 'Parameter 1',
   'formulaEditor.function.argSecond': 'Parameter 2',
+  'formulaEditor.function.mergeText': 'Merge the text',
+  'formulaEditor.function.mergeTextWithSeparator': 'Merged text with separators',
+  'formulaEditor.function.formatDateOrNumber': 'Date/Number',
+  'formulaEditor.function.formatCodeText': 'Formatter Code',
   'formulaEditor.diagnostics.expressionNotComplete': 'Incomplete parameter expression',
   'formulaEditor.diagnostics.operatorLeftMissingExpression': 'Operator is missing an expression on the left side',
   'formulaEditor.diagnostics.operatorRightMissingExpression': 'Operator is missing an expression on the right side',
@@ -23,5 +27,8 @@ export default {
   'formulaEditor.diagnostics.missingOperator': 'Missing operator',
   'formulaEditor.diagnostics.invalidArgOfDAYS':
     'The {index}th parameter type error, parameter must be of number or date type',
-  'c': 'Commas cannot be used between fields, please use operators',
+  'formulaEditor.diagnostics.missingOperatorUsedAsSeparator':
+    'Commas cannot be used between fields, please use operators',
+  'formulaEditor.diagnostics.invalidArgOfCONCATENATE':
+    'The type of the {index} th parameter is incorrect. It must be of text type',
 };

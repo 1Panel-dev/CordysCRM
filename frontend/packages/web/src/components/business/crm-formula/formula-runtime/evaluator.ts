@@ -1,6 +1,6 @@
 import FUNCTION_IMPL from './functions';
-import { EvaluateContext, IRFieldNode, IRNode } from './types';
-
+import { EvaluateContext, IRBinaryNode, IRFieldNode, IRLiteralNode, IRNode } from './types';
+// todo 执行器要调整
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EXCEL_EPOCH = new Date(1899, 11, 30).getTime(); // Excel 的日期序列号是从 1900-01-01 开始的，但为了兼容 Lotus 1-2-3 的错误，Excel 实际上把 1900-02-29 也当成了一个有效日期，所以 Excel 的 epoch 是 1899-12-30
 
@@ -80,10 +80,49 @@ export function resolveFieldValue(rawVal: any, node: IRNode): number {
   return num;
 }
 
+function compareValues(op: '=' | '<>' | '>' | '>=' | '<' | '<=', left: any, right: any): boolean {
+  // 先做最小语义：两边都是 number 用数值，否则用原值比较/字符串相等
+  const bothNumber = typeof left === 'number' && typeof right === 'number';
+
+  // '=' / '<>'：非 number 时按“字符串”比较更贴近 Excel 文本比对
+  if (op === '=' || op === '<>') {
+    const eq = bothNumber ? left === right : String(left ?? '') === String(right ?? '');
+    return op === '=' ? eq : !eq;
+  }
+
+  // 其它比较：优先 number，否则退化为字符串比较（先跑通，后面再升级 Excel coercion）
+  const l = bothNumber ? left : String(left ?? '');
+  const r = bothNumber ? right : String(right ?? '');
+
+  switch (op) {
+    case '>':
+      return l > r;
+    case '>=':
+      return l >= r;
+    case '<':
+      return l < r;
+    case '<=':
+      return l <= r;
+    default:
+      return false;
+  }
+}
+
 export default function evaluateIR(node: IRNode, ctx: EvaluateContext): any {
   switch (node.type) {
-    case 'number':
-      return node.value;
+    case 'literal': {
+      const literal = node as IRLiteralNode;
+
+      if (literal.valueType === 'number') {
+        return Number(literal.value) || 0;
+      }
+
+      if (literal.valueType === 'string') {
+        return String(literal.value ?? '');
+      }
+
+      return literal.value;
+    }
 
     case 'field': {
       // 子表字段：返回一组 number
@@ -110,9 +149,15 @@ export default function evaluateIR(node: IRNode, ctx: EvaluateContext): any {
         case '/':
           return right === 0 ? 0 : left / right;
         default:
-          ctx.warn?.(`Unknown operator ${node.operator}`);
+          ctx.warn?.(`Unknown operator ${(node as IRBinaryNode)?.operator}`);
           return null;
       }
+    }
+
+    case 'compare': {
+      const left = evaluateIR(node.left, ctx);
+      const right = evaluateIR(node.right, ctx);
+      return compareValues(node.operator, left, right);
     }
 
     case 'function': {

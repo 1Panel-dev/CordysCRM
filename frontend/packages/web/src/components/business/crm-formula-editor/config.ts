@@ -8,7 +8,15 @@ const { t } = useI18n();
 export const INPUT_NUMBER_COLOR = 'var(--info-blue)'; // 数字主题颜色
 export const DATE_TIME_COLOR = 'var(--success-green)'; // 日期主题颜色
 export const ARRAY_COLOR = 'var(--warning-yellow)'; // 数组主题颜色
+export const TEXT_COLOR = 'var(--primary-1)'; // 文本主题颜色
 export const FUN_COLOR = '#9170fd'; // 函数主题颜色
+
+export const TEXT_TYPE = [
+  FieldTypeEnum.INPUT,
+  FieldTypeEnum.DATA_SOURCE,
+  FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+  FieldTypeEnum.SERIAL_NUMBER,
+];
 
 export const defaultFormulaConfig = {
   source: '',
@@ -43,6 +51,84 @@ export const allFunctionSource: (FormCreateField & { isFunction: boolean })[] = 
     fieldWidth: 0,
     rules: [],
     description: t('crmFormDesign.formulaDAYSDescription'),
+  },
+  {
+    icon: 'CONCATENATE',
+    name: 'CONCATENATE',
+    id: 'CONCATENATE',
+    isFunction: true,
+    type: FieldTypeEnum.INPUT,
+    showLabel: true,
+    readable: false,
+    editable: false,
+    fieldWidth: 0,
+    rules: [],
+    description: t('crmFormDesign.formulaCONCATENATEDescription'),
+  },
+  {
+    icon: 'TEXT',
+    name: 'TEXT',
+    id: 'TEXT',
+    isFunction: true,
+    type: FieldTypeEnum.INPUT,
+    showLabel: true,
+    readable: false,
+    editable: false,
+    fieldWidth: 0,
+    rules: [],
+    description: t('crmFormDesign.formulaTEXTDescription'),
+  },
+  {
+    icon: 'IFS',
+    name: 'IFS',
+    id: 'IFS',
+    isFunction: true,
+    type: FieldTypeEnum.INPUT,
+    showLabel: true,
+    readable: false,
+    editable: false,
+    fieldWidth: 0,
+    rules: [],
+    description: t('crmFormDesign.formulaIFSDescription'),
+  },
+  {
+    icon: 'TODAY',
+    name: 'TODAY',
+    id: 'TODAY',
+    isFunction: true,
+    type: FieldTypeEnum.INPUT,
+    showLabel: true,
+    readable: false,
+    editable: false,
+    fieldWidth: 0,
+    rules: [],
+    description: t('crmFormDesign.formulaTODAYDescription'),
+  },
+  {
+    icon: 'NOW',
+    name: 'NOW',
+    id: 'NOW',
+    isFunction: true,
+    type: FieldTypeEnum.INPUT,
+    showLabel: true,
+    readable: false,
+    editable: false,
+    fieldWidth: 0,
+    rules: [],
+    description: t('crmFormDesign.formulaNOWDescription'),
+  },
+  {
+    icon: 'AND',
+    name: 'AND',
+    id: 'AND',
+    isFunction: true,
+    type: FieldTypeEnum.INPUT,
+    showLabel: true,
+    readable: false,
+    editable: false,
+    fieldWidth: 0,
+    rules: [],
+    description: t('crmFormDesign.formulaANDDescription'),
   },
 ];
 
