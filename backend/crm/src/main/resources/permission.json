@@ -658,19 +658,19 @@
         "name": "permission.order.name",
         "permissions": [
           {
-            "id": "ORDER_ORDER:READ"
+            "id": "ORDER:READ"
           },
           {
-            "id": "ORDER_ORDER:ADD"
+            "id": "ORDER:ADD"
           },
           {
-            "id": "ORDER_ORDER:UPDATE"
+            "id": "ORDER:UPDATE"
           },
           {
-            "id": "ORDER_ORDER:DELETE"
+            "id": "ORDER:DELETE"
           },
           {
-            "id": "ORDER_ORDER:DOWNLOAD"
+            "id": "ORDER:DOWNLOAD"
           }
         ]
       }
