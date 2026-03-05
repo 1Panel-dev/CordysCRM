@@ -240,6 +240,8 @@ public class DepartmentService extends MoveNodeService {
                 logs.add(logDTO);
             });
             logService.batchAdd(logs);
+        } else {
+            throw new GenericException(Translator.get("department.has.employee.cannot.delete"));
         }
     }
 
