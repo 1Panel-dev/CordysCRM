@@ -5,8 +5,8 @@ import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author song-cc-rock
@@ -18,7 +18,7 @@ public class ExportFieldParam {
 	/**
 	 * 子表格ID集合
 	 */
-	private List<String> subIds;
+	private Set<String> subIds;
 
 	/**
 	 * 字段配置
