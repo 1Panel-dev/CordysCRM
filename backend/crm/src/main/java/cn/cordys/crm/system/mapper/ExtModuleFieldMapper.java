@@ -2,6 +2,7 @@ package cn.cordys.crm.system.mapper;
 
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.system.domain.ModuleField;
+import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -44,4 +45,11 @@ public interface ExtModuleFieldMapper {
 	 * @return 位置下标
 	 */
 	Long getMaxFieldPosByFormId(String formId);
+
+	/**
+	 * 获取表单子表格字段集合
+	 * @param formKey 表单Key
+	 * @return 子表格字段集合
+	 */
+	List<ModuleFieldBlob> getFormSubFields(@Param("formKey") String formKey);
 }

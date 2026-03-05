@@ -809,7 +809,7 @@ public class ModuleFormService {
                         .collect(Collectors.toMap(ModuleFieldBlob::getId,
                                 filedBlob -> JSON.parseObject(filedBlob.getProp(), BaseField.class)));
 
-                List<BaseField> subFields = getSubFieldsBySourceType(sourceField.getDataSourceType());
+                List<BaseField> subFields = getSubFieldsBySourceType(FieldSourceType.PRICE.name());
                 Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
 
                 // 补充扩展的系统字段
@@ -890,28 +890,25 @@ public class ModuleFormService {
     }
 
     /**
-     * 获取指定数据源的子表字段集合
+     * 获取指定数据源的子表字段集合 (目前只有价格表类型的子表字段支持引用)
      *
      * @param sourceType 数据源类型
      * @return 子表字段集合
      */
     private List<BaseField> getSubFieldsBySourceType(String sourceType) {
-        LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+		List<ModuleFieldBlob> subFields = new ArrayList<>();
 		if (Strings.CS.equals(sourceType, FieldSourceType.PRICE.name())) {
-            fieldWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.PRICE_PRODUCT_TABLE.getKey());
-        } else if (Strings.CS.equals(sourceType, FieldSourceType.CONTRACT.name())) {
-            fieldWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.CONTRACT_PRODUCT_TABLE.getKey());
-        } else {
-            return new ArrayList<>();
-        }
-        List<ModuleField> subFields = moduleFieldMapper.selectListByLambda(fieldWrapper);
+			subFields = extModuleFieldMapper.getFormSubFields(FormKey.PRICE.getKey());
+		}
         if (CollectionUtils.isEmpty(subFields)) {
             return new ArrayList<>();
         }
-        String subId = subFields.getFirst().getId();
-        ModuleFieldBlob fieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(subId);
-        SubField subField = JSON.parseObject(fieldBlob.getProp(), SubField.class);
-        return subField.getSubFields();
+		List<BaseField> subFieldList = new ArrayList<>(subFields.size());
+		for (ModuleFieldBlob fieldBlob : subFields) {
+			SubField subField = JSON.parseObject(fieldBlob.getProp(), SubField.class);
+			subFieldList.addAll(subField.getSubFields());
+		}
+        return subFieldList;
     }
 
     /**
