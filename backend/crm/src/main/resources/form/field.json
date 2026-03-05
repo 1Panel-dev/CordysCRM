@@ -2522,7 +2522,7 @@
       "name": "收货地址",
       "internalKey": "orderDeliveryAddress",
       "type": "LOCATION",
-      "locationType": "detail",
+      "locationType": "PCD",
       "showLabel": true,
       "readable": true,
       "editable": true,
