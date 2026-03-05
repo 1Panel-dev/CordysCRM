@@ -343,20 +343,20 @@
    */
   async function handleDelete(option: CrmTreeNodeData) {
     const offspringIds = [option.id, ...getSpringIds((option as CrmTreeNodeData).children)];
-    const isNotAllow = await checkDeleteDepartment(offspringIds);
+    const canDelete = await checkDeleteDepartment(offspringIds);
     openModal({
-      type: 'error',
+      type: canDelete ? 'error' : 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(option.name) }),
-      content: !isNotAllow ? t('org.deleteExistUserDepartment') : t('org.deleteDepartmentContent'),
-      positiveText: !isNotAllow ? t('org.ok') : t('common.confirm'),
-      negativeText: !isNotAllow ? '' : t('common.cancel'),
+      content: canDelete ? t('org.deleteDepartmentContent') : t('org.deleteExistUserDepartment'),
+      positiveText: canDelete ? t('common.confirm') : t('org.ok'),
+      negativeText: canDelete ? t('common.cancel') : '',
       positiveButtonProps: {
-        type: !isNotAllow ? 'primary' : 'error',
+        type: canDelete ? 'error' : 'primary',
         size: 'medium',
       },
       onPositiveClick: async () => {
         try {
-          if (isNotAllow) {
+          if (canDelete) {
             await deleteDepartment(offspringIds);
             Message.success(t('common.deleteSuccess'));
             initTree(true);
@@ -364,6 +364,9 @@
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
+          if (error instanceof Error) {
+            Message.error(error.message);
+          }
         }
       },
     });
