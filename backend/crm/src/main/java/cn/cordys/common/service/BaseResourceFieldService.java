@@ -430,8 +430,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     // 获取字段解析器
                     AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
                     // 将数据库中的字符串值,转换为对应的对象值
-                    Object objectValue = customFieldResolver.convertToValue(fieldConfig, resourceField.getFieldValue().toString());
-                    resourceField.setFieldValue(objectValue);
+					Object objectValue = null;
+					try {
+						objectValue = customFieldResolver.convertToValue(fieldConfig, resourceField.getFieldValue().toString());
+						resourceField.setFieldValue(objectValue);
+					} catch (Exception e) {
+						log.error("Convert field value error: {}", e.getMessage());
+					}
+
                     if (objectValue == null) {
                         return;
                     }
@@ -882,8 +888,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                             return;
                         }
                         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
-                        Object objectValue = customFieldResolver.convertToValue(fieldConfig, resource.getFieldValue().toString());
-                        rowMap.put(subResource.getFieldId(), objectValue);
+						Object objectValue = null;
+						try {
+							objectValue = customFieldResolver.convertToValue(fieldConfig, resource.getFieldValue().toString());
+							rowMap.put(subResource.getFieldId(), objectValue);
+						} catch (Exception e) {
+							log.error("Convert sub field value error: {}", e.getMessage());
+						}
                         if (objectValue == null || !SourceDetailResolveContext.getSourceMap().containsKey(objectValue.toString())) {
                             return;
                         }

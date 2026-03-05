@@ -29,4 +29,5 @@ public class ExportDTO {
 	 */
 	private ExportFieldParam exportFieldParam;
 	private List<String> mergeHeads;
+	private List<FieldExportMeta> exportMetas;
 }

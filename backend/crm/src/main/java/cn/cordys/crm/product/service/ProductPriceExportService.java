@@ -3,6 +3,7 @@ package cn.cordys.crm.product.service;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportFieldParam;
+import cn.cordys.common.dto.FieldExportMeta;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
@@ -93,14 +94,13 @@ public class ProductPriceExportService extends BaseExportService {
 
         int offset = 0;
         ExportFieldParam exportFieldParam = exportParam.getExportFieldParam();
-        List<String> mergeHeads = exportParam.getMergeHeads();
 
         for (ProductPriceResponse response : dataList) {
 
             checkInterrupted(taskId);
 
             List<List<Object>> rows =
-                    buildData(response, optionMap, exportFieldParam, mergeHeads);
+                    buildData(response, optionMap, exportFieldParam, exportParam.getExportMetas());
 
             if (rows.size() > 1) {
                 mergeRegions.add(new int[]{offset, offset + rows.size() - 1});
@@ -132,7 +132,7 @@ public class ProductPriceExportService extends BaseExportService {
     private List<List<Object>> buildData(ProductPriceResponse detail,
                                          Map<String, List<OptionDTO>> optionMap,
                                          ExportFieldParam exportFieldParam,
-                                         List<String> heads) {
+                                         List<FieldExportMeta> metas) {
 
         LinkedHashMap<String, Object> systemFieldMap =
                 ProductPriceUtils.getSystemFieldMap(detail, optionMap);
@@ -140,7 +140,7 @@ public class ProductPriceExportService extends BaseExportService {
         return buildDataWithSub(
                 detail.getModuleFields(),
                 exportFieldParam,
-                heads,
+				metas,
                 systemFieldMap
         );
     }

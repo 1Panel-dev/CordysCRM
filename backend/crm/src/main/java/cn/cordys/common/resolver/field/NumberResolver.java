@@ -31,9 +31,9 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
     }
 
     @Override
-    public Object transformToValue(InputNumberField numberField, String value) {
-        return value == null ? null : new BigDecimal(value);
-    }
+    public Object transformToValue(InputNumberField selectField, String value) {
+		return super.transformToValue(selectField, value);
+	}
 
     @Override
     public Object textToValue(InputNumberField field, String text) {
