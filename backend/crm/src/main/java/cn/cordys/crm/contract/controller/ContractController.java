@@ -18,6 +18,9 @@ import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.*;
 import cn.cordys.crm.contract.service.*;
 import cn.cordys.crm.customer.dto.request.ContractDetailInvoicePageRequest;
+import cn.cordys.crm.customer.dto.request.ContractOrderPageRequest;
+import cn.cordys.crm.order.dto.response.OrderListResponse;
+import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -51,6 +54,8 @@ public class ContractController {
 	private ContractPaymentRecordService contractPaymentRecordService;
     @Resource
     private ContractInvoiceService contractInvoiceService;
+    @Resource
+    private OrderService orderService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
 
@@ -228,6 +233,17 @@ public class ContractController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
         return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @PostMapping("/order/page")
+    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.ORDER_READ})
+    @Operation(summary = "合同详情-订单列表")
+    public PagerWithOption<List<OrderListResponse>> invoiceList(@Validated @RequestBody ContractOrderPageRequest request) {
+        ConditionFilterUtils.parseCondition(request);
+        request.setViewId(InternalUserView.ALL.name());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.ORDER_READ);
+        return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
     }
 
     @GetMapping("/invoice/statistic/{contractId}")
