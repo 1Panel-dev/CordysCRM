@@ -13,15 +13,21 @@ COPY . /build
 COPY --from=frontend /frontend/packages/web/dist /build/frontend/packages/web/dist
 COPY --from=frontend /frontend/packages/mobile/dist /build/frontend/packages/mobile/dist
 
-RUN ./mvnw clean package -DskipTests -pl '!frontend'
+RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
+    mkdir backend/app/target/dependency && \
+    cd backend/app/target/dependency && \
+    jar -xf ../*.jar
 
 FROM ghcr.io/cordys-dev/cordys-base:latest
 
 LABEL maintainer="FIT2CLOUD <support@fit2cloud.com>"
 
 ARG MODULE=app
+ARG DEPENDENCY=/build/backend/${MODULE}/target/dependency
 
-COPY --from=build /build/backend/${MODULE}/target/app-main.jar /app/cordys-crm.jar
+COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
+COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
+COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
 COPY --from=build /build/backend/${MODULE}/src/main/resources/static /app/static
 COPY installer/shells /shells
 COPY installer/conf /installer/conf
