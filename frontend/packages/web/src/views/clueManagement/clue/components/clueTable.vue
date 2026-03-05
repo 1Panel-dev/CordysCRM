@@ -81,6 +81,8 @@
     :detail="activeClue"
     @refresh="handleRefresh"
     @open-customer-drawer="handleOpenCustomerDetail"
+    @saved="() => searchData(undefined, activeClueId)"
+    @remove="removeItemFromList(activeClueId)"
   />
   <CrmFormCreateDrawer
     v-if="isInitFormCreateDrawer"
@@ -93,7 +95,7 @@
     :link-form-info="linkFormFieldMap"
     :link-form-key="FormDesignKeyEnum.CLUE"
     :link-scenario="formKey === FormDesignKeyEnum.FOLLOW_RECORD_CLUE ? FormLinkScenarioEnum.CLUE_TO_RECORD : undefined"
-    @saved="() => searchData()"
+    @saved="handleFormCreateSaved"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -122,7 +124,11 @@
     :source-id="customerId"
     readonly
   />
-  <convertClueModal v-model:show="showConvertClueModal" :clue-id="activeClueId" @success="() => searchData()" />
+  <convertClueModal
+    v-model:show="showConvertClueModal"
+    :clue-id="activeClueId"
+    @success="removeItemFromList(activeClueId)"
+  />
 
   <CrmBatchEditModal
     v-model:visible="showEditModal"
@@ -260,11 +266,7 @@
   });
 
   const tableRefreshId = ref(0);
-
-  function handleRefresh() {
-    checkedRowKeys.value = [];
-    tableRefreshId.value += 1;
-  }
+  const tableRemoveRefreshId = ref('');
 
   const showExportModal = ref<boolean>(false);
   const activeRowName = ref('');
@@ -275,6 +277,15 @@
     activeRowName.value = row?.name ?? '';
     moveIds.value = row?.id ? row.id : checkedRowKeys.value;
     showMoveModal.value = true;
+  }
+
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    if (typeof moveIds.value === 'string' || typeof moveIds.value === 'number') {
+      tableRemoveRefreshId.value = moveIds.value.toString();
+    } else {
+      tableRefreshId.value += 1;
+    }
   }
 
   // 批量删除
@@ -369,7 +380,7 @@
         try {
           await deleteClue(row.id);
           Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
+          tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -650,10 +661,12 @@
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
 
-  function searchData(val?: string) {
+  function searchData(val?: string, refreshId?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
-    loadList();
-    crmTableRef.value?.scrollTo({ top: 0 });
+    loadList(false, refreshId);
+    if (!refreshId) {
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
 
   handleSearchData.value = searchData;
@@ -702,6 +715,31 @@
     setAdvanceFilter(filterResult);
     activeTab.value = viewId;
   }
+
+  function handleFormCreateSaved(res: any) {
+    if (needInitDetail.value) {
+      searchData(undefined, res.id);
+    } else {
+      searchData();
+    }
+  }
+
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
+    }
+  );
 
   watch(
     () => activeTab.value,

@@ -120,6 +120,7 @@
 
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'remove'): void;
     (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
@@ -256,7 +257,7 @@
           transferForm.value = { ...defaultTransferForm };
           showOptOverviewDrawer.value = false;
           done?.();
-          emit('refresh');
+          emit('remove');
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -280,7 +281,7 @@
           await deleteOpt(sourceId.value);
           Message.success(t('common.deleteSuccess'));
           showOptOverviewDrawer.value = false;
-          emit('refresh');
+          emit('remove');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);

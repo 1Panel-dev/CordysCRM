@@ -138,7 +138,8 @@
   <OptOverviewDrawer
     v-model:show="showOverviewDrawer"
     :detail="activeOpportunity"
-    @refresh="handleRefresh"
+    @refresh="() => searchData(undefined, activeSourceId)"
+    @remove="removeItemFromList(activeOpportunity?.id || '')"
     @open-customer-drawer="handleOpenCustomerDrawer"
   />
   <CrmFormCreateDrawer
@@ -151,7 +152,7 @@
     :link-form-info="linkFormInfo"
     :link-form-key="linkFormKey"
     :link-scenario="linkScenario"
-    @saved="() => searchData()"
+    @saved="handleFormCreateSaved"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -166,7 +167,7 @@
     :pool-id="openSea"
     :source-id="activeSourceId"
     :hidden-columns="props.openseaHiddenColumns || []"
-    @change="searchData"
+    @change="searchData(undefined, activeSourceId)"
   />
 
   <CrmBatchEditModal
@@ -264,6 +265,7 @@
   const keyword = ref('');
   const tableRefreshId = ref(0);
   const billboardTotalCount = ref(0);
+  const tableRemoveRefreshId = ref('');
 
   const stageConfig = ref<OpportunityStageConfig>();
   async function initStageConfig() {
@@ -467,7 +469,7 @@
         try {
           await deleteOpt(row.id);
           Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
+          tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -835,7 +837,7 @@
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[])
   );
 
-  function searchData(_keyword?: string) {
+  function searchData(_keyword?: string, refreshId?: string) {
     if (!activeTab.value && !props.isCustomerTab && props.formKey !== FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY)
       return;
     setLoadListParams({
@@ -847,9 +849,11 @@
       billboardRef.value?.refresh();
       getStatistic(_keyword);
     } else {
-      loadList();
+      loadList(false, refreshId);
       getStatistic(_keyword);
-      crmTableRef.value?.scrollTo({ top: 0 });
+      if (!refreshId) {
+        crmTableRef.value?.scrollTo({ top: 0 });
+      }
     }
   }
 
@@ -1029,6 +1033,32 @@
   function handleBillboardInit(total: number) {
     billboardTotalCount.value = total;
   }
+
+  function handleFormCreateSaved() {
+    if (needInitDetail.value) {
+      searchData(undefined, activeSourceId.value);
+    } else {
+      searchData();
+    }
+  }
+
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+    getStatistic();
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
+    }
+  );
 
   onBeforeUnmount(() => {
     sessionStorage.removeItem('homeData');

@@ -246,6 +246,7 @@
 
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'saved'): void;
   }>();
 
   const tabName = ref('baseInfo');
@@ -396,9 +397,11 @@
           ? updateCustomerPool(params, props.quick)
           : updateCluePool(params, props.quick));
         Message.success(t('common.updateSuccess'));
+        emit('saved');
       } else {
         await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT ? addCustomerPool(params) : addCluePool(params));
         Message.success(t('common.addSuccess'));
+        emit('refresh');
       }
       if (isContinue) {
         form.value = cloneDeep(initForm);
@@ -406,7 +409,6 @@
       } else {
         cancelHandler();
       }
-      emit('refresh');
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);

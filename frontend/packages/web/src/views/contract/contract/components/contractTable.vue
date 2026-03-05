@@ -62,7 +62,7 @@
     :initial-source-name="initialSourceName"
     :link-form-key="FormDesignKeyEnum.CONTRACT"
     :link-form-info="linkFormInfo"
-    @saved="() => searchData()"
+    @saved="handleFormCreateSaved"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -76,12 +76,13 @@
     v-model:visible="showVoidReasonModal"
     :name="activeSourceName"
     :sourceId="activeSourceId"
-    @refresh="searchData"
+    @refresh="searchData(undefined, activeSourceId)"
   />
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
-    @refresh="searchData"
+    @refresh="searchData(undefined, activeSourceId)"
+    @delete="removeItemFromList(activeSourceId)"
     @showCustomerDrawer="showCustomerDrawer"
     @open-business-title-drawer="handleOpenBusinessTitleDrawer"
   />
@@ -115,7 +116,6 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
@@ -167,6 +167,8 @@
   // 操作
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const tableRefreshId = ref(0);
+  const tableRemoveRefreshId = ref('');
+  const tableItemRefreshId = ref('');
 
   const formCreateDrawerVisible = ref(false);
   const activeSourceId = ref('');
@@ -327,7 +329,7 @@
         try {
           await deleteContract(row.id);
           Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
+          tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -347,7 +349,7 @@
     try {
       await revokeContract(row.id);
       Message.success(t('common.revokeSuccess'));
-      tableRefreshId.value += 1;
+      tableItemRefreshId.value = row.id;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -607,10 +609,12 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
-  function searchData(val?: string) {
+  function searchData(val?: string, refreshId?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
-    loadList();
-    crmTableRef.value?.scrollTo({ top: 0 });
+    loadList(false, refreshId);
+    if (!refreshId) {
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
 
   watch(
@@ -627,6 +631,40 @@
     activeBusinessTitleSourceId.value = params.id;
     showBusinessTitleDetailDrawer.value = true;
   }
+
+  function handleFormCreateSaved(res: any) {
+    if (needInitDetail.value) {
+      searchData(undefined, res.id);
+    } else {
+      searchData();
+    }
+  }
+
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
+    }
+  );
+
+  watch(
+    () => tableItemRefreshId.value,
+    (val) => {
+      if (val) {
+        loadList(false, val);
+      }
+    }
+  );
 
   // 先不上
   // function handleGeneratedChart(res: FilterResult, form: FilterForm) {

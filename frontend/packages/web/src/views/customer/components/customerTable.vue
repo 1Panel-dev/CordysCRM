@@ -85,7 +85,11 @@
     :save-api="batchTransferCustomer"
     @load-list="searchData"
   />
-  <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeSourceId" @saved="searchData" />
+  <customerOverviewDrawer
+    v-model:show="showOverviewDrawer"
+    :source-id="activeSourceId"
+    @saved="searchData(undefined, activeSourceId)"
+  />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
     :form-key="activeFormKey"
@@ -250,6 +254,7 @@
   };
 
   const tableRefreshId = ref(0);
+  const tableRemoveRefreshId = ref('');
 
   // 批量删除
   function handleBatchDelete() {
@@ -359,7 +364,7 @@
         try {
           await deleteCustomer(row.id);
           Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
+          tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -680,15 +685,21 @@
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
 
-  function searchData(val?: string) {
+  function searchData(val?: string, refreshId?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
-    loadList();
-    crmTableRef.value?.scrollTo({ top: 0 });
+    loadList(false, refreshId);
+    if (!refreshId) {
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
   handleSearchData.value = searchData;
 
   function handleFormCreateSaved(res: any) {
-    searchData();
+    if (needInitDetail.value) {
+      searchData(undefined, res.id);
+    } else {
+      searchData();
+    }
     if (activeFormKey.value === FormDesignKeyEnum.CUSTOMER && !needInitDetail.value) {
       // 新建客户后打开新建联系人
       activeSourceId.value = res.id;
@@ -733,6 +744,23 @@
     () => {
       checkedRowKeys.value = [];
       searchData();
+    }
+  );
+
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
     }
   );
 

@@ -101,7 +101,7 @@
     ),
   });
 
-  const { propsRes, loadList, setLoadListParams } = useTable(
+  const { propsRes, loadList, setLoadListParams, setAdvanceFilter } = useTable(
     sourceApi[props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER],
     {
       columns: [],
@@ -124,6 +124,7 @@
         if (fieldList.value.length === 0) {
           await initFormConfig();
         }
+        setAdvanceFilter(getParams());
         setLoadListParams({
           keyword: val?.[0]?.name || '',
         });
