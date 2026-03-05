@@ -84,8 +84,10 @@ public class DepartmentControllerTests extends BaseTest {
     @Test
     @Order(6)
     public void departmentDelete() throws Exception {
-        this.requestPost(DEPARTMENT_DELETE, List.of("7"));
-        this.requestPost(DEPARTMENT_DELETE, List.of("8"));
+        // 删除没有员工的部门7，应该成功
+        this.requestPost(DEPARTMENT_DELETE, List.of("7")).andExpect(status().isOk());
+        // 删除有员工的部门8，应该返回500错误并提示部门下有员工
+        this.requestPost(DEPARTMENT_DELETE, List.of("8")).andExpect(status().is5xxServerError());
     }
 
 
