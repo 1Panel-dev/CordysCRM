@@ -2,7 +2,7 @@
 
 bash /shells/init-directories.sh
 
-export JAVA_CLASSPATH=/app:/app/lib/*
+MAIN_CLASS="cn.cordys.Application"
 export CRM_VERSION=`cat /tmp/CRM_VERSION`
 
-exec java ${JAVA_OPTIONS} -jar /app/cordys-crm.jar
+exec java ${JAVA_OPTIONS} -cp "/app/cordys-crm.jar:/app/lib/*" ${MAIN_CLASS}
