@@ -15,6 +15,7 @@ COPY installer/shells /shells
 COPY installer/conf /installer/conf
 COPY installer/mcp /app/mcp
 
+ENV JAVA_CLASSPATH=/app:/app/lib/*
 ENV JAVA_OPTIONS="-Dfile.encoding=utf-8 -Djava.awt.headless=true --add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
 
 ARG CRM_VERSION=main
