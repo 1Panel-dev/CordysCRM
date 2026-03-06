@@ -585,7 +585,6 @@
           }
         });
         const tokens = tokenizeFromSource(source, fieldMap);
-
         renderTokensToEditor(editor.value, tokens);
         await nextTick();
         validateCurrentFormula();
