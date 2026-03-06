@@ -2,40 +2,56 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.BaseTreeNode;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.product.service.ProductPriceService;
+import cn.cordys.crm.product.service.ProductService;
+import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
+import cn.cordys.crm.system.dto.DatasourceRefDTO;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.DateTimeField;
+import cn.cordys.crm.system.dto.request.DatasourceRefQueryRequest;
 import cn.cordys.crm.system.dto.request.FieldRepeatCheckRequest;
 import cn.cordys.crm.system.dto.response.FieldRepeatCheckResponse;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * @author song-cc-rock
  */
 @Service
+@Slf4j
 public class ModuleFieldService {
 
     /**
      * 表单表格映射
      */
     private static final Map<String, String> FORM_TABLE = new HashMap<>(8);
+
+	private static final Map<String, Class<?>> SOURCE_REF_CLASS = new HashMap<>();
 
     static {
         FORM_TABLE.put(FormKey.CLUE.getKey(), "clue");
@@ -51,6 +67,9 @@ public class ModuleFieldService {
         FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), "contract_payment_plan");
         FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), "contract_payment_record");
         FORM_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
+
+		SOURCE_REF_CLASS.put(FieldSourceType.PRODUCT.name(), ProductService.class);
+		SOURCE_REF_CLASS.put(FieldSourceType.PRICE.name(), ProductPriceService.class);
     }
 
     @Resource
@@ -125,6 +144,39 @@ public class ModuleFieldService {
         return FieldRepeatCheckResponse.builder().name(repeatName).repeat(StringUtils.isNotBlank(repeatName)).build();
     }
 
+	@SuppressWarnings("unchecked")
+	public List<DatasourceRefDTO> getSourceRefDetail(DatasourceRefQueryRequest request) {
+		List<String> sourceIds = request.getSourceIds().stream().distinct().toList();
+		Class<?> sourceClass = SOURCE_REF_CLASS.get(request.getDataSourceType());
+		if (sourceClass == null) {
+			return new ArrayList<>();
+		}
+
+		Object service = CommonBeanFactory.getBean(sourceClass);
+		List<DatasourceRefDTO> result = new ArrayList<>();
+		try {
+			Method executeMethod = sourceClass.getMethod("get", String.class);
+			for (String id : sourceIds) {
+				Object res = executeMethod.invoke(service, id);
+				if (res == null) {
+					continue;
+				}
+				DatasourceRefDTO dto = new DatasourceRefDTO();
+				dto.setId(id);
+				dto.setModuleFields((List<BaseModuleFieldValue>) getField(res, "moduleFields", List.class));
+				dto.setProducts((List<Map<String, Object>>) getField(res, "products", List.class));
+				dto.setOptionMap((Map<String, List<OptionDTO>>) getField(res, "optionMap", Map.class));
+
+				result.add(dto);
+			}
+		} catch (Exception e) {
+			log.error("获取数据源引用详细失败, {}", e.getMessage());
+			return new ArrayList<>();
+		}
+
+		return result;
+	}
+
     public void modifyInvoiceShowFields() {
         LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ModuleField::getInternalKey, BusinessModuleField.INVOICE_CONTRACT_ID.getKey());
@@ -165,4 +217,29 @@ public class ModuleFieldService {
         field.setInternalKey(internalKey);
         return moduleFieldMapper.selectOne(field);
     }
+
+	@SuppressWarnings("unchecked")
+	private <T> T getField(Object obj, String fieldName, Class<T> type) {
+		Class<?> clazz = obj.getClass();
+
+		while (clazz != null) {
+			try {
+				Field field = clazz.getDeclaredField(fieldName);
+				field.setAccessible(true);
+
+				Object value = field.get(obj);
+				if (type.isInstance(value)) {
+					return (T) value;
+				}
+
+				return null;
+			} catch (NoSuchFieldException e) {
+				clazz = clazz.getSuperclass();
+			} catch (IllegalAccessException e) {
+				return null;
+			}
+		}
+
+		return null;
+	}
 }

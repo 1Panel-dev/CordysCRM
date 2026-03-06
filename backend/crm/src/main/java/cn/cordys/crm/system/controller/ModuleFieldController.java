@@ -42,6 +42,8 @@ import cn.cordys.crm.product.dto.response.ProductListResponse;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import cn.cordys.crm.product.service.ProductPriceService;
 import cn.cordys.crm.product.service.ProductService;
+import cn.cordys.crm.system.dto.DatasourceRefDTO;
+import cn.cordys.crm.system.dto.request.DatasourceRefQueryRequest;
 import cn.cordys.crm.system.dto.request.FieldRepeatCheckRequest;
 import cn.cordys.crm.system.dto.request.FieldResolveRequest;
 import cn.cordys.crm.system.dto.response.FieldRepeatCheckResponse;
@@ -222,5 +224,11 @@ public class ModuleFieldController {
     public Pager<List<BusinessTitleListResponse>> sourceBusinessTitlePage(@Valid @RequestBody BusinessTitlePageRequest request) {
         return businessTitleService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
+
+	@PostMapping("/source/ref-detail")
+	@Operation(summary = "批量获取数据源引用详情")
+	public List<DatasourceRefDTO> getDatasourceRefDetail(@Valid @RequestBody DatasourceRefQueryRequest request) {
+		return moduleFieldService.getSourceRefDetail(request);
+	}
 
 }
