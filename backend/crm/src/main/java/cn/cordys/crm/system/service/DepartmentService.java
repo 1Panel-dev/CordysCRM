@@ -228,21 +228,35 @@ public class DepartmentService extends MoveNodeService {
      */
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public void delete(List<String> ids, String operator, String orgId) {
-        if (deleteCheck(ids, orgId)) {
-            List<Department> departmentList = departmentMapper.selectByIds(ids);
-            //刪除部門
-            departmentMapper.deleteByIds(ids);
-            List<LogDTO> logs = new ArrayList<>();
-            // 添加日志上下文
-            departmentList.forEach(department -> {
-                LogDTO logDTO = new LogDTO(department.getOrganizationId(), department.getId(), operator, LogType.DELETE, LogModule.SYSTEM_ORGANIZATION, department.getName());
-                logDTO.setOriginalValue(department);
-                logs.add(logDTO);
-            });
-            logService.batchAdd(logs);
-        }
+        validateDelete(ids, orgId);
+        List<Department> departmentList = departmentMapper.selectByIds(ids);
+        //刪除部門
+        departmentMapper.deleteByIds(ids);
+        List<LogDTO> logs = new ArrayList<>();
+        // 添加日志上下文
+        departmentList.forEach(department -> {
+            LogDTO logDTO = new LogDTO(department.getOrganizationId(), department.getId(), operator, LogType.DELETE, LogModule.SYSTEM_ORGANIZATION, department.getName());
+            logDTO.setOriginalValue(department);
+            logs.add(logDTO);
+        });
+        logService.batchAdd(logs);
     }
 
+    private void validateDelete(List<String> ids, String orgId) {
+        List<Department> departmentList = departmentMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(departmentList)) {
+            departmentList.forEach(department -> {
+                if (Strings.CI.equalsAny(department.getResource(), ThirdConfigTypeConstants.INTERNAL.name())
+                        && Strings.CI.equalsAny(department.getParentId(), "NONE")) {
+                    throw new GenericException(Translator.get("department.internal"));
+                }
+            });
+        }
+
+        if (extOrganizationUserMapper.countUserByDepartmentIds(ids, orgId) > 0) {
+            throw new GenericException(Translator.get("department.has_employees"));
+        }
+    }
 
     /**
      * 删除部门前校验
@@ -253,18 +267,12 @@ public class DepartmentService extends MoveNodeService {
      * @return
      */
     public boolean deleteCheck(List<String> ids, String orgId) {
-        List<Department> departmentList = departmentMapper.selectByIds(ids);
-        if (CollectionUtils.isNotEmpty(departmentList)) {
-            departmentList.forEach(department -> {
-                if (Strings.CI.equalsAny(department.getResource(), ThirdConfigTypeConstants.INTERNAL.name())
-                        && Strings.CI.equalsAny(department.getParentId(), "NONE")) {
-                    throw new GenericException(Translator.get("department.internal"));
-                }
-            });
-
+        try {
+            validateDelete(ids, orgId);
+            return true;
+        } catch (GenericException e) {
+            return false;
         }
-
-        return extOrganizationUserMapper.countUserByDepartmentIds(ids, orgId) <= 0;
     }
 
 
