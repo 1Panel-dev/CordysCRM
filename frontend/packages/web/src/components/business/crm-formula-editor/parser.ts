@@ -63,6 +63,7 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
 
       expr.startTokenIndex = startIndex;
       expr.endTokenIndex = index - 1;
+      expr.parenthesized = true;
       return expr;
     }
 

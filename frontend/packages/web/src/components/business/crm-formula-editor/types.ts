@@ -63,6 +63,7 @@ export type ASTNode = FunctionNode | FieldNode | NumberNode | BinaryExpressionNo
 export interface ASTNodeBase {
   startTokenIndex: number;
   endTokenIndex: number;
+  parenthesized?: boolean; // 是否被括号包裹
 }
 
 export interface EmptyNode extends ASTNodeBase {
@@ -81,6 +82,11 @@ export interface FieldNode extends ASTNodeBase {
   name: string;
   fieldType?: string;
   numberType?: NumberType;
+}
+
+export interface GroupNode extends ASTNodeBase {
+  type: 'group';
+  expression: ASTNode;
 }
 
 export interface NumberNode extends ASTNodeBase {
