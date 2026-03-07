@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="true">
+<configuration debug="false">
 
-    <property resource="commons.properties"/>
-    <property file="/opt/cordys/conf/cordys-crm.properties" ignoreResourceNotFound="true"/>
+    <!-- 从Spring Environment获取属性，如果不存在则使用默认值 -->
+    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="${java.io.tmpdir}/cordys-logs"/>
+    <springProperty scope="context" name="MAX_HISTORY" source="logger.max.history" defaultValue="30"/>
+    <springProperty scope="context" name="LOGBACK_LEVEL" source="logback.level" defaultValue="INFO"/>
 
     <!-- Console 输出 -->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
@@ -19,10 +21,10 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/trace.log</File>
+        <File>${LOG_PATH}/trace.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/trace.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/trace.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
@@ -37,10 +39,10 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/debug.log</File>
+        <File>${LOG_PATH}/debug.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/debug.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/debug.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
@@ -55,10 +57,10 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/info.log</File>
+        <File>${LOG_PATH}/info.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/info.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/info.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
@@ -73,10 +75,10 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/warn.log</File>
+        <File>${LOG_PATH}/warn.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/warn.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/warn.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
@@ -91,10 +93,10 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/error.log</File>
+        <File>${LOG_PATH}/error.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/error.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/error.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
@@ -160,7 +162,7 @@
     <!-- ===================== Logger ===================== -->
 
     <!-- cn.cordys 模块日志 -->
-    <logger name="cn.cordys" additivity="false" level="${logback.level:INFO}">
+    <logger name="cn.cordys" additivity="false" level="${LOGBACK_LEVEL}">
         <appender-ref ref="traceAsyncAppender"/>
         <appender-ref ref="debugAsyncAppender"/>
         <appender-ref ref="infoAsyncAppender"/>
@@ -170,7 +172,7 @@
     </logger>
 
     <!-- cn.cordys.Application 单独 INFO 输出 -->
-    <logger name="cn.cordys.Application" additivity="false" level="${logback.level:INFO}">
+    <logger name="cn.cordys.Application" additivity="false" level="${LOGBACK_LEVEL}">
         <appender-ref ref="infoAsyncAppender"/>
     </logger>
 
