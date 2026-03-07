@@ -362,8 +362,8 @@
             initTree(true);
           }
         } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          Message.error(errorMsg || t('common.deleteFail'));
         }
       },
     });
