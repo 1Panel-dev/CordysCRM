@@ -77,15 +77,31 @@ public class DepartmentControllerTests extends BaseTest {
 
     @Test
     @Order(5)
-    public void departmentDeleteCHeck() throws Exception {
-        this.requestPost(DEPARTMENT_DELETE_CHECK, List.of("7"));
+    public void departmentDeleteCheck() throws Exception {
+        // 部门7下没有员工，应该返回true（可以删除）
+        this.requestPost(DEPARTMENT_DELETE_CHECK, List.of("7")).andExpect(status().isOk());
+        // 部门8下有员工（根据init_department_test.sql），应该返回false（不能删除）
+        this.requestPost(DEPARTMENT_DELETE_CHECK, List.of("8")).andExpect(status().isOk());
     }
 
     @Test
     @Order(6)
     public void departmentDelete() throws Exception {
-        this.requestPost(DEPARTMENT_DELETE, List.of("7"));
-        this.requestPost(DEPARTMENT_DELETE, List.of("8"));
+        // 删除部门7（没有员工），应该成功
+        this.requestPost(DEPARTMENT_DELETE, List.of("7")).andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(7)
+    public void departmentDeleteWithEmployees() throws Exception {
+        // 删除部门8（有员工），应该返回500错误并提示"该部门下存在员工，无法删除"
+        this.requestPost(DEPARTMENT_DELETE, List.of("8"))
+                .andExpect(status().is5xxServerError())
+                .andExpect(result -> {
+                    String content = result.getResponse().getContentAsString();
+                    assert content.contains("该部门下存在员工") || content.contains("Department has employees")
+                            : "Expected error message about employees, but got: " + content;
+                });
     }
 
 
