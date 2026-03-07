@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="true">
+<configuration>
 
-    <property resource="commons.properties"/>
-    <property file="/opt/cordys/conf/cordys-crm.properties" ignoreResourceNotFound="true"/>
+    <property name="LOG_PATH" value="${user.home}/cordys/logs/cordys-crm"/>
+    <property name="LOGBACK_LEVEL" value="INFO"/>
 
     <!-- Console 输出 -->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
@@ -19,15 +19,15 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/trace.log</File>
+        <File>${LOG_PATH}/trace.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/trace.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/trace.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>30</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>%d [%thread] %-5level %logger{36} %line - %m%n</Pattern>
         </encoder>
     </appender>
 
@@ -37,15 +37,15 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/debug.log</File>
+        <File>${LOG_PATH}/debug.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/debug.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/debug.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>30</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>%d [%thread] %-5level %logger{36} %line - %m%n</Pattern>
         </encoder>
     </appender>
 
@@ -55,15 +55,15 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/info.log</File>
+        <File>${LOG_PATH}/info.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/info.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/info.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>30</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>%d [%thread] %-5level %logger{36} %line - %m%n</Pattern>
         </encoder>
     </appender>
 
@@ -73,15 +73,15 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/warn.log</File>
+        <File>${LOG_PATH}/warn.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/warn.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/warn.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>30</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>%d [%thread] %-5level %logger{36} %line - %m%n</Pattern>
         </encoder>
     </appender>
 
@@ -91,15 +91,15 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <File>${logging.file.path}/error.log</File>
+        <File>${LOG_PATH}/error.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logging.file.path}/history/error.%d{yyyyMMdd}-%i.log</FileNamePattern>
-            <maxHistory>${logger.max.history:-30}</maxHistory>
+            <FileNamePattern>${LOG_PATH}/history/error.%d{yyyyMMdd}-%i.log</FileNamePattern>
+            <maxHistory>30</maxHistory>
             <maxFileSize>50MB</maxFileSize>
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <Pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</Pattern>
+            <Pattern>%d [%thread] %-5level %logger{36} %line - %m%n</Pattern>
         </encoder>
     </appender>
 
@@ -160,7 +160,7 @@
     <!-- ===================== Logger ===================== -->
 
     <!-- cn.cordys 模块日志 -->
-    <logger name="cn.cordys" additivity="false" level="${logback.level:INFO}">
+    <logger name="cn.cordys" additivity="false" level="${LOGBACK_LEVEL}">
         <appender-ref ref="traceAsyncAppender"/>
         <appender-ref ref="debugAsyncAppender"/>
         <appender-ref ref="infoAsyncAppender"/>
@@ -170,7 +170,7 @@
     </logger>
 
     <!-- cn.cordys.Application 单独 INFO 输出 -->
-    <logger name="cn.cordys.Application" additivity="false" level="${logback.level:INFO}">
+    <logger name="cn.cordys.Application" additivity="false" level="${LOGBACK_LEVEL}">
         <appender-ref ref="infoAsyncAppender"/>
     </logger>
 
