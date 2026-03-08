@@ -1,5 +1,27 @@
 package cn.cordys.crm.system.service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
@@ -27,21 +49,6 @@ import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.SqlSessionUtils;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 
 @Service("departmentService")
@@ -228,19 +235,20 @@ public class DepartmentService extends MoveNodeService {
      */
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public void delete(List<String> ids, String operator, String orgId) {
-        if (deleteCheck(ids, orgId)) {
-            List<Department> departmentList = departmentMapper.selectByIds(ids);
-            //刪除部門
-            departmentMapper.deleteByIds(ids);
-            List<LogDTO> logs = new ArrayList<>();
-            // 添加日志上下文
-            departmentList.forEach(department -> {
-                LogDTO logDTO = new LogDTO(department.getOrganizationId(), department.getId(), operator, LogType.DELETE, LogModule.SYSTEM_ORGANIZATION, department.getName());
-                logDTO.setOriginalValue(department);
-                logs.add(logDTO);
-            });
-            logService.batchAdd(logs);
+        if (!deleteCheck(ids, orgId)) {
+            throw new GenericException(Translator.get("department.has.employee"));
         }
+        List<Department> departmentList = departmentMapper.selectByIds(ids);
+        //刪除部門
+        departmentMapper.deleteByIds(ids);
+        List<LogDTO> logs = new ArrayList<>();
+        // 添加日志上下文
+        departmentList.forEach(department -> {
+            LogDTO logDTO = new LogDTO(department.getOrganizationId(), department.getId(), operator, LogType.DELETE, LogModule.SYSTEM_ORGANIZATION, department.getName());
+            logDTO.setOriginalValue(department);
+            logs.add(logDTO);
+        });
+        logService.batchAdd(logs);
     }
 
 
