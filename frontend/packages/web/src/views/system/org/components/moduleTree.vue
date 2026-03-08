@@ -361,9 +361,9 @@
             Message.success(t('common.deleteSuccess'));
             initTree(true);
           }
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
+        } catch (error: any) {
+          const errorMessage = error?.response?.data?.message || t('common.deleteFailed');
+          Message.error(errorMessage);
         }
       },
     });
