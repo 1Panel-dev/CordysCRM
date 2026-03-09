@@ -206,7 +206,7 @@ public class DataHandleUtils {
                         .noneMatch(thirdUser -> Strings.CI.equalsAny(thirdUser.getUserId(), user.getResourceUserId())))
                 .collect(Collectors.toList());
 
-        organizationUserService.disableUsers(disableUserList, operatorId);
+        organizationUserService.disableUsers(disableUserList);
 
         // 当前系统数据
         List<Department> currentDepartmentList = departmentService.getDepartmentByOrgId(orgId);
