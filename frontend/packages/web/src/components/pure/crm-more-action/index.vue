@@ -47,7 +47,6 @@
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import type { ActionsItem } from './type';
-  import { Size } from 'naive-ui/es/button/src/interface';
 
   const slots = useSlots();
   const props = withDefaults(
@@ -55,7 +54,7 @@
       options: ActionsItem[];
       trigger?: PopoverTrigger;
       nodeProps?: (option: DropdownOption | DropdownGroupOption) => HTMLAttributes;
-      size?: Size;
+      size?: 'tiny' | 'small' | 'medium' | 'large';
       placement?:
         | 'top-start'
         | 'top'
