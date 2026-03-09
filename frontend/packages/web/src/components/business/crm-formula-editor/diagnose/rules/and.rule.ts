@@ -2,12 +2,12 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { FormulaErrorCode } from '../../config';
 import { FormulaDiagnostic, FormulaFunctionRule } from '../../types';
-import { isTextNumberDateNode } from './rule-utils';
+import { isLogicalNode } from './rule-utils';
 
 const { t } = useI18n();
 
-export const CONCATENATE_RULE: FormulaFunctionRule = {
-  name: 'CONCATENATE',
+export const AND_RULE: FormulaFunctionRule = {
+  name: 'AND',
 
   diagnose({ fnNode, args }) {
     const diagnostics: FormulaDiagnostic[] = [];
@@ -26,14 +26,14 @@ export const CONCATENATE_RULE: FormulaFunctionRule = {
       return diagnostics;
     }
 
-    // 2. 参数类型限制：文本、数字、日期
+    // 2. 所有参数必须为逻辑值
     args.forEach((arg, index) => {
-      if (!isTextNumberDateNode(arg)) {
+      if (!isLogicalNode(arg)) {
         diagnostics.push({
           type: 'error',
           code: FormulaErrorCode.INVALID_FUNCTION_CALL,
           functionName: fnNode.name,
-          message: t('formulaEditor.diagnostics.invalidArgTypeOfCONCATENATE', {
+          message: t('formulaEditor.diagnostics.invalidConditionTypeOfAND', {
             index: index + 1,
           }),
           highlight: {
@@ -47,4 +47,4 @@ export const CONCATENATE_RULE: FormulaFunctionRule = {
   },
 };
 
-export default CONCATENATE_RULE;
+export default AND_RULE;

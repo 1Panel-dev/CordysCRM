@@ -21,6 +21,7 @@
   import { NTooltip } from 'naive-ui';
   import { debounce } from 'lodash-es';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
@@ -28,7 +29,8 @@
 
   import { safeParseFormula } from '../crm-formula-editor/utils';
   import evaluateIR from './formula-runtime';
-  import { FormulaResultType } from './formula-runtime/types';
+  import { FieldTypeMap, ValueType } from './formula-runtime/types';
+  import { hydrateIRNumberType } from './utils';
   import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const { t } = useI18n();
@@ -57,6 +59,7 @@
       case 'string':
         return singleText;
       case 'number':
+        return inputNumber;
       default:
         return inputNumber;
     }
@@ -120,7 +123,7 @@
     result: any,
     options?: {
       decimalPlaces?: number;
-      expectedType?: FormulaResultType;
+      expectedType?: ValueType;
     }
   ): any {
     const decimalPlaces = options?.decimalPlaces ?? 2;
@@ -150,7 +153,7 @@
         return result;
 
       case 'boolean':
-        return result;
+        return result ? 'TRUE' : 'FALSE';
 
       default:
         return String(result);
@@ -181,6 +184,42 @@
     return rows.map((row) => row?.[fieldKey]);
   }
 
+  function getValueType(field: FormCreateField): ValueType {
+    switch (field.type) {
+      case FieldTypeEnum.INPUT_NUMBER:
+        return 'number';
+      case FieldTypeEnum.DATE_TIME:
+        return 'date';
+      case FieldTypeEnum.INPUT:
+      case FieldTypeEnum.DATA_SOURCE:
+      case FieldTypeEnum.DATA_SOURCE_MULTIPLE:
+        return 'string';
+      // todo 预留
+      case FieldTypeEnum.RADIO:
+      case FieldTypeEnum.CHECKBOX:
+        return 'boolean';
+      default:
+        return 'unknown';
+    }
+  }
+
+  function buildFieldTypeMap(fields: FormCreateField[]) {
+    const map: FieldTypeMap = {};
+
+    flatAllFields(fields).forEach((field) => {
+      map[field.id] = {
+        valueType: getValueType(field),
+        ...(field.type === FieldTypeEnum.INPUT_NUMBER
+          ? {
+              numberType: field.numberFormat === 'percent' ? 'percent' : 'number', // 仅当 valueType=number
+            }
+          : {}),
+      };
+    });
+
+    return map;
+  }
+
   // 根据公式实时计算
   const updateValue = debounce(() => {
     const { formula } = props.fieldConfig;
@@ -189,6 +228,10 @@
     if (!ir) {
       return;
     }
+    const fields = fieldList.value ?? [];
+    const fieldTypeMap = buildFieldTypeMap(fields);
+    hydrateIRNumberType(ir, fieldTypeMap);
+
     const contextMatch = props.path.match(/^([^[]+)\[(\d+)\]\./);
 
     const context = contextMatch
@@ -202,6 +245,9 @@
       context,
       getScalarFieldValue,
       getTableColumnValues,
+      getFieldMeta: (fieldId: string) => {
+        return fieldTypeMap[fieldId];
+      },
       warn: (msg: string) => {
         // eslint-disable-next-line no-console
         console.warn(msg);

@@ -1,6 +1,10 @@
-import FUNCTION_IMPL from './functions';
-import { EvaluateContext, IRBinaryNode, IRFieldNode, IRLiteralNode, IRNode } from './types';
-// todo 执行器要调整
+import { IRNodeType } from '@lib/shared/enums/formula';
+
+import { functionRegistry } from './function-registry';
+import { excelCompare } from './runtime/excel-runtime';
+import { EvaluateContext, IRBinaryNode, IRLiteralNode, IRNode } from './types';
+
+// todo xinxinwu
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EXCEL_EPOCH = new Date(1899, 11, 30).getTime(); // Excel 的日期序列号是从 1900-01-01 开始的，但为了兼容 Lotus 1-2-3 的错误，Excel 实际上把 1900-02-29 也当成了一个有效日期，所以 Excel 的 epoch 是 1899-12-30
 
@@ -52,18 +56,33 @@ function parseDateWithPrecision(raw: string | number | Date): number {
 
   return 0;
 }
-export function resolveFieldValue(rawVal: any, node: IRNode): number {
-  if (rawVal == null || rawVal === '') return 0;
 
-  // 日期
-  if ((node as IRFieldNode)?.numberType === 'date') {
+export function resolveFieldValue(rawVal: any, node: IRNode, ctx?: EvaluateContext): any {
+  if (rawVal == null || rawVal === '') return 0;
+  const meta = node.type === 'field' ? ctx?.getFieldMeta?.(node.fieldId) : undefined;
+
+  const valueType = meta?.valueType;
+  const numberType = meta?.numberType;
+
+  // ---------- date ----------
+  if (valueType === 'date') {
     const serial = parseDateWithPrecision(rawVal);
-    // 在这里统一 day精度
     return Math.floor(serial);
   }
 
-  // 数字统一解析
+  // ---------- string ----------
+  if (valueType === 'string') {
+    return String(rawVal ?? '');
+  }
+
+  // ---------- boolean ----------
+  if (valueType === 'boolean') {
+    return Boolean(rawVal);
+  }
+
+  // ---------- number ----------
   let num: number;
+
   if (typeof rawVal === 'number') {
     num = rawVal;
   } else {
@@ -72,8 +91,7 @@ export function resolveFieldValue(rawVal: any, node: IRNode): number {
 
   if (Number.isNaN(num)) return 0;
 
-  // 语义处理（只在这里）
-  if ((node as IRFieldNode)?.numberType === 'percent') {
+  if (numberType === 'percent') {
     return num / 100;
   }
 
@@ -110,7 +128,7 @@ function compareValues(op: '=' | '<>' | '>' | '>=' | '<' | '<=', left: any, righ
 
 export default function evaluateIR(node: IRNode, ctx: EvaluateContext): any {
   switch (node.type) {
-    case 'literal': {
+    case IRNodeType.Literal: {
       const literal = node as IRLiteralNode;
 
       if (literal.valueType === 'number') {
@@ -124,19 +142,19 @@ export default function evaluateIR(node: IRNode, ctx: EvaluateContext): any {
       return literal.value;
     }
 
-    case 'field': {
+    case IRNodeType.Field: {
       // 子表字段：返回一组 number
       if (node.fieldId.includes('.')) {
         const values = ctx.getTableColumnValues(node.fieldId);
-        return values.map((v) => resolveFieldValue(v, node));
+        return values.map((v) => resolveFieldValue(v, node, ctx));
       }
 
       // 普通字段
       const rawValue = ctx.getScalarFieldValue(node.fieldId, ctx.context);
-      return resolveFieldValue(rawValue, node);
+      return resolveFieldValue(rawValue, node, ctx);
     }
 
-    case 'binary': {
+    case IRNodeType.Binary: {
       const left = evaluateIR(node.left, ctx);
       const right = evaluateIR(node.right, ctx);
       switch (node.operator) {
@@ -154,20 +172,30 @@ export default function evaluateIR(node: IRNode, ctx: EvaluateContext): any {
       }
     }
 
-    case 'compare': {
+    case IRNodeType.Compare: {
       const left = evaluateIR(node.left, ctx);
       const right = evaluateIR(node.right, ctx);
-      return compareValues(node.operator, left, right);
+      return excelCompare(left, right, node.operator, ctx.warn);
     }
 
-    case 'function': {
-      const fn = FUNCTION_IMPL[node.name];
-      if (!fn) {
+    case IRNodeType.Function: {
+      const spec = functionRegistry.get(node.name);
+
+      if (!spec) {
         ctx.warn?.(`Function ${node.name} not implemented`);
         return null;
       }
+
+      if (spec.lazy) {
+        const thunks = node.args.map((arg) => {
+          return () => evaluateIR(arg, ctx);
+        });
+
+        return spec.fn(ctx, ...thunks);
+      }
+
       const args = node.args.map((arg) => evaluateIR(arg, ctx));
-      return fn(...args);
+      return spec.fn(ctx, ...args);
     }
     default:
       ctx.warn?.(`Unknown node type ${(node as IRNode).type}`);

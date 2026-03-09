@@ -1,6 +1,6 @@
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
-import { FormulaErrorCode } from '../config';
+import { AllowEmptyArgsFunctionList, FormulaErrorCode } from '../config';
 import { ASTNode, FormulaDiagnostic, FunctionNode, Token } from '../types';
 
 const { t } = useI18n();
@@ -22,7 +22,7 @@ export default function diagnoseArgs(fnNode: FunctionNode, args: ASTNode[], toke
   // 所有逗号 token
   const commaTokens = innerTokens.filter((item) => item.type === 'comma');
 
-  if (args?.length === 0) {
+  if (args?.length === 0 && !AllowEmptyArgsFunctionList.includes(fnNode.name)) {
     diagnostics.push({
       type: 'warning',
       functionName: fnNode.name,

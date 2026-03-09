@@ -132,6 +132,9 @@ export const allFunctionSource: (FormCreateField & { isFunction: boolean })[] = 
   },
 ];
 
+// 允许空值的函数
+export const AllowEmptyArgsFunctionList = ['NOW', 'TODAY'];
+
 export const FormulaErrorCode = {
   EMPTY_ARGS: 'EMPTY_ARGS', // 参数个数为空
   ARG_COUNT_ERROR: 'ARG_COUNT_ERROR', // 参数个数错误

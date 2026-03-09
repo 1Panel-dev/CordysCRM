@@ -2,12 +2,9 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { FormulaErrorCode } from '../../config';
 import { ASTNode, FormulaDiagnostic, FormulaFunctionRule } from '../../types';
+import { isColumnField } from './rule-utils';
 
 const { t } = useI18n();
-
-function isColumnField(fieldId: string) {
-  return fieldId.includes('.');
-}
 
 export const DAYS_RULE: FormulaFunctionRule = {
   name: 'DAYS',

@@ -176,6 +176,15 @@
                 （A1 为历史日期）
               </div>
             </div>
+            <div v-if="activeFun?.name === 'AND'">
+              <div class="flex items-center">
+                <div :style="{ color: FUN_COLOR }">AND</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`">
+                  {{ t('formulaEditor.function.conditionFirst') }} </div
+                >,
+                <div :class="`text-[${INPUT_NUMBER_COLOR}]`"> {{ t('formulaEditor.function.conditionSecond') }} </div>,
+                ... )
+              </div>
+            </div>
             <div v-else class="function-desc-text">
               {{ t('crmFormDesign.formulaSelectUsageTip') }}
             </div>
@@ -242,7 +251,7 @@
     (e: 'save', astVal: string): void;
   }>();
 
-  const FUNCTION_NAMES = ['SUM', 'DAYS', 'CONCATENATE'];
+  const FUNCTION_NAMES = [...allFunctionSource.map((e) => e.name)];
 
   const formulaDiagnostics = ref<FormulaDiagnostic[]>([]);
   const keyword = ref('');
@@ -659,9 +668,9 @@
     });
 
     const saveResult = serializeFormulaFromAst(ast, fieldMap);
-
+    // todo xinxinwu debugger
+    // console.log(saveResult, 'saveResult');
     const result = JSON.stringify(saveResult);
-    console.log(result, 'result');
     return result;
   }
 
@@ -727,6 +736,51 @@
     }
   }
 
+  function normalizePastedText(text: string) {
+    return text
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/\u00A0/g, ' ')
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'");
+  }
+
+  function insertTextAtCursor(container: HTMLElement, text: string) {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const textNode = document.createTextNode(text);
+    range.insertNode(textNode);
+
+    // 先把光标放到 textNode 后
+    const caretRange = document.createRange();
+    caretRange.setStartAfter(textNode);
+    caretRange.setEndAfter(textNode);
+
+    selection.removeAllRanges();
+    selection.addRange(caretRange);
+
+    container.normalize();
+  }
+
+  function handlePaste(e: ClipboardEvent) {
+    e.preventDefault();
+    if (!editor.value) return;
+
+    const text = e.clipboardData?.getData('text/plain') ?? '';
+    const normalized = normalizePastedText(text);
+
+    const plain = e.clipboardData?.getData('text/plain') ?? '';
+    const html = e.clipboardData?.getData('text/html') ?? '';
+    const types = e.clipboardData ? Array.from(e.clipboardData.types) : [];
+
+    insertTextAtCursor(editor.value, normalized);
+
+    tokenizeFromEditor(editor.value);
+  }
+
   watch(
     () => props.fieldConfig.formula,
     () => {
@@ -737,6 +791,7 @@
   onMounted(() => {
     initFormula();
     editor.value?.addEventListener('keydown', handleBackspaceAtomic);
+    editor.value?.addEventListener('paste', handlePaste);
   });
 
   defineExpose({

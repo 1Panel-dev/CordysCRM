@@ -9,6 +9,8 @@ export default {
   'formulaEditor.diagnostics.argCountErrorOfDAYS': 'Parameter count error, must be two parameters',
   'formulaEditor.function.argFirst': 'Parameter 1',
   'formulaEditor.function.argSecond': 'Parameter 2',
+  'formulaEditor.function.conditionFirst': 'Condition 1',
+  'formulaEditor.function.conditionSecond': 'Condition 2',
   'formulaEditor.function.mergeText': 'Merge the text',
   'formulaEditor.function.mergeTextWithSeparator': 'Merged text with separators',
   'formulaEditor.function.formatDateOrNumber': 'Date/Number',

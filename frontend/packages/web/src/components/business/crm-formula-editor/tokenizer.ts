@@ -89,7 +89,6 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
           fieldId: el.dataset.value || '',
           name: text,
           fieldType: el.dataset.fieldType,
-          numberType: (el.dataset.numberType ?? 'number') as NumberType,
           start,
           end,
         });
@@ -129,11 +128,12 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
           let closed = false;
 
           while (j < text.length) {
-            if (text[j] === '"') {
+            const cur = text[j];
+            if (cur === '"') {
               closed = true;
               break;
             }
-            value += text[j];
+            value += cur;
             j++;
           }
 
@@ -148,7 +148,7 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
             charIndex += j - i + 1;
             i = j + 1;
           } else {
-            // 未闭合字符串 → unknown
+            // 未闭合字符串
             tokens.push({
               type: 'unknown',
               value: text.slice(i),
@@ -161,15 +161,28 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
           }
         }
 
-        // ===== 数字 =====
-        else if (/\d/.test(char)) {
+        // ===== 数字（支持小数）=====
+        else if (/\d/.test(char) || (char === '.' && /\d/.test(text[i + 1]))) {
           const start = charIndex;
-          let numStr = char;
-          let j = i + 1;
 
-          while (j < text.length && /\d/.test(text[j])) {
-            numStr += text[j];
-            j++;
+          let numStr = '';
+          let j = i;
+          let hasDot = false;
+          let done = false;
+
+          while (j < text.length && !done) {
+            const cur = text[j];
+
+            if (/\d/.test(cur)) {
+              numStr += cur;
+              j++;
+            } else if (cur === '.' && !hasDot) {
+              hasDot = true;
+              numStr += cur;
+              j++;
+            } else {
+              done = true;
+            }
           }
 
           tokens.push({
@@ -183,10 +196,9 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
           charIndex += numStr.length;
           i = j;
         }
-        // 布尔值
+        // ===== boolean / 标识符 =====
         else if (/[A-Za-z]/.test(char)) {
           const start = charIndex;
-
           let word = char;
           let j = i + 1;
 
@@ -248,7 +260,7 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
           i += length;
         }
 
-        // ===== 操作符 =====
+        // ===== 四则运算符 =====
         else if (['+', '-', '*', '/'].includes(char)) {
           tokens.push({
             type: 'operator',
@@ -302,8 +314,8 @@ export default function tokenizeFromEditor(editorEl: HTMLElement, offset = 0): T
       }
     }
   });
-
-  console.log(tokens, 'tokens:tokenizeFromEditor');
+  // todo xinxinwu debugger
+  // console.log(tokens, 'tokens:tokenizeFromEditor');
 
   return tokens;
 }

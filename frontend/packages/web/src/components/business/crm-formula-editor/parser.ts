@@ -70,7 +70,6 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
         fieldId: t.fieldId,
         name: t.name,
         fieldType: t.fieldType,
-        numberType: t.numberType,
         startTokenIndex: index - 1,
         endTokenIndex: index - 1,
       };
@@ -95,6 +94,7 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
 
       expr.startTokenIndex = startIndex;
       expr.endTokenIndex = index - 1;
+      expr.parenthesized = true;
       return expr;
     }
 
@@ -241,8 +241,8 @@ export default function parseTokensToAST(tokens: Token[]): ASTNode[] {
   while (index < meaningfulTokens.length) {
     astList.push(parseComparison());
   }
-
-  console.log(astList, 'astList');
+  // todo xinxinwu debugger
+  // console.log(astList, 'astList');
 
   return astList;
 }
