@@ -33,11 +33,11 @@ public class OrderLogService extends BaseModuleLogService {
                 setUserFieldName(differ);
                 continue;
             }
-            if (Strings.CS.equals(column, BusinessModuleField.ORDER_CUSTOMER_NAME.getBusinessKey())) {
+            if (Strings.CS.equals(column, BusinessModuleField.ORDER_CUSTOMER.getBusinessKey())) {
                 resolveCustomerName(differ);
                 continue;
             }
-            if (Strings.CS.equals(column, BusinessModuleField.ORDER_CONTRACT_NAME.getBusinessKey())) {
+            if (Strings.CS.equals(column, BusinessModuleField.ORDER_CONTRACT.getBusinessKey())) {
                 resolveContractName(differ);
                 continue;
             }
