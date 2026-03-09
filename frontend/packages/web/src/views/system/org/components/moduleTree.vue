@@ -361,9 +361,10 @@
             Message.success(t('common.deleteSuccess'));
             initTree(true);
           }
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
+        } catch (error: any) {
+          // 显示后端返回的错误信息
+          const errorMessage = error?.response?.data?.message || error?.message || t('common.deleteFailed');
+          Message.error(errorMessage);
         }
       },
     });
