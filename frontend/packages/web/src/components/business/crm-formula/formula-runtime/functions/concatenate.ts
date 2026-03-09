@@ -1,6 +1,7 @@
-export default function CONCATENATE(...args: any[]): string {
-  // todo  xinxinwu 2023-05-09
-  // console.log(args, 'args:CONCATENATE');
+// /formula-runtime/functions/concatenate.ts
+import { EvaluateContext } from '../types';
+
+export default function CONCATENATE(ctx: EvaluateContext, ...args: any[]): string {
   if (!args || args.length === 0) return '';
 
   const strVal = args.reduce((result, arg) => {

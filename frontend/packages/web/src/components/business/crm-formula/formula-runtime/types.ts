@@ -11,12 +11,15 @@ export type IRNode = IRLiteralNode | IRFieldNode | IRBinaryNode | IRCompareNode 
 export interface IRLiteralNode {
   type: IRNodeType.Literal;
   value: unknown;
-  valueType: 'number' | 'string' | boolean;
+  valueType: 'number' | 'string' | 'boolean';
 }
+
+// 比较符
+export type CompareOperator = '=' | '<>' | '>' | '>=' | '<' | '<=';
 
 export interface IRCompareNode {
   type: IRNodeType.Compare;
-  operator: '=' | '<>' | '>' | '>=' | '<' | '<=';
+  operator: CompareOperator;
   left: IRNode;
   right: IRNode;
 }
@@ -45,6 +48,15 @@ interface IRInvalidNode {
   reason: string;
 }
 
+export type ValueType = 'number' | 'string' | 'boolean' | 'date' | 'unknown';
+
+export interface FieldMeta {
+  valueType: ValueType;
+  numberType?: 'number' | 'percent';
+}
+
+export type FieldTypeMap = Record<string, FieldMeta>;
+
 // -------- Runtime Context --------
 export interface EvaluateContext {
   /** 当前是否在子表 */
@@ -58,8 +70,15 @@ export interface EvaluateContext {
 
   /** 取列字段 */
   getTableColumnValues(path: string): number[];
+  getFieldMeta?(fieldId: string): FieldMeta | undefined;
 
   warn?(msg: string): void;
 }
 
-export type FormulaResultType = 'number' | 'string' | 'boolean' | 'date' | 'unknown';
+export type FunctionSource = 'builtin' | 'external' | 'plugin';
+
+export interface FnSpec {
+  fn: (ctx: EvaluateContext, ...args: any[]) => any;
+  source?: FunctionSource; // 函数来源
+  lazy?: boolean;
+}

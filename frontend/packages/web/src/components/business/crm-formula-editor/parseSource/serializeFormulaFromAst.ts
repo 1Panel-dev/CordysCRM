@@ -20,98 +20,109 @@ export function serializeNode(
     }
   >
 ): { source: string; display: string } {
+  let result: { source: string; display: string };
   switch (node.type) {
     case 'literal': {
       if (node.valueType === 'string') {
-        return {
-          source: `"${node.value}"`,
-          display: `"${node.value}"`,
+        result = {
+          source: `"${String(node.value ?? '')}"`,
+          display: `"${String(node.value ?? '')}"`,
         };
-      }
-      if (node.valueType === 'boolean') {
-        const v = node.value ? 'TRUE' : 'FALSE';
-        return {
-          source: v,
-          display: v,
+      } else if (node.valueType === 'boolean') {
+        const boolText = node.value ? 'TRUE' : 'FALSE';
+        result = {
+          source: boolText,
+          display: boolText,
         };
-      }
-
-      if (node.valueType === 'number') {
-        return {
+      } else if (node.valueType === 'number') {
+        result = {
+          source: String(node.value),
+          display: String(node.value),
+        };
+      } else {
+        result = {
           source: String(node.value),
           display: String(node.value),
         };
       }
-
-      return {
-        source: String(node.value),
-        display: String(node.value),
-      };
+      break;
     }
 
     case 'field': {
-      const { fieldId, name, fieldType, numberType } = node;
+      const { fieldId, name, fieldType } = node;
 
       /** 收集字段语义（只收一次，去重） */
       if (!fields.has(fieldId)) {
         fields.set(fieldId, {
           fieldId,
           fieldType,
-          numberType,
         });
       }
 
-      return {
+      result = {
         // source 永远用 fieldId，和 UI / name 完全解耦
         source: `\${${fieldId}}`,
 
         // display 仅用于展示，可被字段重命名覆盖
         display: fieldNameMap[fieldId] ?? name,
       };
+      break;
     }
 
     case 'function': {
       const args = node.args.map((arg) => serializeNode(arg, fieldNameMap, fields));
 
-      return {
+      result = {
         source: `${node.name}(${args.map((a) => a.source).join(',')})`,
         display: `${node.name}(${args.map((a) => a.display).join(',')})`,
       };
+      break;
     }
 
     case 'binary': {
       const left = serializeNode(node.left, fieldNameMap, fields);
       const right = serializeNode(node.right, fieldNameMap, fields);
 
-      return {
+      result = {
         /** source 中建议保留空格，利于可读 & diff */
         source: `${left.source} ${node.operator} ${right.source}`,
         display: `${left.display} ${node.operator} ${right.display}`,
       };
+      break;
     }
 
     case 'compare': {
       const left = serializeNode(node.left, fieldNameMap, fields);
       const right = serializeNode(node.right, fieldNameMap, fields);
 
-      return {
+      result = {
         source: `${left.source} ${node.operator} ${right.source}`,
         display: `${left.display} ${node.operator} ${right.display}`,
       };
+      break;
     }
 
     case 'empty':
-      return {
+      result = {
         source: '',
         display: '',
       };
+      break;
 
     default:
-      return {
+      result = {
         source: '',
         display: '',
       };
+      break;
   }
+  if (node.parenthesized) {
+    return {
+      source: `(${result.source})`,
+      display: `(${result.display})`,
+    };
+  }
+  return result;
 }
 
 // 回显解析ast 收集保存入参
@@ -176,19 +187,12 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
       if (end !== -1) {
         const fieldId = source.slice(i + 2, end).trim();
         const field = fieldMap[fieldId];
-        let numberType: 'number' | 'percent' | 'date' = 'number';
-        if ([FieldTypeEnum.INPUT_NUMBER].includes(field?.type as FieldTypeEnum)) {
-          numberType = field?.numberFormat === 'percent' ? 'percent' : 'number';
-        } else if ([FieldTypeEnum.DATE_TIME].includes(field?.type as FieldTypeEnum)) {
-          numberType = 'date';
-        }
 
         tokens.push({
           type: 'field',
           fieldId,
           name: field?.name ?? t('common.optionNotExist'),
           fieldType: field?.type,
-          numberType,
           start: i,
           end: end + 1,
         });
@@ -257,14 +261,31 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
       consumed = j - i;
     }
 
-    // ---------- number ----------
-    else if (/\d/.test(char)) {
+    // ---------- number（支持小数） ----------
+    else if (/\d/.test(char) || (char === '.' && /\d/.test(source[i + 1]))) {
       let j = i;
-      while (j < source?.length && /\d/.test(source[j])) j++;
+      let numStr = '';
+      let hasDot = false;
+      let done = false;
+
+      while (j < source.length && !done) {
+        const cur = source[j];
+
+        if (/\d/.test(cur)) {
+          numStr += cur;
+          j++;
+        } else if (cur === '.' && !hasDot) {
+          hasDot = true;
+          numStr += cur;
+          j++;
+        } else {
+          done = true;
+        }
+      }
 
       tokens.push({
         type: 'number',
-        value: Number(source.slice(i, j)),
+        value: Number(numStr),
         start: i,
         end: j,
       });
@@ -313,7 +334,7 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
 
     i += consumed || 1;
   }
-  // todo xinxinwu
+  // todo xinxinwu debugger
   // console.log(tokens, 'tokens:tokenizeFromSource');
 
   return tokens;

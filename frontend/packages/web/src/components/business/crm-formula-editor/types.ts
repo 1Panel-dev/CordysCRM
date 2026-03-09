@@ -31,7 +31,6 @@ export interface FieldToken extends BaseToken {
   fieldId: string;
   name: string;
   fieldType?: string;
-  numberType?: NumberType; // 字段的数值类型
 }
 
 export interface StringToken extends BaseToken {
@@ -91,6 +90,7 @@ export type ASTNode = FunctionNode | FieldNode | BinaryNode | CompareNode | Lite
 export interface ASTNodeBase {
   startTokenIndex: number;
   endTokenIndex: number;
+  parenthesized?: boolean; // 是否被括号包裹
 }
 
 export interface EmptyNode extends ASTNodeBase {
@@ -108,7 +108,6 @@ export interface FieldNode extends ASTNodeBase {
   fieldId: string;
   name: string;
   fieldType?: string;
-  numberType?: NumberType;
 }
 
 export interface NumberNode extends ASTNodeBase {

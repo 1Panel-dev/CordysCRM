@@ -127,10 +127,6 @@ export function createFieldNode(token: Token) {
     node.dataset.fieldType = (token as FieldToken)?.fieldType;
   }
 
-  if ((token as FieldToken)?.numberType) {
-    node.dataset.numberType = (token as FieldToken)?.numberType;
-  }
-
   node.style.color = getFormulaNodeColor(token);
 
   if (parsedToken.fieldId) {
@@ -149,17 +145,21 @@ export function createFieldNode(token: Token) {
 /**
  * 回显渲染 tokens
  */
-export function renderTokens(tokens: Token[], startIndex = 0): { fragment: DocumentFragment; endIndex: number } {
+export function renderTokens(
+  tokens: Token[],
+  startIndex = 0,
+  stopAtRightParen = false
+): { fragment: DocumentFragment; endIndex: number } {
   const fragment = document.createDocumentFragment();
   let i = startIndex;
 
   while (i < tokens.length) {
     const token = tokens[i];
 
-    // function
+    // ---------- function ----------
     if (token.type === 'function') {
-      // 跳过 function + '('
-      const { fragment: argsFragment, endIndex } = renderTokens(tokens, i + 2);
+      // function 后面按 token 结构是 "("
+      const { fragment: argsFragment, endIndex } = renderTokens(tokens, i + 2, true);
 
       const fnRoot = createFunctionRootNode(token.name!, argsFragment);
 
@@ -169,7 +169,13 @@ export function renderTokens(tokens: Token[], startIndex = 0): { fragment: Docum
       i = endIndex + 1;
     } else if (token.type === 'paren' && token.value === ')') {
       /** ---------- paren end ---------- */
-      return { fragment, endIndex: i };
+      if (stopAtRightParen) {
+        return { fragment, endIndex: i };
+      }
+
+      // 普通表达式里的 )，直接渲染
+      fragment.appendChild(document.createTextNode(')'));
+      i++;
     } else if (token.type === 'field') {
       /** ---------- field ---------- */
       const fieldNode = createFieldNode(token);
@@ -187,9 +193,12 @@ export function renderTokens(tokens: Token[], startIndex = 0): { fragment: Docum
       } else if (token.type === 'operator') {
         text = token.value;
       } else if (token.type === 'comma') {
-        text = ',';
+        text = token.value ?? ',';
+      } else if (token.type === 'paren') {
+        // 普通左括号
+        text = token.value;
       } else {
-        text = String(token.value ?? '');
+        text = String((token as any).value ?? '');
       }
 
       fragment.appendChild(document.createTextNode(text));
@@ -208,7 +217,7 @@ export function renderTokens(tokens: Token[], startIndex = 0): { fragment: Docum
 export function renderTokensToEditor(editor: HTMLElement, tokens: Token[]) {
   editor.innerHTML = '';
 
-  const { fragment } = renderTokens(tokens);
+  const { fragment } = renderTokens(tokens, 0, false);
   editor.appendChild(fragment);
 
   // 保证结尾一定text node（可输入）

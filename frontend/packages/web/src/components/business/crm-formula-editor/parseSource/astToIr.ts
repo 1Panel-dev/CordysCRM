@@ -42,7 +42,15 @@ function resolveNode(node: ASTNode, ctx: ResolveContext): IRNode {
         right: resolveNode(node.right, { expectScalar: true }),
       };
 
-    case 'function':
+    case IRNodeType.Compare:
+      return {
+        type: IRNodeType.Compare,
+        operator: (node as any).operator, // '=' | '!=' | '>' | '>=' | '<' | '<='
+        left: resolveNode((node as any).left, { expectScalar: true }),
+        right: resolveNode((node as any).right, { expectScalar: true }),
+      };
+
+    case IRNodeType.Function:
       // eslint-disable-next-line no-use-before-define
       return resolveFunction(node, ctx);
     default:
@@ -54,11 +62,22 @@ function resolveNode(node: ASTNode, ctx: ResolveContext): IRNode {
 }
 
 function resolveFunction(node: FunctionNode, _ctx: ResolveContext): IRNode {
-  switch (node.name) {
+  const name = node.name?.toUpperCase();
+  if (!name) {
+    return {
+      type: IRNodeType.Invalid,
+      reason: 'function name missing',
+    };
+  }
+
+  /**
+   * 特殊函数规则
+   */
+  switch (name) {
     case 'SUM':
       return {
         type: IRNodeType.Function,
-        name: 'SUM',
+        name,
         args: node.args.map((arg) => resolveNode(arg, { expectScalar: false })),
       };
 
@@ -66,26 +85,26 @@ function resolveFunction(node: FunctionNode, _ctx: ResolveContext): IRNode {
       if (node.args.length !== 2) {
         return {
           type: IRNodeType.Invalid,
-          reason: 'DAYS function must have 2 arguments',
+          reason: 'DAYS requires 2 arguments',
         };
       }
+
       return {
         type: IRNodeType.Function,
-        name: 'DAYS',
+        name,
         args: node.args.map((arg) => resolveNode(arg, { expectScalar: true })),
       };
 
-    case 'CONCATENATE':
+    default:
+      /**
+       * 默认函数行为
+       *
+       * IF / IFS / AND / CONCATENATE / TODAY / NOW / TEXT 等
+       */
       return {
         type: IRNodeType.Function,
-        name: 'CONCATENATE',
-        args: node.args.map((arg) => resolveNode(arg, { expectScalar: false })),
-      };
-
-    default:
-      return {
-        type: IRNodeType.Invalid,
-        reason: `unknown function ${node.name}`,
+        name,
+        args: node.args.map((arg) => resolveNode(arg, { expectScalar: true })),
       };
   }
 }
