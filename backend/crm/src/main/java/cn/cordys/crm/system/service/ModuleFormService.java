@@ -1253,7 +1253,7 @@ public class ModuleFormService {
                                         f.idOrBusinessKey(), BaseField::getName, (oldValue, newValue) -> oldValue));
 
                 subField.getSubFields().stream()
-                        .filter(BaseField::canImport)
+                        .filter(BaseField::canExport)
                         .forEach(f -> {
                             List<String> head = new ArrayList<>();
                             head.add(field.getName());
@@ -1303,7 +1303,7 @@ public class ModuleFormService {
                                 : f.idOrBusinessKey(), Function.identity(), (oldValue, newValue) -> oldValue));
 
                 subField.getSubFields().stream()
-                        .filter(BaseField::canImport)
+                        .filter(BaseField::canExport)
                         .map(BaseField::getId)
                         .forEach(heads::add);
 
