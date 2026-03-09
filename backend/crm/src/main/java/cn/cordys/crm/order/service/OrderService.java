@@ -214,11 +214,11 @@ public class OrderService {
 
         if (customer != null) {
             orderGetResponse.setCustomerName(customer.getName());
-            optionMap.put(BusinessModuleField.ORDER_CUSTOMER_NAME.getBusinessKey(), Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
+            optionMap.put(BusinessModuleField.ORDER_CUSTOMER.getBusinessKey(), Collections.singletonList(new OptionDTO(customer.getId(), customer.getName())));
         }
         if (contract != null) {
             orderGetResponse.setContractName(contract.getName());
-            optionMap.put(BusinessModuleField.ORDER_CONTRACT_NAME.getBusinessKey(), Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
+            optionMap.put(BusinessModuleField.ORDER_CONTRACT.getBusinessKey(), Collections.singletonList(new OptionDTO(contract.getId(), contract.getName())));
         }
 
         orderGetResponse.setOptionMap(optionMap);

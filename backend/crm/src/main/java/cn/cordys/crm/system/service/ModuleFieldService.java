@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * @author song-cc-rock
@@ -194,7 +193,7 @@ public class ModuleFieldService {
                     if (Strings.CI.equalsAny(showFields.get(i),
                             "contractProductSumAmount",
                             BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey())) {
-                        ModuleField contractNameField = selectFieldsByInternalKey(BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey());
+                        ModuleField contractNameField = selectFieldByInternalKey(BusinessModuleField.CONTRACT_TOTAL_AMOUNT.getKey());
                         if (contractNameField != null) {
                             showFields.set(i, contractNameField.getId());
                             contractFieldBlob.setProp(JSON.toJSONString(datasourceField));
@@ -212,7 +211,7 @@ public class ModuleFieldService {
                 .in(ModuleField::getInternalKey, internalKeys));
     }
 
-    public ModuleField selectFieldsByInternalKey(String internalKey) {
+    public ModuleField selectFieldByInternalKey(String internalKey) {
         ModuleField field = new ModuleField();
         field.setInternalKey(internalKey);
         return moduleFieldMapper.selectOne(field);
@@ -242,4 +241,151 @@ public class ModuleFieldService {
 
 		return null;
 	}
+
+    /**
+     * 订单模块字段初始化
+     */
+    public void initOrderFields() {
+        initOrderContractFilter();
+        initOrderProducts();
+    }
+
+    /**
+     * 订单产品字段增加金额计算公式，订单增加订单金额计算公式
+     */
+    private void initOrderProducts() {
+        ModuleField orderProducts = selectFieldByInternalKey("orderProducts");
+        ModuleFieldBlob orderProductsFieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(orderProducts.getId());
+        Map<String, Object> orderProductsField = JSON.parseMap(orderProductsFieldBlob.getProp());
+
+        List<Map<String, Object>> subFields = (List<Map<String, Object>>) orderProductsField.get("subFields");
+        Map<String, Object> orderProductAmount = null;
+        String orderProductPriceId = null;
+        String orderProductNumberId = null;
+        for (Map<String, Object> subField : subFields) {
+            String subFieldInternalKey = (String) subField.get("internalKey");
+            if (Strings.CI.equals(subFieldInternalKey, "orderProductPrice")) {
+                orderProductPriceId = (String) subField.get("id");
+            }
+            if (Strings.CI.equals(subFieldInternalKey, "orderProductNumber")) {
+                orderProductNumberId = (String) subField.get("id");
+            }
+            if (Strings.CI.equals(subFieldInternalKey, "orderProductAmount")) {
+                orderProductAmount = subField;
+            }
+        }
+        orderProductAmount.put("formula", getOrderProductAmountFormula(orderProductPriceId, orderProductNumberId));
+
+        orderProductsFieldBlob.setProp(JSON.toJSONString(orderProductsField));
+        moduleFieldBlobMapper.updateById(orderProductsFieldBlob);
+
+        ModuleField orderAmount = selectFieldByInternalKey("orderAmount");
+        String orderAmountFormulaId = orderProductsField.get("id").toString() + "." + orderProductAmount.get("id").toString();
+        ModuleFieldBlob orderAmountFieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(orderAmount.getId());
+        Map<String, Object> orderAmountField = JSON.parseMap(orderAmountFieldBlob.getProp());
+        orderAmountField.put("formula", getOrderAmountFormula(orderAmountFormulaId));
+        orderAmountFieldBlob.setProp(JSON.toJSONString(orderAmountField));
+        moduleFieldBlobMapper.updateById(orderAmountFieldBlob);
+    }
+
+    private String getOrderAmountFormula(String orderAmountFormulaId) {
+        String orderProductAmountFormula = String.format("""
+                {
+                    "source": "SUM(${%s})",
+                    "display": "SUM(产品明细.金额)",
+                    "fields": [
+                        {
+                            "fieldId": "%s",
+                            "fieldType": "FORMULA",
+                            "numberType": "number"
+                        }
+                    ],
+                    "ir": {
+                        "type": "function",
+                        "name": "SUM",
+                        "args": [
+                            {
+                                "type": "field",
+                                "fieldId": "%s",
+                                "name": "产品明细.金额",
+                                "fieldType": "FORMULA",
+                                "numberType": "number",
+                                "startTokenIndex": 2,
+                                "endTokenIndex": 2
+                            }
+                        ]
+                    }
+                }""", orderAmountFormulaId, orderAmountFormulaId, orderAmountFormulaId);
+        return orderProductAmountFormula;
+    }
+
+    private String getOrderProductAmountFormula(String orderProductPriceId, String orderProductNumberId) {
+        return String.format("""
+                {
+                     "source": "${%s} * ${%s}",
+                     "display": "产品单价 * 数量",
+                     "fields": [
+                         {
+                             "fieldId": "%s",
+                             "fieldType": "INPUT_NUMBER",
+                             "numberType": "number"
+                         },
+                         {
+                             "fieldId": "%s",
+                             "fieldType": "INPUT_NUMBER",
+                             "numberType": "number"
+                         }
+                     ],
+                     "ir": {
+                         "type": "binary",
+                         "operator": "*",
+                         "left": {
+                             "type": "field",
+                             "fieldId": "%s",
+                             "name": "产品单价",
+                             "fieldType": "INPUT_NUMBER",
+                             "numberType": "number",
+                             "startTokenIndex": 0,
+                             "endTokenIndex": 0
+                         },
+                         "right": {
+                             "type": "field",
+                             "fieldId": "%s",
+                             "name": "数量",
+                             "fieldType": "INPUT_NUMBER",
+                             "numberType": "number",
+                             "startTokenIndex": 2,
+                             "endTokenIndex": 2
+                         }
+                     }
+                 }""", orderProductPriceId, orderProductNumberId, orderProductPriceId, orderProductNumberId, orderProductPriceId, orderProductNumberId);
+    }
+
+    /**
+     * 订单合同字段增加订单客户过滤条件
+     */
+    private void initOrderContractFilter() {
+        ModuleField orderContract = selectFieldByInternalKey(BusinessModuleField.ORDER_CONTRACT.getKey());
+        ModuleField orderCustomer = selectFieldByInternalKey(BusinessModuleField.ORDER_CUSTOMER.getKey());
+        ModuleFieldBlob orderContractFieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(orderContract.getId());
+        DatasourceField datasourceField = JSON.parseObject(orderContractFieldBlob.getProp(), DatasourceField.class);
+        String customerConditionJson = String.format("""
+                {
+                  "searchMode": "OR",
+                  "conditions": [
+                    {
+                      "leftFieldId": "customerId",
+                      "leftFieldType": "DATA_SOURCE",
+                      "operator": "IN",
+                      "rightFieldId": "%s",
+                      "rightFieldCustom": false,
+                      "rightFieldCustomValue": "",
+                      "rightFieldType": "INPUT"
+                    }
+                  ]
+                }""", orderCustomer.getId());
+        datasourceField.setCombineSearch(JSON.parseToMap(customerConditionJson));
+        orderContractFieldBlob.setProp(JSON.toJSONString(datasourceField));
+        moduleFieldBlobMapper.updateById(orderContractFieldBlob);
+    }
 }

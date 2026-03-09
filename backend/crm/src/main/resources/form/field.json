@@ -2455,7 +2455,7 @@
         },
         {
           "name": "产品单价",
-          "internalKey": "orderProductAmount",
+          "internalKey": "orderProductPrice",
           "type": "INPUT_NUMBER",
           "showLabel": true,
           "readable": true,
