@@ -129,7 +129,7 @@ public class CommonNoticeSendService {
 
         List<Receiver> receivers = getReceivers(users);
         NoticeModel noticeModel = NoticeModel.builder()
-                .operator(operator.getId())
+                .operator(operatorId)
                 .context(context)
                 .paramMap(paramMap)
                 .event(event)
