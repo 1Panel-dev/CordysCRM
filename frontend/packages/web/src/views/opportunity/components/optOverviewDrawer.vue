@@ -242,6 +242,10 @@
     },
   ];
 
+  const titleName = ref('');
+  const subTitleName = ref('');
+  const initialSourceName = ref('');
+
   // 转移
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   function handleTransfer(done?: () => void) {
@@ -272,7 +276,7 @@
   function handleDelete() {
     openModal({
       type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(props.detail?.opportunityName) }),
+      title: t('common.deleteConfirmTitle', { name: characterLimit(titleName.value) }),
       content: t('opportunity.batchDeleteContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
@@ -307,10 +311,6 @@
     refreshKey.value += 1;
     emit('refresh');
   }
-
-  const titleName = ref('');
-  const subTitleName = ref('');
-  const initialSourceName = ref('');
 
   function handleDescriptionInit(
     _collaborationType?: CollaborationType,
