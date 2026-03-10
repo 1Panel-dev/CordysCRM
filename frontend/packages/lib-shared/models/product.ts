@@ -1,4 +1,4 @@
-import { ModuleField } from '@lib/shared/models/customer';
+import type { ModuleField } from './common';
 
 export interface ProductListItem {
   id: string;

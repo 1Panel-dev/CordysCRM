@@ -1,6 +1,7 @@
 import type { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
-import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
+import type { ModuleField } from '@lib/shared/models/common';
+import type { CollaborationType } from '@lib/shared/models/customer';
 
 import type { FormItemRule } from 'naive-ui';
 import type { Option } from 'naive-ui/es/transfer/src/interface';
@@ -133,6 +134,7 @@ export interface FormCreateField {
   icon: string;
   show?: boolean; // 是否显示，受控于别的字段的showControlRules
   linkRange?: (string | number)[]; // 联动限制可选范围
+  fieldValue?: any; // 字段值
   // 链接
   linkSource?: string;
   openMode?: string;

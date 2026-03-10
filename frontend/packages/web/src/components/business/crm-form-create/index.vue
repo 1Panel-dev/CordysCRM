@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-  import { FormInst, NButton, NForm, NScrollbar } from 'naive-ui';
+  import { FormInst, NButton, NForm, NScrollbar, useMessage } from 'naive-ui';
   import { cloneDeep, isEqual } from 'lodash-es';
   import dayjs from 'dayjs';
 
@@ -70,13 +70,18 @@
     multipleTypes,
     singleTypes,
     specialBusinessKeyMap,
+    transformData,
   } from '@lib/shared/method/formCreate';
   import { FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import { type DataSourceSubFieldLinkField, FormCreateField } from '@/components/business/crm-form-create/types';
 
+  import { getDatasourceRefDetailList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+
+  import { formKeyMap } from '../crm-data-source-select/config';
+  import { getFormConfigApiMap } from './config';
 
   const props = defineProps<{
     isEdit?: boolean;
@@ -96,6 +101,7 @@
   }>();
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const formLoading = defineModel<boolean>('loading', {
     default: false,
@@ -327,11 +333,55 @@
 
   provide('formFieldsProvider', readonly(fieldList));
 
+  async function initDatasourceLinkOptions(
+    beFilledSubFields: FormCreateField[],
+    datasourceMap: Record<string, string[]>
+  ) {
+    try {
+      const paramsList = Object.keys(datasourceMap).map((key) => ({
+        sourceIds: datasourceMap[key],
+        dataSourceType: key,
+      }));
+      const resList = await Promise.all(paramsList.map((params) => getDatasourceRefDetailList(params)));
+      const datasourceFormConfigGroup = await Promise.all(
+        paramsList.map((params) =>
+          getFormConfigApiMap[formKeyMap[params.dataSourceType as FieldDataSourceTypeEnum] as FormDesignKeyEnum]()
+        )
+      );
+      beFilledSubFields.forEach((field) => {
+        const currentRes = resList[paramsList.findIndex((params) => params.dataSourceType === field.dataSourceType)];
+        const currentFormConfig =
+          datasourceFormConfigGroup[paramsList.findIndex((params) => params.dataSourceType === field.dataSourceType)];
+        const newOptions = field.initialOptions?.map((option) => {
+          const currentOption = currentRes.find((res) => res.id === option.id);
+          if (currentOption) {
+            return {
+              ...transformData({
+                item: currentOption,
+                originalData: currentOption as any,
+                fields: currentFormConfig.fields || [],
+              }),
+              ...option,
+            };
+          }
+          return option;
+        });
+        field.initialOptions = newOptions;
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      Message.warning(t('formCreate.dataSourceLinkOptionsFailed'));
+    }
+  }
+
   function applySubFieldLink(
     subLinkFieldParents: DataSourceSubFieldLinkField[],
     currentSource?: Record<string, any>,
     dataSourceFormFields?: FormCreateField[]
   ) {
+    const datasourceMap: Record<string, string[]> = {};
+    const beFilledSubFields: FormCreateField[] = []; // 需要填充的子字段列表
     subLinkFieldParents.forEach((linkField) => {
       if (linkField.enable === false) {
         return;
@@ -357,13 +407,18 @@
                 const currentKey = currentChildField.businessKey || currentChildField.id;
                 switch (true) {
                   case dataSourceTypes.includes(currentChildField.type):
-                    if (subData[`${childLinkField.id}_original`]) {
+                    if (subData[`${childLinkField.id}_original`] && currentChildField.dataSourceType) {
+                      if (datasourceMap[currentChildField.dataSourceType] === undefined) {
+                        datasourceMap[currentChildField.dataSourceType] = [];
+                      }
+                      datasourceMap[currentChildField.dataSourceType].push(subData[`${childLinkField.id}_original`]); // 先将数据源字段的值存起来，等循环结束后一起去重填充到initialOptions中，避免重复请求接口
                       currentChildField.initialOptions = mergeUniqueOptions(currentChildField.initialOptions || [], [
                         {
                           id: subData[`${childLinkField.id}_original`],
                           name: currentSource.optionMap[key]?.find(
                             (e: any) => e.id === subData[`${childLinkField.id}_original`]
                           )?.name,
+                          isFormLinkFilled: true, // 用于区分是表单联动填充的选项还是其他途径的选项，主要用于数据源显示字段的回显
                         },
                       ]);
                       line[currentKey] = [subData[`${childLinkField.id}_original`]];
@@ -374,8 +429,11 @@
                         currentChildField.initialOptions?.push({
                           id: subData.price_sub,
                           parentId: subData[`${childLinkField.id}_original`],
+                          isFormLinkFilled: true, // 用于区分是表单联动填充的选项还是其他途径的选项，主要用于数据源显示字段的回显
                         });
                       }
+                      currentChildField.fieldValue = subData[`${childLinkField.id}_original`];
+                      beFilledSubFields.push(currentChildField);
                     }
                     break;
                   case multipleTypes.includes(currentChildField.type):
@@ -449,6 +507,10 @@
         }
       }
     });
+    if (Object.keys(datasourceMap).length > 0) {
+      // 将数据源字段的值去重后填充到对应字段的initialOptions中
+      initDatasourceLinkOptions(beFilledSubFields, datasourceMap);
+    }
   }
 
   function handleFieldChange(

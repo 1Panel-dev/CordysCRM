@@ -1,8 +1,7 @@
-import { ModuleField } from '@lib/shared/models/customer';
 import { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
 import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 import { ContractBusinessTitleStatusEnum, type ContractInvoiceStatusEnum } from '@lib/shared/enums/contractEnum';
-import type { TableQueryParams } from './common';
+import type { ModuleField, TableQueryParams } from './common';
 import type { FormDesignConfigDetailParams } from './system/module';
 
 // 合同列表项

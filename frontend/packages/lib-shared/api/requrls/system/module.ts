@@ -62,6 +62,7 @@ export const GetFieldPriceListUrl = '/field/source/price'; // 获取价格列表
 export const GetFieldQuotationListUrl = '/field/source/quotation'; // 获取报价单列表
 export const GetFieldDisplayListUrl = '/field/display';
 export const GetFieldBusinessTitleListUrl = '/field/source/business-title';
+export const GetFieldRefDetailListUrl = '/field/source/ref-detail'; // 批量获取数据源字段详情
 
 export const UploadTempFileUrl = '/pic/upload/temp'; // 上传临时图片
 export const PreviewPictureUrl = '/pic/preview'; // 预览图片

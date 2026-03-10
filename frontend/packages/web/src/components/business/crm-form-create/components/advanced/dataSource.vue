@@ -134,6 +134,9 @@
         );
         value.value = newRows.map((e) => e.id) as (string | number)[];
         emit('change', value.value, newRows, fieldList.value);
+      } else if (val?.some((e) => e.isFormLinkFilled)) {
+        // 这里将表单联动填充的初始化选项 emit 出去，触发 change  让数据源显示字段回显
+        emit('change', value.value, val, fieldList.value);
       }
     },
     {

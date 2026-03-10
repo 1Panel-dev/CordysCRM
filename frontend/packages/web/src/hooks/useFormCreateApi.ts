@@ -24,7 +24,8 @@ import {
   parseModuleFieldValue,
   singleTypes,
 } from '@lib/shared/method/formCreate';
-import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
+import type { ModuleField } from '@lib/shared/models/common';
+import type { CollaborationType } from '@lib/shared/models/customer';
 import type { FormConfig, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import type { Description } from '@/components/pure/crm-description/index.vue';
