@@ -1,6 +1,6 @@
 import { IRNodeType } from '@lib/shared/enums/formula';
 
-import { FieldTypeMap, IRNode } from './formula-runtime/types';
+import { FieldTypeMap, FormulaDataSourceMap, IRNode } from './formula-runtime/types';
 
 export function hydrateIRNumberType(node: IRNode | any, fieldTypeMap: FieldTypeMap): IRNode {
   // ---------- 历史数据兼容 as 旧数据，需要转换成新版本----------
@@ -69,4 +69,36 @@ export function hydrateIRNumberType(node: IRNode | any, fieldTypeMap: FieldTypeM
   }
 }
 
-export default {};
+export function getFormulaDataSourceDisplayValue(
+  formulaDataSource: FormulaDataSourceMap,
+  fieldId: string,
+  rawValue: any
+): any {
+  const config = formulaDataSource[fieldId];
+
+  // 不是数据源映射字段，保持原值
+  if (!config?.parserName) {
+    return rawValue;
+  }
+
+  // 空值
+  if (rawValue == null || rawValue === '') {
+    return [];
+  }
+
+  const options = config.options ?? [];
+
+  const values = Array.isArray(rawValue) ? rawValue : [rawValue];
+
+  const result = values.map((value) => {
+    const target = String(value);
+
+    const matched = options.find((item) => {
+      const candidate = item.value ?? item.id;
+      return String(candidate) === target;
+    });
+
+    return matched?.name ?? matched?.label ?? value;
+  });
+  return result;
+}

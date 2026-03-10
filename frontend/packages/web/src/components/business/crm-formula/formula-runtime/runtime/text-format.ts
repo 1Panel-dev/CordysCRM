@@ -1,28 +1,13 @@
 // /formula-runtime/runtime/text-format.ts
+import { excelSerialToLocalDate } from './excel-date';
 import { toNumber, toString } from './excel-runtime';
 
 /**
  * Excel serial -> Date
  */
-const DAY_MS = 24 * 60 * 60 * 1000;
-const EXCEL_EPOCH = new Date(1899, 11, 30).getTime();
 
 function serialToDate(serial: number): Date {
-  const base = new Date(1899, 11, 30);
-
-  const days = Math.floor(serial);
-
-  const date = new Date(base.getFullYear(), base.getMonth(), base.getDate() + days);
-
-  const fraction = serial - days;
-
-  if (fraction > 0) {
-    const seconds = Math.round(fraction * 86400);
-
-    date.setSeconds(date.getSeconds() + seconds);
-  }
-
-  return date;
+  return excelSerialToLocalDate(serial);
 }
 
 function pad(value: number, len = 2): string {
@@ -67,27 +52,21 @@ function isZeroPadFormat(format: string): boolean {
  * - 其余 mm 视为“月份”
  */
 function formatDateByPattern(date: Date, format: string): string {
-  const yyyy = String(date.getFullYear());
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hour = pad(date.getHours());
-  const minute = pad(date.getMinutes());
-  const second = pad(date.getSeconds());
+  const yyyy = String(date.getUTCFullYear());
+  const month = pad(date.getUTCMonth() + 1);
+  const day = pad(date.getUTCDate());
+  const hour = pad(date.getUTCHours());
+  const minute = pad(date.getUTCMinutes());
+  const second = pad(date.getUTCSeconds());
 
   let result = format;
 
-  // 先替换不会冲突的 token
   result = result.replace(/yyyy/g, yyyy).replace(/dd/g, day).replace(/hh/g, hour).replace(/ss/g, second);
 
-  // 把时间部分的 mm 先替换成分钟
-  // hh:mm
   result = result.replace(/hh:mm/g, `${hour}:${minute}`);
-  // :mm:
   result = result.replace(/:mm:/g, `:${minute}:`);
-  // :mm 结尾
   result = result.replace(/:mm\b/g, `:${minute}`);
 
-  // 剩余的 mm 统一当月份
   result = result.replace(/mm/g, month);
 
   return result;

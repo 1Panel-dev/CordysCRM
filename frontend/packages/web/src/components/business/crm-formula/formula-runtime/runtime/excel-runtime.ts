@@ -6,15 +6,17 @@ import { CompareOperator } from '../types';
 // 可选：用于 debug/告警（不想用就不传）
 export type RuntimeWarn = (msg: string) => void;
 
-function normalizeScalar(value: any, warn?: RuntimeWarn): any {
+function normalizeScalar(value: any, _?: RuntimeWarn): any {
   if (Array.isArray(value)) {
-    // 这里策略：取第一个 / 取0 / 报警
-    warn?.(`[formula] array used as scalar, fallback to first element`);
-    return value.length > 0 ? value[0] : 0;
+    if (value.length === 0) {
+      return 0;
+    }
+    // 这里策略：隐式取第一个 / 取0 / 报警
+    return value[0];
   }
+
   return value;
 }
-
 /**
  * Excel boolean coercion
  */
