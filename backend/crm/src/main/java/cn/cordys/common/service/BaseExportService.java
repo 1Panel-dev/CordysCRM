@@ -39,9 +39,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,8 +60,16 @@ public abstract class BaseExportService {
      * 最大查询数量
      */
     public static final int EXPORT_MAX_COUNT = 2000;
+	/**
+	 * 汇总字段前缀
+	 */
     private static final String SUM_PREFIX = "sum_";
     public static final String SLASH = "/";
+	/**
+	 * SXSSFWorkbook行访问窗口大小
+	 */
+    public static final String ROW_ACCESS_SIZE = "_randomAccessWindowSize";
+
     @Resource
     private LogService logService;
     @Resource
@@ -137,6 +147,7 @@ public abstract class BaseExportService {
                 .build()) {
 
             WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+			setRowAccessWindowSize(writer);
 
             int offset = 2, current = 1;
             t.setPageSize(EXPORT_MAX_COUNT);
@@ -155,7 +166,7 @@ public abstract class BaseExportService {
                 writer.write(mergeResult.getDataList(), sheet);
                 // 执行合并策略
                 Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
-                SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, offset);
+				SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, getSummaryColIdx(headList, mergeColumns), offset);
                 strategy.merge(mergeSheet);
                 if (mergeResult.getDataList().size() < EXPORT_MAX_COUNT) {
                     break;
@@ -259,6 +270,7 @@ public abstract class BaseExportService {
             try (ExcelWriter writer = EasyExcel.write(file).head(exportHeads).excelType(ExcelTypeEnum.XLSX)
                     .registerWriteHandler(new CustomHeadColWidthStyleStrategy()).build()) {
                 WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+				setRowAccessWindowSize(writer);
                 AtomicInteger offset = new AtomicInteger(2);
                 SubListUtils.dealForSubList(exportParam.getSelectIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (ids) -> {
                     MergeResult mergeResult = new MergeResult();
@@ -272,7 +284,7 @@ public abstract class BaseExportService {
                     writer.write(mergeResult.getDataList(), sheet);
                     // 执行合并策略
                     Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
-                    SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, offset.get());
+                    SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, getSummaryColIdx(exportHeads, mergeColumns), offset.get());
                     strategy.merge(mergeSheet);
                     offset.addAndGet(mergeResult.getDataList().size());
                 });
@@ -808,7 +820,9 @@ public abstract class BaseExportService {
 
 		for (BaseModuleFieldValue subFv : subFvs) {
 			List<?> list = (List<?>) subFv.getFieldValue();
-			if (list == null) continue;
+			if (list == null) {
+				continue;
+			}
 			for (int i = 0; i < list.size(); i++) {
 				Map<String,Object> row = alignedList.get(i);
 				row.putAll((Map<String,Object>) list.get(i));
@@ -817,4 +831,42 @@ public abstract class BaseExportService {
 		return alignedList;
 	}
 
+	/**
+	 * 获取合并列中的汇总列索引
+	 * @param headList 表头信息
+	 * @param mergeColumns 合并的列索引
+	 * @return 汇总列索引
+	 */
+	private List<Integer> getSummaryColIdx(List<List<String>> headList, List<Integer> mergeColumns) {
+		if (CollectionUtils.isEmpty(headList) || CollectionUtils.isEmpty(mergeColumns)) {
+			return Collections.emptyList();
+		}
+		return mergeColumns.stream().filter(col -> {
+			List<String> mergeHead = headList.get(col);
+			if (mergeHead == null) {
+				return false;
+			}
+			if (!Strings.CI.equals(mergeHead.getFirst(), mergeHead.getLast())) {
+				return false;
+			}
+			String headName = mergeHead.getFirst();
+			return headName != null && headName.startsWith(Translator.get("sum"));
+		}).toList();
+	}
+
+	/**
+	 * 设置SXSSFWorkbook的行数据窗口大小
+	 * @param writer ExcelWriter对象
+	 */
+	private void setRowAccessWindowSize(ExcelWriter writer) {
+		SXSSFWorkbook workbook = (SXSSFWorkbook) writer.writeContext().writeWorkbookHolder().getWorkbook();
+		try {
+			// _rowAccessWindowSize为-1，禁用窗口机制, 避免合并行数据时, 数据被写入磁盘导致无法访问的问题
+			Field f = SXSSFWorkbook.class.getDeclaredField(ROW_ACCESS_SIZE);
+			f.setAccessible(true);
+			f.set(workbook, -1);
+		} catch (Exception e) {
+			log.warn("Fail to set random access window size, {}", e.getMessage());
+		}
+	}
 }
