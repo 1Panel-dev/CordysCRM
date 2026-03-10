@@ -66,6 +66,8 @@
         sys_department_commander
         GROUP BY user_id
         ) uc ON su.id = uc.user_id
+        LEFT JOIN sys_user su_create ON sou.create_user = su_create.id
+        LEFT JOIN sys_user su_update ON sou.update_user = su_update.id
         where sou.department_id in
         <foreach collection="request.departmentIds" item="departmentId" open="(" separator="," close=")">
             #{departmentId}
@@ -96,6 +98,9 @@
                 <choose>
                     <when test="sortName == 'user_name'">
                         su.name ${sortType},
+                    </when>
+                    <when test="sortName == 'work_city_name'">
+                        sou.work_city ${sortType},
                     </when>
                     <otherwise>
                         sou.${sortName} ${sortType},
