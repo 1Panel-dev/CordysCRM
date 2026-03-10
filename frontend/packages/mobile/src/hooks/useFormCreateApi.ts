@@ -15,7 +15,8 @@ import {
   multipleTypes,
   singleTypes,
 } from '@lib/shared/method/formCreate';
-import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
+import type { ModuleField } from '@lib/shared/models/common';
+import type { CollaborationType } from '@lib/shared/models/customer';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
 import type { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';

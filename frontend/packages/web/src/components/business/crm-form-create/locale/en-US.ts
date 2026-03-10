@@ -12,4 +12,5 @@ export default {
   'crmFormCreate.advanced.typeNotValid': 'Invalid file type, please reselect',
   'crmFormCreate.advanced.limitCount': ', maximum limit is {count}',
   'crmFormCreate.advanced.selectIndustry': 'Please select industry',
+  'crmFormCreate.dataSourceLinkOptionsFailed': 'Failed to parse data source linkage options',
 };

@@ -1,8 +1,7 @@
-import type { ModuleField } from '@lib/shared/models/customer';
+import type { ModuleField } from './common';
 
 // TODO lmy
-export interface SaveOrderParams {
-}
+export interface SaveOrderParams {}
 
 export interface UpdateOrderParams extends SaveOrderParams {
   id: string;

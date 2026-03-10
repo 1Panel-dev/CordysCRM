@@ -2,8 +2,7 @@ import dayjs from 'dayjs';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import type { CommonList } from '@lib/shared/models/common';
-import type { ModuleField } from '@lib/shared/models/customer';
+import type { CommonList, ModuleField } from '@lib/shared/models/common';
 
 import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';

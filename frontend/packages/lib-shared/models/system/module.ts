@@ -1,5 +1,5 @@
 import type { FormDesignKeyEnum, FormLinkScenarioEnum } from '../../enums/formDesignEnum';
-import type { TableQueryParams } from '../common';
+import type { ModuleField, TableQueryParams } from '../common';
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 import { MemberSelectTypeEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 
@@ -259,4 +259,16 @@ export interface CheckRepeatParams {
 export interface CheckRepeatInfo {
   repeat: boolean;
   name: string;
+}
+
+export interface GetRefDataSourceFieldParams {
+  sourceIds: string[];
+  dataSourceType: string;
+}
+
+export interface RefDataSourceFieldItem {
+  id: string;
+  moduleFields: ModuleField[];
+  optionMap?: Record<string, any[]>;
+  [key: string]: any;
 }

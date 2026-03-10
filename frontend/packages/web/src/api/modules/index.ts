@@ -637,6 +637,7 @@ export const {
   getFieldQuotationList,
   getFieldDisplayList,
   getFieldBusinessTitleList,
+  getDatasourceRefDetailList,
 } = moduleApi;
 
 export const {

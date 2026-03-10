@@ -71,7 +71,8 @@ import {
   GetFieldQuotationListUrl,
   GetFieldBusinessTitleListUrl,
   SetDisplayAdvancedUrl,
-  GetAdvancedSwitchUrl
+  GetAdvancedSwitchUrl,
+  GetFieldRefDetailListUrl,
 } from '@lib/shared/api/requrls/system/module';
 import { QuotationItem } from '@lib/shared/models/opportunity';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -89,6 +90,7 @@ import type {
   DefaultSearchSetFormModel,
   FormDesignConfigDetailParams,
   FormDesignDataSourceTableQueryParams,
+  GetRefDataSourceFieldParams,
   ModuleNavBaseInfoItem,
   ModuleNavTopItem,
   ModuleSortParams,
@@ -97,6 +99,7 @@ import type {
   ReasonConfig,
   ReasonItem,
   ReasonParams,
+  RefDataSourceFieldItem,
   SaveFormDesignConfigParams,
   SortReasonParams,
   UpdateReasonEnableParams,
@@ -392,6 +395,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<BusinessTitleItem>>({ url: GetFieldBusinessTitleListUrl, data });
   }
 
+  function getDatasourceRefDetailList(data: GetRefDataSourceFieldParams) {
+    return CDR.post<RefDataSourceFieldItem[]>({ url: GetFieldRefDetailListUrl, data });
+  }
+
   // 设置高级筛选开关
   function setDisplayAdvanced() {
     return CDR.get({ url: SetDisplayAdvancedUrl });
@@ -469,5 +476,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getFieldPriceList,
     getFieldQuotationList,
     getFieldBusinessTitleList,
+    getDatasourceRefDetailList,
   };
 }

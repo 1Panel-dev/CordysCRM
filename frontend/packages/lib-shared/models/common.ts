@@ -116,3 +116,8 @@ export interface ChartResponseDataItem {
   subCategoryAxisName: string; // 子类目名称
   valueAxis: string; // 值
 }
+
+export interface ModuleField {
+  fieldId: string;
+  fieldValue: string | string[];
+}

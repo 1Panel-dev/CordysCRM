@@ -1,8 +1,7 @@
-import type { CommonList } from '../models/common';
+import type { CommonList, ModuleField } from '../models/common';
 import { FieldTypeEnum } from '../enums/formDesignEnum';
 import type { FormCreateField, FormDetail } from '@cordys/web/src/components/business/crm-form-create/types';
 import { formatTimeValue, getCityPath, getIndustryPath } from './index';
-import type { ModuleField } from '../models/customer';
 import { useI18n } from '../hooks/useI18n';
 
 export const linkAllAcceptTypes = [FieldTypeEnum.INPUT, FieldTypeEnum.TEXTAREA];
@@ -447,7 +446,7 @@ export function transformData({
         customFieldAttr[field.fieldId] = [t('common.optionNotExist')];
       } else {
         // 多选
-        customFieldAttr[field.fieldId] = field.fieldValue?.map((e) => t('common.optionNotExist'));
+        customFieldAttr[field.fieldId] = field.fieldValue?.map(() => t('common.optionNotExist'));
       }
     } else {
       // 其他类型字段，直接赋值
@@ -501,8 +500,12 @@ export function mergeUniqueOptions(sumInitialOptions: Record<string, any>[], app
       return;
     }
     const optionKey = option.id ?? option.value;
-    if (optionKey !== undefined && !optionMap.has(optionKey)) {
-      optionMap.set(optionKey, option);
+    if (optionKey !== undefined) {
+      if (optionMap.has(optionKey)) {
+        Object.assign(optionMap.get(optionKey) || {}, option);
+      } else {
+        optionMap.set(optionKey, option);
+      }
     }
   });
   sumInitialOptions = Array.from(optionMap.values());

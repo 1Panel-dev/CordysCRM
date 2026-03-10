@@ -1,10 +1,5 @@
 import type { CustomerFollowPlanStatusEnum, CustomerSearchTypeEnum } from '../../enums/customerEnum';
-import type { TableExportParams, TableQueryParams } from '../common';
-
-export interface ModuleField {
-  fieldId: string;
-  fieldValue: string | string[];
-}
+import type { ModuleField, TableExportParams, TableQueryParams } from '../common';
 
 export interface SaveCustomerParams {
   name?: string;
