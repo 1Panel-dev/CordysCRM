@@ -746,14 +746,8 @@ public class ClueService {
 
         // 转移线索的计划&记录
         batchCopyCluePlanAndRecord(clue.getId(), transitionCs.getId(), null, transformCsAssociateDTO.getContactId());
-        // 刷新客户的最新跟进时间
-        if (clue.getFollowTime() != null && (transitionCs.getFollowTime() == null || transitionCs.getFollowTime() < clue.getFollowTime())) {
-            Customer updateCustomer = new Customer();
-            updateCustomer.setId(transitionCs.getId());
-            updateCustomer.setFollower(clue.getFollower());
-            updateCustomer.setFollowTime(clue.getFollowTime());
-            customerMapper.updateById(updateCustomer);
-        }
+		// 刷新转换过程中同名客户的最新跟进时间
+		refreshCsFollowTime(clue, transitionCs);
 
         // 只通知线索负责人
         Map<String, Object> paramMap = new HashMap<>(8);
@@ -795,14 +789,8 @@ public class ClueService {
             // 根据表单联动来创建客户
             transformCustomer = generateCustomerByLinkForm(clue, currentUser, orgId);
         }
-        if (clue.getFollowTime() != null && (transformCustomer.getFollowTime() == null || transformCustomer.getFollowTime() < clue.getFollowTime())) {
-            // 刷新同名客户最新跟进时间
-            Customer updateCustomer = new Customer();
-            updateCustomer.setId(transformCustomer.getId());
-            updateCustomer.setFollower(clue.getFollower());
-            updateCustomer.setFollowTime(clue.getFollowTime());
-            customerMapper.updateById(updateCustomer);
-        }
+		// 刷新转换过程中同名客户的最新跟进时间
+		refreshCsFollowTime(clue, transformCustomer);
 
         TransformCsAssociateDTO transformCsAssociateDTO = transformCsAssociate(clue, transformCustomer, currentUser, orgId);
         clue.setTransitionId(transformCustomer.getId());
@@ -959,7 +947,7 @@ public class ClueService {
             customerLinkFillDTO = moduleFormService.fillFormLinkValue(new Customer(), get(clue.getId()),
                     customerFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_CUSTOMER.name());
         } catch (Exception e) {
-            log.error("Attempt to fill linked form values error: {}", e.getMessage());
+            log.error("Attempt to fill customer form error: {}", e.getMessage());
             throw new GenericException(Translator.get("transform.customer.error"));
         }
         // 部分内置字段未配置联动, 取线索值即可
@@ -990,7 +978,7 @@ public class ClueService {
             opportunityLinkFillDTO = moduleFormService.fillFormLinkValue(new Opportunity(), get(clue.getId()),
                     opportunityFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_OPPORTUNITY.name());
         } catch (Exception e) {
-            log.error("Attempt to fill linked form values error: {}", e.getMessage());
+            log.error("Attempt to fill opportunity form error: {}", e.getMessage());
             throw new GenericException(Translator.get("transform.opportunity.error"));
         }
         OpportunityAddRequest addRequest = new OpportunityAddRequest();
@@ -1015,6 +1003,29 @@ public class ClueService {
         return opportunityService.add(addRequest, currentUser, orgId);
     }
 
+	/**
+	 * 通过表单联动来构建客户联系人创建对象
+	 * @param clue 线索
+	 * @param orgId 组织ID
+	 * @return 客户联系人创建对象
+	 */
+	public CustomerContactAddRequest buildContactRequestByLinkForm(Clue clue, String orgId) {
+		ModuleFormConfigDTO contactFormConfig = moduleFormService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
+		FormLinkFill<CustomerContactAddRequest> fillDTO = null;
+		try {
+			fillDTO = moduleFormService.fillFormLinkValue(new CustomerContactAddRequest(), get(clue.getId()),
+					contactFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_CONTACT.name());
+		} catch (Exception e) {
+			log.error("Attempt to fill contact form error: {}", e.getMessage());
+		}
+		if (fillDTO == null || fillDTO.getEntity() == null) {
+			return new CustomerContactAddRequest();
+		}
+		CustomerContactAddRequest request = fillDTO.getEntity();
+		request.setModuleFields(fillDTO.getFields());
+		return request;
+	}
+
     /**
      * 转换客户处理
      *
@@ -1037,12 +1048,12 @@ public class ClueService {
         if (StringUtils.isNotEmpty(clue.getContact())) {
             boolean unique = customerContactService.checkCustomerContactUnique(clue.getContact(), clue.getPhone(), transformCs.getId(), orgId);
             if (unique) {
-                CustomerContactAddRequest contactAddRequest = new CustomerContactAddRequest();
-                contactAddRequest.setCustomerId(transformCs.getId());
-                contactAddRequest.setName(clue.getContact());
-                contactAddRequest.setPhone(clue.getPhone());
-                contactAddRequest.setOwner(clue.getOwner());
-                CustomerContact contact = customerContactService.add(contactAddRequest, currentUser, orgId);
+				CustomerContactAddRequest request = buildContactRequestByLinkForm(clue, orgId);
+				request.setCustomerId(transformCs.getId());
+				if (StringUtils.isEmpty(request.getOwner())) {
+					request.setOwner(clue.getOwner());
+				}
+                CustomerContact contact = customerContactService.add(request, currentUser, orgId);
                 transformDTO.setContactId(contact.getId());
             }
         }
@@ -1136,6 +1147,7 @@ public class ClueService {
         }
     }
 
+	@SuppressWarnings("unchecked")
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = clueFieldService.getAndCheckField(request.getFieldId(), organizationId);
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
@@ -1181,7 +1193,7 @@ public class ClueService {
         LambdaQueryWrapper<FollowUpRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
         recordLambdaQueryWrapper.in(FollowUpRecord::getClueId, clueIds).eq(FollowUpRecord::getType, FollowUpPlanType.CLUE.name());
         List<FollowUpRecord> clueRecords = followUpRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
-        Map<String, ClueFollowDTO> followDTOMap = new HashMap<>();
+        Map<String, ClueFollowDTO> clueFollowMap = new HashMap<>(8);
         clueRecords.forEach(clueRecord -> {
             String customerId = clueTransferMap.get(clueRecord.getClueId());
             clueRecord.setId(IDGenerator.nextStr());
@@ -1190,16 +1202,21 @@ public class ClueService {
             clueRecord.setType(FollowUpPlanType.CUSTOMER.name());
             if (StringUtils.isNotBlank(clueRecord.getCustomerId())) {
                 records.add(clueRecord);
-                ClueFollowDTO clueFollowDTO = followDTOMap.get(customerId);
+                ClueFollowDTO clueFollowDTO = clueFollowMap.get(customerId);
                 if (clueFollowDTO == null) {
-                    followDTOMap.put(customerId, ClueFollowDTO.builder().follower(clueRecord.getOwner())
+					clueFollowMap.put(customerId, ClueFollowDTO.builder().follower(clueRecord.getOwner())
                             .followerTime(clueRecord.getFollowTime()).build());
                 } else {
-                    if (clueRecord.getFollowTime() != null && (clueFollowDTO.getFollowerTime() == null || clueRecord.getFollowTime() > clueFollowDTO.getFollowerTime())) {
-                        clueFollowDTO.setFollower(clueRecord.getOwner());
-                        clueFollowDTO.setFollowerTime(clueRecord.getFollowTime());
-                        followDTOMap.put(customerId, clueFollowDTO);
-                    }
+					Long recordTime = clueRecord.getFollowTime();
+					if (recordTime == null) {
+						return;
+					}
+					Long followerTime = clueFollowDTO.getFollowerTime();
+					if (followerTime == null || recordTime > followerTime) {
+						clueFollowDTO.setFollower(clueRecord.getOwner());
+						clueFollowDTO.setFollowerTime(recordTime);
+						clueFollowMap.put(customerId, clueFollowDTO);
+					}
                 }
             }
         });
@@ -1224,14 +1241,34 @@ public class ClueService {
             followUpPlanMapper.batchInsert(plans);
         }
         // 更新客户最新跟进人和时间
-        List<String> customerIds = followDTOMap.keySet().stream().toList();
+        List<String> customerIds = clueFollowMap.keySet().stream().toList();
         List<Customer> customers = customerMapper.selectByIds(customerIds);
         customers.forEach(customer -> {
-            if (customer.getFollowTime() == null || customer.getFollowTime() < followDTOMap.get(customer.getId()).getFollowerTime()) {
-                customer.setFollower(followDTOMap.get(customer.getId()).getFollower());
-                customer.setFollowTime(followDTOMap.get(customer.getId()).getFollowerTime());
+            if (customer.getFollowTime() == null || customer.getFollowTime() < clueFollowMap.get(customer.getId()).getFollowerTime()) {
+                customer.setFollower(clueFollowMap.get(customer.getId()).getFollower());
+                customer.setFollowTime(clueFollowMap.get(customer.getId()).getFollowerTime());
             }
             customerMapper.updateById(customer);
         });
     }
+
+	/**
+	 * 刷新客户的最新跟进时间
+	 * @param clue 线索信息
+	 * @param transitionCs 转移的客户信息
+	 */
+	private void refreshCsFollowTime(Clue clue, Customer transitionCs) {
+		Long clueFollowTime = clue.getFollowTime();
+		Long customerFollowTime = transitionCs.getFollowTime();
+		if (clueFollowTime == null) {
+			return;
+		}
+		if (customerFollowTime == null || customerFollowTime < clueFollowTime) {
+			Customer updateCustomer = new Customer();
+			updateCustomer.setId(transitionCs.getId());
+			updateCustomer.setFollower(clue.getFollower());
+			updateCustomer.setFollowTime(clueFollowTime);
+			customerMapper.updateById(updateCustomer);
+		}
+	}
 }
