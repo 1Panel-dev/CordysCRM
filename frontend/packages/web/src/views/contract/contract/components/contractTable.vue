@@ -81,6 +81,7 @@
   <DetailDrawer
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
+    isContractTableDetail
     @refresh="searchData(undefined, activeSourceId)"
     @delete="removeItemFromList(activeSourceId)"
     @showCustomerDrawer="showCustomerDrawer"

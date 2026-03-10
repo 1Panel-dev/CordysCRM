@@ -53,47 +53,17 @@
           </n-tooltip>
         </div>
       </template>
-      <template #[FieldDataSourceTypeEnum.CUSTOMER]="{ item }">
-        <div class="field-line flex w-full items-center">
-          <div class="mr-[16px] leading-[24px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
-            {{ item.label }}
-          </div>
-          <CrmTableButton
-            v-if="
-              (item.value !== t('common.optionNotExist') &&
-                item.value !== '-' &&
-                !detail.inCustomerPool &&
-                hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
-              (detail.inCustomerPool && hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
-            "
-            class="crm-form-description-link-button"
-            size="small"
-            @click="openCustomerDetail(formDetail[item.fieldInfo.id])"
-          >
-            <template #trigger>
-              {{ item.value }}
-            </template>
-            {{ item.value }}
-          </CrmTableButton>
-          <n-tooltip v-else :delay="300">
-            <template #trigger>
-              <div class="one-line-text">
-                {{ item.value }}
-              </div>
-            </template>
-            {{ item.value }}
-          </n-tooltip>
-        </div>
-      </template>
-      <template #[FieldDataSourceTypeEnum.CONTRACT]="{ item }">
+
+      <!-- 单选 DataSource -->
+      <template #dataSource="{ item }">
         <div class="field-line flex w-full items-center">
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
             {{ item.label }}
           </div>
           <CrmTableButton
-            v-if="hasAnyPermission(['CONTRACT:READ'])"
+            v-if="canOpenDataSource(item)"
             class="crm-form-description-link-button"
-            @click="openContractDetail(formDetail[item.fieldInfo.id])"
+            @click="openDataSource(item)"
           >
             <template #trigger>
               {{ item.value }}
@@ -110,56 +80,35 @@
           </n-tooltip>
         </div>
       </template>
-      <template #[FieldDataSourceTypeEnum.CONTRACT_PAYMENT]="{ item }">
-        <div class="field-line flex w-full items-center">
+
+      <!-- 多选 DataSource -->
+      <template #dataSourceMultiple="{ item }">
+        <div class="field-line flex w-full overflow-hidden">
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
             {{ item.label }}
           </div>
-          <CrmTableButton
-            v-if="hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ'])"
-            class="crm-form-description-link-button"
-            @click="openContractPaymentPlanDetail(formDetail[item.fieldInfo.id])"
-          >
-            <template #trigger>
-              {{ item.value }}
-            </template>
-            {{ item.value }}
-          </CrmTableButton>
-          <n-tooltip v-else :delay="300">
-            <template #trigger>
-              <div class="one-line-text">
-                {{ item.value }}
-              </div>
-            </template>
-            {{ item.value }}
-          </n-tooltip>
-        </div>
-      </template>
-      <template #[FieldDataSourceTypeEnum.BUSINESS_TITLE]="{ item }">
-        <div class="field-line flex w-full items-center">
-          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
-            {{ item.label }}
+          <div v-if="canOpenDataSource(item)" class="flex flex-1 flex-col items-start gap-[12px] overflow-hidden">
+            <CrmTableButton
+              v-for="v in item.value"
+              :key="v.id || v"
+              class="crm-form-description-link-button"
+              @click="openDataSource(item, v)"
+            >
+              <template #trigger>
+                {{ v }}
+              </template>
+              {{ v }}
+            </CrmTableButton>
           </div>
-          <CrmTableButton
-            v-if="hasAnyPermission(['CONTRACT_BUSINESS_TITLE:READ'])"
-            class="crm-form-description-link-button"
-            @click="openContractBusinessTitleDetail(formDetail[item.fieldInfo.id])"
-          >
-            <template #trigger>
-              {{ item.value }}
-            </template>
-            {{ item.value }}
-          </CrmTableButton>
-          <n-tooltip v-else :delay="300">
-            <template #trigger>
-              <div class="one-line-text">
-                {{ item.value }}
-              </div>
-            </template>
-            {{ item.value }}
-          </n-tooltip>
+          <CrmTagGroup
+            v-else-if="Array.isArray(item.value) && item.value.length"
+            :tags="item.value"
+            :label-key="item.tagProps?.labelKey"
+            :class="`justify-${props.valueAlign ?? 'end'}`"
+          />
         </div>
       </template>
+
       <template #[FieldTypeEnum.DATE_TIME]="{ item }">
         <div class="field-line flex w-full items-center">
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
@@ -289,6 +238,7 @@
       loadingDescription?: string;
       oneLineValue?: boolean; // value 是否单行显示
       oneLineLabel?: boolean; // label 是否单行显示
+      isContractTableDetail?: boolean; // 只支持合同列表打开的合同详情抽屉高亮跳转
     }>(),
     {
       oneLineLabel: true,
@@ -300,6 +250,8 @@
     (e: 'openCustomerDetail', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
     (e: 'openContractDetail', params: { id: string }): void;
     (e: 'openContractPaymentPlanDetail', params: { id: string }): void;
+    (e: 'openOpportunityDetail', params: { id: string }): void;
+    (e: 'openQuotationDetail', params: { id: string }): void;
   }>();
 
   const { t } = useI18n();
@@ -323,6 +275,7 @@
     formKey: toRefs(props).formKey,
     sourceId: toRefs(props).sourceId,
     needInitDetail,
+    isContractTableDetail: props.isContractTableDetail,
   });
 
   const realDescriptions = computed(() => {
@@ -410,6 +363,84 @@
     activeBusinessTitleId.value = Array.isArray(id) ? id[0] : id;
     isInitBusinessTitleDetail.value = true;
     showBusinessTitleDetail.value = true;
+  }
+
+  function openOpportunityDetail(id: string | string[]) {
+    emit('openOpportunityDetail', {
+      id: Array.isArray(id) ? id[0] : id,
+    });
+  }
+
+  function openQuotationDetail(id: string | string[]) {
+    emit('openQuotationDetail', {
+      id: Array.isArray(id) ? id[0] : id,
+    });
+  }
+
+  type DataSourceConfig = {
+    canOpen: (item: Description) => boolean;
+    open: (id: string | string[]) => void;
+  };
+  const dataSourceConfig: Partial<Record<FieldDataSourceTypeEnum, DataSourceConfig>> = {
+    [FieldDataSourceTypeEnum.CUSTOMER]: {
+      canOpen: (item: Description) => {
+        const { value } = item;
+
+        const valid = value !== t('common.optionNotExist') && value !== '-';
+
+        if (!valid) return false;
+
+        if (detail.value.inCustomerPool) {
+          return hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']);
+        }
+
+        return hasAnyPermission(['CUSTOMER_MANAGEMENT:READ']);
+      },
+      open: openCustomerDetail,
+    },
+
+    [FieldDataSourceTypeEnum.CONTRACT]: {
+      canOpen: () => hasAnyPermission(['CONTRACT:READ']),
+      open: openContractDetail,
+    },
+
+    [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: {
+      canOpen: () => hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ']),
+      open: openContractPaymentPlanDetail,
+    },
+
+    [FieldDataSourceTypeEnum.BUSINESS_TITLE]: {
+      canOpen: () => hasAnyPermission(['CONTRACT_BUSINESS_TITLE:READ']),
+      open: openContractBusinessTitleDetail,
+    },
+
+    [FieldDataSourceTypeEnum.QUOTATION]: {
+      canOpen: () => hasAnyPermission(['OPPORTUNITY_QUOTATION:READ']),
+      open: openQuotationDetail,
+    },
+
+    [FieldDataSourceTypeEnum.BUSINESS]: {
+      canOpen: () => hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']),
+      open: openOpportunityDetail,
+    },
+  };
+
+  function canOpenDataSource(item: Description) {
+    const config = dataSourceConfig[item.fieldInfo.dataSourceType as FieldDataSourceTypeEnum];
+
+    if (!config) return false;
+
+    return config.canOpen?.(item);
+  }
+
+  function openDataSource(item: Description, value?: string) {
+    const config = dataSourceConfig[item.fieldInfo.dataSourceType as FieldDataSourceTypeEnum];
+
+    if (!config) return;
+    const option = item.fieldInfo.initialOptions?.find((i: { id: string; name: string }) => i.name === value);
+
+    const id = option?.id ?? formDetail.value[item.fieldInfo.id];
+    config.open(id);
   }
 
   // 打开链接

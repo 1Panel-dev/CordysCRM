@@ -135,7 +135,7 @@
 
     column-gap: 32px;
     .crm-description-item {
-      @apply flex items-center;
+      @apply flex items-baseline;
 
       width: calc((100% - v-bind(column - 1) * 32px) / v-bind(column));
     }

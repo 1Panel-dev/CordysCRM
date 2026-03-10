@@ -50,6 +50,7 @@ export interface FormCreateApiProps {
   linkFormInfo?: Ref<Record<string, any> | undefined>; // 关联表单信息
   linkFormKey?: Ref<FormDesignKeyEnum | undefined>; // 关联表单key
   linkScenario?: Ref<FormLinkScenarioEnum | undefined>; // 关联表单场景
+  isContractTableDetail?: boolean;
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -384,7 +385,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       descriptions.value.push({
         label: item.name,
         value: parseFormDetailValue(item, form),
-        slotName: FieldDataSourceTypeEnum.CUSTOMER,
+        slotName: 'dataSource',
         fieldInfo: item,
         tooltipPosition: 'top-end',
       });
@@ -397,7 +398,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       descriptions.value.push({
         label: item.name,
         value: parseFormDetailValue(item, form),
-        slotName: FieldDataSourceTypeEnum.BUSINESS_TITLE,
+        slotName: 'dataSource',
         fieldInfo: item,
         tooltipPosition: 'top-end',
       });
@@ -414,7 +415,42 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       descriptions.value.push({
         label: item.name,
         value: parseFormDetailValue(item, form),
-        slotName: FieldDataSourceTypeEnum.CONTRACT,
+        slotName: 'dataSource',
+        fieldInfo: item,
+        tooltipPosition: 'top-end',
+      });
+    } else if (
+      props.isContractTableDetail &&
+      [FieldTypeEnum.DATA_SOURCE].includes(item.type) &&
+      props.formKey.value === FormDesignKeyEnum.CONTRACT_SNAPSHOT &&
+      [FieldDataSourceTypeEnum.BUSINESS, FieldDataSourceTypeEnum.QUOTATION].includes(
+        item.dataSourceType as FieldDataSourceTypeEnum
+      ) &&
+      !item.resourceFieldId
+    ) {
+      descriptions.value.push({
+        label: item.name,
+        value: parseFormDetailValue(item, form),
+        slotName: 'dataSource',
+        fieldInfo: item,
+        tooltipPosition: 'top-end',
+      });
+    } else if (
+      props.isContractTableDetail &&
+      item.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE &&
+      props.formKey.value === FormDesignKeyEnum.CONTRACT_SNAPSHOT &&
+      [
+        FieldDataSourceTypeEnum.BUSINESS,
+        FieldDataSourceTypeEnum.CUSTOMER,
+        FieldDataSourceTypeEnum.BUSINESS_TITLE,
+        FieldDataSourceTypeEnum.QUOTATION,
+      ].includes(item.dataSourceType as FieldDataSourceTypeEnum) &&
+      !item.resourceFieldId
+    ) {
+      descriptions.value.push({
+        label: item.name,
+        value: parseFormDetailValue(item, form),
+        slotName: 'dataSourceMultiple',
         fieldInfo: item,
         tooltipPosition: 'top-end',
       });
