@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -162,10 +163,16 @@ public class ModuleFieldService {
 				}
 				DatasourceRefDTO dto = new DatasourceRefDTO();
 				dto.setId(id);
+				dto.setName(getField(res, "name", String.class));
 				dto.setModuleFields((List<BaseModuleFieldValue>) getField(res, "moduleFields", List.class));
 				dto.setProducts((List<Map<String, Object>>) getField(res, "products", List.class));
 				dto.setOptionMap((Map<String, List<OptionDTO>>) getField(res, "optionMap", Map.class));
 
+				if (Strings.CI.equals(request.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
+					// 产品需要获取价格和状态等业务详情字段
+					dto.setPrice(getField(res, "price", BigDecimal.class));
+					dto.setStatus(getField(res, "status", String.class));
+				}
 				result.add(dto);
 			}
 		} catch (Exception e) {

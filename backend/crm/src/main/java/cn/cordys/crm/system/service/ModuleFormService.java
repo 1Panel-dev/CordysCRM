@@ -952,6 +952,42 @@ public class ModuleFormService {
         initFormAndFields(allKeys);
     }
 
+	/**
+	 * 初始化线索转联系人表单联动规则
+	 */
+	@SuppressWarnings("unchecked")
+	public void initContactFormLinkRules() {
+		// 加载初始化的字段信息
+		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+		fieldWrapper.in(ModuleField::getInternalKey, List.of("contactName", "contactPhone", "clueContactName", "clueContactPhone"));
+		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
+		if (CollectionUtils.isEmpty(fields) || fields.size() < 4) {
+			log.error("未找到对应的内置字段，无法初始化联动规则");
+			return;
+		}
+		Map<String, String> fieldMap = fields.stream().collect(Collectors.toMap(ModuleField::getInternalKey, ModuleField::getId));
+		// 构建联动规则
+		LinkField contactNameLink = new LinkField();
+		contactNameLink.setCurrent(fieldMap.get("contactName"));
+		contactNameLink.setLink(fieldMap.get("clueContactName"));
+		contactNameLink.setEnable(true);
+		LinkField contactPhoneLink = new LinkField();
+		contactPhoneLink.setCurrent(fieldMap.get("contactPhone"));
+		contactPhoneLink.setLink(fieldMap.get("clueContactPhone"));
+		contactPhoneLink.setEnable(true);
+		// 更新表单属性
+		LambdaQueryWrapper<ModuleForm> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(ModuleForm::getFormKey, FormKey.CONTACT.getKey());
+		ModuleForm contactForm = moduleFormMapper.selectListByLambda(wrapper).getFirst();
+		ModuleFormBlob formBlob = moduleFormBlobMapper.selectByPrimaryKey(contactForm.getId());
+		Map<String, Object> propMap = JSON.parseMap(formBlob.getProp());
+		List<LinkScenario> contactLinkProp = List.of(LinkScenario.builder().key(LinkScenarioKey.CLUE_TO_CONTACT.name())
+				.linkFields(List.of(contactNameLink, contactPhoneLink)).build());
+		propMap.put("linkProp", Map.of(FormKey.CLUE.getKey(), contactLinkProp));
+		formBlob.setProp(JSON.toJSONString(propMap));
+		moduleFormBlobMapper.updateById(formBlob);
+	}
+
     @SuppressWarnings("unchecked")
     public void initExtFieldsByVer(String version) {
         try {

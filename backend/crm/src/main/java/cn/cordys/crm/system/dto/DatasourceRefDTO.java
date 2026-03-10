@@ -5,6 +5,7 @@ import cn.cordys.common.dto.OptionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,7 @@ import java.util.Map;
  * @author song-cc-rock
  */
 @Data
-public class DatasourceRefDTO {
+public class DatasourceRefDTO extends DatasourceRefBusinessDetail {
 
 	@Schema(description = "数据源ID")
 	private String id;
