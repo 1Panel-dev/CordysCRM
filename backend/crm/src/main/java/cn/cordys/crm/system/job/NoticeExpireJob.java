@@ -1,7 +1,6 @@
 package cn.cordys.crm.system.job;
 
 import cn.cordys.common.util.JSON;
-import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
@@ -24,11 +23,7 @@ import cn.cordys.quartz.anno.QuartzScheduled;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.Strings;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -77,7 +72,6 @@ public class NoticeExpireJob {
      * <p>
      * 该方法每天8点执行一次，检查商机报价单，回款计划以及合同的到期情况，并发送相应的通知提醒。
      * </p>
-     *
      */
     @QuartzScheduled(cron = "0 0 8 * * ?")
     public void onEvent() {
@@ -131,8 +125,6 @@ public class NoticeExpireJob {
                 continue;
             }
 
-            SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-            ExtContractMapper batchUpdateMapper = sqlSession.getMapper(ExtContractMapper.class);
             for (Contract contract : contractList) {
                 //发送通知
                 Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
@@ -140,14 +132,8 @@ public class NoticeExpireJob {
                     log.info("组织{}合同{}关联的客户不存在", organizationId, contract.getId());
                     continue;
                 }
-                if (!Strings.CI.equals(contract.getStage(), ContractStage.COMPLETED_PERFORMANCE.name()) && !Strings.CI.equals(contract.getStage(), ContractStage.ARCHIVED.name())) {
-                    contract.setStage(ContractStage.COMPLETED_PERFORMANCE.name());
-                    batchUpdateMapper.updateStage(contract.getId(), contract.getStage(), contract.getUpdateUser(), System.currentTimeMillis());
-                }
                 sendNotice(expiredConfigDTO, NotificationConstants.Module.CONTRACT, contract.getCreateUser(), contract.getOrganizationId(), NotificationConstants.Event.CONTRACT_EXPIRED, customer.getName(), contract.getCreateUser(), contract.getOwner(), null, contract.getId());
             }
-            sqlSession.flushStatements();
-            SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
             log.info("组织{}合同到期提醒发送通知成功", organizationId);
         }
 
