@@ -213,6 +213,7 @@ export default {
   'crmFormDesign.OPPORTUNITY_TO_RECORD': 'Write Record',
   'crmFormDesign.PLAN_TO_RECORD': 'Plan to Record',
   'crmFormDesign.CONTRACT_TO_INVOICE': 'Add Invoice',
+  'crmFormDesign.CLUE_TO_CONTACT': 'Lead to Contact',
   'crmFormDesign.tip.CLUE_TO_CUSTOMER':
     'When converting a lead to an account, fill the lead form field content into the account form field',
   'crmFormDesign.tip.CLUE_TO_OPPORTUNITY':
@@ -229,6 +230,8 @@ export default {
     'When performing plan to record operations, fill the plan form field content into the record form fields',
   'crmFormDesign.tip.CONTRACT_TO_INVOICE':
     'When creating an invoice in the contract details, fill the contract form fields into the invoice form fields',
+  'crmFormDesign.tip.CLUE_TO_CONTACT':
+    'When converting a lead to a contact, fill the lead form field content into the contact form fields',
   'crmFormDesign.productTable': 'Product Table',
   'crmFormDesign.quotationTable': 'Quotation Table',
   'crmFormDesign.sum': 'Sum',
