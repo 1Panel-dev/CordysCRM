@@ -57,8 +57,17 @@ export interface FieldMeta {
 
 export type FieldTypeMap = Record<string, FieldMeta>;
 
+export type FormulaDataSourceMap = Record<
+  string,
+  {
+    parserName: boolean;
+    options: Record<string, any>[];
+  }
+>;
+
 // -------- Runtime Context --------
 export interface EvaluateContext {
+  evaluationNow: Date | null;
   /** 当前是否在子表 */
   context?: {
     tableKey?: string;
@@ -71,6 +80,7 @@ export interface EvaluateContext {
   /** 取列字段 */
   getTableColumnValues(path: string): number[];
   getFieldMeta?(fieldId: string): FieldMeta | undefined;
+  resolveFieldRuntimeValue?(fieldId: string, rawValue: any): any;
 
   warn?(msg: string): void;
 }

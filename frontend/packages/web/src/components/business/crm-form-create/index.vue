@@ -81,6 +81,8 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import { formKeyMap } from '../crm-data-source-select/config';
+  import { FormulaDataSourceMap } from '../crm-formula/formula-runtime/types';
+  import { safeParseFormula } from '../crm-formula-editor/utils';
   import { getFormConfigApiMap } from './config';
 
   const props = defineProps<{
@@ -331,8 +333,6 @@
     });
   }
 
-  provide('formFieldsProvider', readonly(fieldList));
-
   async function initDatasourceLinkOptions(
     beFilledSubFields: FormCreateField[],
     datasourceMap: Record<string, string[]>
@@ -513,6 +513,38 @@
     }
   }
 
+  const formulaDataSource = ref<FormulaDataSourceMap>({});
+
+  const evaluationNow = ref<Date | null>(new Date());
+
+  const formulaFormContext = computed(() => ({
+    fields: fieldList.value,
+    formulaDataSource: formulaDataSource.value,
+    evaluationNow,
+  }));
+
+  provide('formFieldsProvider', readonly(formulaFormContext));
+
+  function initFormulaDataSourceRemark() {
+    formulaDataSource.value = {};
+    fieldList.value.forEach((item) => {
+      if (item.type === FieldTypeEnum.FORMULA) {
+        const { fields } = safeParseFormula(item.formula ?? '');
+        fields.forEach((e: any) => {
+          if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(e.fieldType)) {
+            const options = props.needInitDetail
+              ? fieldList.value.find((f) => f.id === e.fieldId)?.initialOptions ?? []
+              : [];
+            formulaDataSource.value[e.fieldId] = {
+              parserName: true,
+              options,
+            };
+          }
+        });
+      }
+    });
+  }
+
   function handleFieldChange(
     value: any,
     source: Record<string, any>[],
@@ -565,6 +597,12 @@
             : target?.[field.businessKey || field.id];
       });
     }
+
+    // 计算组件的数据源标记source 用于获取数据源name
+    if (formulaDataSource.value[item.id]?.parserName && !props.needInitDetail) {
+      formulaDataSource.value[item.id].options = source;
+    }
+
     unsaved.value = true;
   }
 
@@ -646,6 +684,7 @@
       await initFormDetail();
     }
     initForm(props.linkScenario);
+    initFormulaDataSourceRemark();
   });
 </script>
 

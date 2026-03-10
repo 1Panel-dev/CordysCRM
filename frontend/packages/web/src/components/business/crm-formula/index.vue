@@ -30,7 +30,7 @@
   import { safeParseFormula } from '../crm-formula-editor/utils';
   import evaluateIR from './formula-runtime';
   import { FieldTypeMap, ValueType } from './formula-runtime/types';
-  import { hydrateIRNumberType } from './utils';
+  import { getFormulaDataSourceDisplayValue, hydrateIRNumberType } from './utils';
   import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const { t } = useI18n();
@@ -65,7 +65,18 @@
     }
   });
 
-  const fieldList = inject('formFieldsProvider', ref([]));
+  const formulaFormContext = inject(
+    'formFieldsProvider',
+    ref({
+      fields: [],
+      formulaDataSource: {},
+      evaluationNow: null,
+    })
+  );
+
+  const fieldList = computed(() => formulaFormContext?.value.fields);
+  const formulaDataSource = computed(() => formulaFormContext?.value.formulaDataSource);
+  const evaluationNow = computed(() => formulaFormContext?.value.evaluationNow);
 
   function resolveFieldId(e: FormCreateField, inSubTable?: boolean) {
     if (e.resourceFieldId) {
@@ -220,6 +231,10 @@
     return map;
   }
 
+  function resolveFieldRuntimeValue(fieldId: string, rawValue: any) {
+    return getFormulaDataSourceDisplayValue(formulaDataSource.value, fieldId, rawValue);
+  }
+
   // 根据公式实时计算
   const updateValue = debounce(() => {
     const { formula } = props.fieldConfig;
@@ -242,12 +257,14 @@
       : undefined;
 
     const result = evaluateIR(ir, {
+      evaluationNow: evaluationNow.value,
       context,
       getScalarFieldValue,
       getTableColumnValues,
       getFieldMeta: (fieldId: string) => {
         return fieldTypeMap[fieldId];
       },
+      resolveFieldRuntimeValue,
       warn: (msg: string) => {
         // eslint-disable-next-line no-console
         console.warn(msg);
