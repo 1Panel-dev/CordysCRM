@@ -88,6 +88,8 @@ public class OrderService {
     private DataScopeService dataScopeService;
     @Resource
     private ExtOrderStageConfigMapper extOrderStageConfigMapper;
+    @Resource
+    private BaseMapper<Customer> customerBaseMapper;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
 
@@ -211,6 +213,11 @@ public class OrderService {
 
         Customer customer = customerMapper.selectByPrimaryKey(order.getCustomerId());
         Contract contract = contractMapper.selectByPrimaryKey(order.getContractId());
+
+        Map<String, String> stageNameMap = extOrderStageConfigMapper.getStageConfigList(order.getOrganizationId()).stream()
+                .collect(Collectors.toMap(OrderStageConfigResponse::getId,
+                        OrderStageConfigResponse::getName));
+        orderGetResponse.setStageName(stageNameMap.get(order.getStage()));
 
         if (customer != null) {
             orderGetResponse.setCustomerName(customer.getName());
@@ -383,6 +390,13 @@ public class OrderService {
         OrderSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
         if (snapshot != null) {
             response = JSON.parseObject(snapshot.getOrderValue(), OrderGetResponse.class);
+            if (StringUtils.isNotBlank(order.getCustomerId())) {
+                Customer customer = customerBaseMapper.selectByPrimaryKey(order.getCustomerId());
+                if (customer != null) {
+                    response.setInCustomerPool(customer.getInSharedPool());
+                    response.setPoolId(customer.getPoolId());
+                }
+            }
         }
         return response;
     }
@@ -442,6 +456,10 @@ public class OrderService {
         Map<String, String> userNameMap = baseService.getUserNameMap(ownerIds);
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
+        Map<String, String> stageNameMap = extOrderStageConfigMapper.getStageConfigList(orgId).stream()
+                .collect(Collectors.toMap(OrderStageConfigResponse::getId,
+                        OrderStageConfigResponse::getName));
+
         list.forEach(item -> {
             item.setOwnerName(userNameMap.get(item.getOwner()));
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getOwner());
@@ -449,6 +467,7 @@ public class OrderService {
                 item.setDepartmentId(userDeptDTO.getDeptId());
                 item.setDepartmentName(userDeptDTO.getDeptName());
             }
+            item.setStageName(stageNameMap.get(item.getStage()));
             // 获取自定义字段
             List<BaseModuleFieldValue> orderFields = resolvefieldValueMap.get(item.getId());
             item.setModuleFields(orderFields);
