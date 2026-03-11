@@ -30,7 +30,7 @@ public class Order extends BaseModel {
     private String number;
 
     @Schema(description = "状态")
-    private String status;
+    private String stage;
 
     @Schema(description = "组织id")
     private String organizationId;

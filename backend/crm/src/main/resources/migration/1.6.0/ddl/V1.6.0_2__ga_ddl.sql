@@ -10,7 +10,7 @@ CREATE TABLE sales_order
     `contract_id`     VARCHAR(32)  NOT NULL COMMENT '合同id',
     `owner`           VARCHAR(32)  NOT NULL COMMENT '订单负责人',
     `amount`          DECIMAL(20, 10) COMMENT '金额',
-    `status`          VARCHAR(50)  NOT NULL COMMENT '订单状态',
+    `stage`          VARCHAR(50)  NOT NULL COMMENT '订单状态',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',

@@ -11,7 +11,7 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.order.dto.request.OrderAddRequest;
 import cn.cordys.crm.order.dto.request.OrderPageRequest;
-import cn.cordys.crm.order.dto.request.OrderStatusRequest;
+import cn.cordys.crm.order.dto.request.OrderStageRequest;
 import cn.cordys.crm.order.dto.request.OrderUpdateRequest;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
@@ -61,11 +61,11 @@ public class OrderController {
         return orderService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-    @PostMapping("/stage/update")
+    @PostMapping("/update/stage")
     @RequiresPermissions(PermissionConstants.ORDER_UPDATE)
     @Operation(summary = "更新订单阶段")
-    public void updateStage(@Validated @RequestBody OrderStatusRequest request) {
-        orderService.updateStatus(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public void updateStage(@Validated @RequestBody OrderStageRequest request) {
+        orderService.updateStage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

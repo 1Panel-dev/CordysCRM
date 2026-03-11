@@ -11,8 +11,7 @@
         so.number,
         c.`name` AS contractName,
         so.amount,
-        so.approval_status,
-        so.status,
+        so.stage,
         so.`owner`,
         so.create_user,
         so.create_time,
@@ -95,8 +94,7 @@
         so.number,
         c.`name` AS contractName,
         so.amount,
-        so.approval_status,
-        so.status,
+        so.stage,
         so.`owner`,
         so.create_user,
         so.create_time,
@@ -131,7 +129,7 @@
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name not in
                 {'name', 'owner', 'createTime', 'updateTime', 'customerId', 'contractId', 'createUser', 'updateUser',
-                 'departmentId', 'number', 'status', 'amount', 'startTime', 'endTime'}">
+                 'departmentId', 'number', 'stage', 'amount', 'startTime', 'endTime'}">
                     <if test="condition.multipleValue">
                         left join contract_field_blob ${tablePrefix}_${i}
                         on so.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -151,7 +149,7 @@
 
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
-                {'name', 'owner', 'customer_id', 'amount', 'status', 'update_user', 'create_time',
+                {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time',
                  'contract_id', 'update_time', 'create_user', 'department_id'}">
             <bind name="sortName" value="${sort}.name"/>
             left join contract_field sort_table
@@ -208,22 +206,16 @@
                     <property name="column" value="so.owner"/>
                 </include>
             </when>
-            <when test="condition.name == 'status'">
+            <when test="condition.name == 'stage'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="so.status"/>
+                    <property name="column" value="so.stage"/>
                 </include>
             </when>
             <when test="condition.name == 'number'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="so.number"/>
-                </include>
-            </when>
-            <when test="condition.name == 'approvalStatus'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="so.approval_status"/>
                 </include>
             </when>
             <when test="condition.name == 'departmentId'">
@@ -321,8 +313,8 @@
                     <when test="${sort}.name == 'amount'">
                         so.`amount` ${sortType}, so.id ASC
                     </when>
-                    <when test="${sort}.name == 'status'">
-                        so.`status` ${sortType}, so.id ASC
+                    <when test="${sort}.name == 'stage'">
+                        so.`stage` ${sortType}, so.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
                         so.`create_time` ${sortType}, so.id ASC
@@ -364,8 +356,7 @@
                 so.number,
                 c.`name` AS contractName,
                 so.amount,
-                so.approval_status,
-                so.status,
+                so.stage,
                 so.`owner`,
                 so.create_user,
                 so.create_time,
@@ -376,16 +367,8 @@
         where so.id = #{id}
     </select>
 
-    <update id="updateStatus">
-        update sales_order
-        set stattus       = #{status},
-            update_user = #{userId},
-            update_time = #{updateTime}
-        where id = #{id}
-    </update>
-
     <select id="countByStage" resultType="java.lang.Integer">
         select count(id) from sales_order
-        where stage = #{stageId}
+        where stage = #{stage}
     </select>
 </mapper>
