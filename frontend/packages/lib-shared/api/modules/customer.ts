@@ -124,6 +124,7 @@ import {
   GetAccountPaymentRecordListUrl,
   GetAccountInvoiceListUrl,
   GetAccountInvoiceStatisticUrl,
+  GetAccountOrderListUrl,
 } from '@lib/shared/api/requrls/customer';
 import type {
   ChartResponseDataItem,
@@ -182,6 +183,7 @@ import type {
   UpdateCustomerRelationItemParams,
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
+import type { OrderItem } from '@lib/shared/models/order';
 import type { CluePoolItem, FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
@@ -359,6 +361,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 获取客户发票统计
   function getCustomerInvoiceStatistic(id: string) {
     return CDR.get<CustomerInvoiceStatistic[]>({ url: `${GetAccountInvoiceStatisticUrl}/${id}` });
+  }
+
+  // 获取客户的订单
+  function getCustomerOrderList(data: TableQueryParams) {
+    return CDR.post<CommonList<OrderItem>>({ url: GetAccountOrderListUrl, data });
   }
 
   // 启用客户联系人
@@ -919,6 +926,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getAccountPaymentRecord,
     getAccountPaymentRecordStatistic,
     getCustomerInvoiceList,
+    getCustomerOrderList,
     getCustomerInvoiceStatistic,
   };
 }

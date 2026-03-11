@@ -94,6 +94,7 @@ export const GetAccountPaymentRecordListUrl = '/account/contract/payment-record/
 export const GetAccountPaymentRecordStatisticUrl = '/account/contract/payment-record/statistic'; // 客户详情-回款列表统计
 export const GetAccountInvoiceListUrl = '/account/invoice/page'; // 客户详情-发票列表
 export const GetAccountInvoiceStatisticUrl = '/account/invoice/statistic'; // 客户详情-发票列表统计
+export const GetAccountOrderListUrl = '/account/order/page'; // 客户详情-订单列表
 
 // 视图
 export const GetCustomerViewDetailUrl = '/account/view/detail';

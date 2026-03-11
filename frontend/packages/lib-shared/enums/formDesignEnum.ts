@@ -33,6 +33,7 @@ export enum FormDesignKeyEnum {
   ORDER = 'order', // 订单
   ORDER_SNAPSHOT = 'orderSnapshot', // 订单快照
   CONTRACT_ORDER = 'contractOrder', // 合同下的订单
+  CUSTOMER_ORDER = 'customerOrder', // 客户下的订单
   // 全局搜索
   SEARCH_ADVANCED_CLUE = 'searchAdvancedClue', // 线索
   SEARCH_ADVANCED_CUSTOMER = 'searchAdvancedCustomer', // 客户

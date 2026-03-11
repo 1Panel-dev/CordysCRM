@@ -6,6 +6,7 @@
           :form-key="FormDesignKeyEnum.ORDER"
           :fullscreen-target-ref="orderCardRef"
           @open-contract-drawer="handleOpenContractDrawer"
+          @open-customer-drawer="handleOpenCustomerDrawer"
         />
       </div>
     </CrmCard>

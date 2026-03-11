@@ -106,13 +106,9 @@
           :form-key="FormDesignKeyEnum.INVOICE"
           :source-id="props.sourceId"
         />
-        <!-- TODO lmy 客户下的订单数据 -->
-        <OrderTable
-          v-else-if="activeTab === 'order'"
-          :formKey="FormDesignKeyEnum.ORDER"
-          :sourceId="props.sourceId"
-          :readonly="collaborationType === 'READ_ONLY' || props.readonly"
-        />
+        <CrmCard v-else-if="activeTab === 'order'" hide-footer no-content-bottom-padding>
+          <OrderTable :formKey="FormDesignKeyEnum.CUSTOMER_ORDER" :sourceId="props.sourceId" readonly />
+        </CrmCard>
       </div>
       <CrmMoveModal
         v-model:show="showMoveModal"
@@ -294,7 +290,7 @@
         name: 'order',
         tab: t('module.order'),
         enable: true,
-        permission: ['CONTRACT_ORDER:READ'], // TODO lmy
+        permission: ['ORDER:READ'],
       },
     ];
     if (collaborationType.value) {
