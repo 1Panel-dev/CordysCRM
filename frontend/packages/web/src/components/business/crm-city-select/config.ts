@@ -433,24 +433,24 @@ export const GAT = [
       {
         children: [
           {
-            label: '大堂区',
-            value: '820100',
-          },
-          {
-            label: '风顺堂区',
-            value: '820100',
-          },
-          {
             label: '花地玛堂区',
-            value: '820100',
+            value: '820101',
           },
           {
             label: '花王堂区',
-            value: '820100',
+            value: '820102',
+          },
+          {
+            label: '大堂区',
+            value: '820103',
           },
           {
             label: '望德堂区',
-            value: '820100',
+            value: '820104',
+          },
+          {
+            label: '风顺堂区',
+            value: '820105',
           },
           {
             label: '其他区',
@@ -464,15 +464,7 @@ export const GAT = [
         children: [
           {
             label: '嘉模堂区',
-            value: '820200',
-          },
-          {
-            label: '路凼填海区',
-            value: '820200',
-          },
-          {
-            label: '圣方济各堂区',
-            value: '820200',
+            value: '820201',
           },
           {
             label: '其他区',
@@ -481,6 +473,14 @@ export const GAT = [
         ],
         label: '离岛',
         value: '8202',
+      },
+      {
+        label: '圣方济各堂区',
+        value: '820301',
+      },
+      {
+        label: '路凼填海区',
+        value: '820401',
       },
     ],
     label: '澳门特别行政区',
