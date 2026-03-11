@@ -137,19 +137,19 @@
         }
       }
     }
-    .n-card__content {
+    .n-card-content {
       @apply h-full;
 
       padding: 24px !important;
     }
   }
   .n-card--no-padding {
-    .n-card__content {
+    .n-card-content {
       padding: 0 !important;
     }
   }
   .n-card--no-bottom-padding {
-    .n-card__content {
+    .n-card-content {
       padding-bottom: 0 !important;
     }
   }
