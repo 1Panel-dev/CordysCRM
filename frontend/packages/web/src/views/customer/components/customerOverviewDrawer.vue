@@ -116,7 +116,7 @@
         :source-id="props.sourceId"
         :name="sourceName"
         type="warning"
-        @refresh="refresh"
+        @refresh="emit('deleted')"
       />
     </template>
   </CrmOverviewDrawer>
@@ -157,6 +157,8 @@
   }>();
   const emit = defineEmits<{
     (e: 'saved'): void;
+    (e: 'deleted'): void;
+    (e: 'transfer'): void;
   }>();
 
   const { t } = useI18n();
@@ -315,7 +317,7 @@
       });
       Message.success(t('common.transferSuccess'));
       descriptionRef.value?.initFormDescription();
-      emit('saved');
+      emit('transfer');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -336,7 +338,7 @@
         try {
           await deleteCustomer(props.sourceId);
           Message.success(t('common.deleteSuccess'));
-          emit('saved');
+          emit('deleted');
           show.value = false;
         } catch (error) {
           // eslint-disable-next-line no-console

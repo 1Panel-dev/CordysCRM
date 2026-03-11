@@ -89,6 +89,8 @@
     v-model:show="showOverviewDrawer"
     :source-id="activeSourceId"
     @saved="searchData(undefined, activeSourceId)"
+    @deleted="removeItemFromList(activeSourceId)"
+    @transfer="searchData"
   />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
