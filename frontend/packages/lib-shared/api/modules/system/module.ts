@@ -396,7 +396,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function getDatasourceRefDetailList(data: GetRefDataSourceFieldParams) {
-    return CDR.post<RefDataSourceFieldItem[]>({ url: GetFieldRefDetailListUrl, data });
+    return CDR.post<RefDataSourceFieldItem[]>({ url: GetFieldRefDetailListUrl, data }, { ignoreCancelToken: true });
   }
 
   // 设置高级筛选开关

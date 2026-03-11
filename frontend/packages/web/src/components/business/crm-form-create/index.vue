@@ -371,7 +371,7 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
-      Message.warning(t('formCreate.dataSourceLinkOptionsFailed'));
+      Message.warning(t('crmFormCreate.dataSourceLinkOptionsFailed'));
     }
   }
 

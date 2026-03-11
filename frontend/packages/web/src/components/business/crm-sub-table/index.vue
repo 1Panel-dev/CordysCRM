@@ -275,8 +275,13 @@
     rowIndex: number,
     isPriceSubTableShowSubField?: boolean
   ) {
-    if (isProcessingDataSourceChange.value || row.price_sub) {
+    if (isProcessingDataSourceChange.value) {
       // 子表格添加多行会触发 change，避免重复处理
+      return;
+    }
+    if (row.price_sub) {
+      // 填充时已经有了价格表数据，需要回显字段
+      applyDataSourceShowFields(field, val, row, source, row.price_sub);
       return;
     }
     isProcessingDataSourceChange.value = true;
