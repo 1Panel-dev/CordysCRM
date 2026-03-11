@@ -71,8 +71,8 @@
     v-model:enable="enableOptMoveReason"
     @load-config="() => getGlobalReasonConfig()"
   />
-  <stepSettingDrawer v-model:visible="businessManagementStepSetVisible" />
-  <orderStateFlowDrawer v-model:visible="orderStateFlowVisible" />
+  <stateFlowDrawer v-model:visible="businessManagementStepSetVisible" :type="FormDesignKeyEnum.BUSINESS" />
+  <stateFlowDrawer v-model:visible="orderStateFlowVisible" :type="FormDesignKeyEnum.ORDER" />
   <ContractFormFormDrawer v-model:visible="contractFormVisible" />
   <OrderFormFormDrawer v-model:visible="orderFormVisible" />
   <ContractPaymentPlanFormDrawer v-model:visible="contractPaymentPlanFormVisible" />
@@ -94,6 +94,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import stateFlowDrawer from '@/components/business/crm-status-config-drawer/index.vue';
   import approvalSwitch, { approvalConfigType } from './approvalSwitch.vue';
   import businessTitleValidate from './businessTitleValidate.vue';
   import CapacitySetDrawer from './capacitySetDrawer.vue';
@@ -112,9 +113,7 @@
   import OpportunityFormDrawer from './opportunity/formDrawer.vue';
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
   import optQuotationFormDrawer from './opportunity/optQuotationFormDrawer.vue';
-  import stepSettingDrawer from './opportunity/stepSettingDrawer.vue';
   import OrderFormFormDrawer from './order/orderFormFormDrawer.vue';
-  import orderStateFlowDrawer from './order/orderStateFlowDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
   import priceTableFormDrawer from './productManagement/priceTableFormDrawer.vue';
 

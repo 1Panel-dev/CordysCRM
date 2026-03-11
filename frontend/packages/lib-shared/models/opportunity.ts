@@ -75,9 +75,12 @@ export interface OpportunityBillboardDraggedParams {
   stage: string;
 }
 
-export interface UpdateOpportunityStageParams {
+export interface UpdateStageBaseParams {
   id: string;
   name: string;
+}
+
+export interface UpdateOpportunityStageParams {
   rate: string;
 }
 
@@ -86,15 +89,18 @@ export interface UpdateOpportunityStageRollbackParams {
   endRollBack: boolean;
 }
 
-export interface AddOpportunityStageParams {
+export interface StageBaseParams{
   name: string;
   type: 'AFOOT' | 'END';
-  rate: string;
   dropPosition: number;
   targetId: string;
 }
 
-export interface StageConfigItem {
+export interface AddOpportunityStageParams extends StageBaseParams {
+  rate: string;
+}
+
+export interface StageConfigBaseItem{
   id: string;
   createUser: string;
   updateUser: string;
@@ -102,11 +108,14 @@ export interface StageConfigItem {
   updateTime: number;
   name: string;
   type: 'AFOOT' | 'END';
-  rate: string;
   afootRollBack: boolean;
   endRollBack: boolean;
   pos: number;
   organizationId: string;
+}
+
+export interface StageConfigItem extends StageConfigBaseItem {
+  rate: string;
 }
 
 export interface OpportunityStageConfig {
