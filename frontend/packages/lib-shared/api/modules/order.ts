@@ -19,6 +19,12 @@ import {
   GetOrderViewListUrl,
   UpdateOrderUrl,
   UpdateOrderViewUrl,
+  UpdateOrderStatusUrl,
+  UpdateOrderStatusRollbackUrl,
+  SortOrderStatusUrl,
+  AddOrderStatusUrl,
+  GetOrderStatusConfigUrl,
+  DeleteOrderStatusUrl,
 } from '@lib/shared/api/requrls/order';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import type { CommonList, TableDraggedParams } from '@lib/shared/models/common';
@@ -30,6 +36,7 @@ import type {
 import type { TableQueryParams } from '@lib/shared/models/common';
 
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
+import {  StageBaseParams, StageConfigBaseItem, UpdateOpportunityStageRollbackParams, UpdateStageBaseParams } from '@lib/shared/models/opportunity';
 
 export default function useOrderApi(CDR: CordysAxios) {
   // 列表
@@ -119,6 +126,36 @@ export default function useOrderApi(CDR: CordysAxios) {
     return CDR.post({ url: DragOrderViewUrl, data });
   }
 
+  // 更新订单状态配置
+  function updateOrderStatus(data: UpdateStageBaseParams) {
+    return CDR.post({ url: UpdateOrderStatusUrl, data });
+  }
+  
+  // 订单状态回退配置
+  function updateOrderStatusRollback(data: UpdateOpportunityStageRollbackParams) {
+    return CDR.post({ url: UpdateOrderStatusRollbackUrl, data });
+  }
+  
+  // 订单状态排序
+  function sortOrderStatus(data: string[]) {
+    return CDR.post({ url: SortOrderStatusUrl, data });
+  }
+  
+  // 添加订单状态
+  function addOrderStatus(data: StageBaseParams) {
+    return CDR.post({ url: AddOrderStatusUrl, data });
+  }
+  
+  // 获取订单状态配置
+  function getOrderStatusConfig() {
+    return CDR.get<StageConfigBaseItem>({ url: GetOrderStatusConfigUrl }, { ignoreCancelToken: true });
+  }
+  
+  // 删除订单状态
+  function deleteOrderStatus(id: string) {
+    return CDR.get({ url: `${DeleteOrderStatusUrl}/${id}` });
+  }
+
   return {
     getOrderFormConfig,
     getOrderFormSnapshotConfig,
@@ -138,5 +175,11 @@ export default function useOrderApi(CDR: CordysAxios) {
     enableOrderView,
     deleteOrderView,
     dragOrderView,
+    updateOrderStatus,
+    updateOrderStatusRollback,
+    sortOrderStatus,
+    addOrderStatus,
+    getOrderStatusConfig,
+    deleteOrderStatus,
   };
 }

@@ -65,12 +65,6 @@ export default {
   'module.businessManage.businessStepSet': 'Opportunity stage settings',
   'module.businessManage.businessStepConfig': 'Stage configuration',
   'module.businessManage.businessStepRollbackConfig': 'Opportunity stage rollback settings',
-  'module.businessManage.runningStageRollback': 'Ongoing stage rollback',
-  'module.businessManage.runningStageRollbackTip':
-    'Ongoing opportunities can be advanced in both directions and across stages',
-  'module.businessManage.completedStageRollback': 'Completed stage rollback',
-  'module.businessManage.completedStageRollbackTip':
-    'Completed opportunities can be rolled back to any stage (does not conflict with "anti-signing" permissions)',
   'module.businessManage.insetBefore': 'Insert stage before',
   'module.businessManage.insetAfter': 'Insert stage after',
   'module.businessManage.stageHasData': 'Current opportunity stage contains opportunity data, deletion is prohibited!',
@@ -116,7 +110,7 @@ export default {
   'module.order.stateFlowSet': 'Order Status Flow Settings',
   'module.order.stateConfig': 'Order Status Config',
   'module.order.stateBackConfig': 'Status rollback config',
-  'module.order.deleteUsedStatusTip': 'There is data in the current order status, forbidden to delete!',
+  'module.order.stageHasData': 'There is data in the current order status, forbidden to delete!',
   'module.formSettings': 'Form Settings',
   'module.paymentPlan': 'Payment Plan',
   'module.paymentRecord': 'Payment Record',

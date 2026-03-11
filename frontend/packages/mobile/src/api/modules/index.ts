@@ -71,6 +71,12 @@ export const {
   enableOrderView,
   deleteOrderView,
   dragOrderView,
+  updateOrderStatus,
+  updateOrderStatusRollback,
+  sortOrderStatus,
+  addOrderStatus,
+  getOrderStatusConfig,
+  deleteOrderStatus,
 } = orderApi;
 
 export const {
