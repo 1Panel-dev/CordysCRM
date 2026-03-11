@@ -118,7 +118,7 @@
     :source-id="moveIds"
     :name="initialSourceName"
     type="warning"
-    @refresh="() => (tableRefreshId += 1)"
+    @refresh="Array.isArray(moveIds) ? (tableRefreshId += 1) : removeItemFromList(moveIds.toString())"
   />
 
   <CrmBatchEditModal
@@ -695,7 +695,7 @@
   handleSearchData.value = searchData;
 
   function handleFormCreateSaved(res: any) {
-    if (needInitDetail.value) {
+    if (needInitDetail.value || activeFormKey.value === FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER) {
       searchData(undefined, res.id);
     } else {
       searchData();
