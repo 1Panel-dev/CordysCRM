@@ -87,6 +87,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;
+    (e: 'delete'): void;
   }>();
 
   const { t } = useI18n();
@@ -181,7 +182,7 @@
         try {
           await deleteOpenSeaCustomer(props.sourceId);
           Message.success(t('common.deleteSuccess'));
-          emit('change');
+          emit('delete');
           show.value = false;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -199,7 +200,7 @@
         poolId: props.poolId,
       });
       Message.success(t('common.claimSuccess'));
-      emit('change');
+      emit('delete');
       show.value = false;
       openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
         id,
@@ -220,7 +221,7 @@
         assignUserId: distributeForm.value.owner,
       });
       Message.success(t('common.distributeSuccess'));
-      emit('change');
+      emit('delete');
       show.value = false;
     } catch (error) {
       // eslint-disable-next-line no-console
