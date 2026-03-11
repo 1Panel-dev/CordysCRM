@@ -11,6 +11,7 @@ export default {
   'contract.toBeSigned': '待签署',
   'contract.signed': '已签署',
   'contract.change': '合同变更',
+  'contract.archive': '合同完结',
   'contract.inProgress': '履行中',
   'contract.completedPerformance': '履行完毕',
   'contract.uncompleted': '未完成',
