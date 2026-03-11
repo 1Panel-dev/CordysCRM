@@ -10,6 +10,8 @@
         so.contract_id,
         so.number,
         c.`name` AS contractName,
+        cc.in_shared_pool AS inCustomerPool,
+        cc.pool_id,
         so.amount,
         so.stage,
         so.`owner`,
@@ -19,6 +21,7 @@
         so.update_time
         FROM sales_order so
         LEFT JOIN contract c ON so.contract_id = c.id
+        LEFT JOIN customer cc ON so.customer_id = cc.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
