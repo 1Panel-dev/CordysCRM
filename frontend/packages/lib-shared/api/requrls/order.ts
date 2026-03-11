@@ -1,14 +1,14 @@
-// TODO lmy
 export const AddOrderUrl = '/order/add';
 export const UpdateOrderUrl = '/order/update';
+export const UpdateOrderStageUrl = '/order/stage/update';
 export const DeleteOrderUrl = '/order/delete';
 export const GetOrderDetailUrl = '/order/get';
 export const OrderPageUrl = '/order/page';
 export const OrderDetailSnapshotUrl = '/order/get/snapshot';
 export const OrderFormConfigUrl = '/order/module/form';
 export const OrderFormConfigSnapshotUrl = '/order/module/form/snapshot';
-export const OrderInContractPageUrl = '/contract/order/page';
 export const GetOrderTabUrl = '/order/tab';
+export const OrderInContractPageUrl = '/contract/order/page';
 
 // 订单视图
 export const AddOrderViewUrl = '/order/view/add';

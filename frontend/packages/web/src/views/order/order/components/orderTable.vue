@@ -6,6 +6,7 @@
     :class="`crm-order-table-${props.formKey}`"
     :not-show-table-filter="isAdvancedSearchMode"
     :fullscreen-target-ref="props.fullscreenTargetRef"
+    :action-config="{ baseAction: [] }"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
@@ -13,8 +14,7 @@
     @refresh="searchData"
   >
     <template #actionLeft>
-      <!-- TODO lmy permission  -->
-      <n-button v-if="!props.readonly" v-permission="['CLUE_MANAGEMENT:ADD']" type="primary" @click="handleNewClick">
+      <n-button v-if="!props.readonly" v-permission="['ORDER:ADD']" type="primary" @click="handleNewClick">
         {{ t('order.new') }}
       </n-button>
     </template>
@@ -32,7 +32,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.hiddenAdvanceFilter"
+        v-if="!props.isContractTab"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.ORDER"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -81,12 +81,15 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detail.vue';
 
-  import { getOpportunityStageConfig } from '@/api/modules';
+  import { getOrderStatusConfig } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { FullPageEnum } from '@/enums/routeEnum';
 
   const route = useRoute();
 
@@ -94,6 +97,7 @@
   const Message = useMessage();
   const { currentLocale } = useLocale(Message.loading);
   const { openModal } = useModal();
+  const { openNewPage } = useOpenNewPage();
 
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
@@ -102,20 +106,20 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
-    formKey: FormDesignKeyEnum.ORDER | FormDesignKeyEnum.CONTRACT_ORDER;
+    formKey: FormDesignKeyEnum.ORDER | FormDesignKeyEnum.CONTRACT_ORDER | FormDesignKeyEnum.CUSTOMER_ORDER;
   }>();
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
+    (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
   const activeTab = ref();
   const keyword = ref('');
 
-  const statusConfig = ref<any>();
+  const stageConfig = ref<any>();
   async function initStageConfig() {
     try {
-      // TODO lmy 接口
-      statusConfig.value = await getOpportunityStageConfig();
+      stageConfig.value = await getOrderStatusConfig();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -181,12 +185,11 @@
     },
     {
       title: t('order.status'),
-      dataIndex: 'status',
+      dataIndex: 'stage',
       type: FieldTypeEnum.SELECT_MULTIPLE,
       selectProps: {
-        // TODO lmy 状态
         options:
-          statusConfig.value?.stageConfigList.map((e: any) => ({
+          stageConfig.value?.stageConfigList.map((e: any) => ({
             label: e.name,
             value: e.id,
           })) || [],
@@ -202,14 +205,14 @@
             {
               label: t('common.edit'),
               key: 'edit',
-              permission: ['CONTRACT_PAYMENT_PLAN:UPDATE'], // TODO lmy permission
+              permission: ['ORDER:UPDATE'],
             },
           ]
         : []),
       {
         label: t('common.download'),
         key: 'download',
-        permission: ['CONTRACT_PAYMENT_PLAN:DELETE'], // TODO lmy permission
+        permission: ['ORDER:DELETE'],
       },
     ];
   });
@@ -229,13 +232,18 @@
     showDetailDrawer.value = true;
   }
 
+  function handleDownload(id: string) {
+    // TODO lmy
+    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
+  }
+
   async function handleActionSelect(row: OrderItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
         handleEdit(row.id);
         break;
       case 'download':
-        // TODO lmy 下载
+        handleDownload(row.id);
         break;
       default:
         break;
@@ -252,12 +260,20 @@
     }
   }
 
+  function showCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    emit('openCustomerDrawer', {
+      customerId: params.customerId,
+      inCustomerPool: params.inCustomerPool,
+      poolId: params.poolId || '',
+    });
+  }
+
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.formKey,
     excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 180 : 150,
+      width: currentLocale.value === 'en-US' ? 150 : 100,
       fixed: 'right',
       render: (row: OrderItem) =>
         h(CrmOperationButton, {
@@ -296,8 +312,32 @@
               { default: () => row.contractName, trigger: () => row.contractName }
             );
       },
+      customerId: (row: OrderItem) => {
+        return (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
+          (row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
+          ? h(
+              CrmNameTooltip,
+              { text: row.customerName },
+              {
+                default: () => row.customerName,
+              }
+            )
+          : h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showCustomerDrawer(row);
+                },
+              },
+              { default: () => row.customerName, trigger: () => row.customerName }
+            );
+      },
+      stage: (row: OrderItem) => {
+        return row.stageName || '-';
+      },
     },
     containerClass: `.crm-order-table-${props.formKey}`,
+    orderStage: stageConfig.value?.stageConfigList || [],
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
@@ -313,7 +353,12 @@
   }
 
   function searchData(val?: string) {
-    setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value, contractId: props.sourceId });
+    setLoadListParams({
+      keyword: val ?? keyword.value,
+      viewId: activeTab.value,
+      ...(props.formKey === FormDesignKeyEnum.CONTRACT_ORDER ? { contractId: props.sourceId } : {}),
+      ...(props.formKey === FormDesignKeyEnum.CUSTOMER_ORDER ? { customerId: props.sourceId } : {}),
+    });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
@@ -337,7 +382,12 @@
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value, contractId: props.sourceId });
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: activeTab.value,
+          ...(props.formKey === FormDesignKeyEnum.CONTRACT_ORDER ? { contractId: props.sourceId } : {}),
+          ...(props.formKey === FormDesignKeyEnum.CUSTOMER_ORDER ? { customerId: props.sourceId } : {}),
+        });
         crmTableRef.value?.setColumnSort(val);
       }
     }

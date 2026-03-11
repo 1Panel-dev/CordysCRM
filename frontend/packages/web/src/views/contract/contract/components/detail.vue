@@ -179,7 +179,7 @@
       {
         name: 'order',
         tab: t('module.order'),
-        permission: ['CONTRACT_ORDER:READ'], // TODO lmy
+        permission: ['ORDER:READ'],
       },
     ].filter((item) => hasAnyPermission(item.permission))
   );
@@ -444,7 +444,7 @@
     return detailInfo.value?.stage === ContractStatusEnum.VOID;
   });
 
-  // TODO lmy
+  // TODO lmy 啥情况下不显示操作
   const getReadonlyOrder = computed(
     () => detailInfo.value?.stage === ContractStatusEnum.VOID || detailInfo.value?.stage === ContractStatusEnum.ARCHIVED
   );

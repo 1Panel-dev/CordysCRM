@@ -57,7 +57,8 @@ export type FormKey =
   | FormDesignKeyEnum.INVOICE
   | FormDesignKeyEnum.CONTRACT_INVOICE
   | FormDesignKeyEnum.ORDER
-  | FormDesignKeyEnum.CONTRACT_ORDER;
+  | FormDesignKeyEnum.CONTRACT_ORDER
+  | FormDesignKeyEnum.CUSTOMER_ORDER;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -72,6 +73,7 @@ export interface FormCreateTableProps {
   containerClass: string; // 容器元素类名
   hiddenTotal?: Ref<boolean>;
   opportunityStage?: StageConfigItem[]; // 商机阶段筛选项
+  orderStage?: StageConfigItem[];
   hiddenAllScreen?: boolean;
   hiddenRefresh?: boolean;
 }
@@ -116,6 +118,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CONTRACT_INVOICE]: TableKeyEnum.CONTRACT_INVOICE,
     [FormDesignKeyEnum.ORDER]: TableKeyEnum.ORDER,
     [FormDesignKeyEnum.CONTRACT_ORDER]: TableKeyEnum.CONTRACT_ORDER,
+    [FormDesignKeyEnum.CUSTOMER_ORDER]: TableKeyEnum.ORDER,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合
@@ -457,20 +460,19 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     {
       title: t('order.status'),
       width: 150,
-      key: 'status',
+      key: 'stage',
       ellipsis: {
         tooltip: true,
       },
       filter: true,
       sortOrder: false,
       sorter: true,
-      // TODO lmy 订单状态
       filterOptions:
-        props.opportunityStage?.map((e) => ({
+        props.orderStage?.map((e) => ({
           label: e.name,
           value: e.id,
         })) || [],
-      render: props.specialRender?.status,
+      render: props.specialRender?.stage,
     },
   ];
 
@@ -860,6 +862,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CONTRACT_INVOICE]: invoiceInternalColumns,
     [FormDesignKeyEnum.ORDER]: orderInternalColumns,
     [FormDesignKeyEnum.CONTRACT_ORDER]: orderInternalColumns,
+    [FormDesignKeyEnum.CUSTOMER_ORDER]: orderInternalColumns,
   };
   const staticColumns: CrmDataTableColumn[] = [
     {

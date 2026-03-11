@@ -1,9 +1,9 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false">
+  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="detailInfo?.name ?? ''">
     <template #titleRight>
       <n-button
         v-if="!props.readonly"
-        v-permission="['CONTRACT_PAYMENT_PLAN:UPDATE']"
+        v-permission="['ORDER:UPDATE']"
         type="primary"
         ghost
         class="n-btn-outline-primary"
@@ -12,19 +12,18 @@
         {{ t('common.edit') }}
       </n-button>
       <n-button
-        v-permission="['CONTRACT_PAYMENT_PLAN:UPDATE']"
+        v-permission="['ORDER:UPDATE']"
         type="primary"
         ghost
-        class="n-btn-outline-primary"
+        class="n-btn-outline-primary ml-[12px]"
         @click="handleDownload(props.sourceId)"
       >
         {{ t('common.download') }}
       </n-button>
       <n-button
         v-if="!props.readonly"
-        v-permission="['CONTRACT_PAYMENT_PLAN:DELETE']"
+        v-permission="['ORDER:DELETE']"
         type="primary"
-        danger
         ghost
         class="n-btn-outline-primary ml-[12px]"
         @click="handleDelete(detailInfo)"
@@ -59,6 +58,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
+            readonly
             @init="handleInit"
             @open-contract-detail="emit('openContractDrawer', $event)"
           />
@@ -94,6 +94,9 @@
 
   import { deleteOrder } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
+
+  import { FullPageEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
     sourceId: string;
@@ -112,6 +115,7 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const detailInfo = ref();
+  const { openNewPage } = useOpenNewPage();
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     detailInfo.value = detail;
@@ -124,37 +128,21 @@
   }
 
   async function handleDelete(row: OrderItem) {
-    // TODO lmy 判断是否被合同关联
-    const hasData = true;
-    const content = hasData ? t('order.deleteContent') : t('common.deleteConfirmContent');
-    const positiveText = hasData ? t('opportunity.gotIt') : t('common.confirmDelete');
-
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
-      content,
-      positiveText,
+      content: t('common.deleteConfirmContent'),
+      positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
-      positiveButtonProps: {
-        type: hasData ? 'primary' : 'error',
-        size: 'medium',
-      },
       onPositiveClick: async () => {
-        if (!hasData) {
-          try {
-            await deleteOrder(row.id);
-            Message.success(t('common.deleteSuccess'));
-            visible.value = false;
-            emit('refresh');
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error(error);
-          }
-        }
-      },
-      onNegativeClick: () => {
-        if (hasData) {
+        try {
+          await deleteOrder(row.id);
+          Message.success(t('common.deleteSuccess'));
           visible.value = false;
+          emit('refresh');
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
         }
       },
     });
@@ -167,5 +155,6 @@
 
   function handleDownload(id: string) {
     // TODO lmy 下载
+    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
   }
 </script>

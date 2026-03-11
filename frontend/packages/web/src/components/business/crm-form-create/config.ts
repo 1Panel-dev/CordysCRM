@@ -63,6 +63,7 @@ import {
   getCustomerFormConfig,
   getCustomerList,
   getCustomerOpportunityPage,
+  getCustomerOrderList,
   getFollowPlanDetail,
   getFollowPLanPage,
   getFollowRecordDetail,
@@ -785,6 +786,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, (id?: string) => Pro
   [FormDesignKeyEnum.BUSINESS_TITLE]: getBusinessTitleModuleForm,
   [FormDesignKeyEnum.ORDER]: getOrderFormConfig,
   [FormDesignKeyEnum.CONTRACT_ORDER]: getOrderFormConfig,
+  [FormDesignKeyEnum.CUSTOMER_ORDER]: getOrderFormConfig,
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: (id) => getOrderFormSnapshotConfig(id),
 };
 
@@ -829,6 +831,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.ORDER]: addOrder,
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: addOrder,
   [FormDesignKeyEnum.CONTRACT_ORDER]: async () => ({}),
+  [FormDesignKeyEnum.CUSTOMER_ORDER]: async () => ({}),
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -872,6 +875,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.ORDER]: updateOrder,
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: updateOrder,
   [FormDesignKeyEnum.CONTRACT_ORDER]: async () => ({}),
+  [FormDesignKeyEnum.CUSTOMER_ORDER]: async () => ({}),
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {
@@ -909,6 +913,8 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.INVOICE]: getInvoicedDetail,
   [FormDesignKeyEnum.INVOICE_SNAPSHOT]: getInvoicedDetailSnapshot,
   [FormDesignKeyEnum.ORDER]: getOrderDetail,
+  [FormDesignKeyEnum.CONTRACT_ORDER]: getOrderDetailSnapshot,
+  [FormDesignKeyEnum.CUSTOMER_ORDER]: getOrderDetailSnapshot,
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: getOrderDetailSnapshot,
 };
 
@@ -942,6 +948,7 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.CONTRACT_INVOICE]: getInvoicedInContractList,
   [FormDesignKeyEnum.ORDER]: getOrderList,
   [FormDesignKeyEnum.CONTRACT_ORDER]: getOrderInContractList,
+  [FormDesignKeyEnum.CUSTOMER_ORDER]: getCustomerOrderList,
 };
 
 export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {

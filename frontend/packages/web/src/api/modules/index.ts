@@ -407,6 +407,7 @@ export const {
   getAccountPaymentRecord,
   getAccountPaymentRecordStatistic,
   getCustomerInvoiceList,
+  getCustomerOrderList,
   getCustomerInvoiceStatistic,
 } = customerApi;
 
