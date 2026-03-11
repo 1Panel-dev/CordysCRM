@@ -79,7 +79,7 @@ export const contractStatusOptions = [
   },
   {
     value: ContractStatusEnum.ARCHIVED,
-    label: t('common.archive'),
+    label: t('contract.archive'),
   },
   {
     value: ContractStatusEnum.VOID,

@@ -11,6 +11,7 @@ export default {
   'contract.toBeSigned': 'To be signed',
   'contract.signed': 'Signed',
   'contract.change': 'Change',
+  'contract.archive': 'Complete',
   'contract.inProgress': 'In Progress',
   'contract.completedPerformance': 'Completed',
   'contract.uncompleted': 'Incomplete',

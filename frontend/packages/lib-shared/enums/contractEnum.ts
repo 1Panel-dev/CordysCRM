@@ -5,7 +5,7 @@ export enum ContractStatusEnum {
   IN_PROGRESS = 'IN_PROGRESS', // 履行中
   COMPLETED_PERFORMANCE = 'COMPLETED_PERFORMANCE', // 履行完毕
   VOID = 'VOID', // 作废
-  ARCHIVED = 'ARCHIVED', // 归档
+  ARCHIVED = 'ARCHIVED', // 合同完結
 }
 
 export enum ContractPaymentPlanEnum {
