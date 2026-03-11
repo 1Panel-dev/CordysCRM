@@ -21,10 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -142,7 +139,7 @@ public class ContractExportService extends BaseExportService {
             systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
         }
         if (StringUtils.isNotBlank(data.getStage())) {
-            systemFieldMap.put("stage", Translator.get("contract.stage." + data.getStage().toLowerCase()));
+            systemFieldMap.put("stage", Translator.get("contract.stage." + data.getStage().toLowerCase(), Locale.SIMPLIFIED_CHINESE));
         }
         systemFieldMap.put("createUser", data.getCreateUserName());
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
