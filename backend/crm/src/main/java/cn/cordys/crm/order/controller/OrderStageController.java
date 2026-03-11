@@ -19,7 +19,7 @@ import java.util.List;
 
 @Tag(name = "订单状态流设置")
 @RestController
-@RequestMapping("/order_stage")
+@RequestMapping("/order/stage")
 public class OrderStageController {
 
     @Resource

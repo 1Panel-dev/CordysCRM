@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class OrderStatusRequest {
+public class OrderStageRequest {
 
     @NotBlank
     @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -14,5 +14,5 @@ public class OrderStatusRequest {
     private String id;
 
     @NotBlank
-    private String status;
+    private String stage;
 }

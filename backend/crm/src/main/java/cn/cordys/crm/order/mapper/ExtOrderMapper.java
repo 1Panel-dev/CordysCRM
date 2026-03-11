@@ -18,7 +18,5 @@ public interface ExtOrderMapper {
 
     List<OrderListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    void updateStatus(@Param("id") String id, @Param("status") String status, @Param("userId") String userId, @Param("updateTime") long updateTime);
-
-    int countByStage(@Param("stageId") String id);
+    int countByStage(@Param("stage") String stage);
 }

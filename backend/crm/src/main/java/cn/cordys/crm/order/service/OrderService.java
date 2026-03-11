@@ -29,7 +29,7 @@ import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.order.domain.OrderSnapshot;
 import cn.cordys.crm.order.dto.request.OrderAddRequest;
 import cn.cordys.crm.order.dto.request.OrderPageRequest;
-import cn.cordys.crm.order.dto.request.OrderStatusRequest;
+import cn.cordys.crm.order.dto.request.OrderStageRequest;
 import cn.cordys.crm.order.dto.request.OrderUpdateRequest;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
@@ -115,7 +115,7 @@ public class OrderService {
         BeanUtils.copyBean(order, request);
         order.setId(IDGenerator.nextStr());
         order.setNumber(createOrderNumber(moduleFormConfigDTO, orgId));
-        order.setStatus(stageConfigList.getFirst().getId());
+        order.setStage(stageConfigList.getFirst().getId());
         order.setOrganizationId(orgId);
         order.setCreateTime(System.currentTimeMillis());
         order.setCreateUser(operatorId);
@@ -281,7 +281,7 @@ public class OrderService {
             order.setNumber(oldOrder.getNumber());
             order.setCreateUser(oldOrder.getCreateUser());
             order.setCreateTime(oldOrder.getCreateTime());
-            order.setStatus(oldOrder.getStatus());
+            order.setStage(oldOrder.getStage());
             //判断总金额
             setAmount(request.getAmount(), order);
             updateFields(moduleFields, order, orgId, userId);
@@ -485,8 +485,8 @@ public class OrderService {
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.ORDER_READ, rolePermissions);
     }
 
-    private void updateStatusSnapshot(String id, String status) {
-        if (StringUtils.isBlank(status)) {
+    private void updateStageSnapshot(String id, String stage) {
+        if (StringUtils.isBlank(stage)) {
             return;
         }
         LambdaQueryWrapper<OrderSnapshot> delWrapper = new LambdaQueryWrapper<>();
@@ -495,7 +495,7 @@ public class OrderService {
         OrderSnapshot first = orderSnapshots.getFirst();
         if (first != null) {
             OrderGetResponse response = JSON.parseObject(first.getOrderValue(), OrderGetResponse.class);
-            response.setStatus(status);
+            response.setStage(stage);
             first.setOrderValue(JSON.toJSONString(response));
             snapshotBaseMapper.update(first);
         }
@@ -505,26 +505,26 @@ public class OrderService {
         return orderMapper.selectByPrimaryKey(id);
     }
 
-    public void updateStatus(OrderStatusRequest request, String userId, String orgId) {
+    public void updateStage(OrderStageRequest request, String userId, String orgId) {
         Order order = orderMapper.selectByPrimaryKey(request.getId());
         if (order == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
         Map<String, String> oldMap = new HashMap<>();
-        oldMap.put("orderStage", Translator.get("order.stage." + order.getStatus().toLowerCase()));
+        oldMap.put("orderStage", Translator.get("order.stage." + order.getStage().toLowerCase()));
 
-        order.setStatus(request.getStatus());
+        order.setStage(request.getStage());
 
         order.setUpdateTime(System.currentTimeMillis());
         order.setUpdateUser(userId);
         orderMapper.update(order);
 
-        updateStatusSnapshot(request.getId(), request.getStatus());
+        updateStageSnapshot(request.getId(), request.getStage());
 
         LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.ORDER, order.getName());
         Map<String, String> newMap = new HashMap<>();
-        newMap.put("orderStage", Translator.get("order.stage." + request.getStatus().toLowerCase()));
+        newMap.put("orderStage", Translator.get("order.stage." + request.getStage().toLowerCase()));
         logDTO.setOriginalValue(oldMap);
         logDTO.setModifiedValue(newMap);
         logService.add(logDTO);
