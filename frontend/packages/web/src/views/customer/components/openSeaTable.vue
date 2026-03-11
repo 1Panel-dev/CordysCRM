@@ -81,6 +81,7 @@
     :pool-id="openSea"
     :hidden-columns="hiddenColumns"
     @change="searchData(undefined, undefined, activeCustomerId)"
+    @delete="removeItemFromList(activeCustomerId)"
   />
   <TransferModal
     v-model:show="showDistributeModal"
