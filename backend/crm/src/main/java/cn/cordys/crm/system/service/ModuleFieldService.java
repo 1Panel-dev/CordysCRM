@@ -167,11 +167,11 @@ public class ModuleFieldService {
 				dto.setModuleFields((List<BaseModuleFieldValue>) getField(res, "moduleFields", List.class));
 				dto.setProducts((List<Map<String, Object>>) getField(res, "products", List.class));
 				dto.setOptionMap((Map<String, List<OptionDTO>>) getField(res, "optionMap", Map.class));
+				dto.setStatus(getField(res, "status", String.class));
 
 				if (Strings.CI.equals(request.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
-					// 产品需要获取价格和状态等业务详情字段
+					// 产品需要获取系统价格字段
 					dto.setPrice(getField(res, "price", BigDecimal.class));
-					dto.setStatus(getField(res, "status", String.class));
 				}
 				result.add(dto);
 			}
