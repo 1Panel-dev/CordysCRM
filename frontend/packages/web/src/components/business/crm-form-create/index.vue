@@ -360,6 +360,8 @@
                 item: currentOption,
                 originalData: currentOption as any,
                 fields: currentFormConfig.fields || [],
+                excludeFieldIds: [],
+                needParseSubTable: true,
               }),
               ...option,
             };

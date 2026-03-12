@@ -301,8 +301,7 @@ export function transformData({
               subItem[subField.businessKey || subField.id],
               originalData?.optionMap?.[subField.businessKey || subField.id]
             );
-            fieldOptionMap[subField.businessKey || subField.id] =
-              originalData?.optionMap?.[subField.businessKey || subField.id] || [];
+            fieldOptionMap[subField.id] = originalData?.optionMap?.[subField.businessKey || subField.id] || [];
           }
           return subItem;
         });
@@ -380,10 +379,11 @@ export function transformData({
         // 处理特殊业务 key 映射关系
         businessFieldAttr[specialBusinessKeyMap[fieldId]] = item[specialBusinessKeyMap[fieldId]];
       }
-      if (![FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type)) {
-        // 字段可能会被设置为数据源的显示字段，而数据源显示字段都通过 id 读取，所以这里需要用 id 备份一份数据以供数据源显示字段场景读取
-        businessFieldAttr[field.id] = businessFieldAttr[fieldId] || item[fieldId];
-      }
+      // if (![FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type)) {
+      //   // 字段可能会被设置为数据源的显示字段，而数据源显示字段都通过 id 读取，所以这里需要用 id 备份一份数据以供数据源显示字段场景读取
+      //   businessFieldAttr[field.id] = businessFieldAttr[fieldId] || item[fieldId];
+      // }
+      businessFieldAttr[field.id] = businessFieldAttr[fieldId] || item[fieldId];
     }
   });
 

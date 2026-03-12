@@ -156,8 +156,9 @@ export default function useTable<T>(
       };
       let refreshPage = 0;
       if (refreshId !== undefined) {
-        refreshPage = Math.ceil(
-          (propsRes.value.data.findIndex((item) => item.id === refreshId) + 1) / appStore.pageSize
+        refreshPage = Math.max(
+          Math.ceil((propsRes.value.data.findIndex((item) => item.id === refreshId) + 1) / appStore.pageSize),
+          1
         );
       }
       const res = await loadListFunc({
@@ -180,6 +181,7 @@ export default function useTable<T>(
           tmpArr.list?.forEach((item: CrmTableDataItem<T>) => {
             propsRes.value.data.push(processRecordItem(item, tmpArr));
           }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
+          setPagination(tmpArr.current, tmpArr.total);
         } else if (refreshId) {
           const oldData = propsRes.value.data.find((item) => item.id === refreshId);
           const newData = tmpArr.list?.find((item: CrmTableDataItem<T>) => item.id === refreshId);
@@ -190,9 +192,6 @@ export default function useTable<T>(
           propsRes.value.data = tmpArr.list?.map((item: CrmTableDataItem<T>) =>
             processRecordItem(item, tmpArr)
           ) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
-        }
-        // 设置分页
-        if (!refreshId) {
           setPagination(tmpArr.current, tmpArr.total);
         }
       }
