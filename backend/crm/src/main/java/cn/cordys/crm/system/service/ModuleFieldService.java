@@ -67,6 +67,7 @@ public class ModuleFieldService {
         FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), "contract_payment_plan");
         FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), "contract_payment_record");
         FORM_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
+        FORM_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
 
 		SOURCE_REF_CLASS.put(FieldSourceType.PRODUCT.name(), ProductService.class);
 		SOURCE_REF_CLASS.put(FieldSourceType.PRICE.name(), ProductPriceService.class);
