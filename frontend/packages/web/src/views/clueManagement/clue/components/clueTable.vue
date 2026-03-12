@@ -81,8 +81,8 @@
     :detail="activeClue"
     @refresh="handleRefresh"
     @open-customer-drawer="handleOpenCustomerDetail"
-    @saved="() => searchData(undefined, activeClueId)"
-    @remove="removeItemFromList(activeClueId)"
+    @saved="() => searchData(undefined, activeClue?.id)"
+    @remove="removeItemFromList(activeClue?.id || '')"
   />
   <CrmFormCreateDrawer
     v-if="isInitFormCreateDrawer"
@@ -290,6 +290,7 @@
 
   // 批量删除
   function handleBatchDelete() {
+    moveIds.value = [];
     openModal({
       type: 'error',
       title: t('clue.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
@@ -319,6 +320,7 @@
 
   // 关联客户
   function handleLinkAccount() {
+    moveIds.value = [];
     isInitConvertDrawer.value = true;
     needInitDetail.value = false;
     showConvertToCustomerDrawer.value = true;
@@ -326,6 +328,7 @@
 
   const showEditModal = ref(false);
   function handleBatchEdit() {
+    moveIds.value = [];
     showEditModal.value = true;
   }
 
@@ -717,7 +720,7 @@
   }
 
   function handleFormCreateSaved(res: any) {
-    if (needInitDetail.value) {
+    if (needInitDetail.value || formKey.value === FormDesignKeyEnum.FOLLOW_RECORD_CLUE) {
       searchData(undefined, res.id);
     } else {
       searchData();
