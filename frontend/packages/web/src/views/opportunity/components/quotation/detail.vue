@@ -85,6 +85,7 @@
   const emit = defineEmits<{
     (e: 'edit', sourceId: string): void;
     (e: 'refresh'): void;
+    (e: 'remove'): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -225,7 +226,7 @@
           await deleteQuotation(props.sourceId);
           Message.success(t('common.deleteSuccess'));
           visible.value = false;
-          emit('refresh');
+          emit('remove');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);

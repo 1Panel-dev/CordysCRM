@@ -369,11 +369,6 @@
     emit('saved');
   }
 
-  function refresh() {
-    emit('saved');
-    show.value = false;
-  }
-
   function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {
     collaborationType.value = _collaborationType;
     sourceName.value = _sourceName || '';

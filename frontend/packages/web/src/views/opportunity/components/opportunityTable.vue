@@ -138,7 +138,7 @@
   <OptOverviewDrawer
     v-model:show="showOverviewDrawer"
     :detail="activeOpportunity"
-    @refresh="() => searchData(undefined, activeSourceId)"
+    @refresh="() => searchData(undefined, activeOpportunity?.id)"
     @remove="removeItemFromList(activeOpportunity?.id || '')"
     @open-customer-drawer="handleOpenCustomerDrawer"
   />
@@ -1034,9 +1034,9 @@
     billboardTotalCount.value = total;
   }
 
-  function handleFormCreateSaved() {
-    if (needInitDetail.value) {
-      searchData(undefined, activeSourceId.value);
+  function handleFormCreateSaved(res: any) {
+    if (needInitDetail.value || realFormKey.value === FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS) {
+      searchData(undefined, res.id);
     } else {
       searchData();
     }

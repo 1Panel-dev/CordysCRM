@@ -53,6 +53,7 @@
     :source-id="activeSourceId"
     @edit="handleEdit"
     @refresh="() => searchData(undefined, activeSourceId)"
+    @remove="removeItemFromList(activeSourceId)"
   />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
