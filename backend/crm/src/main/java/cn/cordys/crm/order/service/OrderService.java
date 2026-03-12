@@ -548,4 +548,15 @@ public class OrderService {
         logDTO.setModifiedValue(newMap);
         logService.add(logDTO);
     }
+
+    public void download(String id, String userId, String organizationId) {
+        OrderGetResponse getResponse = get(id);
+        if (getResponse == null) {
+            throw new GenericException(Translator.get("order_not_exist"));
+        }
+
+        LogDTO logDTO = new LogDTO(organizationId, id, userId, LogType.DOWNLOAD, LogModule.ORDER, getResponse.getName());
+        logDTO.setOriginalValue(getResponse.getName());
+        logService.add(logDTO);
+    }
 }

@@ -113,4 +113,11 @@ public class OrderController {
     public ResourceTabEnableDTO getTabEnableConfig() {
         return orderService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
+
+    @GetMapping("/download/{id}")
+    @RequiresPermissions(PermissionConstants.ORDER_DOWNLOAD)
+    @Operation(summary = "下载订单日志记录")
+    public void download(@PathVariable("id") String id) {
+        orderService.download(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }
