@@ -14,22 +14,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderFieldService extends BaseResourceFieldService<OrderField, OrderFieldBlob> {
 
     @Resource
-    private BaseMapper<OrderField> contractFieldMapper;
+    private BaseMapper<OrderField> orderFieldMapper;
     @Resource
-    private BaseMapper<OrderFieldBlob> contractFieldBlobMapper;
+    private BaseMapper<OrderFieldBlob> orderFieldBlobMapper;
 
     @Override
     protected String getFormKey() {
-        return FormKey.CONTRACT.getKey();
+        return FormKey.ORDER.getKey();
     }
 
     @Override
     protected BaseMapper<OrderField> getResourceFieldMapper() {
-        return contractFieldMapper;
+        return orderFieldMapper;
     }
 
     @Override
     protected BaseMapper<OrderFieldBlob> getResourceFieldBlobMapper() {
-        return contractFieldBlobMapper;
+        return orderFieldBlobMapper;
     }
 }
