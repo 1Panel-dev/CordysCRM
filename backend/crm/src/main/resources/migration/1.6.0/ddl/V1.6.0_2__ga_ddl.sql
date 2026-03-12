@@ -36,6 +36,7 @@ CREATE TABLE sales_order_field
     `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
     `ref_sub_id`  VARCHAR(32) COMMENT '引用子表格ID;关联的子表格字段ID',
     `row_id`      VARCHAR(32) COMMENT '子表格行实例ID;行实例数据ID',
+    `biz_id`      VARCHAR(32) COMMENT '唯一业务行ID',
     PRIMARY KEY (id)
 ) COMMENT = '订单自定义属性'
 ENGINE = InnoDB
@@ -53,6 +54,7 @@ CREATE TABLE sales_order_field_blob
     `field_value` TEXT        NOT NULL COMMENT '自定义属性值',
     `ref_sub_id`  VARCHAR(32) COMMENT '引用子表格ID;关联的子表格字段ID',
     `row_id`      VARCHAR(32) COMMENT '子表格行实例ID;行实例数据ID',
+    `biz_id`      VARCHAR(32) COMMENT '唯一业务行ID',
     PRIMARY KEY (id)
 ) COMMENT = '订单自定义属性大文本'
 ENGINE = InnoDB
