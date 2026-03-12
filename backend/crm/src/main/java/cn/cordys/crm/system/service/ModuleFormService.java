@@ -995,6 +995,22 @@ public class ModuleFormService {
 		moduleFormBlobMapper.updateById(formBlob);
 	}
 
+	/**
+	 * 初始化订单(合同)联动规则
+	 */
+	@SuppressWarnings("unchecked")
+	public void initContractToOrderLinkScenario() {
+		LambdaQueryWrapper<ModuleForm> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(ModuleForm::getFormKey, FormKey.ORDER.getKey());
+		ModuleForm orderForm = moduleFormMapper.selectListByLambda(wrapper).getFirst();
+		ModuleFormBlob formBlob = moduleFormBlobMapper.selectByPrimaryKey(orderForm.getId());
+		Map<String, Object> propMap = JSON.parseMap(formBlob.getProp());
+		propMap.put("linkProp", Map.of(FormKey.CONTRACT.getKey(), List.of(
+				LinkScenario.builder().key(LinkScenarioKey.CONTRACT_TO_ORDER.name()).linkFields(new ArrayList<>()))));
+		formBlob.setProp(JSON.toJSONString(propMap));
+		moduleFormBlobMapper.updateById(formBlob);
+	}
+
     @SuppressWarnings("unchecked")
     public void initExtFieldsByVer(String version) {
         try {

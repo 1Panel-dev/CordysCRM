@@ -42,5 +42,9 @@ public enum LinkScenarioKey {
 	/**
 	 * 合同转发票
 	 */
-	CONTRACT_TO_INVOICE
+	CONTRACT_TO_INVOICE,
+	/**
+	 * 合同转订单
+	 */
+	CONTRACT_TO_ORDER,
 }
