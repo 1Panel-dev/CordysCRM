@@ -11,7 +11,7 @@
     :form-key="FormDesignKeyEnum.BUSINESS"
     :source-id="sourceId"
     @button-select="handleSelect"
-    @saved="() => (refreshKey += 1)"
+    @saved="refreshList"
   >
     <template #left>
       <div class="h-full overflow-hidden">
@@ -261,7 +261,7 @@
           transferForm.value = { ...defaultTransferForm };
           showOptOverviewDrawer.value = false;
           done?.();
-          emit('remove');
+          emit('refresh');
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
