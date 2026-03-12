@@ -1,0 +1,247 @@
+import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
+import { FormCreateField } from '@/components/business/crm-form-create/types';
+import { safeParseFormula } from '@/components/business/crm-formula-editor/utils';
+
+import { getFormulaDataSourceDisplayValue, hydrateIRNumberType } from '../../utils';
+import registerBuiltinFunctions from '../functions';
+import { FieldTypeMap, FormulaExecutorContext, FormulaExecutorResult, ValueType } from '../types';
+import evaluateIR from './evaluator';
+
+registerBuiltinFunctions();
+
+export function flatAllFields(
+  fields: FormCreateField[],
+  options?: {
+    isSubTableRender?: boolean;
+  }
+) {
+  const result: (FormCreateField & {
+    parentId?: string;
+    parentName?: string;
+    inSubTable?: boolean;
+  })[] = [];
+
+  const resolveFieldId = (e: FormCreateField, inSubTable?: boolean) => {
+    if ((e as any).resourceFieldId) {
+      return e.id;
+    }
+    return inSubTable ? e.businessKey || e.id : e.id;
+  };
+
+  fields?.forEach((field) => {
+    if (field.subFields) {
+      field.subFields.forEach((sub) => {
+        result.push({
+          ...sub,
+          name: `${field.name}.${sub.name}`,
+          id: options?.isSubTableRender ? resolveFieldId(sub, true) : `${field.id}.${resolveFieldId(sub, true)}`,
+          parentId: field.id,
+          parentName: field.name,
+          inSubTable: true,
+        });
+      });
+    } else {
+      result.push({
+        ...field,
+        inSubTable: false,
+      });
+    }
+  });
+
+  return result;
+}
+
+export function getValueType(field: FormCreateField): ValueType {
+  switch (field.type) {
+    case FieldTypeEnum.INPUT_NUMBER:
+      return 'number';
+    case FieldTypeEnum.DATE_TIME:
+      return 'date';
+    case FieldTypeEnum.INPUT:
+    case FieldTypeEnum.DATA_SOURCE:
+    case FieldTypeEnum.DATA_SOURCE_MULTIPLE:
+    case FieldTypeEnum.SERIAL_NUMBER:
+      return 'string';
+    case FieldTypeEnum.RADIO:
+    case FieldTypeEnum.CHECKBOX:
+      return 'boolean';
+    default:
+      return 'unknown';
+  }
+}
+
+export function buildFieldTypeMap(fields: FormCreateField[]): FieldTypeMap {
+  const map: FieldTypeMap = {};
+
+  flatAllFields(fields).forEach((field) => {
+    map[field.id] = {
+      valueType: getValueType(field),
+      ...(field.type === FieldTypeEnum.INPUT_NUMBER
+        ? {
+            numberType: field.numberFormat === 'percent' ? 'percent' : 'number',
+          }
+        : {}),
+    };
+  });
+
+  return map;
+}
+
+export function getFormulaRuntimeContext(path?: string) {
+  const contextMatch = path?.match(/^([^[]+)\[(\d+)\]\./);
+
+  if (!contextMatch) return undefined;
+
+  return {
+    tableKey: contextMatch[1],
+    rowIndex: Number(contextMatch[2]),
+  };
+}
+
+export function normalizeFormulaResult(
+  result: any,
+  options?: {
+    decimalPlaces?: number;
+    expectedType?: ValueType;
+  }
+): any {
+  const decimalPlaces = options?.decimalPlaces ?? 2;
+  const expectedType = options?.expectedType;
+
+  if (result == null) {
+    return '';
+  }
+
+  if (expectedType === 'string') {
+    return String(result);
+  }
+
+  if (expectedType === 'number') {
+    const num = Number(result);
+    if (Number.isNaN(num)) return 0;
+    return Number(num.toFixed(decimalPlaces));
+  }
+
+  switch (typeof result) {
+    case 'number':
+      return Number(result.toFixed(decimalPlaces));
+    case 'string':
+      return result;
+    case 'boolean':
+      return result ? 'TRUE' : 'FALSE';
+    default:
+      return String(result);
+  }
+}
+
+function cloneIRIfNeeded<T>(value: T, clone = true): T {
+  if (!clone) return value;
+
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value);
+  }
+
+  return JSON.parse(JSON.stringify(value));
+}
+
+/**
+ * 表单场景统一执行公式
+ */
+export function executeFormFormula(ctx: FormulaExecutorContext): FormulaExecutorResult | undefined {
+  const {
+    formula,
+    path,
+    formDetail,
+    fields = [],
+    formulaDataSource,
+    evaluationNow,
+    decimalPlaces = 2,
+    expectedType,
+    cloneIR = true,
+    warn,
+  } = ctx;
+
+  const { ir } = safeParseFormula(formula ?? '');
+
+  if (!ir) {
+    return;
+  }
+
+  const runtimeIR = cloneIRIfNeeded(ir, cloneIR);
+  const fieldTypeMap = buildFieldTypeMap(fields);
+  hydrateIRNumberType(runtimeIR, fieldTypeMap);
+
+  const runtimeContext = getFormulaRuntimeContext(path);
+
+  const getScalarFieldValue = (
+    fieldId: string,
+    context?: {
+      tableKey?: string;
+      rowIndex?: number;
+    }
+  ) => {
+    if (context?.tableKey && context.rowIndex != null) {
+      const row = formDetail?.[context.tableKey]?.[context.rowIndex];
+      return row?.[fieldId];
+    }
+
+    return formDetail?.[fieldId];
+  };
+
+  const getTableColumnValues = (fieldPath: string): any[] => {
+    const [tableKey, fieldKey] = fieldPath.split('.');
+    const rows = formDetail?.[tableKey];
+    if (!Array.isArray(rows)) return [];
+    return rows.map((row) => row?.[fieldKey]);
+  };
+
+  const resolveFieldRuntimeValue = (fieldId: string, rawValue: any) => {
+    return getFormulaDataSourceDisplayValue(formulaDataSource, fieldId, rawValue);
+  };
+
+  const rawResult = evaluateIR(runtimeIR, {
+    evaluationNow,
+    context: runtimeContext,
+    getScalarFieldValue,
+    getTableColumnValues,
+    getFieldMeta: (fieldId: string) => {
+      return fieldTypeMap[fieldId];
+    },
+    resolveFieldRuntimeValue,
+    warn: (msg: string) => {
+      warn?.(msg);
+    },
+  } as any);
+
+  const normalizedResult = normalizeFormulaResult(rawResult, {
+    decimalPlaces,
+    expectedType,
+  });
+
+  return {
+    rawResult,
+    normalizedResult,
+  };
+}
+
+/**
+ * 取单值字段
+ */
+export function getScalarFieldValueByFormDetail(
+  formDetail: Record<string, any> | undefined,
+  fieldId: string,
+  context?: {
+    tableKey?: string;
+    rowIndex?: number;
+  }
+) {
+  // 子表当前行上下文
+  if (context?.tableKey && context.rowIndex != null) {
+    const row = formDetail?.[context.tableKey]?.[context.rowIndex];
+    return row?.[fieldId];
+  }
+
+  // 主表字段
+  return formDetail?.[fieldId];
+}

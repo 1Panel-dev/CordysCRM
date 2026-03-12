@@ -23,11 +23,16 @@
       v-html="props.fieldConfig.description"
     ></div>
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
+    <!-- todo xinxinwu -->
     <n-input
       v-model:value="value"
       :maxlength="255"
       :placeholder="props.fieldConfig.placeholder"
-      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :disabled="
+        props.fieldConfig.editable === false ||
+        !!props.fieldConfig.resourceFieldId ||
+        props.fieldConfig.defaultValueType === 'formula'
+      "
       clearable
       @update-value="($event) => emit('change', $event)"
     />
@@ -36,8 +41,11 @@
 
 <script setup lang="ts">
   import { NDivider, NFormItem, NInput } from 'naive-ui';
+  import { debounce } from 'lodash-es';
 
   import type { FormConfig } from '@lib/shared/models/system/module';
+
+  import { executeFormFormula } from '@/components/business/crm-formula/formula-runtime/formula-executor';
 
   import { FormCreateField } from '../../types';
 
@@ -48,6 +56,7 @@
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    formDetail?: Record<string, any>;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;
@@ -68,6 +77,57 @@
     {
       immediate: true,
     }
+  );
+
+  const formulaFormContext = inject(
+    'formFieldsProvider',
+    ref({
+      fields: [],
+      formulaDataSource: {},
+      evaluationNow: null,
+    })
+  );
+
+  const fieldList = computed(() => formulaFormContext?.value.fields);
+  const formulaDataSource = computed(() => formulaFormContext?.value.formulaDataSource);
+  const evaluationNow = computed(() => formulaFormContext?.value.evaluationNow);
+
+  const updateValue = debounce(() => {
+    const { formula } = props.fieldConfig;
+
+    const result = executeFormFormula({
+      formula,
+      path: props.path,
+      formDetail: props.formDetail,
+      fields: fieldList.value ?? [],
+      formulaDataSource: formulaDataSource.value,
+      evaluationNow: evaluationNow.value,
+      decimalPlaces: 2,
+      warn: (msg: string) => {
+        // eslint-disable-next-line no-console
+        console.warn(msg);
+      },
+    });
+
+    if (!result) {
+      return;
+    }
+
+    const next = result.normalizedResult;
+
+    if (Object.is(next, value.value)) return;
+    value.value = next;
+  }, 100);
+
+  watch(
+    () => props.formDetail,
+    () => {
+      updateValue.flush?.();
+      if (props.fieldConfig.defaultValueType === 'formula') {
+        updateValue();
+      }
+    },
+    { deep: true }
   );
 </script>
 
