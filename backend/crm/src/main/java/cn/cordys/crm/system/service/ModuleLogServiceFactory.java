@@ -9,6 +9,7 @@ import cn.cordys.crm.follow.service.FollowUpPlanLogService;
 import cn.cordys.crm.follow.service.FollowUpRecordLogService;
 import cn.cordys.crm.opportunity.service.OpportunityLogService;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationalLogService;
+import cn.cordys.crm.order.service.OrderLogService;
 import cn.cordys.crm.product.service.PriceLogService;
 import cn.cordys.crm.product.service.ProductLogService;
 
@@ -36,6 +37,7 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.SYSTEM_MODULE, CommonBeanFactory.getBean(SystemModuleLogService.class));
         logServiceMap.put(LogModule.CONTRACT_PAYMENT, CommonBeanFactory.getBean(ContractPaymentPlanLogService.class));
         logServiceMap.put(LogModule.CONTRACT_INVOICE, CommonBeanFactory.getBean(ContractInvoiceLogService.class));
+        logServiceMap.put(LogModule.ORDER, CommonBeanFactory.getBean(OrderLogService.class));
 
     }
 
