@@ -134,57 +134,61 @@
                 </div>
                 <div class="function-desc-text">{{ t('formulaEditor.function.mergeTextWithSeparator') }}</div>
               </div>
-            </div>
-            <div v-if="activeFun?.name === 'TEXT'">
-              <div class="flex items-center">
-                <div :style="{ color: FUN_COLOR }">TEXT</div>(<div :class="`text-[${TEXT_COLOR}]`">
-                  {{ t('formulaEditor.function.formatDateOrNumber') }} </div
-                >, <div :class="`text-[${TEXT_COLOR}]`"> {{ t('formulaEditor.function.formatCodeText') }} </div>, )
+              <div v-if="activeFun?.name === 'TEXT'">
+                <div class="flex items-center">
+                  <div :style="{ color: FUN_COLOR }">TEXT</div>(<div :class="`text-[${TEXT_COLOR}]`">
+                    {{ t('formulaEditor.function.formatDateOrNumber') }} </div
+                  >, <div :class="`text-[${TEXT_COLOR}]`"> {{ t('formulaEditor.function.formatCodeText') }} </div>, )
+                </div>
+              </div>
+              <div v-if="activeFun?.name === 'IFS'">
+                <div class="flex flex-wrap items-center">
+                  <div :style="{ color: FUN_COLOR }">IFS</div>(<div :class="`text-[${TEXT_COLOR}]`"> A1>90 </div>,
+                  <div :class="`text-[${TEXT_COLOR}]`"> "优秀" </div>,
+                  <div :class="`text-[${TEXT_COLOR}]`"> A1>=60 </div>,
+                  <div :class="`text-[${TEXT_COLOR}]`"> "及格" </div>,
+                  <div :class="`text-[${TEXT_COLOR}]`"> TRUE </div>,
+                  <div :class="`text-[${TEXT_COLOR}]`"> "不及格" </div>
+                  )
+                </div>
+              </div>
+              <div v-if="activeFun?.name === 'TODAY'">
+                <div class="function-desc-text">获取当前日期:</div>
+                <div class="flex flex-wrap items-center gap-[2px]">
+                  <div :style="{ color: FUN_COLOR }">TODAY</div>( )
+                </div>
+                <div class="function-desc-text">计算日期差:</div>
+                <div class="flex flex-wrap items-center gap-[2px]">
+                  <div :style="{ color: FUN_COLOR }">TODAY</div>( )
+                  <div> - </div>
+                  <div :class="`text-[${TEXT_COLOR}]`"> A1 </div>
+                  （A1 为历史日期）
+                </div>
+              </div>
+              <div v-if="activeFun?.name === 'NOW'">
+                <div class="function-desc-text">获取当前日期时间:</div>
+                <div class="flex flex-wrap items-center gap-[2px]">
+                  <div :style="{ color: FUN_COLOR }">NOW</div>( )
+                </div>
+                <div class="function-desc-text">计算时间差:</div>
+                <div class="flex flex-wrap items-center gap-[2px]">
+                  <div :style="{ color: FUN_COLOR }">NOW</div>( )
+                  <div> - </div>
+                  <div :class="`text-[${TEXT_COLOR}]`"> A1 </div>
+                  （A1 为历史日期）
+                </div>
+              </div>
+              <div v-if="activeFun?.name === 'AND'">
+                <div class="flex items-center">
+                  <div :style="{ color: FUN_COLOR }">AND</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`">
+                    {{ t('formulaEditor.function.conditionFirst') }} </div
+                  >,
+                  <div :class="`text-[${INPUT_NUMBER_COLOR}]`"> {{ t('formulaEditor.function.conditionSecond') }} </div
+                  >, ... )
+                </div>
               </div>
             </div>
-            <div v-if="activeFun?.name === 'IFS'">
-              <div class="flex flex-wrap items-center">
-                <div :style="{ color: FUN_COLOR }">IFS</div>(<div :class="`text-[${TEXT_COLOR}]`"> A1>90 </div>,
-                <div :class="`text-[${TEXT_COLOR}]`"> "优秀" </div>,
-                <div :class="`text-[${TEXT_COLOR}]`"> A1>=60 </div>,
-                <div :class="`text-[${TEXT_COLOR}]`"> "及格" </div>, <div :class="`text-[${TEXT_COLOR}]`"> TRUE </div>,
-                <div :class="`text-[${TEXT_COLOR}]`"> "不及格" </div>
-                )
-              </div>
-            </div>
-            <div v-if="activeFun?.name === 'TODAY'">
-              <div class="function-desc-text">获取当前日期:</div>
-              <div class="flex flex-wrap items-center gap-[2px]">
-                <div :style="{ color: FUN_COLOR }">TODAY</div>( )
-              </div>
-              <div class="function-desc-text">计算日期差:</div>
-              <div class="flex flex-wrap items-center gap-[2px]">
-                <div :style="{ color: FUN_COLOR }">TODAY</div>( )
-                <div> - </div>
-                <div :class="`text-[${TEXT_COLOR}]`"> A1 </div>
-                （A1 为历史日期）
-              </div>
-            </div>
-            <div v-if="activeFun?.name === 'NOW'">
-              <div class="function-desc-text">获取当前日期时间:</div>
-              <div class="flex flex-wrap items-center gap-[2px]"> <div :style="{ color: FUN_COLOR }">NOW</div>( ) </div>
-              <div class="function-desc-text">计算时间差:</div>
-              <div class="flex flex-wrap items-center gap-[2px]">
-                <div :style="{ color: FUN_COLOR }">NOW</div>( )
-                <div> - </div>
-                <div :class="`text-[${TEXT_COLOR}]`"> A1 </div>
-                （A1 为历史日期）
-              </div>
-            </div>
-            <div v-if="activeFun?.name === 'AND'">
-              <div class="flex items-center">
-                <div :style="{ color: FUN_COLOR }">AND</div>(<div :class="`text-[${INPUT_NUMBER_COLOR}]`">
-                  {{ t('formulaEditor.function.conditionFirst') }} </div
-                >,
-                <div :class="`text-[${INPUT_NUMBER_COLOR}]`"> {{ t('formulaEditor.function.conditionSecond') }} </div>,
-                ... )
-              </div>
-            </div>
+
             <div v-else class="function-desc-text">
               {{ t('crmFormDesign.formulaSelectUsageTip') }}
             </div>

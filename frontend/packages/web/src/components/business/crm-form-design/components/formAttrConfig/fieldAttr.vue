@@ -634,13 +634,53 @@
           </n-tooltip>
         </div>
         <template v-if="fieldConfig.serialNumberRules">
+          <div class="flex items-center justify-between">
+            <n-radio-group
+              v-model:value="fieldConfig.prefixType"
+              name="prefixType"
+              @update-value="
+                (val) => {
+                  fieldConfig.prefixType = val;
+                }
+              "
+            >
+              <n-radio-button key="custom" value="custom" :label="t('crmFormDesign.fixedChar')" />
+              <n-radio-button key="formula" value="formula" :label="t('crmFormDesign.formulaSetting')" />
+            </n-radio-group>
+
+            <n-button
+              v-if="fieldConfig.prefixType !== 'custom'"
+              type="primary"
+              text
+              :disabled="!formulaConfig.source?.length || !!fieldConfig.resourceFieldId"
+              @click="handleClearFormulaField"
+            >
+              {{ t('common.clear') }}
+            </n-button>
+          </div>
+
           <n-input
+            v-if="fieldConfig.prefixType === 'custom'"
             v-model:value="serialNumberRules1"
+            class="flex-1"
             maxlength="10"
             :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
           >
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
           </n-input>
+
+          <div v-else>
+            <div class="flex items-center gap-[8px]">
+              <n-button
+                type="default"
+                class="outline--secondary flex-1"
+                :disabled="!!fieldConfig.resourceFieldId"
+                @click="handleCalculateFormula"
+              >
+                {{ formulaConfig.source?.length ? t('crmFormDesign.formulaHasBeenSet') : t('common.setting') }}
+              </n-button>
+            </div>
+          </div>
           <n-input
             v-model:value="serialNumberRules2"
             maxlength="10"
@@ -887,13 +927,58 @@
           :data-source-type="fieldConfig.dataSourceType || dataSourceOptions[0].value as FieldDataSourceTypeEnum"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
         />
-        <n-input
-          v-else
-          v-model:value="fieldConfig.defaultValue"
-          :maxlength="255"
-          :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
-          clearable
-        />
+        <template v-else>
+          <n-select
+            v-if="fieldConfig.type === FieldTypeEnum.INPUT"
+            v-model:value="fieldConfig.defaultValueType"
+            :options="[
+              {
+                label: t('crmFormDesign.custom'),
+                value: 'custom',
+              },
+              {
+                label: t('crmFormDesign.formulaSetting'),
+                value: 'formula',
+              },
+            ]"
+            :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
+            @update-value="
+              (val) => {
+                fieldConfig.defaultValueType = val;
+                fieldConfig.defaultValue = null;
+              }
+            "
+          />
+          <!-- 默认值为公式 -->
+          <div v-if="fieldConfig?.defaultValueType === 'formula'" class="crm-form-design-config-item">
+            <div class="crm-form-design-config-item-title">
+              <span> {{ t('crmFormDesign.formula') }}</span>
+              <n-button
+                type="primary"
+                text
+                :disabled="!formulaConfig.source?.length || !!fieldConfig.resourceFieldId"
+                @click="handleClearFormulaField"
+              >
+                {{ t('common.clear') }}
+              </n-button>
+            </div>
+            <n-button
+              type="default"
+              class="outline--secondary"
+              :disabled="!!fieldConfig.resourceFieldId"
+              @click="handleCalculateFormula"
+            >
+              {{ formulaConfig.source?.length ? t('crmFormDesign.formulaHasBeenSet') : t('common.setting') }}
+            </n-button>
+          </div>
+          <n-input
+            v-else
+            v-model:value="fieldConfig.defaultValue"
+            :maxlength="255"
+            :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
+            clearable
+          />
+        </template>
       </div>
       <!-- 默认值 End -->
       <!-- 附件 Start -->
@@ -1712,6 +1797,8 @@
 
   function handleCalculateFormulaConfigSave(astValue?: string) {
     fieldConfig.value.formula = astValue;
+    console.log(fieldConfig.value, ' fieldConfig.value');
+
     showCalculateFormulaModal.value = false;
   }
 

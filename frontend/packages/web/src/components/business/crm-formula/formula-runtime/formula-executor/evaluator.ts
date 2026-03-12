@@ -1,8 +1,14 @@
 import { IRNodeType } from '@lib/shared/enums/formula';
 
-import { functionRegistry } from './function-registry';
-import { excelCompare } from './runtime/excel-runtime';
-import { EvaluateContext, IRBinaryNode, IRLiteralNode, IRNode } from './types';
+import {
+  EvaluateContext,
+  IRBinaryNode,
+  IRLiteralNode,
+  IRNode,
+} from '@/components/business/crm-formula/formula-runtime/types';
+
+import { functionRegistry } from '../function-registry';
+import { excelCompare } from '../runtime/excel-runtime';
 
 // Date.UTC(1899, 11, 30)：计算 1899 年 12 月 30 日 00:00:00 UTC 的时间戳（毫秒）
 // 注意：月份从 0 开始计数，所以 11 代表 12 月

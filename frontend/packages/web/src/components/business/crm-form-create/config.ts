@@ -214,11 +214,13 @@ export const inputDefaultFieldConfig: FormCreateField = {
   fieldWidth: 1,
   showLabel: true,
   defaultValue: '',
+  defaultValueType: 'custom',
   description: '',
   readable: true,
   editable: true,
   mobile: true,
   rules: [],
+  formula: '',
 };
 
 export const textareaDefaultFieldConfig: FormCreateField = {
@@ -610,6 +612,8 @@ export const serialNumberDefaultFieldConfig: FormCreateField = {
   mobile: true,
   rules: [],
   serialNumberRules: ['Opp', '-', 'yyyyMM', '-', 6],
+  prefixType: 'custom',
+  formula: '',
 };
 
 export const linkDefaultFieldConfig: FormCreateField = {

@@ -76,6 +76,8 @@ export interface FormCreateField {
   editable: boolean;
   fieldWidth: number;
   defaultValue?: any;
+  defaultValueType?: 'custom' | 'formula';
+  prefixType?: 'custom' | 'formula';
   rules: FormCreateFieldRule[];
   mobile?: boolean; // 是否在移动端显示
   // 数字输入属性

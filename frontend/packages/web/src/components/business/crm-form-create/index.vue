@@ -528,7 +528,7 @@
   function initFormulaDataSourceRemark() {
     formulaDataSource.value = {};
     fieldList.value.forEach((item) => {
-      if (item.type === FieldTypeEnum.FORMULA) {
+      if ([FieldTypeEnum.FORMULA, FieldTypeEnum.INPUT, FieldTypeEnum.SERIAL_NUMBER].includes(item.type)) {
         const { fields } = safeParseFormula(item.formula ?? '');
         fields.forEach((e: any) => {
           if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(e.fieldType)) {

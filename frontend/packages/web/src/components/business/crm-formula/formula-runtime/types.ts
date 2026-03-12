@@ -1,5 +1,7 @@
 import { IRNodeType } from '@lib/shared/enums/formula';
 
+import { FormCreateField } from '@/components/business/crm-form-create/types';
+
 export interface ResolveContext {
   /** 是否允许出现列字段 */
   expectScalar: boolean;
@@ -91,4 +93,22 @@ export interface FnSpec {
   fn: (ctx: EvaluateContext, ...args: any[]) => any;
   source?: FunctionSource; // 函数来源
   lazy?: boolean;
+}
+
+export interface FormulaExecutorContext {
+  formula?: string;
+  path?: string;
+  formDetail?: Record<string, any>;
+  fields?: FormCreateField[];
+  formulaDataSource: Record<string, any>;
+  evaluationNow?: any;
+  decimalPlaces?: number;
+  expectedType?: ValueType;
+  cloneIR?: boolean;
+  warn?: (msg: string) => void;
+}
+
+export interface FormulaExecutorResult {
+  rawResult: any;
+  normalizedResult: any;
 }

@@ -1,6 +1,3 @@
-import evaluateIR from './evaluator';
-import registerBuiltinFunctions from './functions';
-
-registerBuiltinFunctions();
+import evaluateIR from './formula-executor/evaluator';
 
 export default evaluateIR;
