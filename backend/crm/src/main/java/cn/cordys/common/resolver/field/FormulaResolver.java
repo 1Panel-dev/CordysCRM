@@ -14,7 +14,7 @@ public class FormulaResolver extends AbstractModuleFieldResolver<FormulaField> {
     public void validate(FormulaField numberField, Object value) {
         validateRequired(numberField, value);
 
-        if (value != null && !(value instanceof Number)) {
+        if (value != null && !(value instanceof Number) && !(value instanceof String)) {
             throwValidateException(numberField.getName());
         }
     }
