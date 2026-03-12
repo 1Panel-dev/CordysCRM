@@ -279,9 +279,13 @@
       // 子表格添加多行会触发 change，避免重复处理
       return;
     }
-    if (row.price_sub) {
+    if (source.every((e) => e.isFormLinkFilled)) {
       // 填充时已经有了价格表数据，需要回显字段
-      applyDataSourceShowFields(field, val, row, source, row.price_sub);
+      const key = field.businessKey || field.id;
+      for (let i = 0; i < data.value.length; i++) {
+        const newRow = data.value[i];
+        applyDataSourceShowFields(field, newRow[key], newRow, source, newRow.price_sub); // 回显价格表带出的显示字段
+      }
       return;
     }
     isProcessingDataSourceChange.value = true;
