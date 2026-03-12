@@ -192,7 +192,9 @@ export default function useTable<T>(
           ) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
         }
         // 设置分页
-        setPagination(tmpArr.current, tmpArr.total);
+        if (!refreshId) {
+          setPagination(tmpArr.current, tmpArr.total);
+        }
       }
       // 解决分页数据不足一页时不能触发滚动的问题
       nextTick(() => {

@@ -634,7 +634,7 @@
   }
 
   function handleFormCreateSaved(res: any) {
-    if (needInitDetail.value) {
+    if (needInitDetail.value || activeFormKey.value === FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD) {
       searchData(undefined, res.id);
     } else {
       searchData();
