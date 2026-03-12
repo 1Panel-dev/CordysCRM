@@ -68,6 +68,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
+  import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
   import { OrderItem } from '@lib/shared/models/order';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -116,7 +117,7 @@
   const activeTab = ref();
   const keyword = ref('');
 
-  const stageConfig = ref<any>();
+  const stageConfig = ref<OpportunityStageConfig>();
   async function initStageConfig() {
     try {
       stageConfig.value = await getOrderStatusConfig();
@@ -233,8 +234,7 @@
   }
 
   function handleDownload(id: string) {
-    // TODO lmy
-    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
+    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_ORDER, { id });
   }
 
   async function handleActionSelect(row: OrderItem, actionKey: string) {

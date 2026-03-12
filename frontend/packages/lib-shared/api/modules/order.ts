@@ -4,6 +4,7 @@ import {
   AddOrderUrl,
   AddOrderViewUrl,
   DeleteOrderUrl,
+  UpdateOrderStageUrl,
   DeleteOrderViewUrl,
   DragOrderViewUrl,
   EnableOrderViewUrl,
@@ -25,6 +26,7 @@ import {
   AddOrderStatusUrl,
   GetOrderStatusConfigUrl,
   DeleteOrderStatusUrl,
+  DownloadOrderUrl,
 } from '@lib/shared/api/requrls/order';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import type { CommonList, TableDraggedParams } from '@lib/shared/models/common';
@@ -36,7 +38,7 @@ import type {
 import type { TableQueryParams } from '@lib/shared/models/common';
 
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
-import {  StageBaseParams, StageConfigBaseItem, UpdateOpportunityStageRollbackParams, UpdateStageBaseParams } from '@lib/shared/models/opportunity';
+import {  StageBaseParams, OpportunityStageConfig, UpdateOpportunityStageRollbackParams, UpdateStageBaseParams } from '@lib/shared/models/opportunity';
 
 export default function useOrderApi(CDR: CordysAxios) {
   // 列表
@@ -75,18 +77,22 @@ export default function useOrderApi(CDR: CordysAxios) {
   }
 
   // 获取表单配置
-    function getOrderFormConfig() {
-      return CDR.get<FormDesignConfigDetailParams>({
-        url: OrderFormConfigUrl,
-      });
-    }
+  function getOrderFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({
+      url: OrderFormConfigUrl,
+    });
+  }
   
-    // 获取表单配置快照
-    function getOrderFormSnapshotConfig(id?: string) {
-      return CDR.get<FormDesignConfigDetailParams>({
-        url: `${OrderFormConfigSnapshotUrl}/${id}`,
-      });
-    }
+  // 获取表单配置快照
+  function getOrderFormSnapshotConfig(id?: string) {
+    return CDR.get<FormDesignConfigDetailParams>({
+      url: `${OrderFormConfigSnapshotUrl}/${id}`,
+    });
+  }
+
+  function downloadOrder(id: string) {
+    return CDR.get({ url: `${DownloadOrderUrl}/${id}` });
+  }
 
   // 获取订单tab显隐配置
   function getOrderTab() {
@@ -148,12 +154,17 @@ export default function useOrderApi(CDR: CordysAxios) {
   
   // 获取订单状态配置
   function getOrderStatusConfig() {
-    return CDR.get<StageConfigBaseItem>({ url: GetOrderStatusConfigUrl }, { ignoreCancelToken: true });
+    return CDR.get<OpportunityStageConfig>({ url: GetOrderStatusConfigUrl }, { ignoreCancelToken: true });
   }
   
   // 删除订单状态
   function deleteOrderStatus(id: string) {
     return CDR.get({ url: `${DeleteOrderStatusUrl}/${id}` });
+  }
+
+  // 更新阶段
+  function updateOrderStage(data: { id: string; stage: string; }) {
+    return CDR.post({ url: UpdateOrderStageUrl, data });
   }
 
   return {
@@ -181,5 +192,7 @@ export default function useOrderApi(CDR: CordysAxios) {
     addOrderStatus,
     getOrderStatusConfig,
     deleteOrderStatus,
+    updateOrderStage,
+    downloadOrder
   };
 }

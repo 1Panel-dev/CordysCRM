@@ -196,6 +196,7 @@
 
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import CrmFileListModal from '@/components/business/crm-file-list-modal/index.vue';
   import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import CrmSubTable from '@/components/business/crm-sub-table/index.vue';

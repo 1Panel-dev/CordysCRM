@@ -32,22 +32,19 @@
       </n-button>
     </template>
     <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
-      <!-- TODO lmy 订单状态 -->
-      <!-- <CrmWorkflowCard
+      <CrmWorkflowCard
         v-model:stage="currentStatus"
-        :show-confirm-status="true"
         class="mb-[16px]"
         :stage-config-list="stageConfig?.stageConfigList || []"
         is-limit-back
-        :failure-reason="lastFailureReason"
-        :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']"
+        :back-stage-permission="['ORDER:UPDATE']"
         :source-id="sourceId"
-        :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
-        :update-api="updateOptStage"
+        :operation-permission="['ORDER:UPDATE']"
+        :update-api="updateOrderStage"
         :afoot-roll-back="stageConfig?.afootRollBack"
         :end-roll-back="stageConfig?.endRollBack"
-        @load-detail="refreshList"
-      /> -->
+        @load-detail="handleSaved()"
+      />
       <CrmCard hide-footer>
         <div class="flex-1">
           <CrmFormDescription
@@ -84,6 +81,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { CollaborationType } from '@lib/shared/models/customer';
+  import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
   import { OrderItem } from '@lib/shared/models/order';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -92,7 +90,7 @@
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { deleteOrder } from '@/api/modules';
+  import { deleteOrder, getOrderStatusConfig, updateOrderStage } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
 
@@ -117,8 +115,32 @@
   const detailInfo = ref();
   const { openNewPage } = useOpenNewPage();
 
+  const stageConfig = ref<OpportunityStageConfig>();
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getOrderStatusConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        initStageConfig();
+      }
+    }
+  );
+
+  const currentStatus = ref<string>(stageConfig.value?.stageConfigList[0]?.id || '');
+
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     detailInfo.value = detail;
+    if (detail) {
+      currentStatus.value = detail.stage;
+    }
   }
 
   const refreshKey = ref(0);
@@ -154,7 +176,6 @@
   }
 
   function handleDownload(id: string) {
-    // TODO lmy 下载
-    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
+    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_ORDER, { id });
   }
 </script>
