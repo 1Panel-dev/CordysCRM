@@ -13,4 +13,10 @@ public class InputField extends BaseField {
 
     @Schema(description = "默认值")
     private String defaultValue;
+
+	@Schema(description = "默认值类型", allowableValues = {"custom", "formula"})
+	private String defaultValueType;
+
+	@Schema(description = "公式")
+	private String formula;
 }

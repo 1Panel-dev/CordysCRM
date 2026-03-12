@@ -15,4 +15,10 @@ public class SerialNumberField extends BaseField {
 
     @Schema(description = "流水号规则")
     private List<String> serialNumberRules;
+
+	@Schema(description = "前缀固定字符类型", allowableValues = {"custom", "formula"})
+	private String prefixType;
+
+	@Schema(description = "公式, prefixType 为 formula")
+	private String formula;
 }

@@ -389,6 +389,13 @@ public class ModuleFormService {
                 if (baseField.needInitialOptions()) {
                     handleInitialOption(baseField);
                 }
+				// 文本字段默认值格式 || 流水号前缀固定字符格式
+				if (baseField instanceof SerialNumberField serialField && StringUtils.isEmpty(serialField.getPrefixType())) {
+					serialField.setPrefixType(OPTION_DEFAULT_SOURCE);
+				}
+				if (baseField instanceof InputField inputField && StringUtils.isEmpty(inputField.getDefaultValueType())) {
+					inputField.setDefaultValueType(OPTION_DEFAULT_SOURCE);
+				}
                 fieldDTOList.add(baseField);
             });
         }
