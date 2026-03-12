@@ -85,6 +85,7 @@
     :sourceId="activeSourceId"
     :readonly="props.readonly"
     @refresh="searchData(undefined, activeSourceId)"
+    @delete="removeItemFromList(activeSourceId)"
     @open-contract-drawer="showContractDrawer"
   />
 </template>
