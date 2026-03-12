@@ -76,6 +76,8 @@ export const {
   sortOrderStatus,
   addOrderStatus,
   getOrderStatusConfig,
+  updateOrderStage,
+  downloadOrder,
   deleteOrderStatus,
 } = orderApi;
 

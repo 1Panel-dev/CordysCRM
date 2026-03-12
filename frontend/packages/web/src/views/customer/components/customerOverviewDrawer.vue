@@ -107,7 +107,12 @@
           :source-id="props.sourceId"
         />
         <CrmCard v-else-if="activeTab === 'order'" hide-footer no-content-bottom-padding>
-          <OrderTable :formKey="FormDesignKeyEnum.CUSTOMER_ORDER" :sourceId="props.sourceId" readonly />
+          <OrderTable
+            :formKey="FormDesignKeyEnum.CUSTOMER_ORDER"
+            :sourceId="props.sourceId"
+            readonly
+            @open-contract-drawer="handleOpenContractDrawer"
+          />
         </CrmCard>
       </div>
       <CrmMoveModal
@@ -117,6 +122,11 @@
         :name="sourceName"
         type="warning"
         @refresh="emit('deleted')"
+      />
+      <ContractDetailDrawer
+        v-model:visible="showContractDetailDrawer"
+        :sourceId="activeSourceId"
+        @showCustomerDrawer="handleOpenCustomerDrawer"
       />
     </template>
   </CrmOverviewDrawer>
@@ -142,6 +152,7 @@
   import collaborator from './collaborator.vue';
   import customerRelation from './customerRelation.vue';
   import ContractTimeline from '@/views/contract/contract/components/contractTimeline.vue';
+  import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
   import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
@@ -372,6 +383,17 @@
   function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {
     collaborationType.value = _collaborationType;
     sourceName.value = _sourceName || '';
+  }
+
+  const showContractDetailDrawer = ref(false);
+  const activeSourceId = ref<string>('');
+  function handleOpenContractDrawer(params: { id: string }) {
+    activeSourceId.value = params.id;
+    showContractDetailDrawer.value = true;
+  }
+
+  function handleOpenCustomerDrawer() {
+    showContractDetailDrawer.value = false;
   }
 </script>
 

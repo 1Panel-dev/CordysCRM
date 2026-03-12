@@ -66,6 +66,7 @@
           :sourceName="title"
           is-contract-tab
           :readonly="getReadonlyOrder"
+          @open-customer-drawer="emit('showCustomerDrawer', $event)"
         />
       </CrmCard>
     </div>

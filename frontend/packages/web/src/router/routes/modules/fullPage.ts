@@ -29,6 +29,14 @@ const FullPage: AppRouteRecordRaw = {
         permissions: ['OPPORTUNITY_QUOTATION:READ'],
       },
     },
+    {
+      path: 'fullExportOrder',
+      name: FullPageEnum.FULL_PAGE_EXPORT_ORDER,
+      component: () => import('@/views/order/order/components/exportPdf.vue'),
+      meta: {
+        permissions: ['ORDER:READ'],
+      },
+    },
   ],
 };
 

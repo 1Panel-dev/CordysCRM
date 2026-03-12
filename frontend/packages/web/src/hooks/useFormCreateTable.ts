@@ -1107,6 +1107,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 FormDesignKeyEnum.INVOICE,
                 FormDesignKeyEnum.CONTRACT_INVOICE,
                 FormDesignKeyEnum.ORDER,
+                FormDesignKeyEnum.CUSTOMER_ORDER,
                 FormDesignKeyEnum.CONTRACT_ORDER,
               ].includes(props.formKey) &&
                 field.businessKey === 'contractId') ||
