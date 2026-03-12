@@ -70,6 +70,7 @@ public class DataInitService {
             initOneTime(moduleFormService::initUpgradeForm, "init.upgrade.form.v1.6.0");
             initOneTime(moduleFieldService::initOrderFields, "init.order.fields");
 			initOneTime(moduleFormService::initContactFormLinkRules, "init.contact.form.link.rules");
+			initOneTime(moduleFormService::initContractToOrderLinkScenario, "init.order.form.link.rules");
         } finally {
             lock.unlock();
         }
