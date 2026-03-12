@@ -78,6 +78,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'delete'): void;
     (e: 'openContractDrawer', params: { id: string }): void;
   }>();
 
@@ -112,7 +113,7 @@
           await deletePaymentPlan(row.id);
           Message.success(t('common.deleteSuccess'));
           visible.value = false;
-          emit('refresh');
+          emit('delete');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
