@@ -109,7 +109,7 @@
     :form-key="realFormKey"
     :source-id="sourceId"
     :need-init-detail="needInitDetail"
-    @saved="emit('saved')"
+    @saved="emit('saved', $event)"
   />
 </template>
 
@@ -145,7 +145,7 @@
 
   const emit = defineEmits<{
     (e: 'buttonSelect', key: string, done?: () => void): void;
-    (e: 'saved'): void;
+    (e: 'saved', res: any): void;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {

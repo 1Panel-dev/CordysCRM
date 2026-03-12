@@ -11,7 +11,12 @@
     :form-key="FormDesignKeyEnum.CLUE"
     :show-tab-setting="false"
     @button-select="handleSelect"
-    @saved="() => (refreshKey += 1)"
+    @saved="
+      (res) => {
+        refreshKey += 1;
+        emit('saved', res);
+      }
+    "
   >
     <template #left>
       <div class="h-full overflow-hidden">
@@ -68,13 +73,6 @@
           :load-list-api="getClueHeaderList"
         />
       </div>
-      <CrmFormCreateDrawer
-        v-model:visible="formDrawerVisible"
-        :other-save-params="otherFollowRecordSaveParams"
-        :form-key="realFormKey"
-        :initial-source-name="sourceName"
-        @saved="emit('saved')"
-      />
     </template>
   </CrmOverviewDrawer>
   <CrmMoveModal
@@ -99,7 +97,6 @@
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
-  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
   import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
@@ -123,7 +120,7 @@
 
   const emit = defineEmits<{
     (e: 'refresh'): void;
-    (e: 'saved'): void;
+    (e: 'saved', res: any): void;
     (e: 'remove'): void;
     (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
@@ -206,9 +203,6 @@
     showConvertClueModal.value = true;
   }
 
-  const formDrawerVisible = ref(false);
-  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_CLUE);
-  const otherFollowRecordSaveParams = computed(() => ({ clueId: sourceId.value }));
   function handleSelect(key: string) {
     switch (key) {
       case 'pop-transfer':
