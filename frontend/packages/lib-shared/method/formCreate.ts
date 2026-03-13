@@ -301,7 +301,8 @@ export function transformData({
               subItem[subField.businessKey || subField.id],
               originalData?.optionMap?.[subField.businessKey || subField.id]
             );
-            fieldOptionMap[subField.id] = originalData?.optionMap?.[subField.businessKey || subField.id] || [];
+            fieldOptionMap[subField.businessKey || subField.id] =
+              originalData?.optionMap?.[subField.businessKey || subField.id] || [];
           }
           return subItem;
         });
