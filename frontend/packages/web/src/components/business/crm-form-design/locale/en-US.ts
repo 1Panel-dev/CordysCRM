@@ -231,7 +231,7 @@ export default {
   'crmFormDesign.tip.CONTRACT_TO_INVOICE':
     'When creating an invoice in the contract details, fill the contract form fields into the invoice form fields',
   'crmFormDesign.tip.CLUE_TO_CONTACT':
-    'When converting a lead to a contact, fill the lead form field content into the contact form fields',
+    'When converting a lead to a contact, fill the lead form field content into the contact form fields. Note: The customer name field in the contact form is filled by system logic, please do not configure it!',
   'crmFormDesign.productTable': 'Product Table',
   'crmFormDesign.quotationTable': 'Quotation Table',
   'crmFormDesign.sum': 'Sum',
