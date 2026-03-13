@@ -60,6 +60,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -1572,10 +1575,6 @@ public class ModuleFormService {
                 continue;
             }
 
-			if (Strings.CI.equals(targetField.getType(), FieldType.INPUT.name())) {
-				// 输入框需要截取部分长度
-
-			}
             // 放入目标对象字段
             putTargetFieldVal(targetField, sourceValue, targetClass, target, targetFieldVals);
         }
@@ -1669,6 +1668,9 @@ public class ModuleFormService {
         } else {
             sourceApply.setDisplayVal(displayOfType(sourceField, sourceApply.getActualVal()));
         }
+		if (sourceField instanceof InputNumberField) {
+			sourceApply.setActualVal(sourceApply.getDisplayVal());
+		}
         return sourceApply;
     }
 
@@ -1715,6 +1717,19 @@ public class ModuleFormService {
         if (sourceField instanceof HasOption fieldWithOption) {
             return val2Text(fieldWithOption.getOptions(), actualVal);
         }
+		if (sourceField instanceof InputNumberField numberField) {
+			BigDecimal actualDecimal = new BigDecimal(actualVal.toString());
+			if (numberField.getDecimalPlaces()) {
+				actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
+			}
+			String formatActualVal;
+			if (numberField.getShowThousandsSeparator()) {
+				formatActualVal = InputNumberField.formatThousands(actualDecimal);
+			} else {
+				formatActualVal = actualDecimal.toPlainString();
+			}
+			return formatActualVal + (Strings.CI.equals(numberField.getNumberFormat(), "percent") ? "%" : "");
+		}
         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(sourceField.getType());
         // 将数据库中的字符串值,转换为对应的对象值
         return customFieldResolver.transformToValue(sourceField, actualVal instanceof List ? JSON.toJSONString(actualVal) : actualVal.toString());
