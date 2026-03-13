@@ -155,7 +155,7 @@
                         THEN sort_table.field_value+0
                         END ${sortType},
                         sort_table.field_value ${sortType},
-                        cc.id ASC
+                        cc.id ${sortType}
                     </otherwise>
                 </choose>
             </when>

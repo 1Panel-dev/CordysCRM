@@ -140,7 +140,7 @@
                         THEN sort_table.field_value+0
                         END ${sortType},
                         sort_table.field_value ${sortType},
-                        p.id ASC
+                        p.id ${sortType}
                     </otherwise>
                 </choose>
             </when>

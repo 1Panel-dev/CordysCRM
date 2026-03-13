@@ -12,6 +12,7 @@
         c.`name` AS contractName,
         cc.in_shared_pool AS inCustomerPool,
         cc.pool_id,
+        cc.name as customerName,
         so.amount,
         so.stage,
         so.`owner`,
@@ -152,7 +153,7 @@
 
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
-                {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time',
+                {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time', 'customer_id',
                  'contract_id', 'update_time', 'create_user', 'department_id'}">
             <bind name="sortName" value="${sort}.name"/>
             left join contract_field sort_table
@@ -310,6 +311,9 @@
                     <when test="${sort}.name == 'contract_id'">
                         c.`name` ${sortType}, so.id ASC
                     </when>
+                    <when test="${sort}.name == 'customer_id'">
+                        cc.`name` ${sortType}, so.id ASC
+                    </when>
                     <when test="${sort}.name == 'owner'">
                         so.`owner` ${sortType}, so.id ASC
                     </when>
@@ -332,7 +336,7 @@
                         so.`update_user` ${sortType}, so.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
-                        souc_sort.`id` ${sortType}, so.id ASC
+                        souc_sort.`id` ${sortType}, so.id ${sortType}
                     </when>
 
                     <otherwise>
@@ -341,7 +345,7 @@
                         THEN sort_table.field_value+0
                         END ${sortType},
                         sort_table.field_value ${sortType},
-                        so.id ASC
+                        so.id ${sortType}
                     </otherwise>
                 </choose>
             </when>

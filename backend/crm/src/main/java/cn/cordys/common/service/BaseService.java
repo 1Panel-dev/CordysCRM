@@ -372,7 +372,7 @@ public class BaseService {
         Map<String, Object> originResourceLog = JSON.parseToMap(JSON.toJSONString(originResource));
         Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
         Set<String> subRefKey = getSubTableRefIds(moduleFormConfigDTO);
-        if (originResourceFields != null) {
+        if (CollectionUtils.isNotEmpty(originResourceFields)) {
             Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, moduleFormConfigDTO);
             List<BaseModuleFieldValue> validFields = originResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
@@ -381,7 +381,7 @@ public class BaseService {
             fillResourceLog(originResourceLog, validFields, oldFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey, moduleFormConfigDTO);
         }
 
-        if (modifiedResourceFields != null) {
+        if (CollectionUtils.isNotEmpty(modifiedResourceFields)) {
             Map<String, String> newFieldNameMap = getFieldNameMap(modifiedResourceFields, moduleFormConfigDTO);
             List<BaseModuleFieldValue> validFields = modifiedResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)

@@ -104,7 +104,7 @@
                         THEN sort_table.field_value+0
                         END ${sortType},
                         sort_table.field_value ${sortType},
-                        pp.id ASC
+                        pp.id ${sortType}
                     </otherwise>
                 </choose>
             </when>
