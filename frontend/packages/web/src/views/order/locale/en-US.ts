@@ -6,4 +6,5 @@ export default {
   'order.depart': 'Department Orders',
   'order.my': 'My Orders',
   'order.deleteContent': 'The current order has been associated with the contract and cannot be deleted!',
+  'order.exportingPdf': 'Order PDF export in progress ...',
 };
