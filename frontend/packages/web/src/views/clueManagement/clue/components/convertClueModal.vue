@@ -43,8 +43,23 @@
         </div>
         <div>{{ isSelectOpportunity ? t('clue.notSameNameOppConvertTip') : t('clue.notSameNameConvertTip') }}</div>
         <div>{{ isSelectOpportunity ? t('clue.linkFormConfigOppTip') : t('clue.linkFormConfigTip') }}</div>
-        <n-button v-permission="['MODULE_SETTING:UPDATE']" text type="primary" @click="handleOpenFormDesignDrawer">
+        <n-button
+          v-permission="['MODULE_SETTING:UPDATE']"
+          text
+          type="primary"
+          @click="() => handleOpenFormDesignDrawer()"
+        >
           {{ isSelectOpportunity ? t('module.opportunityFormSetting') : t('module.customerFormSetting') }}
+        </n-button>
+        <n-button
+          v-if="!isSelectOpportunity"
+          v-permission="['MODULE_SETTING:UPDATE']"
+          text
+          type="primary"
+          class="ml-[16px]"
+          @click="handleOpenFormDesignDrawer('contact')"
+        >
+          {{ t('module.newContactForm') }}
         </n-button>
       </div>
     </n-form>
@@ -105,6 +120,7 @@
   </CrmModal>
   <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
   <OpportunityFormDrawer v-model:visible="businessManagementFormVisible" />
+  <contactFormDrawer v-model:visible="concatFormVisible" />
 </template>
 
 <script setup lang="ts">
@@ -129,6 +145,7 @@
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
+  import contactFormDrawer from '@/views/system/module/components/customManagement/contactFormDrawer.vue';
   import customManagementFormDrawer from '@/views/system/module/components/customManagement/formDrawer.vue';
   import OpportunityFormDrawer from '@/views/system/module/components/opportunity/formDrawer.vue';
 
@@ -188,8 +205,11 @@
 
   const customerManagementFormVisible = ref(false);
   const businessManagementFormVisible = ref(false);
-  function handleOpenFormDesignDrawer() {
-    if (isSelectOpportunity.value) {
+  const concatFormVisible = ref(false);
+  function handleOpenFormDesignDrawer(type?: 'contact' | 'customer' | 'business') {
+    if (type === 'contact') {
+      concatFormVisible.value = true;
+    } else if (isSelectOpportunity.value) {
       businessManagementFormVisible.value = true;
     } else {
       customerManagementFormVisible.value = true;
