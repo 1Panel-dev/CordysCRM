@@ -1550,6 +1550,9 @@ public class ModuleFormService {
         @SuppressWarnings("unchecked")
         List<BaseModuleFieldValue> sourceFieldVals = (List<BaseModuleFieldValue>) sourceClass.getMethod("getModuleFields").invoke(source);
         for (LinkField linkField : scenarioOptional.get().getLinkFields()) {
+			if (!linkField.isEnable()) {
+				continue;
+			}
             BaseField targetField = targetFieldMap.get(linkField.getCurrent());
             BaseField sourceField = sourceFieldMap.get(linkField.getLink());
             if (targetField == null || sourceField == null) {
@@ -1568,6 +1571,11 @@ public class ModuleFormService {
             if (sourceValue == null || sourceValue.getActualVal() == null) {
                 continue;
             }
+
+			if (Strings.CI.equals(targetField.getType(), FieldType.INPUT.name())) {
+				// 输入框需要截取部分长度
+
+			}
             // 放入目标对象字段
             putTargetFieldVal(targetField, sourceValue, targetClass, target, targetFieldVals);
         }

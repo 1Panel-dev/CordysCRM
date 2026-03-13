@@ -1044,19 +1044,21 @@ public class ClueService {
             collaborationAddRequest.setUserId(clue.getOwner());
             customerCollaborationService.add(collaborationAddRequest, currentUser, orgId);
         }
+
         // 线索联系人 => 客户联系人
-        if (StringUtils.isNotEmpty(clue.getContact())) {
-            boolean unique = customerContactService.checkCustomerContactUnique(clue.getContact(), clue.getPhone(), transformCs.getId(), orgId);
-            if (unique) {
-				CustomerContactAddRequest request = buildContactRequestByLinkForm(clue, orgId);
-				request.setCustomerId(transformCs.getId());
-				if (StringUtils.isEmpty(request.getOwner())) {
-					request.setOwner(clue.getOwner());
-				}
-                CustomerContact contact = customerContactService.add(request, currentUser, orgId);
-                transformDTO.setContactId(contact.getId());
-            }
-        }
+		CustomerContactAddRequest request = buildContactRequestByLinkForm(clue, orgId);
+		if (StringUtils.isEmpty(request.getName())) {
+			return transformDTO;
+		}
+		boolean unique = customerContactService.checkCustomerContactUnique(request.getName(), request.getPhone(), transformCs.getId(), orgId);
+		if (unique) {
+			request.setCustomerId(transformCs.getId());
+			if (StringUtils.isEmpty(request.getOwner())) {
+				request.setOwner(clue.getOwner());
+			}
+			CustomerContact contact = customerContactService.add(request, currentUser, orgId);
+			transformDTO.setContactId(contact.getId());
+		}
 
         return transformDTO;
     }
