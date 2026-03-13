@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+
 @Data
 @JsonTypeName(value = "INPUT_NUMBER")
 @EqualsAndHashCode(callSuper = true)
@@ -31,4 +34,22 @@ public class InputNumberField extends BaseField {
 
     @Schema(description = "显示千分位")
     private Boolean showThousandsSeparator;
+
+	public static String formatThousands(BigDecimal num) {
+		if (num == null) {
+			return null;
+		}
+		String plain = num.toPlainString();
+		int dotIndex = plain.indexOf('.');
+		String integerPart;
+		String decimalPart = "";
+		if (dotIndex >= 0) {
+			integerPart = plain.substring(0, dotIndex);
+			decimalPart = plain.substring(dotIndex);
+		} else {
+			integerPart = plain;
+		}
+		DecimalFormat df = new DecimalFormat("#,##0");
+		return df.format(new BigDecimal(integerPart)) + decimalPart;
+	}
 }
