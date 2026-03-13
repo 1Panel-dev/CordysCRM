@@ -110,6 +110,7 @@ function getFormulaNodeColor(token: Token) {
     case FieldTypeEnum.DATA_SOURCE:
     case FieldTypeEnum.DATA_SOURCE_MULTIPLE:
     case FieldTypeEnum.SERIAL_NUMBER:
+    case FieldTypeEnum.SELECT:
       return TEXT_COLOR;
 
     default:

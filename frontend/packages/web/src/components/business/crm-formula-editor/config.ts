@@ -16,6 +16,7 @@ export const TEXT_TYPE = [
   FieldTypeEnum.DATA_SOURCE,
   FieldTypeEnum.DATA_SOURCE_MULTIPLE,
   FieldTypeEnum.SERIAL_NUMBER,
+  FieldTypeEnum.SELECT,
 ];
 
 export const defaultFormulaConfig = {

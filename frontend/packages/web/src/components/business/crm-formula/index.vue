@@ -1,5 +1,5 @@
 <template>
-  <n-tooltip trigger="hover" placement="top">
+  <n-tooltip trigger="hover" placement="top" :disabled="currentComponent === singleText">
     <template #trigger>
       <component
         :is="currentComponent"
@@ -26,8 +26,8 @@
 
   import basicComponents from '@/components/business/crm-form-create/components/basic/index';
 
-  import { safeParseFormula } from '../crm-formula-editor/utils';
   import { executeFormFormula } from './formula-runtime/formula-executor';
+  import { getFormulaDisplayInfo } from './formula-runtime/formula-executor/formula-display';
   import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const { t } = useI18n();
@@ -75,57 +75,17 @@
   const formulaDataSource = computed(() => formulaFormContext?.value.formulaDataSource);
   const evaluationNow = computed(() => formulaFormContext?.value.evaluationNow);
 
-  function resolveFieldId(e: FormCreateField, inSubTable?: boolean) {
-    if (e.resourceFieldId) {
-      return e.id;
-    }
+  const formulaDisplayInfo = computed(() =>
+    getFormulaDisplayInfo({
+      formula: props.fieldConfig.formula,
+      fields: fieldList.value ?? [],
+      invalidText: t('crmFormDesign.formulaFieldChanged'),
+      emptyText: t('crmFormDesign.formulaTooltip'),
+      isSubTableRender: props.isSubTableRender,
+    })
+  );
 
-    return inSubTable ? e.businessKey || e.id : e.id;
-  }
-
-  function flatAllFields(fields: FormCreateField[]) {
-    const result: (FormCreateField & { parentId?: string; parentName?: string; inSubTable?: boolean })[] = [];
-    fields?.forEach((field) => {
-      if (field.subFields) {
-        field.subFields.forEach((sub) => {
-          result.push({
-            ...sub,
-            name: `${field.name}.${sub.name}`,
-            parentId: field.id,
-            id: props.isSubTableRender ? resolveFieldId(sub, true) : `${field.id}.${resolveFieldId(sub, true)}`,
-            parentName: field.name,
-            inSubTable: true,
-          });
-        });
-      } else {
-        result.push({
-          ...field,
-          inSubTable: false,
-        });
-      }
-    });
-
-    return result;
-  }
-
-  const allFieldIds = computed(() => {
-    const fields = fieldList.value ?? [];
-    return flatAllFields(fields).map((e) => e.id);
-  });
-  const isFormulaInvalid = computed(() => {
-    const { fields } = safeParseFormula(props.fieldConfig.formula ?? '');
-    const savedFields = fields?.map((e: any) => e.fieldId);
-
-    return savedFields.some((fieldId: string) => !allFieldIds.value.includes(fieldId));
-  });
-
-  const formulaTooltip = computed(() => {
-    const { display } = safeParseFormula(props.fieldConfig.formula ?? '');
-    if (display) {
-      return isFormulaInvalid.value ? t('crmFormDesign.formulaFieldChanged') : display;
-    }
-    return t('crmFormDesign.formulaTooltip');
-  });
+  const formulaTooltip = computed(() => formulaDisplayInfo.value.tooltip);
 
   // 根据公式实时计算 todo 等待优化
   const updateValue = debounce(() => {
