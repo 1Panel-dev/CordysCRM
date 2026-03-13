@@ -17,25 +17,33 @@
       v-html="props.fieldConfig.description"
     ></div>
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
-    <!-- todo xinxinwu -->
-    <n-input
-      v-model:value="displayValue"
-      :default-value="props.fieldConfig.defaultValue"
-      :placeholder="props.fieldConfig.placeholder"
-      disabled
-    />
+    <n-tooltip trigger="hover" placement="top" :disabled="props.fieldConfig.defaultValueType === 'custom'">
+      <template #trigger>
+        <n-input
+          v-model:value="displayValue"
+          :default-value="props.fieldConfig.defaultValue"
+          :placeholder="props.fieldConfig.placeholder"
+          disabled
+        />
+      </template>
+      {{ formulaTooltip }}
+    </n-tooltip>
   </n-form-item>
 </template>
 
 <script setup lang="ts">
-  import { NDivider, NFormItem, NInput } from 'naive-ui';
+  import { NDivider, NFormItem, NInput, NTooltip } from 'naive-ui';
   import { debounce } from 'lodash-es';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
   import { executeFormFormula } from '@/components/business/crm-formula/formula-runtime/formula-executor';
+  import { getFormulaDisplayInfo } from '@/components/business/crm-formula/formula-runtime/formula-executor/formula-display';
 
   import { FormCreateField } from '../../types';
+
+  const { t } = useI18n();
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
@@ -92,6 +100,18 @@
   }, 100);
 
   const displayValue = computed(() => (props.needInitDetail ? value.value : ''));
+
+  const formulaDisplayInfo = computed(() =>
+    getFormulaDisplayInfo({
+      formula: props.fieldConfig.formula,
+      fields: fieldList.value ?? [],
+      invalidText: t('crmFormDesign.formulaFieldChanged'),
+      emptyText: t('crmFormDesign.formulaTooltip'),
+      isSubTableRender: props.isSubTableRender,
+    })
+  );
+
+  const formulaTooltip = computed(() => formulaDisplayInfo.value.tooltip);
 
   watch(
     () => props.formDetail,

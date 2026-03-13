@@ -529,19 +529,26 @@
 
   function initFormulaDataSourceRemark() {
     formulaDataSource.value = {};
+    const fieldMap = new Map(fieldList.value.map((item) => [item.id, item]));
     fieldList.value.forEach((item) => {
       if ([FieldTypeEnum.FORMULA, FieldTypeEnum.INPUT, FieldTypeEnum.SERIAL_NUMBER].includes(item.type)) {
         const { fields } = safeParseFormula(item.formula ?? '');
         fields.forEach((e: any) => {
+          let options = [];
+          const targetField = fieldMap.get(e.fieldId);
+
           if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(e.fieldType)) {
-            const options = props.needInitDetail
-              ? fieldList.value.find((f) => f.id === e.fieldId)?.initialOptions ?? []
-              : [];
-            formulaDataSource.value[e.fieldId] = {
-              parserName: true,
-              options,
-            };
+            options = props.needInitDetail ? targetField?.initialOptions ?? [] : [];
+          } else if (e.fieldType === FieldTypeEnum.SELECT) {
+            options = targetField?.options ?? [];
+          } else {
+            return;
           }
+
+          formulaDataSource.value[e.fieldId] = {
+            parserName: true,
+            options,
+          };
         });
       }
     });
@@ -601,7 +608,11 @@
     }
 
     // 计算组件的数据源标记source 用于获取数据源name
-    if (formulaDataSource.value[item.id]?.parserName && !props.needInitDetail) {
+    if (
+      formulaDataSource.value[item.id]?.parserName &&
+      !props.needInitDetail &&
+      [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)
+    ) {
       formulaDataSource.value[item.id].options = source;
     }
 

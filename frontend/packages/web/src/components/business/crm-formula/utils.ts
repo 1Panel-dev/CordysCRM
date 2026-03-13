@@ -1,6 +1,7 @@
 import { IRNodeType } from '@lib/shared/enums/formula';
 
 import { FieldTypeMap, FormulaDataSourceMap, IRNode } from './formula-runtime/types';
+import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export function hydrateIRNumberType(node: IRNode | any, fieldTypeMap: FieldTypeMap): IRNode {
   // ---------- 历史数据兼容 as 旧数据，需要转换成新版本----------
@@ -100,5 +101,47 @@ export function getFormulaDataSourceDisplayValue(
 
     return matched?.name ?? matched?.label ?? value;
   });
+  return result;
+}
+
+export function flatAllFields(
+  fields: FormCreateField[],
+  options?: {
+    isSubTableRender?: boolean;
+  }
+) {
+  const result: (FormCreateField & {
+    parentId?: string;
+    parentName?: string;
+    inSubTable?: boolean;
+  })[] = [];
+
+  const resolveFieldId = (e: FormCreateField, inSubTable?: boolean) => {
+    if ((e as any).resourceFieldId) {
+      return e.id;
+    }
+    return inSubTable ? e.businessKey || e.id : e.id;
+  };
+
+  fields?.forEach((field) => {
+    if (field.subFields) {
+      field.subFields.forEach((sub) => {
+        result.push({
+          ...sub,
+          name: `${field.name}.${sub.name}`,
+          id: options?.isSubTableRender ? resolveFieldId(sub, true) : `${field.id}.${resolveFieldId(sub, true)}`,
+          parentId: field.id,
+          parentName: field.name,
+          inSubTable: true,
+        });
+      });
+    } else {
+      result.push({
+        ...field,
+        inSubTable: false,
+      });
+    }
+  });
+
   return result;
 }

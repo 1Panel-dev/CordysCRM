@@ -78,7 +78,7 @@
         </div>
         <div class="field-item">
           <div class="field-item-title"> {{ t('crmFormDesign.formulaFunction') }} </div>
-          <div class="field-item-content max-h-[428px]">
+          <div class="field-item-content">
             <n-scrollbar>
               <div v-for="fun of allFunctionSource" class="field-fun-item" @mousedown.prevent="insertField(fun)">
                 <div
@@ -511,6 +511,7 @@
       case FieldTypeEnum.DATA_SOURCE:
       case FieldTypeEnum.DATA_SOURCE_MULTIPLE:
       case FieldTypeEnum.SERIAL_NUMBER:
+      case FieldTypeEnum.SELECT:
         return {
           text: item.name,
           color: TEXT_COLOR,

@@ -3,54 +3,12 @@ import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { FormCreateField } from '@/components/business/crm-form-create/types';
 import { safeParseFormula } from '@/components/business/crm-formula-editor/utils';
 
-import { getFormulaDataSourceDisplayValue, hydrateIRNumberType } from '../../utils';
+import { flatAllFields, getFormulaDataSourceDisplayValue, hydrateIRNumberType } from '../../utils';
 import registerBuiltinFunctions from '../functions';
 import { FieldTypeMap, FormulaExecutorContext, FormulaExecutorResult, ValueType } from '../types';
 import evaluateIR from './evaluator';
 
 registerBuiltinFunctions();
-
-export function flatAllFields(
-  fields: FormCreateField[],
-  options?: {
-    isSubTableRender?: boolean;
-  }
-) {
-  const result: (FormCreateField & {
-    parentId?: string;
-    parentName?: string;
-    inSubTable?: boolean;
-  })[] = [];
-
-  const resolveFieldId = (e: FormCreateField, inSubTable?: boolean) => {
-    if ((e as any).resourceFieldId) {
-      return e.id;
-    }
-    return inSubTable ? e.businessKey || e.id : e.id;
-  };
-
-  fields?.forEach((field) => {
-    if (field.subFields) {
-      field.subFields.forEach((sub) => {
-        result.push({
-          ...sub,
-          name: `${field.name}.${sub.name}`,
-          id: options?.isSubTableRender ? resolveFieldId(sub, true) : `${field.id}.${resolveFieldId(sub, true)}`,
-          parentId: field.id,
-          parentName: field.name,
-          inSubTable: true,
-        });
-      });
-    } else {
-      result.push({
-        ...field,
-        inSubTable: false,
-      });
-    }
-  });
-
-  return result;
-}
 
 export function getValueType(field: FormCreateField): ValueType {
   switch (field.type) {
@@ -62,6 +20,7 @@ export function getValueType(field: FormCreateField): ValueType {
     case FieldTypeEnum.DATA_SOURCE:
     case FieldTypeEnum.DATA_SOURCE_MULTIPLE:
     case FieldTypeEnum.SERIAL_NUMBER:
+    case FieldTypeEnum.SELECT:
       return 'string';
     case FieldTypeEnum.RADIO:
     case FieldTypeEnum.CHECKBOX:
