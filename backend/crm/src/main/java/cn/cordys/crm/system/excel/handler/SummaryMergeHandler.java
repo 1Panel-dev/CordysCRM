@@ -30,7 +30,11 @@ public record SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeC
 				for (int r = start; r <= end; r++) {
 					Cell cell = sheet.getRow(r).getCell(colIndex);
 					if (cell != null) {
-						String val = String.valueOf(cell.getNumericCellValue());
+						String val = switch (cell.getCellType()) {
+							case STRING -> cell.getStringCellValue();
+							case NUMERIC -> String.valueOf(cell.getNumericCellValue());
+							default -> null;
+						};
 						if (StringUtils.isNotEmpty(val) && NumberUtils.isParsable(val)) {
 							total = total.add(new BigDecimal(val));
 						}
