@@ -347,23 +347,24 @@
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(option.name) }),
-      content: !isNotAllow ? t('org.deleteExistUserDepartment') : t('org.deleteDepartmentContent'),
-      positiveText: !isNotAllow ? t('org.ok') : t('common.confirm'),
-      negativeText: !isNotAllow ? '' : t('common.cancel'),
+      content: isNotAllow ? t('org.deleteExistUserDepartment') : t('org.deleteDepartmentContent'),
+      positiveText: isNotAllow ? t('org.ok') : t('common.confirm'),
+      negativeText: isNotAllow ? '' : t('common.cancel'),
       positiveButtonProps: {
-        type: !isNotAllow ? 'primary' : 'error',
+        type: isNotAllow ? 'primary' : 'error',
         size: 'medium',
       },
       onPositiveClick: async () => {
         try {
-          if (isNotAllow) {
+          if (!isNotAllow) {
             await deleteDepartment(offspringIds);
             Message.success(t('common.deleteSuccess'));
             initTree(true);
           }
-        } catch (error) {
+        } catch (error: any) {
           // eslint-disable-next-line no-console
           console.log(error);
+          Message.error(error.message || t('common.deleteFailed'));
         }
       },
     });
