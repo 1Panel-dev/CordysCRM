@@ -8,42 +8,56 @@ import {
 } from '@/components/business/crm-formula/formula-runtime/types';
 
 import { functionRegistry } from '../function-registry';
-import { excelCompare } from '../runtime/excel-runtime';
+import { excelCompare, toNumber } from '../runtime/excel-runtime';
 
-// Date.UTC(1899, 11, 30)：计算 1899 年 12 月 30 日 00:00:00 UTC 的时间戳（毫秒）
-// 注意：月份从 0 开始计数，所以 11 代表 12 月
-// _UTC 后缀表示这是基于 UTC 时间的时间戳
+/**
+ * Excel 日期计算的基准时间戳
+ *
+ * Excel 使用 1899-12-30 作为日期序列号的起点（序列号 0）
+ * 这是因为 Lotus 1-2-3 中的历史遗留问题，Excel 为保持兼容性沿用了这个基准
+ *
+ * 用途：用于在 Excel 日期序列号与 JavaScript Date 对象之间进行转换
+ * 例如：Excel 序列号 44197 对应 2021-01-01
+ */
 const DAY_MS = 24 * 60 * 60 * 1000;
-const EXCEL_EPOCH_UTC = Date.UTC(1899, 11, 30);
+const EXCEL_EPOCH = new Date(1899, 11, 30).getTime();
 
 function dateToSerial(date: Date | string): number {
   let t: number;
 
   if (date instanceof Date) {
-    t = date.getTime();
+    t = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds()
+    ).getTime();
   } else {
-    // YYYY-MM-DD / YYYY-MM-DD HH:mm:ss
     const m = date.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
     if (!m) return 0;
 
     const [, y, mo, d, h = '0', mi = '0', s = '0'] = m;
-    // 月份在 Date 构造函数里是从 0 开始的，所以要减 1
     const localDate = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s));
 
     t = localDate.getTime();
   }
 
-  return (t - EXCEL_EPOCH_UTC) / DAY_MS;
+  return (t - EXCEL_EPOCH) / DAY_MS;
 }
 
 function parseDateWithPrecision(raw: string | number | Date): number {
-  //  number 在 date 语义里，只允许是 Excel serial
   if (typeof raw === 'number') {
-    // 明显是毫秒时间戳
+    // 毫秒时间戳
     if (raw > 1e10) {
-      return (raw - EXCEL_EPOCH_UTC) / DAY_MS;
+      const d = new Date(raw);
+
+      // 如果你的日期字段是“纯日期”，建议只保留年月日
+      return dateToSerial(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
     }
-    // 否则认为是 serial
+
+    // 否则认为是 Excel serial
     return raw;
   }
 
@@ -52,12 +66,15 @@ function parseDateWithPrecision(raw: string | number | Date): number {
   }
 
   if (typeof raw === 'string') {
-    // YYYY-MM
     if (/^\d{4}-\d{2}$/.test(raw)) {
       return dateToSerial(`${raw}-01`);
     }
-    // YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return dateToSerial(raw);
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2})?$/.test(raw)) {
       return dateToSerial(raw);
     }
   }
@@ -71,6 +88,7 @@ export function resolveFieldValue(rawVal: any, node: IRNode, ctx?: EvaluateConte
   if (Array.isArray(rawVal)) {
     return rawVal;
   }
+
   const meta = node.type === 'field' ? ctx?.getFieldMeta?.(node.fieldId) : undefined;
 
   const valueType = meta?.valueType;
@@ -151,12 +169,33 @@ export default function evaluateIR(node: IRNode, ctx: EvaluateContext): any {
       switch (node.operator) {
         case '+':
           return left + right;
-        case '-':
-          return left - right;
-        case '*':
-          return left * right;
-        case '/':
-          return right === 0 ? 0 : left / right;
+        case '-': {
+          const l = toNumber(left, ctx.warn);
+          const r = toNumber(right, ctx.warn);
+          if (Number.isNaN(l) || Number.isNaN(r)) {
+            ctx.warn?.(`[formula] invalid subtraction operands: ${left} - ${right}`);
+            return 0;
+          }
+          return l - r;
+        }
+        case '*': {
+          const l = toNumber(left, ctx.warn);
+          const r = toNumber(right, ctx.warn);
+          if (Number.isNaN(l) || Number.isNaN(r)) {
+            ctx.warn?.(`[formula] invalid multiplication operands: ${left} * ${right}`);
+            return 0;
+          }
+          return l * r;
+        }
+        case '/': {
+          const l = toNumber(left, ctx.warn);
+          const r = toNumber(right, ctx.warn);
+          if (Number.isNaN(l) || Number.isNaN(r)) {
+            ctx.warn?.(`[formula] invalid division operands: ${left} / ${right}`);
+            return 0;
+          }
+          return r === 0 ? 0 : l / r;
+        }
         default:
           ctx.warn?.(`Unknown operator ${(node as IRBinaryNode)?.operator}`);
           return null;

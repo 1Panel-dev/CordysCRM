@@ -1,5 +1,5 @@
 <template>
-  <n-tooltip trigger="hover" placement="top" :disabled="currentComponent === singleText">
+  <n-tooltip trigger="hover" placement="top">
     <template #trigger>
       <component
         :is="currentComponent"
