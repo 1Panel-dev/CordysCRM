@@ -104,13 +104,13 @@ public class ModuleFieldExtService {
 	 * @param internalKey 字段Key
 	 * @return 字段规则集合
 	 */
-	public List<String> getSerialFieldRulesByKey(String formKey, String currentOrg, String internalKey) {
+	public List<String> getSerialFieldRulesByKey(String formKey, String currentOrg, String internalKey, String formulaPrefix) {
 		ModuleFieldBlob blob = getFieldBlobByKey(formKey, currentOrg, internalKey);
 		if (blob == null) {
 			return new ArrayList<>();
 		}
 		SerialNumberField serialNumberField = JSON.parseObject(blob.getProp(), SerialNumberField.class);
-		return serialNumberField.getSerialNumberRules();
+		return serialNumberField.getSerialNumberRules(formulaPrefix);
 	}
 
 	/**

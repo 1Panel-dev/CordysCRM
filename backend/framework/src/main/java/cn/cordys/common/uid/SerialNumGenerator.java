@@ -40,7 +40,7 @@ public class SerialNumGenerator {
 
         // 强制使用年月作为流水号 key 的日期部分
         String date = new SimpleDateFormat(r.datePattern()).format(new Date());
-        String key = "%s:%s:%s:%s".formatted(PREFIX, orgId, formKey, date);
+        String key = "%s:%s:%s:%s:%s".formatted(PREFIX, orgId, formKey, date, r.p1);
         try {
             // Redis 自增序列
             long seq = Objects.requireNonNull(redis.opsForValue().increment(key), "Redis increment 返回 null");

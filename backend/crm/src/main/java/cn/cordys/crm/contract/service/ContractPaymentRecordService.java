@@ -130,7 +130,7 @@ public class ContractPaymentRecordService {
 		if (StringUtils.isEmpty(paymentRecord.getOwner())) {
 			paymentRecord.setOwner(currentUser);
 		}
-		List<String> rules = moduleFieldExtService.getSerialFieldRulesByKey(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg, BusinessModuleField.CONTRACT_PAYMENT_RECORD_NO.getKey());
+		List<String> rules = moduleFieldExtService.getSerialFieldRulesByKey(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg, BusinessModuleField.CONTRACT_PAYMENT_RECORD_NO.getKey(), request.getNo());
 		if (CollectionUtils.isNotEmpty(rules)) {
 			paymentRecord.setNo(serialNumGenerator.generateByRules(rules, currentOrg, FormKey.CONTRACT_PAYMENT_RECORD.getKey()));
 		}
