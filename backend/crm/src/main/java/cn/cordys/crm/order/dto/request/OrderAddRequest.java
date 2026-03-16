@@ -41,4 +41,7 @@ public class OrderAddRequest {
 
     @Schema(description = "表单配置")
     private ModuleFormConfigDTO moduleFormConfigDTO;
+
+	@Schema(description = "编号")
+	private String number;
 }

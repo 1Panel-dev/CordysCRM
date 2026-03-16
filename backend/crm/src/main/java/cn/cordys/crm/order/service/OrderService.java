@@ -116,7 +116,7 @@ public class OrderService {
         Order order = new Order();
         BeanUtils.copyBean(order, request);
         order.setId(IDGenerator.nextStr());
-        order.setNumber(createOrderNumber(moduleFormConfigDTO, orgId));
+        order.setNumber(createOrderNumber(moduleFormConfigDTO, orgId, request.getNumber()));
         order.setStage(stageConfigList.getFirst().getId());
         order.setOrganizationId(orgId);
         order.setCreateTime(System.currentTimeMillis());
@@ -142,14 +142,12 @@ public class OrderService {
     }
 
 
-    private String createOrderNumber(ModuleFormConfigDTO moduleFormConfigDTO, String orgId) {
+    private String createOrderNumber(ModuleFormConfigDTO moduleFormConfigDTO, String orgId, String prefix) {
         BaseField numberField = moduleFormConfigDTO.getFields().stream()
                 .filter(field -> field.isSerialNumber() && StringUtils.isNotEmpty(field.getBusinessKey())).findFirst().orElse(null);
 
         if (numberField != null) {
-            BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
-            fieldValue.setFieldId(numberField.getId());
-            return serialNumGenerator.generateByRules(((SerialNumberField) numberField).getSerialNumberRules(), orgId, FormKey.ORDER.getKey());
+            return serialNumGenerator.generateByRules(((SerialNumberField) numberField).getSerialNumberRules(prefix), orgId, FormKey.ORDER.getKey());
         }
         return null;
     }

@@ -48,4 +48,7 @@ public class ContractAddRequest {
 
     @Schema(description = "子产品信息")
     private List<Map<String, Object>> products;
+
+	@Schema(description = "编号")
+	private String number;
 }

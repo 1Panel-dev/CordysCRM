@@ -25,6 +25,9 @@ public class ContractPaymentRecordAddRequest {
 	@Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String owner;
 
+	@Schema(description = "回款编号")
+	private String no;
+
 	@NotBlank
 	@Size(max = 32)
 	@Schema(description = "合同ID", requiredMode = Schema.RequiredMode.REQUIRED)

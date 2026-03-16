@@ -140,7 +140,7 @@ public class ContractService {
         contract.setName(request.getName());
         contract.setCustomerId(request.getCustomerId());
         contract.setOwner(request.getOwner());
-        contract.setNumber(createContractNumber(moduleFormConfigDTO, orgId));
+        contract.setNumber(createContractNumber(moduleFormConfigDTO, orgId, request.getNumber()));
         contract.setStage(ContractStage.PENDING_SIGNING.name());
         contract.setOrganizationId(orgId);
         contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
@@ -174,15 +174,12 @@ public class ContractService {
         return contract;
     }
 
-
-    private String createContractNumber(ModuleFormConfigDTO moduleFormConfigDTO, String orgId) {
+    private String createContractNumber(ModuleFormConfigDTO moduleFormConfigDTO, String orgId, String prefix) {
         BaseField numberField = moduleFormConfigDTO.getFields().stream()
                 .filter(field -> field.isSerialNumber() && StringUtils.isNotEmpty(field.getBusinessKey())).findFirst().orElse(null);
 
-        if (numberField != null) {
-            BaseModuleFieldValue fieldValue = new BaseModuleFieldValue();
-            fieldValue.setFieldId(numberField.getId());
-            return serialNumGenerator.generateByRules(((SerialNumberField) numberField).getSerialNumberRules(), orgId, FormKey.CONTRACT.getKey());
+        if (numberField instanceof SerialNumberField serialField) {
+			return serialNumGenerator.generateByRules(serialField.getSerialNumberRules(prefix), orgId, FormKey.CONTRACT.getKey());
         }
         return null;
     }
