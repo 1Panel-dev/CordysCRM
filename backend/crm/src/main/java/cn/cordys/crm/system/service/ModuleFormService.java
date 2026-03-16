@@ -1741,7 +1741,7 @@ public class ModuleFormService {
      * @param sourceVal   来源值
      * @return 值
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked"})
     public Object resolveTargetPutVal(BaseField targetField, TransformSourceApplyDTO sourceVal) {
         if (targetField.multiple() && sourceVal.getActualVal() instanceof String) {
             // 兼容处理: 单值映射多值的情况
@@ -1756,17 +1756,37 @@ public class ModuleFormService {
             }
             return displayVal instanceof List ? String.join(",", (List<String>) displayVal) : displayVal.toString();
         }
-        if (targetField instanceof InputMultipleField) {
-            // 兼容处理: 多值输入直接取展示值即可.
-            TextMultipleResolver textMultipleResolver = new TextMultipleResolver();
-            return textMultipleResolver.getCorrectFormatInput(sourceVal.getDisplayVal() instanceof List ?
-                    (List<String>) sourceVal.getDisplayVal() : List.of(sourceVal.getDisplayVal().toString().split(",")));
-        }
-        if (targetField instanceof HasOption targetFieldWithOption) {
-            // 兼容处理: 选项文本映射
-            return text2Val(targetFieldWithOption.getOptions(), sourceVal.getDisplayVal());
-        }
-        return sourceVal.getActualVal();
+		switch (targetField) {
+			case InputMultipleField inputMultipleField -> {
+				// 兼容处理: 多值输入直接取展示值即可.
+				TextMultipleResolver textMultipleResolver = new TextMultipleResolver();
+				return textMultipleResolver.getCorrectFormatInput(sourceVal.getDisplayVal() instanceof List ?
+						(List<String>) sourceVal.getDisplayVal() : List.of(sourceVal.getDisplayVal().toString().split(",")));
+			}
+			case HasOption targetFieldWithOption -> {
+				// 兼容处理: 选项文本映射
+				return text2Val(targetFieldWithOption.getOptions(), sourceVal.getDisplayVal());
+				// 兼容处理: 选项文本映射
+			}
+			case InputNumberField inputNumberField -> {
+				String actualVal = sourceVal.getActualVal().toString();
+				if (StringUtils.isEmpty(actualVal)) {
+					return null;
+				}
+				if (actualVal.contains("%") || actualVal.contains(",")) {
+					actualVal = actualVal.replace(",", StringUtils.EMPTY).replace("%", StringUtils.EMPTY);
+				}
+				try {
+					return new BigDecimal(actualVal);
+				} catch (NumberFormatException e) {
+					log.error("Invalid source value: {}", actualVal, e);
+					return null;
+				}
+			}
+			default -> {
+			}
+		}
+		return sourceVal.getActualVal();
     }
 
     /**
