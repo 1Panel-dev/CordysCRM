@@ -46,3 +46,45 @@ export function isTextNumberDateNode(node: ASTNode): boolean {
 export function isTextNumberDateOrLogicalNode(node: ASTNode): boolean {
   return isTextNumberDateNode(node) || isLogicalNode(node);
 }
+
+/**
+ * AND 参数允许：
+ * - 逻辑表达式 / 布尔字面量
+ * - 数字字面量
+ * - 数字字段
+ * - 日期字段（Excel 里日期本质是 number serial）
+ * - 返回 number/date 的函数
+ *
+ * AND 参数不允许：
+ * - 文本字面量
+ * - 文本字段
+ * - TEXT / CONCATENATE 等文本函数
+ */
+export function isLogicalLikeNodeForAnd(node: ASTNode): boolean {
+  if (!node) return false;
+
+  // 原生逻辑值
+  if (isLogicalNode(node)) return true;
+
+  // number literal 允许
+  if (node.type === 'literal') {
+    return node.valueType === 'number';
+  }
+
+  // 数字字段 / 日期字段允许
+  if (node.type === 'field') {
+    return [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.DATE_TIME].includes(node.fieldType as any);
+  }
+
+  // 返回数值 / 日期的函数允许
+  if (node.type === 'function') {
+    return ['SUM', 'DAYS', 'NOW', 'TODAY'].includes(node.name);
+  }
+
+  // 二元数值表达式也允许，例如：数字1 + 数字2
+  if (node.type === 'binary') {
+    return ['+', '-', '*', '/'].includes(node.operator);
+  }
+
+  return false;
+}

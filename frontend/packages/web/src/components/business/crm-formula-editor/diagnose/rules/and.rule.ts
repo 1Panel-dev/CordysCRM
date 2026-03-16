@@ -2,7 +2,7 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { FormulaErrorCode } from '../../config';
 import { FormulaDiagnostic, FormulaFunctionRule } from '../../types';
-import { isLogicalNode } from './rule-utils';
+import { isLogicalLikeNodeForAnd } from './rule-utils';
 
 const { t } = useI18n();
 
@@ -26,9 +26,9 @@ export const AND_RULE: FormulaFunctionRule = {
       return diagnostics;
     }
 
-    // 2. 所有参数必须为逻辑值
+    // 允许逻辑值，可转逻辑的 number/date 节点
     args.forEach((arg, index) => {
-      if (!isLogicalNode(arg)) {
+      if (!isLogicalLikeNodeForAnd(arg)) {
         diagnostics.push({
           type: 'error',
           code: FormulaErrorCode.INVALID_FUNCTION_CALL,

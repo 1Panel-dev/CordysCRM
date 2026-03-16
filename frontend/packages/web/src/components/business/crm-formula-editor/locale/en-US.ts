@@ -33,4 +33,8 @@ export default {
     'Commas cannot be used between fields, please use operators',
   'formulaEditor.diagnostics.invalidArgOfCONCATENATE':
     'The type of the {index} th parameter is incorrect. It must be of text type',
+  'formulaEditor.diagnostics.invalidRightOperandTypeOfBinary':
+    'Operator {operator} right operand type error, must be of numeric type',
+  'formulaEditor.diagnostics.invalidLeftOperandTypeOfBinary':
+    'Operator {operator} left operand type error, must be of numeric type',
 };

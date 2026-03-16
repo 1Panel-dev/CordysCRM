@@ -1,5 +1,6 @@
 import { ASTNode, FormulaDiagnostic, Token } from '../types';
 import diagnoseArgs from './diagnoseArgs';
+import diagnoseBinaryOperandType from './diagnoseBinaryOperandType';
 import diagnoseIncompleteExpression from './diagnoseIncompleteExpression';
 import diagnoseTokens from './diagnoseTokens';
 import FUNCTION_RULES from './rules';
@@ -40,7 +41,10 @@ export default function diagnoseFormula(tokens: Token[], ast: ASTNode[]): Formul
   /**  AST 层诊断 */
   ast.forEach((root) => {
     walkAST(root, (node) => {
+      // 表达式诊断
       diagnostics.push(...diagnoseIncompleteExpression(node));
+      // 二元运算符诊断
+      diagnostics.push(...diagnoseBinaryOperandType(node));
       if (node.type !== 'function') return;
 
       /**  通用参数结构诊断（逗号、空参） */

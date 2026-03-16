@@ -41,4 +41,6 @@ export default {
   'formulaEditor.diagnostics.argCountError': '参数个数错误，至少 1 个参数',
   'formulaEditor.diagnostics.invalidConditionTypeOfAND': '参数必须为逻辑值',
   'formulaEditor.diagnostics.invalidArgTypeOfCONCATENATE': '参数类型限制：文本、数字、日期',
+  'formulaEditor.diagnostics.invalidRightOperandTypeOfBinary': '运算符右侧参数类型错误，必须为数值表达式',
+  'formulaEditor.diagnostics.invalidLeftOperandTypeOfBinary': '运算符左侧参数类型错误，必须为数值表达式',
 };

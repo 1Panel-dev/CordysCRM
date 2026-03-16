@@ -24,7 +24,7 @@
     ></div>
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
 
-    <n-tooltip trigger="hover" placement="top" :disabled="props.fieldConfig.defaultValueType === 'custom'">
+    <n-tooltip trigger="hover" placement="top" :disabled="props.fieldConfig.defaultValueType !== 'formula'">
       <template #trigger>
         <n-input
           v-model:value="value"
@@ -48,6 +48,7 @@
   import { NDivider, NFormItem, NInput, NTooltip } from 'naive-ui';
   import { debounce } from 'lodash-es';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
