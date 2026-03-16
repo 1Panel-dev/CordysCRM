@@ -17,6 +17,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.resolver.field.TextMultipleResolver;
+import cn.cordys.common.resolver.field.TextResolver;
 import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.FieldSourceServiceProvider;
 import cn.cordys.common.uid.IDGenerator;
@@ -1754,7 +1755,17 @@ public class ModuleFormService {
             if (displayVal == null) {
                 return null;
             }
-            return displayVal instanceof List ? String.join(",", (List<String>) displayVal) : displayVal.toString();
+			String displayStr;
+			if (displayVal instanceof List) {
+				displayStr = String.join(",", (List<String>) displayVal);
+			} else {
+				displayStr = displayVal.toString();
+			}
+			if (targetField instanceof InputField) {
+				return new TextResolver().getCorrectInputString(displayStr);
+			} else {
+				return displayStr;
+			}
         }
 		switch (targetField) {
 			case InputMultipleField inputMultipleField -> {
