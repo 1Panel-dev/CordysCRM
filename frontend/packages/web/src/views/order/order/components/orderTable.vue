@@ -57,6 +57,7 @@
     :initial-source-name="initialSourceName"
     :link-form-key="FormDesignKeyEnum.CONTRACT"
     :link-form-info="linkFormInfo"
+    :link-scenario="FormLinkScenarioEnum.CONTRACT_TO_ORDER"
     @saved="() => searchData()"
   />
 </template>
@@ -65,7 +66,7 @@
   import { useRoute } from 'vue-router';
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { OpportunityStageConfig } from '@lib/shared/models/opportunity';

@@ -111,4 +111,5 @@ export enum FormLinkScenarioEnum {
   PLAN_TO_RECORD = 'PLAN_TO_RECORD', // 跟进计划转跟进记录
   CONTRACT_TO_INVOICE = 'CONTRACT_TO_INVOICE', // 合同开票
   CLUE_TO_CONTACT = 'CLUE_TO_CONTACT', // 线索转联系人
+  CONTRACT_TO_ORDER = 'CONTRACT_TO_ORDER', // 合同创建订单
 }
