@@ -65,7 +65,7 @@
           :sourceId="props.sourceId"
           :sourceName="title"
           is-contract-tab
-          :readonly="getReadonlyOrder"
+          :readonly="getReadonlyInvoice"
           @open-customer-drawer="emit('showCustomerDrawer', $event)"
         />
       </CrmCard>
@@ -444,11 +444,6 @@
     }
     return detailInfo.value?.stage === ContractStatusEnum.VOID;
   });
-
-  // TODO lmy 啥情况下不显示操作
-  const getReadonlyOrder = computed(
-    () => detailInfo.value?.stage === ContractStatusEnum.VOID || detailInfo.value?.stage === ContractStatusEnum.ARCHIVED
-  );
 
   async function handleButtonClick(actionKey: string) {
     switch (actionKey) {
