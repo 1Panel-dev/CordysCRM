@@ -365,7 +365,7 @@ public class OrganizationUserControllerTests extends BaseTest {
         //        姓名  userName    like查询
         FilterCondition likeCondition = new FilterCondition();
         likeCondition.setOperator(FilterCondition.CombineConditionOperator.CONTAINS.name());
-        likeCondition.setName("name");
+        likeCondition.setName("userName");
         likeCondition.setValue("combineTest_");
         filterConditionList.add(likeCondition);
         combineSearch.setConditions(filterConditionList);
@@ -381,9 +381,9 @@ public class OrganizationUserControllerTests extends BaseTest {
         //        性别  gender
         filterConditionList.clear();
         FilterCondition booleanCondition = new FilterCondition();
-        booleanCondition.setOperator(FilterCondition.CombineConditionOperator.EQUALS.name());
+        booleanCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
         booleanCondition.setName("gender");
-        booleanCondition.setValue(false);
+        booleanCondition.setValue("male");
         filterConditionList.add(booleanCondition);
         request.getCombineSearch().setConditions(filterConditionList);
         pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
@@ -397,7 +397,7 @@ public class OrganizationUserControllerTests extends BaseTest {
         filterConditionList.clear();
         booleanCondition = new FilterCondition();
         booleanCondition.setOperator(FilterCondition.CombineConditionOperator.EQUALS.name());
-        booleanCondition.setName("enable");
+        booleanCondition.setName("status");
         booleanCondition.setValue(false);
         filterConditionList.add(booleanCondition);
         request.getCombineSearch().setConditions(filterConditionList);
@@ -408,11 +408,11 @@ public class OrganizationUserControllerTests extends BaseTest {
                 Pager.class);
         Assertions.assertEquals(4, result.getTotal());
 
-        //      手机号 phone
+        //      手机号 phoneNumber
         filterConditionList.clear();
         likeCondition = new FilterCondition();
         likeCondition.setOperator(FilterCondition.CombineConditionOperator.CONTAINS.name());
-        likeCondition.setName("phone");
+        likeCondition.setName("phoneNumber");
         likeCondition.setValue("1858888000");
         filterConditionList.add(likeCondition);
         request.getCombineSearch().setConditions(filterConditionList);
@@ -422,7 +422,6 @@ public class OrganizationUserControllerTests extends BaseTest {
                         JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
-
         //      邮箱  email
         filterConditionList.clear();
         likeCondition = new FilterCondition();
@@ -501,7 +500,7 @@ public class OrganizationUserControllerTests extends BaseTest {
         filterConditionList.clear();
         likeCondition = new FilterCondition();
         likeCondition.setOperator(FilterCondition.CombineConditionOperator.CONTAINS.name());
-        likeCondition.setName("position");
+        likeCondition.setName("positionId");
         likeCondition.setValue("测试");
         filterConditionList.add(likeCondition);
         request.getCombineSearch().setConditions(filterConditionList);

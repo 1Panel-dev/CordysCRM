@@ -139,11 +139,27 @@
 
     <sql id="condition">
         <choose>
-            <when test="condition.name == 'name'">
+            <when test="condition.name == 'userName'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="su.name"/>
                 </include>
+            </when>
+            <when test="condition.name == 'status'">
+                <if test="condition.value == true">
+                    sou.enable is true
+                </if>
+                <if test="condition.value == false">
+                    sou.enable is false
+                </if>
+            </when>
+            <when test="condition.name == 'gender'">
+                <if test="condition.value == 'female'">
+                    su.gender is true
+                </if>
+                <if test="condition.value == 'male'">
+                    su.gender is false
+                </if>
             </when>
             <when test="condition.name == 'email'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
@@ -151,7 +167,7 @@
                     <property name="column" value="su.email"/>
                 </include>
             </when>
-            <when test="condition.name == 'phone'">
+            <when test="condition.name == 'phoneNumber'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="su.phone"/>
@@ -217,7 +233,7 @@
                     <property name="column" value="sou.work_city"/>
                 </include>
             </when>
-            <when test="condition.name == 'position'">
+            <when test="condition.name == 'positionId'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="sou.position"/>
