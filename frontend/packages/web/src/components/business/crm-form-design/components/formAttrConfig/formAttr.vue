@@ -138,6 +138,7 @@
           FormDesignKeyEnum.BUSINESS,
           FormDesignKeyEnum.INVOICE,
           FormDesignKeyEnum.CONTACT,
+          FormDesignKeyEnum.ORDER,
         ].includes(props.formKey)
       "
       class="crm-form-design-config-item"
@@ -210,6 +211,15 @@
         {
           label: t('crmFormDesign.clue'),
           value: FormDesignKeyEnum.CLUE,
+          linkClearPop: false,
+        },
+      ];
+    }
+    if (props.formKey === FormDesignKeyEnum.ORDER) {
+      return [
+        {
+          label: t('crmFormDesign.contract'),
+          value: FormDesignKeyEnum.CONTRACT,
           linkClearPop: false,
         },
       ];

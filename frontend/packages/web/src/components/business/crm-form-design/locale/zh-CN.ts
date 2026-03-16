@@ -208,6 +208,7 @@ export default {
   'crmFormDesign.PLAN_TO_RECORD': '计划转记录',
   'crmFormDesign.CONTRACT_TO_INVOICE': '新增发票',
   'crmFormDesign.CLUE_TO_CONTACT': '线索转联系人',
+  'crmFormDesign.CONTRACT_TO_ORDER': '新建订单',
   'crmFormDesign.tip.CLUE_TO_CUSTOMER': '线索转换客户时，将线索的表单字段内容填充到客户表单字段',
   'crmFormDesign.tip.CLUE_TO_OPPORTUNITY': '线索转商机时，将线索表单字段填充到商机表单字段',
   'crmFormDesign.tip.CUSTOMER_TO_OPPORTUNITY': '在客户详情创建商机时，将客户表单字段填充到商机表单字段',
@@ -218,6 +219,7 @@ export default {
   'crmFormDesign.tip.CONTRACT_TO_INVOICE': '在合同详情创建发票时，将合同表单字段填充到发票表单字段',
   'crmFormDesign.tip.CLUE_TO_CONTACT':
     '线索转换联系人时，将线索的表单字段内容填充到联系人表单字段。注：联系人表单的客户名称字段由系统逻辑填充，请勿配置！',
+  'crmFormDesign.tip.CONTRACT_TO_ORDER': '在合同详情创建订单时，将合同表单字段填充到订单表单',
   'crmFormDesign.productTable': '产品表格',
   'crmFormDesign.quotationTable': '报价表格',
   'crmFormDesign.sum': '汇总',
