@@ -342,8 +342,8 @@ public class OrganizationUserControllerTests extends BaseTest {
         入职日期    onboardingDate  （动态范围查询）
         创建时间    createTime      （动态范围查询）
         更新时间    updateTime      （动态范围查询）
-        工作城市    workCity        (查询方式待商榷，暂不查询)
-        入职日期    onboardingDate  (查询方式待商榷，暂不查询)
+        工作城市    workCity        (查询方式待商榷)
+        入职日期    onboardingDate  (查询方式待商榷)
          */
 
         UserPageRequest request = new UserPageRequest();
@@ -616,6 +616,101 @@ public class OrganizationUserControllerTests extends BaseTest {
                         JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
                 Pager.class);
         Assertions.assertEquals(10, result.getTotal());
+
+        // 表头过滤
+        request.getCombineSearch().setConditions(new ArrayList<>());
+
+        // 工作城市
+        filterConditionList.clear();
+        inCondition = new FilterCondition();
+        inCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
+        inCondition.setName("workCity");
+        inCondition.setValue("110101");
+        filterConditionList.add(betweenCondition);
+        request.setFilters(filterConditionList);
+
+        pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
+        result = JSON.parseObject(
+                JSON.toJSONString(
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                Pager.class);
+        Assertions.assertEquals(10, result.getTotal());
+
+        // 创建时间
+        filterConditionList.clear();
+        betweenCondition = new FilterCondition();
+        betweenCondition.setOperator(FilterCondition.CombineConditionOperator.BETWEEN.name());
+        betweenCondition.setName("createTime");
+        betweenCondition.setValue(List.of(startTestTime, System.currentTimeMillis()));
+        filterConditionList.add(betweenCondition);
+        request.setFilters(filterConditionList);
+        pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
+        result = JSON.parseObject(
+                JSON.toJSONString(
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                Pager.class);
+        Assertions.assertTrue(result.getTotal() >= 20);
+
+        // 创建人
+        filterConditionList.clear();
+        inCondition = new FilterCondition();
+        inCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
+        inCondition.setName("createUser");
+        inCondition.setValue(List.of("admin"));
+        filterConditionList.add(inCondition);
+        request.setFilters(filterConditionList);
+        pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
+        result = JSON.parseObject(
+                JSON.toJSONString(
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                Pager.class);
+        Assertions.assertTrue(result.getTotal() > 20);
+
+        // 更新时间
+        filterConditionList.clear();
+        betweenCondition = new FilterCondition();
+        betweenCondition.setOperator(FilterCondition.CombineConditionOperator.BETWEEN.name());
+        betweenCondition.setName("updateTime");
+        betweenCondition.setValue(List.of(startTestTime, System.currentTimeMillis()));
+        filterConditionList.add(betweenCondition);
+        request.setFilters(filterConditionList);
+        pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
+        result = JSON.parseObject(
+                JSON.toJSONString(
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                Pager.class);
+        Assertions.assertTrue(result.getTotal() >= 20);
+
+        // 更新人
+        filterConditionList.clear();
+        inCondition = new FilterCondition();
+        inCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
+        inCondition.setName("updateUser");
+        inCondition.setValue(List.of("admin"));
+        filterConditionList.add(inCondition);
+        request.setFilters(filterConditionList);
+        pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
+        result = JSON.parseObject(
+                JSON.toJSONString(
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                Pager.class);
+        Assertions.assertTrue(result.getTotal() > 20);
+
+        // 入职日期
+        filterConditionList.clear();
+        betweenCondition = new FilterCondition();
+        betweenCondition.setOperator(FilterCondition.CombineConditionOperator.BETWEEN.name());
+        betweenCondition.setName("onboardingDate");
+        betweenCondition.setValue(List.of(startTestTime, System.currentTimeMillis()));
+        filterConditionList.add(betweenCondition);
+        request.setFilters(filterConditionList);
+        pageResult = this.requestPostWithOkAndReturn(USER_LIST, request);
+        result = JSON.parseObject(
+                JSON.toJSONString(
+                        JSON.parseObject(pageResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
+                Pager.class);
+        Assertions.assertEquals(10, result.getTotal());
+
     }
 
 }
