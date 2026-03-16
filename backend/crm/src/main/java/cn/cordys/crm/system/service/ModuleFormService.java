@@ -62,7 +62,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -1760,8 +1759,8 @@ public class ModuleFormService {
         if (targetField instanceof InputMultipleField) {
             // 兼容处理: 多值输入直接取展示值即可.
             TextMultipleResolver textMultipleResolver = new TextMultipleResolver();
-            return new ArrayList<>(textMultipleResolver.getCorrectFormatInput(sourceVal.getDisplayVal() instanceof List ?
-                    (List<String>) sourceVal.getDisplayVal() : List.of(sourceVal.getDisplayVal().toString().split(","))));
+            return textMultipleResolver.getCorrectFormatInput(sourceVal.getDisplayVal() instanceof List ?
+                    (List<String>) sourceVal.getDisplayVal() : List.of(sourceVal.getDisplayVal().toString().split(",")));
         }
         if (targetField instanceof HasOption targetFieldWithOption) {
             // 兼容处理: 选项文本映射
