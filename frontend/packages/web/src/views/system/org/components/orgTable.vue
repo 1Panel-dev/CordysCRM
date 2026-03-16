@@ -6,6 +6,7 @@
       v-bind="propsRes"
       class="crm-organization-table"
       :action-config="actionConfig"
+      :not-show-table-filter="isAdvancedSearchMode"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -916,7 +917,7 @@
     {
       title: t('org.userName'),
       dataIndex: 'userName',
-      type: FieldTypeEnum.USER_SELECT,
+      type: FieldTypeEnum.INPUT,
     },
     {
       title: t('common.status'),
@@ -963,11 +964,6 @@
       type: FieldTypeEnum.INPUT,
     },
     {
-      title: t('org.department'),
-      dataIndex: 'departmentIds',
-      type: FieldTypeEnum.DEPARTMENT,
-    },
-    {
       title: t('org.directSuperior'),
       dataIndex: 'supervisorId',
       type: FieldTypeEnum.USER_SELECT,
@@ -985,7 +981,7 @@
     {
       title: t('org.employeeType'),
       dataIndex: 'employeeType',
-      type: FieldTypeEnum.SELECT,
+      type: FieldTypeEnum.SELECT_MULTIPLE,
       selectProps: {
         options: [
           {
