@@ -1918,6 +1918,22 @@ public class ModuleFormService {
     }
 
     /**
+     * 初始化订单表单联动场景
+     */
+    @SuppressWarnings("unchecked")
+    public void initOrderFormScenarioProp() {
+        LambdaQueryWrapper<ModuleForm> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ModuleForm::getFormKey, FormKey.ORDER.getKey());
+        ModuleForm orderForm = moduleFormMapper.selectListByLambda(wrapper).getFirst();
+        ModuleFormBlob orderFormBlob = moduleFormBlobMapper.selectByPrimaryKey(orderForm.getId());
+        Map<String, Object> propMap = JSON.parseMap(orderFormBlob.getProp());
+        List<LinkScenario> contractLinkProp = List.of(LinkScenario.builder().key(LinkScenarioKey.CONTRACT_TO_ORDER.name()).linkFields(List.of()).build());
+        propMap.put("linkProp", Map.of(FormKey.CONTRACT.getKey(), contractLinkProp));
+        orderFormBlob.setProp(JSON.toJSONString(propMap));
+        moduleFormBlobMapper.updateById(orderFormBlob);
+    }
+
+    /**
      * 表单属性处理(视图)
      */
     @SuppressWarnings("unchecked")
