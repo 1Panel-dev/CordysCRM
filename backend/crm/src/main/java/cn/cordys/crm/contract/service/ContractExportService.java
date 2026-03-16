@@ -136,7 +136,7 @@ public class ContractExportService extends BaseExportService {
         systemFieldMap.put("alreadyPayAmount", data.getAlreadyPayAmount());
         systemFieldMap.put("number", data.getNumber());
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), Locale.SIMPLIFIED_CHINESE));
         }
         if (StringUtils.isNotBlank(data.getStage())) {
             systemFieldMap.put("stage", Translator.get("contract.stage." + data.getStage().toLowerCase(), Locale.SIMPLIFIED_CHINESE));
