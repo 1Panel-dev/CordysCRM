@@ -32,11 +32,13 @@
         </div>
       </template>
       <template #actionRight>
-        <CrmSearchInput
-          v-model:value="keyword"
-          class="!w-[240px]"
-          :placeholder="t('org.searchByNameAndPhone')"
-          @search="searchData"
+        <CrmAdvanceFilter
+          ref="tableAdvanceFilterRef"
+          v-model:keyword="keyword"
+          :custom-fields-config-list="customFieldsFilterConfig"
+          :filter-config-list="filterConfigList"
+          @adv-search="handleAdvSearch"
+          @keyword-search="searchData"
         />
       </template>
     </CrmTable>
@@ -94,11 +96,12 @@
 
 <script setup lang="ts">
   import { ref, RendererElement } from 'vue';
-  import { DataTableRowKey, NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, NSwitch, NTooltip, type SelectOption, selectProps, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
   import dayjs from 'dayjs';
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -106,6 +109,8 @@
   import type { ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
   import type { MemberItem, ValidateInfo } from '@lib/shared/models/system/org';
 
+  import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
+  import type { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -147,6 +152,8 @@
     platFormNameMap,
     platformType,
   } from '@/config/business';
+  import { baseFilterConfigList } from '@/config/clue';
+  import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
   import { useAppStore } from '@/store';
@@ -174,6 +181,8 @@
   const emit = defineEmits<{
     (e: 'addSuccess'): void;
   }>();
+
+  const { customFieldsFilterConfig } = useFormCreateAdvanceFilter();
 
   /**
    * 设置同步微信
@@ -786,7 +795,7 @@
     }
   };
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
+  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTable(
     getUserList,
     {
       tableKey: TableKeyEnum.SYSTEM_ORG_TABLE,
@@ -901,6 +910,119 @@
   const keyword = ref('');
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const isAdvancedSearchMode = ref(false);
+
+  const filterConfigList: FilterFormItem[] = [
+    {
+      title: t('org.userName'),
+      dataIndex: 'userName',
+      type: FieldTypeEnum.USER_SELECT,
+    },
+    {
+      title: t('common.status'),
+      dataIndex: 'status',
+      type: FieldTypeEnum.SELECT,
+      selectProps: {
+        options: [
+          {
+            label: t('common.enable'),
+            value: true,
+          },
+          {
+            label: t('common.disable'),
+            value: false,
+          },
+        ] as unknown as SelectOption[],
+      },
+    },
+    {
+      title: t('org.gender'),
+      dataIndex: 'gender',
+      type: FieldTypeEnum.SELECT,
+      selectProps: {
+        options: [
+          {
+            label: t('org.male'),
+            value: 'male',
+          },
+          {
+            label: t('org.female'),
+            value: 'female',
+          },
+        ],
+      },
+    },
+    {
+      title: t('common.phoneNumber'),
+      dataIndex: 'phoneNumber',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('org.userEmail'),
+      dataIndex: 'email',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('org.department'),
+      dataIndex: 'departmentIds',
+      type: FieldTypeEnum.DEPARTMENT,
+    },
+    {
+      title: t('org.directSuperior'),
+      dataIndex: 'supervisorId',
+      type: FieldTypeEnum.USER_SELECT,
+    },
+    {
+      title: t('org.employeeNumber'),
+      dataIndex: 'employeeId',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('org.position'),
+      dataIndex: 'positionId',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('org.employeeType'),
+      dataIndex: 'employeeType',
+      type: FieldTypeEnum.SELECT,
+      selectProps: {
+        options: [
+          {
+            label: t('org.formalUser'),
+            value: 'formal',
+          },
+          {
+            label: t('org.internshipUser'),
+            value: 'internship',
+          },
+          {
+            label: t('org.outsourcingUser'),
+            value: 'outsourcing',
+          },
+        ],
+      },
+    },
+    {
+      title: t('org.workingCity'),
+      dataIndex: 'workCity',
+      type: FieldTypeEnum.LOCATION,
+    },
+    {
+      title: t('org.onboardingDate'),
+      dataIndex: 'onboardingDate',
+      type: FieldTypeEnum.DATE_TIME,
+    },
+    ...baseFilterConfigList,
+  ];
+
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean) {
+    keyword.value = '';
+    isAdvancedSearchMode.value = isAdvancedMode;
+    setAdvanceFilter(filter);
+    loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
+  }
 
   function initOrgList() {
     setLoadListParams({ keyword: keyword.value, departmentIds: [props.activeNode, ...props.offspringIds] });
