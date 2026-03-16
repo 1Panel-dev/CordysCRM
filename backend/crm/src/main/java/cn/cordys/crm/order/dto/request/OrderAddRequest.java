@@ -8,7 +8,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 public class OrderAddRequest {
@@ -18,12 +17,10 @@ public class OrderAddRequest {
     @Schema(description = "合同名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
-    @NotBlank
     @Size(max = 32)
     @Schema(description = "客户id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String customerId;
 
-    @NotBlank
     @Size(max = 32)
     @Schema(description = "合同id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String contractId;
