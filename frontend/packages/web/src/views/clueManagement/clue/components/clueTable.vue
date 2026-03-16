@@ -583,6 +583,7 @@
               CrmTableButton,
               {
                 onClick: () => {
+                  moveIds.value = [];
                   activeClue.value = row;
                   isInitOverviewDrawer.value = true;
                   showOverviewDrawer.value = true;
