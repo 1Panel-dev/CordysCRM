@@ -5,7 +5,7 @@ import { safeParseFormula } from '@/components/business/crm-formula-editor/utils
 
 import { flatAllFields, getFormulaDataSourceDisplayValue, hydrateIRNumberType } from '../../utils';
 import registerBuiltinFunctions from '../functions';
-import { FieldTypeMap, FormulaExecutorContext, FormulaExecutorResult, ValueType } from '../types';
+import { FieldMeta, FieldTypeMap, FormulaExecutorContext, FormulaExecutorResult, ValueType } from '../types';
 import evaluateIR from './evaluator';
 
 registerBuiltinFunctions();
@@ -30,18 +30,32 @@ export function getValueType(field: FormCreateField): ValueType {
   }
 }
 
+function buildFieldTypeInfo(field: FormCreateField): FieldMeta {
+  return {
+    valueType: getValueType(field),
+    ...(field.type === FieldTypeEnum.INPUT_NUMBER
+      ? {
+          numberType: field.numberFormat === 'percent' ? 'percent' : 'number',
+        }
+      : {}),
+  };
+}
+
 export function buildFieldTypeMap(fields: FormCreateField[]): FieldTypeMap {
   const map: FieldTypeMap = {};
 
   flatAllFields(fields).forEach((field) => {
-    map[field.id] = {
-      valueType: getValueType(field),
-      ...(field.type === FieldTypeEnum.INPUT_NUMBER
-        ? {
-            numberType: field.numberFormat === 'percent' ? 'percent' : 'number',
-          }
-        : {}),
-    };
+    const fieldInfo = buildFieldTypeInfo(field);
+
+    // 注册完整路径的字段
+    map[field.id] = fieldInfo;
+
+    // 如果字段 ID 包含子表路径
+    if (field.id.includes('.')) {
+      field.id.split('.').forEach((fieldId) => {
+        map[fieldId] = fieldInfo;
+      });
+    }
   });
 
   return map;
