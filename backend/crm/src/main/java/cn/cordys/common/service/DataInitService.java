@@ -71,6 +71,7 @@ public class DataInitService {
             initOneTime(moduleFieldService::initOrderFields, "init.order.fields");
 			initOneTime(moduleFormService::initContactFormLinkRules, "init.contact.form.link.rules");
 			initOneTime(moduleFormService::initContractToOrderLinkScenario, "init.order.form.link.rules");
+            initOneTime(moduleFormService::initOrderFormScenarioProp, "init.order.form.scenario");
         } finally {
             lock.unlock();
         }
