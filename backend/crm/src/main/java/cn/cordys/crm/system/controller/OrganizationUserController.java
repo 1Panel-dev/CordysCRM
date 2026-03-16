@@ -5,6 +5,7 @@ import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.dto.request.*;
 import cn.cordys.crm.system.dto.response.RoleListResponse;
@@ -45,6 +46,7 @@ public class OrganizationUserController {
     @Operation(summary = "用户(员工)-列表查询")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_READ)
     public Pager<List<UserPageResponse>> list(@Validated @RequestBody UserPageRequest request) {
+        ConditionFilterUtils.parseCondition(request);
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, organizationUserService.list(request));
     }
