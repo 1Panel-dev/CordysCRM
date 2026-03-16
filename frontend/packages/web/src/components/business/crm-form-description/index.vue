@@ -56,13 +56,14 @@
 
       <!-- 单选 DataSource -->
       <template #dataSource="{ item }">
-        <div class="field-line flex w-full items-center">
+        <div class="field-line flex w-full items-center overflow-hidden">
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
             {{ item.label }}
           </div>
           <CrmTableButton
             v-if="canOpenDataSource(item)"
-            class="crm-form-description-link-button"
+            class="crm-form-description-link-button flex-1 overflow-hidden"
+            :class="`justify-${props.valueAlign ?? 'end'}`"
             @click="openDataSource(item)"
           >
             <template #trigger>

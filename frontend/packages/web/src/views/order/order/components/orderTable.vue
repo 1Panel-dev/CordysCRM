@@ -294,7 +294,7 @@
         );
       },
       contractId: (row: OrderItem) => {
-        return props.isContractTab || !hasAnyPermission(['CONTRACT:READ'])
+        return props.isContractTab || props.readonly || !hasAnyPermission(['CONTRACT:READ'])
           ? h(
               CrmNameTooltip,
               { text: row.contractName },
