@@ -7,10 +7,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMultipleField> {
 
@@ -32,8 +29,8 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
         return parse2Array(value);
     }
 
-
     @Override
+	@SuppressWarnings("unchecked")
     public Object transformToValue(InputMultipleField inputMultipleField, String value) {
         if (StringUtils.isEmpty(value)) {
             return StringUtils.EMPTY;
