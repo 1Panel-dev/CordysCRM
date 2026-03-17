@@ -146,19 +146,51 @@
                 </include>
             </when>
             <when test="condition.name == 'status'">
-                <if test="condition.value == true">
-                    sou.enable is true
+                <if test="condition.operator == 'IN'">
+                    <if test="condition.value == true">
+                        sou.enable is true
+                    </if>
+                    <if test="condition.value == false">
+                        sou.enable is false
+                    </if>
                 </if>
-                <if test="condition.value == false">
-                    sou.enable is false
+                <if test="condition.operator == 'NOT_IN'">
+                    <if test="condition.value == true">
+                        sou.enable is false
+                    </if>
+                    <if test="condition.value == false">
+                        sou.enable is true
+                    </if>
+                </if>
+                <if test="condition.operator == 'EMPTY'">
+                    sou.enable IS NULL
+                </if>
+                <if test="condition.operator == 'NOT_EMPTY'">
+                    sou.enable IS NOT NULL
                 </if>
             </when>
             <when test="condition.name == 'gender'">
-                <if test="condition.value == 'female'">
-                    su.gender is true
+                <if test="condition.operator == 'IN'">
+                    <if test="condition.value == 'female'">
+                        su.gender is true
+                    </if>
+                    <if test="condition.value == 'male'">
+                        su.gender is false
+                    </if>
                 </if>
-                <if test="condition.value == 'male'">
-                    su.gender is false
+                <if test="condition.operator == 'NOT_IN'">
+                    <if test="condition.value == 'female'">
+                        su.gender is false
+                    </if>
+                    <if test="condition.value == 'male'">
+                        su.gender is true
+                    </if>
+                </if>
+                <if test="condition.operator == 'EMPTY'">
+                    su.gender IS NULL
+                </if>
+                <if test="condition.operator == 'NOT_EMPTY'">
+                    su.gender IS NOT NULL
                 </if>
             </when>
             <when test="condition.name == 'email'">
@@ -200,13 +232,13 @@
             <when test="condition.name == 'updateUser'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="su.update_user"/>
+                    <property name="column" value="sou.update_user"/>
                 </include>
             </when>
             <when test="condition.name == 'createUser'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="su.create_user"/>
+                    <property name="column" value="sou.create_user"/>
                 </include>
             </when>
             <when test="condition.name == 'onboardingDate'">
@@ -218,13 +250,13 @@
             <when test="condition.name == 'createTime'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="su.create_time"/>
+                    <property name="column" value="sou.create_time"/>
                 </include>
             </when>
             <when test="condition.name == 'updateTime'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="su.update_time"/>
+                    <property name="column" value="sou.update_time"/>
                 </include>
             </when>
             <when test="condition.name == 'workCity'">
