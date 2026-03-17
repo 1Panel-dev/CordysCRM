@@ -3,6 +3,7 @@ package cn.cordys.crm.order.service;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.system.service.BaseModuleLogService;
@@ -39,6 +40,10 @@ public class OrderLogService extends BaseModuleLogService {
             }
             if (Strings.CS.equals(column, BusinessModuleField.ORDER_CONTRACT.getBusinessKey())) {
                 resolveContractName(differ);
+                continue;
+            }
+            if (Strings.CS.equals(column, "orderStage")) {
+                differ.setColumnName(Translator.get("order.stage"));
                 continue;
             }
             if (column != null && column.contains("-")) {
