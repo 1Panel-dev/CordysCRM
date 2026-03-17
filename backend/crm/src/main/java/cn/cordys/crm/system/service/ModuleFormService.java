@@ -62,7 +62,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -1717,19 +1716,6 @@ public class ModuleFormService {
         if (sourceField instanceof HasOption fieldWithOption) {
             return val2Text(fieldWithOption.getOptions(), actualVal);
         }
-		if (sourceField instanceof InputNumberField numberField) {
-			BigDecimal actualDecimal = new BigDecimal(actualVal.toString());
-			if (numberField.getDecimalPlaces()) {
-				actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
-			}
-			String formatActualVal;
-			if (numberField.getShowThousandsSeparator()) {
-				formatActualVal = InputNumberField.formatThousands(actualDecimal);
-			} else {
-				formatActualVal = actualDecimal.toPlainString();
-			}
-			return formatActualVal + (Strings.CI.equals(numberField.getNumberFormat(), "percent") ? "%" : "");
-		}
         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(sourceField.getType());
         // 将数据库中的字符串值,转换为对应的对象值
         return customFieldResolver.transformToValue(sourceField, actualVal instanceof List ? JSON.toJSONString(actualVal) : actualVal.toString());
@@ -1768,24 +1754,23 @@ public class ModuleFormService {
 			}
         }
 		switch (targetField) {
-			case InputMultipleField inputMultipleField -> {
-				// 兼容处理: 多值输入直接取展示值即可.
+			case InputMultipleField ignored -> {
 				TextMultipleResolver textMultipleResolver = new TextMultipleResolver();
-				return textMultipleResolver.getCorrectFormatInput(sourceVal.getDisplayVal() instanceof List ?
-						(List<String>) sourceVal.getDisplayVal() : List.of(sourceVal.getDisplayVal().toString().split(",")));
+				return textMultipleResolver.getCorrectFormatInput(
+						sourceVal.getDisplayVal() instanceof List
+								? (List<String>) sourceVal.getDisplayVal() : List.of(sourceVal.getDisplayVal().toString().split(","))
+				);
 			}
 			case HasOption targetFieldWithOption -> {
-				// 兼容处理: 选项文本映射
 				return text2Val(targetFieldWithOption.getOptions(), sourceVal.getDisplayVal());
-				// 兼容处理: 选项文本映射
 			}
-			case InputNumberField inputNumberField -> {
+			case InputNumberField ignored -> {
 				String actualVal = sourceVal.getActualVal().toString();
 				if (StringUtils.isEmpty(actualVal)) {
 					return null;
 				}
 				if (actualVal.contains("%") || actualVal.contains(",")) {
-					actualVal = actualVal.replace(",", StringUtils.EMPTY).replace("%", StringUtils.EMPTY);
+					actualVal = actualVal.replace(",", "").replace("%", "");
 				}
 				try {
 					return new BigDecimal(actualVal);
@@ -1794,8 +1779,7 @@ public class ModuleFormService {
 					return null;
 				}
 			}
-			default -> {
-			}
+			default -> {}
 		}
 		return sourceVal.getActualVal();
     }

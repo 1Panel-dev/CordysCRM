@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.excel.handler;
 
+import cn.cordys.crm.system.dto.field.InputNumberField;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -27,6 +28,9 @@ public record SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeC
 			for (Integer colIndex : summaryCols) {
 				// 合计
 				BigDecimal total = BigDecimal.ZERO;
+				boolean showThousandsSeparator = false;
+				boolean hasPercent = false;
+				int decimalPlaces = 0;
 				for (int r = start; r <= end; r++) {
 					Cell cell = sheet.getRow(r).getCell(colIndex);
 					if (cell != null) {
@@ -35,14 +39,28 @@ public record SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeC
 							case NUMERIC -> String.valueOf(cell.getNumericCellValue());
 							default -> null;
 						};
-						if (StringUtils.isNotEmpty(val) && NumberUtils.isParsable(val)) {
+						if (StringUtils.isEmpty(val)) {
+							continue;
+						}
+						// 记住汇总列格式
+						if (val.contains(",") && !showThousandsSeparator) {
+							showThousandsSeparator = true;
+						}
+						if (val.contains("%") && !hasPercent) {
+							hasPercent = true;
+						}
+						val = val.replace(",", StringUtils.EMPTY).replace("%", StringUtils.EMPTY);
+						if (NumberUtils.isParsable(val)) {
+							if (decimalPlaces == 0 && val.contains(".")) {
+								decimalPlaces = val.length() - val.indexOf(".") - 1;
+							}
 							total = total.add(new BigDecimal(val));
 						}
 					}
 				}
 				// 只写入第一行, 清空其他行的汇总值 (不同值合并展示有误)
 				Cell sumCell = sheet.getRow(start).getCell(colIndex);
-				sumCell.setCellValue(total.toPlainString());
+				sumCell.setCellValue(InputNumberField.formatNumber(total, decimalPlaces, showThousandsSeparator, hasPercent));
 				Workbook wb = sheet.getWorkbook();
 				CellStyle style = wb.createCellStyle();
 				style.setAlignment(HorizontalAlignment.RIGHT);
