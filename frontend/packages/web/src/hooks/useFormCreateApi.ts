@@ -14,6 +14,7 @@ import { getCityPath, getIndustryPath, safeFractionConvert } from '@lib/shared/m
 import {
   dataSourceTypes,
   departmentTypes,
+  formatNumberValueToString,
   getNormalFieldValue,
   getRuleType,
   initFieldValue,
@@ -699,8 +700,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                   .map((e: any) => e.name)
                   .join(',')
                   .slice(0, limitLength);
-              } else if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(linkField.type)) {
+              } else if (FieldTypeEnum.FORMULA === linkField.type) {
                 formDetail.value[field.id] = linkField.value?.toString();
+              } else if (FieldTypeEnum.INPUT_NUMBER === linkField.type) {
+                formDetail.value[field.id] = formatNumberValueToString(linkField.value, linkField);
               } else {
                 formDetail.value[field.id] = linkField.value;
               }
