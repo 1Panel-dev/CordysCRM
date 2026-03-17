@@ -233,6 +233,7 @@
       name: 'contact',
       tab: t('opportunity.contactInfo'),
       enable: true,
+      permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
     },
     {
       name: 'quotation',
