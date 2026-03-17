@@ -2,7 +2,7 @@
   <n-form-item
     :label="props.fieldConfig.name"
     :path="props.path"
-    :rule="props.fieldConfig.rules"
+    :rule="formItemRules"
     :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
     :label-placement="props.isSubTableField || props.isSubTableRender ? 'top' : props.formConfig?.labelPos"
     :show-label="!props.isSubTableRender && !props.isDefaultValueRender"
@@ -56,6 +56,7 @@
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
     isDefaultValueRender?: boolean; // 是否是默认值渲染
+    ignoreRule?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: number | null): void;
@@ -63,6 +64,11 @@
 
   const value = defineModel<number | null>('value', {
     default: null,
+  });
+
+  const formItemRules = computed(() => {
+    if (props.ignoreRule) return [];
+    return props.fieldConfig.rules || [];
   });
 
   watch(
