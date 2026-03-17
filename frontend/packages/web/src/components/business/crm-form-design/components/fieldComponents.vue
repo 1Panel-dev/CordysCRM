@@ -72,7 +72,7 @@
   const { t } = useI18n();
 
   const realAdvancedFields: FormCreateField[] = [];
-  if ([FormDesignKeyEnum.PRICE, FormDesignKeyEnum.CONTRACT].includes(props.formKey)) {
+  if ([FormDesignKeyEnum.PRICE, FormDesignKeyEnum.CONTRACT, FormDesignKeyEnum.ORDER].includes(props.formKey)) {
     advancedFields.forEach((field) => {
       if (field.type !== FieldTypeEnum.SUB_PRICE) {
         realAdvancedFields.push(field);
@@ -98,7 +98,9 @@
     }
     if (
       item.type === FieldTypeEnum.SUB_PRODUCT &&
-      ![FormDesignKeyEnum.OPPORTUNITY_QUOTATION, FormDesignKeyEnum.CONTRACT].includes(props.formKey)
+      ![FormDesignKeyEnum.OPPORTUNITY_QUOTATION, FormDesignKeyEnum.CONTRACT, FormDesignKeyEnum.ORDER].includes(
+        props.formKey
+      )
     ) {
       // 报价单/合同支持多个子表格
       return props.fieldList.some((e) => e.type === FieldTypeEnum.SUB_PRODUCT);
