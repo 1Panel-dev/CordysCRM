@@ -228,19 +228,20 @@ public class DepartmentService extends MoveNodeService {
      */
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public void delete(List<String> ids, String operator, String orgId) {
-        if (deleteCheck(ids, orgId)) {
-            List<Department> departmentList = departmentMapper.selectByIds(ids);
-            //刪除部門
-            departmentMapper.deleteByIds(ids);
-            List<LogDTO> logs = new ArrayList<>();
-            // 添加日志上下文
-            departmentList.forEach(department -> {
-                LogDTO logDTO = new LogDTO(department.getOrganizationId(), department.getId(), operator, LogType.DELETE, LogModule.SYSTEM_ORGANIZATION, department.getName());
-                logDTO.setOriginalValue(department);
-                logs.add(logDTO);
-            });
-            logService.batchAdd(logs);
+        if (!deleteCheck(ids, orgId)) {
+            throw new GenericException(Translator.get("department_has_users"));
         }
+        List<Department> departmentList = departmentMapper.selectByIds(ids);
+        //刪除部門
+        departmentMapper.deleteByIds(ids);
+        List<LogDTO> logs = new ArrayList<>();
+        // 添加日志上下文
+        departmentList.forEach(department -> {
+            LogDTO logDTO = new LogDTO(department.getOrganizationId(), department.getId(), operator, LogType.DELETE, LogModule.SYSTEM_ORGANIZATION, department.getName());
+            logDTO.setOriginalValue(department);
+            logs.add(logDTO);
+        });
+        logService.batchAdd(logs);
     }
 
 
