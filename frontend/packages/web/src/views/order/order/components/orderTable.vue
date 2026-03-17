@@ -69,6 +69,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
+  import { characterLimit } from '@lib/shared/method';
   import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
   import { OrderItem } from '@lib/shared/models/order';
 
@@ -83,7 +84,7 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detail.vue';
 
-  import { getOrderStatusConfig } from '@/api/modules';
+  import { deleteOrder, getOrderStatusConfig } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -214,8 +215,17 @@
       {
         label: t('common.download'),
         key: 'download',
-        permission: ['ORDER:DELETE'],
+        permission: ['ORDER:DOWNLOAD'],
       },
+      ...(!props.readonly
+        ? [
+            {
+              label: 'more',
+              key: 'more',
+              slotName: 'more',
+            },
+          ]
+        : []),
     ];
   });
 
@@ -238,6 +248,26 @@
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_ORDER, { id });
   }
 
+  async function handleDelete(row: OrderItem) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteOrder(row.id);
+          Message.success(t('common.deleteSuccess'));
+          tableRefreshId.value += 1;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
   async function handleActionSelect(row: OrderItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
@@ -245,6 +275,9 @@
         break;
       case 'download':
         handleDownload(row.id);
+        break;
+      case 'delete':
+        handleDelete(row);
         break;
       default:
         break;
@@ -274,12 +307,20 @@
     excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 150 : 100,
+      width: currentLocale.value === 'en-US' ? 180 : 150,
       fixed: 'right',
       render: (row: OrderItem) =>
         h(CrmOperationButton, {
           groupList: operationGroupList.value,
           onSelect: (key: string) => handleActionSelect(row, key),
+          moreList: [
+            {
+              label: t('common.delete'),
+              key: 'delete',
+              danger: true,
+              permission: ['ORDER:DELETE'],
+            },
+          ],
         }),
     },
     specialRender: {
