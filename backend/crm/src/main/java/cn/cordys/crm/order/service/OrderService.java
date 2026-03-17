@@ -101,7 +101,7 @@ public class OrderService {
      * @param orgId
      * @return
      */
-    @OperationLog(module = LogModule.ORDER, type = LogType.ADD, resourceName = "{#request.name}")
+    @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Order add(OrderAddRequest request, String operatorId, String orgId) {
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
@@ -264,7 +264,7 @@ public class OrderService {
      * @param orgId
      * @return
      */
-    @OperationLog(module = LogModule.ORDER, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Order update(OrderUpdateRequest request, String userId, String orgId) {
         Order oldOrder = orderMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
@@ -352,7 +352,7 @@ public class OrderService {
      *
      * @param id 订单ID
      */
-    @OperationLog(module = LogModule.ORDER, type = LogType.DELETE, resourceId = "{#id}")
+    @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Order order = orderMapper.selectByPrimaryKey(id);
         if (order == null) {
@@ -539,7 +539,7 @@ public class OrderService {
 
         updateStageSnapshot(request.getId(), request.getStage());
 
-        LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.ORDER, order.getName());
+        LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.ORDER_INDEX, order.getName());
         Map<String, String> newMap = new HashMap<>();
         newMap.put("orderStage", Translator.get("order.stage." + request.getStage().toLowerCase()));
         logDTO.setOriginalValue(oldMap);
@@ -553,7 +553,7 @@ public class OrderService {
             throw new GenericException(Translator.get("order_not_exist"));
         }
 
-        LogDTO logDTO = new LogDTO(organizationId, id, userId, LogType.DOWNLOAD, LogModule.ORDER, getResponse.getName());
+        LogDTO logDTO = new LogDTO(organizationId, id, userId, LogType.DOWNLOAD, LogModule.ORDER_INDEX, getResponse.getName());
         logDTO.setOriginalValue(getResponse.getName());
         logService.add(logDTO);
     }

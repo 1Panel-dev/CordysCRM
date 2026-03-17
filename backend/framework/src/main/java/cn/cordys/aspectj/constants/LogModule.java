@@ -146,6 +146,6 @@ public class LogModule {
     /**
      * 订单
      */
-    public static final String ORDER = "ORDER";
+    public static final String ORDER_INDEX = "ORDER_INDEX";
 
 }
