@@ -17,7 +17,7 @@
       v-html="props.fieldConfig.description"
     ></div>
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
-    <n-tooltip trigger="hover" placement="top" :disabled="props.fieldConfig.defaultValueType === 'custom'">
+    <n-tooltip trigger="hover" placement="top" :disabled="props.fieldConfig.defaultValueType !== 'formula'">
       <template #trigger>
         <n-input
           v-model:value="displayValue"

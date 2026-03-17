@@ -94,7 +94,10 @@ export function useStatusFormItemModelConfig(): Record<StatusBizType, FormItemMo
         type: FieldTypeEnum.INPUT,
         formItemClass: 'w-full flex-initial',
         inputProps: { maxlength: 16 },
-        rule: [{ required: true, message: t('common.notNull', { value: '' }) }],
+        rule: [
+          { required: true, message: t('common.notNull', { value: '' }) },
+          { notRepeat: true, message: t('module.capacitySet.repeatMsg') },
+        ],
       },
       {
         path: 'rate',
@@ -108,7 +111,7 @@ export function useStatusFormItemModelConfig(): Record<StatusBizType, FormItemMo
             return row.type === 'END';
           },
         },
-        rule: [{ required: true, message: t('common.notNull', { value: '' }) }],
+        rule: [{ required: true, message: t('common.notNull', { value: t('opportunity.stage') }) }],
       },
       {
         path: 'type',
@@ -130,7 +133,13 @@ export function useStatusFormItemModelConfig(): Record<StatusBizType, FormItemMo
         type: FieldTypeEnum.INPUT,
         formItemClass: 'w-full flex-initial',
         inputProps: { maxlength: 16 },
-        rule: [{ required: true, message: t('common.notNull', { value: '' }) }],
+        rule: [
+          {
+            required: true,
+            message: t('common.notNull', { value: t('order.status') }),
+          },
+          { notRepeat: true, message: t('module.capacitySet.repeatMsg') },
+        ],
       },
       {
         path: 'type',
