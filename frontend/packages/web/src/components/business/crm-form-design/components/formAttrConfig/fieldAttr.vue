@@ -843,12 +843,10 @@
           :show-button="false"
           :min="0"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
-          :fieldConfig="{
-            ...fieldConfig,
-            rules: [],
-          }"
+          :fieldConfig="fieldConfig"
           path=""
           isDefaultValueRender
+          ignore-rule
         />
         <CrmTextArea
           v-else-if="fieldConfig.type === FieldTypeEnum.TEXTAREA"
