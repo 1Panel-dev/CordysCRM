@@ -18,8 +18,10 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseService;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -27,7 +29,9 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.customer.domain.CustomerCollaboration;
 import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
+import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.opportunity.constants.OpportunityStageType;
@@ -140,6 +144,8 @@ public class OpportunityService {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
+    @Resource
+    private DataScopeService dataScopeService;
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
                                                                DeptDataPermissionDTO deptDataPermission, Boolean source) {
@@ -483,6 +489,16 @@ public class OpportunityService {
                         NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
                         orgId, List.of(opportunity.getOwner()), true)
         );
+    }
+
+
+    public OpportunityDetailResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
+        OpportunityDetailResponse getResponse = get(id);
+        if (getResponse == null) {
+            throw new GenericException(Translator.get("opportunity_not_found"));
+        }
+        dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        return getResponse;
     }
 
 
