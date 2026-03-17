@@ -25,7 +25,6 @@ public class OrderAddRequest {
     @Schema(description = "合同id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String contractId;
 
-    @NotBlank(message = "{owner.required}")
     @Size(max = 32)
     @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
     private String owner;
