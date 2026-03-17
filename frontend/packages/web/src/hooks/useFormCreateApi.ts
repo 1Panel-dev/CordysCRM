@@ -378,6 +378,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         FormDesignKeyEnum.BUSINESS,
         FormDesignKeyEnum.CONTRACT_SNAPSHOT,
         FormDesignKeyEnum.INVOICE_SNAPSHOT,
+        FormDesignKeyEnum.ORDER_SNAPSHOT,
       ].includes(props.formKey.value) &&
       !item.resourceFieldId
     ) {
@@ -409,9 +410,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         FormDesignKeyEnum.CONTRACT_PAYMENT,
         FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
         FormDesignKeyEnum.INVOICE_SNAPSHOT,
+        FormDesignKeyEnum.ORDER_SNAPSHOT,
       ].includes(props.formKey.value) &&
       !item.resourceFieldId
     ) {
+      // 合同
       descriptions.value.push({
         label: item.name,
         value: parseFormDetailValue(item, form),

@@ -60,7 +60,7 @@
               color="var(--error-red)"
               class="action-icon"
             />
-            <CrmSvg width="60px" height="60px" :name="item.icon" />
+            <CrmSvg width="44px" height="44px" :name="item.icon" />
           </div>
           <div class="text-[var(--text-n1)]">{{ item.label }}</div>
         </div>
@@ -84,7 +84,7 @@
               color="var(--success-green)"
               class="action-icon"
             />
-            <CrmSvg width="60px" height="60px" :name="item.icon" />
+            <CrmSvg width="44px" height="44px" :name="item.icon" />
           </div>
           <div class="text-[var(--text-n1)]">{{ item.label }}</div>
         </div>
@@ -208,8 +208,11 @@
     @apply flex cursor-pointer flex-col items-center;
     .function-svg {
       position: relative;
+      width: 60px;
+      height: 60px;
       border: 1px solid var(--text-n8);
       border-radius: 2px;
+      @apply flex items-center justify-center;
     }
     .action-icon {
       position: absolute;
