@@ -396,7 +396,7 @@ public class OrganizationUserControllerTests extends BaseTest {
         //        是否启用  enable
         filterConditionList.clear();
         booleanCondition = new FilterCondition();
-        booleanCondition.setOperator(FilterCondition.CombineConditionOperator.EQUALS.name());
+        booleanCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
         booleanCondition.setName("status");
         booleanCondition.setValue(false);
         filterConditionList.add(booleanCondition);
