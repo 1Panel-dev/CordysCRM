@@ -235,6 +235,9 @@ public class BusinessTitleService {
      */
     public BusinessTitleListResponse get(String id) {
         BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
+        if (businessTitle == null) {
+            throw new GenericException(Translator.get("business_title.not.exist"));
+        }
         BusinessTitleListResponse businessTitleListResponse = BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
         baseService.setCreateAndUpdateUserName(List.of(businessTitleListResponse));
         return businessTitleListResponse;
