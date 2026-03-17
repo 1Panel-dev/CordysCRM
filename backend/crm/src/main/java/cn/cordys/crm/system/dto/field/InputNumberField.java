@@ -5,8 +5,11 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 @Data
@@ -51,5 +54,32 @@ public class InputNumberField extends BaseField {
 		}
 		DecimalFormat df = new DecimalFormat("#,##0");
 		return df.format(new BigDecimal(integerPart)) + decimalPart;
+	}
+
+	/**
+	 * 格式化数字
+	 * @param num 数字
+	 * @param precision 小数点位数
+	 * @param showThousandsSeparator 千分位
+	 * @param percent 百分比
+	 * @return 格式化后的字符串
+	 */
+	public static String formatNumber(BigDecimal num, int precision, boolean showThousandsSeparator, boolean percent) {
+		if (num == null) {
+			return null;
+		}
+		// 小数点位数
+		if (precision > 0) {
+			num = num.setScale(precision, RoundingMode.HALF_UP);
+		}
+		// 千分位
+		String formatActualVal;
+		if (showThousandsSeparator) {
+			formatActualVal = formatThousands(num);
+		} else {
+			formatActualVal = num.toPlainString();
+		}
+		// 百分比
+		return formatActualVal + (percent ? "%" : "");
 	}
 }

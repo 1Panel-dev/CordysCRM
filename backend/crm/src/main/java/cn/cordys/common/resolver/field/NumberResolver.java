@@ -7,6 +7,7 @@ import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.formula.FormulaParseException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * @author jianxing
@@ -31,8 +32,18 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
     }
 
     @Override
-    public Object transformToValue(InputNumberField selectField, String value) {
-		return super.transformToValue(selectField, value);
+    public Object transformToValue(InputNumberField numberField, String value) {
+		BigDecimal actualDecimal = new BigDecimal(value);
+		if (numberField.getDecimalPlaces()) {
+			actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
+		}
+		String formatActualVal;
+		if (BooleanUtils.isTrue(numberField.getShowThousandsSeparator())) {
+			formatActualVal = InputNumberField.formatThousands(actualDecimal);
+		} else {
+			formatActualVal = actualDecimal.toPlainString();
+		}
+		return formatActualVal + (Strings.CI.equals(numberField.getNumberFormat(), "percent") ? "%" : "");
 	}
 
     @Override
