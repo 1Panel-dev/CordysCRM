@@ -10,7 +10,7 @@ const contract: AppRouteRecordRaw = {
   component: DEFAULT_LAYOUT,
   meta: {
     locale: 'module.order',
-    permissions: ['CONTRACT:READ', 'CONTRACT_PAYMENT_PLAN:READ'], // todo
+    permissions: ['ORDER:READ'],
     icon: 'iconicon_order_form',
     hideChildrenInMenu: true,
     collapsedLocale: 'module.order',
@@ -23,7 +23,7 @@ const contract: AppRouteRecordRaw = {
       meta: {
         locale: 'module.order',
         isTopMenu: true,
-        permissions: [], // todo
+        permissions: ['ORDER:READ'],
       },
     },
   ],

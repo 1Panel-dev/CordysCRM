@@ -14,7 +14,12 @@
     @refresh="searchData"
   >
     <template #actionLeft>
-      <n-button v-if="!props.readonly" v-permission="['ORDER:ADD']" type="primary" @click="handleNewClick">
+      <n-button
+        v-if="!props.readonly && !props.isCustomerTab"
+        v-permission="['ORDER:ADD']"
+        type="primary"
+        @click="handleNewClick"
+      >
         {{ t('order.new') }}
       </n-button>
     </template>
@@ -32,7 +37,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.isContractTab"
+        v-if="!props.isContractTab && !props.isCustomerTab"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.ORDER"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -106,6 +111,7 @@
     fullscreenTargetRef?: HTMLElement | null;
     hiddenAdvanceFilter?: boolean;
     isContractTab?: boolean;
+    isCustomerTab?: boolean;
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
@@ -355,7 +361,8 @@
             );
       },
       customerId: (row: OrderItem) => {
-        return (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
+        return props.isCustomerTab ||
+          (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
           (row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
           ? h(
               CrmNameTooltip,
@@ -414,7 +421,7 @@
   );
 
   onBeforeMount(() => {
-    if (props.isContractTab) {
+    if (props.isContractTab || props.isCustomerTab) {
       searchData();
     }
   });
@@ -436,7 +443,7 @@
   );
 
   onMounted(async () => {
-    if (route.query.id && !props.isContractTab) {
+    if (route.query.id && !(props.isContractTab || props.isCustomerTab)) {
       activeSourceId.value = route.query.id as string;
       showDetailDrawer.value = true;
     }

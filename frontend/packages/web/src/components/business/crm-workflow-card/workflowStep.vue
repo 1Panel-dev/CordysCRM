@@ -73,8 +73,10 @@
   const workflowData = computed(() => props.workflowList || []);
   const currentStatusIndex = computed(() => workflowData.value.findIndex((e) => e.value === currentStatus.value));
   const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
+  // 订单没有rate 只判断type
   const successStage = computed(
-    () => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id || ''
+    () =>
+      props.stageConfigList.find((e) => (e.rate ? e.type === 'END' && e.rate === '100' : e.type === 'END'))?.id || ''
   );
   const failureStage = computed(() => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id || '');
 
