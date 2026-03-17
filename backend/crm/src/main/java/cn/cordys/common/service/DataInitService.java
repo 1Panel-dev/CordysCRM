@@ -52,7 +52,6 @@ public class DataInitService {
             initOneTime(moduleFormService::modifyFormLinkProp, "modify.form.link");
             initOneTime(moduleFormService::modifyFormProp, "modify.form.prop");
             initOneTime(moduleFormService::modifyFieldMobile, "modify.field.mobile");
-            initOneTime(moduleFormService::modifyPhoneFieldFormat, "modify.field.format");
             initOneTime(moduleFormService::processOldLinkData, "process.old.link.data");
             initOneTime(moduleFormService::initFormScenarioProp, "init.record.form.scenario");
             initOneTime(clueService::processTransferredCluePlanAndRecord, "process.transferred.clue");

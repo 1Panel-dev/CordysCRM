@@ -370,6 +370,7 @@
       "editable": true,
       "fieldWidth": 1,
       "mobile": true,
+      "format": "255",
       "rules": [
         {
           "key": "unique"
@@ -818,6 +819,7 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
+      "format": "255",
       "rules": [
         {
           "key": "required"
@@ -2438,9 +2440,7 @@
       "fieldWidth": 1,
       "mobile": true,
       "fixedColumn": 1,
-      "sumColumns": [
-        "amount"
-      ],
+      "sumColumns": [],
       "subFields": [
         {
           "name": "产品名称",
