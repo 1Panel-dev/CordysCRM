@@ -12,7 +12,7 @@
         {{ t('common.edit') }}
       </n-button>
       <n-button
-        v-permission="['ORDER:UPDATE']"
+        v-permission="['ORDER:DOWNLOAD']"
         type="primary"
         ghost
         class="n-btn-outline-primary ml-[12px]"

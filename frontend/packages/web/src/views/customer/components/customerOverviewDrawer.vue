@@ -110,7 +110,7 @@
           <OrderTable
             :formKey="FormDesignKeyEnum.CUSTOMER_ORDER"
             :sourceId="props.sourceId"
-            readonly
+            isCustomerTab
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </CrmCard>
