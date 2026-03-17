@@ -189,7 +189,7 @@
             <when test="condition.name == 'customerId'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.dataSourceCondition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.id"/>
+                    <property name="column" value="cc.id"/>
                 </include>
             </when>
             <when test="condition.name == 'contractId'">
