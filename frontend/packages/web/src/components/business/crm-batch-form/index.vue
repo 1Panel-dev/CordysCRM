@@ -30,15 +30,20 @@
               :class="`${!element.editing ? 'read-only-row' : ''} flex gap-[8px]`"
             >
               <CrmIcon
-                v-if="props.draggable && element.draggable !== false"
+                v-if="props.draggable || element.draggable === false"
                 type="iconicon_move"
                 :size="12"
-                :class="`handle  ${
-                  disabledDraggable ? 'cursor-not-allowed text-[var(--text-n6)]' : 'cursor-move text-[var(--text-n4)]'
-                }`"
-                :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '40px' : '14px' }"
+                :class="
+                  element.draggable === false
+                    ? 'pointer-events-none invisible'
+                    : `handle ${
+                        disabledDraggable
+                          ? 'cursor-not-allowed text-[var(--text-n6)]'
+                          : 'cursor-move text-[var(--text-n4)]'
+                      }`
+                "
+                :style="{ marginTop: index === 0 && props.models.some((item) => item.label) ? '40px' : '14px' }"
               />
-              <div v-if="element.draggable === false" class="w-[42px]"></div>
               <n-form-item
                 v-for="model of props.models"
                 :key="`${model.path}${index}`"
