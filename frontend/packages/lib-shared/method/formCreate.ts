@@ -340,7 +340,7 @@ export function transformData({
         businessFieldAttr[fieldId] = formatTimeValue(item[fieldId], field.dateType);
       } else if (options && options.length > 0) {
         let name: string | string[] = '';
-        if (item[fieldId] === '') {
+        if (item[fieldId] === '' || item[fieldId] === null) {
           name = '-';
         } else if (dataSourceFieldIds.includes(fieldId)) {
           // 处理数据源字段，需要赋值为数组
