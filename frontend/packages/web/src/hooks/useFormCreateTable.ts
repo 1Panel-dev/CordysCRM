@@ -458,6 +458,17 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
 
   const orderInternalColumns: CrmDataTableColumn[] = [
     {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentId',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => row.departmentName || '-',
+    },
+    {
       title: t('order.status'),
       width: 150,
       key: 'stage',

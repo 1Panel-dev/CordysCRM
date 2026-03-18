@@ -17,10 +17,9 @@
       </n-button>
       <n-button
         v-permission="['CONTRACT_PAYMENT_PLAN:DELETE']"
-        type="primary"
-        danger
+        type="error"
         ghost
-        class="n-btn-outline-primary ml-[12px]"
+        class="n-btn-outline-error ml-[12px]"
         @click="handleDelete(detailInfo)"
       >
         {{ t('common.delete') }}
