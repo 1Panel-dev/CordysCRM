@@ -135,11 +135,11 @@
                 {'name', 'owner', 'createTime', 'updateTime', 'customerId', 'contractId', 'createUser', 'updateUser',
                  'departmentId', 'number', 'stage', 'amount', 'startTime', 'endTime'}">
                     <if test="condition.multipleValue">
-                        left join contract_field_blob ${tablePrefix}_${i}
+                        left join sales_order_field_blob ${tablePrefix}_${i}
                         on so.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
-                        left join contract_field ${tablePrefix}_${i}
+                        left join sales_order_field ${tablePrefix}_${i}
                         on so.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
@@ -156,7 +156,7 @@
                 {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time', 'customer_id',
                  'contract_id', 'update_time', 'create_user', 'department_id'}">
             <bind name="sortName" value="${sort}.name"/>
-            left join contract_field sort_table
+            left join sales_order_field sort_table
             on so.id = sort_table.resource_id and sort_table.field_id = #{sortName}
             left join sys_module_field module_table on sort_table.field_id = module_table.id
         </if>
