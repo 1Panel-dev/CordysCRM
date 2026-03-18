@@ -225,9 +225,10 @@ public class DepartmentService extends MoveNodeService {
      * 刪除部门
      *
      * @param ids
+     * @return 删除结果
      */
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
-    public void delete(List<String> ids, String operator, String orgId) {
+    public boolean delete(List<String> ids, String operator, String orgId) {
         if (deleteCheck(ids, orgId)) {
             List<Department> departmentList = departmentMapper.selectByIds(ids);
             //刪除部門
@@ -240,7 +241,9 @@ public class DepartmentService extends MoveNodeService {
                 logs.add(logDTO);
             });
             logService.batchAdd(logs);
+            return true;
         }
+        return false;
     }
 
 

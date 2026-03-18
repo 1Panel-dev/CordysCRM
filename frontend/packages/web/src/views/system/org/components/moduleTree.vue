@@ -357,9 +357,13 @@
       onPositiveClick: async () => {
         try {
           if (isNotAllow) {
-            await deleteDepartment(offspringIds);
-            Message.success(t('common.deleteSuccess'));
-            initTree(true);
+            const result = await deleteDepartment(offspringIds);
+            if (result) {
+              Message.success(t('common.deleteSuccess'));
+              initTree(true);
+            } else {
+              Message.error(t('org.deleteExistUserDepartment'));
+            }
           }
         } catch (error) {
           // eslint-disable-next-line no-console

@@ -71,8 +71,8 @@ public class DepartmentController {
     @PostMapping("/delete")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_DELETE)
     @Operation(summary = "组织架构-删除部门")
-    public void deleteDepartment(@RequestBody @NotEmpty List<String> ids) {
-        departmentService.delete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public boolean deleteDepartment(@RequestBody @NotEmpty List<String> ids) {
+        return departmentService.delete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 
     }
 
