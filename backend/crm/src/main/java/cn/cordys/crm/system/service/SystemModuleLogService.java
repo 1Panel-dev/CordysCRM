@@ -10,6 +10,7 @@ import cn.cordys.crm.system.dto.ScopeNameDTO;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class SystemModuleLogService extends BaseModuleLogService {
 
     public static final String LINK_KEY_SPILT = "-";
@@ -69,6 +71,12 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setOldValueName(differ.getOldValue());
             }
 
+            if (Strings.CS.equals("optBtnContent", differ.getColumn())) {
+                differ.setColumnName(Translator.get("log.module.form.operate.btn"));
+                differ.setNewValueName(getBtnContentList(differ.getNewValue()).toString());
+                differ.setOldValueName(getBtnContentList(differ.getOldValue()).toString());
+            }
+
             handlePoolConfig(differ);
 
             if (differ.getColumn().contains("searchAdvanced")) {
@@ -77,6 +85,22 @@ public class SystemModuleLogService extends BaseModuleLogService {
         });
 
         return differences;
+    }
+
+    private List<String> getBtnContentList(Object value) {
+        List<String> newValuesList = new ArrayList<>();
+        if (value != null) {
+            try {
+                List<Map<String, Object>> newValues = (List<Map<String, Object>>) value;
+                newValuesList = newValues.stream().filter(newValue -> newValue.get("enable") != null && (Boolean) newValue.get("enable"))
+                        .map(newValue -> (String) newValue.get("text"))
+                        .toList();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return newValuesList;
+            }
+        }
+        return newValuesList;
     }
 
     private void handlePoolConfig(JsonDifferenceDTO differ) {
