@@ -927,7 +927,7 @@
         />
         <template v-else>
           <n-select
-            v-if="fieldConfig.type === FieldTypeEnum.INPUT"
+            v-if="fieldConfig.type === FieldTypeEnum.INPUT && !isSubTableField"
             v-model:value="fieldConfig.defaultValueType"
             :options="[
               {
@@ -948,7 +948,10 @@
             "
           />
           <!-- 默认值为公式 -->
-          <div v-if="fieldConfig?.defaultValueType === 'formula'" class="crm-form-design-config-item">
+          <div
+            v-if="fieldConfig?.defaultValueType === 'formula' && !isSubTableField"
+            class="crm-form-design-config-item"
+          >
             <div class="crm-form-design-config-item-title">
               <span> {{ t('crmFormDesign.formula') }}</span>
               <n-button

@@ -203,7 +203,8 @@ export default {
     'In order to check multiple conditions, and returns the first meet the conditions of the corresponding results',
   'crmFormDesign.formulaTODAYDescription': 'Return current system date (excluding time)',
   'crmFormDesign.formulaNOWDescription': 'Returns the current system date and time (time stamp)',
-  'crmFormDesign.formulaANDDescription': '返回当前系统日期和时间（含时间戳）', // todo
+  'crmFormDesign.formulaANDDescription':
+    'Check if multiple conditions are met simultaneously. If all are met, return TRUE; otherwise, return FALSE',
   'crmFormDesign.amount': 'Amount',
   'crmFormDesign.CLUE_TO_CUSTOMER': 'Lead to Account',
   'crmFormDesign.CLUE_TO_OPPORTUNITY': 'Lead to Opportunity',

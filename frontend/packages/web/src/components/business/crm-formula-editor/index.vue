@@ -78,7 +78,7 @@
         </div>
         <div class="field-item">
           <div class="field-item-title"> {{ t('crmFormDesign.formulaFunction') }} </div>
-          <div class="field-item-content">
+          <div class="field-item-content max-h-[428px]">
             <n-scrollbar>
               <div v-for="fun of allFunctionSource" class="field-fun-item" @mousedown.prevent="insertField(fun)">
                 <div
@@ -235,7 +235,16 @@
   import { serializeFormulaFromAst, tokenizeFromSource } from './parseSource/serializeFormulaFromAst';
   import tokenizeFromEditor from './tokenizer';
   import { FormulaDiagnostic, FormulaFieldMeta } from './types';
-  import { deleteAtomicNode, findLeftAtomicDeep, insertRangeAtomic, safeParseFormula } from './utils';
+  import {
+    deleteAtomicNode,
+    ensureFnArgsHasCaretText,
+    findLeftAtomicDeep,
+    getSelectionRange,
+    insertRangeAtomic,
+    isRangeInsideSameFnArgs,
+    placeCaretAtEnd,
+    safeParseFormula,
+  } from './utils';
 
   const { t } = useI18n();
 
@@ -741,6 +750,29 @@
     }
   }
 
+  function handleBackspace(event: KeyboardEvent) {
+    const range = getSelectionRange();
+    if (!range) return;
+
+    // 如果选区完全位于同一个函数参数区内，按普通内容删除处理
+    const sameFnArgs = isRangeInsideSameFnArgs(range);
+    if (sameFnArgs) {
+      // 有选区：只删选中的参数内容
+      if (!range.collapsed) {
+        event.preventDefault();
+        range.deleteContents();
+        ensureFnArgsHasCaretText(sameFnArgs);
+        placeCaretAtEnd(sameFnArgs);
+        return;
+      }
+
+      // 光标在参数区内：交给浏览器默认 Backspace 行为
+      return;
+    }
+    // 否则删除原子dom
+    handleBackspaceAtomic(event);
+  }
+
   function normalizePastedText(text: string) {
     return text
       .replace(/[\u200B-\u200D\uFEFF]/g, '')
@@ -776,6 +808,9 @@
 
     const text = e.clipboardData?.getData('text/plain') ?? '';
     const normalized = normalizePastedText(text);
+    if (text) {
+      handleFocus();
+    }
 
     const plain = e.clipboardData?.getData('text/plain') ?? '';
     const html = e.clipboardData?.getData('text/html') ?? '';
@@ -795,7 +830,7 @@
 
   onMounted(() => {
     initFormula();
-    editor.value?.addEventListener('keydown', handleBackspaceAtomic);
+    editor.value?.addEventListener('keydown', handleBackspace);
     editor.value?.addEventListener('paste', handlePaste);
   });
 
