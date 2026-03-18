@@ -262,6 +262,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         key: 'departmentName',
       },
     ],
+    [FormDesignKeyEnum.ORDER_SNAPSHOT]: [
+      {
+        title: t('org.department'),
+        key: 'departmentName',
+      },
+    ],
   };
   const staticFields = [
     {

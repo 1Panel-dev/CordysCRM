@@ -51,7 +51,8 @@
     v-model:visible="showDetailDrawer"
     :sourceId="activeSourceId"
     :readonly="props.readonly"
-    @refresh="searchData"
+    @refresh="searchData(undefined, activeSourceId)"
+    @delete="removeItemFromList(activeSourceId)"
     @open-contract-drawer="showContractDrawer"
   />
   <CrmFormCreateDrawer
@@ -63,7 +64,7 @@
     :link-form-key="FormDesignKeyEnum.CONTRACT"
     :link-form-info="linkFormInfo"
     :link-scenario="FormLinkScenarioEnum.CONTRACT_TO_ORDER"
-    @saved="() => searchData()"
+    @saved="handleFormCreateSaved"
   />
 </template>
 
@@ -254,6 +255,7 @@
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_ORDER, { id });
   }
 
+  const tableRemoveRefreshId = ref('');
   async function handleDelete(row: OrderItem) {
     openModal({
       type: 'error',
@@ -265,7 +267,7 @@
         try {
           await deleteOrder(row.id);
           Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
+          tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -342,7 +344,7 @@
         );
       },
       contractId: (row: OrderItem) => {
-        return props.isContractTab || props.readonly || !hasAnyPermission(['CONTRACT:READ'])
+        return props.isContractTab || !hasAnyPermission(['CONTRACT:READ'])
           ? h(
               CrmNameTooltip,
               { text: row.contractName },
@@ -401,15 +403,17 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
-  function searchData(val?: string) {
+  function searchData(val?: string, refreshId?: string) {
     setLoadListParams({
       keyword: val ?? keyword.value,
       viewId: activeTab.value,
       ...(props.formKey === FormDesignKeyEnum.CONTRACT_ORDER ? { contractId: props.sourceId } : {}),
       ...(props.formKey === FormDesignKeyEnum.CUSTOMER_ORDER ? { customerId: props.sourceId } : {}),
     });
-    loadList();
-    crmTableRef.value?.scrollTo({ top: 0 });
+    loadList(false, refreshId);
+    if (!refreshId) {
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
 
   watch(
@@ -425,6 +429,31 @@
       searchData();
     }
   });
+
+  function handleFormCreateSaved(res: any) {
+    if (needInitDetail.value) {
+      searchData(undefined, res.id);
+    } else {
+      searchData();
+    }
+  }
+
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
+    }
+  );
 
   watch(
     () => activeTab.value,
