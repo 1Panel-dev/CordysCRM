@@ -255,3 +255,79 @@ export function findLeftAtomicDeep(container: Node, offset: number): HTMLElement
 
   return null;
 }
+
+/**
+ * 获取当前文本选择范围
+ * @returns Range对象或null（如果没有选择）
+ */
+export function getSelectionRange(): Range | null {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return null;
+  return selection.getRangeAt(0);
+}
+
+/**
+ * 从指定节点开始向上查找匹配选择器的最近元素
+ * @param node 起始节点
+ * @param selector CSS选择器
+ * @returns 匹配的HTMLElement或null（如果未找到）
+ */
+export function closestElement(node: Node | null, selector: string): HTMLElement | null {
+  if (!node) return null;
+
+  let current: Node | null = node.nodeType === Node.ELEMENT_NODE ? node : node.parentNode;
+
+  while (current) {
+    if (current.nodeType === Node.ELEMENT_NODE) {
+      const el = current as HTMLElement;
+      if (el.matches(selector)) {
+        return el;
+      }
+    }
+    current = current.parentNode;
+  }
+
+  return null;
+}
+
+/**
+ * 检查选择范围是否完全在同一个函数参数容器内
+ * @param range 文本选择范围
+ * @returns 包含选择范围的.fn-args元素或null（如果不在同一参数容器内）
+ */
+export function isRangeInsideSameFnArgs(range: Range): HTMLElement | null {
+  const startArgs = closestElement(range.startContainer, '.fn-args');
+  const endArgs = closestElement(range.endContainer, '.fn-args');
+
+  if (startArgs && endArgs && startArgs === endArgs) {
+    return startArgs;
+  }
+
+  return null;
+}
+
+/**
+ * 确保函数参数容器有文本节点，以便光标可以定位
+ * @param argsEl 函数参数容器元素
+ */
+export function ensureFnArgsHasCaretText(argsEl: HTMLElement) {
+  if (!argsEl.firstChild) {
+    argsEl.appendChild(document.createTextNode(''));
+  }
+}
+
+/**
+ * 将光标放置在元素内容的末尾
+ * @param el 目标元素
+ */
+export function placeCaretAtEnd(el: HTMLElement) {
+  const selection = window.getSelection();
+  if (!selection) return;
+
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+}

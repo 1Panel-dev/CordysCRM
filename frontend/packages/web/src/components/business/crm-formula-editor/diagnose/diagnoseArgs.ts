@@ -70,7 +70,7 @@ export default function diagnoseArgs(fnNode: FunctionNode, args: ASTNode[], toke
     }
   }
 
-  if (args?.length >= 2 && commaTokens.length === 0) {
+  if (args?.length >= 2 && commaTokens.length !== args.length - 1) {
     diagnostics.push({
       type: 'error',
       code: FormulaErrorCode.MISSING_SEPARATOR,
