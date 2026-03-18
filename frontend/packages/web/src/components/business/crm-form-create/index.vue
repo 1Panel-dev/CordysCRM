@@ -631,6 +631,24 @@
       // 去空格
       result[key] = result[key]?.replace(/[\s\uFEFF\xA0]+/g, '');
     }
+    if ([FieldTypeEnum.SELECT, FieldTypeEnum.RADIO].includes(item.type)) {
+      // 处理单选/下拉选择字段，传value值
+      const currentOption = item.options?.find((e) => e.value === result[key]);
+      if (currentOption) {
+        result[key] = currentOption.value;
+      } else {
+        result[key] = '';
+      }
+    }
+    if ([FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.CHECKBOX].includes(item.type)) {
+      // 处理多选/复选字段，传value数组
+      const currentOptions = item.options?.filter((e) => result[key]?.includes(e.value));
+      if (currentOptions) {
+        result[key] = currentOptions.map((e) => e.value);
+      } else {
+        result[key] = [];
+      }
+    }
   }
 
   function transformSubFieldsValue(item: FormCreateField, result: Record<string, any>[]) {
