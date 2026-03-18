@@ -69,6 +69,7 @@
             and (
             so.name like concat('%', #{request.keyword},'%')
             or c.name like concat('%', #{request.keyword},'%')
+            or cc.name like concat('%', #{request.keyword},'%')
             )
         </if>
         <if test="source and request.keyword != null and request.keyword != ''">
@@ -199,10 +200,17 @@
                 </include>
             </when>
             <when test="condition.name == 'amount'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="so.amount"/>
-                </include>
+                <choose>
+                    <when test="condition.operator == 'EMPTY'">
+                        so.amount is null
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="so.amount"/>
+                        </include>
+                    </otherwise>
+                </choose>
             </when>
             <when test="condition.name == 'owner'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
