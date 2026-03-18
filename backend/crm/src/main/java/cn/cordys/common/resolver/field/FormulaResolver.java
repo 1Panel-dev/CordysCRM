@@ -21,12 +21,19 @@ public class FormulaResolver extends AbstractModuleFieldResolver<FormulaField> {
 
     @Override
     public Object convertToValue(FormulaField numberField, String value) {
-        return value == null ? null : new BigDecimal(value);
+        return transformToValue(numberField, value);
     }
 
     @Override
     public Object transformToValue(FormulaField numberField, String value) {
-        return value == null ? null : new BigDecimal(value);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return new BigDecimal(value);
+        } catch (Exception e) {
+            return value;
+        }
     }
 
     @Override
