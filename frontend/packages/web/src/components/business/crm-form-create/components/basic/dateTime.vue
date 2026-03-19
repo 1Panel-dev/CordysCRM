@@ -26,7 +26,7 @@
       :placeholder="props.fieldConfig.placeholder"
       :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       class="w-full"
-      :status="props.feedback ? 'error' : 'success'"
+      :status="props.feedback ? 'error' : undefined"
       @update-value="($event) => emit('change', $event)"
     >
     </n-date-picker>

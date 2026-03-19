@@ -30,7 +30,7 @@
       :fieldConfig="props.fieldConfig"
       :disabled-selection="props.disabledSelection"
       :hide-child-tag="props.hideChildTag"
-      :status="props.feedback ? 'error' : 'success'"
+      :status="props.feedback ? 'error' : undefined"
       @delete="emit('delete', $event)"
       @change="($event, source, fields) => emit('change', $event, source, fields)"
     />

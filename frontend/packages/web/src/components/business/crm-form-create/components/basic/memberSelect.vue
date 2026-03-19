@@ -33,7 +33,7 @@
           : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
       "
       :class="props.isSubTableField ? '!w-[150px]' : ''"
-      :status="props.feedback ? 'error' : 'success'"
+      :status="props.feedback ? 'error' : undefined"
       @confirm="handleConfirm"
       @delete-tag="handleConfirm"
     />
