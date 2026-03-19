@@ -29,6 +29,7 @@
     mergeUniqueOptions,
     normalizeNumber,
   } from '@lib/shared/method/formCreate';
+  import { isNotEmpty } from '@lib/shared/method/is';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -186,17 +187,18 @@
     props.subFields.forEach((field) => {
       const key = field.resourceFieldId ? field.id : field.businessKey || field.id;
       if (field.type === FieldTypeEnum.INPUT_NUMBER) {
-        newRow[key] = field.resourceFieldId
-          ? formatNumberValue(field.defaultValue ?? 0, field)
-          : field.defaultValue ?? null;
+        newRow[key] =
+          field.resourceFieldId && isNotEmpty(field.defaultValue)
+            ? formatNumberValue(field.defaultValue, field)
+            : field.defaultValue ?? null;
       } else if (field.type === FieldTypeEnum.FORMULA) {
-        newRow[key] = field.defaultValue ?? 0;
+        newRow[key] = field.resourceFieldId ? null : field.defaultValue ?? null;
       } else if (
         [FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.PICTURE].includes(field.type)
       ) {
         newRow[key] = [];
       } else {
-        newRow[key] = field.defaultValue ?? '';
+        newRow[key] = field.resourceFieldId ? '' : field.defaultValue ?? '';
       }
     });
     return newRow;
