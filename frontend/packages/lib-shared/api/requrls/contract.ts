@@ -10,6 +10,7 @@ export const GetContractFormSnapshotConfigUrl = '/contract/module/form/snapshot'
 export const GetContractTabUrl = '/contract/tab'; // 合同tab显隐
 export const ChangeContractStatusUrl = '/contract/stage/update';
 export const BatchApproveContractUrl = '/contract/batch/approval';
+export const BatchUpdateContractUrl = '/contract/batch/update';
 export const ApproveContractUrl = '/contract/approval';
 export const RevokeContractUrl = '/contract/revoke';
 export const ContractStatisticUrl = '/contract/statistic';

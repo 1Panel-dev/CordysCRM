@@ -47,6 +47,7 @@ import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
@@ -819,6 +820,63 @@ public class ContractService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         } else {
             return BigDecimal.ZERO;
+        }
+    }
+
+    /**
+     * 批量更新合同
+     *
+     * @param request        批量编辑参数
+     * @param userId         当前用户ID
+     * @param organizationId 当前组织ID
+     */
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+        BaseField field = contractFieldService.getAndCheckField(request.getFieldId(), organizationId);
+        // getAndCheckField 走的是 getConfig()，不会设置 businessKey，需要手动补充
+        moduleFormService.setFieldBusinessParam(field);
+        List<Contract> originContracts = contractMapper.selectByIds(request.getIds());
+        contractFieldService.batchUpdate(request, field, originContracts, Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, organizationId);
+
+        // 批量更新后重建每条合同的快照
+        ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(organizationId);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+
+        // 批量删除旧快照（1次）
+        LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
+        delWrapper.in(ContractSnapshot::getContractId, request.getIds());
+        snapshotBaseMapper.deleteByLambda(delWrapper);
+
+        // 批量重新获取最新合同数据，因为业务字段已更新（1次替代N次）
+        List<Contract> latestContracts = contractMapper.selectByIds(request.getIds());
+        Map<String, Contract> latestContractMap = latestContracts.stream()
+                .collect(Collectors.toMap(Contract::getId, c -> c));
+
+        // 批量获取所有合同的自定义字段值（1次替代N次）
+        Map<String, List<BaseModuleFieldValue>> fieldMap = contractFieldService.getResourceFieldMap(request.getIds(), true);
+
+        // 逐条构建快照，批量写入
+        List<ContractSnapshot> snapshots = new ArrayList<>();
+        for (String id : request.getIds()) {
+            Contract contract = latestContractMap.get(id);
+            if (contract == null) continue;
+            List<BaseModuleFieldValue> contractFields = fieldMap.getOrDefault(id, Collections.emptyList());
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(contractFields, moduleFormConfigDTO, contractFieldService, id);
+            ContractGetResponse response = get(contract, resolveFieldValues, moduleFormConfigDTO);
+            // 过滤空值（与 saveSnapshot 保持一致）
+            if (CollectionUtils.isNotEmpty(response.getModuleFields())) {
+                response.setModuleFields(response.getModuleFields().stream()
+                        .filter(f -> f.getFieldValue() != null && StringUtils.isNotBlank(f.getFieldValue().toString()) && !"[]".equals(f.getFieldValue().toString()))
+                        .toList());
+            }
+            ContractSnapshot snapshot = new ContractSnapshot();
+            snapshot.setId(IDGenerator.nextStr());
+            snapshot.setContractId(id);
+            snapshot.setContractProp(JSON.toJSONString(saveModuleFormConfigDTO));
+            snapshot.setContractValue(JSON.toJSONString(response));
+            snapshots.add(snapshot);
+        }
+        if (CollectionUtils.isNotEmpty(snapshots)) {
+            snapshotBaseMapper.batchInsert(snapshots);
         }
     }
 

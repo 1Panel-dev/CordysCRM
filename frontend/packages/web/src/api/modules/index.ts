@@ -433,6 +433,7 @@ export const {
   approvalContract,
   revokeContract,
   batchApproveContract,
+  batchUpdateContract,
   getContractFormSnapshotConfig,
   updateContract,
   deleteContract,
