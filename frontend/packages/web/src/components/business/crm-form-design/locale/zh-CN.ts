@@ -123,6 +123,7 @@ export default {
   'crmFormDesign.formActionButtonPosition': '表单操作按钮位置',
   'crmFormDesign.serialNumberRule': '流水号规则',
   'crmFormDesign.serialNumberRuleTip': '更改规则会重新计数',
+  'crmFormDesign.serialNumberRuleAutoCountTip': '{number} 位数字，不自动重置',
   'crmFormDesign.fixedChar': '固定字符',
   'crmFormDesign.submitDate': '提交日期',
   'crmFormDesign.autoCount': '自动计数',

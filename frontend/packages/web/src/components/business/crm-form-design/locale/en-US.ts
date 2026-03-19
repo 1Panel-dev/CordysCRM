@@ -125,6 +125,7 @@ export default {
   'crmFormDesign.formActionButtonPosition': 'Form Action Button Position',
   'crmFormDesign.serialNumberRule': 'Serial Number Rule',
   'crmFormDesign.serialNumberRuleTip': 'Changing the rules will reset the count',
+  'crmFormDesign.serialNumberRuleAutoCountTip': '{number} digits, not automatically reset',
   'crmFormDesign.fixedChar': 'Fixed Character',
   'crmFormDesign.submitDate': 'Submission Date',
   'crmFormDesign.autoCount': 'Auto Count',
