@@ -23,6 +23,7 @@ import cn.cordys.crm.customer.dto.request.ContractOrderPageRequest;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -149,6 +150,13 @@ public class ContractController {
     @Operation(summary = "批量审核通过/不通过")
     public BatchAffectSkipResponse batchApproval(@Validated @RequestBody ContractApprovalBatchRequest request) {
         return contractService.batchApprovalContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/batch/update")
+    @RequiresPermissions(PermissionConstants.CONTRACT_UPDATE)
+    @Operation(summary = "批量更新合同")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        contractService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
