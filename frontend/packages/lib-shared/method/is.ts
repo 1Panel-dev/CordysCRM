@@ -47,3 +47,8 @@ export function isEmptyObject(obj: any): boolean {
 export function isExist(obj: any): boolean {
   return obj || obj === 0;
 }
+
+// 判断变量非空值
+export function isNotEmpty(obj: any): boolean {
+  return obj !== undefined && obj !== null && obj !== '';
+}
