@@ -540,7 +540,7 @@
         return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
       opportunityId: (row: QuotationItem) => {
-        return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ'])
+        return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']) && row.opportunityName
           ? h(
               CrmTableButton,
               {
