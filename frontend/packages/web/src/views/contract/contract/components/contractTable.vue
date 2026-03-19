@@ -95,6 +95,13 @@
   />
   <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="batchOperationName" />
   <businessTitleDrawer v-model:visible="showBusinessTitleDetailDrawer" :source-id="activeBusinessTitleSourceId" />
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="fieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.CONTRACT"
+    @refresh="handleRefresh"
+  />
 </template>
 
 <script setup lang="ts">
@@ -118,6 +125,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -196,6 +204,16 @@
     checkedRowKeys.value = [];
   }
 
+  const showEditModal = ref(false);
+  function handleBatchEdit() {
+    showEditModal.value = true;
+  }
+
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    tableRefreshId.value += 1;
+  }
+
   const showApprovalModal = ref(false);
   const batchOperationName = ref('');
   const batchResult = ref<BatchOperationResult>({
@@ -219,6 +237,9 @@
       case 'approval':
         showApprovalModal.value = true;
         batchOperationName.value = t('common.batchApproval');
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
         break;
       default:
         break;
@@ -530,6 +551,11 @@
           label: t('common.exportChecked'),
           key: 'exportChecked',
           permission: ['CONTRACT:EXPORT'],
+        },
+        {
+          label: t('common.batchEdit'),
+          key: 'batchEdit',
+          permission: ['CONTRACT:UPDATE'],
         },
         ...(dicApprovalEnable.value
           ? [

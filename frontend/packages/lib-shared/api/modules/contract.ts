@@ -44,6 +44,7 @@ import {
   DeletePaymentPlanViewUrl,
   DragPaymentPlanViewUrl,
   BatchApproveContractUrl,
+  BatchUpdateContractUrl,
   ApproveContractUrl,
   RevokeContractUrl,
   PaymentRecordPageUrl,
@@ -142,6 +143,7 @@ import type {
   ContractInvoiceDetail,
 } from '@lib/shared/models/contract';
 import type { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
+import type { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
 export default function useContractApi(CDR: CordysAxios) {
   // 合同列表
   function getContractList(data: TableQueryParams) {
@@ -215,6 +217,10 @@ export default function useContractApi(CDR: CordysAxios) {
 
   function batchApproveContract(data: BatchUpdateQuotationStatusParams) {
     return CDR.post<BatchOperationResult>({ url: BatchApproveContractUrl, data });
+  }
+
+  function batchUpdateContract(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateContractUrl, data });
   }
 
   function approvalContract(data: ApprovalContractParams) {
@@ -701,6 +707,7 @@ export default function useContractApi(CDR: CordysAxios) {
     getContractFormConfig,
     getContractFormSnapshotConfig,
     batchApproveContract,
+    batchUpdateContract,
     approvalContract,
     revokeContract,
     // 回款计划

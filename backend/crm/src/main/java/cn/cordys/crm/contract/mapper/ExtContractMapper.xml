@@ -472,4 +472,40 @@
             update_time = #{updateTime}
         where id = #{id}
     </update>
+
+    <update id="batchUpdate">
+        UPDATE contract
+        <set>
+            <if test="request.fieldName == 'owner'">
+                owner = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'customerId'">
+                customer_id = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'amount'">
+                amount = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'number'">
+                number = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'stage'">
+                stage = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'startTime'">
+                start_time = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'endTime'">
+                end_time = #{request.fieldValue},
+            </if>
+            update_time = #{request.updateTime},
+            update_user = #{request.updateUser}
+        </set>
+        WHERE id IN
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 </mapper>

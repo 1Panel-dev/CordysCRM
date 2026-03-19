@@ -6,6 +6,7 @@ import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -29,4 +30,6 @@ public interface ExtContractMapper {
     void updateStage(@Param("id") String id, @Param("stage") String stage, @Param("userId") String userId, @Param("updateTime") long updateTime);
 
     List<Contract> selectByTimestamp(@Param("organizationId") String organizationId, @Param("timestampOld") long timestampOld, @Param("timestamp") long timestamp);
+
+    void batchUpdate(@Param("request") BatchUpdateDbParam request);
 }
