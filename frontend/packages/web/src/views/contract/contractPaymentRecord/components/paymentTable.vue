@@ -356,7 +356,7 @@
         );
       },
       contractId: (row: PaymentRecordItem) => {
-        return props.isContractTab || !hasAnyPermission(['CONTRACT:READ'])
+        return props.isContractTab || !row.contractName || !hasAnyPermission(['CONTRACT:READ'])
           ? h(
               CrmNameTooltip,
               { text: row.contractName },
@@ -375,7 +375,7 @@
             );
       },
       paymentPlanId: (row: PaymentRecordItem) => {
-        return props.isContractTab || !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ'])
+        return props.isContractTab || !row.paymentPlanName || !hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ'])
           ? h(
               CrmNameTooltip,
               { text: row.paymentPlanName },

@@ -344,7 +344,7 @@
         );
       },
       contractId: (row: OrderItem) => {
-        return props.isContractTab || !hasAnyPermission(['CONTRACT:READ'])
+        return props.isContractTab || !hasAnyPermission(['CONTRACT:READ']) || !row.contractName
           ? h(
               CrmNameTooltip,
               { text: row.contractName },
@@ -364,6 +364,7 @@
       },
       customerId: (row: OrderItem) => {
         return props.isCustomerTab ||
+          !row.customerName ||
           (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
           (row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
           ? h(

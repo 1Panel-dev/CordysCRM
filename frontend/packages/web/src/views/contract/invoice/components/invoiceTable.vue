@@ -437,7 +437,7 @@
         );
       },
       contractId: (row: ContractInvoiceItem) => {
-        return props.isContractTab || !hasAnyPermission(['CONTRACT:READ'])
+        return props.isContractTab || !hasAnyPermission(['CONTRACT:READ']) || !row.contractName
           ? h(
               CrmNameTooltip,
               { text: row.contractName },

@@ -61,7 +61,7 @@
             {{ item.label }}
           </div>
           <CrmTableButton
-            v-if="canOpenDataSource(item)"
+            v-if="canOpenDataSource(item) && item.value"
             class="crm-form-description-link-button flex-1 overflow-hidden"
             :class="`justify-${props.valueAlign ?? 'end'}`"
             @click="openDataSource(item)"
@@ -71,10 +71,17 @@
             </template>
             {{ item.value }}
           </CrmTableButton>
-          <n-tooltip v-else :delay="300">
+          <n-tooltip
+            v-else
+            :delay="300"
+            :placement="(props.tooltipPosition || item.tooltipPosition) ?? 'top-start'"
+            :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"
+          >
             <template #trigger>
               <div class="one-line-text">
-                {{ item.value }}
+                {{
+                  item.value === undefined || item.value === null || item.value?.toString() === '' ? '-' : item.value
+                }}
               </div>
             </template>
             {{ item.value }}

@@ -449,7 +449,8 @@
         );
       },
       customerId: (row: ContractItem) => {
-        return (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
+        return !row.customerName ||
+          (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
           (row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
           ? h(
               CrmNameTooltip,
