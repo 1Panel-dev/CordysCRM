@@ -622,55 +622,61 @@
       <!-- 流水号属性 -->
       <div v-if="fieldConfig.type === FieldTypeEnum.SERIAL_NUMBER" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
-          {{ t('crmFormDesign.serialNumberRule') }}
-          <n-tooltip trigger="hover">
-            <template #trigger>
-              <CrmIcon
-                type="iconicon_help_circle"
-                class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
-              />
-            </template>
-            {{ t('crmFormDesign.serialNumberRuleTip') }}
-          </n-tooltip>
+          <div class="flex items-center gap-[8px]">
+            {{ t('crmFormDesign.serialNumberRule') }}
+            <n-tooltip trigger="hover">
+              <template #trigger>
+                <CrmIcon
+                  type="iconicon_help_circle"
+                  class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                />
+              </template>
+              {{ t('crmFormDesign.serialNumberRuleTip') }}
+            </n-tooltip>
+          </div>
+          <div
+            v-if="fieldConfig?.prefixType === 'formula'"
+            class="font-normal"
+            :class="`${
+              disabledClearFormulaConfig
+                ? 'cursor-not-allowed text-[var(--primary-6)]'
+                : 'cursor-pointer text-[var(--primary-8)]'
+            }`"
+            @click="handleClearFormulaField"
+          >
+            {{ t('common.clear') }}
+          </div>
         </div>
         <template v-if="fieldConfig.serialNumberRules">
-          <div class="flex items-center justify-between">
-            <n-radio-group
+          <n-input-group>
+            <n-select
               v-model:value="fieldConfig.prefixType"
-              name="prefixType"
+              class="w-[100px]"
+              :options="[
+                {
+                  label: t('crmFormDesign.fixedChar'),
+                  value: 'custom',
+                },
+                {
+                  label: t('crmFormDesign.formulaSetting'),
+                  value: 'formula',
+                },
+              ]"
               @update-value="
                 (val) => {
                   fieldConfig.prefixType = val;
                 }
               "
-            >
-              <n-radio-button key="custom" value="custom" :label="t('crmFormDesign.fixedChar')" />
-              <n-radio-button key="formula" value="formula" :label="t('crmFormDesign.formulaSetting')" />
-            </n-radio-group>
+            />
+            <n-input
+              v-if="fieldConfig.prefixType === 'custom'"
+              v-model:value="serialNumberRules1"
+              class="flex-1"
+              maxlength="10"
+              :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
+            />
 
-            <n-button
-              v-if="fieldConfig.prefixType !== 'custom'"
-              type="primary"
-              text
-              :disabled="!formulaConfig.source?.length || !!fieldConfig.resourceFieldId"
-              @click="handleClearFormulaField"
-            >
-              {{ t('common.clear') }}
-            </n-button>
-          </div>
-
-          <n-input
-            v-if="fieldConfig.prefixType === 'custom'"
-            v-model:value="serialNumberRules1"
-            class="flex-1"
-            maxlength="10"
-            :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
-          >
-            <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
-          </n-input>
-
-          <div v-else>
-            <div class="flex items-center gap-[8px]">
+            <div v-else class="flex flex-1">
               <n-button
                 type="default"
                 class="outline--secondary flex-1"
@@ -680,7 +686,8 @@
                 {{ formulaConfig.source?.length ? t('crmFormDesign.formulaHasBeenSet') : t('common.setting') }}
               </n-button>
             </div>
-          </div>
+          </n-input-group>
+
           <n-input
             v-model:value="serialNumberRules2"
             maxlength="10"
@@ -698,16 +705,30 @@
           >
             <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
           </n-input>
-          <n-input-number
-            v-model:value="serialNumberRules5"
-            :min="1"
-            :max="9"
-            :precision="0"
-            :show-button="false"
-            :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
-          >
-            <template #prefix>{{ t('crmFormDesign.autoCount') }}</template>
-          </n-input-number>
+          <div class="flex items-center gap-[8px]">
+            <n-input-number
+              v-model:value="serialNumberRules5"
+              :min="1"
+              :max="9"
+              :precision="0"
+              :show-button="false"
+              :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
+            >
+              <template #prefix>
+                <div class="text-[var(--primary-8)]">{{ t('crmFormDesign.autoCount') }}</div>
+              </template>
+            </n-input-number>
+            <n-tooltip trigger="hover">
+              <template #trigger>
+                <CrmIcon
+                  type="iconicon_error_circle"
+                  class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                />
+              </template>
+              {{ t('crmFormDesign.serialNumberRuleAutoCountTip', { number: serialNumberRules5 }) }}
+            </n-tooltip>
+          </div>
+
           <div
             class="flex flex-1 items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] px-[8px] py-[4px]"
           >
@@ -808,7 +829,21 @@
         "
         class="crm-form-design-config-item"
       >
-        <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.defaultValue') }}</div>
+        <div class="flex items-center justify-between">
+          <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.defaultValue') }}</div>
+          <div
+            v-if="fieldConfig?.defaultValueType === 'formula' && !isSubTableField"
+            class="crm-form-design-config-item-formula-clear"
+            :class="`${
+              disabledClearFormulaConfig
+                ? 'cursor-not-allowed text-[var(--primary-6)]'
+                : 'cursor-pointer text-[var(--primary-8)]'
+            }`"
+            @click="handleClearFormulaField"
+          >
+            {{ t('common.clear') }}
+          </div>
+        </div>
         <div
           v-if="[FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldConfig.type)"
           class="flex items-center gap-[8px]"
@@ -926,19 +961,11 @@
           :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
         />
         <template v-else>
-          <n-select
+          <n-radio-group
             v-if="fieldConfig.type === FieldTypeEnum.INPUT && !isSubTableField"
             v-model:value="fieldConfig.defaultValueType"
-            :options="[
-              {
-                label: t('crmFormDesign.custom'),
-                value: 'custom',
-              },
-              {
-                label: t('crmFormDesign.formulaSetting'),
-                value: 'formula',
-              },
-            ]"
+            name="defaultValueType"
+            class="crm-form-design-config-radio-group"
             :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
             @update-value="
               (val) => {
@@ -946,26 +973,16 @@
                 fieldConfig.defaultValue = null;
               }
             "
-          />
-          <!-- 默认值为公式 -->
-          <div
-            v-if="fieldConfig?.defaultValueType === 'formula' && !isSubTableField"
-            class="crm-form-design-config-item"
           >
-            <div class="crm-form-design-config-item-title">
-              <span> {{ t('crmFormDesign.formula') }}</span>
-              <n-button
-                type="primary"
-                text
-                :disabled="!formulaConfig.source?.length || !!fieldConfig.resourceFieldId"
-                @click="handleClearFormulaField"
-              >
-                {{ t('common.clear') }}
-              </n-button>
-            </div>
+            <n-radio-button key="custom" value="custom" :label="t('crmFormDesign.custom')" />
+            <n-radio-button key="formula" value="formula" :label="t('crmFormDesign.formulaSetting')" />
+          </n-radio-group>
+
+          <!-- 默认值为公式 -->
+          <div v-if="fieldConfig?.defaultValueType === 'formula' && !isSubTableField">
             <n-button
               type="default"
-              class="outline--secondary"
+              class="outline--secondary w-full"
               :disabled="!!fieldConfig.resourceFieldId"
               @click="handleCalculateFormula"
             >
@@ -1449,6 +1466,10 @@
     return safeParseFormula(fieldConfig.value.formula);
   });
 
+  const disabledClearFormulaConfig = computed(() => {
+    return !formulaConfig.value.source?.length || !!fieldConfig.value.resourceFieldId;
+  });
+
   function handleRuleChange(val: (string | number)[]) {
     fieldConfig.value.rules = val
       .map((e) => {
@@ -1798,7 +1819,6 @@
 
   function handleCalculateFormulaConfigSave(astValue?: string) {
     fieldConfig.value.formula = astValue;
-    console.log(fieldConfig.value, ' fieldConfig.value');
 
     showCalculateFormulaModal.value = false;
   }
@@ -1940,6 +1960,15 @@
     border-radius: var(--border-radius-small);
     .crm-form-design-color-select {
       @apply h-full w-full;
+    }
+  }
+  .crm-form-design-config-radio-group {
+    @apply flex;
+    .n-radio-button {
+      @apply flex-1;
+      :deep(.n-radio__label) {
+        text-align: center;
+      }
     }
   }
 </style>
