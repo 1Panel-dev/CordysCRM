@@ -14,7 +14,7 @@ function isNumericLikeNode(node: ASTNode): boolean {
   }
 
   if (node.type === 'field') {
-    return [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.DATE_TIME].includes(node.fieldType as any);
+    return [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.DATE_TIME, FieldTypeEnum.FORMULA].includes(node.fieldType as any);
   }
 
   if (node.type === 'binary') {

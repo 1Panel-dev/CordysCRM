@@ -34,63 +34,59 @@
             class="field-search-input !w-[calc(100%+2px)]"
             :placeholder="t('crmFormDesign.formulaByNameSearchPlaceholder')"
           />
-          <div class="field-item-content max-h-[400px]">
-            <n-scrollbar>
-              <CrmCollapse
-                v-for="(ele, index) of allFieldList"
-                :default-expand="true"
-                :name-key="ele.type"
-                class="field-item-collapse"
-              >
-                <template #header>
-                  <div class="px-[4px] text-[14px] font-medium text-[var(--text-n2)]">
-                    {{ t(ele.name) }}（{{ ele.children.length }}）
-                  </div>
-                </template>
-                <template v-if="ele.children.length > 0">
-                  <div
-                    v-for="item of ele.children"
-                    class="flex h-[32px] items-center justify-between rounded px-[4px] hover:bg-[var(--text-n9)]"
-                    @mousedown.prevent="insertField(item)"
-                  >
-                    <n-tooltip trigger="hover" :delay="300" placement="top-start">
-                      <template #trigger>
-                        <div class="one-line-text flex-1 cursor-pointer">
-                          {{ item.name }}
-                        </div>
-                      </template>
-                      {{ item.name }}
-                    </n-tooltip>
+          <div class="field-item-content">
+            <CrmCollapse
+              v-for="(ele, index) of allFieldList"
+              :default-expand="true"
+              :name-key="ele.type"
+              class="field-item-collapse"
+            >
+              <template #header>
+                <div class="px-[4px] text-[14px] font-medium text-[var(--text-n2)]">
+                  {{ t(ele.name) }}（{{ ele.children.length }}）
+                </div>
+              </template>
+              <template v-if="ele.children.length > 0">
+                <div
+                  v-for="item of ele.children"
+                  class="flex h-[32px] items-center justify-between rounded px-[4px] hover:bg-[var(--text-n9)]"
+                  @mousedown.prevent="insertField(item)"
+                >
+                  <n-tooltip trigger="hover" :delay="300" placement="top-start">
+                    <template #trigger>
+                      <div class="one-line-text flex-1 cursor-pointer">
+                        {{ item.name }}
+                      </div>
+                    </template>
+                    {{ item.name }}
+                  </n-tooltip>
 
-                    <CrmTag :type="colorThemeMap[ele.type]?.type || 'default'" class="flex-shrink-0" theme="light">
-                      {{ colorThemeMap[ele.type]?.label }}
-                    </CrmTag>
-                  </div>
-                </template>
-                <div v-else class="px-[4px] text-[var(--text-n4)]">{{ t('common.noData') }}</div>
-                <n-divider
-                  v-if="ele.children.length !== 0 && index !== allFieldList.length - 1"
-                  class="!mb-0 !mt-[16px]"
-                />
-              </CrmCollapse>
-            </n-scrollbar>
+                  <CrmTag :type="colorThemeMap[ele.type]?.type || 'default'" class="flex-shrink-0" theme="light">
+                    {{ colorThemeMap[ele.type]?.label }}
+                  </CrmTag>
+                </div>
+              </template>
+              <div v-else class="px-[4px] text-[var(--text-n4)]">{{ t('common.noData') }}</div>
+              <n-divider
+                v-if="ele.children.length !== 0 && index !== allFieldList.length - 1"
+                class="!mb-0 !mt-[16px]"
+              />
+            </CrmCollapse>
           </div>
         </div>
         <div class="field-item">
           <div class="field-item-title"> {{ t('crmFormDesign.formulaFunction') }} </div>
-          <div class="field-item-content max-h-[428px]">
-            <n-scrollbar>
-              <div v-for="fun of allFunctionSource" class="field-fun-item" @mousedown.prevent="insertField(fun)">
-                <div
-                  :style="{
-                    color: activeFun?.name === fun.name ? FUN_COLOR : 'var(--text-n1)',
-                  }"
-                >
-                  {{ fun.name }}
-                </div>
-                <div class="function-desc-text">{{ fun.description }}</div>
+          <div class="field-item-content">
+            <div v-for="fun of allFunctionSource" class="field-fun-item" @mousedown.prevent="insertField(fun)">
+              <div
+                :style="{
+                  color: activeFun?.name === fun.name ? FUN_COLOR : 'var(--text-n1)',
+                }"
+              >
+                {{ fun.name }}
               </div>
-            </n-scrollbar>
+              <div class="function-desc-text">{{ fun.description }}</div>
+            </div>
           </div>
         </div>
         <div class="field-item">
@@ -893,12 +889,15 @@
   .field-wrapper {
     @apply flex;
 
-    min-width: 250px;
+    max-height: 400px;
     border: 1px solid var(--text-n7);
     border-radius: 4px;
     background: var(--text-n9);
     .field-item {
-      @apply flex w-1/3  flex-1  flex-col;
+      @apply flex  w-1/3  flex-1  flex-col;
+      &:hover .field-item-content::-webkit-scrollbar-thumb {
+        @apply block;
+      }
 
       border-radius: 4px;
       .field-item-title {
@@ -916,11 +915,12 @@
         border-bottom: 1px solid var(--text-n7);
       }
       .field-item-content {
+        overflow-y: auto;
         padding: 12px;
-        @apply flex flex-1 flex-col;
-
         border-right: 1px solid var(--text-n7);
         background: var(--text-n10);
+        @apply flex flex-1 flex-col;
+        .crm-scroll-bar();
         .field-fun-item {
           padding: 0 4px;
           @apply cursor-pointer rounded;

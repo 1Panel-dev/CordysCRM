@@ -610,7 +610,6 @@
     // 计算组件的数据源标记source 用于获取数据源name
     if (
       formulaDataSource.value[item.id]?.parserName &&
-      !props.needInitDetail &&
       [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)
     ) {
       formulaDataSource.value[item.id].options = source;

@@ -69,7 +69,7 @@
             />
             <CrmInputNumber
               v-else-if="
-                item.type === FieldTypeEnum.INPUT_NUMBER ||
+                [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.type) ||
                 (item.type === FieldTypeEnum.INPUT_MULTIPLE &&
                   [OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(item.operator as OperatorEnum))
               "
