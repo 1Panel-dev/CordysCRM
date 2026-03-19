@@ -1610,12 +1610,17 @@
       )
         ? // 子表格里只能有一个价格表
           fullList.filter(
-            (item) => [FieldDataSourceTypeEnum.PRODUCT].includes(item.value) && item.formKey !== props.formKey
+            (item) =>
+              [FieldDataSourceTypeEnum.PRODUCT, FieldDataSourceTypeEnum.BUSINESS_TITLE].includes(item.value) &&
+              item.formKey !== props.formKey
           )
         : fullList.filter(
             (item) =>
-              [FieldDataSourceTypeEnum.PRODUCT, FieldDataSourceTypeEnum.PRICE].includes(item.value) &&
-              item.formKey !== props.formKey
+              [
+                FieldDataSourceTypeEnum.PRODUCT,
+                FieldDataSourceTypeEnum.PRICE,
+                FieldDataSourceTypeEnum.BUSINESS_TITLE,
+              ].includes(item.value) && item.formKey !== props.formKey
           );
     }
     return fullList.filter((item) => item.formKey !== props.formKey);
@@ -1819,7 +1824,6 @@
 
   function handleCalculateFormulaConfigSave(astValue?: string) {
     fieldConfig.value.formula = astValue;
-
     showCalculateFormulaModal.value = false;
   }
 
