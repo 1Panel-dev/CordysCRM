@@ -115,6 +115,9 @@ export function formatNumberByPattern(value: number, format: string): string {
  * 入口：TEXT(value, format)
  */
 export function formatTextValue(value: any, format: any): string {
+  if (value == null || value === '') {
+    return '';
+  }
   const fmt = toString(format).trim();
 
   if (!fmt) {
