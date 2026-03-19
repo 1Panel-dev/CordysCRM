@@ -145,13 +145,38 @@
   const logTypeOptions = computed(() => logTypeOption.map((e) => ({ ...e, label: t(e.label) })));
 
   // 查询条件
-  function dataDisabled(ts: number) {
+  function dataDisabled(ts: number, type: 'start' | 'end', range: [number, number] | null) {
     const currentDate = new Date();
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(currentDate.getMonth() - 6);
     const selectedDate = new Date(ts);
-    // 只能查询过去半年的
-    return selectedDate < sixMonthsAgo || selectedDate > currentDate;
+    const month = 30 * 24 * 60 * 60 * 1000; // 30天的毫秒数
+
+    // 不能选择未来时间
+    if (selectedDate > currentDate) {
+      return true;
+    }
+
+    // 根据选中的type类型限制时间范围
+    if (range) {
+      const [startTime, endTime] = range;
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+      const diffMonths =
+        start.valueOf() > end.valueOf()
+          ? Math.abs((selectedDate.getTime() - end.getTime()) / month)
+          : Math.abs((selectedDate.getTime() - start.getTime()) / month);
+
+      // 如果选择的是开始时间，限制不能超过6个月前
+      if (type === 'start' && diffMonths > 6) {
+        return true;
+      }
+
+      // 如果选择的是结束时间，限制不能超过6个月后
+      if (type === 'end' && diffMonths > 6) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   const moduleOptions = ref<CascaderOption[]>([]);
@@ -336,7 +361,6 @@
       padding: 24px 24px 8px;
     }
   }
-
   :deep(.n-form-item-feedback-wrapper) {
     min-height: 16px;
   }
