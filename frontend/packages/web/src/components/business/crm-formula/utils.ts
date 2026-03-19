@@ -145,3 +145,9 @@ export function flatAllFields(
 
   return result;
 }
+
+export function normalizeFormulaNumber(n: number): number {
+  if (!Number.isFinite(n)) return n;
+  // 去掉浮点尾巴
+  return Number(parseFloat(n.toFixed(12)));
+}

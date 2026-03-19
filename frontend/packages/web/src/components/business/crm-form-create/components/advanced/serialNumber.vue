@@ -97,7 +97,7 @@
 
     if (Object.is(next, value.value)) return;
     value.value = next;
-  }, 100);
+  }, 10);
 
   const displayValue = computed(() => (props.needInitDetail ? value.value : ''));
 

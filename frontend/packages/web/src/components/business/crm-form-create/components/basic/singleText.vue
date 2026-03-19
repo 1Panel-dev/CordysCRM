@@ -129,7 +129,7 @@
     const next = result.normalizedResult;
 
     if (Object.is(next, value.value)) return;
-    value.value = next;
+    value.value = String(next);
   }, 100);
 
   const formulaDisplayInfo = computed(() =>

@@ -1,4 +1,6 @@
 // /formula-runtime/functions/sum.ts
+import { normalizeFormulaNumber } from '@/components/business/crm-formula/utils';
+
 import { EvaluateContext } from '../types';
 
 export default function SUM(ctx: EvaluateContext, ...args: any[]): number {
@@ -12,5 +14,5 @@ export default function SUM(ctx: EvaluateContext, ...args: any[]): number {
     }
   });
 
-  return total;
+  return normalizeFormulaNumber(total);
 }
