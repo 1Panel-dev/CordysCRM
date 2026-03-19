@@ -83,13 +83,22 @@ function parseDateWithPrecision(raw: string | number | Date): number {
 }
 
 export function resolveFieldValue(rawVal: any, node: IRNode, ctx?: EvaluateContext): any {
-  if (rawVal == null || rawVal === '') return 0;
+  const meta = node.type === 'field' ? ctx?.getFieldMeta?.(node.fieldId) : undefined;
+  if (rawVal == null || rawVal === '') {
+    if (meta?.valueType === 'date') {
+      return null;
+    }
+
+    if (meta?.valueType === 'number') {
+      return 0;
+    }
+
+    return '';
+  }
 
   if (Array.isArray(rawVal)) {
     return rawVal;
   }
-
-  const meta = node.type === 'field' ? ctx?.getFieldMeta?.(node.fieldId) : undefined;
 
   const valueType = meta?.valueType;
   const numberType = meta?.numberType;
