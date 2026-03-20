@@ -92,6 +92,7 @@ public class OrderService {
     private BaseMapper<Customer> customerBaseMapper;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
+	public static final int MAX_NUMBER_LENGTH = 50;
 
     /**
      * 新建订单
@@ -117,6 +118,9 @@ public class OrderService {
         BeanUtils.copyBean(order, request);
         order.setId(IDGenerator.nextStr());
         order.setNumber(createOrderNumber(moduleFormConfigDTO, orgId, request.getNumber()));
+		if (order.getNumber().length() > MAX_NUMBER_LENGTH) {
+			throw new GenericException(Translator.get("order.number.length.exceed"));
+		}
         order.setStage(stageConfigList.getFirst().getId());
         order.setOrganizationId(orgId);
         order.setCreateTime(System.currentTimeMillis());
