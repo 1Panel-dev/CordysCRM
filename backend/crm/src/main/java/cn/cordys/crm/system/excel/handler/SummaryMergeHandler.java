@@ -26,7 +26,6 @@ public record SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeC
 			int start = region[0] + offset;
 			int end = region[1] + offset;
 			for (Integer colIndex : summaryCols) {
-				// 合计
 				BigDecimal total = BigDecimal.ZERO;
 				boolean showThousandsSeparator = false;
 				boolean hasPercent = false;
@@ -58,14 +57,18 @@ public record SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeC
 						}
 					}
 				}
-				// 只写入第一行, 清空其他行的汇总值 (不同值合并展示有误)
-				Cell sumCell = sheet.getRow(start).getCell(colIndex);
-				sumCell.setCellValue(InputNumberField.formatNumber(total, decimalPlaces, showThousandsSeparator, hasPercent));
-				Workbook wb = sheet.getWorkbook();
-				CellStyle style = wb.createCellStyle();
-				style.setAlignment(HorizontalAlignment.RIGHT);
-				style.setVerticalAlignment(VerticalAlignment.CENTER);
-				sumCell.setCellStyle(style);
+				// 将汇总值写入合并后的单元格, 空值不展示
+				if (total.compareTo(BigDecimal.ZERO) != 0) {
+					Cell sumCell = sheet.getRow(start).getCell(colIndex);
+					sumCell.setCellValue(InputNumberField.formatNumber(total, decimalPlaces, showThousandsSeparator, hasPercent));
+					Workbook wb = sheet.getWorkbook();
+					CellStyle style = wb.createCellStyle();
+					style.setAlignment(HorizontalAlignment.RIGHT);
+					style.setVerticalAlignment(VerticalAlignment.CENTER);
+					sumCell.setCellStyle(style);
+				}
+
+				// 只保留第一行, 清空其他行汇总列的单元格值 (不同值合并展示有误)
 				for (int r = start + 1; r <= end; r++) {
 					sheet.getRow(r).getCell(colIndex).setCellValue("");
 				}
