@@ -1318,7 +1318,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           },
         ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
       }
-      if (props.linkFormInfo?.value && linkScenario) {
+      if (Object.keys(props.linkFormInfo?.value || {}).length && linkScenario) {
         // 如果有关联表单信息，则填充关联表单字段值
         fillLinkFormFieldValue(item, linkScenario);
       }
@@ -1332,7 +1332,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   function resetForm() {
     formDetail.value = {};
     fieldList.value.forEach((item) => {
-      item.initialOptions = [];
+      if (!item.resourceFieldId) {
+        item.initialOptions = [];
+      }
     });
     initFormFieldConfig(fieldList.value);
     initForm(props.linkScenario?.value);
