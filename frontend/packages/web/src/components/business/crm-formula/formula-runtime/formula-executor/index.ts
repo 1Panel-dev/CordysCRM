@@ -3,7 +3,7 @@ import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { FormCreateField } from '@/components/business/crm-form-create/types';
 import { safeParseFormula } from '@/components/business/crm-formula-editor/utils';
 
-import { flatAllFields, getFormulaDataSourceDisplayValue, hydrateIRNumberType } from '../../utils';
+import { flatAllFields, getFormulaDataSourceDisplayValue, hydrateIRNumberType, keepDecimal } from '../../utils';
 import registerBuiltinFunctions from '../functions';
 import { FieldMeta, FieldTypeMap, FormulaExecutorContext, FormulaExecutorResult, ValueType } from '../types';
 import evaluateIR from './evaluator';
@@ -93,12 +93,12 @@ export function normalizeFormulaResult(
   if (expectedType === 'number') {
     const num = Number(result);
     if (Number.isNaN(num)) return 0;
-    return Number(num.toFixed(decimalPlaces));
+    return keepDecimal(num, decimalPlaces);
   }
 
   switch (typeof result) {
     case 'number':
-      return Number(result.toFixed(decimalPlaces));
+      return keepDecimal(result, decimalPlaces);
     case 'string':
       return result;
     case 'boolean':

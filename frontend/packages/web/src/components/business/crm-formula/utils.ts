@@ -151,3 +151,11 @@ export function normalizeFormulaNumber(n: number): number {
   // 去掉浮点尾巴
   return Number(parseFloat(n.toFixed(12)));
 }
+
+/**
+ * 保留小数位，不进行四舍五入
+ */
+export function keepDecimal(value: number, digits = 2) {
+  const factor = 10 ** digits;
+  return Math.trunc(value * factor) / factor;
+}

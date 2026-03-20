@@ -3,6 +3,16 @@
  */
 import { CompareOperator } from '../types';
 
+const SECOND_MS = 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * 把 Excel serial 裁到秒精度
+ */
+export function normalizeSerialToSecond(serial: number): number {
+  return (Math.floor((serial * DAY_MS) / SECOND_MS) * SECOND_MS) / DAY_MS;
+}
+
 // 可选：用于 debug/告警（不想用就不传）
 export type RuntimeWarn = (msg: string) => void;
 

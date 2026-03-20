@@ -8,7 +8,8 @@ import {
 } from '@/components/business/crm-formula/formula-runtime/types';
 
 import { functionRegistry } from '../function-registry';
-import { excelCompare, toNumber } from '../runtime/excel-runtime';
+import { localDateToExcelSerial } from '../runtime/excel-date';
+import { excelCompare, normalizeSerialToSecond, toNumber } from '../runtime/excel-runtime';
 
 /**
  * Excel 日期计算的基准时间戳
@@ -52,9 +53,7 @@ function parseDateWithPrecision(raw: string | number | Date): number {
     // 毫秒时间戳
     if (raw > 1e10) {
       const d = new Date(raw);
-
-      // 如果你的日期字段是“纯日期”，建议只保留年月日
-      return dateToSerial(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+      return localDateToExcelSerial(d);
     }
 
     // 否则认为是 Excel serial
@@ -62,19 +61,17 @@ function parseDateWithPrecision(raw: string | number | Date): number {
   }
 
   if (raw instanceof Date) {
-    return dateToSerial(raw);
+    return localDateToExcelSerial(raw);
   }
 
   if (typeof raw === 'string') {
+    // YYYY-MM
     if (/^\d{4}-\d{2}$/.test(raw)) {
       return dateToSerial(`${raw}-01`);
     }
 
-    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-      return dateToSerial(raw);
-    }
-
-    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2})?$/.test(raw)) {
+    // YYYY-MM-DD / YYYY-MM-DD HH:mm:ss
+    if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
       return dateToSerial(raw);
     }
   }
@@ -106,7 +103,7 @@ export function resolveFieldValue(rawVal: any, node: IRNode, ctx?: EvaluateConte
   // ---------- date ----------
   if (valueType === 'date') {
     const serial = parseDateWithPrecision(rawVal);
-    return Math.floor(serial);
+    return serial;
   }
 
   // ---------- string ----------
@@ -212,9 +209,27 @@ export default function evaluateIR(node: IRNode, ctx: EvaluateContext): any {
     }
 
     case IRNodeType.Compare: {
-      const left = evaluateIR(node.left, ctx);
-      const right = evaluateIR(node.right, ctx);
-      return excelCompare(left, right, node.operator, ctx.warn);
+      let left = evaluateIR(node.left, ctx);
+      let right = evaluateIR(node.right, ctx);
+
+      const leftMeta = node.left.type === IRNodeType.Field ? ctx.getFieldMeta?.(node.left.fieldId) : undefined;
+
+      const rightMeta = node.right.type === IRNodeType.Field ? ctx.getFieldMeta?.(node.right.fieldId) : undefined;
+
+      const leftIsDate = leftMeta?.valueType === 'date';
+      const rightIsDate = rightMeta?.valueType === 'date';
+
+      // 只有日期比较才裁秒
+      if (leftIsDate || rightIsDate) {
+        if (typeof left === 'number') {
+          left = normalizeSerialToSecond(left);
+        }
+        if (typeof right === 'number') {
+          right = normalizeSerialToSecond(right);
+        }
+      }
+
+      return excelCompare(left, right, node.operator);
     }
 
     case IRNodeType.Function: {

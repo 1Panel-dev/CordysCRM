@@ -328,6 +328,7 @@
 
   function flatAllFields(fields: FormCreateField[]) {
     const result: (FormCreateField & { parentId?: string; parentName?: string; inSubTable?: boolean })[] = [];
+    const currentFieldId = props.fieldConfig.id;
     fields.forEach((field) => {
       if (field.subFields) {
         field.subFields.forEach((sub) => {
@@ -339,7 +340,7 @@
             inSubTable: true,
           });
         });
-      } else {
+      } else if (currentFieldId !== field.id) {
         result.push({
           ...field,
           inSubTable: false,

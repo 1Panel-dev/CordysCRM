@@ -119,6 +119,10 @@ export function formatTextValue(value: any, format: any): string {
     return '';
   }
   const fmt = toString(format).trim();
+  // 数字特例：当格式为空时显示空字符串
+  if (typeof value === 'number' && (format === '' || !format)) {
+    return '';
+  }
 
   if (!fmt) {
     return toString(value);
