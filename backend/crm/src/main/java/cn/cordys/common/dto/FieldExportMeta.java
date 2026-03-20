@@ -22,4 +22,6 @@ public class FieldExportMeta {
 	private String fieldId;
 
 	private String businessKey;
+
+	private String prefixId;
 }

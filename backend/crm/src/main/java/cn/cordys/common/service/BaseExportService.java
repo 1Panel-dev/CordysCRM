@@ -64,6 +64,7 @@ public abstract class BaseExportService {
 	 * 汇总字段前缀
 	 */
     private static final String SUM_PREFIX = "sum_";
+	private static final String UNDERLINE = "_";
     public static final String SLASH = "/";
 	/**
 	 * SXSSFWorkbook行访问窗口大小
@@ -328,9 +329,8 @@ public abstract class BaseExportService {
      * @return 单行记录值
      */
     public List<Object> transFieldValueWithSub(List<FieldExportMeta> metas, LinkedHashMap<String, Object> sysFieldValMap, Map<String, Object> normalFieldMap,
-											   Map<String, Object> rowMap) {
+											   Map<String, Object> subRowMap) {
 		List<Object> dataList = new ArrayList<>(metas.size());
-
 		for (FieldExportMeta meta : metas) {
 			BaseField field = meta.getField();
 			if (field == null) {
@@ -340,9 +340,13 @@ public abstract class BaseExportService {
 
 			String businessKey = meta.getBusinessKey();
 			String fieldId = meta.getFieldId();
-			Object value = null;
+			if (StringUtils.isNotEmpty(meta.getPrefixId())) {
+				businessKey = meta.getPrefixId() + UNDERLINE + meta.getBusinessKey();
+				fieldId = meta.getPrefixId() + UNDERLINE + meta.getFieldId();
+			}
 
-			// 引用ID不存在时, 先用Key尝试取值 (取值顺序: 系统字段值 > 普通字段值 > 行数据)
+			Object value = null;
+			// 引用ID不存在时, 先用Key尝试取值 (取值顺序: 系统字段值 > 普通字段值 > 子表行数据)
 			if (meta.isNoResource()) {
 				value = sysFieldValMap.get(businessKey);
 				if (value != null) {
@@ -351,15 +355,15 @@ public abstract class BaseExportService {
 				}
 				value = normalFieldMap.get(businessKey);
 				if (value == null) {
-					value = rowMap.get(businessKey);
+					value = subRowMap.get(businessKey);
 				}
 			}
-
+			// 兜底取值
 			if (value == null) {
 				value = normalFieldMap.get(fieldId);
 			}
 			if (value == null) {
-				value = rowMap.get(fieldId);
+				value = subRowMap.get(fieldId);
 			}
 
 			dataList.add(value == null ? null : transformFieldValue(meta.getResolver(), field, value));
@@ -575,7 +579,7 @@ public abstract class BaseExportService {
         ModuleFormConfigDTO formConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class))
                 .getBusinessFormConfig(exportParam.getFormKey(), exportParam.getOrgId());
         List<String> exportTitles = exportParam.getHeadList().stream().map(ExportHeadDTO::getTitle).toList();
-        List<BaseField> flattenFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).flattenFormAllFields(formConfig);
+        List<BaseField> flattenFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).flattenFormAllFieldsWithSubId(formConfig);
 		List<String> subTableIds = flattenFields.stream().filter(f -> f instanceof SubField && exportTitles.contains(f.getName())).map(BaseField::getId).toList();
         Map<String, BaseField> fieldConfigMap = flattenFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
         return ExportFieldParam.builder().subIds(new HashSet<>(subTableIds)).fieldConfigMap(fieldConfigMap)
@@ -592,12 +596,20 @@ public abstract class BaseExportService {
 	private List<FieldExportMeta> getExportFieldMeta(Map<String, BaseField> fieldConfigMap, List<String> heads) {
 		List<FieldExportMeta> metas = new ArrayList<>(heads.size());
 		for (String head : heads) {
+			FieldExportMeta meta = new FieldExportMeta();
 			String realHead = head;
+			// 子表格汇总字段截取
 			if (head.contains(SUM_PREFIX)) {
 				realHead = head.substring(head.indexOf(SUM_PREFIX) + SUM_PREFIX.length());
 			}
+			// 表头Key包含下划线, 含有子表格字段, 截取下划线前部分作为前缀ID, 用于取值区分不同子表格 (如果存在同名字段), 后半部分作为实际字段ID
+			if (realHead.contains(UNDERLINE)) {
+				String[] ks = realHead.split(UNDERLINE);
+				meta.setPrefixId(ks[0]);
+				realHead = ks[1];
+			}
+
 			BaseField field = fieldConfigMap.get(realHead);
-			FieldExportMeta meta = new FieldExportMeta();
 			meta.setHead(realHead);
 			meta.setField(field);
 			if (field != null) {
@@ -825,7 +837,8 @@ public abstract class BaseExportService {
 			}
 			for (int i = 0; i < list.size(); i++) {
 				Map<String,Object> row = alignedList.get(i);
-				row.putAll((Map<String,Object>) list.get(i));
+				Map<String,Object> subRowMap = (Map<String,Object>) list.get(i);
+				subRowMap.forEach((k,v) -> row.put(subFv.getFieldId() + UNDERLINE + k, v));
 			}
 		}
 		return alignedList;
