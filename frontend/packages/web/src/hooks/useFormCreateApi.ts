@@ -696,7 +696,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 const addressArr: string[] = linkField.value.split('-') || [];
                 formDetail.value[field.id] = addressArr.length
                   ? `${getCityPath(addressArr[0])}${
-                      addressArr.filter((e, i) => i > 0).length > 0
+                      addressArr.filter((e, i) => i > 0).length > 1
                         ? `-${addressArr.filter((e, i) => i > 0).join('-')}`
                         : ''
                     }`
