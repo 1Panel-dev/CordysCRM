@@ -32,7 +32,9 @@
               v-if="
                 ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
                   item.type
-                ) || !item.businessKey
+                ) ||
+                !item.businessKey ||
+                (item.type === FieldTypeEnum.SERIAL_NUMBER && item.resourceFieldId)
               "
               class="crm-form-design--composition-item-tools"
             >
@@ -56,6 +58,7 @@
                 </template>
                 {{ t('common.copy') }}
               </n-tooltip>
+
               <n-tooltip
                 v-if="!item.businessKey || item.resourceFieldId"
                 :delay="300"
