@@ -4,6 +4,7 @@
       <div id="detail">
         <CrmFormDescription
           :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
+          readonly
           :source-id="sourceId"
           :loadingDescription="t('order.exportingPdf')"
           :column="2"
