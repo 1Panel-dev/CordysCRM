@@ -154,7 +154,7 @@
 
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
-                {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time', 'customer_id',
+                {'name', 'number', 'owner', 'name', 'amount', 'stage', 'update_user', 'create_time', 'customer_id',
                  'contract_id', 'update_time', 'create_user', 'department_id'}">
             <bind name="sortName" value="${sort}.name"/>
             left join sales_order_field sort_table
@@ -330,6 +330,9 @@
                     </when>
                     <when test="${sort}.name == 'stage'">
                         so.`stage` ${sortType}, so.id ASC
+                    </when>
+                    <when test="${sort}.name == 'number'">
+                        so.`number` ${sortType}, so.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
                         so.`create_time` ${sortType}, so.id ASC
