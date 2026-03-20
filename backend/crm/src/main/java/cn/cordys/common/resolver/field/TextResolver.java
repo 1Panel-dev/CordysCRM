@@ -11,7 +11,10 @@ public class TextResolver extends AbstractModuleFieldResolver<BaseField> {
     @Override
     public void validate(BaseField baseField, Object value) {
         validateRequired(baseField, value);
-        validateString(baseField.getName(), value);
+
+		if (value != null && !(value instanceof Number) && !(value instanceof String)) {
+			throwValidateException(baseField.getName());
+		}
     }
 
 	/**
