@@ -85,6 +85,7 @@ public class ModuleFormService {
     private static final String PRICE_SUB_ROW_KEY = "price_sub";
     private static final String OPTION_DEFAULT_SOURCE = "custom";
     private static final String UPGRADE_EXT_FIELD = "ext_ver";
+    private static final String UNDERLINE = "_";
 
     static {
         TYPE_SOURCE_MAP = Map.ofEntries(
@@ -509,11 +510,7 @@ public class ModuleFormService {
             if (CollectionUtils.isEmpty(subField.getSubFields())) {
                 return;
             }
-            subField.getSubFields().forEach(field -> {
-                if (StringUtils.isEmpty(field.getSubTableFieldId())) {
-                    field.setSubTableFieldId(subField.getId());
-                }
-            });
+            subField.getSubFields().forEach(field -> field.setSubTableFieldId(subField.getId()));
             toFlattenFields.addAll(subField.getSubFields());
         });
         formConfig.getFields().addAll(toFlattenFields);
@@ -1363,17 +1360,19 @@ public class ModuleFormService {
                         .collect(Collectors.toMap(f -> StringUtils.isNotBlank(f.getResourceFieldId()) ? f.getId()
                                 : f.idOrBusinessKey(), Function.identity(), (oldValue, newValue) -> oldValue));
 
+				// 子表格的表头ID格式: 子表格ID_字段ID
                 subField.getSubFields().stream()
                         .filter(BaseField::canExport)
                         .map(BaseField::getId)
-                        .forEach(heads::add);
+                        .forEach(bf -> heads.add(subField.getId() + UNDERLINE + bf));
 
+				// 子表格汇总字段ID格式: SUM-子表格ID-字段ID
                 if (CollectionUtils.isNotEmpty(subField.getSumColumns())) {
                     subField.getSumColumns().forEach(sumColumn -> {
                         if (!subFieldMap.containsKey(sumColumn)) {
                             return;
                         }
-                        heads.add(SUM_PREFIX + subFieldMap.get(sumColumn).getId());
+                        heads.add(SUM_PREFIX + subField.getId() + UNDERLINE + subFieldMap.get(sumColumn).getId());
                     });
                 }
             } else {
