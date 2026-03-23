@@ -273,8 +273,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         });
         int rowId = 1;
         for (Map<String, Object> subValue : subValues) {
-            String bizId = IDGenerator.nextStr();
-            for (Map.Entry<String, Object> kv : subValue.entrySet()) {
+			// 子表行数据, 如果存在ID, 则使用旧ID作为bizId, 不存在则生成一个唯一ID, 保证行数据关联正确
+            String bizId = subValue.containsKey("id") ? subValue.get("id").toString() : IDGenerator.nextStr();
+			for (Map.Entry<String, Object> kv : subValue.entrySet()) {
                 if (Strings.CS.equals(kv.getKey(), PRICE_SUB_ROW_KEY) && kv.getValue() != null) {
                     T t = supplyNewResource(this::newResourceField, resourceId, kv.getKey(), kv.getValue().toString());
                     setResourceFieldValue(t, "rowId", String.valueOf(rowId));
