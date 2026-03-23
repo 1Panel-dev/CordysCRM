@@ -58,6 +58,12 @@ export const quickAccessList: QuickAccessItem[] = [
     label: t('workbench.createFollowUpPlan'),
     permission: ['CUSTOMER_MANAGEMENT:UPDATE', 'CLUE_MANAGEMENT:UPDATE'],
   },
+  {
+    key: FormDesignKeyEnum.ORDER,
+    icon: 'newOrder',
+    label: t('order.new'),
+    permission: ['ORDER:ADD'],
+  },
 ];
 
 export default {};
