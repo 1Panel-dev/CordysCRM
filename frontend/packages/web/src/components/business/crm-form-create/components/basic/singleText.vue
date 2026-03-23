@@ -83,12 +83,9 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       if (!props.needInitDetail) {
-        value.value = val !== undefined && !value.value ? val : value.value;
+        value.value = val !== undefined ? val : value.value;
         emit('change', value.value);
       }
-    },
-    {
-      immediate: true,
     }
   );
 
@@ -154,6 +151,14 @@
     },
     { deep: true }
   );
+
+  onBeforeMount(() => {
+    if (!props.needInitDetail) {
+      value.value =
+        props.fieldConfig.defaultValue !== undefined && !value.value ? props.fieldConfig.defaultValue : value.value;
+      emit('change', value.value);
+    }
+  });
 </script>
 
 <style lang="less" scoped></style>
