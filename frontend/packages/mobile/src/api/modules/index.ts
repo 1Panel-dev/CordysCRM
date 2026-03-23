@@ -392,6 +392,7 @@ export const {
   deleteAttachment,
   getFieldPriceList,
   getFieldQuotationList,
+  getFieldOrderList,
   getFieldContractPaymentPlanList,
   getFieldContractPaymentRecordList,
   getFieldBusinessTitleList,
