@@ -111,6 +111,7 @@
 
   const dataSourcesModalVisible = ref(false);
   const dataSourceFormFields = ref<FormCreateField[]>([]);
+  const initialRows = ref<InternalRowData[]>([]);
 
   function handleFormInit(fields: FormCreateField[]) {
     dataSourceFormFields.value = fields;
@@ -178,9 +179,9 @@
     () => value.value,
     () => {
       selectedKeys.value = value.value;
-      selectedRows.value = rows.value.filter((item) => value.value.includes(item.id as DataTableRowKey));
-    },
-    { immediate: true }
+      selectedRows.value = initialRows.value.filter((item) => value.value.includes(item.id as DataTableRowKey));
+      rows.value = cloneDeep(selectedRows.value);
+    }
   );
 
   const fullscreenTargetRef = ref();
@@ -212,6 +213,9 @@
   );
 
   onBeforeMount(() => {
+    if (value.value.length === 0) {
+      initialRows.value = cloneDeep(rows.value);
+    }
     rows.value = rows.value.filter((item) => value.value.includes(item.id as DataTableRowKey));
   });
 </script>
