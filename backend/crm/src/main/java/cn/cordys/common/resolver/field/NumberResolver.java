@@ -34,7 +34,7 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
     @Override
     public Object transformToValue(InputNumberField numberField, String value) {
 		BigDecimal actualDecimal = new BigDecimal(value);
-		if (numberField.getDecimalPlaces()) {
+		if (BooleanUtils.isTrue(numberField.getDecimalPlaces())) {
 			actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
 		}
 		String formatActualVal;
