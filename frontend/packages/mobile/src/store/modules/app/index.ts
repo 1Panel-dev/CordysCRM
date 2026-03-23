@@ -178,7 +178,9 @@ const useAppStore = defineStore('app', {
       // const licenseStore = useLicenseStore();
       // if (!licenseStore.hasLicense()) return;
       const res = await getThirdConfigByType(CompanyTypeEnum.SQLBot);
-      await loadScript(res.config?.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
+      if (res.config.sqlBotChatEnable) {
+        await loadScript(res.config?.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
+      }
     },
     async initPublicKey() {
       try {
