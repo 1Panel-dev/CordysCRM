@@ -10,6 +10,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -34,6 +35,7 @@ import cn.cordys.crm.order.dto.request.OrderUpdateRequest;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
 import cn.cordys.crm.order.dto.response.OrderStageConfigResponse;
+import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -560,5 +562,20 @@ public class OrderService {
         LogDTO logDTO = new LogDTO(organizationId, id, userId, LogType.DOWNLOAD, LogModule.ORDER_INDEX, getResponse.getName());
         logDTO.setOriginalValue(getResponse.getName());
         logService.add(logDTO);
+    }
+
+
+    /**
+     * 统计
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     * @param deptDataPermission
+     * @return
+     */
+    public OrderStatisticResponse searchStatistic(BaseCondition request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        OrderStatisticResponse response = extOrderMapper.searchStatistic(request, orgId, userId, deptDataPermission);
+        return Optional.ofNullable(response).orElse(new OrderStatisticResponse());
     }
 }

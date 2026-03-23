@@ -389,4 +389,66 @@
         select count(id) from sales_order
         where stage = #{stage}
     </select>
+
+    <select id="searchStatistic" resultType="cn.cordys.crm.order.dto.response.OrderStatisticResponse">
+        SELECT
+        sum(so.amount) as amount,
+        sum(so.amount)  / count(*) as averageAmount
+        FROM
+        sales_order so
+        LEFT JOIN contract c ON so.contract_id = c.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on so.owner = sys_organization_user.user_id
+            and (
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="dataPermission.viewId == 'ALL'">
+                or sys_organization_user.user_id = #{userId}
+            </if>
+            )
+        </if>
+
+        where so.organization_id = #{orgId}
+
+        <if test="dataPermission != null and dataPermission.self">
+            and so.owner = #{userId}
+        </if>
+
+        <if test="request.customerId != null and request.customerId != ''">
+            and so.customer_id = #{request.customerId}
+        </if>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and (
+            so.name like concat('%', #{request.keyword},'%')
+            or so.name like concat('%', #{request.keyword},'%')
+            )
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
+        </include>
+
+    </select>
 </mapper>

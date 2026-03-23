@@ -8,6 +8,7 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -50,8 +51,8 @@ public class ContractController {
     private DataScopeService dataScopeService;
     @Resource
     private ContractPaymentPlanService contractPaymentPlanService;
-	@Resource
-	private ContractPaymentRecordService contractPaymentRecordService;
+    @Resource
+    private ContractPaymentRecordService contractPaymentRecordService;
     @Resource
     private ContractInvoiceService contractInvoiceService;
     @Resource
@@ -162,16 +163,16 @@ public class ContractController {
         return contractPaymentPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
-	@PostMapping("/contract-payment-record/page")
-	@RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
-	@Operation(summary = "合同详情-回款记录")
-	public PagerWithOption<List<ContractPaymentRecordResponse>> paymentRecordList(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
-		ConditionFilterUtils.parseCondition(request);
-		request.setViewId(InternalUserView.ALL.name());
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
-	}
+    @PostMapping("/contract-payment-record/page")
+    @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
+    @Operation(summary = "合同详情-回款记录")
+    public PagerWithOption<List<ContractPaymentRecordResponse>> paymentRecordList(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
+        ConditionFilterUtils.parseCondition(request);
+        request.setViewId(InternalUserView.ALL.name());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
 
     @GetMapping("/tab")
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
@@ -259,5 +260,16 @@ public class ContractController {
         response.setInvoicedAmount(invoiceAmount);
         response.setUninvoicedAmount(response.getContractAmount().subtract(invoiceAmount));
         return response;
+    }
+
+
+    @PostMapping("/statistic")
+    @RequiresPermissions(PermissionConstants.CONTRACT_READ)
+    @Operation(summary = "合同统计")
+    public ContractStatisticResponse searchStatistic(@Validated @RequestBody BaseCondition request) {
+        ConditionFilterUtils.parseCondition(request);
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_READ);
+        return contractService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 }
