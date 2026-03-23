@@ -60,6 +60,7 @@ export const GetFieldContractPaymentRecordListUrl = '/field/source/contract/paym
 export const CheckRepeatUrl = '/field/check/repeat'; // 查重
 export const GetFieldPriceListUrl = '/field/source/price'; // 获取价格列表
 export const GetFieldQuotationListUrl = '/field/source/quotation'; // 获取报价单列表
+export const GetFieldOrderListUrl = '/field/source/order'; // 获取订单列表
 export const GetFieldDisplayListUrl = '/field/display';
 export const GetFieldBusinessTitleListUrl = '/field/source/business-title';
 export const GetFieldRefDetailListUrl = '/field/source/ref-detail'; // 批量获取数据源字段详情

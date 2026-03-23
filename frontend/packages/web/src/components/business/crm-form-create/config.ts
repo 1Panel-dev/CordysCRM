@@ -966,4 +966,5 @@ export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum,
   [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: FormDesignKeyEnum.CONTRACT_PAYMENT,
   [FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD]: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
   [FieldDataSourceTypeEnum.QUOTATION]: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+  [FieldDataSourceTypeEnum.ORDER]: FormDesignKeyEnum.ORDER,
 };

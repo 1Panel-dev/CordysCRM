@@ -73,6 +73,7 @@ import {
   SetDisplayAdvancedUrl,
   GetAdvancedSwitchUrl,
   GetFieldRefDetailListUrl,
+  GetFieldOrderListUrl,
 } from '@lib/shared/api/requrls/system/module';
 import { QuotationItem } from '@lib/shared/models/opportunity';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -108,6 +109,7 @@ import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 import type { Result } from '@lib/shared/types/axios';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import type { BusinessTitleItem, ContractItem, PaymentPlanItem, PaymentRecordItem } from '@lib/shared/models/contract';
+import type { OrderItem } from '@lib/shared/models/order';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 模块首页-导航模块列表
@@ -387,6 +389,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<QuotationItem>>({ url: GetFieldQuotationListUrl, data });
   }
 
+  function getFieldOrderList(data: FormDesignDataSourceTableQueryParams) {
+    return CDR.post<CommonList<OrderItem>>({ url: GetFieldOrderListUrl, data });
+  }
+
   function getFieldDisplayList(formKey: FormDesignKeyEnum) {
     return CDR.get<FormDesignConfigDetailParams>({ url: `${GetFieldDisplayListUrl}/${formKey}` });
   }
@@ -475,6 +481,7 @@ export default function useProductApi(CDR: CordysAxios) {
     downloadAttachment,
     getFieldPriceList,
     getFieldQuotationList,
+    getFieldOrderList,
     getFieldBusinessTitleList,
     getDatasourceRefDetailList,
   };

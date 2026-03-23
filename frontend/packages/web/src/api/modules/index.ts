@@ -644,6 +644,7 @@ export const {
   getModuleSearchMaskConfig,
   getFieldPriceList,
   getFieldQuotationList,
+  getFieldOrderList,
   getFieldDisplayList,
   getFieldBusinessTitleList,
   getDatasourceRefDetailList,
