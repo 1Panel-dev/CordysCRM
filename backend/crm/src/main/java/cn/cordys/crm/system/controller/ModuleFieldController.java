@@ -7,6 +7,7 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
@@ -36,6 +37,9 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
+import cn.cordys.crm.order.dto.request.OrderPageRequest;
+import cn.cordys.crm.order.dto.response.OrderListResponse;
+import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.product.dto.request.ProductPageRequest;
 import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
 import cn.cordys.crm.product.dto.response.ProductListResponse;
@@ -57,6 +61,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -99,6 +104,8 @@ public class ModuleFieldController {
     private DataScopeService dataScopeService;
     @Resource
     private BusinessTitleService businessTitleService;
+	@Resource
+	private OrderService orderService;
 
     @GetMapping("/dept/tree")
     @Operation(summary = "获取部门树")
@@ -117,7 +124,7 @@ public class ModuleFieldController {
     public Pager<List<ClueListResponse>> sourceCluePage(@Valid @RequestBody CluePageRequest request) {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                "ALL", PermissionConstants.CLUE_MANAGEMENT_READ);
+				InternalUserView.ALL.name(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
     }
 
@@ -126,7 +133,7 @@ public class ModuleFieldController {
     public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody CustomerPageRequest request) {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                "ALL", PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+				InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return customerService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
@@ -135,7 +142,7 @@ public class ModuleFieldController {
     public Pager<List<CustomerContactListResponse>> sourceContactPage(@Valid @RequestBody CustomerContactPageRequest request) {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
-                "ALL", PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+				InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
         return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
     }
 
@@ -143,7 +150,7 @@ public class ModuleFieldController {
     @Operation(summary = "分页获取商机")
     public Pager<List<OpportunityListResponse>> sourceOpportunityPage(@Valid @RequestBody OpportunityPageRequest request) {
         request.setCombineSearch(request.getCombineSearch().convert());
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "ALL",
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
     }
@@ -152,7 +159,7 @@ public class ModuleFieldController {
     @Operation(summary = "分页获取报价单")
     public Pager<List<OpportunityQuotationListResponse>> sourceOpportunityQuotationPage(@Valid @RequestBody OpportunityQuotationPageRequest request) {
         request.setCombineSearch(request.getCombineSearch().convert());
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "ALL",
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), deptDataPermission, true);
     }
@@ -199,6 +206,15 @@ public class ModuleFieldController {
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
 				PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
 		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+	}
+
+	@PostMapping("/source/order/page")
+	@Operation(summary = "列表")
+	public PagerWithOption<List<OrderListResponse>> list(@Validated @RequestBody OrderPageRequest request) {
+		request.setCombineSearch(request.getCombineSearch().convert());
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+				InternalUserView.ALL.name(), PermissionConstants.ORDER_READ);
+		return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
 	}
 
     @PostMapping("/check/repeat")
