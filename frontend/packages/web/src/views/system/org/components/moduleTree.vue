@@ -362,8 +362,7 @@
             initTree(true);
           }
         } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
+          // 错误处理已经由Axios拦截器处理，这里不需要额外处理
         }
       },
     });
