@@ -745,6 +745,8 @@
       e.preventDefault();
       deleteAtomicNode(atomic);
     }
+
+    nextTick(() => validateCurrentFormula());
   }
   //  todo 优化 xinxinwu
   // function handleBackspace(event: KeyboardEvent) {
