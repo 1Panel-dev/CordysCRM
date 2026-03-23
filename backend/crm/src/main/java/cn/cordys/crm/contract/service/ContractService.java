@@ -11,6 +11,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
+import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
@@ -33,6 +34,7 @@ import cn.cordys.crm.contract.domain.ContractSnapshot;
 import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
+import cn.cordys.crm.contract.dto.response.ContractStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
@@ -179,7 +181,7 @@ public class ContractService {
                 .filter(field -> field.isSerialNumber() && StringUtils.isNotEmpty(field.getBusinessKey())).findFirst().orElse(null);
 
         if (numberField instanceof SerialNumberField serialField) {
-			return serialNumGenerator.generateByRules(serialField.getSerialNumberRules(prefix), orgId, FormKey.CONTRACT.getKey());
+            return serialNumGenerator.generateByRules(serialField.getSerialNumberRules(prefix), orgId, FormKey.CONTRACT.getKey());
         }
         return null;
     }
@@ -781,7 +783,7 @@ public class ContractService {
         // 只展示状态为通过且非作废/归档阶段的合同
         List<FilterCondition> conditions = new ArrayList<>();
 
-        if (dictService.isDictConfigEnable(DictModule.CONTRACT_APPROVAL.name(), OrganizationContext.getOrganizationId()))  {
+        if (dictService.isDictConfigEnable(DictModule.CONTRACT_APPROVAL.name(), OrganizationContext.getOrganizationId())) {
             FilterCondition statusCondition = new FilterCondition();
             statusCondition.setMultipleValue(false);
             statusCondition.setName("approvalStatus");
@@ -835,5 +837,20 @@ public class ContractService {
         if (extContractInvoiceMapper.hasContractInvoice(contractId)) {
             throw new GenericException(Translator.get("contract.has.invoice.cannot.delete"));
         }
+    }
+
+
+    /**
+     * 统计
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     * @param deptDataPermission
+     * @return
+     */
+    public ContractStatisticResponse searchStatistic(BaseCondition request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        ContractStatisticResponse response = extContractMapper.searchStatistic(request, orgId, userId, deptDataPermission);
+        return Optional.ofNullable(response).orElse(new ContractStatisticResponse());
     }
 }

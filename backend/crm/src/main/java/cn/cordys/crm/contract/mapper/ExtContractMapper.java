@@ -1,10 +1,12 @@
 package cn.cordys.crm.contract.mapper;
 
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
-import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractGetResponse;
+import cn.cordys.crm.contract.dto.response.ContractListResponse;
+import cn.cordys.crm.contract.dto.response.ContractStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import org.apache.ibatis.annotations.Param;
 
@@ -29,4 +31,6 @@ public interface ExtContractMapper {
     void updateStage(@Param("id") String id, @Param("stage") String stage, @Param("userId") String userId, @Param("updateTime") long updateTime);
 
     List<Contract> selectByTimestamp(@Param("organizationId") String organizationId, @Param("timestampOld") long timestampOld, @Param("timestamp") long timestamp);
+
+    ContractStatisticResponse searchStatistic(@Param("request") BaseCondition request, @Param("orgId") String orgId, @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }
