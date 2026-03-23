@@ -315,19 +315,3 @@ export function ensureFnArgsHasCaretText(argsEl: HTMLElement) {
     argsEl.appendChild(document.createTextNode(''));
   }
 }
-
-/**
- * 将光标放置在元素内容的末尾
- * @param el 目标元素
- */
-export function placeCaretAtEnd(el: HTMLElement) {
-  const selection = window.getSelection();
-  if (!selection) return;
-
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  range.collapse(false);
-
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
