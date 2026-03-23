@@ -178,7 +178,6 @@
     () => value.value,
     () => {
       selectedKeys.value = value.value;
-      rows.value = rows.value.filter((item) => value.value.includes(item.id as DataTableRowKey));
       selectedRows.value = rows.value.filter((item) => value.value.includes(item.id as DataTableRowKey));
     },
     { immediate: true }
@@ -211,6 +210,10 @@
       setFullWrapperFullScreenRef();
     }
   );
+
+  onBeforeMount(() => {
+    rows.value = rows.value.filter((item) => value.value.includes(item.id as DataTableRowKey));
+  });
 </script>
 
 <style lang="less">
