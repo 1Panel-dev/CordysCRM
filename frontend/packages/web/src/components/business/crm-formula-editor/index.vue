@@ -238,7 +238,6 @@
     getSelectionRange,
     insertRangeAtomic,
     isRangeInsideSameFnArgs,
-    placeCaretAtEnd,
     safeParseFormula,
   } from './utils';
 
@@ -635,7 +634,11 @@
       const textNode = walker.currentNode as Text;
       const parent = textNode.parentElement;
 
-      const canProcess = !!parent && !parent.closest('.formula-fn-root') && !parent.closest('.fn-args');
+      const canProcess =
+        !!parent &&
+        !parent.closest('.fn-name') &&
+        !parent.closest('.fn-paren') &&
+        !parent.closest('.formula-tag-wrapper');
 
       if (canProcess) {
         textNodes.push(textNode);
@@ -651,7 +654,7 @@
 
         if (match) {
           const start = match.index;
-          const end = start + fnName.length + 1; // fn + '('
+          const end = start + fnName.length + 1;
 
           const range = document.createRange();
           range.setStart(textNode, start);
@@ -719,58 +722,49 @@
   function handleBackspaceAtomic(e: KeyboardEvent) {
     if (e.key !== 'Backspace') return;
 
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
+    const range = getSelectionRange();
+    if (!range) return;
 
-    const range = sel.getRangeAt(0);
-
-    // 有选区：整体删
+    // 有选区
     if (!range.collapsed) {
-      const el =
-        range.commonAncestorContainer instanceof HTMLElement
-          ? range.commonAncestorContainer.closest('[contenteditable="false"]')
-          : null;
+      const sameFnArgs = isRangeInsideSameFnArgs(range);
 
-      if (el) {
+      // 选区完全位于同一个函数参数区内：只删除选中的内容
+      if (sameFnArgs) {
         e.preventDefault();
-        deleteAtomicNode(el as HTMLElement);
+        range.deleteContents();
+        ensureFnArgsHasCaretText(sameFnArgs);
+
+        nextTick(() => {
+          validateCurrentFormula();
+        });
+        return;
       }
+
+      // 其他情况交给浏览器默认行为，避免误删整个函数 atomic
+      nextTick(() => {
+        validateCurrentFormula();
+      });
       return;
     }
 
+    // 无选区：继续保留 atomic 删除能力
     const { startContainer, startOffset } = range;
-
     const atomic = findLeftAtomicDeep(startContainer, startOffset);
+
     if (atomic) {
       e.preventDefault();
       deleteAtomicNode(atomic);
+
+      nextTick(() => validateCurrentFormula());
+      return;
     }
 
-    nextTick(() => validateCurrentFormula());
+    //  普通文本退格走浏览器默认行为
+    nextTick(() => {
+      validateCurrentFormula();
+    });
   }
-  //  todo 优化 xinxinwu
-  // function handleBackspace(event: KeyboardEvent) {
-  //   const range = getSelectionRange();
-  //   if (!range) return;
-
-  //   // 如果选区完全位于同一个函数参数区内，按普通内容删除处理
-  //   const sameFnArgs = isRangeInsideSameFnArgs(range);
-  //   if (sameFnArgs) {
-  //     // 有选区：只删选中的参数内容
-  //     if (!range.collapsed) {
-  //       event.preventDefault();
-  //       range.deleteContents();
-  //       ensureFnArgsHasCaretText(sameFnArgs);
-  //       placeCaretAtEnd(sameFnArgs);
-  //       return;
-  //     }
-
-  //     // 光标在参数区内：交给浏览器默认 Backspace 行为
-  //     return;
-  //   }
-  //   // 否则删除原子dom
-  //   handleBackspaceAtomic(event);
-  // }
 
   function normalizePastedText(text: string) {
     return text
