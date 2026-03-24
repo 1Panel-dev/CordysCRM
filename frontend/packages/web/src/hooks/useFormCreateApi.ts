@@ -695,7 +695,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 // 联动的字段是省市区则填充城市路径
                 const addressArr: string[] = linkField.value.split('-') || [];
                 formDetail.value[field.id] = addressArr.length
-                  ? [getCityPath(addressArr[0]), addressArr.filter((e, i) => i > 0).join('-')].join('-')
+                  ? [getCityPath(addressArr[0]), addressArr.filter((e, i) => i > 0).join('-')]
+                      .filter((e) => e)
+                      .join('-')
                   : '-';
               } else if (linkField.type === FieldTypeEnum.INDUSTRY) {
                 formDetail.value[field.id] = linkField.value ? getIndustryPath(linkField.value as string) : '-';
