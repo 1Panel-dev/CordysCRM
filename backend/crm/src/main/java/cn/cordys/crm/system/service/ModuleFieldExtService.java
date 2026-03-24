@@ -19,12 +19,15 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 字段操作的扩展逻辑
@@ -216,5 +219,31 @@ public class ModuleFieldExtService {
 			fb.setProp(JSON.toJSONString(subField));
 			fieldBlobMapper.updateById(fb);
 		}
+	}
+
+	public void modifyContractSubSumColumn() {
+		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+		fieldWrapper.like(ModuleField::getInternalKey, "contractProducts");
+		List<ModuleField> fields = fieldMapper.selectListByLambda(fieldWrapper);
+		ModuleFieldBlob moduleFieldBlob = fieldBlobMapper.selectByPrimaryKey(fields.getFirst().getId());
+		SubField subField = JSON.parseObject(moduleFieldBlob.getProp(), SubField.class);
+		if (subField == null || CollectionUtils.isEmpty(subField.getSumColumns())) {
+			return;
+		}
+		Map<String, String> fieldKeyMap = subField.getSubFields().stream().filter(f -> StringUtils.isNotEmpty(f.getInternalKey()))
+				.collect(Collectors.toMap(BaseField::getInternalKey, BaseField::getId));
+		List<String> sumColumns = new ArrayList<>();
+		subField.getSumColumns().forEach(col -> {
+			if (Strings.CS.equals(col, "sumAmount")) {
+				sumColumns.add(fieldKeyMap.get("contractProductSumAmount"));
+			} else if (Strings.CS.equals(col, "price")) {
+				sumColumns.add(fieldKeyMap.get("contractProductAmount"));
+			} else {
+				sumColumns.add(col);
+			}
+		});
+		subField.setSumColumns(sumColumns);
+		moduleFieldBlob.setProp(JSON.toJSONString(subField));
+		fieldBlobMapper.updateById(moduleFieldBlob);
 	}
 }
