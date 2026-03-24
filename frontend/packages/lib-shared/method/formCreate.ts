@@ -450,6 +450,16 @@ export function transformData({
       customFieldAttr[field.fieldId] = field.fieldValue;
     }
   });
+  // 根据 moduleFields 集合判断 fields 完整字段集合中是否有自定义字段无值，因为无值后台不会在 moduleFields 里返回该字段，需要手动置空
+  fields.forEach((field) => {
+    if (!field.resourceFieldId && !field.businessKey) {
+      const fieldId = field.id;
+      if (!customFieldAttr[fieldId]) {
+        customFieldAttr[fieldId] = undefined;
+      }
+    }
+  });
+
   return {
     ...item,
     ...customFieldAttr,
