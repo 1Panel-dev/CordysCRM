@@ -610,4 +610,12 @@ public class OrderService {
         lambdaQueryWrapper.in(Order::getName, names);
         return orderMapper.selectListByLambda(lambdaQueryWrapper);
     }
+
+    public Object getOrderName(String id) {
+        Order order = orderMapper.selectByPrimaryKey(id);
+        if (order != null) {
+            return order.getName();
+        }
+        return null;
+    }
 }
