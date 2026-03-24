@@ -188,7 +188,7 @@ export default {
   'crmFormDesign.formulaDiscount': 'Discount',
   'crmFormDesign.formulaPlaceholder':
     'Select the fields and functions below to configure the calculation formula. For example:',
-  'crmFormDesign.formulaHasBeenSet': 'Formula has been set',
+  'crmFormDesign.formulaHasBeenSet': 'Formula set',
   'crmFormDesign.formulaByNameSearchPlaceholder': 'Search by field name',
   'crmFormDesign.formulaFunction': 'Common Functions',
   'crmFormDesign.formulaUsage': 'Function Usage',
