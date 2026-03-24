@@ -101,9 +101,6 @@
             : val || value.value || [];
         emit('change', value.value);
       }
-    },
-    {
-      immediate: true,
     }
   );
 
@@ -140,6 +137,17 @@
       emit('change', []);
     }
   }
+
+  onBeforeMount(() => {
+    if (!props.needInitDetail && (!value.value || (Array.isArray(value.value) && !value.value.length))) {
+      value.value =
+        [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type) &&
+        !Array.isArray(props.fieldConfig.defaultValue)
+          ? [props.fieldConfig.defaultValue]
+          : props.fieldConfig.defaultValue || value.value || [];
+      emit('change', value.value);
+    }
+  });
 </script>
 
 <style lang="less" scoped></style>
