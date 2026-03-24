@@ -329,4 +329,64 @@
             </otherwise>
         </choose>
     </sql>
+
+
+    <select id="searchStatistic" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentRecordStatisticResponse">
+        SELECT
+        sum(cpr.record_amount) as amount,
+        sum(cpr.record_amount)  / count(*) as averageAmount
+        FROM
+        contract_payment_record cpr
+        LEFT JOIN contract c on c.id = cpr.contract_id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on cpr.owner = sys_organization_user.user_id
+            and (
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="dataPermission.viewId == 'ALL'">
+                or sys_organization_user.user_id = #{userId}
+            </if>
+            )
+        </if>
+
+        where cpr.organization_id = #{orgId}
+
+        <if test="dataPermission != null and dataPermission.self">
+            and cpr.owner = #{userId}
+        </if>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and (
+            cpr.name like concat('%', #{request.keyword},'%')
+            or cpr.name like concat('%', #{request.keyword},'%')
+            )
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
+        </include>
+
+    </select>
+
 </mapper>
