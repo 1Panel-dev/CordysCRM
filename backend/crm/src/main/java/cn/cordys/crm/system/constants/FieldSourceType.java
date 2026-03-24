@@ -45,5 +45,9 @@ public enum FieldSourceType {
 	/**
 	 * 回款记录
 	 */
-	CONTRACT_PAYMENT_RECORD
+	CONTRACT_PAYMENT_RECORD,
+	/**
+	 * 订单
+	 */
+	ORDER
 }

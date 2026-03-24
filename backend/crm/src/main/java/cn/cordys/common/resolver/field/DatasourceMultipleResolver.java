@@ -18,6 +18,8 @@ import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
+import cn.cordys.crm.order.domain.Order;
+import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.product.domain.Product;
 import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.product.service.ProductPriceService;
@@ -43,6 +45,7 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
 	private static final ContractPaymentPlanService contractPaymentPlanService;
 	private static final ContractPaymentRecordService contractPaymentRecordService;
 	private static final BusinessTitleService businessTitleService;
+	private static final OrderService orderService;
 
 	public static final String EMPTY_ARRAY_STRING = "[]";
 
@@ -57,6 +60,7 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
 		contractPaymentRecordService = CommonBeanFactory.getBean(ContractPaymentRecordService.class);
 		contractPaymentPlanService = CommonBeanFactory.getBean(ContractPaymentPlanService.class);
 		businessTitleService = CommonBeanFactory.getBean(BusinessTitleService.class);
+        orderService = CommonBeanFactory.getBean(OrderService.class);
     }
 
     @Override
@@ -121,6 +125,9 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
 		if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
 			return Objects.requireNonNull(businessTitleService).getTitleNameByIds(list);
 		}
+        if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), FieldSourceType.ORDER.name())) {
+            return Objects.requireNonNull(orderService).getOrderNameByIds(list);
+        }
 
         return StringUtils.EMPTY;
     }
@@ -187,6 +194,12 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
 			List<String> ids = titles.stream().map(BusinessTitle::getId).toList();
 			return CollectionUtils.isEmpty(ids) ? names : ids;
 		}
+
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.ORDER.name())) {
+            List<Order> titles = Objects.requireNonNull(orderService).getOrderListByNames(names);
+            List<String> ids = titles.stream().map(Order::getId).toList();
+            return CollectionUtils.isEmpty(ids) ? names : ids;
+        }
         return names;
     }
 }
