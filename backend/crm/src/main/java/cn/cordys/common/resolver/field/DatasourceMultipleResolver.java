@@ -196,8 +196,8 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
 		}
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.ORDER.name())) {
-            List<Order> titles = Objects.requireNonNull(orderService).getOrderListByNames(names);
-            List<String> ids = titles.stream().map(Order::getId).toList();
+            List<Order> orders = Objects.requireNonNull(orderService).getOrderListByNames(names);
+            List<String> ids = orders.stream().map(Order::getId).toList();
             return CollectionUtils.isEmpty(ids) ? names : ids;
         }
         return names;

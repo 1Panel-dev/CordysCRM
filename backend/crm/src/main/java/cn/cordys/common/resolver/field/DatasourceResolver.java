@@ -19,6 +19,8 @@ import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
+import cn.cordys.crm.order.domain.Order;
+import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.product.domain.Product;
 import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.product.service.ProductPriceService;
@@ -45,6 +47,7 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 	private static final ContractPaymentPlanService contractPaymentPlanService;
 	private static final ContractPaymentRecordService contractPaymentRecordService;
 	private static final BusinessTitleService businessTitleService;
+    private static final OrderService orderService;
 
     static {
         customerService = CommonBeanFactory.getBean(CustomerService.class);
@@ -58,6 +61,7 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 		contractPaymentRecordService = CommonBeanFactory.getBean(ContractPaymentRecordService.class);
 		contractPaymentPlanService = CommonBeanFactory.getBean(ContractPaymentPlanService.class);
 		businessTitleService = CommonBeanFactory.getBean(BusinessTitleService.class);
+        orderService = CommonBeanFactory.getBean(OrderService.class);
     }
 
     @Override
@@ -111,6 +115,9 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 		if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
 			return Objects.requireNonNull(businessTitleService).getBusinessTitleName(value);
 		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.ORDER.name())) {
+            return Objects.requireNonNull(orderService).getOrderName(value);
+        }
 
         return StringUtils.EMPTY;
     }
@@ -164,6 +171,10 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 			List<BusinessTitle> businessTitles = Objects.requireNonNull(businessTitleService).getBusinessTitleListByNames(List.of(text));
 			return CollectionUtils.isEmpty(businessTitles) ? StringUtils.EMPTY : businessTitles.getFirst().getId();
 		}
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.ORDER.name())) {
+            List<Order> orders = Objects.requireNonNull(orderService).getOrderListByNames(List.of(text));
+            return CollectionUtils.isEmpty(orders) ? StringUtils.EMPTY : orders.getFirst().getId();
+        }
         return text;
     }
 }
