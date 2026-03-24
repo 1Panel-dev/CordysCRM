@@ -208,7 +208,7 @@ public class ModuleFieldController {
 		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 
-	@PostMapping("/source/order/page")
+	@PostMapping("/source/order")
 	@Operation(summary = "列表")
 	public PagerWithOption<List<OrderListResponse>> list(@Validated @RequestBody OrderPageRequest request) {
 		request.setCombineSearch(request.getCombineSearch().convert());
