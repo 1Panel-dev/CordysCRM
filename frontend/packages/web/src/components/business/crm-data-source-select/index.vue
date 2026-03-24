@@ -179,7 +179,9 @@
     () => value.value,
     () => {
       selectedKeys.value = value.value;
-      selectedRows.value = initialRows.value.filter((item) => value.value.includes(item.id as DataTableRowKey));
+      selectedRows.value = initialRows.value
+        .concat(rows.value)
+        .filter((item) => value.value.includes(item.id as DataTableRowKey));
       rows.value = cloneDeep(selectedRows.value);
     }
   );
