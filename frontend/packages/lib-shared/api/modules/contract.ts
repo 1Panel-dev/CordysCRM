@@ -107,6 +107,8 @@ import {
   ContractInvoicedInContractPageUrl,
   GetContractDetailSnapshotUrl,
   ContractInvoicedDetailSnapshotUrl,
+  ContractStatisticUrl,
+  GetPaymentRecordStatisticUrl,
 } from '@lib/shared/api/requrls/contract';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 import type {
@@ -678,6 +680,16 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.post({ url: DragContractInvoicedViewUrl, data });
   }
 
+  // 合同统计
+  function getContractStatistic(data: TableQueryParams) {
+    return CDR.post({ url: ContractStatisticUrl, data }, { ignoreCancelToken: true });
+  }
+
+  // 回款记录统计
+  function getPaymentRecordStatistic(data: TableQueryParams) {
+    return CDR.post({ url: GetPaymentRecordStatisticUrl, data }, { ignoreCancelToken: true });
+  }
+
   return {
     exportContractAll,
     exportContractSelected,
@@ -703,6 +715,7 @@ export default function useContractApi(CDR: CordysAxios) {
     batchApproveContract,
     approvalContract,
     revokeContract,
+    getContractStatistic,
     // 回款计划
     getPaymentPlanList,
     getContractPaymentPlanList,
@@ -744,6 +757,7 @@ export default function useContractApi(CDR: CordysAxios) {
     preCheckImportContractPaymentRecord,
     importContractPaymentRecord,
     downloadContractPaymentRecordTemplate,
+    getPaymentRecordStatistic,
     // 合同工商抬头
     preCheckImportBusinessTitle,
     downloadBusinessTitleTemplate,

@@ -75,6 +75,7 @@ export const {
   updateOrderStage,
   downloadOrder,
   deleteOrderStatus,
+  getOrderStatistic,
 } = orderApi;
 
 export const {
@@ -517,6 +518,8 @@ export const {
   getInvoicedInContractList,
   getContractDetailSnapshot,
   getInvoicedDetailSnapshot,
+  getContractStatistic,
+  getPaymentRecordStatistic,
 } = contractApi;
 
 export const {

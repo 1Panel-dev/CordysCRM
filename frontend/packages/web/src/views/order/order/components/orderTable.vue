@@ -10,7 +10,7 @@
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
-    @filter-change="propsEvent.filterChange"
+    @filter-change="filterChange"
     @refresh="searchData"
   >
     <template #actionLeft>
@@ -45,6 +45,26 @@
         @refresh-table-data="searchData"
       />
     </template>
+    <template #totalRight>
+      <div class="ml-[24px]">
+        {{ t('opportunity.averageAmount') }}
+        <span class="ml-[4px]">
+          {{ abbreviateNumber(totalAmountInfo?.averageAmount, '').value }}
+          <span class="unit">
+            {{ abbreviateNumber(totalAmountInfo?.averageAmount, '').unit }}
+          </span>
+        </span>
+      </div>
+      <div class="ml-[24px]">
+        {{ t('opportunity.totalAmount') }}
+        <span class="ml-[4px]">
+          {{ abbreviateNumber(totalAmountInfo?.amount, '').value }}
+          <span class="unit">
+            {{ abbreviateNumber(totalAmountInfo?.amount, '').unit }}
+          </span>
+        </span>
+      </div>
+    </template>
   </CrmTable>
 
   <DetailDrawer
@@ -75,7 +95,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
-  import { characterLimit } from '@lib/shared/method';
+  import { abbreviateNumber, characterLimit } from '@lib/shared/method';
   import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
   import { OrderItem } from '@lib/shared/models/order';
 
@@ -90,7 +110,7 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detail.vue';
 
-  import { deleteOrder, getOrderStatusConfig } from '@/api/modules';
+  import { deleteOrder, getOrderStatistic, getOrderStatusConfig } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -391,9 +411,47 @@
     containerClass: `.crm-order-table-${props.formKey}`,
     orderStage: stageConfig.value?.stageConfigList || [],
   });
-  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { propsRes, propsEvent, advanceFilter, filterItem, loadList, setLoadListParams, setAdvanceFilter } =
+    useTableRes;
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+
+  const statisticInfo = ref({ amount: 0, averageAmount: 0 });
+  async function getStatistic(_keyword?: string) {
+    try {
+      const res = await getOrderStatistic({
+        keyword: _keyword ?? keyword.value,
+        viewId: activeTab.value,
+        customerId: props.sourceId,
+        combineSearch: advanceFilter,
+        filters: filterItem.value,
+      });
+      statisticInfo.value = res;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+  const totalAmountInfo = computed(() => {
+    if (checkedRowKeys.value.length > 0) {
+      const amount = propsRes.value.data
+        .filter((item: OrderItem) => checkedRowKeys.value.includes(item.id))
+        .reduce((total: number, item: OrderItem) => total + (item.amount || 0), 0);
+      return {
+        averageAmount: amount / checkedRowKeys.value.length,
+        amount,
+      };
+    }
+    return {
+      averageAmount: statisticInfo.value?.averageAmount ?? 0,
+      amount: statisticInfo.value?.amount ?? 0,
+    };
+  });
+
+  function filterChange(val: any) {
+    propsEvent.value.filterChange(val);
+    getStatistic();
+  }
 
   const isAdvancedSearchMode = ref(false);
   function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
@@ -401,6 +459,7 @@
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
+    getStatistic();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
@@ -412,6 +471,7 @@
       ...(props.formKey === FormDesignKeyEnum.CUSTOMER_ORDER ? { customerId: props.sourceId } : {}),
     });
     loadList(false, refreshId);
+    getStatistic(val);
     if (!refreshId) {
       crmTableRef.value?.scrollTo({ top: 0 });
     }
@@ -452,6 +512,7 @@
     (val) => {
       if (val) {
         removeItemFromList(val);
+        getStatistic();
       }
     }
   );
@@ -468,8 +529,10 @@
           ...(props.formKey === FormDesignKeyEnum.CUSTOMER_ORDER ? { customerId: props.sourceId } : {}),
         });
         crmTableRef.value?.setColumnSort(val);
+        getStatistic();
       }
-    }
+    },
+    { immediate: true }
   );
 
   onMounted(async () => {
