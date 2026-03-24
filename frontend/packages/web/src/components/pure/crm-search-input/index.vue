@@ -11,7 +11,7 @@
     @compositionend="handleCompositionEnd"
   >
     <template #suffix>
-      <n-icon>
+      <n-icon class="cursor-pointer" @click="emit('search', keyword)">
         <Search />
       </n-icon>
     </template>
