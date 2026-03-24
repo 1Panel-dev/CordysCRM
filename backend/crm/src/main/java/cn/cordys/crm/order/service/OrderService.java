@@ -94,7 +94,7 @@ public class OrderService {
     private BaseMapper<Customer> customerBaseMapper;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
-	public static final int MAX_NUMBER_LENGTH = 50;
+    public static final int MAX_NUMBER_LENGTH = 50;
 
     /**
      * 新建订单
@@ -120,9 +120,9 @@ public class OrderService {
         BeanUtils.copyBean(order, request);
         order.setId(IDGenerator.nextStr());
         order.setNumber(createOrderNumber(moduleFormConfigDTO, orgId, request.getNumber()));
-		if (order.getNumber().length() > MAX_NUMBER_LENGTH) {
-			throw new GenericException(Translator.get("order.number.length.exceed"));
-		}
+        if (order.getNumber().length() > MAX_NUMBER_LENGTH) {
+            throw new GenericException(Translator.get("order.number.length.exceed"));
+        }
         order.setStage(stageConfigList.getFirst().getId());
         order.setOrganizationId(orgId);
         order.setCreateTime(System.currentTimeMillis());
@@ -577,5 +577,37 @@ public class OrderService {
     public OrderStatisticResponse searchStatistic(BaseCondition request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         OrderStatisticResponse response = extOrderMapper.searchStatistic(request, orgId, userId, deptDataPermission);
         return Optional.ofNullable(response).orElse(new OrderStatisticResponse());
+    }
+
+
+    /**
+     * 通过ID集合获取订单名称
+     *
+     * @param ids id集合
+     * @return 工商表头名称
+     */
+    public Object getOrderNameByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return StringUtils.EMPTY;
+        }
+        List<Order> records = orderMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(records)) {
+            List<String> names = records.stream().map(Order::getName).toList();
+            return String.join(",", names);
+        }
+        return StringUtils.EMPTY;
+    }
+
+
+    /**
+     * 通过名称获取订单集合
+     *
+     * @param names 名称
+     * @return 订单名称
+     */
+    public List<Order> getOrderListByNames(List<String> names) {
+        LambdaQueryWrapper<Order> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(Order::getName, names);
+        return orderMapper.selectListByLambda(lambdaQueryWrapper);
     }
 }
