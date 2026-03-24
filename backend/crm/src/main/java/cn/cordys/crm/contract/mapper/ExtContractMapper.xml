@@ -512,10 +512,6 @@
             and ct.owner = #{userId}
         </if>
 
-        <if test="request.customerId != null and request.customerId != ''">
-            and ct.customer_id = #{request.customerId}
-        </if>
-
         <if test="request.keyword != null and request.keyword != ''">
             and (
             ct.name like concat('%', #{request.keyword},'%')

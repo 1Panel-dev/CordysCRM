@@ -428,10 +428,6 @@
             and so.owner = #{userId}
         </if>
 
-        <if test="request.customerId != null and request.customerId != ''">
-            and so.customer_id = #{request.customerId}
-        </if>
-
         <if test="request.keyword != null and request.keyword != ''">
             and (
             so.name like concat('%', #{request.keyword},'%')
