@@ -146,10 +146,12 @@
       if (failCount.value === 0) {
         setTimeout(() => {
           showModal.value = false;
+          showToPoolResultModel.value = false;
           emit('refresh');
         }, 3000);
       } else if (successCount.value > 0) {
         showModal.value = false;
+        showToPoolResultModel.value = false;
         emit('refresh');
       }
     } catch (e) {
