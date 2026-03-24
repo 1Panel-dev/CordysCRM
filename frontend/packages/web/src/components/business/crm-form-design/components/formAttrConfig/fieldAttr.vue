@@ -662,6 +662,7 @@
                   value: 'formula',
                 },
               ]"
+              :render-option="renderPrefixTypeOption"
               @update-value="
                 (val) => {
                   fieldConfig.prefixType = val;
@@ -1329,6 +1330,7 @@
 </template>
 
 <script setup lang="ts">
+  import { VNodeChild } from 'vue';
   import {
     NButton,
     NCheckbox,
@@ -1506,6 +1508,13 @@
       },
     ];
   });
+
+  function renderPrefixTypeOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
+    return h(NTooltip, null, {
+      trigger: () => node,
+      default: () => option.label,
+    });
+  }
 
   function handleHasCurrentChange(val: boolean, multiple: boolean) {
     if (val && !multiple) {
