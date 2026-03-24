@@ -12,6 +12,7 @@
           :one-line-value="false"
           :one-line-label="false"
           value-align="start"
+          readonly
           tooltip-position="top-start"
           @init="handleInit"
         />
