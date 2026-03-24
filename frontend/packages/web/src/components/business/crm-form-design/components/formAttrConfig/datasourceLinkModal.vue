@@ -415,7 +415,8 @@
         (f) =>
           [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(f.type) &&
           f.id !== props.fieldConfig.id &&
-          (f.id === currentFieldId || !alreadySelectedFields.includes(f.id))
+          (f.id === currentFieldId || !alreadySelectedFields.includes(f.id)) &&
+          !f.resourceFieldId
       )
       .map((f) => ({ label: f.name, value: f.id, icon: getFieldIcon(f.type) }));
   }
