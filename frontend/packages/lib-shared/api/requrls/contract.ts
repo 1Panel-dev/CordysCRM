@@ -12,6 +12,7 @@ export const ChangeContractStatusUrl = '/contract/stage/update';
 export const BatchApproveContractUrl = '/contract/batch/approval';
 export const ApproveContractUrl = '/contract/approval';
 export const RevokeContractUrl = '/contract/revoke';
+export const ContractStatisticUrl = '/contract/statistic';
 
 // 合同导出
 export const ExportContractAllUrl = '/contract/export-all'; // 合同导出全量
@@ -65,6 +66,7 @@ export const PaymentRecordDeleteUrl = '/contract/payment-record/delete'; // 删�
 export const GetPaymentRecordDetailUrl = '/contract/payment-record/get'; // 获取回款记录详情
 export const GetPaymentRecordFormConfigUrl = '/contract/payment-record/module/form'; // 回款记录表单配置
 export const GetPaymentRecordTabUrl = '/contract/payment-record/tab'; // 回款记录tab显隐
+export const GetPaymentRecordStatisticUrl = '/contract/payment-record/statistic'; // 回款记录统计
 
 // 回款记录导出
 export const ExportPaymentRecordAllUrl = '/contract/payment-record/export-all'; // 回款记录导出全量

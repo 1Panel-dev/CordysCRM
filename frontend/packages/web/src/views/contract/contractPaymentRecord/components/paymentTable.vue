@@ -10,7 +10,7 @@
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
-    @filter-change="propsEvent.filterChange"
+    @filter-change="filterChange"
     @batch-action="handleBatchAction"
     @refresh="searchData"
   >
@@ -65,6 +65,26 @@
         @refresh-table-data="searchData"
       />
     </template>
+    <template #totalRight>
+      <div class="ml-[24px]">
+        {{ t('opportunity.averageAmount') }}
+        <span class="ml-[4px]">
+          {{ abbreviateNumber(totalAmountInfo?.averageAmount, '').value }}
+          <span class="unit">
+            {{ abbreviateNumber(totalAmountInfo?.averageAmount, '').unit }}
+          </span>
+        </span>
+      </div>
+      <div class="ml-[24px]">
+        {{ t('opportunity.totalAmount') }}
+        <span class="ml-[4px]">
+          {{ abbreviateNumber(totalAmountInfo?.amount, '').value }}
+          <span class="unit">
+            {{ abbreviateNumber(totalAmountInfo?.amount, '').unit }}
+          </span>
+        </span>
+      </div>
+    </template>
   </CrmTable>
 
   <CrmFormCreateDrawer
@@ -103,7 +123,7 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
-  import { characterLimit } from '@lib/shared/method';
+  import { abbreviateNumber, characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { PaymentRecordItem } from '@lib/shared/models/contract';
 
@@ -121,7 +141,7 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detail.vue';
 
-  import { deletePaymentRecord } from '@/api/modules';
+  import { deletePaymentRecord, getPaymentRecordStatistic } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -397,7 +417,16 @@
     permission: ['CONTRACT_PAYMENT_RECORD:EXPORT'],
     containerClass: `.crm-contract-payment-table-${props.formKey}`,
   });
-  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const {
+    propsRes,
+    propsEvent,
+    tableQueryParams,
+    filterItem,
+    advanceFilter,
+    loadList,
+    setLoadListParams,
+    setAdvanceFilter,
+  } = useTableRes;
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[])
@@ -413,6 +442,43 @@
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 
+  const statisticInfo = ref({ amount: 0, averageAmount: 0 });
+  async function getStatistic(_keyword?: string) {
+    try {
+      const res = await getPaymentRecordStatistic({
+        keyword: _keyword ?? keyword.value,
+        viewId: activeTab.value,
+        contractId: props.sourceId,
+        combineSearch: advanceFilter,
+        filters: filterItem.value,
+      });
+      statisticInfo.value = res;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+  const totalAmountInfo = computed(() => {
+    if (checkedRowKeys.value.length > 0) {
+      const amount = propsRes.value.data
+        .filter((item: PaymentRecordItem) => checkedRowKeys.value.includes(item.id))
+        .reduce((total: number, item: PaymentRecordItem) => total + (item.amount || 0), 0);
+      return {
+        averageAmount: amount / checkedRowKeys.value.length,
+        amount,
+      };
+    }
+    return {
+      averageAmount: statisticInfo.value?.averageAmount ?? 0,
+      amount: statisticInfo.value?.amount ?? 0,
+    };
+  });
+
+  function filterChange(val: any) {
+    propsEvent.value.filterChange(val);
+    getStatistic();
+  }
+
   const isAdvancedSearchMode = ref(false);
   const advancedOriginalForm = ref<FilterForm | undefined>();
   function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
@@ -421,12 +487,14 @@
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
     loadList();
+    getStatistic();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   function searchData(val?: string, refreshId?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value, contractId: props.sourceId });
     loadList(false, refreshId);
+    getStatistic();
     if (!refreshId) {
       crmTableRef.value?.scrollTo({ top: 0 });
     }
@@ -462,6 +530,7 @@
     (val) => {
       if (val) {
         removeItemFromList(val);
+        getStatistic();
       }
     }
   );
@@ -483,7 +552,9 @@
         checkedRowKeys.value = [];
         setLoadListParams({ keyword: keyword.value, viewId: activeTab.value, contractId: props.sourceId });
         crmTableRef.value?.setColumnSort(val);
+        getStatistic();
       }
-    }
+    },
+    { immediate: true }
   );
 </script>
