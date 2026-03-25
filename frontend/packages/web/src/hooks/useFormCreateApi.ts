@@ -717,8 +717,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               }
               break;
             case [...memberTypes, ...departmentTypes].includes(field.type):
-              formDetail.value[field.id] = Array.isArray(linkField.value) ? linkField.value : [linkField.value];
+              if ([FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(field.type)) {
+                formDetail.value[field.id] = Array.isArray(linkField.value) ? linkField.value : [linkField.value];
+              } else {
+                formDetail.value[field.id] = linkField.value;
+              }
               field.initialOptions = linkField.initialOptions || [];
+              field.defaultValue = formDetail.value[field.id];
               break;
             default:
               formDetail.value[field.id] = linkField.value;
