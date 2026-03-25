@@ -1,7 +1,7 @@
 -- set innodb lock wait timeout
 SET SESSION innodb_lock_wait_timeout = 7200;
 
-insert into sys_module value (UUID_SHORT(), '100001', 'order', true, 11,
+insert into sys_module value (UUID_SHORT(), '100001', 'order', true, 10,
                               'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000);
 
 INSERT INTO `sales_order_stage_config`(`id`, `name`, `type`, `afoot_roll_back`, `end_roll_back`, `pos`, `organization_id`, `create_time`, `update_time`, `create_user`, `update_user`)
