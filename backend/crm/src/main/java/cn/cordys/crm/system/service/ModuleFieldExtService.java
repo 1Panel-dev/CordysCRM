@@ -9,6 +9,7 @@ import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.dto.field.DateTimeField;
+import cn.cordys.crm.system.dto.field.FormulaField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.HasOption;
@@ -221,29 +222,78 @@ public class ModuleFieldExtService {
 		}
 	}
 
-	public void modifyContractSubSumColumn() {
+	public void modifyInternalSubSumColumn() {
 		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
-		fieldWrapper.like(ModuleField::getInternalKey, "contractProducts");
+		fieldWrapper.in(ModuleField::getInternalKey, List.of("contractProducts", "quotationProducts"));
 		List<ModuleField> fields = fieldMapper.selectListByLambda(fieldWrapper);
-		ModuleFieldBlob moduleFieldBlob = fieldBlobMapper.selectByPrimaryKey(fields.getFirst().getId());
-		SubField subField = JSON.parseObject(moduleFieldBlob.getProp(), SubField.class);
-		if (subField == null || CollectionUtils.isEmpty(subField.getSumColumns())) {
-			return;
-		}
-		Map<String, String> fieldKeyMap = subField.getSubFields().stream().filter(f -> StringUtils.isNotEmpty(f.getInternalKey()))
-				.collect(Collectors.toMap(BaseField::getInternalKey, BaseField::getId));
-		List<String> sumColumns = new ArrayList<>();
-		subField.getSumColumns().forEach(col -> {
-			if (Strings.CS.equals(col, "sumAmount")) {
-				sumColumns.add(fieldKeyMap.get("contractProductSumAmount"));
-			} else if (Strings.CS.equals(col, "price")) {
-				sumColumns.add(fieldKeyMap.get("contractProductAmount"));
-			} else {
-				sumColumns.add(col);
+		List<ModuleFieldBlob> moduleFieldBlobs = fieldBlobMapper.selectByIds(fields.stream().map(ModuleField::getId).toList());
+		for (ModuleFieldBlob moduleFieldBlob : moduleFieldBlobs) {
+			SubField subField = JSON.parseObject(moduleFieldBlob.getProp(), SubField.class);
+			if (subField == null || CollectionUtils.isEmpty(subField.getSumColumns())) {
+				return;
 			}
-		});
-		subField.setSumColumns(sumColumns);
-		moduleFieldBlob.setProp(JSON.toJSONString(subField));
+			Map<String, String> fieldKeyMap = subField.getSubFields().stream().filter(f -> StringUtils.isNotEmpty(f.getInternalKey()))
+					.collect(Collectors.toMap(BaseField::getInternalKey, BaseField::getId));
+			List<String> sumColumns = new ArrayList<>();
+			subField.getSumColumns().forEach(col -> {
+				if (Strings.CS.equals(col, "sumAmount")) {
+					if (fieldKeyMap.containsKey("quotationAmount")) {
+						sumColumns.add(fieldKeyMap.get("quotationAmount"));
+					} else {
+						sumColumns.add(fieldKeyMap.get("contractProductSumAmount"));
+					}
+				} else if (Strings.CS.equals(col, "price")) {
+					sumColumns.add(fieldKeyMap.get("contractProductAmount"));
+				} else {
+					sumColumns.add(col);
+				}
+			});
+			subField.setSumColumns(sumColumns);
+			moduleFieldBlob.setProp(JSON.toJSONString(subField));
+			fieldBlobMapper.updateById(moduleFieldBlob);
+		}
+	}
+
+	public void modifyInternalSubCalcFormula() {
+		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+		fieldWrapper.in(ModuleField::getInternalKey, List.of("contractProducts", "quotationProducts"));
+		List<ModuleField> fields = fieldMapper.selectListByLambda(fieldWrapper);
+		List<ModuleFieldBlob> moduleFieldBlobs = fieldBlobMapper.selectByIds(fields.stream().map(ModuleField::getId).toList());
+		String quotationAmountId = null;
+		for (ModuleFieldBlob moduleFieldBlob : moduleFieldBlobs) {
+			SubField subField = JSON.parseObject(moduleFieldBlob.getProp(), SubField.class);
+			if (subField == null) {
+				return;
+			}
+			Map<String, String> fieldKeyMap = subField.getSubFields().stream().filter(f -> StringUtils.isNotEmpty(f.getInternalKey()))
+					.collect(Collectors.toMap(BaseField::getInternalKey, BaseField::getId));
+			if (fieldKeyMap.containsKey("quotationAmount")) {
+				quotationAmountId = fieldKeyMap.get("quotationAmount");
+			}
+			subField.getSubFields().forEach(f -> {
+				if (f instanceof FormulaField formulaField && StringUtils.isNotEmpty(formulaField.getFormula())) {
+					if (fieldKeyMap.containsKey("quotationAmount")) {
+						formulaField.setFormula(formulaField.getFormula().replace("sumAmount", fieldKeyMap.get("quotationAmount")));
+					} else {
+						formulaField.setFormula(formulaField.getFormula().replace("price", fieldKeyMap.get("contractProductAmount"))
+								.replace("sumAmount", fieldKeyMap.get("contractProductSumAmount")));
+					}
+
+				}
+			});
+			moduleFieldBlob.setProp(JSON.toJSONString(subField));
+			fieldBlobMapper.updateById(moduleFieldBlob);
+		}
+
+		LambdaQueryWrapper<ModuleField> totalFieldWrapper = new LambdaQueryWrapper<>();
+		totalFieldWrapper.eq(ModuleField::getInternalKey, "quotationTotalAmount");
+		List<ModuleField> totalFields = fieldMapper.selectListByLambda(totalFieldWrapper);
+		ModuleFieldBlob moduleFieldBlob = fieldBlobMapper.selectByPrimaryKey(totalFields.getFirst().getId());
+		FormulaField formulaField = JSON.parseObject(moduleFieldBlob.getProp(), FormulaField.class);
+		if (formulaField != null && StringUtils.isNotEmpty(formulaField.getFormula())) {
+			formulaField.setFormula(formulaField.getFormula().replace("sumAmount", quotationAmountId));
+		}
+		moduleFieldBlob.setProp(JSON.toJSONString(formulaField));
 		fieldBlobMapper.updateById(moduleFieldBlob);
 	}
 }

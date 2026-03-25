@@ -71,8 +71,9 @@ public class DataInitService {
 			initOneTime(moduleFormService::initContactFormLinkRules, "init.contact.form.link.rules");
 			initOneTime(moduleFormService::initContractToOrderLinkScenario, "init.order.form.link.rules");
             initOneTime(moduleFormService::initOrderFormScenarioProp, "init.order.form.scenario");
-			initOneTime(moduleFieldExtService::modifyContractSubSumColumn, "modify.contract.sum.column");
-        } finally {
+			initOneTime(moduleFieldExtService::modifyInternalSubSumColumn, "modify.internal.sum.column");
+			initOneTime(moduleFieldExtService::modifyInternalSubCalcFormula, "modify.internal.calc.formula");
+		} finally {
             lock.unlock();
         }
     }
