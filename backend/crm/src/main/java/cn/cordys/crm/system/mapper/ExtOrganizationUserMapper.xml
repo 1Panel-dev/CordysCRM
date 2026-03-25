@@ -169,7 +169,9 @@
                     sou.enable IS NOT NULL
                 </if>
             </when>
-            <when test="condition.name == 'gender'">
+            <when test="condition.name == 'gender'
+                and (condition.value == 'female' or condition.value == 'male'
+                or condition.operator == 'EMPTY' or condition.operator == 'NOT_EMPTY')">
                 <if test="condition.operator == 'IN'">
                     <if test="condition.value == 'female'">
                         su.gender is true
@@ -177,6 +179,7 @@
                     <if test="condition.value == 'male'">
                         su.gender is false
                     </if>
+
                 </if>
                 <if test="condition.operator == 'NOT_IN'">
                     <if test="condition.value == 'female'">
