@@ -78,9 +78,6 @@
         value.value = val !== undefined ? val : value.value;
         emit('change', value.value);
       }
-    },
-    {
-      immediate: true,
     }
   );
 
@@ -120,6 +117,13 @@
       ? val.toFixed(props.fieldConfig.precision || 0)
       : Number(val).toFixed(props.fieldConfig.precision || 0);
   }
+
+  onBeforeMount(() => {
+    if (props.needInitDetail && props.fieldConfig.defaultValue !== undefined) {
+      value.value = value.value === undefined || value.value === null ? props.fieldConfig.defaultValue : value.value;
+      emit('change', value.value);
+    }
+  });
 </script>
 
 <style lang="less" scoped></style>
