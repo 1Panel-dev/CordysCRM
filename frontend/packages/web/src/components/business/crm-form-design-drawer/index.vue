@@ -197,7 +197,7 @@
                   id: subField.resourceFieldId ? subField.id.split('_ref_')[1] : subField.id, // 处理数据源显示字段 id
                 } as FormCreateField)
             );
-            e.sumColumns = e.sumColumns?.map((s) => (s.includes('_ref_') ? s.split('_ref_')[1] : s)); // 处理数据源显示字段 id
+            e.sumColumns = e.sumColumns?.map((s) => (s?.includes('_ref_') ? s.split('_ref_')[1] : s)); // 处理数据源显示字段 id
           }
           return {
             ...e,
