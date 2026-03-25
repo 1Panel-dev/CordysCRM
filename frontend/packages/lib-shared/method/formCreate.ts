@@ -283,7 +283,7 @@ export function transformData({
     } else if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && needParseSubTable) {
       field.subFields?.forEach((subField) => {
         const subFieldData = (
-          item[fieldId] || item.moduleFields.find((mf: any) => mf.fieldId === fieldId)?.fieldValue
+          item[fieldId] || item.moduleFields?.find((mf: any) => mf.fieldId === fieldId)?.fieldValue
         )?.map((subItem: Record<string, any>) => {
           if (subField.resourceFieldId) {
             subItem[`${subField.id}_original`] = subItem[subField.id]; // 备份原始值以供编辑时填充数据源
