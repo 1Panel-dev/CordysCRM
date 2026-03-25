@@ -12,6 +12,7 @@
         :failure-reason="getFailureReason"
         :afoot-roll-back="props.afootRollBack"
         :end-roll-back="props.endRollBack"
+        :isOrder="props.isOrder"
         @change="handleUpdateStatus"
       >
         <template v-if="!props.readonly" #action>
@@ -86,6 +87,7 @@
     failureReason?: string;
     afootRollBack?: boolean; // 是否允许从跟进中回退
     endRollBack?: boolean; // 是否允许从成功或失败回退
+    isOrder?: boolean;
   }>();
 
   const emit = defineEmits<{

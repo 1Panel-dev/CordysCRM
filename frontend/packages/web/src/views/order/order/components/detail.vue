@@ -37,6 +37,7 @@
         class="mb-[16px]"
         :stage-config-list="stageConfig?.stageConfigList || []"
         is-limit-back
+        is-order
         :back-stage-permission="['ORDER:UPDATE']"
         :source-id="sourceId"
         :operation-permission="['ORDER:UPDATE']"

@@ -60,6 +60,7 @@
     failureReason?: string;
     afootRollBack?: boolean; // 是否允许从跟进中回退
     endRollBack?: boolean; // 是否允许从成功或失败回退
+    isOrder?: boolean; // 是否是订单
   }>();
 
   const emit = defineEmits<{
@@ -73,17 +74,17 @@
   const workflowData = computed(() => props.workflowList || []);
   const currentStatusIndex = computed(() => workflowData.value.findIndex((e) => e.value === currentStatus.value));
   const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
-  // 订单没有rate 只判断type
   const successStage = computed(
-    () =>
-      props.stageConfigList.find((e) => (e.rate ? e.type === 'END' && e.rate === '100' : e.type === 'END'))?.id || ''
+    () => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id || ''
   );
   const failureStage = computed(() => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id || '');
+  // 订单没有rate 只判断type
+  const endStages = computed(() => props.stageConfigList.filter((e) => e.type === 'END').map((i) => i.id));
 
   const isDisabledStage = (stage: string) => {
     const isSameStage = currentStatus.value === stage;
     const isFailureStage = stage === failureStage.value;
-    const isCurrentEndStage = currentStatus.value === successStage.value || currentStatus.value === failureStage.value;
+    const isCurrentEndStage = endStages.value.includes(currentStatus.value);
     const hasPermission = props.backStagePermission && hasAllPermission(props.backStagePermission);
 
     // 获取当前阶段和目标阶段在流程中的索引
@@ -91,12 +92,17 @@
     const targetIndex = workflowData.value.findIndex((item) => item.value === stage);
     // 限制回退状态
     if (props.isLimitBack) {
-      // 当前为成功状态，且目标为失败状态，需要返签权限
-      if (currentStatus.value === successStage.value && isFailureStage) {
-        return isSameStage || readonly.value || !hasPermission;
-      }
-      // 当前为完结状态，且目标是进行中状态，需要开启完结阶段回退
-      if (currentStatus.value === successStage.value || currentStatus.value === failureStage.value) {
+      if (!props.isOrder) {
+        // 当前为成功状态，且目标为失败状态，需要返签权限
+        if (currentStatus.value === successStage.value && isFailureStage) {
+          return isSameStage || readonly.value || !hasPermission;
+        }
+        // 当前为完结状态，且目标是进行中状态，需要开启完结阶段回退
+        if (currentStatus.value === successStage.value || currentStatus.value === failureStage.value) {
+          return isSameStage || readonly.value || !props.endRollBack;
+        }
+      } else if (isCurrentEndStage) {
+        // 订单没有反签
         return isSameStage || readonly.value || !props.endRollBack;
       }
 
