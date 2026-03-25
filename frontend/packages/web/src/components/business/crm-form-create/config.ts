@@ -255,6 +255,7 @@ export const inputNumberDefaultFieldConfig: FormCreateField = {
   decimalPlaces: false,
   precision: 0,
   showThousandsSeparator: false,
+  min: -999999999,
 };
 
 export const dateTimeDefaultFieldConfig: FormCreateField = {
