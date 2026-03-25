@@ -57,7 +57,7 @@ export function useStatusTextConfig(): Record<StatusBizType, StatusTextConfig> {
         {
           key: 'completedStageRollback',
           label: t('crmStatusConfigDrawer.completedStageRollback'),
-          tip: t('crmStatusConfigDrawer.completedStageRollbackTip', { name: t('module.businessManagement') }),
+          tip: t('crmStatusConfigDrawer.completedOptStageRollbackTip', { name: t('module.businessManagement') }),
         },
       ],
       stageHasDataTip: t('module.businessManage.stageHasData'),
