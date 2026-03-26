@@ -593,6 +593,7 @@
     (val) => {
       if (val) {
         searchData(undefined, val);
+        tableItemRefreshId.value = '';
       }
     }
   );
