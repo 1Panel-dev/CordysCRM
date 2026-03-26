@@ -183,6 +183,9 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
     value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
   } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
     value = formatNumberValueToString(fieldValue as unknown as number, item);
+    if (value.includes('NaN') || value.includes('%%')) {
+      value = fieldValue.toString();
+    }
   } else if (item.type === FieldTypeEnum.DATE_TIME) {
     value = formatTimeValue(fieldValue as string, item.dateType);
   }
