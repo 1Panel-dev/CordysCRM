@@ -311,10 +311,7 @@ public class CustomerService {
     }
 
     /**
-     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-     *
      * @param id 客户ID
-     *
      * @return 客户详情
      */
     public CustomerGetResponse get(String id) {
@@ -389,6 +386,22 @@ public class CustomerService {
 
         return customerGetResponse;
     }
+
+	/**
+	 * 获取客户详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+	 * @param id 客户ID
+	 * @return 客户详情
+	 */
+	public CustomerGetResponse getSimple(String id) {
+		Customer customer = customerMapper.selectByPrimaryKey(id);
+		if (customer == null) {
+			return null;
+		}
+		CustomerGetResponse response = BeanUtils.copyBean(new CustomerGetResponse(), customer);
+		List<BaseModuleFieldValue> fvs = customerFieldService.getModuleFieldValuesByResourceId(id);
+		response.setModuleFields(fvs);
+		return response;
+	}
 
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Customer add(CustomerAddRequest request, String userId, String orgId) {

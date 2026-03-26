@@ -197,6 +197,24 @@ public class ProductPriceService {
         return baseService.setCreateAndUpdateUserName(priceDetail);
     }
 
+	/**
+	 * 获取价格表详情-简化版 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+	 * @param id 价格表ID
+	 * @return 价格表详情
+	 */
+	public ProductPriceGetResponse getSimple(String id) {
+		ProductPrice price = productPriceMapper.selectByPrimaryKey(id);
+		if (price == null) {
+			return null;
+		}
+		ProductPriceGetResponse response = BeanUtils.copyBean(new ProductPriceGetResponse(), price);
+		// 处理自定义字段(包括详情附件)
+		ModuleFormConfigDTO priceFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), price.getOrganizationId());
+		List<BaseModuleFieldValue> fvs = productPriceFieldService.getModuleFieldValuesByResourceId(id);
+		moduleFormService.processBusinessFieldValues(response, fvs, priceFormConf);
+		return response;
+	}
+
     /**
      * 删除价格表
      *

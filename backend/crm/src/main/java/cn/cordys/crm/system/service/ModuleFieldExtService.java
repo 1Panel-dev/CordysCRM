@@ -274,9 +274,10 @@ public class ModuleFieldExtService {
 				if (f instanceof FormulaField formulaField && StringUtils.isNotEmpty(formulaField.getFormula())) {
 					if (fieldKeyMap.containsKey("quotationAmount")) {
 						formulaField.setFormula(formulaField.getFormula().replace("sumAmount", fieldKeyMap.get("quotationAmount")));
-					} else {
-						formulaField.setFormula(formulaField.getFormula().replace("price", fieldKeyMap.get("contractProductAmount"))
-								.replace("sumAmount", fieldKeyMap.get("contractProductSumAmount")));
+					} else if (fieldKeyMap.containsKey("contractProductAmount")){
+						formulaField.setFormula(formulaField.getFormula().replace("price", fieldKeyMap.get("contractProductAmount")));
+					} else if (fieldKeyMap.containsKey("contractProductSumAmount")) {
+						formulaField.setFormula(formulaField.getFormula().replace("sumAmount", fieldKeyMap.get("contractProductSumAmount")));
 					}
 
 				}

@@ -27,7 +27,10 @@ import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
-import cn.cordys.crm.contract.dto.response.*;
+import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
+import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
+import cn.cordys.crm.contract.dto.response.ContractPaymentRecordStatisticResponse;
+import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -177,12 +180,12 @@ public class ContractPaymentRecordService {
     }
 
     public ContractPaymentRecordGetResponse getWithDataPermissionCheck(String id, String currentUser, String currentOrg) {
-        ContractPaymentRecordGetResponse response = get(id, currentOrg);
+        ContractPaymentRecordGetResponse response = get(id);
         dataScopeService.checkDataPermission(currentUser, currentOrg, response.getOwner(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
         return response;
     }
 
-    public ContractPaymentRecordGetResponse get(String id, String currentOrg) {
+    public ContractPaymentRecordGetResponse get(String id) {
         ContractPaymentRecord paymentRecord = contractPaymentRecordMapper.selectByPrimaryKey(id);
         if (paymentRecord == null) {
             throw new GenericException(Translator.get("record.not.exist"));
@@ -214,7 +217,7 @@ public class ContractPaymentRecordService {
         recordDetail.setAttachmentMap(moduleFormService.getAttachmentMap(recordFormConf, recordDetail.getModuleFields()));
 
         if (recordDetail.getOwner() != null) {
-            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(recordDetail.getOwner(), currentOrg);
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(recordDetail.getOwner(), paymentRecord.getOrganizationId());
             if (userDeptDTO != null) {
                 recordDetail.setDepartmentId(userDeptDTO.getDeptId());
                 recordDetail.setDepartmentName(userDeptDTO.getDeptName());
@@ -222,6 +225,23 @@ public class ContractPaymentRecordService {
         }
         return recordDetail;
     }
+
+	/**
+	 * 获取回款记录详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
+	 * @param id 回款记录ID
+	 * @return 回款记录详情
+	 */
+	public ContractPaymentRecordGetResponse getSimple(String id) {
+		ContractPaymentRecord paymentRecord = contractPaymentRecordMapper.selectByPrimaryKey(id);
+		if (paymentRecord == null) {
+			return null;
+		}
+		ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), paymentRecord);
+		List<BaseModuleFieldValue> fvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(id);
+		response.setModuleFields(fvs);
+		return response;
+	}
+
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
