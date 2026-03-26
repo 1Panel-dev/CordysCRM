@@ -1,3 +1,4 @@
+import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { IRNodeType } from '@lib/shared/enums/formula';
 
 import {
@@ -81,7 +82,16 @@ function parseDateWithPrecision(raw: string | number | Date): number {
 
 export function resolveFieldValue(rawVal: any, node: IRNode, ctx?: EvaluateContext): any {
   const meta = node.type === 'field' ? ctx?.getFieldMeta?.(node.fieldId) : undefined;
-  if (rawVal == null || rawVal === '') {
+
+  const isEmptyString = typeof rawVal === 'string' && rawVal.trim() === '';
+  const isEmptyValue = rawVal == null || rawVal === '' || isEmptyString;
+
+  if (isEmptyValue) {
+    // 只有流水号字段，在取不到值时保留占位符 ${name}
+    if (node.type === 'field' && meta?.fieldType === FieldTypeEnum.SERIAL_NUMBER) {
+      return `\${${ctx?.getFieldMeta?.(node.fieldId)?.name || node.fieldId}}`;
+    }
+
     if (meta?.valueType === 'date' || meta?.valueType === 'number') {
       return null;
     }
