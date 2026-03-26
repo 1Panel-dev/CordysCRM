@@ -195,10 +195,7 @@ public class CustomerContactService {
     }
 
     /**
-     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-     *
      * @param id 联系人ID
-     *
      * @return 联系人详情
      */
     public CustomerContactGetResponse get(String id) {
@@ -246,6 +243,22 @@ public class CustomerContactService {
         customerContactGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(customerContactFormConfig, customerContactFields));
         return customerContactGetResponse;
     }
+
+	/**
+	 * 获取联系人详情（简化版）⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 联系人ID
+	 * @return 详情
+	 */
+	public CustomerContactGetResponse getSimple(String id) {
+		CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
+		if (customerContact == null) {
+			return null;
+		}
+		CustomerContactGetResponse response = BeanUtils.copyBean(new CustomerContactGetResponse(), customerContact);
+		List<BaseModuleFieldValue> fvs = customerContactFieldService.getModuleFieldValuesByResourceId(id);
+		response.setModuleFields(fvs);
+		return response;
+	}
 
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.ADD, resourceName = "{#request.name}")
     public CustomerContact add(CustomerContactAddRequest request, String userId, String orgId) {

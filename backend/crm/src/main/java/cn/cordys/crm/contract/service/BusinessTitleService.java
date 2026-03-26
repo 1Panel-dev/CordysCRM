@@ -243,6 +243,19 @@ public class BusinessTitleService {
         return businessTitleListResponse;
     }
 
+	/**
+	 * 获取工商抬头详情 （⚠️反射调用; 勿修改入参, 返回, 方法名!）
+	 * @param id 抬头ID
+	 * @return 工商抬头详情
+	 */
+	public BusinessTitleListResponse getSimple(String id) {
+		BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
+		if (businessTitle == null) {
+			return null;
+		}
+		return BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
+	}
+
 
     /**
      * 审核通过/不通过

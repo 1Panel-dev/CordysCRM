@@ -304,7 +304,6 @@ public class ClueService {
     }
 
     /**
-     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
      *
      * @param id 线索ID
      *
@@ -385,6 +384,23 @@ public class ClueService {
 
         return clueGetResponse;
     }
+
+	/**
+	 * 获取线索详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+	 * @param id 线索ID
+	 * @return 详情
+	 */
+	public ClueGetResponse getSimple(String id) {
+		Clue clue = clueMapper.selectByPrimaryKey(id);
+		if (clue == null) {
+			return null;
+		}
+		ClueGetResponse clueGetResponse = BeanUtils.copyBean(new ClueGetResponse(), clue);
+		// 获取模块字段
+		List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(id);
+		clueGetResponse.setModuleFields(clueFields);
+		return clueGetResponse;
+	}
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Clue add(ClueAddRequest request, String userId, String orgId) {

@@ -524,7 +524,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 if (!SourceDetailResolveContext.getSourceMap().containsKey(val.toString())) {
                     FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
                     try {
-                        Object sourceObj = fieldSourceServiceProvider.safeGetById(sourceType, val.toString());
+                        Object sourceObj = fieldSourceServiceProvider.safeGetSimpleById(sourceType, val.toString());
                         if (sourceObj != null) {
                             SourceDetailResolveContext.put(val.toString(), JSON.MAPPER.convertValue(sourceObj, Map.class));
                         }
@@ -965,7 +965,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     SourceDetailResolveContext.putPlaceholder(value);
                     try {
                         var sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
-                        var detail = fieldSourceServiceProvider.safeGetById(sourceType, value);
+                        var detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, value);
 
                         if (detail == null) {
                             SourceDetailResolveContext.remove(value);

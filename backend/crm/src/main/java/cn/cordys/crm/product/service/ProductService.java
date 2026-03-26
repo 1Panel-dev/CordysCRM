@@ -143,6 +143,23 @@ public class ProductService {
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
 
+	/**
+	 * 获取产品详情（简化版）, ⚠️反射调用; 勿修改入参, 返回, 方法名!
+	 * @param id 产品ID
+	 * @return 产品详情
+	 */
+	public ProductGetResponse getSimple(String id) {
+		Product product = productBaseMapper.selectByPrimaryKey(id);
+		if (product == null) {
+			return null;
+		}
+		ProductGetResponse response = BeanUtils.copyBean(new ProductGetResponse(), product);
+		// 获取模块字段
+		List<BaseModuleFieldValue> fvs = productFieldService.getModuleFieldValuesByResourceId(id);
+		response.setModuleFields(fvs);
+		return response;
+	}
+
     @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")
     public Product add(ProductEditRequest request, String userId, String orgId) {
         Product product = BeanUtils.copyBean(new Product(), request);

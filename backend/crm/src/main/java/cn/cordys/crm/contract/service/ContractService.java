@@ -282,6 +282,23 @@ public class ContractService {
         return get(contract, contractFields, contractFormConfig);
     }
 
+	/**
+	 * 获取合同详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
+	 * @param id 合同ID
+	 * @return 合同详情
+	 */
+	public ContractGetResponse getSimple(String id) {
+		Contract contract = contractMapper.selectByPrimaryKey(id);
+		if (contract == null) {
+			return null;
+		}
+		ContractGetResponse response = BeanUtils.copyBean(new ContractGetResponse(), contract);
+		List<BaseModuleFieldValue> fvs = contractFieldService.getModuleFieldValuesByResourceId(id);
+		response.setModuleFields(fvs);
+		return response;
+	}
+
+
     /**
      * 编辑合同
      *

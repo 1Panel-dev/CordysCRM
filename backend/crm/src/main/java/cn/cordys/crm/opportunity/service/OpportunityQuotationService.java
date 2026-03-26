@@ -248,8 +248,6 @@ public class OpportunityQuotationService {
     }
 
     /**
-     * ⚠️反射调用; 勿修改入参, 返回, 方法名!
-     *
      * @param id 报价单ID
      * @return 报价单详情
      */
@@ -290,6 +288,22 @@ public class OpportunityQuotationService {
         }
         return response;
     }
+
+	/**
+	 * 获取报价单详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+	 * @param id 报价单ID
+	 * @return 报价单详情
+	 */
+	public OpportunityQuotationGetResponse getSimple(String id) {
+		OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
+		if (opportunityQuotation == null) {
+			return null;
+		}
+		OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), opportunityQuotation);
+		List<BaseModuleFieldValue> fvs = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(id);
+		response.setModuleFields(fvs);
+		return response;
+	}
 
     /**
      * 撤销审批
