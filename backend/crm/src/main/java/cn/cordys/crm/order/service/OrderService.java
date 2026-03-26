@@ -262,6 +262,23 @@ public class OrderService {
         return get(order, orderFields, orderFormConfig);
     }
 
+	/**
+	 * 获取订单详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
+	 * @param id 订单ID
+	 * @return 订单详情
+	 */
+	public OrderGetResponse getSimple(String id) {
+		Order order = orderMapper.selectByPrimaryKey(id);
+		if (order == null) {
+			return null;
+		}
+		OrderGetResponse response = BeanUtils.copyBean(new OrderGetResponse(), order);
+		List<BaseModuleFieldValue> fvs = orderFieldService.getModuleFieldValuesByResourceId(id);
+		ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
+		moduleFormService.processBusinessFieldValues(response, fvs, orderFormConfig);
+		return response;
+	}
+
     /**
      * 编辑订单
      *

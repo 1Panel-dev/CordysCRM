@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.util.ArrayList;
@@ -123,6 +124,16 @@ public abstract class BaseField {
     public boolean isSerialNumber() {
         return Strings.CS.equals(type, FieldType.SERIAL_NUMBER.name());
     }
+
+	public boolean includeFormula() {
+		if (Strings.CS.equals(type, FieldType.INPUT.name())) {
+			return StringUtils.isNotEmpty(((InputField) this).getFormula());
+		}
+		if (Strings.CS.equals(type, FieldType.FORMULA.name())) {
+			return StringUtils.isNotEmpty(((FormulaField) this).getFormula());
+		}
+		return false;
+	}
 
 	@JsonIgnore
 	public boolean isSubField() {

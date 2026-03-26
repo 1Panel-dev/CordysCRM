@@ -20,7 +20,6 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.crm.contract.constants.ContractPaymentPlanStatus;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
-import cn.cordys.crm.contract.domain.ContractPaymentRecord;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanUpdateRequest;
@@ -211,6 +210,22 @@ public class ContractPaymentPlanService {
 
         return contractPaymentPlanGetResponse;
     }
+
+	/**
+	 * 获取跟进计划详情 （⚠️反射调用; 勿修改入参, 返回, 方法名!）
+	 * @param id 计划ID
+	 * @return 计划详情
+	 */
+	public ContractPaymentPlanGetResponse getSimple(String id) {
+		ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
+		if (contractPaymentPlan == null) {
+			return null;
+		}
+		ContractPaymentPlanGetResponse response = BeanUtils.copyBean(new ContractPaymentPlanGetResponse(), contractPaymentPlan);
+		List<BaseModuleFieldValue> fvs = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(id);
+		response.setModuleFields(fvs);
+		return response;
+	}
 
     @OperationLog(module = LogModule.CONTRACT_PAYMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")
     public ContractPaymentPlan add(ContractPaymentPlanAddRequest request, String userId, String orgId) {

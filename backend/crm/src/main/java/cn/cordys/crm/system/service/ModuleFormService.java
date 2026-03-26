@@ -51,6 +51,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.util.ReflectionUtils;
@@ -413,6 +414,7 @@ public class ModuleFormService {
      * @param allDataFields 所有数据字段
      * @return 字段选项集合
      */
+	@SuppressWarnings("unchecked")
     public Map<String, List<OptionDTO>> getOptionMap(ModuleFormConfigDTO formConfig, List<BaseModuleFieldValue> allDataFields) {
         var optionMap = new HashMap<String, List<OptionDTO>>(4);
         var optionMeta = collectOptionMetadata(formConfig);
@@ -422,17 +424,48 @@ public class ModuleFormService {
         }
         var allFieldValues = flattenSubFieldValues(formConfig, allDataFields);
         var typeIdsMap = collectOptionIds(allFieldValues, optionMeta.idTypeMap());
-        typeIdsMap.forEach((fieldId, ids) -> {
-            var sourceType = optionMeta.idTypeMap().get(fieldId);
-            if (CollectionUtils.isEmpty(ids) || !TYPE_SOURCE_MAP.containsKey(sourceType)) {
-                return;
-            }
-            var options = extModuleFieldMapper.getSourceOptionsByIds(TYPE_SOURCE_MAP.get(sourceType), ids);
-            if (CollectionUtils.isNotEmpty(options)) {
-                optionMap.put(fieldId, options);
-            }
-        });
-        return optionMap;
+
+		// 按照sourceType聚合id, 以便批量查询
+		Map<String, Set<String>> sourceTypeIdsMap = new HashMap<>();
+		Map<String, String> fieldIdSourceTypeMap = new HashMap<>();
+
+		typeIdsMap.forEach((fieldId, ids) -> {
+			var sourceType = optionMeta.idTypeMap().get(fieldId);
+			if (CollectionUtils.isEmpty(ids) || !TYPE_SOURCE_MAP.containsKey(sourceType)) {
+				return;
+			}
+			fieldIdSourceTypeMap.put(fieldId, sourceType);
+			// 去重
+			sourceTypeIdsMap.computeIfAbsent(sourceType, k -> new HashSet<>()).addAll(ids);
+		});
+
+		// 按照类型, 整体查询
+		Map<String, List<OptionDTO>> sourceTypeOptionsMap = new HashMap<>();
+		sourceTypeIdsMap.forEach((sourceType, ids) -> {
+			var options = extModuleFieldMapper.getSourceOptionsByIds(TYPE_SOURCE_MAP.get(sourceType), new ArrayList<>(ids));
+			if (CollectionUtils.isNotEmpty(options)) {
+				sourceTypeOptionsMap.put(sourceType, options);
+			}
+		});
+
+		// 按照fieldId, 分配选项
+		typeIdsMap.forEach((fieldId, ids) -> {
+			var sourceType = fieldIdSourceTypeMap.get(fieldId);
+			if (sourceType == null) {
+				return;
+			}
+			var allOptions = sourceTypeOptionsMap.get(sourceType);
+			if (CollectionUtils.isEmpty(allOptions)) {
+				return;
+			}
+			// 只保留当前 fieldId 需要的
+			var optionList = allOptions.stream().filter(opt -> ids.contains(opt.getId())).toList();
+			if (CollectionUtils.isNotEmpty(optionList)) {
+				optionMap.put(fieldId, optionList);
+			}
+		});
+
+		return optionMap;
     }
 
     private OptionMetadata collectOptionMetadata(ModuleFormConfigDTO formConfig) {
@@ -525,6 +558,7 @@ public class ModuleFormService {
      * @param orgId   组织ID
      * @return 平铺的字段集合
      */
+	@Cacheable(value = "field_cache", key = "#orgId + ':' + #formKey", unless = "#result == null")
     public List<BaseField> getFlattenFormFields(String formKey, String orgId) {
         ModuleFormConfigDTO formConfig = getBusinessFormConfig(formKey, orgId);
         return flattenFormAllFields(formConfig);
@@ -806,6 +840,8 @@ public class ModuleFormService {
 
     public List<BaseField> flattenSourceRefFields(List<BaseField> fields) {
         List<BaseField> flatFields = new ArrayList<>();
+		List<BaseField> subFields = getSubFieldsBySourceType(FieldSourceType.PRICE.name());
+		Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
         fields.forEach(field -> {
             flatFields.add(field);
             if (field instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
@@ -815,9 +851,6 @@ public class ModuleFormService {
                 Map<String, BaseField> reloadFieldMap = reloadFieldBlobs.stream()
                         .collect(Collectors.toMap(ModuleFieldBlob::getId,
                                 filedBlob -> JSON.parseObject(filedBlob.getProp(), BaseField.class)));
-
-                List<BaseField> subFields = getSubFieldsBySourceType(FieldSourceType.PRICE.name());
-                Map<String, BaseField> subFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
 
                 // 补充扩展的系统字段
                 getSystemExtendFiles(sourceField.getDataSourceType())
@@ -1267,6 +1300,7 @@ public class ModuleFormService {
                     return optionDTO;
                 })
                 .distinct()
+				.filter(option -> StringUtils.isNotEmpty(option.getId()))
                 .toList();
     }
 
@@ -2072,7 +2106,7 @@ public class ModuleFormService {
             if (sourceConfigMap.containsKey(fieldId)) {
                 final DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(fieldId);
                 final FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-                final Object detail = fieldSourceServiceProvider.safeGetById(sourceType, fv.getFieldValue().toString());
+                final Object detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, fv.getFieldValue().toString());
                 if (detail == null) {
                     return;
                 }
@@ -2100,7 +2134,7 @@ public class ModuleFormService {
 
                         final DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(k);
                         final FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-                        final Object detail = fieldSourceServiceProvider.safeGetById(sourceType, v.toString());
+                        final Object detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, v.toString());
                         if (detail == null) {
                             return;
                         }
