@@ -1,11 +1,5 @@
 <template>
-  <n-radio-group
-    v-model:value="fieldConfig.optionSource"
-    name="radiogroup"
-    class="flex"
-    :disabled="props.disabled"
-    size="small"
-  >
+  <n-radio-group v-model:value="fieldConfig.optionSource" name="radiogroup" class="flex" :disabled="props.disabled">
     <n-radio-button value="ref" class="flex-1 text-center">
       {{ t('crmFormDesign.quotingData') }}
     </n-radio-button>
