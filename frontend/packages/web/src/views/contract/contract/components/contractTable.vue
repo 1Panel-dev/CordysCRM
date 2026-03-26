@@ -744,6 +744,7 @@
       if (val) {
         loadList(false, val);
         getStatistic();
+        tableItemRefreshId.value = '';
       }
     }
   );
