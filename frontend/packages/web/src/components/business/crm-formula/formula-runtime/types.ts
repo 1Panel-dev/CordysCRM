@@ -1,3 +1,4 @@
+import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import { IRNodeType } from '@lib/shared/enums/formula';
 
 import { FormCreateField } from '@/components/business/crm-form-create/types';
@@ -54,6 +55,8 @@ export type ValueType = 'number' | 'string' | 'boolean' | 'date' | 'unknown';
 
 export interface FieldMeta {
   valueType: ValueType;
+  name: string;
+  fieldType: FieldTypeEnum;
   numberType?: 'number' | 'percent';
 }
 

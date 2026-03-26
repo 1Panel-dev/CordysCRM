@@ -33,6 +33,8 @@ export function getValueType(field: FormCreateField): ValueType {
 function buildFieldTypeInfo(field: FormCreateField): FieldMeta {
   return {
     valueType: getValueType(field),
+    fieldType: field.type,
+    name: field.name,
     ...(field.type === FieldTypeEnum.INPUT_NUMBER
       ? {
           numberType: field.numberFormat === 'percent' ? 'percent' : 'number',
