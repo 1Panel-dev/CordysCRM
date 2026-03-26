@@ -234,12 +234,13 @@
     try {
       const result = await getThirdPartyConfig(CompanyTypeEnum.QCC);
       isEnableQccConfig.value = !!result && !!result.config && !!result.config?.qccEnable;
-      if (!isEnableQccConfig.value && !form.value.id) {
-        form.value.type = 'CUSTOM';
-      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      if (!isEnableQccConfig.value && !form.value.id) {
+        form.value.type = 'CUSTOM';
+      }
     }
   }
 
