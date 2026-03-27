@@ -306,6 +306,7 @@ export default {
   'common.onlyOne': 'Not allowed to repeat value',
   'common.dayUnit': 'Day',
   'common.optionNotExist': 'Option does not exist',
+  'common.fieldNotExist': 'Field does not exist',
   'common.dateCannotBeInPast': 'The date cannot be less than the current time',
   'common.cancelExport': 'Cancel export',
   'common.exportAll': 'Export all',

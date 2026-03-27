@@ -191,7 +191,7 @@ export function tokenizeFromSource(source: string, fieldMap: Record<string, Form
         tokens.push({
           type: 'field',
           fieldId,
-          name: field?.name ?? t('common.optionNotExist'),
+          name: field?.name ?? t('common.fieldNotExist'),
           fieldType: field?.type,
           start: i,
           end: end + 1,

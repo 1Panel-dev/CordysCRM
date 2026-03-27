@@ -316,6 +316,7 @@ export default {
   'common.onlyOne': '不允许重复值',
   'common.dayUnit': '天',
   'common.optionNotExist': '选项不存在',
+  'common.fieldNotExist': '字段不存在',
   'common.dateCannotBeInPast': '日期不能小于当前时间',
   'common.cancelExport': '取消导出',
   'common.exportAll': '导出所有页',
