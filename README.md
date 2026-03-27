@@ -106,6 +106,7 @@ docker run -d \
 - [x] 2025.12.18：[v1.4.0 新增标讯、报价和合同模块](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.4.0)
 - [x] 2026.01.29：[v1.5.0 新增工商抬头管理、发票管理、回款管理](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.5.0)
 - [x] 2026.03.11：[Cordys CRM Skills 正式发布](https://github.com/1Panel-dev/CordysCRM-skills)
+- [x] 2026.03.26：[v1.6.0 新增订单模块、计算组件函数功能增强](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.6.0) 发布
 
 ## 技术栈
 
