@@ -74,3 +74,6 @@ src/main/resources/templates
 ############################
 
 qywx.json
+
+# Claude Code
+.claude
