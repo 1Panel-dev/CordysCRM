@@ -71,6 +71,7 @@ export const DeleteQuotationUrl = '/opportunity/quotation/delete';
 export const RevokeQuotationUrl = '/opportunity/quotation/revoke';
 export const BatchApproveUrl = '/opportunity/quotation/batch/approve';
 export const BatchVoidedUrl = '/opportunity/quotation/batch/voided';
+export const BatchUpdateQuotationUrl = '/opportunity/quotation/batch/update';
 export const GetQuotationSnapshotFormConfigUrl = '/opportunity/quotation/module/form/snapshot';
 export const DownloadQuotationUrl = '/opportunity/quotation/download';
 

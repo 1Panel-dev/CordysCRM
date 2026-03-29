@@ -55,6 +55,7 @@ export const {
   getOrderDetail,
   getOrderDetailSnapshot,
   updateOrder,
+  batchUpdateOrder,
   deleteOrder,
   getOrderList,
   getOrderInContractList,
@@ -212,6 +213,7 @@ export const {
   revokeQuotation,
   batchApprove,
   batchVoided,
+  batchUpdateQuotation,
   downloadQuotation,
 } = opportunityApi;
 

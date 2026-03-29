@@ -10,6 +10,7 @@ import {
   AdvancedSearchOptPageUrl,
   ApprovalQuotationUrl,
   BatchApproveUrl,
+  BatchUpdateQuotationUrl,
   BatchUpdateOpportunityUrl,
   BatchVoidedUrl,
   CancelOptFollowPlanUrl,
@@ -460,6 +461,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<BatchOperationResult>({ url: BatchVoidedUrl, data });
   }
 
+  function batchUpdateQuotation(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateQuotationUrl, data });
+  }
+
   function downloadQuotation(id: string) {
     return CDR.get({ url: `${DownloadQuotationUrl}/${id}` });
   }
@@ -536,6 +541,7 @@ export default function useProductApi(CDR: CordysAxios) {
     revokeQuotation,
     batchApprove,
     batchVoided,
+    batchUpdateQuotation,
     downloadQuotation,
   };
 }

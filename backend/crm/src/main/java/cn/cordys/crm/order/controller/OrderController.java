@@ -18,6 +18,7 @@ import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.service.OrderService;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
@@ -68,6 +69,13 @@ public class OrderController {
     @Operation(summary = "更新订单阶段")
     public void updateStage(@Validated @RequestBody OrderStageRequest request) {
         orderService.updateStage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/batch/update")
+    @RequiresPermissions(PermissionConstants.ORDER_UPDATE)
+    @Operation(summary = "批量更新订单")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        orderService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

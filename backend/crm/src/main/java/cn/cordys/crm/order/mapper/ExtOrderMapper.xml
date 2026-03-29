@@ -128,6 +128,39 @@
         </if>
     </select>
 
+    <update id="batchUpdate">
+        update sales_order
+        <set>
+            <if test="request.fieldName == 'owner'">
+                owner = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'customerId'">
+                customer_id = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'contractId'">
+                contract_id = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'amount'">
+                amount = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'number'">
+                number = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'stage'">
+                stage = #{request.fieldValue},
+            </if>
+            update_time = #{request.updateTime},
+            update_user = #{request.updateUser}
+        </set>
+        where id in
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
     <!-- common sql start -->
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">

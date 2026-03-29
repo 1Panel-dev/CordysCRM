@@ -184,8 +184,10 @@
     batchUpdateLead,
     batchUpdateOpenSeaCustomer,
     batchUpdateOpportunity,
+    batchUpdateOrder,
     batchUpdateProduct,
     batchUpdateProductPrice,
+    batchUpdateQuotation,
   } from '@/api/modules';
   import { useUserStore } from '@/store';
 
@@ -206,7 +208,9 @@
       | FormDesignKeyEnum.PRODUCT
       | FormDesignKeyEnum.CUSTOMER_CONTACT
       | FormDesignKeyEnum.PRICE
-      | FormDesignKeyEnum.CONTRACT;
+      | FormDesignKeyEnum.CONTRACT
+      | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
+      | FormDesignKeyEnum.ORDER;
   }>();
 
   const emit = defineEmits<{
@@ -230,6 +234,8 @@
     [FormDesignKeyEnum.CUSTOMER_CONTACT]: batchUpdateContact,
     [FormDesignKeyEnum.PRICE]: batchUpdateProductPrice,
     [FormDesignKeyEnum.CONTRACT]: batchUpdateContract,
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: batchUpdateQuotation,
+    [FormDesignKeyEnum.ORDER]: batchUpdateOrder,
   };
 
   const initForm = {

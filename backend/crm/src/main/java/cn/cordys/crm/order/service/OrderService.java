@@ -40,6 +40,7 @@ import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -551,6 +552,58 @@ public class OrderService {
         logDTO.setOriginalValue(oldMap);
         logDTO.setModifiedValue(newMap);
         logService.add(logDTO);
+    }
+
+    /**
+     * 批量更新订单
+     *
+     * @param request 批量编辑参数
+     * @param userId  当前用户ID
+     * @param orgId   当前组织ID
+     */
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String orgId) {
+        BaseField field = orderFieldService.getAndCheckField(request.getFieldId(), orgId);
+        moduleFormService.setFieldBusinessParam(field);
+        List<Order> originOrders = orderMapper.selectByIds(request.getIds());
+        orderFieldService.batchUpdate(request, field, originOrders, Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, orgId);
+
+        ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(orgId);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+
+        LambdaQueryWrapper<OrderSnapshot> delWrapper = new LambdaQueryWrapper<>();
+        delWrapper.in(OrderSnapshot::getOrderId, request.getIds());
+        snapshotBaseMapper.deleteByLambda(delWrapper);
+
+        List<Order> latestOrders = orderMapper.selectByIds(request.getIds());
+        Map<String, Order> latestOrderMap = latestOrders.stream().collect(Collectors.toMap(Order::getId, item -> item));
+        Map<String, List<BaseModuleFieldValue>> fieldMap = orderFieldService.getResourceFieldMap(request.getIds(), true);
+
+        List<OrderSnapshot> snapshots = new ArrayList<>();
+        for (String id : request.getIds()) {
+            Order order = latestOrderMap.get(id);
+            if (order == null) {
+                continue;
+            }
+            List<BaseModuleFieldValue> orderFields = fieldMap.getOrDefault(id, Collections.emptyList());
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(orderFields, moduleFormConfigDTO, orderFieldService, id);
+            OrderGetResponse response = get(order, resolveFieldValues, moduleFormConfigDTO);
+            if (CollectionUtils.isNotEmpty(response.getModuleFields())) {
+                response.setModuleFields(response.getModuleFields().stream()
+                        .filter(f -> f.getFieldValue() != null
+                                && StringUtils.isNotBlank(f.getFieldValue().toString())
+                                && !"[]".equals(f.getFieldValue().toString()))
+                        .toList());
+            }
+            OrderSnapshot snapshot = new OrderSnapshot();
+            snapshot.setId(IDGenerator.nextStr());
+            snapshot.setOrderId(id);
+            snapshot.setOrderProp(JSON.toJSONString(saveModuleFormConfigDTO));
+            snapshot.setOrderValue(JSON.toJSONString(response));
+            snapshots.add(snapshot);
+        }
+        if (CollectionUtils.isNotEmpty(snapshots)) {
+            snapshotBaseMapper.batchInsert(snapshots);
+        }
     }
 
     public void download(String id, String userId, String organizationId) {

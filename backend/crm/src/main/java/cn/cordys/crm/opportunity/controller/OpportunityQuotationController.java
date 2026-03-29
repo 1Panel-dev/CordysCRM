@@ -16,6 +16,7 @@ import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -137,6 +138,13 @@ public class OpportunityQuotationController {
     @Operation(summary = "批量审批报价单")
     public BatchAffectSkipResponse batchApprove(@Validated @RequestBody OpportunityQuotationBatchRequest request) {
         return opportunityQuotationService.batchApprove(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/batch/update")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE)
+    @Operation(summary = "批量更新报价单")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        opportunityQuotationService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     //删除报价单
