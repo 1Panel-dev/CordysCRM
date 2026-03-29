@@ -38,6 +38,8 @@ import cn.cordys.crm.opportunity.mapper.ExtOpportunityQuotationSnapshotMapper;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -794,6 +796,73 @@ public class OpportunityQuotationService {
                         Translator.get("opportunity.quotation.status.approved") : Translator.get("opportunity.quotation.status.unapproved")), item, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
         );
         return BatchAffectSkipResponse.builder().success(list.size() - skipCount.get()).fail(0).skip(skipCount.get()).build();
+    }
+
+    /**
+     * 批量更新报价单
+     *
+     * @param request        批量编辑参数
+     * @param userId         当前用户ID
+     * @param organizationId 当前组织ID
+     */
+    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+        BaseField field = opportunityQuotationFieldService.getAndCheckField(request.getFieldId(), organizationId);
+        moduleFormService.setFieldBusinessParam(field);
+        List<OpportunityQuotation> originQuotations = opportunityQuotationMapper.selectByIds(request.getIds());
+        opportunityQuotationFieldService.batchUpdate(
+                request,
+                field,
+                originQuotations,
+                OpportunityQuotation.class,
+                LogModule.OPPORTUNITY_QUOTATION,
+                extOpportunityQuotationMapper::batchUpdate,
+                userId,
+                organizationId
+        );
+
+        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), organizationId);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+
+        LambdaQueryWrapper<OpportunityQuotationSnapshot> delWrapper = new LambdaQueryWrapper<>();
+        delWrapper.in(OpportunityQuotationSnapshot::getQuotationId, request.getIds());
+        snapshotBaseMapper.deleteByLambda(delWrapper);
+
+        List<OpportunityQuotation> latestQuotations = opportunityQuotationMapper.selectByIds(request.getIds());
+        Map<String, OpportunityQuotation> latestQuotationMap = latestQuotations.stream()
+                .collect(Collectors.toMap(OpportunityQuotation::getId, item -> item));
+        Map<String, List<BaseModuleFieldValue>> fieldMap = opportunityQuotationFieldService.getResourceFieldMap(request.getIds(), true);
+
+        List<OpportunityQuotationSnapshot> snapshots = new ArrayList<>();
+        for (String id : request.getIds()) {
+            OpportunityQuotation opportunityQuotation = latestQuotationMap.get(id);
+            if (opportunityQuotation == null) {
+                continue;
+            }
+            List<BaseModuleFieldValue> quotationFields = fieldMap.getOrDefault(id, Collections.emptyList());
+            List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(
+                    quotationFields,
+                    moduleFormConfigDTO,
+                    opportunityQuotationFieldService,
+                    id
+            );
+            OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, resolveFieldValues, moduleFormConfigDTO);
+            if (CollectionUtils.isNotEmpty(response.getModuleFields())) {
+                response.setModuleFields(response.getModuleFields().stream()
+                        .filter(f -> f.getFieldValue() != null
+                                && StringUtils.isNotBlank(f.getFieldValue().toString())
+                                && !"[]".equals(f.getFieldValue().toString()))
+                        .toList());
+            }
+            OpportunityQuotationSnapshot snapshot = new OpportunityQuotationSnapshot();
+            snapshot.setId(IDGenerator.nextStr());
+            snapshot.setQuotationId(id);
+            snapshot.setQuotationProp(JSON.toJSONString(saveModuleFormConfigDTO));
+            snapshot.setQuotationValue(JSON.toJSONString(response));
+            snapshots.add(snapshot);
+        }
+        if (CollectionUtils.isNotEmpty(snapshots)) {
+            snapshotBaseMapper.batchInsert(snapshots);
+        }
     }
 
 

@@ -12,6 +12,30 @@
 
     </update>
 
+    <update id="batchUpdate">
+        update opportunity_quotation
+        <set>
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'opportunityId'">
+                opportunity_id = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'untilTime'">
+                until_time = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'amount'">
+                amount = #{request.fieldValue},
+            </if>
+            update_time = #{request.updateTime},
+            update_user = #{request.updateUser}
+        </set>
+        where id in
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
 
     <select id="list" resultType="cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse">
         select oq.id, oq.name, oq.opportunity_id, o.name as opportunityName, oq.approval_status, oq.amount,

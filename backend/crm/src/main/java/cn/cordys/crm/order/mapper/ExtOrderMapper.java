@@ -1,5 +1,6 @@
 package cn.cordys.crm.order.mapper;
 
+import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.crm.order.dto.request.OrderPageRequest;
@@ -19,6 +20,8 @@ public interface ExtOrderMapper {
     OrderGetResponse getDetail(@Param("id") String id);
 
     List<OrderListResponse> getListByIds(@Param("ids") List<String> ids, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
+
+    void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
     int countByStage(@Param("stage") String stage);
 

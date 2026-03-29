@@ -1,5 +1,6 @@
 export const AddOrderUrl = '/order/add';
 export const UpdateOrderUrl = '/order/update';
+export const BatchUpdateOrderUrl = '/order/batch/update';
 export const UpdateOrderStageUrl = '/order/update/stage';
 export const DeleteOrderUrl = '/order/delete';
 export const GetOrderDetailUrl = '/order/get';

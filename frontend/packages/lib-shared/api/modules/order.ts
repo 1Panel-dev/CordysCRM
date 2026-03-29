@@ -2,6 +2,7 @@ import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddOrderUrl,
   AddOrderViewUrl,
+  BatchUpdateOrderUrl,
   DeleteOrderUrl,
   UpdateOrderStageUrl,
   DeleteOrderViewUrl,
@@ -30,7 +31,7 @@ import {
 } from '@lib/shared/api/requrls/order';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import type { CommonList, TableDraggedParams } from '@lib/shared/models/common';
-import type { CustomerTabHidden } from '@lib/shared/models/customer';
+import type { BatchUpdatePoolAccountParams, CustomerTabHidden } from '@lib/shared/models/customer';
 import type { OrderItem, UpdateOrderParams } from '@lib/shared/models/order';
 import type { TableQueryParams } from '@lib/shared/models/common';
 
@@ -71,6 +72,11 @@ export default function useOrderApi(CDR: CordysAxios) {
   // 更新订单
   function updateOrder(data: UpdateOrderParams) {
     return CDR.post({ url: UpdateOrderUrl, data });
+  }
+
+  // 批量更新订单
+  function batchUpdateOrder(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateOrderUrl, data });
   }
 
   // 删除订单
@@ -181,6 +187,7 @@ export default function useOrderApi(CDR: CordysAxios) {
     getOrderDetail,
     getOrderDetailSnapshot,
     updateOrder,
+    batchUpdateOrder,
     deleteOrder,
     getOrderList,
     getOrderInContractList,

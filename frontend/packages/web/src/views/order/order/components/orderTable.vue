@@ -6,11 +6,12 @@
     :class="`crm-order-table-${props.formKey}`"
     :not-show-table-filter="isAdvancedSearchMode"
     :fullscreen-target-ref="props.fullscreenTargetRef"
-    :action-config="{ baseAction: [] }"
+    :action-config="actionConfig"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
     @filter-change="filterChange"
+    @batch-action="handleBatchAction"
     @refresh="searchData"
   >
     <template #actionLeft>
@@ -86,6 +87,13 @@
     :link-scenario="FormLinkScenarioEnum.CONTRACT_TO_ORDER"
     @saved="handleFormCreateSaved"
   />
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="fieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.ORDER"
+    @refresh="handleRefresh"
+  />
 </template>
 
 <script setup lang="ts">
@@ -105,6 +113,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
@@ -145,6 +154,7 @@
 
   const activeTab = ref();
   const keyword = ref('');
+  const tableRefreshId = ref(0);
 
   const stageConfig = ref<OpportunityStageConfig>();
   async function initStageConfig() {
@@ -159,6 +169,37 @@
 
   // 操作
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const showEditModal = ref(false);
+  const actionConfig = computed(() => ({
+    baseAction: props.readonly
+      ? []
+      : [
+          {
+            label: t('common.batchEdit'),
+            key: 'batchEdit',
+            permission: ['ORDER:UPDATE'],
+          },
+        ],
+  }));
+
+  function handleBatchEdit() {
+    showEditModal.value = true;
+  }
+
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    tableRefreshId.value += 1;
+  }
+
+  function handleBatchAction(item: ActionsItem) {
+    switch (item.key) {
+      case 'batchEdit':
+        handleBatchEdit();
+        break;
+      default:
+        break;
+    }
+  }
 
   const formCreateDrawerVisible = ref(false);
   const activeSourceId = ref(props.sourceId || '');
@@ -256,7 +297,6 @@
     ];
   });
 
-  const tableRefreshId = ref(0);
   const showDetailDrawer = ref(false);
 
   function handleEdit(id: string) {
@@ -330,7 +370,7 @@
     });
   }
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     excludeFieldIds: ['contractId'],
     operationColumn: {

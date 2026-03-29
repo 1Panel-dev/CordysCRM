@@ -67,6 +67,13 @@
     @saved="handleFormCreateSaved"
   />
   <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="batchOperationName" />
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="fieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
+    @refresh="handleRefresh"
+  />
 
   <OptOverviewDrawer
     v-model:show="showOverviewDrawer"
@@ -107,6 +114,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
@@ -169,9 +177,14 @@
   const tableRefreshItemId = ref('');
 
   const showApprovalModal = ref(false);
+  const showEditModal = ref(false);
   function handleBatchApproval() {
     showApprovalModal.value = true;
     batchOperationName.value = t('common.batchApproval');
+  }
+
+  function handleBatchEdit() {
+    showEditModal.value = true;
   }
 
   function handleRefresh() {
@@ -215,6 +228,9 @@
     switch (item.key) {
       case 'approval':
         handleBatchApproval();
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
         break;
       case 'voided':
         handleBatchVoid();
@@ -573,6 +589,11 @@
               },
             ]
           : []),
+        {
+          label: t('common.batchEdit'),
+          key: 'batchEdit',
+          permission: ['OPPORTUNITY_QUOTATION:UPDATE'],
+        },
         {
           label: t('common.batchVoid'),
           key: 'voided',
