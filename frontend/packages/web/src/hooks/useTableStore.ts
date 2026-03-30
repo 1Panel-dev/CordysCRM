@@ -4,7 +4,7 @@ import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { isArraysEqualWithOrder } from '@lib/shared/method/equal';
 
-import type { CrmDataTableColumn, TableStorageConfigItem } from '@/components/pure/crm-table/type';
+import type { CrmDataTableColumn, PaginationType, TableStorageConfigItem } from '@/components/pure/crm-table/type';
 
 import useAppStore from '@/store/modules/app';
 
@@ -217,7 +217,25 @@ export default function useTableStore() {
 
   async function getTableLineHeight(tableKey: TableKeyEnum) {
     const tableColumnsMap = await getTableColumnsMap(tableKey);
-    return tableColumnsMap && tableColumnsMap.layout ? tableColumnsMap.layout : 'compact';
+    return tableColumnsMap?.layout || 'compact';
+  }
+
+  async function setTablePaginationType(tableKey: TableKeyEnum, paginationType: PaginationType): Promise<void> {
+    try {
+      const tableColumnsMap = await getTableColumnsMap(tableKey);
+      if (tableColumnsMap) {
+        tableColumnsMap.paginationType = paginationType;
+        await setTableColumnsMap(tableKey, tableColumnsMap);
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+  }
+
+  async function getTablePaginationType(tableKey: TableKeyEnum) {
+    const tableColumnsMap = await getTableColumnsMap(tableKey);
+    return tableColumnsMap?.paginationType || 'scrollPagination';
   }
 
   return {
@@ -229,5 +247,7 @@ export default function useTableStore() {
     getPageSize,
     setTableLineHeight,
     getTableLineHeight,
+    setTablePaginationType,
+    getTablePaginationType,
   };
 }

@@ -1,6 +1,8 @@
 <template>
   <div
-    :class="`crm-pagination--${props.size} flex items-center ${props.showTotal ? 'justify-between' : 'justify-end'}`"
+    :class="`crm-pagination--${props.size} flex items-center ${
+      props.showTotal ? 'justify-between' : 'justify-end'
+    } py-[12px]`"
   >
     <div v-if="props.checkedCount" class="flex items-center gap-[4px]">
       <div>{{ t('crmPagination.checked') }}</div>
@@ -9,6 +11,9 @@
     </div>
     <div v-else v-show="props.showTotal" class="total text-[var(--text-n2)]">
       {{ t('crmPagination.total', { count: props.itemCount }) }}
+    </div>
+    <div class="mr-auto flex items-center">
+      <slot></slot>
     </div>
     <n-pagination
       v-if="!props.hidePagination"
@@ -124,3 +129,11 @@
     emit('handlePageSizeChange', value);
   }
 </script>
+
+<style lang="less">
+  .crm-pagination--small {
+    .total {
+      font-size: 14px;
+    }
+  }
+</style>

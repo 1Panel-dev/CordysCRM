@@ -20,7 +20,7 @@
       </n-button>
     </template>
     <div class="mb-[4px] p-[8px]">
-      <n-radio-group v-model:value="layoutType" name="layoutType">
+      <n-radio-group v-model:value="layoutType" name="layoutType" size="small">
         <n-radio-button v-for="e in layoutTypeList" :key="e.value" :value="e.value" :label="e.label" />
       </n-radio-group>
     </div>
@@ -103,7 +103,7 @@
           </div>
         </VueDraggable>
       </div>
-      <div v-else class="px-[8px]">
+      <div v-else-if="layoutType === 'lineHeightSet'" class="px-[8px]">
         <div class="h-[24px] font-medium text-[var(--text-n1)]">
           {{ t('crmTable.columnSetting.tableLineHeightSettings') }}
         </div>
@@ -138,6 +138,17 @@
           </div>
         </div>
       </div>
+      <n-radio-group
+        v-else
+        v-model:value="paginationType"
+        name="layoutType"
+        size="small"
+        class="px-[4px]"
+        @update:value="handleChange"
+      >
+        <n-radio-button value="scrollPagination" :label="t('crmTable.columnSetting.scrollPagination')" />
+        <n-radio-button value="pagePagination" :label="t('crmTable.columnSetting.pagePagination')" />
+      </n-radio-group>
     </n-scrollbar>
   </n-popover>
 </template>
@@ -149,7 +160,7 @@
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
+  import type { CrmDataTableColumn, PaginationType } from '@/components/pure/crm-table/type';
 
   import useTableStore from '@/hooks/useTableStore';
 
@@ -170,12 +181,14 @@
   const notAllowSortCachedColumns = ref<CrmDataTableColumn[]>([]);
   const allowSortCachedColumns = ref<CrmDataTableColumn[]>([]);
   const activeLayoutType = ref<string>('compact');
+  const paginationType = ref<PaginationType>('scrollPagination');
 
   async function getCachedColumns() {
     const columns = await tableStore.getCanSetColumns(props.tableKey);
     notAllowSortCachedColumns.value = columns.filter((e) => e.columnSelectorDisabled);
     allowSortCachedColumns.value = columns.filter((e) => !e.columnSelectorDisabled);
     activeLayoutType.value = (await tableStore.getTableLineHeight(props.tableKey)) as string;
+    paginationType.value = await tableStore.getTablePaginationType(props.tableKey);
   }
 
   const layoutTypeList = [
@@ -186,6 +199,10 @@
     {
       value: 'lineHeightSet',
       label: t('crmTable.columnSetting.tableLineHeightSettings'),
+    },
+    {
+      value: 'pageSet',
+      label: t('crmTable.columnSetting.tableLinePageSettings'),
     },
   ];
 
@@ -206,6 +223,7 @@
           ...allowSortCachedColumns.value,
         ]);
         await tableStore.setTableLineHeight(props.tableKey, activeLayoutType.value);
+        await tableStore.setTablePaginationType(props.tableKey, paginationType.value);
         emit('changeColumnsSetting');
         hasChange.value = false;
       }

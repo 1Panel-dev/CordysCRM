@@ -107,33 +107,44 @@
         </template>
       </n-data-table>
     </template>
-    <div
-      v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen) || hasFinished"
-      class="crm-table-bottom-tip flex text-center"
-    >
-      <div :class="`flex flex-1 items-start`">
-        <div v-if="(!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)) && !attrs.customTotal">
-          {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
-        </div>
-        <slot name="totalRight"></slot>
-      </div>
-      <div
-        v-if="hasFinished && !attrs.loading && !props.notShowTable"
-        :class="`-ml-[24px] flex flex-1 items-start ${
-          !(!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)) ? 'items-center justify-center' : 'items-start'
-        }`"
+    <template v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen) || hasFinished">
+      <CrmPagination
+        v-if="paginationType === 'pagePagination'"
+        :item-count="(attrs.crmPagination as PaginationProps)?.itemCount"
+        :page-size="(attrs.crmPagination as PaginationProps)?.pageSize"
+        :page="(attrs.crmPagination as PaginationProps)?.page"
+        show-total
+        size="small"
+        @handle-page-change="pageChange"
+        @handle-page-size-change="pageSizeChange"
       >
-        {{ t('crmTable.tableScrollFinishedTip') }}
+        <slot name="totalRight"></slot>
+      </CrmPagination>
+      <div v-else class="crm-table-bottom-tip flex text-center">
+        <div :class="`flex flex-1 items-start`">
+          <div v-if="(!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)) && !attrs.customTotal">
+            {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
+          </div>
+          <slot name="totalRight"></slot>
+        </div>
+        <div
+          v-if="hasFinished && !attrs.loading && !props.notShowTable"
+          :class="`-ml-[24px] flex flex-1 items-start ${
+            !(!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)) ? 'items-center justify-center' : 'items-start'
+          }`"
+        >
+          {{ t('crmTable.tableScrollFinishedTip') }}
+        </div>
+        <div v-if="!attrs.hiddenBackToTop" class="flex items-center">
+          <n-button size="small" type="primary" text class="text-btn-primary" @click="backToTop">
+            <template #icon>
+              <CrmIcon type="iconicon_backtop" :size="14" />
+            </template>
+            <div class="text-[14px]">{{ t('common.backToTop') }}</div>
+          </n-button>
+        </div>
       </div>
-      <div v-if="!attrs.hiddenBackToTop" class="flex items-center">
-        <n-button size="small" type="primary" text class="text-btn-primary" @click="backToTop">
-          <template #icon>
-            <CrmIcon type="iconicon_backtop" :size="14" />
-          </template>
-          <div class="text-[14px]">{{ t('common.backToTop') }}</div>
-        </n-button>
-      </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -148,7 +159,8 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import type { CrmDataTableColumn, TableStorageConfigItem } from '@/components/pure/crm-table/type';
+  import CrmPagination from '@/components/pure/crm-pagination/index.vue';
+  import type { CrmDataTableColumn, PaginationType, TableStorageConfigItem } from '@/components/pure/crm-table/type';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import BatchAction from './components/batchAction.vue';
   import ColumnSetting from './components/columnSetting.vue';
@@ -529,6 +541,20 @@
     }
   }
 
+  const paginationType = ref<PaginationType>();
+  async function initPaginationType(load: boolean = false) {
+    if (attrs.showSetting) {
+      paginationType.value = await tableStore.getTablePaginationType(attrs.tableKey as TableKeyEnum);
+      if (load) {
+        // 切换分页类型时，重置页码到1
+        scrollTo({
+          top: 0,
+        });
+        emit('refresh');
+      }
+    }
+  }
+
   const tableLineHeight = computed(() => {
     if (attrs.showSetting) {
       return layOut.value === 'compact' ? 36 : 46;
@@ -548,6 +574,7 @@
   function changeColumnsSetting() {
     initColumn();
     initLayoutType();
+    initPaginationType(true);
   }
 
   function patchColKeys() {
@@ -613,6 +640,7 @@
       patchColKeys();
       listenColWidthChange();
       initLayoutType();
+      initPaginationType();
     },
     { immediate: true }
   );
@@ -692,23 +720,33 @@
 
   const hasFinished = ref(false);
   function handleScroll(e: Event) {
-    const target = e.target as HTMLElement;
-    const pagination = attrs.crmPagination as any;
-    hasFinished.value = false;
-    // 处理有纵向滚动的情况
-    if (
-      target.scrollHeight > target.clientHeight &&
-      target.scrollHeight - target.scrollTop - target.clientHeight <= 40 &&
-      pagination &&
-      !attrs.loading &&
-      !hasFinished.value
-    ) {
-      if (pagination.itemCount > pagination.page * pagination.pageSize) {
-        emit('pageChange', pagination.page + 1);
-      } else {
-        hasFinished.value = true;
+    if (paginationType.value === 'scrollPagination') {
+      const target = e.target as HTMLElement;
+      const pagination = attrs.crmPagination as any;
+      hasFinished.value = false;
+      // 处理有纵向滚动的情况
+      if (
+        target.scrollHeight > target.clientHeight &&
+        target.scrollHeight - target.scrollTop - target.clientHeight <= 40 &&
+        pagination &&
+        !attrs.loading &&
+        !hasFinished.value
+      ) {
+        if (pagination.itemCount > pagination.page * pagination.pageSize) {
+          emit('pageChange', pagination.page + 1);
+        } else {
+          hasFinished.value = true;
+        }
       }
     }
+  }
+
+  function pageChange(page: number) {
+    emit('pageChange', page);
+  }
+
+  function pageSizeChange(pageSize: number) {
+    emit('pageSizeChange', pageSize);
   }
 
   const sortable = ref();
