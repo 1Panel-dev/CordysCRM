@@ -49,8 +49,11 @@ public class BusinessTitle extends BaseModel {
     @Schema(description = "组织id")
     private String organizationId;
 
-    @Schema(description = "所属地区")
-    private String area;
+    @Schema(description = "省")
+    private String province;
+
+    @Schema(description = "市")
+    private String city;
 
     @Schema(description = "企业规模")
     private String scale;

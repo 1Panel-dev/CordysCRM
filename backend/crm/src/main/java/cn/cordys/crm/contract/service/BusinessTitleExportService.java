@@ -77,7 +77,8 @@ public class BusinessTitleExportService extends BaseExportService {
         systemFieldMap.put("companySize", data.getCompanySize());
         systemFieldMap.put("registrationNumber", data.getRegistrationNumber());
         systemFieldMap.put("unapprovedReason", data.getUnapprovedReason());
-        systemFieldMap.put("area", data.getArea());
+        systemFieldMap.put("province", data.getProvince());
+        systemFieldMap.put("city", data.getCity());
         systemFieldMap.put("scale", data.getScale());
         systemFieldMap.put("industry", data.getIndustry());
 

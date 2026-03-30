@@ -157,16 +157,16 @@ public class BusinessTitleController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "excel导入检查")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
-    public ImportResponse preCheck(@RequestPart(value = "file", required = false) MultipartFile file) {
-        return businessTitleService.importPreCheck(file, OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@RequestPart(value = "file", required = false) MultipartFile file, @Validated @RequestPart("request") BusinessTitleImportRequest request) {
+        return businessTitleService.importPreCheck(file, OrganizationContext.getOrganizationId(), request);
     }
 
 
     @PostMapping(value = "/import")
     @Operation(summary = "导入")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
-    public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file) {
-        return businessTitleService.realImport(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file, @Validated @RequestPart("request") BusinessTitleImportRequest request) {
+        return businessTitleService.realImport(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), request);
     }
 
 
