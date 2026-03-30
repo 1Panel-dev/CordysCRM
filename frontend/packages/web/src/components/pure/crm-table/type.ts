@@ -76,12 +76,15 @@ export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'notVirtualScroll'?: boolean;
 };
 
+export type PaginationType = 'scrollPagination' | 'pagePagination';
+
 // 表格存储
 export interface TableStorageConfigItem {
   column: CrmDataTableColumn[]; // 列配置
   pageSize?: number;
   columnBackup: CrmDataTableColumn[]; // 列配置的备份，用于比较当前定义的列配置是否和备份的列配置相同
   layout?: string;
+  paginationType?: PaginationType;
 }
 
 export interface BatchActionConfig {

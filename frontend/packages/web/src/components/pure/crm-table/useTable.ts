@@ -2,6 +2,7 @@ import { UnwrapRef } from 'vue';
 import { cloneDeep } from 'lodash-es';
 import dayjs from 'dayjs';
 
+import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import type { CommonList, FilterConditionItem, SortParams, TableQueryParams } from '@lib/shared/models/common';
 
 import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -10,7 +11,7 @@ import useTableStore from '@/hooks/useTableStore';
 import useAppStore from '@/store/modules/app';
 import useViewStore from '@/store/modules/view';
 
-import type { CrmTableDataItem, CrmTableProps } from './type';
+import type { CrmTableDataItem, CrmTableProps, PaginationType } from './type';
 import type { PaginationProps } from 'naive-ui';
 
 const tableStore = useTableStore();
@@ -126,6 +127,11 @@ export default function useTable<T>(
   const tableQueryParams = ref<TableQueryParams>({}); // 表格请求参数集合
 
   const sortItem = ref<SortParams>(); // 排序
+  const paginationType = ref<PaginationType>(); // 分页类型
+
+  async function getPaginationType(tableKey: TableKeyEnum) {
+    paginationType.value = await tableStore.getTablePaginationType(tableKey);
+  }
 
   function processRecordItem(
     item: CrmTableDataItem<T>,
@@ -146,6 +152,7 @@ export default function useTable<T>(
   async function loadList(isPageChange = false, refreshId: string | number | undefined = undefined) {
     if (!loadListFunc || propsRes.value.loading) return;
     setLoading(true);
+    await getPaginationType(propsRes.value.tableKey as TableKeyEnum);
     try {
       tableQueryParams.value = {
         ...(!propsRes.value.showPagination ? {} : await getPaginationParams()),
@@ -177,7 +184,7 @@ export default function useTable<T>(
         setPagination(1, (data.list || data).length);
       } else {
         const tmpArr = data as CommonList<CrmTableDataItem<T>>;
-        if (isPageChange) {
+        if (isPageChange && paginationType.value === 'scrollPagination') {
           tmpArr.list?.forEach((item: CrmTableDataItem<T>) => {
             propsRes.value.data.push(processRecordItem(item, tmpArr));
           }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
@@ -195,32 +202,34 @@ export default function useTable<T>(
           setPagination(tmpArr.current, tmpArr.total);
         }
       }
-      // 解决分页数据不足一页时不能触发滚动的问题
-      nextTick(() => {
-        if (
-          (data.list || data).length === 0 ||
-          (propsRes.value.crmPagination?.itemCount &&
-            propsRes.value.crmPagination?.page &&
-            propsRes.value.crmPagination?.pageSize &&
-            propsRes.value.crmPagination.itemCount <=
-              propsRes.value.crmPagination.page * propsRes.value.crmPagination.pageSize)
-        ) {
-          return;
-        }
-        if (propsRes.value.containerClass) {
-          const tableScrollElement = document.querySelector(propsRes.value.containerClass)?.querySelector('.v-vl');
-          const listElement = document.querySelector(propsRes.value.containerClass)?.querySelector('.v-vl-items');
+      if (paginationType.value === 'scrollPagination') {
+        // 解决分页数据不足一页时不能触发滚动的问题
+        nextTick(() => {
           if (
-            tableScrollElement &&
-            listElement &&
-            tableScrollElement.clientHeight >= listElement.clientHeight &&
-            propsRes.value.crmPagination?.page
+            (data.list || data).length === 0 ||
+            (propsRes.value.crmPagination?.itemCount &&
+              propsRes.value.crmPagination?.page &&
+              propsRes.value.crmPagination?.pageSize &&
+              propsRes.value.crmPagination.itemCount <=
+                propsRes.value.crmPagination.page * propsRes.value.crmPagination.pageSize)
           ) {
-            setPagination(propsRes.value.crmPagination.page + 1);
-            loadList(true);
+            return;
           }
-        }
-      });
+          if (propsRes.value.containerClass) {
+            const tableScrollElement = document.querySelector(propsRes.value.containerClass)?.querySelector('.v-vl');
+            const listElement = document.querySelector(propsRes.value.containerClass)?.querySelector('.v-vl-items');
+            if (
+              tableScrollElement &&
+              listElement &&
+              tableScrollElement.clientHeight >= listElement.clientHeight &&
+              propsRes.value.crmPagination?.page
+            ) {
+              setPagination(propsRes.value.crmPagination.page + 1);
+              loadList(true);
+            }
+          }
+        });
+      }
     } catch (error: any) {
       propsRes.value.data = [];
       // eslint-disable-next-line no-console
