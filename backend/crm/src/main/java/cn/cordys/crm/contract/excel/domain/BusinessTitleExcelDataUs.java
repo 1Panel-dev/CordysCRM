@@ -67,11 +67,17 @@ public class BusinessTitleExcelDataUs extends BusinessTitleExcelData {
     @ExcelProperty("Registration number")
     private String registrationNumber;
     /**
-     * 所属地区
+     * 省
      */
     @ColumnWidth(255)
-    @ExcelProperty("Area")
-    private String area;
+    @ExcelProperty("Province")
+    private String province;
+    /**
+     * 市
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("City")
+    private String city;
     /**
      * 企业规模
      */

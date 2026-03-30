@@ -5,11 +5,11 @@
 
     <select id="list" resultType="cn.cordys.crm.contract.dto.response.BusinessTitleListResponse">
         SELECT
-            bt.*
+        bt.*
         FROM
-            business_title bt
+        business_title bt
         WHERE
-            bt.organization_id = #{orgId}
+        bt.organization_id = #{orgId}
         <if test="request.keyword != null and request.keyword != ''">
             and bt.name like concat('%', #{request.keyword},'%')
         </if>
@@ -113,6 +113,30 @@
                     <property name="column" value="bt.unapproved_reason"/>
                 </include>
             </when>
+            <when test="condition.name == 'province'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.province"/>
+                </include>
+            </when>
+            <when test="condition.name == 'city'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.city"/>
+                </include>
+            </when>
+            <when test="condition.name == 'scale'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.scale"/>
+                </include>
+            </when>
+            <when test="condition.name == 'industry'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.industry"/>
+                </include>
+            </when>
             <when test="condition.name == 'createTime'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
@@ -160,13 +184,13 @@
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">
-                <bind name="sortType" value="${sort}.type" />
-                <bind name="sortName" value="${sort}.name" />
+                <bind name="sortType" value="${sort}.type"/>
+                <bind name="sortName" value="${sort}.name"/>
                 order by
                 <choose>
                     <when test="${sort}.name in
                         {'name', 'type', 'create_time', 'update_time', 'identification_number', 'opening_bank', 'create_user', 'update_user', 'bank_account', 'registration_address',
-                         'phone_number', 'registered_capital', 'company_size', 'registration_number', 'approval_status', 'unapproved_reason'
+                         'phone_number', 'registered_capital', 'company_size', 'registration_number', 'approval_status', 'unapproved_reason', 'province', 'city', 'scale', 'industry'
                         }">
                         bt.${sortName} ${sortType}, bt.id ASC
                     </when>
@@ -202,5 +226,60 @@
             AND bt.id != #{id}
         </if>
     </select>
+
+
+    <select id="selectByNames" resultType="cn.cordys.crm.contract.domain.BusinessTitle">
+        select id, name from business_title
+        where name in
+        <foreach collection="names" item="name" open="(" close=")" separator=",">
+            #{name}
+        </foreach>
+    </select>
+
+
+    <update id="updateById">
+        update business_title
+        <set>
+            <if test="title.identificationNumber != null and title.identificationNumber != ''">
+                identification_number = #{title.identificationNumber},
+            </if>
+            <if test="title.openingBank != null and title.openingBank != ''">
+                opening_bank = #{title.openingBank},
+            </if>
+            <if test="title.bankAccount != null and title.bankAccount != ''">
+                bank_account = #{title.bankAccount},
+            </if>
+            <if test="title.registrationAddress != null and title.registrationAddress != ''">
+                registration_address = #{title.registrationAddress},
+            </if>
+            <if test="title.phoneNumber != null and title.phoneNumber != ''">
+                phone_number = #{title.phoneNumber},
+            </if>
+            <if test="title.registeredCapital != null and title.registeredCapital != ''">
+                registered_capital = #{title.registeredCapital},
+            </if>
+            <if test="title.companySize != null and title.companySize != ''">
+                company_size = #{title.companySize},
+            </if>
+            <if test="title.registrationNumber != null and title.registrationNumber != ''">
+                registration_number = #{title.registrationNumber},
+            </if>
+            <if test="title.province != null and title.province != ''">
+                province = #{title.province},
+            </if>
+            <if test="title.city != null and title.city != ''">
+                city = #{title.city},
+            </if>
+            <if test="title.scale != null and title.scale != ''">
+                scale = #{title.scale},
+            </if>
+            <if test="title.industry != null and title.industry != ''">
+                industry = #{title.industry},
+            </if>
+        </set>
+        <where>
+            id = #{title.id}
+        </where>
+    </update>
 
 </mapper>

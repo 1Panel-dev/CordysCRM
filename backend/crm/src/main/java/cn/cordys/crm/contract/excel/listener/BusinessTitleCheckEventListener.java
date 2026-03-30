@@ -4,7 +4,9 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.contract.dto.request.BusinessTitleImportRequest;
 import cn.cordys.crm.contract.excel.constants.BusinessTitleImportFiled;
+import cn.cordys.crm.contract.excel.constants.BusinessTitleImportType;
 import cn.cordys.excel.domain.ExcelErrData;
 import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.context.AnalysisContext;
@@ -12,6 +14,7 @@ import cn.idev.excel.event.AnalysisEventListener;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -43,13 +46,15 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private final List<List<String>> heads;
     protected boolean atLeastOne = false;
     private final Map<String, Boolean> excelValueCache = new ConcurrentHashMap<>();
+    private BusinessTitleImportRequest request = new BusinessTitleImportRequest();
 
-    public BusinessTitleCheckEventListener(Class<?> clazz, Map<String, Boolean> requiredFieldMap, String orgId, List<List<String>> heads) {
+    public BusinessTitleCheckEventListener(Class<?> clazz, Map<String, Boolean> requiredFieldMap, String orgId, List<List<String>> heads, BusinessTitleImportRequest request) {
         this.excelDataClass = clazz;
         this.requiredFieldMap = requiredFieldMap;
         this.orgId = orgId;
         this.commonMapper = CommonBeanFactory.getBean(CommonMapper.class);
         this.heads = heads;
+        this.request = request;
     }
 
     @Override
@@ -98,9 +103,11 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private void validateRowData(Integer rowIndex, Map<Integer, String> rowData) {
         StringBuilder errText = new StringBuilder();
         headMap.forEach((k, v) -> {
-            validateRequired(rowData.get(k), errText, v);
+            if (Strings.CI.equals(request.getImportType(), BusinessTitleImportType.ADD.name())) {
+                validateRequired(rowData.get(k), errText, v);
+                validateNameUniques(rowData.get(k), errText, v);
+            }
             validateLenLimit(rowData.get(k), errText, v);
-            validateNameUniques(rowData.get(k), errText, v);
         });
         if (StringUtils.isNotEmpty(errText)) {
             ExcelErrData excelErrData = new ExcelErrData(rowIndex,

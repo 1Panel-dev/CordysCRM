@@ -21,7 +21,8 @@ public enum BusinessTitleImportFiled {
     REGISTERED_CAPITAL("registeredCapital", "注册资本", "Registered capital", BusinessTitleExcelData::getRegisteredCapital),
     COMPANY_SIZE("companySize", "公司规模", "Customer size", BusinessTitleExcelData::getCompanySize),
     registration_number("registrationNumber", "工商注册账号", "Registration number", BusinessTitleExcelData::getRegistrationNumber),
-    AREA("area", "所属地区", "Area", BusinessTitleExcelData::getArea),
+    PROVINCE("province", "省", "Province", BusinessTitleExcelData::getProvince),
+    CITY("city", "市", "City", BusinessTitleExcelData::getCity),
     Scale("scale", "企业规模", "Scale", BusinessTitleExcelData::getScale),
     INDUSTRY("industry", "国标行业", "Industry", BusinessTitleExcelData::getIndustry);
 
