@@ -22,6 +22,40 @@
           </div>
         </div>
       </n-alert>
+      <n-radio-group v-if="props.showImportRadio" v-model:value="importType" class="mb-[16px]" name="radiogroup">
+        <n-space class="!gap-[24px]">
+          <n-radio key="ADD" value="ADD">
+            <div class="flex items-center gap-[8px]">
+              {{ t('crmImportButton.importNew') }}
+              <n-tooltip trigger="hover" placement="right">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_help_circle"
+                    :size="16"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                  />
+                </template>
+                {{ t('crmImportButton.importNew.tooltip') }}
+              </n-tooltip>
+            </div>
+          </n-radio>
+          <n-radio key="UPDATE" value="UPDATE">
+            <div class="flex items-center gap-[8px]">
+              {{ t('crmImportButton.importUpdates') }}
+              <n-tooltip trigger="hover" placement="right">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_help_circle"
+                    :size="16"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                  />
+                </template>
+                {{ t('crmImportButton.importUpdates.tooltip') }}
+              </n-tooltip>
+            </div>
+          </n-radio>
+        </n-space>
+      </n-radio-group>
       <CrmUpload
         v-model:file-list="fileList"
         :is-all-screen="true"
@@ -38,7 +72,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NAlert, useMessage } from 'naive-ui';
+  import { NAlert, NRadio, NRadioGroup, NSpace, NTooltip, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
@@ -58,10 +92,11 @@
     title?: string; // 标题
     descriptionTip?: string; // 描述提示内容
     downloadTemplateApi?: () => Promise<any>; // 下载模板Api
+    showImportRadio?: boolean;
   }>();
 
   const emit = defineEmits<{
-    (e: 'validate', files: CrmFileItem[]): void;
+    (e: 'validate', files: CrmFileItem[], importType?: string): void;
     (e: 'close'): void;
   }>();
 
@@ -71,10 +106,12 @@
   });
 
   const fileList = ref<CrmFileItem[]>([]);
+  const importType = ref('ADD');
 
   function cancel() {
     showModal.value = false;
     fileList.value = [];
+    importType.value = 'ADD';
     emit('close');
   }
 
@@ -109,7 +146,7 @@
   const validateLoading = ref<boolean>(false);
 
   function validate() {
-    emit('validate', fileList.value);
+    emit('validate', fileList.value, importType.value);
   }
 </script>
 

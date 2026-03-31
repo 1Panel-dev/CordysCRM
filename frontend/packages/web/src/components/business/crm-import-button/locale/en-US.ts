@@ -20,4 +20,10 @@ export default {
   'crmImportButton.formExcelImport': 'Import from Excel file',
   'crmImportButton.onlyAllowFileTypeTip': 'Only files in xls/xlsx format are supported',
   'crmImportButton.fileChange': 'The file has been modified. Please re-upload it',
+  'crmImportButton.importNew': 'Import new',
+  'crmImportButton.importNew.tooltip':
+    'Company name is unique. If multiple duplicate records exist, only the first one will be imported.',
+  'crmImportButton.importUpdates': 'Import updates',
+  'crmImportButton.importUpdates.tooltip':
+    'After matching by company name, columns with valid values in the Excel file will overwrite the corresponding records in the system.',
 };

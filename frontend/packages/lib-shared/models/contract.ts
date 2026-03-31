@@ -147,7 +147,9 @@ export interface BusinessTitleItem {
   name: string;
   type: 'THIRD_PARTY' | 'CUSTOM';
   identificationNumber: string;
-  area: string; // 所属地区
+  province: string; // 省
+  city: string; // 市
+  remark: string;
   scale: string; // 企业规模
   industry: string; // 国标行业
   openingBank: string;
@@ -180,7 +182,9 @@ export interface SaveBusinessTitleParams {
   companySize: string; // 公司规模
   registrationNumber: string; //工商注册号
   type: string; // 来源类型
-  area: string; // 所属地区
+  province: string; // 省
+  city: string; // 市
+  remark: string;
   scale: string; // 企业规模
   industry: string; // 国标行业
 }

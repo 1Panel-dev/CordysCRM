@@ -40,8 +40,8 @@ export type ImportApiType =
   | ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT;
 
 export interface importRequestType {
-  preCheck: (file: File) => Promise<{ data: ValidateInfo }>;
-  save: (file: File) => Promise<any>;
+  preCheck: (file: File, importType?: string) => Promise<{ data: ValidateInfo }>;
+  save: (file: File, importType?: string) => Promise<any>;
   download?: () => Promise<File>;
 }
 

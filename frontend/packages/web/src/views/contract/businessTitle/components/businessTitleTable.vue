@@ -21,6 +21,7 @@
         <CrmImportButton
           v-if="hasAnyPermission(['CONTRACT_BUSINESS_TITLE:IMPORT'])"
           :api-type="ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT"
+          showImportRadio
           :title="t('module.businessTitle')"
           @import-success="() => searchData()"
         />
@@ -344,8 +345,18 @@
       width: 200,
     },
     {
-      title: t('contract.businessTitle.area'),
-      key: 'area',
+      title: t('contract.businessTitle.province'),
+      key: 'province',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+    },
+    {
+      title: t('contract.businessTitle.city'),
+      key: 'city',
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -366,6 +377,16 @@
     {
       title: t('contract.businessTitle.industry'),
       key: 'industry',
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+      width: 200,
+    },
+    {
+      title: t('common.remark'),
+      key: 'remark',
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -539,8 +560,13 @@
       type: FieldTypeEnum.INPUT,
     },
     {
-      title: t('contract.businessTitle.area'),
-      dataIndex: 'area',
+      title: t('contract.businessTitle.province'),
+      dataIndex: 'province',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('contract.businessTitle.city'),
+      dataIndex: 'city',
       type: FieldTypeEnum.INPUT,
     },
     {
@@ -551,6 +577,11 @@
     {
       title: t('contract.businessTitle.industry'),
       dataIndex: 'industry',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      title: t('common.remark'),
+      dataIndex: 'remark',
       type: FieldTypeEnum.INPUT,
     },
     ...baseFilterConfigList,

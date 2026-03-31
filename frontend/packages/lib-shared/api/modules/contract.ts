@@ -475,10 +475,10 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 合同-工商抬头导入
-  function preCheckImportBusinessTitle(file: File) {
+  function preCheckImportBusinessTitle(file: File, importType?: string) {
     return CDR.uploadFile<{ data: ValidateInfo }>(
       { url: PreCheckBusinessTitleImportUrl },
-      { fileList: [file] },
+      { fileList: [file], request: {importType } },
       'file'
     );
   }
@@ -493,8 +493,8 @@ export default function useContractApi(CDR: CordysAxios) {
     );
   }
 
-  function importBusinessTitle(file: File) {
-    return CDR.uploadFile({ url: ImportBusinessTitleUrl }, { fileList: [file] }, 'file');
+  function importBusinessTitle(file: File, importType?: string) {
+    return CDR.uploadFile({ url: ImportBusinessTitleUrl }, { fileList: [file], request: {importType} }, 'file');
   }
 
   // 工商抬头列表
