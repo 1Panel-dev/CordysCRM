@@ -38,4 +38,7 @@ public class DatasourceField extends BaseField {
 
 	@Schema(description = "子表格联动配置")
 	private List<SourceLink> childLinkFields;
+
+	@Schema(description = "数据列表显示字段")
+	private List<String> listDisplayFields;
 }
