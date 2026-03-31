@@ -38,6 +38,17 @@ const workbench: AppRouteRecordRaw = {
         isCache: true,
       },
     },
+    {
+      path: 'agent',
+      name: WorkbenchRouteEnum.WORKBENCH_AGENT,
+      component: () => import('@/views/workbench/agent/index.vue'),
+      meta: {
+        locale: '',
+        permissions: [],
+        depth: 1,
+        isCache: true,
+      },
+    },
   ],
 };
 

@@ -3,6 +3,9 @@
     <template #left>
       <CrmIcon v-if="!props.hideBack" name="iconicon_chevron_left" width="24px" height="24px" @click="handleBack" />
     </template>
+    <template #right>
+      <slot name="rightSlot" />
+    </template>
   </van-nav-bar>
 </template>
 

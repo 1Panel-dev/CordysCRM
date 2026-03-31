@@ -11,8 +11,9 @@
           class="flex-1 !p-0"
           @click="goDuplicateCheck"
         />
+        <CrmIcon v-if="hasValidApiKey" name="icon-bot" width="21px" height="21px" @click="goAgent" />
         <van-badge :dot="showBadge">
-          <CrmIcon name="iconicon_notification" width="21px" height="21px" @click="goMineMessage" />
+          <CrmIcon name="iconicon_notification" class="mt-[4px]" width="21px" height="21px" @click="goMineMessage" />
         </van-badge>
       </div>
       <van-notice-bar
@@ -87,7 +88,7 @@
   import { lastScopedOptions } from './duplicateCheck/config';
 
   const appStore = useAppStore();
-
+  const userStore = useUserStore();
   const { t } = useI18n();
   const router = useRouter();
 
@@ -149,6 +150,12 @@
     router.push({ name: MineRouteEnum.MINE_MESSAGE });
   }
 
+  const hasValidApiKey = computed(() => userStore.apiKeyList.some((key) => !key.isExpire && key.enable));
+
+  function goAgent() {
+    router.push({ name: WorkbenchRouteEnum.WORKBENCH_AGENT });
+  }
+
   function goDuplicateCheck() {
     router.push({ name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK });
   }
@@ -176,6 +183,7 @@
     appStore.initMessage();
     appStore.connectSystemMessageSSE();
     appStore.initStageConfig();
+    userStore.initApiKeyList();
   });
 </script>
 

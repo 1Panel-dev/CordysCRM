@@ -1,6 +1,7 @@
 import { showFailToast } from 'vant';
 
 import createAxios from '@lib/shared/api/http';
+import useAgentApi from '@lib/shared/api/modules/agent';
 import useClueApi from '@lib/shared/api/modules/clue';
 import useContractApi from '@lib/shared/api/modules/contract';
 import useCustomerApi from '@lib/shared/api/modules/customer';
@@ -35,6 +36,7 @@ const licenseApi = useLicenseApi(CDR);
 const followApi = useFollowApi(CDR);
 const contractApi = useContractApi(CDR);
 const orderApi = useOrderApi(CDR);
+const agentApi = useAgentApi(CDR);
 
 export const {
   getFollowPlanDetail,
@@ -408,8 +410,11 @@ export const {
   getExportCenterList,
   cancelCenterExport,
   getConfigSynchronization,
+  getApiKeyList,
 } = businessApi;
 
 export const { isLogin, signout, getKey, login, getThirdOauthCallback, getThirdCallback } = loginApi;
 
 export const { getLicense, addLicense } = licenseApi;
+
+export const { getAgentOptions } = agentApi;

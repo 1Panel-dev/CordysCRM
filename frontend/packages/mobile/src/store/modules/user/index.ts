@@ -7,12 +7,14 @@ import { getGenerateId } from '@lib/shared/method';
 import { clearToken, setToken } from '@lib/shared/method/auth';
 import { removeRouteListener } from '@lib/shared/method/route-listener';
 import { removeScript } from '@lib/shared/method/scriptLoader';
+import { ApiKeyItem } from '@lib/shared/models/system/business';
 import type { LoginParams } from '@lib/shared/models/system/login';
 import type { UserInfo } from '@lib/shared/models/user';
 
-import { isLogin, login, signout } from '@/api/modules';
+import { getApiKeyList, isLogin, login, signout } from '@/api/modules';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
+import { hasAnyPermission } from '@/utils/permission';
 
 import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -22,6 +24,7 @@ export interface UserState {
   loginType: string[];
   userInfo: UserInfo;
   clientIdRandomId: string;
+  apiKeyList: ApiKeyItem[];
 }
 
 const useUserStore = defineStore('user', {
@@ -54,6 +57,7 @@ const useUserStore = defineStore('user', {
       defaultPwd: true,
     },
     clientIdRandomId: '',
+    apiKeyList: [],
   }),
 
   getters: {
@@ -142,6 +146,21 @@ const useUserStore = defineStore('user', {
         await signout();
       } finally {
         this.logoutCallBack();
+      }
+    },
+    async initApiKeyList() {
+      if (!hasAnyPermission(['PERSONAL_API_KEY:READ'])) return;
+      try {
+        const res = await getApiKeyList();
+        this.apiKeyList = res.map((item) => ({
+          ...item,
+          isExpire: item.forever ? false : item.expireTime < Date.now(),
+          desensitization: true,
+          showDescInput: false,
+        }));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
       }
     },
   },
