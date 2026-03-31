@@ -552,6 +552,9 @@
         });
         emit('refresh');
       }
+    } else {
+      // 默认使用滚动分页
+      paginationType.value = 'scrollPagination';
     }
   }
 
