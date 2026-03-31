@@ -24,4 +24,5 @@ export default {
   'workbench.duplicateCheck.openSeaName': 'OpenSea name',
   'workbench.duplicateCheck.leadPoolName': 'Lead pool name',
   'workbench.duplicateCheck.lastFollowUpDate': 'Last follow-up time',
+  'workbench.agent.select': 'Select',
 };

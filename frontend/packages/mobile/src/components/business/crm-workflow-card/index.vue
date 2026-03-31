@@ -76,6 +76,7 @@
   import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { StageConfigItem } from '@lib/shared/models/opportunity';
 
@@ -85,7 +86,6 @@
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
-  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 
   const { t } = useI18n();
   const router = useRouter();

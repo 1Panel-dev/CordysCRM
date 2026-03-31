@@ -24,4 +24,5 @@ export default {
   'workbench.duplicateCheck.openSeaName': '公海名称',
   'workbench.duplicateCheck.leadPoolName': '线索池名称',
   'workbench.duplicateCheck.lastFollowUpDate': '最新跟进时间',
+  'workbench.agent.select': '选择',
 };
