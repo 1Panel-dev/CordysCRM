@@ -378,7 +378,15 @@
     try {
       const res = await getFieldDisplayList(formKey.value);
       linkFieldOptions.value = res.fields
-        .filter((e) => [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(e.type))
+        .filter((e) =>
+          [
+            FieldTypeEnum.DATA_SOURCE,
+            FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+            FieldTypeEnum.MEMBER,
+            FieldTypeEnum.MEMBER_MULTIPLE,
+            FieldTypeEnum.LOCATION,
+          ].includes(e.type)
+        )
         .map((item) => {
           return {
             label: item.name,
@@ -403,7 +411,25 @@
     const currentField = props.formFields.find((f) => f.id === currentFieldId);
     if (currentField?.type === FieldTypeEnum.DATA_SOURCE) {
       // 单选数据源不能填充多选数据源
-      return linkFieldOptions.value.filter((f) => f.type !== FieldTypeEnum.DATA_SOURCE_MULTIPLE);
+      return linkFieldOptions.value.filter((f) => f.type === FieldTypeEnum.DATA_SOURCE);
+    }
+    if (currentField?.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE) {
+      return linkFieldOptions.value.filter((f) =>
+        [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(f.type)
+      );
+    }
+    if (currentField?.type === FieldTypeEnum.MEMBER) {
+      // 单选成员不能填充多选成员
+      return linkFieldOptions.value.filter((f) => f.type === FieldTypeEnum.MEMBER);
+    }
+    if (currentField?.type === FieldTypeEnum.MEMBER_MULTIPLE) {
+      // 多选成员不能填充单选成员
+      return linkFieldOptions.value.filter((f) =>
+        [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(f.type)
+      );
+    }
+    if (currentField?.type === FieldTypeEnum.LOCATION) {
+      return linkFieldOptions.value.filter((f) => f.type === FieldTypeEnum.LOCATION);
     }
     return linkFieldOptions.value;
   }
@@ -413,7 +439,13 @@
     return props.formFields
       .filter(
         (f) =>
-          [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(f.type) &&
+          [
+            FieldTypeEnum.DATA_SOURCE,
+            FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+            FieldTypeEnum.LOCATION,
+            FieldTypeEnum.MEMBER,
+            FieldTypeEnum.MEMBER_MULTIPLE,
+          ].includes(f.type) &&
           f.id !== props.fieldConfig.id &&
           (f.id === currentFieldId || !alreadySelectedFields.includes(f.id)) &&
           !f.resourceFieldId
