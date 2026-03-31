@@ -536,6 +536,7 @@ export const locationDefaultFieldConfig: FormCreateField = {
   editable: true,
   mobile: true,
   rules: [],
+  scope: 'ALL',
   locationType: 'PCD',
 };
 

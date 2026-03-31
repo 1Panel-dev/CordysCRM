@@ -238,4 +238,6 @@ export default {
   'crmFormDesign.linkSubFormField': '联动子表单字段',
   'crmFormDesign.addFieldLink': '添加字段联动',
   'crmFormDesign.subFormUnConfig': '{name} 字段联动未配置！',
+  'crmFormDesign.onlyInChina': '仅中国',
+  'crmFormDesign.allCountries': '全部国家',
 };

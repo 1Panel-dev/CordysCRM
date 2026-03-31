@@ -67,7 +67,7 @@
   const fieldLabel = computed(() => getCityPath(city.value));
 
   const options = computed<CascaderOption[]>(() => {
-    return getCountriesByLevel(props.fieldConfig.locationType);
+    return getCountriesByLevel(props.fieldConfig.locationType, props.fieldConfig.scope);
   });
 
   function handleCityAndDetailChange() {
