@@ -7,6 +7,7 @@
       class="crm-contact-table"
       :not-show-table-filter="isAdvancedSearchMode"
       :action-config="props.readonly ? undefined : actionConfig"
+      noPagination
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"

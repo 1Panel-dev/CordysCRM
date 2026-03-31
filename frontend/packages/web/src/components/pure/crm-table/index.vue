@@ -21,6 +21,7 @@
           <ColumnSetting
             v-if="attrs.showSetting && props.actionConfig"
             :table-key="attrs.tableKey as TableKeyEnum"
+            :no-pagination="props.noPagination"
             @change-columns-setting="changeColumnsSetting"
           />
 
@@ -54,6 +55,7 @@
       <ColumnSetting
         v-if="attrs.showSetting && !props.actionConfig"
         :table-key="attrs.tableKey as TableKeyEnum"
+        :no-pagination="props.noPagination"
         @change-columns-setting="changeColumnsSetting"
       />
       <n-button
@@ -109,7 +111,7 @@
     </template>
     <template v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen) || hasFinished">
       <CrmPagination
-        v-if="paginationType === 'pagePagination'"
+        v-if="paginationType === 'pagePagination' && !props.noPagination"
         :item-count="(attrs.crmPagination as PaginationProps)?.itemCount"
         :page-size="(attrs.crmPagination as PaginationProps)?.pageSize"
         :page="(attrs.crmPagination as PaginationProps)?.page"
@@ -200,6 +202,7 @@
     fullscreenTargetRef?: HTMLElement | null;
     class?: string; // 自定义样式类
     childrenKey?: string; // 子节点字段名
+    noPagination?: boolean; // 不使用分页功能
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
