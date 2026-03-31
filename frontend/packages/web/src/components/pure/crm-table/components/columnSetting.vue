@@ -139,7 +139,7 @@
         </div>
       </div>
       <n-radio-group
-        v-else
+        v-else-if="!props.noPagination"
         v-model:value="paginationType"
         name="layoutType"
         size="small"
@@ -166,6 +166,7 @@
 
   const props = defineProps<{
     tableKey: TableKeyEnum;
+    noPagination?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -191,20 +192,25 @@
     paginationType.value = await tableStore.getTablePaginationType(props.tableKey);
   }
 
-  const layoutTypeList = [
-    {
-      value: 'columnHeaderSet',
-      label: t('crmTable.columnSetting.tableHeaderSettings'),
-    },
-    {
-      value: 'lineHeightSet',
-      label: t('crmTable.columnSetting.tableLineHeightSettings'),
-    },
-    {
-      value: 'pageSet',
-      label: t('crmTable.columnSetting.tableLinePageSettings'),
-    },
-  ];
+  const layoutTypeList = computed(() => {
+    const list = [
+      {
+        value: 'columnHeaderSet',
+        label: t('crmTable.columnSetting.tableHeaderSettings'),
+      },
+      {
+        value: 'lineHeightSet',
+        label: t('crmTable.columnSetting.tableLineHeightSettings'),
+      },
+    ];
+    if (!props.noPagination) {
+      list.push({
+        value: 'pageSet',
+        label: t('crmTable.columnSetting.tableLinePageSettings'),
+      });
+    }
+    return list;
+  });
 
   function handleReset() {
     getCachedColumns();
