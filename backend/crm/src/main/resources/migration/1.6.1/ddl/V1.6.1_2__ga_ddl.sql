@@ -7,6 +7,9 @@ ALTER TABLE business_title
 ALTER TABLE business_title
     CHANGE COLUMN area province VARCHAR (255) COMMENT '省';
 
+ALTER TABLE business_title
+    ADD remark VARCHAR(255) COMMENT '备注';
+
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

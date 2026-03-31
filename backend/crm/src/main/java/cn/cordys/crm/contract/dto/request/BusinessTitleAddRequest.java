@@ -62,4 +62,7 @@ public class BusinessTitleAddRequest {
     @Schema(description = "国标行业")
     private String industry;
 
+    @Size(max = 255)
+    @Schema(description = "备注")
+    private String remark;
 }

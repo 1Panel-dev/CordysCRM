@@ -90,6 +90,12 @@ public class BusinessTitleExcelDataUs extends BusinessTitleExcelData {
     @ColumnWidth(255)
     @ExcelProperty("Industry")
     private String industry;
+    /**
+     * 备注
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("remark")
+    private String remark;
 
     @Override
     public List<List<String>> getHead() {

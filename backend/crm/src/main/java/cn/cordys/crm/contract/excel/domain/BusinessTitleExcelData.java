@@ -79,6 +79,11 @@ public class BusinessTitleExcelData {
      */
     @ExcelIgnore
     private String industry;
+    /**
+     * 备注
+     */
+    @ExcelIgnore
+    private String remark;
 
 
     public List<List<String>> getHead() {

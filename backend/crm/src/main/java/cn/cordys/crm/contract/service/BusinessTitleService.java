@@ -424,6 +424,8 @@ public class BusinessTitleService {
                         List<BusinessTitle> titleList = extBusinessTitleMapper.selectByNames(businessTitles.stream().map(BusinessTitle::getName).toList());
                         Map<String, String> idMap = titleList.stream().collect(Collectors.toMap(BusinessTitle::getName, BusinessTitle::getId));
                         List<LogDTO> logs = new ArrayList<>();
+                        Set<String> titleSet = new HashSet<>();
+                        businessTitles.removeIf(user -> !titleSet.add(user.getName()));
                         businessTitles.forEach(title -> {
                             //1.通过name查询id
                             //2.setId 并更新
