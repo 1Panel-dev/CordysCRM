@@ -83,7 +83,7 @@
   import { formKeyMap } from '../crm-data-source-select/config';
   import { FormulaDataSourceMap } from '../crm-formula/formula-runtime/types';
   import { safeParseFormula } from '../crm-formula-editor/utils';
-  import { getFormConfigApiMap } from './config';
+  import { getFormConfigApiMap, multipleValueTypeList } from './config';
 
   const props = defineProps<{
     isEdit?: boolean;
@@ -295,10 +295,14 @@
                     currentDatasourceFormField.businessKey
                 ]
               : currentSource?.[linkField.link];
-            // 处理多选/单选数据源
-            formDetail.value[targetField.id] = Array.isArray(currentSourceValue)
-              ? currentSourceValue
-              : [currentSourceValue];
+            // 处理多选/单选值
+            if (multipleValueTypeList.includes(targetField.type)) {
+              formDetail.value[targetField.id] = Array.isArray(currentSourceValue)
+                ? currentSourceValue
+                : [currentSourceValue];
+            } else {
+              formDetail.value[targetField.id] = currentSourceValue;
+            }
             if (!targetField.initialOptions) {
               targetField.initialOptions = Array.isArray(currentSourceValue)
                 ? currentSourceValue.map((e, i) => ({
