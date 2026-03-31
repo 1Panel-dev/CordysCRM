@@ -91,7 +91,12 @@ public class BusinessTitleExcelDataCn extends BusinessTitleExcelData {
     @ColumnWidth(255)
     @ExcelProperty("国标行业")
     private String industry;
-
+    /**
+     * 备注
+     */
+    @ColumnWidth(255)
+    @ExcelProperty("备注")
+    private String remark;
 
     @Override
     public List<List<String>> getHead() {

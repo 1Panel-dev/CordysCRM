@@ -276,6 +276,9 @@
             <if test="title.industry != null and title.industry != ''">
                 industry = #{title.industry},
             </if>
+            <if test="title.remark != null and title.remark != ''">
+                remark = #{title.remark},
+            </if>
         </set>
         <where>
             id = #{title.id}
