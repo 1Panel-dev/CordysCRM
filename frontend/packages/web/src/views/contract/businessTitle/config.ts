@@ -15,7 +15,9 @@ export const initBusinessTitleForm: SaveBusinessTitleParams = {
   companySize: '',
   registrationNumber: '',
   registrationAddress: '',
-  area: '',
+  province: '', // 省
+  city: '', // 市
+  remark: '',
   scale: '',
   industry: '',
 };

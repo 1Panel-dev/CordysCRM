@@ -159,8 +159,12 @@ export const businessTitleFormConfigList: {
     value: 'registrationNumber',
   },
   {
-    label: t('contract.businessTitle.area'),
-    value: 'area',
+    label: t('contract.businessTitle.province'),
+    value: 'province',
+  },
+  {
+    label: t('contract.businessTitle.city'),
+    value: 'city',
   },
   {
     label: t('contract.businessTitle.scale'),
@@ -169,6 +173,10 @@ export const businessTitleFormConfigList: {
   {
     label: t('contract.businessTitle.industry'),
     value: 'industry',
+  },
+  {
+    label: t('common.remark'),
+    value: 'remark',
   },
 ];
 

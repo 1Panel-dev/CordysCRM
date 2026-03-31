@@ -18,5 +18,8 @@ export default {
   'crmImportButton.importErrorData': '导入失败数据',
   'crmImportButton.formExcelImport': '从 Excel 文件导入',
   'crmImportButton.onlyAllowFileTypeTip': '仅支持 xls/xlsx 格式的文件',
-  'crmImportButton.fileChange': '文件已被修改，请重新上传',
+  'crmImportButton.importNew': '导入新建',
+  'crmImportButton.importNew.tooltip': '公司名称唯一，若存在多条重复信息，仅导入第一条。',
+  'crmImportButton.importUpdates': '导入更新',
+  'crmImportButton.importUpdates.tooltip': '系统按公司名称匹配成功后，Excel 中存在有效值的列将覆盖系统对应记录。',
 };

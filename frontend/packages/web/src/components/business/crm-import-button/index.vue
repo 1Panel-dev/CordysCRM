@@ -9,6 +9,7 @@
     :description-tip="props.descriptionTip"
     :confirm-loading="validateLoading"
     :download-template-api="importApiMap[props.apiType]?.download"
+    :show-import-radio="props.showImportRadio"
     @validate="validateTemplate"
   />
 
@@ -54,6 +55,7 @@
     title?: string;
     buttonText?: string;
     descriptionTip?: string; // 描述提示
+    showImportRadio?: boolean; // 导入新建和导入更新
   }>();
 
   const emit = defineEmits<{
@@ -94,11 +96,12 @@
   // 导入
   const fileList = ref<CrmFileItem[]>([]);
   const importLoading = ref<boolean>(false);
+  const importType = ref('');
 
   async function importHandler() {
     try {
       importLoading.value = true;
-      await importApiMap[props.apiType].save(fileList.value[0].file as File);
+      await importApiMap[props.apiType].save(fileList.value[0].file as File, importType.value);
       Message.success(t('common.importSuccess'));
 
       emit('importSuccess');
@@ -113,8 +116,11 @@
   }
 
   // 校验导入模板
-  async function validateTemplate(files: CrmFileItem[]) {
+  async function validateTemplate(files: CrmFileItem[], type?: string) {
     fileList.value = files;
+    if (type) {
+      importType.value = type;
+    }
     const file = fileList.value[0].file as File;
 
     // 防止修改后未上传就校验
@@ -134,7 +140,7 @@
       validateModal.value = true;
       start();
 
-      const result = await importApiMap[props.apiType].preCheck(file);
+      const result = await importApiMap[props.apiType].preCheck(file, type);
       validateInfo.value = result.data;
       finish();
     } catch (error) {
