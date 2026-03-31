@@ -254,4 +254,6 @@ export default {
   'crmFormDesign.linkSubFormField': 'Linked Sub Form Field',
   'crmFormDesign.addFieldLink': 'Add Field Linkage',
   'crmFormDesign.subFormUnConfig': '{name} field linkage not configured!',
+  'crmFormDesign.onlyInChina': 'Only in China',
+  'crmFormDesign.allCountries': 'all countries',
 };

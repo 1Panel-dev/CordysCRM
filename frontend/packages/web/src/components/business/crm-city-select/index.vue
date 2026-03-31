@@ -27,6 +27,7 @@
       placeholder?: string;
       checkStrategy?: 'all' | 'child' | 'parent';
       range?: 'PCD' | 'PC' | 'detail' | 'C' | 'P';
+      scope?: 'CN' | 'ALL';
     }>(),
     {
       range: 'PCD',
@@ -48,7 +49,7 @@
   });
 
   const workingCityOptions = computed<DataItem[]>(() => {
-    return getCountriesByLevel(props.range) as DataItem[];
+    return getCountriesByLevel(props.range, props.scope) as DataItem[];
   });
 
   function handleChange(

@@ -25,6 +25,7 @@
       :placeholder="props.fieldConfig.placeholder || t('crmFormCreate.advanced.selectLocation')"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :range="props.fieldConfig.locationType"
+      :scope="props.fieldConfig.scope"
       clearable
       @change="handleCityAndDetailChange"
     />

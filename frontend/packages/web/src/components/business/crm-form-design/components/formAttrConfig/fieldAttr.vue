@@ -592,6 +592,20 @@
           {{ t('common.type') }}
         </div>
         <n-select
+          v-model:value="fieldConfig.scope"
+          :options="[
+            {
+              label: t('crmFormDesign.onlyInChina'),
+              value: 'CN',
+            },
+            {
+              label: t('crmFormDesign.allCountries'),
+              value: 'ALL',
+            },
+          ]"
+          :disabled="fieldConfig.disabledProps?.includes('locationType') || !!fieldConfig.resourceFieldId"
+        />
+        <n-select
           v-model:value="fieldConfig.locationType"
           :options="[
             {

@@ -103,6 +103,7 @@ export interface FormCreateField {
   uploadSizeLimit?: number | null;
   uploadSizeLimitEnable?: boolean;
   // 地址属性
+  scope?: 'ALL' | 'CN';
   locationType?: 'PCD' | 'PC' | 'detail' | 'C' | 'P'; // C:国家, P:国家-省,PC: 省市, PCD: 省市区, detail: 省市区+详细地址
   // 选择器属性
   optionSource?: 'ref' | 'custom'; // 选项来源,自定义还是引用
