@@ -692,6 +692,7 @@
                 },
               ]"
               :render-option="renderPrefixTypeOption"
+              :disabled="fieldConfig.disabledProps?.includes('serialNumberRules') || !!fieldConfig.resourceFieldId"
               @update-value="
                 (val) => {
                   fieldConfig.prefixType = val;
