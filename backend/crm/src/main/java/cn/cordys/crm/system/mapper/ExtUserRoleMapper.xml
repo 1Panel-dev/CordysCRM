@@ -93,7 +93,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by sur.create_time desc
+                order by sur.create_time desc, sur.id asc
             </otherwise>
         </choose>
     </sql>
