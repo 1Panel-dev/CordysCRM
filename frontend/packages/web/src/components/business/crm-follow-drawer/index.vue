@@ -3,7 +3,7 @@
     v-model:show="visible"
     resizable
     no-padding
-    width="1200"
+    :width="1200"
     :footer="false"
     class="min-w-[1200px]"
     :title="t('settings.navbar.event')"
