@@ -4,7 +4,7 @@
     :title="`${props.sourceName} ${
       props.formKey === FormDesignKeyEnum.FOLLOW_RECORD ? t('module.customer.followRecord') : t('common.plan')
     }`"
-    width="800"
+    :width="800"
     no-padding
     :footer="false"
   >
