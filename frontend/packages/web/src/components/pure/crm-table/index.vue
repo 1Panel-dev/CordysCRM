@@ -749,10 +749,20 @@
 
   function pageChange(page: number) {
     emit('pageChange', page);
+    nextTick(() => {
+      scrollTo({
+        top: 0,
+      });
+    });
   }
 
   function pageSizeChange(pageSize: number) {
     emit('pageSizeChange', pageSize);
+    nextTick(() => {
+      scrollTo({
+        top: 0,
+      });
+    });
   }
 
   const sortable = ref();
