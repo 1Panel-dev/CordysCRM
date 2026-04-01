@@ -608,10 +608,14 @@
         <n-select
           v-model:value="fieldConfig.locationType"
           :options="[
-            {
-              label: t('crmFormDesign.C'),
-              value: 'C',
-            },
+            ...(fieldConfig.scope === 'ALL'
+              ? [
+                  {
+                    label: t('crmFormDesign.C'),
+                    value: 'C',
+                  },
+                ]
+              : []),
             {
               label: t('crmFormDesign.P'),
               value: 'P',
@@ -1505,6 +1509,15 @@
   //     fieldConfig.value.defaultValue = null;
   //   }
   // }
+
+  watch(
+    () => fieldConfig.value?.scope,
+    (val) => {
+      if (val === 'CN' && fieldConfig.value.locationType === 'C') {
+        fieldConfig.value.locationType = 'PCD';
+      }
+    }
+  );
 
   const memberTypes = computed(() => {
     if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldConfig.value.type)) {
