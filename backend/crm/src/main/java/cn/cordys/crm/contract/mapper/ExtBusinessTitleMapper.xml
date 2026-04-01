@@ -279,6 +279,12 @@
             <if test="title.remark != null and title.remark != ''">
                 remark = #{title.remark},
             </if>
+            <if test="title.updateUser != null and title.updateUser != ''">
+                update_user = #{title.updateUser},
+            </if>
+            <if test="title.updateTime != null and title.updateTime != ''">
+                update_time = #{title.updateTime},
+            </if>
         </set>
         <where>
             id = #{title.id}
