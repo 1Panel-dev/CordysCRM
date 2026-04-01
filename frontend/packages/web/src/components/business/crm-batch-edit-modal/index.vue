@@ -253,16 +253,19 @@
   const fieldOptions = computed(
     () =>
       list.value.filter((e) => {
-        const baseCondition = ![
-          FieldTypeEnum.DIVIDER,
-          FieldTypeEnum.PICTURE,
-          FieldTypeEnum.LINK,
-          FieldTypeEnum.SERIAL_NUMBER,
-          FieldTypeEnum.ATTACHMENT,
-          FieldTypeEnum.SUB_PRICE,
-          FieldTypeEnum.SUB_PRODUCT,
-          FieldTypeEnum.FORMULA,
-        ].includes(e.type);
+        const baseCondition =
+          ![
+            FieldTypeEnum.DIVIDER,
+            FieldTypeEnum.PICTURE,
+            FieldTypeEnum.LINK,
+            FieldTypeEnum.SERIAL_NUMBER,
+            FieldTypeEnum.ATTACHMENT,
+            FieldTypeEnum.SUB_PRICE,
+            FieldTypeEnum.SUB_PRODUCT,
+            FieldTypeEnum.FORMULA,
+          ].includes(e.type) &&
+          !e.resourceFieldId?.length &&
+          e.defaultValueType !== 'formula';
 
         if (props.formKey === FormDesignKeyEnum.CLUE_POOL || props.formKey === FormDesignKeyEnum.CUSTOMER_OPEN_SEA) {
           return baseCondition && e.businessKey !== 'owner';
