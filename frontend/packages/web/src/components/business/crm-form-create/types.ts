@@ -151,6 +151,7 @@ export interface FormCreateField {
   resourceFieldId?: string; // 关联来源字段id
   subTableFieldId?: string; // 关联来源的子表格字段id
   price_sub?: string; // 价格表子表格行号标识
+  listDisplayFields?: string[]; // 数据源列表展示字段
 }
 
 export interface AttachmentInfo {
