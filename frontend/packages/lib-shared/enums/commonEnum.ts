@@ -40,6 +40,7 @@ export enum ColumnTypeEnum {
   SYSTEM = 'system',
   CUSTOM = 'custom',
   SUB_TABLE = 'subTable',
+  SHOW_FIELD = 'showField', // 显示字段，部分表单支持导出显示字段
 }
 
 export enum ImportTypeExcludeFormDesignEnum {
