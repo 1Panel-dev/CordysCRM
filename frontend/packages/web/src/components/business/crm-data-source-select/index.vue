@@ -229,7 +229,8 @@
     }
   }
   .crm-full-modal {
-    max-width: 100% !important;
+    width: 100% !important;
+    max-width: 100vw !important;
     .n-dialog__content {
       height: calc(100vh - 136px);
       .n-scrollbar {

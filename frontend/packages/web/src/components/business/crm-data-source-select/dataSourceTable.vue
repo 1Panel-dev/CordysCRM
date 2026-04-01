@@ -87,58 +87,6 @@
     default: [],
   });
 
-  const columns = ref<CrmDataTableColumn[]>([
-    {
-      type: 'selection',
-      multiple: props.multiple,
-      width: 46,
-      disabled(row: RowData) {
-        return props.disabledSelection ? props.disabledSelection(row) : false;
-      },
-      resizable: false,
-      fixed: 'left',
-    },
-    {
-      title: t('common.name'),
-      key: 'name',
-      ellipsis: {
-        tooltip: true,
-      },
-      resizable: false,
-      fixed: 'left',
-      ...(props.sourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE
-        ? {
-            render: (row: RowData) =>
-              h(
-                CrmNameTooltip,
-                { text: row.name },
-                {
-                  prefix: () => h(CrmBusinessNamePrefix, { type: row.type }),
-                }
-              ),
-          }
-        : {}),
-    },
-  ]);
-
-  if (props.sourceType === FieldDataSourceTypeEnum.CONTACT) {
-    columns.value.push(
-      {
-        title: t('crmFormDesign.phone'),
-        key: 'phone',
-        resizable: false,
-      },
-      {
-        title: t('crmFormDesign.customer'),
-        key: 'customerName',
-        ellipsis: {
-          tooltip: true,
-        },
-        resizable: true,
-      }
-    );
-  }
-
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const { fieldList, initFormConfig } = useFormCreateApi({
     formKey: computed(() => formKeyMap[props.sourceType] as FormDesignKeyEnum),
@@ -155,69 +103,171 @@
     return undefined;
   });
 
-  watch(
-    () => subFieldKey.value,
-    (val) => {
-      if (val) {
-        columns.value = [
-          ...columns.value.map((col) => {
-            if (col.type === 'selection') {
-              col.multiple = true;
-              col.disabled = (row: RowData) => {
-                return (!row[val] || row[val]?.length === 0) && !row.parentId;
-              };
-              return col;
+  const defaultInternalNameKeyMap: Record<string, string> = {
+    [FormDesignKeyEnum.CUSTOMER]: 'customerName',
+    [FormDesignKeyEnum.CLUE]: 'clueName',
+    [FormDesignKeyEnum.BUSINESS]: 'opportunityName',
+    [FormDesignKeyEnum.CONTACT]: 'contactName',
+    [FormDesignKeyEnum.PRODUCT]: 'productName',
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: 'quotationName',
+    [FormDesignKeyEnum.ORDER]: 'orderName',
+    [FormDesignKeyEnum.CONTRACT]: 'contractName',
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: 'contractPaymentPlanName',
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: 'contractPaymentRecordName',
+    [FormDesignKeyEnum.PRICE]: 'priceName',
+    [FormDesignKeyEnum.BUSINESS_TITLE]: 'name',
+  };
+
+  function mapColumnKey(columnKey: string): string {
+    const keyMap: Record<string, string> = {
+      customerId: 'customerName',
+      owner: 'ownerName',
+      stage: 'stageName',
+      contactId: 'contactName',
+      contractId: 'contractName',
+    };
+    return keyMap[columnKey] || columnKey;
+  }
+
+  function getFieldColumnKey(field: FormCreateField) {
+    let key = field.businessKey || field.id;
+    if (field.resourceFieldId) {
+      key = field.id;
+    }
+    return mapColumnKey(key);
+  }
+
+  const defaultInternalKey = computed(() => {
+    return defaultInternalNameKeyMap[formKeyMap[props.sourceType] as FormDesignKeyEnum];
+  });
+
+  const defaultDisplayField = computed<FormCreateField | undefined>(() => {
+    return fieldList.value.find((field) => field.internalKey === defaultInternalKey.value);
+  });
+
+  const selectedDisplayFields = computed<FormCreateField[]>(() => {
+    const allFields = fieldList.value || [];
+    const savedFieldIds = props.fieldConfig?.listDisplayFields || [];
+
+    const matchedFields = savedFieldIds
+      .map((fieldId) => allFields.find((field) => field.id === fieldId))
+      .filter((field): field is FormCreateField => !!field);
+
+    if (matchedFields.length === 0) {
+      return defaultDisplayField.value ? [defaultDisplayField.value] : [];
+    }
+
+    if (!defaultDisplayField.value) {
+      return matchedFields;
+    }
+
+    return [defaultDisplayField.value, ...matchedFields.filter((field) => field.id !== defaultDisplayField.value?.id)];
+  });
+
+  function buildFieldColumn(field: FormCreateField): CrmDataTableColumn {
+    const isTag = [
+      FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+      FieldTypeEnum.MEMBER_MULTIPLE,
+      FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      FieldTypeEnum.INPUT_MULTIPLE,
+      FieldTypeEnum.SELECT_MULTIPLE,
+      FieldTypeEnum.CHECKBOX,
+    ].includes(field.type);
+
+    const columnKey = getFieldColumnKey(field);
+
+    const baseColumn: CrmDataTableColumn = {
+      title: field.name,
+      key: columnKey,
+      ellipsis: {
+        tooltip: true,
+      },
+      resizable: true,
+      width: field.internalKey === defaultInternalKey.value ? 280 : 150,
+      isTag,
+      fixed: defaultDisplayField.value?.id === field.id && selectedDisplayFields.value.length > 2 ? 'left' : undefined,
+    };
+
+    if (props.sourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE && field.businessKey === 'name') {
+      return {
+        ...baseColumn,
+        render: (row: RowData) =>
+          h(
+            CrmNameTooltip,
+            { text: row[columnKey] as string },
+            {
+              prefix: () => h(CrmBusinessNamePrefix, { type: row.type }),
             }
-            if (col.key === 'name') {
-              col.width = 250;
-              return col;
-            }
-            return col;
-          }),
-          ...(subField.value?.subFields || []).map((field) => ({
-            title: field.name,
-            key: field.id,
-            width: 120,
-            ellipsis: {
-              tooltip: true,
-            },
-            resizable: true,
-            render:
-              field.type === FieldTypeEnum.PICTURE
-                ? (row: any) =>
-                    h(
-                      'div',
-                      {
-                        class: 'flex items-center',
-                      },
-                      [
-                        h(
-                          NImageGroup,
-                          {},
-                          {
-                            default: () =>
-                              row[field.businessKey || field.id]?.length
-                                ? (Array.isArray(row[field.businessKey || field.id])
-                                    ? row[field.businessKey || field.id]
-                                    : []
-                                  ).map((_key: string) =>
-                                    h(NImage, {
-                                      class: 'h-[40px] w-[40px] mr-[4px]',
-                                      src: `${PreviewPictureUrl}/${_key}`,
-                                    })
-                                  )
-                                : '-',
-                          }
-                        ),
-                      ]
-                    )
-                : undefined,
-          })),
-        ];
-      }
-    },
-    { immediate: true }
-  );
+          ),
+      };
+    }
+
+    return baseColumn;
+  }
+
+  function buildSubFieldColumn(field: FormCreateField): CrmDataTableColumn {
+    const columnKey = field.businessKey || field.id;
+    return {
+      title: field.name,
+      key: field.id,
+      width: 120,
+      ellipsis: {
+        tooltip: true,
+      },
+      resizable: true,
+      render:
+        field.type === FieldTypeEnum.PICTURE
+          ? (row: any) =>
+              h(
+                'div',
+                {
+                  class: 'flex items-center',
+                },
+                [
+                  h(
+                    NImageGroup,
+                    {},
+                    {
+                      default: () =>
+                        row[columnKey]?.length
+                          ? (Array.isArray(row[columnKey]) ? row[columnKey] : []).map((_key: string) =>
+                              h(NImage, {
+                                class: 'h-[40px] w-[40px] mr-[4px]',
+                                src: `${PreviewPictureUrl}/${_key}`,
+                              })
+                            )
+                          : '-',
+                    }
+                  ),
+                ]
+              )
+          : undefined,
+    };
+  }
+
+  const columns = computed<CrmDataTableColumn[]>(() => {
+    const selectionColumn: CrmDataTableColumn = {
+      type: 'selection',
+      multiple: subFieldKey.value ? true : props.multiple,
+      width: 46,
+      disabled(row: RowData) {
+        if (subFieldKey.value) {
+          return (!row[subFieldKey.value] || row[subFieldKey.value]?.length === 0) && !row.parentId;
+        }
+        return props.disabledSelection ? props.disabledSelection(row) : false;
+      },
+      resizable: false,
+      fixed: 'left',
+    };
+
+    const dynamicColumns = selectedDisplayFields.value.map((field) => buildFieldColumn(field));
+
+    const subColumns = subFieldKey.value
+      ? (subField.value?.subFields || []).map((field) => buildSubFieldColumn(field))
+      : [];
+
+    return [selectionColumn, ...dynamicColumns, ...subColumns];
+  });
 
   const { propsRes, propsEvent, loadList, setAdvanceFilter, setLoadListParams } = useTable(
     sourceApi[props.sourceType],

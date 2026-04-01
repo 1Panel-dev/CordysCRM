@@ -2,82 +2,78 @@
   <n-scrollbar x-scrollable content-class="h-full !w-full" content-style="min-width: 800px">
     <div :class="`config-container  w-full ${licenseStore.expiredDuring ? 'h-[calc(100%-64px)]' : 'h-full'}`">
       <div class="left-box">
-        <CrmCard no-content-padding hide-footer>
-          <n-scrollbar content-class="!w-full p-[24px]">
-            <div class="mb-[16px] flex items-center justify-between">
-              <div class="font-medium text-[var(--text-n1)]">{{ t('module.businessManage.mainNavConfig') }}</div>
-              <div class="text-[var(--text-n4)]">
-                <n-switch v-model:value="enable" size="small" :rubber-band="false" @update:value="changeIcon" />
-                <span class="ml-[8px]">icon </span>
+        <n-scrollbar content-class="!w-full p-[24px]">
+          <div class="mb-[16px] flex items-center justify-between">
+            <div class="font-medium text-[var(--text-n1)]">{{ t('module.businessManage.mainNavConfig') }}</div>
+            <div class="text-[var(--text-n4)]">
+              <n-switch v-model:value="enable" size="small" :rubber-band="false" @update:value="changeIcon" />
+              <span class="ml-[8px]">icon </span>
+            </div>
+          </div>
+          <div class="nav-list">
+            <VueDraggable
+              v-model="moduleNavList"
+              ghost-class="ghost"
+              handle=".nav-item"
+              :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
+              @end="onDragEnd"
+            >
+              <div v-for="item in moduleNavList" :key="item.key" class="nav-item">
+                <CrmIcon type="iconicon_move" :size="16" class="mt-[1px] cursor-move text-[var(--text-n4)]" />
+                <CrmIcon v-if="enable" :type="item.icon ?? ''" :size="18" class="text-[var(--text-n1)]" />
+                {{ item.label }}
               </div>
-            </div>
-            <div class="nav-list">
-              <VueDraggable
-                v-model="moduleNavList"
-                ghost-class="ghost"
-                handle=".nav-item"
-                :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
-                @end="onDragEnd"
-              >
-                <div v-for="item in moduleNavList" :key="item.key" class="nav-item">
+            </VueDraggable>
+          </div>
+          <n-divider />
+          <div class="font-medium text-[var(--text-n1)]">{{ t('module.topNavigationConfig') }}</div>
+          <div class="nav-list mt-[16px]">
+            <VueDraggable
+              v-model="navTopConfigList"
+              ghost-class="ghost"
+              handle=".nav-item"
+              :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
+              @end="onDragNavEnd"
+            >
+              <div v-for="item in navTopConfigList" :key="item.key" class="nav-item justify-between">
+                <div class="flex w-full items-center gap-[8px] overflow-hidden">
                   <CrmIcon type="iconicon_move" :size="16" class="mt-[1px] cursor-move text-[var(--text-n4)]" />
-                  <CrmIcon v-if="enable" :type="item.icon ?? ''" :size="18" class="text-[var(--text-n1)]" />
-                  {{ item.label }}
-                </div>
-              </VueDraggable>
-            </div>
-            <n-divider />
-            <div class="font-medium text-[var(--text-n1)]">{{ t('module.topNavigationConfig') }}</div>
-            <div class="nav-list mt-[16px]">
-              <VueDraggable
-                v-model="navTopConfigList"
-                ghost-class="ghost"
-                handle=".nav-item"
-                :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
-                @end="onDragNavEnd"
-              >
-                <div v-for="item in navTopConfigList" :key="item.key" class="nav-item justify-between">
-                  <div class="flex w-full items-center gap-[8px] overflow-hidden">
-                    <CrmIcon type="iconicon_move" :size="16" class="mt-[1px] cursor-move text-[var(--text-n4)]" />
-                    <div v-if="item.key === 'language'" class="h-[16px] w-[16px]">
-                      <LanguageOutline />
-                    </div>
-                    <CrmIcon v-else :type="item.iconType ?? ''" :size="18" class="text-[var(--text-n1)]" />
-                    <div class="one-line-text">{{ t(item.label) }}</div>
+                  <div v-if="item.key === 'language'" class="h-[16px] w-[16px]">
+                    <LanguageOutline />
                   </div>
-                  <CrmMoreAction
-                    v-if="item.key === 'search'"
-                    :options="searchMoreOptions"
-                    trigger="hover"
-                    @select="(item) => handleMoreSelect(item.key as string)"
-                  >
-                    <n-button type="primary" text :keyboard="false">
-                      {{ t('common.more') }}
-                    </n-button>
-                  </CrmMoreAction>
-                  <CrmMoreAction
-                    v-if="item.key === 'event'"
-                    :options="eventMoreOptions"
-                    trigger="hover"
-                    @select="(item) => handleMoreSelect(item.key as string)"
-                  >
-                    <n-button v-permission="['MODULE_SETTING:UPDATE']" type="primary" text :keyboard="false">
-                      {{ t('common.more') }}
-                    </n-button>
-                  </CrmMoreAction>
+                  <CrmIcon v-else :type="item.iconType ?? ''" :size="18" class="text-[var(--text-n1)]" />
+                  <div class="one-line-text">{{ t(item.label) }}</div>
                 </div>
-              </VueDraggable>
-            </div>
-            <desensitizationModal v-model:visible="showDesensitizationDrawer" />
-          </n-scrollbar>
-        </CrmCard>
+                <CrmMoreAction
+                  v-if="item.key === 'search'"
+                  :options="searchMoreOptions"
+                  trigger="hover"
+                  @select="(item) => handleMoreSelect(item.key as string)"
+                >
+                  <n-button type="primary" text :keyboard="false">
+                    {{ t('common.more') }}
+                  </n-button>
+                </CrmMoreAction>
+                <CrmMoreAction
+                  v-if="item.key === 'event'"
+                  :options="eventMoreOptions"
+                  trigger="hover"
+                  @select="(item) => handleMoreSelect(item.key as string)"
+                >
+                  <n-button v-permission="['MODULE_SETTING:UPDATE']" type="primary" text :keyboard="false">
+                    {{ t('common.more') }}
+                  </n-button>
+                </CrmMoreAction>
+              </div>
+            </VueDraggable>
+          </div>
+          <desensitizationModal v-model:visible="showDesensitizationDrawer" />
+        </n-scrollbar>
       </div>
       <div class="right-box">
-        <CrmCard :content-height="null" no-content-padding hide-footer>
-          <div class="p-[24px]">
-            <ConfigCard :list="moduleNavList" @load-module-list="initModuleNavList()" />
-          </div>
-        </CrmCard>
+        <n-scrollbar content-class="!w-full p-[24px]">
+          <ConfigCard :list="moduleNavList" @load-module-list="initModuleNavList()" />
+        </n-scrollbar>
       </div>
     </div>
   </n-scrollbar>
@@ -364,6 +360,7 @@
       width: 24%;
       border-radius: var(--border-radius-medium);
       background: var(--text-n10);
+      @apply flex flex-col;
       .nav-list {
         .nav-item {
           padding: 8px;
@@ -402,5 +399,8 @@
       margin-right: 8px;
       width: 96px;
     }
+  }
+  .n-scrollbar-rail--vertical {
+    @apply !right-0;
   }
 </style>

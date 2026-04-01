@@ -141,6 +141,17 @@
             @update-value="handleClearDataSourceTypeChange"
           />
         </div>
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.dataSourceTableDisplayField') }}
+          </div>
+          <dataSourceListFieldConfig
+            v-model:value="fieldConfig.listDisplayFields"
+            :fieldConfig="fieldConfig"
+            :disabled="!!fieldConfig.resourceFieldId"
+            @change="handleDataSourceListChange"
+          />
+        </div>
         <div
           v-if="fieldConfig.dataSourceType !== FieldDataSourceTypeEnum.BUSINESS_TITLE"
           class="crm-form-design-config-item"
@@ -1401,6 +1412,7 @@
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import DataSourceDisplayFieldModal from './dataSourceDisplayFieldModal.vue';
   import datasourceLinkModal from './datasourceLinkModal.vue';
+  import dataSourceListFieldConfig from './dataSourceListFieldConfig.vue';
   import fieldLinkDrawer from './fieldLinkDrawer.vue';
   import FilterModal from './filterModal.vue';
   import formulaModal from './formulaModal.vue';
@@ -1521,6 +1533,10 @@
       }
     }
   );
+
+  function handleDataSourceListChange(value: string[], _options: { label: string; value: string }[]) {
+    fieldConfig.value.listDisplayFields = value;
+  }
 
   const memberTypes = computed(() => {
     if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldConfig.value.type)) {
@@ -1835,6 +1851,7 @@
   }
   function handleClearDataSourceDisplayField() {
     fieldConfig.value.showFields = [];
+    fieldConfig.value.listDisplayFields = [];
     if (isSubTableField.value && parentField.value) {
       parentField.value.subFields = parentField.value?.subFields?.filter(
         (item) => item.resourceFieldId !== fieldConfig.value.id
