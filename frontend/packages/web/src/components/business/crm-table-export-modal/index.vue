@@ -68,6 +68,15 @@
             @select-part="(ids) => updateSelectedList(ids, customList)"
             @select-item="(meta) => selectItem(ColumnTypeEnum.CUSTOM, meta)"
           />
+
+          <FieldSection
+            v-if="showFieldList.length"
+            v-model:selected-ids="selectedShowFieldIds"
+            :items="showFieldList"
+            :title="t('common.showFields')"
+            @select-part="(ids) => updateSelectedList(ids, showFieldList)"
+            @select-item="(meta) => selectItem(ColumnTypeEnum.SHOW_FIELD, meta)"
+          />
         </n-scrollbar>
       </div>
 
@@ -233,7 +242,10 @@
 
   const systemList = computed(() => props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.SYSTEM));
   const customList = computed(() => props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.CUSTOM));
-  const allList = computed(() => [...systemList.value, ...customList.value]);
+  const showFieldList = computed(() =>
+    props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.SHOW_FIELD)
+  );
+  const allList = computed(() => [...systemList.value, ...customList.value, ...showFieldList.value]);
 
   // 已选
   const selectedList = ref<any[]>([]);
@@ -250,6 +262,10 @@
 
   const selectedCustomIds = computed(() =>
     selectedList.value.filter((e) => e.columnType === ColumnTypeEnum.CUSTOM).map((e) => e.key)
+  );
+
+  const selectedShowFieldIds = computed(() =>
+    selectedList.value.filter((e) => e.columnType === ColumnTypeEnum.SHOW_FIELD).map((e) => e.key)
   );
 
   function selectItem(columnType: ColumnTypeEnum, meta: { actionType: 'check' | 'uncheck'; value: string | number }) {

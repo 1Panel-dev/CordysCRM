@@ -315,6 +315,7 @@ export default {
   'common.optionalFields': 'Optional fields',
   'common.systemFields': 'System fields',
   'common.formFields': 'Form fields',
+  'common.showFields': 'Show fields',
   'common.exportTaskCreate': 'Export task created, please check the export task list for details',
   'common.exportTaskTip': '[Avatar in the lower left corner > My Export] View the progress of the export task',
   'common.dashboard': 'Dashboard',
