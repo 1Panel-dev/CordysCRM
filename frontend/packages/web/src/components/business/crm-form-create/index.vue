@@ -316,7 +316,7 @@
                     },
                   ];
             } else if (Array.isArray(currentSourceValue)) {
-              // 多选数据源
+              // 多选
               targetField.initialOptions.push(
                 ...currentSourceValue.map((e, i) => ({
                   name: currentSourceName[i],
