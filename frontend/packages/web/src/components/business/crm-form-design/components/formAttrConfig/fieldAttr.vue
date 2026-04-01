@@ -1513,6 +1513,9 @@
   watch(
     () => fieldConfig.value?.scope,
     (val) => {
+      if (!val) {
+        fieldConfig.value.scope = 'ALL';
+      }
       if (val === 'CN' && fieldConfig.value.locationType === 'C') {
         fieldConfig.value.locationType = 'PCD';
       }
