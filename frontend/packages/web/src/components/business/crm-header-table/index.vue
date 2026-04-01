@@ -5,6 +5,7 @@
       v-bind="propsRes"
       class="crm-header-table"
       :scroll-x="1000"
+      no-pagination
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"

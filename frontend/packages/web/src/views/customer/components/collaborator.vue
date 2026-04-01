@@ -6,6 +6,7 @@
       v-model:checked-row-keys="checkedRowKeys"
       class="crm-collaborator-table"
       :action-config="props.readonly ? undefined : actionConfig"
+      noPagination
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
