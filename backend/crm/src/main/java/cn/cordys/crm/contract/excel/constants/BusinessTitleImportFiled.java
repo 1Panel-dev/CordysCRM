@@ -24,7 +24,8 @@ public enum BusinessTitleImportFiled {
     PROVINCE("province", "省", "Province", BusinessTitleExcelData::getProvince),
     CITY("city", "市", "City", BusinessTitleExcelData::getCity),
     Scale("scale", "企业规模", "Scale", BusinessTitleExcelData::getScale),
-    INDUSTRY("industry", "国标行业", "Industry", BusinessTitleExcelData::getIndustry);
+    INDUSTRY("industry", "国标行业", "Industry", BusinessTitleExcelData::getIndustry),
+    REMARK("remark", "备注", "Remark", BusinessTitleExcelData::getRemark);
 
     @Getter
     private final Map<Locale, String> filedLangMap;
