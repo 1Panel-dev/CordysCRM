@@ -75,7 +75,7 @@
     <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse">
         select cpp.id, cpp.owner, cpp.create_time, cpp.update_time, cpp.create_user, cpp.update_user,
         cpp.plan_end_time, cpp.plan_amount, cpp.plan_status, cpp.contract_id,
-        c.name as contract_name
+        c.name as contract_name, cpp.name
         from contract_payment_plan cpp
         join contract c on c.id = cpp.contract_id
 
