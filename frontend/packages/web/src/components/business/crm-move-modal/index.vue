@@ -143,16 +143,18 @@
         failCount.value = fail;
         showToPoolResultModel.value = true;
       }
-      if (failCount.value === 0) {
+      if (failCount.value > 0) {
         setTimeout(() => {
           showModal.value = false;
           showToPoolResultModel.value = false;
           emit('refresh');
         }, 3000);
-      } else if (successCount.value > 0) {
-        showModal.value = false;
-        showToPoolResultModel.value = false;
-        emit('refresh');
+      } else {
+        setTimeout(() => {
+          showModal.value = false;
+          showToPoolResultModel.value = false;
+          emit('refresh');
+        }, 1000);
       }
     } catch (e) {
       // eslint-disable-next-line no-console
