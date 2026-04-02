@@ -297,7 +297,7 @@
                 ]
               : currentSource?.[linkField.link];
             // 处理多选/单选值
-            if (multipleValueTypeList.includes(targetField.type)) {
+            if (multipleValueTypeList.includes(targetField.type) || targetField.type === FieldTypeEnum.DATA_SOURCE) {
               formDetail.value[targetField.id] = Array.isArray(currentSourceValue)
                 ? currentSourceValue
                 : [currentSourceValue];
