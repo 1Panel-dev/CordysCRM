@@ -628,19 +628,19 @@
                 ]
               : []),
             {
-              label: t('crmFormDesign.P'),
+              label: fieldConfig.scope === 'ALL' ? t('crmFormDesign.P') : t('crmFormDesign.cn.P'),
               value: 'P',
             },
             {
-              label: t('crmFormDesign.PC'),
+              label: fieldConfig.scope === 'ALL' ? t('crmFormDesign.PC') : t('crmFormDesign.cn.PC'),
               value: 'PC',
             },
             {
-              label: t('crmFormDesign.PCD'),
+              label: fieldConfig.scope === 'ALL' ? t('crmFormDesign.PCD') : t('crmFormDesign.cn.PCD'),
               value: 'PCD',
             },
             {
-              label: t('crmFormDesign.PCDDetail'),
+              label: fieldConfig.scope === 'ALL' ? t('crmFormDesign.PCDDetail') : t('crmFormDesign.cn.PCDDetail'),
               value: 'detail',
             },
           ]"
