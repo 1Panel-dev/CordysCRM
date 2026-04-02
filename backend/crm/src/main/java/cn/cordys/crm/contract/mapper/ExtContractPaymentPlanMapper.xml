@@ -53,7 +53,7 @@
         </if>
 
         <if test="request.keyword != null and request.keyword != ''">
-            and c.name like concat('%', #{request.keyword},'%')
+            and cpp.name like concat('%', #{request.keyword},'%')
         </if>
 
         <include refid="filters">
