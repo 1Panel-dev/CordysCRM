@@ -100,8 +100,6 @@ public class ContractService {
     @Resource
     private LogService logService;
     @Resource
-    private SerialNumGenerator serialNumGenerator;
-    @Resource
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
@@ -116,6 +114,7 @@ public class ContractService {
     @Resource
     private DictService dictService;
 
+	public static final int MAX_NUMBER_LENGTH = 50;
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
 
     /**
@@ -143,7 +142,7 @@ public class ContractService {
         contract.setName(request.getName());
         contract.setCustomerId(request.getCustomerId());
         contract.setOwner(request.getOwner());
-        contract.setNumber(createContractNumber(moduleFormConfigDTO, orgId, request.getNumber()));
+        contract.setNumber(request.getNumber());
         contract.setStage(ContractStage.PENDING_SIGNING.name());
         contract.setOrganizationId(orgId);
         contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
@@ -175,16 +174,6 @@ public class ContractService {
         saveSnapshot(contract, saveModuleFormConfigDTO, response);
 
         return contract;
-    }
-
-    private String createContractNumber(ModuleFormConfigDTO moduleFormConfigDTO, String orgId, String prefix) {
-        BaseField numberField = moduleFormConfigDTO.getFields().stream()
-                .filter(field -> field.isSerialNumber() && StringUtils.isNotEmpty(field.getBusinessKey())).findFirst().orElse(null);
-
-        if (numberField instanceof SerialNumberField serialField) {
-            return serialNumGenerator.generateByRules(serialField.getSerialNumberRules(prefix), orgId, FormKey.CONTRACT.getKey());
-        }
-        return null;
     }
 
 
