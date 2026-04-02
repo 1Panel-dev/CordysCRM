@@ -9118,19 +9118,19 @@ export function getCountriesByLevel(level?: 'C' | 'P' | 'PC' | 'PCD' | 'detail',
   switch (level) {
     case 'C':
       // 仅国家层级：去掉所有 children
-      return (onlyInChina ? [CHINA_P] : [CHINA_P, ...COUNTRIES_TREE]).map(({ label, value }) => ({ label, value }));
+      return [CHINA_P, ...COUNTRIES_TREE].map(({ label, value }) => ({ label, value }));
 
     case 'P':
       // 国家 - 省：中国用 CHINA_P，其他国家保留自身结构
-      return onlyInChina ? [CHINA_P] : [CHINA_P, ...COUNTRIES_TREE];
+      return onlyInChina ? CHINA_P.children : [CHINA_P, ...COUNTRIES_TREE];
 
     case 'PC':
       // 国家 - 省 - 市
-      return onlyInChina ? [CHINA_PC] : [CHINA_PC, ...COUNTRIES_TREE];
+      return onlyInChina ? CHINA_PC.children : [CHINA_PC, ...COUNTRIES_TREE];
 
     case 'PCD':
     default:
       // 国家 - 省 - 市 - 区
-      return onlyInChina ? [CHINA_PCD] : [CHINA_PCD, ...COUNTRIES_TREE];
+      return onlyInChina ? CHINA_PCD.children : [CHINA_PCD, ...COUNTRIES_TREE];
   }
 }
