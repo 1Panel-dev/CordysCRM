@@ -143,7 +143,7 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
     return '-';
   }
   const { t } = useI18n();
-  let value: string | string[] = fieldValue || '';
+  let value: string | string[] = fieldValue;
   if (options) {
     // 若字段值是选项值，则取选项值的name
     if (Array.isArray(fieldValue)) {
