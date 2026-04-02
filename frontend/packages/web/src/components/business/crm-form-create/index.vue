@@ -286,6 +286,7 @@
               ? currentSource?.[currentDatasourceFormField.businessKey]
               : currentSource?.moduleFields?.find((e: any) => e.fieldId === currentDatasourceFormField.id)?.fieldValue;
             if (currentSourceValue === undefined || currentSourceValue === null) {
+              targetField.initialOptions = [];
               return;
             }
             // 如果有业务 key，则取业务 key 的值（specialBusinessKeyMap读取特殊业务字段值），否则取字段值
@@ -317,12 +318,10 @@
                   ];
             } else if (Array.isArray(currentSourceValue)) {
               // 多选
-              targetField.initialOptions.push(
-                ...currentSourceValue.map((e, i) => ({
-                  name: currentSourceName[i],
-                  id: e,
-                }))
-              );
+              targetField.initialOptions = currentSourceValue.map((e, i) => ({
+                name: currentSourceName[i],
+                id: e,
+              }));
             } else {
               targetField.initialOptions = [
                 {
