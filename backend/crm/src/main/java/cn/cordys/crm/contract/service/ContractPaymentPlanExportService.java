@@ -3,6 +3,8 @@ package cn.cordys.crm.contract.service;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportHeadDTO;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
@@ -14,6 +16,7 @@ import cn.cordys.registry.ExportThreadRegistry;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,21 +65,26 @@ public class ContractPaymentPlanExportService extends BaseExportService {
     private List<Object> buildData(List<ExportHeadDTO> headList, ContractPaymentPlanListResponse data, Map<String, BaseField> fieldConfigMap) {
         List<Object> dataList = new ArrayList<>();
         //固定字段map
-        LinkedHashMap<String, Object> systemFieldMap = getSystemFieldMap(data);
+        LinkedHashMap<String, Object> systemFieldMap = getSystemFieldMap(data, fieldConfigMap);
         //自定义字段map
         Map<String, Object> moduleFieldMap = getFieldIdValueMap(data.getModuleFields());
         //处理数据转换
         return transModuleFieldValue(headList, systemFieldMap, moduleFieldMap, dataList, fieldConfigMap);
     }
 
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentPlanListResponse data) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentPlanListResponse data, Map<String, BaseField> fieldConfigMap) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
-        systemFieldMap.put("name",data.getName());
+        systemFieldMap.put("name", data.getName());
         systemFieldMap.put("contractId", data.getContractName());
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         systemFieldMap.put("planAmount", data.getPlanAmount());
-        systemFieldMap.put("planEndTime", TimeUtils.getDateTimeStr(data.getPlanEndTime()));
+
+        BaseField planEndTime = fieldConfigMap.values().stream().filter(field -> Strings.CI.equals(field.getBusinessKey(), "planEndTime")).findFirst().orElse(null);
+        if (planEndTime != null) {
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(planEndTime.getType());
+            systemFieldMap.put("planEndTime", customFieldResolver.transformToValue(planEndTime, String.valueOf(data.getPlanEndTime())));
+        }
         systemFieldMap.put("planStatus", Translator.get("contract.payment_plan.status." + data.getPlanStatus().toLowerCase()));
 
         systemFieldMap.put("createUser", data.getCreateUserName());
