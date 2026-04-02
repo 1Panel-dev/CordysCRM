@@ -779,12 +779,33 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         ].includes(item.type)
       ) {
         // 处理成员和数据源类型的字段
-        item.initialOptions = options
-          ?.filter((e) => formDetail.value[item.id]?.includes(e.id))
-          .map((e) => ({
-            ...e,
-            name: e.name || t('common.optionNotExist'),
-          }));
+        if (!options || options.length === 0) {
+          // 处理匹配不到 optionsMap 的数据源/成员/部门字段
+          if (typeof field?.fieldValue === 'string' || typeof field?.fieldValue === 'number') {
+            // 单选
+            formDetail.value[item.id] = [t('common.optionNotExist')];
+            item.initialOptions = [
+              {
+                id: field.fieldValue,
+                name: t('common.optionNotExist'),
+              },
+            ];
+          } else {
+            // 多选
+            formDetail.value[item.id] = field?.fieldValue?.map(() => t('common.optionNotExist'));
+            item.initialOptions = field?.fieldValue.map((e) => ({
+              id: e,
+              name: t('common.optionNotExist'),
+            }));
+          }
+        } else {
+          item.initialOptions = options
+            ?.filter((e) => formDetail.value[item.id]?.includes(e.id))
+            .map((e) => ({
+              ...e,
+              name: e.name || t('common.optionNotExist'),
+            }));
+        }
       }
     }
   }
