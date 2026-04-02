@@ -20,7 +20,6 @@ import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -38,7 +37,6 @@ import cn.cordys.crm.order.dto.response.OrderStageConfigResponse;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
-import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -86,8 +84,6 @@ public class OrderService {
     @Resource
     private LogService logService;
     @Resource
-    private SerialNumGenerator serialNumGenerator;
-    @Resource
     private DataScopeService dataScopeService;
     @Resource
     private ExtOrderStageConfigMapper extOrderStageConfigMapper;
@@ -95,7 +91,6 @@ public class OrderService {
     private BaseMapper<Customer> customerBaseMapper;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
-    public static final int MAX_NUMBER_LENGTH = 50;
 
     /**
      * 新建订单
@@ -120,10 +115,6 @@ public class OrderService {
         Order order = new Order();
         BeanUtils.copyBean(order, request);
         order.setId(IDGenerator.nextStr());
-        order.setNumber(createOrderNumber(moduleFormConfigDTO, orgId, request.getNumber()));
-        if (order.getNumber().length() > MAX_NUMBER_LENGTH) {
-            throw new GenericException(Translator.get("order.number.length.exceed"));
-        }
         order.setStage(stageConfigList.getFirst().getId());
         order.setOrganizationId(orgId);
         order.setCreateTime(System.currentTimeMillis());
@@ -146,17 +137,6 @@ public class OrderService {
         saveSnapshot(order, saveModuleFormConfigDTO, response);
 
         return order;
-    }
-
-
-    private String createOrderNumber(ModuleFormConfigDTO moduleFormConfigDTO, String orgId, String prefix) {
-        BaseField numberField = moduleFormConfigDTO.getFields().stream()
-                .filter(field -> field.isSerialNumber() && StringUtils.isNotEmpty(field.getBusinessKey())).findFirst().orElse(null);
-
-        if (numberField != null) {
-            return serialNumGenerator.generateByRules(((SerialNumberField) numberField).getSerialNumberRules(prefix), orgId, FormKey.ORDER.getKey());
-        }
-        return null;
     }
 
 

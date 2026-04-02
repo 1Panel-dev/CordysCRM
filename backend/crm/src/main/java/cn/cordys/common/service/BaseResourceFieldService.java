@@ -73,6 +73,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private static final String ROW_BIZ_ID = "id";
     private static final String DETAIL_FIELD_PARAM_NAME = "moduleFields";
     private static final String PRICE_SUB_ROW_KEY = "price_sub";
+	public static final int MAX_NUMBER_LENGTH = 50;
 
     /**
      * 获取资源字段类型 (T)
@@ -1023,10 +1024,19 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         // 流水号 (需缓存, 公式字段要做占位替换)
         if (field.isSerialNumber() && !update) {
 			if (StringUtils.isNotEmpty(field.getBusinessKey())) {
-				// 流水号作为系统字段, 且在各业务模块已经生成, 无需再统一生成.
-				Object serialNo = getResourceFieldValue(resource, field.getBusinessKey());
-				if (serialNo != null) {
-					serialNumCache.put(field.getName(), serialNo.toString());
+				// 流水号作为业务字段, 从业务资源中获取前缀值
+				Object serialNoPrefix = getResourceFieldValue(resource, field.getBusinessKey());
+				String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(
+						serialNoPrefix != null ? serialNoPrefix.toString() : StringUtils.EMPTY), orgId, getFormKey());
+				// 业务流水号字段过长, SQL错误
+				if (serialNo.length() > MAX_NUMBER_LENGTH) {
+					throw new GenericException(Translator.get("number.length.exceed"));
+				}
+				setResourceFieldValue(resource, field.getBusinessKey(), serialNo);
+				if (serialNoPrefix != null && StringUtils.isNotEmpty(serialNoPrefix.toString())) {
+					serialNumCache.put(serialNoPrefix.toString(), serialNo);
+				} else {
+					serialNumCache.put("${" + field.getName() + "}", serialNo);
 				}
 				return null;
 			} else {
@@ -1037,7 +1047,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 				String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(
 						(fv != null && fv.getFieldValue() != null) ? fv.getFieldValue().toString() : StringUtils.EMPTY), orgId, getFormKey());
 				fieldValue.setFieldValue(serialNo);
-				serialNumCache.put(field.getName(), serialNo);
+				if (fv != null && fv.getFieldValue() != null) {
+					serialNumCache.put(fv.getFieldValue().toString(), serialNo);
+				} else {
+					serialNumCache.put("${" + field.getName() + "}", serialNo);
+				}
 				return fieldValue;
 			}
         }
@@ -1094,7 +1108,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
         String result = text;
         for (Map.Entry<String, String> entry : serialNumMap.entrySet()) {
-            String placeholder = "${" + entry.getKey() + "}";
+            String placeholder = entry.getKey();
             if (result.contains(placeholder)) {
                 result = result.replace(placeholder, entry.getValue());
             }
