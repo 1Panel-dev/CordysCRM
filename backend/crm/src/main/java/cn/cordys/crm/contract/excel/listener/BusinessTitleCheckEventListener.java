@@ -107,6 +107,9 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
                 validateRequired(rowData.get(k), errText, v);
                 validateNameUniques(rowData.get(k), errText, v);
             }
+            if (Strings.CI.equals(request.getImportType(), BusinessTitleImportType.UPDATE.name())) {
+                validateNameExist(rowData.get(k), errText, v);
+            }
             validateLenLimit(rowData.get(k), errText, v);
         });
         if (StringUtils.isNotEmpty(errText)) {
@@ -117,6 +120,15 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
             errRows.add(rowIndex);
         } else if (!errRows.contains(rowIndex)) {
             success++;
+        }
+    }
+
+    private void validateNameExist(String data, StringBuilder errText, String v) {
+        if (data != null && BusinessTitleImportFiled.NAME.equals(BusinessTitleImportFiled.fromHeader(v))) {
+            boolean repeat = commonMapper.checkAddExist("business_title", BusinessTitleImportFiled.NAME.name().toLowerCase(), data, orgId);
+            if (!repeat) {
+                errText.append(v).append(":").append(Translator.get("business_title.not.exist")).append(";");
+            }
         }
     }
 
