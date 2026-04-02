@@ -116,6 +116,9 @@ export function formatNumberValueToString(value: number, item: FormCreateField) 
       return item.precision ? `${Number(value).toFixed(item.precision)}%` : `${value}%`;
     }
     if (item.showThousandsSeparator) {
+      if (typeof value === 'string') {
+        return value;
+      }
       return item.precision
         ? `${value.toLocaleString('en-US').split('.')[0]}.${value.toFixed?.(item.precision).split('.')[1]}`
         : value.toLocaleString('en-US');
