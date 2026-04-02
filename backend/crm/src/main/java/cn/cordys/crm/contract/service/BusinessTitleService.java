@@ -68,6 +68,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -422,19 +423,23 @@ public class BusinessTitleService {
                     ExtBusinessTitleMapper mapper = sqlSession.getMapper(ExtBusinessTitleMapper.class);
                     afterDto = (businessTitles) -> {
                         List<BusinessTitle> titleList = extBusinessTitleMapper.selectByNames(businessTitles.stream().map(BusinessTitle::getName).toList());
-                        Map<String, String> idMap = titleList.stream().collect(Collectors.toMap(BusinessTitle::getName, BusinessTitle::getId));
+                        Map<String, BusinessTitle> nameNap = titleList.stream().collect(Collectors.toMap(BusinessTitle::getName, Function.identity()));
                         List<LogDTO> logs = new ArrayList<>();
                         Set<String> titleSet = new HashSet<>();
                         businessTitles.removeIf(user -> !titleSet.add(user.getName()));
                         businessTitles.forEach(title -> {
                             //1.通过name查询id
                             //2.setId 并更新
-                            if (idMap.containsKey(title.getName())) {
-                                title.setId(idMap.get(title.getName()));
+                            if (nameNap.containsKey(title.getName())) {
+                                BusinessTitle originTitle = nameNap.get(title.getName());
+                                title.setId(originTitle.getId());
                                 title.setUpdateTime(System.currentTimeMillis());
                                 title.setUpdateUser(userId);
                                 mapper.updateById(title);
-                                logs.add(new LogDTO(orgId, title.getId(), userId, LogType.UPDATE, LogModule.CONTRACT_BUSINESS_TITLE, title.getName()));
+                                LogDTO logDTO = new LogDTO(orgId, title.getId(), userId, LogType.UPDATE, LogModule.CONTRACT_BUSINESS_TITLE, title.getName());
+                                logDTO.setOriginalValue(originTitle);
+                                logDTO.setModifiedValue(title);
+                                logs.add(logDTO);
                             }
                         });
                         sqlSession.flushStatements();

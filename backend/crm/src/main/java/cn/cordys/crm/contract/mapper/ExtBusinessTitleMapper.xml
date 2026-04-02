@@ -229,7 +229,9 @@
 
 
     <select id="selectByNames" resultType="cn.cordys.crm.contract.domain.BusinessTitle">
-        select id, name from business_title
+        select id, name, identification_number, opening_bank, bank_account, registration_address, phone_number,
+        registered_capital, company_size, registration_number, province, scale, industry, city, remark
+        from business_title
         where name in
         <foreach collection="names" item="name" open="(" close=")" separator=",">
             #{name}
