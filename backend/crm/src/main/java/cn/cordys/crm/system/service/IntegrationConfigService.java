@@ -1348,4 +1348,50 @@ public class IntegrationConfigService {
             }
         }
     }
+
+    public void handleData(ThirdConfigBaseDTO<?> thirdConfig) {
+        if (thirdConfig.getType() == null) {
+            return;
+        }
+        ThirdConfigTypeConstants typeConstants = ThirdConfigTypeConstants.fromString(thirdConfig.getType());
+        if (typeConstants == null) {
+            throw new GenericException("unsupported.third.type");
+        }
+        switch (typeConstants) {
+            case WECOM -> {
+                WecomThirdConfigRequest weComConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), WecomThirdConfigRequest.class);
+                weComConfig.setAppSecret(StringUtils.EMPTY);
+                ((ThirdConfigBaseDTO<Object>) thirdConfig).setConfig(weComConfig);
+            }
+            case DINGTALK -> {
+                DingTalkThirdConfigRequest dingTalkConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), DingTalkThirdConfigRequest.class);
+                dingTalkConfig.setAppSecret(StringUtils.EMPTY);
+                ((ThirdConfigBaseDTO<Object>) thirdConfig).setConfig(dingTalkConfig);
+            }
+            case LARK -> {
+                LarkThirdConfigRequest larkConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), LarkThirdConfigRequest.class);
+                larkConfig.setAppSecret(StringUtils.EMPTY);
+                ((ThirdConfigBaseDTO<Object>) thirdConfig).setConfig(larkConfig);
+            }
+            case DE -> {
+                DeThirdConfigRequest deConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), DeThirdConfigRequest.class);
+                deConfig.setAppSecret(StringUtils.EMPTY);
+                deConfig.setDeSecretKey(StringUtils.EMPTY);
+                ((ThirdConfigBaseDTO<Object>) thirdConfig).setConfig(deConfig);
+            }
+            case MAXKB -> {
+                MaxKBThirdConfigRequest maxKBConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), MaxKBThirdConfigRequest.class);
+                maxKBConfig.setAppSecret(StringUtils.EMPTY);
+                ((ThirdConfigBaseDTO<Object>) thirdConfig).setConfig(maxKBConfig);
+            }
+            case QCC -> {
+                QccThirdConfigRequest qccConfig = JSON.MAPPER.convertValue(thirdConfig.getConfig(), QccThirdConfigRequest.class);
+                qccConfig.setQccSecretKey(StringUtils.EMPTY);
+                ((ThirdConfigBaseDTO<Object>) thirdConfig).setConfig(qccConfig);
+            }
+            default -> {
+
+            }
+        }
+    }
 }
