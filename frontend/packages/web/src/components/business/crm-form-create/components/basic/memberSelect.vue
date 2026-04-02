@@ -42,6 +42,7 @@
 
 <script setup lang="ts">
   import { NDivider, NFormItem } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -72,7 +73,7 @@
   const value = defineModel<string | number | (string | number)[]>('value', {
     default: [],
   });
-  const selectedUsers = ref<SelectedUsersItem[]>(props.fieldConfig.initialOptions || []);
+  const selectedUsers = ref<SelectedUsersItem[]>(cloneDeep(props.fieldConfig.initialOptions) || []);
   const memberTypes = computed(() => {
     if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)) {
       return [

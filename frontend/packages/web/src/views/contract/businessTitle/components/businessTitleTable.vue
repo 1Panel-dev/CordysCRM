@@ -3,7 +3,7 @@
     ref="crmTableRef"
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
-    class="crm-business-title-table"
+    class="crm-business-title-list-table"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="actionConfig"
     @page-change="propsEvent.pageChange"
