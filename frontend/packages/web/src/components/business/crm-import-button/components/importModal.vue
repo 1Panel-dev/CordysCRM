@@ -148,6 +148,16 @@
   function validate() {
     emit('validate', fileList.value, importType.value);
   }
+
+  watch(
+    () => showModal.value,
+    (val) => {
+      if (!val) {
+        fileList.value = [];
+        importType.value = 'ADD';
+      }
+    }
+  );
 </script>
 
 <style scoped></style>
