@@ -82,7 +82,7 @@ public class ContractInvoiceExportService extends BaseExportService {
         systemFieldMap.put("departmentId", data.getDepartmentName());
         systemFieldMap.put("amount", data.getAmount());
         systemFieldMap.put("taxRate", data.getTaxRate());
-        systemFieldMap.put("businessTitleId", data.getBusinessTitleId());
+        systemFieldMap.put("businessTitleId", data.getBusinessTitleName());
         systemFieldMap.put("approvalStatus", data.getApprovalStatus() == null ? null : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
 
         for (BaseField field : fieldConfigMap.values()) {
