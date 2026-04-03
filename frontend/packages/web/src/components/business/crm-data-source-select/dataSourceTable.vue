@@ -46,7 +46,8 @@
   import { transformData } from '@lib/shared/method/formCreate';
   import type { ContractItem, PaymentPlanItem } from '@lib/shared/models/contract';
   import { CustomerContractListItem } from '@lib/shared/models/customer';
-  import { QuotationItem } from '@lib/shared/models/opportunity';
+  import { OpportunityItem, OpportunityStageConfig, QuotationItem } from '@lib/shared/models/opportunity';
+  import { OrderItem } from '@lib/shared/models/order';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
@@ -59,6 +60,7 @@
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
   import QuotationStatus from '@/views/opportunity/components/quotation/quotationStatus.vue';
 
+  import { getOpportunityStageConfig, getOrderStatusConfig } from '@/api/modules';
   import { contractPaymentPlanStatusOptions, contractStatusOptions } from '@/config/contract';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateSystemColumns from '@/hooks/useFormCreateSystemColumns';
@@ -113,9 +115,9 @@
     return undefined;
   });
 
-  const dataSourceSpecialRenderMap: Record<string, Record<string, (row: any) => any>> = {
-    [FormDesignKeyEnum.CUSTOMER]: {},
-    [FormDesignKeyEnum.CONTACT]: {
+  const dataSourceSpecialRenderMap: Record<FieldDataSourceTypeEnum, Record<string, (row: any) => any>> = {
+    [FieldDataSourceTypeEnum.CUSTOMER]: {},
+    [FieldDataSourceTypeEnum.CONTACT]: {
       status: (row: CustomerContractListItem) => {
         return h(NSwitch, {
           value: row.enable,
@@ -123,17 +125,21 @@
         });
       },
     },
-    [FormDesignKeyEnum.BUSINESS]: {},
-    [FormDesignKeyEnum.PRODUCT]: {},
-    [FormDesignKeyEnum.CLUE]: {},
-    [FormDesignKeyEnum.PRICE]: {},
-    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: {
+    [FieldDataSourceTypeEnum.BUSINESS]: {
+      stage: (row: OpportunityItem) => {
+        return row.stageName || '-';
+      },
+    },
+    [FieldDataSourceTypeEnum.PRODUCT]: {},
+    [FieldDataSourceTypeEnum.CLUE]: {},
+    [FieldDataSourceTypeEnum.PRICE]: {},
+    [FieldDataSourceTypeEnum.QUOTATION]: {
       approvalStatus: (row: QuotationItem) =>
         h(QuotationStatus, {
           status: row.approvalStatus,
         }),
     },
-    [FormDesignKeyEnum.CONTRACT]: {
+    [FieldDataSourceTypeEnum.CONTRACT]: {
       stage: (row: ContractItem) => {
         return h(StatusTagSelect, {
           status: row.stage as ContractStatusEnum,
@@ -147,7 +153,7 @@
           status: row.approvalStatus,
         }),
     },
-    [FormDesignKeyEnum.CONTRACT_PAYMENT]: {
+    [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: {
       status: (row: PaymentPlanItem) =>
         h(StatusTagSelect, {
           'status': row.planStatus as ContractPaymentPlanEnum,
@@ -159,7 +165,7 @@
           'statusOptions': contractPaymentPlanStatusOptions,
         }),
     },
-    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: {
+    [FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD]: {
       status: (row: PaymentPlanItem) =>
         h(StatusTagSelect, {
           'status': row.planStatus as ContractPaymentPlanEnum,
@@ -171,15 +177,44 @@
           'statusOptions': contractPaymentPlanStatusOptions,
         }),
     },
+    [FieldDataSourceTypeEnum.ORDER]: {
+      stage: (row: OrderItem) => {
+        return row.stageName || '-';
+      },
+    },
+    [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: {},
+    [FieldDataSourceTypeEnum.USER_OPTIONS]: {},
+    [FieldDataSourceTypeEnum.BUSINESS_TITLE]: {},
   };
 
+  const stageConfig = ref<OpportunityStageConfig>();
+
+  async function initStageConfig() {
+    try {
+      if (props.sourceType === FieldDataSourceTypeEnum.ORDER) {
+        stageConfig.value = await getOrderStatusConfig();
+      } else if (props.sourceType === FieldDataSourceTypeEnum.BUSINESS) {
+        stageConfig.value = await getOpportunityStageConfig();
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   const formKey = computed(() => formKeyMap[props.sourceType] as FormDesignKeyEnum);
+
+  await initStageConfig();
 
   const { internalColumnMap, staticColumns, noSorterType } = await useFormCreateSystemColumns({
     formKey: formKey.value as FormKey,
     containerClass: '',
     specialRender: {
-      ...dataSourceSpecialRenderMap[formKey.value as FormKey],
+      ...dataSourceSpecialRenderMap[props.sourceType],
+    },
+    ...{
+      [props.sourceType === FieldDataSourceTypeEnum.ORDER ? 'orderStage' : 'opportunityStage']:
+        stageConfig.value?.stageConfigList || [],
     },
   });
 
