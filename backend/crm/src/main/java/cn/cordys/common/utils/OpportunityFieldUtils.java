@@ -2,10 +2,14 @@ package cn.cordys.common.utils;
 
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -16,7 +20,7 @@ import java.util.stream.Collectors;
 public class OpportunityFieldUtils {
 
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, String> stageConfigMap) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, String> stageConfigMap, Map<String, BaseField> fieldConfigMap) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("customerId", data.getCustomerName());
@@ -24,7 +28,12 @@ public class OpportunityFieldUtils {
         systemFieldMap.put("expectedEndTime", TimeUtils.getDateStr(data.getExpectedEndTime()));
         systemFieldMap.put("actualEndTime", TimeUtils.getDateStr(data.getActualEndTime()));
         systemFieldMap.put("failureReason", data.getFailureReason());
-        systemFieldMap.put("possible", data.getPossible());
+
+        BaseField possible = fieldConfigMap.values().stream().filter(field -> Strings.CI.equals(field.getBusinessKey(), "possible")).findFirst().orElse(null);
+        if (possible != null) {
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(possible.getType());
+            systemFieldMap.put("possible", customFieldResolver.transformToValue(possible, data.getPossible().stripTrailingZeros().toPlainString()));
+        }
         systemFieldMap.put("products", getProducts(optionMap, data.getProducts()));
         systemFieldMap.put("contactId", data.getContactName());
         systemFieldMap.put("owner", data.getOwnerName());
