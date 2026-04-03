@@ -4,6 +4,8 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportHeadDTO;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
@@ -81,7 +83,12 @@ public class ContractInvoiceExportService extends BaseExportService {
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         systemFieldMap.put("amount", data.getAmount());
-        systemFieldMap.put("taxRate", data.getTaxRate());
+
+        BaseField taxRate = fieldConfigMap.values().stream().filter(field -> Strings.CI.equals(field.getBusinessKey(), "taxRate")).findFirst().orElse(null);
+        if (taxRate != null) {
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(taxRate.getType());
+            systemFieldMap.put("taxRate", customFieldResolver.transformToValue(taxRate, data.getTaxRate().stripTrailingZeros().toPlainString()));
+        }
         systemFieldMap.put("businessTitleId", data.getBusinessTitleName());
         systemFieldMap.put("approvalStatus", data.getApprovalStatus() == null ? null : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
 
