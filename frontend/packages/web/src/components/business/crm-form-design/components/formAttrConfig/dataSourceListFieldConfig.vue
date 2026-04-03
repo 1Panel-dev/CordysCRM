@@ -21,7 +21,7 @@
               {{ t('crmFormDesign.dataSourceTableDisplayFieldShow') }}
             </div>
             <div class="text-[var(--primary-8)]">
-              {{ fieldConfig.listDisplayFields?.length || 1 }}
+              {{ displayCount }}
             </div>
             <div class="text-[var(--text-n2)]">
               {{ t('crmFormDesign.dataSourceTableDisplayFieldCount') }}
@@ -109,6 +109,8 @@
   import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
   import { getBusinessTitleModuleForm, getFormDesignConfig } from '@/api/modules';
+  import useFormCreateSystemColumns from '@/hooks/useFormCreateSystemColumns';
+  import { FormKey } from '@/hooks/useFormCreateTable';
 
   import type { CSSProperties } from 'vue';
 
@@ -218,12 +220,20 @@
   }
 
   function getInitialSelectedValue(options: FieldOption[]) {
-    const savedValue = normalizeRawValue(props.value);
+    const savedValue = normalizeSelectedValue(props.value, options);
     if (savedValue.length > 0) {
       return savedValue;
     }
     return getDefaultValue(options);
   }
+
+  const displayCount = computed(() => {
+    if (normalizedOptions.value.length > 0) {
+      return getInitialSelectedValue(normalizedOptions.value).length || 1;
+    }
+
+    return normalizeRawValue(props.value).length || 1;
+  });
 
   function commitValueChange() {
     const nextValue = normalizeSelectedValue(innerValue.value, normalizedOptions.value);
@@ -318,6 +328,10 @@
   async function initFieldList() {
     try {
       let nextOptions: FieldOption[] = [];
+      const { internalColumnMap, staticColumns } = await useFormCreateSystemColumns({
+        formKey: formKey.value as FormKey,
+        containerClass: '',
+      });
 
       if (props.fieldConfig.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE) {
         const res = await getBusinessTitleModuleForm();
@@ -349,23 +363,47 @@
           return acc;
         }, []);
       }
+      const systemColumns = internalColumnMap[formKey.value]?.map((e) => {
+        return {
+          label: e.title,
+          value: e.key,
+        } as FieldOption;
+      });
 
-      const savedValue = normalizeRawValue(props.value);
-      const optionValueSet = new Set(nextOptions.map((item) => item.value));
-      const missingOptions: FieldOption[] = savedValue
-        .filter((value) => !optionValueSet.has(value))
-        .map((value) => ({
-          label: t('common.optionNotExist'),
-          value,
-        }));
+      const staticOptions = staticColumns?.map((e) => {
+        return {
+          label: e.title,
+          value: e.key,
+        } as FieldOption;
+      });
 
-      normalizedOptions.value = [...nextOptions, ...missingOptions];
-      innerValue.value = getInitialSelectedValue(normalizedOptions.value);
+      normalizedOptions.value = [...nextOptions, ...(systemColumns || []), ...(staticOptions || [])];
+
+      const nextInnerValue = getInitialSelectedValue(normalizedOptions.value);
+      innerValue.value = nextInnerValue;
+
+      const rawValue = normalizeRawValue(props.value);
+      if (!isSameValue(rawValue, nextInnerValue)) {
+        emit('update:value', nextInnerValue);
+        emit(
+          'change',
+          nextInnerValue,
+          nextOptions.filter((item) => nextInnerValue.includes(item.value))
+        );
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
   }
+
+  watch(
+    () => props.fieldConfig.dataSourceType,
+    () => {
+      initFieldList();
+    },
+    { immediate: true }
+  );
 
   watch(
     () => popoverVisible.value,
@@ -375,7 +413,6 @@
         commitValueChange();
       } else {
         updateTriggerWidth();
-        initFieldList();
       }
     }
   );

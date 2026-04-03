@@ -586,17 +586,20 @@
 
   handleSearchData.value = searchData;
 
-  const filterConfigList = computed(() => [
-    {
-      title: t('customer.recycleReason'),
-      dataIndex: 'reasonId',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options: reasonOptions.value,
-      },
-    },
-    ...baseFilterConfigList,
-  ]);
+  const filterConfigList = computed(
+    () =>
+      [
+        {
+          title: t('customer.recycleReason'),
+          dataIndex: 'reasonId',
+          type: FieldTypeEnum.SELECT_MULTIPLE,
+          selectProps: {
+            options: reasonOptions.value,
+          },
+        },
+        ...baseFilterConfigList,
+      ] as FilterFormItem[]
+  );
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[])
