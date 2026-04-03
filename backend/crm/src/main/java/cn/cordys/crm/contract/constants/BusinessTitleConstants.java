@@ -10,7 +10,11 @@ public enum BusinessTitleConstants {
     PHONE_NUMBER("phoneNumber", "注册电话", "Phone number"),
     REGISTERED_CAPITAL("registeredCapital", "注册资本", "Registered capital"),
     COMPANY_SIZE("companySize", "公司规模", "Customer size"),
-    registration_number("registrationNumber", "工商注册账号", "Registration number");
+    REGISTRATION_NUMBER("registrationNumber", "工商注册账号", "Registration number"),
+    PROVINCE("province", "省", "Province"),
+    CITY("city", "市", "City"),
+    SCALE("scale", "企业规模", "Scale"),
+    INDUSTRY("industry", "国标行业", "Industry");
 
     private final String key;
     private final String ch;
