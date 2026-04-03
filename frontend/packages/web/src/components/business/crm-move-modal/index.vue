@@ -147,7 +147,9 @@
         setTimeout(() => {
           showModal.value = false;
           showToPoolResultModel.value = false;
-          emit('refresh');
+          if (isBatch) {
+            emit('refresh');
+          }
         }, 3000);
       } else {
         setTimeout(() => {
