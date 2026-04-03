@@ -117,9 +117,9 @@ public class CustomerContactService {
     @Resource
     private LogService logService;
 
-    public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, Boolean source) {
+    public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission, source);
+        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission);
         list = buildListData(list, orgId);
 
         Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);

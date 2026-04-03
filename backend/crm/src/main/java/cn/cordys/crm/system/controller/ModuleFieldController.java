@@ -143,7 +143,7 @@ public class ModuleFieldController {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
 				InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, true);
+        return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @PostMapping("/source/opportunity")
