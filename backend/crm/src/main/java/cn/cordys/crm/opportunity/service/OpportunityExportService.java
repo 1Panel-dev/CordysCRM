@@ -301,7 +301,7 @@ public class OpportunityExportService extends BaseExportService {
 
         List<Object> dataList = new ArrayList<>();
         LinkedHashMap<String, Object> systemFieldMap =
-                OpportunityFieldUtils.getSystemFieldMap(data, optionMap, stageConfigMap);
+                OpportunityFieldUtils.getSystemFieldMap(data, optionMap, stageConfigMap,fieldConfigMap);
 
         Map<String, Object> moduleFieldMap = Optional.ofNullable(data.getModuleFields())
                 .map(fields -> fields.stream().collect(Collectors.toMap(
