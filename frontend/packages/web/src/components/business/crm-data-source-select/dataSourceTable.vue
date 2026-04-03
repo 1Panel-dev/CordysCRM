@@ -37,12 +37,16 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, NImage, NImageGroup } from 'naive-ui';
+  import { DataTableRowKey, NImage, NImageGroup, NSwitch } from 'naive-ui';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+  import { ContractPaymentPlanEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
+  import type { ContractItem, PaymentPlanItem } from '@lib/shared/models/contract';
+  import { CustomerContractListItem } from '@lib/shared/models/customer';
+  import { QuotationItem } from '@lib/shared/models/opportunity';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
@@ -51,8 +55,14 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmBusinessNamePrefix from '@/components/business/crm-business-name-prefix/index.vue';
+  import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
+  import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
+  import QuotationStatus from '@/views/opportunity/components/quotation/quotationStatus.vue';
 
+  import { contractPaymentPlanStatusOptions, contractStatusOptions } from '@/config/contract';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useFormCreateSystemColumns from '@/hooks/useFormCreateSystemColumns';
+  import { FormKey } from '@/hooks/useFormCreateTable';
 
   import type { FormCreateField } from '../crm-form-create/types';
   import { formKeyMap, sourceApi } from './config';
@@ -103,6 +113,76 @@
     return undefined;
   });
 
+  const dataSourceSpecialRenderMap: Record<string, Record<string, (row: any) => any>> = {
+    [FormDesignKeyEnum.CUSTOMER]: {},
+    [FormDesignKeyEnum.CONTACT]: {
+      status: (row: CustomerContractListItem) => {
+        return h(NSwitch, {
+          value: row.enable,
+          disabled: true,
+        });
+      },
+    },
+    [FormDesignKeyEnum.BUSINESS]: {},
+    [FormDesignKeyEnum.PRODUCT]: {},
+    [FormDesignKeyEnum.CLUE]: {},
+    [FormDesignKeyEnum.PRICE]: {},
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: {
+      approvalStatus: (row: QuotationItem) =>
+        h(QuotationStatus, {
+          status: row.approvalStatus,
+        }),
+    },
+    [FormDesignKeyEnum.CONTRACT]: {
+      stage: (row: ContractItem) => {
+        return h(StatusTagSelect, {
+          status: row.stage as ContractStatusEnum,
+          noRender: true,
+          disabled: true,
+          statusOptions: contractStatusOptions,
+        });
+      },
+      approvalStatus: (row: ContractItem) =>
+        h(QuotationStatus, {
+          status: row.approvalStatus,
+        }),
+    },
+    [FormDesignKeyEnum.CONTRACT_PAYMENT]: {
+      status: (row: PaymentPlanItem) =>
+        h(StatusTagSelect, {
+          'status': row.planStatus as ContractPaymentPlanEnum,
+          'disabled': true,
+          'statusTagComponent': ContractStatus,
+          'onUpdate:status': (val) => {
+            row.planStatus = val;
+          },
+          'statusOptions': contractPaymentPlanStatusOptions,
+        }),
+    },
+    [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: {
+      status: (row: PaymentPlanItem) =>
+        h(StatusTagSelect, {
+          'status': row.planStatus as ContractPaymentPlanEnum,
+          'disabled': true,
+          'statusTagComponent': ContractStatus,
+          'onUpdate:status': (val) => {
+            row.planStatus = val;
+          },
+          'statusOptions': contractPaymentPlanStatusOptions,
+        }),
+    },
+  };
+
+  const formKey = computed(() => formKeyMap[props.sourceType] as FormDesignKeyEnum);
+
+  const { internalColumnMap, staticColumns, noSorterType } = await useFormCreateSystemColumns({
+    formKey: formKey.value as FormKey,
+    containerClass: '',
+    specialRender: {
+      ...dataSourceSpecialRenderMap[formKey.value as FormKey],
+    },
+  });
+
   const defaultInternalNameKeyMap: Record<string, string> = {
     [FormDesignKeyEnum.CUSTOMER]: 'customerName',
     [FormDesignKeyEnum.CLUE]: 'clueName',
@@ -125,6 +205,7 @@
       stage: 'stageName',
       contactId: 'contactName',
       contractId: 'contractName',
+      paymentPlanId: 'paymentPlanName',
     };
     return keyMap[columnKey] || columnKey;
   }
@@ -145,23 +226,29 @@
     return fieldList.value.find((field) => field.internalKey === defaultInternalKey.value);
   });
 
-  const selectedDisplayFields = computed<FormCreateField[]>(() => {
-    const allFields = fieldList.value || [];
+  const selectedDisplayFields = computed<string[]>(() => {
+    const fixedFieldIds = [...internalColumnMap[formKey.value as FormKey], ...staticColumns].map((column) =>
+      String(column.key)
+    );
+    const allFields = [...fieldList.value.map((e) => e.id), ...fixedFieldIds];
     const savedFieldIds = props.fieldConfig?.listDisplayFields || [];
 
-    const matchedFields = savedFieldIds
-      .map((fieldId) => allFields.find((field) => field.id === fieldId))
-      .filter((field): field is FormCreateField => !!field);
+    const matchedFieldsIds = savedFieldIds
+      .map((fieldId) => allFields.find((id) => id === fieldId))
+      .filter((field): field is string => !!field);
 
-    if (matchedFields.length === 0) {
-      return defaultDisplayField.value ? [defaultDisplayField.value] : [];
+    if (matchedFieldsIds.length === 0) {
+      return defaultDisplayField.value ? [defaultDisplayField.value.id] : [];
     }
 
     if (!defaultDisplayField.value) {
-      return matchedFields;
+      return matchedFieldsIds;
     }
 
-    return [defaultDisplayField.value, ...matchedFields.filter((field) => field.id !== defaultDisplayField.value?.id)];
+    return [
+      defaultDisplayField.value.id,
+      ...matchedFieldsIds.filter((fieldId) => fieldId !== defaultDisplayField.value?.id),
+    ];
   });
 
   function buildFieldColumn(field: FormCreateField): CrmDataTableColumn {
@@ -173,6 +260,13 @@
       FieldTypeEnum.SELECT_MULTIPLE,
       FieldTypeEnum.CHECKBOX,
     ].includes(field.type);
+
+    const hasFilter = [
+      FieldTypeEnum.RADIO,
+      FieldTypeEnum.CHECKBOX,
+      FieldTypeEnum.SELECT,
+      FieldTypeEnum.SELECT_MULTIPLE,
+    ];
 
     const columnKey = getFieldColumnKey(field);
 
@@ -186,7 +280,42 @@
       width: field.internalKey === defaultInternalKey.value ? 280 : 150,
       isTag,
       fixed: defaultDisplayField.value?.id === field.id && selectedDisplayFields.value.length > 2 ? 'left' : undefined,
+      sortOrder: false,
+      filter: !field.resourceFieldId && hasFilter.includes(field.type),
+      filterOptions: field.options || field.initialOptions?.map((e: any) => ({ label: e.name, value: e.id })),
+      sorter: !noSorterType.includes(field.type) && !field.resourceFieldId,
+      filedType: field.type,
+      resourceFieldId: field.resourceFieldId,
     };
+    if (field.type === FieldTypeEnum.PICTURE) {
+      return {
+        ...baseColumn,
+        render: (row: any) =>
+          h(
+            'div',
+            {
+              class: 'flex items-center',
+            },
+            [
+              h(
+                NImageGroup,
+                {},
+                {
+                  default: () =>
+                    row[columnKey]?.length
+                      ? (row[columnKey] || []).map((_key: string) =>
+                          h(NImage, {
+                            class: 'h-[40px] w-[40px] mr-[4px]',
+                            src: `${PreviewPictureUrl}/${_key}`,
+                          })
+                        )
+                      : '-',
+                }
+              ),
+            ]
+          ),
+      };
+    }
 
     if (props.sourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE && field.businessKey === 'name') {
       return {
@@ -245,6 +374,46 @@
     };
   }
 
+  const visibleColumns = computed<CrmDataTableColumn[]>(() => {
+    const allFields = fieldList.value || [];
+    const savedFieldKeys = props.fieldConfig?.listDisplayFields || [];
+    const resolvedColumns: CrmDataTableColumn[] = [];
+    const appendedKeys = new Set<string>();
+    const defaultFieldId = defaultDisplayField.value?.id;
+    const defaultColumn = defaultDisplayField.value ? buildFieldColumn(defaultDisplayField.value) : undefined;
+
+    if (defaultColumn && defaultFieldId) {
+      resolvedColumns.push(defaultColumn);
+      appendedKeys.add(defaultFieldId);
+    }
+
+    const allSystemColumns = [...(internalColumnMap[formKey.value] || []), ...staticColumns];
+    const systemColumnMap = new Map(allSystemColumns.map((column) => [String(column.key), column] as const));
+
+    savedFieldKeys.forEach((fieldKey) => {
+      const matchedField = allFields.find((field) => field.id === fieldKey);
+      if (matchedField) {
+        if (!appendedKeys.has(matchedField.id)) {
+          resolvedColumns.push(buildFieldColumn(matchedField));
+          appendedKeys.add(matchedField.id);
+        }
+        return;
+      }
+
+      const matchedSystemColumn = systemColumnMap.get(String(fieldKey));
+      if (matchedSystemColumn && !appendedKeys.has(String(matchedSystemColumn.key))) {
+        resolvedColumns.push(matchedSystemColumn);
+        appendedKeys.add(String(matchedSystemColumn.key));
+      }
+    });
+
+    if (resolvedColumns.length === 0 && defaultColumn) {
+      return [defaultColumn];
+    }
+
+    return resolvedColumns;
+  });
+
   const columns = computed<CrmDataTableColumn[]>(() => {
     const selectionColumn: CrmDataTableColumn = {
       type: 'selection',
@@ -260,13 +429,11 @@
       fixed: 'left',
     };
 
-    const dynamicColumns = selectedDisplayFields.value.map((field) => buildFieldColumn(field));
-
     const subColumns = subFieldKey.value
       ? (subField.value?.subFields || []).map((field) => buildSubFieldColumn(field))
       : [];
 
-    return [selectionColumn, ...dynamicColumns, ...subColumns];
+    return [selectionColumn, ...visibleColumns.value, ...subColumns];
   });
 
   const { propsRes, propsEvent, loadList, setAdvanceFilter, setLoadListParams } = useTable(
