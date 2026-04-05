@@ -228,9 +228,7 @@ public class DepartmentService extends MoveNodeService {
      */
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public void delete(List<String> ids, String operator, String orgId) {
-        if (!deleteCheck(ids, orgId)) {
-            throw new GenericException(Translator.get("department.employees.exist"));
-        }
+        deleteCheck(ids, orgId);
         List<Department> departmentList = departmentMapper.selectByIds(ids);
         //刪除部門
         departmentMapper.deleteByIds(ids);
@@ -246,14 +244,13 @@ public class DepartmentService extends MoveNodeService {
 
 
     /**
-     * 删除部门前校验
+     * 删除部门前校验（用于实际删除时的校验，失败直接抛出异常）
      *
      * @param ids
      * @param orgId
      *
-     * @return
      */
-    public boolean deleteCheck(List<String> ids, String orgId) {
+    public void deleteCheck(List<String> ids, String orgId) {
         List<Department> departmentList = departmentMapper.selectByIds(ids);
         if (CollectionUtils.isNotEmpty(departmentList)) {
             departmentList.forEach(department -> {
@@ -265,7 +262,34 @@ public class DepartmentService extends MoveNodeService {
 
         }
 
-        return extOrganizationUserMapper.countUserByDepartmentIds(ids, orgId) <= 0;
+        if (extOrganizationUserMapper.countUserByDepartmentIds(ids, orgId) > 0) {
+            throw new GenericException(Translator.get("department.employees.exist"));
+        }
+    }
+
+    /**
+     * 检查是否可以删除部门（用于前端检查，返回 boolean）
+     *
+     * @param ids
+     * @param orgId
+     *
+     * @return true 表示可以删除，false 表示不可以删除
+     */
+    public boolean canDelete(List<String> ids, String orgId) {
+        try {
+            List<Department> departmentList = departmentMapper.selectByIds(ids);
+            if (CollectionUtils.isNotEmpty(departmentList)) {
+                for (Department department : departmentList) {
+                    if (Strings.CI.equalsAny(department.getResource(), ThirdConfigTypeConstants.INTERNAL.name())
+                            && Strings.CI.equalsAny(department.getParentId(), "NONE")) {
+                        return false;
+                    }
+                }
+            }
+            return extOrganizationUserMapper.countUserByDepartmentIds(ids, orgId) <= 0;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 
