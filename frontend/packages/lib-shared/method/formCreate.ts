@@ -180,7 +180,7 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
     } else {
       const country = addressArr[0];
       const rest = addressArr.filter((e, i) => i > 0).join('-');
-      value = rest ? `${getCityPath(country)}-${rest}` : getCityPath(country);
+      value = rest ? `${getCityPath(country, item.scope)}-${rest}` : getCityPath(country, item.scope);
     }
   } else if (item.type === FieldTypeEnum.INDUSTRY) {
     value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
@@ -404,8 +404,9 @@ export function transformData({
         value = '-';
       } else {
         const country = addressArr[0];
+        const scope = fields.find((f) => f.id === field.fieldId)?.scope;
         const rest = addressArr.filter((e, i) => i > 0).join('-');
-        value = rest ? `${getCityPath(country)}-${rest}` : getCityPath(country);
+        value = rest ? `${getCityPath(country, scope)}-${rest}` : getCityPath(country, scope);
       }
       customFieldAttr[field.fieldId] = value;
     } else if (industryFieldIds.includes(field.fieldId)) {
