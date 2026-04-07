@@ -25,6 +25,8 @@ public class ModuleFormCacheService {
 
     @Resource
     private ModuleFormService moduleFormService;
+	@Resource
+	private ModuleFieldService moduleFieldService;
 
     /**
      * 保存表单配置并更新缓存
@@ -67,11 +69,11 @@ public class ModuleFormCacheService {
         businessModuleFormConfig.setFormProp(config.getFormProp());
 
 		// 提前加载价格表子表格字段作为引用集合
-		List<BaseField> subFields = moduleFormService.getSubFieldsBySourceType(FieldSourceType.PRICE.name());
+		List<BaseField> subFields = moduleFieldService.getSubFieldsBySourceType(FieldSourceType.PRICE.name());
 		Map<String, BaseField> refPriceSubFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));
 
-		// 设置业务字段参数
-		List<BaseField> flattenFields = moduleFormService.flattenSourceRefFields(config.getFields(), refPriceSubFieldMap);
+		// 处理字段信息
+ 		List<BaseField> flattenFields = moduleFormService.flattenSourceRefFields(config.getFields(), refPriceSubFieldMap);
 		businessModuleFormConfig.setFields(flattenFields.stream()
 				.peek(moduleFormService::setFieldRefOption)
 				.peek(moduleFormService::setFieldBusinessParam)
