@@ -312,7 +312,7 @@
         tooltip: true,
       },
       resizable: true,
-      width: field.internalKey === defaultInternalKey.value ? 280 : 150,
+      width: field.internalKey === defaultInternalKey.value ? 220 : 150,
       isTag,
       fixed: defaultDisplayField.value?.id === field.id && selectedDisplayFields.value.length > 2 ? 'left' : undefined,
       sortOrder: false,
