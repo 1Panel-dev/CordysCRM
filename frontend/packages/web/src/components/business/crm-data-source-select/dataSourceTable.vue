@@ -262,9 +262,9 @@
   });
 
   const selectedDisplayFields = computed<string[]>(() => {
-    const fixedFieldIds = [...internalColumnMap[formKey.value as FormKey], ...staticColumns].map((column) =>
-      String(column.key)
-    );
+    const defaultFormColumn =
+      formKey.value === FormDesignKeyEnum.BUSINESS_TITLE ? [] : internalColumnMap[formKey.value] || [];
+    const fixedFieldIds = [...defaultFormColumn, ...staticColumns].map((column) => String(column.key));
     const allFields = [...fieldList.value.map((e) => e.id), ...fixedFieldIds];
     const savedFieldIds = props.fieldConfig?.listDisplayFields || [];
 
