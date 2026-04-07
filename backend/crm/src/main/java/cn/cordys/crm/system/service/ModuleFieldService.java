@@ -21,9 +21,12 @@ import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.dto.DatasourceRefDTO;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.DateTimeField;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.request.DatasourceRefQueryRequest;
 import cn.cordys.crm.system.dto.request.FieldRepeatCheckRequest;
 import cn.cordys.crm.system.dto.response.FieldRepeatCheckResponse;
+import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -31,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -82,6 +86,8 @@ public class ModuleFieldService {
     private DepartmentService departmentService;
     @Resource
     private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
+	@Resource
+	private ExtModuleFieldMapper extModuleFieldMapper;
     @Resource
     private CommonMapper commonMapper;
 
@@ -268,6 +274,7 @@ public class ModuleFieldService {
     /**
      * 订单产品字段增加金额计算公式，订单增加订单金额计算公式
      */
+	@SuppressWarnings("unchecked")
     private void initOrderProducts() {
         ModuleField orderProducts = selectFieldByInternalKey("orderProducts");
         ModuleFieldBlob orderProductsFieldBlob = moduleFieldBlobMapper.selectByPrimaryKey(orderProducts.getId());
@@ -403,4 +410,27 @@ public class ModuleFieldService {
         orderContractFieldBlob.setProp(JSON.toJSONString(datasourceField));
         moduleFieldBlobMapper.updateById(orderContractFieldBlob);
     }
+
+	/**
+	 * 获取指定数据源的子表字段集合 (目前只有价格表类型的子表字段支持引用)
+	 *
+	 * @param sourceType 数据源类型
+	 * @return 子表字段集合
+	 */
+	@Cacheable(value = "sub_fields_cache", key = "#sourceType", unless = "#result == null")
+	public List<BaseField> getSubFieldsBySourceType(String sourceType) {
+		List<ModuleFieldBlob> subFields = new ArrayList<>();
+		if (Strings.CS.equals(sourceType, FieldSourceType.PRICE.name())) {
+			subFields = extModuleFieldMapper.getFormSubFields(FormKey.PRICE.getKey());
+		}
+		if (CollectionUtils.isEmpty(subFields)) {
+			return new ArrayList<>();
+		}
+		List<BaseField> subFieldList = new ArrayList<>(subFields.size());
+		for (ModuleFieldBlob fieldBlob : subFields) {
+			SubField subField = JSON.parseObject(fieldBlob.getProp(), SubField.class);
+			subFieldList.addAll(subField.getSubFields());
+		}
+		return subFieldList;
+	}
 }
