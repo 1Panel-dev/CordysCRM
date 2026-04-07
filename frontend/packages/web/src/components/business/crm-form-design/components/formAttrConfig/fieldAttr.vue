@@ -1852,7 +1852,6 @@
   }
   function handleClearDataSourceDisplayField() {
     fieldConfig.value.showFields = [];
-    fieldConfig.value.listDisplayFields = [];
     if (isSubTableField.value && parentField.value) {
       parentField.value.subFields = parentField.value?.subFields?.filter(
         (item) => item.resourceFieldId !== fieldConfig.value.id
