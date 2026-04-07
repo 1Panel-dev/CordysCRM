@@ -233,7 +233,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             } else if (item.type === FieldTypeEnum.LOCATION) {
               const addressArr = (field?.fieldValue as string)?.split('-') || [];
               value = addressArr.length
-                ? `${getCityPath(addressArr[0])}-${addressArr.filter((e, i) => i > 0).join('-')}`
+                ? `${getCityPath(addressArr[0], item.scope)}-${addressArr.filter((e, i) => i > 0).join('-')}`
                 : '-';
             } else if (item.type === FieldTypeEnum.INDUSTRY) {
               value = field?.fieldValue ? getIndustryPath(field.fieldValue as string) : '-';

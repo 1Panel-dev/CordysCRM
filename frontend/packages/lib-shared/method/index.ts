@@ -439,9 +439,9 @@ export function findNodePathByKey<T>(
 /**
  * 根据 cityId 返回城市路径
  */
-export function getCityPath(cityId: string | null): string {
+export function getCityPath(cityId: string | null, scope?: string): string {
   if (!cityId) return '';
-  const nodePathObject = findNodePathByKey([CHINA_PCD, ...COUNTRIES_TREE], cityId, undefined, 'value');
+  const nodePathObject = findNodePathByKey(scope === 'CN' ? CHINA_PCD.children : [CHINA_PCD, ...COUNTRIES_TREE], cityId, undefined, 'value');
   const nodePathName = (nodePathObject?.treePath || []).map((item: any) => item.label);
   return nodePathName.length === 1 ? nodePathName[0] : nodePathName.join('/');
 }
