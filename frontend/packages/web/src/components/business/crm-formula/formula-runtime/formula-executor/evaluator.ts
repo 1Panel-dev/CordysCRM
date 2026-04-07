@@ -86,12 +86,11 @@ export function resolveFieldValue(rawVal: any, node: IRNode, ctx?: EvaluateConte
   const isEmptyString = typeof rawVal === 'string' && rawVal.trim() === '';
   const isEmptyValue = rawVal == null || rawVal === '' || isEmptyString;
 
-  if (isEmptyValue) {
-    // 只有流水号字段，在取不到值时保留占位符 ${name}
-    if (node.type === 'field' && meta?.fieldType === FieldTypeEnum.SERIAL_NUMBER) {
-      return `\${${ctx?.getFieldMeta?.(node.fieldId)?.name || node.fieldId}}`;
-    }
+  if (node.type === 'field' && meta?.fieldType === FieldTypeEnum.SERIAL_NUMBER && !meta?.resourceFieldId) {
+    return `\${${ctx?.getFieldMeta?.(node.fieldId)?.name || node.fieldId}}`;
+  }
 
+  if (isEmptyValue) {
     if (meta?.valueType === 'date' || meta?.valueType === 'number') {
       return null;
     }

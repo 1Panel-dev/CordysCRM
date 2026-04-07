@@ -58,6 +58,8 @@ export interface FieldMeta {
   name: string;
   fieldType: FieldTypeEnum;
   numberType?: 'number' | 'percent';
+  defaultValueType?: 'custom' | 'formula';
+  resourceFieldId?: string;
 }
 
 export type FieldTypeMap = Record<string, FieldMeta>;

@@ -31,15 +31,28 @@ export function getValueType(field: FormCreateField): ValueType {
 }
 
 function buildFieldTypeInfo(field: FormCreateField): FieldMeta {
-  return {
+  const baseInfo = {
     valueType: getValueType(field),
     fieldType: field.type,
     name: field.name,
-    ...(field.type === FieldTypeEnum.INPUT_NUMBER
-      ? {
-          numberType: field.numberFormat === 'percent' ? 'percent' : 'number',
-        }
-      : {}),
+    resourceFieldId: field.resourceFieldId,
+  };
+
+  const typeSpecificInfo: Record<string, any> = {
+    [FieldTypeEnum.INPUT_NUMBER]: {
+      numberType: field.numberFormat === 'percent' ? 'percent' : 'number',
+    },
+    [FieldTypeEnum.SERIAL_NUMBER]: {
+      defaultValueType: field.prefixType,
+    },
+    [FieldTypeEnum.INPUT]: {
+      defaultValueType: field.defaultValueType,
+    },
+  };
+
+  return {
+    ...baseInfo,
+    ...(typeSpecificInfo[field.type] || {}),
   };
 }
 
