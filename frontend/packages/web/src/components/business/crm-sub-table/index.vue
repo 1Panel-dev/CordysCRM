@@ -22,7 +22,7 @@
   import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
+  import { formatTimeValue, getCityPath, getGenerateId, getIndustryPath } from '@lib/shared/method';
   import {
     formatNumberValue,
     formatNumberValueToString,
@@ -182,8 +182,12 @@
     }
   }
 
+  const isProcessingDataSourceChange = ref(false);
+
   function makeNewRow() {
-    const newRow: Record<string, any> = {};
+    const newRow: Record<string, any> = {
+      id: getGenerateId(),
+    };
     props.subFields.forEach((field) => {
       const key = field.resourceFieldId ? field.id : field.businessKey || field.id;
       if (field.type === FieldTypeEnum.INPUT_NUMBER) {
@@ -205,8 +209,12 @@
   }
 
   function addLine() {
+    isProcessingDataSourceChange.value = true;
     const newRow = makeNewRow();
     data.value.push(newRow);
+    nextTick(() => {
+      isProcessingDataSourceChange.value = false;
+    });
   }
 
   function applyDataSourceShowFields(
@@ -268,7 +276,6 @@
     );
   });
 
-  const isProcessingDataSourceChange = ref(false);
   function handleDataSourceChange(
     val: any[],
     source: Record<string, any>[],
@@ -659,8 +666,12 @@
               ghost: true,
               class: 'p-[8px_9px]',
               onClick: () => {
+                isProcessingDataSourceChange.value = true;
                 data.value.splice(rowIndex, 1);
                 emit('change', data.value);
+                nextTick(() => {
+                  isProcessingDataSourceChange.value = false;
+                });
               },
             },
             { default: () => h(CrmIcon, { type: 'iconicon_minus_circle1' }) }
