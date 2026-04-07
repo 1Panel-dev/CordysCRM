@@ -74,8 +74,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private static final String DETAIL_FIELD_PARAM_NAME = "moduleFields";
     private static final String PRICE_SUB_ROW_KEY = "price_sub";
 	public static final int MAX_NUMBER_LENGTH = 50;
+	private static final String REF_UNDERLINE = "_ref_";
 
-    /**
+	/**
      * 获取资源字段类型 (T)
      *
      * @return 资源字段类型
@@ -581,7 +582,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (sourceDetailMap.containsKey(DETAIL_FIELD_PARAM_NAME)) {
             List<Map> fvs = (List<Map>) sourceDetailMap.get(DETAIL_FIELD_PARAM_NAME);
             for (Map fv : fvs) {
-                if (field.getId().equals(fv.get("fieldId"))) {
+				String actualFieldId = field.getId().replace((field.getResourceFieldId() + REF_UNDERLINE), StringUtils.EMPTY);
+				if (Strings.CI.equals(actualFieldId, fv.get("fieldId").toString())) {
                     return fv.get("fieldValue");
                 }
             }

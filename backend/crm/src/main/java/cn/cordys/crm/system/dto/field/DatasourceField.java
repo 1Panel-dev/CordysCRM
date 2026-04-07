@@ -27,7 +27,7 @@ public class DatasourceField extends BaseField {
     @Schema(description = "过滤条件")
     private Map<String, Object> combineSearch;
 
-	@Schema(description = "显示字段")
+	@Schema(description = "显示字段ID集合, 前端用来映射引用字段")
 	private List<String> showFields;
 
 	@Schema(description = "引用的字段集合")
