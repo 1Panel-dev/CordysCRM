@@ -221,10 +221,12 @@
 
   function getInitialSelectedValue(options: FieldOption[]) {
     const savedValue = normalizeSelectedValue(props.value, options);
+    const defaultValue = getDefaultValue(options);
+
     if (savedValue.length > 0) {
-      return savedValue;
+      return Array.from(new Set([...defaultValue, ...savedValue]));
     }
-    return getDefaultValue(options);
+    return defaultValue;
   }
 
   const displayCount = computed(() => {
