@@ -58,7 +58,7 @@ public class FollowUpRecordController {
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     @Operation(summary = "跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody RecordHomePageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
         DeptDataPermissionDTO clueDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         DeptDataPermissionDTO customerDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),

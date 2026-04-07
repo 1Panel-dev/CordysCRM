@@ -5,6 +5,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.product.domain.Product;
 import cn.cordys.crm.product.dto.request.ProductEditRequest;
@@ -55,6 +56,7 @@ public class ProductController {
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
     @Operation(summary = "产品列表")
     public PagerWithOption<List<ProductListResponse>> list(@Validated @RequestBody ProductPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.PRODUCT.getKey());
         return productService.list(request, OrganizationContext.getOrganizationId());
     }
 

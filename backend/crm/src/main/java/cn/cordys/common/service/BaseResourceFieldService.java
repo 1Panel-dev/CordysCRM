@@ -74,7 +74,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private static final String DETAIL_FIELD_PARAM_NAME = "moduleFields";
     private static final String PRICE_SUB_ROW_KEY = "price_sub";
 	public static final int MAX_NUMBER_LENGTH = 50;
-	private static final String REF_UNDERLINE = "_ref_";
+	public static final String REF_UNDERLINE = "_ref_";
 
 	/**
      * 获取资源字段类型 (T)

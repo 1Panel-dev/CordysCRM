@@ -222,6 +222,10 @@ public abstract class BaseField {
 
 	@JsonIgnore
 	public String idOrBusinessKey() {
-		return this.getBusinessKey() != null ? this.getBusinessKey() : this.getId();
+		return hasBusinessKey() ? this.getBusinessKey() : this.getId();
 	}
+
+    public boolean hasBusinessKey() {
+        return StringUtils.isNotBlank(this.getBusinessKey());
+    }
 }

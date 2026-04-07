@@ -1,5 +1,6 @@
 package cn.cordys.crm.customer.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.chart.ChartResult;
@@ -51,7 +52,7 @@ public class PoolCustomerController {
     @Operation(summary = "客户列表")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ})
     public PagerWithOption<List<CustomerListResponse>> list(@Validated @RequestBody CustomerPageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         return customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
     }
 

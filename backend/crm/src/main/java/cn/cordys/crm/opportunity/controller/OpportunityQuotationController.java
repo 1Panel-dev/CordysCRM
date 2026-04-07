@@ -55,7 +55,7 @@ public class OpportunityQuotationController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "报价单列表")
     public PagerWithOption<List<OpportunityQuotationListResponse>> list(@Validated @RequestBody OpportunityQuotationPageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.QUOTATION.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_QUOTATION_READ);
         return opportunityQuotationService.list(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), deptDataPermission, false);

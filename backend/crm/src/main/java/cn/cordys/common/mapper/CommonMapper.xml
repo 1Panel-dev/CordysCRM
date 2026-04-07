@@ -520,4 +520,47 @@
             on ${tablePrefix}.user_id = ${mainTablePrefix}.owner
         </if>
     </sql>
+    
+    <sql id="refFieldConditionJoin">
+        <if test="!condition.refMainCustomField">
+            <if test="!condition.customField">
+                left join ${condition.refMainTableName} ${fieldTable}
+                on ${mainTableAlias}.${condition.refMainFieldName} = ${fieldTable}.id
+            </if>
+            <if test="condition.customField">
+                left join ${condition.refMainTableName} ${fieldTable}_main
+                on ${mainTableAlias}.${condition.refMainFieldName} = ${fieldTable}_main.id
+                left join
+                <if test="condition.multipleValue">
+                    ${condition.refMainTableName}_field_blob
+                </if>
+                <if test="!condition.multipleValue">
+                    ${condition.refMainTableName}_field
+                </if>
+                ${fieldTable}
+                on ${fieldTable}_main.id = ${fieldTable}.resource_id and ${fieldTable}.field_id = #{condition.name}
+            </if>
+        </if>
+        <if test="condition.refMainCustomField">
+            left join ${mainTable}_field ${fieldTable}_custom
+            on ${mainTableAlias}.id = ${fieldTable}_custom.resource_id and ${fieldTable}_custom.field_id = #{condition.refMainFieldName}
+            <if test="!condition.customField">
+                left join ${condition.refMainTableName} ${fieldTable}
+                on ${fieldTable}_custom.field_value = ${fieldTable}.id
+            </if>
+            <if test="condition.customField">
+                left join ${condition.refMainTableName} ${fieldTable}_main
+                on ${fieldTable}_custom.field_value = ${fieldTable}_main.id
+                left join
+                <if test="condition.multipleValue">
+                    ${condition.refMainTableName}_field_blob
+                </if>
+                <if test="!condition.multipleValue">
+                    ${condition.refMainTableName}_field
+                </if>
+                ${fieldTable}
+                on ${fieldTable}_main.id = ${fieldTable}.resource_id and ${fieldTable}.field_id = #{condition.name}
+            </if>
+        </if>
+    </sql>
 </mapper>

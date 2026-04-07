@@ -1,6 +1,8 @@
 package cn.cordys.common.dto.condition;
 
 import cn.cordys.common.constants.EnumValue;
+import cn.cordys.common.dto.SortRequest;
+import cn.cordys.common.exception.GenericException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -46,13 +48,20 @@ public class FilterCondition {
     @Schema(description = "包含新增子部门集合")
     private List<String> containChildIds;
 
+    public String getName() {
+        if (SortRequest.checkSqlInjection(name)) {
+            throw new GenericException("condition name illegal");
+        }
+        return name;
+    }
+
     /**
      * 校验条件是否合法，检查字段名称、操作符和值的有效性。
      *
      * @return 如果条件合法则返回 true，否则返回 false
      */
     public boolean valid() {
-        if (StringUtils.isBlank(name) || StringUtils.isBlank(operator)) {
+        if (StringUtils.isBlank(name) || StringUtils.isBlank(operator) || SortRequest.checkSqlInjection(name)) {
             return false;
         }
 

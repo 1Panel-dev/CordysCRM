@@ -65,7 +65,7 @@ public class CustomerContactController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "联系人列表")
     public PagerWithOption<List<CustomerContactListResponse>> list(@Validated @RequestBody CustomerContactPageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
         return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);

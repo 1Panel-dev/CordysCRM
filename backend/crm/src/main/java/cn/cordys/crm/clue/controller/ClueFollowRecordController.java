@@ -1,7 +1,9 @@
 package cn.cordys.crm.clue.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
@@ -56,6 +58,7 @@ public class ClueFollowRecordController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
         return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CLUE", "CLUE", null);
     }
 

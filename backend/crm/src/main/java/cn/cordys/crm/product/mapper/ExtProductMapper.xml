@@ -66,27 +66,39 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'name'
-                and condition.name != 'status'
-                and condition.name != 'price'
-                and condition.name != 'updateUser'
-                and condition.name != 'createTime'
-                and condition.name != 'updateTime'
-                and condition.name != 'createUser'
-                and condition.name != 'update_user'
-                and condition.name != 'create_time'
-                and condition.name != 'update_time'
-                and condition.name != 'create_user'
-                ">
-                    <if test="condition.multipleValue">
-                        inner join product_field_blob ${tablePrefix}_${i}
-                        on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
-                    </if>
-                    <if test="!condition.multipleValue">
-                        inner join product_field ${tablePrefix}_${i}
-                        on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
-                    </if>
-                </if>
+                <choose>
+                    <when test="condition.refFiled">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
+                            <property name="condition" value="condition"/>
+                            <property name="mainTable" value="product"/>
+                            <property name="mainTableAlias" value="p"/>
+                            <property name="fieldTable" value="${tablePrefix}_${i}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <if test="condition.name != 'name'
+                            and condition.name != 'status'
+                            and condition.name != 'price'
+                            and condition.name != 'updateUser'
+                            and condition.name != 'createTime'
+                            and condition.name != 'updateTime'
+                            and condition.name != 'createUser'
+                            and condition.name != 'update_user'
+                            and condition.name != 'create_time'
+                            and condition.name != 'update_time'
+                            and condition.name != 'create_user'
+                            ">
+                            <if test="condition.multipleValue">
+                                inner join product_field_blob ${tablePrefix}_${i}
+                                on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                            <if test="!condition.multipleValue">
+                                inner join product_field ${tablePrefix}_${i}
+                                on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                        </if>
+                    </otherwise>
+                </choose>
             </foreach>
         </if>
     </sql>
@@ -157,6 +169,7 @@
                     <include refid="condition">
                         <property name="condition" value="condition"/>
                         <property name="fieldTable" value="filter_${i}.field_value"/>
+                        <property name="table" value="filter_${i}"/>
                     </include>
                 </foreach>
             </trim>
@@ -165,35 +178,55 @@
 
     <sql id="condition">
         <choose>
-            <when test="condition.name == 'name'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="p.name"/>
-                </include>
-            </when>
-            <when test="condition.name == 'status'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="p.status"/>
-                </include>
-            </when>
-            <when test="condition.name == 'price'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="p.price"/>
-                </include>
-            </when>
-            <when test="condition.name == 'createUser'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="p.create_user"/>
-                </include>
+            <when test="condition.refFiled">
+                <choose>
+                    <when test="!condition.customField">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${table}.${condition.name}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
             </when>
             <otherwise>
-                <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="${fieldTable}"/>
-                </include>
+                <choose>
+                    <when test="condition.name == 'name'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="p.name"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'status'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="p.status"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'price'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="p.price"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'createUser'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="p.create_user"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
             </otherwise>
         </choose>
     </sql>

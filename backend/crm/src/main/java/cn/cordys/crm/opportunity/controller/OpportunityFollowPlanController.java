@@ -1,7 +1,9 @@
 package cn.cordys.crm.opportunity.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
@@ -49,6 +51,7 @@ public class OpportunityFollowPlanController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机跟进计划列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
         return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", null);
     }
 

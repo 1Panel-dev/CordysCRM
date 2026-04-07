@@ -54,7 +54,7 @@ public class ContractInvoiceController {
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "列表")
     public PagerWithOption<List<ContractInvoiceListResponse>> list(@Validated @RequestBody ContractInvoicePageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
         return contractInvoiceService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);

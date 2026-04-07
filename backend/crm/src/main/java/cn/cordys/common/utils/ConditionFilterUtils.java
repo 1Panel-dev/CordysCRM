@@ -10,15 +10,21 @@ import cn.cordys.common.dto.chart.ChartValueAxisDbParam;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.dto.condition.FilterDBCondition;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.service.BaseResourceFieldService;
+import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.*;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
+import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.DepartmentField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.mapper.ExtAttachmentMapper;
 import cn.cordys.crm.system.service.DepartmentService;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.UserViewService;
 import cn.cordys.security.SessionUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -27,10 +33,7 @@ import org.apache.commons.lang3.Strings;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static cn.cordys.common.utils.IndustryUtils.getIndustries;
@@ -68,6 +71,9 @@ public class ConditionFilterUtils {
 
         // 处理视图查询条件
         chartAnalysisDbRequest.setViewFilterCondition(getViewCondition(chartAnalysisDbRequest.getViewId()));
+
+        replaceDBCondition(fields, chartAnalysisDbRequest.getFilterCondition());
+        replaceDBCondition(fields, chartAnalysisDbRequest.getViewFilterCondition());
 
         // 处理高级搜索条件
         parseCondition(chartAnalysisDbRequest.getFilterCondition());
@@ -115,13 +121,106 @@ public class ConditionFilterUtils {
     }
 
     public static void parseCondition(BaseCondition baseCondition) {
+        parseCondition(baseCondition, null);
+    }
+
+    public static void parseCondition(BaseCondition baseCondition, String formKey) {
+        ModuleFormCacheService moduleFormCacheService = CommonBeanFactory.getBean(ModuleFormCacheService.class);
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
+        List<BaseField> fields = businessFormConfig.getFields();
+
         // 处理视图查询条件
         baseCondition.setViewCombineSearch(getViewCondition(baseCondition.getViewId()));
 
+        CombineSearch combineSearch = baseCondition.getCombineSearch();
+        CombineSearch viewCombineSearch = baseCondition.getViewCombineSearch();
+        
+        replaceFilterDBCondition(fields, baseCondition);
+        replaceDBCondition(fields, combineSearch);
+        replaceDBCondition(fields, viewCombineSearch);
+
         // 处理高级搜索条件
-        parseCondition(baseCondition.getCombineSearch());
+        parseCondition(combineSearch);
         // 处理视图筛选条件
-        parseCondition(baseCondition.getViewCombineSearch());
+        parseCondition(viewCombineSearch);
+    }
+
+    /**
+     * 将 FilterCondition 替换成 FilterDBCondition，并设置数据库查询相关属性
+     * @param fields
+     * @param combineSearch
+     */
+    private static void replaceDBCondition(List<BaseField> fields, CombineSearch combineSearch) {
+        if (combineSearch == null || CollectionUtils.isEmpty(combineSearch.getConditions())) {
+            return;
+        }
+        List<FilterCondition> conditions = combineSearch.getConditions();
+        replaceDBConditions(fields, conditions);
+        // 重新设置conditions
+        combineSearch.setConditions(conditions);
+    }
+
+    private static void replaceFilterDBCondition(List<BaseField> fields, BaseCondition baseCondition) {
+        if (baseCondition == null || CollectionUtils.isEmpty(baseCondition.getFilters())) {
+            return;
+        }
+        List<FilterCondition> conditions = baseCondition.getFilters();
+        replaceDBConditions(fields, conditions);
+        // 重新设置 filters
+        baseCondition.setFilters(conditions);
+    }
+
+    private static void replaceDBConditions(List<BaseField> fields, List<FilterCondition> conditions) {
+        Map<String, BaseField> fieldMap = fields.stream()
+                .collect(Collectors.toMap(BaseField::getId, field -> field));
+
+        for (int i = 0; i < conditions.size(); i++) {
+            FilterCondition condition = conditions.get(i);
+            // 将 FilterCondition 替换成 FilterDBCondition
+            FilterDBCondition dbCondition = BeanUtils.copyBean(new FilterDBCondition(), condition);
+            conditions.set(i, dbCondition);
+
+            BaseField baseField = fieldMap.get(condition.getName());
+            if (baseField != null) {
+                if (StringUtils.isBlank(baseField.getResourceFieldId())) {
+                    // 处理表单字段
+                    parseFilterDBCondition(dbCondition, baseField);
+                } else {
+                    // 处理显示字段
+                    BaseField refResourceField = fieldMap.get(baseField.getResourceFieldId());
+                    if (refResourceField != null && refResourceField instanceof DatasourceField datasourceField) {
+                        parseFilterDBCondition(dbCondition, baseField);
+                        if (baseField.hasBusinessKey()) {
+                            // 暂时只处理显示字段
+                            dbCondition.setName(CaseFormatUtils.camelToUnderscore(baseField.getBusinessKey()));
+                        } else {
+                            String actualFieldId = baseField.getId().replace((baseField.getResourceFieldId() + BaseResourceFieldService.REF_UNDERLINE), StringUtils.EMPTY);
+                            dbCondition.setName(actualFieldId);
+                        }
+                        dbCondition.setRefFiled(true);
+
+                        dbCondition.setRefMainFieldName(refResourceField.idOrBusinessKey());
+                        if (refResourceField.hasBusinessKey()) {
+                            dbCondition.setRefMainFieldName(CaseFormatUtils.camelToUnderscore(refResourceField.getBusinessKey()));
+                        } else {
+                            dbCondition.setRefMainFieldName(refResourceField.getId());
+                        }
+                        dbCondition.setRefMainCustomField(!refResourceField.hasBusinessKey());
+
+                        FieldSourceType fieldSourceType = EnumUtils.valueOf(FieldSourceType.class, datasourceField.getDataSourceType());
+                        String tableName = fieldSourceType.getTableName();
+                        dbCondition.setRefMainTableName(tableName);
+                    }
+                }
+            }
+        }
+    }
+
+    private static FilterDBCondition parseFilterDBCondition(FilterDBCondition dbCondition, BaseField baseField) {
+        dbCondition.setName(baseField.idOrBusinessKey());
+        dbCondition.setCustomField(!baseField.hasBusinessKey());
+        dbCondition.setMultipleValue(baseField.multiple());
+        return dbCondition;
     }
 
     private static void parseCondition(CombineSearch combineSearch) {
@@ -172,6 +271,7 @@ public class ConditionFilterUtils {
             }
         });
         replaceCurrentUser(validConditions);
+        combineSearch.setConditions(validConditions);
     }
 
     private static CombineSearch getViewCondition(String viewId) {
@@ -271,6 +371,6 @@ public class ConditionFilterUtils {
         if (CollectionUtils.isEmpty(conditions)) {
             return List.of();
         }
-        return conditions.stream().filter(FilterCondition::valid).toList();
+        return conditions.stream().filter(FilterCondition::valid).collect(Collectors.toList());
     }
 }
