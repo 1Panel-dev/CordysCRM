@@ -96,7 +96,9 @@
     const next = result.normalizedResult;
 
     if (Object.is(next, value.value)) return;
-    value.value = next;
+    const serialNumberPlaceholder = `\${${props.fieldConfig.name}}`;
+    const resultStr = props.fieldConfig.prefixType === 'formula' ? `${next}${serialNumberPlaceholder}` : next;
+    value.value = resultStr;
   }, 10);
 
   const displayValue = computed(() => (props.needInitDetail ? value.value : ''));
