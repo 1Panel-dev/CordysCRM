@@ -558,7 +558,7 @@ public class ModuleFormService {
      * @param orgId   组织ID
      * @return 平铺的字段集合
      */
-	@Cacheable(value = "field_cache", key = "#orgId + ':' + #formKey", unless = "#result == null")
+	@Cacheable(value = "field_cache", key = "#orgId + ':' + #formKey", unless = "#result == null or #orgId == null")
     public List<BaseField> getFlattenFormFields(String formKey, String orgId) {
         ModuleFormConfigDTO formConfig = getBusinessFormConfig(formKey, orgId);
         return flattenFormAllFields(formConfig);
