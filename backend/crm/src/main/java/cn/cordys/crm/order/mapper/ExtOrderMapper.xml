@@ -430,6 +430,7 @@
         FROM
         sales_order so
         LEFT JOIN contract c ON so.contract_id = c.id
+        LEFT JOIN customer cc ON so.customer_id = cc.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
