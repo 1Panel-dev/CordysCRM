@@ -1,5 +1,6 @@
 package cn.cordys.crm.clue.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.chart.ChartResult;
@@ -55,7 +56,7 @@ public class PoolClueController {
     @Operation(summary = "线索列表")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_READ})
     public PagerWithOption<List<ClueListResponse>> list(@Validated @RequestBody CluePageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null, false);
     }
 

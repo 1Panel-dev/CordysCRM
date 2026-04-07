@@ -5,49 +5,59 @@ public enum FieldSourceType {
     /**
      * 客户来源
      */
-    CUSTOMER,
+    CUSTOMER("customer"),
     /**
      * 线索
      */
-    CLUE,
+    CLUE("clue"),
     /**
      * 联系人来源
      */
-    CONTACT,
+    CONTACT("customer_contact"),
     /**
      * 商机来源
      */
-    OPPORTUNITY,
+    OPPORTUNITY("opportunity"),
     /**
      * 产品来源
      */
-    PRODUCT,
+    PRODUCT("product"),
 	/**
 	 * 价格来源
 	 */
-	PRICE,
+	PRICE("product_price"),
 	/**
 	 * 合同来源
 	 */
-	CONTRACT,
+	CONTRACT("contract"),
 	/**
 	 * 报价单来源
 	 */
-	QUOTATION,
+	QUOTATION("opportunity_quotation"),
 	/**
 	 * 回款计划
 	 */
-	PAYMENT_PLAN,
+	PAYMENT_PLAN("contract_payment_plan"),
 	/**
 	 * 工商抬头
 	 */
-	BUSINESS_TITLE,
+	BUSINESS_TITLE("business_title"),
 	/**
 	 * 回款记录
 	 */
-	CONTRACT_PAYMENT_RECORD,
+	CONTRACT_PAYMENT_RECORD("contract_payment_record"),
 	/**
 	 * 订单
 	 */
-	ORDER
+	ORDER("sales_order");
+
+	private String tableName;
+
+	FieldSourceType(String tableName) {
+		this.tableName = tableName;
+	}
+
+	public String getTableName() {
+		return tableName;
+	}
 }

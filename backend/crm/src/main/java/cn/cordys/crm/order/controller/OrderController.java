@@ -111,7 +111,7 @@ public class OrderController {
     @RequiresPermissions(PermissionConstants.ORDER_READ)
     @Operation(summary = "列表")
     public PagerWithOption<List<OrderListResponse>> list(@Validated @RequestBody OrderPageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.ORDER_READ);
         return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);

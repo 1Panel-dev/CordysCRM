@@ -65,7 +65,7 @@ public class ContractPaymentRecordController {
 	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
 	@Operation(summary = "回款记录列表")
 	public PagerWithOption<List<ContractPaymentRecordResponse>> list(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
-		ConditionFilterUtils.parseCondition(request);
+		ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
 		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);

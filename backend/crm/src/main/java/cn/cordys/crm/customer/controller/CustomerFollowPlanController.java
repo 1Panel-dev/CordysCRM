@@ -1,7 +1,9 @@
 package cn.cordys.crm.customer.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.dto.CustomerDataDTO;
@@ -50,6 +52,7 @@ public class CustomerFollowPlanController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户跟进计划列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
         CustomerDataDTO customerData = followUpPlanService.getCustomerPermission(SessionUtils.getUserId(),
                 request.getSourceId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER", customerData);

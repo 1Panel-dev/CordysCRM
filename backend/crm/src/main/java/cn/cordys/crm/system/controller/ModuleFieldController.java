@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BaseTreeNode;
@@ -9,6 +10,7 @@ import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
@@ -122,6 +124,7 @@ public class ModuleFieldController {
     @PostMapping("/source/lead")
     @Operation(summary = "分页获取线索")
     public Pager<List<ClueListResponse>> sourceCluePage(@Valid @RequestBody CluePageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
 				InternalUserView.ALL.name(), PermissionConstants.CLUE_MANAGEMENT_READ);
@@ -131,6 +134,7 @@ public class ModuleFieldController {
     @PostMapping("/source/account")
     @Operation(summary = "分页获取客户")
     public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody CustomerPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
 				InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
@@ -140,6 +144,7 @@ public class ModuleFieldController {
     @PostMapping("/source/contact")
     @Operation(summary = "分页获取联系人")
     public Pager<List<CustomerContactListResponse>> sourceContactPage(@Valid @RequestBody CustomerContactPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
 				InternalUserView.ALL.name(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
@@ -149,6 +154,7 @@ public class ModuleFieldController {
     @PostMapping("/source/opportunity")
     @Operation(summary = "分页获取商机")
     public Pager<List<OpportunityListResponse>> sourceOpportunityPage(@Valid @RequestBody OpportunityPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
@@ -158,6 +164,7 @@ public class ModuleFieldController {
     @PostMapping("/source/quotation")
     @Operation(summary = "分页获取报价单")
     public Pager<List<OpportunityQuotationListResponse>> sourceOpportunityQuotationPage(@Valid @RequestBody OpportunityQuotationPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.QUOTATION.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
@@ -168,6 +175,7 @@ public class ModuleFieldController {
     @Operation(summary = "分页获取合同")
     public Pager<List<ContractListResponse>> sourceContractPage(@Valid @RequestBody ContractPageRequest request) {
 		request.setFilters(ListUtils.union(contractService.getDefaultSourceFilters(), request.getFilters()));
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.CONTRACT_READ);
@@ -177,6 +185,7 @@ public class ModuleFieldController {
     @PostMapping("/source/product")
     @Operation(summary = "分页获取产品")
     public Pager<List<ProductListResponse>> sourceProductPage(@Valid @RequestBody ProductPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.PRODUCT.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
         // 数据源接口只展示上架数据
         request.setStatus("1");
@@ -186,6 +195,7 @@ public class ModuleFieldController {
     @PostMapping("/source/price")
     @Operation(summary = "分页获取产品价格表")
     public Pager<List<ProductPriceResponse>> sourceProductPage(@Valid @RequestBody ProductPricePageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.PRICE.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
         return productPriceService.list(request, OrganizationContext.getOrganizationId());
     }
@@ -193,6 +203,7 @@ public class ModuleFieldController {
     @PostMapping("/source/contract/payment-plan")
     @Operation(summary = "分页获取合同回款计划")
     public Pager<List<ContractPaymentPlanListResponse>> sourcePlanPage(@Valid @RequestBody ContractPaymentPlanPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
                 PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
@@ -202,7 +213,8 @@ public class ModuleFieldController {
 	@PostMapping("/source/contract/payment-record")
 	@Operation(summary = "分页获取合同回款记录")
 	public Pager<List<ContractPaymentRecordResponse>> sourceRecordPage(@Valid @RequestBody ContractPaymentRecordPageRequest request) {
-		request.setCombineSearch(request.getCombineSearch().convert());
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+        request.setCombineSearch(request.getCombineSearch().convert());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), InternalUserView.ALL.name(),
 				PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
 		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
@@ -211,7 +223,8 @@ public class ModuleFieldController {
 	@PostMapping("/source/order")
 	@Operation(summary = "列表")
 	public PagerWithOption<List<OrderListResponse>> list(@Validated @RequestBody OrderPageRequest request) {
-		request.setCombineSearch(request.getCombineSearch().convert());
+        ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
+        request.setCombineSearch(request.getCombineSearch().convert());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
 				InternalUserView.ALL.name(), PermissionConstants.ORDER_READ);
 		return orderService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);

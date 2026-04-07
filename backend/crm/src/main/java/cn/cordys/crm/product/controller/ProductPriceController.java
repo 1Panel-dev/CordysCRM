@@ -62,7 +62,7 @@ public class ProductPriceController {
     @RequiresPermissions(PermissionConstants.PRICE_READ)
     @Operation(summary = "价格列表")
     public PagerWithOption<List<ProductPriceResponse>> list(@Validated @RequestBody ProductPricePageRequest request) {
-		ConditionFilterUtils.parseCondition(request);
+		ConditionFilterUtils.parseCondition(request, FormKey.PRICE.getKey());
         return priceService.list(request, OrganizationContext.getOrganizationId());
     }
 

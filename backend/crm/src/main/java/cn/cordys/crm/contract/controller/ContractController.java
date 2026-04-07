@@ -125,7 +125,7 @@ public class ContractController {
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "列表")
     public PagerWithOption<List<ContractListResponse>> list(@Validated @RequestBody ContractPageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_READ);
         return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
@@ -164,7 +164,7 @@ public class ContractController {
     @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ})
     @Operation(summary = "合同详情-回款列表")
     public PagerWithOption<List<ContractPaymentPlanListResponse>> paymentPlanList(@Validated @RequestBody ContractDetailPaymentPlanPageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
@@ -175,7 +175,7 @@ public class ContractController {
     @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
     @Operation(summary = "合同详情-回款记录")
     public PagerWithOption<List<ContractPaymentRecordResponse>> paymentRecordList(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
@@ -237,7 +237,7 @@ public class ContractController {
     @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
     @Operation(summary = "合同详情-发票列表")
     public PagerWithOption<List<ContractInvoiceListResponse>> invoiceList(@Validated @RequestBody ContractDetailInvoicePageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_READ);
@@ -248,7 +248,7 @@ public class ContractController {
     @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.ORDER_READ})
     @Operation(summary = "合同详情-订单列表")
     public PagerWithOption<List<OrderListResponse>> invoiceList(@Validated @RequestBody ContractOrderPageRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
         request.setViewId(InternalUserView.ALL.name());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.ORDER_READ);

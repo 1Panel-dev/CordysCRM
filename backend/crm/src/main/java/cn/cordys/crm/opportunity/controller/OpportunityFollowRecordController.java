@@ -1,7 +1,9 @@
 package cn.cordys.crm.opportunity.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.dto.CustomerDataDTO;
@@ -47,6 +49,7 @@ public class OpportunityFollowRecordController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
         CustomerDataDTO customerData = followUpRecordService.getOpportunityPermission(SessionUtils.getUserId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", customerData);
     }

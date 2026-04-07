@@ -170,7 +170,7 @@
             <property name="conditions" value="request.combineSearch.conditions"/>
             <property name="tablePrefix" value="combine"/>
         </include>
-        <include refid="viewFieldConditionJoin">
+        <include refid="fieldConditionJoin">
             <property name="conditions" value="request.viewCombineSearch.conditions"/>
             <property name="tablePrefix" value="viewCombine"/>
         </include>
@@ -250,63 +250,45 @@
     </select>
 
     <sql id="fieldConditionJoin">
-        <if test="${conditions} != null and ${conditions}.size() > 0">
-            <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'content'
-                    and condition.name != 'owner' and condition.name != 'type'
-                    and condition.name != 'customerId' and condition.name != 'opportunityId'
-                    and condition.name != 'clueId' and condition.name != 'contactId'
-                    and condition.name != 'estimatedTime' and condition.name != 'method'
-                    and condition.name != 'status' and condition.name != 'converted'
-                    and condition.name != 'createTime' and condition.name != 'createUser'
-                    and condition.name != 'updateUser' and condition.name != 'updateTime'">
-                    <if test="condition.multipleValue">
-                        LEFT JOIN follow_up_plan_field_blob ${tablePrefix}_${i}
-                        ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
-                    </if>
-                    <if test="!condition.multipleValue">
-                        LEFT JOIN follow_up_plan_field ${tablePrefix}_${i}
-                        ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
-                    </if>
-                    <if test="condition.name == 'departmentId'">
-                        LEFT JOIN sys_organization_user sou ON fup.owner = sou.user_id
-                    </if>
-                    <if test="condition.name == 'phone'">
-                        LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
-                    </if>
+        <choose>
+            <when test="condition.refFiled">
+                <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
+                    <property name="condition" value="condition"/>
+                    <property name="mainTable" value="follow_up_plan"/>
+                    <property name="mainTableAlias" value="fup"/>
+                    <property name="fieldTable" value="${tablePrefix}_${i}"/>
+                </include>
+            </when>
+            <otherwise>
+                <if test="${conditions} != null and ${conditions}.size() > 0">
+                    <foreach collection="${conditions}" item="condition" index="i">
+                        <if test="condition.name != 'content'
+                            and condition.name != 'owner' and condition.name != 'type'
+                            and condition.name != 'customerId' and condition.name != 'opportunityId'
+                            and condition.name != 'clueId' and condition.name != 'contactId'
+                            and condition.name != 'estimatedTime' and condition.name != 'method'
+                            and condition.name != 'status' and condition.name != 'converted'
+                            and condition.name != 'createTime' and condition.name != 'createUser'
+                            and condition.name != 'updateUser' and condition.name != 'updateTime'">
+                            <if test="condition.multipleValue">
+                                LEFT JOIN follow_up_plan_field_blob ${tablePrefix}_${i}
+                                ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                            <if test="!condition.multipleValue">
+                                LEFT JOIN follow_up_plan_field ${tablePrefix}_${i}
+                                ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                            <if test="condition.name == 'departmentId'">
+                                LEFT JOIN sys_organization_user sou ON fup.owner = sou.user_id
+                            </if>
+                            <if test="condition.name == 'phone'">
+                                LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
+                            </if>
+                        </if>
+                    </foreach>
                 </if>
-            </foreach>
-        </if>
-    </sql>
-
-    <sql id="viewFieldConditionJoin">
-        <if test="${conditions} != null and ${conditions}.size() > 0">
-            <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'content'
-                    and condition.name != 'owner' and condition.name != 'type'
-                    and condition.name != 'customerId' and condition.name != 'opportunityId'
-                    and condition.name != 'clueId' and condition.name != 'contactId'
-                    and condition.name != 'estimatedTime' and condition.name != 'method'
-                    and condition.name != 'status' and condition.name != 'converted'
-                    and condition.name != 'createTime' and condition.name != 'createUser'
-                    and condition.name != 'updateUser' and condition.name != 'updateTime'">
-                    <if test="condition.multipleValue">
-                        LEFT JOIN follow_up_plan_field_blob ${tablePrefix}_${i}
-                        ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
-                    </if>
-                    <if test="!condition.multipleValue">
-                        LEFT JOIN follow_up_plan_field ${tablePrefix}_${i}
-                        ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
-                    </if>
-                    <if test="condition.name == 'departmentId'">
-                        LEFT JOIN sys_organization_user sou ON fup.owner = sou.user_id
-                    </if>
-                    <if test="condition.name == 'phone'">
-                        LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
-                    </if>
-                </if>
-            </foreach>
-        </if>
+            </otherwise>
+        </choose>
     </sql>
 
     <sql id="fieldSortJoin">
@@ -329,6 +311,7 @@
                     <include refid="condition">
                         <property name="condition" value="condition"/>
                         <property name="fieldTable" value="filter_${i}.field_value"/>
+                        <property name="table" value="filter_${i}"/>
                     </include>
                 </foreach>
             </trim>
@@ -375,113 +358,133 @@
 
     <sql id="condition">
         <choose>
-            <when test="condition.name == 'content'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.content"/>
-                </include>
-            </when>
-            <when test="condition.name == 'type'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.type"/>
-                </include>
-            </when>
-            <when test="condition.name == 'owner'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.owner"/>
-                </include>
-            </when>
-            <when test="condition.name == 'customerId'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.customer_id"/>
-                </include>
-            </when>
-            <when test="condition.name == 'opportunityId'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.opportunity_id"/>
-                </include>
-            </when>
-            <when test="condition.name == 'clueId'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.clue_id"/>
-                </include>
-            </when>
-            <when test="condition.name == 'contactId'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.contact_id"/>
-                </include>
-            </when>
-            <when test="condition.name == 'method'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.method"/>
-                </include>
-            </when>
-            <when test="condition.name == 'estimatedTime'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.estimated_time"/>
-                </include>
-            </when>
-            <when test="condition.name == 'status'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.status"/>
-                </include>
-            </when>
-            <when test="condition.name == 'converted'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.converted"/>
-                </include>
-            </when>
-            <when test="condition.name == 'createUser'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.create_user"/>
-                </include>
-            </when>
-            <when test="condition.name == 'createTime'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.create_time"/>
-                </include>
-            </when>
-            <when test="condition.name == 'updateUser'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.update_user"/>
-                </include>
-            </when>
-            <when test="condition.name == 'updateTime'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="fup.update_time"/>
-                </include>
-            </when>
-            <when test="condition.name == 'departmentId'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="sou.department_id"/>
-                </include>
-            </when>
-            <when test="condition.name == 'phone'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="cc.phone"/>
-                </include>
+            <when test="condition.refFiled">
+                <choose>
+                    <when test="!condition.customField">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${table}.${condition.name}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
             </when>
             <otherwise>
-                <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="${fieldTable}"/>
-                </include>
+                <choose>
+                    <when test="condition.name == 'content'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.content"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'type'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.type"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'owner'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.owner"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'customerId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.customer_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'opportunityId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.opportunity_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'clueId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.clue_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'contactId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.contact_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'method'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.method"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'estimatedTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.estimated_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'status'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.status"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'converted'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.converted"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'createUser'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.create_user"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'createTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.create_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'updateUser'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.update_user"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'updateTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fup.update_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'departmentId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="sou.department_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'phone'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="cc.phone"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
             </otherwise>
         </choose>
     </sql>
