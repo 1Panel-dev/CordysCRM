@@ -1027,17 +1027,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 				// 流水号作为业务字段, 从业务资源中获取前缀值
 				Object serialNoPrefix = getResourceFieldValue(resource, field.getBusinessKey());
 				String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(
-						serialNoPrefix != null ? serialNoPrefix.toString() : StringUtils.EMPTY), orgId, getFormKey());
+						serialNoPrefix != null ? serialNoPrefix.toString().replace("${" + field.getName() + "}", StringUtils.EMPTY) : StringUtils.EMPTY),
+						orgId, getFormKey());
 				// 业务流水号字段过长, SQL错误
 				if (serialNo.length() > MAX_NUMBER_LENGTH) {
 					throw new GenericException(Translator.get("number.length.exceed"));
 				}
 				setResourceFieldValue(resource, field.getBusinessKey(), serialNo);
-				if (serialNoPrefix != null && StringUtils.isNotEmpty(serialNoPrefix.toString())) {
-					serialNumCache.put(serialNoPrefix.toString(), serialNo);
-				} else {
-					serialNumCache.put("${" + field.getName() + "}", serialNo);
-				}
+				serialNumCache.put("${" + field.getName() + "}", serialNo);
 				return null;
 			} else {
 				// 流水号作为自定义字段, 需要统一生成.
@@ -1045,13 +1042,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 				fieldValue.setFieldId(field.getId());
 				BaseModuleFieldValue fv = fieldValueMap.get(field.getId());
 				String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(
-						(fv != null && fv.getFieldValue() != null) ? fv.getFieldValue().toString() : StringUtils.EMPTY), orgId, getFormKey());
+						(fv != null && fv.getFieldValue() != null) ? fv.getFieldValue().toString().replace("${" + field.getName() + "}", StringUtils.EMPTY) : StringUtils.EMPTY),
+						orgId, getFormKey());
 				fieldValue.setFieldValue(serialNo);
-				if (fv != null && fv.getFieldValue() != null) {
-					serialNumCache.put(fv.getFieldValue().toString(), serialNo);
-				} else {
-					serialNumCache.put("${" + field.getName() + "}", serialNo);
-				}
+				serialNumCache.put("${" + field.getName() + "}", serialNo);
 				return fieldValue;
 			}
         }
