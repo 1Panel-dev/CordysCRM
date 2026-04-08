@@ -215,6 +215,28 @@ public class ProductPriceService {
 		return response;
 	}
 
+	/**
+	 * 批量获取价格表详情 (用于数据源批量查询优化)
+	 * @param ids 价格表ID集合
+	 * @return 价格表详情列表
+	 */
+	public List<ProductPriceGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		List<ProductPrice> prices = productPriceMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(prices)) {
+			return Collections.emptyList();
+		}
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = productPriceFieldService.getResourceFieldMap(ids, true);
+
+		return prices.stream().map(price -> {
+			ProductPriceGetResponse response = BeanUtils.copyBean(new ProductPriceGetResponse(), price);
+			response.setModuleFields(fieldValueMap.get(price.getId()));
+			return response;
+		}).toList();
+	}
+
     /**
      * 删除价格表
      *

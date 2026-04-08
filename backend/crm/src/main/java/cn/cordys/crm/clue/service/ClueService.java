@@ -402,6 +402,31 @@ public class ClueService {
 		return clueGetResponse;
 	}
 
+	/**
+	 * 批量获取线索详情 (用于数据源批量查询优化)
+	 * @param ids 线索ID集合
+	 * @return 线索详情列表
+	 */
+	public List<ClueGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		// 批量查询资源基本信息
+		List<Clue> clues = clueMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(clues)) {
+			return Collections.emptyList();
+		}
+		// 批量查询自定义字段值
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
+
+		// 组装结果
+		return clues.stream().map(clue -> {
+			ClueGetResponse response = BeanUtils.copyBean(new ClueGetResponse(), clue);
+			response.setModuleFields(fieldValueMap.get(clue.getId()));
+			return response;
+		}).toList();
+	}
+
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Clue add(ClueAddRequest request, String userId, String orgId) {
         productService.checkProductList(request.getProducts());

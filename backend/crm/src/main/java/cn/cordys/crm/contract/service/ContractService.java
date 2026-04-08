@@ -289,6 +289,28 @@ public class ContractService {
 		return response;
 	}
 
+	/**
+	 * 批量获取合同详情 (用于数据源批量查询优化)
+	 * @param ids 合同ID集合
+	 * @return 合同详情列表
+	 */
+	public List<ContractGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		List<Contract> contracts = contractMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(contracts)) {
+			return Collections.emptyList();
+		}
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = contractFieldService.getResourceFieldMap(ids, true);
+
+		return contracts.stream().map(contract -> {
+			ContractGetResponse response = BeanUtils.copyBean(new ContractGetResponse(), contract);
+			response.setModuleFields(fieldValueMap.get(contract.getId()));
+			return response;
+		}).toList();
+	}
+
 
     /**
      * 编辑合同

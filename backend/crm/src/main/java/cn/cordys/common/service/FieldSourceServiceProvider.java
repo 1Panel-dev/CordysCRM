@@ -17,11 +17,15 @@ import cn.cordys.crm.system.constants.FieldSourceType;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -119,5 +123,33 @@ public class FieldSourceServiceProvider {
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public Object safeGetSimpleById(FieldSourceType type, String id) {
 		return executeServiceMethod(type, id, "getSimple");
+	}
+
+	/**
+	 * 批量获取数据源详情（挂起事务，防止下游方法异常回滚当前事务）
+	 *
+	 * @param type 数据源类型
+	 * @param ids  主键ID集合
+	 *
+	 * @return 数据对象列表
+	 */
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	@SuppressWarnings("unchecked")
+	public List<Object> batchGetSimpleByIds(FieldSourceType type, List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		Object service = getService(type);
+		if (service == null) {
+			log.error("数据源引用失败, 类型 {} 有误", type.name());
+			return Collections.emptyList();
+		}
+		try {
+			Method method = service.getClass().getMethod("batchGetSimpleByIds", List.class);
+			return (List<Object>) method.invoke(service, ids);
+		} catch (Exception e) {
+			log.error("批量获取数据源详情异常：type={}, ids={}, error={}", type.name(), ids, e.getMessage(), e);
+			return Collections.emptyList();
+		}
 	}
 }

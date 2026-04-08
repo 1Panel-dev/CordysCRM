@@ -403,6 +403,31 @@ public class CustomerService {
 		return response;
 	}
 
+	/**
+	 * 批量获取客户详情 (用于数据源批量查询优化)
+	 * @param ids 客户ID集合
+	 * @return 客户详情列表
+	 */
+	public List<CustomerGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		// 批量查询资源基本信息
+		List<Customer> customers = customerMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(customers)) {
+			return Collections.emptyList();
+		}
+		// 批量查询自定义字段值
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerFieldService.getResourceFieldMap(ids, true);
+
+		// 组装结果
+		return customers.stream().map(customer -> {
+			CustomerGetResponse response = BeanUtils.copyBean(new CustomerGetResponse(), customer);
+			response.setModuleFields(fieldValueMap.get(customer.getId()));
+			return response;
+		}).toList();
+	}
+
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Customer add(CustomerAddRequest request, String userId, String orgId) {
         Customer customer = BeanUtils.copyBean(new Customer(), request);
