@@ -26,6 +26,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
@@ -536,7 +537,7 @@ public class ContractPaymentRecordService {
      * @param deptDataPermission
      * @return
      */
-    public ContractPaymentRecordStatisticResponse searchStatistic(BaseCondition request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public ContractPaymentRecordStatisticResponse searchStatistic(ContractPaymentRecordStatisticRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         ContractPaymentRecordStatisticResponse response = extContractPaymentRecordMapper.searchStatistic(request, orgId, userId, deptDataPermission);
         return Optional.ofNullable(response).orElse(new ContractPaymentRecordStatisticResponse());
     }

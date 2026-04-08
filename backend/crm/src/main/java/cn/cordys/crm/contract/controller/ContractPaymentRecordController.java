@@ -13,10 +13,7 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.contract.domain.ContractPaymentRecord;
-import cn.cordys.crm.contract.dto.request.ContractPaymentRecordAddRequest;
-import cn.cordys.crm.contract.dto.request.ContractPaymentRecordExportRequest;
-import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
-import cn.cordys.crm.contract.dto.request.ContractPaymentRecordUpdateRequest;
+import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordStatisticResponse;
@@ -166,7 +163,7 @@ public class ContractPaymentRecordController {
 	@PostMapping("/statistic")
 	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
 	@Operation(summary = "回款统计")
-	public ContractPaymentRecordStatisticResponse searchStatistic(@Validated @RequestBody BaseCondition request) {
+	public ContractPaymentRecordStatisticResponse searchStatistic(@Validated @RequestBody ContractPaymentRecordStatisticRequest request) {
 		ConditionFilterUtils.parseCondition(request);
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
