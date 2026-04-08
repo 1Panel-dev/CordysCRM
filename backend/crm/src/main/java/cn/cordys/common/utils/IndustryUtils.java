@@ -23,7 +23,7 @@ public class IndustryUtils {
     /**
      * split str
      */
-    private static final String SPILT_STR = "-";
+    private static final String SPILT_STR = "/";
     private static SoftReference<List<IndustryDict>> industryRef;
 
     /**
@@ -77,6 +77,97 @@ public class IndustryUtils {
         List<IndustryDict> industries = getIndustries();
         boolean found = findRecursive(industries, findQueue, path, nameToCode);
         return found ? String.join(SPILT_STR, path) : StringUtils.EMPTY;
+    }
+
+    /**
+     * 编码转父子层级名称
+     * 例如: code=13 -> "制造业/农副食品加工业"
+     *
+     * @param code 字典值编码
+     * @return 父子层级的行业名称
+     */
+    public static String codeToParentLabel(String code) {
+        if (StringUtils.isBlank(code)) {
+            return StringUtils.EMPTY;
+        }
+
+        List<IndustryDict> industries = getIndustries();
+        List<String> path = new ArrayList<>();
+        boolean found = findParentPath(industries, code, path);
+
+        return found ? String.join(SPILT_STR, path) : StringUtils.EMPTY;
+    }
+
+    /**
+     * 名称转编码,只返回叶子节点编码
+     * 例如: name="制造业/农副食品加工业" -> "13"
+     *
+     * @param name 行业名称
+     * @return 叶子节点的编码
+     */
+    public static String nameToCodeOnlyLeaf(String name) {
+        if (StringUtils.isBlank(name)) {
+            return StringUtils.EMPTY;
+        }
+
+        Queue<String> findQueue = new LinkedList<>();
+        CollectionUtils.addAll(findQueue, name.split(SPILT_STR));
+        List<IndustryDict> industries = getIndustries();
+        String[] result = new String[1];
+        findLeafCode(industries, findQueue, result);
+        return result[0] != null ? result[0] : StringUtils.EMPTY;
+    }
+
+    /**
+     * 递归查找父级路径
+     */
+    private static boolean findParentPath(List<IndustryDict> industryTree, String code, List<String> path) {
+        if (CollectionUtils.isEmpty(industryTree)) {
+            return false;
+        }
+        for (IndustryDict industry : industryTree) {
+            // 先递归查找子节点
+            if (industry.getChildren() != null) {
+                List<String> childPath = new ArrayList<>();
+                if (findParentPath(industry.getChildren(), code, childPath)) {
+                    // 找到子节点, 将当前节点加入路径头部
+                    path.add(industry.getLabel());
+                    path.addAll(childPath);
+                    return true;
+                }
+            }
+            // 匹配当前节点
+            if (Strings.CS.equals(industry.getValue(), code)) {
+                path.add(industry.getLabel());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 递归查找叶子节点编码
+     */
+    private static void findLeafCode(List<IndustryDict> industryTree, Queue<String> findQueue, String[] result) {
+        if (CollectionUtils.isEmpty(industryTree) || findQueue.isEmpty()) {
+            return;
+        }
+        String current = findQueue.peek();
+        for (IndustryDict industry : industryTree) {
+            if (Strings.CS.equals(industry.getLabel(), current)) {
+                findQueue.poll();
+                if (findQueue.isEmpty()) {
+                    // 找到目标, 记录编码
+                    result[0] = industry.getValue();
+                    return;
+                }
+                // 继续查找子节点
+                if (industry.getChildren() != null) {
+                    findLeafCode(industry.getChildren(), findQueue, result);
+                }
+                return;
+            }
+        }
     }
 
     /**

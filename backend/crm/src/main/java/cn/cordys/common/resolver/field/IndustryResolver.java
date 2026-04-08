@@ -15,11 +15,11 @@ public class IndustryResolver extends AbstractModuleFieldResolver<IndustryField>
 
     @Override
     public Object transformToValue(IndustryField field, String value) {
-        return IndustryUtils.mapping(value, false);
+        return IndustryUtils.codeToParentLabel(value);
     }
 
     @Override
     public Object textToValue(IndustryField field, String text) {
-        return IndustryUtils.mapping(text, true);
+        return IndustryUtils.nameToCodeOnlyLeaf(text);
     }
 }

@@ -21,7 +21,6 @@ import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -45,7 +44,6 @@ import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
-import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
@@ -940,4 +938,22 @@ public class ContractService {
         ContractStatisticResponse response = extContractMapper.searchStatistic(request, orgId, userId, deptDataPermission);
         return Optional.ofNullable(response).orElse(new ContractStatisticResponse());
     }
+
+	/**
+	 * 通过ID集合获取合同名称
+	 *
+	 * @param ids id集合
+	 * @return 合同名称
+	 */
+	public Object getContractNameByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return StringUtils.EMPTY;
+		}
+		List<Contract> contracts = contractMapper.selectByIds(ids);
+		if (CollectionUtils.isNotEmpty(contracts)) {
+			List<String> names = contracts.stream().map(Contract::getName).toList();
+			return String.join(",", names);
+		}
+		return StringUtils.EMPTY;
+	}
 }
