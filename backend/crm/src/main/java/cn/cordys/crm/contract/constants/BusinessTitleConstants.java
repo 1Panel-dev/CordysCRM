@@ -14,7 +14,8 @@ public enum BusinessTitleConstants {
     PROVINCE("province", "省", "Province"),
     CITY("city", "市", "City"),
     SCALE("scale", "企业规模", "Scale"),
-    INDUSTRY("industry", "国标行业", "Industry");
+    INDUSTRY("industry", "国标行业", "Industry"),
+    REMARK("remark", "备注", "Remark");
 
     private final String key;
     private final String ch;
