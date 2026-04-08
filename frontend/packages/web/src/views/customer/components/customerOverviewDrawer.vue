@@ -121,7 +121,7 @@
         :source-id="props.sourceId"
         :name="sourceName"
         type="warning"
-        @refresh="emit('deleted')"
+        @refresh="handleRemoveSuccess"
       />
       <ContractDetailDrawer
         v-model:visible="showContractDetailDrawer"
@@ -391,6 +391,11 @@
   function handleOpenContractDrawer(params: { id: string }) {
     activeSourceId.value = params.id;
     showContractDetailDrawer.value = true;
+  }
+
+  function handleRemoveSuccess() {
+    show.value = false;
+    emit('deleted');
   }
 
   function handleOpenCustomerDrawer() {
