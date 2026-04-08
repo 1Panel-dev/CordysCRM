@@ -307,7 +307,6 @@
       );
       if (children.length === 0 && val.length > 0) {
         Message.warning(t('crm.subTable.repeatAdd'));
-        row[key] = [];
         return;
       }
       if (children.length === 0 || !source.some((s) => s.parentId)) {
@@ -677,6 +676,9 @@
               onClick: () => {
                 isProcessingDataSourceChange.value = true;
                 data.value.splice(rowIndex, 1);
+                if (data.value.length === 0) {
+                  sumInitialOptions = [];
+                }
                 emit('change', data.value);
                 nextTick(() => {
                   isProcessingDataSourceChange.value = false;
