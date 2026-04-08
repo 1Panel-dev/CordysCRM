@@ -86,7 +86,12 @@ export function resolveFieldValue(rawVal: any, node: IRNode, ctx?: EvaluateConte
   const isEmptyString = typeof rawVal === 'string' && rawVal.trim() === '';
   const isEmptyValue = rawVal == null || rawVal === '' || isEmptyString;
 
-  if (node.type === 'field' && meta?.fieldType === FieldTypeEnum.SERIAL_NUMBER && !meta?.resourceFieldId) {
+  if (
+    node.type === 'field' &&
+    meta?.fieldType === FieldTypeEnum.SERIAL_NUMBER &&
+    !meta?.resourceFieldId &&
+    !ctx?.needInitDetail
+  ) {
     return `\${${ctx?.getFieldMeta?.(node.fieldId)?.name || node.fieldId}}`;
   }
 

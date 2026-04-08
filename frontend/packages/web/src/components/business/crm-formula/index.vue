@@ -90,13 +90,13 @@
   // 根据公式实时计算 todo 等待优化
   const updateValue = debounce(() => {
     const { formula } = props.fieldConfig;
-
     const result = executeFormFormula({
       formula,
       path: props.path,
       formDetail: props.formDetail,
       fields: fieldList.value ?? [],
       formulaDataSource: formulaDataSource.value,
+      needInitDetail: props.needInitDetail,
       evaluationNow: evaluationNow.value,
       decimalPlaces: 2,
       warn: (msg: string) => {

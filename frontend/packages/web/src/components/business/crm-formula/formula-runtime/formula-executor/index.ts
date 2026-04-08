@@ -143,13 +143,13 @@ export function executeFormFormula(ctx: FormulaExecutorContext): FormulaExecutor
     formDetail,
     fields = [],
     formulaDataSource,
+    needInitDetail,
     evaluationNow,
     decimalPlaces = 2,
     expectedType,
     cloneIR = true,
     warn,
   } = ctx;
-
   const { ir } = safeParseFormula(formula ?? '');
 
   if (!ir) {
@@ -197,6 +197,7 @@ export function executeFormFormula(ctx: FormulaExecutorContext): FormulaExecutor
       return fieldTypeMap[fieldId];
     },
     resolveFieldRuntimeValue,
+    needInitDetail,
     warn: (msg: string) => {
       warn?.(msg);
     },

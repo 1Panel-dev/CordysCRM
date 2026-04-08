@@ -80,7 +80,7 @@
     :reason-key="ReasonTypeEnum.CLUE_POOL_RS"
     :source-id="sourceId"
     :name="sourceName"
-    @refresh="emit('remove')"
+    @refresh="handleMovedSuccess"
   />
   <convertClueModal v-model:show="showConvertClueModal" :clue-id="sourceId" @success="emit('remove')" />
 </template>
@@ -309,6 +309,11 @@
       enable: true,
     },
   ];
+
+  function handleMovedSuccess() {
+    show.value = false;
+    emit('remove');
+  }
 
   function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {
     sourceName.value = _sourceName || '';
