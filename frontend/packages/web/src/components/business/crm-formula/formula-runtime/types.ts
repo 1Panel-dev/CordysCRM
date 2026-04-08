@@ -88,7 +88,7 @@ export interface EvaluateContext {
   getTableColumnValues(path: string): number[];
   getFieldMeta?(fieldId: string): FieldMeta | undefined;
   resolveFieldRuntimeValue?(fieldId: string, rawValue: any): any;
-
+  needInitDetail?: boolean;
   warn?(msg: string): void;
 }
 
@@ -106,6 +106,7 @@ export interface FormulaExecutorContext {
   formDetail?: Record<string, any>;
   fields?: FormCreateField[];
   formulaDataSource: Record<string, any>;
+  needInitDetail?: boolean;
   evaluationNow?: any;
   decimalPlaces?: number;
   expectedType?: ValueType;
