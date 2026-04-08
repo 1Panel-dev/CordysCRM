@@ -128,7 +128,7 @@ export function flatAllFields(
       field.subFields.forEach((sub) => {
         result.push({
           ...sub,
-          name: `${field.name}.${sub.name}`,
+          name: options?.isSubTableRender ? sub.name : `${field.name}.${sub.name}`,
           id: options?.isSubTableRender ? resolveFieldId(sub, true) : `${field.id}.${resolveFieldId(sub, true)}`,
           parentId: field.id,
           parentName: field.name,

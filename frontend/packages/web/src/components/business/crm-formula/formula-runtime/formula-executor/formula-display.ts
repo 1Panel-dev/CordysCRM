@@ -1,3 +1,4 @@
+import { tokenizeFromSource } from '@/components/business/crm-formula-editor/parseSource/serializeFormulaFromAst';
 import { safeParseFormula } from '@/components/business/crm-formula-editor/utils';
 
 import { flatAllFields } from '../../utils';
@@ -8,6 +9,42 @@ export interface FormulaDisplayInfo {
   display: string;
   isInvalid: boolean;
   tooltip: string;
+}
+
+function buildFormulaDisplayFromSource(source: string, fields: FormCreateField[], isSubTableRender?: boolean) {
+  const flatFields = flatAllFields(fields, {
+    isSubTableRender,
+  });
+
+  const fieldMap = Object.fromEntries(flatFields.map((field) => [field.id, field]));
+  const tokens = tokenizeFromSource(source, fieldMap);
+
+  return tokens
+    .map((token) => {
+      switch (token.type) {
+        case 'field':
+          return token.name;
+        case 'function':
+          return token.name;
+        case 'string':
+          return `"${token.value}"`;
+        case 'boolean':
+          return token.value ? 'TRUE' : 'FALSE';
+        case 'number':
+          return String(token.value);
+        case 'comma':
+          return ',';
+        case 'paren':
+          return token.value;
+        case 'operator':
+          return ` ${token.value} `;
+        case 'unknown':
+          return token.value;
+        default:
+          return '';
+      }
+    })
+    .join('');
 }
 
 /**
@@ -36,7 +73,9 @@ export function getFormulaDisplayInfo(options: {
   }
 
   const parsed = safeParseFormula(formula);
-  const display = parsed.display ?? '';
+  const display = parsed.source
+    ? buildFormulaDisplayFromSource(parsed.source, fields, isSubTableRender) || parsed.display || ''
+    : parsed.display || '';
   const savedFields = parsed.fields?.map((e: any) => e.fieldId) ?? [];
 
   const isInvalid = savedFields.some((fieldId: string) => !allFieldIds.includes(fieldId));
