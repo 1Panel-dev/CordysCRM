@@ -303,10 +303,12 @@
     if (isPriceSubTableShowSubField && val.filter((e) => parents.some((p) => p.id === e)).length > 0) {
       // 价格表子表格特殊处理，需要填充多行
       const children = source.filter(
-        (s) => s.parentId && data.value.every((r) => r.price_sub !== s.id) // 过滤已存在的行
+        (s) => s.parentId && data.value.every((r) => r.price_sub !== s.id) && val.includes(s.id) // 过滤已存在的行
       );
       if (children.length === 0 && val.length > 0) {
         Message.warning(t('crm.subTable.repeatAdd'));
+        row[key] = [];
+        return;
       }
       if (children.length === 0 || !source.some((s) => s.parentId)) {
         // 没有选中子项或没有选中父项，都表示当前为清空
@@ -330,12 +332,16 @@
         }
         nextTick(() => {
           // 等待行添加完成后，给新增的行补充行号和选中价格表数据源
+          isProcessingDataSourceChange.value = true;
           for (let i = rowIndex + 1; i < rowIndex + children.length; i++) {
             const newRow = data.value[i];
             newRow.price_sub = children[i - rowIndex]?.id;
             newRow[key] = [children[i - rowIndex]?.parentId, newRow.price_sub]; // 选中值为父项以及当前行
             applyDataSourceShowFields(field, newRow[key], newRow, source, newRow.price_sub); // 回显价格表带出的显示字段
           }
+          nextTick(() => {
+            isProcessingDataSourceChange.value = false;
+          });
         });
       } else {
         // 单选行只有一个父级
@@ -353,6 +359,9 @@
             return 0;
           });
         applyDataSourceShowFields(field, row[key], row, source, row.price_sub);
+        nextTick(() => {
+          isProcessingDataSourceChange.value = false;
+        });
       }
     } else {
       row[key] = val.filter((e) => parents.some((p) => p.id === e)).length > 0 ? val : [];
@@ -361,14 +370,14 @@
         // 清空时把行号也清理
         row.price_sub = '';
       }
+      nextTick(() => {
+        isProcessingDataSourceChange.value = false;
+      });
     }
     sumInitialOptions = mergeUniqueOptions(
       sumInitialOptions,
       source.filter((s) => !sumInitialOptions.some((io) => io.id === s.id))
     );
-    nextTick(() => {
-      isProcessingDataSourceChange.value = false;
-    });
     emit('change', data.value);
   }
 
