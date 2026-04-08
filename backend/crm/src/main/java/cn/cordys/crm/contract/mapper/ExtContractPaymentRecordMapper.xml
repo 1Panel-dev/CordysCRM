@@ -369,6 +369,10 @@
             and cpr.owner = #{userId}
         </if>
 
+        <if test="request.contractId != null and request.contractId != ''">
+            and cpr.contract_id = #{request.contractId}
+        </if>
+
         <if test="request.keyword != null and request.keyword != ''">
             and (
             cpr.name like concat('%', #{request.keyword},'%')

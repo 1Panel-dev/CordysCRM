@@ -3,6 +3,7 @@ package cn.cordys.crm.contract.mapper;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
@@ -50,5 +51,5 @@ public interface ExtContractPaymentRecordMapper {
      */
     CustomerPaymentRecordStatisticResponse sumCustomerRecordAmount(@Param("customerId") String customerId, @Param("userId") String userId, @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    ContractPaymentRecordStatisticResponse searchStatistic(@Param("request") BaseCondition request, @Param("orgId") String orgId, @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+    ContractPaymentRecordStatisticResponse searchStatistic(@Param("request") ContractPaymentRecordStatisticRequest request, @Param("orgId") String orgId, @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }
