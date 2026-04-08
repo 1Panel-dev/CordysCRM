@@ -115,7 +115,13 @@ public class RegionUtils {
             return null;
         }
         List<RegionCode> regionCodes = getRegionCodes();
-        return getRegionFullName(code, regionCodes);
+        String regionName = getRegionFullName(code, regionCodes);
+        String detail = getDetail(codeStr);
+        if (StringUtils.isNotBlank(detail)) {
+            // 补充地址详情
+            return regionName + SPILT_STR + detail;
+        }
+        return regionName;
     }
 
     public static String getCode(String codeStr) {
@@ -124,6 +130,17 @@ public class RegionUtils {
         }
         String code = codeStr.split(SPILT_STR)[0];
         return StringUtils.isBlank(code) ? null : code;
+    }
+
+    public static String getDetail(String codeStr) {
+        if (StringUtils.isBlank(codeStr)) {
+            return null;
+        }
+        String[] split = codeStr.split(SPILT_STR);
+        if (split.length > 1) {
+            return split[1];
+        }
+        return null;
     }
 
     private static String getRegionFullName(String code, List<RegionCode> regionCodes) {
