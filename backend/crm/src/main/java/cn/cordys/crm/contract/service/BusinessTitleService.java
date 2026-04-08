@@ -263,6 +263,22 @@ public class BusinessTitleService {
 		return BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
 	}
 
+	/**
+	 * 批量获取工商抬头详情 (用于数据源批量查询优化)
+	 * @param ids 抬头ID集合
+	 * @return 工商抬头详情列表
+	 */
+	public List<BusinessTitleListResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		List<BusinessTitle> titles = businessTitleMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(titles)) {
+			return Collections.emptyList();
+		}
+		return titles.stream().map(title -> BeanUtils.copyBean(new BusinessTitleListResponse(), title)).toList();
+	}
+
 
     /**
      * 审核通过/不通过

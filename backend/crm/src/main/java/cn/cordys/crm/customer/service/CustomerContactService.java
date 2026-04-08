@@ -260,6 +260,28 @@ public class CustomerContactService {
 		return response;
 	}
 
+	/**
+	 * 批量获取联系人详情 (用于数据源批量查询优化)
+	 * @param ids 联系人ID集合
+	 * @return 联系人详情列表
+	 */
+	public List<CustomerContactGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		List<CustomerContact> contacts = customerContactMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(contacts)) {
+			return Collections.emptyList();
+		}
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.getResourceFieldMap(ids, true);
+
+		return contacts.stream().map(contact -> {
+			CustomerContactGetResponse response = BeanUtils.copyBean(new CustomerContactGetResponse(), contact);
+			response.setModuleFields(fieldValueMap.get(contact.getId()));
+			return response;
+		}).toList();
+	}
+
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.ADD, resourceName = "{#request.name}")
     public CustomerContact add(CustomerContactAddRequest request, String userId, String orgId) {
         CustomerContact customerContact = BeanUtils.copyBean(new CustomerContact(), request);

@@ -602,6 +602,31 @@ public class OpportunityService {
 		return response;
 	}
 
+	/**
+	 * 批量获取商机详情 (用于数据源批量查询优化)
+	 * @param ids 商机ID集合
+	 * @return 商机详情列表
+	 */
+	public List<OpportunityDetailResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		// 批量查询资源基本信息
+		List<Opportunity> opportunities = opportunityMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(opportunities)) {
+			return Collections.emptyList();
+		}
+		// 批量查询自定义字段值
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = opportunityFieldService.getResourceFieldMap(ids, true);
+
+		// 组装结果
+		return opportunities.stream().map(opportunity -> {
+			OpportunityDetailResponse response = BeanUtils.copyBean(new OpportunityDetailResponse(), opportunity);
+			response.setModuleFields(fieldValueMap.get(opportunity.getId()));
+			return response;
+		}).toList();
+	}
+
 
     /**
      * 标记商机阶段

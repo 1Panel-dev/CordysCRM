@@ -308,6 +308,28 @@ public class OpportunityQuotationService {
 		return response;
 	}
 
+	/**
+	 * 批量获取报价单详情 (用于数据源批量查询优化)
+	 * @param ids 报价单ID集合
+	 * @return 报价单详情列表
+	 */
+	public List<OpportunityQuotationGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		List<OpportunityQuotation> quotations = opportunityQuotationMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(quotations)) {
+			return Collections.emptyList();
+		}
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = opportunityQuotationFieldService.getResourceFieldMap(ids, true);
+
+		return quotations.stream().map(quotation -> {
+			OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), quotation);
+			response.setModuleFields(fieldValueMap.get(quotation.getId()));
+			return response;
+		}).toList();
+	}
+
     /**
      * 撤销审批
      *

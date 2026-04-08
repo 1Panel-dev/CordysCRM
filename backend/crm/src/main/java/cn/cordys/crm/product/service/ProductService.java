@@ -56,6 +56,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -158,6 +159,28 @@ public class ProductService {
 		List<BaseModuleFieldValue> fvs = productFieldService.getModuleFieldValuesByResourceId(id);
 		response.setModuleFields(fvs);
 		return response;
+	}
+
+	/**
+	 * 批量获取产品详情 (用于数据源批量查询优化)
+	 * @param ids 产品ID集合
+	 * @return 产品详情列表
+	 */
+	public List<ProductGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		List<Product> products = productBaseMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(products)) {
+			return Collections.emptyList();
+		}
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = productFieldService.getResourceFieldMap(ids, true);
+
+		return products.stream().map(product -> {
+			ProductGetResponse response = BeanUtils.copyBean(new ProductGetResponse(), product);
+			response.setModuleFields(fieldValueMap.get(product.getId()));
+			return response;
+		}).toList();
 	}
 
     @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")

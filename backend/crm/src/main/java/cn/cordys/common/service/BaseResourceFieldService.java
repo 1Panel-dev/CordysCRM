@@ -580,6 +580,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
         if (sourceDetailMap.containsKey(DETAIL_FIELD_PARAM_NAME)) {
             List<Map> fvs = (List<Map>) sourceDetailMap.get(DETAIL_FIELD_PARAM_NAME);
+			if (CollectionUtils.isEmpty(fvs)) {
+				return null;
+			}
             for (Map fv : fvs) {
                 if (field.getId().equals(fv.get("fieldId"))) {
                     return fv.get("fieldValue");
@@ -954,6 +957,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     @SuppressWarnings("unchecked")
     private void getSourceDetailMapByIds(List<BaseField> flattenFields, List<T> resourceFields) {
 
+        // 收集所有数据源字段的类型和ID映射关系
         var sourceIdType = flattenFields.stream()
                 .filter(f -> f instanceof DatasourceField ds && CollectionUtils.isNotEmpty(ds.getShowFields()))
                 .collect(Collectors.toMap(
@@ -962,29 +966,52 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         (prev, next) -> next
                 ));
 
+        // 按类型分组：遍历resourceFields找到每个id对应的type
+        Map<FieldSourceType, List<String>> groupedIds = new HashMap<>();
         resourceFields.stream()
                 .filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null)
                 .forEach(rf -> {
-                    var value = rf.getFieldValue().toString();
+                    String value = rf.getFieldValue().toString();
                     if (SourceDetailResolveContext.contains(value)) {
                         return;
                     }
-
-                    SourceDetailResolveContext.putPlaceholder(value);
                     try {
-                        var sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
-                        var detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, value);
-
-                        if (detail == null) {
-                            SourceDetailResolveContext.remove(value);
-                        } else {
-                            SourceDetailResolveContext.put(value, JSON.MAPPER.convertValue(detail, Map.class));
-                        }
+                        FieldSourceType sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
+                        groupedIds.computeIfAbsent(sourceType, k -> new ArrayList<>()).add(value);
                     } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                        SourceDetailResolveContext.remove(value);
+                        log.error("获取数据源类型异常: {}", e.getMessage());
                     }
                 });
+
+        // 批量查询每个类型的数据源详情
+        groupedIds.forEach((sourceType, ids) -> {
+            if (CollectionUtils.isEmpty(ids)) {
+                return;
+            }
+            // 去重
+            List<String> distinctIds = ids.stream().distinct().toList();
+            // 批量查询
+            List<Object> details = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, distinctIds);
+            if (CollectionUtils.isEmpty(details)) {
+                return;
+            }
+            // 存入缓存上下文
+            for (Object detail : details) {
+                if (detail == null) {
+                    continue;
+                }
+                try {
+                    // 通过反射获取ID字段
+                    Map<String, Object> detailMap = JSON.MAPPER.convertValue(detail, Map.class);
+                    Object idValue = detailMap.get("id");
+                    if (idValue != null) {
+                        SourceDetailResolveContext.put(idValue.toString(), detailMap);
+                    }
+                } catch (Exception e) {
+                    log.error("处理数据源详情异常: {}", e.getMessage());
+                }
+            }
+        });
     }
 
     /**

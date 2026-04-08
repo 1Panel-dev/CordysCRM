@@ -238,6 +238,28 @@ public class ContractPaymentRecordService {
 		return response;
 	}
 
+	/**
+	 * 批量获取回款记录详情 (用于数据源批量查询优化)
+	 * @param ids 回款记录ID集合
+	 * @return 回款记录详情列表
+	 */
+	public List<ContractPaymentRecordGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		List<ContractPaymentRecord> records = contractPaymentRecordMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(records)) {
+			return Collections.emptyList();
+		}
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = contractPaymentRecordFieldService.getResourceFieldMap(ids, true);
+
+		return records.stream().map(record -> {
+			ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), record);
+			response.setModuleFields(fieldValueMap.get(record.getId()));
+			return response;
+		}).toList();
+	}
+
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);

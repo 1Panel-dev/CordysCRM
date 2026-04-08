@@ -260,6 +260,28 @@ public class OrderService {
 		return response;
 	}
 
+	/**
+	 * 批量获取订单详情 (用于数据源批量查询优化)
+	 * @param ids 订单ID集合
+	 * @return 订单详情列表
+	 */
+	public List<OrderGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		List<Order> orders = orderMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(orders)) {
+			return Collections.emptyList();
+		}
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = orderFieldService.getResourceFieldMap(ids, true);
+
+		return orders.stream().map(order -> {
+			OrderGetResponse response = BeanUtils.copyBean(new OrderGetResponse(), order);
+			response.setModuleFields(fieldValueMap.get(order.getId()));
+			return response;
+		}).toList();
+	}
+
     /**
      * 编辑订单
      *

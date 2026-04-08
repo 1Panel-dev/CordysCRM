@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -225,6 +226,28 @@ public class ContractPaymentPlanService {
 		List<BaseModuleFieldValue> fvs = contractPaymentPlanFieldService.getModuleFieldValuesByResourceId(id);
 		response.setModuleFields(fvs);
 		return response;
+	}
+
+	/**
+	 * 批量获取回款计划详情 (用于数据源批量查询优化)
+	 * @param ids 计划ID集合
+	 * @return 回款计划详情列表
+	 */
+	public List<ContractPaymentPlanGetResponse> batchGetSimpleByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return Collections.emptyList();
+		}
+		List<ContractPaymentPlan> plans = contractPaymentPlanMapper.selectByIds(ids);
+		if (CollectionUtils.isEmpty(plans)) {
+			return Collections.emptyList();
+		}
+		Map<String, List<BaseModuleFieldValue>> fieldValueMap = contractPaymentPlanFieldService.getResourceFieldMap(ids, true);
+
+		return plans.stream().map(plan -> {
+			ContractPaymentPlanGetResponse response = BeanUtils.copyBean(new ContractPaymentPlanGetResponse(), plan);
+			response.setModuleFields(fieldValueMap.get(plan.getId()));
+			return response;
+		}).toList();
 	}
 
     @OperationLog(module = LogModule.CONTRACT_PAYMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")
