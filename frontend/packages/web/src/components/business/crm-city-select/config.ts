@@ -9111,6 +9111,10 @@ export const COUNTRIES_TREE: CascaderOption[] = [
     label: '突尼斯',
     value: 'TUN',
   },
+  {
+    label: '秘鲁',
+    value: 'PER',
+  },
 ];
 
 export function getCountriesByLevel(level?: 'C' | 'P' | 'PC' | 'PCD' | 'detail', scope?: 'CN' | 'ALL') {
