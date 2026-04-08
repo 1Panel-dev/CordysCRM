@@ -17,6 +17,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.EncryptUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.common.utils.BeanCopyUtils;
 import cn.cordys.crm.contract.constants.BusinessTitleType;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.BusinessTitle;
@@ -250,18 +251,19 @@ public class BusinessTitleService {
         return businessTitleListResponse;
     }
 
-	/**
-	 * 获取工商抬头详情 （⚠️反射调用; 勿修改入参, 返回, 方法名!）
-	 * @param id 抬头ID
-	 * @return 工商抬头详情
-	 */
-	public BusinessTitleListResponse getSimple(String id) {
-		BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
-		if (businessTitle == null) {
-			return null;
-		}
-		return BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
-	}
+    /**
+     * 获取工商抬头详情 （⚠️反射调用; 勿修改入参, 返回, 方法名!）
+     *
+     * @param id 抬头ID
+     * @return 工商抬头详情
+     */
+    public BusinessTitleListResponse getSimple(String id) {
+        BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
+        if (businessTitle == null) {
+            return null;
+        }
+        return BeanUtils.copyBean(new BusinessTitleListResponse(), businessTitle);
+    }
 
 
     /**
@@ -432,6 +434,7 @@ public class BusinessTitleService {
                             //2.setId 并更新
                             if (nameNap.containsKey(title.getName())) {
                                 BusinessTitle originTitle = nameNap.get(title.getName());
+                                BeanCopyUtils.fillEmptyFields(title, originTitle);
                                 title.setId(originTitle.getId());
                                 title.setUpdateTime(System.currentTimeMillis());
                                 title.setUpdateUser(userId);
