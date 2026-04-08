@@ -915,7 +915,13 @@ public class ModuleFormService {
         BusinessTitleConstants[] values = BusinessTitleConstants.values();
         for (BusinessTitleConstants constant : values) {
             InputField field = new InputField();
-            field.setId(constant.getKey());
+            if (constant == BusinessTitleConstants.NAME) {
+                // name 和其他字段的 businessKey 冲突
+                field.setId("business_title_" + constant.getKey());
+            } else {
+                // 其他字段不冲突，不处理，避免影响历史数据
+                field.setId(constant.getKey());
+            }
             field.setBusinessKey(constant.getKey());
             if (Locale.US.toString().equalsIgnoreCase(locale.toString())) {
                 field.setName(constant.getUs());
