@@ -118,6 +118,9 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.ORDER.name())) {
             return Objects.requireNonNull(orderService).getOrderName(value);
         }
+		if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
+			return Objects.requireNonNull(contractService).getContractName(value);
+		}
 
         return StringUtils.EMPTY;
     }
@@ -175,6 +178,10 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
             List<Order> orders = Objects.requireNonNull(orderService).getOrderListByNames(List.of(text));
             return CollectionUtils.isEmpty(orders) ? StringUtils.EMPTY : orders.getFirst().getId();
         }
+		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
+			List<Contract> contracts = Objects.requireNonNull(contractService).getContractListByNames(List.of(text));
+			return CollectionUtils.isEmpty(contracts) ? StringUtils.EMPTY : contracts.getFirst().getId();
+		}
         return text;
     }
 }
