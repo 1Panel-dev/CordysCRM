@@ -447,10 +447,10 @@ export function transformData({
       // 处理匹配不到 optionsMap 的数据源/成员/部门字段
       if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
         // 单选
-        customFieldAttr[field.fieldId] = [t('common.optionNotExist')];
+        customFieldAttr[field.fieldId] = field.fieldValue !== '' ? [t('common.optionNotExist')] : ['-'];
       } else {
         // 多选
-        customFieldAttr[field.fieldId] = field.fieldValue?.map(() => t('common.optionNotExist'));
+        customFieldAttr[field.fieldId] = field.fieldValue?.map((e) => (e !== '' ? [t('common.optionNotExist')] : '-'));
       }
     } else {
       // 其他类型字段，直接赋值
