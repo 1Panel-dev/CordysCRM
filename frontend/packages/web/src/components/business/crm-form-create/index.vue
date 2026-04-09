@@ -286,8 +286,20 @@
               ? currentSource?.[currentDatasourceFormField.businessKey]
               : currentSource?.moduleFields?.find((e: any) => e.fieldId === currentDatasourceFormField.id)?.fieldValue;
             if (currentSourceValue === undefined || currentSourceValue === null) {
-              formDetail.value[targetField.id] = currentSourceValue;
               targetField.initialOptions = [];
+              // 处理多选/单选值
+              if (multipleValueTypeList.includes(targetField.type) || targetField.type === FieldTypeEnum.DATA_SOURCE) {
+                formDetail.value[targetField.id] = [];
+              } else {
+                formDetail.value[targetField.id] = '';
+              }
+              if (targetField.showFields?.length) {
+                // 无值清空显示字段
+                const showFields = fieldList.value.filter((f) => targetField.showFields?.includes(f.id));
+                showFields.forEach((field) => {
+                  formDetail.value[field.id] = '';
+                });
+              }
               return;
             }
             // 如果有业务 key，则取业务 key 的值（specialBusinessKeyMap读取特殊业务字段值），否则取字段值

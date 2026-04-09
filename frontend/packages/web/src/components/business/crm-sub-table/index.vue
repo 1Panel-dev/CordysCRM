@@ -19,7 +19,12 @@
   import { isEqual } from 'lodash-es';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
-  import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import {
+    FieldDataSourceTypeEnum,
+    FieldRuleEnum,
+    FieldTypeEnum,
+    FormDesignKeyEnum,
+  } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatTimeValue, getCityPath, getGenerateId, getIndustryPath } from '@lib/shared/method';
@@ -183,6 +188,7 @@
   }
 
   const isProcessingDataSourceChange = ref(false);
+  const isProcessingDataSourceChangeMap = ref<Record<string, boolean>>({});
 
   function makeNewRow() {
     const newRow: Record<string, any> = {
@@ -284,11 +290,12 @@
     rowIndex: number,
     isPriceSubTableShowSubField?: boolean
   ) {
-    if (isProcessingDataSourceChange.value) {
+    const cellId = `${row.id}-${field.id}`;
+    if (isProcessingDataSourceChange.value || isProcessingDataSourceChangeMap.value[cellId]) {
       // 子表格添加多行会触发 change，避免重复处理
       return;
     }
-    isProcessingDataSourceChange.value = true;
+    isProcessingDataSourceChangeMap.value[cellId] = true;
     if (source.some((e) => e.isFormLinkFilled && val.includes(e.id))) {
       // 填充时已经有了价格表数据，需要回显字段
       const key = field.businessKey || field.id;
@@ -306,6 +313,7 @@
         emit('change', data.value);
         nextTick(() => {
           isProcessingDataSourceChange.value = false;
+          isProcessingDataSourceChangeMap.value[cellId] = false;
         });
         return;
       }
@@ -315,6 +323,7 @@
       }
       nextTick(() => {
         isProcessingDataSourceChange.value = false;
+        isProcessingDataSourceChangeMap.value[cellId] = false;
       });
       return;
     }
@@ -327,6 +336,8 @@
       );
       if (children.length === 0 && val.length > 0) {
         Message.warning(t('crm.subTable.repeatAdd'));
+        isProcessingDataSourceChange.value = false;
+        isProcessingDataSourceChangeMap.value[cellId] = false;
         return;
       }
       if (children.length === 0 || !source.some((s) => s.parentId)) {
@@ -334,10 +345,11 @@
         row[key] = [];
         row.price_sub = '';
         applyDataSourceShowFields(field, [], row, source, row.price_sub);
-        emit('change', data.value);
         nextTick(() => {
           isProcessingDataSourceChange.value = false;
+          isProcessingDataSourceChangeMap.value[cellId] = false;
         });
+        emit('change', data.value);
         return;
       }
       if (children.length > 1) {
@@ -351,7 +363,7 @@
         }
         nextTick(() => {
           // 等待行添加完成后，给新增的行补充行号和选中价格表数据源
-          isProcessingDataSourceChange.value = true;
+          isProcessingDataSourceChangeMap.value[cellId] = true;
           for (let i = rowIndex + 1; i < rowIndex + children.length; i++) {
             const newRow = data.value[i];
             newRow.price_sub = children[i - rowIndex]?.id;
@@ -360,6 +372,7 @@
           }
           nextTick(() => {
             isProcessingDataSourceChange.value = false;
+            isProcessingDataSourceChangeMap.value[cellId] = false;
           });
         });
       } else {
@@ -380,17 +393,19 @@
         applyDataSourceShowFields(field, row[key], row, source, row.price_sub);
         nextTick(() => {
           isProcessingDataSourceChange.value = false;
+          isProcessingDataSourceChangeMap.value[cellId] = false;
         });
       }
     } else {
       row[key] = val.filter((e) => parents.some((p) => p.id === e)).length > 0 ? val : [];
       applyDataSourceShowFields(field, val, row, source, row.price_sub);
-      if (row[key].length === 0) {
+      if (row[key].length === 0 && field.dataSourceType === FieldDataSourceTypeEnum.PRICE) {
         // 清空时把行号也清理
         row.price_sub = '';
       }
       nextTick(() => {
         isProcessingDataSourceChange.value = false;
+        isProcessingDataSourceChangeMap.value[cellId] = false;
       });
     }
     sumInitialOptions = mergeUniqueOptions(
