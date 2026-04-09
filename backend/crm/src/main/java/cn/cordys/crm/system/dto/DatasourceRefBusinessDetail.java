@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.dto;
 
+import cn.cordys.crm.contract.domain.BusinessTitle;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -10,10 +11,7 @@ import java.math.BigDecimal;
  * @author song-cc-rock
  */
 @Data
-public class DatasourceRefBusinessDetail {
-
-	@Schema(description = "名称")
-	private String name;
+public class DatasourceRefBusinessDetail extends BusinessTitle {
 
 	@Schema(description = "价格")
 	private BigDecimal price;
