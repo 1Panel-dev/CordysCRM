@@ -30,7 +30,7 @@ public class OpportunityFieldUtils {
         systemFieldMap.put("failureReason", data.getFailureReason());
 
         BaseField possible = fieldConfigMap.values().stream().filter(field -> Strings.CI.equals(field.getBusinessKey(), "possible")).findFirst().orElse(null);
-        if (possible != null) {
+        if (possible != null && data.getPossible() != null) {
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(possible.getType());
             systemFieldMap.put("possible", customFieldResolver.transformToValue(possible, data.getPossible().stripTrailingZeros().toPlainString()));
         }
