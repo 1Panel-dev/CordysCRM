@@ -770,10 +770,10 @@ public class ModuleFormService {
      * @param field 自定义字段
      */
     public void setFieldBusinessParam(BaseField field) {
-        Set<String> businessTitleKeySet = Arrays.stream(BusinessTitleConstants.values())
-                .map(BusinessTitleConstants::getKey)
+        Set<String> businessTitleIdSet = Arrays.stream(BusinessTitleConstants.values())
+                .map(BusinessTitleConstants::getId)
                 .collect(Collectors.toSet());
-        if (businessTitleKeySet.contains(field.getId())) {
+        if (businessTitleIdSet.contains(field.getId())) {
             return;
         }
 
@@ -916,13 +916,7 @@ public class ModuleFormService {
         BusinessTitleConstants[] values = BusinessTitleConstants.values();
         for (BusinessTitleConstants constant : values) {
             InputField field = new InputField();
-            if (constant == BusinessTitleConstants.NAME) {
-                // name 和其他字段的 businessKey 冲突
-                field.setId("business_title_" + constant.getKey());
-            } else {
-                // 其他字段不冲突，不处理，避免影响历史数据
-                field.setId(constant.getKey());
-            }
+            field.setId(constant.getId());
             field.setBusinessKey(constant.getKey());
             if (Locale.US.toString().equalsIgnoreCase(locale.toString())) {
                 field.setName(constant.getUs());
