@@ -39,4 +39,13 @@ public enum BusinessTitleConstants {
         return us;
     }
 
+    public String getId() {
+        if (this == BusinessTitleConstants.NAME) {
+            // name 和其他字段的 businessKey 冲突
+            return "business_title_" + getKey();
+        } else {
+            // 其他字段不冲突，不处理，避免影响历史数据
+            return getKey();
+        }
+    }
 }
