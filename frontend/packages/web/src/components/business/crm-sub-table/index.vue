@@ -288,16 +288,30 @@
       // 子表格添加多行会触发 change，避免重复处理
       return;
     }
+    isProcessingDataSourceChange.value = true;
     if (source.every((e) => e.isFormLinkFilled)) {
       // 填充时已经有了价格表数据，需要回显字段
       const key = field.businessKey || field.id;
+      if (val.length === 0 || (val.length === 1 && source.find((e) => e.id === val[0])?.parentId)) {
+        // 没有选中子项或没有选中父项，都表示当前为清空
+        row[key] = [];
+        row.price_sub = '';
+        applyDataSourceShowFields(field, [], row, source, row.price_sub);
+        emit('change', data.value);
+        nextTick(() => {
+          isProcessingDataSourceChange.value = false;
+        });
+        return;
+      }
       for (let i = 0; i < data.value.length; i++) {
         const newRow = data.value[i];
         applyDataSourceShowFields(field, newRow[key], newRow, source, newRow.price_sub); // 回显价格表带出的显示字段
       }
+      nextTick(() => {
+        isProcessingDataSourceChange.value = false;
+      });
       return;
     }
-    isProcessingDataSourceChange.value = true;
     const key = field.businessKey || field.id;
     const parents = source.filter((s) => !s.parentId);
     if (isPriceSubTableShowSubField && val.filter((e) => parents.some((p) => p.id === e)).length > 0) {
