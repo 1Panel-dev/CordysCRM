@@ -289,14 +289,20 @@
       return;
     }
     isProcessingDataSourceChange.value = true;
-    if (source.every((e) => e.isFormLinkFilled)) {
+    if (source.some((e) => e.isFormLinkFilled && val.includes(e.id))) {
       // 填充时已经有了价格表数据，需要回显字段
       const key = field.businessKey || field.id;
       if (val.length === 0 || (val.length === 1 && source.find((e) => e.id === val[0])?.parentId)) {
         // 没有选中子项或没有选中父项，都表示当前为清空
         row[key] = [];
         row.price_sub = '';
-        applyDataSourceShowFields(field, [], row, source, row.price_sub);
+        applyDataSourceShowFields(
+          field,
+          [],
+          row,
+          source.filter((e) => e.isFormLinkFilled),
+          row.price_sub
+        );
         emit('change', data.value);
         nextTick(() => {
           isProcessingDataSourceChange.value = false;

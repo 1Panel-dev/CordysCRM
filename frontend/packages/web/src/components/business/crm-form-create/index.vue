@@ -286,6 +286,7 @@
               ? currentSource?.[currentDatasourceFormField.businessKey]
               : currentSource?.moduleFields?.find((e: any) => e.fieldId === currentDatasourceFormField.id)?.fieldValue;
             if (currentSourceValue === undefined || currentSourceValue === null) {
+              formDetail.value[targetField.id] = currentSourceValue;
               targetField.initialOptions = [];
               return;
             }
