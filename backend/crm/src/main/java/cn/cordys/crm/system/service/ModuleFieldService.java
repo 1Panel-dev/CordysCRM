@@ -7,9 +7,11 @@ import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.contract.service.BusinessTitleService;
 import cn.cordys.crm.product.service.ProductPriceService;
 import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.crm.system.constants.FieldSourceType;
@@ -71,6 +73,7 @@ public class ModuleFieldService {
 
 		SOURCE_REF_CLASS.put(FieldSourceType.PRODUCT.name(), ProductService.class);
 		SOURCE_REF_CLASS.put(FieldSourceType.PRICE.name(), ProductPriceService.class);
+		SOURCE_REF_CLASS.put(FieldSourceType.BUSINESS_TITLE.name(), BusinessTitleService.class);
     }
 
     @Resource
@@ -163,16 +166,20 @@ public class ModuleFieldService {
 					continue;
 				}
 				DatasourceRefDTO dto = new DatasourceRefDTO();
-				dto.setId(id);
-				dto.setName(getField(res, "name", String.class));
-				dto.setModuleFields((List<BaseModuleFieldValue>) getField(res, "moduleFields", List.class));
-				dto.setProducts((List<Map<String, Object>>) getField(res, "products", List.class));
-				dto.setOptionMap((Map<String, List<OptionDTO>>) getField(res, "optionMap", Map.class));
-				dto.setStatus(getField(res, "status", String.class));
+				if (Strings.CI.equals(request.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
+					BeanUtils.copyBean(dto, res);
+				} else {
+					dto.setId(id);
+					dto.setName(getField(res, "name", String.class));
+					dto.setModuleFields((List<BaseModuleFieldValue>) getField(res, "moduleFields", List.class));
+					dto.setProducts((List<Map<String, Object>>) getField(res, "products", List.class));
+					dto.setOptionMap((Map<String, List<OptionDTO>>) getField(res, "optionMap", Map.class));
+					dto.setStatus(getField(res, "status", String.class));
 
-				if (Strings.CI.equals(request.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
-					// 产品需要获取系统价格字段
-					dto.setPrice(getField(res, "price", BigDecimal.class));
+					if (Strings.CI.equals(request.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
+						// 产品需要获取系统价格字段
+						dto.setPrice(getField(res, "price", BigDecimal.class));
+					}
 				}
 				result.add(dto);
 			}
