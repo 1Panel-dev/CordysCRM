@@ -2,6 +2,7 @@ package cn.cordys.common.utils;
 
 import cn.cordys.common.resolver.field.LocationResolver;
 import cn.cordys.common.util.JSON;
+import cn.cordys.crm.system.dto.field.LocationField;
 import cn.cordys.crm.system.dto.regioncode.RegionCode;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.collections4.CollectionUtils;
@@ -58,7 +59,8 @@ public class RegionUtils {
 
     /**
      * 映射地址与编码
-     * @param str 映射字符串
+     *
+     * @param str        映射字符串
      * @param nameToCode 是否名称转编码
      * @return 映射结果
      */
@@ -109,13 +111,20 @@ public class RegionUtils {
      * @param codeStr 地址编码
      * @return address
      */
-    public static String codeToName(String codeStr) {
+    public static String codeToName(String codeStr, LocationField locationField) {
         String code = getCode(codeStr);
         if (code == null) {
             return null;
         }
+        String regionName = "";
         List<RegionCode> regionCodes = getRegionCodes();
-        String regionName = getRegionFullName(code, regionCodes);
+        if (Strings.CS.equals("CN", locationField.getScope())) {
+            RegionCode chn = regionCodes.stream().filter(regionCode -> Strings.CS.equals(regionCode.getCode(), "CHN")).findFirst().get();
+            regionName = getRegionFullName(code, chn.getChildren());
+        } else {
+            regionName = getRegionFullName(code, regionCodes);
+        }
+
         String detail = getDetail(codeStr);
         if (StringUtils.isNotBlank(detail)) {
             // 补充地址详情

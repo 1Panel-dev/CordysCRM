@@ -21,7 +21,7 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
 
     @Override
     public Object transformToValue(LocationField locationField, String value) {
-        return RegionUtils.codeToName(value);
+        return RegionUtils.codeToName(value, locationField);
     }
 
     @Override

@@ -48,7 +48,7 @@ public class ContractInvoiceExportService extends BaseExportService {
         String orgId = exportDTO.getOrgId();
         PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize());
         //获取数据
-        List<ContractInvoiceListResponse> allList = extContractInvoiceMapper.list(pageRequest, orgId,  exportDTO.getUserId(), exportDTO.getDeptDataPermission());
+        List<ContractInvoiceListResponse> allList = extContractInvoiceMapper.list(pageRequest, orgId, exportDTO.getUserId(), exportDTO.getDeptDataPermission());
         List<ContractInvoiceListResponse> dataList = contractInvoiceService.buildList(allList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.INVOICE.getKey(), orgId);
 
@@ -85,7 +85,7 @@ public class ContractInvoiceExportService extends BaseExportService {
         systemFieldMap.put("amount", data.getAmount());
 
         BaseField taxRate = fieldConfigMap.values().stream().filter(field -> Strings.CI.equals(field.getBusinessKey(), "taxRate")).findFirst().orElse(null);
-        if (taxRate != null) {
+        if (taxRate != null && data.getTaxRate() != null) {
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(taxRate.getType());
             systemFieldMap.put("taxRate", customFieldResolver.transformToValue(taxRate, data.getTaxRate().stripTrailingZeros().toPlainString()));
         }
@@ -94,7 +94,7 @@ public class ContractInvoiceExportService extends BaseExportService {
 
         for (BaseField field : fieldConfigMap.values()) {
             if (Strings.CS.equals(BusinessModuleField.INVOICE_INVOICE_TYPE.getBusinessKey(), field.getBusinessKey())
-                && field instanceof SelectField invoiceTypeField) {
+                    && field instanceof SelectField invoiceTypeField) {
                 String invoiceTypeName = getOptionLabel(data.getInvoiceType(), invoiceTypeField.getOptions());
                 systemFieldMap.put("invoiceType", invoiceTypeName);
             }
