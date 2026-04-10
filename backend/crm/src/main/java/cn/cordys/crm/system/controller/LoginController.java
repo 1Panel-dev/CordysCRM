@@ -6,6 +6,7 @@ import cn.cordys.common.request.LoginRequest;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.util.rsa.RsaKey;
 import cn.cordys.common.util.rsa.RsaUtils;
+import cn.cordys.common.utils.IpUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.service.UserLoginService;
 import cn.cordys.security.SessionUser;
@@ -14,6 +15,7 @@ import cn.cordys.security.UserDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.validation.annotation.Validated;
@@ -79,7 +81,7 @@ public class LoginController {
      */
     @PostMapping(value = "/login")
     @Operation(summary = "登录")
-    public SessionUser login(@Validated @RequestBody LoginRequest request) {
+    public SessionUser login(@Validated @RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
         SessionUser sessionUser = SessionUtils.getUser();
         if (sessionUser != null) {
             // 如果当前用户已登录且用户名与请求用户名不匹配，抛出异常
@@ -89,6 +91,7 @@ public class LoginController {
         }
         // 设置认证方式为 LOCAL
         SecurityUtils.getSubject().getSession().setAttribute("authenticate", UserSource.LOCAL.name());
+        request.setLoginAddress(IpUtils.getClientIpAddress(httpServletRequest));
         return userLoginService.login(request);
     }
 
