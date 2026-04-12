@@ -11,6 +11,7 @@ import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.NodeSortDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.NodeSortUtils;
@@ -109,7 +110,7 @@ public class DepartmentService extends MoveNodeService {
 
     private void checkDepartmentName(String name, String parentId, String orgId) {
         if (extDepartmentMapper.countByName(name, parentId, orgId) > 0) {
-            throw new GenericException(Translator.get("department_name_exist"));
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, Translator.get("department_name_exist"));
         }
     }
 
@@ -152,7 +153,7 @@ public class DepartmentService extends MoveNodeService {
     private Department checkDepartment(String id) {
         Department department = departmentMapper.selectByPrimaryKey(id);
         if (department == null) {
-            throw new GenericException(Translator.get("department.blank"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("department.blank"));
         }
         return department;
     }
@@ -167,7 +168,7 @@ public class DepartmentService extends MoveNodeService {
     public void setCommander(DepartmentCommanderRequest request, String userId) {
         Department department = departmentMapper.selectByPrimaryKey(request.getDepartmentId());
         if (department == null) {
-            throw new GenericException(Translator.get("department.blank"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND, Translator.get("department.blank"));
         }
         // 获取原部门负责人
         String originCommander = setCommanderByDeptId(request.getDepartmentId());
@@ -229,7 +230,7 @@ public class DepartmentService extends MoveNodeService {
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public void delete(List<String> ids, String operator, String orgId) {
         if (!deleteCheck(ids, orgId)) {
-            throw new GenericException(Translator.get("department.employees.exist"));
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, Translator.get("department.employees.exist"));
         }
         List<Department> departmentList = departmentMapper.selectByIds(ids);
         //刪除部門
@@ -259,7 +260,7 @@ public class DepartmentService extends MoveNodeService {
             departmentList.forEach(department -> {
                 if (Strings.CI.equalsAny(department.getResource(), ThirdConfigTypeConstants.INTERNAL.name())
                         && Strings.CI.equalsAny(department.getParentId(), "NONE")) {
-                    throw new GenericException(Translator.get("department.internal"));
+                    throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, Translator.get("department.internal"));
                 }
             });
 
@@ -308,7 +309,7 @@ public class DepartmentService extends MoveNodeService {
             //当前节点部门名称
             String currentDepName;
             if (depNames.size() <= 1) {
-                throw new GenericException(Translator.get("department_create_fail") + ":" + path);
+                throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, Translator.get("department_create_fail") + ":" + path);
             } else {
                 itemIterator.next();
                 itemIterator.remove();
