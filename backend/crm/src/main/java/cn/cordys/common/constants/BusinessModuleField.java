@@ -198,7 +198,7 @@ public enum BusinessModuleField {
     /*------ end: PRODUCT ------*/
 
     /**
-     * 价格表单
+     * 价格表单 (修改价格子表格为自定义时, 注意处理对应详情解析逻辑)
      */
     PRICE_NAME("priceName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),
     PRICE_STATUS("priceStatus", "status", Set.of("rules.required", "mobile", "readable"), FormKey.PRICE.getKey()),

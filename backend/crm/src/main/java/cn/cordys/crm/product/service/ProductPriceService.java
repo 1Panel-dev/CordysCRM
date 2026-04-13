@@ -228,11 +228,15 @@ public class ProductPriceService {
 		if (CollectionUtils.isEmpty(prices)) {
 			return Collections.emptyList();
 		}
+		ModuleFormConfigDTO priceFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), prices.getFirst().getOrganizationId());
 		Map<String, List<BaseModuleFieldValue>> fieldValueMap = productPriceFieldService.getResourceFieldMap(ids, true);
 
 		return prices.stream().map(price -> {
 			ProductPriceGetResponse response = BeanUtils.copyBean(new ProductPriceGetResponse(), price);
-			response.setModuleFields(fieldValueMap.get(price.getId()));
+			List<BaseModuleFieldValue> fvs = fieldValueMap.get(price.getId());
+			if (CollectionUtils.isNotEmpty(fvs)) {
+				moduleFormService.processBusinessFieldValues(response, fvs, priceFormConf);
+			}
 			return response;
 		}).toList();
 	}
