@@ -2155,10 +2155,12 @@ public class ModuleFormService {
                                 return;
                             }
                             if (StringUtils.isNotEmpty(showFieldConf.getSubTableFieldId()) && sfv.containsKey(PRICE_SUB_ROW_KEY)) {
-                                Object matchVal = baseResourceFieldService.matchSubFieldValueOfDetailMap(
-                                        showFieldConf.idOrBusinessKey(), detailMap, showFieldConf.getSubTableFieldId(),
-                                        sfv.get(PRICE_SUB_ROW_KEY).toString()
-                                );
+								Object matchVal = baseResourceFieldService.matchSubFieldValueOfDetailMap(
+										showFieldConf.idOrBusinessKey(),
+										detailMap,
+										BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
+										sfv.get(PRICE_SUB_ROW_KEY).toString()
+								);
 
                                 if (matchVal != null) {
                                     showFieldMap.put(showFieldConf.getId(), matchVal);

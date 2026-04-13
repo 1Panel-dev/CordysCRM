@@ -603,25 +603,20 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @return 匹配值
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Object matchSubFieldValueOfDetailMap(String targetId, Map<String, Object> sourceDetail, String subKey, String rowKey) {
-		List<Map<String, Object>> mfMap = (List) sourceDetail.get("moduleFields");
-		if (CollectionUtils.isEmpty(mfMap)) {
+	public Object matchSubFieldValueOfDetailMap(String targetId, Map<String, Object> sourceDetail, String subKey, String rowKey) {
+		if (MapUtils.isEmpty(sourceDetail) || !sourceDetail.containsKey(subKey)) {
 			return null;
 		}
-		Map<String, Object> sourceFieldMap = mfMap.stream().collect(Collectors.toMap(m -> m.get("fieldId").toString(), m -> m.get("fieldValue")));
-		if (MapUtils.isEmpty(sourceFieldMap) || !sourceFieldMap.containsKey(subKey)) {
-            return null;
-        }
-        // 子表格数据集合
-        List<Map<String, Object>> rows = (List) sourceFieldMap.get(subKey);
-        for (Map<String, Object> row : rows) {
-            // 匹配行数据
-            if (row.containsKey(ROW_BIZ_ID) && Strings.CS.equals(rowKey, row.get(ROW_BIZ_ID).toString())) {
-                return row.get(targetId);
-            }
-        }
-        return null;
-    }
+		// 子表格数据集合
+		List<Map<String, Object>> rows = (List) sourceDetail.get(subKey);
+		for (Map<String, Object> row : rows) {
+			// 匹配行数据
+			if (row.containsKey(ROW_BIZ_ID) && Strings.CS.equals(rowKey, row.get(ROW_BIZ_ID).toString())) {
+				return row.get(targetId);
+			}
+		}
+		return null;
+	}
 
     /**
      * 删除指定资源的模块字段值
@@ -927,7 +922,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                     return;
                                 }
                                 if (StringUtils.isNotEmpty(showFieldConfig.getSubTableFieldId()) && rowMap.containsKey(PRICE_SUB_ROW_KEY)) {
-                                    Object matchVal = matchSubFieldValueOfDetailMap(showFieldConfig.idOrBusinessKey(), detailMap, showFieldConfig.getSubTableFieldId(),
+                                    Object matchVal = matchSubFieldValueOfDetailMap(showFieldConfig.idOrBusinessKey(), detailMap,  BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
                                             rowMap.get(PRICE_SUB_ROW_KEY).toString());
                                     if (matchVal != null) {
                                         rowMap.put(showFieldConfig.getId(), matchVal);
