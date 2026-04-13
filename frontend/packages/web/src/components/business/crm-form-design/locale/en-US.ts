@@ -96,6 +96,8 @@ export default {
   'crmFormDesign.dataSourceFilter': 'Data Filter',
   'crmFormDesign.dataSourceFilterSetting': 'Set Filter Conditions',
   'crmFormDesign.dataSourceFilterValuePlaceholder': 'Please select the current form field',
+  'crmFormDesign.dataSourceFilterMatchingFields': 'Matching Field',
+  'crmFormDesign.dataSourceFilterMatchingValue': 'Matching Value',
   'crmFormDesign.dataSourceFilterDataIndexPlaceholder': 'Please select {type} form field',
   'crmFormDesign.dataSourceFilterTip':
     'After adding filter conditions, only data that meets the conditions will be displayed',

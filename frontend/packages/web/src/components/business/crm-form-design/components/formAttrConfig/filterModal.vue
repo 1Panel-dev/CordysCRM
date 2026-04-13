@@ -98,6 +98,7 @@
             leftFieldId: undefined,
             leftFieldType: FieldTypeEnum.INPUT,
             operator: undefined,
+            matchType: 'MATCH_FIELD',
             rightFieldId: undefined,
             rightFieldCustom: false,
             rightFieldCustomValue: '',

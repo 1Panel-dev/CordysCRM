@@ -95,6 +95,8 @@ export default {
   'crmFormDesign.dataSourceFilter': '数据过滤',
   'crmFormDesign.dataSourceFilterSetting': '设置过滤条件',
   'crmFormDesign.dataSourceFilterValuePlaceholder': '请选择当前表单字段',
+  'crmFormDesign.dataSourceFilterMatchingFields': '匹配字段',
+  'crmFormDesign.dataSourceFilterMatchingValue': '匹配值',
   'crmFormDesign.dataSourceFilterDataIndexPlaceholder': '请选择{type}表单字段',
   'crmFormDesign.dataSourceFilterTip': '添加过滤条件后，仅展示符合条件的数据',
   'crmFormDesign.dataSourceFilterSetTip': '已设置 {count} 条过滤',

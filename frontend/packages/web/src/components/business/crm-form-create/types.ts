@@ -2,8 +2,10 @@ import type { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import type { ModuleField } from '@lib/shared/models/common';
 import type { CollaborationType } from '@lib/shared/models/customer';
+import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
 import type { FormItemRule } from 'naive-ui';
+import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 import type { Option } from 'naive-ui/es/transfer/src/interface';
 
 export interface FormCreateFieldOption extends Option {
@@ -22,15 +24,19 @@ export interface FormCreateFieldShowControlRule {
 }
 
 export type FormCreateFieldDateType = 'month' | 'date' | 'datetime';
+export type DataSourceMatchType = 'MATCH_FIELD' | 'MATCH_VALUE';
 
 export interface DataSourceFilterItem {
   leftFieldId: string | undefined; // 左侧字段id
   leftFieldType: FieldTypeEnum; // 左侧字段类型
   operator: OperatorEnum | undefined; // 操作符
+  matchType: DataSourceMatchType; // 匹配类型
   rightFieldId: string | undefined; // 右侧字段id
   rightFieldCustom?: boolean; // 右侧是否为自定义值
-  rightFieldCustomValue?: string; // 右侧自定义值
+  rightFieldCustomValue: any; // 右侧自定义值
   rightFieldType: FieldTypeEnum; // 右侧字段类型
+  selectedRows?: InternalRowData[];
+  selectedUserList?: SelectedUsersItem[];
 }
 
 export interface DataSourceFilterCombine {
