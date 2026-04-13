@@ -137,6 +137,12 @@
                     <property name="column" value="bt.industry"/>
                 </include>
             </when>
+            <when test="condition.name == 'remark'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.remark"/>
+                </include>
+            </when>
             <when test="condition.name == 'createTime'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
@@ -190,7 +196,7 @@
                 <choose>
                     <when test="${sort}.name in
                         {'name', 'type', 'create_time', 'update_time', 'identification_number', 'opening_bank', 'create_user', 'update_user', 'bank_account', 'registration_address',
-                         'phone_number', 'registered_capital', 'company_size', 'registration_number', 'approval_status', 'unapproved_reason', 'province', 'city', 'scale', 'industry'
+                         'phone_number', 'registered_capital', 'company_size', 'registration_number', 'approval_status', 'unapproved_reason', 'province', 'city', 'scale', 'industry', 'remark'
                         }">
                         bt.${sortName} ${sortType}, bt.id ASC
                     </when>
