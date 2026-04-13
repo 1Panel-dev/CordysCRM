@@ -241,6 +241,7 @@
       contactId: 'contactName',
       contractId: 'contractName',
       paymentPlanId: 'paymentPlanName',
+      opportunityId: 'opportunityName',
     };
     return keyMap[columnKey] || columnKey;
   }
