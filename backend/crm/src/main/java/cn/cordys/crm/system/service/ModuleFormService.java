@@ -815,24 +815,27 @@ public class ModuleFormService {
 				// 合并可能引用的字段属性 (数据源引用字段 & 价格表子表格字段)
 				reloadFieldMap.putAll(priceSubFieldMap);
 
-				ListIterator<BaseField> it = subField.getSubFields().stream().filter(f ->
-						StringUtils.isNotEmpty(f.getResourceFieldId()) && Strings.CI.equals(f.getResourceFieldId(), sf.getId()))
-						.toList().listIterator();
 				List<String> newRefIds = new ArrayList<>();
 				Function<String, String> refIdSplitter = splitRefId(sf.getId());
+				// 直接在原始 subFields 上操作，避免 .collect(Collectors.toList()) 创建新 List
+				ListIterator<BaseField> it = subField.getSubFields().listIterator();
 				while (it.hasNext()) {
-					BaseField oldRefField = it.next();
+					BaseField oldField = it.next();
+					// 只处理符合条件的引用字段
+					if (StringUtils.isEmpty(oldField.getResourceFieldId()) || !Strings.CI.equals(oldField.getResourceFieldId(), sf.getId())) {
+						continue;
+					}
 					// 兼容旧引用字段
-					String oldRefFieldId = refIdSplitter.apply(oldRefField.getId());
+					String oldRefFieldId = refIdSplitter.apply(oldField.getId());
 					BaseField refField = reloadFieldMap.get(oldRefFieldId);
 					if (refField == null) {
 						it.remove();
 						continue;
 					}
-					BaseField combineField = combineFieldsProps(oldRefField, refField);
+					BaseField combineField = combineFieldsProps(oldField, refField);
 					// 子表格的引用字段特殊属性
-					combineField.setBusinessKey(oldRefField.getBusinessKey());
-					combineField.setSubTableFieldId(oldRefField.getSubTableFieldId());
+					combineField.setBusinessKey(oldField.getBusinessKey());
+					combineField.setSubTableFieldId(oldField.getSubTableFieldId());
 					newRefIds.add(combineField.getId());
 					it.set(combineField);
 				}
@@ -888,8 +891,10 @@ public class ModuleFormService {
                 for (String showFieldKey : sourceField.getShowFields()) {
                     BaseField refField = reloadFieldMap.get(showFieldKey);
                     if (refField != null && !refFieldIds.contains(refField.getId())) {
-                        refField.setResourceFieldId(field.getId());
-                        sourceField.getRefFields().add(refField);
+                        // 深拷贝对象，避免修改原始对象
+                        BaseField clonedRef = JSON.parseObject(JSON.toJSONString(refField), BaseField.class);
+                        clonedRef.setResourceFieldId(field.getId());
+                        sourceField.getRefFields().add(clonedRef);
                     }
                 }
 
