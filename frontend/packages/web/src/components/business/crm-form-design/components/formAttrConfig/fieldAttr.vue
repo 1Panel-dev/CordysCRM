@@ -2,7 +2,10 @@
   <div class="p-[16px]">
     <div v-if="fieldConfig">
       <div class="crm-form-design-config-item">
-        <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.fieldTitle') }}</div>
+        <div class="flex items-center justify-between">
+          <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.fieldTitle') }}</div>
+          <CrmTag>{{ t(getFieldTypeName(fieldConfig.type) || '') }}</CrmTag>
+        </div>
         <n-input
           v-model:value="fieldConfig.name"
           :disabled="fieldConfig.disabledProps?.includes('name')"
@@ -137,7 +140,11 @@
           <n-select
             v-model:value="fieldConfig.dataSourceType"
             :options="dataSourceOptions"
-            :disabled="fieldConfig.disabledProps?.includes('dataSourceType') || !!fieldConfig.resourceFieldId"
+            :disabled="
+              fieldConfig.disabledProps?.includes('dataSourceType') ||
+              !!fieldConfig.resourceFieldId ||
+              !fieldConfig.isNew
+            "
             @update-value="handleClearDataSourceTypeChange"
           />
         </div>
@@ -1395,11 +1402,17 @@
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import CrmFormCreateInputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
   import CrmTextArea from '@/components/business/crm-form-create/components/basic/textarea.vue';
-  import { fullFormSettingList, rules, showRulesMap } from '@/components/business/crm-form-create/config';
+  import {
+    fullFormSettingList,
+    getFieldTypeName,
+    rules,
+    showRulesMap,
+  } from '@/components/business/crm-form-create/config';
   import {
     DataSourceFilterCombine,
     type DataSourceLinkField,

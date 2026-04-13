@@ -702,6 +702,12 @@ export function getFieldIcon(type: FieldTypeEnum) {
   return field?.icon;
 }
 
+export function getFieldTypeName(type: FieldTypeEnum) {
+  const allFields = [...basicFields, ...advancedFields];
+  const field = allFields.find((f) => f.type === type);
+  return field?.name;
+}
+
 export const rules: FormCreateFieldRule[] = [
   {
     key: FieldRuleEnum.REQUIRED,

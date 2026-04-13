@@ -230,7 +230,7 @@
     source: Record<string, any>[],
     rowId?: string
   ) {
-    if (field.showFields?.length && val) {
+    if (field.showFields?.length && val.length) {
       // 数据源显示字段联动
       const showFields = props.subFields.filter((f) => f.resourceFieldId === field.id);
       const targetSource = source.filter((e) => !e.parentId).find((e) => val.includes(e.id)); // 子表格数据源是单选，所以目标数据源只有一个
