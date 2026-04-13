@@ -2170,9 +2170,7 @@ public class ModuleFormService {
                             }
                             if (StringUtils.isNotEmpty(showFieldConf.getSubTableFieldId()) && sfv.containsKey(PRICE_SUB_ROW_KEY)) {
                                 Object matchVal = baseResourceFieldService.matchSubFieldValueOfDetailMap(
-                                        showFieldConf.idOrBusinessKey(),
-                                        detailMap,
-                                        BusinessModuleField.PRICE_PRODUCT_TABLE.getBusinessKey(),
+                                        showFieldConf.idOrBusinessKey(), detailMap, showFieldConf.getSubTableFieldId(),
                                         sfv.get(PRICE_SUB_ROW_KEY).toString()
                                 );
 
