@@ -138,6 +138,7 @@ export interface FormCreateField {
   show?: boolean; // 是否显示，受控于别的字段的showControlRules
   linkRange?: (string | number)[]; // 联动限制可选范围
   fieldValue?: any; // 字段值
+  isNew?: boolean;
   // 链接
   linkSource?: string;
   openMode?: string;

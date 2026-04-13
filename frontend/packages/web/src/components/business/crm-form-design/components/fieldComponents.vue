@@ -130,6 +130,7 @@
       ...e,
       id: getGenerateId(),
       name: t(e.name),
+      isNew: true,
     };
     if (
       [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(

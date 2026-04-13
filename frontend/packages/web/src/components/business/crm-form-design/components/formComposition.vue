@@ -39,11 +39,7 @@
               class="crm-form-design--composition-item-tools"
             >
               <n-tooltip
-                v-if="
-                  ![FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
-                    item.type
-                  ) && !item.resourceFieldId
-                "
+                v-if="![FieldTypeEnum.SERIAL_NUMBER].includes(item.type) && !item.resourceFieldId"
                 :delay="300"
                 :show-arrow="false"
                 class="crm-form-design--composition-item-tools-tip"
@@ -225,6 +221,7 @@
       ...cloneDeep(item),
       id: getGenerateId(),
       name: t(item.name),
+      isNew: true,
     };
     if (
       [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(
@@ -259,12 +256,15 @@
 
   function copyItem(item: FormCreateField) {
     const res: FormCreateField = {
-      ...item,
+      ...cloneDeep(item),
       id: getGenerateId(),
       internalKey: undefined,
       businessKey: undefined,
       disabledProps: [],
+      isNew: true,
     };
+    const dataSourceHasShowFieldItems: FormCreateField[] = [];
+
     if (
       [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT].includes(item.type) &&
       item.options?.length === 0
@@ -284,9 +284,42 @@
         },
       ];
       res.customOptions = [...res.options];
+    } else if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
+      res.subFields = res.subFields?.map((e) => {
+        const newItem = {
+          ...cloneDeep(e),
+          id: e.resourceFieldId ? e.id : getGenerateId(),
+          internalKey: undefined,
+          businessKey: undefined,
+          disabledProps: [],
+          isNew: true,
+        };
+        if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(e.type) && e.showFields?.length) {
+          dataSourceHasShowFieldItems.push(newItem);
+        }
+        return newItem;
+      });
     }
 
-    list.value.push(cloneDeep(res));
+    // 子表格重置一下数据源显示字段父级 id
+    dataSourceHasShowFieldItems.forEach((d) => {
+      d.showFields?.forEach((dId) => {
+        const newDatasourceShowField = res.subFields?.find((e) => e.id.includes(dId));
+        if (newDatasourceShowField) {
+          newDatasourceShowField.id = `${d.id}_ref_${newDatasourceShowField.id.split('_ref_')[1]}`;
+          newDatasourceShowField.resourceFieldId = d.id;
+        }
+      });
+    });
+
+    list.value.push(res);
+    activeItem.value = res;
+    nextTick(() => {
+      const el = document.getElementById(res.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
   }
 
   function deleteItem(item: FormCreateField) {
