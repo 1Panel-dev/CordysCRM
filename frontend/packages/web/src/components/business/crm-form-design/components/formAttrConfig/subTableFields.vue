@@ -84,6 +84,7 @@
 
 <script setup lang="ts">
   import { NButton, NDropdown, NInput, NTooltip } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
@@ -182,9 +183,10 @@
 
   function handleFieldCopy(i: number) {
     if (fieldConfig.value.subFields) {
-      const copyItem = JSON.parse(JSON.stringify(fieldConfig.value.subFields[i]));
+      const copyItem = cloneDeep(fieldConfig.value.subFields[i]);
       copyItem.id = getGenerateId();
       copyItem.name += `_${t('common.copy')}`;
+      copyItem.isNew = true;
       fieldConfig.value.subFields.splice(i + 1, 0, copyItem);
     }
   }
