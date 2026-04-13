@@ -47,4 +47,5 @@ export const formKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEn
   [FieldDataSourceTypeEnum.QUOTATION]: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
   [FieldDataSourceTypeEnum.BUSINESS_TITLE]: FormDesignKeyEnum.BUSINESS_TITLE,
   [FieldDataSourceTypeEnum.ORDER]: FormDesignKeyEnum.ORDER,
+  [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: FormDesignKeyEnum.CUSTOMER,
 };
