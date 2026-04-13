@@ -201,6 +201,8 @@
       id: getGenerateId(),
       internalKey: undefined,
       businessKey: undefined,
+      disabledProps: [],
+      isNew: true,
     };
     // if (
     //   [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT].includes(item.type) &&
