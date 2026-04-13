@@ -826,7 +826,7 @@ public class ModuleFormService {
                 if (reloadFieldMap.containsKey(oldField.getId())) {
                     refField = JSON.parseObject(reloadFieldMap.get(oldField.getId()), BaseField.class);
                 } else {
-                    refField = priceSubFieldMap.get(oldField.getId());
+					refField = JSON.parseObject(JSON.toJSONString(priceSubFieldMap.get(oldField.getId())), BaseField.class);
                 }
                 // 属于引用字段 (保留数据源引用ID)
                 refField.setResourceFieldId(oldField.getResourceFieldId());
