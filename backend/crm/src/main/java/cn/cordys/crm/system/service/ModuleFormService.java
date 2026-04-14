@@ -874,30 +874,14 @@ public class ModuleFormService {
                 Map<String, BaseField> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId,
                                 filedBlob -> JSON.parseObject(filedBlob.getProp(), BaseField.class)));
 
-                // 补充扩展的系统字段
+                // 补充内置扩展的系统字段
 				getSystemExtendFields(sourceField.getDataSourceType())
 						.forEach(extField -> reloadFieldMap.put(extField.getId(), extField));
 
-                Set<String> refFieldIds = Set.of();
-                if (sourceField.getRefFields() == null) {
-                    sourceField.setRefFields(new ArrayList<>());
-                } else {
-                    refFieldIds = sourceField.getRefFields().stream().map(BaseField::getId).collect(Collectors.toSet());
-                }
-
-                // 获取最新引用字段属性
-                for (String showFieldKey : sourceField.getShowFields()) {
-                    BaseField refField = reloadFieldMap.get(showFieldKey);
-                    if (refField != null && !refFieldIds.contains(refField.getId())) {
-                        // 深拷贝对象，避免修改原始对象
-                        BaseField clonedRef = JSON.parseObject(JSON.toJSONString(refField), BaseField.class);
-                        clonedRef.setResourceFieldId(field.getId());
-                        sourceField.getRefFields().add(clonedRef);
-                    }
-                }
-
 				// 合并可能引用的字段属性 (数据源引用字段 & 价格表子表格字段)
 				reloadFieldMap.putAll(priceSubFieldMap);
+
+				// 平铺引用字段
                 sourceField.getRefFields().forEach(oldRefField -> {
 					// 兼容旧引用字段
 					String oldRefFieldId = splitRefId(oldRefField.getResourceFieldId()).apply(oldRefField.getId());
@@ -906,7 +890,6 @@ public class ModuleFormService {
 						return;
 					}
 					BaseField combineField = combineFieldsProps(oldRefField, refField);
-					// 平铺引用字段 & 保留数据源新引用ID集合
                     flatFields.add(flatFields.size(), combineField);
                 });
             }

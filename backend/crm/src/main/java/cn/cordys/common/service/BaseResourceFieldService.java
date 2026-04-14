@@ -462,11 +462,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                             return;
                         }
                         sourceField.getShowFields().forEach(id -> {
-                            BaseField showFieldConfig = fieldConfigMap.get(id);
+                            BaseField showFieldConfig = fieldConfigMap.get(sourceField.getId() + REF_UNDERLINE + id);
                             if (showFieldConfig == null) {
                                 return;
                             }
-                            resourceMap.get(resourceId).add(new BaseModuleFieldValue(id, getFieldValueOfDetailMap(showFieldConfig, detailMap)));
+                            resourceMap.get(resourceId).add(new BaseModuleFieldValue(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap)));
                         });
                     }
                 }
@@ -919,7 +919,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 return;
                             }
                             sourceField.getShowFields().forEach(id -> {
-                                BaseField showFieldConfig = subFieldIdConfigMap.get(id);
+                                BaseField showFieldConfig = subFieldIdConfigMap.get(sourceField + REF_UNDERLINE + id);
                                 if (showFieldConfig == null) {
                                     return;
                                 }
