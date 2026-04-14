@@ -494,7 +494,7 @@ public class ModuleFormService {
         var allFields = flattenFormAllFields(formConfig);
         var showFields = allFields.stream()
                 .filter(f -> f instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
-                .flatMap(f -> ((DatasourceField) f).getShowFields().stream())
+                .flatMap(f -> ((DatasourceField) f).getShowFields().stream().map(sf -> f.getId() + REF_UNDERLINE + sf))
                 .distinct()
                 .toList();
         var staticOptions = new HashMap<String, List<OptionDTO>>(4);
