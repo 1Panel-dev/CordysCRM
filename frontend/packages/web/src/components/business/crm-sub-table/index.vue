@@ -31,6 +31,7 @@
   import {
     formatNumberValue,
     formatNumberValueToString,
+    getFieldItemId,
     mergeUniqueOptions,
     normalizeNumber,
   } from '@lib/shared/method/formCreate';
@@ -237,14 +238,14 @@
       showFields.forEach((sf) => {
         let fieldVal: string | string[] = '';
         if (targetSource) {
-          const sourceFieldVal = targetSource[sf.id]; // 数据源的显示字段都使用id 读取
+          const sourceFieldVal = targetSource[getFieldItemId(sf)]; // 数据源的显示字段都使用id 读取
           if (sf.subTableFieldId) {
             // 如果数据源显示字段是数据源的子表格字段，则需要 rowId 定位数据源子表格的行
             const subTableData = targetSource[sf.subTableFieldId];
             if (Array.isArray(subTableData) && rowId) {
               const subTableRow = subTableData.find((stRow) => stRow.id === rowId);
               if (subTableRow) {
-                fieldVal = subTableRow[sf.id];
+                fieldVal = subTableRow[getFieldItemId(sf)];
               }
             }
           } else {
