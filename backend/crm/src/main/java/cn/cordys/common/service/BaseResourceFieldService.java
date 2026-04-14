@@ -466,7 +466,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                             if (showFieldConfig == null) {
                                 return;
                             }
-                            resourceMap.get(resourceId).add(new BaseModuleFieldValue(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap)));
+                            resourceMap.get(resourceId).add(new BaseModuleFieldValue(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap, sourceField)));
                         });
                     }
                 }
@@ -553,7 +553,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
                     String resourceId = detailMap.get(SOURCE_DETAIL_ID).toString();
                     resourceFieldMap.putIfAbsent(resourceId, new ArrayList<>());
-                    Object showFieldValue = getFieldValueOfDetailMap(showFieldConfig, sourceDetail);
+                    Object showFieldValue = getFieldValueOfDetailMap(showFieldConfig, sourceDetail, sourceField);
                     if (showFieldValue != null) {
                         resourceFieldMap.get(resourceId).add(new BaseModuleFieldValue(showFieldConfig.getId(), showFieldValue));
                     }
@@ -568,14 +568,20 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @param field           字段信息
      * @param sourceDetailMap 来源详情
+	 * @param refSourceField 被引用的数据源字段信息
      *
      * @return 字段值
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Object getFieldValueOfDetailMap(BaseField field, Map<String, Object> sourceDetailMap) {
+    public Object getFieldValueOfDetailMap(BaseField field, Map<String, Object> sourceDetailMap, DatasourceField refSourceField) {
         if (MapUtils.isEmpty(sourceDetailMap)) {
             return null;
         }
+		if (Strings.CI.equals(refSourceField.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
+			// 工商抬头数据源特殊处理
+			String fieldKey = field.getId().replace((field.getResourceFieldId() + REF_UNDERLINE), StringUtils.EMPTY).replace("business_title_", StringUtils.EMPTY);
+			return sourceDetailMap.get(fieldKey);
+		}
         if (StringUtils.isNotEmpty(field.getBusinessKey())) {
             return sourceDetailMap.get(field.getBusinessKey());
         }
@@ -930,7 +936,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                         rowMap.put(showFieldConfig.getId(), matchVal);
                                     }
                                 } else {
-                                    rowMap.put(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap));
+                                    rowMap.put(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap, sourceField));
                                 }
                             });
                         }

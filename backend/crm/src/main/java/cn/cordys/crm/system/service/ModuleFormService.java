@@ -2093,7 +2093,7 @@ public class ModuleFormService {
                 sourceField.getShowFields().forEach(refId -> {
                     final BaseField showFieldConf = fieldMap.get(sourceField.getId() + REF_UNDERLINE + refId);
                     if (showFieldConf != null) {
-                        final Object val = baseResourceFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap);
+                        final Object val = baseResourceFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap, sourceField);
                         reFvs.add(new BaseModuleFieldValue(showFieldConf.getId(), val));
                     }
                 });
@@ -2139,7 +2139,7 @@ public class ModuleFormService {
                                     showFieldMap.put(showFieldConf.getId(), matchVal);
                                 }
                             } else {
-                                showFieldMap.put(showFieldConf.getId(), baseResourceFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap));
+                                showFieldMap.put(showFieldConf.getId(), baseResourceFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap, sourceField));
                             }
                         });
                     });
