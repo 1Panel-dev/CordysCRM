@@ -123,6 +123,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import { remapFormulaFieldIds } from '@/components/business/crm-formula-editor/parseSource/remapFormulaFieldIds';
   import dataTable from './dataTable.vue';
 
   const props = defineProps<{
@@ -264,6 +265,7 @@
       isNew: true,
     };
     const dataSourceHasShowFieldItems: FormCreateField[] = [];
+    const subFieldIdMap: Record<string, string> = {};
 
     if (
       [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT].includes(item.type) &&
@@ -286,9 +288,12 @@
       res.customOptions = [...res.options];
     } else if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
       res.subFields = res.subFields?.map((e) => {
+        const nextId = e.resourceFieldId ? e.id : getGenerateId();
+        subFieldIdMap[e.id] = nextId;
+
         const newItem = {
           ...cloneDeep(e),
-          id: e.resourceFieldId ? e.id : getGenerateId(),
+          id: nextId,
           internalKey: undefined,
           businessKey: undefined,
           disabledProps: [],
@@ -301,6 +306,17 @@
           dataSourceHasShowFieldItems.push(newItem);
         }
         return newItem;
+      });
+
+      res.subFields = res.subFields?.map((subField) => {
+        if (subField.type !== FieldTypeEnum.FORMULA || !subField.formula) {
+          return subField;
+        }
+
+        return {
+          ...subField,
+          formula: remapFormulaFieldIds(subField.formula, subFieldIdMap, res.subFields || []),
+        };
       });
     }
 
