@@ -75,6 +75,13 @@
     "moduleName": "",
     "messageTaskDetailDTOList": [
       {
+        "event": "CLUE_ADD",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
         "event": "CLUE_AUTOMATIC_MOVE_POOL",
         "eventName": "",
         "emailEnable": false,
