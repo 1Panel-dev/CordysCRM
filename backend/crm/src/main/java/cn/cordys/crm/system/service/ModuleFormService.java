@@ -304,7 +304,7 @@ public class ModuleFormService {
         // 剔除引用字段&&并保留到数据源引用字段
         List<BaseField> fieldToSave = new ArrayList<>(saveFields);
         List<String> showFields = fieldToSave.stream().filter(f -> f instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
-                .flatMap(sf -> ((DatasourceField) sf).getShowFields().stream()).distinct().toList();
+                .flatMap(sf -> ((DatasourceField) sf).getShowFields().stream().map(ff -> sf.getId() + REF_UNDERLINE + ff)).distinct().toList();
         List<BaseField> refFields = fieldToSave.stream().filter(f -> showFields.contains(f.getId()) && StringUtils.isNotEmpty(f.getResourceFieldId()))
                 .collect(Collectors.toMap(BaseField::getId, Function.identity(), (a, b) -> a)).values().stream()
                 .toList();
@@ -330,7 +330,10 @@ public class ModuleFormService {
             ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
             fieldBlob.setId(field.getId());
             if (field instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
-                List<BaseField> sourceRefFields = refFields.stream().filter(f -> sourceField.getShowFields().contains(f.getId())).toList();
+                List<BaseField> sourceRefFields = refFields.stream().filter(rf -> {
+					String actualId = rf.getId().replace(sourceField.getId() + REF_UNDERLINE, StringUtils.EMPTY);
+					return sourceField.getShowFields().contains(actualId);
+				}).toList();
                 sourceField.setRefFields(sourceRefFields);
             }
             fieldBlob.setProp(JSON.toJSONString(field));
@@ -815,9 +818,7 @@ public class ModuleFormService {
 				// 合并可能引用的字段属性 (数据源引用字段 & 价格表子表格字段)
 				reloadFieldMap.putAll(priceSubFieldMap);
 
-				List<String> newRefIds = new ArrayList<>();
 				Function<String, String> refIdSplitter = splitRefId(sf.getId());
-				// 直接在原始 subFields 上操作，避免 .collect(Collectors.toList()) 创建新 List
 				ListIterator<BaseField> it = subField.getSubFields().listIterator();
 				while (it.hasNext()) {
 					BaseField oldField = it.next();
@@ -836,10 +837,8 @@ public class ModuleFormService {
 					// 子表格的引用字段特殊属性
 					combineField.setBusinessKey(oldField.getBusinessKey());
 					combineField.setSubTableFieldId(oldField.getSubTableFieldId());
-					newRefIds.add(combineField.getId());
 					it.set(combineField);
 				}
-				((DatasourceField) sf).setShowFields(newRefIds);
 			});
         }
     }
@@ -871,7 +870,6 @@ public class ModuleFormService {
             if (field instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
 				// 兼容新旧引用字段
                 List<String> oldRefIds = sourceField.getShowFields().stream().map(splitRefId(sourceField.getId())).distinct().toList();
-                List<String> newRefIds = new ArrayList<>();
                 List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(oldRefIds);
                 Map<String, BaseField> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId,
                                 filedBlob -> JSON.parseObject(filedBlob.getProp(), BaseField.class)));
@@ -910,9 +908,7 @@ public class ModuleFormService {
 					BaseField combineField = combineFieldsProps(oldRefField, refField);
 					// 平铺引用字段 & 保留数据源新引用ID集合
                     flatFields.add(flatFields.size(), combineField);
-                    newRefIds.add(combineField.getId());
                 });
-                sourceField.setShowFields(newRefIds);
             }
         });
         return flatFields;
