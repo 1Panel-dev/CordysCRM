@@ -4,7 +4,7 @@ import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatNumberValueToString, transformData } from '@lib/shared/method/formCreate';
+import { formatNumberValueToString, getFieldItemId, transformData } from '@lib/shared/method/formCreate';
 import type { StageConfigItem } from '@lib/shared/models/opportunity';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -192,7 +192,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           let key = field.businessKey || field.id;
           if (field.resourceFieldId) {
             // 数据源引用字段用 id作为 key
-            key = field.id;
+            key = getFieldItemId(field);
           }
           if (field.type === FieldTypeEnum.PICTURE) {
             return {

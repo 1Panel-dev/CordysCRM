@@ -194,14 +194,13 @@
               (subField) =>
                 ({
                   ...subField,
-                  id: subField.resourceFieldId ? subField.id.split('_ref_')[1] : subField.id, // 处理数据源显示字段 id
+                  id: subField.id,
                 } as FormCreateField)
             );
-            e.sumColumns = e.sumColumns?.map((s) => (s?.includes('_ref_') ? s.split('_ref_')[1] : s)); // 处理数据源显示字段 id
           }
           return {
             ...e,
-            id: e.resourceFieldId ? e.id.split('_ref_')[1] : e.id, // 处理数据源显示字段 id
+            id: e.id,
             defaultValue:
               [
                 FieldTypeEnum.SELECT,
@@ -239,11 +238,11 @@
         const newSubFields = item.subFields?.map((e) => ({
           ...e,
           description: '',
-          id: e.resourceFieldId ? `${getGenerateId()}_ref_${e.id}` : e.id, // 处理数据源显示字段 id
+          id: e.id,
         }));
         return {
           ...item,
-          id: item.resourceFieldId ? `${getGenerateId()}_ref_${item.id}` : item.id, // 处理数据源显示字段 id
+          id: item.id,
           internalKey: item.internalKey,
           type: item.type,
           name: t(item.name),

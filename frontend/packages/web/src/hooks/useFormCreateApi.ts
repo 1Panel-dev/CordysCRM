@@ -15,6 +15,7 @@ import {
   dataSourceTypes,
   departmentTypes,
   formatNumberValueToString,
+  getFieldItemId,
   getNormalFieldValue,
   getRuleType,
   initFieldValue,
@@ -738,7 +739,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   function transformFormDetailValue(item: FormCreateField, res: FormDetail) {
     if (item.resourceFieldId) {
       // 数据源引用字段直接解析值
-      formDetail.value[item.id] = parseFormDetailValue(item, res);
+      formDetail.value[getFieldItemId(item)] = parseFormDetailValue(item, res);
     } else if (item.businessKey) {
       // 业务标准字段读取最外层
       formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
@@ -888,11 +889,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 });
               }
               if (subField.resourceFieldId) {
-                subItem[subField.id] = parseModuleFieldValue(
-                  subField,
-                  subItem[subField.id],
-                  res.optionMap?.[subField.id]
-                );
+                const subFieldId = getFieldItemId(subField);
+                subItem[subFieldId] = parseModuleFieldValue(subField, subItem[subFieldId], res.optionMap?.[subFieldId]);
               } else {
                 subItem[subField.businessKey || subField.id] = initFieldValue(
                   subField,
