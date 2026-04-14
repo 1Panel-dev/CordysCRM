@@ -112,7 +112,6 @@ public class ContractService {
     @Resource
     private DictService dictService;
 
-	public static final int MAX_NUMBER_LENGTH = 50;
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
 
     /**
