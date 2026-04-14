@@ -210,7 +210,6 @@
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getFieldItemId } from '@lib/shared/method/formCreate';
 
   import CrmCollapse from '@/components/pure/crm-collapse/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -288,7 +287,7 @@
   function resolveFieldId(e: FormCreateField, inSubTable?: boolean) {
     const id = e.id.split('_').pop() ?? '';
     if (e.resourceFieldId) {
-      return getFieldItemId(e);
+      return e.id;
     }
     if (inSubTable) {
       return e.businessKey || id;

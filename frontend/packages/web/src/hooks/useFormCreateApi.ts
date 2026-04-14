@@ -15,7 +15,6 @@ import {
   dataSourceTypes,
   departmentTypes,
   formatNumberValueToString,
-  getFieldItemId,
   getNormalFieldValue,
   getRuleType,
   initFieldValue,
@@ -889,8 +888,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 });
               }
               if (subField.resourceFieldId) {
-                const subFieldId = getFieldItemId(subField);
-                subItem[subFieldId] = parseModuleFieldValue(subField, subItem[subFieldId], res.optionMap?.[subFieldId]);
+                subItem[subField.id] = parseModuleFieldValue(
+                  subField,
+                  subItem[subField.id],
+                  res.optionMap?.[subField.id]
+                );
               } else {
                 subItem[subField.businessKey || subField.id] = initFieldValue(
                   subField,

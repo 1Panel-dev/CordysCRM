@@ -280,7 +280,7 @@ export function transformData({
   const fieldOptionMap: Record<string, any[]> = {};
 
   fields.forEach((field) => {
-    const fieldId = field.resourceFieldId ? getFieldItemId(item) : field.businessKey || field.id;
+    const fieldId = field.resourceFieldId ? field.id : field.businessKey || field.id;
     if (field.type === FieldTypeEnum.LOCATION) {
       addressFieldIds.push(fieldId);
     } else if (field.type === FieldTypeEnum.INDUSTRY) {
@@ -299,7 +299,7 @@ export function transformData({
           item[fieldId] || item.moduleFields?.find((mf: any) => mf.fieldId === fieldId)?.fieldValue
         )?.map((subItem: Record<string, any>) => {
           if (subField.resourceFieldId) {
-            subItem[`${subField.id}_original`] = subItem[getFieldItemId(subField)]; // 备份原始值以供编辑时填充数据源
+            subItem[`${subField.id}_original`] = subItem[field.id]; // 备份原始值以供编辑时填充数据源
             subItem[subField.id] = parseModuleFieldValue(
               subField,
               subItem[subField.id],

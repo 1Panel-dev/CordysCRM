@@ -1,5 +1,4 @@
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
-import { getFieldItemId } from '@lib/shared/method/formCreate';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import type { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
@@ -46,7 +45,7 @@ export default function useFormCreateFilter() {
         let key = field.businessKey || field.id;
         if (field.resourceFieldId) {
           // 数据源引用字段用 id作为 key
-          key = getFieldItemId(field);
+          key = field.id;
         }
         acc.push({
           title: field.name,
