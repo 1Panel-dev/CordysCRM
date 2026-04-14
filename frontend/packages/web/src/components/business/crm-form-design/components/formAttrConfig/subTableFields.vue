@@ -142,6 +142,7 @@
       id: getGenerateId(),
       name: option.label,
       icon: option._icon,
+      isNew: true,
     };
     if (
       [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(

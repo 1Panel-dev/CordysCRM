@@ -294,6 +294,9 @@
           disabledProps: [],
           isNew: true,
         };
+        if (res.sumColumns?.includes(e.id)) {
+          res.sumColumns = res.sumColumns?.filter((id) => id !== e.id).concat(newItem.id); // 如果原来有配置合计字段，复制后替换成新的字段 id
+        }
         if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(e.type) && e.showFields?.length) {
           dataSourceHasShowFieldItems.push(newItem);
         }
@@ -306,6 +309,11 @@
       d.showFields?.forEach((dId) => {
         const newDatasourceShowField = res.subFields?.find((e) => e.id.includes(dId));
         if (newDatasourceShowField) {
+          if (res.sumColumns?.includes(newDatasourceShowField.id)) {
+            res.sumColumns = res.sumColumns
+              ?.filter((id) => id !== newDatasourceShowField.id)
+              .concat(`${d.id}_ref_${newDatasourceShowField.id.split('_ref_')[1]}`); // 如果原来有配置合计字段，复制后替换成新的字段 id
+          }
           newDatasourceShowField.id = `${d.id}_ref_${newDatasourceShowField.id.split('_ref_')[1]}`;
           newDatasourceShowField.resourceFieldId = d.id;
         }
