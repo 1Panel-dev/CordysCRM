@@ -2,10 +2,11 @@ package cn.cordys.crm.contract.dto.response;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
-import cn.cordys.crm.system.domain.Attachment;
-import lombok.Data;
-import io.swagger.v3.oas.annotations.media.Schema;
 import cn.cordys.crm.contract.domain.ContractInvoice;
+import cn.cordys.crm.system.domain.Attachment;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
 import java.util.List;
 import java.util.Map;
 

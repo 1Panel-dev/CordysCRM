@@ -9,7 +9,6 @@ import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.util.JSON;
-
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.CluePool;
 import cn.cordys.crm.customer.domain.CustomerPool;

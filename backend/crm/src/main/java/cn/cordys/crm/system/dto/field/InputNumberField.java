@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.Strings;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

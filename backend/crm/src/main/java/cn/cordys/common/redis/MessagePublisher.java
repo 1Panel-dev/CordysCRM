@@ -1,7 +1,6 @@
 package cn.cordys.common.redis;
 
 import cn.cordys.common.constants.TopicConstants;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;

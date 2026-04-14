@@ -16,7 +16,6 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
-
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.product.domain.Product;
@@ -55,11 +54,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 

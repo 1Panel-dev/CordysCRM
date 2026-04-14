@@ -7,7 +7,6 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
-import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;

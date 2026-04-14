@@ -11,7 +11,6 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
-import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.CluePool;
 import cn.cordys.crm.clue.domain.CluePoolRecycleRule;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;

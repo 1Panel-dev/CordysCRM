@@ -1,7 +1,7 @@
 package cn.cordys.crm.integration.tender.controller;
 
-import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.system.service.IntegrationConfigService;

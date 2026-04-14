@@ -2,7 +2,6 @@ package cn.cordys.crm.integration.wecom.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
-
 import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;

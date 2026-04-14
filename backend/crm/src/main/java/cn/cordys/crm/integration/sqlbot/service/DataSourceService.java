@@ -2,7 +2,6 @@ package cn.cordys.crm.integration.sqlbot.service;
 
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.RoleDataScope;
-import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.constants.ThirdDetailType;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
@@ -14,7 +13,6 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
-
 import cn.cordys.crm.integration.sqlbot.constant.SQLBotTable;
 import cn.cordys.crm.integration.sqlbot.dto.*;
 import cn.cordys.crm.integration.sqlbot.handler.TablePermissionHandler;

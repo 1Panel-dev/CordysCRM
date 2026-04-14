@@ -3,7 +3,6 @@ package cn.cordys.crm.integration.common.client;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
-
 import cn.cordys.common.util.Translator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

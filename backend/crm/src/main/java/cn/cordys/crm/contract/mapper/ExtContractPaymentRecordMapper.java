@@ -1,7 +1,6 @@
 package cn.cordys.crm.contract.mapper;
 
 import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordStatisticRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;

@@ -9,7 +9,6 @@ import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.uid.IDGenerator;
-
 import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.utils.OpportunityFieldUtils;
 import cn.cordys.crm.opportunity.dto.request.OpportunityExportRequest;

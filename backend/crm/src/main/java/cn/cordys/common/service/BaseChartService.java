@@ -7,7 +7,6 @@ import cn.cordys.common.dto.chart.ChartCategoryAxisDbParam;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
-import cn.cordys.common.util.JSON;
 import cn.cordys.common.utils.IndustryUtils;
 import cn.cordys.common.utils.RegionUtils;
 import cn.cordys.crm.system.constants.FieldType;

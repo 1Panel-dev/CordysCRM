@@ -1,6 +1,5 @@
 package cn.cordys.crm.contract.excel.domain;
 
-import cn.idev.excel.annotation.ExcelIgnore;
 import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.annotation.write.style.ColumnWidth;
 import lombok.Data;

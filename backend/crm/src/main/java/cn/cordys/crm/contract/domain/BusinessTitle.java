@@ -3,7 +3,6 @@ package cn.cordys.crm.contract.domain;
 import cn.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 
