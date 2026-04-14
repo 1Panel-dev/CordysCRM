@@ -5,6 +5,8 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 SET @clue_add_id = UUID_SHORT();
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
     VALUE (@clue_add_id, 'CLUE_ADD', 'CLUE', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
-
+SET @business_add_id = UUID_SHORT();
+INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
+    VALUE (@business_add_id, 'BUSINESS_ADD', 'OPPORTUNITY', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
 
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

@@ -1156,11 +1156,14 @@ public class ClueService {
                     clue.setStage(ClueStatus.NEW.name());
                     clue.setInSharedPool(false);
                     logs.add(new LogDTO(currentOrg, clue.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX, clue.getName()));
+					// 消息通知 (异步)
+					commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_ADD, clue.getName(), currentUser,
+							currentOrg, List.of(clue.getOwner()), true);
                 });
                 clueMapper.batchInsert(clues);
                 clueFieldMapper.batchInsert(clueFields.stream().map(field -> BeanUtils.copyBean(new ClueField(), field)).toList());
                 clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
-                // record logs
+                // 日志
                 logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<Clue> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
