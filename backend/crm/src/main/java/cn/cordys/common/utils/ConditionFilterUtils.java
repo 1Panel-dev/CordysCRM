@@ -126,7 +126,7 @@ public class ConditionFilterUtils {
 
     public static void parseCondition(BaseCondition baseCondition, String formKey) {
         ModuleFormCacheService moduleFormCacheService = CommonBeanFactory.getBean(ModuleFormCacheService.class);
-        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
+        ModuleFormConfigDTO businessFormConfig = Objects.requireNonNull(moduleFormCacheService).getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
         List<BaseField> fields = businessFormConfig.getFields();
 
         // 处理视图查询条件
@@ -134,7 +134,7 @@ public class ConditionFilterUtils {
 
         CombineSearch combineSearch = baseCondition.getCombineSearch();
         CombineSearch viewCombineSearch = baseCondition.getViewCombineSearch();
-        
+
         replaceFilterDBCondition(fields, baseCondition);
         replaceDBCondition(fields, combineSearch);
         replaceDBCondition(fields, viewCombineSearch);
@@ -147,6 +147,7 @@ public class ConditionFilterUtils {
 
     /**
      * 将 FilterCondition 替换成 FilterDBCondition，并设置数据库查询相关属性
+     *
      * @param fields
      * @param combineSearch
      */
@@ -188,7 +189,7 @@ public class ConditionFilterUtils {
                 } else {
                     // 处理显示字段
                     BaseField refResourceField = fieldMap.get(baseField.getResourceFieldId());
-                    if (refResourceField != null && refResourceField instanceof DatasourceField datasourceField) {
+                    if (refResourceField instanceof DatasourceField datasourceField) {
                         parseFilterDBCondition(dbCondition, baseField);
                         if (baseField.hasBusinessKey()) {
                             // 暂时只处理显示字段
@@ -216,11 +217,10 @@ public class ConditionFilterUtils {
         }
     }
 
-    private static FilterDBCondition parseFilterDBCondition(FilterDBCondition dbCondition, BaseField baseField) {
+    private static void parseFilterDBCondition(FilterDBCondition dbCondition, BaseField baseField) {
         dbCondition.setName(baseField.idOrBusinessKey());
         dbCondition.setCustomField(!baseField.hasBusinessKey());
         dbCondition.setMultipleValue(baseField.multiple());
-        return dbCondition;
     }
 
     private static void parseCondition(CombineSearch combineSearch) {

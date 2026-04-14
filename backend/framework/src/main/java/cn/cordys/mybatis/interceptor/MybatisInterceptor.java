@@ -101,7 +101,6 @@ public class MybatisInterceptor implements Interceptor {
             return interceptorConfigMap.get(pClassName);
         }
 
-        Map<String, List<MybatisInterceptorConfig>> m = new HashMap<>();
         for (MybatisInterceptorConfig interceptorConfig : interceptorConfigList) {
             String className = interceptorConfig.getModelName();
             String attrName = interceptorConfig.getAttrName();
