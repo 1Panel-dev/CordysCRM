@@ -620,7 +620,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 		for (Map<String, Object> row : rows) {
 			// 匹配行数据
 			if (row.containsKey(ROW_BIZ_ID) && Strings.CS.equals(rowKey, row.get(ROW_BIZ_ID).toString())) {
-				return row.get(targetId);
+				if (targetId.contains(REF_UNDERLINE)) {
+					return row.get(targetId.split(REF_UNDERLINE)[1]);
+				} else {
+					return row.get(targetId);
+				}
 			}
 		}
 		return null;
@@ -925,7 +929,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 return;
                             }
                             sourceField.getShowFields().forEach(id -> {
-                                BaseField showFieldConfig = subFieldIdConfigMap.get(sourceField + REF_UNDERLINE + id);
+                                BaseField showFieldConfig = subFieldIdConfigMap.get(sourceField.getId() + REF_UNDERLINE + id);
                                 if (showFieldConfig == null) {
                                     return;
                                 }
