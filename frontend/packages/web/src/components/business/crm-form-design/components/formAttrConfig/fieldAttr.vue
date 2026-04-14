@@ -1836,7 +1836,7 @@
           0,
           ...selectedList.map((item) => ({
             ...item,
-            id: `${parentField.value?.id}_ref_${item.id}`,
+            id: `${fieldConfig.value.id}_ref_${item.id}`,
             resourceFieldId: fieldConfig.value.id,
             description: '',
             editable: false,
