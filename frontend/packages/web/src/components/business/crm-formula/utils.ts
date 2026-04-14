@@ -1,4 +1,5 @@
 import { IRNodeType } from '@lib/shared/enums/formula';
+import { getFieldItemId } from '@lib/shared/method/formCreate';
 
 import { FieldTypeMap, FormulaDataSourceMap, IRNode } from './formula-runtime/types';
 import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
@@ -118,7 +119,7 @@ export function flatAllFields(
 
   const resolveFieldId = (e: FormCreateField, inSubTable?: boolean) => {
     if ((e as any).resourceFieldId) {
-      return e.id;
+      return getFieldItemId(e);
     }
     return inSubTable ? e.businessKey || e.id : e.id;
   };

@@ -43,7 +43,7 @@
   import { ContractPaymentPlanEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { transformData } from '@lib/shared/method/formCreate';
+  import { getFieldItemId, transformData } from '@lib/shared/method/formCreate';
   import type { ContractItem, PaymentPlanItem } from '@lib/shared/models/contract';
   import { CustomerContractListItem } from '@lib/shared/models/customer';
   import { OpportunityItem, OpportunityStageConfig, QuotationItem } from '@lib/shared/models/opportunity';
@@ -249,7 +249,7 @@
   function getFieldColumnKey(field: FormCreateField) {
     let key = field.businessKey || field.id;
     if (field.resourceFieldId) {
-      key = field.id;
+      key = getFieldItemId(field);
     }
     return mapColumnKey(key);
   }
