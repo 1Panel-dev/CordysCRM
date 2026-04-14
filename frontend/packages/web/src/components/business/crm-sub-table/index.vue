@@ -31,7 +31,6 @@
   import {
     formatNumberValue,
     formatNumberValueToString,
-    getFieldItemId,
     mergeUniqueOptions,
     normalizeNumber,
   } from '@lib/shared/method/formCreate';
@@ -196,7 +195,7 @@
       id: getGenerateId(),
     };
     props.subFields.forEach((field) => {
-      const key = field.resourceFieldId ? getFieldItemId(field) : field.businessKey || field.id;
+      const key = field.resourceFieldId ? field.id : field.businessKey || field.id;
       if (field.type === FieldTypeEnum.INPUT_NUMBER) {
         newRow[key] =
           field.resourceFieldId && isNotEmpty(field.defaultValue)
@@ -424,7 +423,7 @@
           let key = field.businessKey || field.id;
           if (field.resourceFieldId) {
             // 数据源引用字段用 id作为 key
-            key = getFieldItemId(field);
+            key = field.id;
           }
           return {
             title: field.showLabel ? field.name : '',
@@ -472,7 +471,7 @@
         let key = field.businessKey || field.id;
         if (field.resourceFieldId) {
           // 数据源引用字段用 id作为 key
-          key = getFieldItemId(field);
+          key = field.id;
         }
         let title: any = field.name;
         if (field.showLabel === false) {
