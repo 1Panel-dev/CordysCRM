@@ -318,6 +318,10 @@ public class OpportunityService {
 
         baseService.handleAddLog(opportunity, request.getModuleFields());
 
+		// 消息通知
+		commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+				NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), operatorId,
+				orgId, List.of(opportunity.getOwner()), true);
         return opportunity;
     }
 
@@ -770,6 +774,10 @@ public class OpportunityService {
                     opportunity.setStage(stageConfigList.getFirst().getId());
                     opportunity.setPos(nextPos + i);
                     logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD, LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
+					// 消息通知(异步)
+					commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+							NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), currentUser,
+							currentOrg, List.of(opportunity.getOwner()), true);
                 }
                 opportunityMapper.batchInsert(opportunities);
                 opportunityFieldMapper.batchInsert(opportunityFields.stream().map(field -> BeanUtils.copyBean(new OpportunityField(), field)).toList());

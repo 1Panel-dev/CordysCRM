@@ -131,13 +131,6 @@
         "weComEnable": false
       },
       {
-        "event": "CLUE_IMPORT",
-        "eventName": "",
-        "emailEnable": false,
-        "sysEnable": false,
-        "weComEnable": false
-      },
-      {
         "event": "CLUE_FOLLOW_UP_PLAN_DUE",
         "eventName": "",
         "emailEnable": false,
@@ -152,6 +145,13 @@
     "moduleName": "",
     "messageTaskDetailDTOList": [
       {
+        "event": "BUSINESS_ADD",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
         "event": "BUSINESS_DELETED",
         "eventName": "",
         "emailEnable": false,
@@ -160,13 +160,6 @@
       },
       {
         "event": "BUSINESS_TRANSFER",
-        "eventName": "",
-        "emailEnable": false,
-        "sysEnable": false,
-        "weComEnable": false
-      },
-      {
-        "event": "BUSINESS_IMPORT",
         "eventName": "",
         "emailEnable": false,
         "sysEnable": false,
