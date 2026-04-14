@@ -450,6 +450,11 @@ public class ClueService {
 
         clueMapper.insert(clue);
         baseService.handleAddLog(clue, request.getModuleFields());
+
+		// 消息通知
+		commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+				NotificationConstants.Event.CLUE_ADD, clue.getName(), userId,
+				orgId, List.of(clue.getOwner()), true);
         return clue;
     }
 

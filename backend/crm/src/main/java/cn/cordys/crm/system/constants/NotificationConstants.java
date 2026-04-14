@@ -67,6 +67,9 @@ public class NotificationConstants {
         @Schema(description = "message.customer_follow_up_plan_due")
         String CUSTOMER_FOLLOW_UP_PLAN_DUE = "CUSTOMER_FOLLOW_UP_PLAN_DUE";
         //----线索管理----
+		//自动移入线索池
+		@Schema(description = "message.clue_add")
+		String CLUE_ADD = "CLUE_ADD";
         //自动移入线索池
         @Schema(description = "message.clue_automatic_move_pool")
         String CLUE_AUTOMATIC_MOVE_POOL = "CLUE_AUTOMATIC_MOVE_POOL";
@@ -189,6 +192,10 @@ public class NotificationConstants {
         //请注意！您创建的${customerName}跟进计划，已到预定时间，请及时跟进！
         @Schema(description = "message.customer_follow_up_plan_due_text")
         String CUSTOMER_FOLLOW_UP_PLAN_DUE_TEXT = "CUSTOMER_FOLLOW_UP_PLAN_DUE_TEXT";
+
+		//请注意！${OPERATOR}新建${customerName}线索给您，请知悉！
+		@Schema(description = "message.clue_add_text")
+		String CLUE_ADD_TEXT = "CLUE_ADD_TEXT";
 
         //请注意！根据系统规则，您负责的${clueName}的销售线索，已被移入线索池！
         @Schema(description = "message.clue_automatic_move_pool_text")
