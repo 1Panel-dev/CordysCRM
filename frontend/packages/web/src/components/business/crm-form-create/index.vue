@@ -65,6 +65,7 @@
   import { getCityPath, getGenerateId, getIndustryPath } from '@lib/shared/method';
   import {
     dataSourceTypes,
+    getFieldItemId,
     linkAllAcceptTypes,
     mergeUniqueOptions,
     multipleTypes,
@@ -619,7 +620,7 @@
         formDetail.value[field.id] =
           field.businessKey && specialBusinessKeyMap[field.businessKey]
             ? target?.[specialBusinessKeyMap[field.businessKey]]
-            : target?.[field.businessKey || field.id];
+            : target?.[field.businessKey || getFieldItemId(field)];
       });
     }
 
