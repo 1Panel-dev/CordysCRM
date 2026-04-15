@@ -126,6 +126,8 @@
   import { remapFormulaFieldIds } from '@/components/business/crm-formula-editor/parseSource/remapFormulaFieldIds';
   import dataTable from './dataTable.vue';
 
+  import { resolveFieldId } from '../../crm-formula-editor/utils';
+
   const props = defineProps<{
     formConfig: FormConfig;
   }>();
@@ -266,6 +268,8 @@
     };
     const dataSourceHasShowFieldItems: FormCreateField[] = [];
     const subFieldIdMap: Record<string, string> = {};
+    const isCopySubTable = [FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type);
+    const oldSubFields = isCopySubTable ? cloneDeep(res.subFields || []) : [];
 
     if (
       [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT].includes(item.type) &&
@@ -286,10 +290,9 @@
         },
       ];
       res.customOptions = [...res.options];
-    } else if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
+    } else if (isCopySubTable) {
       res.subFields = res.subFields?.map((e) => {
         const nextId = e.resourceFieldId ? e.id : getGenerateId();
-        subFieldIdMap[e.id] = nextId;
 
         const newItem = {
           ...cloneDeep(e),
@@ -306,17 +309,6 @@
           dataSourceHasShowFieldItems.push(newItem);
         }
         return newItem;
-      });
-
-      res.subFields = res.subFields?.map((subField) => {
-        if (subField.type !== FieldTypeEnum.FORMULA || !subField.formula) {
-          return subField;
-        }
-
-        return {
-          ...subField,
-          formula: remapFormulaFieldIds(subField.formula, subFieldIdMap, res.subFields || []),
-        };
       });
     }
 
@@ -335,6 +327,27 @@
         }
       });
     });
+
+    if (isCopySubTable) {
+      oldSubFields.forEach((oldSubField, index) => {
+        const nextSubField = res.subFields?.[index];
+        if (!nextSubField) {
+          return;
+        }
+        subFieldIdMap[resolveFieldId(oldSubField, true)] = resolveFieldId(nextSubField, true);
+      });
+
+      res.subFields = res.subFields?.map((subField) => {
+        if (subField.type !== FieldTypeEnum.FORMULA || !subField.formula) {
+          return subField;
+        }
+
+        return {
+          ...subField,
+          formula: remapFormulaFieldIds(subField.formula, subFieldIdMap, res.subFields || []),
+        };
+      });
+    }
 
     list.value.push(res);
     activeItem.value = res;

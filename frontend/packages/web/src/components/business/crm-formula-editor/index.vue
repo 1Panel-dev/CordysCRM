@@ -238,6 +238,7 @@
     getSelectionRange,
     insertRangeAtomic,
     isRangeInsideSameFnArgs,
+    resolveFieldId,
     safeParseFormula,
   } from './utils';
 
@@ -283,17 +284,6 @@
       label: t('common.text'),
     },
   };
-
-  function resolveFieldId(e: FormCreateField, inSubTable?: boolean) {
-    const id = e.id.split('_').pop() ?? '';
-    if (e.resourceFieldId) {
-      return e.id;
-    }
-    if (inSubTable) {
-      return e.businessKey || id;
-    }
-    return id;
-  }
 
   const allowFormulaType = [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.DATE_TIME];
 
