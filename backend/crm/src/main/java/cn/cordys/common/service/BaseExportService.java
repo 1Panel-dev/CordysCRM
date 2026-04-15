@@ -226,7 +226,7 @@ public abstract class BaseExportService {
             } else if (moduleFieldMap.containsKey(head.getKey())) {
                 //自定义字段
                 Map<String, Object> collect = moduleFieldMap.entrySet().stream()
-                        .filter(entry -> entry.getKey().contains(head.getKey()))
+                        .filter(entry -> entry.getKey().equals(head.getKey()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
                 getResourceFieldMap(collect, dataList, fieldConfigMap);
