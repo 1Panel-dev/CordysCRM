@@ -131,6 +131,7 @@ public abstract class BaseField {
         return Strings.CS.equals(type, FieldType.SERIAL_NUMBER.name());
     }
 
+	@JsonIgnore
 	public boolean includeFormula() {
 		if (Strings.CS.equals(type, FieldType.INPUT.name())) {
 			return StringUtils.isNotEmpty(((InputField) this).getFormula());
@@ -201,7 +202,7 @@ public abstract class BaseField {
     @JsonIgnore
     public boolean multiple() {
         return Strings.CS.equalsAny(type, FieldType.CHECKBOX.name(), FieldType.SELECT_MULTIPLE.name(),
-                FieldType.INPUT_MULTIPLE.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(), FieldType.DATA_SOURCE_MULTIPLE.name());
+                FieldType.INPUT_MULTIPLE.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(), FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.ATTACHMENT.name());
     }
 
     @JsonIgnore
@@ -225,6 +226,7 @@ public abstract class BaseField {
 		return hasBusinessKey() ? this.getBusinessKey() : this.getId();
 	}
 
+	@JsonIgnore
     public boolean hasBusinessKey() {
         return StringUtils.isNotBlank(this.getBusinessKey());
     }
