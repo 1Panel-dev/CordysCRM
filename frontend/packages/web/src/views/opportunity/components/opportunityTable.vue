@@ -25,11 +25,7 @@
       />
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="
-            hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD']) &&
-            activeTab !== OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS &&
-            !props.readonly
-          "
+          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD']) && !props.readonly"
           :loading="createLoading"
           type="primary"
           @click="handleCreate"
