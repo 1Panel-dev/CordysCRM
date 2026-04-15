@@ -680,11 +680,12 @@
       dataIndex: 'voidReason',
       type: FieldTypeEnum.INPUT,
     },
-    {
-      title: t('contract.alreadyPayAmount'),
-      dataIndex: 'alreadyPayAmount',
-      type: FieldTypeEnum.INPUT_NUMBER,
-    },
+    // 先去掉
+    // {
+    //   title: t('contract.alreadyPayAmount'),
+    //   dataIndex: 'alreadyPayAmount',
+    //   type: FieldTypeEnum.INPUT_NUMBER,
+    // },
     ...(dicApprovalEnable.value
       ? [
           {
