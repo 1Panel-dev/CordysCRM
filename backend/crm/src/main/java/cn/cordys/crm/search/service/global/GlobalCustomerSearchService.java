@@ -13,6 +13,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.service.CustomerFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
@@ -101,6 +102,7 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
         buildCombineSearch(conditions, request);
         //搜索客户
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         List<GlobalCustomerResponse> globalCustomerResponses = extCustomerMapper.globalSearchList(request, orgId);
         if (CollectionUtils.isEmpty(globalCustomerResponses)) {
             return PageUtils.setPageInfo(page, List.of());

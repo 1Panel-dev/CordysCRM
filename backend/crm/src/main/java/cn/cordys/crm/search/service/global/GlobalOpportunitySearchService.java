@@ -13,6 +13,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.service.OpportunityFieldService;
@@ -120,6 +121,7 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         buildCombineSearch(conditions, request);
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         List<GlobalOpportunityResponse> globalOpportunityResponses = extOpportunityMapper.globalSearchList(request, orgId);
         if (CollectionUtils.isEmpty(globalOpportunityResponses)) {
             return PageUtils.setPageInfo(page, List.of());
