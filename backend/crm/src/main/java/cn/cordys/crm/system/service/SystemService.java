@@ -23,6 +23,7 @@ public class SystemService {
 
     private static final String CACHE_COPYRIGHT = "copyright_cache";
     private static final String CACHE_FORM = "form_cache";
+    private static final String CACHE_FIELD = "field_cache";
     private static final String CACHE_TABLE_SCHEMA = "table_schema_cache";
     private static final String PRODUCT = "CORDYS";
     private static final String EDITION_CE = "ce";
@@ -128,7 +129,7 @@ public class SystemService {
             log.info("CacheManager 未初始化，跳过清理。");
             return;
         }
-        String[] cacheNames = {CACHE_FORM, CACHE_TABLE_SCHEMA, CACHE_COPYRIGHT, PERMISSION_CACHE};
+        String[] cacheNames = {CACHE_FORM, CACHE_FIELD, CACHE_TABLE_SCHEMA, CACHE_COPYRIGHT, PERMISSION_CACHE};
         for (String cacheName : cacheNames) {
             try {
                 Cache cache = cacheManager.getCache(cacheName);
