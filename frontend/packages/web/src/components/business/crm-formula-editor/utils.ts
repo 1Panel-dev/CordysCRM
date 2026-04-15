@@ -1,3 +1,5 @@
+import type { FormCreateField } from '@/components/business/crm-form-create/types';
+
 import { defaultFormulaConfig } from './config';
 import { FormulaDiagnostic } from './types';
 
@@ -314,4 +316,14 @@ export function ensureFnArgsHasCaretText(argsEl: HTMLElement) {
   if (!argsEl.firstChild) {
     argsEl.appendChild(document.createTextNode(''));
   }
+}
+
+export function resolveFieldId(e: FormCreateField, inSubTable?: boolean) {
+  if (e.resourceFieldId) {
+    return e.id;
+  }
+  if (inSubTable) {
+    return e.businessKey || e.id;
+  }
+  return e.id;
 }
