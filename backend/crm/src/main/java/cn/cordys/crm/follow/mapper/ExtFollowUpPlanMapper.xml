@@ -250,18 +250,18 @@
     </select>
 
     <sql id="fieldConditionJoin">
-        <choose>
-            <when test="condition.refFiled">
-                <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
-                    <property name="condition" value="condition"/>
-                    <property name="mainTable" value="follow_up_plan"/>
-                    <property name="mainTableAlias" value="fup"/>
-                    <property name="fieldTable" value="${tablePrefix}_${i}"/>
-                </include>
-            </when>
-            <otherwise>
-                <if test="${conditions} != null and ${conditions}.size() > 0">
-                    <foreach collection="${conditions}" item="condition" index="i">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <choose>
+                    <when test="condition.refFiled">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
+                            <property name="condition" value="condition"/>
+                            <property name="mainTable" value="follow_up_plan"/>
+                            <property name="mainTableAlias" value="fup"/>
+                            <property name="fieldTable" value="${tablePrefix}_${i}"/>
+                        </include>
+                    </when>
+                    <otherwise>
                         <if test="condition.name != 'content'
                             and condition.name != 'owner' and condition.name != 'type'
                             and condition.name != 'customerId' and condition.name != 'opportunityId'
@@ -285,10 +285,10 @@
                                 LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
                             </if>
                         </if>
-                    </foreach>
-                </if>
-            </otherwise>
-        </choose>
+                    </otherwise>
+                </choose>
+            </foreach>
+        </if>
     </sql>
 
     <sql id="fieldSortJoin">

@@ -8,6 +8,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.clue.service.ClueFieldService;
@@ -115,6 +116,7 @@ public class GlobalCluePoolSearchService extends BaseSearchService<BasePageReque
         buildCombineSearch(conditions, request);
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         List<GlobalCluePoolResponse> globalCluePoolResponses = extClueMapper.globalPoolSearchList(request, orgId);
         if (CollectionUtils.isEmpty(globalCluePoolResponses)) {
             return PageUtils.setPageInfo(page, List.of());

@@ -8,6 +8,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.service.CustomerFieldService;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
@@ -96,6 +97,7 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
         buildCombineSearch(conditions, request);
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         List<GlobalCustomerPoolResponse> customerPoolResponses = extCustomerMapper.globalPoolSearchList(request, orgId);
         if (CollectionUtils.isEmpty(customerPoolResponses)) {
             return PageUtils.setPageInfo(page, List.of());

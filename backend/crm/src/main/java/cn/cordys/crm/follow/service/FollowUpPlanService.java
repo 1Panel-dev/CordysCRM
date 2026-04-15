@@ -22,6 +22,7 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.follow.constants.FollowUpPlanStatusType;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
@@ -189,6 +190,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
     public PagerWithOption<List<FollowUpPlanListResponse>> totalList(PlanHomePageRequest request, String userId, String orgId,
                                                                      DeptDataPermissionDTO clueDataPermission, DeptDataPermissionDTO customerDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
         List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectTotalList(request, userId, orgId, clueDataPermission, customerDataPermission);
         List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);

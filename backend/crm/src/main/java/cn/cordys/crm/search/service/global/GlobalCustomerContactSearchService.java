@@ -14,6 +14,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.customer.service.CustomerContactFieldService;
@@ -118,6 +119,7 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
         buildCombineSearch(conditions, request);
         //搜索客户
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         List<GlobalCustomerContactResponse> globalContactResponses = extCustomerContactMapper.globalSearchList(request, orgId);
         if (CollectionUtils.isEmpty(globalContactResponses)) {
             return PageUtils.setPageInfo(page, List.of());

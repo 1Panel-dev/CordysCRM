@@ -1,11 +1,13 @@
 package cn.cordys.crm.search.service.global;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.ModuleKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.OptionCountDTO;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
@@ -148,6 +150,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         return extOpportunityMapper.globalSearchListCount(request, orgId);
     }
 
@@ -191,7 +194,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
-
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         return extClueMapper.globalPoolSearchListCount(request, orgId);
     }
 
@@ -234,6 +237,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         return extClueMapper.globalSearchListCount(request, orgId);
     }
 
@@ -269,6 +273,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         return extCustomerMapper.globalPoolSearchListCount(request, orgId);
     }
 
@@ -315,6 +320,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         return extCustomerContactMapper.globalSearchListCount(request, orgId);
     }
 
@@ -350,6 +356,7 @@ public class GlobalSearchCountService extends BaseSearchService<BasePageRequest,
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         return extCustomerMapper.globalSearchListCount(request, orgId);
     }
 
