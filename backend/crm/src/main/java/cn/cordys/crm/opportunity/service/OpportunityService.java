@@ -279,7 +279,7 @@ public class OpportunityService {
      * @param orgId
      * @return
      */
-    @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
+    @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.ADD)
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
         productService.checkProductList(request.getProducts());
         List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
@@ -312,7 +312,7 @@ public class OpportunityService {
         opportunityFieldService.saveModuleField(opportunity, orgId, operatorId, request.getModuleFields(), false);
         opportunityMapper.insert(opportunity);
 
-        baseService.handleAddLog(opportunity, request.getModuleFields());
+        baseService.handleAddLogWithResourceName(opportunity, request.getModuleFields());
 
 		// 消息通知
 		commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,

@@ -876,7 +876,7 @@ public class ModuleFormService {
                 }
             }
 
-            if (field instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
+            if (field instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()) && CollectionUtils.isNotEmpty(sourceField.getRefFields())) {
 				// 兼容新旧引用字段
                 List<String> oldRefIds = sourceField.getShowFields().stream().map(splitRefId(sourceField.getId())).distinct().toList();
                 List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(oldRefIds);

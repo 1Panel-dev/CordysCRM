@@ -125,7 +125,7 @@ public class ContractPaymentRecordService {
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    @OperationLog(module = LogModule.CONTRACT_PAYMENT_RECORD, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#currentUser}")
+    @OperationLog(module = LogModule.CONTRACT_PAYMENT_RECORD, type = LogType.ADD, operator = "{#currentUser}")
     public ContractPaymentRecord add(ContractPaymentRecordAddRequest request, String currentUser, String currentOrg) {
         checkContractPaymentAmount(request.getContractId(), request.getRecordAmount(), null);
         ContractPaymentRecord paymentRecord = BeanUtils.copyBean(new ContractPaymentRecord(), request);
@@ -142,7 +142,7 @@ public class ContractPaymentRecordService {
         contractPaymentRecordFieldService.saveModuleField(paymentRecord, currentOrg, currentUser, request.getModuleFields(), false);
         contractPaymentRecordMapper.insert(paymentRecord);
         // 日志
-        baseService.handleAddLog(paymentRecord, request.getModuleFields());
+        baseService.handleAddLogWithResourceName(paymentRecord, request.getModuleFields());
         return paymentRecord;
     }
 

@@ -178,7 +178,7 @@ public class ProductService {
 		}).toList();
 	}
 
-    @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")
+    @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.ADD, operator = "{#userId}")
     public Product add(ProductEditRequest request, String userId, String orgId) {
         Product product = BeanUtils.copyBean(new Product(), request);
         product.setName(request.getName());
@@ -198,7 +198,7 @@ public class ProductService {
         productBaseMapper.insert(product);
 
         // 添加日志上下文
-        baseService.handleAddLog(product, request.getModuleFields());
+        baseService.handleAddLogWithResourceName(product, request.getModuleFields());
         return product;
     }
 

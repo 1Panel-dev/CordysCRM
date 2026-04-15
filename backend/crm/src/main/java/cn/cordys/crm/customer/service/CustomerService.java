@@ -427,7 +427,7 @@ public class CustomerService {
 		}).toList();
 	}
 
-    @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
+    @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.ADD)
     public Customer add(CustomerAddRequest request, String userId, String orgId) {
         Customer customer = BeanUtils.copyBean(new Customer(), request);
         if (StringUtils.isBlank(request.getOwner())) {
@@ -448,7 +448,7 @@ public class CustomerService {
 
         customerMapper.insert(customer);
 
-        baseService.handleAddLog(customer, request.getModuleFields());
+        baseService.handleAddLogWithResourceName(customer, request.getModuleFields());
         // 通知
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
                 NotificationConstants.Event.CUSTOMER_ADD, customer.getName(), userId,

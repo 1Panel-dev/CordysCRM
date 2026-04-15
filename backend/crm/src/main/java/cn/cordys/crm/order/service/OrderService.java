@@ -100,7 +100,7 @@ public class OrderService {
      * @param orgId
      * @return
      */
-    @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
+    @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.ADD)
     public Order add(OrderAddRequest request, String operatorId, String orgId) {
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
