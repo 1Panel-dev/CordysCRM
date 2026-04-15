@@ -82,7 +82,7 @@ public class AdvancedCustomerPoolSearchService extends BaseSearchService<BasePag
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
 
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         // 查询重复公海客户列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<AdvancedCustomerPoolResponse> list = extCustomerMapper.customerPoolList(request, orgId);

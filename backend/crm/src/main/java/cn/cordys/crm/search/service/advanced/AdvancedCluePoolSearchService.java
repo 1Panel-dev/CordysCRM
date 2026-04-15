@@ -81,7 +81,7 @@ public class AdvancedCluePoolSearchService extends BaseSearchService<BasePageReq
         if (!enabledModules.contains(ModuleKey.CLUE.getKey())) {
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         // 查询重复线索池线索列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<AdvancedCluePoolResponse> list = extClueMapper.cluePoolList(request, orgId);

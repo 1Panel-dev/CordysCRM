@@ -116,7 +116,7 @@ public class PoolCustomerController {
     @Operation(summary = "客户导出全部")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
     public String customerPoolExportAll(@Validated @RequestBody CustomerExportRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         return customerPoolExportService.exportCrossPage(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), null, LocaleContextHolder.getLocale());
     }
 

@@ -215,7 +215,7 @@ public class ContractController {
     @Operation(summary = "导出全部合同")
     @RequiresPermissions(PermissionConstants.CONTRACT_EXPORT)
     public String exportAll(@Validated @RequestBody ContractExportRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_READ);
         ExportDTO exportDTO = ExportDTO.builder()
@@ -275,7 +275,7 @@ public class ContractController {
     @RequiresPermissions(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "合同统计")
     public ContractStatisticResponse searchStatistic(@Validated @RequestBody BaseCondition request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_READ);
         return contractService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);

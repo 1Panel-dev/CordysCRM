@@ -92,7 +92,7 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
 
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<AdvancedOpportunityResponse> list = extOpportunityMapper.advancedSearchList(request, orgId);

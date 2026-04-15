@@ -129,7 +129,7 @@ public class ContractPaymentPlanController {
     @Operation(summary = "导出全部回款计划")
     @RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_PLAN_READ)
     public String exportAll(@Validated @RequestBody ContractPaymentPlanExportRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_PLAN.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
         ExportDTO exportDTO = ExportDTO.builder()

@@ -336,24 +336,7 @@
                         </include>
                     </when>
                     <otherwise>
-                        <if test="condition.name != 'name'
-                            and condition.name != 'owner'
-                            and condition.name != 'customerId'
-                            and condition.name != 'stage'
-                            and condition.name != 'amount'
-                            and condition.name != 'possible'
-                            and condition.name != 'products'
-                            and condition.name != 'contactId'
-                            and condition.name != 'followTime'
-                            and condition.name != 'updateUser'
-                            and condition.name != 'createTime'
-                            and condition.name != 'updateTime'
-                            and condition.name != 'createUser'
-                            and condition.name != 'follower'
-                            and condition.name != 'expectedEndTime'
-                            and condition.name != 'actualEndTime'
-                            and condition.name != 'failureReason'
-                            and condition.name != 'departmentId'">
+                        <if test="condition.customField">
                             <if test="condition.blob">
                                 left join opportunity_field_blob ${tablePrefix}_${i}
                                 on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -443,12 +426,20 @@
     <sql id="condition">
         <choose>
             <when test="condition.refFiled">
-                <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
-                    <property name="condition" value="condition"/>
-                    <property name="mainTable" value="contract"/>
-                    <property name="mainTableAlias" value="ct"/>
-                    <property name="fieldTable" value="${tablePrefix}_${i}"/>
-                </include>
+                <choose>
+                    <when test="!condition.customField">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${table}.${condition.name}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
             </when>
             <otherwise>
                 <choose>

@@ -158,7 +158,7 @@ public class CustomerContactController {
     @Operation(summary = "联系人导出全部")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_EXPORT)
     public String customerContactExportAll(@Validated @RequestBody CustomerContactExportRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
         return customerContactExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());

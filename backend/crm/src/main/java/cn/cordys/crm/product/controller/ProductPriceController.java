@@ -140,7 +140,7 @@ public class ProductPriceController {
 	@RequiresPermissions(PermissionConstants.PRICE_EXPORT)
 	@Operation(summary = "导出全部")
 	public String exportAll(@Validated @RequestBody ProductPriceExportRequest request) {
-		ConditionFilterUtils.parseCondition(request);
+		ConditionFilterUtils.parseCondition(request, FormKey.PRICE.getKey());
 		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
 				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
 				.locale(LocaleContextHolder.getLocale()).pageRequest(request).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
