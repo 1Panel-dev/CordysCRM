@@ -120,7 +120,7 @@ public class PoolClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_EXPORT)
     @Operation(summary = "导出全部")
     public String exportAll(@Validated @RequestBody ClueExportRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         return cluePoolExportService.exportCrossPage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null, LocaleContextHolder.getLocale());
     }
 

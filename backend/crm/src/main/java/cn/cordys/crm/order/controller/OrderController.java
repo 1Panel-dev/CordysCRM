@@ -136,7 +136,7 @@ public class OrderController {
     @RequiresPermissions(PermissionConstants.ORDER_READ)
     @Operation(summary = "订单统计")
     public OrderStatisticResponse searchStatistic(@Validated @RequestBody BaseCondition request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.ORDER_READ);
         return orderService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);

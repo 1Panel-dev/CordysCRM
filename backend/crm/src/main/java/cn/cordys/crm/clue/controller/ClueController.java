@@ -169,7 +169,7 @@ public class ClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_EXPORT)
     @Operation(summary = "导出全部")
     public String exportAll(@Validated @RequestBody ClueExportRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return clueExportService.exportAll(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());

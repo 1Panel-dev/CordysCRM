@@ -82,7 +82,7 @@ public class AdvancedClueSearchService extends BaseSearchService<CluePageRequest
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         request.setPoolId(null);
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 4. 查询并返回相似线索列表
         List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, null, false);

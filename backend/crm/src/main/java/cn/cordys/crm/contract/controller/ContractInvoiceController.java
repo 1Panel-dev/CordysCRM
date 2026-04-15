@@ -135,7 +135,7 @@ public class ContractInvoiceController {
     @Operation(summary = "导出全部合同")
     @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_EXPORT)
     public String exportAll(@Validated @RequestBody ContractInvoiceExportRequest request) {
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_INVOICE_EXPORT);
         ExportDTO exportDTO = ExportDTO.builder()

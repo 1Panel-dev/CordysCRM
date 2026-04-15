@@ -146,7 +146,7 @@ public class ContractPaymentRecordController {
 	@Operation(summary = "导出全部回款记录")
 	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
 	public String exportAll(@Validated @RequestBody ContractPaymentRecordExportRequest request) {
-		ConditionFilterUtils.parseCondition(request);
+		ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
 		ExportDTO exportDTO = ExportDTO.builder().exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
@@ -163,7 +163,7 @@ public class ContractPaymentRecordController {
 	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
 	@Operation(summary = "回款统计")
 	public ContractPaymentRecordStatisticResponse searchStatistic(@Validated @RequestBody ContractPaymentRecordStatisticRequest request) {
-		ConditionFilterUtils.parseCondition(request);
+		ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
 		return contractPaymentRecordService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);

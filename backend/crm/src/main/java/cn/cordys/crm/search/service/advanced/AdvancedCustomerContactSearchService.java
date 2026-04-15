@@ -64,7 +64,7 @@ public class AdvancedCustomerContactSearchService extends BaseSearchService<Cust
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
 
-        ConditionFilterUtils.parseCondition(request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, null);
         List<AdvancedCustomerContactResponse> buildListData = buildCustomerContactData(list, orgId, userId);
