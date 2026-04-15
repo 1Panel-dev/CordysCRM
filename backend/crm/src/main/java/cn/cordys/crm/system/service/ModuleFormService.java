@@ -844,7 +844,10 @@ public class ModuleFormService {
 					}
 					BaseField combineField = combineFieldsProps(oldField, refField);
 					// 子表格的引用字段特殊属性
-					combineField.setBusinessKey(oldField.getBusinessKey());
+					BusinessModuleField businessField = BusinessModuleField.ofKey(combineField.getInternalKey());
+					if (businessField != null) {
+						combineField.setBusinessKey(businessField.getBusinessKey());
+					}
 					combineField.setSubTableFieldId(oldField.getSubTableFieldId());
 					it.set(combineField);
 				}
