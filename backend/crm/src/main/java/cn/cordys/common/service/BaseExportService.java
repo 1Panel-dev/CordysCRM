@@ -64,7 +64,6 @@ public abstract class BaseExportService {
 	 * 汇总字段前缀
 	 */
     private static final String SUM_PREFIX = "sum_";
-	private static final String UNDERLINE = "_";
     public static final String SLASH = "/";
 	/**
 	 * SXSSFWorkbook行访问窗口大小
@@ -341,8 +340,8 @@ public abstract class BaseExportService {
 			String businessKey = meta.getBusinessKey();
 			String fieldId = meta.getFieldId();
 			if (StringUtils.isNotEmpty(meta.getPrefixId())) {
-				businessKey = meta.getPrefixId() + UNDERLINE + meta.getBusinessKey();
-				fieldId = meta.getPrefixId() + UNDERLINE + meta.getFieldId();
+				businessKey = meta.getPrefixId() + SLASH + meta.getBusinessKey();
+				fieldId = meta.getPrefixId() + SLASH + meta.getFieldId();
 			}
 
 			Object value = null;
@@ -603,8 +602,8 @@ public abstract class BaseExportService {
 				realHead = head.substring(head.indexOf(SUM_PREFIX) + SUM_PREFIX.length());
 			}
 			// 表头Key包含下划线, 含有子表格字段, 截取下划线前部分作为前缀ID, 用于取值区分不同子表格 (如果存在同名字段), 后半部分作为实际字段ID
-			if (realHead.contains(UNDERLINE)) {
-				String[] ks = realHead.split(UNDERLINE);
+			if (realHead.contains(SLASH)) {
+				String[] ks = realHead.split(SLASH);
 				meta.setPrefixId(ks[0]);
 				realHead = ks[1];
 			}
@@ -838,7 +837,7 @@ public abstract class BaseExportService {
 			for (int i = 0; i < list.size(); i++) {
 				Map<String,Object> row = alignedList.get(i);
 				Map<String,Object> subRowMap = (Map<String,Object>) list.get(i);
-				subRowMap.forEach((k,v) -> row.put(subFv.getFieldId() + UNDERLINE + k, v));
+				subRowMap.forEach((k,v) -> row.put(subFv.getFieldId() + SLASH + k, v));
 			}
 		}
 		return alignedList;

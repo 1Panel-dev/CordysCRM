@@ -86,7 +86,7 @@ public class ModuleFormService {
     private static final String PRICE_SUB_ROW_KEY = "price_sub";
     private static final String OPTION_DEFAULT_SOURCE = "custom";
     private static final String UPGRADE_EXT_FIELD = "ext_ver";
-    private static final String UNDERLINE = "_";
+	public static final String SLASH = "/";
 	private static final String REF_UNDERLINE = "_ref_";
 
     static {
@@ -1381,19 +1381,19 @@ public class ModuleFormService {
                         .collect(Collectors.toMap(f -> StringUtils.isNotBlank(f.getResourceFieldId()) ? f.getId()
                                 : f.idOrBusinessKey(), Function.identity(), (oldValue, newValue) -> oldValue));
 
-                // 子表格的表头ID格式: 子表格ID_字段ID
+                // 子表格的表头ID格式: 子表格ID|字段ID
                 subField.getSubFields().stream()
                         .filter(BaseField::canExport)
                         .map(BaseField::getId)
-                        .forEach(bf -> heads.add(subField.getId() + UNDERLINE + bf));
+                        .forEach(bf -> heads.add(subField.getId() + SLASH + bf));
 
-                // 子表格汇总字段ID格式: SUM-子表格ID-字段ID
+                // 子表格汇总字段ID格式: sum_子表格ID|字段ID
                 if (CollectionUtils.isNotEmpty(subField.getSumColumns())) {
                     subField.getSumColumns().forEach(sumColumn -> {
                         if (!subFieldMap.containsKey(sumColumn)) {
                             return;
                         }
-                        heads.add(SUM_PREFIX + subField.getId() + UNDERLINE + subFieldMap.get(sumColumn).getId());
+                        heads.add(SUM_PREFIX + subField.getId() + SLASH + subFieldMap.get(sumColumn).getId());
                     });
                 }
             } else {

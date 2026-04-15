@@ -73,6 +73,7 @@ public class DataInitService {
             initOneTime(moduleFormService::initOrderFormScenarioProp, "init.order.form.scenario");
 			initOneTime(moduleFieldExtService::modifyInternalSubSumColumn, "modify.internal.sum.column");
 			initOneTime(moduleFieldExtService::modifyInternalSubCalcFormula, "modify.internal.calc.formula");
+			initOneTime(moduleFieldExtService::refreshFormulaOldReferencedId, "refresh.formula.old.referenced.id");
 		} finally {
             lock.unlock();
         }
