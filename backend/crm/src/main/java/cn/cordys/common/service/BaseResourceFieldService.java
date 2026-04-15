@@ -1296,10 +1296,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @return 字段信息
      */
     public BaseField getAndCheckField(String fieldId, String organizationId) {
-        return moduleFormCacheService.getConfig(getFormKey(), organizationId)
-                .getFields()
-                .stream()
-                .filter(f -> fieldId.equals(f.getId()))
+        List<BaseField> flattenFormFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).
+                getFlattenFormFields(getFormKey(), OrganizationContext.getOrganizationId());
+        return flattenFormFields.stream().filter(f->fieldId.equals(f.getId()))
                 .findFirst()
                 .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));
     }
