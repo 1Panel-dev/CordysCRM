@@ -427,7 +427,7 @@ public class ClueService {
 		}).toList();
 	}
 
-    @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
+    @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD)
     public Clue add(ClueAddRequest request, String userId, String orgId) {
         productService.checkProductList(request.getProducts());
         Clue clue = BeanUtils.copyBean(new Clue(), request);
@@ -449,7 +449,7 @@ public class ClueService {
         clueFieldService.saveModuleField(clue, orgId, userId, request.getModuleFields(), false);
 
         clueMapper.insert(clue);
-        baseService.handleAddLog(clue, request.getModuleFields());
+        baseService.handleAddLogWithResourceName(clue, request.getModuleFields());
 
 		// 消息通知
 		commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,

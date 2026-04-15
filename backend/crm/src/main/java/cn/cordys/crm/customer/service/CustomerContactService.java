@@ -282,7 +282,7 @@ public class CustomerContactService {
 		}).toList();
 	}
 
-    @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.ADD, resourceName = "{#request.name}")
+    @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.ADD)
     public CustomerContact add(CustomerContactAddRequest request, String userId, String orgId) {
         CustomerContact customerContact = BeanUtils.copyBean(new CustomerContact(), request);
         customerContact.setCreateTime(System.currentTimeMillis());
@@ -301,7 +301,7 @@ public class CustomerContactService {
 
         customerContactMapper.insert(customerContact);
 
-        baseService.handleAddLog(customerContact, request.getModuleFields());
+        baseService.handleAddLogWithResourceName(customerContact, request.getModuleFields());
 
         // 添加联系人通知
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());

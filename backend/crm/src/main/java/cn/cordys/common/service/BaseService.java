@@ -277,6 +277,26 @@ public class BaseService {
         writeAddLogContext(resource, resourceLog);
     }
 
+	/**
+	 * 新增日志, 替换资源名称
+	 * @param resource 资源信息
+	 * @param moduleFields 自定义字段
+	 * @param <T> 资源类型
+	 */
+	public <T> void handleAddLogWithResourceName(T resource, List<BaseModuleFieldValue> moduleFields) {
+		Map<String, Object> resourceLog = JSON.parseToMap(JSON.toJSONString(resource));
+
+		if (moduleFields != null) {
+			moduleFields.stream()
+					.filter(BaseModuleFieldValue::valid)
+					.forEach(field ->
+							resourceLog.put(field.getFieldId(), field.getFieldValue())
+					);
+		}
+
+		writeAddLogContextWithResourceName(resource, resourceLog);
+	}
+
     public <T> void handleAddLogWithSubTable(
             T resource,
             List<BaseModuleFieldValue> moduleFields,
@@ -294,7 +314,7 @@ public class BaseService {
             fillResourceLog(resourceLog, validFields, fieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey, moduleFormConfigDTO);
         }
 
-        writeAddLogContext(resource, resourceLog);
+		writeAddLogContextWithResourceName(resource, resourceLog);
     }
 
 
@@ -314,6 +334,28 @@ public class BaseService {
             throw new GenericException(e);
         }
     }
+
+	/**
+	 * 写入操作日志上下文，替换资源名称 (参数资源名存在占位符)
+	 * @param resource 资源
+	 * @param resourceLog 日志信息
+	 * @param <T> 资源类型
+	 */
+	private <T> void writeAddLogContextWithResourceName(T resource, Map<String, Object> resourceLog) {
+		try {
+			Method idGetter = resource.getClass().getMethod("getId");
+			Method nameGetter = resource.getClass().getMethod("getName");
+			OperationLogContext.setContext(
+					LogContextInfo.builder()
+							.resourceId((String) idGetter.invoke(resource))
+							.resourceName((String) nameGetter.invoke(resource))
+							.modifiedValue(resourceLog)
+							.build()
+			);
+		} catch (Exception e) {
+			throw new GenericException(e);
+		}
+	}
 
     public <T> void handleUpdateLog(
             T originResource,
