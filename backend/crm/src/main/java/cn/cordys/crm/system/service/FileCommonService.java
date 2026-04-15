@@ -57,10 +57,11 @@ public class FileCommonService {
      */
     public void upload(File file, FileRequest request) {
         try {
-            FileInputStream inputStream = new FileInputStream(file);
-            FileCenter.getRepository(request.getStorage()).saveFile(inputStream, request);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            try (FileInputStream inputStream = new FileInputStream(file)) {
+                FileCenter.getRepository(request.getStorage()).saveFile(inputStream, request);
+                } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 
