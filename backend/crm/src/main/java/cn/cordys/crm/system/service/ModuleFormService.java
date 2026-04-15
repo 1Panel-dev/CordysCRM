@@ -338,6 +338,7 @@ public class ModuleFormService {
 					BaseField refField = new InputField();
 					refField.setId(rf.getId());
 					refField.setName(rf.getName());
+					refField.setType(rf.getType());
 					refField.setFieldWidth(rf.getFieldWidth());
 					refField.setResourceFieldId(rf.getResourceFieldId());
 					return refField;
