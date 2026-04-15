@@ -298,13 +298,15 @@ public class ModuleFieldExtService {
 	}
 
 	public void refreshFormulaOldReferencedId() {
-		// 外层数据源
-		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
-		fieldWrapper.eq(ModuleField::getType, FieldType.DATA_SOURCE.name());
-		List<ModuleField> sourceFields = fieldMapper.selectListByLambda(fieldWrapper);
-		sourceFields.stream().collect(Collectors.groupingBy(ModuleField::getFormId)).forEach((formId, fields) -> {
+		List<ModuleForm> allForms = formMapper.selectAll(null);
+		allForms.forEach(form -> {
 			Map<String, String> oldToNewMap = new HashMap<>(8);
-			List<ModuleFieldBlob> moduleFieldBlobs = fieldBlobMapper.selectByIds(fields.stream().map(ModuleField::getId).toList());
+
+			// 外层数据源
+			LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+			fieldWrapper.eq(ModuleField::getType, FieldType.DATA_SOURCE.name()).eq(ModuleField::getFormId, form.getId());
+			List<ModuleField> sourceFields = fieldMapper.selectListByLambda(fieldWrapper);
+			List<ModuleFieldBlob> moduleFieldBlobs = fieldBlobMapper.selectByIds(sourceFields.stream().map(ModuleField::getId).toList());
 			for (ModuleFieldBlob fieldBlob : moduleFieldBlobs) {
 				DatasourceField sourceField = JSON.parseObject(fieldBlob.getProp(), DatasourceField.class);
 				if (CollectionUtils.isEmpty(sourceField.getShowFields())) {
@@ -315,7 +317,7 @@ public class ModuleFieldExtService {
 
 			// 子表格数据源
 			LambdaQueryWrapper<ModuleField> subFieldWrapper = new LambdaQueryWrapper<>();
-			subFieldWrapper.like(ModuleField::getType, "SUB_").eq(ModuleField::getFormId, formId);
+			subFieldWrapper.like(ModuleField::getType, "SUB_").eq(ModuleField::getFormId, form.getId());
 			List<ModuleField> subFields = fieldMapper.selectListByLambda(subFieldWrapper);
 			List<ModuleFieldBlob> subFieldBlobs = fieldBlobMapper.selectByIds(subFields.stream().map(ModuleField::getId).toList());
 			for (ModuleFieldBlob fieldBlob : subFieldBlobs) {
@@ -334,7 +336,7 @@ public class ModuleFieldExtService {
 			 * 替换公式字段中的旧引用ID (外层计算字段 & 子表格计算字段)
 			 */
 			LambdaQueryWrapper<ModuleField> formulaFieldWrapper = new LambdaQueryWrapper<>();
-			formulaFieldWrapper.eq(ModuleField::getType, FieldType.FORMULA.name()).eq(ModuleField::getFormId, formId);
+			formulaFieldWrapper.eq(ModuleField::getType, FieldType.FORMULA.name()).eq(ModuleField::getFormId, form.getId());
 			List<ModuleField> formulaFields = fieldMapper.selectListByLambda(formulaFieldWrapper);
 			List<ModuleFieldBlob> formulaFieldBlobs = fieldBlobMapper.selectByIds(formulaFields.stream().map(ModuleField::getId).toList());
 			for (ModuleFieldBlob fieldBlob : formulaFieldBlobs) {
@@ -369,6 +371,5 @@ public class ModuleFieldExtService {
 				fieldBlobMapper.updateById(fieldBlob);
 			}
 		});
-
 	}
 }

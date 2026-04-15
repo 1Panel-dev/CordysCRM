@@ -824,6 +824,10 @@ public class ModuleFormService {
 				List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(oldRefIds);
 				Map<String, BaseField> reloadFieldMap = reloadFieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId,
 						filedBlob -> JSON.parseObject(filedBlob.getProp(), BaseField.class)));
+
+				// 补充一些内置字段信息
+				getSystemExtendFields(((DatasourceField) sf).getDataSourceType())
+						.forEach(extField -> reloadFieldMap.put(extField.getId(), extField));
 				// 合并可能引用的字段属性 (数据源引用字段 & 价格表子表格字段)
 				reloadFieldMap.putAll(priceSubFieldMap);
 
