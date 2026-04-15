@@ -8,6 +8,7 @@ import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.ModuleFieldBlob;
 import cn.cordys.crm.system.domain.ModuleForm;
+import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.DateTimeField;
 import cn.cordys.crm.system.dto.field.FormulaField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
@@ -25,9 +26,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -296,5 +295,80 @@ public class ModuleFieldExtService {
 		}
 		moduleFieldBlob.setProp(JSON.toJSONString(formulaField));
 		fieldBlobMapper.updateById(moduleFieldBlob);
+	}
+
+	public void refreshFormulaOldReferencedId() {
+		// 外层数据源
+		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+		fieldWrapper.eq(ModuleField::getType, FieldType.DATA_SOURCE.name());
+		List<ModuleField> sourceFields = fieldMapper.selectListByLambda(fieldWrapper);
+		sourceFields.stream().collect(Collectors.groupingBy(ModuleField::getFormId)).forEach((formId, fields) -> {
+			Map<String, String> oldToNewMap = new HashMap<>(8);
+			List<ModuleFieldBlob> moduleFieldBlobs = fieldBlobMapper.selectByIds(fields.stream().map(ModuleField::getId).toList());
+			for (ModuleFieldBlob fieldBlob : moduleFieldBlobs) {
+				DatasourceField sourceField = JSON.parseObject(fieldBlob.getProp(), DatasourceField.class);
+				if (CollectionUtils.isEmpty(sourceField.getShowFields())) {
+					continue;
+				}
+				sourceField.getShowFields().forEach(sf -> oldToNewMap.put(sf, sourceField.getId() + "_ref_" + sf));
+			}
+
+			// 子表格数据源
+			LambdaQueryWrapper<ModuleField> subFieldWrapper = new LambdaQueryWrapper<>();
+			subFieldWrapper.like(ModuleField::getType, "SUB_").eq(ModuleField::getFormId, formId);
+			List<ModuleField> subFields = fieldMapper.selectListByLambda(subFieldWrapper);
+			List<ModuleFieldBlob> subFieldBlobs = fieldBlobMapper.selectByIds(subFields.stream().map(ModuleField::getId).toList());
+			for (ModuleFieldBlob fieldBlob : subFieldBlobs) {
+				SubField subField = JSON.parseObject(fieldBlob.getProp(), SubField.class);
+				if (CollectionUtils.isEmpty(subField.getSubFields())) {
+					continue;
+				}
+				subField.getSubFields().forEach(sbf -> {
+					if (sbf instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
+						sourceField.getShowFields().forEach(sf -> oldToNewMap.put(sf, sourceField.getId() + "_ref_" + sf));
+					}
+				});
+			}
+
+			/*
+			 * 替换公式字段中的旧引用ID (外层计算字段 & 子表格计算字段)
+			 */
+			LambdaQueryWrapper<ModuleField> formulaFieldWrapper = new LambdaQueryWrapper<>();
+			formulaFieldWrapper.eq(ModuleField::getType, FieldType.FORMULA.name()).eq(ModuleField::getFormId, formId);
+			List<ModuleField> formulaFields = fieldMapper.selectListByLambda(formulaFieldWrapper);
+			List<ModuleFieldBlob> formulaFieldBlobs = fieldBlobMapper.selectByIds(formulaFields.stream().map(ModuleField::getId).toList());
+			for (ModuleFieldBlob fieldBlob : formulaFieldBlobs) {
+				FormulaField formulaField = JSON.parseObject(fieldBlob.getProp(), FormulaField.class);
+				if (StringUtils.isEmpty(formulaField.getFormula())) {
+					continue;
+				}
+				oldToNewMap.keySet().forEach(oldId -> {
+					if (formulaField.getFormula().contains(oldId)) {
+						formulaField.setFormula(formulaField.getFormula().replace(oldId, oldToNewMap.get(oldId)));
+					}
+				});
+				fieldBlob.setProp(JSON.toJSONString(formulaField));
+				fieldBlobMapper.updateById(fieldBlob);
+			}
+
+			for (ModuleFieldBlob fieldBlob : subFieldBlobs) {
+				SubField subField = JSON.parseObject(fieldBlob.getProp(), SubField.class);
+				if (CollectionUtils.isEmpty(subField.getSubFields())) {
+					continue;
+				}
+				subField.getSubFields().forEach(sbf -> {
+					if (sbf instanceof FormulaField formulaField && StringUtils.isNotEmpty(formulaField.getFormula())) {
+						oldToNewMap.keySet().forEach(oldId -> {
+							if (formulaField.getFormula().contains(oldId)) {
+								formulaField.setFormula(formulaField.getFormula().replace(oldId, oldToNewMap.get(oldId)));
+							}
+						});
+					}
+				});
+				fieldBlob.setProp(JSON.toJSONString(subField));
+				fieldBlobMapper.updateById(fieldBlob);
+			}
+		});
+
 	}
 }
