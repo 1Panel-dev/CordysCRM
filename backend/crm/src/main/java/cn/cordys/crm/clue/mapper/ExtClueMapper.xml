@@ -259,11 +259,11 @@
                             and condition.name != 'followTime' and condition.name != 'createTime' and condition.name != 'collectionTime'
                             and condition.name != 'updateUser' and condition.name != 'createUser'
                             and condition.name != 'updateTime' and condition.name != 'phone' and condition.name != 'reasonId' and condition.name != 'departmentId'">
-                            <if test="condition.multipleValue">
+                            <if test="condition.blob">
                                 left join clue_field_blob ${tablePrefix}_${i}
                                 on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
-                            <if test="!condition.multipleValue">
+                            <if test="!condition.blob">
                                 left join clue_field ${tablePrefix}_${i}
                                 on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>

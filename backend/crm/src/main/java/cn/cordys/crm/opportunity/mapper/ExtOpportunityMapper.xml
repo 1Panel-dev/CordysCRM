@@ -354,11 +354,11 @@
                             and condition.name != 'actualEndTime'
                             and condition.name != 'failureReason'
                             and condition.name != 'departmentId'">
-                            <if test="condition.multipleValue">
+                            <if test="condition.blob">
                                 left join opportunity_field_blob ${tablePrefix}_${i}
                                 on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
-                            <if test="!condition.multipleValue">
+                            <if test="!condition.blob">
                                 left join opportunity_field ${tablePrefix}_${i}
                                 on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>

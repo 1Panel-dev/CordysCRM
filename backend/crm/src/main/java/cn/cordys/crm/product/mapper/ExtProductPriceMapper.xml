@@ -60,11 +60,11 @@
                             and condition.name != 'createTime' and condition.name != 'updateTime' and condition.name != 'createUser'
                             and condition.name != 'update_user' and condition.name != 'create_time' and condition.name != 'update_time'
                             and condition.name != 'create_user'">
-                            <if test="condition.multipleValue">
+                            <if test="condition.blob">
                                 left join product_price_field_blob ${tablePrefix}_${i}
                                 on pp.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
-                            <if test="!condition.multipleValue">
+                            <if test="!condition.blob">
                                 left join product_price_field ${tablePrefix}_${i}
                                 on pp.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>

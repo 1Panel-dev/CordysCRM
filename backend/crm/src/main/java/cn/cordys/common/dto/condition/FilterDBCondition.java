@@ -13,6 +13,9 @@ public class FilterDBCondition extends FilterCondition {
     @Schema(description = "是否是自定义字段")
     private Boolean customField = false;
 
+    @Schema(description = "是否是大字段")
+    private Boolean blob = false;
+
     @Schema(description = "是否是显示字段")
     private Boolean refFiled = false;
 

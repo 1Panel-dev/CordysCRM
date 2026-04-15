@@ -172,11 +172,11 @@
                     <otherwise>
                         <if test="condition.name not in
                             {'name', 'no', 'owner', 'paymentPlanId', 'contractId', 'createTime', 'updateTime', 'recordAmount', 'recordEndTime', 'createUser', 'updateUser', 'departmentId'}">
-                            <if test="condition.multipleValue">
+                            <if test="condition.blob">
                                 left join contract_payment_record_field_blob ${tablePrefix}_${i}
                                 on cpr.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
-                            <if test="!condition.multipleValue">
+                            <if test="!condition.blob">
                                 left join contract_payment_record_field ${tablePrefix}_${i}
                                 on cpr.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
