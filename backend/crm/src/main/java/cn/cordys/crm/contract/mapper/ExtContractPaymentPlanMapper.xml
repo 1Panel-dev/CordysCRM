@@ -173,13 +173,12 @@
                        </include>
                     </when>
                     <otherwise>
-                        <if test="condition.name not in
-                            {'name', 'owner', 'createTime', 'updateTime', 'planStatus', 'planAmount', 'planEndTime', 'createUser', 'updateUser', 'departmentId', 'contractId'}">
-                            <if test="condition.multipleValue">
+                        <if test="condition.customField">
+                            <if test="condition.blob">
                                 left join contract_payment_plan_field_blob ${tablePrefix}_${i}
                                 on cpp.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
-                            <if test="!condition.multipleValue">
+                            <if test="!condition.blob">
                                 left join contract_payment_plan_field ${tablePrefix}_${i}
                                 on cpp.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>

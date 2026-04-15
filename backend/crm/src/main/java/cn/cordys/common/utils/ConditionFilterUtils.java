@@ -183,6 +183,8 @@ public class ConditionFilterUtils {
 
             BaseField baseField = fieldMap.get(condition.getName());
             if (baseField != null) {
+                dbCondition.setBlob(baseField.isBlob());
+                dbCondition.setMultipleValue(baseField.multiple());
                 if (StringUtils.isBlank(baseField.getResourceFieldId())) {
                     // 处理表单字段
                     parseFilterDBCondition(dbCondition, baseField);

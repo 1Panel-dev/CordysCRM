@@ -531,10 +531,10 @@
                 left join ${condition.refMainTableName} ${fieldTable}_main
                 on ${mainTableAlias}.${condition.refMainFieldName} = ${fieldTable}_main.id
                 left join
-                <if test="condition.multipleValue">
+                <if test="condition.blob">
                     ${condition.refMainTableName}_field_blob
                 </if>
-                <if test="!condition.multipleValue">
+                <if test="!condition.blob">
                     ${condition.refMainTableName}_field
                 </if>
                 ${fieldTable}
@@ -552,10 +552,10 @@
                 left join ${condition.refMainTableName} ${fieldTable}_main
                 on ${fieldTable}_custom.field_value = ${fieldTable}_main.id
                 left join
-                <if test="condition.multipleValue">
+                <if test="condition.blob">
                     ${condition.refMainTableName}_field_blob
                 </if>
-                <if test="!condition.multipleValue">
+                <if test="!condition.blob">
                     ${condition.refMainTableName}_field
                 </if>
                 ${fieldTable}

@@ -142,11 +142,11 @@
                         <if test="condition.name not in
                                 {'owner', 'createTime', 'updateTime', 'contractId', 'createUser', 'updateUser',
                                  'departmentId', 'name', 'invoiceType', 'amount', 'taxRate', 'businessTitleId'}">
-                            <if test="condition.multipleValue">
+                            <if test="condition.blob">
                                 left join contract_invoice_field_blob ${tablePrefix}_${i}
                                 on ci.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
-                            <if test="!condition.multipleValue">
+                            <if test="!condition.blob">
                                 left join contract_invoice_field ${tablePrefix}_${i}
                                 on ci.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>

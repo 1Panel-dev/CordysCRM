@@ -270,11 +270,11 @@
                             and condition.name != 'status' and condition.name != 'converted'
                             and condition.name != 'createTime' and condition.name != 'createUser'
                             and condition.name != 'updateUser' and condition.name != 'updateTime'">
-                            <if test="condition.multipleValue">
+                            <if test="condition.blob">
                                 LEFT JOIN follow_up_plan_field_blob ${tablePrefix}_${i}
                                 ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
-                            <if test="!condition.multipleValue">
+                            <if test="!condition.blob">
                                 LEFT JOIN follow_up_plan_field ${tablePrefix}_${i}
                                 ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>

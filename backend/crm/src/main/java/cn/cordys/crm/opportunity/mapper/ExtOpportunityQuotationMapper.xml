@@ -142,11 +142,11 @@
                             and condition.name != 'create_user'
                             and condition.name != 'untilTime'
                             ">
-                            <if test="condition.multipleValue">
+                            <if test="condition.blob">
                                 left join opportunity_quotation_field_blob ${tablePrefix}_${i}
                                 on oq.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
-                            <if test="!condition.multipleValue">
+                            <if test="!condition.blob">
                                 left join opportunity_quotation_field ${tablePrefix}_${i}
                                 on oq.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
