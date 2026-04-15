@@ -788,7 +788,7 @@ public class ModuleFormService {
         Set<String> businessTitleIdSet = Arrays.stream(BusinessTitleConstants.values())
                 .map(BusinessTitleConstants::getId)
                 .collect(Collectors.toSet());
-        if (businessTitleIdSet.contains(field.getId())) {
+        if (businessTitleIdSet.contains(field.getInternalKey())) {
             return;
         }
 
