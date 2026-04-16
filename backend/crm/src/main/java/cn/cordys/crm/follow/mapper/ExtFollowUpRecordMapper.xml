@@ -267,8 +267,8 @@
                     <when test="condition.refFiled">
                         <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
                             <property name="condition" value="condition"/>
-                            <property name="mainTable" value="contract"/>
-                            <property name="mainTableAlias" value="ct"/>
+                            <property name="mainTable" value="follow_up_record"/>
+                            <property name="mainTableAlias" value="fur"/>
                             <property name="fieldTable" value="${tablePrefix}_${i}"/>
                         </include>
                     </when>
