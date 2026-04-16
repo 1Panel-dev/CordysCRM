@@ -54,6 +54,14 @@
         return item ? item.label : '-';
       },
     },
+    {
+      title: 'IP',
+      key: 'loginAddress',
+      resizable: false,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
   ];
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
