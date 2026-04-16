@@ -360,13 +360,18 @@
   }
 
   function deleteItem(item: FormCreateField) {
-    list.value = list.value.filter((e) => e.id !== item.id);
+    let newList = list.value.filter((e) => e.id !== item.id);
     if (activeItem.value?.id === item.id) {
       activeItem.value = null;
     }
     if (item.type === FieldTypeEnum.DATA_SOURCE && item.showFields?.length) {
       // 删除字段时，同时删除数据源字段关联的显示字段
-      list.value.filter((e) => !item.showFields?.some((id) => id === e.id));
+      newList = newList.filter(
+        (e) =>
+          !item.showFields?.some((id) => {
+            return id === e.id || id === e.id.split('_ref_')[1]; // 数据源显示字段 id 是拼接_ref_的
+          })
+      );
     }
     if (item.resourceFieldId) {
       // 删除引用的数据源字段时，同时删除数据源配置的字段 id
@@ -381,6 +386,7 @@
     ) {
       activeItem.value = null;
     }
+    list.value = newList;
   }
 
   defineExpose({
