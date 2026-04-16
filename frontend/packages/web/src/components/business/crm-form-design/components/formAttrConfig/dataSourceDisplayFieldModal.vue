@@ -162,6 +162,8 @@
   watch([() => props.fieldConfig?.showFields, () => allColumns.value], () => {
     if (props.fieldConfig?.showFields && allColumns.value) {
       selectedList.value = allColumns.value.filter((item) => props.fieldConfig?.showFields?.includes(item.key));
+    } else {
+      selectedList.value = [];
     }
   });
 </script>
