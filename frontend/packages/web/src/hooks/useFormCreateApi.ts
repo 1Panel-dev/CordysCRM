@@ -310,9 +310,25 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             // 处理显示规则
             if (fieldShowControlMap.value[fieldId][ruleId].includes(formDetail.value[controlField.id])) {
               field.show = true;
+              if (field.showFields?.length) {
+                // 显示数据源字段也显示该数据源的显示字段
+                fieldList.value.forEach((f) => {
+                  if (f.resourceFieldId === field.id) {
+                    f.show = true;
+                  }
+                });
+              }
               break; // 满足显示规则就停止，因为只需要满足一个规则字段即显示
             } else {
               field.show = false;
+              if (field.showFields?.length) {
+                // 隐藏数据源字段也隐藏该数据源的显示字段
+                fieldList.value.forEach((f) => {
+                  if (f.resourceFieldId === field.id) {
+                    f.show = false;
+                  }
+                });
+              }
             }
           }
         }
@@ -619,7 +635,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         } else {
           linkFormFieldMap.value[field.id] = {
             ...field,
-            value: formDetail.value[field.id].map((id: string) => field.options?.find((e) => e.value === id)?.label),
+            value:
+              formDetail.value[field.id]?.map((id: string) => field.options?.find((e) => e.value === id)?.label) || [],
           };
         }
         break;
