@@ -303,14 +303,15 @@ public class ModuleFormService {
     private void saveFields(List<BaseField> saveFields, String saveFormId, String currentUserId) {
         // 剔除引用字段&&并保留到数据源引用字段
         List<BaseField> fieldToSave = new ArrayList<>(saveFields);
-        List<BaseField> refFields = fieldToSave.stream().filter(f -> StringUtils.isNotEmpty(f.getResourceFieldId()))
+		AtomicLong pos = new AtomicLong(0L);
+        List<BaseField> refFields = fieldToSave.stream().peek(f -> f.setPos(pos.getAndIncrement()))
+				.filter(f -> StringUtils.isNotEmpty(f.getResourceFieldId()))
 				.collect(Collectors.toMap(BaseField::getId, Function.identity(), (a, b) -> a)).values().stream()
                 .toList();
         fieldToSave.removeAll(refFields);
 
         List<ModuleField> addFields = new ArrayList<>();
         List<ModuleFieldBlob> addFieldBlobs = new ArrayList<>();
-        AtomicLong pos = new AtomicLong(1);
         fieldToSave.forEach(field -> {
             ModuleField moduleField = new ModuleField();
             moduleField.setId(field.getId());
@@ -319,7 +320,7 @@ public class ModuleFormService {
             moduleField.setInternalKey(field.getInternalKey());
             moduleField.setType(field.getType());
             moduleField.setName(field.getName());
-            moduleField.setPos(pos.getAndIncrement());
+            moduleField.setPos(field.getPos());
             moduleField.setCreateTime(System.currentTimeMillis());
             moduleField.setCreateUser(currentUserId);
             moduleField.setUpdateTime(System.currentTimeMillis());
@@ -335,6 +336,7 @@ public class ModuleFormService {
 					// 引用字段只需保留部分属性
 					BaseField refField = new InputField();
 					refField.setId(rf.getId());
+					refField.setPos(rf.getPos());
 					refField.setName(rf.getName());
 					refField.setType(rf.getType());
 					refField.setFieldWidth(rf.getFieldWidth());
@@ -410,6 +412,7 @@ public class ModuleFormService {
             Map<String, String> fieldBlobMap = fieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
             fields.forEach(field -> {
                 BaseField baseField = JSON.parseObject(fieldBlobMap.get(field.getId()), BaseField.class);
+				baseField.setPos(field.getPos());
                 baseField.setType(field.getType());
                 baseField.setMobile(field.getMobile());
                 baseField.setInternalKey(field.getInternalKey());
@@ -907,10 +910,13 @@ public class ModuleFormService {
 						return;
 					}
 					BaseField combineField = combineFieldsProps(oldRefField, refField);
+					combineField.setPos(oldRefField.getPos() == null ? flatFields.size() : oldRefField.getPos());
                     flatFields.add(flatFields.size(), combineField);
                 });
             }
         });
+		// 按照pos排序保证数据源引用字段被平铺后顺序不变
+		flatFields.sort(Comparator.comparing(BaseField::getPos));
         return flatFields;
     }
 

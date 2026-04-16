@@ -998,7 +998,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      */
     @SuppressWarnings("unchecked")
     private void getSourceDetailMapByIds(List<BaseField> flattenFields, List<T> resourceFields) {
-        // ( 深度 > 1), 不处理嵌套引用( A -> B -> C )的情况
+        // 深度 > 1, 跳过, 不处理嵌套引用 [A -> B -> C]
         if (SourceDetailResolveContext.getDepth() > 1) {
             return;
         }
@@ -1012,7 +1012,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         (prev, next) -> next
                 ));
 
-        // 按类型分组：遍历resourceFields找到每个id对应的type
+        // 按数据源类型分组
         Map<FieldSourceType, List<String>> groupedIds = new HashMap<>(FieldSourceType.values().length);
         resourceFields.stream()
                 .filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null)
@@ -1029,15 +1029,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     }
                 });
 
-        // 批量查询每个类型的数据源详情
+        // 批量查询每个类型的数据源详情 (最多N次, N为数据源类型数量)
         groupedIds.forEach((sourceType, ids) -> {
             if (CollectionUtils.isEmpty(ids)) {
                 return;
             }
-            // 去重
-            List<String> distinctIds = ids.stream().distinct().toList();
 
-            // 先把要查询的ID放入上下文，防止相互引用时无限递归 (A -> B -> A)
+            // 去重 & 提前数据源详情上下文占位 (防止相互引用时无限递归 [A -> B -> A])
+            List<String> distinctIds = ids.stream().distinct().toList();
             distinctIds.forEach(SourceDetailResolveContext::putPlaceholder);
 
             // 批量查询
@@ -1045,7 +1044,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             if (CollectionUtils.isEmpty(details)) {
                 return;
             }
-            // 存入缓存上下文
+
+            // 缓存上下文
             for (Object detail : details) {
                 if (detail == null) {
                     continue;
@@ -1335,7 +1335,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      */
     public BaseField getAndCheckField(String fieldId, String organizationId) {
         List<BaseField> flattenFormFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).
-                getFlattenFormFields(getFormKey(), OrganizationContext.getOrganizationId());
+                getFlattenFormFields(getFormKey(), organizationId);
         return flattenFormFields.stream().filter(f->fieldId.equals(f.getId()))
                 .findFirst()
                 .orElseThrow(() -> new GenericException(Translator.get("module.field.not_exist")));

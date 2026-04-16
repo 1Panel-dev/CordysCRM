@@ -11,7 +11,6 @@ import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.DateTimeField;
 import cn.cordys.crm.system.dto.field.FormulaField;
-import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.HasOption;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
@@ -26,7 +25,10 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -98,22 +100,6 @@ public class ModuleFieldExtService {
 		return allFields.stream().filter(BaseField::isAttachment)
 				.map(BaseField::getId)
 				.toList();
-	}
-
-	/**
-	 * 获取流水号字段规则
-	 * @param formKey 表单Key
-	 * @param currentOrg 当前组织
-	 * @param internalKey 字段Key
-	 * @return 字段规则集合
-	 */
-	public List<String> getSerialFieldRulesByKey(String formKey, String currentOrg, String internalKey, String formulaPrefix) {
-		ModuleFieldBlob blob = getFieldBlobByKey(formKey, currentOrg, internalKey);
-		if (blob == null) {
-			return new ArrayList<>();
-		}
-		SerialNumberField serialNumberField = JSON.parseObject(blob.getProp(), SerialNumberField.class);
-		return serialNumberField.getSerialNumberRules(formulaPrefix);
 	}
 
 	/**
@@ -290,7 +276,7 @@ public class ModuleFieldExtService {
 		List<ModuleField> totalFields = fieldMapper.selectListByLambda(totalFieldWrapper);
 		ModuleFieldBlob moduleFieldBlob = fieldBlobMapper.selectByPrimaryKey(totalFields.getFirst().getId());
 		FormulaField formulaField = JSON.parseObject(moduleFieldBlob.getProp(), FormulaField.class);
-		if (formulaField != null && StringUtils.isNotEmpty(formulaField.getFormula())) {
+		if (formulaField != null && StringUtils.isNotEmpty(formulaField.getFormula()) && StringUtils.isNotEmpty(quotationAmountId)) {
 			formulaField.setFormula(formulaField.getFormula().replace("sumAmount", quotationAmountId));
 		}
 		moduleFieldBlob.setProp(JSON.toJSONString(formulaField));
