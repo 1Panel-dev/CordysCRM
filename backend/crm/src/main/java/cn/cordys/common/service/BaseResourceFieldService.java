@@ -26,7 +26,6 @@ import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
-import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.EntityTableMapper;
@@ -63,8 +62,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     private CommonMapper commonMapper;
     @Resource
     private BaseMapper<ModuleField> moduleFieldMapper;
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
     @Lazy
     @Resource
     private FieldSourceServiceProvider fieldSourceServiceProvider;
@@ -522,34 +519,67 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             return resourceFieldMap;
         }
         Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (prev, next) -> next));
-        details.forEach(detail -> {
+
+        // 按数据源类型分组收集需要批量获取的ID
+        Map<FieldSourceType, List<String>> idsToFetch = new HashMap<>(FieldSourceType.values().length);
+        for (Object detail : details) {
             Map<String, Object> detailMap = JSON.MAPPER.convertValue(detail, Map.class);
-            sourceBusinessFields.forEach(bsf -> {
+            for (BaseField bsf : sourceBusinessFields) {
                 DatasourceField sourceField = (DatasourceField) bsf;
                 Object val = detailMap.get(sourceField.getBusinessKey());
                 if (val == null) {
-                    return;
+                    continue;
                 }
-                if (!SourceDetailResolveContext.getSourceMap().containsKey(val.toString())) {
-                    FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-                    try {
-                        Object sourceObj = fieldSourceServiceProvider.safeGetSimpleById(sourceType, val.toString());
-                        if (sourceObj != null) {
-                            SourceDetailResolveContext.put(val.toString(), JSON.MAPPER.convertValue(sourceObj, Map.class));
+                String id = val.toString();
+                // 跳过已缓存的
+                if (SourceDetailResolveContext.getSourceMap().containsKey(id)) {
+                    continue;
+                }
+                FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
+                idsToFetch.computeIfAbsent(sourceType, k -> new ArrayList<>()).add(id);
+            }
+        }
+
+        // 批量获取详情并缓存
+        for (Map.Entry<FieldSourceType, List<String>> entry : idsToFetch.entrySet()) {
+            FieldSourceType sourceType = entry.getKey();
+            List<String> ids = entry.getValue();
+            // 去重保持顺序
+            List<String> uniqueIds = ids.stream().distinct().toList();
+            List<Object> sourceObjList = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, uniqueIds);
+            if (CollectionUtils.isNotEmpty(sourceObjList)) {
+                for (Object sourceObj : sourceObjList) {
+                    if (sourceObj != null) {
+                        Map<String, Object> sourceMap = JSON.MAPPER.convertValue(sourceObj, Map.class);
+                        Object sourceId = sourceMap.get("id");
+                        if (sourceId != null && uniqueIds.contains(sourceId.toString())) {
+                            SourceDetailResolveContext.put(sourceId.toString(), sourceMap);
                         }
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                        return;
                     }
                 }
-                Map<String, Object> sourceDetail = SourceDetailResolveContext.getSourceMap().get(val.toString());
-                if (MapUtils.isEmpty(sourceDetail) || detail == null) {
-                    return;
+            }
+        }
+
+        // 处理字段值
+        for (Object detail : details) {
+            Map<String, Object> detailMap = JSON.MAPPER.convertValue(detail, Map.class);
+            for (BaseField bsf : sourceBusinessFields) {
+                DatasourceField sourceField = (DatasourceField) bsf;
+                Object val = detailMap.get(sourceField.getBusinessKey());
+                if (val == null) {
+                    continue;
                 }
-                sourceField.getShowFields().forEach(id -> {
+                Map<String, Object> sourceDetail = SourceDetailResolveContext.getSourceMap().get(val.toString());
+                if (MapUtils.isEmpty(sourceDetail)) {
+                    continue;
+                }
+                if (!detailMap.containsKey(SOURCE_DETAIL_ID)) {
+                    continue;
+                }
+                for (String id : sourceField.getShowFields()) {
                     BaseField showFieldConfig = fieldConfigMap.get(sourceField.getId() + REF_UNDERLINE + id);
-                    if (showFieldConfig == null || !detailMap.containsKey(SOURCE_DETAIL_ID)) {
-                        return;
+                    if (showFieldConfig == null) {
+                        continue;
                     }
                     String resourceId = detailMap.get(SOURCE_DETAIL_ID).toString();
                     resourceFieldMap.putIfAbsent(resourceId, new ArrayList<>());
@@ -557,9 +587,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     if (showFieldValue != null) {
                         resourceFieldMap.get(resourceId).add(new BaseModuleFieldValue(showFieldConfig.getId(), showFieldValue));
                     }
-                });
-            });
-        });
+                }
+            }
+        }
         return resourceFieldMap;
     }
 
@@ -983,7 +1013,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 ));
 
         // 按类型分组：遍历resourceFields找到每个id对应的type
-        Map<FieldSourceType, List<String>> groupedIds = new HashMap<>();
+        Map<FieldSourceType, List<String>> groupedIds = new HashMap<>(FieldSourceType.values().length);
         resourceFields.stream()
                 .filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null)
                 .forEach(rf -> {

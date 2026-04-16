@@ -477,7 +477,6 @@ public class OrderService {
                 .map(OrderListResponse::getOwner)
                 .distinct()
                 .toList();
-        Map<String, String> userNameMap = baseService.getUserNameMap(ownerIds);
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
         Map<String, String> stageNameMap = extOrderStageConfigMapper.getStageConfigList(orgId).stream()
@@ -485,7 +484,6 @@ public class OrderService {
                         OrderStageConfigResponse::getName));
 
         list.forEach(item -> {
-            item.setOwnerName(userNameMap.get(item.getOwner()));
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getOwner());
             if (userDeptDTO != null) {
                 item.setDepartmentId(userDeptDTO.getDeptId());
@@ -496,7 +494,7 @@ public class OrderService {
             List<BaseModuleFieldValue> orderFields = resolvefieldValueMap.get(item.getId());
             item.setModuleFields(orderFields);
         });
-        return baseService.setCreateAndUpdateUserName(list);
+        return baseService.setCreateUpdateOwnerUserName(list);
     }
 
 
