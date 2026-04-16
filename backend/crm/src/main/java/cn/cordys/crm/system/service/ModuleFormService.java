@@ -910,7 +910,7 @@ public class ModuleFormService {
 						return;
 					}
 					BaseField combineField = combineFieldsProps(oldRefField, refField);
-					combineField.setPos(oldRefField.getPos() == null ? flatFields.size() : oldRefField.getPos());
+					combineField.setPos(oldRefField.getPos() == null ? sourceField.getPos() : oldRefField.getPos());
                     flatFields.add(flatFields.size(), combineField);
                 });
             }
