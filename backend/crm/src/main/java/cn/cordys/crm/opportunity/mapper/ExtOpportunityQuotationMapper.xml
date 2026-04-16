@@ -120,7 +120,7 @@
                     <when test="condition.refFiled">
                         <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
                             <property name="condition" value="condition"/>
-                            <property name="mainTable" value="opportunity"/>
+                            <property name="mainTable" value="opportunity_quotation"/>
                             <property name="mainTableAlias" value="oq"/>
                             <property name="fieldTable" value="${tablePrefix}_${i}"/>
                         </include>
