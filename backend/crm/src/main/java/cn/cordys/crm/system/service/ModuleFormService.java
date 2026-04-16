@@ -303,10 +303,8 @@ public class ModuleFormService {
     private void saveFields(List<BaseField> saveFields, String saveFormId, String currentUserId) {
         // 剔除引用字段&&并保留到数据源引用字段
         List<BaseField> fieldToSave = new ArrayList<>(saveFields);
-        List<String> showFields = fieldToSave.stream().filter(f -> f instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
-                .flatMap(sf -> ((DatasourceField) sf).getShowFields().stream().map(ff -> sf.getId() + REF_UNDERLINE + ff)).distinct().toList();
-        List<BaseField> refFields = fieldToSave.stream().filter(f -> showFields.contains(f.getId()) && StringUtils.isNotEmpty(f.getResourceFieldId()))
-                .collect(Collectors.toMap(BaseField::getId, Function.identity(), (a, b) -> a)).values().stream()
+        List<BaseField> refFields = fieldToSave.stream().filter(f -> StringUtils.isNotEmpty(f.getResourceFieldId()))
+				.collect(Collectors.toMap(BaseField::getId, Function.identity(), (a, b) -> a)).values().stream()
                 .toList();
         fieldToSave.removeAll(refFields);
 
