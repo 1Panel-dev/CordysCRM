@@ -260,6 +260,12 @@
           row[sf.id] = fieldVal;
         }
       });
+    } else if (field.showFields?.length) {
+      // 没有选中数据源时，清空显示字段
+      const showFields = props.subFields.filter((f) => f.resourceFieldId === field.id);
+      showFields.forEach((sf) => {
+        row[sf.id] = sf.type === FieldTypeEnum.INPUT_NUMBER ? null : '';
+      });
     }
   }
 

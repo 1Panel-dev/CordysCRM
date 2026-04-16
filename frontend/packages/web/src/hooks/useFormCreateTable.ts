@@ -365,14 +365,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             };
           }
 
-          if (field.businessKey === 'owner') {
+          if (field.businessKey === 'owner' && !field.resourceFieldId) {
             return {
               title: field.name,
               width: 200,
               key,
               fieldId: field.id,
               sortOrder: false,
-              sorter: sorter && !field.resourceFieldId,
+              sorter,
               ellipsis: {
                 tooltip: true,
               },
