@@ -788,8 +788,11 @@ public class ModuleFormService {
         Set<String> businessTitleIdSet = Arrays.stream(BusinessTitleConstants.values())
                 .map(BusinessTitleConstants::getId)
                 .collect(Collectors.toSet());
-        if (businessTitleIdSet.contains(field.getInternalKey())) {
-            return;
+        if (StringUtils.isNotBlank(field.getResourceFieldId())) {
+            String actualFieldId = field.getId().replace((field.getResourceFieldId() + REF_UNDERLINE), StringUtils.EMPTY);
+            if (businessTitleIdSet.contains(actualFieldId)) {
+                return;
+            }
         }
 
         // 获取特殊的业务字段
