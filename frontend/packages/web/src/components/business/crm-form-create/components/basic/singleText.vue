@@ -27,7 +27,11 @@
     <n-tooltip
       trigger="hover"
       placement="top"
-      :disabled="props.fieldConfig.defaultValueType !== 'formula' || props.isSubTableRender"
+      :disabled="
+        props.fieldConfig.defaultValueType !== 'formula' ||
+        props.isSubTableRender ||
+        !!props.fieldConfig.resourceFieldId
+      "
     >
       <template #trigger>
         <n-input
@@ -146,7 +150,7 @@
     () => props.formDetail,
     () => {
       updateValue.flush?.();
-      if (props.fieldConfig.defaultValueType === 'formula') {
+      if (props.fieldConfig.defaultValueType === 'formula' && !props.fieldConfig.resourceFieldId) {
         updateValue();
       }
     },

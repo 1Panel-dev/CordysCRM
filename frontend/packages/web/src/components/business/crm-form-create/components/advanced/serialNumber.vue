@@ -17,7 +17,11 @@
       v-html="props.fieldConfig.description"
     ></div>
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
-    <n-tooltip trigger="hover" placement="top" :disabled="props.fieldConfig.prefixType !== 'formula'">
+    <n-tooltip
+      trigger="hover"
+      placement="top"
+      :disabled="props.fieldConfig.prefixType !== 'formula' || !!props.fieldConfig.resourceFieldId"
+    >
       <template #trigger>
         <n-input
           v-model:value="displayValue"
@@ -120,7 +124,7 @@
     () => props.formDetail,
     () => {
       updateValue.flush?.();
-      if (props.fieldConfig.prefixType === 'formula' && !props.needInitDetail) {
+      if (props.fieldConfig.prefixType === 'formula' && !props.needInitDetail && !props.fieldConfig.resourceFieldId) {
         updateValue();
       }
     },
