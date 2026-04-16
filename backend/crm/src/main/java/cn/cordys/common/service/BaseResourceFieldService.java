@@ -968,7 +968,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      */
     @SuppressWarnings("unchecked")
     private void getSourceDetailMapByIds(List<BaseField> flattenFields, List<T> resourceFields) {
-        // 嵌套查询时（深度 > 1），不再深入查询数据源的详情，避免无限递归
+        // ( 深度 > 1), 不处理嵌套引用( A -> B -> C )的情况
         if (SourceDetailResolveContext.getDepth() > 1) {
             return;
         }
@@ -1007,7 +1007,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             // 去重
             List<String> distinctIds = ids.stream().distinct().toList();
 
-            // 先把要查询的ID放入上下文，防止嵌套查询时无限递归
+            // 先把要查询的ID放入上下文，防止相互引用时无限递归 (A -> B -> A)
             distinctIds.forEach(SourceDetailResolveContext::putPlaceholder);
 
             // 批量查询
