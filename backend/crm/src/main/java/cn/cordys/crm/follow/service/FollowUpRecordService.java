@@ -50,10 +50,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -244,8 +241,10 @@ public class FollowUpRecordService extends BaseFollowUpService {
     private void buildListData(List<FollowUpRecordListResponse> list, String orgId) {
         List<String> ids = list.stream().map(FollowUpRecordListResponse::getId).toList();
         Map<String, List<BaseModuleFieldValue>> recordCustomFieldMap = followUpRecordFieldService.getResourceFieldMap(ids, true);
+		Map<String, List<BaseModuleFieldValue>> resolveFvMap = followUpRecordFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.FOLLOW_RECORD.getKey(), orgId), recordCustomFieldMap);
 
-        List<String> createUserIds = list.stream().map(FollowUpRecordListResponse::getCreateUser).toList();
+
+		List<String> createUserIds = list.stream().map(FollowUpRecordListResponse::getCreateUser).toList();
         List<String> updateUserIds = list.stream().map(FollowUpRecordListResponse::getUpdateUser).toList();
         List<String> ownerIds = list.stream().map(FollowUpRecordListResponse::getOwner).toList();
         List<String> userIds = Stream.of(createUserIds, updateUserIds, ownerIds)
@@ -271,7 +270,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
         list.forEach(recordListResponse -> {
             // 获取自定义字段
-            List<BaseModuleFieldValue> customerFields = recordCustomFieldMap.get(recordListResponse.getId());
+            List<BaseModuleFieldValue> customerFields = resolveFvMap.get(recordListResponse.getId());
             recordListResponse.setModuleFields(customerFields);
 
             recordListResponse.setCreateUserName(userNameMap.get(recordListResponse.getCreateUser()));
@@ -311,6 +310,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(List.of(response), FollowUpRecordDetailResponse::getModuleFields);
+		moduleFieldValues = followUpRecordFieldService.setBusinessRefFieldValue(List.of(response),
+				moduleFormService.getFlattenFormFields(FormKey.FOLLOW_RECORD.getKey(), followUpRecord.getOrganizationId()), new HashMap<>(Map.of(id, moduleFieldValues))).get(id);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
         // 补充负责人选项

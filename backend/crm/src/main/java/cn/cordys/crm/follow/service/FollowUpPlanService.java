@@ -46,10 +46,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -221,6 +218,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
     public List<FollowUpPlanListResponse> buildListData(List<FollowUpPlanListResponse> list, String orgId) {
         List<String> ids = list.stream().map(FollowUpPlanListResponse::getId).toList();
         Map<String, List<BaseModuleFieldValue>> resourceFieldMap = followUpPlanFieldService.getResourceFieldMap(ids, true);
+		Map<String, List<BaseModuleFieldValue>> resolveFvMap = followUpPlanFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.FOLLOW_PLAN.getKey(), orgId), resourceFieldMap);
 
         List<String> createUserIds = list.stream().map(FollowUpPlanListResponse::getCreateUser).toList();
         List<String> updateUserIds = list.stream().map(FollowUpPlanListResponse::getUpdateUser).toList();
@@ -248,7 +246,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
         list.forEach(planResponse -> {
             // 获取自定义字段
-            List<BaseModuleFieldValue> planCustomerFields = resourceFieldMap.get(planResponse.getId());
+            List<BaseModuleFieldValue> planCustomerFields = resolveFvMap.get(planResponse.getId());
             planResponse.setModuleFields(planCustomerFields);
             planResponse.setCreateUserName(userNameMap.get(planResponse.getCreateUser()));
             planResponse.setUpdateUserName(userNameMap.get(planResponse.getUpdateUser()));
@@ -285,6 +283,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(List.of(response), FollowUpPlanDetailResponse::getModuleFields);
+		moduleFieldValues = followUpPlanFieldService.setBusinessRefFieldValue(List.of(response),
+				moduleFormService.getFlattenFormFields(FormKey.FOLLOW_PLAN.getKey(), followUpPlan.getOrganizationId()), new HashMap<>(Map.of(id, moduleFieldValues))).get(id);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
         // 补充负责人选项
