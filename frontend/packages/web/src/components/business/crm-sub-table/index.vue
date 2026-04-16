@@ -158,6 +158,8 @@
           return labels && labels.length ? labels.join(', ') : '-';
         }
         return '-';
+      case FieldTypeEnum.INPUT_MULTIPLE:
+        return Array.isArray(value) ? value.join(', ') || '-' : value || '-';
       case FieldTypeEnum.INDUSTRY:
         return value ? getIndustryPath(value) : '-';
       default:
