@@ -532,13 +532,16 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 }
                 String id = val.toString();
                 // 跳过已缓存的
-                if (SourceDetailResolveContext.getSourceMap().containsKey(id)) {
+                if (SourceDetailResolveContext.getSourceMap().containsKey(id) || StringUtils.isEmpty(id)) {
                     continue;
                 }
                 FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
                 idsToFetch.computeIfAbsent(sourceType, k -> new ArrayList<>()).add(id);
             }
         }
+
+		// 开启上下文
+		SourceDetailResolveContext.start();
 
         // 批量获取详情并缓存
         for (Map.Entry<FieldSourceType, List<String>> entry : idsToFetch.entrySet()) {
@@ -590,6 +593,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 }
             }
         }
+
+		SourceDetailResolveContext.end();
         return resourceFieldMap;
     }
 
