@@ -2,6 +2,7 @@ package cn.cordys.crm.integration.dataease;
 
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.common.request.DeThirdConfigRequest;
 import cn.cordys.crm.integration.dataease.dto.*;
 import cn.cordys.crm.integration.dataease.dto.request.*;
@@ -172,7 +173,7 @@ public class DataEaseClient {
     }
 
     protected HttpEntity<Object> getHttpEntity(Object obj) {
-        return new HttpEntity<>(obj, getHeader());
+        return new HttpEntity<>(JSON.toJSONString(obj), getHeader());
     }
 
     protected HttpHeaders getHeader() {
@@ -212,7 +213,7 @@ public class DataEaseClient {
     }
 
     public List<OptionDTO> listOrg() {
-        return post("org/page/lazyTree", OrgListResponse.class)
+        return post("org/page/lazyTree", Map.of("desc", true), OrgListResponse.class)
                 .getData()
                 .getNodes();
     }
