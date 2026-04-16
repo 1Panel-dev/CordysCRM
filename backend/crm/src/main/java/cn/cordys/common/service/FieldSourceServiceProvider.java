@@ -87,28 +87,38 @@ public class FieldSourceServiceProvider {
     }
 
 	/**
-	 * 获取数据源类型对应方法的详情数据
+	 * 执行资源详情方法（单个或批量）
 	 *
-	 * @param type 数据源类型
-	 * @param id   主键ID
-	 * @param methodName 方法名称
+	 * @param type        资源或数据源类型
+	 * @param id          单个或批量ID
+	 * @param methodName  方法名称
 	 *
-	 * @return 数据对象
+	 * @return 单个数据对象或数据对象列表
 	 */
 	public Object executeServiceMethod(FieldSourceType type, Object id, String methodName) {
 		Object service = getService(type);
 		if (service == null) {
 			log.error("数据源引用失败, 类型 {} 有误", type.name());
-			return null;
-		}
-		if (!(id instanceof String) || ((String) id).isEmpty()) {
-			return null;
+			return id instanceof List ? Collections.emptyList() : null;
 		}
 		try {
-			return service.getClass().getMethod(methodName, String.class).invoke(service, id.toString());
+			if (id instanceof List<?> idList) {
+				if (CollectionUtils.isEmpty(idList)) {
+					return Collections.emptyList();
+				}
+				List<String> ids = idList.stream().map(Object::toString).toList();
+				Method method = service.getClass().getMethod(methodName, List.class);
+				return method.invoke(service, ids);
+			} else {
+				if (!(id instanceof String) || ((String) id).isEmpty()) {
+					return null;
+				}
+				Method method = service.getClass().getMethod(methodName, String.class);
+				return method.invoke(service, id.toString());
+			}
 		} catch (Exception e) {
-			log.error("获取数据源详情异常：{}", id, e);
-			return null;
+			log.error("获取数据源详情异常：type={}, id={}, error={}", type.name(), id, e.getMessage(), e);
+			return id instanceof List ? Collections.emptyList() : null;
 		}
 	}
 
@@ -136,20 +146,6 @@ public class FieldSourceServiceProvider {
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	@SuppressWarnings("unchecked")
 	public List<Object> batchGetSimpleByIds(FieldSourceType type, List<String> ids) {
-		if (CollectionUtils.isEmpty(ids)) {
-			return Collections.emptyList();
-		}
-		Object service = getService(type);
-		if (service == null) {
-			log.error("数据源引用失败, 类型 {} 有误", type.name());
-			return Collections.emptyList();
-		}
-		try {
-			Method method = service.getClass().getMethod("batchGetSimpleByIds", List.class);
-			return (List<Object>) method.invoke(service, ids);
-		} catch (Exception e) {
-			log.error("批量获取数据源详情异常：type={}, ids={}, error={}", type.name(), ids, e.getMessage(), e);
-			return Collections.emptyList();
-		}
+		return (List<Object>) executeServiceMethod(type, ids, "batchGetSimpleByIds");
 	}
 }
