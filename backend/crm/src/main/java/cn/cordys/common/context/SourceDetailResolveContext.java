@@ -35,6 +35,15 @@ public class SourceDetailResolveContext {
 		DEPTH.set(DEPTH.get() + 1);
 	}
 
+	/**
+	 * 获取当前深度
+	 *
+	 * @return 当前深度
+	 */
+	public static int getDepth() {
+		return DEPTH.get();
+	}
+
 	public static void end() {
 		int depth = DEPTH.get() - 1;
 		if (depth <= 0) {

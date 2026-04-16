@@ -968,6 +968,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      */
     @SuppressWarnings("unchecked")
     private void getSourceDetailMapByIds(List<BaseField> flattenFields, List<T> resourceFields) {
+        // 嵌套查询时（深度 > 1），不再深入查询数据源的详情，避免无限递归
+        if (SourceDetailResolveContext.getDepth() > 1) {
+            return;
+        }
 
         // 收集所有数据源字段的类型和ID映射关系
         var sourceIdType = flattenFields.stream()
@@ -1002,6 +1006,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             }
             // 去重
             List<String> distinctIds = ids.stream().distinct().toList();
+
+            // 先把要查询的ID放入上下文，防止嵌套查询时无限递归
+            distinctIds.forEach(SourceDetailResolveContext::putPlaceholder);
+
             // 批量查询
             List<Object> details = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, distinctIds);
             if (CollectionUtils.isEmpty(details)) {
