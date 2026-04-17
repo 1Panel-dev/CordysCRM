@@ -89,7 +89,7 @@
   />
   <CrmBatchEditModal
     v-model:visible="showEditModal"
-    v-model:field-list="fieldList"
+    v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.ORDER"
     @refresh="handleRefresh"
@@ -182,10 +182,13 @@
         ],
   }));
 
+  const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.ORDER),
+  });
   function handleBatchEdit() {
+    initEditFormConfig();
     showEditModal.value = true;
   }
-
   function handleRefresh() {
     checkedRowKeys.value = [];
     tableRefreshId.value += 1;

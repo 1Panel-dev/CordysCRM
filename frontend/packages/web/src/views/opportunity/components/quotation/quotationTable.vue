@@ -69,7 +69,7 @@
   <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="batchOperationName" />
   <CrmBatchEditModal
     v-model:visible="showEditModal"
-    v-model:field-list="fieldList"
+    v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
     @refresh="handleRefresh"
@@ -183,7 +183,11 @@
     batchOperationName.value = t('common.batchApproval');
   }
 
+  const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.OPPORTUNITY_QUOTATION),
+  });
   function handleBatchEdit() {
+    initEditFormConfig();
     showEditModal.value = true;
   }
 
