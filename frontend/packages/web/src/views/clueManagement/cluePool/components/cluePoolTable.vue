@@ -157,6 +157,7 @@
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
@@ -412,7 +413,11 @@
   }
 
   const showEditModal = ref(false);
+  const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.CLUE_POOL),
+  });
   function handleBatchEdit() {
+    initEditFormConfig();
     showEditModal.value = true;
   }
 

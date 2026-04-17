@@ -140,7 +140,7 @@
 
     <CrmBatchEditModal
       v-model:visible="showEditModal"
-      v-model:field-list="fieldList"
+      v-model:field-list="editFieldList"
       :ids="checkedRowKeys"
       :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
       @refresh="handleRefresh"
@@ -192,6 +192,7 @@
     enableCustomerContact,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
@@ -476,7 +477,11 @@
   }
 
   const showEditModal = ref(false);
+  const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.CONTACT),
+  });
   function handleBatchEdit() {
+    initEditFormConfig();
     showEditModal.value = true;
   }
 

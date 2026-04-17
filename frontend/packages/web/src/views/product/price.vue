@@ -74,7 +74,7 @@
   />
   <CrmBatchEditModal
     v-model:visible="showEditModal"
-    v-model:field-list="fieldList"
+    v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.PRICE"
     @refresh="handleRefresh"
@@ -106,6 +106,7 @@
 
   import { copyProductPrice, deleteProductPrice, dragSortProductPrice } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import { getExportColumns } from '@/utils/export';
@@ -294,7 +295,11 @@
   }
 
   const showEditModal = ref(false);
+  const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.PRICE),
+  });
   function handleBatchEdit() {
+    initEditFormConfig();
     showEditModal.value = true;
   }
 

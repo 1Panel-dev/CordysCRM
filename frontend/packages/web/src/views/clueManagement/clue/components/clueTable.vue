@@ -132,7 +132,7 @@
 
   <CrmBatchEditModal
     v-model:visible="showEditModal"
-    v-model:field-list="fieldList"
+    v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.CLUE"
     @refresh="handleRefresh"
@@ -327,8 +327,12 @@
   }
 
   const showEditModal = ref(false);
+  const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.CLUE),
+  });
   function handleBatchEdit() {
     moveIds.value = [];
+    initEditFormConfig();
     showEditModal.value = true;
   }
 
