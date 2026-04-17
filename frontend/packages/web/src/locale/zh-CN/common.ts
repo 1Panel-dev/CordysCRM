@@ -350,4 +350,5 @@ export default {
   'common.unApprovedSuccess': '审批不通过',
   'common.skipped': '跳过',
   'common.backToTop': '回到顶部',
+  'common.nextStep': '下一步',
 };

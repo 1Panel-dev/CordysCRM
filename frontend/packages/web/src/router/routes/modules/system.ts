@@ -59,6 +59,39 @@ const system: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'process',
+      name: SystemRouteEnum.SYSTEM_PROCESS,
+      component: () => import('@/views/system/process/process/index.vue'),
+      meta: {
+        hideChildrenInMenu: true,
+        locale: 'menu.settings.processSetting',
+        permissions: [], // todo xinxinwu
+      },
+      children: [
+        {
+          path: 'process',
+          name: SystemRouteEnum.SYSTEM_PROCESS_INDEX,
+          component: () => import('@/views/system/process/workflow/index.vue'),
+          meta: {
+            locale: 'menu.settings.approvalFlow',
+            isTopMenu: true,
+            permissions: [], // todo xinxinwu
+          },
+        },
+        // todo 这个版本不上工作流
+        // {
+        //   path: 'workflow',
+        //   name: SystemRouteEnum.SYSTEM_PROCESS_WORKFLOW,
+        //   component: () => import('@/views/system/process/workflow/index.vue'),
+        //   meta: {
+        //     locale: 'menu.settings.workflowSetting',
+        //     isTopMenu: true,
+        //     permissions: [], // todo
+        //   },
+        // },
+      ],
+    },
+    {
       path: 'business',
       name: SystemRouteEnum.SYSTEM_BUSINESS,
       component: () => import('@/views/system/business/index.vue'),

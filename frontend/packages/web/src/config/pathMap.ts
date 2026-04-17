@@ -207,6 +207,18 @@ export const pathMap: PathMapItem[] = [
         ],
       },
       {
+        key: 'SYSTEM_PROCESS',
+        route: AppRouteEnum.SYSTEM_PROCESS,
+        locale: 'menu.settings.processSetting',
+        children: [
+          {
+            key: 'SYSTEM_PROCESS_INDEX',
+            route: AppRouteEnum.SYSTEM_PROCESS_INDEX,
+            locale: 'menu.settings.approvalFlow',
+          },
+        ],
+      },
+      {
         key: 'SYSTEM_BUSINESS',
         route: AppRouteEnum.SYSTEM_BUSINESS,
         locale: 'menu.settings.businessSetting',

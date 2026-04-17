@@ -340,4 +340,5 @@ export default {
   'common.unApprovedSuccess': 'Approval not passed',
   'common.skipped': 'Skipped',
   'common.backToTop': 'Back to top',
+  'common.nextStep': 'Next step',
 };
