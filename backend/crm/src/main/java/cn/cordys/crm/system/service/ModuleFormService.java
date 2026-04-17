@@ -887,7 +887,7 @@ public class ModuleFormService {
                 }
             }
 
-            if (field instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()) && CollectionUtils.isNotEmpty(sourceField.getRefFields())) {
+            if (field instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields())) {
 				// 兼容新旧引用字段
                 List<String> oldRefIds = sourceField.getShowFields().stream().map(splitRefId(sourceField.getId())).distinct().toList();
                 List<ModuleFieldBlob> reloadFieldBlobs = moduleFieldBlobMapper.selectByIds(oldRefIds);
@@ -900,6 +900,16 @@ public class ModuleFormService {
 
 				// 合并可能引用的字段属性 (数据源引用字段 & 价格表子表格字段)
 				reloadFieldMap.putAll(priceSubFieldMap);
+
+				// 兼容处理旧版本引用字段没有refFields属性的情况，直接从showFields解析出引用字段并设置属性
+				if (CollectionUtils.isEmpty(sourceField.getRefFields())) {
+					sourceField.setRefFields(new ArrayList<>());
+					for (String showFieldKey : sourceField.getShowFields()) {
+						BaseField refField = reloadFieldMap.get(showFieldKey);
+						refField.setResourceFieldId(sourceField.getId());
+						sourceField.getRefFields().add(refField);
+					}
+				}
 
 				// 平铺引用字段
                 sourceField.getRefFields().forEach(oldRefField -> {
