@@ -322,8 +322,11 @@
   });
 
   function setMenuValue(_route: RouteLocationNormalizedGeneric) {
-    if (_route.meta.isTopMenu || _route.meta.hideChildrenInMenu) {
-      menuValue.value = _route.matched[0].name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+    if (_route.meta.isTopMenu) {
+      menuValue.value = _route.matched[_route.matched.length - 2]
+        ?.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+    } else if (_route.meta.hideChildrenInMenu) {
+      menuValue.value = _route.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
     } else {
       menuValue.value = _route.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
       if (_route.name?.toString().includes('system')) {

@@ -1,0 +1,34 @@
+export default {
+  'process.processDesign': 'Process Design',
+  'process.processDesign.moreSetting': 'More Setting',
+  'process.process.processType': 'Business Type',
+  'process.process.name': 'Name',
+  'process.executionTiming': 'Execution Timing',
+  'process.process.newProcess': 'New Process',
+  'process.process.enableProcessTip': 'Only one approval flow can be enabled per business type',
+  'process.process.deleteContent': 'Approval stream deletion cannot be undone. Please proceed with caution!',
+  'process.process.deleteEnabledContent': 'Cannot delete an enabled approval flow',
+  'process.process.submitterAuthority': 'Submitter permissions',
+  'process.process.allowSubmitterCancel': 'Allow submitter to cancel pending applications',
+  'process.process.allowSubmitterCancelTip':
+    'Submitter can still cancel after first approval node passes (does not apply to applications initiated before configuration)',
+  'process.process.approverAuthority': 'Approver permissions',
+  'process.process.autoApproval': 'Auto-approval',
+  'process.process.repeatApproval': 'When the same approver appears multiple times:',
+  'process.process.autoApproval.firstNode': 'Only first node requires approval, subsequent nodes auto-approve',
+  'process.process.autoApproval.continuousNode': 'Auto-approve only when consecutive',
+  'process.process.autoApproval.allNode': 'Each node requires approval',
+  'process.process.approvalOpinion': 'Approval comments',
+  'process.process.approvalRejectOpinion': 'Approver must provide comments when approving or rejecting',
+  'process.process.approvalAuthority': 'Approval permissions',
+  'process.process.approvalAuthority.read': 'View',
+  'process.process.approvalAuthority.batchAction': 'Allow approver to batch process',
+  'process.process.approvalAuthority.batchActionTip':
+    'Submitter can still cancel after first approval node passes (does not apply to applications initiated before configuration)',
+  'process.process.approvalAuthority.revokable': 'Allow approver to revoke',
+  'process.process.approvalAuthority.addTempApprover':
+    'When checked, approver can add temporary approver in the approval flow',
+  'process.process.approvalAuthority.allowAddSign': 'Allow adding signatory',
+  'process.process.approvalAuthority.allowAddTempApprover':
+    'When checked, approver can add temporary approver in the approval flow',
+};
