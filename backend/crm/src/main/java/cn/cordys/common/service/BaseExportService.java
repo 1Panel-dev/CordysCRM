@@ -47,7 +47,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -439,21 +438,12 @@ public abstract class BaseExportService {
 		dataList.add(data);
 
 		// 剩余子表行 (并行处理)
-		List<Future<List<Object>>> futures = new ArrayList<>();
 		for (int i = 1; i < alignSubFvs.size(); i++) {
 			// 其余行只用遍历子表格字段
-			Map<String,Object> subRowMap = alignSubFvs.get(i);
-			futures.add(executor.submit(() -> transFieldValueWithSub(metas, new LinkedHashMap<>(), new LinkedHashMap<>(), subRowMap)));
+            dataList.add(transFieldValueWithSub(metas, new LinkedHashMap<>(),
+                    new LinkedHashMap<>(), alignSubFvs.get(i)));
 		}
 
-		for (Future<List<Object>> f : futures) {
-			try {
-				List<Object> subData = f.get();
-				dataList.add(subData);
-			} catch (Exception e) {
-				log.error("Parse sub field value error: {}", e.getMessage());
-			}
-		}
         return dataList;
     }
 
