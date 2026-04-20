@@ -20,14 +20,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -76,45 +80,41 @@ public class ContractExportService extends BaseExportService {
      * @param exportFieldParam 导出字段参数
      * @return 合并结果
      */
-    private MergeResult parallelBuildMergeResult(String taskId, ExportDTO exportParam, List<ContractListResponse> dataList,
+    private MergeResult parallelBuildMergeResult(String taskId, ExportDTO exportParam,
+                                                 List<ContractListResponse> dataList,
                                                  ExportFieldParam exportFieldParam) {
-
         int size = dataList.size();
-        List<List<Object>> mergeRowData = new ArrayList<>(size);
+
+        // 使用数组预存结果，避免排序和 Pair 对象开销
+        @SuppressWarnings("unchecked")
+        List<List<Object>>[] resultsArray = new List[size];
+
+        List<CompletableFuture<Void>> futures = IntStream.range(0, size)
+                .mapToObj(idx -> CompletableFuture.runAsync(() -> {
+                    if (ExportThreadRegistry.isInterrupted(taskId)) {
+                        throw new CompletionException(new InterruptedException("导出中断"));
+                    }
+                    ContractListResponse detail = dataList.get(idx);
+                    List<List<Object>> buildData = buildData(detail, exportFieldParam, exportParam.getExportMetas());
+                    resultsArray[idx] = buildData;
+                }, executor))
+                .toList();
+
+        // 等待全部完成，任一失败则整体失败
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        } catch (CompletionException e) {
+            log.error("并行构建数据失败", e.getCause());
+            throw new RuntimeException("导出数据构建失败", e.getCause());
+        }
+
+        // 顺序合并（resultsArray 已按原始索引排序）
+        List<List<Object>> mergeRowData = new ArrayList<>(size * 2); // 预估容量
         List<int[]> mergeRegions = new ArrayList<>();
-
-        // 任务列表 - 每个任务处理一行数据，构建该行的导出数据 Pair<位置索引, 行数据>
-        List<Future<Pair<Integer, List<List<Object>>>>> futures = new ArrayList<>(3);
-        for (int i = 0; i < size; i++) {
-            final int idx = i;
-            ContractListResponse detail = dataList.get(i);
-            futures.add(executor.submit(() -> {
-                if (ExportThreadRegistry.isInterrupted(taskId)) {
-                    throw new InterruptedException("导出中断");
-                }
-                List<List<Object>> buildData = buildData(detail, exportFieldParam, exportParam.getExportMetas());
-                return Pair.of(idx, buildData);
-            }));
-        }
-
-        // 收集结果 (阻塞)
-        List<Pair<Integer, List<List<Object>>>> results = new ArrayList<>(size);
-        for (Future<Pair<Integer, List<List<Object>>>> f : futures) {
-            try {
-                Pair<Integer, List<List<Object>>> pairData = f.get();
-                results.add(pairData);
-            } catch (Exception e) {
-                log.error("Parse row data error: {}", e.getMessage());
-            }
-        }
-
-        // 按原始索引排序 (很重要, 否则合并区域错乱)
-        results.sort(Comparator.comparingInt(Pair::getLeft));
-
-        // 构建合并区域
         int offset = 0;
-        for (Pair<Integer, List<List<Object>>> r : results) {
-            List<List<Object>> buildData = r.getRight();
+        for (int i = 0; i < size; i++) {
+            List<List<Object>> buildData = resultsArray[i];
+            if (buildData == null) continue; // 异常时可能为 null，根据业务决定处理方式
             if (buildData.size() > 1) {
                 mergeRegions.add(new int[]{offset, offset + buildData.size() - 1});
             }
@@ -122,8 +122,11 @@ public class ContractExportService extends BaseExportService {
             mergeRowData.addAll(buildData);
         }
 
-        // 返回合并的结构
-        return MergeResult.builder().mergeRegions(mergeRegions).dataList(mergeRowData).handleCount(size).build();
+        return MergeResult.builder()
+                .mergeRegions(mergeRegions)
+                .dataList(mergeRowData)
+                .handleCount(size)
+                .build();
     }
 
     private List<List<Object>> buildData(ContractListResponse detail, ExportFieldParam exportFieldParam, List<FieldExportMeta> exportMetas) {
