@@ -1,6 +1,7 @@
-import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 import type { ModuleField, TableQueryParams } from './common';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import { ProcessStatusType } from '@lib/shared/models/system/process';
+import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 
 export interface OpportunityItem {
   id: string; // 商机ID
@@ -132,7 +133,8 @@ export interface QuotationQueryParams extends TableQueryParams {
 export interface QuotationItem {
   id: string;
   name: string;
-  approvalStatus: QuotationStatusEnum;
+  approvalStatus: ProcessStatusType;
+  status: QuotationStatusEnum;
   opportunityId: string;
   opportunityName: string;
   amount: number;
@@ -156,14 +158,14 @@ export interface SaveQuotationParams {
 
 export interface UpdateQuotationParams extends SaveQuotationParams {
   id: string;
-  approvalStatus: QuotationStatusEnum;
+  approvalStatus: ProcessStatusType;
 }
 
 export interface ApproveQuotation {
   id: string;
   name: string;
   opportunityId: string;
-  approvalStatus: QuotationStatusEnum;
+  approvalStatus: ProcessStatusType;
   moduleFormConfigDTO?: FormDesignConfigDetailParams;
   moduleFields: ModuleField[];
   products: any[];
@@ -171,7 +173,13 @@ export interface ApproveQuotation {
 
 export interface BatchUpdateQuotationStatusParams {
   ids: (string | number)[];
-  approvalStatus: QuotationStatusEnum;
+  approvalStatus: ProcessStatusType;
+}
+
+export interface  BatchVoidQuotationStatusParams {
+  ids: (string | number)[];
+  // todo 批量作废 
+  status: QuotationStatusEnum;
 }
 
 export interface BatchOperationResult {

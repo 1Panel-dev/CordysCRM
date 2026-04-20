@@ -102,6 +102,7 @@ import type {
   ApproveQuotation,
   BatchOperationResult,
   BatchUpdateQuotationStatusParams,
+  BatchVoidQuotationStatusParams,
   OpportunityBillboardDraggedParams,
   OpportunityDetail,
   OpportunityItem,
@@ -457,7 +458,7 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<BatchOperationResult>({ url: BatchApproveUrl, data });
   }
 
-  function batchVoided(data: BatchUpdateQuotationStatusParams) {
+  function batchVoided(data: BatchVoidQuotationStatusParams) {
     return CDR.post<BatchOperationResult>({ url: BatchVoidedUrl, data });
   }
 

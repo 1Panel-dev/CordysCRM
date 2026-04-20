@@ -4,7 +4,7 @@ import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 import { getReasonConfig } from '@/api/modules';
 
 import { FilterOption } from 'naive-ui/es/data-table/src/interface';
-
+// todo xinxinwu order
 export type ApprovalConfigType =
   | FormDesignKeyEnum.CONTRACT
   | FormDesignKeyEnum.INVOICE

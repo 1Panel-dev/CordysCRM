@@ -1,17 +1,13 @@
 import dayjs from 'dayjs';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 
-import {
-  contractInvoiceStatusOptions,
-  contractPaymentPlanStatusOptions,
-  contractStatusOptions,
-} from '@/config/contract';
-import { quotationStatusOptions } from '@/config/opportunity';
+import { contractPaymentPlanStatusOptions, contractStatusOptions } from '@/config/contract';
+import { quotationStatus } from '@/config/opportunity';
+import { processStatusOptions } from '@/config/process';
 import useReasonConfig from '@/hooks/useReasonConfig';
 
 import useApprovalConfig from './useApprovalConfig';
@@ -346,21 +342,26 @@ export default async function useFormCreateSystemColumns(
     },
   ];
 
-  const invoiceInternalColumns: CrmDataTableColumn[] = [
-    ...((dicApprovalEnable.value
+  // 审批状态
+  const approvalStatusColumn = (
+    dicApprovalEnable.value
       ? [
           {
             title: t('contract.approvalStatus'),
             width: 120,
             key: 'approvalStatus',
-            filterOptions: contractInvoiceStatusOptions,
+            filterOptions: processStatusOptions,
             sortOrder: false,
             sorter: true,
             filter: true,
             render: props.specialRender?.approvalStatus,
           },
         ]
-      : []) as CrmDataTableColumn[]),
+      : []
+  ) as CrmDataTableColumn[];
+
+  const invoiceInternalColumns: CrmDataTableColumn[] = [
+    ...approvalStatusColumn,
     {
       title: t('org.department'),
       width: 120,
@@ -403,6 +404,7 @@ export default async function useFormCreateSystemColumns(
         })) || [],
       render: props.specialRender?.stage,
     },
+    ...approvalStatusColumn,
   ];
 
   const internalColumnMap: Record<string, CrmDataTableColumn[]> = {
@@ -702,20 +704,17 @@ export default async function useFormCreateSystemColumns(
         sorter: true,
         render: (row: any) => row.departmentName || '-',
       },
-      ...((dicApprovalEnable.value
-        ? [
-            {
-              title: t('common.status'),
-              width: 120,
-              key: 'approvalStatus',
-              filterOptions: quotationStatusOptions,
-              sortOrder: false,
-              sorter: true,
-              filter: true,
-              render: props.specialRender?.approvalStatus,
-            },
-          ]
-        : []) as CrmDataTableColumn[]),
+      {
+        title: t('common.status'),
+        width: 120,
+        key: 'status',
+        filterOptions: quotationStatus,
+        sortOrder: false,
+        sorter: true,
+        filter: true,
+        render: props.specialRender?.status,
+      },
+      ...approvalStatusColumn,
     ],
     [FormDesignKeyEnum.CONTRACT]: [
       {
@@ -754,22 +753,7 @@ export default async function useFormCreateSystemColumns(
         sortOrder: false,
         sorter: true,
       },
-      ...((dicApprovalEnable.value
-        ? [
-            {
-              title: t('contract.approvalStatus'),
-              width: 120,
-              key: 'approvalStatus',
-              filterOptions: quotationStatusOptions.filter(
-                (item) => ![QuotationStatusEnum.VOIDED].includes(item.value)
-              ),
-              sortOrder: false,
-              sorter: true,
-              filter: true,
-              render: props.specialRender?.approvalStatus,
-            },
-          ]
-        : []) as CrmDataTableColumn[]),
+      ...approvalStatusColumn,
     ],
     [FormDesignKeyEnum.CONTRACT_PAYMENT]: paymentInternalColumns,
     [FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT]: paymentInternalColumns,

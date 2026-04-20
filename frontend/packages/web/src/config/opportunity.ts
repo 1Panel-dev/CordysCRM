@@ -96,29 +96,13 @@ export const getOptHomeConditions = async (
   };
 };
 
-export const quotationStatusOptions = [
+export const quotationStatus = [
   {
-    value: QuotationStatusEnum.APPROVED,
-    label: t('common.pass'),
-  },
-  {
-    value: QuotationStatusEnum.UNAPPROVED,
-    label: t('common.unPass'),
-  },
-  {
-    value: QuotationStatusEnum.APPROVING,
-    label: t('common.review'),
+    value: QuotationStatusEnum.NORMAL,
+    label: t('common.normal'),
   },
   {
     value: QuotationStatusEnum.VOIDED,
     label: t('common.voided'),
-  },
-  {
-    value: QuotationStatusEnum.REVOKED,
-    label: t('common.revoke'),
-  },
-  {
-    value: QuotationStatusEnum.NONE,
-    label: '-',
   },
 ];

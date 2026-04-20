@@ -1,5 +1,10 @@
 <template>
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="detailInfo?.name ?? ''">
+    <template #titleLeft>
+      <div v-if="dicApprovalEnable" class="text-[14px] font-normal">
+        <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
+      </div>
+    </template>
     <template #titleRight>
       <n-button
         v-if="!props.readonly"
@@ -92,6 +97,7 @@
   import { NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { CollaborationType } from '@lib/shared/models/customer';
@@ -101,6 +107,7 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
@@ -109,6 +116,7 @@
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
   import { deleteOrder, getOpenSeaOptions, getOrderStatusConfig, updateOrderStage } from '@/api/modules';
+  import useApprovalConfig from '@/hooks/useApprovalConfig';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAnyPermission } from '@/utils/permission';
@@ -188,6 +196,8 @@
       },
     });
   }
+  // todo xinxinwu 需要调整为审批流是否开启的接口key
+  const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(FormDesignKeyEnum.INVOICE);
 
   const formCreateDrawerVisible = ref(false);
   function handleEdit() {
@@ -236,4 +246,13 @@
   onBeforeMount(() => {
     initOpenSeaOptions();
   });
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        initApprovalConfig();
+      }
+    }
+  );
 </script>

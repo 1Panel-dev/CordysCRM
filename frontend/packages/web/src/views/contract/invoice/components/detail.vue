@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="visible" :title="detailInfo?.name" resizable no-padding :width="800" :footer="false">
     <template #titleLeft>
       <div v-if="dicApprovalEnable" class="text-[14px] font-normal">
-        <contractInvoiceStatus :status="detailInfo?.approvalStatus ?? ContractInvoiceStatusEnum.APPROVING" />
+        <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
       </div>
     </template>
     <template v-if="!props.readonly" #titleRight>
@@ -41,17 +41,18 @@
 <script lang="ts" setup>
   import { useMessage } from 'naive-ui';
 
-  import { ContractInvoiceStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { ContractInvoiceItem } from '@lib/shared/models/contract';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
-  import contractInvoiceStatus from './contractInvoiceStatus.vue';
 
   import { approvalInvoiced, deleteInvoiced, revokeInvoiced } from '@/api/modules';
   import { deleteInvoiceContentMap } from '@/config/contract';
@@ -87,7 +88,7 @@
   const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(FormDesignKeyEnum.INVOICE);
 
   function getApprovalEnableBtnList() {
-    if (detailInfo.value?.approvalStatus === ContractInvoiceStatusEnum.APPROVING) {
+    if (detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING) {
       return [
         {
           label: t('common.pass'),
@@ -128,7 +129,7 @@
         },
       ];
     }
-    if (detailInfo.value?.approvalStatus === ContractInvoiceStatusEnum.APPROVED) {
+    if (detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVED) {
       return [
         {
           label: t('common.delete'),
@@ -192,11 +193,11 @@
     emit('refresh');
   }
 
-  function handleDelete(row: any) {
+  function handleDelete(row: ContractInvoiceItem) {
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: row.name }),
-      content: deleteInvoiceContentMap[row.approvalStatus as ContractInvoiceStatusEnum],
+      content: deleteInvoiceContentMap[row.approvalStatus],
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
@@ -219,7 +220,7 @@
   }
 
   async function handleApproval(approval = false) {
-    const approvalStatus = approval ? ContractInvoiceStatusEnum.APPROVED : ContractInvoiceStatusEnum.UNAPPROVED;
+    const approvalStatus = approval ? ProcessStatusEnum.APPROVED : ProcessStatusEnum.UNAPPROVED;
     try {
       await approvalInvoiced({
         id: props.sourceId,

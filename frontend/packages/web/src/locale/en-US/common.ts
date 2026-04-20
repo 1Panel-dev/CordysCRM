@@ -341,4 +341,10 @@ export default {
   'common.skipped': 'Skipped',
   'common.backToTop': 'Back to top',
   'common.nextStep': 'Next step',
+  'common.approvalStatus': 'Approval status',
+  'common.pending': 'Pending',
+  'common.normal': 'Normal',
+  'common.approved': 'Approved',
+  'common.rejected': 'Rejected',
+  'common.reviewing': 'Reviewing',
 };

@@ -351,4 +351,10 @@ export default {
   'common.skipped': '跳过',
   'common.backToTop': '回到顶部',
   'common.nextStep': '下一步',
+  'common.approvalStatus': '审批状态',
+  'common.pending': '待提审',
+  'common.normal': '正常',
+  'common.approved': '已通过',
+  'common.rejected': '已驳回',
+  'common.reviewing': '审批中',
 };
