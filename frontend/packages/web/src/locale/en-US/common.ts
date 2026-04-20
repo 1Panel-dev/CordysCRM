@@ -11,6 +11,7 @@ export default {
   'common.search': 'Search',
   'common.reset': 'Reset',
   'common.retry': 'Retry',
+  'common.start': 'Start',
   'common.end': 'End',
   'common.enable': 'Enable',
   'common.activated': 'Activated',

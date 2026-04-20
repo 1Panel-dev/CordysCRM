@@ -19,6 +19,8 @@
     "lint:styles": "stylelint 'src/**/*.{vue,html,css,scss,less}' --fix"
   },
   "dependencies": {
+    "@antv/x6": "^3.1.7",
+    "@antv/x6-vue-shape": "^3.0.2",
     "@types/color": "^4.2.0",
     "@vicons/ionicons5": "^0.13.0",
     "@wecom/jssdk": "^2.2.5",
