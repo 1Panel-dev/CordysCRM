@@ -59,7 +59,7 @@ public abstract class BaseExportService {
     /**
      * 最大查询数量
      */
-    public static final int EXPORT_MAX_COUNT = 2000;
+    public static final int EXPORT_MAX_COUNT = 1000;
 	/**
 	 * 汇总字段前缀
 	 */
@@ -168,7 +168,7 @@ public abstract class BaseExportService {
                 Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
 				SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, getSummaryColIdx(headList, mergeColumns), offset);
                 strategy.merge(mergeSheet);
-                if (mergeResult.getDataList().size() < EXPORT_MAX_COUNT) {
+                if (mergeResult.getHandleCount() < EXPORT_MAX_COUNT) {
                     break;
                 }
                 // 下一页&&记录偏移量

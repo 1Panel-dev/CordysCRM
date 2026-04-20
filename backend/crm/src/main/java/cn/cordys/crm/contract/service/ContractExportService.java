@@ -47,7 +47,7 @@ public class ContractExportService extends BaseExportService {
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
         var exportList = collectExportList(exportParam);
         if (CollectionUtils.isEmpty(exportList)) {
-            return MergeResult.builder().dataList(new ArrayList<>()).mergeRegions(new ArrayList<>()).build();
+            return MergeResult.builder().dataList(new ArrayList<>()).mergeRegions(new ArrayList<>()).handleCount(0).build();
         }
         var dataList = contractService.buildList(exportList, exportParam.getOrgId());
         moduleFormService.getBaseModuleFieldValues(dataList, ContractListResponse::getModuleFields);
@@ -84,7 +84,7 @@ public class ContractExportService extends BaseExportService {
         List<int[]> mergeRegions = new ArrayList<>();
 
         // 任务列表 - 每个任务处理一行数据，构建该行的导出数据 Pair<位置索引, 行数据>
-        List<Future<Pair<Integer, List<List<Object>>>>> futures = new ArrayList<>(size);
+        List<Future<Pair<Integer, List<List<Object>>>>> futures = new ArrayList<>(size / 10);
         for (int i = 0; i < size; i++) {
             final int idx = i;
             ContractListResponse detail = dataList.get(i);
@@ -123,7 +123,7 @@ public class ContractExportService extends BaseExportService {
         }
 
         // 返回合并的结构
-        return MergeResult.builder().mergeRegions(mergeRegions).dataList(mergeRowData).build();
+        return MergeResult.builder().mergeRegions(mergeRegions).dataList(mergeRowData).handleCount(size).build();
     }
 
     private List<List<Object>> buildData(ContractListResponse detail, ExportFieldParam exportFieldParam, List<FieldExportMeta> exportMetas) {

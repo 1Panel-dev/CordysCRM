@@ -25,4 +25,9 @@ public class MergeResult {
 	 * 合并的行区域
 	 */
 	private List<int[]> mergeRegions;
+
+	/**
+	 * 实际合并处理的行数
+	 */
+	private int handleCount;
 }

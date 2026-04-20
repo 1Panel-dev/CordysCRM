@@ -112,6 +112,7 @@ public class ProductPriceExportService extends BaseExportService {
 
         return MergeResult.builder()
                 .dataList(data)
+				.handleCount(dataList.size())
                 .mergeRegions(mergeRegions)
                 .build();
     }
