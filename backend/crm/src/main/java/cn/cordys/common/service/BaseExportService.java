@@ -59,7 +59,7 @@ public abstract class BaseExportService {
     /**
      * 最大查询数量
      */
-    public static final int EXPORT_MAX_COUNT = 1000;
+    public static final int EXPORT_MAX_COUNT = 5000;
 	/**
 	 * 汇总字段前缀
 	 */
