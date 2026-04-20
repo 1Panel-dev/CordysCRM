@@ -1,5 +1,12 @@
 <template>
-  <CrmDrawer v-model:show="showDrawer" width="100%" :footer="false" no-padding :show-back="true" :closable="false">
+  <CrmDrawer
+    v-model:show="showDrawer"
+    :width="drawerWidth"
+    :footer="false"
+    no-padding
+    :show-back="true"
+    :closable="false"
+  >
     <template #title>
       <n-tooltip trigger="hover" :delay="300" :disabled="!props.title">
         <template #trigger>
@@ -118,6 +125,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -141,6 +149,7 @@
     formKey: FormDesignKeyEnum;
     sourceId?: string;
     showTabSetting?: boolean;
+    formViewSize?: FormViewSize;
   }>();
 
   const emit = defineEmits<{
@@ -164,6 +173,17 @@
   const formDrawerVisible = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(props.formKey);
   const needInitDetail = ref(false);
+  const drawerWidth = computed(() => {
+    switch (props.formViewSize) {
+      case 'small':
+        return '50%';
+      case 'medium':
+        return '75%';
+      case 'large':
+      default:
+        return '100%';
+    }
+  });
 
   function handleButtonClick(key: string, done?: () => void) {
     switch (key) {

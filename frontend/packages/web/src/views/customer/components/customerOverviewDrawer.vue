@@ -8,6 +8,7 @@
     :title="sourceName"
     :form-key="FormDesignKeyEnum.CUSTOMER"
     :source-id="props.sourceId"
+    :formViewSize="formViewSize"
     show-tab-setting
     @button-select="handleButtonSelect"
     @saved="handleSaved"
@@ -139,6 +140,7 @@
   import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
+  import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -381,9 +383,16 @@
     emit('saved');
   }
 
-  function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {
+  const formViewSize = ref<FormViewSize>('large');
+  function handleDescriptionInit(
+    _collaborationType?: CollaborationType,
+    _sourceName?: string,
+    detail?: Record<string, any>,
+    config?: FormConfig
+  ) {
     collaborationType.value = _collaborationType;
     sourceName.value = _sourceName || '';
+    formViewSize.value = config?.viewSize || 'large';
   }
 
   const showContractDetailDrawer = ref(false);

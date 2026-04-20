@@ -10,6 +10,7 @@
     :subtitle="subTitleName"
     :form-key="FormDesignKeyEnum.BUSINESS"
     :source-id="sourceId"
+    :formViewSize="formViewSize"
     @button-select="handleSelect"
     @saved="refreshList"
   >
@@ -92,6 +93,7 @@
   import { characterLimit } from '@lib/shared/method';
   import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
   import type { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
+  import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -313,10 +315,12 @@
     emit('refresh');
   }
 
+  const formViewSize = ref<FormViewSize>('large');
   function handleDescriptionInit(
     _collaborationType?: CollaborationType,
     _sourceName?: string,
-    detail?: Record<string, any>
+    detail?: Record<string, any>,
+    config?: FormConfig
   ) {
     if (detail) {
       const { customerName, customerId, name, stage, failureReason } = detail;
@@ -333,6 +337,7 @@
           customerId,
         }) || '';
     }
+    formViewSize.value = config?.viewSize || 'large';
   }
 
   watch(
