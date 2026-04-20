@@ -6,12 +6,6 @@ export enum OpportunitySearchTypeEnum {
 }
 
 export enum QuotationStatusEnum {
-  APPROVED = 'APPROVED', // 通过
-  UNAPPROVED = 'UNAPPROVED', // 未通过
-  APPROVING = 'APPROVING', // 提审
+  NORMAL = 'NORMAL', // 正常
   VOIDED = 'VOIDED', // 作废
-  REVOKED = 'REVOKED', // 撤销
-  NONE = 'NONE', // 未开启审批状态
 }
-
-export default {};

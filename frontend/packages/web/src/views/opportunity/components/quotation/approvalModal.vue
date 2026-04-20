@@ -34,9 +34,10 @@
   import { ref } from 'vue';
   import { FormInst, NForm, NFormItem, NSelect, useMessage } from 'naive-ui';
 
-  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
+  import { ProcessStatusType } from '@lib/shared/models/system/process';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
@@ -60,14 +61,14 @@
   }>();
 
   const form = ref<{
-    approvalStatus: QuotationStatusEnum | null;
+    approvalStatus: ProcessStatusType | null;
   }>({
     approvalStatus: null,
   });
 
   const reviewOptions = ref([
-    { label: t('common.pass'), value: QuotationStatusEnum.APPROVED },
-    { label: t('common.unPass'), value: QuotationStatusEnum.UNAPPROVED },
+    { label: t('common.pass'), value: ProcessStatusEnum.APPROVED },
+    { label: t('common.unPass'), value: ProcessStatusEnum.UNAPPROVED },
   ]);
 
   function handleCancel() {
@@ -85,7 +86,7 @@
           loading.value = true;
           const result = await (props.approvalApi ?? batchApprove)({
             ids: props.quotationIds,
-            approvalStatus: form.value.approvalStatus as QuotationStatusEnum,
+            approvalStatus: form.value.approvalStatus as ProcessStatusType,
           });
           emit('refresh', result);
           handleCancel();

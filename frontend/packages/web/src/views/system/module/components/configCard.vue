@@ -95,7 +95,6 @@
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import stateFlowDrawer from '@/components/business/crm-status-config-drawer/index.vue';
-  import approvalSwitch, { approvalConfigType } from './approvalSwitch.vue';
   import businessTitleValidate from './businessTitleValidate.vue';
   import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
@@ -151,9 +150,6 @@
   const renderAccountReasonConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
   const renderLeadReasonConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
   const renderOptReasonConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
-  const renderQuotationApprovalConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
-  const renderContractApprovalConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
-  const renderInvoiceApprovalConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
   const renderValidateConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
   // 是否已配置原因
   const isHasConfigAccountReason = ref<boolean>(false);
@@ -300,11 +296,6 @@
       key: 'move',
       render: renderOptReasonConfig.value,
     },
-    {
-      label: t('module.approvalSwitch'),
-      key: 'approval',
-      render: renderQuotationApprovalConfig.value,
-    },
   ]);
 
   const contractMoreOptions = computed<ActionsItem[]>(() => [
@@ -316,16 +307,6 @@
     {
       label: t('module.contract.invoiceFormSetting'),
       key: 'invoiceFormSetting',
-    },
-    {
-      label: t('module.approvalSwitch'),
-      key: 'approval',
-      render: renderContractApprovalConfig.value,
-    },
-    {
-      label: t('module.approvalSwitch'),
-      key: 'approval',
-      render: renderInvoiceApprovalConfig.value,
     },
   ]);
 
@@ -704,63 +685,6 @@
     renderValidateConfig.value = hasAnyPermission(['MODULE_SETTING:UPDATE']) ? h(businessTitleValidate) : null;
   }
 
-  const approvalConfigMap: Record<
-    approvalConfigType,
-    { renderRef: Ref<VNode | null>; name: () => string; enable: Ref<boolean> }
-  > = {
-    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: {
-      renderRef: renderQuotationApprovalConfig,
-      name: () => t('menu.quotation'),
-      enable: enableQuotationApproval,
-    },
-    [FormDesignKeyEnum.CONTRACT]: {
-      renderRef: renderContractApprovalConfig,
-      name: () => t('module.contract'),
-      enable: enableConstructApproval,
-    },
-    [FormDesignKeyEnum.INVOICE]: {
-      renderRef: renderInvoiceApprovalConfig,
-      name: () => t('module.invoiceApproval'),
-      enable: enableInvoiceApproval,
-    },
-  };
-
-  const apiParamsKey: Record<approvalConfigType, string> = {
-    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: ReasonTypeEnum.QUOTATION_APPROVAL,
-    [FormDesignKeyEnum.CONTRACT]: ReasonTypeEnum.CONTRACT_APPROVAL,
-    [FormDesignKeyEnum.INVOICE]: ReasonTypeEnum.INVOICE_APPROVAL,
-  };
-
-  async function initStatus(type: approvalConfigType) {
-    try {
-      const result = await getReasonConfig(apiParamsKey[type] as ReasonTypeEnum);
-      approvalConfigMap[type].enable.value = result.enable;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  async function initRenderApprovalConfig(type: approvalConfigType) {
-    const config = approvalConfigMap[type];
-    if (!config) return;
-
-    await initStatus(type);
-    config.renderRef.value = hasAnyPermission(['MODULE_SETTING:UPDATE'])
-      ? h(approvalSwitch, {
-          title: t('module.approvalSwitch', {
-            name: config.name(),
-          }),
-          value: approvalConfigMap[type].enable.value,
-          apiParamsKey,
-          type,
-          onChange: async (val: approvalConfigType) => {
-            initRenderApprovalConfig(val);
-          },
-        })
-      : null;
-  }
-
   async function getGlobalReasonConfig() {
     try {
       const reasonTypes = [
@@ -808,9 +732,6 @@
 
   onMounted(() => {
     initRenderReasonSwitch();
-    initRenderApprovalConfig(FormDesignKeyEnum.OPPORTUNITY_QUOTATION);
-    initRenderApprovalConfig(FormDesignKeyEnum.CONTRACT);
-    initRenderApprovalConfig(FormDesignKeyEnum.INVOICE);
     initRenderBusinessNameConfig();
     if (route.query.openCluePoolDrawer === 'Y') {
       clueManagementCluePoolVisible.value = true;

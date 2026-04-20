@@ -102,6 +102,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
@@ -114,6 +115,8 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -122,13 +125,12 @@
   import approvalModal from './approvalModal.vue';
   import batchOperationResultModal from './batchOperationResultModal.vue';
   import detailDrawer from './detail.vue';
-  import quotationStatus from './quotationStatus.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
   import { batchVoided, deleteQuotation, getOpenSeaOptions, revokeQuotation, voidQuotation } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { quotationStatusOptions } from '@/config/opportunity';
+  import { processStatusOptions } from '@/config/process';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -213,9 +215,10 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          // todo xinxinwu 作废状态 status 等待调整
           const result = await batchVoided({
             ids: checkedRowKeys.value,
-            approvalStatus: QuotationStatusEnum.VOIDED,
+            status: QuotationStatusEnum.VOIDED,
           });
           batchResult.value = result;
           resultVisible.value = true;
@@ -434,43 +437,45 @@
     if (dicApprovalEnable) {
       const commonGroups = ['voided', 'delete'];
 
+      if (row.status === QuotationStatusEnum.VOIDED) {
+        return getGroups(['delete']);
+      }
+
       switch (row.approvalStatus) {
-        case QuotationStatusEnum.APPROVED:
+        case ProcessStatusEnum.APPROVED:
           return getGroups(['download', ...commonGroups]);
-        case QuotationStatusEnum.UNAPPROVED:
-        case QuotationStatusEnum.REVOKED:
+        case ProcessStatusEnum.UNAPPROVED:
+        case ProcessStatusEnum.REVOKED:
           return getGroups(['edit', ...commonGroups]);
-        case QuotationStatusEnum.APPROVING:
+        case ProcessStatusEnum.APPROVING:
           const operationGroups =
             row.createUser === useStore.userInfo.id && hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])
               ? ['approval', 'revoke', 'more']
               : ['approval', ...commonGroups];
           return getGroups(operationGroups);
-        case QuotationStatusEnum.VOIDED:
-          return getGroups(['delete']);
         default:
           return getGroups(['edit', 'voided', 'delete']);
       }
     }
 
-    if (row.approvalStatus === QuotationStatusEnum.VOIDED) return getGroups(['delete']);
+    if (row.status === QuotationStatusEnum.VOIDED) return getGroups(['delete']);
     return getGroups(['edit', 'download', 'more']);
   }
 
   function getMoreOperationGroupList(row: QuotationItem, dicApprovalEnable: boolean) {
     if (dicApprovalEnable) {
       if (
-        (row.approvalStatus === QuotationStatusEnum.APPROVING &&
+        (row.approvalStatus === ProcessStatusEnum.APPROVING &&
           row.createUser === useStore.userInfo.id &&
           hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])) ||
-        row.approvalStatus === QuotationStatusEnum.NONE
+        row.approvalStatus === ProcessStatusEnum.NONE
       ) {
         return moreActions;
       }
       return [];
     }
 
-    return row.approvalStatus === QuotationStatusEnum.VOIDED ? [] : moreActions;
+    return row.status === QuotationStatusEnum.VOIDED ? [] : moreActions;
   }
   const showOverviewDrawer = ref<boolean>(false);
   const activeOpportunity = ref();
@@ -572,10 +577,25 @@
             )
           : h(CrmNameTooltip, { text: row.opportunityName });
       },
-      approvalStatus: (row: QuotationItem) =>
-        h(quotationStatus, {
-          status: row.approvalStatus,
-        }),
+      status: (row: QuotationItem) => {
+        return h(
+          CrmTag,
+          {
+            type: row.status === QuotationStatusEnum.VOIDED ? 'default' : 'info',
+            theme: 'light',
+          },
+          {
+            default: () => (row.status === QuotationStatusEnum.VOIDED ? t('common.voided') : t('common.normal')),
+          }
+        );
+      },
+      approvalStatus: (row: QuotationItem) => {
+        return row.status === QuotationStatusEnum.VOIDED
+          ? '-'
+          : h(CrmApprovalStatus, {
+              status: row.approvalStatus,
+            });
+      },
     },
     permission: ['OPPORTUNITY_QUOTATION:APPROVAL', 'OPPORTUNITY_QUOTATION:VOIDED'],
     readonly: props.readonly,
@@ -616,11 +636,11 @@
       ...(dicApprovalEnable.value
         ? [
             {
-              title: t('common.status'),
+              title: t('common.approvalStatus'),
               dataIndex: 'approvalStatus',
               type: FieldTypeEnum.SELECT_MULTIPLE,
               selectProps: {
-                options: quotationStatusOptions,
+                options: processStatusOptions,
               },
             },
           ]

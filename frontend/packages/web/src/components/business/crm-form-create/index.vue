@@ -43,6 +43,10 @@
           {{ formConfig.optBtnContent[1].text }}
         </n-button>
       </template>
+      <!-- todo 提审和重新提审按钮& emit 事件  xinxinwu -->
+      <!-- <n-button type="primary" ghost @click="handleApproval">
+        {{ t('common.review') }}
+      </n-button> -->
       <n-button v-if="formConfig.optBtnContent[2].enable" secondary @click="emit('cancel')">
         {{ formConfig.optBtnContent[2].text }}
       </n-button>
@@ -101,6 +105,7 @@
     (e: 'cancel'): void;
     (e: 'init', title: string, formViewSize?: FormViewSize): void;
     (e: 'saved', isContinue: boolean, res: any): void;
+    (e: 'approval', res: any): void;
   }>();
 
   const { t } = useI18n();

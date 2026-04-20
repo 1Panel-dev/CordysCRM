@@ -113,6 +113,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -121,6 +122,7 @@
 
   import { deleteOrder, getOrderStatistic, getOrderStatusConfig } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { processStatusOptions } from '@/config/process';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -240,38 +242,6 @@
     }
   }
 
-  // 表格
-  const filterConfigList = computed<FilterFormItem[]>(() => [
-    {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        type: 'department',
-        checkable: true,
-        showContainChildModule: true,
-        containChildIds: [],
-      },
-    },
-    {
-      title: t('order.status'),
-      dataIndex: 'stage',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options:
-          stageConfig.value?.stageConfigList.map((e: any) => ({
-            label: e.name,
-            value: e.id,
-          })) || [],
-      },
-    },
-    ...baseFilterConfigList,
-  ]);
-
   const operationGroupList = computed<ActionsItem[]>(() => {
     return [
       ...(!props.readonly
@@ -373,7 +343,7 @@
     });
   }
 
-  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, dicApprovalEnable } = await useFormCreateTable({
     formKey: props.formKey,
     excludeFieldIds: ['contractId'],
     operationColumn: {
@@ -450,6 +420,10 @@
       stage: (row: OrderItem) => {
         return row.stageName || '-';
       },
+      approvalStatus: (row: OrderItem) =>
+        h(CrmApprovalStatus, {
+          status: row.approvalStatus,
+        }),
     },
     containerClass: `.crm-order-table-${props.formKey}`,
     orderStage: stageConfig.value?.stageConfigList || [],
@@ -458,6 +432,51 @@
     useTableRes;
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+
+  // 表格
+  const filterConfigList = computed<FilterFormItem[]>(() => [
+    {
+      title: t('opportunity.department'),
+      dataIndex: 'departmentId',
+      type: FieldTypeEnum.TREE_SELECT,
+      treeSelectProps: {
+        labelField: 'name',
+        keyField: 'id',
+        multiple: true,
+        clearFilterAfterSelect: false,
+        type: 'department',
+        checkable: true,
+        showContainChildModule: true,
+        containChildIds: [],
+      },
+    },
+    {
+      title: t('order.status'),
+      dataIndex: 'stage',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options:
+          stageConfig.value?.stageConfigList.map((e: any) => ({
+            label: e.name,
+            value: e.id,
+          })) || [],
+      },
+    },
+    // todo xinxinwu
+    ...(dicApprovalEnable.value
+      ? [
+          {
+            title: t('common.approvalStatus'),
+            dataIndex: 'approvalStatus',
+            type: FieldTypeEnum.SELECT_MULTIPLE,
+            selectProps: {
+              options: processStatusOptions,
+            },
+          },
+        ]
+      : []),
+    ...baseFilterConfigList,
+  ]);
 
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {

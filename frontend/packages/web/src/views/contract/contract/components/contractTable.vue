@@ -136,7 +136,7 @@
 
   import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { abbreviateNumber, characterLimit } from '@lib/shared/method';
@@ -151,6 +151,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
@@ -162,7 +163,6 @@
   import VoidReasonModal from './voidReasonModal.vue';
   import ApprovalModal from '@/views/opportunity/components/quotation/approvalModal.vue';
   import batchOperationResultModal from '@/views/opportunity/components/quotation/batchOperationResultModal.vue';
-  import QuotationStatus from '@/views/opportunity/components/quotation/quotationStatus.vue';
 
   import {
     batchApproveContract,
@@ -173,7 +173,7 @@
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractStatusOptions } from '@/config/contract';
-  import { quotationStatusOptions } from '@/config/opportunity';
+  import { processStatusOptions } from '@/config/process';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -283,7 +283,7 @@
   }
 
   function getEnableApprovalGroupList(row: ContractItem) {
-    if (row.approvalStatus === QuotationStatusEnum.APPROVING) {
+    if (row.approvalStatus === ProcessStatusEnum.APPROVING) {
       return [
         {
           label: t('common.approval'),
@@ -305,7 +305,7 @@
         },
       ];
     }
-    if (row.approvalStatus === QuotationStatusEnum.APPROVED) {
+    if (row.approvalStatus === ProcessStatusEnum.APPROVED) {
       return [
         ...(row.stage !== ContractStatusEnum.VOID
           ? [
@@ -527,7 +527,7 @@
             );
       },
       stage: (row: ContractItem) => {
-        const disabled = row.approvalStatus !== QuotationStatusEnum.APPROVED || !hasAnyPermission(['CONTRACT:STAGE']);
+        const disabled = row.approvalStatus !== ProcessStatusEnum.APPROVED || !hasAnyPermission(['CONTRACT:STAGE']);
         if (disabled && dicApprovalEnable.value) {
           return h(
             NTooltip,
@@ -562,7 +562,7 @@
         });
       },
       approvalStatus: (row: ContractItem) =>
-        h(QuotationStatus, {
+        h(CrmApprovalStatus, {
           status: row.approvalStatus,
         }),
     },
@@ -698,7 +698,7 @@
             operatorOption: COMMON_SELECTION_OPERATORS,
             type: FieldTypeEnum.SELECT_MULTIPLE,
             selectProps: {
-              options: quotationStatusOptions.filter((item) => ![QuotationStatusEnum.VOIDED].includes(item.value)),
+              options: processStatusOptions,
             },
           },
         ]

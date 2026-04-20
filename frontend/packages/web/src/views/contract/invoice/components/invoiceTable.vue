@@ -95,8 +95,8 @@
 <script setup lang="ts">
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
-  import { ContractInvoiceStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
@@ -110,16 +110,17 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
-  import contractInvoiceStatus from './contractInvoiceStatus.vue';
   import DetailDrawer from './detail.vue';
 
   import { batchDeleteInvoiced, deleteInvoiced, revokeInvoiced } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { contractInvoiceStatusOptions, deleteInvoiceContentMap } from '@/config/contract';
+  import { deleteInvoiceContentMap } from '@/config/contract';
+  import { processStatusOptions } from '@/config/process';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -250,7 +251,7 @@
   }
 
   function getApprovalEnableGroupList(row: ContractInvoiceItem) {
-    if (row.approvalStatus === ContractInvoiceStatusEnum.APPROVING) {
+    if (row.approvalStatus === ProcessStatusEnum.APPROVING) {
       return [
         {
           label: t('common.approval'),
@@ -272,7 +273,7 @@
         },
       ];
     }
-    if (row.approvalStatus === ContractInvoiceStatusEnum.APPROVED) {
+    if (row.approvalStatus === ProcessStatusEnum.APPROVED) {
       return [
         {
           label: t('common.delete'),
@@ -318,13 +319,13 @@
 
   const showDetailDrawer = ref(false);
 
-  function handleDelete(row: any, approvalEnable: boolean) {
+  function handleDelete(row: ContractInvoiceItem, approvalEnable: boolean) {
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: row.name }),
       content: approvalEnable
-        ? deleteInvoiceContentMap[row.approvalStatus as ContractInvoiceStatusEnum]
-        : deleteInvoiceContentMap[ContractInvoiceStatusEnum.NONE],
+        ? deleteInvoiceContentMap[row.approvalStatus]
+        : deleteInvoiceContentMap[ProcessStatusEnum.NONE],
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
@@ -456,7 +457,7 @@
             );
       },
       approvalStatus: (row: ContractInvoiceItem) =>
-        h(contractInvoiceStatus, {
+        h(CrmApprovalStatus, {
           status: row.approvalStatus,
         }),
       businessTitleId: (row: ContractInvoiceItem) =>
@@ -520,7 +521,7 @@
             type: FieldTypeEnum.SELECT_MULTIPLE,
             operatorOption: COMMON_SELECTION_OPERATORS,
             selectProps: {
-              options: contractInvoiceStatusOptions,
+              options: processStatusOptions,
             },
           },
         ]

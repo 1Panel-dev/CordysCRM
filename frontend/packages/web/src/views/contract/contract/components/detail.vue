@@ -1,8 +1,11 @@
 <template>
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="title">
     <template #titleLeft>
-      <div class="text-[14px] font-normal">
-        {{ stageName }}
+      <div class="text-[14px]b flex items-center gap-[8px] font-normal">
+        <CrmApprovalStatus v-if="dicApprovalEnable" :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
+        <div class="text-[14px] font-normal">
+          {{ stageName }}
+        </div>
       </div>
     </template>
     <template #titleRight>
@@ -100,7 +103,7 @@
 
   import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { ContractItem } from '@lib/shared/models/contract';
@@ -110,6 +113,7 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
@@ -186,7 +190,7 @@
   );
 
   function getApprovalEnableBtnList() {
-    if (detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVING) {
+    if (detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING) {
       return [
         {
           label: t('common.pass'),
@@ -227,7 +231,7 @@
         },
       ];
     }
-    if (detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVED) {
+    if (detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVED) {
       return [
         ...(detailInfo.value?.stage !== ContractStatusEnum.VOID
           ? [
@@ -371,7 +375,7 @@
   }
 
   async function handleApproval(approval = false) {
-    const approvalStatus = approval ? QuotationStatusEnum.APPROVED : QuotationStatusEnum.UNAPPROVED;
+    const approvalStatus = approval ? ProcessStatusEnum.APPROVED : ProcessStatusEnum.UNAPPROVED;
     try {
       await approvalContract({
         id: props.sourceId,
@@ -430,7 +434,7 @@
     const contractIsVoidOrArchived =
       detailInfo.value?.stage === ContractStatusEnum.VOID || detailInfo.value?.stage === ContractStatusEnum.ARCHIVED;
     if (dicApprovalEnable.value) {
-      return contractIsVoidOrArchived || detailInfo.value?.approvalStatus !== QuotationStatusEnum.APPROVED;
+      return contractIsVoidOrArchived || detailInfo.value?.approvalStatus !== ProcessStatusEnum.APPROVED;
     }
     return contractIsVoidOrArchived;
   });
@@ -439,7 +443,7 @@
     if (dicApprovalEnable.value) {
       return (
         detailInfo.value?.stage === ContractStatusEnum.VOID ||
-        detailInfo.value?.approvalStatus === QuotationStatusEnum.APPROVING
+        detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
       );
     }
     return detailInfo.value?.stage === ContractStatusEnum.VOID;

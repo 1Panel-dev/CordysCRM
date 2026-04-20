@@ -66,9 +66,7 @@ export default {
   'contract.businessTitle.deleteContent': 'Deleted data cannot be recovered. Proceed with caution.',
   'contract.businessTitle.deleteInvoiceContent':
     'The company name has an invoice record and is prohibited from being deleted!',
-  'contract.underReview': 'Under Review',
   'contract.approved': 'Approved',
-  'contract.rejected': 'Rejected',
   'contract.deleteInvoiceUnderReviewContent':
     'Invoice under review, deleting does not affect the invoiced amount of the contract, please proceed with caution!',
   'contract.deleteInvoiceApprovedContent':

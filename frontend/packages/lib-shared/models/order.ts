@@ -1,5 +1,6 @@
 import type { ModuleField } from './common';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import { ProcessStatusType } from '@lib/shared/models/system/process';
 
 export interface SaveOrderParams {
   name: string;
@@ -27,6 +28,7 @@ export interface OrderItem {
   owner: string;
   number: string;
   stage: string;
+  approvalStatus: ProcessStatusType;
   stageName: string;
   organizationId: string;
   customerName: string;

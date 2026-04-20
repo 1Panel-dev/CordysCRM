@@ -42,6 +42,7 @@
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { ContractPaymentPlanEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
   import type { ContractItem, PaymentPlanItem } from '@lib/shared/models/contract';
@@ -55,10 +56,11 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmBusinessNamePrefix from '@/components/business/crm-business-name-prefix/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
-  import QuotationStatus from '@/views/opportunity/components/quotation/quotationStatus.vue';
 
   import { getOpportunityStageConfig, getOrderStatusConfig } from '@/api/modules';
   import { contractPaymentPlanStatusOptions, contractStatusOptions } from '@/config/contract';
@@ -135,9 +137,20 @@
     [FieldDataSourceTypeEnum.PRICE]: {},
     [FieldDataSourceTypeEnum.QUOTATION]: {
       approvalStatus: (row: QuotationItem) =>
-        h(QuotationStatus, {
+        h(CrmApprovalStatus, {
           status: row.approvalStatus,
         }),
+      status: (row: QuotationItem) =>
+        h(
+          CrmTag,
+          {
+            type: row.status === QuotationStatusEnum.VOIDED ? 'default' : 'info',
+            theme: 'light',
+          },
+          {
+            default: () => (row.status === QuotationStatusEnum.VOIDED ? t('common.voided') : t('common.normal')),
+          }
+        ),
     },
     [FieldDataSourceTypeEnum.CONTRACT]: {
       stage: (row: ContractItem) => {
@@ -149,7 +162,7 @@
         });
       },
       approvalStatus: (row: ContractItem) =>
-        h(QuotationStatus, {
+        h(CrmApprovalStatus, {
           status: row.approvalStatus,
         }),
     },
@@ -181,6 +194,10 @@
       stage: (row: OrderItem) => {
         return row.stageName || '-';
       },
+      approvalStatus: (row: ContractItem) =>
+        h(CrmApprovalStatus, {
+          status: row.approvalStatus,
+        }),
     },
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: {},
     [FieldDataSourceTypeEnum.USER_OPTIONS]: {},
