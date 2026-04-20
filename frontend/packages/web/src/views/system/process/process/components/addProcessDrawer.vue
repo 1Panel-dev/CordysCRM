@@ -7,9 +7,8 @@
     @next-step="handleNextStep"
     @cancel="() => emit('cancel')"
   >
-    <template>
-      <!-- todo yuan   -->
-      <div v-if="activeTab === 'process'"> process design </div>
+    <template v-if="visible">
+      <ApprovalFlowDesign v-if="activeTab === 'process'" />
       <moreSetting v-if="activeTab === 'moreSetting'" />
     </template>
   </CrmProcessDrawer>
@@ -22,6 +21,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmProcessDrawer from '@/components/business/crm-process-drawer/index.vue';
+  import ApprovalFlowDesign from './approvalFlowDesign.vue';
   import moreSetting from './moreSetting.vue';
 
   const { t } = useI18n();

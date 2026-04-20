@@ -58,16 +58,14 @@
       </div>
     </template>
     <div class="h-full">
-      <n-scrollbar class="flex flex-col p-[16px]">
-        <slot></slot>
-      </n-scrollbar>
+      <slot></slot>
     </div>
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
   import { watchEffect } from 'vue';
-  import { NButton, NIcon, NScrollbar, NTooltip } from 'naive-ui';
+  import { NButton, NIcon, NTooltip } from 'naive-ui';
   import { ChevronBackOutline } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';

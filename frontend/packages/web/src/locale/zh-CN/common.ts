@@ -11,6 +11,7 @@ export default {
   'common.search': '搜索',
   'common.reset': '重置',
   'common.retry': '重试',
+  'common.start': '开始',
   'common.end': '结束',
   'common.enable': '启用',
   'common.activated': '已启用',
