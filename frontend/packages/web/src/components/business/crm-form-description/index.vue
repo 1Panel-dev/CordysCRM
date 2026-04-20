@@ -201,6 +201,7 @@
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
+  import type { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -255,7 +256,13 @@
     }
   );
   const emit = defineEmits<{
-    (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
+    (
+      e: 'init',
+      collaborationType?: CollaborationType,
+      sourceName?: string,
+      detail?: Record<string, any>,
+      config?: FormConfig
+    ): void;
     (e: 'openCustomerDetail', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
     (e: 'openContractDetail', params: { id: string }): void;
     (e: 'openContractPaymentPlanDetail', params: { id: string }): void;
@@ -276,6 +283,7 @@
     detail,
     formDetail,
     moduleFormConfig,
+    formConfig,
     initFormDetail,
     initFormConfig,
     initFormDescription,
@@ -487,14 +495,14 @@
     () => props.refreshKey,
     async () => {
       await initFormDetail(true);
-      emit('init', collaborationType.value, sourceName.value, detail.value);
+      emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
     }
   );
 
   onBeforeMount(async () => {
     await initFormConfig();
     await initFormDetail(true);
-    emit('init', collaborationType.value, sourceName.value, detail.value);
+    emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
     isInit.value = true;
   });
 
