@@ -84,7 +84,7 @@ public class ContractExportService extends BaseExportService {
         List<int[]> mergeRegions = new ArrayList<>();
 
         // 任务列表 - 每个任务处理一行数据，构建该行的导出数据 Pair<位置索引, 行数据>
-        List<Future<Pair<Integer, List<List<Object>>>>> futures = new ArrayList<>(size / 10);
+        List<Future<Pair<Integer, List<List<Object>>>>> futures = new ArrayList<>(3);
         for (int i = 0; i < size; i++) {
             final int idx = i;
             ContractListResponse detail = dataList.get(i);
