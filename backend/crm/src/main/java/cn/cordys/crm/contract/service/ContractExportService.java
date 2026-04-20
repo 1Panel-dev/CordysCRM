@@ -25,9 +25,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -42,6 +45,15 @@ public class ContractExportService extends BaseExportService {
     private ModuleFormService moduleFormService;
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    /**
+     * 控制并发数，防止 CPU 打满
+     */
+    private static final int MAX_CONCURRENT = 8;
+    private final Semaphore semaphore = new Semaphore(MAX_CONCURRENT);
+    /**
+     * 滑动窗口大小，控制等待提交的任务数，防止 OOM
+     */
+    private static final int WINDOW_SIZE = MAX_CONCURRENT * 10;
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
@@ -83,26 +95,39 @@ public class ContractExportService extends BaseExportService {
         List<List<Object>> mergeRowData = new ArrayList<>(size);
         List<int[]> mergeRegions = new ArrayList<>();
 
-        // 任务列表 - 每个任务处理一行数据，构建该行的导出数据 Pair<位置索引, 行数据>
-        List<Future<Pair<Integer, List<List<Object>>>>> futures = new ArrayList<>(3);
+        // 滑动窗口：阻塞队列控制等待提交的任务数，边跑边提交
+        BlockingQueue<Future<Pair<Integer, List<List<Object>>>>> queue = new LinkedBlockingQueue<>(WINDOW_SIZE);
+
+        // 提交任务
         for (int i = 0; i < size; i++) {
             final int idx = i;
             ContractListResponse detail = dataList.get(i);
-            futures.add(executor.submit(() -> {
-                if (ExportThreadRegistry.isInterrupted(taskId)) {
-                    throw new InterruptedException("导出中断");
+            Future<Pair<Integer, List<List<Object>>>> future = executor.submit(() -> {
+                semaphore.acquire();
+                try {
+                    if (ExportThreadRegistry.isInterrupted(taskId)) {
+                        throw new InterruptedException("导出中断");
+                    }
+                    List<List<Object>> buildData = buildData(detail, exportFieldParam, exportParam.getExportMetas());
+                    return Pair.of(idx, buildData);
+                } finally {
+                    semaphore.release();
                 }
-                List<List<Object>> buildData = buildData(detail, exportFieldParam, exportParam.getExportMetas());
-                return Pair.of(idx, buildData);
-            }));
-        }
+            });
+            // 阻塞等待队列有空位，防止一次性提交所有任务导致 OOM
+			try {
+				queue.put(future);
+			} catch (InterruptedException e) {
+				log.error("Put task error: {}", e.getMessage());
+			}
+		}
 
-        // 收集结果 (阻塞)
+        // 收集结果：每处理完一个就取下一个，保持窗口滑动
         List<Pair<Integer, List<List<Object>>>> results = new ArrayList<>(size);
-        for (Future<Pair<Integer, List<List<Object>>>> f : futures) {
+        for (int i = 0; i < size; i++) {
             try {
-                Pair<Integer, List<List<Object>>> pairData = f.get();
-                results.add(pairData);
+                Future<Pair<Integer, List<List<Object>>>> f = queue.take();
+                results.add(f.get());
             } catch (Exception e) {
                 log.error("Parse row data error: {}", e.getMessage());
             }
