@@ -49,8 +49,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -77,9 +75,6 @@ public abstract class BaseExportService {
     private LogService logService;
     @Resource
     private ExportTaskService exportTaskService;
-
-    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-
 
     public Map<String, BaseField> getFieldConfigMap(String formKey, String orgId) {
         return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
@@ -331,7 +326,7 @@ public abstract class BaseExportService {
      * @return 单行记录值
      */
     public List<Object> transFieldValueWithSub(List<FieldExportMeta> metas, LinkedHashMap<String, Object> sysFieldValMap, Map<String, Object> normalFieldMap,
-                                               Map<String, Object> subRowMap, HashMap<Object, Object> cacheMap) {
+                                               Map<String, Object> subRowMap, Map<Object, Object> cacheMap) {
         List<Object> dataList = new ArrayList<>(metas.size());
         for (FieldExportMeta meta : metas) {
             BaseField field = meta.getField();
@@ -375,7 +370,7 @@ public abstract class BaseExportService {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public Object transformFieldValue(AbstractModuleFieldResolver resolver, BaseField field, Object value, HashMap<Object, Object> cacheMap) {
+    public Object transformFieldValue(AbstractModuleFieldResolver resolver, BaseField field, Object value, Map<Object, Object> cacheMap) {
         if (value == null) {
             return null;
         }
@@ -416,7 +411,7 @@ public abstract class BaseExportService {
      *
      * @return 导出数据列表
      */
-    protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues, ExportFieldParam exportFieldParam, List<FieldExportMeta> metas, LinkedHashMap<String, Object> systemFieldMap, HashMap<Object, Object> cacheMap) {
+    protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues, ExportFieldParam exportFieldParam, List<FieldExportMeta> metas, LinkedHashMap<String, Object> systemFieldMap, Map<Object, Object> cacheMap) {
         List<List<Object>> dataList = new ArrayList<>();
         if (org.apache.commons.collections4.CollectionUtils.isEmpty(moduleFieldValues)) {
             // 无自定义字段, 导出系统字段值, 单行导出

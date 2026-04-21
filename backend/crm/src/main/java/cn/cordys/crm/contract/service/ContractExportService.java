@@ -19,16 +19,14 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -82,7 +80,7 @@ public class ContractExportService extends BaseExportService {
                                                  List<ContractListResponse> dataList,
                                                  ExportFieldParam exportFieldParam) {
         int size = dataList.size();
-        var cacheMap = new HashMap<>();
+        var cacheMap = new ConcurrentHashMap<>();
         List<List<Object>> mergeRowData = new ArrayList<>(size);
         List<int[]> mergeRegions = new ArrayList<>();
 
@@ -99,8 +97,7 @@ public class ContractExportService extends BaseExportService {
                 // 获取数据库访问许可
                 dbSemaphore.acquire();
                 try {
-                    List<List<Object>> buildData = buildData(detail, exportFieldParam,
-                            exportParam.getExportMetas(), cacheMap);
+                    List<List<Object>> buildData = buildData(detail, exportFieldParam, exportParam.getExportMetas(), cacheMap);
                     return Pair.of(idx, buildData);
                 } finally {
                     dbSemaphore.release();  // 确保释放
@@ -139,7 +136,7 @@ public class ContractExportService extends BaseExportService {
                 .build();
     }
 
-    private List<List<Object>> buildData(ContractListResponse detail, ExportFieldParam exportFieldParam, List<FieldExportMeta> exportMetas, HashMap<Object, Object> cacheMap) {
+    private List<List<Object>> buildData(ContractListResponse detail, ExportFieldParam exportFieldParam, List<FieldExportMeta> exportMetas, Map<Object, Object> cacheMap) {
         return buildDataWithSub(detail.getModuleFields(), exportFieldParam, exportMetas, getSystemFieldMap(detail, exportMetas), cacheMap);
     }
 
@@ -152,28 +149,39 @@ public class ContractExportService extends BaseExportService {
         systemFieldMap.put("amount", data.getAmount());
         systemFieldMap.put("alreadyPayAmount", data.getAlreadyPayAmount());
         systemFieldMap.put("number", data.getNumber());
+
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
             systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), Locale.SIMPLIFIED_CHINESE));
         }
         if (StringUtils.isNotBlank(data.getStage())) {
             systemFieldMap.put("stage", Translator.get("contract.stage." + data.getStage().toLowerCase(), Locale.SIMPLIFIED_CHINESE));
         }
+
         systemFieldMap.put("createUser", data.getCreateUserName());
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
         systemFieldMap.put("updateUser", data.getUpdateUserName());
         systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
         systemFieldMap.put("voidReason", data.getVoidReason());
 
-        FieldExportMeta startTime = exportMetas.stream().filter(field -> Strings.CI.equals(field.getBusinessKey(), "startTime")).findFirst().orElse(null);
-        if (startTime != null) {
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(startTime.getField().getType());
-            systemFieldMap.put("startTime", customFieldResolver.transformToValue(startTime.getField(), String.valueOf(data.getStartTime())));
-        }
-        FieldExportMeta endTime = exportMetas.stream().filter(field -> Strings.CI.equals(field.getBusinessKey(), "endTime")).findFirst().orElse(null);
-        if (endTime != null) {
-            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(endTime.getField().getType());
-            systemFieldMap.put("endTime", customFieldResolver.transformToValue(endTime.getField(), String.valueOf(data.getEndTime())));
-        }
+        // 将 exportMetas 转为 Map，避免重复遍历
+        Map<String, FieldExportMeta> metaMap = exportMetas.stream()
+                .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
+
+        resolveAndPutTimeField(systemFieldMap, metaMap, "startTime", String.valueOf(data.getStartTime()));
+        resolveAndPutTimeField(systemFieldMap, metaMap, "endTime", String.valueOf(data.getEndTime()));
+
         return systemFieldMap;
     }
+
+    private void resolveAndPutTimeField(LinkedHashMap<String, Object> map,
+                                        Map<String, FieldExportMeta> metaMap,
+                                        String businessKey,
+                                        String rawValue) {
+        FieldExportMeta meta = metaMap.get(businessKey);
+        if (meta != null) {
+            AbstractModuleFieldResolver resolver = ModuleFieldResolverFactory.getResolver(meta.getField().getType());
+            map.put(businessKey, resolver.transformToValue(meta.getField(), rawValue));
+        }
+    }
+
 }
