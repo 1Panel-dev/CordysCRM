@@ -18,20 +18,20 @@ public class OpportunityAddRequest {
     private String name;
 
     @Size(max = 32)
-    @Schema(description = "客户id")
+    @Schema(description = "客户id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String customerId;
 
-    @Schema(description = "金额")
+    @Schema(description = "金额", requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal amount;
 
-    @Schema(description = "意向产品", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "意向产品")
     private List<String> products;
 
     @Schema(description = "可能性")
     private BigDecimal possible;
 
     @Size(max = 32)
-    @Schema(description = "联系人", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "联系人")
     private String contactId;
 
     @Size(max = 32)
@@ -39,7 +39,7 @@ public class OpportunityAddRequest {
     private String owner;
 
 
-    @Schema(description = "结束时间")
+    @Schema(description = "结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long expectedEndTime;
 
 
