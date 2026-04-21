@@ -18,10 +18,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 价格表导出
@@ -94,13 +91,13 @@ public class ProductPriceExportService extends BaseExportService {
 
         int offset = 0;
         ExportFieldParam exportFieldParam = exportParam.getExportFieldParam();
-
+        var cacheMap = new HashMap<>();
         for (ProductPriceResponse response : dataList) {
 
             checkInterrupted(taskId);
 
             List<List<Object>> rows =
-                    buildData(response, optionMap, exportFieldParam, exportParam.getExportMetas());
+                    buildData(response, optionMap, exportFieldParam, exportParam.getExportMetas(), cacheMap);
 
             if (rows.size() > 1) {
                 mergeRegions.add(new int[]{offset, offset + rows.size() - 1});
@@ -112,7 +109,7 @@ public class ProductPriceExportService extends BaseExportService {
 
         return MergeResult.builder()
                 .dataList(data)
-				.handleCount(dataList.size())
+                .handleCount(dataList.size())
                 .mergeRegions(mergeRegions)
                 .build();
     }
@@ -133,7 +130,7 @@ public class ProductPriceExportService extends BaseExportService {
     private List<List<Object>> buildData(ProductPriceResponse detail,
                                          Map<String, List<OptionDTO>> optionMap,
                                          ExportFieldParam exportFieldParam,
-                                         List<FieldExportMeta> metas) {
+                                         List<FieldExportMeta> metas, HashMap<Object, Object> cacheMap) {
 
         LinkedHashMap<String, Object> systemFieldMap =
                 ProductPriceUtils.getSystemFieldMap(detail, optionMap);
@@ -141,8 +138,8 @@ public class ProductPriceExportService extends BaseExportService {
         return buildDataWithSub(
                 detail.getModuleFields(),
                 exportFieldParam,
-				metas,
-                systemFieldMap
+                metas,
+                systemFieldMap, cacheMap
         );
     }
 }
