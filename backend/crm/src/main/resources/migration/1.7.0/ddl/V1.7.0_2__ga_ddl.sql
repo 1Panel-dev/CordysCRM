@@ -95,5 +95,34 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_flow_id_from_id ON approval_node_link(flow_id ASC,from_node_id ASC);
 
 
+CREATE TABLE approval_task(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `node_id` VARCHAR(32) NOT NULL   COMMENT '节点ID;节点ID' ,
+    `instance_id` VARCHAR(32) NOT NULL   COMMENT '审批实例ID;审批实例ID' ,
+    `approver_id` VARCHAR(20) NOT NULL   COMMENT '审批人ID;审批人ID' ,
+    `task_status` VARCHAR(20) NOT NULL   COMMENT '任务状态;任务状态' ,
+    `approval_method` VARCHAR(20) NOT NULL   COMMENT '审批方式;审批方式' ,
+    `is_add_sign` TINYINT(1) NOT NULL  DEFAULT 0 COMMENT '是否加签;是否加签任务' ,
+    `add_sign_by` VARCHAR(32)    COMMENT '加签人;加签人ID' ,
+    `add_sign_time` BIGINT    COMMENT '加签时间;加签时间' ,
+    `is_return` TINYINT(1) NOT NULL  DEFAULT 0 COMMENT '是否退回;是否退回任务' ,
+    `return_to_node_id` VARCHAR(32)    COMMENT '退回至节点;退回至节点ID' ,
+    `return_reason` TEXT    COMMENT '退回原因;退回原因' ,
+    `return_by` VARCHAR(32)    COMMENT '退回人;退回人ID' ,
+    `return_time` BIGINT    COMMENT '退回时间;退回时间' ,
+    `is_cc` TINYINT(1) NOT NULL  DEFAULT 0 COMMENT '是否为抄送任务;是否为抄送任务' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '审批任务表;存储待办审批任务'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_approver_id ON approval_task(approver_id ASC);
+CREATE INDEX idx_instance_id ON approval_task(instance_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
