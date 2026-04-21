@@ -94,6 +94,28 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_flow_id_from_id ON approval_node_link(flow_id ASC,from_node_id ASC);
 
+CREATE TABLE approval_instance(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `flow_id` VARCHAR(32) NOT NULL   COMMENT '流程ID' ,
+    `type` VARCHAR(20) NOT NULL   COMMENT '表单类型 quote（报价表单）、contract（合同表单）、invoice（发票表单）' ,
+    `resource_id` VARCHAR(32) NOT NULL   COMMENT '审批的数据ID' ,
+    `submitter_id` VARCHAR(32) NOT NULL   COMMENT '提交人ID' ,
+    `current_node_id` VARCHAR(32)    COMMENT '当前节点id' ,
+    `approval_status` VARCHAR(20) NOT NULL   COMMENT '审批状态' ,
+    `submit_time` BIGINT    COMMENT '提审时间' ,
+    `approve_time` BIGINT    COMMENT '审批完成时间' ,
+    `result` VARCHAR(20)    COMMENT '审批结果: approved/rejected/withdrawn' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '审批实例表'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_flow_resource ON approval_instance(flow_id ASC,resource_id ASC);
 
 CREATE TABLE approval_task(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
@@ -121,7 +143,7 @@ CREATE TABLE approval_task(
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_approver_id ON approval_task(approver_id ASC);
+CREATE INDEX idx_instance_node_id ON approval_task(instance_id ASC,node_id ASC);
 CREATE INDEX idx_instance_id ON approval_task(instance_id ASC);
 
 -- set innodb lock wait timeout to default
