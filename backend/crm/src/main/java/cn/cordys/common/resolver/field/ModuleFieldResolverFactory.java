@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 public class ModuleFieldResolverFactory {
 
-    private static final HashMap<String, AbstractModuleFieldResolver> resolverMap = new HashMap<>();
+    private static final HashMap<String, AbstractModuleFieldResolver<?>> resolverMap = new HashMap<>();
 
     private static final DefaultModuleFieldResolver defaultModuleFieldResolver = new DefaultModuleFieldResolver();
 
@@ -47,8 +47,8 @@ public class ModuleFieldResolverFactory {
         resolverMap.put(FieldType.FORMULA.name(), new FormulaResolver());
     }
 
-    public static AbstractModuleFieldResolver getResolver(String type) {
-        AbstractModuleFieldResolver moduleFieldResolver = resolverMap.get(type);
+    public static AbstractModuleFieldResolver<?> getResolver(String type) {
+        var moduleFieldResolver = resolverMap.get(type);
         return moduleFieldResolver == null ? defaultModuleFieldResolver : moduleFieldResolver;
     }
 }
