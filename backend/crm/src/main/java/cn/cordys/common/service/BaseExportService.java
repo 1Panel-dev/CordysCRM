@@ -16,6 +16,10 @@ import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
+import cn.cordys.crm.system.dto.field.DatasourceField;
+import cn.cordys.crm.system.dto.field.DepartmentField;
+import cn.cordys.crm.system.dto.field.SelectField;
+import cn.cordys.crm.system.dto.field.SelectMultipleField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.field.base.SubField;
@@ -59,14 +63,14 @@ public abstract class BaseExportService {
      * 最大查询数量
      */
     public static final int EXPORT_MAX_COUNT = 5000;
-	/**
-	 * 汇总字段前缀
-	 */
+    /**
+     * 汇总字段前缀
+     */
     private static final String SUM_PREFIX = "sum_";
     public static final String SLASH = "/";
-	/**
-	 * SXSSFWorkbook行访问窗口大小
-	 */
+    /**
+     * SXSSFWorkbook行访问窗口大小
+     */
     public static final String ROW_ACCESS_SIZE = "_randomAccessWindowSize";
 
     @Resource
@@ -74,7 +78,7 @@ public abstract class BaseExportService {
     @Resource
     private ExportTaskService exportTaskService;
 
-	private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
 
     public Map<String, BaseField> getFieldConfigMap(String formKey, String orgId) {
@@ -146,7 +150,7 @@ public abstract class BaseExportService {
                 .build()) {
 
             WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
-			setRowAccessWindowSize(writer);
+            setRowAccessWindowSize(writer);
 
             int offset = 2, current = 1;
             t.setPageSize(EXPORT_MAX_COUNT);
@@ -165,7 +169,7 @@ public abstract class BaseExportService {
                 writer.write(mergeResult.getDataList(), sheet);
                 // 执行合并策略
                 Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
-				SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, getSummaryColIdx(headList, mergeColumns), offset);
+                SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, getSummaryColIdx(headList, mergeColumns), offset);
                 strategy.merge(mergeSheet);
                 if (mergeResult.getHandleCount() < EXPORT_MAX_COUNT) {
                     break;
@@ -269,7 +273,7 @@ public abstract class BaseExportService {
             try (ExcelWriter writer = EasyExcel.write(file).head(exportHeads).excelType(ExcelTypeEnum.XLSX)
                     .registerWriteHandler(new CustomHeadColWidthStyleStrategy()).build()) {
                 WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
-				setRowAccessWindowSize(writer);
+                setRowAccessWindowSize(writer);
                 AtomicInteger offset = new AtomicInteger(2);
                 SubListUtils.dealForSubList(exportParam.getSelectIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (ids) -> {
                     MergeResult mergeResult = new MergeResult();
@@ -301,7 +305,7 @@ public abstract class BaseExportService {
      */
     private String exportWithMergeStrategy(ExportDTO exportParam, ExportExecutor executor) {
         exportParam.setExportFieldParam(getExportFieldParam(exportParam));
-		exportParam.setExportMetas(getExportFieldMeta(exportParam.getExportFieldParam().getFieldConfigMap(), exportParam.getMergeHeads()));
+        exportParam.setExportMetas(getExportFieldMeta(exportParam.getExportFieldParam().getFieldConfigMap(), exportParam.getMergeHeads()));
         return asyncExport(exportParam.getFileName(), exportParam.getOrgId(), exportParam.getUserId(), exportParam.getLocale(),
                 exportParam.getLogModule(), exportParam.getExportType(), executor);
     }
@@ -327,122 +331,138 @@ public abstract class BaseExportService {
      * @return 单行记录值
      */
     public List<Object> transFieldValueWithSub(List<FieldExportMeta> metas, LinkedHashMap<String, Object> sysFieldValMap, Map<String, Object> normalFieldMap,
-											   Map<String, Object> subRowMap) {
-		List<Object> dataList = new ArrayList<>(metas.size());
-		for (FieldExportMeta meta : metas) {
-			BaseField field = meta.getField();
-			if (field == null) {
-				dataList.add(sysFieldValMap.get(meta.getHead()));
-				continue;
-			}
+                                               Map<String, Object> subRowMap, HashMap<Object, Object> cacheMap) {
+        List<Object> dataList = new ArrayList<>(metas.size());
+        for (FieldExportMeta meta : metas) {
+            BaseField field = meta.getField();
+            if (field == null) {
+                dataList.add(sysFieldValMap.get(meta.getHead()));
+                continue;
+            }
 
-			String businessKey = meta.getBusinessKey();
-			String fieldId = meta.getFieldId();
-			if (StringUtils.isNotEmpty(meta.getPrefixId())) {
-				businessKey = meta.getPrefixId() + SLASH + meta.getBusinessKey();
-				fieldId = meta.getPrefixId() + SLASH + meta.getFieldId();
-			}
+            String businessKey = meta.getBusinessKey();
+            String fieldId = meta.getFieldId();
+            if (StringUtils.isNotEmpty(meta.getPrefixId())) {
+                businessKey = meta.getPrefixId() + SLASH + meta.getBusinessKey();
+                fieldId = meta.getPrefixId() + SLASH + meta.getFieldId();
+            }
 
-			Object value = null;
-			// 引用ID不存在时, 先用Key尝试取值 (取值顺序: 系统字段值 > 普通字段值 > 子表行数据)
-			if (meta.isNoResource()) {
-				value = sysFieldValMap.get(businessKey);
-				if (value != null) {
-					dataList.add(value);
-					continue;
-				}
-				value = normalFieldMap.get(businessKey);
-				if (value == null) {
-					value = subRowMap.get(businessKey);
-				}
-			}
-			// 兜底取值
-			if (value == null) {
-				value = normalFieldMap.get(fieldId);
-			}
-			if (value == null) {
-				value = subRowMap.get(fieldId);
-			}
+            Object value = null;
+            // 引用ID不存在时, 先用Key尝试取值 (取值顺序: 系统字段值 > 普通字段值 > 子表行数据)
+            if (meta.isNoResource()) {
+                value = sysFieldValMap.get(businessKey);
+                if (value != null) {
+                    dataList.add(value);
+                    continue;
+                }
+                value = normalFieldMap.get(businessKey);
+                if (value == null) {
+                    value = subRowMap.get(businessKey);
+                }
+            }
+            // 兜底取值
+            if (value == null) {
+                value = normalFieldMap.get(fieldId);
+            }
+            if (value == null) {
+                value = subRowMap.get(fieldId);
+            }
 
-			dataList.add(value == null ? null : transformFieldValue(meta.getResolver(), field, value));
-		}
+            dataList.add(value == null ? null : transformFieldValue(meta.getResolver(), field, value, cacheMap));
+        }
 
-		return dataList;
+        return dataList;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public Object transformFieldValue(AbstractModuleFieldResolver resolver, BaseField field, Object value) {
+    public Object transformFieldValue(AbstractModuleFieldResolver resolver, BaseField field, Object value, HashMap<Object, Object> cacheMap) {
         if (value == null) {
             return null;
         }
+        if (field instanceof DatasourceField ||
+                field instanceof DepartmentField ||
+                field instanceof SelectField ||
+                field instanceof SelectMultipleField) {
+
+            if (cacheMap.containsKey(value)) {
+                return cacheMap.get(value);
+            } else {
+                var data = resolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
+                cacheMap.put(value, data);
+                return data;
+            }
+        }
+
         return resolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
     }
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	public Object transformFieldValue(BaseField field, Object value) {
-		if (value == null) {
-			return null;
-		}
-		AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-		// 将数据库中的字符串值,转换为对应的对象值
-		return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
-	}
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public Object transformFieldValue(BaseField field, Object value) {
+        if (value == null) {
+            return null;
+        }
+        AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+        // 将数据库中的字符串值,转换为对应的对象值
+        return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
+    }
 
-	/**
-	 * 构建含有子表格的导出数据
-	 * @param moduleFieldValues 自定义字段值
-	 * @param exportFieldParam 导出参数
-	 * @param metas 导出表头元数据
-	 * @param systemFieldMap 系统字段值
-	 * @return 导出数据列表
-	 */
-    protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues, ExportFieldParam exportFieldParam, List<FieldExportMeta> metas, LinkedHashMap<String, Object> systemFieldMap) {
+    /**
+     * 构建含有子表格的导出数据
+     *
+     * @param moduleFieldValues 自定义字段值
+     * @param exportFieldParam  导出参数
+     * @param metas             导出表头元数据
+     * @param systemFieldMap    系统字段值
+     *
+     * @return 导出数据列表
+     */
+    protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues, ExportFieldParam exportFieldParam, List<FieldExportMeta> metas, LinkedHashMap<String, Object> systemFieldMap, HashMap<Object, Object> cacheMap) {
         List<List<Object>> dataList = new ArrayList<>();
         if (org.apache.commons.collections4.CollectionUtils.isEmpty(moduleFieldValues)) {
             // 无自定义字段, 导出系统字段值, 单行导出
-            dataList.add(transFieldValueWithSub(metas, systemFieldMap, new LinkedHashMap<>(), new LinkedHashMap<>()));
+            dataList.add(transFieldValueWithSub(metas, systemFieldMap, new LinkedHashMap<>(), new LinkedHashMap<>(), cacheMap));
             return dataList;
         }
 
-		// 拆分子表格字段, 普通字段值
-		List<BaseModuleFieldValue> subFvs = new ArrayList<>();
-		Map<String, Object> normalFvs = new HashMap<>(8);
-		Set<String> subIds = exportFieldParam.getSubIds();
-		for (BaseModuleFieldValue mfv : moduleFieldValues) {
-			String fieldId = mfv.getFieldId();
-			Object fieldValue = mfv.getFieldValue();
-			if (subIds.contains(fieldId)) {
-				subFvs.add(mfv);
-			} else {
-				normalFvs.put(fieldId, fieldValue);
-			}
-		}
+        // 拆分子表格字段, 普通字段值
+        List<BaseModuleFieldValue> subFvs = new ArrayList<>();
+        Map<String, Object> normalFvs = new HashMap<>(8);
+        Set<String> subIds = exportFieldParam.getSubIds();
+        for (BaseModuleFieldValue mfv : moduleFieldValues) {
+            String fieldId = mfv.getFieldId();
+            Object fieldValue = mfv.getFieldValue();
+            if (subIds.contains(fieldId)) {
+                subFvs.add(mfv);
+            } else {
+                normalFvs.put(fieldId, fieldValue);
+            }
+        }
 
-		// 子表格缺失, 无需合并逻辑, 单行导出 (普通字段值).
+        // 子表格缺失, 无需合并逻辑, 单行导出 (普通字段值).
         if (isNullSubValue(subFvs)) {
-            dataList.add(transFieldValueWithSub(metas, systemFieldMap, normalFvs, new LinkedHashMap<>()));
+            dataList.add(transFieldValueWithSub(metas, systemFieldMap, normalFvs, new LinkedHashMap<>(), cacheMap));
             return dataList;
         }
 
-		// 合并子表格字段值, 构建多行导出数据
-		List<Map<String, Object>> alignSubFvs = alignSubFvs(subFvs);
+        // 合并子表格字段值, 构建多行导出数据
+        List<Map<String, Object>> alignSubFvs = alignSubFvs(subFvs);
 
-		// 子表格合并为空, 单行导出 (普通字段值).
-		if (CollectionUtils.isEmpty(alignSubFvs)) {
-			dataList.add(transFieldValueWithSub(metas, systemFieldMap, normalFvs, new LinkedHashMap<>()));
-			return dataList;
-		}
+        // 子表格合并为空, 单行导出 (普通字段值).
+        if (CollectionUtils.isEmpty(alignSubFvs)) {
+            dataList.add(transFieldValueWithSub(metas, systemFieldMap, normalFvs, new LinkedHashMap<>(), cacheMap));
+            return dataList;
+        }
 
-		// 第一行数据 = 系统字段值 + 普通字段值 + 第一行子表格字段值 (合并时保留)
-		List<Object> data = transFieldValueWithSub(metas, systemFieldMap, normalFvs, alignSubFvs.getFirst());
-		dataList.add(data);
+        // 第一行数据 = 系统字段值 + 普通字段值 + 第一行子表格字段值 (合并时保留)
+        List<Object> data = transFieldValueWithSub(metas, systemFieldMap, normalFvs, alignSubFvs.getFirst(), cacheMap);
+        dataList.add(data);
 
-		// 剩余子表行 (并行处理)
-		for (int i = 1; i < alignSubFvs.size(); i++) {
-			// 其余行只用遍历子表格字段
+        // 剩余子表行 (并行处理)
+        for (int i = 1; i < alignSubFvs.size(); i++) {
+            // 其余行只用遍历子表格字段
             dataList.add(transFieldValueWithSub(metas, new LinkedHashMap<>(),
-                    new LinkedHashMap<>(), alignSubFvs.get(i)));
-		}
+                    new LinkedHashMap<>(), alignSubFvs.get(i), cacheMap));
+        }
 
         return dataList;
     }
@@ -569,48 +589,50 @@ public abstract class BaseExportService {
                 .getBusinessFormConfig(exportParam.getFormKey(), exportParam.getOrgId());
         List<String> exportTitles = exportParam.getHeadList().stream().map(ExportHeadDTO::getTitle).toList();
         List<BaseField> flattenFields = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class)).flattenFormAllFieldsWithSubId(formConfig);
-		List<String> subTableIds = flattenFields.stream().filter(f -> f instanceof SubField && exportTitles.contains(f.getName())).map(BaseField::getId).toList();
+        List<String> subTableIds = flattenFields.stream().filter(f -> f instanceof SubField && exportTitles.contains(f.getName())).map(BaseField::getId).toList();
         Map<String, BaseField> fieldConfigMap = flattenFields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (f1, f2) -> f1));
         return ExportFieldParam.builder().subIds(new HashSet<>(subTableIds)).fieldConfigMap(fieldConfigMap)
                 .formConfig(formConfig)
                 .build();
     }
 
-	/**
-	 * 预处理表头字段信息
-	 * @param fieldConfigMap 字段配置
-	 * @param heads 表头信息集合
-	 * @return 预处理后的表头字段信息集合
-	 */
-	private List<FieldExportMeta> getExportFieldMeta(Map<String, BaseField> fieldConfigMap, List<String> heads) {
-		List<FieldExportMeta> metas = new ArrayList<>(heads.size());
-		for (String head : heads) {
-			FieldExportMeta meta = new FieldExportMeta();
-			String realHead = head;
-			// 子表格汇总字段截取
-			if (head.contains(SUM_PREFIX)) {
-				realHead = head.substring(head.indexOf(SUM_PREFIX) + SUM_PREFIX.length());
-			}
-			// 表头Key包含下划线, 含有子表格字段, 截取下划线前部分作为前缀ID, 用于取值区分不同子表格 (如果存在同名字段), 后半部分作为实际字段ID
-			if (realHead.contains(SLASH)) {
-				String[] ks = realHead.split(SLASH);
-				meta.setPrefixId(ks[0]);
-				realHead = ks[1];
-			}
+    /**
+     * 预处理表头字段信息
+     *
+     * @param fieldConfigMap 字段配置
+     * @param heads          表头信息集合
+     *
+     * @return 预处理后的表头字段信息集合
+     */
+    private List<FieldExportMeta> getExportFieldMeta(Map<String, BaseField> fieldConfigMap, List<String> heads) {
+        List<FieldExportMeta> metas = new ArrayList<>(heads.size());
+        for (String head : heads) {
+            FieldExportMeta meta = new FieldExportMeta();
+            String realHead = head;
+            // 子表格汇总字段截取
+            if (head.contains(SUM_PREFIX)) {
+                realHead = head.substring(head.indexOf(SUM_PREFIX) + SUM_PREFIX.length());
+            }
+            // 表头Key包含下划线, 含有子表格字段, 截取下划线前部分作为前缀ID, 用于取值区分不同子表格 (如果存在同名字段), 后半部分作为实际字段ID
+            if (realHead.contains(SLASH)) {
+                String[] ks = realHead.split(SLASH);
+                meta.setPrefixId(ks[0]);
+                realHead = ks[1];
+            }
 
-			BaseField field = fieldConfigMap.get(realHead);
-			meta.setHead(realHead);
-			meta.setField(field);
-			if (field != null) {
-				meta.setResolver(ModuleFieldResolverFactory.getResolver(field.getType()));
-				meta.setNoResource(StringUtils.isEmpty(field.getResourceFieldId()));
-				meta.setFieldId(field.getId());
-				meta.setBusinessKey(field.getBusinessKey());
-			}
-			metas.add(meta);
-		}
-		return metas;
-	}
+            BaseField field = fieldConfigMap.get(realHead);
+            meta.setHead(realHead);
+            meta.setField(field);
+            if (field != null) {
+                meta.setResolver(ModuleFieldResolverFactory.getResolver(field.getType()));
+                meta.setNoResource(StringUtils.isEmpty(field.getResourceFieldId()));
+                meta.setFieldId(field.getId());
+                meta.setBusinessKey(field.getBusinessKey());
+            }
+            metas.add(meta);
+        }
+        return metas;
+    }
 
     /**
      * 获取表头ID集合
@@ -779,96 +801,103 @@ public abstract class BaseExportService {
         return null;
     }
 
-	/**
-	 * 是否为空子表格
-	 * @param subFvs 子表格字段值
-	 * @return 是否为空子表格
-	 */
-	private boolean isNullSubValue(List<BaseModuleFieldValue> subFvs) {
-		if (CollectionUtils.isEmpty(subFvs)) {
-			return true;
-		}
-		boolean allNull = true;
-		for (BaseModuleFieldValue subFv : subFvs) {
-			if (CollectionUtils.isNotEmpty((List<?>) subFv.getFieldValue())) {
-				allNull = false;
-				break;
-			}
-		}
-		return allNull;
-	}
+    /**
+     * 是否为空子表格
+     *
+     * @param subFvs 子表格字段值
+     *
+     * @return 是否为空子表格
+     */
+    private boolean isNullSubValue(List<BaseModuleFieldValue> subFvs) {
+        if (CollectionUtils.isEmpty(subFvs)) {
+            return true;
+        }
+        boolean allNull = true;
+        for (BaseModuleFieldValue subFv : subFvs) {
+            if (CollectionUtils.isNotEmpty((List<?>) subFv.getFieldValue())) {
+                allNull = false;
+                break;
+            }
+        }
+        return allNull;
+    }
 
-	/**
-	 * 合并对齐多个子表格的值
-	 * @param subFvs 多子表格字段值
-	 * @return 合并后的子表格值列表
-	 */
-	@SuppressWarnings("unchecked")
-	private List<Map<String, Object>> alignSubFvs(List<BaseModuleFieldValue> subFvs) {
-		int maxSize = 0;
-		for (BaseModuleFieldValue subFv : subFvs) {
-			List<?> list = (List<?>) subFv.getFieldValue();
-			if (list != null && list.size() > maxSize) {
-				maxSize = list.size();
-			}
-		}
+    /**
+     * 合并对齐多个子表格的值
+     *
+     * @param subFvs 多子表格字段值
+     *
+     * @return 合并后的子表格值列表
+     */
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> alignSubFvs(List<BaseModuleFieldValue> subFvs) {
+        int maxSize = 0;
+        for (BaseModuleFieldValue subFv : subFvs) {
+            List<?> list = (List<?>) subFv.getFieldValue();
+            if (list != null && list.size() > maxSize) {
+                maxSize = list.size();
+            }
+        }
 
-		List<Map<String,Object>> alignedList = new ArrayList<>(maxSize);
+        List<Map<String, Object>> alignedList = new ArrayList<>(maxSize);
 
-		for (int i = 0; i < maxSize; i++) {
-			alignedList.add(new HashMap<>(8));
-		}
+        for (int i = 0; i < maxSize; i++) {
+            alignedList.add(new HashMap<>(8));
+        }
 
-		for (BaseModuleFieldValue subFv : subFvs) {
-			List<?> list = (List<?>) subFv.getFieldValue();
-			if (list == null) {
-				continue;
-			}
-			for (int i = 0; i < list.size(); i++) {
-				Map<String,Object> row = alignedList.get(i);
-				Map<String,Object> subRowMap = (Map<String,Object>) list.get(i);
-				subRowMap.forEach((k,v) -> row.put(subFv.getFieldId() + SLASH + k, v));
-			}
-		}
-		return alignedList;
-	}
+        for (BaseModuleFieldValue subFv : subFvs) {
+            List<?> list = (List<?>) subFv.getFieldValue();
+            if (list == null) {
+                continue;
+            }
+            for (int i = 0; i < list.size(); i++) {
+                Map<String, Object> row = alignedList.get(i);
+                Map<String, Object> subRowMap = (Map<String, Object>) list.get(i);
+                subRowMap.forEach((k, v) -> row.put(subFv.getFieldId() + SLASH + k, v));
+            }
+        }
+        return alignedList;
+    }
 
-	/**
-	 * 获取合并列中的汇总列索引
-	 * @param headList 表头信息
-	 * @param mergeColumns 合并的列索引
-	 * @return 汇总列索引
-	 */
-	private List<Integer> getSummaryColIdx(List<List<String>> headList, List<Integer> mergeColumns) {
-		if (CollectionUtils.isEmpty(headList) || CollectionUtils.isEmpty(mergeColumns)) {
-			return Collections.emptyList();
-		}
-		return mergeColumns.stream().filter(col -> {
-			List<String> mergeHead = headList.get(col);
-			if (mergeHead == null) {
-				return false;
-			}
-			if (!Strings.CI.equals(mergeHead.getFirst(), mergeHead.getLast())) {
-				return false;
-			}
-			String headName = mergeHead.getFirst();
-			return headName != null && headName.startsWith(Translator.get("sum"));
-		}).toList();
-	}
+    /**
+     * 获取合并列中的汇总列索引
+     *
+     * @param headList     表头信息
+     * @param mergeColumns 合并的列索引
+     *
+     * @return 汇总列索引
+     */
+    private List<Integer> getSummaryColIdx(List<List<String>> headList, List<Integer> mergeColumns) {
+        if (CollectionUtils.isEmpty(headList) || CollectionUtils.isEmpty(mergeColumns)) {
+            return Collections.emptyList();
+        }
+        return mergeColumns.stream().filter(col -> {
+            List<String> mergeHead = headList.get(col);
+            if (mergeHead == null) {
+                return false;
+            }
+            if (!Strings.CI.equals(mergeHead.getFirst(), mergeHead.getLast())) {
+                return false;
+            }
+            String headName = mergeHead.getFirst();
+            return headName != null && headName.startsWith(Translator.get("sum"));
+        }).toList();
+    }
 
-	/**
-	 * 设置SXSSFWorkbook的行数据窗口大小
-	 * @param writer ExcelWriter对象
-	 */
-	private void setRowAccessWindowSize(ExcelWriter writer) {
-		SXSSFWorkbook workbook = (SXSSFWorkbook) writer.writeContext().writeWorkbookHolder().getWorkbook();
-		try {
-			// _rowAccessWindowSize为-1，禁用窗口机制, 避免合并行数据时, 数据被写入磁盘导致无法访问的问题
-			Field f = SXSSFWorkbook.class.getDeclaredField(ROW_ACCESS_SIZE);
-			f.setAccessible(true);
-			f.set(workbook, -1);
-		} catch (Exception e) {
-			log.warn("Fail to set random access window size, {}", e.getMessage());
-		}
-	}
+    /**
+     * 设置SXSSFWorkbook的行数据窗口大小
+     *
+     * @param writer ExcelWriter对象
+     */
+    private void setRowAccessWindowSize(ExcelWriter writer) {
+        SXSSFWorkbook workbook = (SXSSFWorkbook) writer.writeContext().writeWorkbookHolder().getWorkbook();
+        try {
+            // _rowAccessWindowSize为-1，禁用窗口机制, 避免合并行数据时, 数据被写入磁盘导致无法访问的问题
+            Field f = SXSSFWorkbook.class.getDeclaredField(ROW_ACCESS_SIZE);
+            f.setAccessible(true);
+            f.set(workbook, -1);
+        } catch (Exception e) {
+            log.warn("Fail to set random access window size, {}", e.getMessage());
+        }
+    }
 }
