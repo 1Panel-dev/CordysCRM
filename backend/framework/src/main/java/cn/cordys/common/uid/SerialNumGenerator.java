@@ -78,7 +78,7 @@ public class SerialNumGenerator {
         }
     }
 
-    @QuartzScheduled(cron = "0 25 11 * * ?")
+    @QuartzScheduled(cron = "0 0 1 1,16 * ?")
     public void clean() {
         log.info("开始清理过期流水号Key");
 
