@@ -9,7 +9,8 @@ public enum SystemResultCode implements IResultCode {
 
     ROLE_EXIST(101001, "role.exist"),
     INTERNAL_ROLE_PERMISSION(101002, "internal.role.permission.error"),
-    MODULE_ENABLE(101003, "module.has.closed");
+    MODULE_ENABLE(101003, "module.has.closed"),
+    APPROVAL_FLOW_DUPLICATE(101004, "approval.flow.duplicate");
 
 
     private final int code;

@@ -38,7 +38,7 @@ CREATE TABLE approval_node(
   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
   `flow_id` VARCHAR(32) NOT NULL   COMMENT '流程ID' ,
   `name` VARCHAR(200) NOT NULL   COMMENT '节点名称' ,
-  `node_type` VARCHAR(50) NOT NULL   COMMENT '节点类型：START\IF\ELSE\END' ,
+  `node_type` VARCHAR(50) NOT NULL   COMMENT '节点类型：START\CONDITION\DEFAULT\END' ,
   `sort` INT(11) NOT NULL  DEFAULT 0 COMMENT '排序序号' ,
   PRIMARY KEY (id)
 )  COMMENT = '审批节点配置表'

@@ -22,7 +22,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.contract.domain.ContractFieldBlob;
-import cn.cordys.crm.opportunity.constants.ApprovalState;
+import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationApproval;

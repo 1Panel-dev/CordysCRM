@@ -129,6 +129,24 @@
             "license": true
           }
         ]
+      },
+      {
+        "id": "APPROVAL_FLOW",
+        "name": "permission.approval_flow.name",
+        "permissions": [
+          {
+            "id": "APPROVAL_FLOW:READ"
+          },
+          {
+            "id": "APPROVAL_FLOW:ADD"
+          },
+          {
+            "id": "APPROVAL_FLOW:UPDATE"
+          },
+          {
+            "id": "APPROVAL_FLOW:DELETE"
+          }
+        ]
       }
     ]
   },

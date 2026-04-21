@@ -1,4 +1,4 @@
-package cn.cordys.crm.opportunity.constants;
+package cn.cordys.crm.approval.constants;
 
 import cn.cordys.common.util.Translator;
 import lombok.Getter;
@@ -23,6 +23,11 @@ public enum ApprovalState {
      * 提审
      */
     APPROVING("APPROVING", Translator.get("log.approvalStatus.APPROVING"), AFOOT.toString()),
+
+    /**
+     * 待审批
+     */
+    PENDING("PENDING", Translator.get("log.approvalStatus.PENDING"), AFOOT.toString()),
 
     /**
      * 撤销
