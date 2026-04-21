@@ -20,6 +20,7 @@ import java.util.Objects;
 public class SerialNumGenerator {
 
     private static final int RULE_SIZE = 5;
+    private static final int DATE_KEY_IDX = 3;
     private static final String PREFIX = "serial";
 
     private final StringRedisTemplate redis;
@@ -77,19 +78,22 @@ public class SerialNumGenerator {
         }
     }
 
-    @QuartzScheduled(cron = "0 0 1 1,16 * ?")
+    @QuartzScheduled(cron = "0 25 11 * * ?")
     public void clean() {
-        log.info("开始清理过期流水号");
+        log.info("开始清理过期流水号Key");
 
         String currentMonth = new SimpleDateFormat("yyyyMM").format(new Date());
-
-        try (Cursor<String> cursor = redis.scan(ScanOptions.scanOptions().match("serial:*:*:*").count(1000).build())) {
+        try (Cursor<String> cursor = redis.scan(ScanOptions.scanOptions().match("serial:*:*:*:*").count(1000).build())) {
             cursor.forEachRemaining(key -> {
-                String serialDate = key.substring(key.lastIndexOf(":") + 1);
-                if (!currentMonth.equals(serialDate)) {
-                    redis.delete(key);
-                    log.info("删除过期Key: {}", key);
-                }
+				String[] ks = key.split(":");
+				if (ks.length != RULE_SIZE) {
+					log.warn("存在脏Key: {}", key);
+					return;
+				}
+				if (!currentMonth.equals(ks[DATE_KEY_IDX])) {
+					redis.delete(key);
+					log.info("删除过期Key: {}", key);
+				}
             });
         } catch (Exception e) {
             log.error("流水号过期Key清理异常: ", e);
