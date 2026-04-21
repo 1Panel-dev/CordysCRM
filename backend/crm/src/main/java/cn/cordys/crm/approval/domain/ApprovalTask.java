@@ -1,4 +1,4 @@
-package cn.cordys.crm.system.domain;
+package cn.cordys.crm.approval.domain;
 
 import cn.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;

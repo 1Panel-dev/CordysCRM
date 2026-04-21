@@ -1,9 +1,9 @@
-package cn.cordys.crm.system.service;
+package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.crm.system.domain.ApprovalInstance;
-import cn.cordys.crm.system.domain.ApprovalTask;
+import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.system.dto.request.ApprovalExecuteParam;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
