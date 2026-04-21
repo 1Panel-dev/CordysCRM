@@ -2,6 +2,7 @@ package cn.cordys.crm.system.service;
 
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.crm.approval.service.ApprovalFlowLogService;
 import cn.cordys.crm.clue.service.ClueLogService;
 import cn.cordys.crm.contract.service.ContractLogService;
 import cn.cordys.crm.customer.service.*;
@@ -38,6 +39,7 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.CONTRACT_PAYMENT, CommonBeanFactory.getBean(ContractPaymentPlanLogService.class));
         logServiceMap.put(LogModule.CONTRACT_INVOICE, CommonBeanFactory.getBean(ContractInvoiceLogService.class));
         logServiceMap.put(LogModule.ORDER_INDEX, CommonBeanFactory.getBean(OrderLogService.class));
+        logServiceMap.put(LogModule.APPROVAL_FLOW, CommonBeanFactory.getBean(ApprovalFlowLogService.class));
 
     }
 

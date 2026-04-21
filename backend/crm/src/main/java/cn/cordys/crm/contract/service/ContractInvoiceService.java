@@ -35,7 +35,7 @@ import cn.cordys.crm.contract.dto.request.ContractInvoiceUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
-import cn.cordys.crm.opportunity.constants.ApprovalState;
+import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;

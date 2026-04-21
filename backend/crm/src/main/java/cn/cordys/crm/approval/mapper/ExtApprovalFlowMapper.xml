@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper">
+
+    <select id="list" resultType="cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse">
+        SELECT
+            af.id,
+            af.number,
+            af.name,
+            af.form_type,
+            af.execute_timing,
+            af.enable,
+            af.submitter_can_revoke,
+            af.allow_batch_process,
+            af.allow_withdraw,
+            af.allow_add_sign,
+            af.duplicate_approver_rule,
+            af.require_comment,
+            af.organization_id,
+            af.create_user,
+            af.create_time,
+            af.update_user,
+            af.update_time,
+            cu.name AS createUserName,
+            uu.name AS updateUserName
+        FROM approval_flow af
+        LEFT JOIN sys_user cu ON af.create_user = cu.id
+        LEFT JOIN sys_user uu ON af.update_user = uu.id
+        WHERE af.organization_id = #{organizationId}
+        <if test="request.name != null and request.name != ''">
+            AND af.name LIKE CONCAT('%', #{request.name}, '%')
+        </if>
+        <if test="request.formType != null and request.formType != ''">
+            AND af.form_type = #{request.formType}
+        </if>
+        <if test="request.enable != null">
+            AND af.enable = #{request.enable}
+        </if>
+        ORDER BY af.create_time DESC
+    </select>
+
+    <select id="checkEnableFlowExists" resultType="java.lang.Boolean">
+        SELECT COUNT(1) > 0
+        FROM approval_flow
+        WHERE form_type = #{formType}
+          AND organization_id = #{organizationId}
+          AND enable = 1
+    </select>
+
+    <select id="checkEnableFlowExistsExcludeId" resultType="java.lang.Boolean">
+        SELECT COUNT(1) > 0
+        FROM approval_flow
+        WHERE form_type = #{formType}
+          AND organization_id = #{organizationId}
+          AND enable = 1
+          AND id != #{excludeId}
+    </select>
+
+</mapper>

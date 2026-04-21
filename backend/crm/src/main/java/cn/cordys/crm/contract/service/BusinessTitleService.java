@@ -36,7 +36,7 @@ import cn.cordys.crm.integration.common.request.QccThirdConfigRequest;
 import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import cn.cordys.crm.integration.qcc.constant.QccApiPaths;
 import cn.cordys.crm.integration.qcc.dto.*;
-import cn.cordys.crm.opportunity.constants.ApprovalState;
+import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ImportResponse;

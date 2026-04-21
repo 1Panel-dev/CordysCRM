@@ -7,7 +7,7 @@ import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 import cn.cordys.crm.customer.domain.Customer;
-import cn.cordys.crm.opportunity.constants.ApprovalState;
+import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.system.domain.Notification;

@@ -242,5 +242,12 @@ public class PermissionConstants {
     public static final String ORDER_DELETE = "ORDER:DELETE";
     public static final String ORDER_DOWNLOAD = "ORDER:DOWNLOAD";
     /*------ end: ORDER_ROLE ------*/
+
+    /*------ start: APPROVAL_FLOW ------*/
+    public static final String APPROVAL_FLOW_READ = "APPROVAL_FLOW:READ";
+    public static final String APPROVAL_FLOW_ADD = "APPROVAL_FLOW:ADD";
+    public static final String APPROVAL_FLOW_UPDATE = "APPROVAL_FLOW:UPDATE";
+    public static final String APPROVAL_FLOW_DELETE = "APPROVAL_FLOW:DELETE";
+    /*------ end: APPROVAL_FLOW ------*/
 }
 
