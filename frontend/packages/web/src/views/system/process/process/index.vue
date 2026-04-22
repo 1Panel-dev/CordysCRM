@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -107,7 +107,7 @@
     try {
       // todo
       tableRefreshId.value += 1;
-      Message.success(t(enable ? 'process.process.enableProcessTip' : 'common.closeSuccess'));
+      Message.success(t(enable ? 'common.enableSuccess' : 'common.closeSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -187,7 +187,16 @@
                 {
                   class: 'max-w-[calc(100%-24px)] w-[fit-content]',
                 },
-                h(CrmTableButton, null, { default: () => row.name, trigger: () => row.name })
+                h(
+                  CrmTableButton,
+                  {
+                    onClick: () => {
+                      activeSourceId.value = row.id;
+                      showProcessDrawer.value = true;
+                    },
+                  },
+                  { default: () => row.name, trigger: () => row.name }
+                )
               ),
           }
         );
@@ -214,15 +223,28 @@
       ],
       width: 200,
       render: (row: any) =>
-        // todo 权限控制
-        h(NSwitch, {
-          value: row.enable,
-          disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']),
-          onClick: () => {
-            if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])) return;
-            handleToggleStatus(row);
+        h(
+          NTooltip,
+          {
+            delay: 300,
           },
-        }),
+          {
+            trigger: () => {
+              return h(NSwitch, {
+                size: 'small',
+                rubberBand: false,
+                value: row.enable,
+                // todo 权限
+                disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']),
+                onClick: () => {
+                  if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])) return;
+                  handleToggleStatus(row);
+                },
+              });
+            },
+            default: () => t('process.process.enableProcessTip'),
+          }
+        ),
     },
     {
       title: t('process.executionTiming'),
@@ -231,15 +253,6 @@
       ellipsis: {
         tooltip: true,
       },
-    },
-    {
-      title: t('common.desc'),
-      key: 'description',
-      width: 200,
-      ellipsis: {
-        tooltip: true,
-      },
-      showInTable: false,
     },
     {
       title: t('common.creator'),

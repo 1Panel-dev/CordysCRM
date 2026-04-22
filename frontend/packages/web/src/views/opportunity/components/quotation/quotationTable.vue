@@ -116,7 +116,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval-popover/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -592,8 +592,14 @@
       approvalStatus: (row: QuotationItem) => {
         return row.status === QuotationStatusEnum.VOIDED
           ? '-'
-          : h(CrmApprovalStatus, {
+          : h(CrmApprovalPopover, {
               status: row.approvalStatus,
+              formKey: props.formKey,
+              sourceId: row.id,
+              disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+              onMore: () => {
+                handleApproval(row);
+              },
             });
       },
     },
