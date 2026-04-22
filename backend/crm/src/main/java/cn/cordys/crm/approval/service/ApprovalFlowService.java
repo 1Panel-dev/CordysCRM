@@ -5,9 +5,12 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
+import cn.cordys.common.permission.Permission;
+import cn.cordys.common.permission.PermissionDefinitionItem;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -15,11 +18,13 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.domain.*;
-import cn.cordys.crm.approval.dto.response.*;
+import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import cn.cordys.crm.approval.dto.request.*;
+import cn.cordys.crm.approval.dto.response.*;
 import cn.cordys.crm.system.constants.SystemResultCode;
 import cn.cordys.crm.approval.log.ApprovalFlowLogDTO;
 import cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper;
+import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -51,6 +56,8 @@ public class ApprovalFlowService {
     private BaseMapper<ApprovalNodeCondition> approvalNodeConditionMapper;
     @Resource
     private BaseMapper<ApprovalNodeLink> approvalNodeLinkMapper;
+    @Resource
+    private RoleService roleService;
 
     /**
      * 分页查询审批流列表
@@ -73,11 +80,16 @@ public class ApprovalFlowService {
 
         ApprovalFlowDetailResponse response = convertToDetailResponse(flow);
 
+        List<Permission> permissions = getPermissionsByFormType(flow.getFormType());
+
+        // 设置对应资源的权限列表
+        response.setPermissions(getResourcePermissions(permissions));
+
         // 查询大字段表
         ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(id);
         if (blob != null) {
             response.setDescription(blob.getDescription());
-            response.setStatusPermissions(blob.getStatusPermissions());
+            response.setStatusPermissions(parseStatusPermissions(response.getPermissions(), blob.getStatusPermissions()));
         }
 
         // 查询节点配置并构建树状结构
@@ -113,7 +125,7 @@ public class ApprovalFlowService {
         ApprovalFlowBlob blob = new ApprovalFlowBlob();
         blob.setId(flow.getId());
         blob.setDescription(request.getDescription());
-        blob.setStatusPermissions(request.getStatusPermissions());
+        blob.setStatusPermissions(JSON.toJSONString(request.getStatusPermissions()));
         approvalFlowBlobMapper.insert(blob);
 
         // 保存节点配置
@@ -162,7 +174,7 @@ public class ApprovalFlowService {
         ApprovalFlowBlob blob = new ApprovalFlowBlob();
         blob.setId(flow.getId());
         blob.setDescription(request.getDescription());
-        blob.setStatusPermissions(request.getStatusPermissions());
+        blob.setStatusPermissions(JSON.toJSONString(request.getStatusPermissions()));
         approvalFlowBlobMapper.updateById(blob);
 
         // 删除原有节点配置并重新保存
@@ -486,5 +498,85 @@ public class ApprovalFlowService {
         ApprovalFlowLogDTO logDTO = BeanUtils.copyBean(new ApprovalFlowLogDTO(), flow);
         logDTO.setDescription(request.getDescription());
         return logDTO;
+    }
+
+    /**
+     * 获取对应资源的权限列表
+     */
+    private List<OptionDTO> getResourcePermissions(List<Permission> permissions) {
+        return permissions.stream()
+                .map(p -> new OptionDTO(p.getId(), p.getName()))
+                .collect(Collectors.toList());
+    }
+
+    private List<Permission> getPermissionsByFormType(String formType) {
+        List<PermissionDefinitionItem> permissionSetting = roleService.getPermissionSetting();
+        String permissionId = ApprovalFormTypeEnum.valueOf(formType).getPermissionId();
+        List<Permission> permissions = findPermissionsByPermissionId(permissionSetting, permissionId);
+        if (permissions == null) {
+            return List.of();
+        }
+        return permissions;
+    }
+
+    /**
+     * 解析状态权限配置
+     */
+    private List<StatusPermissionDTO> parseStatusPermissions(List<OptionDTO> permissions, String statusPermissions) {
+        if (StringUtils.isBlank(statusPermissions)) {
+            return null;
+        }
+        // 解析已保存的状态权限配置
+        List<StatusPermissionDTO> savedPermissions = JSON.parseArray(statusPermissions, StatusPermissionDTO.class);
+
+        // 获取所有审批状态
+        Set<String> approvalStatuses = savedPermissions.stream()
+                .map(StatusPermissionDTO::getApprovalStatus)
+                .collect(Collectors.toSet());
+
+        // 构建已保存权限的映射：(审批状态, 权限ID) -> StatusPermissionDTO
+        Map<String, StatusPermissionDTO> savedPermissionMap = savedPermissions.stream()
+                .collect(Collectors.toMap(
+                        p -> p.getApprovalStatus() + ":" + p.getPermission(),
+                        p -> p));
+
+        // 更新权限名称并补充缺失的权限
+        List<StatusPermissionDTO> updatedPermissions = new ArrayList<>();
+        for (String approvalStatus : approvalStatuses) {
+            for (OptionDTO permission : permissions) {
+                String key = approvalStatus + ":" + permission.getId();
+                StatusPermissionDTO item = savedPermissionMap.get(key);
+                if (item != null) {
+                    // 更新权限名称
+                    item.setEnabled(true);
+                    updatedPermissions.add(item);
+                } else {
+                    // 添加缺失的权限，默认不启用
+                    StatusPermissionDTO newItem = new StatusPermissionDTO();
+                    newItem.setApprovalStatus(approvalStatus);
+                    newItem.setPermission(permission.getId());
+                    newItem.setEnabled(false);
+                    updatedPermissions.add(newItem);
+                }
+            }
+        }
+
+        return updatedPermissions;
+    }
+
+    /**
+     * 根据权限ID查找对应的权限列表
+     */
+    private List<Permission> findPermissionsByPermissionId(List<PermissionDefinitionItem> permissionSetting, String permissionId) {
+        for (PermissionDefinitionItem module : permissionSetting) {
+            if (module.getChildren() != null) {
+                for (PermissionDefinitionItem resource : module.getChildren()) {
+                    if (resource.getId().equals(permissionId)) {
+                        return resource.getPermissions();
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

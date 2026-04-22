@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.dto.request;
 import cn.cordys.common.constants.EnumValue;
 import cn.cordys.crm.approval.constants.DuplicateApproverRuleEnum;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -50,7 +51,7 @@ public class ApprovalFlowAddRequest {
     private Boolean requireComment;
 
     @Schema(description = "状态权限配置")
-    private String statusPermissions;
+    private List<StatusPermissionDTO> statusPermissions;
 
     @Schema(description = "节点配置列表")
     private List<ApprovalNodeRequest> nodes;
