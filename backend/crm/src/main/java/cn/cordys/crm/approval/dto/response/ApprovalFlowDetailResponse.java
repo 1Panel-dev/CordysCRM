@@ -1,5 +1,7 @@
 package cn.cordys.crm.approval.dto.response;
 
+import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -47,8 +49,11 @@ public class ApprovalFlowDetailResponse {
     @Schema(description = "是否必须填写审批意见")
     private Boolean requireComment;
 
+    @Schema(description = "对应资源表单的权限列表")
+    private List<OptionDTO> permissions;
+
     @Schema(description = "状态权限配置")
-    private String statusPermissions;
+    private List<StatusPermissionDTO> statusPermissions;
 
     @Schema(description = "节点配置列表")
     private List<ApprovalNodeResponse> nodes;
