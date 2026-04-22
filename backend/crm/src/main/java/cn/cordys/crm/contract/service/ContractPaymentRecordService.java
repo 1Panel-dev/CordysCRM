@@ -460,15 +460,9 @@ public class ContractPaymentRecordService {
         if (StringUtils.isNotEmpty(excludeRecordId)) {
             recordLambdaQueryWrapper.nq(ContractPaymentRecord::getId, excludeRecordId);
         }
-        List<ContractPaymentRecord> contractPaymentRecords = contractPaymentRecordMapper.selectListByLambda(recordLambdaQueryWrapper);
-        BigDecimal alreadyPay = contractPaymentRecords.stream().map(ContractPaymentRecord::getRecordAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
         Contract contract = contractMapper.selectByPrimaryKey(contractId);
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
-        }
-        BigDecimal contractAmount = Optional.ofNullable(contract.getAmount()).orElse(BigDecimal.ZERO);
-        if ((alreadyPay.add(payAmount)).compareTo(contractAmount) > 0) {
-            throw new GenericException(Translator.getWithArgs("record.amount.exceed", contractAmount.subtract(alreadyPay)));
         }
     }
 
