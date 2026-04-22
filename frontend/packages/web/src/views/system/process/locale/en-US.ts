@@ -31,4 +31,8 @@ export default {
   'process.process.approvalAuthority.allowAddSign': 'Allow adding signatory',
   'process.process.approvalAuthority.allowAddTempApprover':
     'When checked, approver can add temporary approver in the approval flow',
+  'process.process.processName': 'Process Name',
+  'process.process.basic.businessType': 'Business Type',
+  'process.process.basic.executionTiming': 'Execution timing',
+  'process.process.basic.description': 'Description',
 };

@@ -6,7 +6,7 @@ import { ApproverItem } from '@/components/business/crm-approver-avatar-list/ind
 
 export type ApprovalPopoverFormKeyType =
   | FormDesignKeyEnum.CONTRACT
-  | FormDesignKeyEnum.CONTRACT_INVOICE
+  | FormDesignKeyEnum.INVOICE
   | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
   | FormDesignKeyEnum.ORDER;
 
@@ -26,7 +26,7 @@ const detailApiMap: Record<ApprovalPopoverFormKeyType, (sourceId: string) => Pro
       approveUserList: [],
       resourceId: '',
     }),
-  [FormDesignKeyEnum.CONTRACT_INVOICE]: (sourceId: string) =>
+  [FormDesignKeyEnum.INVOICE]: (sourceId: string) =>
     Promise.resolve({
       approveStatus: ProcessStatusEnum.NONE,
       approveUserList: [],

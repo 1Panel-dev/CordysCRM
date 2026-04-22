@@ -104,14 +104,15 @@
     display: flex;
     padding: 8px 2px;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 4px;
   }
   .crm-approver-avatar-list__item {
     display: flex;
     align-items: center;
     min-width: 0;
     max-width: 100%;
-    gap: 8px;
+    column-gap: 8px;
+    row-gap: 4px;
     cursor: pointer;
   }
   .crm-approver-avatar-list__avatar-wrap {
@@ -125,7 +126,7 @@
     transition: box-shadow 0.18s ease;
     @apply flex flex-shrink-0 items-center justify-between;
     &--active {
-      box-shadow: 0 0 0 0.5px var(--primary-8);
+      box-shadow: 0 0 0 1px var(--primary-8);
     }
   }
   .crm-approver-avatar-list__item:hover {

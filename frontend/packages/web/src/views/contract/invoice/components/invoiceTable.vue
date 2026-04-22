@@ -459,7 +459,7 @@
       approvalStatus: (row: ContractInvoiceItem) =>
         h(CrmApprovalPopover, {
           status: row.approvalStatus,
-          formKey: FormDesignKeyEnum.CONTRACT_INVOICE,
+          formKey: FormDesignKeyEnum.INVOICE,
           sourceId: row.id,
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           onMore: () => {

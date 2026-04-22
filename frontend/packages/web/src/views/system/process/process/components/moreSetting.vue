@@ -118,14 +118,14 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  const { t } = useI18n();
-  const Message = useMessage();
+  import { defaultMoreConfig } from '@/config/process';
 
-  const form = ref({
-    submitterAuthority: true,
-    approverAuthority: [],
-    autoApproval: 'firstNodeApproval',
-    approvalOpinion: false,
+  const { t } = useI18n();
+
+  const form = defineModel<Record<string, any>>('moreConfig', {
+    default: () => ({
+      ...defaultMoreConfig,
+    }),
   });
 
   const approverAuthorityList = [

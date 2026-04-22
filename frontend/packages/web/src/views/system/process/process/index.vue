@@ -12,7 +12,7 @@
     >
       <template #tableTop>
         <div class="flex items-center justify-between">
-          <n-button type="primary" @click="handleAdd">
+          <n-button v-permission="['APPROVAL_FLOW:ADD']" type="primary" @click="handleAdd">
             {{ t('process.process.newProcess') }}
           </n-button>
           <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
@@ -170,8 +170,7 @@
           CrmEditableText,
           {
             value: row.name ?? '',
-            // todo xinxinwu
-            permission: [],
+            permission: ['APPROVAL_FLOW:UPDATE'],
             onHandleEdit: async (val: string, done?: () => void) => {
               const res = await handleChangeName(row.id, val);
               if (res) {
@@ -234,10 +233,9 @@
                 size: 'small',
                 rubberBand: false,
                 value: row.enable,
-                // todo 权限
-                disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']),
+                disabled: !hasAnyPermission(['APPROVAL_FLOW:UPDATE']),
                 onClick: () => {
-                  if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])) return;
+                  if (!hasAnyPermission(['APPROVAL_FLOW:UPDATE'])) return;
                   handleToggleStatus(row);
                 },
               });
@@ -304,12 +302,12 @@
             {
               label: t('common.edit'),
               key: 'edit',
-              permission: [],
+              permission: ['APPROVAL_FLOW:UPDATE'],
             },
             {
               label: t('common.delete'),
               key: 'delete',
-              permission: [],
+              permission: ['APPROVAL_FLOW:DELETE'],
             },
           ],
           onSelect: (key: string) => handleActionSelect(row, key),

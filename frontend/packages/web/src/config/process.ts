@@ -1,3 +1,4 @@
+import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { ProcessStatusType } from '@lib/shared/models/system/process';
@@ -43,3 +44,17 @@ export const processStatusOptions = Object.entries(processStatusMap).map(([key, 
   label: value.label,
   value: key,
 }));
+
+export const defaultBasicForm = {
+  businessType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+  name: '',
+  executionTiming: ['CREATE'],
+  description: '',
+};
+
+export const defaultMoreConfig = {
+  submitterAuthority: true,
+  approverAuthority: [],
+  autoApproval: 'firstNodeApproval',
+  approvalOpinion: false,
+};

@@ -12,19 +12,21 @@
   >
     <template #header>
       <div class="crm-process-drawer-header-content">
-        <div class="crm-process-drawer-header-item flex items-center">
+        <div class="crm-process-drawer-header-item crm-process-drawer-header-item--title flex items-center">
           <n-button text class="mr-[4px] w-[32px]" @click="handleCancel">
             <n-icon size="16">
               <ChevronBackOutline />
             </n-icon>
           </n-button>
-          <div class="one-line-text flex flex-1 items-center gap-[8px]">
-            <n-tooltip trigger="hover" :delay="300" :disabled="!props.title">
-              <template #trigger>
-                <div class="one-line-text !leading-[20px]"> {{ props.title ?? '-' }}</div>
-              </template>
-              {{ props.title ?? '-' }}
-            </n-tooltip>
+          <div class="crm-process-drawer-title-wrap flex flex-1 items-center gap-[8px]">
+            <slot name="title">
+              <n-tooltip trigger="hover" :delay="300" :disabled="!props.title">
+                <template #trigger>
+                  <div class="one-line-text !leading-[20px]"> {{ props.title ?? '-' }}</div>
+                </template>
+                {{ props.title ?? '-' }}
+              </n-tooltip>
+            </slot>
           </div>
         </div>
         <div class="flex justify-center">
@@ -111,10 +113,21 @@
 <style scoped lang="less">
   .crm-process-drawer-header-content {
     padding: 8px;
+    gap: 24px;
     box-sizing: border-box;
     @apply flex items-center;
     .crm-process-drawer-header-item {
       @apply flex flex-1;
+
+      min-width: 0;
+    }
+    .crm-process-drawer-header-item--title {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .crm-process-drawer-title-wrap {
+      overflow: hidden;
+      min-width: 0;
     }
   }
 </style>
