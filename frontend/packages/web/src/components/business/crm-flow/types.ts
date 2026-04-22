@@ -46,11 +46,7 @@ export interface ConditionGroupNode extends BaseFlowNode {
 
 export type FlowNode = StartNode | ActionNode | ConditionGroupNode | EndNode;
 
-// TODO lmy
-export type SelectionType = 'none' | 'node' | 'branch';
-
-export interface NodeSelectionState {
-  selectionType: SelectionType;
-  selectedNode: FlowNode | null;
-  selectedBranch: ConditionBranch | null;
-}
+export type NodeSelectionState =
+  | { type: 'none' }
+  | { type: 'node'; id: string; node: FlowNode }
+  | { type: 'branch'; id: string; branch: ConditionBranch };

@@ -41,23 +41,30 @@
     BranchClickPayload,
     FlowGraphController,
     FlowGraphNodeClickPayload,
+    FlowGraphNodeData,
     NodeClickPayload,
   } from '../../graph/types';
-  import type { FlowSchema } from '../../types';
+  import type { FlowSchema, NodeSelectionState } from '../../types';
 
   defineOptions({
     name: 'FlowCanvas',
   });
 
-  const props = defineProps<{
-    flow: FlowSchema;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      flow: FlowSchema;
+      selection: NodeSelectionState;
+    }>(),
+    {}
+  );
   const slots = useSlots();
   const hasInsertNodeContentSlot = computed(() => Boolean(slots.insertNodeContent));
 
   const emit = defineEmits<{
     (event: 'nodeClick', payload: NodeClickPayload): void;
     (event: 'branchClick', payload: BranchClickPayload): void;
+    (event: 'nodeDelete', payload: { nodeId: string }): void;
+    (event: 'branchDelete', payload: { groupId: string; branchId: string }): void;
     (event: 'addConditionBranch', groupId: string): void;
     (event: 'blankClick'): void;
   }>();
@@ -145,6 +152,18 @@
     }
   }
 
+  function resolveSelectedState(data: FlowGraphNodeData): boolean {
+    if (data.kind === 'condition-branch') {
+      return props.selection.type === 'branch' && data.branchId === props.selection.id;
+    }
+
+    if (data.kind === 'start' || data.kind === 'action' || data.kind === 'end') {
+      return props.selection.type === 'node' && data.nodeId === props.selection.id;
+    }
+
+    return false;
+  }
+
   function renderFlow() {
     if (!graphController.value) {
       return;
@@ -154,8 +173,58 @@
       cardHeight: viewMode.value === 'compact' ? 58 : 104,
       showNodeDescription: viewMode.value === 'detail',
     });
-    graphController.value.render(cells);
+
+    const cellsWithSelection = (cells as any[]).map((cell) => {
+      if (!cell?.data) {
+        return cell;
+      }
+
+      const data = cell.data as FlowGraphNodeData;
+      return {
+        ...cell,
+        data: {
+          ...data,
+          selected: resolveSelectedState(data),
+        },
+      };
+    });
+
+    graphController.value.render(cellsWithSelection);
   }
+
+  function updateRenderedSelectionState() {
+    const graph = graphController.value?.getGraph();
+    if (!graph) {
+      return;
+    }
+
+    graph.getNodes().forEach((node) => {
+      const data = (node.getData?.() ?? null) as FlowGraphNodeData | null;
+      if (!data) {
+        return;
+      }
+
+      const nextSelected = resolveSelectedState(data);
+      if (data.selected === nextSelected) {
+        return;
+      }
+
+      node.setData({
+        ...data,
+        selected: nextSelected,
+      });
+    });
+  }
+
+  watch(
+    () => props.selection,
+    () => {
+      updateRenderedSelectionState();
+    },
+    {
+      deep: true,
+    }
+  );
 
   function handleViewModeChange(mode: 'compact' | 'detail') {
     viewMode.value = mode;
@@ -236,6 +305,23 @@
           emit('nodeClick', {
             nodeId: data.nodeId,
             nodeType: data.nodeType,
+          });
+        }
+      },
+      onNodeDelete({ data }) {
+        if (isPanMode.value) {
+          return;
+        }
+        if (data.kind === 'condition-branch' && data.groupId && data.branchId) {
+          emit('branchDelete', {
+            groupId: data.groupId,
+            branchId: data.branchId,
+          });
+          return;
+        }
+        if (data.nodeId) {
+          emit('nodeDelete', {
+            nodeId: data.nodeId,
           });
         }
       },

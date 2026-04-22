@@ -10,4 +10,5 @@ export default {
   'crmFlow.viewModeCompactTip': '极简视图：仅展示节点标题',
   'crmFlow.viewModeDetailTip': '详细视图：展示标题及部分详情',
   'crmFlow.deleteNode': '删除节点',
+  'crmFlow.deleteConditionBranchConfirm': '该条件分支下的所有节点将被删除，确认继续？',
 };

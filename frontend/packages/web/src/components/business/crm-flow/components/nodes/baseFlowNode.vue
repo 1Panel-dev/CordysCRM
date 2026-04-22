@@ -16,8 +16,8 @@
             <CrmIcon
               type="iconicon_close"
               :size="16"
-              class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-8)]"
-              @click.stop="handleDelete"
+              class="base-flow-node__delete-icon cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-8)]"
+              @click="handleDelete"
             />
           </template>
           <span> {{ t('crmFlow.deleteNode') }} </span>

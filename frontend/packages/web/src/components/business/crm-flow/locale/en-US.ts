@@ -10,4 +10,6 @@ export default {
   'crmFlow.viewModeCompactTip': 'Compact view: show node title only',
   'crmFlow.viewModeDetailTip': 'Detail view: show title and partial details',
   'crmFlow.deleteNode': 'Delete Node',
+  'crmFlow.deleteConditionBranchConfirm':
+    'All nodes under this condition branch will be deleted. Do you want to continue?',
 };

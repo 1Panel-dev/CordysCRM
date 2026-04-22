@@ -47,7 +47,13 @@
 
       <n-tooltip trigger="hover">
         <template #trigger>
-          <CrmIcon class="flow-canvas-toolbar__icon" type="iconicon_zoom_out1" :size="16" @click="zoomOut" />
+          <CrmIcon
+            class="flow-canvas-toolbar__icon"
+            :class="{ 'is-disabled': !canZoomOut }"
+            type="iconicon_zoom_out1"
+            :size="16"
+            @click="zoomOut"
+          />
         </template>
         <span>{{ t('crmFlow.zoomOut') }}</span>
       </n-tooltip>
@@ -65,7 +71,13 @@
 
       <n-tooltip trigger="hover">
         <template #trigger>
-          <CrmIcon class="flow-canvas-toolbar__icon" type="iconicon_zoom_in1" :size="18" @click="zoomIn" />
+          <CrmIcon
+            class="flow-canvas-toolbar__icon"
+            :class="{ 'is-disabled': !canZoomIn }"
+            type="iconicon_zoom_in1"
+            :size="18"
+            @click="zoomIn"
+          />
         </template>
         <span>{{ t('crmFlow.zoomIn') }}</span>
       </n-tooltip>
@@ -126,6 +138,8 @@
 
   const zoomPercent = ref(100);
   const zoomLevels = [50, 75, 100, 125, 150, 200] as const;
+  const canZoomOut = computed(() => zoomPercent.value > 50);
+  const canZoomIn = computed(() => zoomPercent.value < 200);
 
   const selectedZoomOptionKey = computed(() => {
     const key = `zoom-${zoomPercent.value}`;
@@ -153,11 +167,17 @@
   }
 
   function zoomIn() {
+    if (!canZoomIn.value) {
+      return;
+    }
     props.graphController?.zoomIn();
     syncZoomPercent();
   }
 
   function zoomOut() {
+    if (!canZoomOut.value) {
+      return;
+    }
     props.graphController?.zoomOut();
     syncZoomPercent();
   }
@@ -248,6 +268,13 @@
     }
     &.is-active {
       color: var(--primary-8);
+    }
+    &.is-disabled {
+      color: var(--text-n6);
+      cursor: not-allowed;
+      &:hover {
+        color: var(--text-n6);
+      }
     }
   }
 </style>

@@ -13,10 +13,11 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { toRef } from 'vue';
 
   import BaseFlowNode from './baseFlowNode.vue';
 
+  import useX6NodeData from '../../composables/useX6NodeData';
   import type { Node } from '@antv/x6';
 
   defineOptions({
@@ -27,13 +28,10 @@
     node?: Node;
   }>();
 
-  const nodeData = computed(
-    () =>
-      (props.node?.getData?.() ?? {}) as {
-        name?: string;
-        description?: string;
-        showContent?: boolean;
-        selected?: boolean;
-      }
-  );
+  const { nodeData } = useX6NodeData<{
+    name?: string;
+    description?: string;
+    showContent?: boolean;
+    selected?: boolean;
+  }>(toRef(props, 'node'));
 </script>

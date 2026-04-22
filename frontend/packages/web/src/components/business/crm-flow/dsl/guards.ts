@@ -22,5 +22,6 @@ export function canDeleteBranch(group: ConditionGroupNode, branch: ConditionBran
 }
 
 export function shouldRemoveWholeGroupWhenDeleteIf(group: ConditionGroupNode): boolean {
-  return group.branches.length <= 1;
+  const ifBranchCount = group.branches.filter((item) => !item.isElse).length;
+  return ifBranchCount <= 1;
 }

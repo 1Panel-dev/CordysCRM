@@ -1,20 +1,13 @@
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
-import type {
-  ActionNode,
-  ConditionBranch,
-  ConditionGroupNode,
-  EndNode,
-  FlowActionType,
-  FlowSchema,
-  StartNode,
-} from '../types';
+import type { ActionNode, ConditionBranch, ConditionGroupNode, EndNode, StartNode } from '../types';
 
 const { t } = useI18n();
+let flowIdSeed = 0;
 
-// TODO lmy
 export function createFlowId(prefix = 'node'): string {
-  return `${prefix}_${Date.now().toString(36)}`;
+  flowIdSeed += 1; // 防止id冲突
+  return `${prefix}_${Date.now().toString(36)}_${flowIdSeed.toString(36)}`;
 }
 
 export function createStartNode(partial: Partial<StartNode> = {}): StartNode {
@@ -26,12 +19,11 @@ export function createStartNode(partial: Partial<StartNode> = {}): StartNode {
   };
 }
 
-// TODO lmy 通用和业务
 export function createActionNode(partial: Partial<ActionNode> = {}): ActionNode {
   return {
     id: partial.id ?? createFlowId('action'),
     type: 'action',
-    name: partial.name ?? '动作',
+    name: partial.name ?? '',
     actionType: partial.actionType ?? 'approval',
     description: partial.description,
     config: partial.config ?? {},
@@ -70,7 +62,7 @@ export function createConditionGroupNode(partial: Partial<ConditionGroupNode> = 
   return {
     id: partial.id ?? createFlowId('condition_group'),
     type: 'condition-group',
-    name: partial.name ?? '条件分支', // TODO lmy
+    name: partial.name ?? '',
     branches: partial.branches ?? [createConditionBranch(), createElseBranch()],
   };
 }
