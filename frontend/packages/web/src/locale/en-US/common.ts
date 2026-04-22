@@ -348,4 +348,5 @@ export default {
   'common.approved': 'Approved',
   'common.rejected': 'Rejected',
   'common.reviewing': 'Reviewing',
+  'common.approver': 'Approver',
 };

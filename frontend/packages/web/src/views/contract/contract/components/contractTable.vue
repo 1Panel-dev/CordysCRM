@@ -151,7 +151,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval-popover/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
@@ -432,11 +432,15 @@
     formCreateDrawerVisible.value = true;
   }
 
+  function handleApproval(row: ContractItem) {
+    activeSourceId.value = row.id;
+    showDetailDrawer.value = true;
+  }
+
   async function handleActionSelect(row: ContractItem, actionKey: string) {
     switch (actionKey) {
       case 'approval':
-        activeSourceId.value = row.id;
-        showDetailDrawer.value = true;
+        handleApproval(row);
         break;
       case 'paymentRecord':
         handlePaymentRecord(row);
@@ -562,8 +566,14 @@
         });
       },
       approvalStatus: (row: ContractItem) =>
-        h(CrmApprovalStatus, {
+        h(CrmApprovalPopover, {
           status: row.approvalStatus,
+          formKey: FormDesignKeyEnum.CONTRACT,
+          sourceId: row.id,
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            handleApproval(row);
+          },
         }),
     },
     permission: ['CONTRACT:EXPORT', 'CONTRACT:APPROVAL'],

@@ -110,7 +110,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval-popover/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
@@ -457,8 +457,14 @@
             );
       },
       approvalStatus: (row: ContractInvoiceItem) =>
-        h(CrmApprovalStatus, {
+        h(CrmApprovalPopover, {
           status: row.approvalStatus,
+          formKey: FormDesignKeyEnum.CONTRACT_INVOICE,
+          sourceId: row.id,
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            showDetail(row.id);
+          },
         }),
       businessTitleId: (row: ContractInvoiceItem) =>
         hasAnyPermission(['CONTRACT_BUSINESS_TITLE:READ'])

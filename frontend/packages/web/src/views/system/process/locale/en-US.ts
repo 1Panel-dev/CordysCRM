@@ -5,7 +5,7 @@ export default {
   'process.process.name': 'Name',
   'process.executionTiming': 'Execution Timing',
   'process.process.newProcess': 'New Process',
-  'process.process.enableProcessTip': 'Only one approval flow can be enabled per business type',
+  'process.process.enableProcessTip': 'The same form can only have one enabled approval process',
   'process.process.deleteContent': 'Approval stream deletion cannot be undone. Please proceed with caution!',
   'process.process.deleteEnabledContent': 'Cannot delete an enabled approval flow',
   'process.process.submitterAuthority': 'Submitter permissions',
