@@ -71,7 +71,7 @@ CREATE INDEX idx_flow_id ON approval_node_approver(flow_id ASC);
 CREATE TABLE approval_node_condition(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `flow_id` VARCHAR(32) NOT NULL   COMMENT '流程ID' ,
-    `rule_expression` VARCHAR(2000) NOT NULL   COMMENT '条件表达式JSON数组' ,
+    `condition_config` VARCHAR(2000) NOT NULL   COMMENT '条件配置JSON' ,
     PRIMARY KEY (id,flow_id)
 )  COMMENT = '条件节点配置表'
 ENGINE = InnoDB

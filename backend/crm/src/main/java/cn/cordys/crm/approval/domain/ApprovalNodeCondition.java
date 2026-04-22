@@ -14,6 +14,6 @@ public class ApprovalNodeCondition {
     @Schema(description = "流程ID")
     private String flowId;
 
-    @Schema(description = "条件表达式JSON数组")
-    private String ruleExpression;
+    @Schema(description = "条件配置JSON格式")
+    private String conditionConfig;
 }
