@@ -5,17 +5,23 @@
     v-model:value="inputValue"
     :maxlength="255"
     clearable
+    @update-value="handleInput"
     @keydown.enter="confirmEdit"
     @blur="handleBlur"
   />
-  <div v-else class="flex items-center gap-[8px]">
+  <div
+    v-else
+    class="crm-editable-text-view flex min-w-0 max-w-full items-center gap-[8px]"
+    :class="{ 'cursor-pointer': props.clickToEdit }"
+    @click="props.clickToEdit ? enableEditMode() : undefined"
+  >
     <slot>{{ value }} </slot>
     <CrmIcon
       v-permission="props.permission"
       class="table-row-edit cursor-pointer text-[var(--text-n4)]"
       type="iconicon_edit"
       :size="16"
-      @click="enableEditMode"
+      @click.stop="enableEditMode"
     />
   </div>
 </template>
@@ -28,10 +34,14 @@
   const props = defineProps<{
     value: string;
     permission: string[];
+    clickToEdit?: boolean;
+    emptyTextTip?: string;
   }>();
 
   const emit = defineEmits<{
     (e: 'handleEdit', value: string, done?: () => void): void;
+    (e: 'input', value: string): void;
+    (e: 'cancel'): void;
   }>();
 
   const { t } = useI18n();
@@ -51,7 +61,7 @@
 
   function confirmEdit() {
     if (!inputValue.value.trim().length) {
-      Message.warning(t('common.value.notNull'));
+      Message.warning(props.emptyTextTip ?? t('common.value.notNull'));
       return;
     }
     emit('handleEdit', inputValue.value, () => {
@@ -61,10 +71,19 @@
 
   function handleBlur() {
     isEditing.value = false;
+    emit('cancel');
+  }
+
+  function handleInput(value: string) {
+    emit('input', value);
   }
 </script>
 
 <style lang="less">
+  .crm-editable-text-view {
+    min-width: 0;
+    max-width: 100%;
+  }
   .n-data-table {
     .table-row-edit {
       @apply invisible;

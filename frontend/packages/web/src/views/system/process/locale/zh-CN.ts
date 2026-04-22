@@ -28,4 +28,8 @@ export default {
   'process.process.approvalAuthority.addTempApprover': '勾选后，审批人可在审批流程中增加临时审批人',
   'process.process.approvalAuthority.allowAddSign': '允许加签',
   'process.process.approvalAuthority.allowAddTempApprover': '勾选后，审批人可在审批流程中增加临时审批人',
+  'process.process.processName': '流程名称',
+  'process.process.basic.businessType': '业务类型',
+  'process.process.basic.executionTiming': '执行时机',
+  'process.process.basic.description': '描述信息',
 };

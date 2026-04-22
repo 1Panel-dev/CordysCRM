@@ -26,6 +26,7 @@
       </template>
       <template #rightContent="{ selection }">
         <div> {{ selection }} </div>
+        <basicForm v-model:basicConfig="basicConfig" />
       </template>
     </CrmFlow>
   </div>
@@ -33,6 +34,8 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
+
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import {
@@ -52,6 +55,9 @@
   import { findBranchLocation, findNodeLocation } from '@/components/business/crm-flow/dsl/queries';
   import CrmFlow from '@/components/business/crm-flow/index.vue';
   import type { ConditionBranch, FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
+  import basicForm from './basicForm.vue';
+
+  import { defaultBasicForm } from '@/config/process';
 
   defineOptions({
     name: 'ApprovalFlowView',
@@ -64,6 +70,12 @@
       actionType: 'approval',
     });
   }
+
+  const basicConfig = defineModel<Record<string, any>>('basicConfig', {
+    default: () => ({
+      ...defaultBasicForm,
+    }),
+  });
 
   function createDefaultFlow(): FlowSchema {
     return {

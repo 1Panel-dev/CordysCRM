@@ -17,6 +17,7 @@ const system: AppRouteRecordRaw = {
       'SYSTEM_NOTICE:READ',
       'SYSTEM_SETTING:READ',
       'OPERATION_LOG:READ',
+      'APPROVAL_FLOW:READ',
     ],
     icon: 'iconicon_set_up',
     collapsedLocale: 'menu.collapsedSettings',
@@ -65,7 +66,7 @@ const system: AppRouteRecordRaw = {
       meta: {
         hideChildrenInMenu: true,
         locale: 'menu.settings.processSetting',
-        permissions: [], // todo xinxinwu
+        permissions: ['APPROVAL_FLOW:READ'],
       },
       children: [
         {
@@ -75,7 +76,7 @@ const system: AppRouteRecordRaw = {
           meta: {
             locale: 'menu.settings.approvalFlow',
             isTopMenu: true,
-            permissions: [], // todo xinxinwu
+            permissions: ['APPROVAL_FLOW:READ'],
           },
         },
         // todo 这个版本不上工作流
