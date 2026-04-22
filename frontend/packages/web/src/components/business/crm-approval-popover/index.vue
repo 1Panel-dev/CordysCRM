@@ -5,9 +5,9 @@
         <CrmApprovalStatus :status="props.status" />
       </slot>
     </template>
-    <div class="crm-reject-popover">
-      <div class="crm-reject-popover__header">
-        <div class="crm-reject-popover__title">{{ title }}</div>
+    <div class="crm-approval-popover">
+      <div class="crm-approval-popover__header">
+        <div class="crm-approval-popover__title">{{ title }}</div>
         <n-button v-if="showMore" text type="primary" class="!text-[14px]" @click="emit('more')">
           {{ t('common.more') }}
         </n-button>
@@ -15,8 +15,8 @@
       <n-spin :show="loading">
         <n-scrollbar class="max-h-[40vh]">
           <CrmApprovalApproverList v-model:active-id="activeApproverId" :approvers="approvers" />
-          <div v-if="currentApproverReason" class="crm-reject-popover__reasons">
-            <div class="crm-reject-popover__reason">
+          <div v-if="currentApproverReason" class="crm-approval-popover__reasons">
+            <div class="crm-approval-popover__reason">
               {{ currentApproverReason }}
             </div>
           </div>
@@ -106,31 +106,31 @@
 </script>
 
 <style scoped lang="less">
-  .crm-reject-popover {
+  .crm-approval-popover {
     padding: 16px;
     width: 344px;
     border-radius: 12px;
     background: var(--text-n10);
   }
-  .crm-reject-popover__header {
+  .crm-approval-popover__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .crm-reject-popover__title {
+  .crm-approval-popover__title {
     font-size: 14px;
     font-weight: 600;
     color: var(--text-n1);
     line-height: 20px;
   }
-  .crm-reject-popover__reasons {
+  .crm-approval-popover__reasons {
     display: flex;
     flex-direction: column;
     margin-top: 14px;
     background: var(--text-n9);
     gap: 8px;
   }
-  .crm-reject-popover__reason {
+  .crm-approval-popover__reason {
     display: box;
     overflow: hidden;
     padding: 4px 12px;
@@ -140,9 +140,9 @@
     color: var(--text-n2);
     line-height: 22px;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 2; /* 限制为 2 行 */
   }
-  .crm-reject-popover__empty {
+  .crm-approval-popover__empty {
     font-size: 14px;
     color: var(--text-n4);
     line-height: 20px;
