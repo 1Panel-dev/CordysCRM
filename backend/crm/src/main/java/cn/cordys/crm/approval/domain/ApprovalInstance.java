@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+/**
+ * 审批实例
+ */
 @Data
 @Table(name = "approval_instance")
 public class ApprovalInstance extends BaseModel {
@@ -31,7 +34,7 @@ public class ApprovalInstance extends BaseModel {
 	private Long submitTime;
 
 	@Schema(description = "审批完成时间")
-	private Long approveTime;
+	private Long approvalTime;
 
 	@Schema(description = "审批结果")
 	private String result;
