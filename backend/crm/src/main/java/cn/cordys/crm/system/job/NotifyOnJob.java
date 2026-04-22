@@ -19,7 +19,9 @@ import java.util.List;
 @Component
 @Slf4j
 public class NotifyOnJob {
-    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
+
+    private static final String ANNOUNCE_PREFIX = "announce_content:";
+
     @Resource
     private ExtAnnouncementMapper extAnnouncementMapper;
     @Resource
@@ -30,48 +32,49 @@ public class NotifyOnJob {
     @QuartzScheduled(cron = "0 0/5 * * * ?")
     public void onEvent() {
         try {
-            this.addNotification();
+            addNotification();
         } catch (Exception e) {
-            log.error("公告通知异常: ", e.getMessage());
+            log.error("公告通知异常", e);
         }
     }
 
-    /**
-     * 将到期发布的公告转成通知
-     */
     public void addNotification() {
-        LocalDateTime dateTime = LocalDateTime.now();
-        long timestamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        this.doAddNotification(timestamp);
+        long timestamp = currentEpochMs();
+        doAddNotification(timestamp);
     }
 
     private void doAddNotification(long timestamp) {
-        //查询所有在这个时间内生效的公告
         List<AnnouncementDTO> announcements = extAnnouncementMapper.selectInEffectUnConvertData(timestamp);
-        if (CollectionUtils.isEmpty(announcements)) {
-            return;
-        }
-        log.info("公告通知数量: {}", announcements.size());
-        //将公告根据接收人生成相关的通知
-        List<String> ids = new ArrayList<>();
-        for (AnnouncementDTO announcementDTO : announcements) {
-            List<String> userIds = JSON.parseArray(new String(announcementDTO.getReceiver()), String.class);
-            announcementService.convertNotification("admin", announcementDTO, userIds);
-            ids.add(announcementDTO.getId());
-        }
-        extAnnouncementMapper.updateNotice(ids, true, announcements.getFirst().getOrganizationId());
-        //删除已过期公告的推送
-        LocalDateTime dateTime = LocalDateTime.now();
-        long expiredStamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        LocalDateTime startTime = LocalDateTime.now().minusDays(1L);
-        long startStamp = startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        if (CollectionUtils.isEmpty(announcements)) return;
 
-        List<String> expiredIds = extAnnouncementMapper.selectFixTimeExpiredIds(startStamp, expiredStamp);
-        if (CollectionUtils.isNotEmpty(expiredIds)) {
-            for (String expiredId : expiredIds) {
-                stringRedisTemplate.delete(ANNOUNCE_PREFIX + expiredId);
-            }
+        log.info("公告通知数量: {}", announcements.size());
+        List<String> ids = new ArrayList<>();
+
+        for (AnnouncementDTO dto : announcements) {
+            List<String> userIds = JSON.parseArray(new String(dto.getReceiver()), String.class);
+            announcementService.convertNotification("admin", dto, userIds);
+            ids.add(dto.getId());
         }
+
+        extAnnouncementMapper.updateNotice(ids, true, announcements.getFirst().getOrganizationId());
+        cleanExpiredPushes();
     }
 
+    /**
+     * 清理已过期的 Redis 公告推送缓存
+     */
+    private void cleanExpiredPushes() {
+        long now = currentEpochMs();
+        long yesterdayStart = LocalDateTime.now().minusDays(1)
+                .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        List<String> expiredIds = extAnnouncementMapper.selectFixTimeExpiredIds(yesterdayStart, now);
+        if (CollectionUtils.isEmpty(expiredIds)) return;
+
+        expiredIds.forEach(id -> stringRedisTemplate.delete(ANNOUNCE_PREFIX + id));
+    }
+
+    private static long currentEpochMs() {
+        return LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
 }

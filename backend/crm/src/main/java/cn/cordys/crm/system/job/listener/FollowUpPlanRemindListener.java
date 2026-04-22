@@ -57,7 +57,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
         try {
             this.followUpPlanRemind();
         } catch (Exception e) {
-            log.error("跟进计划到期提醒异常: ", e.getMessage());
+            log.error("跟进计划到期提醒异常: {}", e.getMessage());
         }
     }
 

@@ -5,21 +5,25 @@ import cn.cordys.crm.system.service.SystemService;
 import cn.cordys.quartz.anno.QuartzScheduled;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.reflect.MethodUtils;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.session.Session;
 import org.springframework.session.data.redis.RedisIndexedSessionRepository;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
 @Slf4j
 public class SessionJob {
+
+    private static final String SESSION_KEY_PREFIX = "spring:session:sessions:";
+    private static final String SESSION_EXPIRES_PREFIX = SESSION_KEY_PREFIX + "expires:";
+    private static final String USER_ATTR_KEY = "sessionAttr:user";
+    private static final Duration EXPIRE_FIX_DURATION = Duration.ofSeconds(30);
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
@@ -31,60 +35,76 @@ public class SessionJob {
     private SystemService systemService;
 
     /**
-     * 定时清理没有绑定用户的会话。
-     * <p>
-     * 该方法每晚 0 点 2 分执行，扫描 Redis 中的会话数据，删除没有绑定用户信息的会话。
-     * 此外，还会处理一些特殊情况，如 Redisson 设置了过期时间为 -1 时，手动设置过期时间。
-     * </p>
-     *
-     * <p>
-     * 该方法使用 {@link QuartzScheduled} 注解定时执行，并使用 {@link ScanOptions} 扫描 Redis 中的会话。
-     * </p>
-     * <p>
-     * spring.session.timeout=30d
-     * server.servlet.session.timeout=30d
+     * 定时清理未绑定用户的会话，每晚 0 点 2 分执行。
      */
     @QuartzScheduled(cron = "0 2 0 * * ?")
     public void cleanSession() {
         Map<String, Long> userCount = new HashMap<>();
-        ScanOptions options = ScanOptions.scanOptions().match("spring:session:sessions:*").count(1000).build();
+        ScanOptions options = ScanOptions.scanOptions()
+                .match(SESSION_KEY_PREFIX + "*")
+                .count(1000)
+                .build();
 
         try (Cursor<String> scan = stringRedisTemplate.scan(options)) {
-            while (scan.hasNext()) {
-                String key = scan.next();
-                if (key.contains("spring:session:sessions:expires:")) {
-                    continue;
-                }
+            scan.forEachRemaining(key -> {
+                if (key.startsWith(SESSION_EXPIRES_PREFIX)) return;
 
                 String sessionId = key.substring(key.lastIndexOf(":") + 1);
-                Boolean exists = stringRedisTemplate.opsForHash().hasKey(key, "sessionAttr:user");
+                Boolean hasUser = stringRedisTemplate.opsForHash().hasKey(key, USER_ATTR_KEY);
 
-                // 删除没有绑定用户的会话
-                if (!exists) {
+                if (!hasUser) {
                     redisIndexedSessionRepository.deleteById(sessionId);
-                } else {
-                    // 获取用户信息并检查会话过期时间
-                    Object user = redisIndexedSessionRepository.getSessionRedisOperations().opsForHash().get(key, "sessionAttr:user");
-                    Long expire = redisIndexedSessionRepository.getSessionRedisOperations().getExpire(key);
-
-                    assert user != null;
-                    String userId = (String) MethodUtils.invokeMethod(user, "getId");
-                    userCount.merge(userId, 1L, Long::sum);
-
-                    // 记录日志并检查会话的过期时间
-                    log.info("{} : {} 过期时间: {}", key, userId, expire);
-
-                    // 如果过期时间为 -1，则手动设置过期时间为 30 秒
-                    if (expire != null && expire == -1) {
-                        redisIndexedSessionRepository.getSessionRedisOperations().expire(key, Duration.of(30, ChronoUnit.SECONDS));
-                    }
+                    return;
                 }
-            }
-            // 清理缓存
+
+                Session session = redisIndexedSessionRepository.findById(sessionId);
+                if (session == null) return;
+
+                Object principal = session.getAttribute("user");
+                if (principal == null) {
+                    redisIndexedSessionRepository.deleteById(sessionId);
+                    return;
+                }
+
+                String userId = extractUserId(principal);
+                if (userId == null) {
+                    redisIndexedSessionRepository.deleteById(sessionId);
+                    return;
+                }
+
+                userCount.merge(userId, 1L, Long::sum);
+
+                Long expire = redisIndexedSessionRepository.getSessionRedisOperations().getExpire(key);
+                log.info("{} : {} 过期时间: {}", key, userId, expire);
+
+                if (expire != null && expire == -1) {
+                    redisIndexedSessionRepository.getSessionRedisOperations()
+                            .expire(key, EXPIRE_FIX_DURATION);
+                }
+            });
+
             systemService.clearFormCache();
             log.info("用户会话统计: {}", JSON.toJSONString(userCount));
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error("清理会话异常", e);
+        }
+    }
+
+    /**
+     * 从 principal 对象中提取 userId。
+     * 支持标准 UserDetails 实现（getId()）和 Map 结构（"id" key）。
+     */
+    private static String extractUserId(Object principal) {
+        try {
+            if (principal instanceof Map<?, ?> map) {
+                Object id = map.get("id");
+                return id != null ? id.toString() : null;
+            }
+            // 通过反射兜底，兼容无源码类型
+            return (String) principal.getClass().getMethod("getId").invoke(principal);
+        } catch (Exception e) {
+            log.warn("无法从 principal 提取 userId: {}", principal.getClass().getName());
+            return null;
         }
     }
 }
