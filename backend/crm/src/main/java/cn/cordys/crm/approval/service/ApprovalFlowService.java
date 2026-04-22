@@ -5,6 +5,9 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.condition.CombineSearch;
+import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
@@ -449,7 +452,7 @@ public class ApprovalFlowService {
                     "rules");
             conditionNode.setId(nodeId);
             conditionNode.setFlowId(flowId);
-            conditionNode.setRuleExpression(JSON.toJSONString(conditionRequest.getRules()));
+            conditionNode.setConditionConfig(JSON.toJSONString(conditionRequest.getConditionConfig()));
             approvalNodeConditionMapper.insert(conditionNode);
         }
 
@@ -562,6 +565,268 @@ public class ApprovalFlowService {
         }
 
         return updatedPermissions;
+    }
+
+    /**
+     * 获取下一个节点
+     * 条件节点根据字段值进行匹配，其他类型节点直接返回
+     */
+    public ApprovalNodeResponse getNextNode(String nodeId, List<BaseModuleFieldValue> fieldValues) {
+        List<ApprovalNodeResponse> nextNodes = getNextNodes(nodeId);
+
+        if (CollectionUtils.isEmpty(nextNodes)) {
+            return null;
+        }
+
+        // 检查是否存在条件节点
+        boolean hasConditionNode = nextNodes.stream()
+                .anyMatch(n -> ApprovalNodeTypeEnum.CONDITION.name().equals(n.getNodeType()));
+
+        if (!hasConditionNode) {
+            // 非条件节点，通常只有一个，直接返回第一个
+            return nextNodes.getFirst();
+        }
+
+        // 条件节点匹配逻辑：按 sort 顺序依次匹配所有条件节点
+        // 条件节点 + 默认节点组成 if-else 组合
+        ApprovalNodeResponse defaultNode = null;
+
+        for (ApprovalNodeResponse nextNode : nextNodes) {
+            if (nextNode instanceof ApprovalNodeConditionResponse conditionNode) {
+                // 匹配条件节点，如果匹配成功则立即返回
+                if (matchCondition(conditionNode.getConditionConfig(), fieldValues)) {
+                    return conditionNode;
+                }
+            } else if (ApprovalNodeTypeEnum.DEFAULT.name().equals(nextNode.getNodeType())) {
+                // 记录 DEFAULT 节点，等所有条件节点检查完毕后再返回
+                defaultNode = nextNode;
+            }
+        }
+
+        // 所有条件节点都不匹配，返回 DEFAULT 节点（如果存在）
+        return defaultNode;
+    }
+
+    /**
+     * 匹配条件
+     */
+    private boolean matchCondition(CombineSearch combineSearch, List<BaseModuleFieldValue> fieldValues) {
+        if (combineSearch == null || CollectionUtils.isEmpty(combineSearch.getConditions())) {
+            return false;
+        }
+
+        // 构建字段值映射
+        Map<String, Object> fieldValueMap = fieldValues.stream()
+                .filter(BaseModuleFieldValue::valid)
+                .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+
+        List<FilterCondition> conditions = combineSearch.getConditions();
+        String searchMode = combineSearch.getSearchMode();
+
+        // 根据匹配模式进行条件判断
+        if (CombineSearch.SearchMode.AND.name().equals(searchMode)) {
+            // AND 模式：所有条件都必须满足
+            return conditions.stream().allMatch(condition -> matchSingleCondition(condition, fieldValueMap));
+        } else {
+            // OR 模式：任一条件满足即可
+            return conditions.stream().anyMatch(condition -> matchSingleCondition(condition, fieldValueMap));
+        }
+    }
+
+    /**
+     * 匹配单个条件
+     */
+    private boolean matchSingleCondition(FilterCondition condition, Map<String, Object> fieldValueMap) {
+        String fieldName = condition.getName();
+        Object actualValue = fieldValueMap.get(fieldName);
+
+        // 获取操作符枚举
+        FilterCondition.CombineConditionOperator operator;
+        try {
+            operator = FilterCondition.CombineConditionOperator.valueOf(condition.getOperator());
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+
+        // 处理空值判断操作符
+        if (operator == FilterCondition.CombineConditionOperator.EMPTY) {
+            return actualValue == null;
+        }
+        if (operator == FilterCondition.CombineConditionOperator.NOT_EMPTY) {
+            return actualValue != null;
+        }
+
+        if (actualValue == null) {
+            return false;
+        }
+
+        Object expectedValue = condition.getValue();
+
+        try {
+            return switch (operator) {
+                case EQUALS -> matchEquals(actualValue, expectedValue);
+                case NOT_EQUALS -> !matchEquals(actualValue, expectedValue);
+                case CONTAINS -> matchContains(actualValue, expectedValue);
+                case NOT_CONTAINS -> !matchContains(actualValue, expectedValue);
+                case IN -> matchIn(actualValue, expectedValue);
+                case NOT_IN -> !matchIn(actualValue, expectedValue);
+                case GT -> matchCompare(actualValue, expectedValue) > 0;
+                case LT -> matchCompare(actualValue, expectedValue) < 0;
+                case GE -> matchCompare(actualValue, expectedValue) >= 0;
+                case LE -> matchCompare(actualValue, expectedValue) <= 0;
+                case BETWEEN -> matchBetween(actualValue, expectedValue);
+                case DYNAMICS, COUNT_GT, COUNT_LT -> false;
+                default -> false;
+            };
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 等于匹配
+     */
+    private boolean matchEquals(Object actualValue, Object expectedValue) {
+        if (actualValue instanceof List<?> actualList && expectedValue instanceof List<?> expectedList) {
+            return actualList.equals(expectedList);
+        }
+        return Objects.equals(actualValue, expectedValue);
+    }
+
+    /**
+     * 包含匹配
+     */
+    private boolean matchContains(Object actualValue, Object expectedValue) {
+        String actualStr = String.valueOf(actualValue);
+        String expectedStr = String.valueOf(expectedValue);
+        return actualStr.contains(expectedStr);
+    }
+
+    /**
+     * IN 匹配（实际值在期望值列表中）
+     */
+    private boolean matchIn(Object actualValue, Object expectedValue) {
+        if (expectedValue instanceof List<?> expectedList) {
+            if (actualValue instanceof List<?> actualList) {
+                // 多值匹配：交集非空
+                return actualList.stream().anyMatch(expectedList::contains);
+            }
+            return expectedList.contains(actualValue);
+        }
+        return false;
+    }
+
+    /**
+     * 比较匹配（用于数字或日期比较）
+     */
+    private int matchCompare(Object actualValue, Object expectedValue) {
+        if (actualValue instanceof Number actualNum && expectedValue instanceof Number expectedNum) {
+            return Double.compare(actualNum.doubleValue(), expectedNum.doubleValue());
+        }
+        // 尝试转换为数字比较
+        try {
+            double actual = Double.parseDouble(String.valueOf(actualValue));
+            double expected = Double.parseDouble(String.valueOf(expectedValue));
+            return Double.compare(actual, expected);
+        } catch (NumberFormatException e) {
+            // 字符串比较
+            return String.valueOf(actualValue).compareTo(String.valueOf(expectedValue));
+        }
+    }
+
+    /**
+     * BETWEEN 匹配（实际值在范围内）
+     */
+    private boolean matchBetween(Object actualValue, Object expectedValue) {
+        if (expectedValue instanceof List<?> rangeList && rangeList.size() == 2) {
+            Object min = rangeList.get(0);
+            Object max = rangeList.get(1);
+            return matchCompare(actualValue, min) >= 0 && matchCompare(actualValue, max) <= 0;
+        }
+        return false;
+    }
+
+    /**
+     * 获取下一层节点列表
+     */
+    public List<ApprovalNodeResponse> getNextNodes(String nodeId) {
+        ApprovalNode node = approvalNodeMapper.selectByPrimaryKey(nodeId);
+        if (node == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
+
+        String flowId = node.getFlowId();
+
+        // 查询节点连接关系
+        ApprovalNodeLink linkCriteria = new ApprovalNodeLink();
+        linkCriteria.setFlowId(flowId);
+        linkCriteria.setFromNodeId(nodeId);
+        List<ApprovalNodeLink> links = approvalNodeLinkMapper.select(linkCriteria);
+
+        if (CollectionUtils.isEmpty(links)) {
+            return List.of();
+        }
+
+        // 获取下一层节点ID列表（按sort排序）
+        List<String> nextNodeIds = links.stream()
+                .sorted(Comparator.comparing(ApprovalNodeLink::getSort))
+                .map(ApprovalNodeLink::getToNodeId)
+                .collect(Collectors.toList());
+
+        // 批量查询节点
+        List<ApprovalNode> nodes = approvalNodeMapper.selectByIds(nextNodeIds);
+        Map<String, ApprovalNode> nodeMap = nodes.stream()
+                .collect(Collectors.toMap(ApprovalNode::getId, n -> n));
+
+        // 批量查询审批人节点配置
+        List<ApprovalNodeApprover> approverNodes = approvalNodeApproverMapper.selectByIds(nextNodeIds);
+        Map<String, ApprovalNodeApprover> approverNodeMap = approverNodes.stream()
+                .collect(Collectors.toMap(ApprovalNodeApprover::getId, n -> n));
+
+        // 批量查询条件节点配置
+        List<ApprovalNodeCondition> conditionNodes = approvalNodeConditionMapper.selectByIds(nextNodeIds);
+        Map<String, ApprovalNodeCondition> conditionNodeMap = conditionNodes.stream()
+                .collect(Collectors.toMap(ApprovalNodeCondition::getId, n -> n));
+
+        // 组装节点响应
+        return nextNodeIds.stream()
+                .map(nextNodeId -> {
+                    ApprovalNode nextNode = nodeMap.get(nextNodeId);
+                    if (nextNode == null) {
+                        return null;
+                    }
+
+                    // 审批人节点
+                    if (ApprovalNodeTypeEnum.APPROVER.name().equals(nextNode.getNodeType())) {
+                        ApprovalNodeApprover approverNode = approverNodeMap.get(nextNodeId);
+                        if (approverNode != null) {
+                            ApprovalNodeApproverResponse approverResponse = BeanUtils.copyBean(
+                                    new ApprovalNodeApproverResponse(), nextNode);
+                            BeanUtils.copyBean(approverResponse, approverNode);
+                            return approverResponse;
+                        }
+                    }
+
+                    // 条件节点
+                    if (ApprovalNodeTypeEnum.CONDITION.name().equals(nextNode.getNodeType())) {
+                        ApprovalNodeCondition conditionNode = conditionNodeMap.get(nextNodeId);
+                        if (conditionNode != null) {
+                            ApprovalNodeConditionResponse conditionResponse = BeanUtils.copyBean(
+                                    new ApprovalNodeConditionResponse(), nextNode);
+                            // 手动解析条件配置（因为类型不同，BeanUtils 无法自动复制）
+                            if (StringUtils.isNotBlank(conditionNode.getConditionConfig())) {
+                                conditionResponse.setConditionConfig(
+                                        JSON.parseObject(conditionNode.getConditionConfig(), CombineSearch.class));
+                            }
+                            return conditionResponse;
+                        }
+                    }
+
+                    // 其他类型节点
+                    return BeanUtils.copyBean(new ApprovalNodeResponse(), nextNode);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     /**
