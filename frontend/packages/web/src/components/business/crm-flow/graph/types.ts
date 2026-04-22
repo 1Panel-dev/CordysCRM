@@ -14,6 +14,7 @@ export interface FlowGraphNodeData {
   actionType?: string; // 动作节点的扩展类型（如 approval）。
   showContent?: boolean; // 当前视图模式下是否显示节点第二行内容（description）
   isElse?: boolean;
+  selected?: boolean; // 选中
 }
 
 export interface FlowGraphLayoutNode {
@@ -68,6 +69,7 @@ export interface FlowGraphNodeClickPayload {
 
 export interface FlowGraphEventHandlers {
   onNodeClick?: (payload: FlowGraphNodeClickPayload) => void;
+  onNodeDelete?: (payload: { data: FlowGraphNodeData }) => void;
   onBlankClick?: () => void;
 }
 

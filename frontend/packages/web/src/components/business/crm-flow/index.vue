@@ -3,8 +3,11 @@
     <div class="crm-flow__main relative flex-1 overflow-hidden">
       <FlowCanvas
         :flow="flow"
+        :selection="selection"
         @node-click="handleNodeClick"
         @branch-click="handleBranchClick"
+        @node-delete="handleNodeDelete"
+        @branch-delete="handleBranchDelete"
         @add-condition-branch="handleAddConditionBranch"
         @blank-click="clearSelection"
       >
@@ -22,13 +25,22 @@
 
 <script setup lang="ts">
   import { computed, ref, useSlots, watch } from 'vue';
+  import { cloneDeep } from 'lodash-es';
+
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import FlowCanvas from './components/canvas/flowCanvas.vue';
 
-  import useFlowDesigner from './composables/useFlowDesigner';
+  import useModal from '@/hooks/useModal';
+
   import useNodeSelection from './composables/useNodeSelection';
+  import { deleteConditionBranch, deleteNodeById } from './dsl/actions';
   import type { BranchClickPayload, NodeClickPayload } from './graph/types';
   import type { FlowSchema } from './types';
+
+  const emit = defineEmits<{
+    (event: 'addConditionBranch', groupId: string): void;
+  }>();
 
   const model = defineModel<FlowSchema>('model', {
     required: true,
@@ -38,8 +50,10 @@
   const hasInsertNodeContentSlot = computed(() => Boolean(slots.insertNodeContent));
   const hasRightContentSlot = computed(() => Boolean(slots.rightContent));
 
-  const { flow, setFlow, addBranchToConditionGroup } = useFlowDesigner(model.value);
+  const flow = ref<FlowSchema>(model.value);
   const { selection, selectNode, selectBranch, clearSelection } = useNodeSelection(flow);
+  const { t } = useI18n();
+  const { openModal } = useModal();
 
   const syncingFromProps = ref(false);
 
@@ -48,7 +62,7 @@
     (value) => {
       if (value) {
         syncingFromProps.value = true;
-        setFlow(value);
+        flow.value = cloneDeep(value);
       }
     },
     {
@@ -79,7 +93,31 @@
   }
 
   function handleAddConditionBranch(groupId: string) {
-    addBranchToConditionGroup(groupId);
+    emit('addConditionBranch', groupId);
+  }
+
+  function handleNodeDelete(payload: { nodeId: string }) {
+    deleteNodeById(flow.value, payload.nodeId);
+    clearSelection();
+  }
+
+  function handleBranchDelete(payload: { groupId: string; branchId: string }) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirm'),
+      content: t('crmFlow.deleteConditionBranchConfirm'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          deleteConditionBranch(flow.value, payload.groupId, payload.branchId);
+          clearSelection();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
   }
 
   defineExpose({

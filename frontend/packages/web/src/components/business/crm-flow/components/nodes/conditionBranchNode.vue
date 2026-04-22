@@ -15,10 +15,11 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, toRef } from 'vue';
 
   import BaseFlowNode from './baseFlowNode.vue';
 
+  import useX6NodeData from '../../composables/useX6NodeData';
   import type { Node } from '@antv/x6';
 
   defineOptions({
@@ -33,16 +34,14 @@
     (event: 'delete'): void;
   }>();
 
-  const nodeData = computed(
-    () =>
-      (props.node?.getData?.() ?? {}) as {
-        name?: string;
-        description?: string;
-        showContent?: boolean;
-        isElse?: boolean;
-        selected?: boolean;
-      }
-  );
+  const { nodeData } = useX6NodeData<{
+    name?: string;
+    description?: string;
+    showContent?: boolean;
+    isElse?: boolean;
+    selected?: boolean;
+  }>(toRef(props, 'node'));
+
   const displayIsElse = computed(() => nodeData.value.isElse ?? false);
 
   function handleDelete() {

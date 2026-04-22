@@ -1,5 +1,5 @@
 /** DSL actions：实现节点插入、删除、更新和分支调整（写操作） */
-import type { FlowNode, FlowSchema } from '../types';
+import type { ConditionBranch, FlowNode, FlowSchema } from '../types';
 import { createConditionBranch } from './factory';
 import { canDeleteBranch, canDeleteNode, shouldRemoveWholeGroupWhenDeleteIf } from './guards';
 import {
@@ -22,7 +22,7 @@ export function insertNodeAfterNode(schema: FlowSchema, anchorNodeId: string, no
 }
 
 // 在条件组里新增一个 if 分支，插到 else 之前
-export function addConditionBranch(schema: FlowSchema, groupId: string): boolean {
+export function addConditionBranch(schema: FlowSchema, groupId: string, partial?: Partial<ConditionBranch>): boolean {
   const groupNode = findConditionGroupById(schema.nodes, groupId);
   if (!groupNode) {
     return false;
@@ -30,7 +30,7 @@ export function addConditionBranch(schema: FlowSchema, groupId: string): boolean
 
   const elseIndex = groupNode.branches.findIndex((item) => item.isElse);
 
-  const nextIfBranch = createConditionBranch();
+  const nextIfBranch = createConditionBranch(partial);
 
   if (elseIndex >= 0) {
     groupNode.branches.splice(elseIndex, 0, nextIfBranch);

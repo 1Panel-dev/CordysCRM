@@ -1,51 +1,60 @@
 import { computed, type Ref, ref } from 'vue';
 
 import { findBranchById, findNodeById } from '../dsl/queries';
-import type { ConditionBranch, FlowNode, FlowSchema, NodeSelectionState, SelectionType } from '../types';
+import type { FlowSchema, NodeSelectionState } from '../types';
 
 export default function useNodeSelection(flow: Ref<FlowSchema>) {
-  const selectionType = ref<SelectionType>('none');
-  const selectedNodeId = ref<string | null>(null);
-  const selectedBranchId = ref<string | null>(null);
+  type SelectionState = { type: 'none' } | { type: 'node'; id: string } | { type: 'branch'; id: string };
+  const selectionState = ref<SelectionState>({ type: 'none' });
 
-  const selectedNode = computed<FlowNode | null>(() => {
-    if (!selectedNodeId.value) {
-      return null;
+  const selection = computed<NodeSelectionState>(() => {
+    if (selectionState.value.type === 'none') {
+      return { type: 'none' };
     }
 
-    return findNodeById(flow.value.nodes, selectedNodeId.value);
-  });
+    if (selectionState.value.type === 'node') {
+      const node = findNodeById(flow.value.nodes, selectionState.value.id);
+      if (!node) {
+        return { type: 'none' };
+      }
 
-  const selectedBranch = computed<ConditionBranch | null>(() => {
-    if (!selectedBranchId.value) {
-      return null;
+      return {
+        type: 'node',
+        id: selectionState.value.id,
+        node,
+      };
     }
 
-    return findBranchById(flow.value.nodes, selectedBranchId.value);
-  });
+    const branch = findBranchById(flow.value.nodes, selectionState.value.id);
+    if (!branch) {
+      return { type: 'none' };
+    }
 
-  const selection = computed<NodeSelectionState>(() => ({
-    selectionType: selectionType.value,
-    selectedNode: selectedNode.value,
-    selectedBranch: selectedBranch.value,
-  }));
+    return {
+      type: 'branch',
+      id: selectionState.value.id,
+      branch,
+    };
+  });
 
   function selectNode(nodeId: string) {
-    selectionType.value = 'node';
-    selectedNodeId.value = nodeId;
-    selectedBranchId.value = null;
+    selectionState.value = {
+      type: 'node',
+      id: nodeId,
+    };
   }
 
   function selectBranch(branchId: string) {
-    selectionType.value = 'branch';
-    selectedBranchId.value = branchId;
-    selectedNodeId.value = null;
+    selectionState.value = {
+      type: 'branch',
+      id: branchId,
+    };
   }
 
   function clearSelection() {
-    selectionType.value = 'none';
-    selectedNodeId.value = null;
-    selectedBranchId.value = null;
+    selectionState.value = {
+      type: 'none',
+    };
   }
 
   return {
