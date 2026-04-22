@@ -101,6 +101,7 @@
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { abbreviateNumber, characterLimit } from '@lib/shared/method';
@@ -113,7 +114,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval-popover/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -421,8 +422,14 @@
         return row.stageName || '-';
       },
       approvalStatus: (row: OrderItem) =>
-        h(CrmApprovalStatus, {
+        h(CrmApprovalPopover, {
           status: row.approvalStatus,
+          formKey: FormDesignKeyEnum.ORDER,
+          sourceId: row.id,
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            showDetail(row.id);
+          },
         }),
     },
     containerClass: `.crm-order-table-${props.formKey}`,
