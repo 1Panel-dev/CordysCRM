@@ -1,4 +1,4 @@
-package cn.cordys.crm.system.dto.request;
+package cn.cordys.crm.approval.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

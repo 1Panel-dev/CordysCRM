@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+/**
+ * 审批任务
+ */
 @Data
 @Table(name = "approval_task")
 public class ApprovalTask extends BaseModel {
@@ -21,32 +24,11 @@ public class ApprovalTask extends BaseModel {
 	@Schema(description = "任务状态")
 	private String taskStatus;
 
-	@Schema(description = "审批方式")
-	private String approvalMethod;
-
-	@Schema(description = "是否加签")
+	@Schema(description = "是否为加签任务")
 	private Boolean isAddSign;
 
-	@Schema(description = "加签人")
-	private String addSignBy;
-
-	@Schema(description = "加签时间")
-	private Long addSignTime;
-
-	@Schema(description = "是否退回")
+	@Schema(description = "是否为退回任务")
 	private Boolean isReturn;
-
-	@Schema(description = "退回至节点")
-	private String returnToNodeId;
-
-	@Schema(description = "退回原因")
-	private String returnReason;
-
-	@Schema(description = "退回人")
-	private String returnBy;
-
-	@Schema(description = "退回时间")
-	private Long returnTime;
 
 	@Schema(description = "是否为抄送任务")
 	private Boolean isCc;
