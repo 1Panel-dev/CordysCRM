@@ -57,8 +57,8 @@ CREATE TABLE approval_node_approver(
    `same_submitter_action` VARCHAR(20) NOT NULL  DEFAULT 'SKIP' COMMENT '审批人与提交人相同时动作：SKIP(自动跳过)/ALLOW(由提交人审批)/ASSIGN_SUPERIOR(转交给直属上级审批)' ,
    `cc` VARCHAR(2000)    COMMENT '抄送人（JSON数组）' ,
    `approver` VARCHAR(2000)    COMMENT '审批人（JSON数组）' ,
-   `pass_update_config` VARCHAR(2000)    COMMENT '审批通过后配置（JSON格式）' ,
-   `reject_update_config` VARCHAR(2000)    COMMENT '审批驳回后配置（JSON格式）' ,
+   `pass_post_config` VARCHAR(2000)    COMMENT '审批通过后配置（JSON格式）' ,
+   `reject_post_config` VARCHAR(2000)    COMMENT '审批驳回后配置（JSON格式）' ,
    `field_permissions` VARCHAR(2000)    COMMENT '字段权限配置（JSON格式）' ,
    PRIMARY KEY (id)
 )  COMMENT = '审批人节点配置表'

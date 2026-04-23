@@ -20,7 +20,7 @@ public class ApprovalFlowUpdateRequest {
     @Schema(description = "流程名称")
     private String name;
 
-    @Schema(description = "执行时机列表")
+    @Schema(description = "执行时机列表：CREATE/EDIT")
     private List<String> executeTiming;
 
     @Schema(description = "启用状态")
