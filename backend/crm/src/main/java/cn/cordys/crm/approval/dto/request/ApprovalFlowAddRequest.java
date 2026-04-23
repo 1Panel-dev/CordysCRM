@@ -22,7 +22,7 @@ public class ApprovalFlowAddRequest {
     @Schema(description = "表单类型：QUOTATION/CONTRACT/INVOICE/ORDER")
     private String formType;
 
-    @Schema(description = "执行时机列表")
+    @Schema(description = "执行时机列表：CREATE/EDIT")
     private List<String> executeTiming;
 
     @Schema(description = "启用状态")

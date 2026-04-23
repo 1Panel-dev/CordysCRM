@@ -5,6 +5,9 @@ import cn.cordys.crm.approval.constants.ApprovalTypeEnum;
 import cn.cordys.crm.approval.constants.EmptyApproverActionEnum;
 import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
 import cn.cordys.crm.approval.constants.SameSubmitterActionEnum;
+import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
+import cn.cordys.crm.approval.dto.ApproverConfigDTO;
+import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -33,25 +36,17 @@ public class ApprovalNodeApproverRequest extends ApprovalNodeRequest {
     private String sameSubmitterAction;
 
     @Schema(description = "抄送人列表")
-    private List<ApproverConfig> cc;
+    private List<ApproverConfigDTO> cc;
 
     @Schema(description = "审批人列表")
-    private List<ApproverConfig> approver;
+    private List<ApproverConfigDTO> approver;
 
     @Schema(description = "审批通过后配置")
-    private String passUpdateConfig;
+    private ApprovalPostConfigDTO passPostConfig;
 
     @Schema(description = "审批驳回后配置")
-    private String rejectUpdateConfig;
+    private ApprovalPostConfigDTO rejectPostConfig;
 
-    @Schema(description = "字段权限配置")
-    private String fieldPermissions;
-
-    @Data
-    public static class ApproverConfig {
-        @Schema(description = "审批人类型：MEMBER/SUPERIOR/DEPT_HEAD/ROLE/FORM_FIELD")
-        private String type;
-        @Schema(description = "审批人值")
-        private String value;
-    }
+    @Schema(description = "字段权限配置列表")
+    private List<FieldPermissionDTO> fieldPermissions;
 }

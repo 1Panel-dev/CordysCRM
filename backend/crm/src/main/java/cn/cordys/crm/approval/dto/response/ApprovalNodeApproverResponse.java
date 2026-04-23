@@ -1,8 +1,13 @@
 package cn.cordys.crm.approval.dto.response;
 
+import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
+import cn.cordys.crm.approval.dto.ApproverConfigDTO;
+import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -27,18 +32,18 @@ public class ApprovalNodeApproverResponse extends ApprovalNodeResponse {
     @Schema(description = "审批人与提交人相同时动作")
     private String sameSubmitterAction;
 
-    @Schema(description = "抄送人")
-    private String cc;
+    @Schema(description = "抄送人列表")
+    private List<ApproverConfigDTO> cc;
 
-    @Schema(description = "审批人")
-    private String approver;
+    @Schema(description = "审批人列表")
+    private List<ApproverConfigDTO> approver;
 
     @Schema(description = "审批通过后配置")
-    private String passUpdateConfig;
+    private ApprovalPostConfigDTO passPostConfig;
 
     @Schema(description = "审批驳回后配置")
-    private String rejectUpdateConfig;
+    private ApprovalPostConfigDTO rejectPostConfig;
 
-    @Schema(description = "字段权限配置")
-    private String fieldPermissions;
+    @Schema(description = "字段权限配置列表")
+    private List<FieldPermissionDTO> fieldPermissions;
 }

@@ -21,6 +21,9 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.domain.*;
+import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
+import cn.cordys.crm.approval.dto.ApproverConfigDTO;
+import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.*;
@@ -320,6 +323,8 @@ public class ApprovalFlowService {
                     ApprovalNodeApproverResponse approverResponse = BeanUtils.copyBean(
                             new ApprovalNodeApproverResponse(), node);
                     BeanUtils.copyBean(approverResponse, approverNode);
+                    // 解析 JSON 字段为对象
+                    parseApproverNodeFields(approverNode, approverResponse);
                     return approverResponse;
                 }
             }
@@ -340,6 +345,27 @@ public class ApprovalFlowService {
             ApprovalNodeResponse response = BeanUtils.copyBean(new ApprovalNodeResponse(), node);
             return response;
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * 解析审批人节点 JSON 字段为对象
+     */
+    private void parseApproverNodeFields(ApprovalNodeApprover approverNode, ApprovalNodeApproverResponse response) {
+        if (StringUtils.isNotBlank(approverNode.getCc())) {
+            response.setCc(JSON.parseArray(approverNode.getCc(), ApproverConfigDTO.class));
+        }
+        if (StringUtils.isNotBlank(approverNode.getApprover())) {
+            response.setApprover(JSON.parseArray(approverNode.getApprover(), ApproverConfigDTO.class));
+        }
+        if (StringUtils.isNotBlank(approverNode.getPassUpdateConfig())) {
+            response.setPassPostConfig(JSON.parseObject(approverNode.getPassUpdateConfig(), ApprovalPostConfigDTO.class));
+        }
+        if (StringUtils.isNotBlank(approverNode.getRejectUpdateConfig())) {
+            response.setRejectPostConfig(JSON.parseObject(approverNode.getRejectUpdateConfig(), ApprovalPostConfigDTO.class));
+        }
+        if (StringUtils.isNotBlank(approverNode.getFieldPermissions())) {
+            response.setFieldPermissions(JSON.parseArray(approverNode.getFieldPermissions(), FieldPermissionDTO.class));
+        }
     }
 
     /**
@@ -438,11 +464,14 @@ public class ApprovalFlowService {
         if (nodeRequest instanceof ApprovalNodeApproverRequest) {
             ApprovalNodeApproverRequest approverRequest = (ApprovalNodeApproverRequest) nodeRequest;
             ApprovalNodeApprover approverNode = BeanUtils.copyBean(new ApprovalNodeApprover(), approverRequest,
-                    "cc", "approver");
+                    "cc", "approver", "passPostConfig", "rejectPostConfig", "fieldPermissions");
             approverNode.setId(nodeId);
             approverNode.setFlowId(flowId);
             approverNode.setCc(JSON.toJSONString(approverRequest.getCc()));
             approverNode.setApprover(JSON.toJSONString(approverRequest.getApprover()));
+            approverNode.setPassUpdateConfig(JSON.toJSONString(approverRequest.getPassPostConfig()));
+            approverNode.setRejectUpdateConfig(JSON.toJSONString(approverRequest.getRejectPostConfig()));
+            approverNode.setFieldPermissions(JSON.toJSONString(approverRequest.getFieldPermissions()));
             approvalNodeApproverMapper.insert(approverNode);
         }
         // 保存条件节点配置
@@ -803,6 +832,8 @@ public class ApprovalFlowService {
                             ApprovalNodeApproverResponse approverResponse = BeanUtils.copyBean(
                                     new ApprovalNodeApproverResponse(), nextNode);
                             BeanUtils.copyBean(approverResponse, approverNode);
+                            // 解析 JSON 字段为对象
+                            parseApproverNodeFields(approverNode, approverResponse);
                             return approverResponse;
                         }
                     }
