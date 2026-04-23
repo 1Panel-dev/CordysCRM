@@ -198,7 +198,7 @@
       return;
     }
 
-    graph.getNodes().forEach((node) => {
+    graph.getNodes().forEach((node: any) => {
       const data = (node.getData?.() ?? null) as FlowGraphNodeData | null;
       if (!data) {
         return;
