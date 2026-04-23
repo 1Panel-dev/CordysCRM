@@ -12,9 +12,6 @@ import lombok.Data;
 @Table(name = "approval_add_sign_task")
 public class ApprovalAddSignTask extends BaseModel {
 
-	@Schema(description = "审批实例ID")
-	private String instanceId;
-
 	@Schema(description = "加签任务ID")
 	private String taskId;
 
