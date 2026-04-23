@@ -1,5 +1,6 @@
 package cn.cordys.crm.approval.dto;
 
+import cn.cordys.crm.system.domain.Attachment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,9 +36,18 @@ public class ApprovalRecordNode {
 	@Schema(description = "提交审批时间")
 	private Long approvalTime;
 
+	@Schema(description = "审批意见")
+	private String comment;
+
+	@Schema(description = "审批附件")
+	private List<Attachment> attachments;
+
+	@Schema(description = "是否退回节点")
+	private boolean isReturnNode;
+
 	@Schema(description = "是否加签节点")
 	private boolean isAddSignNode;
 
-	@Schema(description = "抄送的节点列表")
-	private List<ApprovalRecordNode> ccNodes;
+	@Schema(description = "抄送的节点集合")
+	private List<ApprovalCcNode> ccNodes;
 }

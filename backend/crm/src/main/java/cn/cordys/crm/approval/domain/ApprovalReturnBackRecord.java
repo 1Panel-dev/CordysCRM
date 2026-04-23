@@ -12,9 +12,6 @@ import lombok.Data;
 @Table(name = "approval_return_back_record")
 public class ApprovalReturnBackRecord extends BaseModel {
 
-	@Schema(description = "审批实例ID")
-	private String instanceId;
-
 	@Schema(description = "当前任务ID")
 	private String taskId;
 
