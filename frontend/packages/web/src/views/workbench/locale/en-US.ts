@@ -74,4 +74,9 @@ export default {
     'Creator: Counts all leads created by the specified user within the given time period, including those in the lead pool and those converted to customers.',
   'workbench.dataOverview.statisticalDimensionTip2':
     'Owner: Counts all leads managed by the specified owner within the given time period.',
+  'workbench.dataOverview.myTasks': 'My tasks',
+  'workbench.dataOverview.pendingApproval': 'Pending Approval',
+  'workbench.dataOverview.approvedByMe': 'Approved by Me',
+  'workbench.dataOverview.initiatedByMe': 'Initiated by Me',
+  'workbench.dataOverview.copiedToMe': 'Copied to Me',
 };

@@ -12,31 +12,43 @@ export const processStatusMap: Record<ProcessStatusType, StatusInfo> = {
     label: t('common.approved'),
     icon: 'iconicon_succeed_filled',
     color: 'var(--success-green)',
+    tagBgColor: 'var(--success-5)',
+    tagColor: 'var(--success-green)',
   },
   [ProcessStatusEnum.UNAPPROVED]: {
     label: t('common.rejected'),
     icon: 'iconicon_close_circle_filled',
     color: 'var(--error-red)',
+    tagBgColor: 'var(--error-5)',
+    tagColor: 'var(--error-red)',
   },
   [ProcessStatusEnum.APPROVING]: {
     label: t('common.reviewing'),
     icon: 'iconicon_wait',
     color: 'var(--info-blue)',
+    tagBgColor: 'var(--warning-5)',
+    tagColor: 'var(--warning-yellow)',
   },
   [ProcessStatusEnum.PENDING]: {
     label: t('common.pending'),
     icon: 'iconicon_minus_circle_filled1',
     color: 'var(--text-n4)',
+    tagBgColor: '',
+    tagColor: '',
   },
   [ProcessStatusEnum.REVOKED]: {
     label: t('common.revoked'),
     icon: 'iconicon_skip_planarity',
     color: 'var(--text-n4)',
+    tagBgColor: '',
+    tagColor: '',
   },
   [ProcessStatusEnum.NONE]: {
     label: '-',
     icon: '',
     color: '',
+    tagBgColor: '',
+    tagColor: '',
   },
 };
 

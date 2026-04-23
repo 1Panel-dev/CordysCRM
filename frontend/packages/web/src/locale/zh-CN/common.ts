@@ -359,4 +359,6 @@ export default {
   'common.rejected': '已驳回',
   'common.reviewing': '审批中',
   'common.approver': '审批人',
+  'common.reject': '驳回',
+  'common.approve': '同意',
 };
