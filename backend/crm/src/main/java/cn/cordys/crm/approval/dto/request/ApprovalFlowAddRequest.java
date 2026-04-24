@@ -19,7 +19,7 @@ public class ApprovalFlowAddRequest {
 
     @EnumValue(enumClass = ApprovalFormTypeEnum.class)
     @NotBlank(message = "表单类型不能为空")
-    @Schema(description = "表单类型：QUOTATION/CONTRACT/INVOICE/ORDER")
+    @Schema(description = "表单类型：quotation/contract/invoice/order")
     private String formType;
 
     @Schema(description = "执行时机列表：CREATE/EDIT")

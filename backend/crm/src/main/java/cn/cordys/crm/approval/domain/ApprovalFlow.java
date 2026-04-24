@@ -15,7 +15,7 @@ public class ApprovalFlow extends BaseModel {
     @Schema(description = "流程名称")
     private String name;
 
-    @Schema(description = "表单类型：QUOTATION/CONTRACT/INVOICE/ORDER")
+    @Schema(description = "表单类型：quotation/contract/invoice/order")
     private String formType;
 
     @Schema(description = "执行时机(JSON)")

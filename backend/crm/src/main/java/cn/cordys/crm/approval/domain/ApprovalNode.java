@@ -17,7 +17,7 @@ public class ApprovalNode {
     @Schema(description = "节点名称")
     private String name;
 
-    @Schema(description = "节点类型：START/APPROVER/CONDITION/ELSE/END")
+    @Schema(description = "节点类型：START/APPROVER/CONDITION/DEFAULT/END")
     private String nodeType;
 
     @Schema(description = "排序序号")

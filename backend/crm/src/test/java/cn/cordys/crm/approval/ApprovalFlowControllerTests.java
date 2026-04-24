@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval;
 
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalFlowBlob;
@@ -43,7 +44,7 @@ import static cn.cordys.crm.system.constants.SystemResultCode.APPROVAL_FLOW_DUPL
 class ApprovalFlowControllerTests extends BaseTest {
     private static final String BASE_PATH = "/approval-flow/";
     private static final String ENABLE = "enable/{0}";
-    private static final String STATUS_PERMISSIONS = "status-permissions/{0}";
+    private static final String STATUS_PERMISSION_SETTING = "status-permission/setting/{0}";
 
     /**
      * 记录创建的审批流
@@ -139,7 +140,7 @@ class ApprovalFlowControllerTests extends BaseTest {
     private ApprovalFlowAddRequest buildAddRequest(String name, ApprovalFormTypeEnum formType, boolean enable) {
         ApprovalFlowAddRequest request = new ApprovalFlowAddRequest();
         request.setName(name);
-        request.setFormType(formType.name());
+        request.setFormType(formType.getValue());
         request.setEnable(enable);
         request.setDescription("测试审批流描述");
         request.setSubmitterCanRevoke(true);
@@ -306,13 +307,13 @@ class ApprovalFlowControllerTests extends BaseTest {
         ApprovalFlowPageRequest formTypeFilterRequest = new ApprovalFlowPageRequest();
         formTypeFilterRequest.setCurrent(1);
         formTypeFilterRequest.setPageSize(10);
-        formTypeFilterRequest.setFormType(ApprovalFormTypeEnum.QUOTATION.name());
+        formTypeFilterRequest.setFormType(ApprovalFormTypeEnum.QUOTATION.getValue());
         MvcResult formTypeMvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, formTypeFilterRequest);
         List<ApprovalFlowListResponse> formTypePageResult = getPageResult(formTypeMvcResult, ApprovalFlowListResponse.class).getList();
 
         // 校验筛选结果
         Assertions.assertFalse(formTypePageResult.isEmpty());
-        formTypePageResult.forEach(flow -> Assertions.assertEquals(ApprovalFormTypeEnum.QUOTATION.name(), flow.getFormType()));
+        formTypePageResult.forEach(flow -> Assertions.assertEquals(ApprovalFormTypeEnum.QUOTATION.getValue(), flow.getFormType()));
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.APPROVAL_FLOW_READ, DEFAULT_PAGE, request);
@@ -441,7 +442,7 @@ class ApprovalFlowControllerTests extends BaseTest {
      */
     private ApprovalFlow getDisabledFlow() {
         ApprovalFlow criteria = new ApprovalFlow();
-        criteria.setFormType(ApprovalFormTypeEnum.INVOICE.name());
+        criteria.setFormType(ApprovalFormTypeEnum.INVOICE.getValue());
         criteria.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         criteria.setEnable(false);
         List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
@@ -450,24 +451,30 @@ class ApprovalFlowControllerTests extends BaseTest {
 
     @Test
     @Order(8)
-    void testGetStatusPermissions() throws Exception {
+    void testGetStatusPermissionSetting() throws Exception {
         // 请求成功 - 获取报价审批流的状态权限配置
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(STATUS_PERMISSIONS, ApprovalFormTypeEnum.QUOTATION.name());
-        List<StatusPermissionDTO> permissions = getResultDataArray(mvcResult, StatusPermissionDTO.class);
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(STATUS_PERMISSION_SETTING, ApprovalFormTypeEnum.QUOTATION.getValue());
+        StatusPermissionSettingResponse response = getResultData(mvcResult, StatusPermissionSettingResponse.class);
 
         // 校验返回数据不为空
-        Assertions.assertFalse(permissions.isEmpty());
+        Assertions.assertNotNull(response);
+        Assertions.assertNotNull(response.getPermissions());
+        Assertions.assertNotNull(response.getStatusPermissions());
+
+        // 校验权限列表不为空
+        Assertions.assertFalse(response.getPermissions().isEmpty());
 
         // 校验权限数据结构正确
-        permissions.forEach(p -> {
+        response.getPermissions().forEach(p -> {
+            Assertions.assertNotNull(p.getId());
+            Assertions.assertNotNull(p.getName());
+        });
+
+        // 校验状态权限数据结构正确
+        response.getStatusPermissions().forEach(p -> {
             Assertions.assertNotNull(p.getApprovalStatus());
             Assertions.assertNotNull(p.getPermission());
             Assertions.assertNotNull(p.getEnabled());
         });
-
-        // 校验权限 - 不存在的表单类型
-        MvcResult emptyMvcResult = this.requestGetWithOkAndReturn(STATUS_PERMISSIONS, "NON_EXISTENT_FORM");
-        List<StatusPermissionDTO> emptyPermissions = getResultDataArray(emptyMvcResult, StatusPermissionDTO.class);
-        Assertions.assertTrue(emptyPermissions.isEmpty());
     }
 }
