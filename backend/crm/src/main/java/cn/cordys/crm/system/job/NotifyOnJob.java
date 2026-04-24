@@ -32,7 +32,7 @@ public class NotifyOnJob {
         try {
             this.addNotification();
         } catch (Exception e) {
-            log.error("公告通知异常: ", e.getMessage());
+            log.error("公告通知异常: {}", e.getMessage());
         }
     }
 

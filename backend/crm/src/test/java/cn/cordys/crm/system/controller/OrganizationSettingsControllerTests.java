@@ -30,7 +30,7 @@ public class OrganizationSettingsControllerTests extends BaseTest {
     @Order(1)
     public void testAdd() throws Exception {
         EmailDTO emailDTO = new EmailDTO();
-        emailDTO.setHost("test.com");
+        emailDTO.setHost("smtp.163.com");
         emailDTO.setPort("25");
         emailDTO.setPassword("test");
         this.requestPost("/organization/settings/email/edit", emailDTO).andExpect(status().isOk());
@@ -44,7 +44,7 @@ public class OrganizationSettingsControllerTests extends BaseTest {
         OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
         Assertions.assertNotNull(organizationConfigDetail);
         EmailDTO emailDTO = new EmailDTO();
-        emailDTO.setHost("test.com");
+        emailDTO.setHost("smtp.163.com");
         emailDTO.setPort("25");
         emailDTO.setPassword("test");
         emailDTO.setAccount("sddd");
