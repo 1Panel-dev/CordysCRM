@@ -9,6 +9,7 @@ import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.ApproverConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -19,21 +20,25 @@ import java.util.List;
 @Schema(description = "审批人节点请求")
 public class ApprovalNodeApproverRequest extends ApprovalNodeRequest {
 
+    @NotBlank
     @EnumValue(enumClass = ApprovalTypeEnum.class)
     @Schema(description = "审批类型：MANUAL/AUTO_PASS/AUTO_REJECT")
-    private String approvalType;
+    private String approvalType = EmptyApproverActionEnum.AUTO_PASS.name();
 
+    @NotBlank
     @EnumValue(enumClass = MultiApproverModeEnum.class)
     @Schema(description = "多人审批方式：ALL/ANY/SEQUENTIAL")
-    private String multiApproverMode;
+    private String multiApproverMode = MultiApproverModeEnum.ALL.name();
 
+    @NotBlank
     @EnumValue(enumClass = EmptyApproverActionEnum.class)
     @Schema(description = "审批人为空时动作")
-    private String emptyApproverAction;
+    private String emptyApproverAction = EmptyApproverActionEnum.AUTO_PASS.name();
 
+    @NotBlank
     @EnumValue(enumClass = SameSubmitterActionEnum.class)
     @Schema(description = "审批人与提交人相同时动作")
-    private String sameSubmitterAction;
+    private String sameSubmitterAction = SameSubmitterActionEnum.SKIP.name();
 
     @Schema(description = "抄送人列表")
     private List<ApproverConfigDTO> cc;

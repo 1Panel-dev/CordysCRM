@@ -16,7 +16,6 @@ public class ApprovalFlowUpdateRequest {
     @Schema(description = "审批流ID")
     private String id;
 
-    @NotBlank
     @Schema(description = "流程名称")
     private String name;
 

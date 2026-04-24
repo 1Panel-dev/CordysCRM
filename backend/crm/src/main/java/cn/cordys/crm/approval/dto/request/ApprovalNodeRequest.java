@@ -2,8 +2,8 @@ package cn.cordys.crm.approval.dto.request;
 
 import cn.cordys.common.constants.EnumValue;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -11,10 +11,13 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "nodeType")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "nodeType", visible = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = ApprovalNodeApproverRequest.class, name = "APPROVER"),
-    @JsonSubTypes.Type(value = ApprovalNodeConditionRequest.class, name = "CONDITION")
+    @JsonSubTypes.Type(value = ApprovalNodeConditionRequest.class, name = "CONDITION"),
+    @JsonSubTypes.Type(value = ApprovalNodeRequest.class, name = "START"),
+    @JsonSubTypes.Type(value = ApprovalNodeRequest.class, name = "END"),
+    @JsonSubTypes.Type(value = ApprovalNodeRequest.class, name = "DEFAULT"),
 })
 public class ApprovalNodeRequest {
 

@@ -18,6 +18,7 @@ CREATE TABLE approval_flow(
   `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
   `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
   `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+  `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
   PRIMARY KEY (id)
 )  COMMENT = '审批流表'
 ENGINE = InnoDB
