@@ -43,6 +43,7 @@ import static cn.cordys.crm.system.constants.SystemResultCode.APPROVAL_FLOW_DUPL
 class ApprovalFlowControllerTests extends BaseTest {
     private static final String BASE_PATH = "/approval-flow/";
     private static final String ENABLE = "enable/{0}";
+    private static final String STATUS_PERMISSIONS = "status-permissions/{0}";
 
     /**
      * 记录创建的审批流
@@ -445,5 +446,28 @@ class ApprovalFlowControllerTests extends BaseTest {
         criteria.setEnable(false);
         List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
         return flows.isEmpty() ? null : flows.get(0);
+    }
+
+    @Test
+    @Order(8)
+    void testGetStatusPermissions() throws Exception {
+        // 请求成功 - 获取报价审批流的状态权限配置
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(STATUS_PERMISSIONS, ApprovalFormTypeEnum.QUOTATION.name());
+        List<StatusPermissionDTO> permissions = getResultDataArray(mvcResult, StatusPermissionDTO.class);
+
+        // 校验返回数据不为空
+        Assertions.assertFalse(permissions.isEmpty());
+
+        // 校验权限数据结构正确
+        permissions.forEach(p -> {
+            Assertions.assertNotNull(p.getApprovalStatus());
+            Assertions.assertNotNull(p.getPermission());
+            Assertions.assertNotNull(p.getEnabled());
+        });
+
+        // 校验权限 - 不存在的表单类型
+        MvcResult emptyMvcResult = this.requestGetWithOkAndReturn(STATUS_PERMISSIONS, "NON_EXISTENT_FORM");
+        List<StatusPermissionDTO> emptyPermissions = getResultDataArray(emptyMvcResult, StatusPermissionDTO.class);
+        Assertions.assertTrue(emptyPermissions.isEmpty());
     }
 }
