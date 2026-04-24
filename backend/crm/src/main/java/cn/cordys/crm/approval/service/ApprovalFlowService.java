@@ -66,6 +66,38 @@ public class ApprovalFlowService {
     private RoleService roleService;
 
     /**
+     * 根据表单类型获取审批流状态权限配置
+     */
+    public List<StatusPermissionDTO> getStatusPermissionsByFormType(String formType, String organizationId) {
+        // 查询该表单类型对应的审批流
+        ApprovalFlow criteria = new ApprovalFlow();
+        criteria.setFormType(formType);
+        criteria.setEnable(true);
+        criteria.setOrganizationId(organizationId);
+        List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
+        
+        if (CollectionUtils.isEmpty(flows)) {
+            return List.of();
+        }
+        
+        // 优先使用启用的审批流，如果没有则使用第一个
+        ApprovalFlow targetFlow = flows.stream()
+                .filter(ApprovalFlow::getEnable)
+                .findFirst()
+                .orElse(flows.get(0));
+        
+        // 查询大字段表获取状态权限配置
+        ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(targetFlow.getId());
+        if (blob == null || StringUtils.isBlank(blob.getStatusPermissions())) {
+            return List.of();
+        }
+        
+        // 解析状态权限配置
+        List<OptionDTO> permissions = getResourcePermissions(getPermissionsByFormType(formType));
+        return parseStatusPermissions(permissions, blob.getStatusPermissions());
+    }
+
+    /**
      * 分页查询审批流列表
      */
     public Pager<List<ApprovalFlowListResponse>> list(ApprovalFlowPageRequest request, String organizationId) {
