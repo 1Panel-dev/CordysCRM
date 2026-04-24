@@ -32,8 +32,17 @@
       </div>
     </template>
     <template v-if="visible">
-      <ApprovalFlowDesign v-if="activeTab === 'process'" v-model:basicConfig="form.basicConfig" />
-      <moreSetting v-if="activeTab === 'moreSetting'" v-model:moreConfig="form.moreConfig" />
+      <ApprovalFlowDesign
+        v-if="activeTab === 'process'"
+        ref="approvalFlowDesignRef"
+        v-model:basicConfig="form.basicConfig"
+      />
+      <moreSetting
+        v-if="activeTab === 'moreSetting'"
+        v-model:moreConfig="form.moreConfig"
+        :need-detail="!!props.sourceId"
+        :form-type="form.basicConfig.formType"
+      />
     </template>
   </CrmProcessDrawer>
 </template>
@@ -68,11 +77,16 @@
   const activeTab = ref('process');
 
   const form = ref({
-    basicConfig: defaultBasicForm,
-    moreConfig: defaultMoreConfig,
+    basicConfig: {
+      ...defaultBasicForm,
+    },
+    moreConfig: {
+      ...defaultMoreConfig,
+    },
   });
 
   const editingName = ref('');
+  const approvalFlowDesignRef = ref<InstanceType<typeof ApprovalFlowDesign> | null>(null);
 
   const tabList = [
     {
@@ -93,7 +107,16 @@
     activeTab.value = tabList[index + 1].name;
   }
 
-  function handleSave() {}
+  async function handleSave() {
+    approvalFlowDesignRef.value?.validate(() => {
+      try {
+        // todo
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    });
+  }
 
   function handleEditName(value: string, done?: () => void) {
     form.value.basicConfig.name = value;

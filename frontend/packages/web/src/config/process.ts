@@ -1,7 +1,7 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { ProcessStatusType } from '@lib/shared/models/system/process';
+import { BasicFormParams, MoreSettingsParams, ProcessStatusType } from '@lib/shared/models/system/process';
 
 import { StatusInfo } from '@/components/business/crm-approval-status/index.vue';
 
@@ -15,13 +15,6 @@ export const processStatusMap: Record<ProcessStatusType, StatusInfo> = {
     tagBgColor: 'var(--success-5)',
     tagColor: 'var(--success-green)',
   },
-  [ProcessStatusEnum.UNAPPROVED]: {
-    label: t('common.rejected'),
-    icon: 'iconicon_close_circle_filled',
-    color: 'var(--error-red)',
-    tagBgColor: 'var(--error-5)',
-    tagColor: 'var(--error-red)',
-  },
   [ProcessStatusEnum.APPROVING]: {
     label: t('common.reviewing'),
     icon: 'iconicon_wait',
@@ -29,12 +22,12 @@ export const processStatusMap: Record<ProcessStatusType, StatusInfo> = {
     tagBgColor: 'var(--warning-5)',
     tagColor: 'var(--warning-yellow)',
   },
-  [ProcessStatusEnum.PENDING]: {
-    label: t('common.pending'),
-    icon: 'iconicon_minus_circle_filled1',
-    color: 'var(--text-n4)',
-    tagBgColor: '',
-    tagColor: '',
+  [ProcessStatusEnum.UNAPPROVED]: {
+    label: t('common.rejected'),
+    icon: 'iconicon_close_circle_filled',
+    color: 'var(--error-red)',
+    tagBgColor: 'var(--error-5)',
+    tagColor: 'var(--error-red)',
   },
   [ProcessStatusEnum.REVOKED]: {
     label: t('common.revoked'),
@@ -43,6 +36,14 @@ export const processStatusMap: Record<ProcessStatusType, StatusInfo> = {
     tagBgColor: '',
     tagColor: '',
   },
+  [ProcessStatusEnum.PENDING]: {
+    label: t('common.pending'),
+    icon: 'iconicon_minus_circle_filled1',
+    color: 'var(--text-n4)',
+    tagBgColor: '',
+    tagColor: '',
+  },
+
   [ProcessStatusEnum.NONE]: {
     label: '-',
     icon: '',
@@ -57,16 +58,38 @@ export const processStatusOptions = Object.entries(processStatusMap).map(([key, 
   value: key,
 }));
 
-export const defaultBasicForm = {
-  businessType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+export const defaultBasicForm: BasicFormParams = {
+  formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
   name: '',
-  executionTiming: ['CREATE'],
+  executeTiming: ['CREATE'],
   description: '',
 };
 
-export const defaultMoreConfig = {
-  submitterAuthority: true,
-  approverAuthority: [],
-  autoApproval: 'firstNodeApproval',
-  approvalOpinion: false,
+export const defaultMoreConfig: MoreSettingsParams = {
+  submitterCanRevoke: true,
+  allowBatchProcess: false,
+  allowWithdraw: false,
+  allowAddSign: false,
+  duplicateApproverRule: 'FIRST_ONLY',
+  requireComment: false,
+  statusPermissions: [],
 };
+
+export const businessTypeOptions = [
+  {
+    label: t('crmFormCreate.drawer.quotation'),
+    value: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+  },
+  {
+    label: t('module.contract'),
+    value: FormDesignKeyEnum.CONTRACT,
+  },
+  {
+    label: t('module.invoiceApproval'),
+    value: FormDesignKeyEnum.INVOICE,
+  },
+  {
+    label: t('module.order'),
+    value: FormDesignKeyEnum.ORDER,
+  },
+];

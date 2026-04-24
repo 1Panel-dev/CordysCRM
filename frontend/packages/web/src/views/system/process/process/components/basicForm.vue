@@ -1,9 +1,9 @@
 <template>
   <div class="process-basic-setting p-[16px]">
     <n-form ref="formRef" class="process-basic-setting-form" :model="form" label-placement="top">
-      <n-form-item require-mark-placement="left" path="businessType" :label="t('process.process.basic.businessType')">
+      <n-form-item require-mark-placement="left" path="formType" :label="t('process.process.basic.businessType')">
         <n-select
-          v-model:value="form.businessType"
+          v-model:value="form.formType"
           :options="businessTypeOptions"
           :placeholder="t('common.pleaseSelect')"
         />
@@ -18,10 +18,10 @@
       </n-form-item>
       <n-form-item
         require-mark-placement="right"
-        path="executionTiming"
+        path="executeTiming"
         :label="t('process.process.basic.executionTiming')"
       >
-        <n-checkbox-group v-model:value="form.executionTiming" class="mt-[4px]">
+        <n-checkbox-group v-model:value="form.executeTiming" class="mt-[4px]">
           <div class="flex flex-col gap-[8px]">
             <n-checkbox v-for="item of executionTimingList" :key="item.value" :value="item.value">
               <div class="flex items-center gap-[8px]">
@@ -48,37 +48,21 @@
   import { ref } from 'vue';
   import { NCheckbox, NCheckboxGroup, NForm, NFormItem, NInput, NSelect, useMessage } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { BasicFormParams } from '@lib/shared/models/system/process';
 
-  import { defaultBasicForm } from '@/config/process';
+  import { businessTypeOptions, defaultBasicForm } from '@/config/process';
+
+  import type { FormInst } from 'naive-ui';
 
   const { t } = useI18n();
-  // todo ts type
-  const form = defineModel<Record<string, any>>('basicConfig', {
+  const form = defineModel<BasicFormParams>('basicConfig', {
     default: () => ({
       ...defaultBasicForm,
     }),
   });
 
-  const businessTypeOptions = [
-    {
-      label: t('crmFormCreate.drawer.quotation'),
-      value: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
-    },
-    {
-      label: t('module.contract'),
-      value: FormDesignKeyEnum.CONTRACT,
-    },
-    {
-      label: t('module.invoiceApproval'),
-      value: FormDesignKeyEnum.INVOICE,
-    },
-    {
-      label: t('module.order'),
-      formKey: FormDesignKeyEnum.ORDER,
-    },
-  ];
+  const formRef = ref<FormInst | null>(null);
 
   const executionTimingList = [
     {
@@ -86,10 +70,22 @@
       label: t('common.create'),
     },
     {
-      value: 'UPDATE',
+      value: 'EDIT',
       label: t('common.edit'),
     },
   ];
+
+  function validate(cb?: () => void) {
+    formRef.value?.validate((error) => {
+      if (!error) {
+        cb?.();
+      }
+    });
+  }
+
+  defineExpose({
+    validate,
+  });
 </script>
 
 <style lang="less">
