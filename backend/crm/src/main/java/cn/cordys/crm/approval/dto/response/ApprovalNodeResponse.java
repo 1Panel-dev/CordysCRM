@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "nodeType")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "nodeType", visible = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = ApprovalNodeApproverResponse.class, name = "APPROVER"),
     @JsonSubTypes.Type(value = ApprovalNodeConditionResponse.class, name = "CONDITION"),

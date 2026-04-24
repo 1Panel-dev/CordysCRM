@@ -1,7 +1,10 @@
 package cn.cordys.crm.approval.domain;
 
+import cn.cordys.crm.approval.constants.EmptyApproverActionEnum;
+import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
@@ -14,15 +17,19 @@ public class ApprovalNodeApprover {
     @Schema(description = "流程ID")
     private String flowId;
 
+    @NotBlank
     @Schema(description = "审批类型：MANUAL/AUTO_PASS/AUTO_REJECT")
-    private String approvalType;
+    private String approvalType = EmptyApproverActionEnum.AUTO_PASS.name();
 
+    @NotBlank
     @Schema(description = "多人审批方式：ALL/ANY/SEQUENTIAL")
-    private String multiApproverMode;
+    private String multiApproverMode = MultiApproverModeEnum.ALL.name();
 
+    @NotBlank
     @Schema(description = "审批人为空时动作")
-    private String emptyApproverAction;
+    private String emptyApproverAction = EmptyApproverActionEnum.AUTO_PASS.name();
 
+    @NotBlank
     @Schema(description = "审批人与提交人相同时动作")
     private String sameSubmitterAction;
 
@@ -33,10 +40,10 @@ public class ApprovalNodeApprover {
     private String approver;
 
     @Schema(description = "审批通过后配置（JSON格式）")
-    private String passUpdateConfig;
+    private String passPostConfig;
 
     @Schema(description = "审批驳回后配置（JSON格式）")
-    private String rejectUpdateConfig;
+    private String rejectPostConfig;
 
     @Schema(description = "字段权限配置（JSON格式）")
     private String fieldPermissions;

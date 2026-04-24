@@ -357,11 +357,11 @@ public class ApprovalFlowService {
         if (StringUtils.isNotBlank(approverNode.getApprover())) {
             response.setApprover(JSON.parseArray(approverNode.getApprover(), ApproverConfigDTO.class));
         }
-        if (StringUtils.isNotBlank(approverNode.getPassUpdateConfig())) {
-            response.setPassPostConfig(JSON.parseObject(approverNode.getPassUpdateConfig(), ApprovalPostConfigDTO.class));
+        if (StringUtils.isNotBlank(approverNode.getPassPostConfig())) {
+            response.setPassPostConfig(JSON.parseObject(approverNode.getPassPostConfig(), ApprovalPostConfigDTO.class));
         }
-        if (StringUtils.isNotBlank(approverNode.getRejectUpdateConfig())) {
-            response.setRejectPostConfig(JSON.parseObject(approverNode.getRejectUpdateConfig(), ApprovalPostConfigDTO.class));
+        if (StringUtils.isNotBlank(approverNode.getRejectPostConfig())) {
+            response.setRejectPostConfig(JSON.parseObject(approverNode.getRejectPostConfig(), ApprovalPostConfigDTO.class));
         }
         if (StringUtils.isNotBlank(approverNode.getFieldPermissions())) {
             response.setFieldPermissions(JSON.parseArray(approverNode.getFieldPermissions(), FieldPermissionDTO.class));
@@ -431,25 +431,52 @@ public class ApprovalFlowService {
         }
     }
 
+    /**
+     * 批量保存节点配置
+     * 先递归收集所有节点信息，然后批量插入，提高性能
+     */
     private void saveNodes(List<ApprovalNodeRequest> nodes, String flowId, String userId) {
+        // 用于收集节点、连接和配置信息
+        List<ApprovalNode> allNodes = new ArrayList<>();
+        List<ApprovalNodeLink> allLinks = new ArrayList<>();
+        List<ApprovalNodeApprover> allApproverNodes = new ArrayList<>();
+        List<ApprovalNodeCondition> allConditionNodes = new ArrayList<>();
+
+        // 递归收集所有节点信息
         for (ApprovalNodeRequest nodeRequest : nodes) {
-            saveNode(nodeRequest, flowId, userId, null);
+            collectNodeInfo(nodeRequest, flowId, userId, null, allNodes, allLinks, allApproverNodes, allConditionNodes);
+        }
+
+        // 批量插入
+        if (CollectionUtils.isNotEmpty(allNodes)) {
+            approvalNodeMapper.batchInsert(allNodes);
+        }
+        if (CollectionUtils.isNotEmpty(allLinks)) {
+            approvalNodeLinkMapper.batchInsert(allLinks);
+        }
+        if (CollectionUtils.isNotEmpty(allApproverNodes)) {
+            approvalNodeApproverMapper.batchInsert(allApproverNodes);
+        }
+        if (CollectionUtils.isNotEmpty(allConditionNodes)) {
+            approvalNodeConditionMapper.batchInsert(allConditionNodes);
         }
     }
 
     /**
-     * 递归保存节点及其子节点
+     * 递归收集节点信息到列表中
      */
-    private void saveNode(ApprovalNodeRequest nodeRequest, String flowId, String userId, String parentId) {
+    private void collectNodeInfo(ApprovalNodeRequest nodeRequest, String flowId, String userId, String parentId,
+                                  List<ApprovalNode> allNodes, List<ApprovalNodeLink> allLinks,
+                                  List<ApprovalNodeApprover> allApproverNodes, List<ApprovalNodeCondition> allConditionNodes) {
         String nodeId = StringUtils.isNotBlank(nodeRequest.getId()) ? nodeRequest.getId() : IDGenerator.nextStr();
 
-        // 保存节点基本信息
+        // 收集节点基本信息
         ApprovalNode node = BeanUtils.copyBean(new ApprovalNode(), nodeRequest);
         node.setId(nodeId);
         node.setFlowId(flowId);
-        approvalNodeMapper.insert(node);
+        allNodes.add(node);
 
-        // 保存节点连接（如果有父节点）
+        // 收集节点连接信息（如果有父节点）
         if (StringUtils.isNotBlank(parentId)) {
             ApprovalNodeLink link = new ApprovalNodeLink();
             link.setId(IDGenerator.nextStr());
@@ -457,10 +484,10 @@ public class ApprovalFlowService {
             link.setFromNodeId(parentId);
             link.setToNodeId(nodeId);
             link.setSort(nodeRequest.getSort());
-            approvalNodeLinkMapper.insert(link);
+            allLinks.add(link);
         }
 
-        // 保存审批人节点配置
+        // 收集审批人节点配置
         if (nodeRequest instanceof ApprovalNodeApproverRequest) {
             ApprovalNodeApproverRequest approverRequest = (ApprovalNodeApproverRequest) nodeRequest;
             ApprovalNodeApprover approverNode = BeanUtils.copyBean(new ApprovalNodeApprover(), approverRequest,
@@ -469,12 +496,12 @@ public class ApprovalFlowService {
             approverNode.setFlowId(flowId);
             approverNode.setCc(JSON.toJSONString(approverRequest.getCc()));
             approverNode.setApprover(JSON.toJSONString(approverRequest.getApprover()));
-            approverNode.setPassUpdateConfig(JSON.toJSONString(approverRequest.getPassPostConfig()));
-            approverNode.setRejectUpdateConfig(JSON.toJSONString(approverRequest.getRejectPostConfig()));
+            approverNode.setPassPostConfig(JSON.toJSONString(approverRequest.getPassPostConfig()));
+            approverNode.setRejectPostConfig(JSON.toJSONString(approverRequest.getRejectPostConfig()));
             approverNode.setFieldPermissions(JSON.toJSONString(approverRequest.getFieldPermissions()));
-            approvalNodeApproverMapper.insert(approverNode);
+            allApproverNodes.add(approverNode);
         }
-        // 保存条件节点配置
+        // 收集条件节点配置
         else if (nodeRequest instanceof ApprovalNodeConditionRequest) {
             ApprovalNodeConditionRequest conditionRequest = (ApprovalNodeConditionRequest) nodeRequest;
             ApprovalNodeCondition conditionNode = BeanUtils.copyBean(new ApprovalNodeCondition(), conditionRequest,
@@ -482,13 +509,13 @@ public class ApprovalFlowService {
             conditionNode.setId(nodeId);
             conditionNode.setFlowId(flowId);
             conditionNode.setConditionConfig(JSON.toJSONString(conditionRequest.getConditionConfig()));
-            approvalNodeConditionMapper.insert(conditionNode);
+            allConditionNodes.add(conditionNode);
         }
 
-        // 递归保存子节点
+        // 递归收集子节点
         if (CollectionUtils.isNotEmpty(nodeRequest.getChildren())) {
             for (ApprovalNodeRequest childRequest : nodeRequest.getChildren()) {
-                saveNode(childRequest, flowId, userId, nodeId);
+                collectNodeInfo(childRequest, flowId, userId, nodeId, allNodes, allLinks, allApproverNodes, allConditionNodes);
             }
         }
     }
