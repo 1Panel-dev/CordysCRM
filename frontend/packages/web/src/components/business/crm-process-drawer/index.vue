@@ -2,6 +2,7 @@
   <CrmDrawer
     v-model:show="visible"
     width="75%"
+    :min-width="800"
     :footer="false"
     :closable="false"
     :close-on-esc="false"

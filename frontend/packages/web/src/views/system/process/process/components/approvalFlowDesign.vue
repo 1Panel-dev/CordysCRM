@@ -26,7 +26,7 @@
       </template>
       <template #rightContent="{ selection }">
         <div> {{ selection }} </div>
-        <basicForm v-model:basicConfig="basicConfig" />
+        <basicForm ref="basicFormRef" v-model:basicConfig="basicConfig" />
       </template>
     </CrmFlow>
   </div>
@@ -35,7 +35,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { BasicFormParams } from '@lib/shared/models/system/process';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import {
@@ -71,10 +71,19 @@
     });
   }
 
-  const basicConfig = defineModel<Record<string, any>>('basicConfig', {
+  const basicConfig = defineModel<BasicFormParams>('basicConfig', {
     default: () => ({
       ...defaultBasicForm,
     }),
+  });
+  const basicFormRef = ref<InstanceType<typeof basicForm> | null>(null);
+
+  function validate(cb?: () => void) {
+    basicFormRef.value?.validate(cb);
+  }
+
+  defineExpose({
+    validate,
   });
 
   function createDefaultFlow(): FlowSchema {

@@ -29,7 +29,7 @@
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
-  import type { AnnouncementItemDetail } from '@lib/shared/models/system/message';
+  import { ApprovalProcessItem } from '@lib/shared/models/system/process';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
@@ -42,7 +42,8 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import addProcessDrawer from './components/addProcessDrawer.vue';
 
-  import { getAnnouncementList } from '@/api/modules';
+  import { deleteApprovalProcess, getApprovalProcessList, toggleApprovalProcess } from '@/api/modules';
+  import { businessTypeOptions } from '@/config/process';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -62,7 +63,7 @@
     showProcessDrawer.value = true;
   }
 
-  async function deleteHandler(row: any, done?: () => void) {
+  async function deleteHandler(row: ApprovalProcessItem) {
     const enabled = row.enable;
     const content = enabled ? t('process.process.deleteEnabledContent') : t('process.process.deleteContent');
     const positiveText = enabled ? t('common.gotIt') : t('common.confirm');
@@ -73,13 +74,12 @@
       positiveText,
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
-        if (!enabled) {
-          deleteHandler(row, done);
-        }
         try {
-          // todo
-          tableRefreshId.value += 1;
-          Message.success(t('common.deleteSuccess'));
+          if (!enabled) {
+            await deleteApprovalProcess(row.id);
+            tableRefreshId.value += 1;
+            Message.success(t('common.deleteSuccess'));
+          }
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -88,7 +88,7 @@
     });
   }
 
-  function handleActionSelect(row: any, actionKey: string) {
+  function handleActionSelect(row: ApprovalProcessItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
         activeSourceId.value = row.id;
@@ -102,12 +102,11 @@
     }
   }
 
-  async function handleToggleStatus(row: any) {
-    const enable = !row.enable;
+  async function handleToggleStatus(row: ApprovalProcessItem) {
     try {
-      // todo
+      await toggleApprovalProcess(row.id, !row.enable);
+      Message.success(t(!row.enable ? 'common.enableSuccess' : 'common.closeSuccess'));
       tableRefreshId.value += 1;
-      Message.success(t(enable ? 'common.enableSuccess' : 'common.closeSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -138,7 +137,7 @@
     },
     {
       title: 'ID',
-      key: 'id',
+      key: 'number',
       width: 200,
       sortOrder: false,
       sorter: true,
@@ -150,10 +149,10 @@
     },
     {
       title: t('process.process.processType'),
-      key: 'type',
+      key: 'formType',
       width: 200,
-      ellipsis: {
-        tooltip: true,
+      render: (row: any) => {
+        return h(CrmNameTooltip, { name: businessTypeOptions.find((e) => e.value === row.formType)?.label ?? '' });
       },
     },
     {
@@ -165,7 +164,7 @@
         tooltip: true,
       },
       width: 200,
-      render: (row: any) => {
+      render: (row: ApprovalProcessItem) => {
         return h(
           CrmEditableText,
           {
@@ -203,7 +202,7 @@
     },
     {
       title: t('common.status'),
-      key: 'status',
+      key: 'enable',
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -212,16 +211,16 @@
       filter: true,
       filterOptions: [
         {
-          value: '1',
+          value: true,
           label: t('common.enable'),
         },
         {
-          value: '0',
+          value: false,
           label: t('common.disable'),
         },
       ],
       width: 200,
-      render: (row: any) =>
+      render: (row: ApprovalProcessItem) =>
         h(
           NTooltip,
           {
@@ -246,7 +245,7 @@
     },
     {
       title: t('process.executionTiming'),
-      key: 'executionTiming',
+      key: 'executeTiming',
       width: 200,
       ellipsis: {
         tooltip: true,
@@ -258,7 +257,7 @@
       sortOrder: false,
       sorter: true,
       width: 200,
-      render: (row: any) => {
+      render: (row: ApprovalProcessItem) => {
         return h(CrmNameTooltip, { text: row.createUserName });
       },
     },
@@ -278,7 +277,7 @@
       width: 200,
       sortOrder: false,
       sorter: true,
-      render: (row: AnnouncementItemDetail) => {
+      render: (row: ApprovalProcessItem) => {
         return h(CrmNameTooltip, { text: row.updateUserName });
       },
     },
@@ -296,7 +295,7 @@
       key: 'operation',
       width: 110,
       fixed: 'right',
-      render: (row: AnnouncementItemDetail) =>
+      render: (row: ApprovalProcessItem) =>
         h(CrmOperationButton, {
           groupList: [
             {
@@ -314,8 +313,8 @@
         }),
     },
   ];
-  // todo xinxinwu
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getAnnouncementList, {
+
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getApprovalProcessList, {
     tableKey: TableKeyEnum.PROCESS,
     showSetting: true,
     columns,
