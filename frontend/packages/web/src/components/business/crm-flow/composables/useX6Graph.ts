@@ -5,6 +5,7 @@ import { Graph, Selection } from '@antv/x6';
 
 interface CreateGraphOptions {
   container: HTMLElement;
+  resizeTarget?: HTMLElement;
 }
 
 const MIN_SCALE = 0.5;
@@ -80,7 +81,8 @@ export default function useX6Graph() {
       if (!graph) {
         return;
       }
-      const { clientWidth, clientHeight } = options.container;
+      const resizeSource = options.resizeTarget ?? options.container;
+      const { clientWidth, clientHeight } = resizeSource;
       if (!clientWidth || !clientHeight) {
         return;
       }
@@ -92,7 +94,7 @@ export default function useX6Graph() {
       resizeObserver = new ResizeObserver(() => {
         resizeGraph();
       });
-      resizeObserver.observe(options.container);
+      resizeObserver.observe(options.resizeTarget ?? options.container);
     }
 
     const controller: FlowGraphController = {

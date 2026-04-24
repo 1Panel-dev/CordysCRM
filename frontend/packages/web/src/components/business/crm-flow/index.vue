@@ -17,7 +17,7 @@
       </FlowCanvas>
     </div>
 
-    <div v-if="hasRightContentSlot" class="crm-flow__sidebar">
+    <div v-if="showRightContent" class="crm-flow__sidebar">
       <slot name="rightContent" :selection="selection" />
     </div>
   </div>
@@ -36,10 +36,14 @@
   import useNodeSelection from './composables/useNodeSelection';
   import { deleteConditionBranch, deleteNodeById } from './dsl/actions';
   import type { BranchClickPayload, NodeClickPayload } from './graph/types';
-  import type { FlowSchema } from './types';
+  import type { FlowSchema, NodeSelectionState } from './types';
 
   const emit = defineEmits<{
     (event: 'addConditionBranch', groupId: string): void;
+  }>();
+
+  const props = defineProps<{
+    rightContentVisible?: (selection: NodeSelectionState) => boolean;
   }>();
 
   const model = defineModel<FlowSchema>('model', {
@@ -56,6 +60,14 @@
   const { openModal } = useModal();
 
   const syncingFromProps = ref(false);
+
+  const showRightContent = computed(() => {
+    if (!hasRightContentSlot.value) {
+      return false;
+    }
+
+    return props.rightContentVisible?.(selection.value);
+  });
 
   watch(
     model,
@@ -122,6 +134,7 @@
 
   defineExpose({
     flow,
+    selectNode,
   });
 </script>
 

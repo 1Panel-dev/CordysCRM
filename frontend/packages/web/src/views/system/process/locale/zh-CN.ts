@@ -32,4 +32,12 @@ export default {
   'process.process.basic.businessType': '业务类型',
   'process.process.basic.executionTiming': '执行时机',
   'process.process.basic.description': '描述信息',
+  'process.process.flow.approver': '审批人',
+  'process.process.flow.selectApprover': '选择审批人',
+  'process.process.flow.manualApproval': '人工审批',
+  'process.process.flow.autoApprove': '自动通过',
+  'process.process.flow.autoReject': '自动拒绝',
+  'process.process.flow.conditionRule': '条件规则',
+  'process.process.flow.approvalType': '审批类型',
+  'process.process.flow.nodeName': '节点名称',
 };
