@@ -7,6 +7,7 @@ import lombok.Data;
 public class EmailDTO {
     //SMTP 主机
     @Schema(description = "SMTP 主机")
+    @SafeHost(message = "{ip_address.not_allowed}")
     private String host;
     //SMTP 端口
     @Schema(description = "SMTP 端口")
