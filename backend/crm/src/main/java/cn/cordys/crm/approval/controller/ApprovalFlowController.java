@@ -6,9 +6,9 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse;
+import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowAddRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowPageRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowUpdateRequest;
@@ -81,9 +81,9 @@ public class ApprovalFlowController {
         approvalFlowService.updateEnable(id, enable, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-    @GetMapping("/status-permissions/{formType}")
+    @GetMapping("/status-permission/setting/{formType}")
     @Operation(summary = "根据表单类型获取审批流状态权限配置")
-    public List<StatusPermissionDTO> getStatusPermissions(@PathVariable("formType") String formType) {
+    public StatusPermissionSettingResponse getStatusPermissionSetting(@PathVariable("formType") String formType) {
         return approvalFlowService.getStatusPermissionsByFormType(formType, OrganizationContext.getOrganizationId());
     }
 }

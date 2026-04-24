@@ -29,7 +29,7 @@ public class ApprovalNodeRequest {
 
     @EnumValue(enumClass = ApprovalNodeTypeEnum.class)
     @NotBlank(message = "节点类型不能为空")
-    @Schema(description = "节点类型：START/APPROVER/CONDITION/ELSE/END")
+    @Schema(description = "节点类型：START/APPROVER/CONDITION/DEFAULT/END")
     private String nodeType;
 
     @Schema(description = "排序序号")

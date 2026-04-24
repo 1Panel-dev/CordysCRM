@@ -68,33 +68,41 @@ public class ApprovalFlowService {
     /**
      * 根据表单类型获取审批流状态权限配置
      */
-    public List<StatusPermissionDTO> getStatusPermissionsByFormType(String formType, String organizationId) {
+    public StatusPermissionSettingResponse getStatusPermissionsByFormType(String formType, String organizationId) {
+        StatusPermissionSettingResponse response = new StatusPermissionSettingResponse();
+        
+        // 获取权限列表
+        List<OptionDTO> permissions = getResourcePermissions(getPermissionsByFormType(formType));
+        response.setPermissions(permissions);
+        
         // 查询该表单类型对应的审批流
         ApprovalFlow criteria = new ApprovalFlow();
         criteria.setFormType(formType);
         criteria.setEnable(true);
         criteria.setOrganizationId(organizationId);
         List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
-        
+
         if (CollectionUtils.isEmpty(flows)) {
-            return List.of();
+            response.setStatusPermissions(List.of());
+            return response;
         }
-        
+
         // 优先使用启用的审批流，如果没有则使用第一个
         ApprovalFlow targetFlow = flows.stream()
                 .filter(ApprovalFlow::getEnable)
                 .findFirst()
                 .orElse(flows.get(0));
-        
+
         // 查询大字段表获取状态权限配置
         ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(targetFlow.getId());
         if (blob == null || StringUtils.isBlank(blob.getStatusPermissions())) {
-            return List.of();
+            response.setStatusPermissions(List.of());
+            return response;
         }
-        
+
         // 解析状态权限配置
-        List<OptionDTO> permissions = getResourcePermissions(getPermissionsByFormType(formType));
-        return parseStatusPermissions(permissions, blob.getStatusPermissions());
+        response.setStatusPermissions(parseStatusPermissions(permissions, blob.getStatusPermissions()));
+        return response;
     }
 
     /**
@@ -602,7 +610,7 @@ public class ApprovalFlowService {
 
     private List<Permission> getPermissionsByFormType(String formType) {
         List<PermissionDefinitionItem> permissionSetting = roleService.getPermissionSetting();
-        String permissionId = ApprovalFormTypeEnum.valueOf(formType).getPermissionId();
+        String permissionId = ApprovalFormTypeEnum.getByValue(formType).getPermissionId();
         List<Permission> permissions = findPermissionsByPermissionId(permissionSetting, permissionId);
         if (permissions == null) {
             return List.of();
@@ -923,6 +931,9 @@ public class ApprovalFlowService {
      * 根据权限ID查找对应的权限列表
      */
     private List<Permission> findPermissionsByPermissionId(List<PermissionDefinitionItem> permissionSetting, String permissionId) {
+        if (StringUtils.isBlank(permissionId) || CollectionUtils.isEmpty(permissionSetting)) {
+            return List.of();
+        }
         for (PermissionDefinitionItem module : permissionSetting) {
             if (module.getChildren() != null) {
                 for (PermissionDefinitionItem resource : module.getChildren()) {
