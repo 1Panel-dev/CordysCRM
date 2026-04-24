@@ -35,4 +35,12 @@ export default {
   'process.process.basic.businessType': 'Business Type',
   'process.process.basic.executionTiming': 'Execution timing',
   'process.process.basic.description': 'Description',
+  'process.process.flow.approver': 'Approver',
+  'process.process.flow.selectApprover': 'Select approver',
+  'process.process.flow.manualApproval': 'Manual approval',
+  'process.process.flow.autoApprove': 'Auto approve',
+  'process.process.flow.autoReject': 'Auto reject',
+  'process.process.flow.conditionRule': 'Condition rule',
+  'process.process.flow.approvalType': 'Approval type',
+  'process.process.flow.nodeName': 'Node name',
 };

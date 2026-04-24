@@ -1,5 +1,6 @@
 /** 图布局：负责所有图形元素的位置和连线关系 */
 import type { FlowNode, FlowSchema } from '../types';
+import { clearRenameHandlers, registerBranchRenameHandler, registerMainNodeRenameHandler } from './renameRegistry';
 import type { FlowGraphLayoutEdge, FlowGraphLayoutNode, FlowGraphLayoutResult } from './types';
 
 export interface FlowLayoutOptions {
@@ -57,6 +58,9 @@ function createMainNodeLayout(
   y: number,
   options: FlowLayoutOptions
 ): FlowGraphLayoutNode {
+  registerMainNodeRenameHandler(node.id, (value: string) => {
+    node.name = value;
+  });
   return {
     id: node.id,
     shape: shapeByNodeType(node.type),
@@ -186,6 +190,9 @@ function createConditionBranchNodeLayout(
   branchStartY: number,
   options: FlowLayoutOptions
 ): FlowGraphLayoutNode {
+  registerBranchRenameHandler(groupId, branch.id, (value: string) => {
+    branch.name = value;
+  });
   return {
     id: branchNodeId,
     shape: 'flow-condition-branch-node',
@@ -459,6 +466,8 @@ export default function buildFlowLayout(
   flow: FlowSchema,
   options: Partial<FlowLayoutOptions> = {}
 ): FlowGraphLayoutResult {
+  clearRenameHandlers(); // 在每次重新布局前调用，避免旧 key 泄漏到新图数据中
+
   // 允许业务场景覆写默认布局参数
   const mergedOptions: FlowLayoutOptions = {
     ...DEFAULT_FLOW_LAYOUT_OPTIONS,

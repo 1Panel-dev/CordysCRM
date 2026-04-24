@@ -1,6 +1,6 @@
 <template>
   <div class="process-basic-setting p-[16px]">
-    <n-form ref="formRef" class="process-basic-setting-form" :model="form" label-placement="top">
+    <n-form ref="formRef" class="process-setting-form" :model="form" label-placement="top">
       <n-form-item require-mark-placement="left" path="formType" :label="t('process.process.basic.businessType')">
         <n-select
           v-model:value="form.formType"
@@ -45,13 +45,12 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import { NCheckbox, NCheckboxGroup, NForm, NFormItem, NInput, NSelect, useMessage } from 'naive-ui';
+  import { NCheckbox, NCheckboxGroup, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { BasicFormParams } from '@lib/shared/models/system/process';
 
-  import { businessTypeOptions, defaultBasicForm } from '@/config/process';
+  import { businessTypeOptions, defaultBasicForm, executionTimingList } from '@/config/process';
 
   import type { FormInst } from 'naive-ui';
 
@@ -63,17 +62,6 @@
   });
 
   const formRef = ref<FormInst | null>(null);
-
-  const executionTimingList = [
-    {
-      value: 'CREATE',
-      label: t('common.create'),
-    },
-    {
-      value: 'EDIT',
-      label: t('common.edit'),
-    },
-  ];
 
   function validate(cb?: () => void) {
     formRef.value?.validate((error) => {
@@ -87,12 +75,3 @@
     validate,
   });
 </script>
-
-<style lang="less">
-  .process-basic-setting-form {
-    .n-form-item-label {
-      font-weight: 600;
-      color: var(--text-n1);
-    }
-  }
-</style>

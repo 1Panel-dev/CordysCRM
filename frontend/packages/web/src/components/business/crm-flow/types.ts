@@ -1,12 +1,9 @@
 export type FlowNodeType = 'start' | 'action' | 'condition-group' | 'end';
 
-export type FlowActionType = 'approval'; // TODO lmy
+export type FlowActionType = 'approval';
 
 export interface FlowSchema {
-  id: string;
-  name: string;
   nodes: FlowNode[];
-  // TODO lmy
 }
 
 export interface BaseFlowNode {

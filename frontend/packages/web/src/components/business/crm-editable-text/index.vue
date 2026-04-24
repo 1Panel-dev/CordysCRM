@@ -3,6 +3,7 @@
     v-if="isEditing"
     ref="inputRef"
     v-model:value="inputValue"
+    class="crm-editable-text-input-wrap"
     :maxlength="255"
     clearable
     @update-value="handleInput"
@@ -12,12 +13,12 @@
   <div
     v-else
     class="crm-editable-text-view flex min-w-0 max-w-full items-center gap-[8px]"
-    :class="{ 'cursor-pointer': props.clickToEdit }"
-    @click="props.clickToEdit ? enableEditMode() : undefined"
+    :class="{ 'cursor-pointer': props.clickToEdit && hasEditPermission }"
+    @click="props.clickToEdit && hasEditPermission ? enableEditMode() : undefined"
   >
     <slot>{{ value }} </slot>
     <CrmIcon
-      v-permission="props.permission"
+      v-if="hasEditPermission"
       class="table-row-edit cursor-pointer text-[var(--text-n4)]"
       type="iconicon_edit"
       :size="16"
@@ -27,9 +28,14 @@
 </template>
 
 <script setup lang="ts">
+  import { computed } from 'vue';
   import { NInput, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     value: string;
@@ -45,11 +51,20 @@
   }>();
 
   const { t } = useI18n();
-  const Message = useMessage();
+
+  // 在 X6 节点环境里很可能拿不到 n-message-provider，useMessage() 会直接抛错，导致节点组件初始化失败
+  const messageApi = (() => {
+    try {
+      return useMessage();
+    } catch (error) {
+      return null;
+    }
+  })();
 
   const isEditing = ref(false);
   const inputRef = ref<InstanceType<typeof NInput> | null>(null);
   const inputValue = ref<string>('');
+  const hasEditPermission = computed(() => hasAnyPermission(props.permission));
 
   function enableEditMode() {
     inputValue.value = props.value;
@@ -61,7 +76,13 @@
 
   function confirmEdit() {
     if (!inputValue.value.trim().length) {
-      Message.warning(props.emptyTextTip ?? t('common.value.notNull'));
+      const message = props.emptyTextTip ?? t('common.value.notNull');
+      if (messageApi) {
+        messageApi.warning(message);
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(message);
+      }
       return;
     }
     emit('handleEdit', inputValue.value, () => {

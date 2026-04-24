@@ -65,6 +65,17 @@ export const defaultBasicForm: BasicFormParams = {
   description: '',
 };
 
+export const executionTimingList = [
+  {
+    value: 'CREATE',
+    label: t('common.create'),
+  },
+  {
+    value: 'EDIT',
+    label: t('common.edit'),
+  },
+];
+
 export const defaultMoreConfig: MoreSettingsParams = {
   submitterCanRevoke: true,
   allowBatchProcess: false,
@@ -93,3 +104,41 @@ export const businessTypeOptions = [
     value: FormDesignKeyEnum.ORDER,
   },
 ];
+
+export type ApprovalType = 'manual' | 'auto-approve' | 'auto-reject';
+
+export const approvalTypeOptions: Array<{ label: string; value: ApprovalType }> = [
+  {
+    label: t('process.process.flow.manualApproval'),
+    value: 'manual',
+  },
+  {
+    label: t('process.process.flow.autoApprove'),
+    value: 'auto-approve',
+  },
+  {
+    label: t('process.process.flow.autoReject'),
+    value: 'auto-reject',
+  },
+];
+
+export function resolveApprovalActionNodeDefaults(approvalType: ApprovalType) {
+  if (approvalType === 'auto-approve') {
+    return {
+      name: t('process.process.flow.approver'),
+      description: t('process.process.flow.autoApprove'),
+    };
+  }
+
+  if (approvalType === 'auto-reject') {
+    return {
+      name: t('process.process.flow.approver'),
+      description: t('process.process.flow.autoReject'),
+    };
+  }
+
+  return {
+    name: t('process.process.flow.approver'),
+    description: t('process.process.flow.selectApprover'),
+  };
+}

@@ -260,6 +260,7 @@
 
     graphController.value = createGraph({
       container: canvasRef.value,
+      resizeTarget: flowCanvasRef.value ?? canvasRef.value,
     });
 
     const graph = graphController.value.getGraph();

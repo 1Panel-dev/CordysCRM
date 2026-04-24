@@ -8,7 +8,29 @@
         >
           <CrmIcon :type="props.icon.type" :size="16" class="text-[var(--text-n10)]" />
         </div>
-        <span class="base-flow-node__title">{{ name }}</span>
+        <CrmEditableText
+          v-if="props.titleEditable"
+          size="small"
+          :value="name"
+          :permission="props.editPermission"
+          click-to-edit
+          :emptyTextTip="t('common.notNull', { value: t('process.process.flow.nodeName') })"
+          @handle-edit="handleTitleEdit"
+        >
+          <n-tooltip trigger="hover" :delay="300" :disabled="!name">
+            <template #trigger>
+              <div
+                class="base-flow-node__title one-line-text"
+                :class="`${props.titleEditable ? 'title-editable' : ''}`"
+              >
+                {{ name ?? '-' }}
+              </div>
+            </template>
+            {{ name ?? '-' }}
+          </n-tooltip>
+        </CrmEditableText>
+
+        <span v-else class="base-flow-node__title">{{ name }}</span>
       </div>
       <div class="base-flow-node__header-extra">
         <n-tooltip v-if="deletable" :delay="300" trigger="hover">
@@ -36,6 +58,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
 
   defineOptions({
     name: 'BaseFlowNode',
@@ -49,6 +72,8 @@
       selected?: boolean;
       deletable?: boolean;
       showContent?: boolean;
+      titleEditable?: boolean;
+      editPermission?: string[];
       icon: {
         type: string;
         backgroundColor: string;
@@ -60,17 +85,24 @@
       selected: false,
       deletable: false,
       showContent: true,
+      titleEditable: false,
+      editPermission: () => [],
     }
   );
 
   const emit = defineEmits<{
     (event: 'delete'): void;
+    (event: 'titleEdit', value: string, done?: () => void): void;
   }>();
 
   const { t } = useI18n();
 
   function handleDelete() {
     emit('delete');
+  }
+
+  function handleTitleEdit(value: string, done?: () => void) {
+    emit('titleEdit', value, done);
   }
 </script>
 
@@ -97,16 +129,45 @@
     align-items: center;
     gap: 8px;
   }
-  .base-flow-node__header-extra,
-  .base-flow-node__title-wrap {
+  .base-flow-node__header-extra {
     display: flex;
     align-items: center;
     gap: 8px;
   }
+  .base-flow-node__title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    flex: 1;
+    :deep(.crm-editable-text-view),
+    :deep(.crm-editable-text-input-wrap) {
+      flex: 1;
+    }
+    :deep(.crm-editable-text-input-wrap .n-input__input-el) {
+      height: 24px;
+      line-height: 24px;
+    }
+    :deep(.table-row-edit) {
+      @apply invisible;
+    }
+    &:hover {
+      :deep(.table-row-edit) {
+        color: var(--primary-8);
+        @apply visible;
+      }
+    }
+  }
   .base-flow-node__title {
+    height: 24px;
     font-size: 16px;
     font-weight: 500;
     color: var(--text-n1);
+    &.title-editable {
+      border-bottom: 2px solid var(--text-n6);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
   .base-flow-node__content {
     padding: 5px 12px;

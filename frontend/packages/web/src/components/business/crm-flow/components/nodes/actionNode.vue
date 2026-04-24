@@ -1,4 +1,5 @@
 <template>
+  <!-- TODO lmy edit-permission -->
   <BaseFlowNode
     :name="nodeData.name ?? ''"
     :description="nodeData.description"
@@ -6,8 +7,11 @@
     :selected="Boolean(nodeData.selected)"
     node-type="action"
     :icon="iconConfig"
+    title-editable
+    :edit-permission="['']"
     deletable
     @delete="handleDelete"
+    @title-edit="handleTitleEdit"
   />
 </template>
 
@@ -17,6 +21,7 @@
   import BaseFlowNode from './baseFlowNode.vue';
 
   import useX6NodeData from '../../composables/useX6NodeData';
+  import { renameFlowByGraphData } from '../../graph/renameRegistry';
   import type { Node } from '@antv/x6';
 
   defineOptions({
@@ -44,6 +49,8 @@
   }>();
 
   const { nodeData } = useX6NodeData<{
+    kind: 'action';
+    nodeId?: string;
     name?: string;
     description?: string;
     actionType?: string;
@@ -58,5 +65,15 @@
 
   function handleDelete() {
     emit('delete');
+  }
+
+  function handleTitleEdit(value: string, done?: () => void) {
+    const data = nodeData.value;
+    renameFlowByGraphData(data, value);
+    props.node?.setData?.({
+      ...data,
+      name: value,
+    });
+    done?.();
   }
 </script>
