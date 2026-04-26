@@ -142,6 +142,8 @@ public class OpportunityService {
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private OpportunityStageHistoryService opportunityStageHistoryService;
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
                                                                DeptDataPermissionDTO deptDataPermission, Boolean source) {
@@ -397,10 +399,10 @@ public class OpportunityService {
         Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
             opportunityMapper.deleteByPrimaryKey(opportunity.getId());
             opportunityFieldService.deleteByResourceId(opportunity.getId());
+            opportunityStageHistoryService.deleteByOpportunityId(opportunity.getId());
         }, () -> {
             throw new GenericException("opportunity_not_found");
         });
-        // 添加日志上下文
         OperationLogContext.setResourceName(opportunity.getName());
 
         commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
@@ -414,7 +416,6 @@ public class OpportunityService {
      */
     public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
         List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        // 过滤出成功阶段
         StageConfigResponse successConfig = stageConfigList.stream().filter(config ->
                 Strings.CI.equals(config.getType(), OpportunityStageType.END.name()) && Strings.CI.equals(config.getRate(), "100")
         ).findFirst().get();
@@ -428,16 +429,32 @@ public class OpportunityService {
         }
         List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
 
-        long nextPos = getNextPos(orgId, stageConfigList.getFirst().getId());
+        String firstStageId = stageConfigList.getFirst().getId();
+        Map<String, String> oldStageMap = opportunityList.stream()
+                .collect(Collectors.toMap(Opportunity::getId, Opportunity::getStage));
+
+        long nextPos = getNextPos(orgId, firstStageId);
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
         for (int i = 0; i < ids.size(); i++) {
-            batchUpdateMapper.transfer(request.getOwner(), userId, ids.get(i), System.currentTimeMillis(), nextPos + i, stageConfigList.getFirst().getId());
+            batchUpdateMapper.transfer(request.getOwner(), userId, ids.get(i), System.currentTimeMillis(), nextPos + i, firstStageId);
         }
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
 
-        // 记录日志
+        opportunityList.forEach(opportunity -> {
+            String oldStage = oldStageMap.get(opportunity.getId());
+            if (!Strings.CI.equals(oldStage, firstStageId)) {
+                opportunityStageHistoryService.add(
+                        opportunity.getId(),
+                        oldStage,
+                        firstStageId,
+                        userId,
+                        null
+                );
+            }
+        });
+
         List<LogDTO> logs = new ArrayList<>();
         opportunityList.forEach(opportunity -> {
             Customer originCustomer = new Customer();
@@ -479,6 +496,7 @@ public class OpportunityService {
         }
         opportunityMapper.deleteByIds(toDoIds);
         opportunityFieldService.deleteByResourceIds(toDoIds);
+        opportunityStageHistoryService.deleteByOpportunityIds(toDoIds);
         List<LogDTO> logs = new ArrayList<>();
         opportunityList.forEach(opportunity -> {
             LogDTO logDTO = new LogDTO(opportunity.getOrganizationId(), opportunity.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY_INDEX, opportunity.getName());
@@ -487,7 +505,6 @@ public class OpportunityService {
         });
         logService.batchAdd(logs);
 
-        // 消息通知
         opportunityList.forEach(opportunity ->
                 commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
                         NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
@@ -633,12 +650,17 @@ public class OpportunityService {
      *
      * @param request
      * @param orgId
+     * @param operatorId
      */
     @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
-    public void updateStage(OpportunityStageRequest request, String orgId) {
+    public void updateStage(OpportunityStageRequest request, String orgId, String operatorId) {
         final Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         if (oldOpportunity == null) {
             throw new GenericException(Translator.get("opportunity_not_found"));
+        }
+
+        if (Strings.CI.equals(oldOpportunity.getStage(), request.getStage())) {
+            return;
         }
 
         final List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
@@ -675,6 +697,14 @@ public class OpportunityService {
         newOpportunity.setPos(nextPos);
 
         opportunityMapper.update(newOpportunity);
+
+        opportunityStageHistoryService.add(
+                request.getId(),
+                oldOpportunity.getStage(),
+                request.getStage(),
+                operatorId,
+                isFailStage ? request.getFailureReason() : null
+        );
 
         final Map<String, String> originalVal = new HashMap<>(1);
         originalVal.put("stage", stageMap.get(oldOpportunity.getStage()));
@@ -840,14 +870,15 @@ public class OpportunityService {
      * @param userId
      */
     public void sort(OpportunitySortRequest request, String userId) {
-        //拖拽节点
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getDragNodeId());
         if (opportunity == null) {
             throw new GenericException(Translator.get("opportunity_not_found"));
         }
+
+        boolean stageChanged = !Strings.CI.equals(opportunity.getStage(), request.getStage());
+
         Long pos = DEFAULT_POS;
         if (StringUtils.isNotBlank(request.getDropNodeId())) {
-            //放入节点
             Opportunity dropNode = opportunityMapper.selectByPrimaryKey(request.getDropNodeId());
             pos = dropNode.getPos();
             if (request.getDropPosition() == -1) {
@@ -866,6 +897,16 @@ public class OpportunityService {
         dragOpportunity.setUpdateUser(userId);
         dragOpportunity.setUpdateTime(System.currentTimeMillis());
         opportunityMapper.updateById(dragOpportunity);
+
+        if (stageChanged) {
+            opportunityStageHistoryService.add(
+                    request.getDragNodeId(),
+                    opportunity.getStage(),
+                    request.getStage(),
+                    userId,
+                    null
+            );
+        }
     }
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {

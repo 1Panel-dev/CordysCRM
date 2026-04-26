@@ -80,3 +80,6 @@ export const DownloadQuotationUrl = '/opportunity/quotation/download';
 export const PreCheckOptImportUrl = '/opportunity/import/pre-check';
 export const DownloadOptTemplateUrl = '/opportunity/template/download';
 export const ImportOpportunityUrl = '/opportunity/import';
+
+// 商机阶段变更历史
+export const GetOptStageHistoryListUrl = '/opportunity/stage/history/list';

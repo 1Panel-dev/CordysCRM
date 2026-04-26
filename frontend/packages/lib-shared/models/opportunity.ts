@@ -188,3 +188,17 @@ export interface BatchOperationResult {
   skip?: number;
   errorMessages?: string;
 }
+
+export interface OpportunityStageHistoryItem {
+  id: string;
+  opportunityId: string;
+  fromStage: string;
+  fromStageName: string;
+  toStage: string;
+  toStageName: string;
+  changeTime: number;
+  operator: string;
+  operatorName: string;
+  failureReasonId?: string;
+  failureReasonName?: string;
+}

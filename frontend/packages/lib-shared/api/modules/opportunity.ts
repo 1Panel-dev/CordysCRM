@@ -73,6 +73,7 @@ import {
   UpdateQuotationUrl,
   UpdateQuotationViewUrl,
   VoidQuotationUrl,
+  GetOptStageHistoryListUrl,
 } from '@lib/shared/api/requrls/opportunity';
 import type {
   ChartResponseDataItem,
@@ -108,6 +109,7 @@ import type {
   OpportunityItem,
   OpportunityPageQueryParams,
   OpportunityStageConfig,
+  OpportunityStageHistoryItem,
   QuotationItem,
   QuotationQueryParams,
   SaveOpportunityParams,
@@ -280,6 +282,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 获取商机阶段配置
   function getOpportunityStageConfig() {
     return CDR.get<OpportunityStageConfig>({ url: GetOpportunityStageConfigUrl }, { ignoreCancelToken: true });
+  }
+
+  // 获取商机阶段变更历史列表
+  function getOptStageHistoryList(opportunityId: string) {
+    return CDR.get<OpportunityStageHistoryItem[]>({ url: `${GetOptStageHistoryListUrl}/${opportunityId}` });
   }
 
   // 删除商机阶段
@@ -518,6 +525,7 @@ export default function useProductApi(CDR: CordysAxios) {
     sortOpportunityStage,
     addOpportunityStage,
     getOpportunityStageConfig,
+    getOptStageHistoryList,
     deleteOpportunityStage,
     generateOpportunityChart,
     getQuotationTab,

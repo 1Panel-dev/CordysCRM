@@ -77,6 +77,60 @@
           :source-name="titleName"
         />
       </CrmCard>
+      <CrmCard v-else-if="activeTab === 'stageHistory'" no-content-bottom-padding hide-footer>
+        <div class="p-[16px] h-full overflow-auto">
+          <n-timeline v-if="stageHistoryList.length" :horizontal="false">
+            <n-timeline-item
+              v-for="item in stageHistoryList"
+              :key="item.id"
+              :type="getTimelineType(item)"
+            >
+              <template #dot>
+                <div
+                  :class="[
+                    'w-[16px] h-[16px] rounded-full flex items-center justify-center text-white text-xs',
+                    getTimelineBgClass(item),
+                  ]"
+                >
+                  <n-icon size="12">
+                    <component :is="getTimelineIcon(item)" />
+                  </n-icon>
+                </div>
+              </template>
+              <div class="mb-[8px]">
+                <div class="flex items-center gap-[8px] mb-[4px]">
+                  <span class="text-[14px] font-medium text-[var(--text-n1)]">
+                    {{ item.fromStageName || '-' }}
+                  </span>
+                  <n-icon size="14" color="var(--text-n4)">
+                    <ArrowRightOutlined />
+                  </n-icon>
+                  <span
+                    :class="[
+                      'text-[14px] font-medium',
+                      getStageTextClass(item),
+                    ]"
+                  >
+                    {{ item.toStageName || '-' }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-[8px] text-[12px] text-[var(--text-n4)]">
+                  <span>{{ item.operatorName || '-' }}</span>
+                  <span>{{ dayjs(item.changeTime).format('YYYY-MM-DD HH:mm:ss') }}</span>
+                </div>
+                <div
+                  v-if="item.failureReasonName"
+                  class="mt-[8px] p-[8px] bg-[var(--text-n9)] rounded text-[12px] text-[var(--text-n2)]"
+                >
+                  <span class="text-[var(--text-n4)]">{{ t('common.fail') }}：</span>
+                  {{ item.failureReasonName }}
+                </div>
+              </div>
+            </n-timeline-item>
+          </n-timeline>
+          <n-empty v-else :description="t('common.noData')" />
+        </div>
+      </CrmCard>
     </template>
 
     <template #transferPopContent>
@@ -86,13 +140,15 @@
 </template>
 
 <script setup lang="ts">
-  import { useMessage } from 'naive-ui';
+  import { NEmpty, NIcon, NTimeline, NTimelineItem, useMessage } from 'naive-ui';
+  import { ArrowRightOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined } from '@vicons/antd';
+  import dayjs from 'dayjs';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
-  import type { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
+  import type { OpportunityItem, OpportunityStageConfig, OpportunityStageHistoryItem } from '@lib/shared/models/opportunity';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -106,7 +162,7 @@
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
   import quotationTable from './quotation/quotationTable.vue';
 
-  import { deleteOpt, getOpportunityStageConfig, transferOpt, updateOptStage } from '@/api/modules';
+  import { deleteOpt, getOpportunityStageConfig, getOptStageHistoryList, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
@@ -139,12 +195,27 @@
   });
 
   const stageConfig = ref<OpportunityStageConfig>();
+  const stageHistoryList = ref<OpportunityStageHistoryItem[]>([]);
+
   async function initStageConfig() {
     try {
       stageConfig.value = await getOpportunityStageConfig();
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.log(error);
+    }
+  }
+
+  async function loadStageHistory() {
+    if (!sourceId.value) {
+      stageHistoryList.value = [];
+      return;
+    }
+    try {
+      const res = await getOptStageHistoryList(sourceId.value);
+      stageHistoryList.value = res || [];
+    } catch (error) {
+      console.log(error);
+      stageHistoryList.value = [];
     }
   }
 
@@ -160,6 +231,66 @@
   const isFail = computed(
     () => currentStatus.value === stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id
   );
+
+  function getTimelineType(item: OpportunityStageHistoryItem): 'success' | 'error' | 'default' {
+    const endStage = stageConfig.value?.stageConfigList.find(
+      (s) => s.type === 'END' && s.id === item.toStage
+    );
+    if (endStage) {
+      if (endStage.rate === '100') {
+        return 'success';
+      }
+      if (endStage.rate === '0') {
+        return 'error';
+      }
+    }
+    return 'default';
+  }
+
+  function getTimelineBgClass(item: OpportunityStageHistoryItem): string {
+    const endStage = stageConfig.value?.stageConfigList.find(
+      (s) => s.type === 'END' && s.id === item.toStage
+    );
+    if (endStage) {
+      if (endStage.rate === '100') {
+        return 'bg-[var(--success-6)]';
+      }
+      if (endStage.rate === '0') {
+        return 'bg-[var(--error-6)]';
+      }
+    }
+    return 'bg-[var(--primary-6)]';
+  }
+
+  function getStageTextClass(item: OpportunityStageHistoryItem): string {
+    const endStage = stageConfig.value?.stageConfigList.find(
+      (s) => s.type === 'END' && s.id === item.toStage
+    );
+    if (endStage) {
+      if (endStage.rate === '100') {
+        return 'text-[var(--success-6)]';
+      }
+      if (endStage.rate === '0') {
+        return 'text-[var(--error-6)]';
+      }
+    }
+    return 'text-[var(--primary-6)]';
+  }
+
+  function getTimelineIcon(item: OpportunityStageHistoryItem) {
+    const endStage = stageConfig.value?.stageConfigList.find(
+      (s) => s.type === 'END' && s.id === item.toStage
+    );
+    if (endStage) {
+      if (endStage.rate === '100') {
+        return CheckCircleOutlined;
+      }
+      if (endStage.rate === '0') {
+        return CloseCircleOutlined;
+      }
+    }
+    return SyncOutlined;
+  }
 
   const transferLoading = ref(false);
 
@@ -243,6 +374,11 @@
       enable: true,
       permission: ['OPPORTUNITY_QUOTATION:READ'],
     },
+    {
+      name: 'stageHistory',
+      tab: '阶段变更历史',
+      enable: true,
+    },
   ];
 
   const titleName = ref('');
@@ -313,6 +449,7 @@
   function refreshList() {
     refreshKey.value += 1;
     emit('refresh');
+    loadStageHistory();
   }
 
   const formViewSize = ref<FormViewSize>('large');
@@ -324,9 +461,7 @@
   ) {
     if (detail) {
       const { customerName, customerId, name, stage, failureReason } = detail;
-      // 商机阶段
       currentStatus.value = stage;
-      // 用于回显跟进类型、商机、商机对应客户
       titleName.value = _sourceName || '';
       subTitleName.value = customerName;
       lastFailureReason.value = failureReason;
@@ -345,6 +480,7 @@
     (val) => {
       if (val) {
         initStageConfig();
+        loadStageHistory();
       }
     }
   );
