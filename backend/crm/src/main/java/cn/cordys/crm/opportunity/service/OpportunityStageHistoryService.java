@@ -64,16 +64,21 @@ public class OpportunityStageHistoryService {
             }
         }
 
-        Map<String, String> operatorNameMap = baseService.getUserNameMap(operatorIds);
+        Map<String, String> operatorNameMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        operatorNameMap.putAll(baseService.getUserNameMap(operatorIds));
 
         List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        Map<String, String> stageNameMap = stageConfigList.stream()
-                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+        Map<String, String> stageNameMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (StageConfigResponse config : stageConfigList) {
+            stageNameMap.put(config.getId(), config.getName());
+        }
 
-        Map<String, String> reasonNameMap = new HashMap<>();
+        Map<String, String> reasonNameMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         if (!reasonIds.isEmpty()) {
             List<Dict> dictList = dictMapper.selectByIds(new ArrayList<>(reasonIds));
-            reasonNameMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+            for (Dict dict : dictList) {
+                reasonNameMap.put(dict.getId(), dict.getName());
+            }
         }
 
         return historyList
@@ -81,14 +86,21 @@ public class OpportunityStageHistoryService {
                 .map(item -> {
                     OpportunityStageHistoryResponse response =
                             BeanUtils.copyBean(new OpportunityStageHistoryResponse(), item);
-                    response.setOperatorName(operatorNameMap.get(item.getOperator()));
-                    response.setFromStageName(stageNameMap.get(item.getFromStage()));
-                    response.setToStageName(stageNameMap.get(item.getToStage()));
+                    response.setOperatorName(getNameIgnoreCase(operatorNameMap, item.getOperator()));
+                    response.setFromStageName(getNameIgnoreCase(stageNameMap, item.getFromStage()));
+                    response.setToStageName(getNameIgnoreCase(stageNameMap, item.getToStage()));
                     if (StringUtils.isNotBlank(item.getFailureReasonId())) {
-                        response.setFailureReasonName(reasonNameMap.get(item.getFailureReasonId()));
+                        response.setFailureReasonName(getNameIgnoreCase(reasonNameMap, item.getFailureReasonId()));
                     }
                     return response;
                 }).toList();
+    }
+
+    private String getNameIgnoreCase(Map<String, String> nameMap, String key) {
+        if (StringUtils.isBlank(key)) {
+            return null;
+        }
+        return nameMap.get(key);
     }
 
     public void add(String opportunityId, String fromStage, String toStage, String operatorId, String failureReasonId) {
