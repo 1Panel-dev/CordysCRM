@@ -66,12 +66,20 @@ public class CustomerOwnerHistoryService {
             reasonIds.add(owner.getReasonId());
         }
 
-        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(new ArrayList<>(ownerIds), orgId);
+        Map<String, UserDeptDTO> userDeptMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, UserDeptDTO> originUserDeptMap = baseService.getUserDeptMapByUserIds(new ArrayList<>(ownerIds), orgId);
+        userDeptMap.putAll(originUserDeptMap);
 
-        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+        Map<String, String> userNameMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        userNameMap.putAll(baseService.getUserNameMap(userIds));
 
-        List<Dict> dictList = dictMapper.selectByIds(new ArrayList<>(reasonIds));
-        Map<String, String> dictNameMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+        Map<String, String> dictNameMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (!reasonIds.isEmpty()) {
+            List<Dict> dictList = dictMapper.selectByIds(new ArrayList<>(reasonIds));
+            for (Dict dict : dictList) {
+                dictNameMap.put(dict.getId(), dict.getName());
+            }
+        }
 
         LambdaQueryWrapper<DictConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
         configLambdaQueryWrapper.eq(DictConfig::getModule, DictModule.CUSTOMER_POOL_RS.name()).eq(DictConfig::getOrganizationId, orgId);
@@ -94,10 +102,18 @@ public class CustomerOwnerHistoryService {
                     } else {
                         customerOwner.setReasonName(dictNameMap.get(customerOwner.getReasonId()));
                     }
-                    customerOwner.setOwnerName(userNameMap.get(customerOwner.getOwner()));
-                    customerOwner.setOperatorName(userNameMap.get(customerOwner.getOperator()));
+                    customerOwner.setOwnerName(getUserNameOrDefault(userNameMap, customerOwner.getOwner()));
+                    customerOwner.setOperatorName(getUserNameOrDefault(userNameMap, customerOwner.getOperator()));
                     return customerOwner;
                 }).toList();
+    }
+
+    private String getUserNameOrDefault(Map<String, String> userNameMap, String userId) {
+        if (StringUtils.isBlank(userId)) {
+            return "未知用户";
+        }
+        String name = userNameMap.get(userId);
+        return StringUtils.isNotBlank(name) ? name : "未知用户";
     }
 
     public CustomerOwner add(Customer customer, String userId, Boolean addReason) {

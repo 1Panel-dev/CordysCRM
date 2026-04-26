@@ -70,12 +70,20 @@ public class ClueOwnerHistoryService {
         List<DictConfig> configs = dictConfigMapper.selectListByLambda(configLambdaQueryWrapper);
         boolean showReason = CollectionUtils.isNotEmpty(configs) && configs.getFirst().getEnabled();
 
-        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(new ArrayList<>(ownerIds), orgId);
+        Map<String, UserDeptDTO> userDeptMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, UserDeptDTO> originUserDeptMap = baseService.getUserDeptMapByUserIds(new ArrayList<>(ownerIds), orgId);
+        userDeptMap.putAll(originUserDeptMap);
 
-        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+        Map<String, String> userNameMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        userNameMap.putAll(baseService.getUserNameMap(userIds));
 
-        List<Dict> dictList = dictMapper.selectByIds(new ArrayList<>(reasonIds));
-        Map<String, String> dictNameMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+        Map<String, String> dictNameMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (!reasonIds.isEmpty()) {
+            List<Dict> dictList = dictMapper.selectByIds(new ArrayList<>(reasonIds));
+            for (Dict dict : dictList) {
+                dictNameMap.put(dict.getId(), dict.getName());
+            }
+        }
 
         return owners
                 .stream()
@@ -93,10 +101,18 @@ public class ClueOwnerHistoryService {
                     } else {
                         clueOwner.setReasonName(dictNameMap.get(clueOwner.getReasonId()));
                     }
-                    clueOwner.setOwnerName(userNameMap.get(clueOwner.getOwner()));
-                    clueOwner.setOperatorName(userNameMap.get(clueOwner.getOperator()));
+                    clueOwner.setOwnerName(getUserNameOrDefault(userNameMap, clueOwner.getOwner()));
+                    clueOwner.setOperatorName(getUserNameOrDefault(userNameMap, clueOwner.getOperator()));
                     return clueOwner;
                 }).toList();
+    }
+
+    private String getUserNameOrDefault(Map<String, String> userNameMap, String userId) {
+        if (StringUtils.isBlank(userId)) {
+            return "未知用户";
+        }
+        String name = userNameMap.get(userId);
+        return StringUtils.isNotBlank(name) ? name : "未知用户";
     }
 
     public ClueOwner add(Clue clue, String userId, Boolean addReason) {

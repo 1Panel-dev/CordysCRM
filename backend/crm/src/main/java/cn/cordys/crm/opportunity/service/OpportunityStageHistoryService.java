@@ -86,9 +86,9 @@ public class OpportunityStageHistoryService {
                 .map(item -> {
                     OpportunityStageHistoryResponse response =
                             BeanUtils.copyBean(new OpportunityStageHistoryResponse(), item);
-                    response.setOperatorName(getNameIgnoreCase(operatorNameMap, item.getOperator()));
-                    response.setFromStageName(getNameIgnoreCase(stageNameMap, item.getFromStage()));
-                    response.setToStageName(getNameIgnoreCase(stageNameMap, item.getToStage()));
+                    response.setOperatorName(getOperatorNameOrDefault(operatorNameMap, item.getOperator()));
+                    response.setFromStageName(getStageNameOrDefault(stageNameMap, item.getFromStage()));
+                    response.setToStageName(getStageNameOrDefault(stageNameMap, item.getToStage()));
                     if (StringUtils.isNotBlank(item.getFailureReasonId())) {
                         response.setFailureReasonName(getNameIgnoreCase(reasonNameMap, item.getFailureReasonId()));
                     }
@@ -101,6 +101,22 @@ public class OpportunityStageHistoryService {
             return null;
         }
         return nameMap.get(key);
+    }
+
+    private String getStageNameOrDefault(Map<String, String> stageNameMap, String stageId) {
+        if (StringUtils.isBlank(stageId)) {
+            return "未知阶段";
+        }
+        String name = stageNameMap.get(stageId);
+        return StringUtils.isNotBlank(name) ? name : "未知阶段";
+    }
+
+    private String getOperatorNameOrDefault(Map<String, String> operatorNameMap, String operatorId) {
+        if (StringUtils.isBlank(operatorId)) {
+            return "未知用户";
+        }
+        String name = operatorNameMap.get(operatorId);
+        return StringUtils.isNotBlank(name) ? name : "未知用户";
     }
 
     public void add(String opportunityId, String fromStage, String toStage, String operatorId, String failureReasonId) {
