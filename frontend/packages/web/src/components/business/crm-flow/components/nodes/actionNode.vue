@@ -7,7 +7,7 @@
     :selected="Boolean(nodeData.selected)"
     node-type="action"
     :icon="iconConfig"
-    title-editable
+    :title-editable="Boolean(!nodeData.isPanMode)"
     :edit-permission="['']"
     deletable
     @delete="handleDelete"
@@ -56,6 +56,7 @@
     actionType?: string;
     showContent?: boolean;
     selected?: boolean;
+    isPanMode?: boolean;
   }>(toRef(props, 'node'));
 
   const iconConfig = computed<ActionIconConfig>(() => {

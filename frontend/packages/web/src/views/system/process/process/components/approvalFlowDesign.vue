@@ -5,10 +5,11 @@
       v-model:model="flowSchema"
       :right-content-visible="isRightContentVisible"
       @add-condition-branch="handleAddConditionBranch"
+      @branch-click="handleBranchClick"
     >
       <template #insertNodeContent="{ anchorNodeId, anchorBranch }">
         <div class="base-box-shadow min-w-[366px] rounded-[6px] bg-[var(--text-n10)] p-[16px]">
-          <div v-for="group in addNodeGroups" :key="group.key" class="mb-[16px] last:mb-0">
+          <div v-for="group in approvalFlowAddNodeGroups" :key="group.key" class="mb-[16px] last:mb-0">
             <div class="mb-[8px] font-semibold">{{ group.title }}</div>
             <div class="flex gap-[8px]">
               <div
@@ -41,61 +42,44 @@
         />
       </template>
     </CrmFlow>
+    <setConditionDrawer
+      v-model:show="setConditionDrawerVisible"
+      :branch="activeConditionBranch"
+      @confirm="handleConditionConfirm"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
-  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { BasicFormParams } from '@lib/shared/models/system/process';
 
+  import type { FilterForm } from '@/components/pure/crm-advance-filter/type';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import {
-    addConditionBranch,
-    insertNodeAfterNode,
-    insertNodeToConditionBranch,
-  } from '@/components/business/crm-flow/dsl/actions';
-  import {
-    createActionNode,
-    createConditionBranch,
-    createConditionGroupNode,
-    createElseBranch,
-    createEndNode,
-    createStartNode,
-  } from '@/components/business/crm-flow/dsl/factory';
-  import { findBranchLocation, findNodeLocation } from '@/components/business/crm-flow/dsl/queries';
+  import { findBranchLocation } from '@/components/business/crm-flow/dsl/queries';
+  import type { BranchClickPayload } from '@/components/business/crm-flow/graph/types';
   import CrmFlow from '@/components/business/crm-flow/index.vue';
-  import type { ConditionBranch, FlowNode, FlowSchema, NodeSelectionState } from '@/components/business/crm-flow/types';
+  import type { ConditionBranch, FlowSchema, NodeSelectionState } from '@/components/business/crm-flow/types';
   import approvalActionNodeForm from './approvalActionNodeForm.vue';
   import basicForm from './basicForm.vue';
+  import setConditionDrawer from './setConditionDrawer.vue';
 
+  import type { ApprovalType } from '@/config/process';
   import {
-    type ApprovalType,
+    approvalFlowAddNodeGroups,
     businessTypeOptions,
     defaultBasicForm,
     executionTimingList,
-    resolveApprovalActionNodeDefaults,
   } from '@/config/process';
+
+  import { addApprovalConditionBranch, createDefaultFlow, insertFromAnchor } from './approvalFlowDesign';
 
   defineOptions({
     name: 'ApprovalFlowView',
   });
 
-  const { t } = useI18n();
-
-  function createApprovalActionNode(approvalType: ApprovalType = 'manual') {
-    const defaults = resolveApprovalActionNodeDefaults(approvalType);
-    return createActionNode({
-      name: defaults.name,
-      description: defaults.description,
-      actionType: 'approval',
-      config: {
-        approvalType,
-      },
-    });
-  }
-
+  // 基础表单
   const basicConfig = defineModel<BasicFormParams>('basicConfig', {
     default: () => ({
       ...defaultBasicForm,
@@ -107,29 +91,28 @@
     basicFormRef.value?.validate(cb);
   }
 
+  // 右侧面板仅展示开始节点与审批节点配置
   function isRightContentVisible(selection: NodeSelectionState) {
     if (selection.type !== 'node') return false;
     return ['start', 'action'].includes(selection.node.type);
   }
 
-  function getStartNodeDescription() {
-    const businessTypeLabel =
-      businessTypeOptions.find((item) => item.value === basicConfig.value.formType)?.label ?? '';
+  function resolveOptionLabel(value: string, options: Array<{ value: string; label: string }>): string {
+    return options.find((item) => item.value === value)?.label ?? '';
+  }
+
+  const startNodeDescription = computed(() => {
+    const businessTypeLabel = resolveOptionLabel(basicConfig.value.formType, businessTypeOptions);
     const executionTimingLabel = basicConfig.value.executeTiming
-      .map((value: string) => executionTimingList.find((item) => item.value === value)?.label ?? '')
+      .map((value: string) => resolveOptionLabel(value, executionTimingList))
       .filter(Boolean)
       .join('/');
 
     return executionTimingLabel ? `${businessTypeLabel}(${executionTimingLabel})` : businessTypeLabel;
-  }
+  });
 
-  function createDefaultFlow(): FlowSchema {
-    return {
-      nodes: [createStartNode({ description: getStartNodeDescription() }), createApprovalActionNode(), createEndNode()],
-    };
-  }
-
-  const flowSchema = ref<FlowSchema>(createDefaultFlow());
+  // 流程图
+  const flowSchema = ref<FlowSchema>(createDefaultFlow(startNodeDescription.value));
 
   // 初始化时自动选中开始节点
   const crmFlowRef = ref<InstanceType<typeof CrmFlow>>();
@@ -148,174 +131,6 @@
     });
   });
 
-  interface AddNodeOption {
-    label: string;
-    type: 'action' | 'condition-group';
-    icon: string;
-    iconBgClass: string;
-    actionApprovalType?: ApprovalType;
-  }
-
-  const addNodeGroups = computed<Array<{ key: string; title: string; options: AddNodeOption[] }>>(() => [
-    {
-      key: 'approval',
-      title: t('process.process.flow.approver'),
-      options: [
-        {
-          label: t('process.process.flow.manualApproval'),
-          type: 'action',
-          actionApprovalType: 'manual',
-          icon: 'iconicon_contract',
-          iconBgClass: 'bg-[var(--warning-yellow)]',
-        },
-        {
-          label: t('process.process.flow.autoApprove'),
-          type: 'action',
-          actionApprovalType: 'auto-approve',
-          icon: 'iconicon_contract',
-          iconBgClass: 'bg-[var(--warning-yellow)]',
-        },
-        {
-          label: t('process.process.flow.autoReject'),
-          type: 'action',
-          actionApprovalType: 'auto-reject',
-          icon: 'iconicon_contract',
-          iconBgClass: 'bg-[var(--warning-yellow)]',
-        },
-      ],
-    },
-    {
-      key: 'condition',
-      title: t('crmFlow.triggerCondition'),
-      options: [
-        {
-          label: t('process.process.flow.conditionRule'),
-          type: 'condition-group',
-          icon: 'iconicon_fork',
-          iconBgClass: 'bg-[var(--info-blue)]',
-        },
-      ],
-    },
-  ]);
-
-  // 新建条件分支时，分支末尾默认挂一个审批节点
-  function createApprovalConditionBranch(partial: Partial<ConditionBranch> = {}): ConditionBranch {
-    return createConditionBranch({
-      ...partial,
-      children: partial.children ?? [createApprovalActionNode()],
-    });
-  }
-
-  // 新建条件组时，if 和 else 两个默认分支都要带审批节点
-  function createApprovalConditionGroupNode() {
-    return createConditionGroupNode({
-      branches: [
-        createApprovalConditionBranch(),
-        createElseBranch({
-          children: [createApprovalActionNode()],
-        }),
-      ],
-    });
-  }
-
-  function bindElseBranchFallbackNode(
-    groupNode: ReturnType<typeof createApprovalConditionGroupNode>,
-    fallbackNode?: FlowNode
-  ) {
-    if (fallbackNode?.type !== 'action') {
-      return;
-    }
-
-    const elseBranch = groupNode.branches.find((branch) => branch.isElse);
-    if (!elseBranch) {
-      return;
-    }
-
-    // 条件组插入到“审批节点”前时，把原审批节点迁移到 else 分支，避免主链出现重复审批
-    elseBranch.children = [fallbackNode];
-  }
-
-  // 主链插入条件组
-  function insertApprovalConditionGroupAfterNode(anchorNodeId: string) {
-    const location = findNodeLocation(flowSchema.value.nodes, anchorNodeId);
-    if (!location) {
-      return;
-    }
-
-    // 当前锚点后面的节点，是“加条件组”时要兜底迁移的候选节点。
-    const nextNode = location.container[location.index + 1];
-    const conditionGroupNode = createApprovalConditionGroupNode();
-    bindElseBranchFallbackNode(conditionGroupNode, nextNode);
-
-    if (nextNode?.type === 'action') {
-      // 用条件组替换主链中的原审批节点。
-      location.container.splice(location.index + 1, 1, conditionGroupNode);
-      return;
-    }
-
-    insertNodeAfterNode(flowSchema.value, anchorNodeId, conditionGroupNode);
-  }
-
-  // 分支内插入条件组
-  function insertApprovalConditionGroupToBranch(groupId: string, branchId: string) {
-    const location = findBranchLocation(flowSchema.value.nodes, branchId);
-    if (!location || location.group.id !== groupId) {
-      return;
-    }
-
-    // 分支内新增节点默认插在头部，所以这里检查头节点是否需要迁移到 else
-    const firstNode = location.branch.children[0];
-    const conditionGroupNode = createApprovalConditionGroupNode();
-    bindElseBranchFallbackNode(conditionGroupNode, firstNode);
-
-    if (firstNode?.type === 'action') {
-      // 分支头部为审批节点时，替换为条件组，并把审批迁移到 else
-      location.branch.children.splice(0, 1, conditionGroupNode);
-      return;
-    }
-
-    location.branch.children.unshift(conditionGroupNode);
-  }
-
-  function handleInsertFromAnchor(payload: {
-    type: 'action' | 'condition-group';
-    anchorNodeId: string | null;
-    anchorBranch: { groupId: string; branchId: string } | null;
-    actionApprovalType?: ApprovalType;
-  }) {
-    if (payload.type === 'condition-group') {
-      if (payload.anchorBranch) {
-        // 分支内插入条件组时，处理分支头审批节点迁移
-        insertApprovalConditionGroupToBranch(payload.anchorBranch.groupId, payload.anchorBranch.branchId);
-        return;
-      }
-
-      if (!payload.anchorNodeId) {
-        return;
-      }
-
-      // 主链插入条件组时，处理分支头审批节点迁移
-      insertApprovalConditionGroupAfterNode(payload.anchorNodeId);
-      return;
-    }
-
-    const actionNode = createApprovalActionNode(payload.actionApprovalType ?? 'manual');
-    if (payload.anchorBranch) {
-      insertNodeToConditionBranch(
-        flowSchema.value,
-        payload.anchorBranch.groupId,
-        payload.anchorBranch.branchId,
-        actionNode
-      );
-      return;
-    }
-
-    if (!payload.anchorNodeId) {
-      return;
-    }
-    insertNodeAfterNode(flowSchema.value, payload.anchorNodeId, actionNode);
-  }
-
   function insertFromPopover(
     type: 'action' | 'condition-group',
     anchorNodeId: string | null,
@@ -326,15 +141,49 @@
       return;
     }
 
-    handleInsertFromAnchor({ type, anchorNodeId, anchorBranch, actionApprovalType });
+    insertFromAnchor({
+      flowSchema: flowSchema.value,
+      type,
+      anchorNodeId,
+      anchorBranch,
+      actionApprovalType,
+    });
   }
 
   // 新增if条件分支
   function handleAddConditionBranch(groupId: string) {
-    addConditionBranch(flowSchema.value, groupId, createApprovalConditionBranch());
+    addApprovalConditionBranch(flowSchema.value, groupId);
   }
 
-  const startNodeDescription = computed(() => getStartNodeDescription());
+  // 触发条件抽屉
+  const setConditionDrawerVisible = ref(false);
+  const activeConditionBranch = ref<ConditionBranch | null>(null);
+
+  function openConditionDrawer(branch: ConditionBranch) {
+    activeConditionBranch.value = branch;
+    setConditionDrawerVisible.value = true;
+  }
+
+  function handleBranchClick(payload: BranchClickPayload) {
+    const location = findBranchLocation(flowSchema.value.nodes, payload.branchId);
+    if (!location || location.group.id !== payload.groupId || location.branch.isElse) {
+      return;
+    }
+
+    openConditionDrawer(location.branch);
+  }
+
+  function handleConditionConfirm(payload: { name: string; formModel: FilterForm }) {
+    if (!activeConditionBranch.value) {
+      return;
+    }
+
+    activeConditionBranch.value.name = payload.name;
+    activeConditionBranch.value.config = {
+      ...(activeConditionBranch.value.config ?? {}),
+      formModel: payload.formModel,
+    };
+  }
 
   // 更新开始节点描述
   watch(

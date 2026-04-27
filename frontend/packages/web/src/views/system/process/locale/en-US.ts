@@ -43,4 +43,6 @@ export default {
   'process.process.flow.conditionRule': 'Condition rule',
   'process.process.flow.approvalType': 'Approval type',
   'process.process.flow.nodeName': 'Node name',
+  'process.process.flow.setTriggerCondition': 'Set Trigger Condition',
+  'process.process.flow.conditionName': 'Condition Name',
 };

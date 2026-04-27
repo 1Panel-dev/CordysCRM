@@ -25,7 +25,7 @@ export interface ActionNode extends BaseFlowNode {
   type: 'action';
   actionType: FlowActionType;
   description?: string;
-  config: Record<string, unknown>;
+  config?: Record<string, any>;
 }
 
 export interface ConditionBranch {
@@ -33,6 +33,7 @@ export interface ConditionBranch {
   name: string;
   isElse: boolean;
   description?: string;
+  config?: Record<string, any>;
   children: FlowNode[];
 }
 
