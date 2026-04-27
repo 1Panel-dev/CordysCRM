@@ -59,7 +59,7 @@ public class CustomerContactExportService extends BaseExportService {
     public String export(String userId, CustomerContactExportRequest request, String orgId,
                          DeptDataPermissionDTO deptDataPermission, Locale locale) {
         checkFileName(request.getFileName());
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER_CONTACT.name());
 
         final var fileId = IDGenerator.nextStr();
         final var exportTask = exportTaskService.saveTask(
@@ -150,7 +150,7 @@ public class CustomerContactExportService extends BaseExportService {
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
         checkFileName(request.getFileName());
         // 用户导出数量限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER_CONTACT.name());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER_CONTACT.toString(), request.getFileName());
