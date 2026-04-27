@@ -8,3 +8,9 @@ export enum ProcessStatusEnum {
   NONE = 'NONE', // 未开启审批状态
 }
 
+export enum ProcessResultEnum {
+  AGREE = 'AGREE', // 同意
+  REJECT = 'REJECT', // 驳回
+  FALLBACK = 'FALLBACK', // 退回
+  ADD_SIGN = 'ADD_SIGN', // 加签
+}

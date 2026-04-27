@@ -8,4 +8,8 @@ export default {
   'taskDrawer.rejectReason': 'Reject Reason',
   'taskDrawer.confirmReject': 'Confirm Reject',
   'taskDrawer.items': '({count} items)',
+  'taskDrawer.result.AGREE': 'Agree',
+  'taskDrawer.result.REJECT': 'Reject',
+  'taskDrawer.result.ADD_SIGN': 'Add Sign',
+  'taskDrawer.result.FALLBACK': 'Fallback',
 };

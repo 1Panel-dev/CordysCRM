@@ -75,7 +75,7 @@ export default {
   'workbench.dataOverview.statisticalDimensionTip2': '负责人：统计指定负责人在单位时间内的全部线索。',
   'workbench.dataOverview.myTasks': '我的待办',
   'workbench.dataOverview.pendingApproval': '待我审批',
-  'workbench.dataOverview.approvedByMe': '我审批的',
+  'workbench.dataOverview.approvedByMe': '我处理的',
   'workbench.dataOverview.initiatedByMe': '我发起的',
   'workbench.dataOverview.copiedToMe': '抄送我的',
 };
