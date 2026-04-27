@@ -562,7 +562,7 @@ public abstract class BaseExportService {
     public String asyncExport(String exportFileName, String currentOrg, String currentUser, Locale locale, String logModule,
                               String exportType, ExportExecutor executor) {
         checkFileName(exportFileName);
-        exportTaskService.checkUserTaskLimit(currentUser, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(currentUser, exportType);
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(currentOrg, fileId, currentUser, exportType, exportFileName);
 
@@ -740,7 +740,7 @@ public abstract class BaseExportService {
         String orgId = exportDTO.getOrgId();
         checkFileName(fileName);
         // 用户导出数量限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, exportDTO.getExportType());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, exportDTO.getExportType(), fileName);
@@ -758,7 +758,7 @@ public abstract class BaseExportService {
         String fileName = exportDTO.getFileName();
         checkFileName(exportDTO.getFileName());
         //用户导出数量 限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, exportType);
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, exportType, fileName);

@@ -52,7 +52,7 @@ public class ClueExportService extends BaseExportService {
     public String exportAll(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
         checkFileName(request.getFileName());
         //用户导出数量 限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CLUE.name());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE.toString(), request.getFileName());
@@ -83,7 +83,7 @@ public class ClueExportService extends BaseExportService {
     public String exportSelect(ExportSelectRequest request, String userId, String orgId, Locale locale) {
         checkFileName(request.getFileName());
         // 用户导出数量限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CLUE.name());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE.toString(), request.getFileName());

@@ -50,10 +50,9 @@ public class CustomerExportService extends BaseExportService {
     public String export(String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
         checkFileName(request.getFileName());
         //用户导出数量 限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER.name());
 
-        String fileId = IDGenerator.nextStr();
-        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
+        ExportTask exportTask = exportTaskService.saveTask(orgId, IDGenerator.nextStr(), userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
 
         // 启动虚拟线程执行导出任务
         runExport(orgId, userId, LogModule.CUSTOMER_INDEX, locale, exportTask, request.getFileName(),
@@ -103,7 +102,7 @@ public class CustomerExportService extends BaseExportService {
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
         checkFileName(request.getFileName());
         // 用户导出数量限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER.name());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());

@@ -67,7 +67,7 @@ public class OpportunityExportService extends BaseExportService {
 
         checkFileName(request.getFileName());
         Objects.requireNonNull(userId, "userId 不能为空");
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.OPPORTUNITY.name());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(

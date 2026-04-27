@@ -38,4 +38,13 @@
         ORDER BY
             create_time DESC
     </select>
+
+    <select id="checkPreparedUniqueness" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM export_task
+        WHERE status = 'PREPARED'
+          AND create_user = #{createUser}
+          AND resource_type = #{resourceType}
+    </select>
+
 </mapper>

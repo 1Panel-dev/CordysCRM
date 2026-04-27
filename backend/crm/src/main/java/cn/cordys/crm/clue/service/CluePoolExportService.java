@@ -50,7 +50,7 @@ public class CluePoolExportService extends ClueExportService {
 
     public String exportCrossPage(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
         checkFileName(request.getFileName());
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CLUE.name());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE_POOL.toString(), request.getFileName());
@@ -78,7 +78,7 @@ public class CluePoolExportService extends ClueExportService {
     @Override
     public String exportSelect(ExportSelectRequest request, String userId, String orgId, Locale locale) {
         checkFileName(request.getFileName());
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CLUE_POOL.name());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE_POOL.toString(), request.getFileName());

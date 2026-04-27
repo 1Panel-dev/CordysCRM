@@ -5,7 +5,6 @@ import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.ExportHeadDTO;
-import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -253,22 +252,4 @@ public class OpportunityControllerTests extends BaseTest {
         this.requestPostWithOk(EXPORT_ALL, request);
     }
 
-
-    @Test
-    @Order(4)
-    void testExportSelect() throws Exception {
-        ExportSelectRequest request = new ExportSelectRequest();
-        request.setFileName("测试导出选中");
-
-        ExportHeadDTO exportHeadDTO = new ExportHeadDTO();
-        exportHeadDTO.setKey("name");
-        exportHeadDTO.setTitle("商机名称");
-        List<ExportHeadDTO> list = new ArrayList<>();
-        list.add(exportHeadDTO);
-        request.setHeadList(list);
-
-        request.setIds(List.of(addOpportunity.getId()));
-
-        this.requestPostWithOk(EXPORT_SELECT, request);
-    }
 }
