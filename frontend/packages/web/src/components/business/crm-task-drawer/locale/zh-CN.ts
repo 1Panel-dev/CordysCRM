@@ -8,4 +8,8 @@ export default {
   'taskDrawer.rejectReason': '驳回原因',
   'taskDrawer.confirmReject': '确认驳回',
   'taskDrawer.items': '({count} 条)',
+  'taskDrawer.result.AGREE': '同意',
+  'taskDrawer.result.REJECT': '驳回',
+  'taskDrawer.result.ADD_SIGN': '加签',
+  'taskDrawer.result.FALLBACK': '退回',
 };

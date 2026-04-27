@@ -15,7 +15,16 @@
             <n-checkbox v-if="props.activeTaskType?.includes('pending')" :value="item.id" class="mt-[4px]" />
             <div class="task-item-content">
               <div class="flex w-full items-center justify-between">
-                <CrmApprovalStatus :status="item.status" isTag />
+                <div class="flex items-center gap-[8px]">
+                  <CrmTag
+                    v-if="props.activeTaskType?.includes('approved')"
+                    :color="getApprovedTagColor(item.result)"
+                    bordered
+                  >
+                    {{ t(`taskDrawer.result.${item.result}`) }}
+                  </CrmTag>
+                  <CrmApprovalStatus :status="item.status" isTag />
+                </div>
                 <CrmTableButton
                   type="primary"
                   text
@@ -69,11 +78,12 @@
   import { NButton, NCheckbox, NCheckboxGroup, NSpin } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import { ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { ProcessResultEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import approvalModal from './approvalModal.vue';
 
@@ -103,6 +113,31 @@
       createUserName: 'adshasda',
       applyTime: 1729382938293,
       status: ProcessStatusEnum.APPROVING,
+      result: ProcessResultEnum.AGREE,
+    },
+    {
+      id: 1928391823791,
+      name: 'xxxxxx',
+      createUserName: 'adshasda',
+      applyTime: 1729382938293,
+      status: ProcessStatusEnum.APPROVING,
+      result: ProcessResultEnum.REJECT,
+    },
+    {
+      id: 1928391823791,
+      name: 'xxxxxx',
+      createUserName: 'adshasda',
+      applyTime: 1729382938293,
+      status: ProcessStatusEnum.APPROVING,
+      result: ProcessResultEnum.ADD_SIGN,
+    },
+    {
+      id: 1928391823791,
+      name: 'xxxxxx',
+      createUserName: 'adshasda',
+      applyTime: 1729382938293,
+      status: ProcessStatusEnum.APPROVING,
+      result: ProcessResultEnum.FALLBACK,
     },
   ]);
   const loading = ref(false);
@@ -167,6 +202,36 @@
     approvalItem.value = undefined;
   }
 
+  function getApprovedTagColor(result: ProcessResultEnum) {
+    switch (result) {
+      case ProcessResultEnum.AGREE:
+        return {
+          color: 'transparent',
+          textColor: 'var(--success-green)',
+          borderColor: 'var(--success-green)',
+        };
+      case ProcessResultEnum.REJECT:
+        return {
+          color: 'transparent',
+          textColor: 'var(--error-red)',
+          borderColor: 'var(--error-red)',
+        };
+      case ProcessResultEnum.ADD_SIGN:
+        return {
+          color: 'transparent',
+          textColor: 'var(--info-blue)',
+          borderColor: 'var(--info-blue)',
+        };
+      case ProcessResultEnum.FALLBACK:
+      default:
+        return {
+          color: 'transparent',
+          textColor: 'var(--text-n1)',
+          borderColor: 'var(--text-n7)',
+        };
+    }
+  }
+
   defineExpose({
     loadTaskList,
   });
@@ -176,6 +241,7 @@
   .task-item {
     @apply flex justify-between;
 
+    margin-bottom: 16px;
     padding: 16px;
     border: 1px solid var(--text-n8);
     border-radius: var(--border-radius-small);
