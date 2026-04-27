@@ -5,9 +5,9 @@
     :description="nodeData.description"
     :show-content="nodeData.showContent ?? true"
     :selected="Boolean(nodeData.selected)"
+    :titleEditable="Boolean(!nodeData.isPanMode)"
     node-type="condition-branch"
     :deletable="!displayIsElse"
-    title-editable
     :edit-permission="['']"
     :icon="{
       type: 'iconicon_fork',
@@ -48,6 +48,7 @@
     showContent?: boolean;
     isElse?: boolean;
     selected?: boolean;
+    isPanMode?: boolean;
   }>(toRef(props, 'node'));
 
   const displayIsElse = computed(() => nodeData.value.isElse ?? false);

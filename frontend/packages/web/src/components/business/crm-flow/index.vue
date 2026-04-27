@@ -40,6 +40,7 @@
 
   const emit = defineEmits<{
     (event: 'addConditionBranch', groupId: string): void;
+    (event: 'branchClick', payload: BranchClickPayload): void;
   }>();
 
   const props = defineProps<{
@@ -102,6 +103,7 @@
 
   function handleBranchClick(payload: BranchClickPayload) {
     selectBranch(payload.branchId);
+    emit('branchClick', payload);
   }
 
   function handleAddConditionBranch(groupId: string) {

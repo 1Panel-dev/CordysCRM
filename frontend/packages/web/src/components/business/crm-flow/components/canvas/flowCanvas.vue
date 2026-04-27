@@ -185,6 +185,7 @@
         data: {
           ...data,
           selected: resolveSelectedState(data),
+          isPanMode: isPanMode.value,
         },
       };
     });
@@ -192,7 +193,7 @@
     graphController.value.render(cellsWithSelection);
   }
 
-  function updateRenderedSelectionState() {
+  function updateRenderedNodeState() {
     const graph = graphController.value?.getGraph();
     if (!graph) {
       return;
@@ -205,13 +206,15 @@
       }
 
       const nextSelected = resolveSelectedState(data);
-      if (data.selected === nextSelected) {
+      const nextPanMode = isPanMode.value;
+      if (data.selected === nextSelected && data.isPanMode === nextPanMode) {
         return;
       }
 
       node.setData({
         ...data,
         selected: nextSelected,
+        isPanMode: nextPanMode,
       });
     });
   }
@@ -219,12 +222,16 @@
   watch(
     () => props.selection,
     () => {
-      updateRenderedSelectionState();
+      updateRenderedNodeState();
     },
     {
       deep: true,
     }
   );
+
+  watch(isPanMode, () => {
+    updateRenderedNodeState();
+  });
 
   function handleViewModeChange(mode: 'compact' | 'detail') {
     viewMode.value = mode;

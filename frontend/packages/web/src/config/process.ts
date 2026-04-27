@@ -122,6 +122,64 @@ export const approvalTypeOptions: Array<{ label: string; value: ApprovalType }> 
   },
 ];
 
+export type FlowAddNodeType = 'action' | 'condition-group';
+
+export interface FlowAddNodeOption {
+  label: string;
+  type: FlowAddNodeType;
+  icon: string;
+  iconBgClass: string;
+  actionApprovalType?: ApprovalType;
+}
+
+export interface FlowAddNodeGroup {
+  key: string;
+  title: string;
+  options: FlowAddNodeOption[];
+}
+
+export const approvalFlowAddNodeGroups: FlowAddNodeGroup[] = [
+  {
+    key: 'approval',
+    title: t('process.process.flow.approver'),
+    options: [
+      {
+        label: t('process.process.flow.manualApproval'),
+        type: 'action',
+        actionApprovalType: 'manual',
+        icon: 'iconicon_contract',
+        iconBgClass: 'bg-[var(--warning-yellow)]',
+      },
+      {
+        label: t('process.process.flow.autoApprove'),
+        type: 'action',
+        actionApprovalType: 'auto-approve',
+        icon: 'iconicon_contract',
+        iconBgClass: 'bg-[var(--warning-yellow)]',
+      },
+      {
+        label: t('process.process.flow.autoReject'),
+        type: 'action',
+        actionApprovalType: 'auto-reject',
+        icon: 'iconicon_contract',
+        iconBgClass: 'bg-[var(--warning-yellow)]',
+      },
+    ],
+  },
+  {
+    key: 'condition',
+    title: t('crmFlow.triggerCondition'),
+    options: [
+      {
+        label: t('process.process.flow.conditionRule'),
+        type: 'condition-group',
+        icon: 'iconicon_fork',
+        iconBgClass: 'bg-[var(--info-blue)]',
+      },
+    ],
+  },
+];
+
 export function resolveApprovalActionNodeDefaults(approvalType: ApprovalType) {
   if (approvalType === 'auto-approve') {
     return {

@@ -40,4 +40,6 @@ export default {
   'process.process.flow.conditionRule': '条件规则',
   'process.process.flow.approvalType': '审批类型',
   'process.process.flow.nodeName': '节点名称',
+  'process.process.flow.setTriggerCondition': '设置触发条件',
+  'process.process.flow.conditionName': '条件名称',
 };

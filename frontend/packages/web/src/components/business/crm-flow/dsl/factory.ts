@@ -44,6 +44,7 @@ export function createConditionBranch(partial: Partial<ConditionBranch> = {}): C
     name: partial.name ?? t('crmFlow.triggerCondition'),
     isElse: false,
     description: partial.description ?? t('crmFlow.pleaseSet'),
+    config: partial.config ?? {},
     children: partial.children ?? [],
   };
 }
@@ -54,6 +55,7 @@ export function createElseBranch(partial: Partial<ConditionBranch> = {}): Condit
     name: partial.name ?? t('crmFlow.else'),
     isElse: true,
     description: partial.description ?? t('crmFlow.pleaseSet'),
+    config: partial.config ?? {},
     children: partial.children ?? [],
   };
 }
