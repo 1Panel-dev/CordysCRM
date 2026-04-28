@@ -14,12 +14,7 @@
       </div>
       <n-spin :show="loading">
         <n-scrollbar class="max-h-[40vh]">
-          <CrmApprovalApproverList v-model:active-id="activeApproverId" :approvers="approvers" />
-          <div v-if="currentApproverReason" class="crm-approval-popover__reasons">
-            <div class="crm-approval-popover__reason">
-              {{ currentApproverReason }}
-            </div>
-          </div>
+          <CrmApprovalApproverContent v-model:active-id="activeApproverId" :approvers="approvers" />
         </n-scrollbar>
       </n-spin>
     </div>
@@ -27,14 +22,15 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NPopover, NScrollbar, NSpin } from 'naive-ui';
+  import { NButton, NPopover, NSpin } from 'naive-ui';
 
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { ProcessStatusType } from '@lib/shared/models/system/process';
 
+  import CrmApprovalApproverContent from '@/components/business/crm-approval-approver-content/index.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
-  import CrmApprovalApproverList, { type ApproverItem } from '@/components/business/crm-approver-avatar-list/index.vue';
+  import { type ApproverItem } from '@/components/business/crm-approver-avatar-list/index.vue';
 
   import useRejectPopoverDetail, { type ApprovalPopoverFormKeyType } from './useApprovalPopoverDetail';
 
@@ -64,10 +60,6 @@
   const approvers = ref<ApproverItem[]>([]);
 
   const activeApproverId = ref('');
-  const currentApproverMap = computed(() => new Map(approvers.value.map((item) => [item.id, item])));
-  const currentApproverReason = computed(
-    () => currentApproverMap.value?.get(activeApproverId.value)?.approveReason ?? '-'
-  );
 
   const title = computed(() => props.title || t('common.approver'));
 
@@ -81,9 +73,27 @@
       approvers.value = [
         {
           approveReason:
-            '原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因',
+            '原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因1',
+          approveResult: ProcessStatusEnum.APPROVED,
+          id: '3164961142886311',
+          name: '吴鑫鑫',
+          avatar:
+            'https://s1-imfile.feishucdn.com/static-resource/v1/v3_007d_71e27f5a-1b9a-46fc-bac5-cfd897657dag~?image_size=240x240&cut_type=&quality=&format=png&sticker_format=.webp',
+        },
+        {
+          approveReason:
+            '原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因2',
           approveResult: ProcessStatusEnum.UNAPPROVED,
-          id: '31649611428863184211',
+          id: '31649611184211',
+          name: '吴鑫鑫',
+          avatar:
+            'https://s1-imfile.feishucdn.com/static-resource/v1/v3_007d_71e27f5a-1b9a-46fc-bac5-cfd897657dag~?image_size=240x240&cut_type=&quality=&format=png&sticker_format=.webp',
+        },
+        {
+          approveReason:
+            '原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因原因3',
+          approveResult: ProcessStatusEnum.APPROVING,
+          id: '3164961142884211',
           name: '吴鑫鑫',
           avatar:
             'https://s1-imfile.feishucdn.com/static-resource/v1/v3_007d_71e27f5a-1b9a-46fc-bac5-cfd897657dag~?image_size=240x240&cut_type=&quality=&format=png&sticker_format=.webp',
@@ -122,25 +132,6 @@
     font-weight: 600;
     color: var(--text-n1);
     line-height: 20px;
-  }
-  .crm-approval-popover__reasons {
-    display: flex;
-    flex-direction: column;
-    margin-top: 14px;
-    background: var(--text-n9);
-    gap: 8px;
-  }
-  .crm-approval-popover__reason {
-    display: box;
-    overflow: hidden;
-    padding: 4px 12px;
-    font-size: 14px;
-    border-radius: 4px;
-    text-overflow: ellipsis;
-    color: var(--text-n2);
-    line-height: 22px;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2; /* 限制为 2 行 */
   }
   .crm-approval-popover__empty {
     font-size: 14px;
