@@ -38,6 +38,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +65,8 @@ public class ApprovalFlowService {
     private BaseMapper<ApprovalNodeLink> approvalNodeLinkMapper;
     @Resource
     private RoleService roleService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -322,29 +325,14 @@ public class ApprovalFlowService {
      */
     private String generateFlowNumber(String formType, String organizationId) {
         String prefix = getNumberPrefix(formType);
-        ApprovalFlow criteria = new ApprovalFlow();
-        criteria.setOrganizationId(organizationId);
-        criteria.setFormType(formType);
-        List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
-        int maxNum = 0;
-        for (ApprovalFlow flow : flows) {
-            if (StringUtils.isNotBlank(flow.getNumber()) && flow.getNumber().startsWith(prefix)) {
-                try {
-                    String numStr = flow.getNumber().substring(flow.getNumber().lastIndexOf("-") + 1);
-                    int num = Integer.parseInt(numStr);
-                    if (num > maxNum) {
-                        maxNum = num;
-                    }
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
-        return String.format("%s-%03d", prefix, maxNum + 1);
+        String key = "approval_flow_num:" + organizationId + ":" + formType;
+        long seq = stringRedisTemplate.opsForValue().increment(key);
+        return String.format("%s-%05d", prefix, seq);
     }
 
     private String getNumberPrefix(String formType) {
         try {
-            return ApprovalFormTypeEnum.valueOf(formType).getPrefix();
+            return ApprovalFormTypeEnum.valueOf(formType.toUpperCase()).getPrefix();
         } catch (IllegalArgumentException e) {
             return "APV";
         }
