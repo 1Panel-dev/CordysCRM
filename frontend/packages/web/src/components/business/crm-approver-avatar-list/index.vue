@@ -102,7 +102,7 @@
 <style scoped lang="less">
   .crm-approver-avatar-list {
     display: flex;
-    padding: 8px 2px;
+    padding: 8px;
     flex-wrap: wrap;
     gap: 4px;
   }
