@@ -1,28 +1,19 @@
 package cn.cordys.crm.approval;
 
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
-import cn.cordys.crm.base.BaseTest;
+import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalFlowBlob;
 import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
 import cn.cordys.crm.approval.dto.ApproverConfigDTO;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
-import cn.cordys.crm.approval.dto.request.ApprovalFlowAddRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalFlowPageRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalFlowUpdateRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalNodeApproverRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalNodeRequest;
+import cn.cordys.crm.approval.dto.request.*;
+import cn.cordys.crm.approval.dto.response.ApprovalFlowByFormTypeResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse;
-import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
-import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
-import cn.cordys.crm.approval.constants.ApprovalTypeEnum;
-import cn.cordys.crm.approval.constants.ApprovalState;
-import cn.cordys.crm.approval.constants.DuplicateApproverRuleEnum;
-import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
-import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
+import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
+import cn.cordys.crm.base.BaseTest;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -33,8 +24,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static cn.cordys.crm.system.constants.SystemResultCode.APPROVAL_FLOW_DUPLICATE;
 
@@ -45,6 +34,7 @@ class ApprovalFlowControllerTests extends BaseTest {
     private static final String BASE_PATH = "/approval-flow/";
     private static final String ENABLE = "enable/{0}";
     private static final String STATUS_PERMISSION_SETTING = "status-permission/setting/{0}";
+    private static final String GET_BY_FORM_TYPE = "get-by-form-type/{0}";
 
     /**
      * 记录创建的审批流
@@ -476,5 +466,44 @@ class ApprovalFlowControllerTests extends BaseTest {
             Assertions.assertNotNull(p.getPermission());
             Assertions.assertNotNull(p.getEnabled());
         });
+    }
+
+    @Test
+    @Order(9)
+    void testGetByFormType() throws Exception {
+        // 请求成功 - 根据表单类型获取审批流信息
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(GET_BY_FORM_TYPE, ApprovalFormTypeEnum.QUOTATION.getValue());
+        ApprovalFlowByFormTypeResponse response = getResultData(mvcResult, ApprovalFlowByFormTypeResponse.class);
+
+        // 校验基本信息
+        Assertions.assertNotNull(response);
+        Assertions.assertNotNull(response.getId());
+        Assertions.assertNotNull(response.getNumber());
+        Assertions.assertNotNull(response.getName());
+        Assertions.assertEquals(ApprovalFormTypeEnum.QUOTATION.getValue(), response.getFormType());
+        Assertions.assertTrue(response.getEnable());
+
+        // 校验大字段
+        ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(response.getId());
+        Assertions.assertNotNull(blob);
+        Assertions.assertEquals(blob.getDescription(), response.getDescription());
+
+        // 校验权限列表
+        Assertions.assertNotNull(response.getPermissions());
+        Assertions.assertFalse(response.getPermissions().isEmpty());
+
+        // 校验状态权限配置
+        Assertions.assertNotNull(response.getStatusPermissions());
+
+        // 校验不包含节点配置（ApprovalFlowByFormTypeResponse没有nodes字段）
+        Assertions.assertThrows(NoSuchMethodException.class,
+                () -> response.getClass().getMethod("getNodes"),
+                "Response should not have nodes field");
+
+        // 请求不存在的表单类型，应返回 null
+        mvcResult = this.requestGetWithOkAndReturn(GET_BY_FORM_TYPE, "non_existent_form_type");
+        ApprovalFlowByFormTypeResponse response2 = getResultData(mvcResult, ApprovalFlowByFormTypeResponse.class);
+
+        Assertions.assertNull(response2);
     }
 }

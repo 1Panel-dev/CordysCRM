@@ -146,6 +146,39 @@ public class ApprovalFlowService {
     }
 
     /**
+     * 根据表单类型获取审批流信息（不含节点配置）
+     */
+    public ApprovalFlowByFormTypeResponse getByFormType(String formType, String organizationId) {
+        ApprovalFlow criteria = new ApprovalFlow();
+        criteria.setFormType(formType);
+        criteria.setEnable(true);
+        criteria.setOrganizationId(organizationId);
+        List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
+
+        ApprovalFlow targetFlow = flows.stream()
+                .filter(ApprovalFlow::getEnable)
+                .findFirst()
+                .orElse(null);
+
+        if (targetFlow == null) {
+            return null;
+        }
+
+        ApprovalFlowByFormTypeResponse response = BeanUtils.copyBean(new ApprovalFlowByFormTypeResponse(), targetFlow);
+
+        List<Permission> permissions = getPermissionsByFormType(targetFlow.getFormType());
+        response.setPermissions(getResourcePermissions(permissions));
+
+        ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(targetFlow.getId());
+        if (blob != null) {
+            response.setDescription(blob.getDescription());
+            response.setStatusPermissions(parseStatusPermissions(response.getPermissions(), blob.getStatusPermissions()));
+        }
+
+        return response;
+    }
+
+    /**
      * 新建审批流
      */
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.ADD, resourceName = "{#request.name}")
