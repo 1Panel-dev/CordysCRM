@@ -1,0 +1,18 @@
+name: GitHub Issue 自动同步到 TAPD（API账号/秘钥版）
+on:
+  issues:
+    types: [opened, assigned]
+
+jobs:
+  sync-to-tapd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 同步 Issue 到 TAPD
+        uses: fjllr/github-issue-to-tapd@main
+        with:
+          tapd_workspace_id: ${{ secrets.TAPD_WORKSPACE_ID }}
+          tapd_project_id: ${{ secrets.TAPD_PROJECT_ID }}
+          tapd_username: ${{ secrets.TAPD_API_USERNAME }}  # 你的API账号
+          tapd_api_token: ${{ secrets.TAPD_API_PASSWORD }}  # 你的API秘钥
+          tapd_iteration_id: ${{ secrets.TAPD_ITERATION_ID }}
+          only_assignee: "luty2018"
