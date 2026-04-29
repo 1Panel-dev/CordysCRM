@@ -33,6 +33,7 @@ jobs:
           TAPD_ITERATION_ID: ${{ secrets.TAPD_ITERATION_ID }}
           TAPD_API_USERNAME: ${{ secrets.TAPD_API_USERNAME }}
           TAPD_API_PASSWORD: ${{ secrets.TAPD_API_PASSWORD }}
+          TAPD_API_OWNER: ${{ secrets.TAPD_API_OWNER }}
         run: |
           # 空描述兜底
           BODY="${ISSUE_BODY:-无描述}"
