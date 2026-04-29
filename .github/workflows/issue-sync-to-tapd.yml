@@ -3,7 +3,7 @@ name: GitHub Issue 自动同步到 TAPD
 on:
   issues:
     types:
-      - assigned
+      - opened
 
 jobs:
   sync-to-tapd:
