@@ -12,28 +12,34 @@ permissions:
 jobs:
   sync-to-tapd:
     runs-on: ubuntu-latest
-    # 按 Issue 编号串行化，确保不会并发创建多条重复需求
     concurrency:
       group: sync-issue-${{ github.event.issue.number }}
       cancel-in-progress: false
 
     steps:
-      - name: Check if sync is needed (assignee + label)
+      - name: Check if sync is needed (assignee + live labels)
         id: check
         run: |
           ASSIGNEE="${{ github.event.issue.assignee.login }}"
-          LABELS='${{ toJSON(github.event.issue.labels.*.name) }}'
+
+          # Fetch live labels from GitHub API (not the snapshot in the event)
+          LABELS=$(gh issue view ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --json labels \
+            --jq '.labels[].name')
 
           if [ -z "$ASSIGNEE" ] || [ "$ASSIGNEE" != "luty2018" ]; then
             echo "Issue is not assigned to luty2018 or has no assignee, skipping sync"
             echo "should_sync=false" >> $GITHUB_OUTPUT
-          elif echo "$LABELS" | jq -e 'index("tapd-synced")' > /dev/null; then
+          elif echo "$LABELS" | grep -qx "tapd-synced"; then
             echo "Issue already has the tapd-synced label, already synced, skipping"
             echo "should_sync=false" >> $GITHUB_OUTPUT
           else
             echo "Issue is assigned to luty2018 and not yet synced, proceeding to sync"
             echo "should_sync=true" >> $GITHUB_OUTPUT
           fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Sync to TAPD
         if: steps.check.outputs.should_sync == 'true'
@@ -51,14 +57,11 @@ jobs:
         run: |
           # Fallback for empty body
           BODY="${ISSUE_BODY:-No description}"
-          # Title includes issue number, e.g. [GitHub Issue #42] Original title
           TITLE="[GitHub Issue #${ISSUE_NUMBER}] ${ISSUE_TITLE}"
 
-          # Replace newlines with <br> and build final description
           BODY_HTML="${BODY//$'\n'/<br>}"
           DESCRIPTION="GitHub link: ${ISSUE_URL}<br><br>Description: ${BODY_HTML}"
 
-          # Use jq to safely generate JSON
           JSON=$(jq -n \
             --arg name "$TITLE" \
             --arg desc "$DESCRIPTION" \
@@ -80,7 +83,6 @@ jobs:
           echo "Title: $TITLE"
           echo "Description: $DESCRIPTION"
 
-          # Send request and check status code
           HTTP_CODE=$(curl -s -o /dev/stderr -w "%{http_code}" -X POST \
             "https://api.tapd.cn/stories?workspace_id=${TAPD_WORKSPACE_ID}" \
             -H "Content-Type: application/json" \
