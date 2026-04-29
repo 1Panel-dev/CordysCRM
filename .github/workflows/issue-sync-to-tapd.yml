@@ -4,24 +4,37 @@ on:
   issues:
     types:
       - opened
+      - assigned
+      - reopened
+
+# 需要写权限来添加标签
+permissions:
+  issues: write
 
 jobs:
   sync-to-tapd:
     runs-on: ubuntu-latest
     steps:
-      - name: 检查 Issue 责任人
+      - name: 检查是否需要同步（责任人 + 标签）
+        id: check
         run: |
           ASSIGNEE="${{ github.event.issue.assignee.login }}"
+          # 获取当前 Issue 所有标签名（空数组表示无标签）
+          LABELS='${{ toJSON(github.event.issue.labels.*.name) }}'
+
           if [ -z "$ASSIGNEE" ] || [ "$ASSIGNEE" != "luty2018" ]; then
             echo "Issue 未分配给 luty2018 或无负责人，跳过同步"
-            echo "SHOULD_SKIP=true" >> $GITHUB_ENV
+            echo "should_sync=false" >> $GITHUB_OUTPUT
+          elif echo "$LABELS" | jq -e 'index("tapd-synced")' > /dev/null; then
+            echo "Issue 已带有 tapd-synced 标签，已经同步过，跳过"
+            echo "should_sync=false" >> $GITHUB_OUTPUT
           else
-            echo "Issue 已分配给 luty2018，准备同步"
-            echo "SHOULD_SKIP=false" >> $GITHUB_ENV
+            echo "Issue 已分配给 luty2018 且未同步，准备同步"
+            echo "should_sync=true" >> $GITHUB_OUTPUT
           fi
 
       - name: 同步到 TAPD
-        if: env.SHOULD_SKIP == 'false'
+        if: steps.check.outputs.should_sync == 'true'
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
@@ -76,3 +89,15 @@ jobs:
           fi
 
           echo "✅ 同步完成，TAPD 需求已创建"
+
+      - name: 添加已同步标签
+        if: steps.check.outputs.should_sync == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['tapd-synced']
+            })
