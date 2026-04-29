@@ -1,4 +1,4 @@
-name: GitHub Issue 自动同步到 TAPD
+name: GitHub Issue 自动同步到 TAPD（官方API版）
 on:
   issues:
     types: [opened, assigned]
@@ -7,12 +7,51 @@ jobs:
   sync-to-tapd:
     runs-on: ubuntu-latest
     steps:
-      - name: 同步 Issue 到 TAPD
-        uses: actions-cool/sync-github-to-tapd@v2
-        with:
-          tapd-workspace-id: ${{ secrets.TAPD_WORKSPACE_ID }}
-          tapd-project-id: ${{ secrets.TAPD_PROJECT_ID }}
-          tapd-username: ${{ secrets.TAPD_API_USERNAME }}
-          tapd-token: ${{ secrets.TAPD_API_PASSWORD }}
-          tapd-iteration-id: ${{ secrets.TAPD_ITERATION_ID }}
-          filter-assignee: "luty2018"
+      # 步骤1：仅同步分配给luty2018的Issue（过滤非目标Issue）
+      - name: 检查Issue责任人
+        if: ${{ github.event.issue.assignee.login != 'luty2018' }}
+        run: |
+          echo "Issue未分配给luty2018，跳过同步"
+          exit 0
+
+      # 步骤2：调用TAPD官方API创建需求
+      - name: 同步到TAPD
+        if: ${{ github.event.issue.assignee.login == 'luty2018' }}
+        run: |
+          # 构造TAPD请求数据（同步为「需求」，改defects可同步为缺陷）
+          JSON_DATA=$(jq -n \
+            --arg title "[GitHub] ${${{ github.event.issue.title }}//\"/\\\"}" \
+            --arg desc "GitHub链接：${{ github.event.issue.html_url }}\n\n描述：${{ github.event.issue.body || '无' }}" \
+            --arg ws "${{ secrets.TAPD_WORKSPACE_ID }}" \
+            --arg proj "${{ secrets.TAPD_PROJECT_ID }}" \
+            --arg iter "${{ secrets.TAPD_ITERATION_ID }}" \
+            --arg user "${{ secrets.TAPD_API_USERNAME }}" \
+            '{
+              story: {
+                title: $title,
+                description: $desc,
+                workspace_id: $ws,
+                project_id: $proj,
+                iteration_id: $iter,
+                status: "未处理",
+                created_by: $user,
+                assigned_to: $user
+              }
+            }')
+
+          # 调用TAPD API（Basic Auth认证，和你已配置的Secrets兼容）
+          RESPONSE=$(curl -s -w "%{http_code}" -X POST \
+            "https://api.tapd.cn/stories?workspace_id=${{ secrets.TAPD_WORKSPACE_ID }}" \
+            -H "Content-Type: application/json" \
+            -u "${{ secrets.TAPD_API_USERNAME }}:${{ secrets.TAPD_API_PASSWORD }}" \
+            -d "$JSON_DATA")
+
+          # 打印响应日志（便于排查）
+          echo "TAPD API响应：$RESPONSE"
+          # 校验HTTP状态码
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "同步失败，TAPD返回状态码：$HTTP_CODE"
+            exit 1
+          fi
+          echo "Issue同步到TAPD成功！"
