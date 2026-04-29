@@ -38,10 +38,11 @@ jobs:
           BODY="${ISSUE_BODY:-无描述}"
           TITLE="[GitHub Issue] ${ISSUE_TITLE}"
 
-          # 使用 $'...' 生成真正的换行符，确保 TAPD 描述清晰分段
-          DESCRIPTION=$'GitHub链接：'"${ISSUE_URL}"$'\n\n描述：'"${BODY}"
+          # 把正文里的换行都换成 <br>，再组装最终描述
+          BODY_HTML="${BODY//$'\n'/<br>}"
+          DESCRIPTION="GitHub链接：${ISSUE_URL}<br><br>描述：${BODY_HTML}"
 
-          # 用 jq 安全构建 JSON（自动处理描述中的特殊字符）
+          # 用 jq 安全生成 JSON（自动处理引号等特殊字符）
           JSON=$(jq -n \
             --arg name "$TITLE" \
             --arg desc "$DESCRIPTION" \
