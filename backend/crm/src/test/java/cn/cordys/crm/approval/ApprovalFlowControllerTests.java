@@ -25,8 +25,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.ArrayList;
 import java.util.List;
 
-import static cn.cordys.crm.system.constants.SystemResultCode.APPROVAL_FLOW_DUPLICATE;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -171,7 +169,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         // 请求成功 - 创建启用的审批流
         ApprovalFlowAddRequest request = buildAddRequest("报价审批流", ApprovalFormTypeEnum.QUOTATION, true);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
-        ApprovalFlow resultData = getResultData(mvcResult, ApprovalFlow.class);
+        ApprovalFlowDetailResponse resultData = getResultData(mvcResult, ApprovalFlowDetailResponse.class);
         ApprovalFlow flow = approvalFlowMapper.selectByPrimaryKey(resultData.getId());
 
         // 校验请求成功数据
@@ -199,19 +197,15 @@ class ApprovalFlowControllerTests extends BaseTest {
         ApprovalNodeApprover approverConfig = approvalNodeApproverMapper.selectByPrimaryKey(approverNode.getId());
         Assertions.assertNotNull(approverConfig);
 
-        // 校验重复审批流异常（同一表单只能有一个启用的审批流）
-        ApprovalFlowAddRequest duplicateRequest = buildAddRequest("另一个报价审批流", ApprovalFormTypeEnum.QUOTATION, true);
-        assertErrorCode(this.requestPost(DEFAULT_ADD, duplicateRequest), APPROVAL_FLOW_DUPLICATE);
-
         // 添加另一条数据，不同表单类型
         ApprovalFlowAddRequest anotherRequest = buildAddRequest("合同审批流", ApprovalFormTypeEnum.CONTRACT, true);
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, anotherRequest);
-        anotherApprovalFlow = approvalFlowMapper.selectByPrimaryKey(getResultData(mvcResult, ApprovalFlow.class).getId());
+        anotherApprovalFlow = approvalFlowMapper.selectByPrimaryKey(getResultData(mvcResult, ApprovalFlowDetailResponse.class).getId());
 
         // 校验创建禁用的审批流
         ApprovalFlowAddRequest disabledRequest = buildAddRequest("禁用的发票审批流", ApprovalFormTypeEnum.INVOICE, false);
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, disabledRequest);
-        ApprovalFlow disabledFlow = approvalFlowMapper.selectByPrimaryKey(getResultData(mvcResult, ApprovalFlow.class).getId());
+        ApprovalFlow disabledFlow = approvalFlowMapper.selectByPrimaryKey(getResultData(mvcResult, ApprovalFlowDetailResponse.class).getId());
         Assertions.assertFalse(disabledFlow.getEnable());
 
         // 校验权限

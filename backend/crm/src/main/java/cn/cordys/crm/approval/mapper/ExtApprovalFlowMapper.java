@@ -19,17 +19,12 @@ public interface ExtApprovalFlowMapper {
             @Param("organizationId") String organizationId);
 
     /**
-     * 校验同一表单是否存在启用的审批流
+     * 批量禁用同类型审批流
      */
-    boolean checkEnableFlowExists(
-            @Param("formType") String formType,
-            @Param("organizationId") String organizationId);
-
-    /**
-     * 校验同一表单是否存在启用的审批流（排除指定ID）
-     */
-    boolean checkEnableFlowExistsExcludeId(
+    int disableByFormType(
             @Param("formType") String formType,
             @Param("organizationId") String organizationId,
-            @Param("excludeId") String excludeId);
+            @Param("excludeId") String excludeId,
+            @Param("updateUser") String updateUser,
+            @Param("updateTime") Long updateTime);
 }
