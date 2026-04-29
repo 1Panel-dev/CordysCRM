@@ -1,4 +1,4 @@
-name: GitHub Issue 自动同步到 TAPD
+name: Sync GitHub Issues to TAPD
 
 on:
   issues:
@@ -7,7 +7,6 @@ on:
       - assigned
       - reopened
 
-# 需要写权限来添加标签
 permissions:
   issues: write
 
@@ -15,28 +14,28 @@ jobs:
   sync-to-tapd:
     runs-on: ubuntu-latest
     steps:
-      - name: 检查是否需要同步（责任人 + 标签）
+      - name: Check if sync is needed (assignee + label)
         id: check
         run: |
           ASSIGNEE="${{ github.event.issue.assignee.login }}"
-          # 获取当前 Issue 所有标签名（空数组表示无标签）
           LABELS='${{ toJSON(github.event.issue.labels.*.name) }}'
 
           if [ -z "$ASSIGNEE" ] || [ "$ASSIGNEE" != "luty2018" ]; then
-            echo "Issue 未分配给 luty2018 或无负责人，跳过同步"
+            echo "Issue is not assigned to luty2018 or has no assignee, skipping sync"
             echo "should_sync=false" >> $GITHUB_OUTPUT
           elif echo "$LABELS" | jq -e 'index("tapd-synced")' > /dev/null; then
-            echo "Issue 已带有 tapd-synced 标签，已经同步过，跳过"
+            echo "Issue already has the tapd-synced label, already synced, skipping"
             echo "should_sync=false" >> $GITHUB_OUTPUT
           else
-            echo "Issue 已分配给 luty2018 且未同步，准备同步"
+            echo "Issue is assigned to luty2018 and not yet synced, proceeding to sync"
             echo "should_sync=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: 同步到 TAPD
+      - name: Sync to TAPD
         if: steps.check.outputs.should_sync == 'true'
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
           ISSUE_BODY: ${{ github.event.issue.body }}
           TAPD_WORKSPACE_ID: ${{ secrets.TAPD_WORKSPACE_ID }}
@@ -46,15 +45,16 @@ jobs:
           TAPD_API_PASSWORD: ${{ secrets.TAPD_API_PASSWORD }}
           TAPD_API_OWNER: ${{ secrets.TAPD_API_OWNER }}
         run: |
-          # 空描述兜底
-          BODY="${ISSUE_BODY:-无描述}"
-          TITLE="[GitHub Issue] ${ISSUE_TITLE}"
+          # Fallback for empty body
+          BODY="${ISSUE_BODY:-No description}"
+          # Title includes issue number, e.g. [GitHub Issue #42] Original title
+          TITLE="[GitHub Issue #${ISSUE_NUMBER}] ${ISSUE_TITLE}"
 
-          # 把正文里的换行都换成 <br>，再组装最终描述
+          # Replace newlines with <br> and build final description
           BODY_HTML="${BODY//$'\n'/<br>}"
-          DESCRIPTION="GitHub链接：${ISSUE_URL}<br><br>描述：${BODY_HTML}"
+          DESCRIPTION="GitHub link: ${ISSUE_URL}<br><br>Description: ${BODY_HTML}"
 
-          # 用 jq 安全生成 JSON（自动处理引号等特殊字符）
+          # Use jq to safely generate JSON (handles quotes etc.)
           JSON=$(jq -n \
             --arg name "$TITLE" \
             --arg desc "$DESCRIPTION" \
@@ -72,11 +72,11 @@ jobs:
               creator: $owner
             } + if $iteration != "" then {iteration_id: $iteration} else {} end')
 
-          echo "正在创建 TAPD 需求..."
-          echo "标题: $TITLE"
-          echo "描述: $DESCRIPTION"
+          echo "Creating TAPD story..."
+          echo "Title: $TITLE"
+          echo "Description: $DESCRIPTION"
 
-          # 发送请求并检查状态码
+          # Send request and check status code
           HTTP_CODE=$(curl -s -o /dev/stderr -w "%{http_code}" -X POST \
             "https://api.tapd.cn/stories?workspace_id=${TAPD_WORKSPACE_ID}" \
             -H "Content-Type: application/json" \
@@ -84,13 +84,13 @@ jobs:
             -d "$JSON")
 
           if [ "$HTTP_CODE" -ne 200 ] && [ "$HTTP_CODE" -ne 201 ]; then
-            echo "::error::TAPD API 返回 HTTP ${HTTP_CODE}，请查看上方响应详情"
+            echo "::error::TAPD API returned HTTP ${HTTP_CODE}, check the response details above"
             exit 1
           fi
 
-          echo "✅ 同步完成，TAPD 需求已创建"
+          echo "::notice::Sync completed, TAPD story created"
 
-      - name: 添加已同步标签
+      - name: Add synced label
         if: steps.check.outputs.should_sync == 'true'
         uses: actions/github-script@v7
         with:
