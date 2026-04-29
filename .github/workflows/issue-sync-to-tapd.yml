@@ -50,13 +50,14 @@ jobs:
             --arg ws "$TAPD_WORKSPACE_ID" \
             --arg iteration "$TAPD_ITERATION_ID" \
             --arg user "$TAPD_API_USERNAME" \
+            --arg owner "$TAPD_API_OWNER" \
             '{
               name: $name,
               description: $desc,
               project_id: $proj,
               workspace_id: $ws,
-              owner: $user,
-              creator: $user
+              owner: $owner,
+              creator: $owner
             } + if $iteration != "" then {iteration_id: $iteration} else {} end')
 
           echo "正在创建 TAPD 需求..."
