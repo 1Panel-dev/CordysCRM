@@ -28,18 +28,20 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
           ISSUE_BODY: ${{ github.event.issue.body }}
-          # Secrets 已安全引用
           TAPD_WORKSPACE_ID: ${{ secrets.TAPD_WORKSPACE_ID }}
           TAPD_PROJECT_ID: ${{ secrets.TAPD_PROJECT_ID }}
           TAPD_ITERATION_ID: ${{ secrets.TAPD_ITERATION_ID }}
           TAPD_API_USERNAME: ${{ secrets.TAPD_API_USERNAME }}
           TAPD_API_PASSWORD: ${{ secrets.TAPD_API_PASSWORD }}
         run: |
+          # 空描述兜底
           BODY="${ISSUE_BODY:-无描述}"
           TITLE="[GitHub Issue] ${ISSUE_TITLE}"
-          DESCRIPTION="GitHub链接：${ISSUE_URL}\n\n描述：${BODY}"
 
-          # 用 jq 安全生成 JSON，不会受特殊字符影响
+          # 使用 $'...' 生成真正的换行符，确保 TAPD 描述清晰分段
+          DESCRIPTION=$'GitHub链接：'"${ISSUE_URL}"$'\n\n描述：'"${BODY}"
+
+          # 用 jq 安全构建 JSON（自动处理描述中的特殊字符）
           JSON=$(jq -n \
             --arg name "$TITLE" \
             --arg desc "$DESCRIPTION" \
@@ -56,7 +58,11 @@ jobs:
               creator: $user
             } + if $iteration != "" then {iteration_id: $iteration} else {} end')
 
-          echo "正在同步..."
+          echo "正在创建 TAPD 需求..."
+          echo "标题: $TITLE"
+          echo "描述: $DESCRIPTION"
+
+          # 发送请求并检查状态码
           HTTP_CODE=$(curl -s -o /dev/stderr -w "%{http_code}" -X POST \
             "https://api.tapd.cn/stories?workspace_id=${TAPD_WORKSPACE_ID}" \
             -H "Content-Type: application/json" \
@@ -64,7 +70,8 @@ jobs:
             -d "$JSON")
 
           if [ "$HTTP_CODE" -ne 200 ] && [ "$HTTP_CODE" -ne 201 ]; then
-            echo "::error::TAPD API 返回 HTTP ${HTTP_CODE}，请检查日志"
+            echo "::error::TAPD API 返回 HTTP ${HTTP_CODE}，请查看上方响应详情"
             exit 1
           fi
-          echo "同步完成，TAPD 需求已创建"
+
+          echo "✅ 同步完成，TAPD 需求已创建"
