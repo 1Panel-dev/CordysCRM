@@ -3,7 +3,6 @@ name: Sync GitHub Issues to TAPD
 on:
   issues:
     types:
-      - opened
       - assigned
       - reopened
 
