@@ -13,6 +13,11 @@ permissions:
 jobs:
   sync-to-tapd:
     runs-on: ubuntu-latest
+    # 按 Issue 编号串行化，确保不会并发创建多条重复需求
+    concurrency:
+      group: sync-issue-${{ github.event.issue.number }}
+      cancel-in-progress: false
+
     steps:
       - name: Check if sync is needed (assignee + label)
         id: check
@@ -54,7 +59,7 @@ jobs:
           BODY_HTML="${BODY//$'\n'/<br>}"
           DESCRIPTION="GitHub link: ${ISSUE_URL}<br><br>Description: ${BODY_HTML}"
 
-          # Use jq to safely generate JSON (handles quotes etc.)
+          # Use jq to safely generate JSON
           JSON=$(jq -n \
             --arg name "$TITLE" \
             --arg desc "$DESCRIPTION" \
