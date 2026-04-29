@@ -12,34 +12,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 步骤1：检查是否有 assignee，避免空指针报错
-      - name: 检查 Issue 是否分配给指定负责人
-        id: check_assignee
+      # 步骤1：检查 assignee 是否存在，并且是否为指定负责人
+      - name: 检查 Issue 责任人
         run: |
-          ASSIGNEE="${{ github.event.issue.assignee.login || '' }}"
+          ASSIGNEE="${{ github.event.issue.assignee.login }}"
 
           if [ -z "$ASSIGNEE" ]; then
-            echo "Issue 当前没有负责人，跳过同步"
-            echo "should_skip=true" >> $GITHUB_ENV
+            echo "Issue 没有负责人，跳过同步"
+            echo "SHOULD_SKIP=true" >> $GITHUB_ENV
             exit 0
           fi
 
           if [ "$ASSIGNEE" != "luty2018" ]; then
             echo "Issue 未分配给 luty2018，跳过同步"
-            echo "should_skip=true" >> $GITHUB_ENV
+            echo "SHOULD_SKIP=true" >> $GITHUB_ENV
             exit 0
           fi
 
-          echo "Issue 已分配给 luty2018，开始同步"
-          echo "should_skip=false" >> $GITHUB_ENV
+          echo "Issue 已分配给 luty2018，准备同步"
+          echo "SHOULD_SKIP=false" >> $GITHUB_ENV
 
-      # 步骤2：同步到 TAPD
+      # 步骤2：同步到 TAPD（修复 GitHub Actions 表达式语法）
       - name: 同步到 TAPD
-        if: env.should_skip == 'false'
+        if: env.SHOULD_SKIP == 'false'
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
-          ISSUE_BODY: ${{ github.event.issue.body || '无描述' }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
 
           TAPD_WORKSPACE_ID: ${{ secrets.TAPD_WORKSPACE_ID }}
           TAPD_PROJECT_ID: ${{ secrets.TAPD_PROJECT_ID }}
@@ -48,6 +47,11 @@ jobs:
           TAPD_API_PASSWORD: ${{ secrets.TAPD_API_PASSWORD }}
 
         run: |
+          # body 为空时手动兜底（不能在 GitHub 表达式里直接写 "无描述"）
+          if [ -z "$ISSUE_BODY" ]; then
+            ISSUE_BODY="无描述"
+          fi
+
           echo "开始同步 GitHub Issue 到 TAPD..."
 
           curl --fail -X POST "https://api.tapd.cn/stories?workspace_id=${TAPD_WORKSPACE_ID}" \
