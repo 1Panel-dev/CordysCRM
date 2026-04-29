@@ -65,7 +65,6 @@ jobs:
               "project_id": "${TAPD_PROJECT_ID}",
               "workspace_id": "${TAPD_WORKSPACE_ID}",
               "iteration_id": "${TAPD_ITERATION_ID}",
-              "status": "status_2",
               "created_by": "${TAPD_API_USERNAME}",
               "assigned_to": "${TAPD_API_USERNAME}"
             }
