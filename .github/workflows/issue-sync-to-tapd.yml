@@ -10,66 +10,61 @@ on:
 jobs:
   sync-to-tapd:
     runs-on: ubuntu-latest
-
     steps:
-      # 步骤1：检查 assignee 是否存在，并且是否为指定负责人
       - name: 检查 Issue 责任人
         run: |
           ASSIGNEE="${{ github.event.issue.assignee.login }}"
-
-          if [ -z "$ASSIGNEE" ]; then
-            echo "Issue 没有负责人，跳过同步"
+          if [ -z "$ASSIGNEE" ] || [ "$ASSIGNEE" != "luty2018" ]; then
+            echo "Issue 未分配给 luty2018 或无负责人，跳过同步"
             echo "SHOULD_SKIP=true" >> $GITHUB_ENV
-            exit 0
+          else
+            echo "Issue 已分配给 luty2018，准备同步"
+            echo "SHOULD_SKIP=false" >> $GITHUB_ENV
           fi
 
-          if [ "$ASSIGNEE" != "luty2018" ]; then
-            echo "Issue 未分配给 luty2018，跳过同步"
-            echo "SHOULD_SKIP=true" >> $GITHUB_ENV
-            exit 0
-          fi
-
-          echo "Issue 已分配给 luty2018，准备同步"
-          echo "SHOULD_SKIP=false" >> $GITHUB_ENV
-
-      # 步骤2：同步到 TAPD（修复 GitHub Actions 表达式语法）
       - name: 同步到 TAPD
         if: env.SHOULD_SKIP == 'false'
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
           ISSUE_BODY: ${{ github.event.issue.body }}
-
+          # Secrets 已安全引用
           TAPD_WORKSPACE_ID: ${{ secrets.TAPD_WORKSPACE_ID }}
           TAPD_PROJECT_ID: ${{ secrets.TAPD_PROJECT_ID }}
           TAPD_ITERATION_ID: ${{ secrets.TAPD_ITERATION_ID }}
           TAPD_API_USERNAME: ${{ secrets.TAPD_API_USERNAME }}
           TAPD_API_PASSWORD: ${{ secrets.TAPD_API_PASSWORD }}
-
         run: |
-          # body 为空时手动兜底（不能在 GitHub 表达式里直接写 "无描述"）
-          if [ -z "$ISSUE_BODY" ]; then
-            ISSUE_BODY="无描述"
-          fi
+          BODY="${ISSUE_BODY:-无描述}"
+          TITLE="[GitHub Issue] ${ISSUE_TITLE}"
+          DESCRIPTION="GitHub链接：${ISSUE_URL}\n\n描述：${BODY}"
 
-          echo "开始同步 GitHub Issue 到 TAPD..."
+          # 用 jq 安全生成 JSON，不会受特殊字符影响
+          JSON=$(jq -n \
+            --arg name "$TITLE" \
+            --arg desc "$DESCRIPTION" \
+            --arg proj "$TAPD_PROJECT_ID" \
+            --arg ws "$TAPD_WORKSPACE_ID" \
+            --arg iteration "$TAPD_ITERATION_ID" \
+            --arg user "$TAPD_API_USERNAME" \
+            '{
+              name: $name,
+              description: $desc,
+              project_id: $proj,
+              workspace_id: $ws,
+              owner: $user,
+              creator: $user
+            } + if $iteration != "" then {iteration_id: $iteration} else {} end')
 
-          curl --fail -X POST "https://api.tapd.cn/stories?workspace_id=${TAPD_WORKSPACE_ID}" \
+          echo "正在同步..."
+          HTTP_CODE=$(curl -s -o /dev/stderr -w "%{http_code}" -X POST \
+            "https://api.tapd.cn/stories?workspace_id=${TAPD_WORKSPACE_ID}" \
             -H "Content-Type: application/json" \
             -u "${TAPD_API_USERNAME}:${TAPD_API_PASSWORD}" \
-            -d "$(cat <<EOF
-          {
-            "story": {
-              "title": "[GitHub Issue] ${ISSUE_TITLE}",
-              "description": "GitHub链接：${ISSUE_URL}\n\n描述：${ISSUE_BODY}",
-              "project_id": "${TAPD_PROJECT_ID}",
-              "workspace_id": "${TAPD_WORKSPACE_ID}",
-              "iteration_id": "${TAPD_ITERATION_ID}",
-              "created_by": "${TAPD_API_USERNAME}",
-              "assigned_to": "${TAPD_API_USERNAME}"
-            }
-          }
-          EOF
-          )"
+            -d "$JSON")
 
-          echo "同步完成"
+          if [ "$HTTP_CODE" -ne 200 ] && [ "$HTTP_CODE" -ne 201 ]; then
+            echo "::error::TAPD API 返回 HTTP ${HTTP_CODE}，请检查日志"
+            exit 1
+          fi
+          echo "同步完成，TAPD 需求已创建"
