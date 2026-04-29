@@ -167,7 +167,10 @@ public class ApprovalFlowService {
             return null;
         }
 
-        ApprovalFlowByFormTypeResponse response = BeanUtils.copyBean(new ApprovalFlowByFormTypeResponse(), targetFlow);
+        ApprovalFlowByFormTypeResponse response = BeanUtils.copyBean(new ApprovalFlowByFormTypeResponse(), targetFlow, "executeTiming");
+        if (StringUtils.isNotBlank(targetFlow.getExecuteTiming())) {
+            response.setExecuteTiming(JSON.parseArray(targetFlow.getExecuteTiming(), String.class));
+        }
 
         List<Permission> permissions = getPermissionsByFormType(targetFlow.getFormType());
         response.setPermissions(getResourcePermissions(permissions));
@@ -185,16 +188,18 @@ public class ApprovalFlowService {
      * 新建审批流
      */
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.ADD, resourceName = "{#request.name}")
-    public ApprovalFlow add(ApprovalFlowAddRequest request, String userId, String organizationId) {
-        // 校验同一表单只能有一个启用的审批流
+    public ApprovalFlowDetailResponse add(ApprovalFlowAddRequest request, String userId, String organizationId) {
+        // 如果启用，先关闭同类型的其他审批流
         if (Boolean.TRUE.equals(request.getEnable())) {
-            checkOnlyOneEnableFlow(request.getFormType(), organizationId);
+            disableOtherFlows(request.getFormType(), null, userId, organizationId);
         }
 
         ApprovalFlow flow = BeanUtils.copyBean(new ApprovalFlow(), request);
         flow.setId(IDGenerator.nextStr());
         flow.setNumber(generateFlowNumber(request.getFormType(), organizationId));
-        flow.setExecuteTiming(JSON.toJSONString(request.getExecuteTiming()));
+        if (request.getExecuteTiming() != null) {
+            flow.setExecuteTiming(JSON.toJSONString(request.getExecuteTiming()));
+        }
         flow.setCreateUser(userId);
         flow.setCreateTime(System.currentTimeMillis());
         flow.setUpdateUser(userId);
@@ -207,7 +212,9 @@ public class ApprovalFlowService {
         ApprovalFlowBlob blob = new ApprovalFlowBlob();
         blob.setId(flow.getId());
         blob.setDescription(request.getDescription());
-        blob.setStatusPermissions(JSON.toJSONString(request.getStatusPermissions()));
+        if (request.getStatusPermissions() != null) {
+            blob.setStatusPermissions(JSON.toJSONString(request.getStatusPermissions()));
+        }
         approvalFlowBlobMapper.insert(blob);
 
         // 保存节点配置
@@ -224,14 +231,14 @@ public class ApprovalFlowService {
                         .build()
         );
 
-        return flow;
+        return getDetail(flow.getId(), organizationId);
     }
 
     /**
      * 更新审批流
      */
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.UPDATE, resourceId = "{#request.id}")
-    public ApprovalFlow update(ApprovalFlowUpdateRequest request, String userId, String organizationId) {
+    public ApprovalFlowDetailResponse update(ApprovalFlowUpdateRequest request, String userId, String organizationId) {
         ApprovalFlow existing = approvalFlowMapper.selectByPrimaryKey(request.getId());
         if (existing == null || !existing.getOrganizationId().equals(organizationId)) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
@@ -240,13 +247,15 @@ public class ApprovalFlowService {
         // 获取原始日志DTO
         ApprovalFlowLogDTO originLogDTO = buildOriginLogDTO(existing);
 
-        // 校验同一表单只能有一个启用的审批流
+        // 如果启用，先关闭同类型的其他审批流
         if (Boolean.TRUE.equals(request.getEnable())) {
-            checkOnlyOneEnableFlowExcludeId(existing.getFormType(), organizationId, request.getId());
+            disableOtherFlows(existing.getFormType(), request.getId(), userId, organizationId);
         }
 
         ApprovalFlow flow = BeanUtils.copyBean(new ApprovalFlow(), request);
-        flow.setExecuteTiming(JSON.toJSONString(request.getExecuteTiming()));
+        if (request.getExecuteTiming() != null) {
+            flow.setExecuteTiming(JSON.toJSONString(request.getExecuteTiming()));
+        }
         flow.setUpdateUser(userId);
         flow.setUpdateTime(System.currentTimeMillis());
 
@@ -256,12 +265,18 @@ public class ApprovalFlowService {
         ApprovalFlowBlob blob = new ApprovalFlowBlob();
         blob.setId(flow.getId());
         blob.setDescription(request.getDescription());
-        blob.setStatusPermissions(JSON.toJSONString(request.getStatusPermissions()));
+        ApprovalFlowBlob originApprovalFlowBlob = approvalFlowBlobMapper.selectByPrimaryKey(request.getId());
+        if (request.getStatusPermissions() != null) {
+            blob.setStatusPermissions(JSON.toJSONString(request.getStatusPermissions()));
+        } else {
+            // 避免更新字段为空，报错
+            blob.setStatusPermissions(originApprovalFlowBlob.getStatusPermissions());
+        }
         approvalFlowBlobMapper.updateById(blob);
 
-        // 删除原有节点配置并重新保存
-        deleteNodesByFlowId(flow.getId());
         if (CollectionUtils.isNotEmpty(request.getNodes())) {
+            // 删除原有节点配置并重新保存
+            deleteNodesByFlowId(flow.getId());
             saveNodes(request.getNodes(), flow.getId(), userId);
         }
 
@@ -275,7 +290,7 @@ public class ApprovalFlowService {
                         .build()
         );
 
-        return flow;
+        return getDetail(flow.getId(), organizationId);
     }
 
     /**
@@ -301,6 +316,7 @@ public class ApprovalFlowService {
 
     /**
      * 启用/禁用审批流
+     * 启用时直接启用当前审批流，并关闭同类型的其他审批流
      */
     public void updateEnable(String id, Boolean enable, String userId, String organizationId) {
         ApprovalFlow flow = approvalFlowMapper.selectByPrimaryKey(id);
@@ -309,7 +325,8 @@ public class ApprovalFlowService {
         }
 
         if (Boolean.TRUE.equals(enable)) {
-            checkOnlyOneEnableFlowExcludeId(flow.getFormType(), organizationId, id);
+            // 关闭同类型的其他审批流
+            disableOtherFlows(flow.getFormType(), id, userId, organizationId);
         }
 
         ApprovalFlow update = new ApprovalFlow();
@@ -318,6 +335,13 @@ public class ApprovalFlowService {
         update.setUpdateUser(userId);
         update.setUpdateTime(System.currentTimeMillis());
         approvalFlowMapper.updateById(update);
+    }
+
+    /**
+     * 关闭同类型的其他审批流
+     */
+    private void disableOtherFlows(String formType, String excludeId, String userId, String organizationId) {
+        extApprovalFlowMapper.disableByFormType(formType, organizationId, excludeId, userId, System.currentTimeMillis());
     }
 
     /**
@@ -338,34 +362,12 @@ public class ApprovalFlowService {
         }
     }
 
-    /**
-     * 校验同一表单只能有一个启用的审批流
-     */
-    private void checkOnlyOneEnableFlow(String formType, String organizationId) {
-        ApprovalFlow criteria = new ApprovalFlow();
-        criteria.setFormType(formType);
-        criteria.setOrganizationId(organizationId);
-        criteria.setEnable(true);
-        if (approvalFlowMapper.exist(criteria)) {
-            throw new GenericException(SystemResultCode.APPROVAL_FLOW_DUPLICATE);
-        }
-    }
-
-    private void checkOnlyOneEnableFlowExcludeId(String formType, String organizationId, String excludeId) {
-        ApprovalFlow criteria = new ApprovalFlow();
-        criteria.setFormType(formType);
-        criteria.setOrganizationId(organizationId);
-        criteria.setEnable(true);
-        List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
-        for (ApprovalFlow flow : flows) {
-            if (!flow.getId().equals(excludeId)) {
-                throw new GenericException(SystemResultCode.APPROVAL_FLOW_DUPLICATE);
-            }
-        }
-    }
 
     private ApprovalFlowDetailResponse convertToDetailResponse(ApprovalFlow flow) {
-        ApprovalFlowDetailResponse response = BeanUtils.copyBean(new ApprovalFlowDetailResponse(), flow);
+        ApprovalFlowDetailResponse response = BeanUtils.copyBean(new ApprovalFlowDetailResponse(), flow, "executeTiming");
+        if (StringUtils.isNotBlank(flow.getExecuteTiming())) {
+            response.setExecuteTiming(JSON.parseArray(flow.getExecuteTiming(), String.class));
+        }
         return response;
     }
 
@@ -644,10 +646,14 @@ public class ApprovalFlowService {
      */
     private List<StatusPermissionDTO> parseStatusPermissions(List<OptionDTO> permissions, String statusPermissions) {
         if (StringUtils.isBlank(statusPermissions)) {
-            return null;
+            return List.of();
         }
         // 解析已保存的状态权限配置
         List<StatusPermissionDTO> savedPermissions = JSON.parseArray(statusPermissions, StatusPermissionDTO.class);
+
+        if (CollectionUtils.isEmpty(savedPermissions)) {
+            return List.of();
+        }
 
         // 获取所有审批状态
         Set<String> approvalStatuses = savedPermissions.stream()

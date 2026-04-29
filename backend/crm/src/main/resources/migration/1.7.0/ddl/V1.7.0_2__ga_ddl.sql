@@ -27,7 +27,7 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE approval_flow_blob(
    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-   `status_permissions` VARCHAR(2000) NOT NULL   COMMENT '状态权限配置（JSON格式）' ,
+   `status_permissions` text NOT NULL   COMMENT '状态权限配置（JSON格式）' ,
    `description` VARCHAR(3000)    COMMENT '流程描述' ,
    PRIMARY KEY (id)
 )  COMMENT = '审批流大字段表'

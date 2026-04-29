@@ -23,7 +23,7 @@ public class ApprovalFlowByFormTypeResponse {
     private String formType;
 
     @Schema(description = "执行时机")
-    private String executeTiming;
+    private List<String> executeTiming;
 
     @Schema(description = "启用状态")
     private Boolean enable;

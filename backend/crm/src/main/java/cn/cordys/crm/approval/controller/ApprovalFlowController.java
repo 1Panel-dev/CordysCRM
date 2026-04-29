@@ -47,7 +47,7 @@ public class ApprovalFlowController {
     @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_ADD)
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.ADD)
     @Operation(summary = "新建审批流")
-    public ApprovalFlow add(@Validated @RequestBody ApprovalFlowAddRequest request) {
+    public ApprovalFlowDetailResponse add(@Validated @RequestBody ApprovalFlowAddRequest request) {
         return approvalFlowService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -55,7 +55,7 @@ public class ApprovalFlowController {
     @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_UPDATE)
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.UPDATE)
     @Operation(summary = "更新审批流")
-    public ApprovalFlow update(@Validated @RequestBody ApprovalFlowUpdateRequest request) {
+    public ApprovalFlowDetailResponse update(@Validated @RequestBody ApprovalFlowUpdateRequest request) {
         return approvalFlowService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
