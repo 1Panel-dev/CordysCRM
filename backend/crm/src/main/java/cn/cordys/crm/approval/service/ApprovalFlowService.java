@@ -673,8 +673,6 @@ public class ApprovalFlowService {
                 String key = approvalStatus + ":" + permission.getId();
                 StatusPermissionDTO item = savedPermissionMap.get(key);
                 if (item != null) {
-                    // 更新权限名称
-                    item.setEnabled(true);
                     updatedPermissions.add(item);
                 } else {
                     // 添加缺失的权限，默认不启用

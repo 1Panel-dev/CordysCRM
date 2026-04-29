@@ -359,9 +359,6 @@
             "name": "permission.opportunity_management.opportunity_quotation.download"
           },
           {
-            "id": "OPPORTUNITY_QUOTATION:APPROVAL"
-          },
-          {
             "id": "OPPORTUNITY_QUOTATION:VOIDED"
           }
         ]
@@ -557,10 +554,6 @@
             "license": false
           },
           {
-            "id": "CONTRACT:APPROVAL",
-            "license": false
-          },
-          {
             "id": "CONTRACT:PAYMENT"
           }
         ]
@@ -658,10 +651,7 @@
           },
           {
             "id": "CONTRACT_INVOICE:EXPORT"
-          },
-          {
-            "id": "CONTRACT_INVOICE:APPROVAL"
-           }
+          }
         ]
       }
     ]
