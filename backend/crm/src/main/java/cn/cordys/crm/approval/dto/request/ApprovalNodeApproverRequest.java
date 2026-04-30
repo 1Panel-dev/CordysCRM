@@ -1,12 +1,8 @@
 package cn.cordys.crm.approval.dto.request;
 
 import cn.cordys.common.constants.EnumValue;
-import cn.cordys.crm.approval.constants.ApprovalTypeEnum;
-import cn.cordys.crm.approval.constants.EmptyApproverActionEnum;
-import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
-import cn.cordys.crm.approval.constants.SameSubmitterActionEnum;
+import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
-import cn.cordys.crm.approval.dto.ApproverConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -40,11 +36,19 @@ public class ApprovalNodeApproverRequest extends ApprovalNodeRequest {
     @Schema(description = "审批人与提交人相同时动作")
     private String sameSubmitterAction = SameSubmitterActionEnum.SKIP.name();
 
-    @Schema(description = "抄送人列表")
-    private List<ApproverConfigDTO> cc;
+    @EnumValue(enumClass = ApproverTypeEnum.class)
+    @Schema(description = "审批人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
+    private String approverType;
 
     @Schema(description = "审批人列表")
-    private List<ApproverConfigDTO> approver;
+    private List<String> approverList;
+
+    @EnumValue(enumClass = ApproverTypeEnum.class)
+    @Schema(description = "抄送人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
+    private String ccType;
+
+    @Schema(description = "抄送人列表")
+    private List<String> ccList;
 
     @Schema(description = "审批通过后配置")
     private ApprovalPostConfigDTO passPostConfig;

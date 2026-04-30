@@ -6,7 +6,6 @@ import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalFlowBlob;
 import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
-import cn.cordys.crm.approval.dto.ApproverConfigDTO;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowByFormTypeResponse;
@@ -66,16 +65,12 @@ class ApprovalFlowControllerTests extends BaseTest {
         node.setMultiApproverMode(MultiApproverModeEnum.ALL.name());
 
         // 配置审批人
-        ApproverConfigDTO approver = new ApproverConfigDTO();
-        approver.setType("ROLE");
-        approver.setValue("sales_manager");
-        node.setApprover(List.of(approver));
+        node.setApproverType(ApproverTypeEnum.ROLE.name());
+        node.setApproverList(List.of("sales_manager"));
 
         // 配置抄送
-        ApproverConfigDTO cc = new ApproverConfigDTO();
-        cc.setType("ROLE");
-        cc.setValue("org_admin");
-        node.setCc(List.of(cc));
+        node.setCcType(ApproverTypeEnum.ROLE.name());
+        node.setCcList(List.of("org_admin"));
 
         return node;
     }
