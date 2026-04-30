@@ -42,4 +42,6 @@ export default {
   'process.process.flow.nodeName': '节点名称',
   'process.process.flow.setTriggerCondition': '设置触发条件',
   'process.process.flow.conditionName': '条件名称',
+  'process.process.flow.nodeNameNotSet': '节点名称未设置，请设置',
+  'process.process.flow.toConfig': '去设置',
 };

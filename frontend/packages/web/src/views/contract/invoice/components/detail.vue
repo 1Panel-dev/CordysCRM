@@ -1,12 +1,25 @@
 <template>
   <CrmDrawer v-model:show="visible" :title="detailInfo?.name" resizable no-padding :width="800" :footer="false">
     <template #titleLeft>
-      <div v-if="dicApprovalEnable" class="text-[14px] font-normal">
+      <div v-if="enableApproval" class="text-[14px] font-normal">
         <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
       </div>
     </template>
     <template v-if="!props.readonly" #titleRight>
-      <CrmButtonGroup class="gap-[12px]" :list="buttonList" not-show-divider @select="handleButtonClick" />
+      <CrmOperationButton
+        class="gap-[12px]"
+        :not-show-divider="true"
+        :group-list="detailActions.groupList"
+        :more-list="detailActions.moreList"
+        @select="handleButtonClick"
+      >
+        <template #more>
+          <n-button type="primary" ghost class="n-btn-outline-primary">
+            {{ t('common.more') }}
+            <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
+          </n-button>
+        </template>
+      </CrmOperationButton>
     </template>
     <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
       <CrmCard hide-footer>
@@ -39,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { useMessage } from 'naive-ui';
+  import { NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
@@ -47,18 +60,19 @@
   import { ContractInvoiceItem } from '@lib/shared/models/contract';
   import { CollaborationType } from '@lib/shared/models/customer';
 
-  import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
   import { approvalInvoiced, deleteInvoiced, revokeInvoiced } from '@/api/modules';
   import { deleteInvoiceContentMap } from '@/config/contract';
-  import useApprovalConfig from '@/hooks/useApprovalConfig';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useModal from '@/hooks/useModal';
-  import useUserStore from '@/store/modules/user';
 
   const props = defineProps<{
     sourceId: string;
@@ -75,7 +89,6 @@
     required: true,
   });
 
-  const useStore = useUserStore();
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
@@ -85,107 +98,54 @@
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     detailInfo.value = detail;
   }
-  const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(FormDesignKeyEnum.INVOICE);
 
-  function getApprovalEnableBtnList() {
-    if (detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING) {
-      return [
-        {
-          label: t('common.pass'),
-          key: 'pass',
-          text: false,
-          ghost: true,
-          class: 'n-btn-outline-primary',
-          permission: ['CONTRACT_INVOICE:APPROVAL'],
-        },
-        {
-          label: t('common.unPass'),
-          key: 'unPass',
-          danger: true,
-          text: false,
-          ghost: true,
-          class: 'n-btn-outline-primary',
-          permission: ['CONTRACT_INVOICE:APPROVAL'],
-        },
-        ...(detailInfo.value?.createUser === useStore.userInfo.id
-          ? [
-              {
-                label: t('common.revoke'),
-                key: 'revoke',
-                text: false,
-                ghost: true,
-                class: 'n-btn-outline-primary',
-              },
-            ]
-          : []),
-        {
-          label: t('common.delete'),
-          key: 'delete',
-          text: false,
-          ghost: true,
-          danger: true,
-          class: 'n-btn-outline-primary',
-          permission: ['CONTRACT_INVOICE:DELETE'],
-        },
-      ];
-    }
-    if (detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVED) {
-      return [
-        {
-          label: t('common.delete'),
-          key: 'delete',
-          text: false,
-          ghost: true,
-          danger: true,
-          class: 'n-btn-outline-primary',
-          permission: ['CONTRACT_INVOICE:DELETE'],
-        },
-      ];
-    }
-    return [
-      {
-        key: 'edit',
-        label: t('common.edit'),
-        permission: ['CONTRACT_INVOICE:UPDATE'],
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-      },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        text: false,
-        ghost: true,
-        danger: true,
-        class: 'n-btn-outline-primary',
-        permission: ['CONTRACT_INVOICE:DELETE'],
-      },
-    ];
-  }
+  const invoiceDetailDataActionMap = {
+    edit: {
+      key: 'edit',
+      label: t('common.edit'),
+      permission: ['CONTRACT_INVOICE:UPDATE'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      danger: true,
+      permission: ['CONTRACT_INVOICE:DELETE'],
+    },
+  };
 
-  const buttonList = computed(() =>
-    dicApprovalEnable.value
-      ? getApprovalEnableBtnList()
-      : [
-          {
-            key: 'edit',
-            label: t('common.edit'),
-            permission: ['CONTRACT_INVOICE:UPDATE'],
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-          },
-          {
-            label: t('common.delete'),
-            key: 'delete',
-            text: false,
-            ghost: true,
-            danger: true,
-            class: 'n-btn-outline-primary',
-            permission: ['CONTRACT_INVOICE:DELETE'],
-          },
-        ]
-  );
+  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<ContractInvoiceItem>({
+    formType: FormDesignKeyEnum.INVOICE,
+    dataActionMap: invoiceDetailDataActionMap,
+    isDetail: true,
+    identityResolver: {
+      isApplicant: (row, currentUserId) => row.createUser === currentUserId,
+      isApprover: () =>
+        // todo xinxinwu 不确定审批人如何返回
+        true,
+    },
+  });
+
+  const detailActions = computed<{
+    groupList: ActionsItem[];
+    moreList: ActionsItem[];
+  }>(() => {
+    if (!detailInfo.value) {
+      return { groupList: [], moreList: [] };
+    }
+
+    const detailAction = resolveRowOperation(detailInfo.value);
+    return {
+      ...detailAction,
+      groupList: detailAction.groupList.map((e) => {
+        return {
+          ...e,
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+        };
+      }),
+    };
+  });
 
   const refreshKey = ref(0);
   function handleSaved() {
@@ -253,6 +213,9 @@
       case 'unPass':
         handleApproval();
         break;
+      case 'review':
+        // todo 提审 xinxinwu
+        break;
       case 'edit':
         handleEdit();
         break;
@@ -271,7 +234,7 @@
     () => visible.value,
     (val) => {
       if (val) {
-        initApprovalConfig();
+        initApprovalPermission();
       }
     }
   );

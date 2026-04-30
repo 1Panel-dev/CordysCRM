@@ -1,40 +1,25 @@
 <template>
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="detailInfo?.name ?? ''">
     <template #titleLeft>
-      <div v-if="dicApprovalEnable" class="text-[14px] font-normal">
+      <div v-if="enableApproval" class="text-[14px] font-normal">
         <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
       </div>
     </template>
     <template #titleRight>
-      <n-button
-        v-if="!props.readonly"
-        v-permission="['ORDER:UPDATE']"
-        type="primary"
-        ghost
-        class="n-btn-outline-primary"
-        @click="handleEdit()"
+      <CrmOperationButton
+        class="gap-[12px]"
+        :not-show-divider="true"
+        :group-list="detailActions.groupList"
+        :more-list="detailActions.moreList"
+        @select="handleSelect"
       >
-        {{ t('common.edit') }}
-      </n-button>
-      <n-button
-        v-permission="['ORDER:DOWNLOAD']"
-        type="primary"
-        ghost
-        class="n-btn-outline-primary ml-[12px]"
-        @click="handleDownload(props.sourceId)"
-      >
-        {{ t('common.download') }}
-      </n-button>
-      <n-button
-        v-if="!props.readonly"
-        v-permission="['ORDER:DELETE']"
-        type="error"
-        ghost
-        class="n-btn-outline-error ml-[12px]"
-        @click="handleDelete(detailInfo)"
-      >
-        {{ t('common.delete') }}
-      </n-button>
+        <template #more>
+          <n-button type="primary" ghost class="n-btn-outline-primary">
+            {{ t('common.more') }}
+            <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
+          </n-button>
+        </template>
+      </CrmOperationButton>
     </template>
     <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
       <CrmWorkflowCard
@@ -107,16 +92,19 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
   import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
   import { deleteOrder, getOpenSeaOptions, getOrderStatusConfig, updateOrderStage } from '@/api/modules';
-  import useApprovalConfig from '@/hooks/useApprovalConfig';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAnyPermission } from '@/utils/permission';
@@ -196,8 +184,63 @@
       },
     });
   }
-  // todo xinxinwu 需要调整为审批流是否开启的接口key
-  const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(FormDesignKeyEnum.INVOICE);
+
+  const orderDetailDataActionMap = {
+    edit: {
+      key: 'edit',
+      label: t('common.edit'),
+      permission: ['ORDER:UPDATE'],
+    },
+    download: {
+      label: t('common.download'),
+      key: 'download',
+      permission: ['ORDER:DOWNLOAD'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      danger: true,
+      permission: ['ORDER:DELETE'],
+    },
+  };
+  // todo 订单现在没有审批状态，所以暂时不生效，需要和后台确认
+  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<OrderItem>({
+    formType: FormDesignKeyEnum.ORDER,
+    dataActionMap: orderDetailDataActionMap,
+    isDetail: true,
+    specialActionFilter: (_row, actionKeys) => {
+      return actionKeys.filter((key) => !['review', 'revoke', 'pass', 'unPass'].includes(key));
+    },
+  });
+
+  const detailActions = computed<{
+    groupList: ActionsItem[];
+    moreList: ActionsItem[];
+  }>(() => {
+    if (!detailInfo.value) {
+      return { groupList: [], moreList: [] };
+    }
+
+    const detailAction = resolveRowOperation(detailInfo.value);
+    const filteredGroupList = props.readonly
+      ? detailAction.groupList.filter((item) => !['edit', 'delete'].includes(item.key as string))
+      : detailAction.groupList;
+    const filteredMoreList = props.readonly
+      ? detailAction.moreList.filter((item) => !['edit', 'delete'].includes(item.key as string))
+      : detailAction.moreList;
+
+    return {
+      groupList: filteredGroupList.map((e) => {
+        return {
+          ...e,
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+        };
+      }),
+      moreList: filteredMoreList,
+    };
+  });
 
   const formCreateDrawerVisible = ref(false);
   function handleEdit() {
@@ -206,6 +249,42 @@
 
   function handleDownload(id: string) {
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_ORDER, { id });
+  }
+
+  function handleApproval(isPass?: boolean) {
+    // todo 审批
+  }
+  function handleRevoke() {
+    // todo 撤销
+  }
+
+  function handleSelect(key: string) {
+    // todo 缺少审批那些
+    switch (key) {
+      case 'pass':
+        handleApproval(true);
+        break;
+      case 'unPass':
+        handleApproval();
+        break;
+      case 'review':
+        // todo 提审 xinxinwu
+        break;
+      case 'revoke':
+        handleRevoke();
+        break;
+      case 'edit':
+        handleEdit();
+        break;
+      case 'download':
+        handleDownload(props.sourceId);
+        break;
+      case 'delete':
+        handleDelete(detailInfo.value);
+        break;
+      default:
+        break;
+    }
   }
 
   const showContractDetailDrawer = ref(false);
@@ -251,7 +330,7 @@
     () => visible.value,
     (val) => {
       if (val) {
-        initApprovalConfig();
+        initApprovalPermission();
       }
     }
   );

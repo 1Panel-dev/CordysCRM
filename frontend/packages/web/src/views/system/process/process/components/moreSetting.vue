@@ -14,7 +14,7 @@
         path="submitterCanRevoke"
         :label="t('process.process.submitterAuthority')"
       >
-        <n-checkbox v-model:checked="form.submitterCanRevoke">
+        <n-checkbox v-model:checked="form.submitterCanRevoke" :disabled="readonly">
           <div class="flex items-center gap-[8px]">
             {{ t('process.process.allowSubmitterCancel') }}
             <n-tooltip trigger="hover">
@@ -36,7 +36,12 @@
         :label="t('process.process.approverAuthority')"
       >
         <div class="mt-[4px] flex flex-col gap-[4px]">
-          <n-checkbox v-for="item of approverAuthorityList" :key="item.value" v-model:checked="form[item.value]">
+          <n-checkbox
+            v-for="item of approverAuthorityList"
+            :key="item.value"
+            v-model:checked="form[item.value]"
+            :disabled="readonly"
+          >
             <div class="flex items-center gap-[8px]">
               {{ item.label }}
               <n-tooltip trigger="hover">
@@ -60,7 +65,7 @@
       >
         <div class="mt-[4px] flex flex-col gap-[8px]">
           <div>{{ t('process.process.repeatApproval') }}</div>
-          <n-radio-group v-model:value="form.duplicateApproverRule">
+          <n-radio-group v-model:value="form.duplicateApproverRule" :disabled="readonly">
             <div class="flex flex-col gap-[8px]">
               <n-radio v-for="item of autoApprovalList" :key="item.value" :value="item.value" :label="t(item.label)">
               </n-radio>
@@ -74,7 +79,7 @@
         path="requireComment"
         :label="t('process.process.approvalOpinion')"
       >
-        <n-checkbox v-model:checked="form.requireComment">
+        <n-checkbox v-model:checked="form.requireComment" :disabled="readonly">
           {{ t('process.process.approvalRejectOpinion') }}
         </n-checkbox>
       </n-form-item>
@@ -121,6 +126,7 @@
   const props = defineProps<{
     formType: string;
     needDetail?: boolean;
+    readonly?: boolean;
   }>();
 
   const form = defineModel<MoreSettingsParams>('moreConfig', {
@@ -191,7 +197,7 @@
         result.push({
           approvalStatus: status,
           permission: permissionKey,
-          enabled,
+          enabled: Boolean(enabled),
         });
       });
     });
@@ -245,6 +251,7 @@
             render: (row: ApprovalAuthorityRow) =>
               h(NCheckbox, {
                 checked: Boolean(row.permissions[item.id]),
+                disabled: props.readonly,
                 onUpdateChecked: (checked: boolean) => {
                   updateRowPermission(row, item.id, checked);
                   form.value.statusPermissions = flattenStatusPermissions(permissionData.value);
@@ -298,7 +305,7 @@
   async function initPermissionData() {
     try {
       const result = await getApprovalPermissions(props.formType);
-      permission.value = result.permissions.filter((e) => !e.id.includes(':ADD'));
+      permission.value = result.permissions.filter((e) => !e.id.includes(':ADD') && !e.id.includes(':APPROVAL'));
       if (props.needDetail) {
         permissionData.value = aggregateStatusPermissions(form.value.statusPermissions);
       } else {
@@ -312,11 +319,9 @@
   }
 
   watch(
-    () => props.formType,
-    (val) => {
-      if (val) {
-        initPermissionData();
-      }
+    [() => props.formType, () => form.value.permissions],
+    () => {
+      initPermissionData();
     },
     {
       immediate: true,

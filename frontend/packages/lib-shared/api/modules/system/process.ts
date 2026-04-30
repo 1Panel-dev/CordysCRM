@@ -7,6 +7,7 @@ import {
   ApprovalProcessDetailUrl,
   ToggleApprovalProcessUrl,
   ApprovalProcessPageUrl,
+  GetApprovalConfigDetailUrl,
 } from '@lib/shared/api/requrls/system/process';
 import {
   AddApprovalProcessParams,
@@ -23,6 +24,10 @@ export default function useProcessApi(CDR: CordysAxios) {
   // 审批流数据权限
   function getApprovalPermissions(type: string) {
     return CDR.get<ApprovalPermissionsDetail>({ url:`${ApprovalPermissionsUrl}/${type}` });
+  }
+  // 审批流配置详情 用于列表里边查询对应状态审批流详情
+  function getApprovalConfigDetail(type: string) {
+    return CDR.get<ApprovalProcessDetail>({ url:`${GetApprovalConfigDetailUrl}/${type}` });
   }
   // 审批流数据权限
   function getApprovalProcessList(data: TableQueryParams) {
@@ -56,6 +61,7 @@ export default function useProcessApi(CDR: CordysAxios) {
     updateApprovalProcess,
     approvalProcessDetail,
     deleteApprovalProcess,
-    toggleApprovalProcess
+    toggleApprovalProcess,
+    getApprovalConfigDetail,
   };
 }

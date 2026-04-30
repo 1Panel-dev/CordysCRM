@@ -1,6 +1,11 @@
 <template>
   <!-- 按钮组 -->
-  <CrmButtonGroup :list="buttonGroupList" @select="handleSelect" @cancel="emit('cancel')">
+  <CrmButtonGroup
+    :list="buttonGroupList"
+    :not-show-divider="props.notShowDivider"
+    @select="handleSelect"
+    @cancel="emit('cancel')"
+  >
     <template v-if="props.moreList?.length" #more>
       <!-- 更多操作 -->
       <CrmMoreAction
@@ -11,9 +16,11 @@
         @select="handleMoreSelect"
       >
         <template #default>
-          <n-button text type="primary">
-            {{ t('common.more') }}
-          </n-button>
+          <slot name="more">
+            <n-button text type="primary">
+              {{ t('common.more') }}
+            </n-button>
+          </slot>
         </template>
         <template v-for="group in hasMorePopContentSlot" :key="group.key" #[group.popSlotContent]="{ key }">
           <slot :key="key" :name="group.popSlotContent"></slot>
@@ -41,6 +48,7 @@
   const props = defineProps<{
     groupList: ActionsItem[]; // 按钮组数据
     moreList?: ActionsItem[]; // 更多操作下拉选项
+    notShowDivider?: boolean; // 不显示分割线
   }>();
 
   const emit = defineEmits<{

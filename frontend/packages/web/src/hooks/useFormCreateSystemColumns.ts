@@ -10,14 +10,12 @@ import { quotationStatus } from '@/config/opportunity';
 import { processStatusOptions } from '@/config/process';
 import useReasonConfig from '@/hooks/useReasonConfig';
 
-import useApprovalConfig from './useApprovalConfig';
 import { FormCreateTableProps } from './useFormCreateTable';
 import { FilterOption } from 'naive-ui/es/data-table/src/interface';
 
 interface FormCreateSystemColumnsResult {
   internalColumnMap: Record<string, CrmDataTableColumn[]>;
   staticColumns: CrmDataTableColumn[];
-  dicApprovalEnable: Ref<boolean>;
   reasonOptions: Ref<FilterOption[]>;
   noSorterType: FieldTypeEnum[];
 }
@@ -28,9 +26,9 @@ export default async function useFormCreateSystemColumns(
   const { t } = useI18n();
 
   const { reasonOptions, initReasonConfig } = useReasonConfig(props.formKey);
-  const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(props.formKey);
   const showPagination = props.showPagination ?? true;
   const columnsSorter = showPagination ? true : 'default';
+  const enableApproval = props.enableApproval?.value ?? false;
 
   const noSorterType = [
     FieldTypeEnum.DIVIDER,
@@ -48,8 +46,7 @@ export default async function useFormCreateSystemColumns(
 
   // 静态列和高级筛选增加原因配置筛选
   await initReasonConfig();
-  // 审批配置
-  await initApprovalConfig();
+
   const customerInternalColumns: CrmDataTableColumn[] = [
     {
       title: t('org.department'),
@@ -341,10 +338,9 @@ export default async function useFormCreateSystemColumns(
       render: props.specialRender?.status,
     },
   ];
-
   // 审批状态
   const approvalStatusColumn = (
-    dicApprovalEnable.value
+    enableApproval
       ? [
           {
             title: t('contract.approvalStatus'),
@@ -825,7 +821,6 @@ export default async function useFormCreateSystemColumns(
   return {
     internalColumnMap,
     staticColumns,
-    dicApprovalEnable,
     reasonOptions,
     noSorterType,
   };

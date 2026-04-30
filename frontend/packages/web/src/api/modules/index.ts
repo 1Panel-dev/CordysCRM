@@ -770,4 +770,5 @@ export const {
   approvalProcessDetail,
   deleteApprovalProcess,
   toggleApprovalProcess,
+  getApprovalConfigDetail,
 } = processApi;

@@ -174,10 +174,10 @@
   import { baseFilterConfigList } from '@/config/clue';
   import { contractStatusOptions } from '@/config/contract';
   import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
-  import { useUserStore } from '@/store';
   // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
@@ -195,7 +195,6 @@
     ): void;
   }>();
 
-  const useStore = useUserStore();
   const { t } = useI18n();
   const Message = useMessage();
   const { currentLocale } = useLocale(Message.loading);
@@ -282,91 +281,6 @@
     }
   }
 
-  function getEnableApprovalGroupList(row: ContractItem) {
-    if (row.approvalStatus === ProcessStatusEnum.APPROVING) {
-      return [
-        {
-          label: t('common.approval'),
-          key: 'approval',
-          permission: ['CONTRACT:APPROVAL'],
-        },
-        ...(row.createUser === useStore.userInfo.id
-          ? [
-              {
-                label: t('common.revoke'),
-                key: 'revoke',
-              },
-            ]
-          : []),
-        {
-          label: t('common.delete'),
-          key: 'delete',
-          permission: ['CONTRACT:DELETE'],
-        },
-      ];
-    }
-    if (row.approvalStatus === ProcessStatusEnum.APPROVED) {
-      return [
-        ...(row.stage !== ContractStatusEnum.VOID
-          ? [
-              {
-                label: t('contract.payment'),
-                key: 'paymentRecord',
-                permission: ['CONTRACT:PAYMENT'],
-                disabled: !row.amount || row.alreadyPayAmount >= row.amount,
-                tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
-              },
-            ]
-          : []),
-        {
-          label: t('common.delete'),
-          key: 'delete',
-          permission: ['CONTRACT:DELETE'],
-        },
-      ];
-    }
-    return [
-      {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['CONTRACT:UPDATE'],
-      },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['CONTRACT:DELETE'],
-      },
-    ];
-  }
-
-  function getOperationGroupList(row: ContractItem, dicApprovalEnable: boolean) {
-    return dicApprovalEnable
-      ? getEnableApprovalGroupList(row)
-      : [
-          {
-            label: t('common.edit'),
-            key: 'edit',
-            permission: ['CONTRACT:UPDATE'],
-          },
-          ...(row.stage !== ContractStatusEnum.VOID
-            ? [
-                {
-                  label: t('contract.payment'),
-                  key: 'paymentRecord',
-                  permission: ['CONTRACT:PAYMENT'],
-                  disabled: !row.amount || row.alreadyPayAmount >= row.amount,
-                  tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
-                },
-              ]
-            : []),
-          {
-            label: t('common.delete'),
-            key: 'delete',
-            permission: ['CONTRACT:DELETE'],
-          },
-        ];
-  }
-
   const showDetailDrawer = ref(false);
 
   function handleEdit(id: string) {
@@ -439,7 +353,8 @@
 
   async function handleActionSelect(row: ContractItem, actionKey: string) {
     switch (actionKey) {
-      case 'approval':
+      case 'review':
+        // todo 提审 xinxinwu
         handleApproval(row);
         break;
       case 'paymentRecord':
@@ -482,19 +397,53 @@
     }
   }
 
-  const { useTableRes, customFieldsFilterConfig, fieldList, dicApprovalEnable } = await useFormCreateTable({
+  function createContractDataActionMap(row: ContractItem) {
+    return {
+      edit: {
+        label: t('common.edit'),
+        key: 'edit',
+        permission: ['CONTRACT:UPDATE'],
+      },
+      paymentRecord: {
+        label: t('contract.payment'),
+        key: 'paymentRecord',
+        permission: ['CONTRACT:PAYMENT'],
+        disabled: !row.amount || row.alreadyPayAmount >= row.amount,
+        tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
+      },
+      delete: {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['CONTRACT:DELETE'],
+      },
+    };
+  }
+
+  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<ContractItem>({
+    formType: FormDesignKeyEnum.CONTRACT,
+    dataActionMap: createContractDataActionMap,
+    specialActionFilter: (row, actionKeys) => {
+      return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
+    },
+  });
+  await initApprovalPermission();
+
+  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CONTRACT,
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 180 : 150,
+      width: 180,
       fixed: 'right',
-      render: (row: ContractItem) =>
-        getOperationGroupList(row, dicApprovalEnable.value).length
+      render: (row: ContractItem) => {
+        const operation = resolveRowOperation(row);
+        return operation.groupList.length
           ? h(CrmOperationButton, {
-              groupList: getOperationGroupList(row, dicApprovalEnable.value),
+              groupList: operation.groupList,
+              moreList: operation.moreList,
               onSelect: (key: string) => handleActionSelect(row, key),
             })
-          : '-',
+          : '-';
+      },
     },
     specialRender: {
       name: (row: ContractItem) => {
@@ -532,7 +481,7 @@
       },
       stage: (row: ContractItem) => {
         const disabled = row.approvalStatus !== ProcessStatusEnum.APPROVED || !hasAnyPermission(['CONTRACT:STAGE']);
-        if (disabled && dicApprovalEnable.value) {
+        if (disabled && enableApproval.value) {
           return h(
             NTooltip,
             { delay: 300 },
@@ -552,7 +501,7 @@
         return h(StatusTagSelect, {
           'status': row.stage as ContractStatusEnum,
           'noRender': true,
-          'disabled': disabled && dicApprovalEnable.value,
+          'disabled': disabled && enableApproval.value,
           'onUpdate:status': async (val) => {
             // 修改为作废的时候需要填写原因
             if (val === ContractStatusEnum.VOID) {
@@ -578,6 +527,7 @@
     },
     permission: ['CONTRACT:EXPORT', 'CONTRACT:APPROVAL'],
     containerClass: '.crm-contract-table',
+    enableApproval,
   });
   const {
     propsRes,
@@ -650,7 +600,7 @@
           key: 'batchEdit',
           permission: ['CONTRACT:UPDATE'],
         },
-        ...(dicApprovalEnable.value
+        ...(enableApproval.value
           ? [
               {
                 label: t('common.batchApproval'),
@@ -700,7 +650,7 @@
     //   dataIndex: 'alreadyPayAmount',
     //   type: FieldTypeEnum.INPUT_NUMBER,
     // },
-    ...(dicApprovalEnable.value
+    ...(enableApproval.value
       ? [
           {
             title: t('contract.approvalStatus'),

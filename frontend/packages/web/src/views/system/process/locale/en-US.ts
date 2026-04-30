@@ -45,4 +45,6 @@ export default {
   'process.process.flow.nodeName': 'Node name',
   'process.process.flow.setTriggerCondition': 'Set Trigger Condition',
   'process.process.flow.conditionName': 'Condition Name',
+  'process.process.flow.nodeNameNotSet': 'Node name not set, please set',
+  'process.process.flow.toConfig': 'To Config',
 };

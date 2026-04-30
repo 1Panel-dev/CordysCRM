@@ -5,6 +5,7 @@
         <n-select
           v-model:value="form.formType"
           :options="businessTypeOptions"
+          :disabled="props.needDetail"
           :placeholder="t('common.pleaseSelect')"
         />
       </n-form-item>
@@ -12,16 +13,28 @@
         require-mark-placement="right"
         path="name"
         :label="t('process.process.processName')"
-        :rule="[{ required: true, message: t('common.notNull', { value: `${t('process.process.processName')}` }) }]"
+        :rule="[
+          {
+            required: true,
+            message: t('common.notNull', { value: `${t('process.process.processName')}` }),
+            trigger: ['input'],
+          },
+        ]"
       >
-        <n-input v-model:value="form.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
+        <n-input
+          v-model:value="form.name"
+          :maxlength="255"
+          type="text"
+          :disabled="readonly"
+          :placeholder="t('common.pleaseInput')"
+        />
       </n-form-item>
       <n-form-item
         require-mark-placement="right"
         path="executeTiming"
         :label="t('process.process.basic.executionTiming')"
       >
-        <n-checkbox-group v-model:value="form.executeTiming" class="mt-[4px]">
+        <n-checkbox-group v-model:value="form.executeTiming" class="mt-[4px]" :disabled="readonly">
           <div class="flex flex-col gap-[8px]">
             <n-checkbox v-for="item of executionTimingList" :key="item.value" :value="item.value">
               <div class="flex items-center gap-[8px]">
@@ -34,6 +47,7 @@
       <n-form-item require-mark-placement="right" path="description" :label="t('process.process.basic.description')">
         <n-input
           v-model:value="form.description"
+          :disabled="readonly"
           :maxlength="1000"
           :placeholder="t('common.pleaseInput')"
           type="textarea"
@@ -55,6 +69,11 @@
   import type { FormInst } from 'naive-ui';
 
   const { t } = useI18n();
+  const props = defineProps<{
+    needDetail?: boolean;
+    readonly?: boolean;
+  }>();
+
   const form = defineModel<BasicFormParams>('basicConfig', {
     default: () => ({
       ...defaultBasicForm,

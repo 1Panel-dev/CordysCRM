@@ -68,13 +68,13 @@ export interface FormCreateTableProps {
   orderStage?: StageConfigItem[];
   hiddenAllScreen?: boolean;
   hiddenRefresh?: boolean;
+  enableApproval?: Ref<boolean>;
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
   const { t } = useI18n();
   const { getFilterListConfig, customFieldsFilterConfig } = useFormCreateAdvanceFilter();
-  const { internalColumnMap, staticColumns, reasonOptions, dicApprovalEnable, noSorterType } =
-    await useFormCreateSystemColumns(props);
+  const { internalColumnMap, staticColumns, reasonOptions, noSorterType } = await useFormCreateSystemColumns(props);
   const loading = ref(false);
   const showPagination = props.showPagination ?? true;
   let columns: CrmDataTableColumn[] = [];
@@ -580,7 +580,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     useTableRes,
     customFieldsFilterConfig,
     reasonOptions,
-    dicApprovalEnable,
     fieldList,
   };
 }
