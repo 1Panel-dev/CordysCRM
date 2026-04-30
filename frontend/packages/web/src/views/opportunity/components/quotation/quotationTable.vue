@@ -104,7 +104,6 @@
   import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
   import { BatchOperationResult, QuotationItem } from '@lib/shared/models/opportunity';
   import { CluePoolItem } from '@lib/shared/models/system/module';
@@ -130,12 +129,13 @@
 
   import { batchVoided, deleteQuotation, getOpenSeaOptions, revokeQuotation, voidQuotation } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { quotationDataActionMap } from '@/config/opportunity';
   import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
-  import { useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { FullPageEnum } from '@/enums/routeEnum';
@@ -143,9 +143,7 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const Message = useMessage();
-  const { currentLocale } = useLocale(Message.loading);
 
-  const useStore = useUserStore();
   const { openNewPage } = useOpenNewPage();
 
   const props = defineProps<{
@@ -355,7 +353,8 @@
       case 'edit':
         handleEdit(row.id);
         break;
-      case 'approval':
+      case 'review':
+        // todo 提审
         handleApproval(row);
         break;
       case 'voided':
@@ -375,108 +374,6 @@
     }
   }
 
-  const groupList = [
-    {
-      label: t('common.edit'),
-      key: 'edit',
-      permission: ['OPPORTUNITY_QUOTATION:UPDATE'],
-    },
-    {
-      label: t('common.approval'),
-      key: 'approval',
-      permission: ['OPPORTUNITY_QUOTATION:APPROVAL'],
-    },
-    {
-      label: t('common.voided'),
-      key: 'voided',
-      permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      permission: ['OPPORTUNITY_QUOTATION:DELETE'],
-    },
-    {
-      label: 'more',
-      key: 'more',
-      slotName: 'more',
-    },
-  ];
-
-  const moreGroupList = [
-    {
-      label: t('common.download'),
-      key: 'download',
-      permission: ['OPPORTUNITY_QUOTATION:DOWNLOAD'],
-    },
-    {
-      label: t('common.revoke'),
-      key: 'revoke',
-    },
-  ];
-
-  const moreActions = [
-    {
-      label: t('common.voided'),
-      key: 'voided',
-      permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      danger: true,
-      permission: ['OPPORTUNITY_QUOTATION:DELETE'],
-    },
-  ];
-
-  function getOperationGroupList(row: QuotationItem, dicApprovalEnable: boolean) {
-    const allGroups = [...groupList, ...moreGroupList];
-    const getGroups = (keys: string[]) => {
-      return keys.map((key) => allGroups.find((e) => e.key === key)).filter(Boolean) as typeof groupList;
-    };
-    if (dicApprovalEnable) {
-      const commonGroups = ['voided', 'delete'];
-
-      if (row.status === QuotationStatusEnum.VOIDED) {
-        return getGroups(['delete']);
-      }
-
-      switch (row.approvalStatus) {
-        case ProcessStatusEnum.APPROVED:
-          return getGroups(['download', ...commonGroups]);
-        case ProcessStatusEnum.UNAPPROVED:
-        case ProcessStatusEnum.REVOKED:
-          return getGroups(['edit', ...commonGroups]);
-        case ProcessStatusEnum.APPROVING:
-          const operationGroups =
-            row.createUser === useStore.userInfo.id && hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])
-              ? ['approval', 'revoke', 'more']
-              : ['approval', ...commonGroups];
-          return getGroups(operationGroups);
-        default:
-          return getGroups(['edit', 'voided', 'delete']);
-      }
-    }
-
-    if (row.status === QuotationStatusEnum.VOIDED) return getGroups(['delete']);
-    return getGroups(['edit', 'download', 'more']);
-  }
-
-  function getMoreOperationGroupList(row: QuotationItem, dicApprovalEnable: boolean) {
-    if (dicApprovalEnable) {
-      if (
-        (row.approvalStatus === ProcessStatusEnum.APPROVING &&
-          row.createUser === useStore.userInfo.id &&
-          hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL'])) ||
-        row.approvalStatus === ProcessStatusEnum.NONE
-      ) {
-        return moreActions;
-      }
-      return [];
-    }
-
-    return row.status === QuotationStatusEnum.VOIDED ? [] : moreActions;
-  }
   const showOverviewDrawer = ref<boolean>(false);
   const activeOpportunity = ref();
   function showOpportunityDrawer(row: QuotationItem) {
@@ -531,23 +428,38 @@
     initOpenSeaOptions();
   });
 
-  const { useTableRes, customFieldsFilterConfig, fieldList, dicApprovalEnable } = await useFormCreateTable({
+  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<QuotationItem>({
+    formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+    dataActionMap: quotationDataActionMap,
+    specialActionFilter: (row, actionKeys) => {
+      // todo 状态为作废历史数据 xinxinwu
+      if (row.status === QuotationStatusEnum.VOIDED) {
+        return actionKeys.filter((key) => key === 'delete');
+      }
+      return actionKeys;
+    },
+  });
+  await initApprovalPermission();
+
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.formKey,
     containerClass: `.crm-quotation-table-${props.formKey}`,
     operationColumn: props.readonly
       ? undefined
       : {
           key: 'operation',
-          width: currentLocale.value === 'zh-CN' ? 140 : 200,
+          width: 180,
           fixed: 'right',
-          render: (row: QuotationItem) =>
-            getOperationGroupList(row, dicApprovalEnable.value).length
+          render: (row: QuotationItem) => {
+            const operation = resolveRowOperation(row);
+            return operation.groupList.length
               ? h(CrmOperationButton, {
-                  groupList: getOperationGroupList(row, dicApprovalEnable.value),
-                  moreList: getMoreOperationGroupList(row, dicApprovalEnable.value),
+                  groupList: operation.groupList,
+                  moreList: operation.moreList,
                   onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
                 })
-              : '-',
+              : '-';
+          },
         },
     specialRender: {
       name: (row: QuotationItem) => {
@@ -605,12 +517,13 @@
     },
     permission: ['OPPORTUNITY_QUOTATION:APPROVAL', 'OPPORTUNITY_QUOTATION:VOIDED'],
     readonly: props.readonly,
+    enableApproval,
   });
 
   const actionConfig = computed(<BatchActionConfig>() => {
     return {
       baseAction: [
-        ...(dicApprovalEnable.value
+        ...(enableApproval.value
           ? [
               {
                 label: t('common.batchApproval'),
@@ -639,7 +552,7 @@
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
-      ...(dicApprovalEnable.value
+      ...(enableApproval.value
         ? [
             {
               title: t('common.approvalStatus'),
@@ -731,7 +644,7 @@
     }
   );
 
-  onBeforeMount(async () => {
+  onBeforeMount(() => {
     if (props.sourceId) {
       searchData();
     }

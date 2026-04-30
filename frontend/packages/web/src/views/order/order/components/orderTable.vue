@@ -124,6 +124,7 @@
   import { deleteOrder, getOrderStatistic, getOrderStatusConfig } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -243,34 +244,6 @@
     }
   }
 
-  const operationGroupList = computed<ActionsItem[]>(() => {
-    return [
-      ...(!props.readonly
-        ? [
-            {
-              label: t('common.edit'),
-              key: 'edit',
-              permission: ['ORDER:UPDATE'],
-            },
-          ]
-        : []),
-      {
-        label: t('common.download'),
-        key: 'download',
-        permission: ['ORDER:DOWNLOAD'],
-      },
-      ...(!props.readonly
-        ? [
-            {
-              label: 'more',
-              key: 'more',
-              slotName: 'more',
-            },
-          ]
-        : []),
-    ];
-  });
-
   const showDetailDrawer = ref(false);
 
   function handleEdit(id: string) {
@@ -312,6 +285,10 @@
 
   async function handleActionSelect(row: OrderItem, actionKey: string) {
     switch (actionKey) {
+      case 'review':
+        // todo 提审 xinxinwu
+        showDetail(row.id);
+        break;
       case 'edit':
         handleEdit(row.id);
         break;
@@ -344,26 +321,50 @@
     });
   }
 
-  const { useTableRes, customFieldsFilterConfig, dicApprovalEnable } = await useFormCreateTable({
+  const orderDataActionMap = {
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: ['ORDER:UPDATE'],
+    },
+    download: {
+      label: t('common.download'),
+      key: 'download',
+      permission: ['ORDER:DOWNLOAD'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: ['ORDER:DELETE'],
+    },
+  };
+
+  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<OrderItem>({
+    formType: FormDesignKeyEnum.ORDER,
+    dataActionMap: orderDataActionMap,
+    specialActionFilter: (row, actionKeys) => {
+      return props.readonly ? [] : actionKeys;
+    },
+  });
+  await initApprovalPermission();
+
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.formKey,
     excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',
       width: currentLocale.value === 'en-US' ? 180 : 150,
       fixed: 'right',
-      render: (row: OrderItem) =>
-        h(CrmOperationButton, {
-          groupList: operationGroupList.value,
-          onSelect: (key: string) => handleActionSelect(row, key),
-          moreList: [
-            {
-              label: t('common.delete'),
-              key: 'delete',
-              danger: true,
-              permission: ['ORDER:DELETE'],
-            },
-          ],
-        }),
+      render: (row: OrderItem) => {
+        const operation = resolveRowOperation(row);
+        return operation.groupList.length
+          ? h(CrmOperationButton, {
+              groupList: operation.groupList,
+              moreList: operation.moreList,
+              onSelect: (key: string) => handleActionSelect(row, key),
+            })
+          : '-';
+      },
     },
     specialRender: {
       name: (row: OrderItem) => {
@@ -422,18 +423,21 @@
         return row.stageName || '-';
       },
       approvalStatus: (row: OrderItem) =>
-        h(CrmApprovalPopover, {
-          status: row.approvalStatus,
-          formKey: FormDesignKeyEnum.ORDER,
-          sourceId: row.id,
-          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
-          onMore: () => {
-            showDetail(row.id);
-          },
-        }),
+        row.approvalStatus
+          ? h(CrmApprovalPopover, {
+              status: row.approvalStatus,
+              formKey: FormDesignKeyEnum.ORDER,
+              sourceId: row.id,
+              disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+              onMore: () => {
+                showDetail(row.id);
+              },
+            })
+          : '-',
     },
     containerClass: `.crm-order-table-${props.formKey}`,
     orderStage: stageConfig.value?.stageConfigList || [],
+    enableApproval,
   });
   const { propsRes, propsEvent, advanceFilter, filterItem, loadList, setLoadListParams, setAdvanceFilter } =
     useTableRes;
@@ -470,7 +474,7 @@
       },
     },
     // todo xinxinwu
-    ...(dicApprovalEnable.value
+    ...(enableApproval.value
       ? [
           {
             title: t('common.approvalStatus'),
@@ -554,7 +558,8 @@
     }
   );
 
-  onBeforeMount(() => {
+  onBeforeMount(async () => {
+    await initApprovalPermission();
     if (props.isContractTab || props.isCustomerTab) {
       searchData();
     }

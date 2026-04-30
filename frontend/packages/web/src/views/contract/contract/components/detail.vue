@@ -2,14 +2,27 @@
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="title">
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
-        <CrmApprovalStatus v-if="dicApprovalEnable" :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
+        <CrmApprovalStatus v-if="enableApproval" :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
         <div class="text-[14px] font-normal">
           {{ stageName }}
         </div>
       </div>
     </template>
     <template #titleRight>
-      <CrmButtonGroup class="gap-[12px]" :list="buttonList" not-show-divider @select="handleButtonClick" />
+      <CrmOperationButton
+        class="gap-[12px]"
+        :not-show-divider="true"
+        :group-list="detailActions.groupList"
+        :more-list="detailActions.moreList"
+        @select="handleButtonClick"
+      >
+        <template #more>
+          <n-button type="primary" ghost class="n-btn-outline-primary">
+            {{ t('common.more') }}
+            <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
+          </n-button>
+        </template>
+      </CrmOperationButton>
     </template>
     <div class="h-full bg-[var(--text-n9)] p-[16px]">
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
@@ -99,7 +112,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { useMessage } from 'naive-ui';
+  import { NButton, useMessage } from 'naive-ui';
 
   import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -109,13 +122,15 @@
   import type { ContractItem } from '@lib/shared/models/contract';
   import { CollaborationType } from '@lib/shared/models/customer';
 
-  import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
   import PaymentRecordTable from '@/views/contract/contractPaymentRecord/components/paymentTable.vue';
   import InvoiceTable from '@/views/contract/invoice/components/invoiceTable.vue';
@@ -125,10 +140,9 @@
 
   import { approvalContract, deleteContract, revokeContract } from '@/api/modules';
   import { contractStatusOptions } from '@/config/contract';
-  import useApprovalConfig from '@/hooks/useApprovalConfig';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useModal from '@/hooks/useModal';
-  import { useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -146,7 +160,6 @@
     required: true,
   });
 
-  const useStore = useUserStore();
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
@@ -189,133 +202,65 @@
     ].filter((item) => hasAnyPermission(item.permission))
   );
 
-  function getApprovalEnableBtnList() {
-    if (detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING) {
-      return [
-        {
-          label: t('common.pass'),
-          key: 'pass',
-          text: false,
-          ghost: true,
-          class: 'n-btn-outline-primary',
-          permission: ['CONTRACT:APPROVAL'],
-        },
-        {
-          label: t('common.unPass'),
-          key: 'unPass',
-          danger: true,
-          text: false,
-          ghost: true,
-          class: 'n-btn-outline-primary',
-          permission: ['CONTRACT:APPROVAL'],
-        },
-        ...(detailInfo.value?.createUser === useStore.userInfo.id
-          ? [
-              {
-                label: t('common.revoke'),
-                key: 'revoke',
-                text: false,
-                ghost: true,
-                class: 'n-btn-outline-primary',
-              },
-            ]
-          : []),
-        {
-          label: t('common.delete'),
-          key: 'delete',
-          text: false,
-          ghost: true,
-          danger: true,
-          class: 'n-btn-outline-primary',
-          permission: ['CONTRACT:DELETE'],
-        },
-      ];
-    }
-    if (detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVED) {
-      return [
-        ...(detailInfo.value?.stage !== ContractStatusEnum.VOID
-          ? [
-              {
-                label: t('contract.payment'),
-                key: 'paymentRecord',
-                permission: ['CONTRACT:PAYMENT'],
-                text: false,
-                ghost: true,
-                class: 'n-btn-outline-primary',
-                disabled: !detailInfo.value?.amount || detailInfo.value?.alreadyPayAmount >= detailInfo.value?.amount,
-                tooltipContent:
-                  detailInfo.value?.alreadyPayAmount >= detailInfo.value?.amount ? t('contract.noPaymentRequired') : '',
-              },
-            ]
-          : []),
-        {
-          label: t('common.delete'),
-          key: 'delete',
-          text: false,
-          ghost: true,
-          danger: true,
-          class: 'n-btn-outline-primary',
-          permission: ['CONTRACT:DELETE'],
-        },
-      ];
-    }
-    return [
-      {
-        key: 'edit',
+  function createContractDetailActionMap(row: ContractItem) {
+    return {
+      edit: {
         label: t('common.edit'),
+        key: 'edit',
         permission: ['CONTRACT:UPDATE'],
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
       },
-      {
+      paymentRecord: {
+        label: t('contract.payment'),
+        key: 'paymentRecord',
+        permission: ['CONTRACT:PAYMENT'],
+        disabled: !row.amount || row.alreadyPayAmount >= row.amount,
+        tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
+      },
+      delete: {
         label: t('common.delete'),
         key: 'delete',
-        text: false,
-        ghost: true,
         danger: true,
-        class: 'n-btn-outline-primary',
         permission: ['CONTRACT:DELETE'],
       },
-    ];
+    };
   }
 
-  const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(FormDesignKeyEnum.CONTRACT);
+  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<ContractItem>({
+    formType: FormDesignKeyEnum.CONTRACT,
+    dataActionMap: createContractDetailActionMap,
+    isDetail: true,
+    identityResolver: {
+      isApplicant: (row, currentUserId) => row.createUser === currentUserId,
+      isApprover: () =>
+        // todo xinxinwu 不确定审批人如何返回
+        true,
+    },
+    specialActionFilter: (row, actionKeys) => {
+      return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
+    },
+  });
 
-  const buttonList = computed(() =>
-    dicApprovalEnable.value
-      ? getApprovalEnableBtnList()
-      : [
-          {
-            key: 'edit',
-            label: t('common.edit'),
-            permission: ['CONTRACT:UPDATE'],
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-          },
-          {
-            label: t('contract.payment'),
-            key: 'paymentRecord',
-            permission: ['CONTRACT:PAYMENT'],
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-            disabled: !detailInfo.value?.amount || detailInfo.value?.alreadyPayAmount >= detailInfo.value?.amount,
-            tooltipContent:
-              detailInfo.value?.alreadyPayAmount >= detailInfo.value?.amount ? t('contract.noPaymentRequired') : '',
-          },
-          {
-            label: t('common.delete'),
-            key: 'delete',
-            text: false,
-            ghost: true,
-            danger: true,
-            class: 'n-btn-outline-primary',
-            permission: ['CONTRACT:DELETE'],
-          },
-        ]
-  );
+  const detailActions = computed<{
+    groupList: ActionsItem[];
+    moreList: ActionsItem[];
+  }>(() => {
+    if (!detailInfo.value) {
+      return { groupList: [], moreList: [] };
+    }
+
+    const detailAction = resolveRowOperation(detailInfo.value);
+    return {
+      ...detailAction,
+      groupList: detailAction.groupList.map((e) => {
+        return {
+          ...e,
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+        };
+      }),
+    };
+  });
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     title.value = name || '';
@@ -433,14 +378,14 @@
   const getReadonlyInvoice = computed(() => {
     const contractIsVoidOrArchived =
       detailInfo.value?.stage === ContractStatusEnum.VOID || detailInfo.value?.stage === ContractStatusEnum.ARCHIVED;
-    if (dicApprovalEnable.value) {
+    if (enableApproval.value) {
       return contractIsVoidOrArchived || detailInfo.value?.approvalStatus !== ProcessStatusEnum.APPROVED;
     }
     return contractIsVoidOrArchived;
   });
 
   const getReadonlyPayment = computed(() => {
-    if (dicApprovalEnable.value) {
+    if (enableApproval.value) {
       return (
         detailInfo.value?.stage === ContractStatusEnum.VOID ||
         detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
@@ -482,7 +427,7 @@
     () => visible.value,
     (val) => {
       if (val) {
-        initApprovalConfig();
+        initApprovalPermission();
       }
     }
   );

@@ -15,13 +15,6 @@ export interface PermissionItem {
   enabled: boolean;
 }
 
-// 状态权限
-export interface ApprovalPermission {
-  approvalStatus: ProcessStatusType;
-  permission: string[];
-  enabled: boolean;
-}
-
 // 审批流程基本信息接口
 export interface ApprovalProcessItem extends BaseItem {
   number: string;
@@ -46,7 +39,7 @@ export interface ApprovalProcessItem extends BaseItem {
 // 审批权限详情
 export interface ApprovalPermissionsDetail {
   permissions: PermissionItem[];
-  statusPermissions: ApprovalPermission[];
+  statusPermissions: StatusPermissions[];
 }
 
 // 审批流程节点
@@ -55,14 +48,6 @@ export interface ApprovalProcessNode extends BaseItem {
   sort: number;
   children: ApprovalProcessNode[];
 }
-
-// 状态权限配置
-export interface ApprovalPermission {
-  status: ProcessStatusEnum;
-  statusLabel: string;
-  permissions: PermissionItem[];
-}
-
 // 状态权限
 export interface StatusPermissions {
   approvalStatus: ProcessStatusType;
@@ -86,6 +71,7 @@ export interface MoreSettingsParams {
   allowAddSign: boolean;
   duplicateApproverRule: string;
   requireComment: boolean;
+  permissions: BaseItem[];
   statusPermissions: StatusPermissions[];
 }
 
@@ -103,3 +89,12 @@ export interface ApprovalProcessDetail extends UpdateApprovalProcessParams {
   id: string;
   number: string;
 }
+
+export interface ApprovalProcessForm {
+  id: string;
+  enable: boolean;
+  nodes: ApprovalProcessNode[];
+  basicConfig: BasicFormParams;
+  moreConfig: MoreSettingsParams;
+}
+

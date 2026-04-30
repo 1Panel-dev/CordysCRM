@@ -19,7 +19,13 @@
         </div>
       </template>
     </CrmTable>
-    <addProcessDrawer v-model:visible="showProcessDrawer" :sourceId="activeSourceId" />
+    <addProcessDrawer
+      v-model:visible="showProcessDrawer"
+      :sourceId="activeSourceId"
+      :is-detail="isDetail"
+      @refresh="initData"
+      @cancel="handleCancel"
+    />
   </CrmCard>
 </template>
 
@@ -42,7 +48,13 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import addProcessDrawer from './components/addProcessDrawer.vue';
 
-  import { deleteApprovalProcess, getApprovalProcessList, toggleApprovalProcess } from '@/api/modules';
+  import {
+    approvalProcessDetail,
+    deleteApprovalProcess,
+    getApprovalProcessList,
+    toggleApprovalProcess,
+    updateApprovalProcess,
+  } from '@/api/modules';
   import { businessTypeOptions } from '@/config/process';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -57,25 +69,33 @@
   const activeSourceId = ref();
 
   const showProcessDrawer = ref(false);
-
+  const isDetail = ref(false);
   // 添加
   function handleAdd() {
     showProcessDrawer.value = true;
+    isDetail.value = false;
+  }
+
+  function handleCancel() {
+    showProcessDrawer.value = false;
+    activeSourceId.value = '';
+    isDetail.value = false;
   }
 
   async function deleteHandler(row: ApprovalProcessItem) {
     const enabled = row.enable;
     const content = enabled ? t('process.process.deleteEnabledContent') : t('process.process.deleteContent');
     const positiveText = enabled ? t('common.gotIt') : t('common.confirm');
+    const type = enabled ? 'default' : 'error';
     openModal({
-      type: 'error',
+      type,
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content,
       positiveText,
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          if (!enabled) {
+          if (!row.enable) {
             await deleteApprovalProcess(row.id);
             tableRefreshId.value += 1;
             Message.success(t('common.deleteSuccess'));
@@ -93,6 +113,7 @@
       case 'edit':
         activeSourceId.value = row.id;
         showProcessDrawer.value = true;
+        isDetail.value = false;
         break;
       case 'delete':
         deleteHandler(row);
@@ -115,7 +136,11 @@
 
   async function handleChangeName(id: string, name: string) {
     try {
-      // todo
+      const result = await approvalProcessDetail(id);
+      await updateApprovalProcess({
+        ...result,
+        name,
+      });
       Message.success(t('common.updateSuccess'));
       return Promise.resolve(true);
     } catch (e) {
@@ -151,9 +176,8 @@
       title: t('process.process.processType'),
       key: 'formType',
       width: 200,
-      render: (row: any) => {
-        return h(CrmNameTooltip, { name: businessTypeOptions.find((e) => e.value === row.formType)?.label ?? '' });
-      },
+      render: (row: ApprovalProcessItem) =>
+        h(CrmNameTooltip, { text: businessTypeOptions.find((e) => e.value === row.formType)?.label ?? '-' }),
     },
     {
       title: t('process.process.name'),
@@ -183,7 +207,7 @@
               h(
                 'div',
                 {
-                  class: 'max-w-[calc(100%-24px)] w-[fit-content]',
+                  class: ' w-[fit-content]',
                 },
                 h(
                   CrmTableButton,
@@ -191,6 +215,7 @@
                     onClick: () => {
                       activeSourceId.value = row.id;
                       showProcessDrawer.value = true;
+                      isDetail.value = true;
                     },
                   },
                   { default: () => row.name, trigger: () => row.name }
@@ -247,8 +272,10 @@
       title: t('process.executionTiming'),
       key: 'executeTiming',
       width: 200,
-      ellipsis: {
-        tooltip: true,
+      render: (row: ApprovalProcessItem) => {
+        return h(CrmNameTooltip, {
+          text: row.executeTiming.includes('CREATE') ? t('common.create') : t('common.edit'),
+        });
       },
     },
     {
@@ -330,10 +357,17 @@
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
-  function searchData(val: string) {
-    keyword.value = val;
+  function searchData(val?: string) {
+    keyword.value = val ?? keyword.value;
     initData();
   }
+
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      searchData();
+    }
+  );
 
   onBeforeMount(() => {
     initData();

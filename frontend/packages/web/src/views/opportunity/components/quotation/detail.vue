@@ -16,29 +16,20 @@
       </div>
     </template>
     <template #titleRight>
-      <div class="flex items-center gap-[8px]">
-        <n-button
-          v-for="item of buttonList"
-          :key="item.key"
-          v-permission="item.permission"
-          :type="item.danger ? 'error' : 'primary'"
-          ghost
-          :class="`n-btn-outline-${item.danger ? 'error' : 'primary'}`"
-          @click="handleSelect(item.key as string)"
-        >
-          {{ item.label }}
-        </n-button>
-        <CrmMoreAction
-          :options="buttonMoreList"
-          trigger="click"
-          @select="(item:ActionsItem)=>handleSelect(item.key as string)"
-        >
+      <CrmOperationButton
+        class="gap-[12px]"
+        :not-show-divider="true"
+        :group-list="detailActions.groupList"
+        :more-list="detailActions.moreList"
+        @select="handleSelect"
+      >
+        <template #more>
           <n-button type="primary" ghost class="n-btn-outline-primary">
             {{ t('common.more') }}
             <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
           </n-button>
-        </CrmMoreAction>
-      </div>
+        </template>
+      </CrmOperationButton>
     </template>
     <CrmFormDescription
       ref="formDescriptionRef"
@@ -68,18 +59,18 @@
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
   import { approvalQuotation, deleteQuotation, revokeQuotation, voidQuotation } from '@/api/modules';
-  import useApprovalConfig from '@/hooks/useApprovalConfig';
+  import { quotationDataActionMap } from '@/config/opportunity';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { useUserStore } from '@/store';
-  import { hasAnyPermission } from '@/utils/permission';
 
   import { FullPageEnum } from '@/enums/routeEnum';
 
@@ -113,60 +104,9 @@
     detailInfo.value = detail ?? {};
   }
 
-  const isShowApproval = computed(
-    () =>
-      hasAnyPermission(['OPPORTUNITY_QUOTATION:APPROVAL']) &&
-      detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
-  );
-
   function handleDownload() {
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id: props.sourceId });
   }
-
-  const commonActions = [
-    {
-      label: t('common.pass'),
-      key: 'pass',
-      permission: ['OPPORTUNITY_QUOTATION:APPROVAL'],
-    },
-    {
-      label: t('common.unPass'),
-      key: 'unPass',
-      danger: true,
-      permission: ['OPPORTUNITY_QUOTATION:APPROVAL'],
-    },
-    {
-      label: t('common.edit'),
-      key: 'edit',
-      permission: ['OPPORTUNITY_QUOTATION:UPDATE'],
-    },
-    {
-      label: t('common.download'),
-      key: 'download',
-      permission: ['OPPORTUNITY_QUOTATION:DOWNLOAD'],
-    },
-  ];
-
-  const deleteActions = [
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      danger: true,
-      permission: ['OPPORTUNITY_QUOTATION:DELETE'],
-    },
-  ];
-
-  const moreActions = [
-    {
-      label: t('common.revoke'),
-      key: 'revoke',
-    },
-    {
-      label: t('common.voided'),
-      key: 'voided',
-      permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
-    },
-  ];
 
   function handleSavedRefresh() {
     refreshKey.value += 1;
@@ -253,6 +193,9 @@
         emit('edit', props.sourceId);
         visible.value = false;
         break;
+      case 'review':
+        // todo 提审 xinxinwu
+        break;
       case 'pass':
         handleApproval(true);
         break;
@@ -275,80 +218,55 @@
         break;
     }
   }
-  const { initApprovalConfig, dicApprovalEnable } = useApprovalConfig(FormDesignKeyEnum.OPPORTUNITY_QUOTATION);
-
-  const buttonMoreList = computed(() => {
-    if (dicApprovalEnable.value) {
-      const allActions = [...commonActions, ...moreActions, ...deleteActions];
-      const commonActionsKeys = ['voided', 'delete'];
-      const { approvalStatus, createUser } = detailInfo.value || {};
-      const getActions = (keys: string[]) => allActions.filter((e) => keys.includes(e.key));
-      switch (approvalStatus) {
-        case ProcessStatusEnum.APPROVED:
-          const successStatusGroups = isShowApproval ? commonActionsKeys : ['download', ...commonActionsKeys];
-          return getActions(successStatusGroups);
-        case ProcessStatusEnum.UNAPPROVED:
-        case ProcessStatusEnum.REVOKED:
-          const revokeStatusGroups = isShowApproval ? commonActionsKeys : ['edit', 'download', ...commonActionsKeys];
-          return getActions(revokeStatusGroups);
-        case ProcessStatusEnum.APPROVING:
-          const reviewStatusGroups =
-            createUser === useStore.userInfo.id ? ['revoke', ...commonActionsKeys] : commonActionsKeys;
-          return getActions(reviewStatusGroups);
-        default:
-          return getActions(commonActionsKeys);
+  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<Record<string, any>>({
+    formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+    dataActionMap: quotationDataActionMap,
+    isDetail: true,
+    identityResolver: {
+      isApplicant: (row, currentUserId) => row.createUser === currentUserId,
+      isApprover: (row, currentUserId) =>
+        // todo xinxinwu 不确定审批人如何返回
+        // row.isApprover,
+        true,
+    },
+    specialActionFilter: (row, actionKeys) => {
+      if (row.status === QuotationStatusEnum.VOIDED) {
+        // todo xinxinwu 状态历史数据
+        return actionKeys.filter((key) => key === 'delete');
       }
-    } else {
-      if (detailInfo.value?.approvalStatus === ProcessStatusEnum.VOIDED) return [];
-      return [
-        {
-          label: t('common.voided'),
-          key: 'voided',
-          permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
-        },
-        ...deleteActions,
-      ];
-    }
+      return actionKeys;
+    },
   });
 
-  const buttonList = computed<ActionsItem[]>(() => {
-    if (dicApprovalEnable.value) {
-      switch (detailInfo.value?.approvalStatus) {
-        case ProcessStatusEnum.APPROVING:
-          return isShowApproval.value ? commonActions.filter((item) => ['pass', 'unPass'].includes(item.key)) : [];
-        case ProcessStatusEnum.APPROVED:
-          return commonActions.filter((item) => ['download'].includes(item.key));
-        case ProcessStatusEnum.UNAPPROVED:
-        case ProcessStatusEnum.REVOKED:
-          return commonActions.filter((item) => ['edit'].includes(item.key));
-        case ProcessStatusEnum.VOIDED:
-          return deleteActions;
-        default:
-          return [
-            {
-              label: t('common.edit'),
-              key: 'edit',
-              permission: ['OPPORTUNITY_QUOTATION:UPDATE'],
-            },
-          ];
-      }
-    } else {
-      if (detailInfo.value?.approvalStatus === ProcessStatusEnum.VOIDED) {
-        return deleteActions;
-      }
-      return commonActions.filter((e) => ['edit', 'download'].includes(e.key));
+  const detailActions = computed<{
+    groupList: ActionsItem[];
+    moreList: ActionsItem[];
+  }>(() => {
+    if (!detailInfo.value) {
+      return { groupList: [], moreList: [] };
     }
-  });
 
+    const detailAction = resolveRowOperation(detailInfo.value);
+    return {
+      ...detailAction,
+      groupList: detailAction.groupList.map((e) => {
+        return {
+          ...e,
+          text: false,
+          ghost: true,
+        };
+      }),
+    };
+  });
   const isShowApprovalStatus = computed(() => {
-    return detailInfo.value?.status !== ProcessStatusEnum.VOIDED && dicApprovalEnable.value;
+    return detailInfo.value?.status !== QuotationStatusEnum.VOIDED && enableApproval.value;
   });
 
   watch(
     () => visible.value,
     (val) => {
       if (val) {
-        initApprovalConfig();
+        initApprovalPermission();
       }
     }
   );

@@ -83,6 +83,7 @@ export const defaultMoreConfig: MoreSettingsParams = {
   allowAddSign: false,
   duplicateApproverRule: 'FIRST_ONLY',
   requireComment: false,
+  permissions: [],
   statusPermissions: [],
 };
 

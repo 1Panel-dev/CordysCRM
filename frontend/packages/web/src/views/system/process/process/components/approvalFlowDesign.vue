@@ -35,6 +35,8 @@
           v-if="selection.type === 'node' && selection?.node.type === 'start'"
           ref="basicFormRef"
           v-model:basicConfig="basicConfig"
+          :need-detail="props.needDetail"
+          :readonly="props.readonly"
         />
         <approvalActionNodeForm
           v-if="selection.type === 'node' && selection?.node.type === 'action'"
@@ -78,6 +80,11 @@
   defineOptions({
     name: 'ApprovalFlowView',
   });
+
+  const props = defineProps<{
+    needDetail?: boolean;
+    readonly?: boolean;
+  }>();
 
   // 基础表单
   const basicConfig = defineModel<BasicFormParams>('basicConfig', {

@@ -106,3 +106,26 @@ export const quotationStatus = [
     label: t('common.voided'),
   },
 ];
+
+export const quotationDataActionMap = {
+  edit: {
+    label: t('common.edit'),
+    key: 'edit',
+    permission: ['OPPORTUNITY_QUOTATION:UPDATE'],
+  },
+  download: {
+    label: t('common.download'),
+    key: 'download',
+    permission: ['OPPORTUNITY_QUOTATION:DOWNLOAD'],
+  },
+  voided: {
+    label: t('common.voided'),
+    key: 'voided',
+    permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
+  },
+  delete: {
+    label: t('common.delete'),
+    key: 'delete',
+    permission: ['OPPORTUNITY_QUOTATION:DELETE'],
+  },
+};

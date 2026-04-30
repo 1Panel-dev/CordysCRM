@@ -361,4 +361,5 @@ export default {
   'common.approver': '审批人',
   'common.reject': '驳回',
   'common.approve': '同意',
+  'common.resubmit': '重新提审',
 };

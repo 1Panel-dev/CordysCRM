@@ -121,10 +121,10 @@
   import { baseFilterConfigList } from '@/config/clue';
   import { deleteInvoiceContentMap } from '@/config/contract';
   import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
-  import useUserStore from '@/store/modules/user';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -147,8 +147,6 @@
   const Message = useMessage();
   const { currentLocale } = useLocale(Message.loading);
   const { openModal } = useModal();
-  const useStore = useUserStore();
-
   const activeTab = ref();
   const keyword = ref('');
   const tableRefreshId = ref(0);
@@ -250,73 +248,6 @@
     }
   }
 
-  function getApprovalEnableGroupList(row: ContractInvoiceItem) {
-    if (row.approvalStatus === ProcessStatusEnum.APPROVING) {
-      return [
-        {
-          label: t('common.approval'),
-          key: 'approval',
-          permission: ['CONTRACT_INVOICE:APPROVAL'],
-        },
-        ...(row.createUser === useStore.userInfo.id
-          ? [
-              {
-                label: t('common.revoke'),
-                key: 'revoke',
-              },
-            ]
-          : []),
-        {
-          label: t('common.delete'),
-          key: 'delete',
-          permission: ['CONTRACT_INVOICE:DELETE'],
-        },
-      ];
-    }
-    if (row.approvalStatus === ProcessStatusEnum.APPROVED) {
-      return [
-        {
-          label: t('common.delete'),
-          key: 'delete',
-          permission: ['CONTRACT_INVOICE:DELETE'],
-        },
-      ];
-    }
-    return [
-      {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['CONTRACT_INVOICE:UPDATE'],
-      },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['CONTRACT_INVOICE:DELETE'],
-      },
-    ];
-  }
-
-  function getOperationGroupList(row: ContractInvoiceItem, dicApprovalEnable: boolean) {
-    if (props.readonly) {
-      return [];
-    }
-    if (dicApprovalEnable) {
-      return getApprovalEnableGroupList(row);
-    }
-    return [
-      {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['CONTRACT_INVOICE:UPDATE'],
-      },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['CONTRACT_INVOICE:DELETE'],
-      },
-    ];
-  }
-
   const showDetailDrawer = ref(false);
 
   function handleDelete(row: ContractInvoiceItem, approvalEnable: boolean) {
@@ -374,7 +305,8 @@
       case 'delete':
         handleDelete(row, approvalEnable);
         break;
-      case 'approval':
+      case 'review':
+        // todo 提审 xinxinwu
         showDetail(row.id);
         break;
       default:
@@ -408,22 +340,49 @@
 
   function getOperationWidth(approvalEnable: boolean) {
     if (approvalEnable) {
-      return currentLocale.value === 'en-US' ? 180 : 150;
+      return currentLocale.value === 'en-US' ? 180 : 180;
     }
     return 120;
   }
 
-  const { useTableRes, customFieldsFilterConfig, dicApprovalEnable } = await useFormCreateTable({
-    formKey: props.isContractTab ? FormDesignKeyEnum.CONTRACT_INVOICE : FormDesignKeyEnum.INVOICE,
+  const invoiceDataActionMap = {
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: ['CONTRACT_INVOICE:UPDATE'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: ['CONTRACT_INVOICE:DELETE'],
+    },
+  };
+
+  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<ContractInvoiceItem>({
+    formType: FormDesignKeyEnum.INVOICE,
+    dataActionMap: invoiceDataActionMap,
+    specialActionFilter: (_row, actionKeys) => {
+      return props.readonly ? [] : actionKeys;
+    },
+  });
+  await initApprovalPermission();
+
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+    formKey: FormDesignKeyEnum.INVOICE,
     operationColumn: {
       key: 'operation',
-      width: computed(() => getOperationWidth(dicApprovalEnable.value)) as unknown as number,
+      width: computed(() => getOperationWidth(enableApproval.value)) as unknown as number,
       fixed: 'right',
-      render: (row: ContractInvoiceItem) =>
-        h(CrmOperationButton, {
-          groupList: getOperationGroupList(row, dicApprovalEnable.value),
-          onSelect: (key: string) => handleActionSelect(row, key, dicApprovalEnable.value),
-        }),
+      render: (row: ContractInvoiceItem) => {
+        const operation = resolveRowOperation(row);
+        return operation.groupList.length
+          ? h(CrmOperationButton, {
+              groupList: operation.groupList,
+              moreList: operation.moreList,
+              onSelect: (key: string) => handleActionSelect(row, key, enableApproval.value),
+            })
+          : '-';
+      },
     },
     specialRender: {
       name: (row: ContractInvoiceItem) => {
@@ -487,6 +446,7 @@
     },
     permission: ['CONTRACT_INVOICE:EXPORT'],
     containerClass: `.crm-contract-payment-table-${FormDesignKeyEnum.INVOICE}`,
+    enableApproval,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
@@ -519,7 +479,7 @@
         containChildIds: [],
       },
     },
-    ...(dicApprovalEnable.value
+    ...(enableApproval.value
       ? [
           {
             title: t('contract.approvalStatus'),
@@ -600,7 +560,8 @@
     }
   );
 
-  onBeforeMount(() => {
+  onBeforeMount(async () => {
+    await initApprovalPermission();
     if (props.isContractTab) {
       searchData();
     }

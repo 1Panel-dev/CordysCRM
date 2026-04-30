@@ -40,7 +40,7 @@
           />
         </div>
         <div class="crm-process-drawer-header-item flex justify-end gap-[12px]">
-          <slot name="headerActions">
+          <slot v-if="!props.readonly" name="headerActions">
             <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleCancel">
               {{ t('common.cancel') }}
             </n-button>
@@ -53,7 +53,7 @@
             >
               {{ t('common.nextStep') }}
             </n-button>
-            <n-button type="primary" @click="() => emit('save')">
+            <n-button type="primary" :loading="loading" @click="() => emit('save')">
               {{ t('common.save') }}
             </n-button>
           </slot>
@@ -80,7 +80,9 @@
 
   const props = defineProps<{
     tabList: CrmTabListItem[];
+    loading: boolean;
     title?: string;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -96,8 +98,6 @@
   const activeTab = defineModel<string | number>('activeTab', {
     default: '',
   });
-
-  const loading = ref(false);
 
   function handleCancel() {
     emit('cancel');

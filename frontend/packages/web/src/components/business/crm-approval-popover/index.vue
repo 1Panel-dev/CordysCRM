@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NPopover, NSpin } from 'naive-ui';
+  import { NButton, NPopover, NScrollbar, NSpin } from 'naive-ui';
 
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
