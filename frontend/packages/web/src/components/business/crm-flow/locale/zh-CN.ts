@@ -1,6 +1,7 @@
 export default {
   'crmFlow.triggerCondition': '触发条件',
   'crmFlow.else': '其它情况',
+  'crmFlow.elseDescription': '如触发条件均未满足，则进入此分支',
   'crmFlow.pleaseSet': '请设置',
   'crmFlow.zoomIn': '放大',
   'crmFlow.zoomOut': '缩小',

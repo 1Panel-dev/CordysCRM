@@ -1,5 +1,5 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-import { ProcessStatusEnum } from '@lib/shared/enums/process';
+import { ApprovalTypeEnum, ApproverTypeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { BasicFormParams, MoreSettingsParams, ProcessStatusType } from '@lib/shared/models/system/process';
 
@@ -106,22 +106,38 @@ export const businessTypeOptions = [
   },
 ];
 
-export type ApprovalType = 'manual' | 'auto-approve' | 'auto-reject';
-
-export const approvalTypeOptions: Array<{ label: string; value: ApprovalType }> = [
+const approvalTypeOptionConfigs: Array<{
+  label: string;
+  value: ApprovalTypeEnum;
+  icon: string;
+  iconBgClass: string;
+}> = [
   {
     label: t('process.process.flow.manualApproval'),
-    value: 'manual',
+    value: ApprovalTypeEnum.MANUAL,
+    icon: 'iconicon_contract',
+    iconBgClass: 'bg-[var(--warning-yellow)]',
   },
   {
     label: t('process.process.flow.autoApprove'),
-    value: 'auto-approve',
+    value: ApprovalTypeEnum.AUTO_PASS,
+    icon: 'iconicon_contract',
+    iconBgClass: 'bg-[var(--warning-yellow)]',
   },
   {
     label: t('process.process.flow.autoReject'),
-    value: 'auto-reject',
+    value: ApprovalTypeEnum.AUTO_REJECT,
+    icon: 'iconicon_contract',
+    iconBgClass: 'bg-[var(--warning-yellow)]',
   },
 ];
+
+export const approvalTypeOptions: Array<{ label: string; value: ApprovalTypeEnum }> = approvalTypeOptionConfigs.map(
+  ({ label, value }) => ({
+    label,
+    value,
+  })
+);
 
 export type FlowAddNodeType = 'action' | 'condition-group';
 
@@ -130,7 +146,7 @@ export interface FlowAddNodeOption {
   type: FlowAddNodeType;
   icon: string;
   iconBgClass: string;
-  actionApprovalType?: ApprovalType;
+  actionApprovalType?: ApprovalTypeEnum;
 }
 
 export interface FlowAddNodeGroup {
@@ -143,29 +159,13 @@ export const approvalFlowAddNodeGroups: FlowAddNodeGroup[] = [
   {
     key: 'approval',
     title: t('process.process.flow.approver'),
-    options: [
-      {
-        label: t('process.process.flow.manualApproval'),
-        type: 'action',
-        actionApprovalType: 'manual',
-        icon: 'iconicon_contract',
-        iconBgClass: 'bg-[var(--warning-yellow)]',
-      },
-      {
-        label: t('process.process.flow.autoApprove'),
-        type: 'action',
-        actionApprovalType: 'auto-approve',
-        icon: 'iconicon_contract',
-        iconBgClass: 'bg-[var(--warning-yellow)]',
-      },
-      {
-        label: t('process.process.flow.autoReject'),
-        type: 'action',
-        actionApprovalType: 'auto-reject',
-        icon: 'iconicon_contract',
-        iconBgClass: 'bg-[var(--warning-yellow)]',
-      },
-    ],
+    options: approvalTypeOptionConfigs.map(({ label, value, icon, iconBgClass }) => ({
+      label,
+      type: 'action',
+      actionApprovalType: value,
+      icon,
+      iconBgClass,
+    })),
   },
   {
     key: 'condition',
@@ -181,15 +181,15 @@ export const approvalFlowAddNodeGroups: FlowAddNodeGroup[] = [
   },
 ];
 
-export function resolveApprovalActionNodeDefaults(approvalType: ApprovalType) {
-  if (approvalType === 'auto-approve') {
+export function resolveApprovalActionNodeDefaults(approvalType: ApprovalTypeEnum) {
+  if (approvalType === ApprovalTypeEnum.AUTO_PASS) {
     return {
       name: t('process.process.flow.approver'),
       description: t('process.process.flow.autoApprove'),
     };
   }
 
-  if (approvalType === 'auto-reject') {
+  if (approvalType === ApprovalTypeEnum.AUTO_REJECT) {
     return {
       name: t('process.process.flow.approver'),
       description: t('process.process.flow.autoReject'),
@@ -201,3 +201,30 @@ export function resolveApprovalActionNodeDefaults(approvalType: ApprovalType) {
     description: t('process.process.flow.selectApprover'),
   };
 }
+
+export const approverTypeOptions: Array<{ label: string; value: ApproverTypeEnum }> = [
+  {
+    label: t('process.process.flow.approverType.specifiedMember'),
+    value: ApproverTypeEnum.SPECIFIED_MEMBER,
+  },
+  {
+    label: t('org.directSuperior'),
+    value: ApproverTypeEnum.DIRECT_SUPERVISOR,
+  },
+  {
+    label: t('process.process.flow.approverType.continuousSupervisor'),
+    value: ApproverTypeEnum.CONTINUOUS_SUPERVISOR,
+  },
+  {
+    label: t('process.process.flow.approverType.specifiedDepartmentLeader'),
+    value: ApproverTypeEnum.SPECIFIED_DEPARTMENT_LEADER,
+  },
+  {
+    label: t('process.process.flow.approverType.continuousDepartmentLeader'),
+    value: ApproverTypeEnum.CONTINUOUS_DEPARTMENT_LEADER,
+  },
+  {
+    label: t('role.role'),
+    value: ApproverTypeEnum.ROLE,
+  },
+];
