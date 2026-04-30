@@ -1,17 +1,24 @@
 /** DSL queries：查找节点、定位容器等只读查询能力 */
 import type { ConditionBranch, ConditionGroupNode, FlowNode } from '../types';
 
-export interface NodeLocation {
+export interface NodeLocation<
+  TNode extends FlowNode = FlowNode,
+  TBranch extends ConditionBranch = ConditionBranch,
+  TGroup extends ConditionGroupNode = ConditionGroupNode
+> {
   container: FlowNode[];
-  node: FlowNode;
+  node: TNode;
   index: number;
-  parentBranch: ConditionBranch | null;
-  parentGroup: ConditionGroupNode | null;
+  parentBranch: TBranch | null;
+  parentGroup: TGroup | null;
 }
 
-export interface BranchLocation {
-  group: ConditionGroupNode;
-  branch: ConditionBranch;
+export interface BranchLocation<
+  TBranch extends ConditionBranch = ConditionBranch,
+  TGroup extends ConditionGroupNode = ConditionGroupNode
+> {
+  group: TGroup;
+  branch: TBranch;
   branchIndex: number;
 }
 
@@ -71,7 +78,7 @@ const findNodeLocationInGroup = (group: ConditionGroupNode, nodeId: string): Nod
   return result;
 };
 
-export function findNodeById(nodes: FlowNode[], nodeId: string): FlowNode | null {
+export function findNodeById<TNode extends FlowNode = FlowNode>(nodes: FlowNode[], nodeId: string): TNode | null {
   let result: FlowNode | null = null;
 
   nodes.some((node) => {
@@ -98,10 +105,13 @@ export function findNodeById(nodes: FlowNode[], nodeId: string): FlowNode | null
     return false;
   });
 
-  return result;
+  return result as TNode | null;
 }
 
-export function findNodeLocation(nodes: FlowNode[], nodeId: string): NodeLocation | null {
+export function findNodeLocation<TNode extends FlowNode = FlowNode>(
+  nodes: FlowNode[],
+  nodeId: string
+): NodeLocation<TNode> | null {
   let result: NodeLocation | null = null;
 
   nodes.some((node, index) => {
@@ -127,7 +137,7 @@ export function findNodeLocation(nodes: FlowNode[], nodeId: string): NodeLocatio
     return false;
   });
 
-  return result;
+  return result as NodeLocation<TNode> | null;
 }
 
 export function findConditionGroupById(nodes: FlowNode[], groupId: string): ConditionGroupNode | null {
@@ -135,7 +145,10 @@ export function findConditionGroupById(nodes: FlowNode[], groupId: string): Cond
   return found?.type === 'condition-group' ? found : null;
 }
 
-export function findBranchLocation(nodes: FlowNode[], branchId: string): BranchLocation | null {
+export function findBranchLocation<TBranch extends ConditionBranch = ConditionBranch>(
+  nodes: FlowNode[],
+  branchId: string
+): BranchLocation<TBranch> | null {
   let result: BranchLocation | null = null;
 
   nodes.some((node) => {
@@ -169,9 +182,12 @@ export function findBranchLocation(nodes: FlowNode[], branchId: string): BranchL
     return false;
   });
 
-  return result;
+  return result as BranchLocation<TBranch> | null;
 }
 
-export function findBranchById(nodes: FlowNode[], branchId: string): ConditionBranch | null {
-  return findBranchLocation(nodes, branchId)?.branch ?? null;
+export function findBranchById<TBranch extends ConditionBranch = ConditionBranch>(
+  nodes: FlowNode[],
+  branchId: string
+): TBranch | null {
+  return findBranchLocation<TBranch>(nodes, branchId)?.branch ?? null;
 }

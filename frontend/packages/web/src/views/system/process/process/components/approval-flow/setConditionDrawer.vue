@@ -17,7 +17,7 @@
 
       <FilterContent
         ref="filterContentRef"
-        v-model:form-model="form.formModel"
+        v-model:form-model="form.conditionConfig"
         no-filter-option
         :config-list="[]"
         :custom-list="[]"
@@ -27,31 +27,31 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref, toRef, watch } from 'vue';
+  import { reactive, ref, watch } from 'vue';
   import { NForm, NFormItem, NInput } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { ApprovalConditionBranch } from '@lib/shared/models/system/process';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import type { FilterForm } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import type { ConditionBranch } from '@/components/business/crm-flow/types';
 
   defineOptions({
     name: 'SetConditionDrawer',
   });
 
   const props = defineProps<{
-    branch: ConditionBranch | null;
+    branch: ApprovalConditionBranch | null;
   }>();
   const emit = defineEmits<{
     (
       e: 'confirm',
       payload: {
         name: string;
-        formModel: FilterForm;
+        conditionConfig: FilterForm;
       }
     ): void;
   }>();
@@ -73,15 +73,15 @@
 
   const form = reactive<{
     name: string;
-    formModel: FilterForm;
+    conditionConfig: FilterForm;
   }>({
     name: '',
-    formModel: createDefaultFormModel(),
+    conditionConfig: createDefaultFormModel(),
   });
 
-  function initDraft(branch: ConditionBranch | null) {
+  function initDraft(branch: ApprovalConditionBranch | null) {
     form.name = branch?.name ?? '';
-    form.formModel = branch?.config?.formModel ?? createDefaultFormModel();
+    form.conditionConfig = cloneDeep(branch?.conditionConfig ?? createDefaultFormModel());
   }
 
   watch(
@@ -105,7 +105,7 @@
   function handleConfirm() {
     emit('confirm', {
       name: form.name.trim(),
-      formModel: cloneDeep(form.formModel),
+      conditionConfig: cloneDeep(form.conditionConfig),
     });
     show.value = false;
   }
