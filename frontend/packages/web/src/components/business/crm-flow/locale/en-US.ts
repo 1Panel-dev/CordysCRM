@@ -1,6 +1,7 @@
 export default {
   'crmFlow.triggerCondition': 'Trigger Condition',
   'crmFlow.else': 'Else',
+  'crmFlow.elseDescription': 'If no trigger conditions are met, enter this branch',
   'crmFlow.pleaseSet': 'Please Set',
   'crmFlow.zoomIn': 'Zoom In',
   'crmFlow.zoomOut': 'Zoom Out',

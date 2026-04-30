@@ -37,8 +37,8 @@
           v-model:basicConfig="basicConfig"
         />
         <approvalActionNodeForm
-          v-if="selection.type === 'node' && selection?.node.type === 'action'"
-          :node="selection.node"
+          v-if="selection.type === 'node' && isApprovalActionNode(selection.node)"
+          v-model:node="selection.node"
         />
       </template>
     </CrmFlow>
@@ -53,6 +53,8 @@
 <script setup lang="ts">
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
+  import type { ApprovalTypeEnum } from '@lib/shared/enums/process';
+  import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/models/system/process';
   import { BasicFormParams } from '@lib/shared/models/system/process';
 
   import type { FilterForm } from '@/components/pure/crm-advance-filter/type';
@@ -60,12 +62,11 @@
   import { findBranchLocation } from '@/components/business/crm-flow/dsl/queries';
   import type { BranchClickPayload } from '@/components/business/crm-flow/graph/types';
   import CrmFlow from '@/components/business/crm-flow/index.vue';
-  import type { ConditionBranch, FlowSchema, NodeSelectionState } from '@/components/business/crm-flow/types';
-  import approvalActionNodeForm from './approvalActionNodeForm.vue';
+  import type { FlowNode, FlowSchema, NodeSelectionState } from '@/components/business/crm-flow/types';
+  import approvalActionNodeForm from './approval-node/index.vue';
   import basicForm from './basicForm.vue';
   import setConditionDrawer from './setConditionDrawer.vue';
 
-  import type { ApprovalType } from '@/config/process';
   import {
     approvalFlowAddNodeGroups,
     businessTypeOptions,
@@ -73,7 +74,7 @@
     executionTimingList,
   } from '@/config/process';
 
-  import { addApprovalConditionBranch, createDefaultFlow, insertFromAnchor } from './approvalFlowDesign';
+  import { addApprovalConditionBranch, createDefaultFlow, insertFromAnchor } from './flow';
 
   defineOptions({
     name: 'ApprovalFlowView',
@@ -95,6 +96,10 @@
   function isRightContentVisible(selection: NodeSelectionState) {
     if (selection.type !== 'node') return false;
     return ['start', 'action'].includes(selection.node.type);
+  }
+
+  function isApprovalActionNode(node: FlowNode): node is ApprovalActionNode {
+    return node.type === 'action' && node.actionType === 'approval';
   }
 
   function resolveOptionLabel(value: string, options: Array<{ value: string; label: string }>): string {
@@ -135,7 +140,7 @@
     type: 'action' | 'condition-group',
     anchorNodeId: string | null,
     anchorBranch: { groupId: string; branchId: string } | null,
-    actionApprovalType?: ApprovalType
+    actionApprovalType?: ApprovalTypeEnum
   ) {
     if (!anchorBranch && !anchorNodeId) {
       return;
@@ -157,15 +162,15 @@
 
   // 触发条件抽屉
   const setConditionDrawerVisible = ref(false);
-  const activeConditionBranch = ref<ConditionBranch | null>(null);
+  const activeConditionBranch = ref<ApprovalConditionBranch | null>(null);
 
-  function openConditionDrawer(branch: ConditionBranch) {
+  function openConditionDrawer(branch: ApprovalConditionBranch) {
     activeConditionBranch.value = branch;
     setConditionDrawerVisible.value = true;
   }
 
   function handleBranchClick(payload: BranchClickPayload) {
-    const location = findBranchLocation(flowSchema.value.nodes, payload.branchId);
+    const location = findBranchLocation<ApprovalConditionBranch>(flowSchema.value.nodes, payload.branchId);
     if (!location || location.group.id !== payload.groupId || location.branch.isElse) {
       return;
     }
@@ -173,16 +178,13 @@
     openConditionDrawer(location.branch);
   }
 
-  function handleConditionConfirm(payload: { name: string; formModel: FilterForm }) {
+  function handleConditionConfirm(payload: { name: string; conditionConfig: FilterForm }) {
     if (!activeConditionBranch.value) {
       return;
     }
 
     activeConditionBranch.value.name = payload.name;
-    activeConditionBranch.value.config = {
-      ...(activeConditionBranch.value.config ?? {}),
-      formModel: payload.formModel,
-    };
+    activeConditionBranch.value.conditionConfig = payload.conditionConfig;
   }
 
   // 更新开始节点描述

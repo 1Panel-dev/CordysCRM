@@ -1,3 +1,6 @@
+import { ApprovalTypeEnum, ApproverTypeEnum } from '@lib/shared/enums/process';
+import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/models/system/process';
+
 import {
   addConditionBranch,
   insertNodeAfterNode,
@@ -12,20 +15,25 @@ import {
   createStartNode,
 } from '@/components/business/crm-flow/dsl/factory';
 import { findBranchLocation, findNodeLocation } from '@/components/business/crm-flow/dsl/queries';
-import type { ConditionBranch, FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
+import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
 
-import { type ApprovalType, resolveApprovalActionNodeDefaults } from '@/config/process';
+import { resolveApprovalActionNodeDefaults } from '@/config/process';
 
 // 创建审批动作节点
-export function createApprovalActionNode(approvalType: ApprovalType = 'manual') {
+export function createApprovalActionNode(approvalType: ApprovalTypeEnum = ApprovalTypeEnum.MANUAL): ApprovalActionNode {
   const defaults = resolveApprovalActionNodeDefaults(approvalType);
-  return createActionNode({
+  return createActionNode<ApprovalActionNode>({
     name: defaults.name,
     description: defaults.description,
     actionType: 'approval',
-    config: {
-      approvalType,
-    },
+    approvalType,
+    approverType: ApproverTypeEnum.SPECIFIED_MEMBER,
+    approverList: [],
+    approverSelectedList: [],
+    multiApproverMode: 'ALL',
+    emptyApproverAction: 'AUTO_PASS',
+    sameSubmitterAction: 'SKIP',
+    cc: [],
   });
 }
 
@@ -37,8 +45,8 @@ export function createDefaultFlow(startDescription: string): FlowSchema {
 }
 
 // 创建 if 分支：业务上要求每个条件分支默认带一个审批节点
-export function createApprovalConditionBranch(partial: Partial<ConditionBranch> = {}): ConditionBranch {
-  return createConditionBranch({
+export function createApprovalConditionBranch(partial: Partial<ApprovalConditionBranch> = {}): ApprovalConditionBranch {
+  return createConditionBranch<ApprovalConditionBranch>({
     ...partial,
     children: partial.children ?? [createApprovalActionNode()],
   });
@@ -49,7 +57,7 @@ function createApprovalConditionGroupNode() {
   return createConditionGroupNode({
     branches: [
       createApprovalConditionBranch(),
-      createElseBranch({
+      createElseBranch<ApprovalConditionBranch>({
         children: [createApprovalActionNode()],
       }),
     ],
@@ -121,7 +129,7 @@ export function insertFromAnchor(payload: {
   type: 'action' | 'condition-group';
   anchorNodeId: string | null;
   anchorBranch: { groupId: string; branchId: string } | null;
-  actionApprovalType?: ApprovalType;
+  actionApprovalType?: ApprovalTypeEnum;
 }) {
   if (payload.type === 'condition-group') {
     if (payload.anchorBranch) {
@@ -141,7 +149,7 @@ export function insertFromAnchor(payload: {
     return;
   }
 
-  const actionNode = createApprovalActionNode(payload.actionApprovalType ?? 'manual');
+  const actionNode = createApprovalActionNode(payload.actionApprovalType ?? ApprovalTypeEnum.MANUAL);
   if (payload.anchorBranch) {
     insertNodeToConditionBranch(
       payload.flowSchema,

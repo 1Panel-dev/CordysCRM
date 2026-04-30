@@ -55,7 +55,7 @@
 
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
   import CrmProcessDrawer from '@/components/business/crm-process-drawer/index.vue';
-  import ApprovalFlowDesign from './approvalFlowDesign.vue';
+  import ApprovalFlowDesign from './approval-flow/index.vue';
   import moreSetting from './moreSetting.vue';
 
   import { defaultBasicForm, defaultMoreConfig } from '@/config/process';
