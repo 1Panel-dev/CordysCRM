@@ -22,12 +22,10 @@ import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
-import cn.cordys.crm.approval.dto.ApproverConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.*;
-import cn.cordys.crm.system.constants.SystemResultCode;
 import cn.cordys.crm.approval.log.ApprovalFlowLogDTO;
 import cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper;
 import cn.cordys.crm.system.service.RoleService;
@@ -414,11 +412,11 @@ public class ApprovalFlowService {
      * 解析审批人节点 JSON 字段为对象
      */
     private void parseApproverNodeFields(ApprovalNodeApprover approverNode, ApprovalNodeApproverResponse response) {
-        if (StringUtils.isNotBlank(approverNode.getCc())) {
-            response.setCc(JSON.parseArray(approverNode.getCc(), ApproverConfigDTO.class));
+        if (StringUtils.isNotBlank(approverNode.getApproverList())) {
+            response.setApproverList(JSON.parseArray(approverNode.getApproverList(), String.class));
         }
-        if (StringUtils.isNotBlank(approverNode.getApprover())) {
-            response.setApprover(JSON.parseArray(approverNode.getApprover(), ApproverConfigDTO.class));
+        if (StringUtils.isNotBlank(approverNode.getCcList())) {
+            response.setCcList(JSON.parseArray(approverNode.getCcList(), String.class));
         }
         if (StringUtils.isNotBlank(approverNode.getPassPostConfig())) {
             response.setPassPostConfig(JSON.parseObject(approverNode.getPassPostConfig(), ApprovalPostConfigDTO.class));
@@ -554,11 +552,11 @@ public class ApprovalFlowService {
         if (nodeRequest instanceof ApprovalNodeApproverRequest) {
             ApprovalNodeApproverRequest approverRequest = (ApprovalNodeApproverRequest) nodeRequest;
             ApprovalNodeApprover approverNode = BeanUtils.copyBean(new ApprovalNodeApprover(), approverRequest,
-                    "cc", "approver", "passPostConfig", "rejectPostConfig", "fieldPermissions");
+                    "approverList", "ccList", "passPostConfig", "rejectPostConfig", "fieldPermissions");
             approverNode.setId(nodeId);
             approverNode.setFlowId(flowId);
-            approverNode.setCc(JSON.toJSONString(approverRequest.getCc()));
-            approverNode.setApprover(JSON.toJSONString(approverRequest.getApprover()));
+            approverNode.setApproverList(JSON.toJSONString(approverRequest.getApproverList()));
+            approverNode.setCcList(JSON.toJSONString(approverRequest.getCcList()));
             approverNode.setPassPostConfig(JSON.toJSONString(approverRequest.getPassPostConfig()));
             approverNode.setRejectPostConfig(JSON.toJSONString(approverRequest.getRejectPostConfig()));
             approverNode.setFieldPermissions(JSON.toJSONString(approverRequest.getFieldPermissions()));

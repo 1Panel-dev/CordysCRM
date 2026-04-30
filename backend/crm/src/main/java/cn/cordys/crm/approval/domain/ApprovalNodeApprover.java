@@ -33,11 +33,17 @@ public class ApprovalNodeApprover {
     @Schema(description = "审批人与提交人相同时动作")
     private String sameSubmitterAction;
 
-    @Schema(description = "抄送人（JSON数组）")
-    private String cc;
+    @Schema(description = "审批人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
+    private String approverType;
 
-    @Schema(description = "审批人（JSON数组）")
-    private String approver;
+    @Schema(description = "审批人列表（JSON数组）")
+    private String approverList;
+
+    @Schema(description = "抄送人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
+    private String ccType;
+
+    @Schema(description = "抄送人列表（JSON数组）")
+    private String ccList;
 
     @Schema(description = "审批通过后配置（JSON格式）")
     private String passPostConfig;

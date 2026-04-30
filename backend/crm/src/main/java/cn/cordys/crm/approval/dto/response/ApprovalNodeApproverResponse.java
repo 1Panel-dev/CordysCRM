@@ -1,7 +1,6 @@
 package cn.cordys.crm.approval.dto.response;
 
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
-import cn.cordys.crm.approval.dto.ApproverConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -32,11 +31,17 @@ public class ApprovalNodeApproverResponse extends ApprovalNodeResponse {
     @Schema(description = "审批人与提交人相同时动作")
     private String sameSubmitterAction;
 
-    @Schema(description = "抄送人列表")
-    private List<ApproverConfigDTO> cc;
+    @Schema(description = "审批人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
+    private String approverType;
 
     @Schema(description = "审批人列表")
-    private List<ApproverConfigDTO> approver;
+    private List<String> approverList;
+
+    @Schema(description = "抄送人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
+    private String ccType;
+
+    @Schema(description = "抄送人列表")
+    private List<String> ccList;
 
     @Schema(description = "审批通过后配置")
     private ApprovalPostConfigDTO passPostConfig;
