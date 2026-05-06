@@ -37,8 +37,172 @@
         <if test="request.enable != null">
             AND af.enable = #{request.enable}
         </if>
-        ORDER BY af.create_time DESC
+        <if test="request.keyword != null and request.keyword != ''">
+            AND (
+                af.name LIKE CONCAT('%', #{request.keyword}, '%')
+                OR af.number LIKE CONCAT('%', #{request.keyword}, '%')
+            )
+        </if>
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="sorts">
+            <property name="sort" value="request.sort"/>
+        </include>
     </select>
+
+    <sql id="sorts">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid() > 0">
+                <bind name="sortName" value="${sort}.name"/>
+                <bind name="sortType" value="${sort}.type"/>
+                ORDER BY
+                <choose>
+                    <when test="sortName == 'create_user'">
+                        cu.name ${sortType},
+                    </when>
+                    <when test="sortName == 'update_user'">
+                        uu.name ${sortType},
+                    </when>
+                    <otherwise>
+                        af.${sortName} ${sortType},
+                    </otherwise>
+                </choose>
+                af.create_time DESC
+            </when>
+            <otherwise>
+                ORDER BY af.create_time DESC
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="combine_${i}.field_value"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.name == 'name'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.name"/>
+                </include>
+            </when>
+            <when test="condition.name == 'number'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.number"/>
+                </include>
+            </when>
+            <when test="condition.name == 'formType'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.form_type"/>
+                </include>
+            </when>
+            <when test="condition.name == 'enable'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.enable"/>
+                </include>
+            </when>
+            <when test="condition.name == 'submitterCanRevoke'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.submitter_can_revoke"/>
+                </include>
+            </when>
+            <when test="condition.name == 'allowBatchProcess'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.allow_batch_process"/>
+                </include>
+            </when>
+            <when test="condition.name == 'allowWithdraw'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.allow_withdraw"/>
+                </include>
+            </when>
+            <when test="condition.name == 'allowAddSign'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.allow_add_sign"/>
+                </include>
+            </when>
+            <when test="condition.name == 'duplicateApproverRule'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.duplicate_approver_rule"/>
+                </include>
+            </when>
+            <when test="condition.name == 'requireComment'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.require_comment"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.create_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.update_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.update_time"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${fieldTable}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
 
     <update id="disableByFormType">
         UPDATE approval_flow
