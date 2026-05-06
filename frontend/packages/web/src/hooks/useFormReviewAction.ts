@@ -36,7 +36,7 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
   function getFormReviewAction(params: GetFormReviewActionParams): FormReviewAction {
     const { isEdit, approvalStatus } = params;
 
-    if (!enabledApproval) {
+    if (!enabledApproval.value) {
       return {
         visible: false,
         text: '',
@@ -90,7 +90,7 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
 
     try {
       const result = await getApprovalConfigDetail(options.formKey.value);
-      enabledApproval.value = Boolean(result.enable);
+      enabledApproval.value = Boolean(result?.enable);
     } catch (error) {
       enabledApproval.value = false;
       // eslint-disable-next-line no-console

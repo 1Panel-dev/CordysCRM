@@ -151,7 +151,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import CrmApprovalPopover from '@/components/business/crm-approval-popover/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
@@ -346,7 +346,42 @@
     formCreateDrawerVisible.value = true;
   }
 
+  function createContractDataActionMap(row: ContractItem) {
+    return {
+      edit: {
+        label: t('common.edit'),
+        key: 'edit',
+        permission: ['CONTRACT:UPDATE'],
+      },
+      paymentRecord: {
+        label: t('contract.payment'),
+        key: 'paymentRecord',
+        permission: ['CONTRACT:PAYMENT'],
+        disabled: !row.amount || row.alreadyPayAmount >= row.amount,
+        tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
+      },
+      delete: {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['CONTRACT:DELETE'],
+      },
+    };
+  }
+
+  const { initApprovalPermission, resolveRowOperation, enableApproval, canOpenListDetail } =
+    useApprovalOperation<ContractItem>({
+      formType: FormDesignKeyEnum.CONTRACT,
+      detailReadPermissions: ['CONTRACT:READ'],
+      dataActionMap: createContractDataActionMap,
+      specialActionFilter: (row, actionKeys) => {
+        return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
+      },
+    });
+
   function handleApproval(row: ContractItem) {
+    if (!canOpenListDetail(row)) {
+      return;
+    }
     activeSourceId.value = row.id;
     showDetailDrawer.value = true;
   }
@@ -397,35 +432,6 @@
     }
   }
 
-  function createContractDataActionMap(row: ContractItem) {
-    return {
-      edit: {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['CONTRACT:UPDATE'],
-      },
-      paymentRecord: {
-        label: t('contract.payment'),
-        key: 'paymentRecord',
-        permission: ['CONTRACT:PAYMENT'],
-        disabled: !row.amount || row.alreadyPayAmount >= row.amount,
-        tooltipContent: row.alreadyPayAmount >= row.amount ? t('contract.noPaymentRequired') : undefined,
-      },
-      delete: {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['CONTRACT:DELETE'],
-      },
-    };
-  }
-
-  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<ContractItem>({
-    formType: FormDesignKeyEnum.CONTRACT,
-    dataActionMap: createContractDataActionMap,
-    specialActionFilter: (row, actionKeys) => {
-      return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
-    },
-  });
   await initApprovalPermission();
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
@@ -447,16 +453,18 @@
     },
     specialRender: {
       name: (row: ContractItem) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              activeSourceId.value = row.id;
-              showDetailDrawer.value = true;
-            },
-          },
-          { default: () => row.name, trigger: () => row.name }
-        );
+        return canOpenListDetail(row)
+          ? h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  activeSourceId.value = row.id;
+                  showDetailDrawer.value = true;
+                },
+              },
+              { default: () => row.name, trigger: () => row.name }
+            )
+          : h(CrmNameTooltip, { text: row.name });
       },
       customerId: (row: ContractItem) => {
         return !row.customerName ||
@@ -519,6 +527,7 @@
           status: row.approvalStatus,
           formKey: FormDesignKeyEnum.CONTRACT,
           sourceId: row.id,
+          showMore: canOpenListDetail(row),
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           onMore: () => {
             handleApproval(row);

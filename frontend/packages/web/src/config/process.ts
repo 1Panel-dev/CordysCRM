@@ -3,7 +3,7 @@ import { ApprovalTypeEnum, ApproverTypeEnum, ProcessStatusEnum } from '@lib/shar
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { BasicFormParams, MoreSettingsParams, ProcessStatusType } from '@lib/shared/models/system/process';
 
-import { StatusInfo } from '@/components/business/crm-approval-status/index.vue';
+import { StatusInfo } from '@/components/business/crm-approval/components/crm-approval-status.vue';
 
 const { t } = useI18n();
 

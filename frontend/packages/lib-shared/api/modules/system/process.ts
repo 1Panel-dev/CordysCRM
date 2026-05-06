@@ -8,6 +8,7 @@ import {
   ToggleApprovalProcessUrl,
   ApprovalProcessPageUrl,
   GetApprovalConfigDetailUrl,
+  GetResourceApprovingDetailUrl,
 } from '@lib/shared/api/requrls/system/process';
 import {
   AddApprovalProcessParams,
@@ -53,6 +54,10 @@ export default function useProcessApi(CDR: CordysAxios) {
   function toggleApprovalProcess(id: string, enable: boolean) {
     return CDR.get({ url:`${ToggleApprovalProcessUrl}/${id}`,params: { enable }  });
   }
+  // 获取对应资源审批状态详情用于（列表小卡片）
+  function getResourceApprovingDetail(sourceId: string) {
+    return CDR.get({ url:`${GetResourceApprovingDetailUrl}/${sourceId}` });
+  }
 
   return {
     getApprovalProcessList,
@@ -63,5 +68,6 @@ export default function useProcessApi(CDR: CordysAxios) {
     deleteApprovalProcess,
     toggleApprovalProcess,
     getApprovalConfigDetail,
+    getResourceApprovingDetail,
   };
 }

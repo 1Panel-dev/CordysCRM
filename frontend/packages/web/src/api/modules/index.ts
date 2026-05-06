@@ -771,4 +771,5 @@ export const {
   deleteApprovalProcess,
   toggleApprovalProcess,
   getApprovalConfigDetail,
+  getResourceApprovingDetail,
 } = processApi;

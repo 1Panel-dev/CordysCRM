@@ -112,7 +112,7 @@
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
 
   import { contractStatusOptions } from '@/config/contract';

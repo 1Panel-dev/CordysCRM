@@ -50,7 +50,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
-  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFileList from '@/components/business/crm-file-list/index.vue';
 
   import type { AttachmentInfo } from '../../crm-form-create/types';

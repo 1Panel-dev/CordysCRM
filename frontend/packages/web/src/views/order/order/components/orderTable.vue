@@ -114,7 +114,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import CrmApprovalPopover from '@/components/business/crm-approval-popover/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -253,8 +253,39 @@
     formCreateDrawerVisible.value = true;
   }
 
-  function showDetail(id: string) {
-    activeSourceId.value = id;
+  const orderDataActionMap = {
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: ['ORDER:UPDATE'],
+    },
+    download: {
+      label: t('common.download'),
+      key: 'download',
+      permission: ['ORDER:DOWNLOAD'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: ['ORDER:DELETE'],
+    },
+  };
+
+  const { initApprovalPermission, resolveRowOperation, enableApproval, canOpenListDetail } =
+    useApprovalOperation<OrderItem>({
+      formType: FormDesignKeyEnum.ORDER,
+      detailReadPermissions: ['ORDER:READ'],
+      dataActionMap: orderDataActionMap,
+      specialActionFilter: (row, actionKeys) => {
+        return props.readonly ? [] : actionKeys;
+      },
+    });
+
+  function showDetail(row: OrderItem) {
+    if (row && !canOpenListDetail(row)) {
+      return;
+    }
+    activeSourceId.value = row.id;
     showDetailDrawer.value = true;
   }
 
@@ -287,7 +318,7 @@
     switch (actionKey) {
       case 'review':
         // todo 提审 xinxinwu
-        showDetail(row.id);
+        showDetail(row);
         break;
       case 'edit':
         handleEdit(row.id);
@@ -321,31 +352,6 @@
     });
   }
 
-  const orderDataActionMap = {
-    edit: {
-      label: t('common.edit'),
-      key: 'edit',
-      permission: ['ORDER:UPDATE'],
-    },
-    download: {
-      label: t('common.download'),
-      key: 'download',
-      permission: ['ORDER:DOWNLOAD'],
-    },
-    delete: {
-      label: t('common.delete'),
-      key: 'delete',
-      permission: ['ORDER:DELETE'],
-    },
-  };
-
-  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<OrderItem>({
-    formType: FormDesignKeyEnum.ORDER,
-    dataActionMap: orderDataActionMap,
-    specialActionFilter: (row, actionKeys) => {
-      return props.readonly ? [] : actionKeys;
-    },
-  });
   await initApprovalPermission();
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
@@ -368,15 +374,17 @@
     },
     specialRender: {
       name: (row: OrderItem) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              showDetail(row.id);
-            },
-          },
-          { default: () => row.name, trigger: () => row.name }
-        );
+        return canOpenListDetail(row)
+          ? h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showDetail(row);
+                },
+              },
+              { default: () => row.name, trigger: () => row.name }
+            )
+          : h(CrmNameTooltip, { text: row.name });
       },
       contractId: (row: OrderItem) => {
         return props.isContractTab || !hasAnyPermission(['CONTRACT:READ']) || !row.contractName
@@ -428,9 +436,10 @@
               status: row.approvalStatus,
               formKey: FormDesignKeyEnum.ORDER,
               sourceId: row.id,
+              showMore: canOpenListDetail(row),
               disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
               onMore: () => {
-                showDetail(row.id);
+                showDetail(row);
               },
             })
           : '-',

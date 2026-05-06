@@ -58,8 +58,9 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import CrmApprovalPopover from '@/components/business/crm-approval-popover/index.vue';
-  import { ApprovalPopoverFormKeyType } from '@/components/business/crm-approval-popover/useApprovalPopoverDetail';
+  import CrmApprovalPopover, {
+    ApprovalPopoverFormKeyType,
+  } from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmBusinessNamePrefix from '@/components/business/crm-business-name-prefix/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';

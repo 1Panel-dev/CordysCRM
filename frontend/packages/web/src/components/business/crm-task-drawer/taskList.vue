@@ -85,7 +85,7 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import crmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
-  import CrmApprovalStatus from '@/components/business/crm-approval-status/index.vue';
+  import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import approvalModal from './approvalModal.vue';
 
   const { t } = useI18n();

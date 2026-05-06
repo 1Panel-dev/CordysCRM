@@ -36,3 +36,12 @@ export enum ProcessTypeEnum {
   SEQUENTIAL_APPROVAL = 'SEQUENTIAL_APPROVAL', // 依次审批
   COUNTERSIGNATURE = 'COUNTERSIGNATURE', // 加签
 }
+
+// 审批记录状态
+export enum ApprovalRecordStatusEnum {
+  PASS = 'PASS', // 已通过
+  REJECT = 'REJECT', // 已驳回
+  APPROVING = 'APPROVING', // 审批中
+  PENDING = 'PENDING', // 待审批
+  REVOKED = 'REVOKED', // 已撤销
+}
