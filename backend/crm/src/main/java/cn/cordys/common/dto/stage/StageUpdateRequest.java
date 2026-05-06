@@ -1,15 +1,15 @@
-package cn.cordys.crm.order.dto.request;
+package cn.cordys.common.dto.stage;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class OrderStageUpdateRequest {
+public class StageUpdateRequest {
 
     @Schema(description = "id")
     private String id;
 
-    @Schema(description = "订单状态")
+    @Schema(description = "状态名称")
     private String name;
 
 }

@@ -234,5 +234,28 @@ CREATE TABLE approval_instance_attachment(
 CREATE INDEX idx_instance_id ON approval_instance_attachment(instance_id ASC);
 CREATE INDEX idx_approval_element_id ON approval_instance_attachment(approval_element_id ASC);
 
+
+CREATE TABLE contract_stage_config
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '合同状态',
+    `type`            VARCHAR(50)  NOT NULL COMMENT '状态类型',
+    `afoot_roll_back` BIT(1) DEFAULT 0 COMMENT '进行中回退设置',
+    `end_roll_back`   BIT(1) DEFAULT 0 COMMENT '完结回退设置',
+    `pos`             BIGINT       NOT NULL COMMENT '顺序',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '合同状态流设置'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+
+ALTER TABLE contract ADD COLUMN pos BIGINT DEFAULT NULL;
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

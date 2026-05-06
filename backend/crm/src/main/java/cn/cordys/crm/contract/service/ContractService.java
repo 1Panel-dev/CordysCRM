@@ -13,6 +13,8 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.dto.stage.StageConfigResponse;
+import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -38,8 +40,10 @@ import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper;
+import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.approval.constants.ApprovalState;
+import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
@@ -111,8 +115,11 @@ public class ContractService {
     private ExtContractInvoiceMapper extContractInvoiceMapper;
     @Resource
     private DictService dictService;
+    @Resource
+    private ExtContractStageConfigMapper extContractStageConfigMapper;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
+    public static final Long DEFAULT_POS = 1L;
 
     /**
      * 新建合同
@@ -133,6 +140,8 @@ public class ContractService {
             throw new GenericException(Translator.get("contract.form.config.required"));
         }
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
+        List<StageConfigResponse> stageConfigList = extContractStageConfigMapper.getStageConfigList(orgId);
+        Long nextPos = getNextPos(orgId, stageConfigList.getFirst().getId());
         Contract contract = new Contract();
         String id = IDGenerator.nextStr();
         contract.setId(id);
@@ -140,7 +149,8 @@ public class ContractService {
         contract.setCustomerId(request.getCustomerId());
         contract.setOwner(request.getOwner());
         contract.setNumber(request.getNumber());
-        contract.setStage(ContractStage.PENDING_SIGNING.name());
+        contract.setStage(stageConfigList.getFirst().getId());
+        contract.setPos(nextPos);
         contract.setOrganizationId(orgId);
         contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
         contract.setStartTime(request.getStartTime());
@@ -171,6 +181,11 @@ public class ContractService {
         saveSnapshot(contract, saveModuleFormConfigDTO, response);
 
         return contract;
+    }
+
+    private Long getNextPos(String orgId, String stage) {
+        Long pos = extContractMapper.selectNextPos(orgId, stage);
+        return pos == null ? 1 : pos + 1;
     }
 
 
@@ -955,4 +970,39 @@ public class ContractService {
 		}
 		return StringUtils.EMPTY;
 	}
+
+
+    /**
+     * 阶段看板排序
+     * @param request
+     * @param userId
+     */
+    public void sort(StageSortRequest request, String userId) {
+        //拖拽节点
+        Contract contract = contractMapper.selectByPrimaryKey(request.getDragNodeId());
+        if (contract == null) {
+            throw new GenericException(Translator.get("contract.not.exist"));
+        }
+        Long pos = DEFAULT_POS;
+        if (StringUtils.isNotBlank(request.getDropNodeId())) {
+            //放入节点
+            Contract dropNode = contractMapper.selectByPrimaryKey(request.getDropNodeId());
+            pos = dropNode.getPos();
+            if (request.getDropPosition() == -1) {
+
+                extContractMapper.moveUpStageOpportunity(pos, request.getStage(), DEFAULT_POS);
+                pos = pos + 1;
+            } else {
+                extContractMapper.moveDownStageOpportunity(pos, request.getStage(), DEFAULT_POS);
+            }
+        }
+        Contract dragContract = new Contract();
+        dragContract.setId(request.getDragNodeId());
+        dragContract.setPos(pos);
+        dragContract.setStage(request.getStage());
+        dragContract.setUpdateUser(userId);
+        dragContract.setUpdateTime(System.currentTimeMillis());
+        contractMapper.updateById(dragContract);
+
+    }
 }

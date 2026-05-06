@@ -87,9 +87,15 @@
         <include refid="viewCombine">
             <property name="combineSearch" value="request.viewCombineSearch"/>
         </include>
-        <include refid="sort">
-            <property name="sort" value="request.sort"/>
-        </include>
+
+        <if test="request.board">
+            order by o.pos desc
+        </if>
+        <if test="!request.board">
+            <include refid="sort">
+                <property name="sort" value="request.sort"/>
+            </include>
+        </if>
     </select>
 
     <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractListResponse">
@@ -607,4 +613,23 @@
         </include>
 
     </select>
+
+
+    <select id="countByStage" resultType="java.lang.Integer">
+        select count(id) from contract
+        where stage = #{stage}
+    </select>
+
+    <select id="selectNextPos" resultType="java.lang.Long">
+        select pos from contract where stage = #{stage} and organization_id = #{orgId}
+        order by pos desc limit 1
+    </select>
+
+    <update id="moveUpStageOpportunity">
+        update contract set pos = pos + #{pos} where pos &gt; #{end} and stage = #{stage}
+    </update>
+
+    <update id="moveDownStageOpportunity">
+        update contract set pos = pos + #{pos} where pos &gt;= #{end} and stage = #{stage}
+    </update>
 </mapper>

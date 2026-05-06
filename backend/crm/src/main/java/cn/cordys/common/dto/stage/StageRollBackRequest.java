@@ -1,4 +1,4 @@
-package cn.cordys.crm.opportunity.dto.request;
+package cn.cordys.common.dto.stage;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

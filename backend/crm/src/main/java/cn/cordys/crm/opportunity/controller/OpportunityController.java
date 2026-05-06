@@ -7,6 +7,7 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -199,7 +200,7 @@ public class OpportunityController {
 
     @PostMapping("/sort")
     @Operation(summary = "商机阶段看板拖拽排序")
-    public void sortModule(@Validated @RequestBody OpportunitySortRequest request) {
+    public void sortModule(@Validated @RequestBody StageSortRequest request) {
         opportunityService.sort(request, SessionUtils.getUserId());
     }
 

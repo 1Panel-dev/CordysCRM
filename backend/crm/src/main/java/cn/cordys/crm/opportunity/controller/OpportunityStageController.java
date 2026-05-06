@@ -3,7 +3,7 @@ package cn.cordys.crm.opportunity.controller;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.opportunity.dto.request.OpportunityStageAddRequest;
-import cn.cordys.crm.opportunity.dto.request.StageRollBackRequest;
+import cn.cordys.common.dto.stage.StageRollBackRequest;
 import cn.cordys.crm.opportunity.dto.request.StageUpdateRequest;
 import cn.cordys.crm.opportunity.dto.response.StageConfigListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityStageService;

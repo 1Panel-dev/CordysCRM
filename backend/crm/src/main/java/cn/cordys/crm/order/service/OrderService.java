@@ -33,7 +33,7 @@ import cn.cordys.crm.order.dto.request.OrderStageRequest;
 import cn.cordys.crm.order.dto.request.OrderUpdateRequest;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
-import cn.cordys.crm.order.dto.response.OrderStageConfigResponse;
+import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
@@ -110,7 +110,7 @@ public class OrderService {
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("order.form.config.required"));
         }
-        List<OrderStageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
+        List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         Order order = new Order();
         BeanUtils.copyBean(order, request);
@@ -200,8 +200,8 @@ public class OrderService {
         Contract contract = contractMapper.selectByPrimaryKey(order.getContractId());
 
         Map<String, String> stageNameMap = extOrderStageConfigMapper.getStageConfigList(order.getOrganizationId()).stream()
-                .collect(Collectors.toMap(OrderStageConfigResponse::getId,
-                        OrderStageConfigResponse::getName));
+                .collect(Collectors.toMap(StageConfigResponse::getId,
+                        StageConfigResponse::getName));
         orderGetResponse.setStageName(stageNameMap.get(order.getStage()));
 
         if (customer != null) {
@@ -480,8 +480,8 @@ public class OrderService {
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
         Map<String, String> stageNameMap = extOrderStageConfigMapper.getStageConfigList(orgId).stream()
-                .collect(Collectors.toMap(OrderStageConfigResponse::getId,
-                        OrderStageConfigResponse::getName));
+                .collect(Collectors.toMap(StageConfigResponse::getId,
+                        StageConfigResponse::getName));
 
         list.forEach(item -> {
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getOwner());
