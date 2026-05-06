@@ -36,4 +36,12 @@ public interface ExtContractMapper {
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
     ContractStatisticResponse searchStatistic(@Param("request") BaseCondition request, @Param("orgId") String orgId, @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+
+    int countByStage(@Param("stage") String stage);
+
+    Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
+
+    void moveUpStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
+
+    void moveDownStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 }

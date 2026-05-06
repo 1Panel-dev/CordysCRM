@@ -13,6 +13,7 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -839,7 +840,7 @@ public class OpportunityService {
      * @param request
      * @param userId
      */
-    public void sort(OpportunitySortRequest request, String userId) {
+    public void sort(StageSortRequest request, String userId) {
         //拖拽节点
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getDragNodeId());
         if (opportunity == null) {

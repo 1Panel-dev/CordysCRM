@@ -1,13 +1,13 @@
-package cn.cordys.crm.order.dto.response;
+package cn.cordys.crm.contract.domain;
 
+import cn.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
-public class OrderStageConfigResponse {
-
-    @Schema(description = "ID")
-    private String id;
+@Table(name = "contract_stage_config")
+public class ContractStageConfig extends BaseModel {
 
     @Schema(description = "订单状态")
     private String name;
@@ -24,6 +24,6 @@ public class OrderStageConfigResponse {
     @Schema(description = "顺序")
     private Long pos;
 
-    @Schema(description = "当前阶段是否存在数据")
-    private Boolean stageHasData = false;
+    @Schema(description = "组织id")
+    private String organizationId;
 }
