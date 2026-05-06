@@ -115,7 +115,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import CrmApprovalPopover from '@/components/business/crm-approval-popover/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -343,7 +343,24 @@
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
   }
 
+  const { initApprovalPermission, resolveRowOperation, enableApproval, canOpenListDetail } =
+    useApprovalOperation<QuotationItem>({
+      formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+      detailReadPermissions: ['OPPORTUNITY_QUOTATION:READ'],
+      dataActionMap: quotationDataActionMap,
+      specialActionFilter: (row, actionKeys) => {
+        // todo 状态为作废历史数据 xinxinwu
+        if (row.status === QuotationStatusEnum.VOIDED) {
+          return actionKeys.filter((key) => key === 'delete');
+        }
+        return actionKeys;
+      },
+    });
+
   function handleApproval(row: QuotationItem) {
+    if (!canOpenListDetail(row)) {
+      return;
+    }
     activeSourceId.value = row.id;
     showDetailDrawer.value = true;
   }
@@ -428,17 +445,6 @@
     initOpenSeaOptions();
   });
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<QuotationItem>({
-    formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
-    dataActionMap: quotationDataActionMap,
-    specialActionFilter: (row, actionKeys) => {
-      // todo 状态为作废历史数据 xinxinwu
-      if (row.status === QuotationStatusEnum.VOIDED) {
-        return actionKeys.filter((key) => key === 'delete');
-      }
-      return actionKeys;
-    },
-  });
   await initApprovalPermission();
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
@@ -463,6 +469,7 @@
         },
     specialRender: {
       name: (row: QuotationItem) => {
+        const canOpenDetail = !props.readonly && canOpenListDetail(row);
         const createNameButton = () =>
           h(
             CrmTableButton,
@@ -474,7 +481,7 @@
             },
             { default: () => row.name, trigger: () => row.name }
           );
-        return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
+        return canOpenDetail ? createNameButton() : h(CrmNameTooltip, { text: row.name });
       },
       opportunityId: (row: QuotationItem) => {
         return hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']) && row.opportunityName
@@ -502,12 +509,14 @@
         );
       },
       approvalStatus: (row: QuotationItem) => {
+        const canOpenDetail = canOpenListDetail(row);
         return row.status === QuotationStatusEnum.VOIDED
           ? '-'
           : h(CrmApprovalPopover, {
               status: row.approvalStatus,
               formKey: props.formKey,
               sourceId: row.id,
+              showMore: canOpenDetail,
               disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
               onMore: () => {
                 handleApproval(row);

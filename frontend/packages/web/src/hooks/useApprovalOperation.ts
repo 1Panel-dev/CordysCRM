@@ -20,6 +20,7 @@ export type ApprovalConfigType =
 export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   formType: ApprovalConfigType;
   dataActionMap: Record<string, ActionsItem> | ((row: Row) => Record<string, ActionsItem>);
+  detailReadPermissions?: string[];
   isDetail?: boolean;
   maxVisibleActions?: number;
   getApprovalStatus?: (row: Row) => ProcessStatusType;
@@ -177,6 +178,30 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return actions.filter((item) => filteredKeys.includes(item.key as string));
   }
 
+  function hasStatusPermissions(row: Row, permissions: string[]) {
+    const currentStatusPermissions = statusPermissionMap.value.get(getApprovalStatus(row));
+
+    if (!currentStatusPermissions) {
+      return false;
+    }
+
+    return permissions.some((permission) => currentStatusPermissions.has(permission));
+  }
+
+  function canOpenListDetail(row: Row) {
+    if (!enableApproval.value) {
+      return true;
+    }
+
+    const detailReadPermissions = options.detailReadPermissions || [];
+
+    if (!detailReadPermissions.length) {
+      return false;
+    }
+
+    return hasStatusPermissions(row, detailReadPermissions) && hasAnyPermission(detailReadPermissions);
+  }
+
   function splitActions(actions: ActionsItem[]) {
     // 默认最多展示3个操作
     const maxVisibleActions = options.maxVisibleActions ?? 3;
@@ -245,6 +270,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     initApprovalPermission,
     resolveRowActions,
     resolveRowOperation,
+    canOpenListDetail,
     approvalPermissionsDetail,
     statusPermissionMap,
     getApprovalStatus,

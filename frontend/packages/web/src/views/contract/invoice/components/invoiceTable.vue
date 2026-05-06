@@ -110,7 +110,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import CrmApprovalPopover from '@/components/business/crm-approval-popover/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
@@ -278,8 +278,34 @@
     formCreateDrawerVisible.value = true;
   }
 
-  function showDetail(id: string) {
-    activeSourceId.value = id;
+  const invoiceDataActionMap = {
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: ['CONTRACT_INVOICE:UPDATE'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: ['CONTRACT_INVOICE:DELETE'],
+    },
+  };
+
+  const { initApprovalPermission, resolveRowOperation, enableApproval, canOpenListDetail } =
+    useApprovalOperation<ContractInvoiceItem>({
+      formType: FormDesignKeyEnum.INVOICE,
+      detailReadPermissions: ['CONTRACT_INVOICE:READ'],
+      dataActionMap: invoiceDataActionMap,
+      specialActionFilter: (_row, actionKeys) => {
+        return props.readonly ? [] : actionKeys;
+      },
+    });
+
+  function showDetail(row: ContractInvoiceItem) {
+    if (row && !canOpenListDetail(row)) {
+      return;
+    }
+    activeSourceId.value = row.id;
     showDetailDrawer.value = true;
   }
 
@@ -307,7 +333,7 @@
         break;
       case 'review':
         // todo 提审 xinxinwu
-        showDetail(row.id);
+        showDetail(row);
         break;
       default:
         break;
@@ -345,26 +371,6 @@
     return 120;
   }
 
-  const invoiceDataActionMap = {
-    edit: {
-      label: t('common.edit'),
-      key: 'edit',
-      permission: ['CONTRACT_INVOICE:UPDATE'],
-    },
-    delete: {
-      label: t('common.delete'),
-      key: 'delete',
-      permission: ['CONTRACT_INVOICE:DELETE'],
-    },
-  };
-
-  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<ContractInvoiceItem>({
-    formType: FormDesignKeyEnum.INVOICE,
-    dataActionMap: invoiceDataActionMap,
-    specialActionFilter: (_row, actionKeys) => {
-      return props.readonly ? [] : actionKeys;
-    },
-  });
   await initApprovalPermission();
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
@@ -386,15 +392,17 @@
     },
     specialRender: {
       name: (row: ContractInvoiceItem) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              showDetail(row.id);
-            },
-          },
-          { default: () => row.name, trigger: () => row.name }
-        );
+        return canOpenListDetail(row)
+          ? h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showDetail(row);
+                },
+              },
+              { default: () => row.name, trigger: () => row.name }
+            )
+          : h(CrmNameTooltip, { text: row.name });
       },
       contractId: (row: ContractInvoiceItem) => {
         return props.isContractTab || !hasAnyPermission(['CONTRACT:READ']) || !row.contractName
@@ -420,9 +428,10 @@
           status: row.approvalStatus,
           formKey: FormDesignKeyEnum.INVOICE,
           sourceId: row.id,
+          showMore: canOpenListDetail(row),
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           onMore: () => {
-            showDetail(row.id);
+            showDetail(row);
           },
         }),
       businessTitleId: (row: ContractInvoiceItem) =>
