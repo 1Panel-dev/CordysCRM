@@ -38,7 +38,7 @@ public enum ContractStage {
     VOID,
 
     /**
-     * 归档
+     * 合同完结
      */
     ARCHIVED,
 }

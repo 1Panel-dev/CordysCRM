@@ -1,13 +1,13 @@
-package cn.cordys.crm.order.mapper;
+package cn.cordys.crm.contract.mapper;
 
+import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.StageRollBackRequest;
 import cn.cordys.common.dto.stage.StageUpdateRequest;
-import cn.cordys.common.dto.stage.StageConfigResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface ExtOrderStageConfigMapper {
+public interface ExtContractStageConfigMapper {
 
 
     List<StageConfigResponse> getStageConfigList(@Param("orgId") String orgId);

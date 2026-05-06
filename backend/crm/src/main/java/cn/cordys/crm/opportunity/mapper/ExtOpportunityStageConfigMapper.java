@@ -1,7 +1,7 @@
 package cn.cordys.crm.opportunity.mapper;
 
 import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;
-import cn.cordys.crm.opportunity.dto.request.StageRollBackRequest;
+import cn.cordys.common.dto.stage.StageRollBackRequest;
 import cn.cordys.crm.opportunity.dto.request.StageUpdateRequest;
 import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
 import org.apache.ibatis.annotations.Param;

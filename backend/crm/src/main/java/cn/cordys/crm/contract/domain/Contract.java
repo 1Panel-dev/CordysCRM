@@ -43,4 +43,7 @@ public class Contract extends BaseModel {
 
     @Schema(description = "组织id")
     private String organizationId;
+
+    @Schema(description = "自定义排序")
+    private Long pos;
 }

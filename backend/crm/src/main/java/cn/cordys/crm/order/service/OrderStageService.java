@@ -9,12 +9,12 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.opportunity.dto.request.StageRollBackRequest;
+import cn.cordys.common.dto.stage.StageRollBackRequest;
 import cn.cordys.crm.order.domain.OrderStageConfig;
-import cn.cordys.crm.order.dto.request.OrderStageAddRequest;
-import cn.cordys.crm.order.dto.request.OrderStageUpdateRequest;
+import cn.cordys.common.dto.stage.StageAddRequest;
+import cn.cordys.common.dto.stage.StageUpdateRequest;
 import cn.cordys.crm.order.dto.response.OrderStageConfigListResponse;
-import cn.cordys.crm.order.dto.response.OrderStageConfigResponse;
+import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
@@ -49,12 +49,12 @@ public class OrderStageService {
      */
     public OrderStageConfigListResponse getStageConfigList(String orgId) {
         OrderStageConfigListResponse stageConfigListResponse = new OrderStageConfigListResponse();
-        List<OrderStageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
+        List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
         buildList(stageConfigList, stageConfigListResponse);
         return stageConfigListResponse;
     }
 
-    private void buildList(List<OrderStageConfigResponse> stageConfigList, OrderStageConfigListResponse response) {
+    private void buildList(List<StageConfigResponse> stageConfigList, OrderStageConfigListResponse response) {
         response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
             var first = stageConfigList.getFirst();
@@ -74,7 +74,7 @@ public class OrderStageService {
      * @return
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
-    public String addStageConfig(OrderStageAddRequest request, String userId, String orgId) {
+    public String addStageConfig(StageAddRequest request, String userId, String orgId) {
         checkConfigCount(orgId);
         Long pos = DEFAULT_POS;
         Boolean afootRollBack = true;
@@ -189,7 +189,7 @@ public class OrderStageService {
      * @param userId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
-    public void update(OrderStageUpdateRequest request, String userId) {
+    public void update(StageUpdateRequest request, String userId) {
         OrderStageConfig oldStageConfig = orderStageConfigMapper.selectByPrimaryKey(request.getId());
         if (oldStageConfig == null) {
             throw new GenericException(Translator.get("order_stage_not_exist"));
@@ -219,15 +219,15 @@ public class OrderStageService {
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void sort(List<String> ids, String orgId) {
-        List<OrderStageConfigResponse> oldStageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
-        List<String> oldNames = oldStageConfigList.stream().map(OrderStageConfigResponse::getName).toList();
+        List<StageConfigResponse> oldStageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
+        List<String> oldNames = oldStageConfigList.stream().map(StageConfigResponse::getName).toList();
 
         for (int i = 0; i < ids.size(); i++) {
             extOrderStageConfigMapper.updatePos(ids.get(i), (long) (i + 1));
         }
 
-        List<OrderStageConfigResponse> newStageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
-        List<String> newNames = newStageConfigList.stream().map(OrderStageConfigResponse::getName).toList();
+        List<StageConfigResponse> newStageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
+        List<String> newNames = newStageConfigList.stream().map(StageConfigResponse::getName).toList();
 
         Map<String, List<String>> originalVal = new HashMap<>(1);
         originalVal.put("stageSort", oldNames);

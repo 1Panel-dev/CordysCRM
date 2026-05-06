@@ -20,6 +20,7 @@ import cn.cordys.crm.contract.dto.response.*;
 import cn.cordys.crm.contract.service.*;
 import cn.cordys.crm.customer.dto.request.ContractDetailInvoicePageRequest;
 import cn.cordys.crm.customer.dto.request.ContractOrderPageRequest;
+import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.constants.ExportConstants;
@@ -84,7 +85,7 @@ public class ContractController {
         return contractService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-    @PostMapping("/stage/update")
+    @PostMapping("/update/stage")
     @RequiresPermissions(PermissionConstants.CONTRACT_STAGE)
     @Operation(summary = "更新合同阶段")
     public void updateStage(@Validated @RequestBody ContractStageRequest request) {
@@ -279,5 +280,11 @@ public class ContractController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_READ);
         return contractService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @PostMapping("/sort")
+    @Operation(summary = "合同阶段看板拖拽排序")
+    public void sortModule(@Validated @RequestBody StageSortRequest request) {
+        contractService.sort(request, SessionUtils.getUserId());
     }
 }

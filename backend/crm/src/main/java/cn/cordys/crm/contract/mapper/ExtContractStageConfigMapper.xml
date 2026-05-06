@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper">
+<mapper namespace="cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper">
 
 
     <select id="getStageConfigList" resultType="cn.cordys.common.dto.stage.StageConfigResponse">
         select id, name, type, afoot_roll_back, end_roll_back, pos
-        from sales_order_stage_config
+        from contract_stage_config
         where organization_id = #{orgId}
         order by pos asc
     </select>
 
     <select id="countStageConfig" resultType="java.lang.Integer">
         select count(id)
-        from sales_order_stage_config
+        from contract_stage_config
         where organization_id = #{orgId}
     </select>
 
     <update id="moveUpStageConfig">
-        update sales_order_stage_config
+        update contract_stage_config
         set pos = pos + #{pos}
         where pos &gt;= #{start}
           and organization_id = #{orgId}
     </update>
 
     <update id="moveDownStageConfig">
-        update sales_order_stage_config
+        update contract_stage_config
         set pos = pos + #{pos}
         where pos &gt; #{start}
           and organization_id = #{orgId}
@@ -33,7 +33,7 @@
 
 
     <update id="updateRollBack">
-        UPDATE sales_order_stage_config
+        UPDATE contract_stage_config
         <set>
             <if test="request.afootRollBack != null">
                 afoot_roll_back =#{request.afootRollBack},
@@ -46,7 +46,7 @@
     </update>
 
     <update id="updateStageConfig">
-        update sales_order_stage_config
+        update contract_stage_config
         set name        = #{request.name},
             update_user = #{userId},
             update_time = unix_timestamp() * 1000
@@ -55,6 +55,6 @@
 
 
     <update id="updatePos">
-        update sales_order_stage_config set pos = #{pos} where id = #{id}
+        update contract_stage_config set pos = #{pos} where id = #{id}
     </update>
 </mapper>
