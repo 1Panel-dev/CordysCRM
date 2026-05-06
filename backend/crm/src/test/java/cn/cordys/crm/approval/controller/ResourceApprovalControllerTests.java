@@ -25,7 +25,7 @@ class ResourceApprovalControllerTests extends BaseTest {
 
     @Override
     protected String getBasePath() {
-        return "/resource-approve";
+        return "/resource-approval";
     }
 
     @Sql(
