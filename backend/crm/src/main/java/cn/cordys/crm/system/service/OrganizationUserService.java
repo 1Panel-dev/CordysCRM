@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.InternalRole;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptUserTreeNode;
@@ -24,10 +25,7 @@ import cn.cordys.crm.search.mapper.ExtUserSearchConfigMapper;
 import cn.cordys.crm.system.domain.*;
 import cn.cordys.crm.system.dto.convert.UserRoleConvert;
 import cn.cordys.crm.system.dto.request.*;
-import cn.cordys.crm.system.dto.response.UserImportDTO;
-import cn.cordys.crm.system.dto.response.UserImportResponse;
-import cn.cordys.crm.system.dto.response.UserPageResponse;
-import cn.cordys.crm.system.dto.response.UserResponse;
+import cn.cordys.crm.system.dto.response.*;
 import cn.cordys.crm.system.excel.domain.UserExcelData;
 import cn.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import cn.cordys.crm.system.excel.handler.UserTemplateWriteHandler;
@@ -111,6 +109,8 @@ public class OrganizationUserService {
     private PermissionCache permissionCache;
     @Resource
     private ExtNotificationMapper extNotificationMapper;
+    @Resource
+    private UserRoleService userRoleService;
 
 
     /**
@@ -994,5 +994,9 @@ public class OrganizationUserService {
         }
 
         return sortDpIds;
+    }
+
+    public List<OptionDTO> getAdminUserOptions(String organizationId) {
+        return extUserRoleMapper.selectUserOptionByRoleId(organizationId, InternalRole.ORG_ADMIN.getValue());
     }
 }

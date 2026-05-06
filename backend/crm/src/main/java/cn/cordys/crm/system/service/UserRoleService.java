@@ -274,7 +274,7 @@ public class UserRoleService {
     }
 
     public List<RoleUserOptionResponse> getUserOptionByRoleId(String organizationId, String roleId) {
-        List<RoleUserOptionResponse> roleUserOptions = extUserRoleMapper.selectUserOptionByRoleId(organizationId, roleId);
+        List<RoleUserOptionResponse> roleUserOptions = extUserRoleMapper.selectUserOption(organizationId);
         Set<String> roleUserIdSet = new HashSet<>(extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId)));
 
         roleUserOptions.forEach(userOption -> userOption.setEnabled(!roleUserIdSet.contains(userOption.getId())));
