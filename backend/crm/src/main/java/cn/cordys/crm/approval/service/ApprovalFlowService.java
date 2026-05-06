@@ -29,6 +29,7 @@ import cn.cordys.crm.approval.dto.response.*;
 import cn.cordys.crm.approval.log.ApprovalFlowLogDTO;
 import cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper;
 import cn.cordys.crm.system.service.RoleService;
+import cn.cordys.common.service.BaseService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -63,6 +64,8 @@ public class ApprovalFlowService {
     private BaseMapper<ApprovalNodeLink> approvalNodeLinkMapper;
     @Resource
     private RoleService roleService;
+    @Resource
+    private BaseService baseService;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
@@ -112,6 +115,7 @@ public class ApprovalFlowService {
     public Pager<List<ApprovalFlowListResponse>> list(ApprovalFlowPageRequest request, String organizationId) {
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ApprovalFlowListResponse> responses = extApprovalFlowMapper.list(request, organizationId);
+        baseService.setCreateAndUpdateUserName(responses);
         Page<ApprovalFlowListResponse> page = (Page<ApprovalFlowListResponse>) responses;
         return PageUtils.setPageInfo(page, responses);
     }
@@ -126,6 +130,9 @@ public class ApprovalFlowService {
         }
 
         ApprovalFlowDetailResponse response = convertToDetailResponse(flow);
+
+        // 设置创建人和更新人名称
+        baseService.setCreateAndUpdateUserName(response);
 
         List<Permission> permissions = getPermissionsByFormType(flow.getFormType());
 
@@ -435,6 +442,25 @@ public class ApprovalFlowService {
     private List<ApprovalNodeResponse> buildNodeTree(String flowId) {
         // 获取所有节点
         List<ApprovalNodeResponse> allNodes = getNodesByFlowId(flowId);
+
+        // 收集所有审批人节点的 fallbackApprover ID
+        Set<String> fallbackApproverIds = allNodes.stream()
+                .filter(node -> node instanceof ApprovalNodeApproverResponse)
+                .map(node -> (ApprovalNodeApproverResponse) node)
+                .map(ApprovalNodeApproverResponse::getFallbackApprover)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+
+        // 批量查询兜底审批人名称
+        Map<String, String> fallbackApproverNameMap = baseService.getUserNameMap(fallbackApproverIds);
+
+        // 设置兜底审批人名称
+        allNodes.stream()
+                .filter(node -> node instanceof ApprovalNodeApproverResponse)
+                .map(node -> (ApprovalNodeApproverResponse) node)
+                .filter(node -> StringUtils.isNotBlank(node.getFallbackApprover()))
+                .forEach(node -> node.setFallbackApproverName(
+                        baseService.getAndCheckOptionName(fallbackApproverNameMap.get(node.getFallbackApprover()))));
 
         // 获取节点连接关系
         ApprovalNodeLink linkCriteria = new ApprovalNodeLink();

@@ -21,12 +21,8 @@
             af.create_user,
             af.create_time,
             af.update_user,
-            af.update_time,
-            cu.name AS createUserName,
-            uu.name AS updateUserName
+            af.update_time
         FROM approval_flow af
-        LEFT JOIN sys_user cu ON af.create_user = cu.id
-        LEFT JOIN sys_user uu ON af.update_user = uu.id
         WHERE af.organization_id = #{organizationId}
         <if test="request.name != null and request.name != ''">
             AND af.name LIKE CONCAT('%', #{request.name}, '%')
@@ -59,18 +55,7 @@
             <when test="${sort} != null and ${sort}.valid() > 0">
                 <bind name="sortName" value="${sort}.name"/>
                 <bind name="sortType" value="${sort}.type"/>
-                ORDER BY
-                <choose>
-                    <when test="sortName == 'create_user'">
-                        cu.name ${sortType},
-                    </when>
-                    <when test="sortName == 'update_user'">
-                        uu.name ${sortType},
-                    </when>
-                    <otherwise>
-                        af.${sortName} ${sortType},
-                    </otherwise>
-                </choose>
+                ORDER BY af.${sortName} ${sortType},
                 af.create_time DESC
             </when>
             <otherwise>

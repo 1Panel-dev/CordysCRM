@@ -55,6 +55,7 @@ CREATE TABLE approval_node_approver(
    `approval_type` VARCHAR(20) NOT NULL  DEFAULT 'AUTO_PASS' COMMENT '审批类型;审批类型：MANUAL(人工审批)、AUTO_PASS(自动通过)、AUTO_REJECT(自动拒绝)' ,
    `multi_approver_mode` VARCHAR(20) NOT NULL   COMMENT '多人审批方式;多人审批方式：ALL(会签)/ANY(或签)/SEQUENTIAL(依次审批)' ,
    `empty_approver_action` VARCHAR(20) NOT NULL  DEFAULT 'AUTO_PASS' COMMENT '审批人为空时动作：AUTO_PASS(自动通过)/ASSIGN_SPECIFIC(指定人员审批)/ASSIGN_ADMIN(转交给审批管理员)' ,
+   `fallback_approver` VARCHAR(32) COMMENT '审批人为空时，兜底审批人',
    `same_submitter_action` VARCHAR(20) NOT NULL  DEFAULT 'SKIP' COMMENT '审批人与提交人相同时动作：SKIP(自动跳过)/ALLOW(由提交人审批)/ASSIGN_SUPERIOR(转交给直属上级审批)' ,
    `approver_type` VARCHAR(50)  COMMENT '审批人类型' ,
    `cc_type` VARCHAR(50) COMMENT '抄送人类型' ,
