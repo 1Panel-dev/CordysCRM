@@ -1,0 +1,18 @@
+export default {
+  'crm.approval.record': '审批记录',
+  'crm.approval.opinion': '审批意见',
+  'crm.approval.rejectConfirm': '确认驳回吗？',
+  'crm.approval.rejectTip': '驳回后，审批流将终止，请谨慎操作！',
+  'crm.approval.confirmReject': '确认驳回',
+  'crm.approval.addSignTip1': '在我之前：加签后，流程先经过加签审批人，再由我审批',
+  'crm.approval.addSignTip2': '在我之后：我审批后，流程再到加签审批人',
+  'crm.approval.addSignOpinion': '加签意见',
+  'crm.approval.addSignMethod': '添加方式',
+  'crm.approval.beforeMethod': '在我之前',
+  'crm.approval.afterMethod': '在我之后',
+  'crm.approval.addSignApprover': '加签审批人',
+  'crm.approval.confirmAddSign': '确认加签',
+  'crm.approval.fallbackTo': '退回至',
+  'crm.approval.fallbackReason': '退回原因',
+  'crm.approval.confirmFallback': '确认退回',
+};

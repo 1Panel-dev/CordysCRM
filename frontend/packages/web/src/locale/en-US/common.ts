@@ -350,4 +350,9 @@ export default {
   'common.reviewing': 'Reviewing',
   'common.approver': 'Approver',
   'common.resubmit': 'Resubmit',
+  'common.OR_APPROVAL': 'OR approval',
+  'common.COUNTERSIGNATURE': 'Countersignature',
+  'common.AND_APPROVAL': 'AND approval',
+  'common.SEQUENTIAL_APPROVAL': 'Sequential Approval',
+  'common.copyTo': 'Copy to',
 };
