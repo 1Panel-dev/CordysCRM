@@ -11,6 +11,8 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.condition.BaseCondition;
+import cn.cordys.common.dto.stage.StageConfigResponse;
+import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -33,7 +35,6 @@ import cn.cordys.crm.order.dto.request.OrderStageRequest;
 import cn.cordys.crm.order.dto.request.OrderUpdateRequest;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
-import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
@@ -91,6 +92,7 @@ public class OrderService {
     private BaseMapper<Customer> customerBaseMapper;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
+    public static final Long DEFAULT_POS = 1L;
 
     /**
      * 新建订单
@@ -243,44 +245,46 @@ public class OrderService {
         return get(order, orderFields, orderFormConfig);
     }
 
-	/**
-	 * 获取订单详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
-	 * @param id 订单ID
-	 * @return 订单详情
-	 */
-	public OrderGetResponse getSimple(String id) {
-		Order order = orderMapper.selectByPrimaryKey(id);
-		if (order == null) {
-			return null;
-		}
-		OrderGetResponse response = BeanUtils.copyBean(new OrderGetResponse(), order);
-		List<BaseModuleFieldValue> fvs = orderFieldService.getModuleFieldValuesByResourceId(id);
-		ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
-		moduleFormService.processBusinessFieldValues(response, fvs, orderFormConfig);
-		return response;
-	}
+    /**
+     * 获取订单详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
+     *
+     * @param id 订单ID
+     * @return 订单详情
+     */
+    public OrderGetResponse getSimple(String id) {
+        Order order = orderMapper.selectByPrimaryKey(id);
+        if (order == null) {
+            return null;
+        }
+        OrderGetResponse response = BeanUtils.copyBean(new OrderGetResponse(), order);
+        List<BaseModuleFieldValue> fvs = orderFieldService.getModuleFieldValuesByResourceId(id);
+        ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
+        moduleFormService.processBusinessFieldValues(response, fvs, orderFormConfig);
+        return response;
+    }
 
-	/**
-	 * 批量获取订单详情 (用于数据源批量查询优化)
-	 * @param ids 订单ID集合
-	 * @return 订单详情列表
-	 */
-	public List<OrderGetResponse> batchGetSimpleByIds(List<String> ids) {
-		if (CollectionUtils.isEmpty(ids)) {
-			return Collections.emptyList();
-		}
-		List<Order> orders = orderMapper.selectByIds(ids);
-		if (CollectionUtils.isEmpty(orders)) {
-			return Collections.emptyList();
-		}
-		Map<String, List<BaseModuleFieldValue>> fieldValueMap = orderFieldService.getResourceFieldMap(ids, true);
+    /**
+     * 批量获取订单详情 (用于数据源批量查询优化)
+     *
+     * @param ids 订单ID集合
+     * @return 订单详情列表
+     */
+    public List<OrderGetResponse> batchGetSimpleByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        List<Order> orders = orderMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(orders)) {
+            return Collections.emptyList();
+        }
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = orderFieldService.getResourceFieldMap(ids, true);
 
-		return orders.stream().map(order -> {
-			OrderGetResponse response = BeanUtils.copyBean(new OrderGetResponse(), order);
-			response.setModuleFields(fieldValueMap.get(order.getId()));
-			return response;
-		}).toList();
-	}
+        return orders.stream().map(order -> {
+            OrderGetResponse response = BeanUtils.copyBean(new OrderGetResponse(), order);
+            response.setModuleFields(fieldValueMap.get(order.getId()));
+            return response;
+        }).toList();
+    }
 
     /**
      * 编辑订单
@@ -687,5 +691,41 @@ public class OrderService {
             return order.getName();
         }
         return null;
+    }
+
+
+    /**
+     * 阶段看板排序
+     *
+     * @param request
+     * @param userId
+     */
+    public void sort(StageSortRequest request, String userId) {
+        //拖拽节点
+        Order order = orderMapper.selectByPrimaryKey(request.getDragNodeId());
+        if (order == null) {
+            throw new GenericException(Translator.get("order_not_exist"));
+        }
+        Long pos = DEFAULT_POS;
+        if (StringUtils.isNotBlank(request.getDropNodeId())) {
+            //放入节点
+            Order dropNode = orderMapper.selectByPrimaryKey(request.getDropNodeId());
+            pos = dropNode.getPos();
+            if (request.getDropPosition() == -1) {
+
+                extOrderMapper.moveUpStageOrder(pos, request.getStage(), DEFAULT_POS);
+                pos = pos + 1;
+            } else {
+                extOrderMapper.moveDownStageOrder(pos, request.getStage(), DEFAULT_POS);
+            }
+        }
+        Order dragOrder = new Order();
+        dragOrder.setId(request.getDragNodeId());
+        dragOrder.setPos(pos);
+        dragOrder.setStage(request.getStage());
+        dragOrder.setUpdateUser(userId);
+        dragOrder.setUpdateTime(System.currentTimeMillis());
+        orderMapper.updateById(dragOrder);
+
     }
 }

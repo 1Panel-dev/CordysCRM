@@ -89,7 +89,7 @@
         </include>
 
         <if test="request.board">
-            order by o.pos desc
+            order by ct.pos desc
         </if>
         <if test="!request.board">
             <include refid="sort">
@@ -625,11 +625,11 @@
         order by pos desc limit 1
     </select>
 
-    <update id="moveUpStageOpportunity">
+    <update id="moveUpStageContract">
         update contract set pos = pos + #{pos} where pos &gt; #{end} and stage = #{stage}
     </update>
 
-    <update id="moveDownStageOpportunity">
+    <update id="moveDownStageContract">
         update contract set pos = pos + #{pos} where pos &gt;= #{end} and stage = #{stage}
     </update>
 </mapper>

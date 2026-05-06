@@ -5,6 +5,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
+import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -140,6 +141,13 @@ public class OrderController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.ORDER_READ);
         return orderService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+
+    @PostMapping("/sort")
+    @Operation(summary = "订单看板拖拽排序")
+    public void sortModule(@Validated @RequestBody StageSortRequest request) {
+        orderService.sort(request, SessionUtils.getUserId());
     }
 
 }

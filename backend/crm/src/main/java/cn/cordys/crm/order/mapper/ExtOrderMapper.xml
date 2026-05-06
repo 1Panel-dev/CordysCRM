@@ -85,9 +85,15 @@
         <include refid="viewCombine">
             <property name="combineSearch" value="request.viewCombineSearch"/>
         </include>
-        <include refid="sort">
-            <property name="sort" value="request.sort"/>
-        </include>
+
+        <if test="request.board">
+            order by so.pos desc
+        </if>
+        <if test="!request.board">
+            <include refid="sort">
+                <property name="sort" value="request.sort"/>
+            </include>
+        </if>
     </select>
 
     <select id="getListByIds" resultType="cn.cordys.crm.order.dto.response.OrderListResponse">
@@ -514,4 +520,13 @@
         </include>
 
     </select>
+
+
+    <update id="moveUpStageOrder">
+        update order set pos = pos + #{pos} where pos &gt; #{end} and stage = #{stage}
+    </update>
+
+    <update id="moveDownStageOrder">
+        update order set pos = pos + #{pos} where pos &gt;= #{end} and stage = #{stage}
+    </update>
 </mapper>
