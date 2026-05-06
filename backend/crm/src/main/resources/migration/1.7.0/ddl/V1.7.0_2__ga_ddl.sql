@@ -59,11 +59,11 @@ CREATE TABLE approval_node_approver(
    `same_submitter_action` VARCHAR(20) NOT NULL  DEFAULT 'SKIP' COMMENT '审批人与提交人相同时动作：SKIP(自动跳过)/ALLOW(由提交人审批)/ASSIGN_SUPERIOR(转交给直属上级审批)' ,
    `approver_type` VARCHAR(50)  COMMENT '审批人类型' ,
    `cc_type` VARCHAR(50) COMMENT '抄送人类型' ,
-   `cc_list` VARCHAR(2000)    COMMENT '抄送人列表（JSON数组）' ,
-   `approver_list` VARCHAR(2000)    COMMENT '审批人列表（JSON数组）' ,
-   `pass_post_config` VARCHAR(2000)    COMMENT '审批通过后配置（JSON格式）' ,
-   `reject_post_config` VARCHAR(2000)    COMMENT '审批驳回后配置（JSON格式）' ,
-   `field_permissions` VARCHAR(2000)    COMMENT '字段权限配置（JSON格式）' ,
+   `cc_list` VARCHAR(4000)    COMMENT '抄送人列表（JSON数组）' ,
+   `approver_list` VARCHAR(4000)    COMMENT '审批人列表（JSON数组）' ,
+   `pass_post_config` VARCHAR(4000)    COMMENT '审批通过后配置（JSON格式）' ,
+   `reject_post_config` VARCHAR(4000)    COMMENT '审批驳回后配置（JSON格式）' ,
+   `field_permissions` VARCHAR(4000)    COMMENT '字段权限配置（JSON格式）' ,
    PRIMARY KEY (id)
 )  COMMENT = '审批人节点配置表'
 ENGINE = InnoDB
@@ -75,7 +75,7 @@ CREATE INDEX idx_flow_id ON approval_node_approver(flow_id ASC);
 CREATE TABLE approval_node_condition(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `flow_id` VARCHAR(32) NOT NULL   COMMENT '流程ID' ,
-    `condition_config` VARCHAR(2000) NOT NULL   COMMENT '条件配置JSON' ,
+    `condition_config` VARCHAR(4000) NOT NULL   COMMENT '条件配置JSON' ,
     PRIMARY KEY (id,flow_id)
 )  COMMENT = '条件节点配置表'
 ENGINE = InnoDB
