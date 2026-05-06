@@ -990,10 +990,10 @@ public class ContractService {
             pos = dropNode.getPos();
             if (request.getDropPosition() == -1) {
 
-                extContractMapper.moveUpStageOpportunity(pos, request.getStage(), DEFAULT_POS);
+                extContractMapper.moveUpStageContract(pos, request.getStage(), DEFAULT_POS);
                 pos = pos + 1;
             } else {
-                extContractMapper.moveDownStageOpportunity(pos, request.getStage(), DEFAULT_POS);
+                extContractMapper.moveDownStageContract(pos, request.getStage(), DEFAULT_POS);
             }
         }
         Contract dragContract = new Contract();

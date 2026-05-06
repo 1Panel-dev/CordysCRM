@@ -26,4 +26,8 @@ public interface ExtOrderMapper {
     int countByStage(@Param("stage") String stage);
 
     OrderStatisticResponse searchStatistic(@Param("request") BaseCondition request, @Param("orgId") String orgId, @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+
+    void moveUpStageOrder(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
+
+    void moveDownStageOrder(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 }

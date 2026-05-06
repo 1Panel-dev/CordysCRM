@@ -41,7 +41,7 @@ public interface ExtContractMapper {
 
     Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
 
-    void moveUpStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
+    void moveUpStageContract(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
-    void moveDownStageOpportunity(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
+    void moveDownStageContract(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 }

@@ -258,5 +258,7 @@ COLLATE = utf8mb4_general_ci;
 
 ALTER TABLE contract ADD COLUMN pos BIGINT DEFAULT NULL;
 
+ALTER TABLE sales_order ADD COLUMN pos BIGINT DEFAULT NULL;
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
