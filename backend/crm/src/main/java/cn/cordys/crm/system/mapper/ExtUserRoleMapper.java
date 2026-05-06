@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.mapper;
 
 import cn.cordys.common.dto.DeptUserTreeNode;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.RoleUserTreeNode;
 import cn.cordys.crm.system.dto.request.RoleUserPageRequest;
 import cn.cordys.crm.system.dto.response.RoleUserListResponse;
@@ -31,7 +32,9 @@ public interface ExtUserRoleMapper {
 
     void deleteByIds(@Param("ids") List<String> ids);
 
-    List<RoleUserOptionResponse> selectUserOptionByRoleId(@Param("orgId") String orgId, @Param("roleId") String roleId);
+    List<RoleUserOptionResponse> selectUserOption(@Param("orgId") String orgId);
+
+    List<OptionDTO> selectUserOptionByRoleId(@Param("orgId") String orgId, @Param("roleId") String roleId);
 
     List<String> selectUserRole(@Param("userId") String userId, @Param("orgId") String orgId);
 
