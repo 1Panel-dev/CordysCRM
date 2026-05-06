@@ -49,6 +49,24 @@ public class ApprovalFlowDetailResponse {
     @Schema(description = "是否必须填写审批意见")
     private Boolean requireComment;
 
+    @Schema(description = "创建人名称")
+    private String createUserName;
+
+    @Schema(description = "更新人名称")
+    private String updateUserName;
+
+    @Schema(description = "创建时间")
+    private Long createTime;
+
+    @Schema(description = "更新时间")
+    private Long updateTime;
+
+    @Schema(description = "创建人")
+    private String createUser;
+
+    @Schema(description = "更新人")
+    private String updateUser;
+
     @Schema(description = "对应资源表单的权限列表")
     private List<OptionDTO> permissions;
 

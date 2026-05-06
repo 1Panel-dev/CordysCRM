@@ -29,6 +29,9 @@ public class ApprovalNodeApprover {
     @Schema(description = "审批人为空时动作")
     private String emptyApproverAction = EmptyApproverActionEnum.AUTO_PASS.name();
 
+    @Schema(description = "审批人为空时，兜底审批人")
+    private String fallbackApprover;
+
     @NotBlank
     @Schema(description = "审批人与提交人相同时动作")
     private String sameSubmitterAction;

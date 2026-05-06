@@ -28,6 +28,12 @@ public class ApprovalNodeApproverResponse extends ApprovalNodeResponse {
     @Schema(description = "审批人为空时动作")
     private String emptyApproverAction;
 
+    @Schema(description = "兜底审批人ID")
+    private String fallbackApprover;
+
+    @Schema(description = "兜底审批人名称")
+    private String fallbackApproverName;
+
     @Schema(description = "审批人与提交人相同时动作")
     private String sameSubmitterAction;
 
