@@ -362,4 +362,9 @@ export default {
   'common.reject': '驳回',
   'common.approve': '同意',
   'common.resubmit': '重新提审',
+  'common.OR_APPROVAL': '或签',
+  'common.COUNTERSIGNATURE': '加签',
+  'common.AND_APPROVAL': '会签',
+  'common.SEQUENTIAL_APPROVAL': '依次审批',
+  'common.copyTo': '抄送人',
 };

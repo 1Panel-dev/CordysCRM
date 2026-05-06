@@ -7,9 +7,22 @@
     :class="isExpandAnimating ? 'n-split-panel--animating' : ''"
     :disabled="props.disabled"
   >
-    <template #1><slot name="1"></slot></template>
+    <template #1>
+      <div
+        v-if="(props.collapseSide ?? 'right') === 'right'"
+        :class="['n-split__resize-trigger-icon', 'n-split__resize-trigger-icon--right']"
+        @click.stop="changeSplit"
+      >
+        <CrmIconFont :type="collapsed ? 'iconicon_page_first' : 'iconicon_page_last'" />
+      </div>
+      <slot name="1"></slot>
+    </template>
     <template #2>
-      <div class="n-split__resize-trigger-icon" @click.stop="changeSplit">
+      <div
+        v-if="(props.collapseSide ?? 'right') === 'left'"
+        :class="['n-split__resize-trigger-icon', 'n-split__resize-trigger-icon--left']"
+        @click.stop="changeSplit"
+      >
         <CrmIconFont :type="collapsed ? 'iconicon_page_last' : 'iconicon_page_first'" />
       </div>
       <slot name="2"></slot>
@@ -22,12 +35,18 @@
 
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
 
-  const props = defineProps<{
-    defaultSize: number | string;
-    max: number | string;
-    min: number | string;
-    disabled?: boolean;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      defaultSize: number | string;
+      max: number | string;
+      min: number | string;
+      disabled?: boolean;
+      collapseSide?: 'left' | 'right';
+    }>(),
+    {
+      collapseSide: 'left',
+    }
+  );
 
   const size = defineModel<number | string>('size', {
     default: 0.25,
@@ -38,7 +57,11 @@
   watch(
     () => size.value,
     (val) => {
-      collapsed.value = val === 0;
+      if (props.collapseSide === 'right') {
+        collapsed.value = val === 1;
+      } else {
+        collapsed.value = val === 0;
+      }
     }
   );
 
@@ -46,7 +69,7 @@
     isExpandAnimating.value = true;
     collapsed.value = !collapsed.value;
     if (collapsed.value) {
-      size.value = 0;
+      size.value = props.collapseSide === 'right' ? 1 : 0;
     } else {
       size.value = props.defaultSize || 0.25;
     }
@@ -57,6 +80,11 @@
   }
 
   const spliticonleft = computed(() => {
+    if (props.collapseSide === 'right') {
+      return collapsed.value
+        ? 'calc(100% - 14px)'
+        : `calc(${typeof size.value === 'number' ? `${size.value * 100}%` : size.value} - 8px)`;
+    }
     return collapsed.value
       ? '0px'
       : `calc(${typeof size.value === 'number' ? `${size.value * 100}%` : size.value} - 1px)`;
@@ -85,10 +113,16 @@
     width: 14px;
     height: 24px;
     border: 1px solid var(--text-n8);
-    border-left: 0;
-    border-radius: 0 var(--border-radius-mini) var(--border-radius-mini) 0;
     color: var(--text-n2);
     background-color: var(--text-n10);
+  }
+  .n-split__resize-trigger-icon--right {
+    border-right: 0;
+    border-radius: 0 var(--border-radius-mini) var(--border-radius-mini) 0;
+  }
+  .n-split__resize-trigger-icon--left {
+    border-left: 0;
+    border-radius: var(--border-radius-mini) 0 0 var(--border-radius-mini);
   }
   .n-split-panel--animating {
     .n-split-pane-1,

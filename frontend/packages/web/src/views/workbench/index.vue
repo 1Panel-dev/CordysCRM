@@ -46,10 +46,10 @@
               />
             </CrmCard>
           </div>
-          <div class="flex h-full flex-wrap">
+          <div class="flex h-full w-[400px] flex-col justify-between overflow-hidden">
             <CrmCard hide-footer no-content-padding auto-height class="ml-[16px] w-full">
               <div class="max-h-[352px] p-[24px]">
-                <div class="title !mb-[8px]">
+                <div class="title !mb-[16px]">
                   <div class="title-name">{{ t('workbench.dataOverview.myTasks') }}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-[8px_16px]">

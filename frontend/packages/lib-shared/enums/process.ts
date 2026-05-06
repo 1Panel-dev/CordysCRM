@@ -29,3 +29,10 @@ export enum ApproverTypeEnum {
   CONTINUOUS_DEPARTMENT_LEADER = 'MULTIPLE_DEPT_HEAD', // 连续多级部门负责人
   ROLE = 'ROLE', // 角色
 }
+
+export enum ProcessTypeEnum {
+  OR_APPROVAL = 'OR_APPROVAL', // 或签
+  AND_APPROVAL = 'AND_APPROVAL', // 会签
+  SEQUENTIAL_APPROVAL = 'SEQUENTIAL_APPROVAL', // 依次审批
+  COUNTERSIGNATURE = 'COUNTERSIGNATURE', // 加签
+}

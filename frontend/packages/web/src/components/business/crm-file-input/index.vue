@@ -12,7 +12,7 @@
             :show-file-list="false"
             :max="10"
             @change="({ file, fileList }) => handleFileChange(file as CrmFileItem, fileList as CrmFileItem[])"
-            @before-upload="({ file, fileList })=>beforeUpload(file as CrmFileItem, fileList as CrmFileItem[])"
+            @before-upload="({ file, fileList }) => beforeUpload(file as CrmFileItem, fileList as CrmFileItem[])"
           >
             <CrmIcon type="iconicon_link1" :size="16" class="text-[var(--text-n4)]" />
           </n-upload>
@@ -27,6 +27,7 @@
       :autosize="{
         minRows: 3,
       }"
+      :status="valueStatus"
       class="crm-file-input"
       resizable
       clearable
@@ -62,6 +63,7 @@
       isLimit?: boolean; // 是否限制文件大小
       accept?: string; // 接受的文件类型
       fileTypeTip?: string; // 文件类型不合法提示
+      required?: boolean;
     }>(),
     {
       multiple: true,
@@ -84,6 +86,7 @@
   const fileList = defineModel<CrmFileItem[]>('fileList', {
     default: () => [],
   });
+  const valueStatus = ref();
 
   function handleFileChange(file: CrmFileItem, fs: Array<CrmFileItem>) {
     const lastFileList = fs.map((e: any) => {
@@ -156,6 +159,19 @@
   function handleDeleteFile(fileId: string) {
     fileList.value = fileList.value.filter((file: CrmFileItem) => file.id !== fileId);
   }
+
+  function validate() {
+    if (props.required && value.value.trim() === '') {
+      valueStatus.value = 'error';
+      return false;
+    }
+    valueStatus.value = '';
+    return true;
+  }
+
+  defineExpose({
+    validate,
+  });
 </script>
 
 <style lang="less" scoped>
