@@ -165,9 +165,9 @@ CREATE INDEX idx_cc_user_id ON approval_cc_task(cc_user_id ASC);
 CREATE TABLE approval_add_sign_task(
     `id` VARCHAR(32) NOT NULL COMMENT '主键ID' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '加签任务ID' ,
+    `sign_task_id` VARCHAR(32) NOT NULL   COMMENT '加签的节点ID' ,
     `approver_id` VARCHAR(32) NOT NULL   COMMENT '审批人' ,
     `type` VARCHAR(20) NOT NULL   COMMENT '加签方式：before(在我之前)、after(在我之后)' ,
-    `pos` INT    COMMENT '加签位置',
     `comment` TEXT    COMMENT '加签意见' ,
     `status` VARCHAR(20) NOT NULL   COMMENT '状态: pending(待审批)' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
@@ -182,6 +182,7 @@ CREATE TABLE approval_add_sign_task(
 
 CREATE INDEX idx_approver_id ON approval_add_sign_task(approver_id ASC);
 CREATE INDEX idx_task_id ON approval_add_sign_task(task_id ASC);
+CREATE INDEX idx_sign_task_id ON approval_add_sign_task(sign_task_id ASC);
 
 CREATE TABLE approval_return_back_record(
     `id` VARCHAR(32) NOT NULL COMMENT '主键ID' ,

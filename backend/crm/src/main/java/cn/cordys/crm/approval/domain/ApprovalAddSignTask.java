@@ -15,14 +15,14 @@ public class ApprovalAddSignTask extends BaseModel {
 	@Schema(description = "加签任务ID")
 	private String taskId;
 
+	@Schema(description = "加签任务ID")
+	private String signTaskId;
+
 	@Schema(description = "审批人")
 	private String approverId;
 
 	@Schema(description = "加签方式")
 	private String type;
-
-	@Schema(description = "加签位置")
-	private Integer pos;
 
 	@Schema(description = "加签意见")
 	private String comment;
