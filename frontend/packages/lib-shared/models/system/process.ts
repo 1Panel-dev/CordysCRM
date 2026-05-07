@@ -23,7 +23,8 @@ export interface PermissionItem {
 export interface ApprovalProcessItem extends BaseItem {
   number: string;
   formType: string;
-  executeTiming: string;
+  createExecute: boolean;
+  updateExecute: boolean;
   enable: boolean;
   submitterCanRevoke: boolean;
   allowBatchProcess: boolean;
@@ -94,7 +95,8 @@ export interface BasicFormParams {
   name: string;
   formType: string;
   description: string;
-  executeTiming: string[];
+  createExecute: boolean; // 创建执行
+  updateExecute: boolean; // 更新执行
 }
 
 // 更多设置参数

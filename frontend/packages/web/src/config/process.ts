@@ -61,17 +61,21 @@ export const processStatusOptions = Object.entries(processStatusMap).map(([key, 
 export const defaultBasicForm: BasicFormParams = {
   formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
   name: '',
-  executeTiming: ['CREATE'],
+  createExecute: true,
+  updateExecute: false,
   description: '',
 };
 
-export const executionTimingList = [
+export const executionTimingList: {
+  label: string;
+  value: 'createExecute' | 'updateExecute';
+}[] = [
   {
-    value: 'CREATE',
+    value: 'createExecute',
     label: t('common.create'),
   },
   {
-    value: 'EDIT',
+    value: 'updateExecute',
     label: t('common.edit'),
   },
 ];

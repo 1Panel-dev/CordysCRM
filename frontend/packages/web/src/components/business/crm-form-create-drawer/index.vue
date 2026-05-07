@@ -34,6 +34,7 @@
       class="!pt-[16px]"
       @cancel="handleBack"
       @saved="handleSaved"
+      @review="handleReview"
       @init="handleFormInit"
     />
   </CrmDrawer>
@@ -65,6 +66,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'saved', res: any): void;
+    (e: 'review', res: any): void;
   }>();
 
   const { t } = useI18n();
@@ -121,6 +123,11 @@
   function handleSaved(isContinue: boolean, res: any) {
     visible.value = isContinue;
     emit('saved', res);
+  }
+
+  function handleReview(res: any) {
+    emit('review', res);
+    visible.value = false;
   }
 </script>
 

@@ -83,6 +83,7 @@
     :link-form-key="FormDesignKeyEnum.CONTRACT"
     :link-form-info="linkFormInfo"
     @saved="handleFormCreateSaved"
+    @review="handleFormReview"
   />
 
   <CrmTableExportModal
@@ -386,11 +387,18 @@
     showDetailDrawer.value = true;
   }
 
+  function handleFormReview(res: any) {
+    // todo 待联调 xinxinwu
+  }
+
+  function handleReview(row: ContractItem) {
+    // todo 待联调 xinxinwu
+  }
+
   async function handleActionSelect(row: ContractItem, actionKey: string) {
     switch (actionKey) {
       case 'review':
-        // todo 提审 xinxinwu
-        handleApproval(row);
+        handleReview(row);
         break;
       case 'paymentRecord':
         handlePaymentRecord(row);
@@ -534,7 +542,7 @@
           },
         }),
     },
-    permission: ['CONTRACT:EXPORT', 'CONTRACT:APPROVAL'],
+    permission: ['CONTRACT:EXPORT'],
     containerClass: '.crm-contract-table',
     enableApproval,
   });
@@ -609,15 +617,6 @@
           key: 'batchEdit',
           permission: ['CONTRACT:UPDATE'],
         },
-        ...(enableApproval.value
-          ? [
-              {
-                label: t('common.batchApproval'),
-                key: 'approval',
-                permission: ['CONTRACT:APPROVAL'],
-              },
-            ]
-          : []),
       ],
     };
   });

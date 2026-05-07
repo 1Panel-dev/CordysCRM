@@ -62,6 +62,7 @@
       need-init-detail
       :link-form-key="FormDesignKeyEnum.ORDER"
       @saved="() => handleSaved()"
+      @review="handleFormReview"
     />
     <ContractDetailDrawer
       v-model:visible="showContractDetailDrawer"
@@ -118,6 +119,7 @@
   const emit = defineEmits<{
     (e: 'refresh'): void;
     (e: 'delete'): void;
+    (e: 'review', res: any): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -203,13 +205,13 @@
       permission: ['ORDER:DELETE'],
     },
   };
-  // todo 订单现在没有审批状态，所以暂时不生效，需要和后台确认
+
   const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<OrderItem>({
     formType: FormDesignKeyEnum.ORDER,
     dataActionMap: orderDetailDataActionMap,
     isDetail: true,
     specialActionFilter: (_row, actionKeys) => {
-      return actionKeys.filter((key) => !['review', 'revoke', 'pass', 'unPass'].includes(key));
+      return actionKeys.filter((key) => !['review', 'revoke'].includes(key));
     },
   });
 
@@ -251,24 +253,22 @@
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_ORDER, { id });
   }
 
-  function handleApproval(isPass?: boolean) {
-    // todo 审批
-  }
   function handleRevoke() {
-    // todo 撤销
+    // todo 待联调 xinxinwu
+  }
+
+  function handleFormReview(res: any) {
+    // todo 待联调 xinxinwu
+  }
+
+  function handleReview() {
+    // todo 待联调 xinxinwu
   }
 
   function handleSelect(key: string) {
-    // todo 缺少审批那些
     switch (key) {
-      case 'pass':
-        handleApproval(true);
-        break;
-      case 'unPass':
-        handleApproval();
-        break;
       case 'review':
-        // todo 提审 xinxinwu
+        handleReview();
         break;
       case 'revoke':
         handleRevoke();

@@ -27,7 +27,6 @@ export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   getBizStatus?: (row: Row) => string | undefined;
   identityResolver?: {
     isApplicant?: (row: Row, currentUserId: string) => boolean;
-    isApprover?: (row: Row, currentUserId: string) => boolean;
   };
   specialActionFilter?: (row: Row, actionKeys: string[]) => string[];
 }
@@ -79,10 +78,6 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     );
   }
 
-  function isApprover(row: Row) {
-    return options.identityResolver?.isApprover?.(row, userStore.userInfo.id) ?? false;
-  }
-
   function createApprovalActions(row: Row): ActionsItem[] {
     const approvalStatus = getApprovalStatus(row);
 
@@ -105,19 +100,6 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
         ];
       case ProcessStatusEnum.APPROVING:
         return [
-          ...(options.isDetail && isApprover(row)
-            ? [
-                {
-                  label: t('common.approve'),
-                  key: 'pass',
-                },
-                {
-                  label: t('common.reject'),
-                  key: 'unPass',
-                  danger: true,
-                },
-              ]
-            : []),
           ...(isApplicant(row)
             ? [
                 {

@@ -79,7 +79,7 @@
   const activeApproverId = ref('');
 
   const displayTitle = computed(() => props.title || t('common.approver'));
-  const popoverDisabled = computed(() => props.disabled || !props.sourceId || approvers.value.length === 0);
+  const popoverDisabled = computed(() => props.disabled || !props.sourceId);
 
   function getApprovers(detail: ApprovalPopoverDetail) {
     return props.transformData ? props.transformData(detail) : detail.approveUserList;

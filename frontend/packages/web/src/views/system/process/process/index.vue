@@ -177,7 +177,9 @@
       key: 'formType',
       width: 200,
       render: (row: ApprovalProcessItem) =>
-        h(CrmNameTooltip, { text: businessTypeOptions.find((e) => e.value === row.formType)?.label ?? '-' }),
+        h(CrmNameTooltip, {
+          text: businessTypeOptions.find((item) => item.value === row.formType)?.label ?? '',
+        }),
     },
     {
       title: t('process.process.name'),
@@ -273,8 +275,12 @@
       key: 'executeTiming',
       width: 200,
       render: (row: ApprovalProcessItem) => {
+        const executionTimingLabels = [
+          row.createExecute ? t('common.create') : '',
+          row.updateExecute ? t('common.edit') : '',
+        ].filter(Boolean);
         return h(CrmNameTooltip, {
-          text: row.executeTiming.includes('CREATE') ? t('common.create') : t('common.edit'),
+          text: executionTimingLabels.join('/') || '-',
         });
       },
     },

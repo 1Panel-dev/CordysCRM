@@ -70,14 +70,12 @@
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
-  import { useUserStore } from '@/store';
 
   import { FullPageEnum } from '@/enums/routeEnum';
 
   const { openModal } = useModal();
   const { openNewPage } = useOpenNewPage();
 
-  const useStore = useUserStore();
   const { t } = useI18n();
   const Message = useMessage();
 
@@ -187,6 +185,10 @@
     });
   }
 
+  function handleReview() {
+    // todo 待联调 xinxinwu
+  }
+
   function handleSelect(key: string) {
     switch (key) {
       case 'edit':
@@ -194,13 +196,7 @@
         visible.value = false;
         break;
       case 'review':
-        // todo 提审 xinxinwu
-        break;
-      case 'pass':
-        handleApproval(true);
-        break;
-      case 'unPass':
-        handleApproval();
+        handleReview();
         break;
       case 'voided':
         handleVoid();
@@ -224,14 +220,9 @@
     isDetail: true,
     identityResolver: {
       isApplicant: (row, currentUserId) => row.createUser === currentUserId,
-      isApprover: (row, currentUserId) =>
-        // todo xinxinwu 不确定审批人如何返回
-        // row.isApprover,
-        true,
     },
     specialActionFilter: (row, actionKeys) => {
       if (row.status === QuotationStatusEnum.VOIDED) {
-        // todo xinxinwu 状态历史数据
         return actionKeys.filter((key) => key === 'delete');
       }
       return actionKeys;
@@ -254,6 +245,7 @@
           ...e,
           text: false,
           ghost: true,
+          class: 'n-btn-outline-primary',
         };
       }),
     };
