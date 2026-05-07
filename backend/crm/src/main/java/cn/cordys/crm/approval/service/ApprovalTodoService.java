@@ -50,7 +50,7 @@ public class ApprovalTodoService {
         // 查询当前用户待审批任务。
         LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
         taskWrapper.eq(ApprovalTask::getApproverId, userId)
-                .eq(ApprovalTask::getTaskStatus, ApprovalState.PENDING.getId());
+                .eq(ApprovalTask::getStatus, ApprovalState.PENDING.getId());
         List<ApprovalTask> tasks = approvalTaskMapper.selectListByLambda(taskWrapper);
         if (tasks.isEmpty()) {
             return response;

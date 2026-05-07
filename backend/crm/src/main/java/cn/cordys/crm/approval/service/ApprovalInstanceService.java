@@ -2,6 +2,7 @@ package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.ApprovalCcNode;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
@@ -12,6 +13,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -97,7 +99,7 @@ public class ApprovalInstanceService {
 	 * 查询加签任务并分组
 	 */
 	private Map<String, List<ApprovalAddSignTask>> queryAddSignTasks(List<ApprovalTask> tasks) {
-		List<String> ids = tasks.stream().filter(ApprovalTask::getIsAddSign).map(ApprovalTask::getId).toList();
+		List<String> ids = tasks.stream().filter(task -> Strings.CI.equals(task.getType(), ApprovalTaskType.SN.name())).map(ApprovalTask::getId).toList();
 		if (CollectionUtils.isEmpty(ids)) {
 			return Map.of();
 		}
@@ -110,7 +112,7 @@ public class ApprovalInstanceService {
 	 * 查询抄送任务并分组
 	 */
 	private Map<String, List<ApprovalCcTask>> queryCcTasks(List<ApprovalTask> tasks) {
-		List<String> ids = tasks.stream().filter(ApprovalTask::getIsCc).map(ApprovalTask::getId).toList();
+		List<String> ids = tasks.stream().filter(task -> Strings.CI.equals(task.getType(), ApprovalTaskType.CC.name())).map(ApprovalTask::getId).toList();
 		if (CollectionUtils.isEmpty(ids)) {
 			return Map.of();
 		}
@@ -123,7 +125,7 @@ public class ApprovalInstanceService {
 	 * 查询退回记录
 	 */
 	private Map<String, ApprovalReturnBackRecord> queryReturnRecords(List<ApprovalTask> tasks) {
-		List<String> ids = tasks.stream().filter(ApprovalTask::getIsReturn).map(ApprovalTask::getId).toList();
+		List<String> ids = tasks.stream().filter(task -> Strings.CI.equals(task.getType(), ApprovalTaskType.BK.name())).map(ApprovalTask::getId).toList();
 		if (CollectionUtils.isEmpty(ids)) {
 			return Map.of();
 		}
@@ -149,11 +151,11 @@ public class ApprovalInstanceService {
 	private Map<String, List<Attachment>> queryAttachments(List<ApprovalTask> tasks, Map<String, ApprovalRecord> taskRecordMap,
 															Map<String, List<ApprovalAddSignTask>> signTaskGroupMap) {
 		List<String> elementIds = new ArrayList<>();
-		elementIds.addAll(taskRecordMap.values().stream().map(ApprovalRecord::getId).toList());
-		elementIds.addAll(signTaskGroupMap.values().stream().flatMap(List::stream)
-				.filter(t -> ApprovalStatus.APPROVING.name().equals(t.getStatus())).map(ApprovalAddSignTask::getId).toList());
-		elementIds.addAll(tasks.stream().filter(t -> t.getIsReturn() && ApprovalStatus.APPROVING.name().equals(t.getTaskStatus()))
-				.map(ApprovalTask::getId).toList());
+		// elementIds.addAll(taskRecordMap.values().stream().map(ApprovalRecord::getId).toList());
+		// elementIds.addAll(signTaskGroupMap.values().stream().flatMap(List::stream)
+		// 		.filter(t -> ApprovalStatus.APPROVING.name().equals(t.getStatus())).map(ApprovalAddSignTask::getId).toList());
+		// elementIds.addAll(tasks.stream().filter(t -> t.getIsReturn() && ApprovalStatus.APPROVING.name().equals(t.getTaskStatus()))
+		// 		.map(ApprovalTask::getId).toList());
 
 		if (CollectionUtils.isEmpty(elementIds)) {
 			return Map.of();
@@ -196,17 +198,15 @@ public class ApprovalInstanceService {
 		for (ApprovalTask task : approvalTasks) {
 			ApprovalRecordNode node = buildRecordNode(task, taskRecordMap.get(task.getId()), elementAttachmentsMap);
 			// 处理加签任务节点
-			if (task.getIsAddSign()) {
+			if (Strings.CI.equals(task.getType(), ApprovalTaskType.SN.name())) {
 				List<ApprovalAddSignTask> addSignTasks = signTaskGroupMap.get(task.getId());
 				if (CollectionUtils.isNotEmpty(addSignTasks)) {
 					// 按加签类型分组, 并按位次排序
 					List<ApprovalAddSignTask> beforeTasks = addSignTasks.stream()
 							.filter(t -> "before".equals(t.getType()))
-							//.sorted(Comparator.comparingInt(ApprovalAddSignTask::getPos))
 							.toList();
 					List<ApprovalAddSignTask> afterTasks = addSignTasks.stream()
 							.filter(t -> "after".equals(t.getType()))
-							//.sorted(Comparator.comparingInt(ApprovalAddSignTask::getPos))
 							.toList();
 
 					// 之前的节点
@@ -224,7 +224,7 @@ public class ApprovalInstanceService {
 						nodes.add(afterNode);
 					}
 				}
-			} else if (task.getIsReturn() && ApprovalStatus.APPROVING.name().equals(task.getTaskStatus())) {
+			} else if (Strings.CI.equals(task.getType(), ApprovalTaskType.BK.name()) && ApprovalStatus.APPROVING.name().equals(task.getStatus())) {
 				// 退回任务节点: 仅在审批中时显示为退回节点, 并从退回记录获取意见和附件
 				ApprovalReturnBackRecord returnRecord = returnRecordMap.get(task.getId());
 				node.setReturnNode(true);
@@ -233,7 +233,7 @@ public class ApprovalInstanceService {
 					node.setAttachments(elementAttachmentsMap.get(task.getId()));
 				}
 				nodes.add(node);
-			} else if (task.getIsCc()) {
+			} else if (Strings.CI.equals(task.getType(), ApprovalTaskType.CC.name())) {
 				// 处理抄送任务节点: 查询该任务节点下所有的抄送任务
 				List<ApprovalCcTask> ccTaskList = ccTaskGroupMap.get(task.getId());
 				if (CollectionUtils.isNotEmpty(ccTaskList)) {
@@ -257,7 +257,7 @@ public class ApprovalInstanceService {
 												Map<String, List<Attachment>> elementAttachmentsMap) {
 		ApprovalRecordNode node = ApprovalRecordNode.builder().taskId(task.getId())
 				.nodeId(task.getNodeId()).approverId(task.getApproverId())
-				.approvalStatus(task.getTaskStatus()).approvalTime(task.getCreateTime())
+				.approvalStatus(task.getStatus()).approvalTime(task.getCreateTime())
 				.build();
 		if (record != null) {
 			node.setRecordId(record.getId());
@@ -273,21 +273,21 @@ public class ApprovalInstanceService {
 	 */
 	private ApprovalRecordNode buildAddSignNode(ApprovalAddSignTask signTask, ApprovalRecord record,
 												Map<String, List<Attachment>> elementAttachmentsMap) {
-		ApprovalRecordNode node = ApprovalRecordNode.builder().taskId(signTask.getTaskId()).recordId(record != null ? record.getId() : null)
-				.approverId(signTask.getApproverId()).approvalStatus(signTask.getStatus())
-				.approvalTime(signTask.getCreateTime())
-				.build();
-		// 如果有执行记录，从记录中获取意见和附件
-		if (record != null) {
-			node.setComment(record.getComment());
-			node.setAttachments(elementAttachmentsMap.get(record.getId()));
-		} else if (ApprovalStatus.APPROVING.name().equals(signTask.getStatus())) {
-			// 审批中：从加签信息中取意见
-			node.setComment(signTask.getComment());
-			// 从加签任务获取附件
-			node.setAttachments(elementAttachmentsMap.get(signTask.getId()));
-		}
-		return node;
+		// ApprovalRecordNode node = ApprovalRecordNode.builder().taskId(signTask.getTaskId()).recordId(record != null ? record.getId() : null)
+		// 		.approverId(signTask.getApproverId()).approvalStatus(signTask.getStatus())
+		// 		.approvalTime(signTask.getCreateTime())
+		// 		.build();
+		// // 如果有执行记录，从记录中获取意见和附件
+		// if (record != null) {
+		// 	node.setComment(record.getComment());
+		// 	node.setAttachments(elementAttachmentsMap.get(record.getId()));
+		// } else if (ApprovalStatus.APPROVING.name().equals(signTask.getStatus())) {
+		// 	// 审批中：从加签信息中取意见
+		// 	node.setComment(signTask.getComment());
+		// 	// 从加签任务获取附件
+		// 	node.setAttachments(elementAttachmentsMap.get(signTask.getId()));
+		// }
+		return null;
 	}
 
 	/**
