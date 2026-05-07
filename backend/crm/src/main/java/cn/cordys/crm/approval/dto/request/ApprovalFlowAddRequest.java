@@ -22,8 +22,11 @@ public class ApprovalFlowAddRequest {
     @Schema(description = "表单类型：quotation/contract/invoice/order")
     private String formType;
 
-    @Schema(description = "执行时机列表：CREATE/EDIT")
-    private List<String> executeTiming;
+    @Schema(description = "新建时执行")
+    private Boolean createExecute = true;
+
+    @Schema(description = "编辑时执行")
+    private Boolean updateExecute = true;
 
     @Schema(description = "启用状态")
     private Boolean enable;

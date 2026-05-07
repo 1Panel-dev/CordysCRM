@@ -22,8 +22,11 @@ public class ApprovalFlowDetailResponse {
     @Schema(description = "表单类型")
     private String formType;
 
-    @Schema(description = "执行时机")
-    private List<String> executeTiming;
+    @Schema(description = "新建时执行")
+    private Boolean createExecute;
+
+    @Schema(description = "编辑时执行")
+    private Boolean updateExecute;
 
     @Schema(description = "启用状态")
     private Boolean enable;

@@ -19,8 +19,11 @@ public class ApprovalFlowUpdateRequest {
     @Schema(description = "流程名称")
     private String name;
 
-    @Schema(description = "执行时机列表：CREATE/EDIT")
-    private List<String> executeTiming;
+    @Schema(description = "新建时执行")
+    private Boolean createExecute;
+
+    @Schema(description = "编辑时执行")
+    private Boolean updateExecute;
 
     @Schema(description = "启用状态")
     private Boolean enable;
