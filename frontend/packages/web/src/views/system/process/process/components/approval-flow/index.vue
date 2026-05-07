@@ -41,6 +41,7 @@
         <approvalActionNodeForm
           v-if="selection.type === 'node' && isApprovalActionNode(selection.node)"
           v-model:node="selection.node"
+          @switch-more-setting="emit('switchMoreSetting')"
         />
       </template>
     </CrmFlow>
@@ -85,6 +86,10 @@
   const props = defineProps<{
     needDetail?: boolean;
     readonly?: boolean;
+  }>();
+
+  const emit = defineEmits<{
+    (event: 'switchMoreSetting'): void;
   }>();
 
   // 基础表单

@@ -58,10 +58,10 @@ export interface ApprovalProcessNode extends BaseItem {
 export type ApprovalNodeType = 'START' | 'APPROVER' | 'CONDITION' | 'DEFAULT' | 'END';
 // 多人审批方式：会签/或签/依次审批
 export type MultiApproverMode = 'ALL' | 'ANY' | 'SEQUENTIAL';
-// 审批人为空时动作：自动通过/自动拒绝/转交管理员
-export type EmptyApproverAction = 'AUTO_PASS' | 'AUTO_REJECT' | 'TRANSFER_ADMIN';
-// 审批人与提交人相同时动作：跳过/自动通过/自动拒绝/转交管理员
-export type SameSubmitterAction = 'SKIP' | 'AUTO_PASS' | 'AUTO_REJECT' | 'TRANSFER_ADMIN';
+// 审批人为空时动作：自动通过/指定人员/转交管理员
+export type EmptyApproverAction = 'AUTO_PASS' | 'ASSIGN_SPECIFIC' | 'ASSIGN_ADMIN';
+// 审批人与提交人相同时动作：提交人审批/跳过/交给直属上级审批
+export type SameSubmitterAction = 'ALLOW' | 'SKIP' | 'ASSIGN_SUPERIOR';
 
 // 审批动作节点（前端审批流图使用）
 export interface ApprovalActionNode extends ActionNode {
@@ -70,9 +70,13 @@ export interface ApprovalActionNode extends ActionNode {
   approverList: string[]; // 审批人配置列表：成员 ID / 角色 ID / 层级等
   approverSelectedList?: SelectedUsersItem[]; // 前端展示用的审批人选中列表
   multiApproverMode: MultiApproverMode; // 多人审批方式
-  emptyApproverAction: EmptyApproverAction; // 审批人为空时动作
-  sameSubmitterAction: SameSubmitterAction; // 审批人与提交人相同时动作
-  cc: SelectedUsersItem[]; // 抄送人列表
+  emptyApproverAction: EmptyApproverAction; // 异常处理-审批人为空时动作
+  fallbackApprover: string; // 异常处理-兜底审批人
+  sameSubmitterAction: SameSubmitterAction; // 异常处理-审批人与提交人相同时动作
+  emptyApproverSelectedList?: SelectedUsersItem[]; // 异常处理-前端展示用的
+  ccType: ApproverTypeEnum | null; // 抄送人来源
+  ccList: string[]; // 抄送人配置列表：成员 ID / 角色 ID / 层级等
+  ccSelectedList?: SelectedUsersItem[]; // 前端展示用的抄送选中列表
   passPostConfig?: Record<string, any>; // 审批通过后配置
   rejectPostConfig?: Record<string, any>; // 审批驳回后配置
   fieldPermissions?: Record<string, any>[]; // 字段权限配置列表

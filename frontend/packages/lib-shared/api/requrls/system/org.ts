@@ -18,6 +18,7 @@ export const getUserDetailUrl = '/user/detail'; // 用户(员工)-员工详情
 export const batchEditUserUrl = '/user/batch/edit'; // 用户(员工)-批量编辑
 export const importUserPreCheckUrl = '/user/import/pre-check'; // 用户(员工)-excel导入检查
 export const getUserOptionsUrl = '/user/option'; // 获取用户下拉
+export const getAdminOptionsUrl = '/user/admin/option'; // 获取审批管理员下拉
 export const getRoleOptionsUrl = '/user/role/option'; // 获取角色下拉
 export const importUserUrl = '/user/import'; // 用户(员工)-excel导入
 export const deleteUserUrl = '/user/delete'; // 用户(员工)-删除

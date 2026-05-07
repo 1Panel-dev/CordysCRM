@@ -11,7 +11,7 @@
       :show="false"
       :disabled="props.disabled"
       :status="props.status"
-      max-tag-count="responsive"
+      :max-tag-count="resolvedMaxTagCount"
       @click="handleShowSelectDrawer"
     />
     <CrmSelectUserDrawer
@@ -62,10 +62,12 @@
     fetchMemberParams?: Record<string, any>; // 成员入参
     baseParams?: Record<string, any>; // 基础公共入参
     status?: 'error' | 'success' | 'warning';
+    maxTagCount?: 'responsive' | number | false;
   };
   const props = withDefaults(defineProps<UserTagSelectorProps>(), {
     multiple: true,
     apiTypeKey: MemberApiTypeEnum.MODULE_ROLE,
+    maxTagCount: 'responsive',
   });
   const selectedList = defineModel<SelectedUsersItem[]>('selectedList', {
     required: false,
@@ -81,6 +83,7 @@
 
   const showSelectDrawer = ref(false);
   const crmSelectUserDrawerRef = ref<InstanceType<typeof CrmSelectUserDrawer>>();
+  const resolvedMaxTagCount = computed(() => (props.maxTagCount === false ? undefined : props.maxTagCount));
   function handleShowSelectDrawer() {
     if (props.disabled) return;
     showSelectDrawer.value = true;

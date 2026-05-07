@@ -12,6 +12,7 @@ import {
   deleteUserCheckUrl,
   deleteUserUrl,
   getDepartmentTreeUrl,
+  getAdminOptionsUrl,
   getOrgDepartmentUserUrl,
   CheckSyncUrl,
   getRoleOptionsUrl,
@@ -137,6 +138,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: getUserOptionsUrl });
   }
 
+  // 用户(员工)-获取审批管理员下拉
+  function getAdminOptions() {
+    return CDR.get<{ id: string; name: string }[]>({ url: getAdminOptionsUrl });
+  }
+
   // 用户(员工)-获取角色下拉
   function getRoleOptions() {
     return CDR.get({ url: getRoleOptionsUrl });
@@ -186,6 +192,7 @@ export default function useProductApi(CDR: CordysAxios) {
     batchEditUser,
     importUserPreCheck,
     getUserOptions,
+    getAdminOptions,
     getRoleOptions,
     importUsers,
     deleteUser,
