@@ -29,24 +29,28 @@
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
       </CrmCard>
 
-      <CrmCard hide-footer :special-height="64" noContentBottomPadding>
+      <CrmCard contentHeight="100%" hide-footer :special-height="64" no-content-padding>
         <!-- 需要用到 detailInfo 所以这里不用 v-if -->
-        <div v-show="activeTab === 'contract'">
-          <CrmFormDescription
-            :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
-            :source-id="props.sourceId"
-            :column="2"
-            :refresh-key="refreshKey"
-            label-width="auto"
-            value-align="start"
-            tooltip-position="top-start"
-            readonly
-            :isContractTableDetail="props.isContractTableDetail"
-            @openCustomerDetail="emit('showCustomerDrawer', $event)"
-            @openOpportunityDetail="openOpportunityDetail"
-            @openQuotationDetail="openQuotationDetail"
-            @init="handleInit"
-          />
+        <div v-show="activeTab === 'contract'" class="h-full">
+          <CrmApprovalDetail :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT" :source-id="props.sourceId">
+            <template #left>
+              <CrmFormDescription
+                :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
+                :source-id="props.sourceId"
+                :column="2"
+                :refresh-key="refreshKey"
+                label-width="auto"
+                value-align="start"
+                tooltip-position="top-start"
+                readonly
+                :isContractTableDetail="props.isContractTableDetail"
+                @openCustomerDetail="emit('showCustomerDrawer', $event)"
+                @openOpportunityDetail="openOpportunityDetail"
+                @openQuotationDetail="openQuotationDetail"
+                @init="handleInit"
+              />
+            </template>
+          </CrmApprovalDetail>
         </div>
         <template v-if="activeTab === 'payment'">
           <PaymentTable
@@ -127,6 +131,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
