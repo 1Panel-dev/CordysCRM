@@ -125,14 +125,13 @@ CREATE INDEX idx_resource_id ON approval_instance(resource_id ASC);
 CREATE INDEX idx_submitter_id ON approval_instance(submitter_id ASC);
 
 CREATE TABLE approval_task(
-    `id` VARCHAR(32) NOT NULL COMMENT 'ID' ,
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
     `node_id` VARCHAR(32) NOT NULL   COMMENT '节点ID' ,
     `instance_id` VARCHAR(32) NOT NULL   COMMENT '审批实例ID' ,
     `approver_id` VARCHAR(20) NOT NULL   COMMENT '审批人ID' ,
-    `task_status` VARCHAR(20) NOT NULL   COMMENT '任务状态' ,
-    `is_add_sign` TINYINT(1) NOT NULL  DEFAULT 0 COMMENT '是否加签任务' ,
-    `is_return` TINYINT(1) NOT NULL  DEFAULT 0 COMMENT '是否退回任务' ,
-    `is_cc` TINYINT(1) NOT NULL  DEFAULT 0 COMMENT '是否为抄送任务' ,
+    `status` VARCHAR(20) NOT NULL   COMMENT '任务状态; 待审批: PENDING, 审批中: APPROVING, 已通过: PASS, 已驳回: REJECT, 已撤销: REVOKED' ,
+    `type` VARCHAR(20)    COMMENT '任务类型; 抄送: CC; 加签: SN; 退回: BK; 普通: NL;' ,
+    `action` VARCHAR(20)    COMMENT '执行操作; 同意: APPROVE;驳回: REJECT;加签: SIGN;退回: BACK;' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
@@ -150,12 +149,8 @@ CREATE TABLE approval_cc_task(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '抄送任务ID' ,
     `cc_user_id` VARCHAR(32) NOT NULL   COMMENT '抄送人ID' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
     PRIMARY KEY (id)
-)  COMMENT = '审批抄送任务表'
+)  COMMENT = '审批抄送任务扩展表'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
@@ -164,37 +159,26 @@ CREATE INDEX idx_task_id ON approval_cc_task(task_id ASC);
 CREATE INDEX idx_cc_user_id ON approval_cc_task(cc_user_id ASC);
 
 CREATE TABLE approval_add_sign_task(
-    `id` VARCHAR(32) NOT NULL COMMENT '主键ID' ,
+    `id` VARCHAR(32) NOT NULL   COMMENT '主键ID' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '加签任务ID' ,
-    `sign_task_id` VARCHAR(32) NOT NULL   COMMENT '加签的节点ID' ,
-    `approver_id` VARCHAR(32) NOT NULL   COMMENT '审批人' ,
-    `type` VARCHAR(20) NOT NULL   COMMENT '加签方式：before(在我之前)、after(在我之后)' ,
+    `sign_task_id` VARCHAR(32) NOT NULL   COMMENT '加签目标节点ID' ,
+    `type` VARCHAR(20) NOT NULL   COMMENT '加签方式; 在我之前: BEFORE: 在我之后: AFTER' ,
     `comment` TEXT    COMMENT '加签意见' ,
-    `status` VARCHAR(20) NOT NULL   COMMENT '状态: pending(待审批)' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
     PRIMARY KEY (id)
 )  COMMENT = '加签任务表'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_approver_id ON approval_add_sign_task(approver_id ASC);
 CREATE INDEX idx_task_id ON approval_add_sign_task(task_id ASC);
 CREATE INDEX idx_sign_task_id ON approval_add_sign_task(sign_task_id ASC);
 
 CREATE TABLE approval_return_back_record(
-    `id` VARCHAR(32) NOT NULL COMMENT '主键ID' ,
+    `id` VARCHAR(32) NOT NULL   COMMENT '主键ID' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '当前任务ID' ,
     `return_to_task_id` VARCHAR(32)    COMMENT '退回至任务ID' ,
     `return_reason` TEXT    COMMENT '退回原因' ,
     `return_user_id` VARCHAR(32) NOT NULL   COMMENT '退回操作人' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
     PRIMARY KEY (id)
 )  COMMENT = '退回记录表'
     ENGINE = InnoDB

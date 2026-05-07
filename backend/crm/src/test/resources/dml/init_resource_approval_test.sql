@@ -12,10 +12,10 @@ INSERT INTO approval_instance (`id`, `flow_id`, `type`, `resource_id`, `submitte
 VALUES
     ('approval_instance_test_001', 'approval_flow_test_001', 'contract', 'approval_resource_test_001', 'admin', 'node_current', 'APPROVING', 1736240043609, NULL, NULL, 1736240043609, 1736240043609, 'admin', 'admin');
 
-INSERT INTO approval_task (`id`, `node_id`, `instance_id`, `approver_id`, `task_status`, `is_add_sign`, `is_return`, `is_cc`, `create_time`, `update_time`, `create_user`, `update_user`)
+INSERT INTO approval_task (`id`, `node_id`, `instance_id`, `approver_id`, `status`, `type`, `action`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES
-    ('approval_task_current', 'node_current', 'approval_instance_test_001', 'appr_user_curr', 'APPROVED', 0, 0, 0, 1736240043609, 1736240043609, 'admin', 'admin'),
-    ('approval_task_other', 'node_other', 'approval_instance_test_001', 'appr_user_othr', 'UNAPPROVED', 0, 0, 0, 1736241043609, 1736241043609, 'admin', 'admin');
+    ('approval_task_current', 'node_current', 'approval_instance_test_001', 'appr_user_curr', 'APPROVED', 'NL', 'APPROVE', 1736240043609, 1736240043609, 'admin', 'admin'),
+    ('approval_task_other', 'node_other', 'approval_instance_test_001', 'appr_user_othr', 'APPROVED', 'NL', 'APPROVE',1736241043609, 1736241043609, 'admin', 'admin');
 
 INSERT INTO approval_record (`id`, `instance_id`, `task_id`, `node_id`, `result`, `comment`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES

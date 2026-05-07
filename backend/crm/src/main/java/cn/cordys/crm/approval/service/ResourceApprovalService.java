@@ -105,7 +105,7 @@ public class ResourceApprovalService {
                 userApprove.setEmail(user.getEmail());
             }
 
-            userApprove.setApproveResult(StringUtils.defaultIfBlank(task.getTaskStatus(), ApprovalStatus.PENDING.name()));
+            userApprove.setApproveResult(StringUtils.defaultIfBlank(task.getStatus(), ApprovalStatus.PENDING.name()));
             ApprovalRecord record = taskRecordMap.get(task.getId());
             if (record != null) {
                 userApprove.setApproveReason(record.getComment());

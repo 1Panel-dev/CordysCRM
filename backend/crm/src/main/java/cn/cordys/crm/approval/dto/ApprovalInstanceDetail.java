@@ -26,6 +26,9 @@ public class ApprovalInstanceDetail {
 	@Schema(description = "审批状态")
 	private String approvalStatus;
 
+	@Schema(description = "当前节点ID")
+	private String currentNodeId;
+
 	@Schema(description = "审批节点集合")
 	private List<ApprovalRecordNode> nodes;
 }

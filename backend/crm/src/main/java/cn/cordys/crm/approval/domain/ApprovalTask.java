@@ -22,14 +22,11 @@ public class ApprovalTask extends BaseModel {
 	private String approverId;
 
 	@Schema(description = "任务状态")
-	private String taskStatus;
+	private String status;
 
-	@Schema(description = "是否为加签任务")
-	private Boolean isAddSign;
+	@Schema(description = "任务类型")
+	private String type;
 
-	@Schema(description = "是否为退回任务")
-	private Boolean isReturn;
-
-	@Schema(description = "是否为抄送任务")
-	private Boolean isCc;
+	@Schema(description = "执行操作")
+	private String action;
 }

@@ -25,7 +25,7 @@ public class ApprovalExecuteService {
 	 * 执行审批流程
 	 * @param executeParam 执行参数
 	 */
-	private void execute(ApprovalExecuteParam executeParam) {
+	public void execute(ApprovalExecuteParam executeParam) {
 		ApprovalTask currentTask;
 		if (StringUtils.isNotEmpty(executeParam.getInstanceId())) {
 			ApprovalInstance approvalInstance = approvalInstanceMapper.selectByPrimaryKey(executeParam.getInstanceId());
@@ -42,7 +42,7 @@ public class ApprovalExecuteService {
 		 * 2. 追加下一个审批任务
 		 * TODO: 涉及到退回, 加签的逻辑后续补充
 		 */
-		currentTask.setTaskStatus(executeParam.getResult());
+		currentTask.setStatus(executeParam.getResult());
 		currentTask.setUpdateTime(System.currentTimeMillis());
 		currentTask.setUpdateUser(currentTask.getApproverId());
 		approvalTaskMapper.update(currentTask);
@@ -54,6 +54,10 @@ public class ApprovalExecuteService {
 		nextTask.setCreateTime(System.currentTimeMillis());
 		nextTask.setUpdateTime(System.currentTimeMillis());
 		approvalTaskMapper.insert(nextTask);
+	}
+
+	public void back() {
+
 	}
 
 
