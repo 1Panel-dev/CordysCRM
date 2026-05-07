@@ -20,4 +20,10 @@ public class ApprovalTodoItemResponse {
 
     @Schema(description = "提交时间")
     private Long submitTime;
+
+    @Schema(description = "审批操作")
+    private String approvalOperation;
+
+    @Schema(description = "数据结果")
+    private String dataResult;
 }
