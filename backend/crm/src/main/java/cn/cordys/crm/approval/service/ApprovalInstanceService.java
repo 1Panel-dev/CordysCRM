@@ -202,11 +202,11 @@ public class ApprovalInstanceService {
 					// 按加签类型分组, 并按位次排序
 					List<ApprovalAddSignTask> beforeTasks = addSignTasks.stream()
 							.filter(t -> "before".equals(t.getType()))
-							.sorted(Comparator.comparingInt(ApprovalAddSignTask::getPos))
+							//.sorted(Comparator.comparingInt(ApprovalAddSignTask::getPos))
 							.toList();
 					List<ApprovalAddSignTask> afterTasks = addSignTasks.stream()
 							.filter(t -> "after".equals(t.getType()))
-							.sorted(Comparator.comparingInt(ApprovalAddSignTask::getPos))
+							//.sorted(Comparator.comparingInt(ApprovalAddSignTask::getPos))
 							.toList();
 
 					// 之前的节点
