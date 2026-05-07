@@ -82,8 +82,8 @@
   const spliticonleft = computed(() => {
     if (props.collapseSide === 'right') {
       return collapsed.value
-        ? 'calc(100% - 14px)'
-        : `calc(${typeof size.value === 'number' ? `${size.value * 100}%` : size.value} - 8px)`;
+        ? 'calc(100% - 15px)'
+        : `calc(${typeof size.value === 'number' ? `${size.value * 100}%` : size.value} - 15px)`;
     }
     return collapsed.value
       ? '0px'
@@ -118,7 +118,7 @@
   }
   .n-split__resize-trigger-icon--right {
     border-right: 0;
-    border-radius: 0 var(--border-radius-mini) var(--border-radius-mini) 0;
+    border-radius: var(--border-radius-mini) 0 0 var(--border-radius-mini);
   }
   .n-split__resize-trigger-icon--left {
     border-left: 0;

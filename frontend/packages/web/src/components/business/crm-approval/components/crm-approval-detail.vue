@@ -1,34 +1,40 @@
 <template>
-  <CrmCard auto-height hide-footer no-content-padding>
-    <CrmSplitPanel :max="1" :min="0.7" :default-size="0.7" collapse-side="right" disabled>
+  <CrmCard hide-footer no-content-padding>
+    <CrmSplitPanel :size="0.7" :max="1" :min="0.7" :default-size="0.7" collapse-side="right" disabled>
       <template #1>
-        <div class="flex h-full w-full p-[16px]">
-          <CrmFormDescription
-            :form-key="props.formKey"
-            :source-id="props.sourceId"
-            :refresh-key="refreshKey"
-            class="p-[16px_24px]"
-            :column="props.layout === 'vertical' ? 3 : undefined"
-            :label-width="props.layout === 'vertical' ? 'auto' : undefined"
-            :value-align="props.layout === 'vertical' ? 'start' : undefined"
-            @init="handleDescriptionInit"
-          />
+        <div class="flex h-full w-full p-[24px_16px_24px_24px]">
+          <n-scrollbar x-scrollable>
+            <slot name="left"></slot>
+          </n-scrollbar>
         </div>
       </template>
       <template #2>
-        <div class="flex h-full w-full overflow-hidden p-[16px]">
-          <div class="flex-1 overflow-hidden p-[24px]">
-            <div class="mb-[8px] font-semibold">{{ t('crm.approval.record') }}</div>
+        <div class="flex h-full w-full flex-col overflow-hidden border-l border-[var(--text-n8)]">
+          <div class="flex-1 overflow-hidden p-[24px] pl-[16px]">
+            <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
             <CrmApprovalLine />
           </div>
           <div class="border-t border-[var(--text-n8)] p-[16px]">
-            <div class="mb-[8px] font-semibold">{{ t('crm.approval.opinion') }}</div>
-            <CrmFileInput ref="CrmFileInputRef" v-model:value="approvalOpinion" v-model:file-list="fileList" required />
-            <div class="mt-[12px] flex gap-[12px]">
-              <n-button type="primary" class="w-[60%]" @click="handleApprove">{{ t('common.approve') }}</n-button>
-              <n-button type="error" ghost @click="handleReject">{{ t('common.reject') }}</n-button>
-              <CrmMoreAction :options="moreActions" trigger="click" @select="handleMoreActionSelect" />
-            </div>
+            <template v-if="isApprover">
+              <div class="mb-[8px] font-semibold">{{ t('crm.approval.opinion') }}</div>
+              <CrmFileInput
+                ref="CrmFileInputRef"
+                v-model:value="approvalOpinion"
+                v-model:file-list="fileList"
+                required
+              />
+              <div class="mt-[12px] flex gap-[12px]">
+                <n-button type="primary" class="flex-1" @click="handleApprove">{{ t('common.approve') }}</n-button>
+                <n-button type="error" ghost @click="handleReject">{{ t('common.reject') }}</n-button>
+                <CrmMoreAction :options="moreActions" trigger="click" size="medium" @select="handleMoreActionSelect" />
+              </div>
+            </template>
+            <n-button type="primary" ghost block @click="cancelApproval">
+              <template #icon>
+                <CrmIcon type="iconicon_rollfront" :size="16" />
+              </template>
+              {{ isApprover ? t('crm.approval.cancelApproval') : t('crm.approval.cancelApprovalApply') }}
+            </n-button>
           </div>
         </div>
       </template>
@@ -38,7 +44,7 @@
     v-model:show="addSignModalVisible"
     :title="t('common.COUNTERSIGNATURE')"
     :ok-loading="addSignLoading"
-    :positive-text="t('crm.approval.confirmAddSign')"
+    :positive-text="addSignForm.type === 'after' ? t('crm.approval.agreeAndAddSign') : t('crm.approval.confirmAddSign')"
     @confirm="handleAddSign"
   >
     <n-form
@@ -91,7 +97,17 @@
 </template>
 
 <script setup lang="ts">
-  import { type FormInst, NButton, NForm, NFormItem, NRadio, NRadioGroup, NSelect, useMessage } from 'naive-ui';
+  import {
+    type FormInst,
+    NButton,
+    NForm,
+    NFormItem,
+    NRadio,
+    NRadioGroup,
+    NScrollbar,
+    NSelect,
+    useMessage,
+  } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -99,12 +115,12 @@
   import type { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import CrmFileInput from '@/components/business/crm-file-input/index.vue';
-  import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmMemberSelect from '@/components/business/crm-user-tag-selector/index.vue';
   import CrmApprovalLine from './crm-approval-line.vue';
 
@@ -129,17 +145,7 @@
   const { openModal } = useModal();
   const message = useMessage();
 
-  const refreshKey = ref(0);
-
-  function handleDescriptionInit(
-    _collaborationType?: CollaborationType,
-    _sourceName?: string,
-    detail?: Record<string, any>,
-    config?: FormConfig
-  ) {
-    emit('descriptionInit', _collaborationType, _sourceName, detail, config);
-  }
-
+  const isApprover = ref(true); // 是否是审批人，测试数据，后续根据接口返回设置
   const approvalOpinion = ref('');
   const fileList = ref([]);
   const CrmFileInputRef = ref<InstanceType<typeof CrmFileInput>>();
@@ -244,6 +250,30 @@
     } else if (item.key === 'fallback') {
       // 退回
       fallbackModalVisible.value = true;
+    }
+  }
+
+  function cancelApproval() {
+    if (isApprover.value) {
+      openModal({
+        title: t('crm.approval.cancelApprovalConfirm'),
+        content: t('crm.approval.cancelApprovalTip'),
+        type: 'error',
+        positiveText: t('crm.approval.confirmCancelApproval'),
+        onPositiveClick: async () => {
+          message.success(t('crm.approval.cancelApprovalSuccess'));
+        },
+      });
+    } else {
+      openModal({
+        title: t('crm.approval.cancelApprovalApplyConfirm'),
+        content: t('crm.approval.cancelApprovalApplyTip'),
+        type: 'error',
+        positiveText: t('crm.approval.confirmCancelApprovalApply'),
+        onPositiveClick: async () => {
+          message.success(t('crm.approval.cancelApprovalSuccess'));
+        },
+      });
     }
   }
 </script>
