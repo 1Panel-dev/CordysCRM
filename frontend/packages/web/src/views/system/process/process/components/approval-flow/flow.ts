@@ -32,8 +32,11 @@ export function createApprovalActionNode(approvalType: ApprovalTypeEnum = Approv
     approverSelectedList: [],
     multiApproverMode: 'ALL',
     emptyApproverAction: 'AUTO_PASS',
+    fallbackApprover: '',
     sameSubmitterAction: 'SKIP',
-    cc: [],
+    ccType: null,
+    ccList: [],
+    ccSelectedList: [],
   });
 }
 

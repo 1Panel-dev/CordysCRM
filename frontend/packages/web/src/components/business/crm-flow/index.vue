@@ -24,8 +24,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, useSlots, watch } from 'vue';
-  import { cloneDeep } from 'lodash-es';
+  import { computed, useSlots } from 'vue';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -47,7 +46,7 @@
     rightContentVisible?: (selection: NodeSelectionState) => boolean;
   }>();
 
-  const model = defineModel<FlowSchema>('model', {
+  const flow = defineModel<FlowSchema>('model', {
     required: true,
   });
 
@@ -55,12 +54,9 @@
   const hasInsertNodeContentSlot = computed(() => Boolean(slots.insertNodeContent));
   const hasRightContentSlot = computed(() => Boolean(slots.rightContent));
 
-  const flow = ref<FlowSchema>(model.value);
   const { selection, selectNode, selectBranch, clearSelection } = useNodeSelection(flow);
   const { t } = useI18n();
   const { openModal } = useModal();
-
-  const syncingFromProps = ref(false);
 
   const showRightContent = computed(() => {
     if (!hasRightContentSlot.value) {
@@ -69,33 +65,6 @@
 
     return props.rightContentVisible?.(selection.value);
   });
-
-  watch(
-    model,
-    (value) => {
-      if (value) {
-        syncingFromProps.value = true;
-        flow.value = cloneDeep(value);
-      }
-    },
-    {
-      deep: true,
-    }
-  );
-
-  watch(
-    flow,
-    (value) => {
-      if (syncingFromProps.value) {
-        syncingFromProps.value = false;
-        return;
-      }
-      model.value = value;
-    },
-    {
-      deep: true,
-    }
-  );
 
   function handleNodeClick(payload: NodeClickPayload) {
     selectNode(payload.nodeId);
@@ -145,7 +114,7 @@
     background: var(--text-n9);
   }
   .crm-flow__sidebar {
-    overflow: auto;
+    overflow: hidden;
     width: 400px;
     background: var(--text-n10);
   }

@@ -1,49 +1,108 @@
 <template>
-  <n-form
-    :rules="rules"
-    class="process-setting-form"
-    require-mark-placement="right"
-    :model="nodeConfig"
-    label-placement="top"
-  >
-    <n-form-item path="approvalType" :label="t('process.process.flow.approvalType')">
-      <n-select
-        v-model:value="nodeConfig.approvalType"
-        :options="approvalTypeOptions"
-        :placeholder="t('common.pleaseSelect')"
-      />
-    </n-form-item>
-
-    <n-form-item path="name" :label="t('process.process.flow.nodeName')">
-      <n-input v-model:value="nodeConfig.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
-    </n-form-item>
-
-    <template v-if="isManualApproval">
-      <!-- 审批人 -->
-      <n-form-item path="approverType" :label="t('process.process.flow.approver')">
-        <n-select v-model:value="nodeConfig.approverType" :options="approverTypeOptions" />
-      </n-form-item>
-
-      <!-- 添加成员 -->
-      <n-form-item
-        v-if="nodeConfig.approverType === ApproverTypeEnum.SPECIFIED_MEMBER"
-        path="approverList"
-        :label="t('org.addMember')"
-      >
-        <!-- TODO lmy 添加成员样式 -->
-        <CrmUserTagSelector
-          v-model:value="nodeConfig.approverList"
-          v-model:selected-list="nodeConfig.approverSelectedList"
+  <n-scrollbar class="p-[16px]">
+    <n-form
+      :rules="rules"
+      class="process-setting-form"
+      require-mark-placement="right"
+      :model="nodeConfig"
+      label-placement="top"
+    >
+      <n-form-item path="approvalType" :label="t('process.process.flow.approvalType')">
+        <n-select
+          v-model:value="nodeConfig.approvalType"
+          :options="approvalTypeOptions"
+          :placeholder="t('common.pleaseSelect')"
         />
       </n-form-item>
 
-      <!-- 指定层级 -->
-      <n-form-item v-if="nodeConfig.approverType === ApproverTypeEnum.DIRECT_SUPERVISOR" path="approverList">
-        <template #label>
-          <!-- TODO lmy 示例 -->
-          <span class="inline-flex items-center gap-[8px]">
-            {{ t('process.process.flow.specifiedLevel') }}
-            <n-tooltip trigger="hover" :delay="300">
+      <n-form-item path="name" :label="t('process.process.flow.nodeName')">
+        <n-input v-model:value="nodeConfig.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
+      </n-form-item>
+
+      <template v-if="nodeConfig.approvalType === ApprovalTypeEnum.MANUAL">
+        <!-- 审批人 -->
+        <n-form-item path="approverType" :label="t('process.process.flow.approver')">
+          <n-select
+            v-model:value="nodeConfig.approverType"
+            :options="approverTypeOptions"
+            @update:value="handleApproverTypeUpdate"
+          />
+        </n-form-item>
+
+        <!-- 添加成员/角色 -->
+        <n-form-item
+          v-if="isMemberOrRole(nodeConfig.approverType)"
+          path="approverList"
+          :show-label="false"
+          :show-feedback="false"
+        >
+          <ApprovalMemberSelector
+            :key="nodeConfig.approverType"
+            v-model:value="nodeConfig.approverList"
+            v-model:selected-list="nodeConfig.approverSelectedList"
+            class="mb-[24px]"
+            :label="nodeConfig.approverType === ApproverTypeEnum.ROLE ? t('role.role') : t('org.addMember')"
+            :add-text="nodeConfig.approverType === ApproverTypeEnum.ROLE ? t('role.addRole') : t('role.addMember')"
+            :limit-label="
+              nodeConfig.approverType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.member')
+            "
+            :member-types="nodeConfig.approverType === ApproverTypeEnum.ROLE ? roleMemberTypes : undefined"
+            required
+            :max-count="approverMaxCount"
+          />
+        </n-form-item>
+
+        <!-- 指定层级/终点 -->
+        <n-form-item v-if="approverLevelConfig" path="approverList" class="specified-level-form-item">
+          <template #label>
+            <span class="inline-flex items-center gap-[8px]">
+              {{ approverLevelConfig.label }}
+              <n-tooltip trigger="hover" :delay="300">
+                <template #trigger>
+                  <CrmIcon
+                    :size="16"
+                    type="iconicon_help_circle"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                  />
+                </template>
+                {{ approverLevelConfig.tooltip }}
+              </n-tooltip>
+            </span>
+            <ApprovalLevelExamplePopover
+              v-if="approverLevelConfig.exampleItems"
+              :items="approverLevelConfig.exampleItems"
+              :tip="approverLevelConfig.exampleTip"
+            />
+          </template>
+
+          <n-select v-model:value="approverLevel" :options="approverLevelConfig.options" />
+        </n-form-item>
+
+        <!-- 多人审批 -->
+        <n-form-item path="multiApproverMode" :label="t('process.process.flow.multiApprovalType')">
+          <n-radio-group v-model:value="nodeConfig.multiApproverMode">
+            <n-space vertical :size="8">
+              <n-radio v-for="item in multiApproverModeOptions" :key="item.value" :value="item.value">
+                {{ item.label }}
+                <span v-if="item.description" class="text-[var(--text-n4)]">{{ item.description }}</span>
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+
+        <!-- 异常处理 -->
+        <div>
+          <div class="mb-[8px] inline-flex items-center gap-[8px] font-semibold">
+            {{ t('process.process.flow.exceptionHandling') }}
+
+            <n-tooltip
+              trigger="hover"
+              :delay="300"
+              :theme-overrides="{
+                color: 'var(--text-n10)',
+                textColor: 'var(--text-n1)',
+              }"
+            >
               <template #trigger>
                 <CrmIcon
                   :size="16"
@@ -51,52 +110,177 @@
                   class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
                 />
               </template>
-              {{ t('process.process.flow.directSupervisorTip') }}
+
+              <div class="flex flex-col gap-[4px]">
+                <div>{{ t('process.process.flow.exceptionHandlingTip.disabledApprover') }}</div>
+                <div>
+                  {{ t('process.process.flow.exceptionHandlingTip.duplicateApproverPrefix') }}
+                  <span class="cursor-pointer text-[var(--primary-8)]" @click.stop="emit('switchMoreSetting')">
+                    {{ t('process.processDesign.moreSetting') }}
+                  </span>
+                  {{ t('process.process.flow.exceptionHandlingTip.duplicateApproverSuffix') }}
+                </div>
+              </div>
             </n-tooltip>
-          </span>
-        </template>
-        <n-select v-model:value="directSupervisorLevel" :options="approverLevelOptions" />
-      </n-form-item>
+          </div>
 
-      <n-form-item path="multiApproverMode" :label="t('process.process.flow.multiApprovalType')">
-        <n-radio-group v-model:value="nodeConfig.multiApproverMode">
-          <n-space vertical :size="8">
-            <n-radio v-for="item in multiApproverModeOptions" :key="item.value" :value="item.value">
-              {{ item.label }}
-              <span v-if="item.description" class="text-[var(--text-n4)]">{{ item.description }}</span>
-            </n-radio>
-          </n-space>
-        </n-radio-group>
-      </n-form-item>
+          <CrmTab
+            v-model:active-tab="activeExceptionTab"
+            no-content
+            :tab-list="exceptionTabList"
+            type="segment"
+            class="approval-exception-tabs mb-[8px]"
+          />
 
-      <!-- TODO lmy 抄送人 异常处理 -->
-      <n-form-item path="emptyApproverAction" :label="t('process.process.flow.exceptionHandling')">
-        <n-radio-group v-model:value="nodeConfig.emptyApproverAction">
-          <n-space vertical :size="8">
-            <n-radio value="AUTO_PASS">{{ t('process.process.flow.exceptionHandling.autoPass') }}</n-radio>
-            <n-radio value="AUTO_REJECT">{{ t('process.process.flow.autoReject') }}</n-radio>
-            <n-radio value="TRANSFER_ADMIN">{{ t('process.process.flow.exceptionHandling.toAdmin') }}</n-radio>
-          </n-space>
-        </n-radio-group>
-      </n-form-item>
+          <template v-if="activeExceptionTab === 'emptyApprover'">
+            <n-form-item path="emptyApproverAction" :show-label="false">
+              <n-radio-group
+                v-model:value="nodeConfig.emptyApproverAction"
+                @update:value="handleEmptyApproverActionUpdate"
+              >
+                <n-space vertical :size="8">
+                  <n-radio value="AUTO_PASS">{{ t('process.process.flow.exceptionHandling.autoPass') }}</n-radio>
+                  <n-radio value="ASSIGN_SPECIFIC">{{ t('process.process.flow.exceptionHandling.toUser') }}</n-radio>
+                  <n-radio value="ASSIGN_ADMIN">{{ t('process.process.flow.exceptionHandling.toAdmin') }}</n-radio>
+                </n-space>
+              </n-radio-group>
+            </n-form-item>
 
-      <n-form-item path="cc" :label="t('process.process.flow.ccUsers')"> </n-form-item>
-    </template>
-  </n-form>
+            <n-form-item
+              v-if="nodeConfig.emptyApproverAction === 'ASSIGN_SPECIFIC'"
+              path="fallbackApprover"
+              :show-label="false"
+              :show-feedback="false"
+            >
+              <ApprovalMemberSelector
+                v-model:value="fallbackApproverList"
+                v-model:selected-list="nodeConfig.emptyApproverSelectedList"
+                class="mb-[24px]"
+                :label="t('org.addMember')"
+                :add-text="t('role.addMember')"
+                :limit-label="t('process.process.flow.member')"
+                :max-count="fallbackApproverMaxCount"
+                required
+              />
+            </n-form-item>
+
+            <n-form-item
+              v-if="nodeConfig.emptyApproverAction === 'ASSIGN_ADMIN'"
+              path="fallbackApprover"
+              :label="t('process.process.flow.selectAdmin')"
+            >
+              <n-select v-model:value="nodeConfig.fallbackApprover" :options="approvalAdminOptions" />
+            </n-form-item>
+          </template>
+
+          <template v-else>
+            <n-form-item path="sameSubmitterAction" :show-label="false">
+              <n-radio-group v-model:value="nodeConfig.sameSubmitterAction">
+                <n-space vertical :size="8">
+                  <n-radio value="ALLOW">{{ t('process.process.flow.sameSubmitter.selfApprove') }}</n-radio>
+                  <n-radio value="SKIP">{{ t('process.process.flow.sameSubmitter.skip') }}</n-radio>
+                  <n-radio value="ASSIGN_SUPERIOR">
+                    {{ t('process.process.flow.sameSubmitter.transferSupervisor') }}
+                  </n-radio>
+                </n-space>
+              </n-radio-group>
+            </n-form-item>
+          </template>
+        </div>
+
+        <!-- 抄送人 -->
+        <n-form-item path="ccType" :label="t('process.process.flow.ccType')">
+          <n-select
+            v-model:value="nodeConfig.ccType"
+            :options="approverTypeOptions"
+            @update:value="handleCcTypeUpdate"
+          />
+        </n-form-item>
+
+        <n-form-item
+          v-if="nodeConfig.ccType && isMemberOrRole(nodeConfig.ccType)"
+          path="ccList"
+          :show-label="false"
+          :show-feedback="false"
+        >
+          <ApprovalMemberSelector
+            :key="nodeConfig.ccType ?? 'none'"
+            v-model:value="nodeConfig.ccList"
+            v-model:selected-list="nodeConfig.ccSelectedList"
+            :label="nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.ccUsers')"
+            :add-text="
+              nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.addRole') : t('process.process.flow.addCcMember')
+            "
+            :limit-label="
+              nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.ccMember')
+            "
+            :member-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? roleMemberTypes : undefined"
+            :max-count="ccMaxCount"
+          />
+        </n-form-item>
+
+        <n-form-item v-if="ccLevelConfig" path="ccList" class="specified-level-form-item">
+          <template #label>
+            <span class="inline-flex items-center gap-[8px]">
+              {{ ccLevelConfig.label }}
+              <n-tooltip trigger="hover" :delay="300">
+                <template #trigger>
+                  <CrmIcon
+                    :size="16"
+                    type="iconicon_help_circle"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                  />
+                </template>
+                {{ ccLevelConfig.tooltip }}
+              </n-tooltip>
+            </span>
+
+            <ApprovalLevelExamplePopover
+              v-if="ccLevelConfig.exampleItems"
+              :items="ccLevelConfig.exampleItems"
+              :tip="ccLevelConfig.exampleTip"
+            />
+          </template>
+
+          <n-select v-model:value="ccLevel" :options="ccLevelConfig.options" />
+        </n-form-item>
+      </template>
+    </n-form>
+  </n-scrollbar>
 </template>
 
 <script setup lang="ts">
-  import { computed, watch } from 'vue';
-  import { FormRules, NForm, NFormItem, NInput, NRadio, NRadioGroup, NSelect, NSpace, NTooltip } from 'naive-ui';
+  import { computed, onMounted, ref } from 'vue';
+  import {
+    type FormRules,
+    NForm,
+    NFormItem,
+    NInput,
+    NRadio,
+    NRadioGroup,
+    NScrollbar,
+    NSelect,
+    NSpace,
+    NTooltip,
+  } from 'naive-ui';
 
+  import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { ApprovalTypeEnum, ApproverTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ApprovalActionNode, MultiApproverMode } from '@lib/shared/models/system/process';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import ApprovalLevelExamplePopover from './approvalLevelExamplePopover.vue';
+  import ApprovalMemberSelector from './approvalMemberSelector.vue';
 
-  import { approvalTypeOptions, approverTypeOptions } from '@/config/process';
+  import { getAdminOptions } from '@/api/modules';
+  import {
+    approvalTypeOptions,
+    approverLevelOptions,
+    approverTypeOptions,
+    departmentLevelOptions,
+  } from '@/config/process';
 
   defineOptions({
     name: 'ApproverSettingTab',
@@ -106,21 +290,111 @@
     required: true,
   });
 
+  const emit = defineEmits<{
+    (event: 'switchMoreSetting'): void;
+  }>();
+
   const { t } = useI18n();
 
-  const approverLevelOptions = [
+  const activeExceptionTab = ref<'emptyApprover' | 'sameSubmitter'>('emptyApprover'); // 异常处理的tab
+
+  const approverMaxCount = 15;
+  const ccMaxCount = 100;
+  const fallbackApproverMaxCount = 1;
+
+  const supervisorLevelApproverTypes = [ApproverTypeEnum.DIRECT_SUPERVISOR, ApproverTypeEnum.CONTINUOUS_SUPERVISOR];
+
+  const departmentLevelApproverTypes = [
+    ApproverTypeEnum.SPECIFIED_DEPARTMENT_LEADER,
+    ApproverTypeEnum.CONTINUOUS_DEPARTMENT_LEADER,
+  ];
+
+  const endpointApproverTypes = [ApproverTypeEnum.CONTINUOUS_SUPERVISOR, ApproverTypeEnum.CONTINUOUS_DEPARTMENT_LEADER];
+
+  const roleMemberTypes = [
     {
-      label: t('org.directSuperior'),
-      value: '1',
+      label: t('role.role'),
+      value: MemberSelectTypeEnum.ROLE,
     },
   ];
 
-  const directSupervisorLevel = computed({
+  const exceptionTabList = [
+    {
+      name: 'emptyApprover',
+      tab: t('process.process.flow.exceptionHandling.emptyApprover'),
+    },
+    {
+      name: 'sameSubmitter',
+      tab: t('process.process.flow.exceptionHandling.sameSubmitter'),
+    },
+  ];
+
+  const directSupervisorExampleItems = [
+    {
+      level: t('process.process.flow.levelExample.thirdLevelSupervisor'),
+      name: t('process.process.flow.levelExample.supervisorD'),
+    },
+    {
+      level: t('process.process.flow.levelExample.secondLevelSupervisor'),
+      name: t('process.process.flow.levelExample.supervisorC'),
+    },
+    {
+      level: t('org.directSuperior'),
+      name: t('process.process.flow.levelExample.supervisorB'),
+    },
+    {
+      level: t('process.process.flow.levelExample.applicant'),
+      name: t('process.process.flow.levelExample.employeeA'),
+    },
+  ];
+
+  const departmentLeaderExampleItems = [
+    {
+      level: t('process.process.flow.levelExample.fourthLevelDepartment'),
+      name: t('process.process.flow.levelExample.departmentD'),
+    },
+    {
+      level: t('process.process.flow.levelExample.thirdLevelDepartment'),
+      name: t('process.process.flow.levelExample.departmentC'),
+    },
+    {
+      level: t('process.process.flow.levelExample.secondLevelDepartment'),
+      name: t('process.process.flow.levelExample.departmentB'),
+    },
+    {
+      level: t('process.process.flow.levelExample.directDepartment'),
+      name: t('process.process.flow.levelExample.departmentA'),
+    },
+    {
+      level: t('process.process.flow.levelExample.applicant'),
+      name: t('process.process.flow.levelExample.departmentApplicant'),
+    },
+  ];
+
+  const approverLevel = computed({
     get() {
       return nodeConfig.value.approverList[0] ?? '1';
     },
     set(value: string) {
       nodeConfig.value.approverList = [value];
+    },
+  });
+
+  const ccLevel = computed({
+    get() {
+      return nodeConfig.value.ccList[0] ?? '1';
+    },
+    set(value: string) {
+      nodeConfig.value.ccList = [value];
+    },
+  });
+
+  const fallbackApproverList = computed({
+    get() {
+      return nodeConfig.value.fallbackApprover ? [nodeConfig.value.fallbackApprover] : [];
+    },
+    set(value: string[]) {
+      nodeConfig.value.fallbackApprover = value[0] ?? '';
     },
   });
 
@@ -146,11 +420,17 @@
     },
   ];
 
+  function isMemberOrRole(type?: ApproverTypeEnum | null) {
+    return !!type && [ApproverTypeEnum.SPECIFIED_MEMBER, ApproverTypeEnum.ROLE].includes(type);
+  }
+
   const rules: FormRules = {
     name: [
       {
         required: true,
-        message: t('common.notNull', { value: `${t('process.process.flow.nodeName')}` }),
+        message: t('common.notNull', {
+          value: t('process.process.flow.nodeName'),
+        }),
         trigger: ['blur'],
       },
     ],
@@ -158,41 +438,156 @@
       {
         trigger: ['change', 'blur'],
         validator: (_rule, value: unknown[]) => {
-          if (nodeConfig.value.approverType !== ApproverTypeEnum.SPECIFIED_MEMBER) {
+          if (!isMemberOrRole(nodeConfig.value.approverType)) {
             return true;
           }
 
-          if (Array.isArray(value) && value.length > 0) {
+          if (Array.isArray(value) && value.length > 0 && value.length <= approverMaxCount) {
             return true;
           }
 
-          return new Error(t('common.notNull', { value: t('org.addMember') }));
+          return new Error(
+            t('process.process.flow.addMemberLimitTip', {
+              count: approverMaxCount,
+              target:
+                nodeConfig.value.approverType === ApproverTypeEnum.ROLE
+                  ? t('role.role')
+                  : t('process.process.flow.member'),
+            })
+          );
         },
+      },
+    ],
+    ccList: [
+      {
+        trigger: ['change', 'blur'],
+        validator: (_rule, value: unknown[]) => {
+          if (!nodeConfig.value.ccType || !isMemberOrRole(nodeConfig.value.ccType)) {
+            return true;
+          }
+
+          if (!Array.isArray(value) || value.length <= ccMaxCount) {
+            return true;
+          }
+
+          return new Error(
+            t('process.process.flow.maxAddMemberTip', {
+              count: ccMaxCount,
+              target:
+                nodeConfig.value.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.ccMember'),
+            })
+          );
+        },
+      },
+    ],
+    fallbackApprover: [
+      {
+        trigger: ['change', 'blur'],
+        validator: (_rule, value: string) => {
+          if (
+            activeExceptionTab.value !== 'emptyApprover' ||
+            nodeConfig.value.emptyApproverAction !== 'ASSIGN_SPECIFIC'
+          ) {
+            return true;
+          }
+
+          return !!value;
+        },
+        message: t('process.process.flow.addMemberLimitTip', {
+          count: fallbackApproverMaxCount,
+          target: t('process.process.flow.member'),
+        }),
       },
     ],
   };
 
-  const isManualApproval = computed(() => nodeConfig.value.approvalType === ApprovalTypeEnum.MANUAL);
+  function getApproverLevelTooltip(type: ApproverTypeEnum) {
+    const tooltipMap: Partial<Record<ApproverTypeEnum, string>> = {
+      [ApproverTypeEnum.DIRECT_SUPERVISOR]: t('process.process.flow.directSupervisorTip'),
+      [ApproverTypeEnum.CONTINUOUS_SUPERVISOR]: t('process.process.flow.continuousSupervisorTip'),
+      [ApproverTypeEnum.SPECIFIED_DEPARTMENT_LEADER]: t('process.process.flow.departmentLeaderTip'),
+      [ApproverTypeEnum.CONTINUOUS_DEPARTMENT_LEADER]: t('process.process.flow.continuousDepartmentLeaderTip'),
+    };
 
-  watch(
-    () => nodeConfig.value.approverType,
-    (type, oldType) => {
-      if (!oldType) {
-        if (type === ApproverTypeEnum.DIRECT_SUPERVISOR && !nodeConfig.value.approverList.length) {
-          nodeConfig.value.approverList = ['1'];
-        }
-        return;
-      }
+    return tooltipMap[type] ?? '';
+  }
 
-      if (type === oldType) {
-        return;
-      }
+  function createLevelConfig(type: ApproverTypeEnum) {
+    const isSupervisorLevel = supervisorLevelApproverTypes.includes(type);
+    const isDepartmentLevel = departmentLevelApproverTypes.includes(type);
 
-      nodeConfig.value.approverSelectedList = [];
-      nodeConfig.value.approverList = type === ApproverTypeEnum.DIRECT_SUPERVISOR ? ['1'] : [];
-    },
-    {
-      immediate: true,
+    if (!isSupervisorLevel && !isDepartmentLevel) {
+      return null;
     }
-  );
+
+    return {
+      label: endpointApproverTypes.includes(type)
+        ? t('process.process.flow.specifiedEndpoint')
+        : t('process.process.flow.specifiedLevel'),
+      tooltip: getApproverLevelTooltip(type),
+      options: isDepartmentLevel ? departmentLevelOptions : approverLevelOptions,
+      exampleItems: isDepartmentLevel ? departmentLeaderExampleItems : directSupervisorExampleItems,
+      exampleTip: isDepartmentLevel ? t('process.process.flow.levelExample.departmentTip') : undefined,
+    };
+  }
+
+  const approverLevelConfig = computed(() => createLevelConfig(nodeConfig.value.approverType));
+
+  const ccLevelConfig = computed(() => {
+    return nodeConfig.value.ccType ? createLevelConfig(nodeConfig.value.ccType) : null;
+  });
+
+  function resetLevelList(type: ApproverTypeEnum) {
+    return [...supervisorLevelApproverTypes, ...departmentLevelApproverTypes].includes(type) ? ['1'] : [];
+  }
+
+  function handleApproverTypeUpdate(type: ApproverTypeEnum) {
+    nodeConfig.value.approverSelectedList = [];
+    nodeConfig.value.approverList = resetLevelList(type);
+  }
+
+  function handleCcTypeUpdate(type: ApproverTypeEnum) {
+    nodeConfig.value.ccSelectedList = [];
+    nodeConfig.value.ccList = resetLevelList(type);
+  }
+
+  function handleEmptyApproverActionUpdate() {
+    nodeConfig.value.fallbackApprover = '';
+    nodeConfig.value.emptyApproverSelectedList = [];
+  }
+
+  // 管理员
+  const approvalAdminOptions = ref<Array<{ label: string; value: string }>>([]);
+  async function getApprovalAdminOptions() {
+    try {
+      const options = await getAdminOptions();
+
+      approvalAdminOptions.value = options.map((item) => ({
+        label: item.name,
+        value: item.id,
+      }));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  onMounted(() => {
+    getApprovalAdminOptions();
+  });
 </script>
+
+<style scoped lang="less">
+  .specified-level-form-item {
+    :deep(.n-form-item-label__text) {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+  }
+  .approval-exception-tabs {
+    :deep(.n-tabs-rail) {
+      width: 100%;
+    }
+  }
+</style>

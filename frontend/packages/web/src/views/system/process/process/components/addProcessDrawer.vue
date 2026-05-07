@@ -40,6 +40,7 @@
         v-model:basicConfig="form.basicConfig"
         :need-detail="!!props.sourceId"
         :readonly="isDetail"
+        @switch-more-setting="activeTab = 'moreSetting'"
       />
       <moreSetting
         v-if="activeTab === 'moreSetting'"

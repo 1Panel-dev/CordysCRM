@@ -232,3 +232,89 @@ export const approverTypeOptions: Array<{ label: string; value: ApproverTypeEnum
     value: ApproverTypeEnum.ROLE,
   },
 ];
+
+export const approverLevelOptions = [
+  {
+    label: t('org.directSuperior'),
+    value: '1',
+  },
+  {
+    label: t('process.process.flow.approverLevel.second'),
+    value: '2',
+  },
+  {
+    label: t('process.process.flow.approverLevel.third'),
+    value: '3',
+  },
+  {
+    label: t('process.process.flow.approverLevel.fourth'),
+    value: '4',
+  },
+  {
+    label: t('process.process.flow.approverLevel.fifth'),
+    value: '5',
+  },
+  {
+    label: t('process.process.flow.approverLevel.sixth'),
+    value: '6',
+  },
+  {
+    label: t('process.process.flow.approverLevel.seventh'),
+    value: '7',
+  },
+  {
+    label: t('process.process.flow.approverLevel.eighth'),
+    value: '8',
+  },
+  {
+    label: t('process.process.flow.approverLevel.ninth'),
+    value: '9',
+  },
+  {
+    label: t('process.process.flow.approverLevel.tenth'),
+    value: '10',
+  },
+];
+
+export const departmentLevelOptions = [
+  {
+    label: t('process.process.flow.departmentLevel.direct'),
+    value: '1',
+  },
+  {
+    label: t('process.process.flow.departmentLevel.second'),
+    value: '2',
+  },
+  {
+    label: t('process.process.flow.departmentLevel.third'),
+    value: '3',
+  },
+  {
+    label: t('process.process.flow.departmentLevel.fourth'),
+    value: '4',
+  },
+  {
+    label: t('process.process.flow.departmentLevel.fifth'),
+    value: '5',
+  },
+  {
+    label: t('process.process.flow.departmentLevel.sixth'),
+    value: '6',
+  },
+  {
+    label: t('process.process.flow.departmentLevel.seventh'),
+    value: '7',
+  },
+  {
+    label: t('process.process.flow.departmentLevel.eighth'),
+    value: '8',
+  },
+  {
+    label: t('process.process.flow.departmentLevel.ninth'),
+    value: '9',
+  },
+  {
+    label: t('process.process.flow.departmentLevel.tenth'),
+    value: '10',
+  },
+];

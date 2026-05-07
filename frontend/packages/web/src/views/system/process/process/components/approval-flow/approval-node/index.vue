@@ -1,9 +1,13 @@
 <template>
-  <div>
+  <div class="flex h-full flex-col">
     <CrmTab v-if="isManualApproval" v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
 
-    <div class="p-[16px]">
-      <ApproverSettingTab v-if="!isManualApproval || activeTab === 'approver'" v-model:node-config="nodeConfig" />
+    <div class="flex-1 overflow-hidden">
+      <ApproverSettingTab
+        v-if="!isManualApproval || activeTab === 'approver'"
+        v-model:node-config="nodeConfig"
+        @switch-more-setting="emit('switchMoreSetting')"
+      />
       <FormPermissionTab v-else-if="activeTab === 'formPermission'" />
       <AfterApprovalTab v-else />
     </div>
@@ -29,6 +33,10 @@
   const nodeConfig = defineModel<ApprovalActionNode>('node', {
     required: true,
   });
+
+  const emit = defineEmits<{
+    (event: 'switchMoreSetting'): void;
+  }>();
 
   const { t } = useI18n();
   const activeTab = ref('approver');
