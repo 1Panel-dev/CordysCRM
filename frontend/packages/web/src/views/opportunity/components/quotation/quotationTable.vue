@@ -65,6 +65,7 @@
     :link-form-info="linkFormInfo"
     :link-form-key="linkFormKey"
     @saved="handleFormCreateSaved"
+    @review="handleFormReview"
   />
   <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="batchOperationName" />
   <CrmBatchEditModal
@@ -365,14 +366,21 @@
     showDetailDrawer.value = true;
   }
 
+  function handleFormReview(res: any) {
+    // todo 待联调 xinxinwu
+  }
+
+  function handleReview(row: QuotationItem) {
+    // todo 待联调 xinxinwu
+  }
+
   function handleActionSelect(row: QuotationItem, actionKey: string, done?: () => void) {
     switch (actionKey) {
       case 'edit':
         handleEdit(row.id);
         break;
       case 'review':
-        // todo 提审
-        handleApproval(row);
+        handleReview(row);
         break;
       case 'voided':
         handleVoid(row);
@@ -524,7 +532,7 @@
             });
       },
     },
-    permission: ['OPPORTUNITY_QUOTATION:APPROVAL', 'OPPORTUNITY_QUOTATION:VOIDED'],
+    permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
     readonly: props.readonly,
     enableApproval,
   });
@@ -532,15 +540,6 @@
   const actionConfig = computed(<BatchActionConfig>() => {
     return {
       baseAction: [
-        ...(enableApproval.value
-          ? [
-              {
-                label: t('common.batchApproval'),
-                key: 'approval',
-                permission: ['OPPORTUNITY_QUOTATION:APPROVAL'],
-              },
-            ]
-          : []),
         {
           label: t('common.batchEdit'),
           key: 'batchEdit',

@@ -34,15 +34,17 @@
         path="executeTiming"
         :label="t('process.process.basic.executionTiming')"
       >
-        <n-checkbox-group v-model:value="form.executeTiming" class="mt-[4px]" :disabled="readonly">
-          <div class="flex flex-col gap-[8px]">
-            <n-checkbox v-for="item of executionTimingList" :key="item.value" :value="item.value">
-              <div class="flex items-center gap-[8px]">
-                {{ item.label }}
-              </div>
-            </n-checkbox>
-          </div>
-        </n-checkbox-group>
+        <div class="flex flex-col gap-[8px]">
+          <n-checkbox
+            v-for="item of executionTimingList"
+            :key="item.value"
+            v-model:checked="form[item.value as keyof BasicFormParams]"
+          >
+            <div class="flex items-center gap-[8px]">
+              {{ item.label }}
+            </div>
+          </n-checkbox>
+        </div>
       </n-form-item>
       <n-form-item require-mark-placement="right" path="description" :label="t('process.process.basic.description')">
         <n-input

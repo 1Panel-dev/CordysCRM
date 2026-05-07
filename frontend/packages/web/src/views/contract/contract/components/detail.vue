@@ -99,6 +99,7 @@
       :link-form-key="FormDesignKeyEnum.CONTRACT"
       :link-form-info="linkFormInfo"
       @saved="() => handleSaved()"
+      @review="handleFormReview"
     />
     <QuotationDetailDrawer
       v-model:visible="showQuotationDetailDrawer"
@@ -236,9 +237,6 @@
     isDetail: true,
     identityResolver: {
       isApplicant: (row, currentUserId) => row.createUser === currentUserId,
-      isApprover: () =>
-        // todo xinxinwu 不确定审批人如何返回
-        true,
     },
     specialActionFilter: (row, actionKeys) => {
       return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
@@ -290,6 +288,14 @@
   function handleSaved() {
     refreshKey.value += 1;
     emit('refresh');
+  }
+
+  function handleFormReview(res: any) {
+    // todo 待联调 xinxinwu
+  }
+
+  function handleReview() {
+    // todo 待联调 xinxinwu
   }
 
   function handleDelete(row: ContractItem) {
@@ -401,17 +407,14 @@
 
   async function handleButtonClick(actionKey: string) {
     switch (actionKey) {
-      case 'pass':
-        handleApproval(true);
-        break;
-      case 'unPass':
-        handleApproval();
-        break;
       case 'edit':
         handleEdit();
         break;
       case 'revoke':
         handleRevoke();
+        break;
+      case 'review':
+        handleReview();
         break;
       case 'paymentRecord':
         handlePaymentRecord(detailInfo.value);

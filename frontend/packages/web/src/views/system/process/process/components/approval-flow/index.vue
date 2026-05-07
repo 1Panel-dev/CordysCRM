@@ -115,8 +115,9 @@
 
   const startNodeDescription = computed(() => {
     const businessTypeLabel = resolveOptionLabel(basicConfig.value.formType, businessTypeOptions);
-    const executionTimingLabel = basicConfig.value.executeTiming
-      .map((value: string) => resolveOptionLabel(value, executionTimingList))
+    const executionTimingLabel = executionTimingList
+      .filter((item) => basicConfig.value[item.value])
+      .map((item) => item.label)
       .filter(Boolean)
       .join('/');
 

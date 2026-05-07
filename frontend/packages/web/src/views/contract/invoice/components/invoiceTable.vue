@@ -71,6 +71,7 @@
     :link-form-info="linkFormFieldMap"
     :link-scenario="FormLinkScenarioEnum.CONTRACT_TO_INVOICE"
     @saved="handleFormCreateSaved"
+    @review="handleFormReview"
   />
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -320,6 +321,14 @@
     }
   }
 
+  function handleFormReview(res: any) {
+    // todo 待联调 xinxinwu
+  }
+
+  function handleReview(row: ContractInvoiceItem) {
+    // todo 待联调 xinxinwu
+  }
+
   async function handleActionSelect(row: ContractInvoiceItem, actionKey: string, approvalEnable: boolean) {
     switch (actionKey) {
       case 'edit':
@@ -332,8 +341,7 @@
         handleDelete(row, approvalEnable);
         break;
       case 'review':
-        // todo 提审 xinxinwu
-        showDetail(row);
+        handleReview(row);
         break;
       default:
         break;

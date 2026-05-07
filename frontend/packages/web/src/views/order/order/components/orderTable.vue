@@ -86,6 +86,7 @@
     :link-form-info="linkFormInfo"
     :link-scenario="FormLinkScenarioEnum.CONTRACT_TO_ORDER"
     @saved="handleFormCreateSaved"
+    @review="handleFormReview"
   />
   <CrmBatchEditModal
     v-model:visible="showEditModal"
@@ -314,11 +315,18 @@
     });
   }
 
+  function handleFormReview(res: any) {
+    // todo 待联调 xinxinwu
+  }
+
+  function handleReview(row: OrderItem) {
+    // todo 待联调 xinxinwu
+  }
+
   async function handleActionSelect(row: OrderItem, actionKey: string) {
     switch (actionKey) {
       case 'review':
-        // todo 提审 xinxinwu
-        showDetail(row);
+        handleReview(row);
         break;
       case 'edit':
         handleEdit(row.id);
@@ -482,7 +490,6 @@
           })) || [],
       },
     },
-    // todo xinxinwu
     ...(enableApproval.value
       ? [
           {

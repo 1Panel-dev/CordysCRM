@@ -47,6 +47,7 @@
       :source-id="props.sourceId"
       need-init-detail
       @saved="() => handleSaved()"
+      @review="handleFormReview"
     />
   </CrmDrawer>
 </template>
@@ -119,9 +120,6 @@
     isDetail: true,
     identityResolver: {
       isApplicant: (row, currentUserId) => row.createUser === currentUserId,
-      isApprover: () =>
-        // todo xinxinwu 不确定审批人如何返回
-        true,
     },
   });
 
@@ -205,16 +203,18 @@
     }
   }
 
+  function handleFormReview(res: any) {
+    // todo 待联调 xinxinwu
+  }
+
+  function handleReview() {
+    // todo 待联调 xinxinwu
+  }
+
   async function handleButtonClick(actionKey: string) {
     switch (actionKey) {
-      case 'pass':
-        handleApproval(true);
-        break;
-      case 'unPass':
-        handleApproval();
-        break;
       case 'review':
-        // todo 提审 xinxinwu
+        handleReview();
         break;
       case 'edit':
         handleEdit();
