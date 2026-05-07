@@ -95,7 +95,7 @@ public class ApprovalFlowService {
         ApprovalFlow targetFlow = flows.stream()
                 .filter(ApprovalFlow::getEnable)
                 .findFirst()
-                .orElse(flows.get(0));
+                .orElse(flows.getFirst());
 
         // 查询大字段表获取状态权限配置
         ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(targetFlow.getId());
@@ -410,8 +410,7 @@ public class ApprovalFlowService {
                 }
             }
             // 其他类型节点
-            ApprovalNodeResponse response = BeanUtils.copyBean(new ApprovalNodeResponse(), node);
-            return response;
+            return BeanUtils.copyBean(new ApprovalNodeResponse(), node);
         }).collect(Collectors.toList());
     }
 
@@ -575,8 +574,7 @@ public class ApprovalFlowService {
         }
 
         // 收集审批人节点配置
-        if (nodeRequest instanceof ApprovalNodeApproverRequest) {
-            ApprovalNodeApproverRequest approverRequest = (ApprovalNodeApproverRequest) nodeRequest;
+        if (nodeRequest instanceof ApprovalNodeApproverRequest approverRequest) {
             ApprovalNodeApprover approverNode = BeanUtils.copyBean(new ApprovalNodeApprover(), approverRequest,
                     "approverList", "ccList", "passPostConfig", "rejectPostConfig", "fieldPermissions");
             approverNode.setId(nodeId);
@@ -589,8 +587,7 @@ public class ApprovalFlowService {
             allApproverNodes.add(approverNode);
         }
         // 收集条件节点配置
-        else if (nodeRequest instanceof ApprovalNodeConditionRequest) {
-            ApprovalNodeConditionRequest conditionRequest = (ApprovalNodeConditionRequest) nodeRequest;
+        else if (nodeRequest instanceof ApprovalNodeConditionRequest conditionRequest) {
             ApprovalNodeCondition conditionNode = BeanUtils.copyBean(new ApprovalNodeCondition(), conditionRequest,
                     "rules");
             conditionNode.setId(nodeId);
@@ -657,7 +654,7 @@ public class ApprovalFlowService {
 
     private List<Permission> getPermissionsByFormType(String formType) {
         List<PermissionDefinitionItem> permissionSetting = roleService.getPermissionSetting();
-        String permissionId = ApprovalFormTypeEnum.getByValue(formType).getPermissionId();
+        String permissionId = Objects.requireNonNull(ApprovalFormTypeEnum.getByValue(formType)).getPermissionId();
         List<Permission> permissions = findPermissionsByPermissionId(permissionSetting, permissionId);
         if (permissions == null) {
             return List.of();

@@ -15,6 +15,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -76,7 +77,7 @@ public class ApprovalTodoService {
         List<ApprovalTask> currentNodeTasks = tasks.stream()
                 .filter(task -> {
                     ApprovalInstance instance = instanceMap.get(task.getInstanceId());
-                    return instance != null && StringUtils.equals(instance.getCurrentNodeId(), task.getNodeId());
+                    return instance != null && Strings.CS.equals(instance.getCurrentNodeId(), task.getNodeId());
                 })
                 .toList();
         if (currentNodeTasks.isEmpty()) {
@@ -189,14 +190,13 @@ public class ApprovalTodoService {
         }
         // 优先按枚举名匹配（如 QUOTATION/CONTRACT/ORDER/INVOICE）。
         for (ApprovalFormTypeEnum formType : ApprovalFormTypeEnum.values()) {
-            if (StringUtils.equalsIgnoreCase(formType.name(), type)) {
+            if (Strings.CI.equals(formType.name(), type)) {
                 return formType;
             }
         }
         // 兼容旧值或别名写法。
         return switch (type.toLowerCase()) {
-            case "quote" -> ApprovalFormTypeEnum.QUOTATION;
-            case "quotation" -> ApprovalFormTypeEnum.QUOTATION;
+            case "quote", "quotation" -> ApprovalFormTypeEnum.QUOTATION;
             case "contract" -> ApprovalFormTypeEnum.CONTRACT;
             case "order" -> ApprovalFormTypeEnum.ORDER;
             case "invoice" -> ApprovalFormTypeEnum.INVOICE;
