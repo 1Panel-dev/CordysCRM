@@ -172,10 +172,7 @@ public class ApprovalFlowService {
             return null;
         }
 
-        ApprovalFlowByFormTypeResponse response = BeanUtils.copyBean(new ApprovalFlowByFormTypeResponse(), targetFlow, "executeTiming");
-        if (StringUtils.isNotBlank(targetFlow.getExecuteTiming())) {
-            response.setExecuteTiming(JSON.parseArray(targetFlow.getExecuteTiming(), String.class));
-        }
+        ApprovalFlowByFormTypeResponse response = BeanUtils.copyBean(new ApprovalFlowByFormTypeResponse(), targetFlow);
 
         List<Permission> permissions = getPermissionsByFormType(targetFlow.getFormType());
         response.setPermissions(getResourcePermissions(permissions));
@@ -202,9 +199,6 @@ public class ApprovalFlowService {
         ApprovalFlow flow = BeanUtils.copyBean(new ApprovalFlow(), request);
         flow.setId(IDGenerator.nextStr());
         flow.setNumber(generateFlowNumber(request.getFormType(), organizationId));
-        if (request.getExecuteTiming() != null) {
-            flow.setExecuteTiming(JSON.toJSONString(request.getExecuteTiming()));
-        }
         flow.setCreateUser(userId);
         flow.setCreateTime(System.currentTimeMillis());
         flow.setUpdateUser(userId);
@@ -258,9 +252,6 @@ public class ApprovalFlowService {
         }
 
         ApprovalFlow flow = BeanUtils.copyBean(new ApprovalFlow(), request);
-        if (request.getExecuteTiming() != null) {
-            flow.setExecuteTiming(JSON.toJSONString(request.getExecuteTiming()));
-        }
         flow.setUpdateUser(userId);
         flow.setUpdateTime(System.currentTimeMillis());
 
@@ -369,11 +360,7 @@ public class ApprovalFlowService {
 
 
     private ApprovalFlowDetailResponse convertToDetailResponse(ApprovalFlow flow) {
-        ApprovalFlowDetailResponse response = BeanUtils.copyBean(new ApprovalFlowDetailResponse(), flow, "executeTiming");
-        if (StringUtils.isNotBlank(flow.getExecuteTiming())) {
-            response.setExecuteTiming(JSON.parseArray(flow.getExecuteTiming(), String.class));
-        }
-        return response;
+        return BeanUtils.copyBean(new ApprovalFlowDetailResponse(), flow);
     }
 
     private List<ApprovalNodeResponse> getNodesByFlowId(String flowId) {

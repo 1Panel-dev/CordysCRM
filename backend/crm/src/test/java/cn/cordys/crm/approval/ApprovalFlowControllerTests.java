@@ -132,7 +132,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         request.setAllowAddSign(false);
         request.setDuplicateApproverRule(DuplicateApproverRuleEnum.EACH.name());
         request.setRequireComment(false);
-        request.setExecuteTiming(List.of(ExecuteTimingEnum.CREATE.name(), ExecuteTimingEnum.EDIT.name()));
+        request.setCreateExecute(true);
+        request.setUpdateExecute(true);
         request.setStatusPermissions(buildStatusPermissions());
 
         // 构建节点配置: 开始 -> 审批人 -> 结束
@@ -221,7 +222,8 @@ class ApprovalFlowControllerTests extends BaseTest {
         request.setAllowAddSign(true);
         request.setDuplicateApproverRule(DuplicateApproverRuleEnum.FIRST_ONLY.name());
         request.setRequireComment(true);
-        request.setExecuteTiming(List.of(ExecuteTimingEnum.CREATE.name()));
+        request.setCreateExecute(true);
+        request.setUpdateExecute(false);
         request.setStatusPermissions(buildStatusPermissions());
 
         // 更新节点配置

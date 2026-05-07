@@ -19,8 +19,11 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 case "formType":
                     handleFormTypeLogDetail(differ);
                     break;
-                case "executeTiming":
-                    handleExecuteTimingLogDetail(differ);
+                case "createExecute":
+                    handleCreateExecuteLogDetail(differ);
+                    break;
+                case "updateExecute":
+                    handleUpdateExecuteLogDetail(differ);
                     break;
                 case "enable":
                     handleEnableLogDetail(differ);
@@ -50,10 +53,24 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         differ.setColumnName(Translator.get("log.formType"));
     }
 
-    private void handleExecuteTimingLogDetail(JsonDifferenceDTO differ) {
-        differ.setColumnName(Translator.get("log.executeTiming"));
-        differ.setOldValueName(differ.getOldValue());
-        differ.setNewValueName(differ.getNewValue());
+    private void handleCreateExecuteLogDetail(JsonDifferenceDTO differ) {
+        if (differ.getOldValue() != null) {
+            differ.setOldValueName(differ.getOldValue());
+        }
+        if (differ.getNewValue() != null) {
+            differ.setNewValueName(differ.getNewValue());
+        }
+        differ.setColumnName(Translator.get("log.createExecute"));
+    }
+
+    private void handleUpdateExecuteLogDetail(JsonDifferenceDTO differ) {
+        if (differ.getOldValue() != null) {
+            differ.setOldValueName(differ.getOldValue());
+        }
+        if (differ.getNewValue() != null) {
+            differ.setNewValueName(differ.getNewValue());
+        }
+        differ.setColumnName(Translator.get("log.updateExecute"));
     }
 
     private void handleEnableLogDetail(JsonDifferenceDTO differ) {
