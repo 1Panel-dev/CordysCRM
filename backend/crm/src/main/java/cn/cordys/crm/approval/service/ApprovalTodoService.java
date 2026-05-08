@@ -57,7 +57,13 @@ public class ApprovalTodoService {
             return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
         }
 
-        // 在指定类型场景下先预查实例ID，缩小任务查询范围。
+        // 先根据资源名称预查实例ID，保证分页总数与筛选条件一致。
+        Set<String> nameFilteredInstanceIds = loadInstanceIdsByResourceName(request.getResourceName());
+        if (nameFilteredInstanceIds != null && nameFilteredInstanceIds.isEmpty()) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
+
+        // 在指定类型场景下先预查实例ID，并与名称筛选结果合并。
         List<String> scopedInstanceIds = Collections.emptyList();
         if (filterType != null) {
             scopedInstanceIds = loadInstanceIdsByType(filterType);
@@ -65,15 +71,19 @@ public class ApprovalTodoService {
                 return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
             }
         }
+        List<String> finalScopedInstanceIds = mergeInstanceIdScope(scopedInstanceIds, nameFilteredInstanceIds);
+        if (nameFilteredInstanceIds != null && finalScopedInstanceIds.isEmpty()) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
 
         // 分页查询当前用户待审批任务，并按更新时间倒序返回。
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
         taskWrapper.eq(ApprovalTask::getApproverId, userId)
-                .eq(ApprovalTask::getTaskStatus, ApprovalState.PENDING.getId())
+                .eq(ApprovalTask::getStatus, ApprovalState.PENDING.getId())
                 .orderByDesc(ApprovalTask::getUpdateTime);
-        if (!scopedInstanceIds.isEmpty()) {
-            taskWrapper.in(ApprovalTask::getInstanceId, scopedInstanceIds);
+        if (!finalScopedInstanceIds.isEmpty()) {
+            taskWrapper.in(ApprovalTask::getInstanceId, finalScopedInstanceIds);
         }
         List<ApprovalTask> tasks = approvalTaskMapper.selectListByLambda(taskWrapper);
         if (tasks.isEmpty()) {
@@ -143,7 +153,7 @@ public class ApprovalTodoService {
             item.setResourceType(formType.name());
             item.setApplicant(submitterMap.get(instance.getSubmitterId()));
             item.setSubmitTime(instance.getSubmitTime());
-            item.setApprovalOperation(task.getTaskStatus());
+            item.setApprovalOperation(StringUtils.defaultIfBlank(task.getAction(), task.getStatus()));
             item.setDataResult(instance.getResult());
             list.add(item);
         }
@@ -157,44 +167,57 @@ public class ApprovalTodoService {
             return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
         }
 
+        // 先根据资源名称预查实例ID，保证分页总数与筛选条件一致。
+        Set<String> nameFilteredInstanceIds = loadInstanceIdsByResourceName(request.getResourceName());
+        if (nameFilteredInstanceIds != null && nameFilteredInstanceIds.isEmpty()) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
+
         // 分页查询当前用户已处理任务，并按更新时间倒序返回最新处理记录。
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
         taskWrapper.eq(ApprovalTask::getApproverId, userId)
-                .nq(ApprovalTask::getTaskStatus, ApprovalState.PENDING.getId())
+                .nq(ApprovalTask::getStatus, ApprovalState.PENDING.getId())
                 .orderByDesc(ApprovalTask::getUpdateTime);
+        if (nameFilteredInstanceIds != null) {
+            taskWrapper.in(ApprovalTask::getInstanceId, new ArrayList<>(nameFilteredInstanceIds));
+        }
         List<ApprovalTask> tasks = approvalTaskMapper.selectListByLambda(taskWrapper);
-        if (tasks.isEmpty()) {
+        return buildTaskPageResult(page, tasks);
+    }
+
+    public Pager<List<ApprovalTodoItemResponse>> getInitiatedPage(ApprovalProcessedPageRequest request, String userId) {
+        // 在未登录场景下直接返回空分页数据。
+        if (StringUtils.isBlank(userId)) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
+
+        // 先根据资源名称预查实例ID，保证分页总数与筛选条件一致。
+        Set<String> nameFilteredInstanceIds = loadInstanceIdsByResourceName(request.getResourceName());
+        if (nameFilteredInstanceIds != null && nameFilteredInstanceIds.isEmpty()) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
+
+        // 分页查询当前用户发起的审批实例，并按更新时间倒序返回。
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        LambdaQueryWrapper<ApprovalInstance> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ApprovalInstance::getSubmitterId, userId)
+                .orderByDesc(ApprovalInstance::getUpdateTime);
+        if (nameFilteredInstanceIds != null) {
+            wrapper.in(ApprovalInstance::getId, new ArrayList<>(nameFilteredInstanceIds));
+        }
+        List<ApprovalInstance> instances = approvalInstanceMapper.selectListByLambda(wrapper);
+        if (instances.isEmpty()) {
             return PageUtils.setPageInfo(page, Collections.<ApprovalTodoItemResponse>emptyList());
         }
 
-        // 批量加载任务对应审批实例，避免循环查询实例数据。
-        List<String> instanceIds = tasks.stream()
-                .map(ApprovalTask::getInstanceId)
-                .filter(StringUtils::isNotBlank)
-                .distinct()
-                .toList();
-        Map<String, ApprovalInstance> instanceMap = approvalInstanceMapper.selectByIds(instanceIds).stream()
-                .collect(Collectors.toMap(ApprovalInstance::getId, Function.identity(), (prev, next) -> prev));
-        if (instanceMap.isEmpty()) {
-            return PageUtils.setPageInfo(page, Collections.<ApprovalTodoItemResponse>emptyList());
-        }
-
-        // 预加载申请人名称和资源名称映射，减少组装阶段的重复计算。
-        List<ApprovalInstance> instances = tasks.stream()
-                .map(task -> instanceMap.get(task.getInstanceId()))
-                .filter(Objects::nonNull)
-                .toList();
+        // 预加载申请人名称和资源名称映射，减少组装阶段重复查询。
         Map<String, String> submitterMap = loadSubmitterNameMap(instances);
         Map<ApprovalFormTypeEnum, Map<String, String>> resourceNameMap = loadResourceNameMap(instances);
 
-        // 逐条组装已处理审批数据并回填审批操作和数据结果字段。
-        List<ApprovalTodoItemResponse> list = new ArrayList<>(tasks.size());
-        for (ApprovalTask task : tasks) {
-            ApprovalInstance instance = instanceMap.get(task.getInstanceId());
-            if (instance == null) {
-                continue;
-            }
+        // 逐条组装我发起的审批分页结果。
+        List<ApprovalTodoItemResponse> list = new ArrayList<>(instances.size());
+        for (ApprovalInstance instance : instances) {
             ApprovalFormTypeEnum formType = parseFormType(instance.getType());
             if (formType == null) {
                 continue;
@@ -208,13 +231,37 @@ public class ApprovalTodoService {
             item.setResourceType(formType.name());
             item.setApplicant(submitterMap.get(instance.getSubmitterId()));
             item.setSubmitTime(instance.getSubmitTime());
-            item.setApprovalOperation(task.getTaskStatus());
+            item.setApprovalOperation(instance.getApprovalStatus());
             item.setDataResult(instance.getResult());
             list.add(item);
         }
-
         // 返回分页结果，分页元信息沿用 PageHelper 查询结果。
         return PageUtils.setPageInfo(page, list);
+    }
+
+    public Pager<List<ApprovalTodoItemResponse>> getCcPage(ApprovalProcessedPageRequest request, String userId) {
+        // 在未登录场景下直接返回空分页数据。
+        if (StringUtils.isBlank(userId)) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
+
+        // 先根据资源名称预查实例ID，保证分页总数与筛选条件一致。
+        Set<String> nameFilteredInstanceIds = loadInstanceIdsByResourceName(request.getResourceName());
+        if (nameFilteredInstanceIds != null && nameFilteredInstanceIds.isEmpty()) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
+
+        // 分页查询抄送给当前用户的任务记录，并按更新时间倒序返回。
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
+        taskWrapper.eq(ApprovalTask::getApproverId, userId)
+                .orderByDesc(ApprovalTask::getUpdateTime);
+        taskWrapper.in(ApprovalTask::getType, List.of("cc", "CC"));
+        if (nameFilteredInstanceIds != null) {
+            taskWrapper.in(ApprovalTask::getInstanceId, new ArrayList<>(nameFilteredInstanceIds));
+        }
+        List<ApprovalTask> tasks = approvalTaskMapper.selectListByLambda(taskWrapper);
+        return buildTaskPageResult(page, tasks);
     }
 
     private Map<String, String> loadSubmitterNameMap(List<ApprovalInstance> instances) {
@@ -306,5 +353,129 @@ public class ApprovalTodoService {
                 .filter(StringUtils::isNotBlank)
                 .distinct()
                 .toList();
+    }
+
+    private List<String> mergeInstanceIdScope(List<String> typeInstanceIds, Set<String> nameInstanceIds) {
+        if (nameInstanceIds == null) {
+            return typeInstanceIds;
+        }
+        if (typeInstanceIds.isEmpty()) {
+            return new ArrayList<>(nameInstanceIds);
+        }
+        Set<String> intersection = new HashSet<>(typeInstanceIds);
+        intersection.retainAll(nameInstanceIds);
+        return new ArrayList<>(intersection);
+    }
+
+    private Set<String> loadInstanceIdsByResourceName(String resourceName) {
+        if (StringUtils.isBlank(resourceName)) {
+            return null;
+        }
+        // 按资源名称模糊匹配资源表，构造资源类型到资源ID的映射。
+        Map<ApprovalFormTypeEnum, List<String>> resourceIdsByType = new EnumMap<>(ApprovalFormTypeEnum.class);
+        LambdaQueryWrapper<OpportunityQuotation> quotationWrapper = new LambdaQueryWrapper<>();
+        quotationWrapper.like(OpportunityQuotation::getName, resourceName);
+        List<String> quotationIds = quotationMapper.selectListByLambda(quotationWrapper).stream()
+                .map(OpportunityQuotation::getId).filter(StringUtils::isNotBlank).toList();
+        if (!quotationIds.isEmpty()) {
+            resourceIdsByType.put(ApprovalFormTypeEnum.QUOTATION, quotationIds);
+        }
+        LambdaQueryWrapper<Contract> contractWrapper = new LambdaQueryWrapper<>();
+        contractWrapper.like(Contract::getName, resourceName);
+        List<String> contractIds = contractMapper.selectListByLambda(contractWrapper).stream()
+                .map(Contract::getId).filter(StringUtils::isNotBlank).toList();
+        if (!contractIds.isEmpty()) {
+            resourceIdsByType.put(ApprovalFormTypeEnum.CONTRACT, contractIds);
+        }
+        LambdaQueryWrapper<Order> orderWrapper = new LambdaQueryWrapper<>();
+        orderWrapper.like(Order::getName, resourceName);
+        List<String> orderIds = orderMapper.selectListByLambda(orderWrapper).stream()
+                .map(Order::getId).filter(StringUtils::isNotBlank).toList();
+        if (!orderIds.isEmpty()) {
+            resourceIdsByType.put(ApprovalFormTypeEnum.ORDER, orderIds);
+        }
+        LambdaQueryWrapper<ContractInvoice> invoiceWrapper = new LambdaQueryWrapper<>();
+        invoiceWrapper.like(ContractInvoice::getName, resourceName);
+        List<String> invoiceIds = invoiceMapper.selectListByLambda(invoiceWrapper).stream()
+                .map(ContractInvoice::getId).filter(StringUtils::isNotBlank).toList();
+        if (!invoiceIds.isEmpty()) {
+            resourceIdsByType.put(ApprovalFormTypeEnum.INVOICE, invoiceIds);
+        }
+        if (resourceIdsByType.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        // 按资源类型与资源ID反查审批实例ID。
+        Set<String> instanceIds = new HashSet<>();
+        resourceIdsByType.forEach((formType, resourceIds) -> {
+            List<String> aliases = switch (formType) {
+                case QUOTATION -> List.of("quotation", "quote");
+                case CONTRACT -> List.of("contract");
+                case ORDER -> List.of("order");
+                case INVOICE -> List.of("invoice");
+            };
+            LambdaQueryWrapper<ApprovalInstance> wrapper = new LambdaQueryWrapper<>();
+            wrapper.in(ApprovalInstance::getType, aliases)
+                    .in(ApprovalInstance::getResourceId, resourceIds);
+            instanceIds.addAll(approvalInstanceMapper.selectListByLambda(wrapper).stream()
+                    .map(ApprovalInstance::getId)
+                    .filter(StringUtils::isNotBlank)
+                    .toList());
+        });
+        return instanceIds;
+    }
+
+    private Pager<List<ApprovalTodoItemResponse>> buildTaskPageResult(Page<Object> page, List<ApprovalTask> tasks) {
+        // 无任务时直接返回空分页数据。
+        if (tasks.isEmpty()) {
+            return PageUtils.setPageInfo(page, Collections.<ApprovalTodoItemResponse>emptyList());
+        }
+
+        // 批量加载任务对应审批实例，避免循环查询实例数据。
+        List<String> instanceIds = tasks.stream()
+                .map(ApprovalTask::getInstanceId)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        Map<String, ApprovalInstance> instanceMap = approvalInstanceMapper.selectByIds(instanceIds).stream()
+                .collect(Collectors.toMap(ApprovalInstance::getId, Function.identity(), (prev, next) -> prev));
+        if (instanceMap.isEmpty()) {
+            return PageUtils.setPageInfo(page, Collections.<ApprovalTodoItemResponse>emptyList());
+        }
+
+        // 预加载申请人名称和资源名称映射，减少组装阶段的重复计算。
+        List<ApprovalInstance> instances = tasks.stream()
+                .map(task -> instanceMap.get(task.getInstanceId()))
+                .filter(Objects::nonNull)
+                .toList();
+        Map<String, String> submitterMap = loadSubmitterNameMap(instances);
+        Map<ApprovalFormTypeEnum, Map<String, String>> resourceNameMap = loadResourceNameMap(instances);
+
+        // 逐条组装审批任务分页结果并回填审批操作和数据结果字段。
+        List<ApprovalTodoItemResponse> list = new ArrayList<>(tasks.size());
+        for (ApprovalTask task : tasks) {
+            ApprovalInstance instance = instanceMap.get(task.getInstanceId());
+            if (instance == null) {
+                continue;
+            }
+            ApprovalFormTypeEnum formType = parseFormType(instance.getType());
+            if (formType == null) {
+                continue;
+            }
+            String resourceName = Optional.ofNullable(resourceNameMap.get(formType))
+                    .map(map -> map.get(instance.getResourceId()))
+                    .orElse(StringUtils.EMPTY);
+            ApprovalTodoItemResponse item = new ApprovalTodoItemResponse();
+            item.setResourceId(instance.getResourceId());
+            item.setResourceName(resourceName);
+            item.setResourceType(formType.name());
+            item.setApplicant(submitterMap.get(instance.getSubmitterId()));
+            item.setSubmitTime(instance.getSubmitTime());
+            item.setApprovalOperation(StringUtils.defaultIfBlank(task.getAction(), task.getStatus()));
+            item.setDataResult(instance.getResult());
+            list.add(item);
+        }
+        // 返回分页结果，分页元信息沿用 PageHelper 查询结果。
+        return PageUtils.setPageInfo(page, list);
     }
 }

@@ -23,6 +23,8 @@ class ApprovalTodoControllerTests extends BaseTest {
 
     private static final String TODO_LIST = "/pending/page";
     private static final String PROCESSED_PAGE = "/processed/page";
+    private static final String INITIATED_PAGE = "/initiated/page";
+    private static final String CC_PAGE = "/cc/page";
 
     @Override
     protected String getBasePath() {
@@ -98,5 +100,47 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertTrue(StringUtils.isNotBlank(item.getApplicant()));
         Assertions.assertEquals("APPROVED", item.getApprovalOperation());
         Assertions.assertEquals("SIGNED", item.getDataResult());
+    }
+
+    @Sql(
+            scripts = {"/dml/init_approval_todo_cc_initiated_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Test
+    @Order(4)
+    void testInitiatedPage() throws Exception {
+        Map<String, Object> request = new HashMap<>();
+        request.put("current", 1);
+        request.put("pageSize", 10);
+
+        MvcResult mvcResult = requestPostWithOkAndReturn(INITIATED_PAGE, request);
+        Pager<List<ApprovalTodoItemResponse>> pager = getPageResult(mvcResult, ApprovalTodoItemResponse.class);
+
+        Assertions.assertNotNull(pager);
+        Assertions.assertEquals(2, pager.getTotal());
+        Assertions.assertEquals(2, pager.getList().size());
+        Assertions.assertTrue(pager.getList().stream().allMatch(item -> StringUtils.isNotBlank(item.getApplicant())));
+    }
+
+    @Sql(
+            scripts = {"/dml/init_approval_todo_cc_initiated_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Test
+    @Order(5)
+    void testCcPage() throws Exception {
+        Map<String, Object> request = new HashMap<>();
+        request.put("current", 1);
+        request.put("pageSize", 10);
+
+        MvcResult mvcResult = requestPostWithOkAndReturn(CC_PAGE, request);
+        Pager<List<ApprovalTodoItemResponse>> pager = getPageResult(mvcResult, ApprovalTodoItemResponse.class);
+
+        Assertions.assertNotNull(pager);
+        Assertions.assertEquals(2, pager.getTotal());
+        Assertions.assertEquals(2, pager.getList().size());
+        Assertions.assertTrue(pager.getList().stream().allMatch(item -> StringUtils.equals("READ", item.getApprovalOperation())));
     }
 }

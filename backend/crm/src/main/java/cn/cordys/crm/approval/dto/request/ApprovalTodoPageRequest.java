@@ -11,4 +11,7 @@ public class ApprovalTodoPageRequest extends BasePageRequest {
 
     @Schema(description = "资源类型过滤：ALL/QUOTATION/CONTRACT/ORDER/INVOICE")
     private String resourceType = "ALL";
+
+    @Schema(description = "资源名称（报价/合同/订单/发票）")
+    private String resourceName;
 }

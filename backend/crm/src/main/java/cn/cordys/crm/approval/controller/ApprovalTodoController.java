@@ -36,4 +36,16 @@ public class ApprovalTodoController {
     public Pager<List<ApprovalTodoItemResponse>> processedPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
         return approvalTodoService.getProcessedPage(request, SessionUtils.getUserId());
     }
+
+    @PostMapping("/initiated/page")
+    @Operation(summary = "审核代办-我发起的审批分页")
+    public Pager<List<ApprovalTodoItemResponse>> initiatedPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
+        return approvalTodoService.getInitiatedPage(request, SessionUtils.getUserId());
+    }
+
+    @PostMapping("/cc/page")
+    @Operation(summary = "审核代办-抄送我的审批分页")
+    public Pager<List<ApprovalTodoItemResponse>> ccPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
+        return approvalTodoService.getCcPage(request, SessionUtils.getUserId());
+    }
 }
