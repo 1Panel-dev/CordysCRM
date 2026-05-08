@@ -18,33 +18,33 @@
                 <div class="flex items-center gap-[8px]">
                   <CrmTag
                     v-if="props.activeTaskType?.includes('approved')"
-                    :color="getApprovedTagColor(item.result)"
+                    :color="getApprovedTagColor(item.approvalOperation)"
                     bordered
                   >
-                    {{ t(`taskDrawer.result.${item.result}`) }}
+                    {{ t(`taskDrawer.operation.${item.approvalOperation}`) }}
                   </CrmTag>
-                  <CrmApprovalStatus :status="item.status" isTag />
+                  <CrmApprovalStatus :status="item.dataResult" isTag />
                 </div>
                 <CrmTableButton
                   type="primary"
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.id)"
+                  @click="emit('openDetail', item.resourceId)"
                 >
-                  {{ item.name }}
-                  <template #trigger> {{ item.name }} </template>
+                  {{ item.resourceName }}
+                  <template #trigger> {{ item.resourceName }} </template>
                 </CrmTableButton>
               </div>
               <div class="flex w-full items-center justify-between">
                 <div class="flex gap-[24px]">
                   <div class="flex items-center gap-[8px]">
                     <div class="text-[var(--text-n2)]">{{ t('taskDrawer.applicant') }}</div>
-                    <div>{{ item.createUserName }}</div>
+                    <div>{{ item.applicant }}</div>
                   </div>
                   <div class="flex items-center gap-[8px]">
                     <div class="text-[var(--text-n2)]">{{ t('taskDrawer.applyTime') }}</div>
-                    <div>{{ dayjs(item.applyTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
+                    <div>{{ dayjs(item.submitTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
                   </div>
                 </div>
                 <div v-if="props.activeTaskType?.includes('pending')" class="flex gap-[12px]">
@@ -78,13 +78,12 @@
   import { NButton, NCheckbox, NCheckboxGroup, NSpin } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import { ProcessResultEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { ApprovalOperationEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import crmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import approvalModal from './approvalModal.vue';
 
@@ -109,36 +108,22 @@
 
   const list = ref<any[]>([
     {
-      id: 1928391823791,
-      name: 'xxxxxx',
-      createUserName: 'adshasda',
-      applyTime: 1729382938293,
-      status: ProcessStatusEnum.APPROVING,
-      result: ProcessResultEnum.AGREE,
+      resourceId: 'quotation_20260508009',
+      resourceName: '华东项目报价单-三期',
+      resourceType: 'QUOTATION',
+      applicant: '李四',
+      submitTime: 1746676800000,
+      approvalOperation: 'SIGN',
+      dataResult: 'APPROVED',
     },
     {
-      id: 1928391823791,
-      name: 'xxxxxx',
-      createUserName: 'adshasda',
-      applyTime: 1729382938293,
-      status: ProcessStatusEnum.APPROVING,
-      result: ProcessResultEnum.REJECT,
-    },
-    {
-      id: 1928391823791,
-      name: 'xxxxxx',
-      createUserName: 'adshasda',
-      applyTime: 1729382938293,
-      status: ProcessStatusEnum.APPROVING,
-      result: ProcessResultEnum.ADD_SIGN,
-    },
-    {
-      id: 1928391823791,
-      name: 'xxxxxx',
-      createUserName: 'adshasda',
-      applyTime: 1729382938293,
-      status: ProcessStatusEnum.APPROVING,
-      result: ProcessResultEnum.FALLBACK,
+      resourceId: 'quotation_20260508009',
+      resourceName: '华东项目报价单-三期',
+      resourceType: 'QUOTATION',
+      applicant: '李四',
+      submitTime: 1746676800000,
+      approvalOperation: 'SIGN',
+      dataResult: 'PENDING',
     },
   ]);
   const loading = ref(false);
@@ -203,27 +188,27 @@
     approvalItem.value = undefined;
   }
 
-  function getApprovedTagColor(result: ProcessResultEnum) {
+  function getApprovedTagColor(result: ApprovalOperationEnum) {
     switch (result) {
-      case ProcessResultEnum.AGREE:
+      case ApprovalOperationEnum.APPROVE:
         return {
           color: 'transparent',
           textColor: 'var(--success-green)',
           borderColor: 'var(--success-green)',
         };
-      case ProcessResultEnum.REJECT:
+      case ApprovalOperationEnum.REJECT:
         return {
           color: 'transparent',
           textColor: 'var(--error-red)',
           borderColor: 'var(--error-red)',
         };
-      case ProcessResultEnum.ADD_SIGN:
+      case ApprovalOperationEnum.SIGN:
         return {
           color: 'transparent',
           textColor: 'var(--info-blue)',
           borderColor: 'var(--info-blue)',
         };
-      case ProcessResultEnum.FALLBACK:
+      case ApprovalOperationEnum.BACK:
       default:
         return {
           color: 'transparent',

@@ -1,17 +1,23 @@
 export enum ProcessStatusEnum {
-  APPROVED = 'APPROVED', // 已通过
-  UNAPPROVED = 'UNAPPROVED', // 已驳回
-  APPROVING = 'APPROVING', // 审批中
-  PENDING = 'PENDING', // 待提审
-  REVOKED = 'REVOKED', // 已撤销
-  NONE = 'NONE', // 未开启审批状态
+  /** 无 **/
+  NONE = 'NONE',
+  /** 待提审, 待审批 */
+  PENDING = 'PENDING',
+  /** 审批中 */
+  APPROVING = 'APPROVING',
+  /** 已通过 */
+  APPROVED = 'APPROVED',
+  /** 已驳回 */
+  UNAPPROVED = 'UNAPPROVED',
+  /** 已撤销 */
+  REVOKED = 'REVOKED',
 }
 
-export enum ProcessResultEnum {
-  AGREE = 'AGREE', // 同意
+export enum ApprovalOperationEnum {
+  APPROVE = 'APPROVE', // 通过
   REJECT = 'REJECT', // 驳回
-  FALLBACK = 'FALLBACK', // 退回
-  ADD_SIGN = 'ADD_SIGN', // 加签
+  SIGN = 'SIGN', // 加签
+  BACK = 'BACK', // 退回
 }
 
 export enum ApprovalTypeEnum {
