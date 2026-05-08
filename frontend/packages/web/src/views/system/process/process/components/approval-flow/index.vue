@@ -41,6 +41,7 @@
         <approvalActionNodeForm
           v-if="selection.type === 'node' && isApprovalActionNode(selection.node)"
           v-model:node="selection.node"
+          :form-type="basicConfig.formType"
           @switch-more-setting="emit('switchMoreSetting')"
         />
       </template>
@@ -48,6 +49,7 @@
     <setConditionDrawer
       v-model:show="setConditionDrawerVisible"
       :branch="activeConditionBranch"
+      :form-type="basicConfig.formType"
       @confirm="handleConditionConfirm"
     />
   </div>
@@ -57,6 +59,7 @@
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
   import type { ApprovalTypeEnum } from '@lib/shared/enums/process';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/models/system/process';
   import { BasicFormParams } from '@lib/shared/models/system/process';
 
@@ -91,6 +94,7 @@
   const emit = defineEmits<{
     (event: 'switchMoreSetting'): void;
   }>();
+  const { t } = useI18n();
 
   // 基础表单
   const basicConfig = defineModel<BasicFormParams>('basicConfig', {
@@ -198,6 +202,9 @@
 
     activeConditionBranch.value.name = payload.name;
     activeConditionBranch.value.conditionConfig = payload.conditionConfig;
+    activeConditionBranch.value.description = payload.conditionConfig?.list?.some((item) => item.dataIndex)
+      ? t('process.process.flow.conditionConfigured')
+      : t('process.process.flow.conditionUnset');
   }
 
   // 更新开始节点描述

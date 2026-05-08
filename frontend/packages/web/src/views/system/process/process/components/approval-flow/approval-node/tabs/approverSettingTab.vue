@@ -12,6 +12,7 @@
           v-model:value="nodeConfig.approvalType"
           :options="approvalTypeOptions"
           :placeholder="t('common.pleaseSelect')"
+          @update:value="handleApprovalTypeUpdate"
         />
       </n-form-item>
 
@@ -280,6 +281,7 @@
     approverLevelOptions,
     approverTypeOptions,
     departmentLevelOptions,
+    resolveApprovalActionNodeDescription,
   } from '@/config/process';
 
   defineOptions({
@@ -541,9 +543,14 @@
     return [...supervisorLevelApproverTypes, ...departmentLevelApproverTypes].includes(type) ? ['1'] : [];
   }
 
+  function handleApprovalTypeUpdate(type: ApprovalTypeEnum) {
+    nodeConfig.value.description = resolveApprovalActionNodeDescription(type, nodeConfig.value.approverType);
+  }
+
   function handleApproverTypeUpdate(type: ApproverTypeEnum) {
     nodeConfig.value.approverSelectedList = [];
     nodeConfig.value.approverList = resetLevelList(type);
+    nodeConfig.value.description = resolveApprovalActionNodeDescription(nodeConfig.value.approvalType, type);
   }
 
   function handleCcTypeUpdate(type: ApproverTypeEnum) {

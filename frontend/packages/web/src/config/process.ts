@@ -185,27 +185,6 @@ export const approvalFlowAddNodeGroups: FlowAddNodeGroup[] = [
   },
 ];
 
-export function resolveApprovalActionNodeDefaults(approvalType: ApprovalTypeEnum) {
-  if (approvalType === ApprovalTypeEnum.AUTO_PASS) {
-    return {
-      name: t('process.process.flow.approver'),
-      description: t('process.process.flow.autoApprove'),
-    };
-  }
-
-  if (approvalType === ApprovalTypeEnum.AUTO_REJECT) {
-    return {
-      name: t('process.process.flow.approver'),
-      description: t('process.process.flow.autoReject'),
-    };
-  }
-
-  return {
-    name: t('process.process.flow.approver'),
-    description: t('process.process.flow.selectApprover'),
-  };
-}
-
 export const approverTypeOptions: Array<{ label: string; value: ApproverTypeEnum }> = [
   {
     label: t('process.process.flow.approverType.specifiedMember'),
@@ -232,6 +211,28 @@ export const approverTypeOptions: Array<{ label: string; value: ApproverTypeEnum
     value: ApproverTypeEnum.ROLE,
   },
 ];
+
+export function resolveApprovalActionNodeDescription(
+  approvalType: ApprovalTypeEnum,
+  approverType: ApproverTypeEnum = ApproverTypeEnum.SPECIFIED_MEMBER
+) {
+  if (approvalType === ApprovalTypeEnum.AUTO_PASS) {
+    return t('process.process.flow.autoApprove');
+  }
+
+  if (approvalType === ApprovalTypeEnum.AUTO_REJECT) {
+    return t('process.process.flow.autoReject');
+  }
+
+  return approverTypeOptions.find((item) => item.value === approverType)?.label ?? approverTypeOptions[0].label;
+}
+
+export function resolveApprovalActionNodeDefaults(approvalType: ApprovalTypeEnum) {
+  return {
+    name: t('process.process.flow.approver'),
+    description: resolveApprovalActionNodeDescription(approvalType),
+  };
+}
 
 export const approverLevelOptions = [
   {

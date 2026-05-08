@@ -1,4 +1,5 @@
 import { ApprovalTypeEnum, ApproverTypeEnum } from '@lib/shared/enums/process';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/models/system/process';
 
 import {
@@ -18,6 +19,8 @@ import { findBranchLocation, findNodeLocation } from '@/components/business/crm-
 import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
 
 import { resolveApprovalActionNodeDefaults } from '@/config/process';
+
+const { t } = useI18n();
 
 // 创建审批动作节点
 export function createApprovalActionNode(approvalType: ApprovalTypeEnum = ApprovalTypeEnum.MANUAL): ApprovalActionNode {
@@ -51,6 +54,7 @@ export function createDefaultFlow(startDescription: string): FlowSchema {
 export function createApprovalConditionBranch(partial: Partial<ApprovalConditionBranch> = {}): ApprovalConditionBranch {
   return createConditionBranch<ApprovalConditionBranch>({
     ...partial,
+    description: partial.description ?? t('process.process.flow.conditionUnset'),
     children: partial.children ?? [createApprovalActionNode()],
   });
 }

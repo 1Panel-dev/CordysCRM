@@ -60,6 +60,23 @@ export type MultiApproverMode = 'ALL' | 'ANY' | 'SEQUENTIAL';
 export type EmptyApproverAction = 'AUTO_PASS' | 'ASSIGN_SPECIFIC' | 'ASSIGN_ADMIN';
 // 审批人与提交人相同时动作：提交人审批/跳过/交给直属上级审批
 export type SameSubmitterAction = 'ALLOW' | 'SKIP' | 'ASSIGN_SUPERIOR';
+// 表单字段权限：隐藏/查看/编辑
+export type ApprovalFieldPermissionMode = 'HIDDEN' | 'VIEW' | 'EDIT';
+
+export interface ApprovalFieldPermission {
+  fieldId: string;
+  permissionType: ApprovalFieldPermissionMode;
+}
+
+export interface ApprovalFieldUpdateConfig {
+  fieldId: string;
+  fieldValue: any;
+  enable: boolean;
+}
+
+export interface ApprovalPostConfig {
+  fieldUpdateConfigs: ApprovalFieldUpdateConfig[];
+}
 
 // 审批动作节点（前端审批流图使用）
 export interface ApprovalActionNode extends ActionNode {
@@ -75,9 +92,9 @@ export interface ApprovalActionNode extends ActionNode {
   ccType: ApproverTypeEnum | null; // 抄送人来源
   ccList: string[]; // 抄送人配置列表：成员 ID / 角色 ID / 层级等
   ccSelectedList?: SelectedUsersItem[]; // 前端展示用的抄送选中列表
-  passPostConfig?: Record<string, any>; // 审批通过后配置
-  rejectPostConfig?: Record<string, any>; // 审批驳回后配置
-  fieldPermissions?: Record<string, any>[]; // 字段权限配置列表
+  passPostConfig?: ApprovalPostConfig; // 审批通过后配置
+  rejectPostConfig?: ApprovalPostConfig; // 审批驳回后配置
+  fieldPermissions?: ApprovalFieldPermission[]; // 字段权限配置列表
 }
 
 // 审批条件分支（前端审批流图使用）
@@ -147,4 +164,3 @@ export interface ApprovalPopoverDetail {
   approveStatus: ProcessStatusEnum;
   approveUserList: ApproverItem[];
 }
-
