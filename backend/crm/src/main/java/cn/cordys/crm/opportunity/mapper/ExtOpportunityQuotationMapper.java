@@ -18,6 +18,8 @@ public interface ExtOpportunityQuotationMapper {
 
     void updateApprovalStatus(@Param("approvingId") String approvingId, @Param("approvalStatus") String approvalStatus, @Param("userId") String userId, @Param("updateTime") long updateTime);
 
+    void voided(@Param("approvingId") String approvingId, @Param("userId") String userId, @Param("updateTime") long updateTime);
+
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
     //根据时间戳获取报价单列表
