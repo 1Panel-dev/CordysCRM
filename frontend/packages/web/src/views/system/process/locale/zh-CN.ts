@@ -6,7 +6,7 @@ export default {
   'process.executionTiming': '执行时机',
   'process.process.newProcess': '新建审批流',
   'process.process.enableProcessTip': '同一表单只能有一个启用状态的审批流',
-  'process.process.deleteContent': '审批流删除操作不可恢复，请谨慎操作！',
+  'process.process.deleteContent': '删除审批流程将终止全部审批中单据并清空待办，请谨慎操作！',
   'process.process.deleteEnabledContent': '审批流状态为开启，禁止删除!',
   'process.process.submitterAuthority': '提交人权限',
   'process.process.allowSubmitterCancel': '允许提交人撤销审批中的申请',

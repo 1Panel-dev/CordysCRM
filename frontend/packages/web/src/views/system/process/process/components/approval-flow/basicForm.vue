@@ -39,6 +39,7 @@
             v-for="item of executionTimingList"
             :key="item.value"
             v-model:checked="form[item.value as keyof BasicFormParams]"
+            :disabled="readonly"
           >
             <div class="flex items-center gap-[8px]">
               {{ item.label }}
@@ -61,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NCheckbox, NCheckboxGroup, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
+  import { NCheckbox, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { BasicFormParams } from '@lib/shared/models/system/process';

@@ -1,4 +1,4 @@
-import { ApprovalRecordStatusEnum, ApprovalTypeEnum, ApproverTypeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+import {  ApprovalOperationEnum, ApprovalTypeEnum, ApproverTypeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
 import type { SelectedUsersItem } from './module';
 import type { FilterForm } from '@cordys/web/src/components/pure/crm-advance-filter/type';
 import type { ActionNode, ConditionBranch } from '@cordys/web/src/components/business/crm-flow/types';
@@ -138,7 +138,7 @@ export interface ApprovalProcessForm {
 
 
 export interface ApproverItem extends Pick<UserInfo, 'id' | 'name' | 'avatar'> {
-  approveResult: ApprovalRecordStatusEnum;
+  approveResult: ApprovalOperationEnum;
   approveReason: string;
 }
 
