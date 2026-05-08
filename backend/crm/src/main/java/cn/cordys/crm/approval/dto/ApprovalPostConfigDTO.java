@@ -1,6 +1,6 @@
 package cn.cordys.crm.approval.dto;
 
-import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.EnableFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -13,5 +13,5 @@ import java.util.List;
 public class ApprovalPostConfigDTO {
 
     @Schema(description = "字段更新配置列表")
-    private List<BaseModuleFieldValue> fieldUpdateConfigs;
+    private List<EnableFieldValue> fieldUpdateConfigs;
 }
