@@ -6,7 +6,8 @@ export default {
   'process.executionTiming': 'Execution Timing',
   'process.process.newProcess': 'New Process',
   'process.process.enableProcessTip': 'The same form can only have one enabled approval process',
-  'process.process.deleteContent': 'Approval stream deletion cannot be undone. Please proceed with caution!',
+  'process.process.deleteContent':
+    'Deleting the approval process will terminate all the documents in the approval and clear the backlog. Please operate carefully!',
   'process.process.deleteEnabledContent': 'Cannot delete an enabled approval flow',
   'process.process.submitterAuthority': 'Submitter permissions',
   'process.process.allowSubmitterCancel': 'Allow submitter to cancel pending applications',

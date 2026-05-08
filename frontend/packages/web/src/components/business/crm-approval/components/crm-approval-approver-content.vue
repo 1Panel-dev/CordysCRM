@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ApprovalRecordStatusEnum } from '@lib/shared/enums/process';
+  import { ApprovalOperationEnum } from '@lib/shared/enums/process';
   import { ApproverItem } from '@lib/shared/models/system/process';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -77,15 +77,15 @@
     () => currentApproverMap.value.get(String(activeApproverId.value))?.approveReason ?? ''
   );
 
-  function getStatusIcon(status: ApprovalRecordStatusEnum) {
-    return status === ApprovalRecordStatusEnum.REJECT ? 'iconicon_close_circle_filled' : 'iconicon_succeed_filled';
+  function getStatusIcon(status: ApprovalOperationEnum) {
+    return status === ApprovalOperationEnum.REJECT ? 'iconicon_close_circle_filled' : 'iconicon_succeed_filled';
   }
 
-  function getStatusClass(status: ApprovalRecordStatusEnum) {
+  function getStatusClass(status: ApprovalOperationEnum) {
     switch (status) {
-      case ApprovalRecordStatusEnum.REJECT:
+      case ApprovalOperationEnum.REJECT:
         return 'text-[var(--error-red)]';
-      case ApprovalRecordStatusEnum.PASS:
+      case ApprovalOperationEnum.APPROVE:
         return 'text-[var(--success-green)]';
       default:
         return 'text-[var(--text-n4)]';
@@ -93,11 +93,11 @@
   }
 
   function isActiveApproval(approver: ApproverItem) {
-    return approver.approveResult === ApprovalRecordStatusEnum.PASS && approver.id === activeApproverId.value;
+    return approver.approveResult === ApprovalOperationEnum.APPROVE && approver.id === activeApproverId.value;
   }
 
   function isActiveRejected(approver: ApproverItem) {
-    return approver.approveResult === ApprovalRecordStatusEnum.REJECT && approver.id === activeApproverId.value;
+    return approver.approveResult === ApprovalOperationEnum.REJECT && approver.id === activeApproverId.value;
   }
 
   function toggleActive(approver: ApproverItem) {
