@@ -6,7 +6,6 @@ import {
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { SaveBusinessTitleParams } from '@lib/shared/models/contract';
-import { ProcessStatusType } from '@lib/shared/models/system/process';
 
 const { t } = useI18n();
 
@@ -164,7 +163,7 @@ export const allBusinessTitleFormConfigList: {
   ...businessTitleFormConfigList,
 ];
 
-export const deleteInvoiceContentMap: Record<ProcessStatusType, string> = {
+export const deleteInvoiceContentMap: Record<ProcessStatusEnum, string> = {
   [ProcessStatusEnum.APPROVING]: t('contract.deleteInvoiceUnderReviewContent'),
   [ProcessStatusEnum.APPROVED]: t('contract.deleteInvoiceApprovedContent'),
   [ProcessStatusEnum.REVOKED]: t('contract.deleteInvoiceRevokedContent'),

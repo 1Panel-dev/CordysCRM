@@ -1,13 +1,13 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ApprovalTypeEnum, ApproverTypeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { BasicFormParams, MoreSettingsParams, ProcessStatusType } from '@lib/shared/models/system/process';
+import { BasicFormParams, MoreSettingsParams } from '@lib/shared/models/system/process';
 
 import { StatusInfo } from '@/components/business/crm-approval/components/crm-approval-status.vue';
 
 const { t } = useI18n();
 
-export const processStatusMap: Record<ProcessStatusType, StatusInfo> = {
+export const processStatusMap: Record<ProcessStatusEnum, StatusInfo> = {
   [ProcessStatusEnum.APPROVED]: {
     label: t('common.approved'),
     icon: 'iconicon_succeed_filled',

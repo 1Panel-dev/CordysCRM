@@ -5,8 +5,6 @@ import type { ActionNode, ConditionBranch } from '@cordys/web/src/components/bus
 import type { UserInfo } from '@lib/shared/models/user';
 
 
-export type ProcessStatusType = Exclude<ProcessStatusEnum, ProcessStatusEnum.VOIDED>;
-
 export interface BaseItem {
   id: string;
   name: string;
@@ -89,7 +87,7 @@ export interface ApprovalConditionBranch extends ConditionBranch {
 
 // 状态权限
 export interface StatusPermissions {
-  approvalStatus: ProcessStatusType;
+  approvalStatus: ProcessStatusEnum;
   permission: string;
   enabled: boolean;
 }
@@ -146,7 +144,7 @@ export interface ApproverItem extends Pick<UserInfo, 'id' | 'name' | 'avatar'> {
 
 export interface ApprovalPopoverDetail {
   resourceId: string;
-  approveStatus: ProcessStatusType;
+  approveStatus: ProcessStatusEnum;
   approveUserList: ApproverItem[];
 }
 

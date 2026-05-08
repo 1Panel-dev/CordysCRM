@@ -28,7 +28,6 @@ export default async function useFormCreateSystemColumns(
   const { reasonOptions, initReasonConfig } = useReasonConfig(props.formKey);
   const showPagination = props.showPagination ?? true;
   const columnsSorter = showPagination ? true : 'default';
-  const enableApproval = props.enableApproval?.value ?? false;
 
   const noSorterType = [
     FieldTypeEnum.DIVIDER,
@@ -339,22 +338,18 @@ export default async function useFormCreateSystemColumns(
     },
   ];
   // 审批状态
-  const approvalStatusColumn = (
-    enableApproval
-      ? [
-          {
-            title: t('contract.approvalStatus'),
-            width: 120,
-            key: 'approvalStatus',
-            filterOptions: processStatusOptions,
-            sortOrder: false,
-            sorter: true,
-            filter: true,
-            render: props.specialRender?.approvalStatus,
-          },
-        ]
-      : []
-  ) as CrmDataTableColumn[];
+  const approvalStatusColumn = [
+    {
+      title: t('contract.approvalStatus'),
+      width: 120,
+      key: 'approvalStatus',
+      filterOptions: processStatusOptions,
+      sortOrder: false,
+      sorter: true,
+      filter: true,
+      render: props.specialRender?.approvalStatus,
+    },
+  ] as CrmDataTableColumn[];
 
   const invoiceInternalColumns: CrmDataTableColumn[] = [
     ...approvalStatusColumn,
@@ -703,12 +698,12 @@ export default async function useFormCreateSystemColumns(
       {
         title: t('common.status'),
         width: 120,
-        key: 'status',
+        key: 'invalid',
         filterOptions: quotationStatus,
         sortOrder: false,
         sorter: true,
         filter: true,
-        render: props.specialRender?.status,
+        render: props.specialRender?.invalid,
       },
       ...approvalStatusColumn,
     ],

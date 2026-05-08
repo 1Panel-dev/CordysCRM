@@ -490,18 +490,14 @@
           })) || [],
       },
     },
-    ...(enableApproval.value
-      ? [
-          {
-            title: t('common.approvalStatus'),
-            dataIndex: 'approvalStatus',
-            type: FieldTypeEnum.SELECT_MULTIPLE,
-            selectProps: {
-              options: processStatusOptions,
-            },
-          },
-        ]
-      : []),
+    {
+      title: t('common.approvalStatus'),
+      dataIndex: 'approvalStatus',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options: processStatusOptions,
+      },
+    },
     ...baseFilterConfigList,
   ]);
 

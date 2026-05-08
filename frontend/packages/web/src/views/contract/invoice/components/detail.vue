@@ -1,7 +1,7 @@
 <template>
   <CrmDrawer v-model:show="visible" :title="detailInfo?.name" resizable no-padding :width="800" :footer="false">
     <template #titleLeft>
-      <div v-if="enableApproval" class="text-[14px] font-normal">
+      <div class="text-[14px] font-normal">
         <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
       </div>
     </template>

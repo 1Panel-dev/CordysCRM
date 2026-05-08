@@ -496,19 +496,15 @@
         containChildIds: [],
       },
     },
-    ...(enableApproval.value
-      ? [
-          {
-            title: t('contract.approvalStatus'),
-            dataIndex: 'approvalStatus',
-            type: FieldTypeEnum.SELECT_MULTIPLE,
-            operatorOption: COMMON_SELECTION_OPERATORS,
-            selectProps: {
-              options: processStatusOptions,
-            },
-          },
-        ]
-      : []),
+    {
+      title: t('contract.approvalStatus'),
+      dataIndex: 'approvalStatus',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      operatorOption: COMMON_SELECTION_OPERATORS,
+      selectProps: {
+        options: processStatusOptions,
+      },
+    },
     ...baseFilterConfigList,
   ]);
 

@@ -102,7 +102,6 @@
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -214,10 +213,8 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // todo xinxinwu 作废状态 status 等待调整
           const result = await batchVoided({
             ids: checkedRowKeys.value,
-            status: QuotationStatusEnum.VOIDED,
           });
           batchResult.value = result;
           resultVisible.value = true;
@@ -350,8 +347,7 @@
       detailReadPermissions: ['OPPORTUNITY_QUOTATION:READ'],
       dataActionMap: quotationDataActionMap,
       specialActionFilter: (row, actionKeys) => {
-        // todo 状态为作废历史数据 xinxinwu
-        if (row.status === QuotationStatusEnum.VOIDED) {
+        if (row.invalid) {
           return actionKeys.filter((key) => key === 'delete');
         }
         return actionKeys;
@@ -504,21 +500,21 @@
             )
           : h(CrmNameTooltip, { text: row.opportunityName });
       },
-      status: (row: QuotationItem) => {
+      invalid: (row: QuotationItem) => {
         return h(
           CrmTag,
           {
-            type: row.status === QuotationStatusEnum.VOIDED ? 'default' : 'info',
+            type: row.invalid ? 'default' : 'info',
             theme: 'light',
           },
           {
-            default: () => (row.status === QuotationStatusEnum.VOIDED ? t('common.voided') : t('common.normal')),
+            default: () => (row.invalid ? t('common.voided') : t('common.normal')),
           }
         );
       },
       approvalStatus: (row: QuotationItem) => {
         const canOpenDetail = canOpenListDetail(row);
-        return row.status === QuotationStatusEnum.VOIDED
+        return row.invalid
           ? '-'
           : h(CrmApprovalPopover, {
               status: row.approvalStatus,
@@ -560,18 +556,14 @@
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
-      ...(enableApproval.value
-        ? [
-            {
-              title: t('common.approvalStatus'),
-              dataIndex: 'approvalStatus',
-              type: FieldTypeEnum.SELECT_MULTIPLE,
-              selectProps: {
-                options: processStatusOptions,
-              },
-            },
-          ]
-        : []),
+      {
+        title: t('common.approvalStatus'),
+        dataIndex: 'approvalStatus',
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        selectProps: {
+          options: processStatusOptions,
+        },
+      },
       {
         title: t('opportunity.department'),
         dataIndex: 'departmentId',

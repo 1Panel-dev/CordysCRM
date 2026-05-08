@@ -3,7 +3,7 @@ import { type Ref, ref } from 'vue';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { ApprovalPermissionsDetail, ProcessStatusType, StatusPermissions } from '@lib/shared/models/system/process';
+import { ApprovalPermissionsDetail, StatusPermissions } from '@lib/shared/models/system/process';
 
 import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 
@@ -23,7 +23,7 @@ export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   detailReadPermissions?: string[];
   isDetail?: boolean;
   maxVisibleActions?: number;
-  getApprovalStatus?: (row: Row) => ProcessStatusType;
+  getApprovalStatus?: (row: Row) => ProcessStatusEnum;
   getBizStatus?: (row: Row) => string | undefined;
   identityResolver?: {
     isApplicant?: (row: Row, currentUserId: string) => boolean;
@@ -32,7 +32,7 @@ export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
 }
 
 function buildStatusPermissionMap(statusPermissions: StatusPermissions[]) {
-  const permissionMap = new Map<ProcessStatusType, Set<string>>();
+  const permissionMap = new Map<ProcessStatusEnum, Set<string>>();
 
   statusPermissions.forEach((item) => {
     if (!item.enabled) {
@@ -56,12 +56,12 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   const userStore = useUserStore();
 
   const approvalPermissionsDetail = ref<ApprovalPermissionsDetail | null>(null);
-  const statusPermissionMap = ref<Map<ProcessStatusType, Set<string>>>(new Map());
+  const statusPermissionMap = ref<Map<ProcessStatusEnum, Set<string>>>(new Map());
 
   const enableApproval = ref(false);
 
   function getApprovalStatus(row: Row) {
-    return options.getApprovalStatus?.(row) ?? (row.approvalStatus as ProcessStatusType);
+    return options.getApprovalStatus?.(row) ?? (row.approvalStatus as ProcessStatusEnum);
   }
 
   function getBizStatus(row: Row) {
@@ -120,7 +120,13 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     const dataActionMap = getDataActionMap(row);
 
     if (!currentStatusPermissions) {
-      return [];
+      return Object.values(dataActionMap).filter((action) => {
+        if (!action.key) {
+          return false;
+        }
+
+        return !action.permission?.length || hasAnyPermission(action.permission);
+      });
     }
 
     return Object.values(dataActionMap).filter((action) => {

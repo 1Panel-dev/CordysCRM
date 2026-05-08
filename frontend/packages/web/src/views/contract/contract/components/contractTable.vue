@@ -658,19 +658,15 @@
     //   dataIndex: 'alreadyPayAmount',
     //   type: FieldTypeEnum.INPUT_NUMBER,
     // },
-    ...(enableApproval.value
-      ? [
-          {
-            title: t('contract.approvalStatus'),
-            dataIndex: 'approvalStatus',
-            operatorOption: COMMON_SELECTION_OPERATORS,
-            type: FieldTypeEnum.SELECT_MULTIPLE,
-            selectProps: {
-              options: processStatusOptions,
-            },
-          },
-        ]
-      : []),
+    {
+      title: t('contract.approvalStatus'),
+      dataIndex: 'approvalStatus',
+      operatorOption: COMMON_SELECTION_OPERATORS,
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options: processStatusOptions,
+      },
+    },
     ...baseFilterConfigList,
   ]);
 

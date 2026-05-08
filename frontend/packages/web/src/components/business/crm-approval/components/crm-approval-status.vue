@@ -16,14 +16,14 @@
 </template>
 
 <script setup lang="ts">
-  import { ProcessStatusType } from '@lib/shared/models/system/process';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   import { processStatusMap } from '@/config/process';
 
   const props = defineProps<{
-    status: ProcessStatusType;
+    status: ProcessStatusEnum;
     isTag?: boolean;
   }>();
 
