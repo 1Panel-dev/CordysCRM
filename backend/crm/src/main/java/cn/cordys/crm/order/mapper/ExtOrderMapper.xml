@@ -15,6 +15,7 @@
         cc.name as customerName,
         so.amount,
         so.stage,
+        so.approval_status,
         so.`owner`,
         so.create_user,
         so.create_time,

@@ -5,9 +5,12 @@ import org.apache.ibatis.annotations.Param;
 public interface ExtApprovalInstanceMapper {
 
 	/**
-	 * 提审
-	 * @param sourceTable 主业务表
-	 * @param resourceId 资源ID
+	 * 更新业务表的审批状态
+	 *
+	 * @param sourceTable     主业务表
+	 * @param resourceId      资源ID
+	 * @param approvalStatus  审批状态
 	 */
-	void approving(@Param("sourceTable") String sourceTable, @Param("id") String resourceId);
+	void updateApprovalStatus(@Param("sourceTable") String sourceTable, @Param("id") String resourceId,
+							  @Param("approvalStatus") String approvalStatus);
 }

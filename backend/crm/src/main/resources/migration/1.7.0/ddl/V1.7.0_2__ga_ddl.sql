@@ -248,8 +248,12 @@ ALTER TABLE sales_order ADD COLUMN pos BIGINT DEFAULT NULL;
 
 -- add order approval status
 ALTER TABLE sales_order ADD COLUMN approval_status VARCHAR(50) NOT NULL COMMENT '审批状态' AFTER stage;
+
 -- add quotation invalid
 ALTER TABLE opportunity_quotation ADD COLUMN invalid TINYINT(1) DEFAULT 0 COMMENT '是否作废: 0-正常, 1-作废' AFTER approval_status;
+
+-- drop quotation approval
+DROP TABLE opportunity_quotation_approval;
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

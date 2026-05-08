@@ -39,6 +39,9 @@ public class OpportunityQuotationListResponse {
     @Schema(description = "审核状态")
     private String approvalStatus;
 
+	@Schema(description = "是否作废")
+	private Boolean invalid;
+
     @Schema(description = "有效期至")
     private Long untilTime;
 

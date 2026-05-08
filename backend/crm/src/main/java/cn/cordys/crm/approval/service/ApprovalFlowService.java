@@ -977,4 +977,23 @@ public class ApprovalFlowService {
         }
         return null;
     }
+
+    /**
+     * 获取表单下启用的审批流配置
+     *
+     * @param formKey        表单类型
+     * @param organizationId 组织ID
+     * @return 审批流配置，如果不存在或未启用返回null
+     */
+    public ApprovalFlow getEnabledFlow(String formKey, String organizationId) {
+        if (StringUtils.isBlank(formKey) || StringUtils.isBlank(organizationId)) {
+            return null;
+        }
+        LambdaQueryWrapper<ApprovalFlow> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ApprovalFlow::getFormType, formKey)
+                .eq(ApprovalFlow::getOrganizationId, organizationId)
+                .eq(ApprovalFlow::getEnable, true);
+		List<ApprovalFlow> approvalFlows = approvalFlowMapper.selectListByLambda(wrapper);
+		return CollectionUtils.isEmpty(approvalFlows) ? null : approvalFlows.getFirst();
+    }
 }

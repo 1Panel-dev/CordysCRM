@@ -151,12 +151,34 @@ public class ResourceApprovalService {
         return response;
     }
 
+	public void hitAndSetApprovalStatus() {
 
+	}
+
+	/**
+	 * 更新业务表的审批状态
+	 *
+	 * @param formKey        表单类型
+	 * @param resourceId     资源ID
+	 * @param approvalStatus 审批状态
+	 */
+	public void updateApprovalStatus(FormKey formKey, String resourceId, String approvalStatus) {
+		String tableName = FORM_TABLE.get(formKey.getKey());
+		if (StringUtils.isBlank(tableName)) {
+			throw new GenericException(Translator.get("module.form.illegal"));
+		}
+		extApprovalInstanceMapper.updateApprovalStatus(tableName, resourceId, approvalStatus);
+	}
+
+	/**
+	 * 手动提审
+	 * @param param 提审参数
+	 */
 	public void push(ApprovalPushParam param) {
 		String tableName = FORM_TABLE.get(param.getFormKey());
 		if (StringUtils.isBlank(tableName)) {
 			throw new GenericException(Translator.get("module.form.illegal"));
 		}
-		extApprovalInstanceMapper.approving(tableName, param.getResourceId());
+		extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.APPROVING.name());
 	}
 }
