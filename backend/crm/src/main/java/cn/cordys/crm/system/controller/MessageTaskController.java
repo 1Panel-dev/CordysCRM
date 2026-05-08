@@ -11,7 +11,7 @@ import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.dto.request.MessageTaskConfigRequest;
 import cn.cordys.crm.system.dto.request.MessageTaskRequest;
 import cn.cordys.crm.system.dto.response.MessageTaskDTO;
-import cn.cordys.crm.system.service.MessageTaskService;
+import cn.cordys.crm.system.service.MessageNotificationService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,27 +27,27 @@ import java.util.List;
 @RequestMapping("/message/task/")
 public class MessageTaskController {
     @Resource
-    private MessageTaskService messageTaskService;
+    private MessageNotificationService messageNotificationService;
 
     @PostMapping("save")
     @Operation(summary = "项目管理-消息管理-消息设置-保存消息设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
     public MessageTask saveMessage(@Validated({Created.class, Updated.class}) @RequestBody MessageTaskRequest messageTaskRequest) {
-        return messageTaskService.saveMessageTask(messageTaskRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return messageNotificationService.saveMessageTask(messageTaskRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("batch/save")
     @Operation(summary = "项目管理-消息管理-消息设置-批量编辑")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
     public void batchSaveMessage(@Validated({Created.class, Updated.class}) @RequestBody MessageTaskBatchRequest messageTaskBatchRequest) {
-        messageTaskService.batchSaveMessageTask(messageTaskBatchRequest, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+        messageNotificationService.batchSaveMessageTask(messageTaskBatchRequest, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @GetMapping("get")
     @Operation(summary = "项目管理-消息管理-消息设置-获取消息设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public List<MessageTaskDTO> getMessageList() {
-        return messageTaskService.getMessageList(OrganizationContext.getOrganizationId());
+        return messageNotificationService.getMessageList(OrganizationContext.getOrganizationId());
     }
 
     //获取消息配置的config
@@ -55,7 +55,7 @@ public class MessageTaskController {
     @Operation(summary = "项目管理-消息管理-消息设置-获取消息配置")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public MessageTaskConfigWithNameDTO getMessageConfig(@Validated @RequestBody MessageTaskConfigRequest request) {
-        return messageTaskService.getMessageConfig(request.getModule(), request.getEvent(), OrganizationContext.getOrganizationId());
+        return messageNotificationService.getMessageConfig(request.getModule(), request.getEvent(), OrganizationContext.getOrganizationId());
     }
 
 

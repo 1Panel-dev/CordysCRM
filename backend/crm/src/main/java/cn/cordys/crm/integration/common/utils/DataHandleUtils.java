@@ -10,7 +10,7 @@ import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import cn.cordys.crm.system.domain.*;
 import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.service.DepartmentService;
-import cn.cordys.crm.system.service.MessageTaskService;
+import cn.cordys.crm.system.service.MessageNotificationService;
 import cn.cordys.crm.system.service.OrganizationConfigService;
 import cn.cordys.crm.system.service.OrganizationUserService;
 import org.apache.commons.collections.CollectionUtils;
@@ -25,7 +25,7 @@ public class DataHandleUtils {
     private final DepartmentService departmentService;
     private final OrganizationUserService organizationUserService;
     private final OrganizationConfigService organizationConfigService;
-    private final MessageTaskService messageTaskService;
+    private final MessageNotificationService messageNotificationService;
     private final List<Department> addDepartments = new ArrayList<>();
     private final List<Department> updateDepartments = new ArrayList<>();
     private final List<User> addUsers = new ArrayList<>();
@@ -45,7 +45,7 @@ public class DataHandleUtils {
         this.departmentService = CommonBeanFactory.getBean(DepartmentService.class);
         this.organizationUserService = CommonBeanFactory.getBean(OrganizationUserService.class);
         this.organizationConfigService = CommonBeanFactory.getBean(OrganizationConfigService.class);
-        this.messageTaskService = CommonBeanFactory.getBean(MessageTaskService.class);
+        this.messageNotificationService = CommonBeanFactory.getBean(MessageNotificationService.class);
         this.orgId = orgId;
         this.departmentUserMap = departmentUserMap;
 
@@ -81,7 +81,7 @@ public class DataHandleUtils {
         request.setEmailEnable(false);
         request.setLarkEnable(false);
         request.setDingTalkEnable(false);
-        messageTaskService.batchSaveMessageTask(request, orgId, operatorId);
+        messageNotificationService.batchSaveMessageTask(request, orgId, operatorId);
     }
 
     private void handleTreeAddData(ThirdDepartment thirdDepartment, String operatorId) {
