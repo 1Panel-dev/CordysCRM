@@ -804,7 +804,6 @@ public class ApprovalFlowService {
                 case GE -> matchCompare(actualValue, expectedValue) >= 0;
                 case LE -> matchCompare(actualValue, expectedValue) <= 0;
                 case BETWEEN -> matchBetween(actualValue, expectedValue);
-                case DYNAMICS, COUNT_GT, COUNT_LT -> false;
                 default -> false;
             };
         } catch (Exception e) {

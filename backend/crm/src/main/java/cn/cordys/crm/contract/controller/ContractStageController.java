@@ -44,7 +44,7 @@ public class ContractStageController {
     @Operation(summary = "删除合同状态流")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void delete(@PathVariable("id") @Validated String id) {
-        contractStageService.delete(id, OrganizationContext.getOrganizationId());
+        contractStageService.delete(id);
     }
 
 

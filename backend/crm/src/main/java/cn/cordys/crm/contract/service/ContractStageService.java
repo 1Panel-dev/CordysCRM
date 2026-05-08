@@ -132,18 +132,17 @@ public class ContractStageService {
      * 删除
      *
      * @param id
-     * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id, String orgId) {
-        ContractStageConfig stageConfig = deletePreCheck(id, orgId);
+    public void delete(String id) {
+        ContractStageConfig stageConfig = deletePreCheck(id);
         contractStageConfigMapper.deleteByPrimaryKey(id);
         // 设置操作对象
         OperationLogContext.setResourceName(Translator.get("contract_stage_setting").concat(":").concat(stageConfig.getName()));
     }
 
 
-    private ContractStageConfig deletePreCheck(String id, String orgId) {
+    private ContractStageConfig deletePreCheck(String id) {
         ContractStageConfig stageConfig = contractStageConfigMapper.selectByPrimaryKey(id);
         if (stageConfig == null) {
             throw new GenericException(Translator.get("contract_stage_delete"));
