@@ -2,7 +2,7 @@ FROM --platform=${BUILDPLATFORM} node:22-slim AS frontend
 
 WORKDIR /frontend
 COPY frontend /frontend
-RUN npm install -g pnpm && \
+RUN npm install -g pnpm@10.4.1 && \
     pnpm install && \
     pnpm run build
 
