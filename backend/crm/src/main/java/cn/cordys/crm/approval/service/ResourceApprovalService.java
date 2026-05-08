@@ -1,10 +1,19 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
+import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
+import cn.cordys.crm.contract.service.BusinessTitleService;
+import cn.cordys.crm.product.service.ProductPriceService;
+import cn.cordys.crm.product.service.ProductService;
+import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -28,6 +37,30 @@ public class ResourceApprovalService {
     private BaseMapper<ApprovalRecord> approvalRecordMapper;
     @Resource
     private BaseMapper<User> userMapper;
+	@Resource
+	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+
+	/**
+	 * 表单表格映射
+	 */
+	private static final Map<String, String> FORM_TABLE = new HashMap<>(8);
+
+	static {
+		FORM_TABLE.put(FormKey.CLUE.getKey(), "clue");
+		FORM_TABLE.put(FormKey.CUSTOMER.getKey(), "customer");
+		FORM_TABLE.put(FormKey.CONTACT.getKey(), "customer_contact");
+		FORM_TABLE.put(FormKey.OPPORTUNITY.getKey(), "opportunity");
+		FORM_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
+		FORM_TABLE.put(FormKey.PRODUCT.getKey(), "product");
+		FORM_TABLE.put(FormKey.PRICE.getKey(), "product_price");
+		FORM_TABLE.put(FormKey.FOLLOW_RECORD.getKey(), "follow_up_record");
+		FORM_TABLE.put(FormKey.FOLLOW_PLAN.getKey(), "follow_up_plan");
+		FORM_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
+		FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), "contract_payment_plan");
+		FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), "contract_payment_record");
+		FORM_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
+		FORM_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
+	}
 
     public ResourceApprovalResponse resourceDetail(String resourceId) {
         // 初始化响应对象，默认返回空审核人列表。
@@ -117,4 +150,13 @@ public class ResourceApprovalService {
         response.setApproveUserList(new ArrayList<>(approveUserMap.values()));
         return response;
     }
+
+
+	public void push(ApprovalPushParam param) {
+		String tableName = FORM_TABLE.get(param.getFormKey());
+		if (StringUtils.isBlank(tableName)) {
+			throw new GenericException(Translator.get("module.form.illegal"));
+		}
+		extApprovalInstanceMapper.approving(tableName, param.getResourceId());
+	}
 }

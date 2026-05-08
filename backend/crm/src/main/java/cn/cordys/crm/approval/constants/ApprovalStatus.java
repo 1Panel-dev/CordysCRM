@@ -1,15 +1,20 @@
 package cn.cordys.crm.approval.constants;
 
+/**
+ * 统一的审批状态
+ */
 public enum ApprovalStatus {
 
-	/** 已通过 */
-	PASS,
-	/** 已驳回 */
-	REJECT,
+	/** 无 **/
+	NONE,
+	/** 待提审, 待审批 */
+	PENDING,
 	/** 审批中 */
 	APPROVING,
-	/** 待审批 */
-	PENDING,
+	/** 已通过 */
+	APPROVED,
+	/** 已驳回 */
+	UNAPPROVED,
 	/** 已撤销 */
 	REVOKED
 }
