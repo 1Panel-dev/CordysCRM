@@ -36,8 +36,9 @@
   import { NButton, NPopover, NScrollbar, NSpin } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { ApprovalPopoverDetail, ApproverItem, ProcessStatusType } from '@lib/shared/models/system/process';
+  import { ApprovalPopoverDetail, ApproverItem } from '@lib/shared/models/system/process';
 
   import CrmApprovalApproverContent from '@/components/business/crm-approval/components/crm-approval-approver-content.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
@@ -52,7 +53,7 @@
 
   const props = withDefaults(
     defineProps<{
-      status: ProcessStatusType;
+      status: ProcessStatusEnum;
       formKey: ApprovalPopoverFormKeyType;
       sourceId?: string;
       title?: string;

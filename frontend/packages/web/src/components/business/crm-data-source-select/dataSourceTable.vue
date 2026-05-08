@@ -42,7 +42,6 @@
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { ContractPaymentPlanEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
@@ -146,15 +145,15 @@
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           showMore: false,
         }),
-      status: (row: QuotationItem) =>
+      invalid: (row: QuotationItem) =>
         h(
           CrmTag,
           {
-            type: row.status === QuotationStatusEnum.VOIDED ? 'default' : 'info',
+            type: row.invalid ? 'default' : 'info',
             theme: 'light',
           },
           {
-            default: () => (row.status === QuotationStatusEnum.VOIDED ? t('common.voided') : t('common.normal')),
+            default: () => (row.invalid ? t('common.voided') : t('common.normal')),
           }
         ),
     },

@@ -37,7 +37,6 @@
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
-  import { ProcessStatusType } from '@lib/shared/models/system/process';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
@@ -61,7 +60,7 @@
   }>();
 
   const form = ref<{
-    approvalStatus: ProcessStatusType | null;
+    approvalStatus: ProcessStatusEnum | null;
   }>({
     approvalStatus: null,
   });
@@ -86,7 +85,7 @@
           loading.value = true;
           const result = await (props.approvalApi ?? batchApprove)({
             ids: props.quotationIds,
-            approvalStatus: form.value.approvalStatus as ProcessStatusType,
+            approvalStatus: form.value.approvalStatus as ProcessStatusEnum,
           });
           emit('refresh', result);
           handleCancel();

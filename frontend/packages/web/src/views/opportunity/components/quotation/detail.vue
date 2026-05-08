@@ -3,15 +3,8 @@
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
         <CrmApprovalStatus v-if="isShowApprovalStatus" :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
-        <CrmTag
-          theme="light"
-          :type="detailInfo?.status && detailInfo?.status === QuotationStatusEnum.VOIDED ? 'default' : 'info'"
-        >
-          {{
-            detailInfo?.status && detailInfo?.status === QuotationStatusEnum.VOIDED
-              ? t('common.voided')
-              : t('common.normal')
-          }}
+        <CrmTag theme="light" :type="detailInfo?.invalid ? 'default' : 'info'">
+          {{ detailInfo?.invalid ? t('common.voided') : t('common.normal') }}
         </CrmTag>
       </div>
     </template>
@@ -52,7 +45,6 @@
   import { NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { QuotationStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -222,7 +214,7 @@
       isApplicant: (row, currentUserId) => row.createUser === currentUserId,
     },
     specialActionFilter: (row, actionKeys) => {
-      if (row.status === QuotationStatusEnum.VOIDED) {
+      if (row.invalid) {
         return actionKeys.filter((key) => key === 'delete');
       }
       return actionKeys;
@@ -251,7 +243,7 @@
     };
   });
   const isShowApprovalStatus = computed(() => {
-    return detailInfo.value?.status !== QuotationStatusEnum.VOIDED && enableApproval.value;
+    return !detailInfo.value?.invalid;
   });
 
   watch(

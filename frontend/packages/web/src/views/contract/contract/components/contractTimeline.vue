@@ -80,7 +80,7 @@
                 </template>
                 <template #approvalStatus="{ item: decItem }">
                   <div class="flex items-center gap-[8px]">
-                    <CrmApprovalStatus :status="(decItem.value as ProcessStatusType)??  ProcessStatusEnum.NONE" />
+                    <CrmApprovalStatus :status="(decItem.value as ProcessStatusEnum)??  ProcessStatusEnum.NONE" />
                   </div>
                 </template>
                 <template #updateTime="{ item: decItem }">
@@ -106,7 +106,6 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { ProcessStatusType } from '@lib/shared/models/system/process';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';

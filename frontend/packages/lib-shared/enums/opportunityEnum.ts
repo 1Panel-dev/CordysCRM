@@ -4,8 +4,3 @@ export enum OpportunitySearchTypeEnum {
   DEPARTMENT = 'DEPARTMENT',
   OPPORTUNITY_SUCCESS = 'OPPORTUNITY_SUCCESS',
 }
-
-export enum QuotationStatusEnum {
-  NORMAL = 'NORMAL', // 正常
-  VOIDED = 'VOIDED', // 作废
-}

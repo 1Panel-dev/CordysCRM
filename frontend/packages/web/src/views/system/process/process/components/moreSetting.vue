@@ -107,12 +107,7 @@
 
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import {
-    MoreSettingsParams,
-    PermissionItem,
-    ProcessStatusType,
-    StatusPermissions,
-  } from '@lib/shared/models/system/process';
+  import { MoreSettingsParams, PermissionItem, StatusPermissions } from '@lib/shared/models/system/process';
 
   import { getApprovalPermissions } from '@/api/modules';
   import { defaultMoreConfig, processStatusOptions } from '@/config/process';
@@ -175,7 +170,7 @@
   const loading = ref(false);
 
   type ApprovalAuthorityRow = {
-    status: ProcessStatusType;
+    status: ProcessStatusEnum;
     statusLabel: string;
     permissions: Record<string, boolean>;
   };
@@ -268,9 +263,9 @@
     return processStatusOptions
       .filter((item) => item.value !== ProcessStatusEnum.NONE)
       .map((item) => {
-        const enabledSuffixList = moduleDefaultConfig[item.value as ProcessStatusType] || [];
+        const enabledSuffixList = moduleDefaultConfig[item.value as ProcessStatusEnum] || [];
         return {
-          status: item.value as ProcessStatusType,
+          status: item.value as ProcessStatusEnum,
           statusLabel: item.label,
           permissions: data.reduce((acc, permissionItem: PermissionItem) => {
             acc[permissionItem.id] = enabledSuffixList.some((suffix) =>
@@ -283,7 +278,7 @@
   }
 
   function aggregateStatusPermissions(flatData: StatusPermissions[]): ApprovalAuthorityRow[] {
-    const statusMap = new Map<ProcessStatusType, Record<string, boolean>>();
+    const statusMap = new Map<ProcessStatusEnum, Record<string, boolean>>();
     const processStatusOptionsMap = new Map(
       processStatusOptions.filter((e) => e.value !== ProcessStatusEnum.NONE).map((item) => [item.value, item])
     );

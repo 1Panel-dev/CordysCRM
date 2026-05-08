@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="title">
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
-        <CrmApprovalStatus v-if="enableApproval" :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
+        <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
         <div class="text-[14px] font-normal">
           {{ stageName }}
         </div>

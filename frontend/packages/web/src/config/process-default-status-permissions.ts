@@ -1,10 +1,9 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
-import { ProcessStatusType } from '@lib/shared/models/system/process';
 
 export type PermissionSuffix = 'READ' | 'UPDATE' | 'DELETE' | 'DOWNLOAD' | 'EXPORT' | 'VOIDED' | 'STAGE' | 'PAYMENT';
 
-type PartialModuleDefaultPermissionConfig = Partial<Record<ProcessStatusType, PermissionSuffix[]>>;
+type PartialModuleDefaultPermissionConfig = Partial<Record<ProcessStatusEnum, PermissionSuffix[]>>;
 
 export const processDefaultStatusPermissionMap: Partial<
   Record<FormDesignKeyEnum | string, PartialModuleDefaultPermissionConfig>
