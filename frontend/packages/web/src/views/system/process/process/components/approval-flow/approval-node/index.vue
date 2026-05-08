@@ -8,8 +8,12 @@
         v-model:node-config="nodeConfig"
         @switch-more-setting="emit('switchMoreSetting')"
       />
-      <FormPermissionTab v-else-if="activeTab === 'formPermission'" />
-      <AfterApprovalTab v-else />
+      <FormPermissionTab
+        v-else-if="activeTab === 'formPermission'"
+        v-model:node-config="nodeConfig"
+        :form-type="formType"
+      />
+      <AfterApprovalTab v-else v-model:node-config="nodeConfig" :form-type="formType" />
     </div>
   </div>
 </template>
@@ -33,6 +37,10 @@
   const nodeConfig = defineModel<ApprovalActionNode>('node', {
     required: true,
   });
+
+  defineProps<{
+    formType: string;
+  }>();
 
   const emit = defineEmits<{
     (event: 'switchMoreSetting'): void;
