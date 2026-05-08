@@ -10,6 +10,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class ModuleFormController {
 
     @GetMapping("/config/{formKey}")
     @Operation(summary = "获取表单配置")
-    @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE, PermissionConstants.APPROVAL_FLOW_READ}, logical = Logical.OR)
     public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
         return moduleFormService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
     }
