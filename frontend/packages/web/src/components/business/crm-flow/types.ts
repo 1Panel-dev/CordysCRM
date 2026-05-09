@@ -10,6 +10,7 @@ export interface BaseFlowNode {
   id: string;
   type: FlowNodeType;
   name: string;
+  invalid?: boolean;
 }
 
 export interface StartNode extends BaseFlowNode {
@@ -32,6 +33,7 @@ export interface ConditionBranch {
   name: string;
   isElse: boolean;
   description?: string;
+  invalid?: boolean;
   children: FlowNode[];
 }
 

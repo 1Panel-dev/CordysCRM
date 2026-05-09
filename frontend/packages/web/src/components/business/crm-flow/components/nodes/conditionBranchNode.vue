@@ -5,6 +5,7 @@
     :description="nodeData.description"
     :show-content="nodeData.showContent ?? true"
     :selected="Boolean(nodeData.selected)"
+    :invalid="Boolean(nodeData.invalid)"
     :titleEditable="Boolean(!nodeData.isPanMode)"
     node-type="condition-branch"
     :deletable="!displayIsElse"
@@ -48,6 +49,7 @@
     showContent?: boolean;
     isElse?: boolean;
     selected?: boolean;
+    invalid?: boolean;
     isPanMode?: boolean;
   }>(toRef(props, 'node'));
 
@@ -63,6 +65,7 @@
     props.node?.setData?.({
       ...data,
       name: value,
+      invalid: false,
     });
     done?.();
   }

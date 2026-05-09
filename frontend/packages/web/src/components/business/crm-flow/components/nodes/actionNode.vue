@@ -5,6 +5,7 @@
     :description="nodeData.description"
     :show-content="nodeData.showContent ?? true"
     :selected="Boolean(nodeData.selected)"
+    :invalid="Boolean(nodeData.invalid)"
     node-type="action"
     :icon="iconConfig"
     :title-editable="Boolean(!nodeData.isPanMode)"
@@ -56,6 +57,7 @@
     actionType?: string;
     showContent?: boolean;
     selected?: boolean;
+    invalid?: boolean;
     isPanMode?: boolean;
   }>(toRef(props, 'node'));
 
@@ -74,6 +76,7 @@
     props.node?.setData?.({
       ...data,
       name: value,
+      invalid: false,
     });
     done?.();
   }

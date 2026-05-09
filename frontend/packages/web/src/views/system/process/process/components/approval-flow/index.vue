@@ -33,7 +33,6 @@
       <template #rightContent="{ selection }">
         <basicForm
           v-if="selection.type === 'node' && selection?.node.type === 'start'"
-          ref="basicFormRef"
           v-model:basicConfig="basicConfig"
           :need-detail="props.needDetail"
           :readonly="props.readonly"
@@ -58,9 +57,13 @@
 <script setup lang="ts">
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
-  import type { ApprovalTypeEnum } from '@lib/shared/enums/process';
+  import { ApprovalTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/models/system/process';
+  import type {
+    ApprovalActionNode,
+    ApprovalConditionBranch,
+    ApprovalProcessNode,
+  } from '@lib/shared/models/system/process';
   import { BasicFormParams } from '@lib/shared/models/system/process';
 
   import type { FilterForm } from '@/components/pure/crm-advance-filter/type';
@@ -80,7 +83,15 @@
     executionTimingList,
   } from '@/config/process';
 
-  import { addApprovalConditionBranch, createDefaultFlow, insertFromAnchor } from './flow';
+  import {
+    addApprovalConditionBranch,
+    createDefaultFlow,
+    deserializeProcessNodes,
+    insertFromAnchor,
+    resolveConditionDescription,
+    serializeFlowNodes,
+  } from './flow';
+  import useFlowValidation from './validation/flowValidation';
 
   defineOptions({
     name: 'ApprovalFlowView',
@@ -102,11 +113,6 @@
       ...defaultBasicForm,
     }),
   });
-  const basicFormRef = ref<InstanceType<typeof basicForm> | null>(null);
-
-  function validate(cb?: () => void) {
-    basicFormRef.value?.validate(cb);
-  }
 
   // 右侧面板仅展示开始节点与审批节点配置
   function isRightContentVisible(selection: NodeSelectionState) {
@@ -145,6 +151,17 @@
     }
 
     crmFlowRef.value?.selectNode(startNode.id);
+  }
+
+  function getProcessNodes(): ApprovalProcessNode[] {
+    return serializeFlowNodes(flowSchema.value.nodes);
+  }
+
+  function setProcessNodes(nodes: ApprovalProcessNode[]) {
+    flowSchema.value = deserializeProcessNodes(nodes, startNodeDescription.value);
+    nextTick(() => {
+      selectStartNodeOnInit();
+    });
   }
 
   onMounted(() => {
@@ -202,10 +219,14 @@
 
     activeConditionBranch.value.name = payload.name;
     activeConditionBranch.value.conditionConfig = payload.conditionConfig;
-    activeConditionBranch.value.description = payload.conditionConfig?.list?.some((item) => item.dataIndex)
-      ? t('process.process.flow.conditionConfigured')
-      : t('process.process.flow.conditionUnset');
+    activeConditionBranch.value.description = resolveConditionDescription(payload.conditionConfig);
   }
+
+  const { validateFlowNodes } = useFlowValidation({
+    flowSchema,
+    basicConfig,
+    selectNode: (id) => crmFlowRef.value?.selectNode(id),
+  });
 
   // 更新开始节点描述
   watch(
@@ -225,7 +246,9 @@
   );
 
   defineExpose({
-    validate,
+    validateFlowNodes,
+    getProcessNodes,
+    setProcessNodes,
   });
 </script>
 

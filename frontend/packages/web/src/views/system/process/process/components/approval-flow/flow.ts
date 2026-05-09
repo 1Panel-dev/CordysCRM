@@ -1,7 +1,22 @@
-import { ApprovalTypeEnum, ApproverTypeEnum } from '@lib/shared/enums/process';
-import { useI18n } from '@lib/shared/hooks/useI18n';
-import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/models/system/process';
+import { cloneDeep } from 'lodash-es';
 
+import {
+  ApprovalNodeTypeEnum,
+  ApprovalTypeEnum,
+  ApproverTypeEnum,
+  EmptyApproverActionEnum,
+  MultiApproverModeEnum,
+  SameSubmitterActionEnum,
+} from '@lib/shared/enums/process';
+import { useI18n } from '@lib/shared/hooks/useI18n';
+import type {
+  ApprovalActionNode,
+  ApprovalConditionBranch,
+  ApprovalProcessApproverNode,
+  ApprovalProcessNode,
+} from '@lib/shared/models/system/process';
+
+import type { FilterForm } from '@/components/pure/crm-advance-filter/type';
 import {
   addConditionBranch,
   insertNodeAfterNode,
@@ -18,7 +33,7 @@ import {
 import { findBranchLocation, findNodeLocation } from '@/components/business/crm-flow/dsl/queries';
 import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
 
-import { resolveApprovalActionNodeDefaults } from '@/config/process';
+import { resolveApprovalActionNodeDefaults, resolveApprovalActionNodeDescription } from '@/config/process';
 
 const { t } = useI18n();
 
@@ -33,10 +48,10 @@ export function createApprovalActionNode(approvalType: ApprovalTypeEnum = Approv
     approverType: ApproverTypeEnum.SPECIFIED_MEMBER,
     approverList: [],
     approverSelectedList: [],
-    multiApproverMode: 'ALL',
-    emptyApproverAction: 'AUTO_PASS',
-    fallbackApprover: '',
-    sameSubmitterAction: 'SKIP',
+    multiApproverMode: MultiApproverModeEnum.ALL,
+    emptyApproverAction: EmptyApproverActionEnum.AUTO_PASS,
+    fallbackApprover: null,
+    sameSubmitterAction: SameSubmitterActionEnum.SKIP,
     ccType: null,
     ccList: [],
     ccSelectedList: [],
@@ -177,4 +192,221 @@ export function insertFromAnchor(payload: {
 // 条件组新增 if 分支时，默认仍然补一个审批节点，保持分支规则一致
 export function addApprovalConditionBranch(flowSchema: FlowSchema, groupId: string) {
   addConditionBranch(flowSchema, groupId, createApprovalConditionBranch());
+}
+
+export function resolveConditionDescription(conditionConfig?: FilterForm) {
+  return conditionConfig?.list?.some((item) => item.dataIndex)
+    ? t('process.process.flow.conditionConfigured')
+    : t('process.process.flow.conditionUnset');
+}
+
+// 后端条件节点树里，CONDITION / DEFAULT 这一组在前端对应一个条件组
+function isConditionBranchNode(node: ApprovalProcessNode) {
+  return node.nodeType === ApprovalNodeTypeEnum.CONDITION || node.nodeType === ApprovalNodeTypeEnum.DEFAULT;
+}
+
+// 画布上分支卡片的描述不直接依赖后端文案，而是根据节点类型和条件配置重新计算
+function toConditionBranchDescription(node: ApprovalProcessNode) {
+  if (node.nodeType === ApprovalNodeTypeEnum.DEFAULT) {
+    return t('crmFlow.elseDescription');
+  }
+
+  return node.nodeType === ApprovalNodeTypeEnum.CONDITION ? resolveConditionDescription(node.conditionConfig) : '';
+}
+
+function createProcessNodeBase(node: FlowNode, sort: number) {
+  return {
+    id: node.id,
+    name: node.name,
+    sort,
+    children: [] as ApprovalProcessNode[],
+  };
+}
+
+// 前端画布节点 -> 后端审批流节点树
+// 条件组在后端没有独立节点类型，所以这里会把每个分支展开成 CONDITION / DEFAULT 节点，
+export function serializeFlowNodes(nodes: FlowNode[]): ApprovalProcessNode[] {
+  if (!nodes.length) {
+    return [];
+  }
+
+  const [firstNode, ...restNodes] = nodes;
+
+  if (firstNode.type === 'condition-group') {
+    return (firstNode.branches as ApprovalConditionBranch[]).map((branch, index) => {
+      const branchTail = [...cloneDeep(branch.children), ...cloneDeep(restNodes)];
+      return {
+        id: branch.id,
+        name: branch.name,
+        nodeType: branch.isElse ? ApprovalNodeTypeEnum.DEFAULT : ApprovalNodeTypeEnum.CONDITION,
+        sort: index,
+        children: serializeFlowNodes(branchTail),
+        ...(branch.isElse ? {} : { conditionConfig: branch.conditionConfig }),
+      };
+    });
+  }
+
+  const actionNode = firstNode.type === 'action' ? (firstNode as ApprovalActionNode) : null;
+  const processNode: ApprovalProcessNode = actionNode
+    ? {
+        ...createProcessNodeBase(firstNode, 0),
+        nodeType: ApprovalNodeTypeEnum.APPROVER,
+        approvalType: actionNode.approvalType,
+        approverType: actionNode.approverType,
+        approverList: actionNode.approverList ?? [],
+        multiApproverMode: actionNode.multiApproverMode,
+        emptyApproverAction: actionNode.emptyApproverAction,
+        fallbackApprover: actionNode.fallbackApprover ?? '',
+        fallbackApproverName: actionNode.fallbackApproverName,
+        sameSubmitterAction: actionNode.sameSubmitterAction,
+        ccType: actionNode.ccType,
+        ccList: actionNode.ccList ?? [],
+        passPostConfig: actionNode.passPostConfig,
+        rejectPostConfig: actionNode.rejectPostConfig,
+        fieldPermissions: actionNode.fieldPermissions,
+      }
+    : {
+        ...createProcessNodeBase(firstNode, 0),
+        nodeType: firstNode.type === 'start' ? ApprovalNodeTypeEnum.START : ApprovalNodeTypeEnum.END,
+      };
+
+  processNode.children = serializeFlowNodes(restNodes);
+  return [processNode];
+}
+
+// 后端节点树 -> 前端审批节点
+// 仅前端使用的 selectedList 等展示态补齐
+function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalActionNode {
+  // TODO lmy 后端是不是少数据了
+  const approverList = node.approverList ?? [];
+  const ccList = node.ccList ?? [];
+  const fallbackApprover = node.fallbackApprover ?? null;
+
+  return createActionNode<ApprovalActionNode>({
+    id: node.id,
+    type: 'action',
+    actionType: 'approval',
+    name: node.name,
+    description: resolveApprovalActionNodeDescription(node.approvalType, node.approverType ?? undefined),
+    approvalType: node.approvalType,
+    approverType: node.approverType ?? ApproverTypeEnum.SPECIFIED_MEMBER,
+    approverList,
+    approverSelectedList: approverList.map((id) => ({ id, name: id })),
+    multiApproverMode: node.multiApproverMode,
+    emptyApproverAction: node.emptyApproverAction,
+    fallbackApprover,
+    sameSubmitterAction: node.sameSubmitterAction,
+    emptyApproverSelectedList:
+      fallbackApprover && node.fallbackApproverName ? [{ id: fallbackApprover, name: node.fallbackApproverName }] : [],
+    ccType: node.ccType ?? null,
+    ccList,
+    ccSelectedList: ccList.map((id) => ({ id, name: id })),
+    passPostConfig: node.passPostConfig,
+    rejectPostConfig: node.rejectPostConfig,
+    fieldPermissions: node.fieldPermissions,
+  });
+}
+
+// 条件组序列化时会把主链尾部复制到每个分支里，反序列化时要把这段公共尾链再还原出来
+function getCommonTailLength(chains: FlowNode[][]) {
+  if (!chains.length || chains.some((chain) => !chain.length)) {
+    return 0;
+  }
+
+  let tailLength = 0;
+  // 逐个比较每条分支链的尾部，找出为了适配后端树结构而重复拼接的公共尾链长度
+  while (true) {
+    let baseSignature = '';
+
+    for (let index = 0; index < chains.length; index += 1) {
+      const node = chains[index][chains[index].length - tailLength - 1];
+      if (!node) {
+        return tailLength;
+      }
+
+      const signature = `${node.type}:${node.id}`;
+      if (index === 0) {
+        baseSignature = signature;
+      } else if (signature !== baseSignature) {
+        return tailLength;
+      }
+    }
+
+    tailLength += 1;
+  }
+}
+
+// 后端节点树 -> 前端画布节点列表
+// 其中最特殊的是条件组：后端是多个兄弟 CONDITION / DEFAULT 节点，前端需要重新拼成一个 group。
+function deserializeProcessNodeList(nodes: ApprovalProcessNode[]): FlowNode[] {
+  if (!nodes.length) {
+    return [];
+  }
+
+  const sortedNodes = [...nodes].sort((a, b) => a.sort - b.sort);
+
+  if (sortedNodes.every(isConditionBranchNode)) {
+    const branchChains = sortedNodes.map((node) => deserializeProcessNodeList(node.children ?? []));
+    const commonTailLength = getCommonTailLength(branchChains);
+    const commonTail = commonTailLength ? cloneDeep(branchChains[0].slice(-commonTailLength)) : [];
+
+    const branches = sortedNodes.map((node, index) => {
+      const branchNodes = branchChains[index];
+      const children =
+        commonTailLength > 0 ? branchNodes.slice(0, Math.max(branchNodes.length - commonTailLength, 0)) : branchNodes;
+
+      if (node.nodeType === ApprovalNodeTypeEnum.DEFAULT) {
+        return createElseBranch<ApprovalConditionBranch>({
+          id: node.id,
+          name: node.name,
+          description: toConditionBranchDescription(node),
+          children,
+        });
+      }
+
+      return createApprovalConditionBranch({
+        id: node.id,
+        name: node.name,
+        description: toConditionBranchDescription(node),
+        conditionConfig: node.nodeType === ApprovalNodeTypeEnum.CONDITION ? node.conditionConfig : undefined,
+        children,
+      });
+    });
+
+    return [createConditionGroupNode({ branches }), ...commonTail];
+  }
+
+  return sortedNodes.flatMap((node) => {
+    let currentNode: FlowNode;
+    if (node.nodeType === ApprovalNodeTypeEnum.START) {
+      currentNode = createStartNode({
+        id: node.id,
+        name: node.name,
+      });
+    } else if (node.nodeType === ApprovalNodeTypeEnum.END) {
+      currentNode = createEndNode({
+        id: node.id,
+        name: node.name,
+      });
+    } else {
+      currentNode = deserializeApproverNode(node as ApprovalProcessApproverNode);
+    }
+
+    return [currentNode, ...deserializeProcessNodeList(node.children ?? [])];
+  });
+}
+
+// 对外暴露的总入口：把后端详情里的 nodes 恢复成流程设计器使用的 FlowSchema
+export function deserializeProcessNodes(nodes: ApprovalProcessNode[], startDescription: string): FlowSchema {
+  const flowNodes = deserializeProcessNodeList(nodes);
+  if (!flowNodes.length) {
+    return createDefaultFlow(startDescription);
+  }
+
+  const startNode = flowNodes.find((node) => node.type === 'start');
+  if (startNode?.type === 'start') {
+    startNode.description = startDescription;
+  }
+
+  return { nodes: flowNodes };
 }

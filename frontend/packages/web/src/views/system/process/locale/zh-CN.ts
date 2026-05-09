@@ -51,6 +51,7 @@ export default {
   'process.process.flow.toConfig': '去设置',
   'process.process.flow.approverSetting': '审批人设置',
   'process.process.flow.approverType.specifiedMember': '指定成员',
+  'process.process.flow.approverType.specifiedSupervisor': '指定上级',
   'process.process.flow.approverType.continuousSupervisor': '连续多级上级',
   'process.process.flow.approverType.specifiedDepartmentLeader': '指定部门负责人',
   'process.process.flow.approverType.continuousDepartmentLeader': '连续多级部门负责人',

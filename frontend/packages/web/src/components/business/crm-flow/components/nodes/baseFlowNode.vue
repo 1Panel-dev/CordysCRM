@@ -1,5 +1,8 @@
 <template>
-  <div class="base-flow-node large-box-shadow" :class="[`base-flow-node--${nodeType}`, { 'is-selected': selected }]">
+  <div
+    class="base-flow-node large-box-shadow"
+    :class="[`base-flow-node--${nodeType}`, { 'is-selected': selected, 'is-invalid': invalid }]"
+  >
     <div class="base-flow-node__header">
       <div class="base-flow-node__title-wrap">
         <div
@@ -70,6 +73,7 @@
       description?: string;
       nodeType?: string;
       selected?: boolean;
+      invalid?: boolean;
       deletable?: boolean;
       showContent?: boolean;
       titleEditable?: boolean;
@@ -83,6 +87,7 @@
       description: '',
       nodeType: 'action',
       selected: false,
+      invalid: false,
       deletable: false,
       showContent: true,
       titleEditable: false,
@@ -121,6 +126,9 @@
     }
     &.is-selected {
       border-color: var(--primary-0);
+    }
+    &.is-invalid {
+      border-color: var(--error-red);
     }
   }
   .base-flow-node__header {

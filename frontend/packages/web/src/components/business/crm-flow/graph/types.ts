@@ -15,6 +15,7 @@ export interface FlowGraphNodeData {
   showContent?: boolean; // 当前视图模式下是否显示节点第二行内容（description）
   isElse?: boolean;
   selected?: boolean; // 选中
+  invalid?: boolean; // 校验异常
   isPanMode?: boolean; // 画布是否处于拖拽模式（true 时禁用节点标题编辑等交互）
 }
 

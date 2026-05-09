@@ -191,7 +191,7 @@ export const approverTypeOptions: Array<{ label: string; value: ApproverTypeEnum
     value: ApproverTypeEnum.SPECIFIED_MEMBER,
   },
   {
-    label: t('org.directSuperior'),
+    label: t('process.process.flow.approverType.specifiedSupervisor'),
     value: ApproverTypeEnum.DIRECT_SUPERVISOR,
   },
   {
