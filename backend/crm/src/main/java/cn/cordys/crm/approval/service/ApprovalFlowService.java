@@ -37,6 +37,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -983,12 +984,9 @@ public class ApprovalFlowService {
      *
      * @param formKey        表单类型
      * @param organizationId 组织ID
-     * @return 审批流配置，如果不存在或未启用返回null
+     * @return 审批流配置
      */
     public ApprovalFlow getEnabledFlow(String formKey, String organizationId) {
-        if (StringUtils.isBlank(formKey) || StringUtils.isBlank(organizationId)) {
-            return null;
-        }
         LambdaQueryWrapper<ApprovalFlow> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ApprovalFlow::getFormType, formKey)
                 .eq(ApprovalFlow::getOrganizationId, organizationId)
@@ -996,4 +994,23 @@ public class ApprovalFlowService {
 		List<ApprovalFlow> approvalFlows = approvalFlowMapper.selectListByLambda(wrapper);
 		return CollectionUtils.isEmpty(approvalFlows) ? null : approvalFlows.getFirst();
     }
+
+	/**
+	 * 获取当前资源审批流第一个审批节点
+	 * @param flowId 审批流程ID
+	 * @param resourceFvs 业务资源字段值
+	 * @return 第一个审批节点
+	 */
+	public ApprovalNodeApproverResponse getResourceApprovalFlowFirstApproverNode(String flowId, List<BaseModuleFieldValue> resourceFvs) {
+		ApprovalNode nodeCriteria = new ApprovalNode();
+		nodeCriteria.setFlowId(flowId);
+		nodeCriteria.setNodeType(ApprovalNodeTypeEnum.START.name());
+		ApprovalNode start = approvalNodeMapper.selectOne(nodeCriteria);
+		ApprovalNodeResponse curr = BeanUtils.copyBean(new ApprovalNodeResponse(), start);
+		while (!Strings.CI.equals(curr.getNodeType(), ApprovalNodeTypeEnum.APPROVER.name())) {
+			// 如果非审批类型的节点, 则一直往下一层级获取
+			curr = getNextNode(curr.getId(), resourceFvs);
+		}
+		return (ApprovalNodeApproverResponse) curr;
+	}
 }

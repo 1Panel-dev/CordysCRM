@@ -154,7 +154,7 @@ public class ApprovalTodoService {
             item.setApplicant(submitterMap.get(instance.getSubmitterId()));
             item.setSubmitTime(instance.getSubmitTime());
             item.setApprovalOperation(StringUtils.defaultIfBlank(task.getAction(), task.getStatus()));
-            item.setDataResult(instance.getResult());
+            item.setDataResult(instance.getApprovalStatus());
             list.add(item);
         }
         // 返回分页待办列表。
@@ -232,7 +232,7 @@ public class ApprovalTodoService {
             item.setApplicant(submitterMap.get(instance.getSubmitterId()));
             item.setSubmitTime(instance.getSubmitTime());
             item.setApprovalOperation(instance.getApprovalStatus());
-            item.setDataResult(instance.getResult());
+            item.setDataResult(instance.getApprovalStatus());
             list.add(item);
         }
         // 返回分页结果，分页元信息沿用 PageHelper 查询结果。
@@ -472,7 +472,7 @@ public class ApprovalTodoService {
             item.setApplicant(submitterMap.get(instance.getSubmitterId()));
             item.setSubmitTime(instance.getSubmitTime());
             item.setApprovalOperation(StringUtils.defaultIfBlank(task.getAction(), task.getStatus()));
-            item.setDataResult(instance.getResult());
+            item.setDataResult(instance.getApprovalStatus());
             list.add(item);
         }
         // 返回分页结果，分页元信息沿用 PageHelper 查询结果。

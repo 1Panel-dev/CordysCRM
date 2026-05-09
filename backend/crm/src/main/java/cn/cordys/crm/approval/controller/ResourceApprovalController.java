@@ -1,10 +1,12 @@
 package cn.cordys.crm.approval.controller;
 
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalInstanceService;
 import cn.cordys.crm.approval.service.ResourceApprovalService;
+import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -26,7 +28,7 @@ public class ResourceApprovalController {
 	@GetMapping("/push/{resourceId}")
 	@Operation(summary = "提审")
 	public void push(@RequestBody ApprovalPushParam param) {
-		resourceApprovalService.push(param);
+		resourceApprovalService.push(param, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 	}
 
     @GetMapping("/detail/{resourceId}")
