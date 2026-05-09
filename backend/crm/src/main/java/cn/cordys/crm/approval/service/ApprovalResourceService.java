@@ -1,25 +1,33 @@
 package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.service.BaseResourceFieldService;
+import cn.cordys.common.service.FieldSourceServiceProvider;
+import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
-import cn.cordys.crm.approval.dto.ApprovalPushParam;
+import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
+import cn.cordys.crm.approval.dto.ApprovalResourceRevokeParam;
+import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
-import cn.cordys.crm.contract.service.BusinessTitleService;
-import cn.cordys.crm.product.service.ProductPriceService;
-import cn.cordys.crm.product.service.ProductService;
-import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.UserApprovalDTO;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,7 +35,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class ResourceApprovalService {
+public class ApprovalResourceService {
 
     @Resource
     private BaseMapper<ApprovalInstance> approvalInstanceMapper;
@@ -39,27 +47,24 @@ public class ResourceApprovalService {
     private BaseMapper<User> userMapper;
 	@Resource
 	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+	@Resource
+	private ApprovalFlowService approvalFlowService;
+	@Resource
+	private ApprovalActionService approvalActionService;
+	@Lazy
+	@Resource
+	private FieldSourceServiceProvider fieldSourceServiceProvider;
 
 	/**
-	 * 表单表格映射
+	 * 开启的审批流表单表格映射
 	 */
-	private static final Map<String, String> FORM_TABLE = new HashMap<>(8);
+	private static final Map<String, String> FORM_APPROVAL_TABLE = new HashMap<>(4);
 
 	static {
-		FORM_TABLE.put(FormKey.CLUE.getKey(), "clue");
-		FORM_TABLE.put(FormKey.CUSTOMER.getKey(), "customer");
-		FORM_TABLE.put(FormKey.CONTACT.getKey(), "customer_contact");
-		FORM_TABLE.put(FormKey.OPPORTUNITY.getKey(), "opportunity");
-		FORM_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
-		FORM_TABLE.put(FormKey.PRODUCT.getKey(), "product");
-		FORM_TABLE.put(FormKey.PRICE.getKey(), "product_price");
-		FORM_TABLE.put(FormKey.FOLLOW_RECORD.getKey(), "follow_up_record");
-		FORM_TABLE.put(FormKey.FOLLOW_PLAN.getKey(), "follow_up_plan");
-		FORM_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
-		FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), "contract_payment_plan");
-		FORM_TABLE.put(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), "contract_payment_record");
-		FORM_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
-		FORM_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
+		FORM_APPROVAL_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
+		FORM_APPROVAL_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
+		FORM_APPROVAL_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
+		FORM_APPROVAL_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
 	}
 
     public ResourceApprovalResponse resourceDetail(String resourceId) {
@@ -151,10 +156,6 @@ public class ResourceApprovalService {
         return response;
     }
 
-	public void hitAndSetApprovalStatus() {
-
-	}
-
 	/**
 	 * 更新业务表的审批状态
 	 *
@@ -163,7 +164,7 @@ public class ResourceApprovalService {
 	 * @param approvalStatus 审批状态
 	 */
 	public void updateApprovalStatus(FormKey formKey, String resourceId, String approvalStatus) {
-		String tableName = FORM_TABLE.get(formKey.getKey());
+		String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
 		if (StringUtils.isBlank(tableName)) {
 			throw new GenericException(Translator.get("module.form.illegal"));
 		}
@@ -177,7 +178,7 @@ public class ResourceApprovalService {
      * @param resourceId     资源ID
      */
     public String selectBusinessName(FormKey formKey, String resourceId) {
-        String tableName = FORM_TABLE.get(formKey.getKey());
+        String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
         if (StringUtils.isBlank(tableName)) {
             throw new GenericException(Translator.get("module.form.illegal"));
         }
@@ -189,11 +190,90 @@ public class ResourceApprovalService {
 	 * 手动提审
 	 * @param param 提审参数
 	 */
-	public void push(ApprovalPushParam param) {
-		String tableName = FORM_TABLE.get(param.getFormKey());
+	public void push(ApprovalResourceBaseParam param, String currentOrgId, String currentUserId) {
+		// 更新业务表 approval_status
+		String tableName = FORM_APPROVAL_TABLE.get(param.getFormKey());
 		if (StringUtils.isBlank(tableName)) {
 			throw new GenericException(Translator.get("module.form.illegal"));
 		}
 		extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.APPROVING.name());
+		ApprovalFlow approvalFlow = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
+		if (approvalFlow == null) {
+			throw new GenericException(Translator.get("approval_flow.not.exist"));
+		}
+		// 插入审批实例和第一个审批节点待办任务
+		List<BaseModuleFieldValue> fvs = compressResourceDetail(param.getFormKey(), param.getResourceId());
+		ApprovalNodeApproverResponse firstApproverNode = approvalFlowService.getResourceApprovalFlowFirstApproverNode(approvalFlow.getId(), fvs);
+		ApprovalInstance approvalInstance = new ApprovalInstance();
+		approvalInstance.setId(IDGenerator.nextStr());
+		approvalInstance.setFlowId(approvalFlow.getId());
+		approvalInstance.setType(param.getFormKey());
+		approvalInstance.setResourceId(param.getResourceId());
+		approvalInstance.setSubmitterId(currentUserId);
+		approvalInstance.setSubmitTime(System.currentTimeMillis());
+		approvalInstance.setApprovalStatus(ApprovalStatus.APPROVING.name());
+		approvalInstance.setCurrentNodeId(firstApproverNode.getId());
+		approvalInstance.setCreateTime(System.currentTimeMillis());
+		approvalInstance.setCreateUser(currentUserId);
+		approvalInstance.setUpdateTime(System.currentTimeMillis());
+		approvalInstance.setUpdateUser(currentUserId);
+		approvalInstanceMapper.insert(approvalInstance);
+		approvalActionService.saveNodeApproverTasks(firstApproverNode.getId(), approvalInstance.getId(), currentUserId, currentOrgId, null);
+	}
+
+	public void revoke(ApprovalResourceRevokeParam param, String currentUserId) {
+		// 更新业务表 approval_status
+		String tableName = FORM_APPROVAL_TABLE.get(param.getFormKey());
+		if (StringUtils.isBlank(tableName)) {
+			throw new GenericException(Translator.get("module.form.illegal"));
+		}
+		extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.REVOKED.name());
+		// 更新审批实例状态
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(param.getInstanceId());
+		instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
+		instance.setApprovalTime(System.currentTimeMillis());
+		instance.setUpdateUser(currentUserId);
+		instance.setUpdateTime(System.currentTimeMillis());
+		approvalInstanceMapper.updateById(instance);
+	}
+
+	/**
+	 * 获取业务数据详情
+	 * @param formKey 表单Key
+	 * @param resourceId 资源ID
+	 * @return 通用的条件值
+	 */
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public List<BaseModuleFieldValue> compressResourceDetail(String formKey, String resourceId) {
+		List<BaseModuleFieldValue> fvs = new ArrayList<>();
+		Object resourceDetail = fieldSourceServiceProvider.safeGetSimpleById(formKey, resourceId);
+		if (resourceDetail == null) {
+			return fvs;
+		}
+		Map<String, Object> detailMap = JSON.MAPPER.convertValue(resourceDetail, Map.class);
+		if (MapUtils.isEmpty(detailMap)) {
+			return fvs;
+		}
+
+		detailMap.forEach((k, v) -> {
+			if (Strings.CI.equals(BaseResourceFieldService.DETAIL_FIELD_PARAM_NAME, k)) {
+				List<Map> moduleFieldValues = (List<Map>) v;
+				if (CollectionUtils.isNotEmpty(moduleFieldValues)) {
+					for (Map mfv : moduleFieldValues) {
+						BaseModuleFieldValue bfv = new BaseModuleFieldValue();
+						bfv.setFieldId(mfv.get("fieldId").toString());
+						bfv.setFieldValue(mfv.get("fieldValue"));
+						fvs.add(bfv);
+					}
+				}
+			} else {
+				BaseModuleFieldValue bfv = new BaseModuleFieldValue();
+				bfv.setFieldId(k);
+				bfv.setFieldValue(v);
+				fvs.add(bfv);
+			}
+		});
+
+		return fvs;
 	}
 }

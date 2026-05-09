@@ -7,8 +7,9 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ApprovalAddSignRequest extends ApprovalActionRequest {
+public class ApprovalRevokeRequest {
 
-    @Schema(description = "加签方式 BEFORE: 在我之前，AFTER: 在我之后")
-    private String type;
+    @NotBlank(message = "当前task任务ID不能为空")
+    @Schema(description = "task任务id")
+    private String id;
 }

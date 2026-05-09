@@ -109,7 +109,6 @@ CREATE TABLE approval_instance(
     `approval_status` VARCHAR(20) NOT NULL   COMMENT '审批状态' ,
     `submit_time` BIGINT    COMMENT '提审时间' ,
     `approval_time` BIGINT    COMMENT '审批完成时间' ,
-    `result` VARCHAR(20)    COMMENT '审批结果' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
@@ -129,7 +128,7 @@ CREATE TABLE approval_task(
     `node_id` VARCHAR(32) NOT NULL   COMMENT '节点ID' ,
     `instance_id` VARCHAR(32) NOT NULL   COMMENT '审批实例ID' ,
     `approver_id` VARCHAR(20) NOT NULL   COMMENT '审批人ID' ,
-    `status` VARCHAR(20) NOT NULL   COMMENT '任务状态; 待审批: PENDING, 审批中: APPROVING, 已通过: PASS, 已驳回: REJECT, 已撤销: REVOKED' ,
+    `status` VARCHAR(20) NOT NULL   COMMENT '任务状态; 待审批: PENDING, 审批中: APPROVING, 已通过: APPROVED, 已驳回: UNAPPROVED, 已撤销: REVOKED' ,
     `type` VARCHAR(20)    COMMENT '任务类型; 抄送: CC; 加签: SN; 退回: BK; 普通: NL;' ,
     `action` VARCHAR(20)    COMMENT '执行操作; 同意: APPROVE;驳回: REJECT;加签: SIGN;退回: BACK;' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
@@ -161,7 +160,7 @@ CREATE INDEX idx_cc_user_id ON approval_cc_task(cc_user_id ASC);
 CREATE TABLE approval_add_sign_task(
     `id` VARCHAR(32) NOT NULL   COMMENT '主键ID' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '加签任务ID' ,
-    `sign_task_id` VARCHAR(32) NOT NULL   COMMENT '加签目标节点ID' ,
+    `sign_node_id` VARCHAR(32) NOT NULL   COMMENT '加签目标节点ID' ,
     `type` VARCHAR(20) NOT NULL   COMMENT '加签方式; 在我之前: BEFORE: 在我之后: AFTER' ,
     `comment` TEXT    COMMENT '加签意见' ,
     PRIMARY KEY (id)
@@ -171,12 +170,12 @@ CREATE TABLE approval_add_sign_task(
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_task_id ON approval_add_sign_task(task_id ASC);
-CREATE INDEX idx_sign_task_id ON approval_add_sign_task(sign_task_id ASC);
+CREATE INDEX idx_sign_node_id ON approval_add_sign_task(sign_node_id ASC);
 
 CREATE TABLE approval_return_back_record(
     `id` VARCHAR(32) NOT NULL   COMMENT '主键ID' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '当前任务ID' ,
-    `return_to_task_id` VARCHAR(32)    COMMENT '退回至任务ID' ,
+    `return_to_node_id` VARCHAR(32)    COMMENT '退回至节点ID' ,
     `return_reason` TEXT    COMMENT '退回原因' ,
     `return_user_id` VARCHAR(32) NOT NULL   COMMENT '退回操作人' ,
     PRIMARY KEY (id)
@@ -210,7 +209,7 @@ CREATE INDEX idx_instance_task_id ON approval_record(instance_id ASC,task_id ASC
 CREATE TABLE approval_instance_attachment(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
     `instance_id` VARCHAR(32) NOT NULL   COMMENT '审批实例ID' ,
-    `approval_element_id` VARCHAR(32) NOT NULL   COMMENT '审批节点ID' ,
+    `element_id` VARCHAR(32) NOT NULL   COMMENT '审批节点ID' ,
     `attachment_id` VARCHAR(32) NOT NULL   COMMENT '附件ID' ,
     PRIMARY KEY (id)
 )  COMMENT = '审批实例附件表'
@@ -219,7 +218,7 @@ CREATE TABLE approval_instance_attachment(
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_instance_id ON approval_instance_attachment(instance_id ASC);
-CREATE INDEX idx_approval_element_id ON approval_instance_attachment(approval_element_id ASC);
+CREATE INDEX idx_element_id ON approval_instance_attachment(element_id ASC);
 
 
 CREATE TABLE contract_stage_config

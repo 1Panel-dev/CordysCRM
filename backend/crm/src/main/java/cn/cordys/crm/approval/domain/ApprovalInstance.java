@@ -35,7 +35,4 @@ public class ApprovalInstance extends BaseModel {
 
 	@Schema(description = "审批完成时间")
 	private Long approvalTime;
-
-	@Schema(description = "审批结果")
-	private String result;
 }

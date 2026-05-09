@@ -161,7 +161,7 @@ public class ApprovalInstanceService {
 			return Map.of();
 		}
 		List<ApprovalInstanceAttachment> attachments = approvalInstanceAttachmentMapper.selectListByLambda(
-				new LambdaQueryWrapper<ApprovalInstanceAttachment>().in(ApprovalInstanceAttachment::getApprovalElementId, elementIds));
+				new LambdaQueryWrapper<ApprovalInstanceAttachment>().in(ApprovalInstanceAttachment::getElementId, elementIds));
 		if (CollectionUtils.isEmpty(attachments)) {
 			return Map.of();
 		}
@@ -170,7 +170,7 @@ public class ApprovalInstanceService {
 		List<Attachment> attachmentList = attachmentMapper.selectByIds(attachmentIds);
 		Map<String, Attachment> attachmentMap = attachmentList.stream().collect(Collectors.toMap(Attachment::getId, a -> a, (v1, v2) -> v1));
 
-		return attachments.stream().collect(Collectors.groupingBy(ApprovalInstanceAttachment::getApprovalElementId,
+		return attachments.stream().collect(Collectors.groupingBy(ApprovalInstanceAttachment::getElementId,
 				Collectors.mapping(a -> attachmentMap.get(a.getAttachmentId()), Collectors.toList())));
 	}
 

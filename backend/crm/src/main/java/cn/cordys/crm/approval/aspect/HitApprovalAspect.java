@@ -3,10 +3,11 @@ package cn.cordys.crm.approval.aspect;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
-import cn.cordys.crm.approval.service.ResourceApprovalService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,7 @@ public class HitApprovalAspect {
 	@Resource
 	private ApprovalFlowService approvalFlowService;
 	@Resource
-	private ResourceApprovalService resourceApprovalService;
+	private ApprovalResourceService approvalResourceService;
 
 	@Pointcut("@annotation(cn.cordys.crm.approval.annotation.HitApproval)")
 	public void pointcut() {
@@ -74,7 +75,7 @@ public class HitApprovalAspect {
 
 			if (hit) {
 				// 命中审批流, 修改业务资源审批状态为待提审
-				resourceApprovalService.updateApprovalStatus(annotation.formKey(), resourceId, "PENDING");
+				approvalResourceService.updateApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name());
 			}
 		} catch (Exception e) {
 			log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);
