@@ -292,10 +292,9 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, canOpenListDetail } =
+  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
     useApprovalOperation<ContractInvoiceItem>({
       formType: FormDesignKeyEnum.INVOICE,
-      detailReadPermissions: ['CONTRACT_INVOICE:READ'],
       dataActionMap: invoiceDataActionMap,
       specialActionFilter: (_row, actionKeys) => {
         return props.readonly ? [] : actionKeys;
@@ -303,7 +302,7 @@
     });
 
   function showDetail(row: ContractInvoiceItem) {
-    if (row && !canOpenListDetail(row)) {
+    if (row && !hasApprovalScopedPermission(row, ['CONTRACT_INVOICE:READ'])) {
       return;
     }
     activeSourceId.value = row.id;
@@ -400,7 +399,7 @@
     },
     specialRender: {
       name: (row: ContractInvoiceItem) => {
-        return canOpenListDetail(row)
+        return hasApprovalScopedPermission(row, ['CONTRACT_INVOICE:READ'])
           ? h(
               CrmTableButton,
               {
@@ -436,7 +435,7 @@
           status: row.approvalStatus,
           formKey: FormDesignKeyEnum.INVOICE,
           sourceId: row.id,
-          showMore: canOpenListDetail(row),
+          showMore: hasApprovalScopedPermission(row, ['CONTRACT_INVOICE:READ']),
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           onMore: () => {
             showDetail(row);

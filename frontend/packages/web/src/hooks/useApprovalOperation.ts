@@ -20,7 +20,6 @@ export type ApprovalConfigType =
 export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   formType: ApprovalConfigType;
   dataActionMap: Record<string, ActionsItem> | ((row: Row) => Record<string, ActionsItem>);
-  detailReadPermissions?: string[];
   isDetail?: boolean;
   maxVisibleActions?: number;
   getApprovalStatus?: (row: Row) => ProcessStatusEnum;
@@ -35,12 +34,12 @@ function buildStatusPermissionMap(statusPermissions: StatusPermissions[]) {
   const permissionMap = new Map<ProcessStatusEnum, Set<string>>();
 
   statusPermissions.forEach((item) => {
-    if (!item.enabled) {
-      return;
-    }
-
     if (!permissionMap.has(item.approvalStatus)) {
       permissionMap.set(item.approvalStatus, new Set<string>());
+    }
+
+    if (!item.enabled) {
+      return;
     }
 
     permissionMap.get(item.approvalStatus)?.add(item.permission);
@@ -176,18 +175,25 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return permissions.some((permission) => currentStatusPermissions.has(permission));
   }
 
-  function canOpenListDetail(row: Row) {
-    if (!enableApproval.value) {
-      return true;
-    }
-
-    const detailReadPermissions = options.detailReadPermissions || [];
-
-    if (!detailReadPermissions.length) {
+  // 获取对应数据权限是否允许操作
+  function hasApprovalScopedPermission(row: Row, permissions: string[]) {
+    if (!permissions.length) {
       return false;
     }
 
-    return hasStatusPermissions(row, detailReadPermissions) && hasAnyPermission(detailReadPermissions);
+    const hasRolePermission = hasAnyPermission(permissions);
+
+    if (!enableApproval.value) {
+      return hasRolePermission;
+    }
+
+    const currentStatusPermissions = statusPermissionMap.value.get(getApprovalStatus(row));
+
+    if (!currentStatusPermissions) {
+      return hasRolePermission;
+    }
+
+    return hasStatusPermissions(row, permissions) && hasRolePermission;
   }
 
   function splitActions(actions: ActionsItem[]) {
@@ -258,7 +264,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     initApprovalPermission,
     resolveRowActions,
     resolveRowOperation,
-    canOpenListDetail,
+    hasApprovalScopedPermission,
     approvalPermissionsDetail,
     statusPermissionMap,
     getApprovalStatus,

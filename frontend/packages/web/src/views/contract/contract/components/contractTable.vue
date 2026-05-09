@@ -143,7 +143,7 @@
   import { abbreviateNumber, characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { ContractItem } from '@lib/shared/models/contract';
-  import { BatchOperationResult } from '@lib/shared/models/opportunity';
+  import { BatchOperationResult, OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import { COMMON_SELECTION_OPERATORS } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -170,6 +170,7 @@
     changeContractStatus,
     deleteContract,
     getContractStatistic,
+    getContractStatusConfig,
     revokeContract,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
@@ -369,10 +370,9 @@
     };
   }
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, canOpenListDetail } =
+  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
     useApprovalOperation<ContractItem>({
       formType: FormDesignKeyEnum.CONTRACT,
-      detailReadPermissions: ['CONTRACT:READ'],
       dataActionMap: createContractDataActionMap,
       specialActionFilter: (row, actionKeys) => {
         return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
@@ -380,7 +380,7 @@
     });
 
   function handleApproval(row: ContractItem) {
-    if (!canOpenListDetail(row)) {
+    if (!hasApprovalScopedPermission(row, ['CONTRACT:READ'])) {
       return;
     }
     activeSourceId.value = row.id;
@@ -429,6 +429,18 @@
     );
   }
 
+  const stageConfig = ref<OpportunityStageConfig>();
+
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getContractStatusConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+  await initStageConfig();
+
   async function changeStatus(id: string, stage: string) {
     try {
       await changeContractStatus(id, stage);
@@ -461,7 +473,7 @@
     },
     specialRender: {
       name: (row: ContractItem) => {
-        return canOpenListDetail(row)
+        return hasApprovalScopedPermission(row, ['CONTRACT:READ'])
           ? h(
               CrmTableButton,
               {
@@ -536,7 +548,7 @@
           status: row.approvalStatus,
           formKey: FormDesignKeyEnum.CONTRACT,
           sourceId: row.id,
-          showMore: canOpenListDetail(row),
+          showMore: hasApprovalScopedPermission(row, ['CONTRACT:READ']),
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           onMore: () => {
             handleApproval(row);
@@ -545,6 +557,7 @@
     },
     permission: ['CONTRACT:EXPORT'],
     containerClass: '.crm-contract-table',
+    contractStage: stageConfig.value?.stageConfigList || [],
     enableApproval,
   });
   const {
