@@ -19,15 +19,15 @@ public class ApprovalNodeApprover {
 
     @NotBlank
     @Schema(description = "审批类型：MANUAL/AUTO_PASS/AUTO_REJECT")
-    private String approvalType = EmptyApproverActionEnum.AUTO_PASS.name();
+    private String approvalType;
 
     @NotBlank
     @Schema(description = "多人审批方式：ALL/ANY/SEQUENTIAL")
-    private String multiApproverMode = MultiApproverModeEnum.ALL.name();
+    private String multiApproverMode;
 
     @NotBlank
     @Schema(description = "审批人为空时动作")
-    private String emptyApproverAction = EmptyApproverActionEnum.AUTO_PASS.name();
+    private String emptyApproverAction;
 
     @Schema(description = "审批人为空时，兜底审批人")
     private String fallbackApprover;
