@@ -60,6 +60,7 @@ function createMainNodeLayout(
 ): FlowGraphLayoutNode {
   registerMainNodeRenameHandler(node.id, (value: string) => {
     node.name = value;
+    node.invalid = false;
   });
   return {
     id: node.id,
@@ -76,6 +77,7 @@ function createMainNodeLayout(
       description: node.type !== 'end' ? node.description : undefined,
       actionType: node.type === 'action' ? node.actionType : undefined,
       showContent: options.showNodeDescription,
+      invalid: node.invalid,
     },
   };
 }
@@ -192,6 +194,7 @@ function createConditionBranchNodeLayout(
 ): FlowGraphLayoutNode {
   registerBranchRenameHandler(groupId, branch.id, (value: string) => {
     branch.name = value;
+    branch.invalid = false;
   });
   return {
     id: branchNodeId,
@@ -208,6 +211,7 @@ function createConditionBranchNodeLayout(
       description: branch.description,
       showContent: options.showNodeDescription,
       isElse: branch.isElse,
+      invalid: branch.invalid,
     },
   };
 }

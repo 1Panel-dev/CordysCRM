@@ -1,9 +1,15 @@
 import {  ApprovalOperationEnum, ApprovalTypeEnum, ApproverTypeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
 import type { SelectedUsersItem } from './module';
 import type { FilterForm } from '@cordys/web/src/components/pure/crm-advance-filter/type';
-import type { ActionNode, ConditionBranch } from '@cordys/web/src/components/business/crm-flow/types';
 import type { UserInfo } from '@lib/shared/models/user';
-
+import {
+  ApprovalFieldPermissionModeEnum,
+  ApprovalNodeTypeEnum,
+  EmptyApproverActionEnum,
+  MultiApproverModeEnum,
+  SameSubmitterActionEnum,
+} from '@lib/shared/enums/process';
+import type { ActionNode, ConditionBranch } from '@cordys/web/src/components/business/crm-flow/types';
 
 export interface BaseItem {
   id: string;
@@ -45,27 +51,9 @@ export interface ApprovalPermissionsDetail {
   statusPermissions: StatusPermissions[];
 }
 
-// 审批流程节点
-export interface ApprovalProcessNode extends BaseItem {
-  nodeType: string;
-  sort: number;
-  children: ApprovalProcessNode[];
-}
-
-// 节点类型：开始/审批人/条件/默认分支/结束
-export type ApprovalNodeType = 'START' | 'APPROVER' | 'CONDITION' | 'DEFAULT' | 'END';
-// 多人审批方式：会签/或签/依次审批
-export type MultiApproverMode = 'ALL' | 'ANY' | 'SEQUENTIAL';
-// 审批人为空时动作：自动通过/指定人员/转交管理员
-export type EmptyApproverAction = 'AUTO_PASS' | 'ASSIGN_SPECIFIC' | 'ASSIGN_ADMIN';
-// 审批人与提交人相同时动作：提交人审批/跳过/交给直属上级审批
-export type SameSubmitterAction = 'ALLOW' | 'SKIP' | 'ASSIGN_SUPERIOR';
-// 表单字段权限：隐藏/查看/编辑
-export type ApprovalFieldPermissionMode = 'HIDDEN' | 'VIEW' | 'EDIT';
-
 export interface ApprovalFieldPermission {
   fieldId: string;
-  permissionType: ApprovalFieldPermissionMode;
+  permissionType: ApprovalFieldPermissionModeEnum;
 }
 
 export interface ApprovalFieldUpdateConfig {
@@ -78,23 +66,57 @@ export interface ApprovalPostConfig {
   fieldUpdateConfigs: ApprovalFieldUpdateConfig[];
 }
 
+// 后端审批流节点的基础结构
+export interface ApprovalProcessNodeBase<TNodeType extends ApprovalNodeTypeEnum> extends BaseItem {
+  nodeType: TNodeType;
+  sort: number;
+  children: ApprovalProcessNode[];
+}
+
+// 审批节点里前后端共用的业务配置
+export interface ApprovalNodeParticipantConfig {
+  approvalType: ApprovalTypeEnum;
+  approverType: ApproverTypeEnum;
+  approverList: string[];
+  multiApproverMode: MultiApproverModeEnum;
+  emptyApproverAction: EmptyApproverActionEnum;
+  fallbackApprover: string | null;
+  fallbackApproverName?: string;
+  sameSubmitterAction: SameSubmitterActionEnum;
+  ccType: ApproverTypeEnum | null;
+  ccList: string[];
+  passPostConfig?: ApprovalPostConfig;
+  rejectPostConfig?: ApprovalPostConfig;
+  fieldPermissions?: ApprovalFieldPermission[];
+}
+
+export type ApprovalProcessStartNode = ApprovalProcessNodeBase<ApprovalNodeTypeEnum.START>;
+
+export type ApprovalProcessEndNode = ApprovalProcessNodeBase<ApprovalNodeTypeEnum.END>;
+
+export interface ApprovalProcessApproverNode
+  extends ApprovalProcessNodeBase<ApprovalNodeTypeEnum.APPROVER>,
+    ApprovalNodeParticipantConfig {}
+
+export interface ApprovalProcessConditionNode extends ApprovalProcessNodeBase<ApprovalNodeTypeEnum.CONDITION> {
+  nodeType: ApprovalNodeTypeEnum.CONDITION;
+  conditionConfig?: FilterForm;
+}
+
+export type ApprovalProcessDefaultNode = ApprovalProcessNodeBase<ApprovalNodeTypeEnum.DEFAULT>;
+
+export type ApprovalProcessNode =
+  | ApprovalProcessStartNode
+  | ApprovalProcessEndNode
+  | ApprovalProcessApproverNode
+  | ApprovalProcessConditionNode
+  | ApprovalProcessDefaultNode;
+
 // 审批动作节点（前端审批流图使用）
-export interface ApprovalActionNode extends ActionNode {
-  approvalType: ApprovalTypeEnum; // 审批类型：人工审批/自动通过/自动拒绝
-  approverType: ApproverTypeEnum; // 审批人来源
-  approverList: string[]; // 审批人配置列表：成员 ID / 角色 ID / 层级等
-  approverSelectedList?: SelectedUsersItem[]; // 前端展示用的审批人选中列表
-  multiApproverMode: MultiApproverMode; // 多人审批方式
-  emptyApproverAction: EmptyApproverAction; // 异常处理-审批人为空时动作
-  fallbackApprover: string; // 异常处理-兜底审批人
-  sameSubmitterAction: SameSubmitterAction; // 异常处理-审批人与提交人相同时动作
-  emptyApproverSelectedList?: SelectedUsersItem[]; // 异常处理-前端展示用的
-  ccType: ApproverTypeEnum | null; // 抄送人来源
-  ccList: string[]; // 抄送人配置列表：成员 ID / 角色 ID / 层级等
-  ccSelectedList?: SelectedUsersItem[]; // 前端展示用的抄送选中列表
-  passPostConfig?: ApprovalPostConfig; // 审批通过后配置
-  rejectPostConfig?: ApprovalPostConfig; // 审批驳回后配置
-  fieldPermissions?: ApprovalFieldPermission[]; // 字段权限配置列表
+export interface ApprovalActionNode extends ActionNode, ApprovalNodeParticipantConfig {
+  approverSelectedList?: SelectedUsersItem[];
+  emptyApproverSelectedList?: SelectedUsersItem[];
+  ccSelectedList?: SelectedUsersItem[];
 }
 
 // 审批条件分支（前端审批流图使用）

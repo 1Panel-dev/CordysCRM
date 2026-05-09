@@ -55,6 +55,7 @@ export default {
   'process.process.flow.toConfig': 'To Config',
   'process.process.flow.approverSetting': 'Approver setting',
   'process.process.flow.approverType.specifiedMember': 'Specified members',
+  'process.process.flow.approverType.specifiedSupervisor': 'Specified supervisor',
   'process.process.flow.approverType.continuousSupervisor': 'Continuous multi-level supervisors',
   'process.process.flow.approverType.specifiedDepartmentLeader': 'Specified department head',
   'process.process.flow.approverType.continuousDepartmentLeader': 'Continuous multi-level department heads',

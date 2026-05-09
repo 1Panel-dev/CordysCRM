@@ -4,6 +4,7 @@
     :description="nodeData.description"
     :show-content="nodeData.showContent ?? true"
     :selected="Boolean(nodeData.selected)"
+    :invalid="Boolean(nodeData.invalid)"
     node-type="start"
     :icon="{
       type: 'iconicon_play_circle_stroke',
@@ -33,5 +34,6 @@
     description?: string;
     showContent?: boolean;
     selected?: boolean;
+    invalid?: boolean;
   }>(toRef(props, 'node'));
 </script>

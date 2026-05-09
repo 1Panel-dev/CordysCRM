@@ -35,7 +35,7 @@
     </template>
     <template v-if="visible">
       <ApprovalFlowDesign
-        v-if="activeTab === 'process'"
+        v-show="activeTab === 'process'"
         ref="approvalFlowDesignRef"
         v-model:basicConfig="form.basicConfig"
         :need-detail="!!props.sourceId"
@@ -43,7 +43,7 @@
         @switch-more-setting="activeTab = 'moreSetting'"
       />
       <moreSetting
-        v-if="activeTab === 'moreSetting'"
+        v-show="activeTab === 'moreSetting'"
         v-model:moreConfig="form.moreConfig"
         :need-detail="!!props.sourceId"
         :form-type="form.basicConfig.formType"
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { nextTick, ref } from 'vue';
   import { NTooltip, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
@@ -68,9 +68,6 @@
 
   import { addApprovalProcess, approvalProcessDetail, updateApprovalProcess } from '@/api/modules';
   import { defaultBasicForm, defaultMoreConfig } from '@/config/process';
-  import useModal from '@/hooks/useModal';
-
-  const { openModal } = useModal();
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -143,6 +140,7 @@
         ...form.value,
         ...form.value.basicConfig,
         ...form.value.moreConfig,
+        nodes: approvalFlowDesignRef.value?.getProcessNodes() ?? [],
       };
       if (props.sourceId) {
         await updateApprovalProcess(params);
@@ -162,24 +160,12 @@
   }
 
   function handleSave() {
-    if (activeTab.value === 'process' && approvalFlowDesignRef.value) {
-      approvalFlowDesignRef.value?.validate(async () => {
-        await handleSubmit();
-      });
-    } else if (!form.value.basicConfig.name.length) {
-      openModal({
-        type: 'warning',
-        title: t('common.saveFailed'),
-        positiveText: t('process.process.flow.toConfig'),
-        content: t('process.process.flow.nodeNameNotSet'),
-        negativeText: t('common.cancel'),
-        onPositiveClick: async () => {
-          activeTab.value = 'process';
-        },
-      });
-    } else {
-      handleSubmit();
+    if (approvalFlowDesignRef.value && !approvalFlowDesignRef.value.validateFlowNodes()) {
+      activeTab.value = 'process';
+      return;
     }
+
+    handleSubmit();
   }
 
   function pickFormConfig<T extends Record<string, any>>(source: Record<string, any>, defaultConfig: T): T {
@@ -204,6 +190,9 @@
         moreConfig,
       };
       editingName.value = result.name;
+      nextTick(() => {
+        approvalFlowDesignRef.value?.setProcessNodes(result.nodes ?? []);
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -220,6 +209,7 @@
           ...form.value,
           ...form.value.basicConfig,
           ...form.value.moreConfig,
+          nodes: approvalFlowDesignRef.value?.getProcessNodes() ?? [],
           name: newName,
         };
         await updateApprovalProcess(params);

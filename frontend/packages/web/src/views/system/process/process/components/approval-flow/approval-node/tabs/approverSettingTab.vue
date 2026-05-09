@@ -17,7 +17,13 @@
       </n-form-item>
 
       <n-form-item path="name" :label="t('process.process.flow.nodeName')">
-        <n-input v-model:value="nodeConfig.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
+        <n-input
+          v-model:value="nodeConfig.name"
+          :maxlength="255"
+          type="text"
+          :placeholder="t('common.pleaseInput')"
+          @update:value="clearCurrentNodeInvalid"
+        />
       </n-form-item>
 
       <template v-if="nodeConfig.approvalType === ApprovalTypeEnum.MANUAL">
@@ -50,6 +56,7 @@
             :member-types="nodeConfig.approverType === ApproverTypeEnum.ROLE ? roleMemberTypes : undefined"
             required
             :max-count="approverMaxCount"
+            @update:value="clearCurrentNodeInvalid"
           />
         </n-form-item>
 
@@ -76,7 +83,11 @@
             />
           </template>
 
-          <n-select v-model:value="approverLevel" :options="approverLevelConfig.options" />
+          <n-select
+            v-model:value="approverLevel"
+            :options="approverLevelConfig.options"
+            @update:value="clearCurrentNodeInvalid"
+          />
         </n-form-item>
 
         <!-- 多人审批 -->
@@ -140,15 +151,21 @@
                 @update:value="handleEmptyApproverActionUpdate"
               >
                 <n-space vertical :size="8">
-                  <n-radio value="AUTO_PASS">{{ t('process.process.flow.exceptionHandling.autoPass') }}</n-radio>
-                  <n-radio value="ASSIGN_SPECIFIC">{{ t('process.process.flow.exceptionHandling.toUser') }}</n-radio>
-                  <n-radio value="ASSIGN_ADMIN">{{ t('process.process.flow.exceptionHandling.toAdmin') }}</n-radio>
+                  <n-radio :value="EmptyApproverActionEnum.AUTO_PASS">
+                    {{ t('process.process.flow.exceptionHandling.autoPass') }}
+                  </n-radio>
+                  <n-radio :value="EmptyApproverActionEnum.ASSIGN_SPECIFIC">
+                    {{ t('process.process.flow.exceptionHandling.toUser') }}
+                  </n-radio>
+                  <n-radio :value="EmptyApproverActionEnum.ASSIGN_ADMIN">
+                    {{ t('process.process.flow.exceptionHandling.toAdmin') }}
+                  </n-radio>
                 </n-space>
               </n-radio-group>
             </n-form-item>
 
             <n-form-item
-              v-if="nodeConfig.emptyApproverAction === 'ASSIGN_SPECIFIC'"
+              v-if="nodeConfig.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_SPECIFIC"
               path="fallbackApprover"
               :show-label="false"
               :show-feedback="false"
@@ -162,15 +179,21 @@
                 :limit-label="t('process.process.flow.member')"
                 :max-count="fallbackApproverMaxCount"
                 required
+                @update:value="clearCurrentNodeInvalid"
               />
             </n-form-item>
 
             <n-form-item
-              v-if="nodeConfig.emptyApproverAction === 'ASSIGN_ADMIN'"
+              v-if="nodeConfig.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_ADMIN"
               path="fallbackApprover"
               :label="t('process.process.flow.selectAdmin')"
             >
-              <n-select v-model:value="nodeConfig.fallbackApprover" :options="approvalAdminOptions" />
+              <n-select
+                v-model:value="nodeConfig.fallbackApprover"
+                :options="approvalAdminOptions"
+                :placeholder="t('common.pleaseSelect')"
+                @update:value="clearCurrentNodeInvalid"
+              />
             </n-form-item>
           </template>
 
@@ -178,9 +201,13 @@
             <n-form-item path="sameSubmitterAction" :show-label="false">
               <n-radio-group v-model:value="nodeConfig.sameSubmitterAction">
                 <n-space vertical :size="8">
-                  <n-radio value="ALLOW">{{ t('process.process.flow.sameSubmitter.selfApprove') }}</n-radio>
-                  <n-radio value="SKIP">{{ t('process.process.flow.sameSubmitter.skip') }}</n-radio>
-                  <n-radio value="ASSIGN_SUPERIOR">
+                  <n-radio :value="SameSubmitterActionEnum.ALLOW">
+                    {{ t('process.process.flow.sameSubmitter.selfApprove') }}
+                  </n-radio>
+                  <n-radio :value="SameSubmitterActionEnum.SKIP">
+                    {{ t('process.process.flow.sameSubmitter.skip') }}
+                  </n-radio>
+                  <n-radio :value="SameSubmitterActionEnum.ASSIGN_SUPERIOR">
                     {{ t('process.process.flow.sameSubmitter.transferSupervisor') }}
                   </n-radio>
                 </n-space>
@@ -217,6 +244,7 @@
             "
             :member-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? roleMemberTypes : undefined"
             :max-count="ccMaxCount"
+            @update:value="clearCurrentNodeInvalid"
           />
         </n-form-item>
 
@@ -243,7 +271,7 @@
             />
           </template>
 
-          <n-select v-model:value="ccLevel" :options="ccLevelConfig.options" />
+          <n-select v-model:value="ccLevel" :options="ccLevelConfig.options" @update:value="clearCurrentNodeInvalid" />
         </n-form-item>
       </template>
     </n-form>
@@ -266,9 +294,15 @@
   } from 'naive-ui';
 
   import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
-  import { ApprovalTypeEnum, ApproverTypeEnum } from '@lib/shared/enums/process';
+  import {
+    ApprovalTypeEnum,
+    ApproverTypeEnum,
+    EmptyApproverActionEnum,
+    MultiApproverModeEnum,
+    SameSubmitterActionEnum,
+  } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ApprovalActionNode, MultiApproverMode } from '@lib/shared/models/system/process';
+  import type { ApprovalActionNode } from '@lib/shared/models/system/process';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
@@ -283,6 +317,8 @@
     departmentLevelOptions,
     resolveApprovalActionNodeDescription,
   } from '@/config/process';
+
+  import { clearInvalidState } from '../../validation/flowValidation';
 
   defineOptions({
     name: 'ApproverSettingTab',
@@ -396,27 +432,27 @@
       return nodeConfig.value.fallbackApprover ? [nodeConfig.value.fallbackApprover] : [];
     },
     set(value: string[]) {
-      nodeConfig.value.fallbackApprover = value[0] ?? '';
+      nodeConfig.value.fallbackApprover = value[0] ?? null;
     },
   });
 
   const multiApproverModeOptions: Array<{
-    value: MultiApproverMode;
+    value: MultiApproverModeEnum;
     label: string;
     description: string;
   }> = [
     {
-      value: 'ALL',
+      value: MultiApproverModeEnum.ALL,
       label: t('process.process.flow.multiApprovalType.all'),
       description: t('process.process.flow.multiApprovalType.all.description'),
     },
     {
-      value: 'ANY',
+      value: MultiApproverModeEnum.ANY,
       label: t('process.process.flow.multiApprovalType.majority'),
       description: t('process.process.flow.multiApprovalType.majority.description'),
     },
     {
-      value: 'SEQUENTIAL',
+      value: MultiApproverModeEnum.SEQUENTIAL,
       label: t('process.process.flow.multiApprovalType.sequential'),
       description: t('process.process.flow.multiApprovalType.sequential.description'),
     },
@@ -424,6 +460,10 @@
 
   function isMemberOrRole(type?: ApproverTypeEnum | null) {
     return !!type && [ApproverTypeEnum.SPECIFIED_MEMBER, ApproverTypeEnum.ROLE].includes(type);
+  }
+
+  function clearCurrentNodeInvalid() {
+    clearInvalidState(nodeConfig.value);
   }
 
   const rules: FormRules = {
@@ -485,10 +525,10 @@
     fallbackApprover: [
       {
         trigger: ['change', 'blur'],
-        validator: (_rule, value: string) => {
+        validator: (_rule, value: string | null) => {
           if (
             activeExceptionTab.value !== 'emptyApprover' ||
-            nodeConfig.value.emptyApproverAction !== 'ASSIGN_SPECIFIC'
+            nodeConfig.value.emptyApproverAction !== EmptyApproverActionEnum.ASSIGN_SPECIFIC
           ) {
             return true;
           }
@@ -545,22 +585,26 @@
 
   function handleApprovalTypeUpdate(type: ApprovalTypeEnum) {
     nodeConfig.value.description = resolveApprovalActionNodeDescription(type, nodeConfig.value.approverType);
+    clearCurrentNodeInvalid();
   }
 
   function handleApproverTypeUpdate(type: ApproverTypeEnum) {
     nodeConfig.value.approverSelectedList = [];
     nodeConfig.value.approverList = resetLevelList(type);
     nodeConfig.value.description = resolveApprovalActionNodeDescription(nodeConfig.value.approvalType, type);
+    clearCurrentNodeInvalid();
   }
 
   function handleCcTypeUpdate(type: ApproverTypeEnum) {
     nodeConfig.value.ccSelectedList = [];
     nodeConfig.value.ccList = resetLevelList(type);
+    clearCurrentNodeInvalid();
   }
 
   function handleEmptyApproverActionUpdate() {
-    nodeConfig.value.fallbackApprover = '';
+    nodeConfig.value.fallbackApprover = null;
     nodeConfig.value.emptyApproverSelectedList = [];
+    clearCurrentNodeInvalid();
   }
 
   // 管理员

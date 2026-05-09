@@ -15,8 +15,9 @@
   import { DataTableColumn, NDataTable, NRadio, NScrollbar } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ApprovalFieldPermissionModeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ApprovalActionNode, ApprovalFieldPermissionMode } from '@lib/shared/models/system/process';
+  import type { ApprovalActionNode } from '@lib/shared/models/system/process';
 
   import { getFormConfigApiMap } from '@/components/business/crm-form-create/config';
   import type { FormCreateField } from '@/components/business/crm-form-create/types';
@@ -36,18 +37,18 @@
   const { t } = useI18n();
   const formFields = ref<FormCreateField[]>([]);
 
-  const permissionOptions: Array<{ label: string; value: ApprovalFieldPermissionMode }> = [
+  const permissionOptions: Array<{ label: string; value: ApprovalFieldPermissionModeEnum }> = [
     {
       label: t('process.process.flow.permission.hidden'),
-      value: 'HIDDEN',
+      value: ApprovalFieldPermissionModeEnum.HIDDEN,
     },
     {
       label: t('process.process.flow.permission.view'),
-      value: 'VIEW',
+      value: ApprovalFieldPermissionModeEnum.VIEW,
     },
     {
       label: t('process.process.flow.permission.edit'),
-      value: 'EDIT',
+      value: ApprovalFieldPermissionModeEnum.EDIT,
     },
   ];
 
@@ -64,7 +65,7 @@
     return nodeConfig.value.fieldPermissions?.find((item) => item.fieldId === fieldId)?.permissionType ?? 'VIEW';
   }
 
-  function setFieldPermission(fieldId: string, permissionType: ApprovalFieldPermissionMode) {
+  function setFieldPermission(fieldId: string, permissionType: ApprovalFieldPermissionModeEnum) {
     const fieldPermissions = nodeConfig.value.fieldPermissions ?? [];
     const target = fieldPermissions.find((item) => item.fieldId === fieldId);
 
@@ -80,22 +81,22 @@
     nodeConfig.value.fieldPermissions = fieldPermissions;
   }
 
-  function isPermissionDisabled(field: FormCreateField, permissionType: ApprovalFieldPermissionMode) {
-    return permissionType === 'EDIT' && !isEditableField(field);
+  function isPermissionDisabled(field: FormCreateField, permissionType: ApprovalFieldPermissionModeEnum) {
+    return permissionType === ApprovalFieldPermissionModeEnum.EDIT && !isEditableField(field);
   }
 
-  function getSelectableFields(permissionType: ApprovalFieldPermissionMode) {
+  function getSelectableFields(permissionType: ApprovalFieldPermissionModeEnum) {
     return formFields.value.filter((field) => !isPermissionDisabled(field, permissionType));
   }
 
-  function isColumnChecked(permissionType: ApprovalFieldPermissionMode) {
+  function isColumnChecked(permissionType: ApprovalFieldPermissionModeEnum) {
     const selectableFields = getSelectableFields(permissionType);
     return (
       selectableFields.length > 0 && selectableFields.every((field) => getFieldPermission(field.id) === permissionType)
     );
   }
 
-  function setColumnPermission(permissionType: ApprovalFieldPermissionMode) {
+  function setColumnPermission(permissionType: ApprovalFieldPermissionModeEnum) {
     getSelectableFields(permissionType).forEach((field) => {
       setFieldPermission(field.id, permissionType);
     });
@@ -148,10 +149,13 @@
     );
 
     nodeConfig.value.fieldPermissions = fields.map((field) => {
-      const permissionType = existingPermissionMap.get(field.id) ?? 'VIEW';
+      const permissionType = existingPermissionMap.get(field.id) ?? ApprovalFieldPermissionModeEnum.VIEW;
       return {
         fieldId: field.id,
-        permissionType: permissionType === 'EDIT' && !isEditableField(field) ? 'VIEW' : permissionType,
+        permissionType:
+          permissionType === ApprovalFieldPermissionModeEnum.EDIT && !isEditableField(field)
+            ? ApprovalFieldPermissionModeEnum.VIEW
+            : permissionType,
       };
     });
   }

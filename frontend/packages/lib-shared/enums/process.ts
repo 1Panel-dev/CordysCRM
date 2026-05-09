@@ -20,12 +20,23 @@ export enum ApprovalOperationEnum {
   BACK = 'BACK', // 退回
 }
 
+//  审批类型
 export enum ApprovalTypeEnum {
   MANUAL = 'MANUAL', // 人工审批
-  AUTO_PASS = 'AUTO_PASS',
-  AUTO_REJECT = 'AUTO_REJECT',
+  AUTO_PASS = 'AUTO_PASS', // 自动通过
+  AUTO_REJECT = 'AUTO_REJECT', // 自动拒绝
 }
 
+// 审批流节点类型
+export enum ApprovalNodeTypeEnum {
+  START = 'START', // 开始节点
+  APPROVER = 'APPROVER', // 审批节点
+  CONDITION = 'CONDITION', // 条件分支
+  DEFAULT = 'DEFAULT', // 默认分支
+  END = 'END', // 结束节点
+}
+
+// 审批人/抄送人来源类型
 export enum ApproverTypeEnum {
   SPECIFIED_MEMBER = 'MEMBER', // 指定成员
   DIRECT_SUPERVISOR = 'SUPERIOR', // 直属上级
@@ -35,9 +46,38 @@ export enum ApproverTypeEnum {
   ROLE = 'ROLE', // 角色
 }
 
+// 审批流程类型
 export enum ProcessTypeEnum {
   OR_APPROVAL = 'OR_APPROVAL', // 或签
   AND_APPROVAL = 'AND_APPROVAL', // 会签
   SEQUENTIAL_APPROVAL = 'SEQUENTIAL_APPROVAL', // 依次审批
   COUNTERSIGNATURE = 'COUNTERSIGNATURE', // 加签
+}
+
+// 多人审批方式
+export enum MultiApproverModeEnum {
+  ALL = 'ALL', // 会签
+  ANY = 'ANY', // 或签
+  SEQUENTIAL = 'SEQUENTIAL', // 依次审批
+}
+
+// 审批人为空时的处理方式
+export enum EmptyApproverActionEnum {
+  AUTO_PASS = 'AUTO_PASS', // 自动通过
+  ASSIGN_SPECIFIC = 'ASSIGN_SPECIFIC', // 指定人员处理
+  ASSIGN_ADMIN = 'ASSIGN_ADMIN', // 转交审批管理员
+}
+
+// 审批人与提交人相同时的处理方式
+export enum SameSubmitterActionEnum {
+  ALLOW = 'ALLOW', // 由提交人审批
+  SKIP = 'SKIP', // 自动跳过
+  ASSIGN_SUPERIOR = 'ASSIGN_SUPERIOR', // 转交直属上级审批
+}
+
+// 表单字段权限类型
+export enum ApprovalFieldPermissionModeEnum {
+  HIDDEN = 'HIDDEN', // 隐藏
+  VIEW = 'VIEW', // 仅查看
+  EDIT = 'EDIT', // 可编辑
 }
