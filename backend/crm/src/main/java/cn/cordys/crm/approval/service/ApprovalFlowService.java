@@ -370,10 +370,7 @@ public class ApprovalFlowService {
         return nodes.stream().map(node -> {
             // 查询审批人节点配置
             if (ApprovalNodeTypeEnum.APPROVER.name().equals(node.getNodeType())) {
-                ApprovalNodeApprover approverCriteria = new ApprovalNodeApprover();
-                approverCriteria.setId(node.getId());
-                approverCriteria.setFlowId(flowId);
-                ApprovalNodeApprover approverNode = approvalNodeApproverMapper.selectOne(approverCriteria);
+                ApprovalNodeApprover approverNode = approvalNodeApproverMapper.selectByPrimaryKey(node.getId());
                 if (approverNode != null) {
                     ApprovalNodeApproverResponse approverResponse = BeanUtils.copyBean(
                             new ApprovalNodeApproverResponse(), node);
@@ -385,10 +382,7 @@ public class ApprovalFlowService {
             }
             // 查询条件节点配置
             if (ApprovalNodeTypeEnum.CONDITION.name().equals(node.getNodeType())) {
-                ApprovalNodeCondition conditionCriteria = new ApprovalNodeCondition();
-                conditionCriteria.setId(node.getId());
-                conditionCriteria.setFlowId(flowId);
-                ApprovalNodeCondition conditionNode = approvalNodeConditionMapper.selectOne(conditionCriteria);
+                ApprovalNodeCondition conditionNode = approvalNodeConditionMapper.selectByPrimaryKey(node.getId());
                 if (conditionNode != null) {
                     ApprovalNodeConditionResponse conditionResponse = BeanUtils.copyBean(
                             new ApprovalNodeConditionResponse(), node);
