@@ -13,4 +13,11 @@ public interface ExtApprovalInstanceMapper {
 	 */
 	void updateApprovalStatus(@Param("sourceTable") String sourceTable, @Param("id") String resourceId,
 							  @Param("approvalStatus") String approvalStatus);
+
+	/**
+	 * 查询业务表业务名称
+	 * @param sourceTable
+	 * @param id
+	 */
+	String selectBusinessName(@Param("sourceTable") String sourceTable, @Param("id") String id);
 }

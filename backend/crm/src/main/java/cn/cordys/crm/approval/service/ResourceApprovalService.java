@@ -170,6 +170,21 @@ public class ResourceApprovalService {
 		extApprovalInstanceMapper.updateApprovalStatus(tableName, resourceId, approvalStatus);
 	}
 
+    /**
+     * 查询对应业务表的业务名
+     *
+     * @param formKey        表单类型
+     * @param resourceId     资源ID
+     */
+    public String selectBusinessName(FormKey formKey, String resourceId) {
+        String tableName = FORM_TABLE.get(formKey.getKey());
+        if (StringUtils.isBlank(tableName)) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
+        return extApprovalInstanceMapper.selectBusinessName(tableName, resourceId);
+    }
+
+
 	/**
 	 * 手动提审
 	 * @param param 提审参数

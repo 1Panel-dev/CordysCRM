@@ -28,6 +28,9 @@ public class ApprovalReturnBackService extends ApprovalOperationBaseService {
      * @param orgId
      */
     public void back(ApprovalReturnBackRequest request, String userId, String orgId) {
+        //获取回退目标任务的审批人
+        ApprovalTask approvalTask = approvalTaskMapper.selectByPrimaryKey(request.getReturnToTaskId());
+        request.setApproverId(approvalTask.getApproverId());
         //新增退回task
         addApprovalTask(request, userId, ApprovalTaskType.BK.name());
         //新增退回拓展信息
