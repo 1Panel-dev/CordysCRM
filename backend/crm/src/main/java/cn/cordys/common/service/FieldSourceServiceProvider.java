@@ -1,11 +1,9 @@
 package cn.cordys.common.service;
 
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.crm.clue.service.ClueService;
-import cn.cordys.crm.contract.service.BusinessTitleService;
-import cn.cordys.crm.contract.service.ContractPaymentPlanService;
-import cn.cordys.crm.contract.service.ContractPaymentRecordService;
-import cn.cordys.crm.contract.service.ContractService;
+import cn.cordys.crm.contract.service.*;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
@@ -37,6 +35,11 @@ public class FieldSourceServiceProvider {
 
     private static final Map<FieldSourceType, Object> SERVICE_MAP = new HashMap<>();
 
+	/**
+	 * 开启的审批流表单表格映射
+	 */
+	private static final Map<String, Object> APPROVAL_FORM_SERVICE_MAP = new HashMap<>(4);
+
     @Resource
     private ClueService clueService;
     @Resource
@@ -61,6 +64,8 @@ public class FieldSourceServiceProvider {
 	private ContractPaymentRecordService paymentRecordService;
 	@Resource
 	private ContractPaymentPlanService paymentPlanService;
+	@Resource
+	private ContractInvoiceService invoiceService;
 
     @PostConstruct
     public void init() {
@@ -76,6 +81,11 @@ public class FieldSourceServiceProvider {
 		SERVICE_MAP.put(FieldSourceType.ORDER, orderService);
 		SERVICE_MAP.put(FieldSourceType.CONTRACT_PAYMENT_RECORD, paymentRecordService);
 		SERVICE_MAP.put(FieldSourceType.PAYMENT_PLAN, paymentPlanService);
+
+		APPROVAL_FORM_SERVICE_MAP.put(FormKey.QUOTATION.getKey(), opportunityQuotationService);
+		APPROVAL_FORM_SERVICE_MAP.put(FormKey.CONTRACT.getKey(), contractService);
+		APPROVAL_FORM_SERVICE_MAP.put(FormKey.INVOICE.getKey(), invoiceService);
+		APPROVAL_FORM_SERVICE_MAP.put(FormKey.ORDER.getKey(), orderService);
     }
 
     /**
@@ -85,6 +95,14 @@ public class FieldSourceServiceProvider {
     public static <T> T getService(FieldSourceType type) {
         return (T) SERVICE_MAP.get(type);
     }
+
+	/**
+	 * 根据来源类型获取对应的 Service
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T getServiceOfKey(String key) {
+		return (T) APPROVAL_FORM_SERVICE_MAP.get(key);
+	}
 
 	/**
 	 * 执行资源详情方法（单个或批量）
@@ -122,6 +140,33 @@ public class FieldSourceServiceProvider {
 		}
 	}
 
+	public Object executeServiceMethod(String formKey, Object id, String methodName) {
+		Object service = getServiceOfKey(formKey);
+		if (service == null) {
+			log.error("审批表单类型 {} 有误", formKey);
+			return id instanceof List ? Collections.emptyList() : null;
+		}
+		try {
+			if (id instanceof List<?> idList) {
+				if (CollectionUtils.isEmpty(idList)) {
+					return Collections.emptyList();
+				}
+				List<String> ids = idList.stream().map(Object::toString).toList();
+				Method method = service.getClass().getMethod(methodName, List.class);
+				return method.invoke(service, ids);
+			} else {
+				if (!(id instanceof String) || ((String) id).isEmpty()) {
+					return null;
+				}
+				Method method = service.getClass().getMethod(methodName, String.class);
+				return method.invoke(service, id.toString());
+			}
+		} catch (Exception e) {
+			log.error("获取业务数据详情异常：type={}, id={}, error={}", formKey, id, e.getMessage(), e);
+			return id instanceof List ? Collections.emptyList() : null;
+		}
+	}
+
 	/**
 	 * 挂起事务, 防止下游方法异常回滚当前事务
 	 *
@@ -133,6 +178,17 @@ public class FieldSourceServiceProvider {
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public Object safeGetSimpleById(FieldSourceType type, String id) {
 		return executeServiceMethod(type, id, "getSimple");
+	}
+
+	/**
+	 * 获取表单业务数据详情
+	 * @param formKey 表单
+	 * @param id 主表ID
+	 * @return 业务数据详情
+	 */
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public Object safeGetSimpleById(String formKey, String id) {
+		return executeServiceMethod(formKey, id, "getSimple");
 	}
 
 	/**

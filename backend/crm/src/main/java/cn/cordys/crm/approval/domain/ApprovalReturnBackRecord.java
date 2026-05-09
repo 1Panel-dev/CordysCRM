@@ -17,8 +17,8 @@ public class ApprovalReturnBackRecord {
 	@Schema(description = "当前任务ID")
 	private String taskId;
 
-	@Schema(description = "退回至任务ID")
-	private String returnToTaskId;
+	@Schema(description = "退回至节点ID")
+	private String returnToNodeId;
 
 	@Schema(description = "退回原因")
 	private String returnReason;

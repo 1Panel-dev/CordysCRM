@@ -15,7 +15,7 @@ public class ApprovalInstanceAttachment {
     private String instanceId;
 
     @Schema(description = "审批节点ID")
-    private String approvalElementId;
+    private String elementId;
 
     @Schema(description = "附件ID")
     private String attachmentId;

@@ -18,7 +18,7 @@ public class ApprovalAddSignTask {
 	private String taskId;
 
 	@Schema(description = "加签的节点ID")
-	private String signTaskId;
+	private String signNodeId;
 
 	@Schema(description = "加签方式")
 	private String type;
