@@ -66,6 +66,7 @@ export interface FormCreateTableProps {
   hiddenTotal?: Ref<boolean>;
   opportunityStage?: StageConfigItem[]; // 商机阶段筛选项
   orderStage?: StageConfigItem[];
+  contractStage?: StageConfigItem[];
   hiddenAllScreen?: boolean;
   hiddenRefresh?: boolean;
   enableApproval?: Ref<boolean>;

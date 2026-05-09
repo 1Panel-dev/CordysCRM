@@ -272,10 +272,9 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, canOpenListDetail } =
+  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
     useApprovalOperation<OrderItem>({
       formType: FormDesignKeyEnum.ORDER,
-      detailReadPermissions: ['ORDER:READ'],
       dataActionMap: orderDataActionMap,
       specialActionFilter: (row, actionKeys) => {
         return props.readonly ? [] : actionKeys;
@@ -283,7 +282,7 @@
     });
 
   function showDetail(row: OrderItem) {
-    if (row && !canOpenListDetail(row)) {
+    if (row && !hasApprovalScopedPermission(row, ['ORDER:READ'])) {
       return;
     }
     activeSourceId.value = row.id;
@@ -382,7 +381,7 @@
     },
     specialRender: {
       name: (row: OrderItem) => {
-        return canOpenListDetail(row)
+        return hasApprovalScopedPermission(row, ['ORDER:READ'])
           ? h(
               CrmTableButton,
               {
@@ -444,7 +443,7 @@
               status: row.approvalStatus,
               formKey: FormDesignKeyEnum.ORDER,
               sourceId: row.id,
-              showMore: canOpenListDetail(row),
+              showMore: hasApprovalScopedPermission(row, ['ORDER:READ']),
               disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
               onMore: () => {
                 showDetail(row);

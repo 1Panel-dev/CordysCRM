@@ -341,10 +341,9 @@
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
   }
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, canOpenListDetail } =
+  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
     useApprovalOperation<QuotationItem>({
       formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
-      detailReadPermissions: ['OPPORTUNITY_QUOTATION:READ'],
       dataActionMap: quotationDataActionMap,
       specialActionFilter: (row, actionKeys) => {
         if (row.invalid) {
@@ -355,7 +354,7 @@
     });
 
   function handleApproval(row: QuotationItem) {
-    if (!canOpenListDetail(row)) {
+    if (!hasApprovalScopedPermission(row, ['OPPORTUNITY_QUOTATION:READ'])) {
       return;
     }
     activeSourceId.value = row.id;
@@ -473,7 +472,7 @@
         },
     specialRender: {
       name: (row: QuotationItem) => {
-        const canOpenDetail = !props.readonly && canOpenListDetail(row);
+        const canOpenDetail = !props.readonly && hasApprovalScopedPermission(row, ['OPPORTUNITY_QUOTATION:READ']);
         const createNameButton = () =>
           h(
             CrmTableButton,
@@ -513,7 +512,7 @@
         );
       },
       approvalStatus: (row: QuotationItem) => {
-        const canOpenDetail = canOpenListDetail(row);
+        const canOpenDetail = hasApprovalScopedPermission(row, ['OPPORTUNITY_QUOTATION:READ']);
         return row.invalid
           ? '-'
           : h(CrmApprovalPopover, {

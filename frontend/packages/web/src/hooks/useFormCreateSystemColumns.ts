@@ -723,7 +723,11 @@ export default async function useFormCreateSystemColumns(
         title: t('contract.status'),
         width: 120,
         key: 'stage',
-        filterOptions: contractStatusOptions,
+        filterOptions:
+          props.contractStage?.map((e) => ({
+            label: e.name,
+            value: e.id,
+          })) || [],
         sortOrder: false,
         sorter: true,
         filter: true,
