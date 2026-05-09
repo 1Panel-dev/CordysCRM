@@ -99,7 +99,7 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertEquals("CONTRACT", item.getResourceType());
         Assertions.assertTrue(StringUtils.isNotBlank(item.getApplicant()));
         Assertions.assertEquals("APPROVED", item.getApprovalOperation());
-        Assertions.assertEquals("SIGNED", item.getDataResult());
+        Assertions.assertEquals("APPROVED", item.getDataResult());
     }
 
     @Sql(

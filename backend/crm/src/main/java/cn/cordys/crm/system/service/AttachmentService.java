@@ -16,6 +16,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -214,9 +215,7 @@ public class AttachmentService {
                     DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), oldAttachment.getResourceId(), oId),
                     DefaultRepositoryDir.getTransferFileDir(oldAttachment.getOrganizationId(), targetId, nId),
                     oldAttachment.getName());
-            Thread.startVirtualThread(() -> {
-                fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
-            });
+            Thread.startVirtualThread(() -> fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name()));
             // 复制附件记录
             oldAttachment.setId(nId);
             oldAttachment.setResourceId(targetId);
@@ -240,4 +239,44 @@ public class AttachmentService {
         return URLEncoder.encode(fileName, StandardCharsets.UTF_8)
                 .replaceAll("\\+", "%20");
     }
+
+	/**
+	 * 追加临时文件
+	 * @param transferRequest 参数
+	 */
+	@Async
+	public void appendTemp(UploadTransferRequest transferRequest) {
+		List<Attachment> attachments = new ArrayList<>();
+		// insert new attachment
+		transferRequest.getTempFileIds().forEach(tempFileId -> {
+			FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir() + "/" + tempFileId, StorageType.LOCAL.name(), null);
+			List<File> folderTempFiles = fileCommonService.getFolderFiles(request);
+			if (!CollectionUtils.isEmpty(folderTempFiles)) {
+				File tempFile = folderTempFiles.getFirst();
+				FileCopyRequest copyRequest = new FileCopyRequest(DefaultRepositoryDir.getTempFileDir(tempFileId),
+						DefaultRepositoryDir.getTransferFileDir(transferRequest.getOrganizationId(), transferRequest.getResourceId(), tempFileId),
+						tempFile.getName());
+				fileCommonService.copyFile(copyRequest, StorageType.LOCAL.name());
+				Attachment attachment = new Attachment();
+				attachment.setId(tempFileId);
+				attachment.setName(tempFile.getName());
+				String type = "";
+				int index = tempFile.getName().lastIndexOf('.');
+				if (index != -1 && index < tempFile.getName().length() - 1) {
+					type = tempFile.getName().substring(index + 1);
+				}
+				attachment.setType(type);
+				attachment.setSize(tempFile.length());
+				attachment.setStorage(StorageType.LOCAL.name());
+				attachment.setOrganizationId(transferRequest.getOrganizationId());
+				attachment.setResourceId(transferRequest.getResourceId());
+				attachment.setCreateTime(System.currentTimeMillis());
+				attachment.setCreateUser(transferRequest.getOperatorUserId());
+				attachment.setUpdateTime(System.currentTimeMillis());
+				attachment.setUpdateUser(transferRequest.getOperatorUserId());
+				attachments.add(attachment);
+			}
+		});
+		attachmentMapper.batchInsert(attachments);
+	}
 }

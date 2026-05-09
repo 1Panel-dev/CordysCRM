@@ -4,8 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-public class ApprovalOperationBaseRequest {
+public class ApprovalActionRequest {
 
     @NotBlank(message = "当前task任务ID不能为空")
     @Schema(description = "task任务id")
@@ -21,4 +23,10 @@ public class ApprovalOperationBaseRequest {
 
     @Schema(description = "审批人ID")
     private String approverId;
+
+	@Schema(description = "加签意见")
+	private String comment;
+
+	@Schema(description = "加签意见的附件集合")
+	private List<String> attachmentIds;
 }

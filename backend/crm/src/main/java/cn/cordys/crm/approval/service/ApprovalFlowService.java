@@ -46,6 +46,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1410,4 +1411,50 @@ public class ApprovalFlowService {
         }
         return null;
     }
+
+	/**
+	 * 判断当前实例节点是否支持多人审批
+	 * @param currentNodeId 当前节点ID
+	 * @param userId 用户ID
+	 * @param currentOrgId 当前组织ID
+	 * @return 是否支持多人审批
+	 */
+	public boolean isCurrentNodeMultiApprover(String currentNodeId, String userId, String currentOrgId) {
+		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+		List<User> approvers = resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
+		return approvers.size() > 1;
+	}
+
+	/**
+	 * 获取当前实例节点审批人
+	 * @param currentNodeId 当前节点ID
+	 * @param userId 用户ID
+	 * @param currentOrgId 当前组织ID
+	 * @return 审批人ID集合
+	 */
+	public List<User> getCurrentNodeMultiApprover(String currentNodeId, String userId, String currentOrgId) {
+		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
+	}
+
+	/**
+	 * 获取当前资源审批流第一个审批节点
+	 * @param flowVersionId 审批流版本ID
+	 * @param resourceFvs 业务资源字段值
+	 * @return 第一个审批节点
+	 */
+	public ApprovalNodeApproverResponse getResourceApprovalFlowFirstApproverNode(String flowVersionId, List<BaseModuleFieldValue> resourceFvs) {
+		ApprovalNode nodeCriteria = new ApprovalNode();
+		nodeCriteria.setFlowVersionId(flowVersionId);
+		nodeCriteria.setNodeType(ApprovalNodeTypeEnum.START.name());
+		ApprovalNode start = approvalNodeMapper.selectOne(nodeCriteria);
+		ApprovalNodeResponse curr = BeanUtils.copyBean(new ApprovalNodeResponse(), start);
+		while (!Strings.CI.equals(curr.getNodeType(), ApprovalNodeTypeEnum.APPROVER.name())) {
+			// 如果非审批类型的节点, 则一直往下一层级获取
+			curr = getNextNode(curr.getId(), resourceFvs);
+		}
+		return (ApprovalNodeApproverResponse) curr;
+	}
+
+
 }

@@ -1,5 +1,6 @@
 package cn.cordys.crm.approval.controller;
 
+import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
@@ -17,15 +18,15 @@ import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class ResourceApprovalControllerTests extends BaseTest {
+class ApprovalResourceControllerTests extends BaseTest {
 
-    private static final String DETAIL = "/detail/{0}";
+    private static final String SIMPLE_DETAIL = "/simple-detail/{0}";
     private static final String RESOURCE_ID = "approval_resource_test_001";
     private static final String CURRENT_APPROVER_ID = "appr_user_curr";
 
     @Override
     protected String getBasePath() {
-        return "/resource-approval";
+        return "/approval-resource";
     }
 
     @Sql(
@@ -36,7 +37,7 @@ class ResourceApprovalControllerTests extends BaseTest {
     @Test
     @Order(1)
     void testResourceDetailOnlyCurrentNodeTasks() throws Exception {
-        MvcResult mvcResult = requestGetWithOkAndReturn(DETAIL, RESOURCE_ID);
+        MvcResult mvcResult = requestGetWithOkAndReturn(SIMPLE_DETAIL, RESOURCE_ID);
         ResourceApprovalResponse response = getResultData(mvcResult, ResourceApprovalResponse.class);
 
         Assertions.assertNotNull(response);
