@@ -594,9 +594,6 @@ public class ContractService {
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
-        if (dictService.isDictConfigEnable(DictModule.CONTRACT_APPROVAL.name(), orgId) && !Strings.CI.equals(contract.getApprovalStatus(), ContractApprovalStatus.APPROVED.name())) {
-            throw new GenericException(Translator.get("contract.unapproved.cannot.edit"));
-        }
 
         Map<String, String> oldMap = new HashMap<>();
         oldMap.put("contractStage", Translator.get("contract.stage." + contract.getStage().toLowerCase()));
