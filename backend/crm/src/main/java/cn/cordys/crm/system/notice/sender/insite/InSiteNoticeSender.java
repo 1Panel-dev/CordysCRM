@@ -29,9 +29,9 @@ import java.util.Set;
 @Slf4j
 public class InSiteNoticeSender extends AbstractNoticeSender {
 
-    private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
-    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
-    private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
+    protected static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
+    protected static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
+    protected static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
     @Resource
     private BaseMapper<Notification> notificationBaseMapper;
     @Resource

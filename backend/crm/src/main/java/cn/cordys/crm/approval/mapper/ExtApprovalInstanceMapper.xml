@@ -5,4 +5,9 @@
     <select id="updateApprovalStatus" resultType="java.lang.String">
         update ${sourceTable} set approval_status = #{approvalStatus} where id = #{id}
     </select>
+
+
+    <select id="selectBusinessName" resultType="java.lang.String">
+        select name from ${sourceTable} where id = #{id}
+    </select>
 </mapper>
