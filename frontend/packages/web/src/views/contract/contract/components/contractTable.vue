@@ -495,6 +495,7 @@
               { default: () => row.customerName, trigger: () => row.customerName }
             );
       },
+      // todo xinxinwu
       stage: (row: ContractItem) => {
         const disabled = row.approvalStatus !== ProcessStatusEnum.APPROVED || !hasAnyPermission(['CONTRACT:STAGE']);
         if (disabled && enableApproval.value) {

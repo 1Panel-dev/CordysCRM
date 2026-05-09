@@ -525,6 +525,13 @@ export const {
   getInvoicedDetailSnapshot,
   getContractStatistic,
   getPaymentRecordStatistic,
+  updateContractStatus,
+  updateContractStatusRollback,
+  sortContractStatus,
+  addContractStatus,
+  getContractStatusConfig,
+  deleteContractStatus,
+  updateContractStage,
 } = contractApi;
 
 export const {

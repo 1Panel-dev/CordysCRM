@@ -100,7 +100,7 @@
     dragEnd,
     handleMove,
     getDropdownOptions,
-  } = useStageConfig(props.type);
+  } = useStageConfig(computed(() => props.type));
 
   async function handleActionSelect(action: ActionsItem, element: StatusRowItem) {
     await handleMoreSelect(action, element, batchFormRef.value);

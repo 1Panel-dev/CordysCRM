@@ -136,3 +136,12 @@ export const FixedContractInvoicedViewUrl = '/invoice/view/fixed'; // 固定发�
 export const EnableContractInvoicedViewUrl = '/invoice/view/enable'; // 启用/禁用发票视图
 export const GetContractInvoicedViewDetailUrl = '/invoice/view/detail'; // 发票视图详情
 export const DeleteContractInvoicedViewUrl = '/invoice/view/delete'; // 发票视图删除
+
+// 合同状态
+export const UpdateContractStatusUrl = '/contract/stage/update'; // 更新合同状态配置
+export const UpdateContractStatusRollbackUrl = '/contract/stage/update-rollback'; // 合同状态回退配置
+export const SortContractStatusUrl = '/contract/stage/sort'; // 合同状态排序
+export const AddContractStatusUrl = '/contract/stage/add'; // 合同状态添加
+export const GetContractStatusConfigUrl = '/contract/stage/get'; // 获取合同状态配置
+export const DeleteContractStatusUrl = '/contract/stage/delete'; // 删除合同状态
+export const UpdateContractStageUrl = '/contract/update/stage'; // 更新合同详情阶段

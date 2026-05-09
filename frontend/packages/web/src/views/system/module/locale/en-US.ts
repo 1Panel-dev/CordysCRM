@@ -120,5 +120,8 @@ export default {
   'module.tender': 'Tender',
   'module.contract.businessNameValidateConfig': 'Business Title Form Required Settings',
   'module.contract.invoiceFormSetting': 'Invoice Form Settings',
+  'module.contract.stageSetting': 'Stage Setting',
+  'module.contract.stage': 'Contract Stage',
+  'module.contract.stageHasData': 'The current contract state has data, cannot delete!',
   'module.invoice': 'Invoice Records',
 };
