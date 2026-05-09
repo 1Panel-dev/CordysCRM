@@ -117,5 +117,8 @@ export default {
   'module.tender': '标讯',
   'module.contract.businessNameValidateConfig': '工商抬头表单必填设置',
   'module.contract.invoiceFormSetting': '发票表单设置',
+  'module.contract.stageSetting': '合同阶段设置',
+  'module.contract.stage': '合同阶段',
+  'module.contract.stageHasData': '当前合同状态存在数据，禁止删除！',
   'module.invoice': '发票记录',
 };

@@ -71,8 +71,7 @@
     v-model:enable="enableOptMoveReason"
     @load-config="() => getGlobalReasonConfig()"
   />
-  <stateFlowDrawer v-model:visible="businessManagementStepSetVisible" :type="FormDesignKeyEnum.BUSINESS" />
-  <stateFlowDrawer v-model:visible="orderStateFlowVisible" :type="FormDesignKeyEnum.ORDER" />
+  <stateFlowDrawer v-model:visible="stateFlowVisible" :type="stageFormKey" />
   <ContractFormFormDrawer v-model:visible="contractFormVisible" />
   <OrderFormFormDrawer v-model:visible="orderFormVisible" />
   <ContractPaymentPlanFormDrawer v-model:visible="contractPaymentPlanFormVisible" />
@@ -95,6 +94,7 @@
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import stateFlowDrawer from '@/components/business/crm-status-config-drawer/index.vue';
+  import { StatusBizType } from '@/components/business/crm-status-config-drawer/types';
   import businessTitleValidate from './businessTitleValidate.vue';
   import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
@@ -164,11 +164,6 @@
   const showAccountReasonDrawer = ref(false);
   const showLeadReasonDrawer = ref(false);
   const showOptReasonDrawer = ref(false);
-
-  // 全局审批开关配置
-  const enableConstructApproval = ref(false);
-  const enableInvoiceApproval = ref(false);
-  const enableQuotationApproval = ref(false);
 
   // 配置原因
   function handleConfigReason(e: MouseEvent, type: ReasonTypeEnum) {
@@ -307,6 +302,10 @@
     {
       label: t('module.contract.invoiceFormSetting'),
       key: 'invoiceFormSetting',
+    },
+    {
+      label: t('module.contract.stageSetting'),
+      key: 'contractStateFlow',
     },
   ]);
 
@@ -567,9 +566,10 @@
   const businessManagementFormVisible = ref(false);
   const opportunityQuotationFormVisible = ref(false);
   const businessManagementBusinessParamsSetVisible = ref(false);
-  const businessManagementStepSetVisible = ref(false);
+
   const orderFormVisible = ref(false);
-  const orderStateFlowVisible = ref(false);
+  const stateFlowVisible = ref(false);
+  const stageFormKey = ref<StatusBizType>(FormDesignKeyEnum.BUSINESS);
 
   const productManagementFormVisible = ref(false);
   const priceTableFormVisible = ref(false);
@@ -617,7 +617,8 @@
         } else if (key === 'newFormOpportunityQuotation') {
           opportunityQuotationFormVisible.value = true;
         } else if (key === 'businessStepSet') {
-          businessManagementStepSetVisible.value = true;
+          stageFormKey.value = FormDesignKeyEnum.BUSINESS;
+          stateFlowVisible.value = true;
         }
         break;
       case ModuleConfigEnum.PRODUCT_MANAGEMENT:
@@ -631,7 +632,8 @@
         if (key === 'newForm') {
           orderFormVisible.value = true;
         } else if (key === 'orderStateFlow') {
-          orderStateFlowVisible.value = true;
+          stageFormKey.value = FormDesignKeyEnum.ORDER;
+          stateFlowVisible.value = true;
         }
         break;
       default:
@@ -650,6 +652,10 @@
         break;
       case 'invoiceFormSetting':
         contractInvoiceFormVisible.value = true;
+        break;
+      case 'contractStateFlow':
+        stageFormKey.value = FormDesignKeyEnum.CONTRACT;
+        stateFlowVisible.value = true;
         break;
       default:
         break;

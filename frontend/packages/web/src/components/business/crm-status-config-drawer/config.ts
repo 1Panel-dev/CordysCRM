@@ -4,14 +4,20 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { FormItemModel } from '@/components/business/crm-batch-form/types';
 
 import {
+  addContractStatus,
   addOpportunityStage,
   addOrderStatus,
+  deleteContractStatus,
   deleteOpportunityStage,
   deleteOrderStatus,
+  getContractStatusConfig,
   getOpportunityStageConfig,
   getOrderStatusConfig,
+  sortContractStatus,
   sortOpportunityStage,
   sortOrderStatus,
+  updateContractStatus,
+  updateContractStatusRollback,
   updateOpportunityStage,
   updateOpportunityStageRollback,
   updateOrderStatus,
@@ -80,6 +86,25 @@ export function useStatusTextConfig(): Record<StatusBizType, StatusTextConfig> {
         },
       ],
       stageHasDataTip: t('module.order.stageHasData'),
+    },
+    [FormDesignKeyEnum.CONTRACT]: {
+      title: t('module.contract.stageSetting'),
+      sectionTitle: t('module.businessManage.businessStepConfig'),
+      columnTitles: [t('module.contract.stage'), t('opportunity.stageType')],
+      rollbackTitle: t('module.order.stateBackConfig'),
+      switches: [
+        {
+          key: 'runningStageRollback',
+          label: t('crmStatusConfigDrawer.runningStageRollback'),
+          tip: t('crmStatusConfigDrawer.runningStageRollbackTip', { name: t('module.contract') }),
+        },
+        {
+          key: 'completedStageRollback',
+          label: t('crmStatusConfigDrawer.completedStageRollback'),
+          tip: t('crmStatusConfigDrawer.completedStageRollbackTip', { name: t('module.contract') }),
+        },
+      ],
+      stageHasDataTip: t('module.contract.stageHasData'),
     },
   };
 }
@@ -155,6 +180,34 @@ export function useStatusFormItemModelConfig(): Record<StatusBizType, FormItemMo
         },
       },
     ],
+    [FormDesignKeyEnum.CONTRACT]: [
+      {
+        path: 'name',
+        type: FieldTypeEnum.INPUT,
+        formItemClass: 'w-full flex-initial',
+        inputProps: { maxlength: 16 },
+        rule: [
+          {
+            required: true,
+            message: t('common.notNull', { value: t('order.status') }),
+          },
+          { notRepeat: true, message: t('module.capacitySet.repeatMsg') },
+        ],
+      },
+      {
+        path: 'type',
+        type: FieldTypeEnum.SELECT,
+        formItemClass: 'w-full flex-initial',
+        selectProps: {
+          disabledFunction: () => true,
+          disabledTooltipFunction: () => t('opportunity.stageTypeDisabledChange'),
+          options: [
+            { label: t('common.inProgress'), value: 'AFOOT' },
+            { label: t('common.complete'), value: 'END' },
+          ],
+        },
+      },
+    ],
   };
 }
 
@@ -176,6 +229,14 @@ export function useStatusApiConfig(): Record<StatusBizType, StatusApiConfig> {
       sort: sortOrderStatus,
       rollback: updateOrderStatusRollback,
     },
+    [FormDesignKeyEnum.CONTRACT]: {
+      load: getContractStatusConfig,
+      create: addContractStatus,
+      update: updateContractStatus,
+      remove: deleteContractStatus,
+      sort: sortContractStatus,
+      rollback: updateContractStatusRollback,
+    },
   };
 }
 
@@ -193,6 +254,11 @@ export function useStatusStrategyConfig(): Record<StatusBizType, StatusStrategyC
     },
     [FormDesignKeyEnum.ORDER]: {
       formItemModel: formItemModelMap[FormDesignKeyEnum.ORDER],
+      buildCreateParams: (row, { list, index }) => buildDefaultCreateParams(row, list, index, ['name', 'type']),
+      buildUpdateParams: (row) => buildDefaultUpdateParams(row, ['id', 'name']),
+    },
+    [FormDesignKeyEnum.CONTRACT]: {
+      formItemModel: formItemModelMap[FormDesignKeyEnum.CONTRACT],
       buildCreateParams: (row, { list, index }) => buildDefaultCreateParams(row, list, index, ['name', 'type']),
       buildUpdateParams: (row) => buildDefaultUpdateParams(row, ['id', 'name']),
     },

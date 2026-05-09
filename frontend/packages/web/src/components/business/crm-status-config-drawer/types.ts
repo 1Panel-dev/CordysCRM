@@ -5,7 +5,7 @@ import type { FormItemModel } from '@/components/business/crm-batch-form/types';
 
 import type { Ref } from 'vue';
 
-export type StatusBizType = FormDesignKeyEnum.BUSINESS | FormDesignKeyEnum.ORDER;
+export type StatusBizType = FormDesignKeyEnum.BUSINESS | FormDesignKeyEnum.ORDER | FormDesignKeyEnum.CONTRACT;
 
 export interface StatusRowItem {
   id?: string;

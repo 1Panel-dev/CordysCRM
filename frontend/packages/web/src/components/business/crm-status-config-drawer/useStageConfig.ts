@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, type Ref, ref } from 'vue';
 import { useMessage } from 'naive-ui';
 
 import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -17,7 +17,7 @@ function buildRollbackParams(form: StatusFormModel) {
   };
 }
 
-export default function useStageConfig(type: StatusBizType): UseStatusConfigReturn {
+export default function useStageConfig(type: Ref<StatusBizType>): UseStatusConfigReturn {
   const { t } = useI18n();
   const message = useMessage();
 
@@ -25,9 +25,9 @@ export default function useStageConfig(type: StatusBizType): UseStatusConfigRetu
   const apiConfigMap = useStatusApiConfig();
   const strategyConfigMap = useStatusStrategyConfig();
 
-  const textConfig = computed(() => textConfigMap[type]);
-  const apiConfig = computed(() => apiConfigMap[type]);
-  const strategyConfig = computed(() => strategyConfigMap[type]);
+  const textConfig = computed(() => textConfigMap[type.value]);
+  const apiConfig = computed(() => apiConfigMap[type.value]);
+  const strategyConfig = computed(() => strategyConfigMap[type.value]);
   const formItemModel = computed(() => strategyConfig.value.formItemModel);
 
   const form = ref<StatusFormModel>({
