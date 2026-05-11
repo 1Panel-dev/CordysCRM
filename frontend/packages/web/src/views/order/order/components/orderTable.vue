@@ -126,6 +126,7 @@
   import { baseFilterConfigList } from '@/config/clue';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -160,6 +161,7 @@
   const activeTab = ref();
   const keyword = ref('');
   const tableRefreshId = ref(0);
+  const tableItemRefreshId = ref('');
 
   const stageConfig = ref<OpportunityStageConfig>();
   async function initStageConfig() {
@@ -281,6 +283,10 @@
       },
     });
 
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.ORDER,
+  });
+
   function showDetail(row: OrderItem) {
     if (row && !hasApprovalScopedPermission(row, ['ORDER:READ'])) {
       return;
@@ -314,18 +320,29 @@
     });
   }
 
-  function handleFormReview(res: any) {
-    // todo 待联调 xinxinwu
+  function handleReview(row: OrderItem) {
+    reviewByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableItemRefreshId.value = resourceId;
+      },
+    });
   }
 
-  function handleReview(row: OrderItem) {
-    // todo 待联调 xinxinwu
+  function handleRevoke(row: OrderItem) {
+    revokeByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableItemRefreshId.value = resourceId;
+      },
+    });
   }
 
   async function handleActionSelect(row: OrderItem, actionKey: string) {
     switch (actionKey) {
       case 'review':
         handleReview(row);
+        break;
+      case 'revoke':
+        handleRevoke(row);
         break;
       case 'edit':
         handleEdit(row.id);
@@ -584,6 +601,14 @@
     }
   }
 
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleFormCreateSaved(res);
+      },
+    });
+  }
+
   function removeItemFromList(id: string) {
     propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
     propsRes.value.crmPagination = {
@@ -598,6 +623,16 @@
       if (val) {
         removeItemFromList(val);
         getStatistic();
+      }
+    }
+  );
+
+  watch(
+    () => tableItemRefreshId.value,
+    (val) => {
+      if (val) {
+        searchData(undefined, val);
+        tableItemRefreshId.value = '';
       }
     }
   );

@@ -234,6 +234,16 @@
       },
     ];
 
+    const todoListMessage = [
+      {
+        value: 'todo',
+        label: t('system.message.todoList'),
+        count: isAnnouncementTab
+          ? messageCount.value[SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE]
+          : messageCount.value?.total, // todo 待办数量
+      },
+    ];
+
     const baseMessageTypes = [
       {
         value: SystemResourceMessageTypeEnum.CLUE,
@@ -265,7 +275,11 @@
     if (isAnnouncementTab) {
       return allMessage;
     }
-    return [...allMessage, ...baseMessageTypes.filter(({ value }) => enabledModuleKeys.has(value) || value)];
+    return [
+      ...allMessage,
+      ...todoListMessage,
+      ...baseMessageTypes.filter(({ value }) => enabledModuleKeys.has(value) || value),
+    ];
   });
 
   async function initMessageCount() {

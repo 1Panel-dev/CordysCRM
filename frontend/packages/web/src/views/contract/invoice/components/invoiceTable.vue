@@ -118,11 +118,12 @@
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import DetailDrawer from './detail.vue';
 
-  import { batchDeleteInvoiced, deleteInvoiced, revokeInvoiced } from '@/api/modules';
+  import { batchDeleteInvoiced, deleteInvoiced } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { deleteInvoiceContentMap } from '@/config/contract';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -301,6 +302,10 @@
       },
     });
 
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.INVOICE,
+  });
+
   function showDetail(row: ContractInvoiceItem) {
     if (row && !hasApprovalScopedPermission(row, ['CONTRACT_INVOICE:READ'])) {
       return;
@@ -309,23 +314,20 @@
     showDetailDrawer.value = true;
   }
 
-  async function handleRevoke(row: ContractInvoiceItem) {
-    try {
-      await revokeInvoiced(row.id);
-      Message.success(t('common.revokeSuccess'));
-      tableItemRefreshId.value = row.id;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-
-  function handleFormReview(res: any) {
-    // todo 待联调 xinxinwu
+  function handleRevoke(row: ContractInvoiceItem) {
+    revokeByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableItemRefreshId.value = resourceId;
+      },
+    });
   }
 
   function handleReview(row: ContractInvoiceItem) {
-    // todo 待联调 xinxinwu
+    reviewByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableItemRefreshId.value = resourceId;
+      },
+    });
   }
 
   async function handleActionSelect(row: ContractInvoiceItem, actionKey: string, approvalEnable: boolean) {
@@ -543,6 +545,14 @@
     } else {
       searchData();
     }
+  }
+
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleFormCreateSaved(res);
+      },
+    });
   }
 
   function removeItemFromList(id: string) {

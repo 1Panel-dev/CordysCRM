@@ -57,9 +57,10 @@
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
-  import { approvalQuotation, deleteQuotation, revokeQuotation, voidQuotation } from '@/api/modules';
+  import { deleteQuotation, voidQuotation } from '@/api/modules';
   import { quotationDataActionMap } from '@/config/opportunity';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
 
@@ -104,26 +105,10 @@
   }
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription> | null>(null);
-  async function handleApproval(approval = false) {
-    const approvalStatus = approval ? ProcessStatusEnum.APPROVED : ProcessStatusEnum.UNAPPROVED;
-    const { name, opportunityId, moduleFields = [], products = [] } = detailInfo.value;
-    try {
-      await approvalQuotation({
-        id: props.sourceId,
-        name: name ?? '',
-        approvalStatus,
-        opportunityId: opportunityId ?? '',
-        moduleFormConfigDTO: formDescriptionRef.value?.moduleFormConfig,
-        moduleFields,
-        products,
-      });
-      Message.success(approval ? t('common.approvedSuccess') : t('common.unApprovedSuccess'));
-      handleSavedRefresh();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
+
+  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+  });
 
   function handleVoid() {
     openModal({
@@ -145,15 +130,12 @@
     });
   }
 
-  async function handleRevoke() {
-    try {
-      await revokeQuotation(props.sourceId);
-      Message.success(t('common.revokeSuccess'));
-      handleSavedRefresh();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
+  function handleRevoke() {
+    revokeByResourceId(props.sourceId, {
+      onSuccess: () => {
+        handleSavedRefresh();
+      },
+    });
   }
 
   function handleDelete() {
@@ -178,7 +160,11 @@
   }
 
   function handleReview() {
-    // todo 待联调 xinxinwu
+    reviewByResourceId(props.sourceId, {
+      onSuccess: () => {
+        handleSavedRefresh();
+      },
+    });
   }
 
   function handleSelect(key: string) {
@@ -213,6 +199,7 @@
     identityResolver: {
       isApplicant: (row, currentUserId) => row.createUser === currentUserId,
     },
+    shouldUseRolePermissionOnly: (row) => row.invalid,
     specialActionFilter: (row, actionKeys) => {
       if (row.invalid) {
         return actionKeys.filter((key) => key === 'delete');

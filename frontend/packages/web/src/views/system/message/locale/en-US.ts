@@ -56,4 +56,5 @@ export default {
   'system.message.noticeOfDepartmentHead': 'Notice from the head of the level department',
   'system.message.departmentHeadTooltip': '0 represents the direct superior',
   'system.message.timeSetting': 'Time configuration',
+  'system.message.todoList': 'Todo list',
 };

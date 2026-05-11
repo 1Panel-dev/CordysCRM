@@ -9,12 +9,15 @@ import {
   ApprovalProcessPageUrl,
   GetApprovalConfigDetailUrl,
   GetResourceApprovingDetailUrl,
+  ReviewResourceUrl,
+  RevokeResourceUrl,
 } from '@lib/shared/api/requrls/system/process';
 import {
   AddApprovalProcessParams,
   ApprovalPermissionsDetail,
   ApprovalProcessDetail,
   ApprovalProcessItem,
+  CommonApprovalActionParams,
   UpdateApprovalProcessParams,
 } from '@lib/shared/models/system/process';
 import type { CommonList } from '@lib/shared/models/common';
@@ -58,6 +61,15 @@ export default function useProcessApi(CDR: CordysAxios) {
   function getResourceApprovingDetail(sourceId: string) {
     return CDR.get({ url:`${GetResourceApprovingDetailUrl}/${sourceId}` });
   }
+  // 提审
+  function reviewResource(data: CommonApprovalActionParams) {
+    return CDR.post({ url:ReviewResourceUrl,data });
+  }
+
+  // 撤销 todo xinxinwu
+  function revokeResource(data: CommonApprovalActionParams) {
+    return CDR.post({ url:RevokeResourceUrl,data });
+  }
 
   return {
     getApprovalProcessList,
@@ -69,5 +81,7 @@ export default function useProcessApi(CDR: CordysAxios) {
     toggleApprovalProcess,
     getApprovalConfigDetail,
     getResourceApprovingDetail,
+    reviewResource,
+    revokeResource,
   };
 }

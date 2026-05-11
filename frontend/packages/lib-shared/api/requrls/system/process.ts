@@ -7,3 +7,5 @@ export const DeleteApprovalProcessUrl = '/approval-flow/delete'; // 删除审批
 export const ApprovalProcessDetailUrl = '/approval-flow/get'; // 审批流详情
 export const ToggleApprovalProcessUrl = '/approval-flow/enable'; // 启用｜禁用审批流
 export const GetResourceApprovingDetailUrl = '/resource-approval/detail'; // 资源审批状态详情
+export const ReviewResourceUrl = '/resource-approval/push'; // 提审
+export const RevokeResourceUrl = '/resource-approval/pop'; // 撤销 todo xinxinwu

@@ -145,9 +145,10 @@
   import QuotationDetailDrawer from '@/views/opportunity/components/quotation/detail.vue';
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
-  import { approvalContract, deleteContract, revokeContract } from '@/api/modules';
+  import { approvalContract, deleteContract } from '@/api/modules';
   import { contractStatusOptions } from '@/config/contract';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -291,12 +292,24 @@
     emit('refresh');
   }
 
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CONTRACT,
+  });
+
   function handleFormReview(res: any) {
-    // todo 待联调 xinxinwu
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleSaved();
+      },
+    });
   }
 
   function handleReview() {
-    // todo 待联调 xinxinwu
+    reviewByResourceId(props.sourceId, {
+      onSuccess: () => {
+        handleSaved();
+      },
+    });
   }
 
   function handleDelete(row: ContractItem) {
@@ -320,15 +333,12 @@
     });
   }
 
-  async function handleRevoke() {
-    try {
-      await revokeContract(props.sourceId);
-      Message.success(t('common.revokeSuccess'));
-      handleSaved();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
+  function handleRevoke() {
+    revokeByResourceId(props.sourceId, {
+      onSuccess: () => {
+        handleSaved();
+      },
+    });
   }
 
   async function handleApproval(approval = false) {
