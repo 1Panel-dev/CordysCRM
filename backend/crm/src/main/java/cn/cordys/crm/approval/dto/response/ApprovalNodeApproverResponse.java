@@ -1,5 +1,6 @@
 package cn.cordys.crm.approval.dto.response;
 
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,14 +41,20 @@ public class ApprovalNodeApproverResponse extends ApprovalNodeResponse {
     @Schema(description = "审批人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
     private String approverType;
 
-    @Schema(description = "审批人列表")
+    @Schema(description = "审批人ID列表")
     private List<String> approverList;
+
+    @Schema(description = "审批人选择项（用于前端回显）")
+    private List<OptionDTO> approverSelectOptions;
 
     @Schema(description = "抄送人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
     private String ccType;
 
-    @Schema(description = "抄送人列表")
+    @Schema(description = "抄送人ID列表")
     private List<String> ccList;
+
+    @Schema(description = "抄送人选择项（用于前端回显）")
+    private List<OptionDTO> ccSelectOptions;
 
     @Schema(description = "审批通过后配置")
     private ApprovalPostConfigDTO passPostConfig;

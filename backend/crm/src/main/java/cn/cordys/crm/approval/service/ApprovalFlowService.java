@@ -6,15 +6,16 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.dto.condition.FilterCondition;
-import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.Permission;
 import cn.cordys.common.permission.PermissionDefinitionItem;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -31,15 +32,13 @@ import cn.cordys.crm.approval.dto.response.*;
 import cn.cordys.crm.approval.log.ApprovalFlowLogDTO;
 import cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper;
 import cn.cordys.crm.system.domain.Department;
-import cn.cordys.crm.system.domain.DepartmentCommander;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.mapper.ExtDepartmentCommanderMapper;
-import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
+import cn.cordys.crm.system.mapper.ExtRoleMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
 import cn.cordys.crm.system.service.RoleService;
-import cn.cordys.common.service.BaseService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -88,6 +87,8 @@ public class ApprovalFlowService {
     private ExtDepartmentCommanderMapper extDepartmentCommanderMapper;
     @Resource
     private ExtUserMapper extUserMapper;
+    @Resource
+    private ExtRoleMapper extRoleMapper;
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -419,12 +420,19 @@ public class ApprovalFlowService {
      * 解析审批人节点 JSON 字段为对象
      */
     private void parseApproverNodeFields(ApprovalNodeApprover approverNode, ApprovalNodeApproverResponse response) {
+        // 解析审批人列表
+        List<String> approverIds = null;
         if (StringUtils.isNotBlank(approverNode.getApproverList())) {
-            response.setApproverList(JSON.parseArray(approverNode.getApproverList(), String.class));
+            approverIds = JSON.parseArray(approverNode.getApproverList(), String.class);
+            response.setApproverList(approverIds);
         }
+        // 解析抄送人列表
+        List<String> ccIds = null;
         if (StringUtils.isNotBlank(approverNode.getCcList())) {
-            response.setCcList(JSON.parseArray(approverNode.getCcList(), String.class));
+            ccIds = JSON.parseArray(approverNode.getCcList(), String.class);
+            response.setCcList(ccIds);
         }
+        // 解析其他配置
         if (StringUtils.isNotBlank(approverNode.getPassPostConfig())) {
             response.setPassPostConfig(JSON.parseObject(approverNode.getPassPostConfig(), ApprovalPostConfigDTO.class));
         }
@@ -434,6 +442,68 @@ public class ApprovalFlowService {
         if (StringUtils.isNotBlank(approverNode.getFieldPermissions())) {
             response.setFieldPermissions(JSON.parseArray(approverNode.getFieldPermissions(), FieldPermissionDTO.class));
         }
+
+        // 查询审批人选择项名称（用于前端回显）
+        if (CollectionUtils.isNotEmpty(approverIds)) {
+            response.setApproverSelectOptions(resolveSelectOptions(approverNode.getApproverType(), approverIds));
+        }
+        // 查询抄送人选择项名称（用于前端回显）
+        if (CollectionUtils.isNotEmpty(ccIds)) {
+            response.setCcSelectOptions(resolveSelectOptions(approverNode.getCcType(), ccIds));
+        }
+    }
+
+    /**
+     * 根据类型解析选择项列表
+     */
+    private List<OptionDTO> resolveSelectOptions(String type, List<String> ids) {
+        if (StringUtils.isBlank(type) || CollectionUtils.isEmpty(ids)) {
+            return List.of();
+        }
+        try {
+            ApproverTypeEnum approverType = ApproverTypeEnum.valueOf(type);
+            return switch (approverType) {
+                case MEMBER -> resolveMemberOptions(ids);
+                case ROLE -> resolveRoleOptions(ids);
+                default -> List.of();
+            };
+        } catch (IllegalArgumentException e) {
+            return List.of();
+        }
+    }
+
+    /**
+     * 解析成员选择项
+     */
+    private List<OptionDTO> resolveMemberOptions(List<String> userIds) {
+        List<OptionDTO> userOptions = extUserMapper.selectUserOptionByIds(userIds);
+        if (CollectionUtils.isEmpty(userOptions)) {
+            return List.of();
+        }
+        // 按照 userIds 顺序返回
+        Map<String, OptionDTO> optionMap = userOptions.stream()
+                .collect(Collectors.toMap(OptionDTO::getId, o -> o));
+        return userIds.stream()
+                .map(optionMap::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 解析角色选择项
+     */
+    private List<OptionDTO> resolveRoleOptions(List<String> roleIds) {
+        List<OptionDTO> roleOptions = extRoleMapper.getIdNameByIds(roleIds);
+        if (CollectionUtils.isEmpty(roleOptions)) {
+            return List.of();
+        }
+        // 按照 roleIds 顺序返回
+        Map<String, OptionDTO> optionMap = roleOptions.stream()
+                .collect(Collectors.toMap(OptionDTO::getId, o -> o));
+        return roleIds.stream()
+                .map(optionMap::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -945,7 +1015,7 @@ public class ApprovalFlowService {
                             ApprovalNodeApproverResponse approverResponse = BeanUtils.copyBean(
                                     new ApprovalNodeApproverResponse(), nextNode);
                             BeanUtils.copyBean(approverResponse, approverNode);
-                            // 解析 JSON 字段为对象
+                            // 解析 JSON 字段为对象（不需要前端回显，传null）
                             parseApproverNodeFields(approverNode, approverResponse);
                             return approverResponse;
                         }
