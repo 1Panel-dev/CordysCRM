@@ -55,4 +55,5 @@ export default {
   'system.message.noticeOfDepartmentHead': '级部门负责人通知',
   'system.message.departmentHeadTooltip': '0 代表直属上级',
   'system.message.timeSetting': '时间配置',
+  'system.message.todoList': '待办',
 };

@@ -171,12 +171,12 @@
     deleteContract,
     getContractStatistic,
     getContractStatusConfig,
-    revokeContract,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractStatusOptions } from '@/config/contract';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -319,17 +319,6 @@
     showVoidReasonModal.value = true;
   }
 
-  async function handleRevoke(row: ContractItem) {
-    try {
-      await revokeContract(row.id);
-      Message.success(t('common.revokeSuccess'));
-      tableItemRefreshId.value = row.id;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-
   // 回款
   const initialSourceName = ref('');
   const linkFormInfo = ref();
@@ -379,6 +368,18 @@
       },
     });
 
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.CONTRACT,
+  });
+
+  function handleRevoke(row: ContractItem) {
+    revokeByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableItemRefreshId.value = resourceId;
+      },
+    });
+  }
+
   function handleApproval(row: ContractItem) {
     if (!hasApprovalScopedPermission(row, ['CONTRACT:READ'])) {
       return;
@@ -387,12 +388,12 @@
     showDetailDrawer.value = true;
   }
 
-  function handleFormReview(res: any) {
-    // todo 待联调 xinxinwu
-  }
-
   function handleReview(row: ContractItem) {
-    // todo 待联调 xinxinwu
+    reviewByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableItemRefreshId.value = resourceId;
+      },
+    });
   }
 
   async function handleActionSelect(row: ContractItem, actionKey: string) {
@@ -728,6 +729,14 @@
     } else {
       searchData();
     }
+  }
+
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleFormCreateSaved(res);
+      },
+    });
   }
 
   function removeItemFromList(id: string) {

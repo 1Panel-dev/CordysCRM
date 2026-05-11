@@ -127,11 +127,12 @@
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
-  import { batchVoided, deleteQuotation, getOpenSeaOptions, revokeQuotation, voidQuotation } from '@/api/modules';
+  import { batchVoided, deleteQuotation, getOpenSeaOptions, voidQuotation } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { quotationDataActionMap } from '@/config/opportunity';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -326,17 +327,6 @@
     });
   }
 
-  async function handleRevoke(row: QuotationItem) {
-    try {
-      await revokeQuotation(row.id);
-      Message.success(t('common.revokeSuccess'));
-      tableRefreshItemId.value = row.id;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-
   function handleDownload(id: string) {
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
   }
@@ -345,6 +335,7 @@
     useApprovalOperation<QuotationItem>({
       formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
       dataActionMap: quotationDataActionMap,
+      shouldUseRolePermissionOnly: (row) => row.invalid,
       specialActionFilter: (row, actionKeys) => {
         if (row.invalid) {
           return actionKeys.filter((key) => key === 'delete');
@@ -352,6 +343,10 @@
         return actionKeys;
       },
     });
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+  });
 
   function handleApproval(row: QuotationItem) {
     if (!hasApprovalScopedPermission(row, ['OPPORTUNITY_QUOTATION:READ'])) {
@@ -361,12 +356,20 @@
     showDetailDrawer.value = true;
   }
 
-  function handleFormReview(res: any) {
-    // todo 待联调 xinxinwu
+  function handleReview(row: QuotationItem) {
+    reviewByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableRefreshItemId.value = resourceId;
+      },
+    });
   }
 
-  function handleReview(row: QuotationItem) {
-    // todo 待联调 xinxinwu
+  function handleRevoke(row: QuotationItem) {
+    revokeByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableRefreshItemId.value = resourceId;
+      },
+    });
   }
 
   function handleActionSelect(row: QuotationItem, actionKey: string, done?: () => void) {
@@ -614,6 +617,14 @@
     } else {
       searchData();
     }
+  }
+
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleFormCreateSaved();
+      },
+    });
   }
 
   function removeItemFromList(id: string) {

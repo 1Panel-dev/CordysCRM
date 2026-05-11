@@ -780,4 +780,6 @@ export const {
   toggleApprovalProcess,
   getApprovalConfigDetail,
   getResourceApprovingDetail,
+  reviewResource,
+  revokeResource,
 } = processApi;

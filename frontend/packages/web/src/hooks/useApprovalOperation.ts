@@ -28,6 +28,7 @@ export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
     isApplicant?: (row: Row, currentUserId: string) => boolean;
   };
   specialActionFilter?: (row: Row, actionKeys: string[]) => string[];
+  shouldUseRolePermissionOnly?: (row: Row) => boolean; // 应该回退成“只按角色权限”处理，例如报价单作废状态下，但是审批状态还是审批中，此刻按照角色权限处理只展示删除
 }
 
 function buildStatusPermissionMap(statusPermissions: StatusPermissions[]) {
@@ -75,6 +76,10 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return (
       options.identityResolver?.isApplicant?.(row, userStore.userInfo.id) ?? row.createUser === userStore.userInfo.id
     );
+  }
+
+  function shouldUseRolePermissionOnly(row: Row) {
+    return options.shouldUseRolePermissionOnly?.(row) ?? false;
   }
 
   function createApprovalActions(row: Row): ActionsItem[] {
@@ -183,7 +188,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
     const hasRolePermission = hasAnyPermission(permissions);
 
-    if (!enableApproval.value) {
+    if (!enableApproval.value || shouldUseRolePermissionOnly(row)) {
       return hasRolePermission;
     }
 
@@ -231,9 +236,10 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   }
 
   function resolveRowActions(row: Row) {
-    const actions = enableApproval.value
-      ? [...createApprovalActions(row), ...createDataPermissionActions(row)]
-      : createNormalActions(row);
+    const actions =
+      !enableApproval.value || shouldUseRolePermissionOnly(row)
+        ? createNormalActions(row)
+        : [...createApprovalActions(row), ...createDataPermissionActions(row)];
 
     return applySpecialActionFilter(row, actions);
   }

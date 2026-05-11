@@ -186,3 +186,8 @@ export interface ApprovalPopoverDetail {
   approveStatus: ProcessStatusEnum;
   approveUserList: ApproverItem[];
 }
+
+export interface CommonApprovalActionParams {
+  resourceId: string;
+  formKey: string;
+}

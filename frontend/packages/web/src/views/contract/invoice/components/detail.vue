@@ -70,9 +70,10 @@
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
-  import { approvalInvoiced, deleteInvoiced, revokeInvoiced } from '@/api/modules';
+  import { approvalInvoiced, deleteInvoiced } from '@/api/modules';
   import { deleteInvoiceContentMap } from '@/config/contract';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useModal from '@/hooks/useModal';
 
   const props = defineProps<{
@@ -114,7 +115,7 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<ContractInvoiceItem>({
+  const { initApprovalPermission, resolveRowOperation } = useApprovalOperation<ContractInvoiceItem>({
     formType: FormDesignKeyEnum.INVOICE,
     dataActionMap: invoiceDetailDataActionMap,
     isDetail: true,
@@ -150,6 +151,10 @@
     refreshKey.value += 1;
     emit('refresh');
   }
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.INVOICE,
+  });
 
   function handleDelete(row: ContractInvoiceItem) {
     openModal({
@@ -192,23 +197,28 @@
     }
   }
 
-  async function handleRevoke() {
-    try {
-      await revokeInvoiced(props.sourceId);
-      Message.success(t('common.revokeSuccess'));
-      handleSaved();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
+  function handleRevoke() {
+    revokeByResourceId(props.sourceId, {
+      onSuccess: () => {
+        handleSaved();
+      },
+    });
   }
 
   function handleFormReview(res: any) {
-    // todo 待联调 xinxinwu
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleSaved();
+      },
+    });
   }
 
   function handleReview() {
-    // todo 待联调 xinxinwu
+    reviewByResourceId(props.sourceId, {
+      onSuccess: () => {
+        handleSaved();
+      },
+    });
   }
 
   async function handleButtonClick(actionKey: string) {

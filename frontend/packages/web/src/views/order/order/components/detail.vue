@@ -106,6 +106,7 @@
 
   import { deleteOrder, getOpenSeaOptions, getOrderStatusConfig, updateOrderStage } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAnyPermission } from '@/utils/permission';
@@ -165,6 +166,10 @@
     refreshKey.value += 1;
     emit('refresh');
   }
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.ORDER,
+  });
 
   async function handleDelete(row: OrderItem) {
     openModal({
@@ -254,15 +259,27 @@
   }
 
   function handleRevoke() {
-    // todo 待联调 xinxinwu
+    revokeByResourceId(props.sourceId, {
+      onSuccess: () => {
+        handleSaved();
+      },
+    });
   }
 
   function handleFormReview(res: any) {
-    // todo 待联调 xinxinwu
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleSaved();
+      },
+    });
   }
 
   function handleReview() {
-    // todo 待联调 xinxinwu
+    reviewByResourceId(props.sourceId, {
+      onSuccess: () => {
+        handleSaved();
+      },
+    });
   }
 
   function handleSelect(key: string) {
