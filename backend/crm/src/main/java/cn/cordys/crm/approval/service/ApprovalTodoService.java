@@ -155,6 +155,10 @@ public class ApprovalTodoService {
             item.setSubmitTime(instance.getSubmitTime());
             item.setApprovalOperation(StringUtils.defaultIfBlank(task.getAction(), task.getStatus()));
             item.setDataResult(instance.getResult());
+            item.setApprovalTaskId(task.getId());
+            item.setApprovalNodeId(task.getNodeId());
+            item.setApprovalInstanceId(task.getInstanceId());
+            item.setApprovalId(task.getApproverId());
             list.add(item);
         }
         // 返回分页待办列表。
@@ -473,9 +477,14 @@ public class ApprovalTodoService {
             item.setSubmitTime(instance.getSubmitTime());
             item.setApprovalOperation(StringUtils.defaultIfBlank(task.getAction(), task.getStatus()));
             item.setDataResult(instance.getResult());
+            item.setApprovalTaskId(task.getId());
+            item.setApprovalNodeId(task.getNodeId());
+            item.setApprovalInstanceId(task.getInstanceId());
+            item.setApprovalId(task.getApproverId());
             list.add(item);
         }
         // 返回分页结果，分页元信息沿用 PageHelper 查询结果。
         return PageUtils.setPageInfo(page, list);
     }
+
 }
