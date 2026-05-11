@@ -7,7 +7,7 @@ public enum ApproverTypeEnum {
 
     /** 指定成员 */
     MEMBER,
-    /** 直属上级 */
+    /** 指定上级 */
     SUPERIOR,
     /** 多级上级 */
     MULTIPLE_SUPERIOR,

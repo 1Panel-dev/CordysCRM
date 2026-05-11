@@ -20,6 +20,8 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
+import cn.cordys.crm.approval.constants.ApproverLevelEnum;
+import cn.cordys.crm.approval.constants.ApproverTypeEnum;
 import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
@@ -28,6 +30,14 @@ import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.*;
 import cn.cordys.crm.approval.log.ApprovalFlowLogDTO;
 import cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper;
+import cn.cordys.crm.system.domain.Department;
+import cn.cordys.crm.system.domain.DepartmentCommander;
+import cn.cordys.crm.system.domain.OrganizationUser;
+import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.mapper.ExtDepartmentCommanderMapper;
+import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
+import cn.cordys.crm.system.mapper.ExtUserMapper;
+import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
 import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.mybatis.BaseMapper;
@@ -67,7 +77,17 @@ public class ApprovalFlowService {
     @Resource
     private BaseService baseService;
     @Resource
+    private BaseMapper<Department> departmentBaseMapper;
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserMapper;
+    @Resource
+    private ExtUserRoleMapper extUserRoleMapper;
+    @Resource
+    private ExtDepartmentCommanderMapper extDepartmentCommanderMapper;
+    @Resource
+    private ExtUserMapper extUserMapper;
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -989,5 +1009,222 @@ public class ApprovalFlowService {
                 .eq(ApprovalFlow::getEnable, true);
 		List<ApprovalFlow> approvalFlows = approvalFlowMapper.selectListByLambda(wrapper);
 		return CollectionUtils.isEmpty(approvalFlows) ? null : approvalFlows.getFirst();
+    }
+
+    /**
+     * 根据审批人类型解析具体的审批人用户列表
+     *
+     * @param userId       当前用户ID
+     * @param approverType 审批人类型枚举
+     * @param approverList 审批人值列表
+     * @return 具体的用户列表，按照 approverList 顺序返回
+     */
+    public List<User> resolveApprovers(String userId, String orgId, ApproverTypeEnum approverType, List<String> approverList) {
+        if (StringUtils.isBlank(userId) || approverType == null || CollectionUtils.isEmpty(approverList)) {
+            return List.of();
+        }
+
+        // 获取当前用户的组织用户信息
+        OrganizationUser currentUser = getOrganizationUser(userId, orgId);
+        if (currentUser == null) {
+            return List.of();
+        }
+
+        return switch (approverType) {
+            case MEMBER -> resolveMemberApprovers(orgId, approverList);
+            case ROLE -> resolveRoleApprovers(orgId, approverList);
+            case SUPERIOR -> resolveSuperiorApprovers(orgId, currentUser, approverList);
+            case MULTIPLE_SUPERIOR -> resolveMultipleSuperiorApprovers(orgId, currentUser, approverList);
+            case DEPT_HEAD -> resolveDeptHeadApprovers(orgId, currentUser.getDepartmentId(), approverList);
+            case MULTIPLE_DEPT_HEAD -> resolveMultipleDeptHeadApprovers(orgId, currentUser, approverList);
+        };
+    }
+
+    private OrganizationUser getOrganizationUser(String userId, String orgId) {
+        OrganizationUser criteria = new OrganizationUser();
+        criteria.setUserId(userId);
+        criteria.setOrganizationId(orgId);
+        OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
+        return currentUser;
+    }
+
+    /**
+     * 解析指定成员审批人
+     */
+    private List<User> resolveMemberApprovers(String orgId, List<String> approverList) {
+        List<User> users = extUserMapper.getOrgUserByUserIds(orgId, approverList);
+        // 按照 approverList 顺序返回
+        Map<String, User> userMap = users.stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+        return approverList.stream()
+                .map(userMap::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 解析指定角色审批人
+     */
+    private List<User> resolveRoleApprovers(String orgId, List<String> roleIds) {
+        List<String> userIds = extUserRoleMapper.getUserIdsByRoleIds(roleIds);
+        if (CollectionUtils.isEmpty(userIds)) {
+            return List.of();
+        }
+        return resolveMemberApprovers(orgId, userIds);
+    }
+
+    /**
+     * 解析指定上级审批人
+     */
+    private List<User> resolveSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+        // 值是单选
+        Integer approvalLevel = getValidLevel(approverList);
+
+        String approver = null;
+        String currentSupervisorId = currentUser.getSupervisorId();
+
+        for (int level = 1; level <= approvalLevel && StringUtils.isNotBlank(currentSupervisorId); level++) {
+            if (approvalLevel.equals(level)) {
+                approver = currentSupervisorId;
+                break;
+            }
+            OrganizationUser supervisorOrgUser = getOrganizationUser(currentSupervisorId, orgId);
+            if (supervisorOrgUser == null) {
+                break;
+            }
+            currentSupervisorId = supervisorOrgUser.getSupervisorId();
+        }
+
+        if (approver == null) {
+            return List.of();
+        }
+
+        return resolveMemberApprovers(orgId, List.of(approver));
+    }
+
+    /**
+     * 解析多级上级审批人
+     */
+    private List<User> resolveMultipleSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+        // 值是单选
+        Integer approvalLevel = getValidLevel(approverList);
+
+        List<String> userIds = new ArrayList<>();
+        String currentSupervisorId = currentUser.getSupervisorId();
+
+        for (int level = 1; level <= approvalLevel && StringUtils.isNotBlank(currentSupervisorId); level++) {
+            userIds.add(currentSupervisorId);
+            OrganizationUser supervisorOrgUser = getOrganizationUser(currentSupervisorId, orgId);
+            if (supervisorOrgUser == null) {
+                break;
+            }
+            currentSupervisorId = supervisorOrgUser.getSupervisorId();
+        }
+
+        if (userIds.isEmpty()) {
+            return List.of();
+        }
+
+        return resolveMemberApprovers(orgId, userIds);
+    }
+
+    private Integer getValidLevel(List<String> approverList) {
+        // 使用 ApproverLevelEnum 验证并获取有效的层级值
+        Set<String> validLevels = Arrays.stream(ApproverLevelEnum.values())
+                .map(ApproverLevelEnum::getValue)
+                .collect(Collectors.toSet());
+
+        // 过滤出有效的层级并按 approverList 顺序保存
+        List<String> validRequestedLevels = approverList.stream()
+                .filter(validLevels::contains)
+                .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(validRequestedLevels)) {
+            return 0;
+        }
+
+        // 值是单选
+        return Integer.parseInt(validRequestedLevels.getFirst());
+    }
+
+    /**
+     * 解析部门负责人审批人
+     */
+    private List<User> resolveDeptHeadApprovers(String orgId, String departmentId, List<String> approverList) {
+        if (StringUtils.isBlank(departmentId)) {
+            return List.of();
+        }
+
+        // 值是单选
+        Integer approvalLevel = getValidLevel(approverList);
+
+        String commanderId = null;
+        String currentDepartmentId = departmentId;
+
+        for (int level = 1; level <= approvalLevel && StringUtils.isNotBlank(currentDepartmentId); level++) {
+            String currentCommanderId = getDeptCommander(orgId, currentDepartmentId);
+            if (StringUtils.isNotBlank(currentCommanderId) && approvalLevel.equals(level)) {
+                commanderId = currentCommanderId;
+                break;
+            }
+            // 获取父部门，继续向上查找
+            currentDepartmentId = getParentDepartmentId(currentDepartmentId);
+        }
+
+        if (StringUtils.isBlank(commanderId)) {
+            return List.of();
+        }
+
+        return resolveMemberApprovers(orgId, List.of(commanderId));
+    }
+
+    private String getDeptCommander(String orgId, String departmentId) {
+        List<String> commanderIds = extDepartmentCommanderMapper.selectCommander(departmentId, orgId);
+        if (CollectionUtils.isNotEmpty(commanderIds)) {
+            return commanderIds.getFirst();
+        }
+        return null;
+    }
+
+    /**
+     * 解析多级部门负责人审批人
+     */
+    private List<User> resolveMultipleDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+        String departmentId = currentUser.getDepartmentId();
+        if (StringUtils.isBlank(departmentId)) {
+            return List.of();
+        }
+
+        // 值是单选
+        Integer approvalLevel = getValidLevel(approverList);
+
+        List<String> userIds = new ArrayList<>();
+        String currentDepartmentId = departmentId;
+
+        for (int level = 1; level <= approvalLevel && StringUtils.isNotBlank(currentDepartmentId); level++) {
+            String commanderId = getDeptCommander(orgId, currentDepartmentId);
+            if (StringUtils.isNotBlank(commanderId)) {
+                userIds.add(commanderId);
+            }
+            // 获取父部门，继续向上查找
+            currentDepartmentId = getParentDepartmentId(currentDepartmentId);
+        }
+
+        if (userIds.isEmpty()) {
+            return List.of();
+        }
+
+        return resolveMemberApprovers(orgId, userIds);
+    }
+
+    /**
+     * 获取父部门ID
+     */
+    private String getParentDepartmentId(String departmentId) {
+        Department department = departmentBaseMapper.selectByPrimaryKey(departmentId);
+        if (department != null) {
+            return department.getParentId();
+        }
+        return null;
     }
 }
