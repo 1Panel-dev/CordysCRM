@@ -11,8 +11,8 @@ public class ApprovalNodeLink {
     @Schema(description = "ID")
     private String id;
 
-    @Schema(description = "流程ID")
-    private String flowId;
+    @Schema(description = "审批流版本ID")
+    private String flowVersionId;
 
     @Schema(description = "源节点ID")
     private String fromNodeId;

@@ -9,7 +9,7 @@ DELETE FROM approval_instance WHERE id IN (
     'todo_processed_inst_001', 'todo_pending_inst_001'
 );
 
-INSERT INTO approval_instance (`id`, `flow_id`, `type`, `resource_id`, `submitter_id`, `current_node_id`, `approval_status`, `submit_time`, `approval_time`, `result`, `create_time`, `update_time`, `create_user`, `update_user`)
+INSERT INTO approval_instance (`id`, `flow_version_id`, `type`, `resource_id`, `submitter_id`, `current_node_id`, `approval_status`, `submit_time`, `approval_time`, `result`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES
     ('todo_cc_inst_001', 'approval_flow_test_001', 'contract', 'todo_cc_resource_001', 'admin', 'node_cc_001', 'APPROVING', 1736243043609, NULL, 'R1', 1736243043609, 1736243043609, 'admin', 'admin'),
     ('todo_cc_inst_002', 'approval_flow_test_001', 'quotation', 'todo_cc_resource_002', 'admin', 'node_cc_002', 'APPROVED', 1736244043609, 1736245043609, 'R2', 1736244043609, 1736245043609, 'admin', 'admin'),

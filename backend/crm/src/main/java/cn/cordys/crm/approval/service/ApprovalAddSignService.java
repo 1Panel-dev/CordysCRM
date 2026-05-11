@@ -7,7 +7,7 @@ import cn.cordys.crm.approval.constants.ApprovalAction;
 import cn.cordys.crm.approval.constants.ApprovalAddSignType;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
-import cn.cordys.crm.approval.domain.ApprovalFlow;
+import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.request.ApprovalAddSignRequest;
 import cn.cordys.mybatis.BaseMapper;
@@ -36,7 +36,7 @@ public class ApprovalAddSignService extends ApprovalOperationBaseService {
      */
     public void addSign(ApprovalAddSignRequest request, String userId, String orgId) {
         //校验流程是否允许加签
-        ApprovalFlow approvalFlow = getFlowPermission(request.getInstanceId());
+        ApprovalFlowVersion approvalFlow = getFlowPermission(request.getInstanceId());
         if (approvalFlow == null || !approvalFlow.getAllowAddSign()) {
             throw new GenericException(Translator.get("no.operation.permission"));
         }

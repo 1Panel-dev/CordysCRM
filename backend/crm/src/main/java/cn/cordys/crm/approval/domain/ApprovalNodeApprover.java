@@ -1,7 +1,5 @@
 package cn.cordys.crm.approval.domain;
 
-import cn.cordys.crm.approval.constants.EmptyApproverActionEnum;
-import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -14,8 +12,8 @@ public class ApprovalNodeApprover {
     @Schema(description = "ID")
     private String id;
 
-    @Schema(description = "流程ID")
-    private String flowId;
+    @Schema(description = "审批流版本ID")
+    private String flowVersionId;
 
     @NotBlank
     @Schema(description = "审批类型：MANUAL/AUTO_PASS/AUTO_REJECT")

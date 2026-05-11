@@ -6,18 +6,12 @@
     <select id="list" resultType="cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse">
         SELECT
             af.id,
+            af.current_version_id,
             af.number,
             af.name,
             af.form_type,
-            af.create_execute,
-            af.update_execute,
             af.enable,
-            af.submitter_can_revoke,
-            af.allow_batch_process,
-            af.allow_withdraw,
-            af.allow_add_sign,
-            af.duplicate_approver_rule,
-            af.require_comment,
+            af.description,
             af.organization_id,
             af.create_user,
             af.create_time,
@@ -119,42 +113,6 @@
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="af.enable"/>
-                </include>
-            </when>
-            <when test="condition.name == 'submitterCanRevoke'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="af.submitter_can_revoke"/>
-                </include>
-            </when>
-            <when test="condition.name == 'allowBatchProcess'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="af.allow_batch_process"/>
-                </include>
-            </when>
-            <when test="condition.name == 'allowWithdraw'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="af.allow_withdraw"/>
-                </include>
-            </when>
-            <when test="condition.name == 'allowAddSign'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="af.allow_add_sign"/>
-                </include>
-            </when>
-            <when test="condition.name == 'duplicateApproverRule'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="af.duplicate_approver_rule"/>
-                </include>
-            </when>
-            <when test="condition.name == 'requireComment'">
-                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="af.require_comment"/>
                 </include>
             </when>
             <when test="condition.name == 'createUser'">

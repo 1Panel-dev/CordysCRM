@@ -21,9 +21,6 @@ import java.util.List;
 })
 public class ApprovalNodeRequest {
 
-    @Schema(description = "节点ID（更新时使用）")
-    private String id;
-
     @Schema(description = "节点名称")
     private String name;
 

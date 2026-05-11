@@ -8,7 +8,7 @@ VALUES
     ('appr_user_curr', 'Current Approver', 'current.approver@cordys-crm.io', MD5('CordysCRM'), 1, '13900000001', 'zh_CN', '100001', 1736240043609, 1736240043609, 'admin', 'admin'),
     ('appr_user_othr', 'Other Approver', 'other.approver@cordys-crm.io', MD5('CordysCRM'), 1, '13900000002', 'zh_CN', '100001', 1736240043609, 1736240043609, 'admin', 'admin');
 
-INSERT INTO approval_instance (`id`, `flow_id`, `type`, `resource_id`, `submitter_id`, `current_node_id`, `approval_status`, `submit_time`, `approval_time`, `result`, `create_time`, `update_time`, `create_user`, `update_user`)
+INSERT INTO approval_instance (`id`, `flow_version_id`, `type`, `resource_id`, `submitter_id`, `current_node_id`, `approval_status`, `submit_time`, `approval_time`, `result`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES
     ('approval_instance_test_001', 'approval_flow_test_001', 'contract', 'approval_resource_test_001', 'admin', 'node_current', 'APPROVING', 1736240043609, NULL, NULL, 1736240043609, 1736240043609, 'admin', 'admin');
 

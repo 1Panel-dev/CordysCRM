@@ -13,6 +13,9 @@ public class ApprovalFlowDetailResponse {
     @Schema(description = "ID")
     private String id;
 
+    @Schema(description = "当前版本ID")
+    private String currentVersionId;
+
     @Schema(description = "流程编码")
     private String number;
 
