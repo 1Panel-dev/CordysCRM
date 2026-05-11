@@ -8,7 +8,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
-import cn.cordys.crm.approval.domain.ApprovalFlow;
+import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalInstanceAttachment;
 import cn.cordys.crm.approval.domain.ApprovalTask;
@@ -27,6 +27,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.CollectionUtils;
 
@@ -39,7 +40,7 @@ import java.util.Set;
 public class ApprovalOperationBaseService extends InSiteNoticeSender {
 
     @Resource
-    private BaseMapper<ApprovalFlow> approvalFlowMapper;
+    private BaseMapper<ApprovalFlowVersion> approvalFlowVersionMapper;
     @Resource
     private BaseMapper<ApprovalInstance> approvalInstanceMapper;
     @Resource
@@ -109,13 +110,15 @@ public class ApprovalOperationBaseService extends InSiteNoticeSender {
     /**
      * 获取流程配置相关权限
      *
-     * @param id
-     * @return
+     * @param id 审批实例ID
+     * @return 审批流版本
      */
-    public ApprovalFlow getFlowPermission(String id) {
+    public ApprovalFlowVersion getFlowPermission(String id) {
         ApprovalInstance approvalInstance = approvalInstanceMapper.selectByPrimaryKey(id);
-        ApprovalFlow approvalFlow = approvalFlowMapper.selectByPrimaryKey(approvalInstance.getFlowId());
-        return approvalFlow;
+        if (approvalInstance == null || StringUtils.isBlank(approvalInstance.getFlowVersionId())) {
+            return null;
+        }
+        return approvalFlowVersionMapper.selectByPrimaryKey(approvalInstance.getFlowVersionId());
     }
 
 

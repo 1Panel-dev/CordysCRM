@@ -3,7 +3,7 @@ package cn.cordys.crm.approval;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
-import cn.cordys.crm.approval.domain.ApprovalFlowBlob;
+import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
@@ -42,7 +42,7 @@ class ApprovalFlowControllerTests extends BaseTest {
     @Resource
     private BaseMapper<ApprovalFlow> approvalFlowMapper;
     @Resource
-    private BaseMapper<ApprovalFlowBlob> approvalFlowBlobMapper;
+    private BaseMapper<ApprovalFlowVersion> approvalFlowVersionMapper;
     @Resource
     private BaseMapper<ApprovalNode> approvalNodeMapper;
     @Resource
@@ -175,13 +175,22 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(request.getEnable(), flow.getEnable());
         Assertions.assertEquals(flow.getOrganizationId(), DEFAULT_ORGANIZATION_ID);
         Assertions.assertNotNull(flow.getNumber());
+        Assertions.assertEquals(request.getDescription(), flow.getDescription());
 
-        // 校验大字段
-        ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(flow.getId());
-        Assertions.assertEquals(request.getDescription(), blob.getDescription());
+        // 校验版本配置
+        ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(flow.getCurrentVersionId());
+        Assertions.assertNotNull(version);
+        Assertions.assertEquals(request.getSubmitterCanRevoke(), version.getSubmitterCanRevoke());
+        Assertions.assertEquals(request.getAllowBatchProcess(), version.getAllowBatchProcess());
+        Assertions.assertEquals(request.getAllowWithdraw(), version.getAllowWithdraw());
+        Assertions.assertEquals(request.getAllowAddSign(), version.getAllowAddSign());
+        Assertions.assertEquals(request.getDuplicateApproverRule(), version.getDuplicateApproverRule());
+        Assertions.assertEquals(request.getRequireComment(), version.getRequireComment());
+        Assertions.assertEquals(request.getCreateExecute(), version.getCreateExecute());
+        Assertions.assertEquals(request.getUpdateExecute(), version.getUpdateExecute());
 
         // 校验节点配置
-        List<ApprovalNode> nodes = getNodesByFlowId(flow.getId());
+        List<ApprovalNode> nodes = getNodesByFlowVersionId(flow.getCurrentVersionId());
         Assertions.assertEquals(3, nodes.size());
 
         // 校验审批人节点配置
@@ -240,13 +249,23 @@ class ApprovalFlowControllerTests extends BaseTest {
         // 校验请求成功数据
         ApprovalFlow updatedFlow = approvalFlowMapper.selectByPrimaryKey(request.getId());
         Assertions.assertEquals(request.getName(), updatedFlow.getName());
+        Assertions.assertEquals(request.getDescription(), updatedFlow.getDescription());
 
-        // 校验大字段更新
-        ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(request.getId());
-        Assertions.assertEquals(request.getDescription(), blob.getDescription());
+        // 校验更新后产生了新版本
+        Assertions.assertNotEquals(addApprovalFlow.getCurrentVersionId(), updatedFlow.getCurrentVersionId());
+
+        // 校验版本配置
+        ApprovalFlowVersion updatedVersion = approvalFlowVersionMapper.selectByPrimaryKey(updatedFlow.getCurrentVersionId());
+        Assertions.assertNotNull(updatedVersion);
+        Assertions.assertEquals(request.getSubmitterCanRevoke(), updatedVersion.getSubmitterCanRevoke());
+        Assertions.assertEquals(request.getAllowBatchProcess(), updatedVersion.getAllowBatchProcess());
+        Assertions.assertEquals(request.getAllowWithdraw(), updatedVersion.getAllowWithdraw());
+        Assertions.assertEquals(request.getAllowAddSign(), updatedVersion.getAllowAddSign());
+        Assertions.assertEquals(request.getDuplicateApproverRule(), updatedVersion.getDuplicateApproverRule());
+        Assertions.assertEquals(request.getRequireComment(), updatedVersion.getRequireComment());
 
         // 校验节点配置已更新（删除旧节点，插入新节点）
-        List<ApprovalNode> updatedNodes = getNodesByFlowId(request.getId());
+        List<ApprovalNode> updatedNodes = getNodesByFlowVersionId(updatedFlow.getCurrentVersionId());
         Assertions.assertEquals(3, updatedNodes.size());
 
         // 不修改信息
@@ -315,10 +334,17 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(approvalFlow.getFormType(), response.getFormType());
         Assertions.assertEquals(approvalFlow.getNumber(), response.getNumber());
         Assertions.assertEquals(approvalFlow.getEnable(), response.getEnable());
+        Assertions.assertEquals(approvalFlow.getDescription(), response.getDescription());
 
-        // 校验大字段
-        ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(addApprovalFlow.getId());
-        Assertions.assertEquals(blob.getDescription(), response.getDescription());
+        // 校验版本配置
+        ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(approvalFlow.getCurrentVersionId());
+        Assertions.assertNotNull(version);
+        Assertions.assertEquals(response.getSubmitterCanRevoke(), version.getSubmitterCanRevoke());
+        Assertions.assertEquals(response.getAllowBatchProcess(), version.getAllowBatchProcess());
+        Assertions.assertEquals(response.getAllowWithdraw(), version.getAllowWithdraw());
+        Assertions.assertEquals(response.getAllowAddSign(), version.getAllowAddSign());
+        Assertions.assertEquals(response.getDuplicateApproverRule(), version.getDuplicateApproverRule());
+        Assertions.assertEquals(response.getRequireComment(), version.getRequireComment());
 
         // 校验节点配置
         Assertions.assertFalse(CollectionUtils.isEmpty(response.getNodes()));
@@ -388,11 +414,13 @@ class ApprovalFlowControllerTests extends BaseTest {
         // 校验请求成功数据
         Assertions.assertNull(approvalFlowMapper.selectByPrimaryKey(addApprovalFlow.getId()));
 
-        // 校验大字段也被删除
-        Assertions.assertNull(approvalFlowBlobMapper.selectByPrimaryKey(addApprovalFlow.getId()));
+        // 校验版本配置也被删除
+        ApprovalFlowVersion versionCriteria = new ApprovalFlowVersion();
+        versionCriteria.setFlowId(addApprovalFlow.getId());
+        Assertions.assertTrue(approvalFlowVersionMapper.select(versionCriteria).isEmpty());
 
-        // 校验节点配置也被删除
-        Assertions.assertTrue(CollectionUtils.isEmpty(getNodesByFlowId(addApprovalFlow.getId())));
+        // 校验节点配置也被删除（通过查询所有版本对应的节点）
+        Assertions.assertTrue(CollectionUtils.isEmpty(getNodesByFlowVersionId(addApprovalFlow.getCurrentVersionId())));
 
         // 删除另一条创建的审批流
         this.requestGetWithOk(DEFAULT_DELETE, anotherApprovalFlow.getId());
@@ -410,11 +438,11 @@ class ApprovalFlowControllerTests extends BaseTest {
     }
 
     /**
-     * 获取流程对应的节点列表
+     * 获取版本对应的节点列表
      */
-    private List<ApprovalNode> getNodesByFlowId(String flowId) {
+    private List<ApprovalNode> getNodesByFlowVersionId(String flowVersionId) {
         ApprovalNode criteria = new ApprovalNode();
-        criteria.setFlowId(flowId);
+        criteria.setFlowVersionId(flowVersionId);
         return approvalNodeMapper.select(criteria);
     }
 
@@ -473,11 +501,17 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertNotNull(response.getName());
         Assertions.assertEquals(ApprovalFormTypeEnum.QUOTATION.getValue(), response.getFormType());
         Assertions.assertTrue(response.getEnable());
+        Assertions.assertNotNull(response.getDescription());
 
-        // 校验大字段
-        ApprovalFlowBlob blob = approvalFlowBlobMapper.selectByPrimaryKey(response.getId());
-        Assertions.assertNotNull(blob);
-        Assertions.assertEquals(blob.getDescription(), response.getDescription());
+        // 校验版本配置
+        ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(response.getCurrentVersionId());
+        Assertions.assertNotNull(version);
+        Assertions.assertEquals(response.getSubmitterCanRevoke(), version.getSubmitterCanRevoke());
+        Assertions.assertEquals(response.getAllowBatchProcess(), version.getAllowBatchProcess());
+        Assertions.assertEquals(response.getAllowWithdraw(), version.getAllowWithdraw());
+        Assertions.assertEquals(response.getAllowAddSign(), version.getAllowAddSign());
+        Assertions.assertEquals(response.getDuplicateApproverRule(), version.getDuplicateApproverRule());
+        Assertions.assertEquals(response.getRequireComment(), version.getRequireComment());
 
         // 校验权限列表
         Assertions.assertNotNull(response.getPermissions());
