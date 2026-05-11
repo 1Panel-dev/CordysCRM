@@ -26,4 +26,16 @@ public class ApprovalTodoItemResponse {
 
     @Schema(description = "数据结果")
     private String dataResult;
+
+    @Schema(description = "审批任务ID")
+    private String approvalTaskId;
+
+    @Schema(description = "审批节点ID")
+    private String approvalNodeId;
+
+    @Schema(description = "审批实例ID")
+    private String approvalInstanceId;
+
+    @Schema(description = "审批人ID")
+    private String approvalId;
 }
