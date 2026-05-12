@@ -20,9 +20,11 @@
         </div>
         <n-tooltip v-else flip :delay="300" trigger="hover">
           <template #trigger>
-            <div class="crm-modal-title one-line-text !text-[var(--text-n4)]"> ({{ props.approvalItem?.name }}) </div>
+            <div class="crm-modal-title one-line-text !text-[var(--text-n4)]">
+              ({{ props.approvalItem?.resourceName }})
+            </div>
           </template>
-          {{ props.approvalItem?.name }}
+          {{ props.approvalItem?.resourceName }}
         </n-tooltip>
       </div>
     </template>
@@ -47,13 +49,16 @@
   import { type FormInst, NForm, NFormItem, NTooltip, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { ApprovalTodoItem } from '@lib/shared/models/system/process';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
   import CrmFileInput from '@/components/business/crm-file-input/index.vue';
 
+  import { rejectApproval } from '@/api/modules/index';
+
   const props = defineProps<{
-    approvalItem?: any;
+    approvalItem?: ApprovalTodoItem;
     approvalItemKeys?: string[];
     approvalType: 'approve' | 'reject';
   }>();
@@ -88,8 +93,16 @@
 
   function handleApprovalSave() {
     approvalFormRef.value?.validate(async (errors) => {
-      if (!errors) {
+      if (!errors && props.approvalItem) {
         try {
+          if (props.approvalType === 'reject') {
+            rejectApproval({
+              id: props.approvalItem.approvalTaskId,
+              nodeId: props.approvalItem.approvalNodeId,
+              instanceId: props.approvalItem.approvalInstanceId,
+              attachmentIds: fileList.value.map((e) => e.id),
+            });
+          }
           message.success(props.approvalType === 'approve' ? t('taskDrawer.approved') : t('taskDrawer.rejected'));
           handleApprovalCancel();
         } catch (error) {

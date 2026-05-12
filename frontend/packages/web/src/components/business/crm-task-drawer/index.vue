@@ -57,10 +57,14 @@
           </div>
         </div>
         <taskList
+          v-if="show"
+          ref="taskListRef"
           v-model:selected-keys="selectedKeys"
           key-field="id"
           virtualScrollHeight="100%"
           :activeTaskType="activeTaskType"
+          :load-params="{ keyword }"
+          @list-init="handleListInit"
         />
       </div>
     </div>
@@ -72,6 +76,7 @@
   import { NButton, NCheckbox, NCollapse, NCollapseItem } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { type ApprovalListTypeEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -81,7 +86,7 @@
   import taskList from './taskList.vue';
 
   const props = defineProps<{
-    type?: 'pending' | 'approved' | 'initiated' | 'copied';
+    type?: ApprovalListTypeEnum;
   }>();
 
   const { t } = useI18n();
@@ -92,26 +97,26 @@
   });
 
   const keyword = ref('');
-  const activeTaskType = ref<any>('pending-quotation');
+  const activeTaskType = ref<string>('pending-QUOTATION');
 
   const moduleItems = [
     {
-      name: 'quotation',
+      name: ApprovalResourceTypeEnum.QUOTATION,
       title: t('menu.quotation'),
       count: 0,
     },
     {
-      name: 'contract',
+      name: ApprovalResourceTypeEnum.CONTRACT,
       title: t('module.contract'),
       count: 0,
     },
     {
-      name: 'order',
+      name: ApprovalResourceTypeEnum.ORDER,
       title: t('module.order'),
       count: 0,
     },
     {
-      name: 'invoice',
+      name: ApprovalResourceTypeEnum.INVOICE,
       title: t('module.invoiceApproval'),
       count: 0,
     },
@@ -150,12 +155,14 @@
   });
   const allSelect = ref<string>('N');
   const selectedKeys = ref<string[]>([]);
+  const listTotal = ref(0);
+  const listAllKeys = ref<string[]>([]);
   const indeterminate = computed(() => {
-    if (selectedKeys.value.length === 0) {
+    if (selectedKeys.value.length === 0 || selectedKeys.value.length === listTotal.value) {
       return false;
     }
     return selectedKeys.value.length > 0;
-  }); // TODO: 需要根据接口返回的总数来判断是否全选
+  });
 
   function handleSelectAll() {
     if (allSelect.value === 'Y') {
@@ -163,11 +170,19 @@
       allSelect.value = 'N';
     } else {
       allSelect.value = 'Y';
-      // TODO: 需要替换成接口返回的当前模块的所有任务ID
+      selectedKeys.value = [];
     }
   }
 
-  function searchData() {}
+  function handleListInit(total: number, keys: string[]) {
+    listTotal.value = total;
+    listAllKeys.value = keys;
+  }
+
+  const taskListRef = ref<InstanceType<typeof taskList>>();
+  function searchData(val?: string) {
+    taskListRef.value?.loadTaskList(true, val);
+  }
 
   function refresh() {
     searchData();
@@ -191,9 +206,9 @@
     (val) => {
       if (!val) {
         keyword.value = '';
-        activeTaskType.value = 'pending-quotation';
+        activeTaskType.value = 'pending-QUOTATION';
       } else if (props.type) {
-        activeTaskType.value = `${props.type}-quotation`;
+        activeTaskType.value = `${props.type}-QUOTATION`;
       }
     }
   );

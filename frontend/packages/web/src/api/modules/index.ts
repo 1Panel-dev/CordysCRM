@@ -782,4 +782,13 @@ export const {
   getResourceApprovingDetail,
   reviewResource,
   revokeResource,
+  getProcessedApprovalList,
+  getPendingApprovalList,
+  getInitiatedApprovalList,
+  getCcApprovalList,
+  rejectApproval,
+  backApproval,
+  addSignApproval,
+  getApprovalRecord,
+  getApprovalResourceDetail,
 } = processApi;
