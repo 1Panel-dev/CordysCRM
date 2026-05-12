@@ -12,7 +12,7 @@
         :failure-reason="getFailureReason"
         :afoot-roll-back="props.afootRollBack"
         :end-roll-back="props.endRollBack"
-        :isOrder="props.isOrder"
+        :is-no-resign-flow="props.isNoResignFlow"
         @change="handleUpdateStatus"
       >
         <template v-if="!props.readonly" #action>
@@ -87,7 +87,8 @@
     failureReason?: string;
     afootRollBack?: boolean; // 是否允许从跟进中回退
     endRollBack?: boolean; // 是否允许从成功或失败回退
-    isOrder?: boolean;
+    isNoResignFlow?: boolean; // 是否是不区分成功失败、无反签逻辑的流程
+    beforeChangeStage?: (stage: string) => boolean | Promise<boolean>; // 切换阶段前的拦截，返回 false 阻止默认更新
   }>();
 
   const emit = defineEmits<{
@@ -153,6 +154,11 @@
   const enableReason = ref(false);
   // 更新状态
   async function handleUpdateStatus(stage: string) {
+    const canContinue = (await props.beforeChangeStage?.(stage)) ?? true;
+    if (!canContinue) {
+      return;
+    }
+
     if (
       props.showConfirmStatus &&
       stage === workflowList.value[workflowList.value.length - 1].value &&

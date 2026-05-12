@@ -60,7 +60,7 @@
     failureReason?: string;
     afootRollBack?: boolean; // 是否允许从跟进中回退
     endRollBack?: boolean; // 是否允许从成功或失败回退
-    isOrder?: boolean; // 是否是订单
+    isNoResignFlow?: boolean; // 是否是不区分成功失败、无反签逻辑的流程
   }>();
 
   const emit = defineEmits<{
@@ -92,7 +92,7 @@
     const targetIndex = workflowData.value.findIndex((item) => item.value === stage);
     // 限制回退状态
     if (props.isLimitBack) {
-      if (!props.isOrder) {
+      if (!props.isNoResignFlow) {
         // 当前为成功状态，且目标为失败状态，需要返签权限
         if (currentStatus.value === successStage.value && isFailureStage) {
           return isSameStage || readonly.value || !hasPermission;
@@ -102,7 +102,7 @@
           return isSameStage || readonly.value || !props.endRollBack;
         }
       } else if (isCurrentEndStage) {
-        // 订单没有反签
+        // 这类流程没有反签，完结阶段统一按回退开关控制
         return isSameStage || readonly.value || !props.endRollBack;
       }
 
