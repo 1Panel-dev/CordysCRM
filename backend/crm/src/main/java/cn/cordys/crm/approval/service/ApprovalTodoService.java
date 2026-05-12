@@ -4,6 +4,8 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.crm.approval.dto.request.ApprovalProcessedPageRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
+import cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse;
+import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
@@ -44,6 +46,8 @@ public class ApprovalTodoService {
     private BaseMapper<Order> orderMapper;
     @Resource
     private BaseMapper<ContractInvoice> invoiceMapper;
+    @Resource
+    private ExtApprovalTaskMapper extApprovalTaskMapper;
 
     public Pager<List<ApprovalTodoItemResponse>> getTodoPage(ApprovalTodoPageRequest request, String userId) {
         // 在未登录场景下直接返回空分页数据。
@@ -165,6 +169,31 @@ public class ApprovalTodoService {
         return PageUtils.setPageInfo(page, list);
     }
 
+    public ApprovalTodoCountResponse getPendingCount(String userId) {
+        // 初始化统计响应对象并设置默认值。
+        ApprovalTodoCountResponse response = new ApprovalTodoCountResponse();
+        response.setTotal(0);
+        response.setQuotation(0);
+        response.setContract(0);
+        response.setOrder(0);
+        response.setInvoice(0);
+        // 未登录用户直接返回空统计。
+        if (StringUtils.isBlank(userId)) {
+            return response;
+        }
+        // 通过聚合SQL统计待我审批总数及资源类型分布。
+        ApprovalTodoCountResponse count = extApprovalTaskMapper.countPendingByApprover(userId, ApprovalState.PENDING.getId());
+        if (count == null) {
+            return response;
+        }
+        response.setTotal(Optional.ofNullable(count.getTotal()).orElse(0));
+        response.setQuotation(Optional.ofNullable(count.getQuotation()).orElse(0));
+        response.setContract(Optional.ofNullable(count.getContract()).orElse(0));
+        response.setOrder(Optional.ofNullable(count.getOrder()).orElse(0));
+        response.setInvoice(Optional.ofNullable(count.getInvoice()).orElse(0));
+        return response;
+    }
+
     public Pager<List<ApprovalTodoItemResponse>> getProcessedPage(ApprovalProcessedPageRequest request, String userId) {
         // 在未登录场景下直接返回空分页数据。
         if (StringUtils.isBlank(userId)) {
@@ -266,6 +295,33 @@ public class ApprovalTodoService {
         }
         List<ApprovalTask> tasks = approvalTaskMapper.selectListByLambda(taskWrapper);
         return buildTaskPageResult(page, tasks);
+    }
+
+    public void deleteApprovalTaskByInstanceId(String approvalInstanceId) {
+        // 实例ID为空时不执行删除。
+        if (StringUtils.isBlank(approvalInstanceId)) {
+            return;
+        }
+        // 按审批实例ID删除审批任务。
+        approvalTaskMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalTask>()
+                .eq(ApprovalTask::getInstanceId, approvalInstanceId));
+    }
+
+    public void deleteApprovalTaskByInstanceIds(List<String> approvalInstanceIds) {
+        // 实例ID集合为空时不执行删除。
+        if (approvalInstanceIds == null || approvalInstanceIds.isEmpty()) {
+            return;
+        }
+        // 过滤空白实例ID并批量删除审批任务。
+        List<String> validInstanceIds = approvalInstanceIds.stream()
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        if (validInstanceIds.isEmpty()) {
+            return;
+        }
+        approvalTaskMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalTask>()
+                .in(ApprovalTask::getInstanceId, validInstanceIds));
     }
 
     private Map<String, String> loadSubmitterNameMap(List<ApprovalInstance> instances) {

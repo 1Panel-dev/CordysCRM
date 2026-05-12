@@ -3,6 +3,29 @@
 
 <mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper">
 
+    <select id="countPendingByApprover" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse">
+        SELECT
+            IFNULL(SUM(t.cnt), 0) AS total,
+            IFNULL(SUM(CASE WHEN t.type IN ('quotation', 'quote') THEN t.cnt ELSE 0 END), 0) AS quotation,
+            IFNULL(SUM(CASE WHEN t.type = 'contract' THEN t.cnt ELSE 0 END), 0) AS contract,
+            IFNULL(SUM(CASE WHEN t.type = 'order' THEN t.cnt ELSE 0 END), 0) AS `order`,
+            IFNULL(SUM(CASE WHEN t.type = 'invoice' THEN t.cnt ELSE 0 END), 0) AS invoice
+        FROM (
+            SELECT
+                ai.type AS type,
+                COUNT(*) AS cnt
+            FROM (
+                SELECT DISTINCT at.instance_id
+                FROM approval_task at
+                INNER JOIN approval_instance ai ON ai.id = at.instance_id
+                WHERE at.approver_id = #{approverId}
+                  AND at.status = #{pendingStatus}
+                  AND ai.current_node_id = at.node_id
+            ) pending
+            INNER JOIN approval_instance ai ON ai.id = pending.instance_id
+            GROUP BY ai.type
+        ) t
+    </select>
 
     <update id="updateTaskById">
         update approval_task
