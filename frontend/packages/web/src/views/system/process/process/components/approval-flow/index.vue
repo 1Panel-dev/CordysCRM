@@ -3,12 +3,13 @@
     <CrmFlow
       ref="crmFlowRef"
       v-model:model="flowSchema"
+      :readonly="props.readonly"
       :right-content-visible="isRightContentVisible"
       @add-condition-branch="handleAddConditionBranch"
       @branch-click="handleBranchClick"
     >
       <template #insertNodeContent="{ anchorNodeId, anchorBranch }">
-        <div class="base-box-shadow min-w-[366px] rounded-[6px] bg-[var(--text-n10)] p-[16px]">
+        <div v-if="!props.readonly" class="base-box-shadow min-w-[366px] rounded-[6px] bg-[var(--text-n10)] p-[16px]">
           <div v-for="group in approvalFlowAddNodeGroups" :key="group.key" class="mb-[16px] last:mb-0">
             <div class="mb-[8px] font-semibold">{{ group.title }}</div>
             <div class="flex gap-[8px]">
@@ -41,6 +42,7 @@
           v-if="selection.type === 'node' && isApprovalActionNode(selection.node)"
           v-model:node="selection.node"
           :form-type="basicConfig.formType"
+          :readonly="props.readonly"
           @switch-more-setting="emit('switchMoreSetting')"
         />
       </template>
@@ -49,6 +51,7 @@
       v-model:show="setConditionDrawerVisible"
       :branch="activeConditionBranch"
       :form-type="basicConfig.formType"
+      :readonly="props.readonly"
       @confirm="handleConditionConfirm"
     />
   </div>
@@ -191,6 +194,9 @@
 
   // 新增if条件分支
   function handleAddConditionBranch(groupId: string) {
+    if (props.readonly) {
+      return;
+    }
     addApprovalConditionBranch(flowSchema.value, groupId);
   }
 
@@ -213,19 +219,19 @@
   }
 
   function handleConditionConfirm(payload: { name: string; conditionConfig: FilterForm }) {
-    if (!activeConditionBranch.value) {
+    if (props.readonly || !activeConditionBranch.value) {
       return;
     }
 
     activeConditionBranch.value.name = payload.name;
     activeConditionBranch.value.conditionConfig = payload.conditionConfig;
     activeConditionBranch.value.description = resolveConditionDescription(payload.conditionConfig);
+    activeConditionBranch.value.invalid = false;
   }
 
   const { validateFlowNodes } = useFlowValidation({
     flowSchema,
     basicConfig,
-    selectNode: (id) => crmFlowRef.value?.selectNode(id),
   });
 
   // 更新开始节点描述

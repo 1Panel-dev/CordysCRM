@@ -35,5 +35,6 @@
     showContent?: boolean;
     selected?: boolean;
     invalid?: boolean;
+    readonly?: boolean;
   }>(toRef(props, 'node'));
 </script>

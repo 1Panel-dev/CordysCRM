@@ -54,6 +54,7 @@
     defineProps<{
       flow: FlowSchema;
       selection: NodeSelectionState;
+      readonly?: boolean;
     }>(),
     {}
   );
@@ -174,7 +175,11 @@
       showNodeDescription: viewMode.value === 'detail',
     });
 
-    const cellsWithSelection = (cells as any[]).map((cell) => {
+    const visibleCells = props.readonly
+      ? (cells as any[]).filter((cell) => !['add-node', 'add-condition'].includes(cell?.data?.kind))
+      : (cells as any[]);
+
+    const cellsWithSelection = visibleCells.map((cell) => {
       if (!cell?.data) {
         return cell;
       }
@@ -185,6 +190,7 @@
         data: {
           ...data,
           selected: resolveSelectedState(data),
+          readonly: Boolean(props.readonly),
           isPanMode: isPanMode.value,
         },
       };
@@ -207,13 +213,15 @@
 
       const nextSelected = resolveSelectedState(data);
       const nextPanMode = isPanMode.value;
-      if (data.selected === nextSelected && data.isPanMode === nextPanMode) {
+      const nextReadonly = Boolean(props.readonly);
+      if (data.selected === nextSelected && data.isPanMode === nextPanMode && data.readonly === nextReadonly) {
         return;
       }
 
       node.setData({
         ...data,
         selected: nextSelected,
+        readonly: nextReadonly,
         isPanMode: nextPanMode,
       });
     });
@@ -297,6 +305,9 @@
         closeAddPopover();
 
         if (data.kind === 'add-condition' && data.groupId) {
+          if (props.readonly) {
+            return;
+          }
           emit('addConditionBranch', data.groupId);
           return;
         }
@@ -317,7 +328,7 @@
         }
       },
       onNodeDelete({ data }) {
-        if (isPanMode.value) {
+        if (isPanMode.value || props.readonly) {
           return;
         }
         if (data.kind === 'condition-branch' && data.groupId && data.branchId) {

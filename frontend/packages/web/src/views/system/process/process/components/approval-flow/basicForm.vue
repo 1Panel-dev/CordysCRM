@@ -32,7 +32,20 @@
       <n-form-item
         require-mark-placement="right"
         path="executeTiming"
+        required
         :label="t('process.process.basic.executionTiming')"
+        :rule="[
+          {
+            validator: () => {
+              if (form.createExecute || form.updateExecute) {
+                return true;
+              }
+
+              return new Error(t('common.notNull', { value: t('process.process.basic.executionTiming') }));
+            },
+            trigger: ['change'],
+          },
+        ]"
       >
         <div class="flex flex-col gap-[8px]">
           <n-checkbox

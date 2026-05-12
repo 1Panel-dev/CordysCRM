@@ -1,5 +1,5 @@
 <template>
-  <n-scrollbar class="p-[16px]">
+  <n-scrollbar class="p-[16px]" @pointerdown.capture="handleUserInteraction" @keydown.capture="handleUserInteraction">
     <n-form
       :rules="rules"
       class="process-setting-form"
@@ -10,6 +10,7 @@
       <n-form-item path="approvalType" :label="t('process.process.flow.approvalType')">
         <n-select
           v-model:value="nodeConfig.approvalType"
+          :disabled="props.readonly"
           :options="approvalTypeOptions"
           :placeholder="t('common.pleaseSelect')"
           @update:value="handleApprovalTypeUpdate"
@@ -19,6 +20,7 @@
       <n-form-item path="name" :label="t('process.process.flow.nodeName')">
         <n-input
           v-model:value="nodeConfig.name"
+          :disabled="props.readonly"
           :maxlength="255"
           type="text"
           :placeholder="t('common.pleaseInput')"
@@ -31,6 +33,7 @@
         <n-form-item path="approverType" :label="t('process.process.flow.approver')">
           <n-select
             v-model:value="nodeConfig.approverType"
+            :disabled="props.readonly"
             :options="approverTypeOptions"
             @update:value="handleApproverTypeUpdate"
           />
@@ -56,6 +59,7 @@
             :member-types="nodeConfig.approverType === ApproverTypeEnum.ROLE ? roleMemberTypes : undefined"
             required
             :max-count="approverMaxCount"
+            :disabled="props.readonly"
             @update:value="clearCurrentNodeInvalid"
           />
         </n-form-item>
@@ -85,6 +89,7 @@
 
           <n-select
             v-model:value="approverLevel"
+            :disabled="props.readonly"
             :options="approverLevelConfig.options"
             @update:value="clearCurrentNodeInvalid"
           />
@@ -92,7 +97,7 @@
 
         <!-- 多人审批 -->
         <n-form-item path="multiApproverMode" :label="t('process.process.flow.multiApprovalType')">
-          <n-radio-group v-model:value="nodeConfig.multiApproverMode">
+          <n-radio-group v-model:value="nodeConfig.multiApproverMode" :disabled="props.readonly">
             <n-space vertical :size="8">
               <n-radio v-for="item in multiApproverModeOptions" :key="item.value" :value="item.value">
                 {{ item.label }}
@@ -142,12 +147,14 @@
             :tab-list="exceptionTabList"
             type="segment"
             class="approval-exception-tabs mb-[8px]"
+            :disabled="props.readonly"
           />
 
           <template v-if="activeExceptionTab === 'emptyApprover'">
             <n-form-item path="emptyApproverAction" :show-label="false">
               <n-radio-group
                 v-model:value="nodeConfig.emptyApproverAction"
+                :disabled="props.readonly"
                 @update:value="handleEmptyApproverActionUpdate"
               >
                 <n-space vertical :size="8">
@@ -179,6 +186,7 @@
                 :limit-label="t('process.process.flow.member')"
                 :max-count="fallbackApproverMaxCount"
                 required
+                :disabled="props.readonly"
                 @update:value="clearCurrentNodeInvalid"
               />
             </n-form-item>
@@ -190,6 +198,7 @@
             >
               <n-select
                 v-model:value="nodeConfig.fallbackApprover"
+                :disabled="props.readonly"
                 :options="approvalAdminOptions"
                 :placeholder="t('common.pleaseSelect')"
                 @update:value="clearCurrentNodeInvalid"
@@ -199,7 +208,7 @@
 
           <template v-else>
             <n-form-item path="sameSubmitterAction" :show-label="false">
-              <n-radio-group v-model:value="nodeConfig.sameSubmitterAction">
+              <n-radio-group v-model:value="nodeConfig.sameSubmitterAction" :disabled="props.readonly">
                 <n-space vertical :size="8">
                   <n-radio :value="SameSubmitterActionEnum.ALLOW">
                     {{ t('process.process.flow.sameSubmitter.selfApprove') }}
@@ -220,6 +229,7 @@
         <n-form-item path="ccType" :label="t('process.process.flow.ccType')">
           <n-select
             v-model:value="nodeConfig.ccType"
+            :disabled="props.readonly"
             :options="approverTypeOptions"
             @update:value="handleCcTypeUpdate"
           />
@@ -244,6 +254,7 @@
             "
             :member-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? roleMemberTypes : undefined"
             :max-count="ccMaxCount"
+            :disabled="props.readonly"
             @update:value="clearCurrentNodeInvalid"
           />
         </n-form-item>
@@ -271,7 +282,12 @@
             />
           </template>
 
-          <n-select v-model:value="ccLevel" :options="ccLevelConfig.options" @update:value="clearCurrentNodeInvalid" />
+          <n-select
+            v-model:value="ccLevel"
+            :disabled="props.readonly"
+            :options="ccLevelConfig.options"
+            @update:value="clearCurrentNodeInvalid"
+          />
         </n-form-item>
       </template>
     </n-form>
@@ -318,11 +334,15 @@
     resolveApprovalActionNodeDescription,
   } from '@/config/process';
 
-  import { clearInvalidState } from '../../validation/flowValidation';
+  import { canClearInvalidState, clearInvalidState, unlockInvalidClearState } from '../../validation/flowValidation';
 
   defineOptions({
     name: 'ApproverSettingTab',
   });
+
+  const props = defineProps<{
+    readonly?: boolean;
+  }>();
 
   const nodeConfig = defineModel<ApprovalActionNode>('nodeConfig', {
     required: true,
@@ -462,8 +482,22 @@
     return !!type && [ApproverTypeEnum.SPECIFIED_MEMBER, ApproverTypeEnum.ROLE].includes(type);
   }
 
+  // 当前节点被保存校验打红后，只有用户真的开始编辑右侧表单，才允许清掉红框
   function clearCurrentNodeInvalid() {
+    if (props.readonly || !canClearInvalidState()) {
+      return;
+    }
+
     clearInvalidState(nodeConfig.value);
+  }
+
+  // 用 capture 提前感知用户交互，先解锁“自动清红框”，再让各个 update 事件继续执行
+  function handleUserInteraction() {
+    if (props.readonly) {
+      return;
+    }
+
+    unlockInvalidClearState();
   }
 
   const rules: FormRules = {
@@ -584,11 +618,19 @@
   }
 
   function handleApprovalTypeUpdate(type: ApprovalTypeEnum) {
+    if (props.readonly) {
+      return;
+    }
+
     nodeConfig.value.description = resolveApprovalActionNodeDescription(type, nodeConfig.value.approverType);
     clearCurrentNodeInvalid();
   }
 
   function handleApproverTypeUpdate(type: ApproverTypeEnum) {
+    if (props.readonly) {
+      return;
+    }
+
     nodeConfig.value.approverSelectedList = [];
     nodeConfig.value.approverList = resetLevelList(type);
     nodeConfig.value.description = resolveApprovalActionNodeDescription(nodeConfig.value.approvalType, type);
@@ -596,12 +638,20 @@
   }
 
   function handleCcTypeUpdate(type: ApproverTypeEnum) {
+    if (props.readonly) {
+      return;
+    }
+
     nodeConfig.value.ccSelectedList = [];
     nodeConfig.value.ccList = resetLevelList(type);
     clearCurrentNodeInvalid();
   }
 
   function handleEmptyApproverActionUpdate() {
+    if (props.readonly) {
+      return;
+    }
+
     nodeConfig.value.fallbackApprover = null;
     nodeConfig.value.emptyApproverSelectedList = [];
     clearCurrentNodeInvalid();

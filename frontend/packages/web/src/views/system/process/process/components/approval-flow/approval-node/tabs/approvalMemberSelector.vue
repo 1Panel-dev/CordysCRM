@@ -5,7 +5,7 @@
         {{ label }}
         <span v-if="required" class="text-[var(--error-red)]">*</span>
       </div>
-      <n-button :disabled="!selectedList?.length" text type="primary" @click="handleClear">
+      <n-button :disabled="props.disabled || !selectedList?.length" text type="primary" @click="handleClear">
         {{ t('common.clear') }}
       </n-button>
     </div>
@@ -15,6 +15,7 @@
         v-model:value="value"
         v-model:selected-list="selectedList"
         :multiple="maxCount !== 1"
+        :disabled="props.disabled"
         :drawer-title="label"
         :max-tag-count="false"
         :member-types="memberTypes"
@@ -55,6 +56,7 @@
       maxCount?: number;
       memberTypes?: Option[];
       limitLabel?: string;
+      disabled?: boolean;
     }>(),
     {
       label: '',
@@ -89,6 +91,9 @@
   }
 
   function handleClear() {
+    if (props.disabled) {
+      return;
+    }
     value.value = [];
     selectedList.value = [];
   }
@@ -118,6 +123,9 @@
       max-height: 108px;
       align-content: flex-start;
       .crm-scroll-bar();
+    }
+    :deep(.n-base-selection.n-base-selection--disabled) .n-base-selection-tags {
+      background: transparent;
     }
   }
   .approval-member-selector__placeholder {

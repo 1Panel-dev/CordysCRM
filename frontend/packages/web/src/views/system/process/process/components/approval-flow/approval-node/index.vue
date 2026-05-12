@@ -6,14 +6,16 @@
       <ApproverSettingTab
         v-if="!isManualApproval || activeTab === 'approver'"
         v-model:node-config="nodeConfig"
+        :readonly="props.readonly"
         @switch-more-setting="emit('switchMoreSetting')"
       />
       <FormPermissionTab
         v-else-if="activeTab === 'formPermission'"
         v-model:node-config="nodeConfig"
         :form-type="formType"
+        :readonly="props.readonly"
       />
-      <AfterApprovalTab v-else v-model:node-config="nodeConfig" :form-type="formType" />
+      <AfterApprovalTab v-else v-model:node-config="nodeConfig" :form-type="formType" :readonly="props.readonly" />
     </div>
   </div>
 </template>
@@ -38,8 +40,9 @@
     required: true,
   });
 
-  defineProps<{
+  const props = defineProps<{
     formType: string;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{

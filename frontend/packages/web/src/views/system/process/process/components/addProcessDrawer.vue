@@ -68,9 +68,7 @@
 
   import { addApprovalProcess, approvalProcessDetail, updateApprovalProcess } from '@/api/modules';
   import { defaultBasicForm, defaultMoreConfig } from '@/config/process';
-
-  const { t } = useI18n();
-  const Message = useMessage();
+  import useModal from '@/hooks/useModal';
 
   const props = defineProps<{
     sourceId?: string;
@@ -86,6 +84,10 @@
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
+
+  const { t } = useI18n();
+  const Message = useMessage();
+  const { openModal } = useModal();
 
   const activeTab = ref('process');
 
@@ -161,6 +163,13 @@
 
   function handleSave() {
     if (approvalFlowDesignRef.value && !approvalFlowDesignRef.value.validateFlowNodes()) {
+      openModal({
+        type: 'warning',
+        title: t('common.saveFailed'),
+        positiveText: t('process.process.flow.toConfig'),
+        content: t('process.process.flow.nodeNameNotSet'),
+        onPositiveClick: async () => undefined,
+      });
       activeTab.value = 'process';
       return;
     }

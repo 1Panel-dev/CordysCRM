@@ -13,7 +13,8 @@
     </div>
 
     <div class="rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]">
-      <n-form ref="formRef" :model="postFormModel" :show-label="false" class="after-approval-update-form">
+      <n-empty v-if="!fieldUpdateRows.length && props.readonly" :description="t('common.noData')" size="small" />
+      <n-form v-else ref="formRef" :model="postFormModel" :show-label="false" class="after-approval-update-form">
         <div v-for="(line, index) in fieldUpdateRows" :key="index" class="mb-[8px] flex items-start gap-[8px]">
           <n-form-item
             :path="`fieldUpdateConfigs.${index}.fieldId`"
@@ -23,6 +24,7 @@
           >
             <n-select
               v-model:value="line.fieldId"
+              :disabled="props.readonly"
               :options="getFieldOptions(line.fieldId)"
               :placeholder="t('common.pleaseSelect')"
               @update:value="(value) => handleFieldUpdate(line, value)"
@@ -38,6 +40,7 @@
               :is="getFieldValueComponent(line)"
               v-if="getFieldValueComponent(line) && getFieldValueConfig(line)"
               v-model:value="line.fieldValue"
+              :disabled="props.readonly"
               :path="`fieldUpdateConfigs.${index}.fieldValue`"
               :field-config="getFieldValueConfig(line)!"
               :form-detail="line"
@@ -52,9 +55,9 @@
             </n-form-item>
           </div>
           <n-form-item :path="`${index}.enable`">
-            <n-switch v-model:value="line.enable" />
+            <n-switch v-model:value="line.enable" :disabled="props.readonly" />
           </n-form-item>
-          <n-button ghost class="px-[7px]" @click="handleDeleteFieldUpdate(index)">
+          <n-button ghost class="px-[7px]" :disabled="props.readonly" @click="handleDeleteFieldUpdate(index)">
             <template #icon>
               <CrmIcon type="iconicon_minus_circle" :size="16" />
             </template>
@@ -62,7 +65,7 @@
         </div>
       </n-form>
 
-      <n-button type="primary" text @click="handleAddFieldUpdate">
+      <n-button v-if="!props.readonly" type="primary" text @click="handleAddFieldUpdate">
         <template #icon>
           <CrmIcon type="iconicon_add" :size="16" />
         </template>
@@ -74,7 +77,7 @@
 
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
-  import { type FormInst, NButton, NForm, NFormItem, NInput, NScrollbar, NSelect, NSwitch } from 'naive-ui';
+  import { type FormInst, NButton, NEmpty, NForm, NFormItem, NInput, NScrollbar, NSelect, NSwitch } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -113,6 +116,7 @@
 
   const props = defineProps<{
     formType: string;
+    readonly?: boolean;
   }>();
 
   const nodeConfig = defineModel<ApprovalActionNode>('nodeConfig', {
@@ -245,6 +249,7 @@
       name: t('common.batchUpdate'),
       description: '',
       showLabel: false,
+      editable: props.readonly ? false : field.editable,
     };
 
     const fullRules: FormCreateFieldRule[] = [];
@@ -323,16 +328,28 @@
 
   // 切换左侧字段时，右侧值按批量编辑逻辑重置成该字段自己的默认值
   function handleFieldUpdate(line: ApprovalFieldUpdateConfig, fieldId: string) {
+    if (props.readonly) {
+      return;
+    }
+
     line.fieldId = fieldId;
     const currentField = fieldId ? getCurrentField(fieldId) : null;
     line.fieldValue = currentField ? getInitialFieldValue(currentField) : '';
   }
 
   function handleDeleteFieldUpdate(index: number) {
+    if (props.readonly) {
+      return;
+    }
+
     ensureActivePostConfig().fieldUpdateConfigs.splice(index, 1);
   }
 
   function handleAddFieldUpdate() {
+    if (props.readonly) {
+      return;
+    }
+
     formRef.value?.validate((errors) => {
       if (errors) {
         return;
@@ -348,7 +365,7 @@
   }
 
   function normalizeFieldUpdateConfigs(config?: ApprovalPostConfig) {
-    if (!config) {
+    if (props.readonly || !config) {
       return;
     }
 
@@ -375,8 +392,10 @@
         getFormConfigApiMap[FormDesignKeyEnum.OPPORTUNITY_QUOTATION];
       const res = await api();
       formFields.value = res.fields;
-      normalizeFieldUpdateConfigs(nodeConfig.value.passPostConfig);
-      normalizeFieldUpdateConfigs(nodeConfig.value.rejectPostConfig);
+      if (!props.readonly) {
+        normalizeFieldUpdateConfigs(nodeConfig.value.passPostConfig);
+        normalizeFieldUpdateConfigs(nodeConfig.value.rejectPostConfig);
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

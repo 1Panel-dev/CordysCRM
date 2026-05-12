@@ -2,6 +2,7 @@
   <div class="crm-flow relative flex h-full w-full">
     <div class="crm-flow__main relative flex-1 overflow-hidden">
       <FlowCanvas
+        :readonly="props.readonly"
         :flow="flow"
         :selection="selection"
         @node-click="handleNodeClick"
@@ -44,6 +45,7 @@
 
   const props = defineProps<{
     rightContentVisible?: (selection: NodeSelectionState) => boolean;
+    readonly?: boolean;
   }>();
 
   const flow = defineModel<FlowSchema>('model', {
@@ -76,15 +78,24 @@
   }
 
   function handleAddConditionBranch(groupId: string) {
+    if (props.readonly) {
+      return;
+    }
     emit('addConditionBranch', groupId);
   }
 
   function handleNodeDelete(payload: { nodeId: string }) {
+    if (props.readonly) {
+      return;
+    }
     deleteNodeById(flow.value, payload.nodeId);
     clearSelection();
   }
 
   function handleBranchDelete(payload: { groupId: string; branchId: string }) {
+    if (props.readonly) {
+      return;
+    }
     openModal({
       type: 'error',
       title: t('common.deleteConfirm'),

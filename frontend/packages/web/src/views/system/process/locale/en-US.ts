@@ -51,7 +51,7 @@ export default {
   'process.process.flow.conditionName': 'Condition Name',
   'process.process.flow.conditionUnset': 'Please set condition',
   'process.process.flow.conditionConfigured': 'Configured',
-  'process.process.flow.nodeNameNotSet': 'Node name not set, please set',
+  'process.process.flow.nodeNameNotSet': 'Node not set, please set',
   'process.process.flow.toConfig': 'To Config',
   'process.process.flow.approverSetting': 'Approver setting',
   'process.process.flow.approverType.specifiedMember': 'Specified members',

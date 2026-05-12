@@ -229,6 +229,7 @@ export function serializeFlowNodes(nodes: FlowNode[]): ApprovalProcessNode[] {
   if (!nodes.length) {
     return [];
   }
+  // TODO lmy 修改结构
 
   const [firstNode, ...restNodes] = nodes;
 
@@ -277,7 +278,6 @@ export function serializeFlowNodes(nodes: FlowNode[]): ApprovalProcessNode[] {
 // 后端节点树 -> 前端审批节点
 // 仅前端使用的 selectedList 等展示态补齐
 function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalActionNode {
-  // TODO lmy 后端是不是少数据了
   const approverList = node.approverList ?? [];
   const ccList = node.ccList ?? [];
   const fallbackApprover = node.fallbackApprover ?? null;
@@ -291,7 +291,7 @@ function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalAct
     approvalType: node.approvalType,
     approverType: node.approverType ?? ApproverTypeEnum.SPECIFIED_MEMBER,
     approverList,
-    approverSelectedList: approverList.map((id) => ({ id, name: id })),
+    approverSelectedList: node.approverSelectOptions?.map((item) => ({ id: item.id, name: item.name })) ?? [],
     multiApproverMode: node.multiApproverMode,
     emptyApproverAction: node.emptyApproverAction,
     fallbackApprover,
@@ -300,7 +300,7 @@ function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalAct
       fallbackApprover && node.fallbackApproverName ? [{ id: fallbackApprover, name: node.fallbackApproverName }] : [],
     ccType: node.ccType ?? null,
     ccList,
-    ccSelectedList: ccList.map((id) => ({ id, name: id })),
+    ccSelectedList: node.ccSelectOptions?.map((item) => ({ id: item.id, name: item.name })) ?? [],
     passPostConfig: node.passPostConfig,
     rejectPostConfig: node.rejectPostConfig,
     fieldPermissions: node.fieldPermissions,

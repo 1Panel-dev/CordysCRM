@@ -16,6 +16,7 @@ export interface FlowGraphNodeData {
   isElse?: boolean;
   selected?: boolean; // 选中
   invalid?: boolean; // 校验异常
+  readonly?: boolean; // 详情态只读
   isPanMode?: boolean; // 画布是否处于拖拽模式（true 时禁用节点标题编辑等交互）
 }
 

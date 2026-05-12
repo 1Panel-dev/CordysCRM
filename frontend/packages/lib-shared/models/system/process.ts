@@ -6,6 +6,7 @@ import {
   type ApprovalResourceTypeEnum,
 } from '@lib/shared/enums/process';
 import type { SelectedUsersItem } from './module';
+import type { OptionDTO } from './business';
 import type { FilterForm } from '@cordys/web/src/components/pure/crm-advance-filter/type';
 import type { UserInfo } from '@lib/shared/models/user';
 import {
@@ -82,19 +83,21 @@ export interface ApprovalProcessNodeBase<TNodeType extends ApprovalNodeTypeEnum>
 
 // 审批节点里前后端共用的业务配置
 export interface ApprovalNodeParticipantConfig {
-  approvalType: ApprovalTypeEnum;
+  approvalType: ApprovalTypeEnum; // 审批类型：人工审批/自动通过/自动拒绝
   approverType: ApproverTypeEnum;
-  approverList: string[];
-  multiApproverMode: MultiApproverModeEnum;
-  emptyApproverAction: EmptyApproverActionEnum;
-  fallbackApprover: string | null;
+  approverList: string[]; // 审批人配置列表：成员 ID / 角色 ID / 层级等
+  approverSelectOptions?: OptionDTO[]; // 审批人选择项（用于前端回显）
+  multiApproverMode: MultiApproverModeEnum; // 多人审批方式
+  emptyApproverAction: EmptyApproverActionEnum; // 异常处理-审批人为空时动作
+  fallbackApprover: string | null; // 异常处理-兜底审批人
   fallbackApproverName?: string;
-  sameSubmitterAction: SameSubmitterActionEnum;
-  ccType: ApproverTypeEnum | null;
-  ccList: string[];
-  passPostConfig?: ApprovalPostConfig;
-  rejectPostConfig?: ApprovalPostConfig;
-  fieldPermissions?: ApprovalFieldPermission[];
+  sameSubmitterAction: SameSubmitterActionEnum; // 异常处理-审批人与提交人相同时动作
+  ccType: ApproverTypeEnum | null; // 抄送人
+  ccList: string[]; // 抄送人配置列表：成员 ID / 角色 ID / 层级等
+  ccSelectOptions?: OptionDTO[]; // 抄送人选择项（用于前端回显）
+  passPostConfig?: ApprovalPostConfig; // 审批通过后配置
+  rejectPostConfig?: ApprovalPostConfig; // 审批驳回后配置
+  fieldPermissions?: ApprovalFieldPermission[]; // 字段权限配置列表
 }
 
 export type ApprovalProcessStartNode = ApprovalProcessNodeBase<ApprovalNodeTypeEnum.START>;
@@ -121,9 +124,9 @@ export type ApprovalProcessNode =
 
 // 审批动作节点（前端审批流图使用）
 export interface ApprovalActionNode extends ActionNode, ApprovalNodeParticipantConfig {
-  approverSelectedList?: SelectedUsersItem[];
-  emptyApproverSelectedList?: SelectedUsersItem[];
-  ccSelectedList?: SelectedUsersItem[];
+  approverSelectedList?: SelectedUsersItem[]; // 前端展示用的审批人选中列表
+  emptyApproverSelectedList?: SelectedUsersItem[]; // 异常处理-前端展示用的
+  ccSelectedList?: SelectedUsersItem[];// 前端展示用的抄送选中列表
 }
 
 // 审批条件分支（前端审批流图使用）
