@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "nodeType", visible = true)
 @JsonSubTypes({
@@ -27,12 +25,6 @@ public class ApprovalNodeResponse {
     @Schema(description = "节点类型")
     private String nodeType;
 
-    @Schema(description = "节点类型名称")
-    private String nodeTypeName;
-
     @Schema(description = "排序序号")
     private Integer sort;
-
-    @Schema(description = "子节点列表")
-    private List<ApprovalNodeResponse> children;
 }

@@ -4,8 +4,10 @@ import cn.cordys.common.constants.EnumValue;
 import cn.cordys.crm.approval.constants.DuplicateApproverRuleEnum;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
@@ -54,5 +56,10 @@ public class ApprovalFlowUpdateRequest {
     private List<StatusPermissionDTO> statusPermissions;
 
     @Schema(description = "节点配置列表")
+    @Valid
     private List<ApprovalNodeRequest> nodes;
+
+    @Schema(description = "节点连接配置列表")
+    @Valid
+    private List<ApprovalNodeLinkRequest> links;
 }

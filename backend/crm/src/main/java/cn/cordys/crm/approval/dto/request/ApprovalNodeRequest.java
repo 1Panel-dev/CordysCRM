@@ -8,8 +8,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "nodeType", visible = true)
 @JsonSubTypes({
@@ -21,6 +19,10 @@ import java.util.List;
 })
 public class ApprovalNodeRequest {
 
+    @Schema(description = "节点ID")
+    @NotBlank
+    private String id;
+
     @Schema(description = "节点名称")
     private String name;
 
@@ -28,10 +30,4 @@ public class ApprovalNodeRequest {
     @NotBlank(message = "节点类型不能为空")
     @Schema(description = "节点类型：START/APPROVER/CONDITION/DEFAULT/END")
     private String nodeType;
-
-    @Schema(description = "排序序号")
-    private Integer sort;
-
-    @Schema(description = "子节点列表")
-    private List<ApprovalNodeRequest> children;
 }

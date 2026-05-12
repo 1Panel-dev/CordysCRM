@@ -181,9 +181,8 @@ public class ApprovalFlowService {
             }
         }
 
-        // 查询节点配置并构建树状结构
-        List<ApprovalNodeResponse> nodes = buildNodeTree(flow.getCurrentVersionId());
-        response.setNodes(nodes);
+        // 查询节点配置和连接关系
+        buildNodesAndLinks(flow.getCurrentVersionId(), response);
 
         return response;
     }
@@ -260,9 +259,7 @@ public class ApprovalFlowService {
         approvalFlowMapper.insert(flow);
 
         // 保存节点配置
-        if (CollectionUtils.isNotEmpty(request.getNodes())) {
-            saveNodes(request.getNodes(), version.getId(), userId);
-        }
+        saveNodesAndLinks(request.getNodes(), request.getLinks(), version.getId(), userId);
 
         // 设置日志上下文
         ApprovalFlowLogDTO approvalFlowLogDTO = buildAddLogDTO(request, flow);
@@ -330,9 +327,7 @@ public class ApprovalFlowService {
         String versionId = newVersion.getId();
 
         // 保存新节点配置
-        if (CollectionUtils.isNotEmpty(request.getNodes())) {
-            saveNodes(request.getNodes(), versionId, userId);
-        }
+        saveNodesAndLinks(request.getNodes(), request.getLinks(), versionId, userId);
 
         // 更新审批流主表
         flow.setUpdateUser(userId);
@@ -583,14 +578,17 @@ public class ApprovalFlowService {
     }
 
     /**
-     * 构建节点树状结构
+     * 构建节点和连接关系
      */
-    private List<ApprovalNodeResponse> buildNodeTree(String flowVersionId) {
+    private void buildNodesAndLinks(String flowVersionId, ApprovalFlowDetailResponse response) {
         if (StringUtils.isBlank(flowVersionId)) {
-            return List.of();
+            response.setNodes(List.of());
+            response.setLinks(List.of());
+            return;
         }
-        // 获取所有节点
+        // 获取所有节点并按 sort 排序
         List<ApprovalNodeResponse> allNodes = getNodesByFlowVersionId(flowVersionId);
+        allNodes.sort(Comparator.comparing(ApprovalNodeResponse::getSort));
 
         // 收集所有审批人节点的 fallbackApprover ID
         Set<String> fallbackApproverIds = allNodes.stream()
@@ -611,81 +609,111 @@ public class ApprovalFlowService {
                 .forEach(node -> node.setFallbackApproverName(
                         baseService.getAndCheckOptionName(fallbackApproverNameMap.get(node.getFallbackApprover()))));
 
-        // 获取节点连接关系
+        response.setNodes(allNodes);
+
+        // 获取节点连接关系并按 sort 排序
         ApprovalNodeLink linkCriteria = new ApprovalNodeLink();
         linkCriteria.setFlowVersionId(flowVersionId);
         List<ApprovalNodeLink> links = approvalNodeLinkMapper.select(linkCriteria);
+        links.sort(Comparator.comparing(ApprovalNodeLink::getSort));
 
-        // 构建父子关系映射
-        Map<String, List<String>> parentChildMap = links.stream()
-                .collect(Collectors.groupingBy(
-                        ApprovalNodeLink::getFromNodeId,
-                        Collectors.mapping(ApprovalNodeLink::getToNodeId, Collectors.toList())
-                ));
-
-        // 构建节点ID到节点的映射
-        Map<String, ApprovalNodeResponse> nodeMap = allNodes.stream()
-                .collect(Collectors.toMap(ApprovalNodeResponse::getId, n -> n));
-
-        // 找出根节点（START节点或没有父节点的节点）
-        Set<String> childIds = links.stream()
-                .map(ApprovalNodeLink::getToNodeId)
-                .collect(Collectors.toSet());
-
-        List<ApprovalNodeResponse> rootNodes = allNodes.stream()
-                .filter(node -> !childIds.contains(node.getId()))
-                .sorted(Comparator.comparing(ApprovalNodeResponse::getSort))
+        List<ApprovalNodeLinkResponse> linkResponses = links.stream()
+                .map(link -> {
+                    ApprovalNodeLinkResponse linkResponse = new ApprovalNodeLinkResponse();
+                    linkResponse.setId(link.getId());
+                    linkResponse.setFromNodeId(link.getFromNodeId());
+                    linkResponse.setToNodeId(link.getToNodeId());
+                    return linkResponse;
+                })
                 .collect(Collectors.toList());
 
-        // 递归构建树状结构
-        for (ApprovalNodeResponse rootNode : rootNodes) {
-            buildChildren(rootNode, parentChildMap, nodeMap);
-        }
-
-        return rootNodes;
+        response.setLinks(linkResponses);
     }
 
     /**
-     * 递归构建子节点
+     * 批量保存节点配置和连接关系
      */
-    private void buildChildren(ApprovalNodeResponse node, Map<String, List<String>> parentChildMap,
-                                Map<String, ApprovalNodeResponse> nodeMap) {
-        List<String> childIds = parentChildMap.get(node.getId());
-        if (CollectionUtils.isNotEmpty(childIds)) {
-            List<ApprovalNodeResponse> children = childIds.stream()
-                    .map(nodeMap::get)
-                    .filter(Objects::nonNull)
-                    .sorted(Comparator.comparing(ApprovalNodeResponse::getSort))
-                    .collect(Collectors.toList());
-
-            node.setChildren(children);
-
-            // 递归构建子节点的子节点
-            for (ApprovalNodeResponse child : children) {
-                buildChildren(child, parentChildMap, nodeMap);
-            }
+    private void saveNodesAndLinks(List<ApprovalNodeRequest> nodes, List<ApprovalNodeLinkRequest> links,
+                                    String flowVersionId, String userId) {
+        if (CollectionUtils.isEmpty(nodes)) {
+            return;
         }
-    }
 
-    /**
-     * 批量保存节点配置
-     */
-    private void saveNodes(List<ApprovalNodeRequest> nodes, String flowVersionId, String userId) {
-        // 用于收集节点、连接和配置信息
+        // 用于收集节点和配置信息
         List<ApprovalNode> allNodes = new ArrayList<>();
-        List<ApprovalNodeLink> allLinks = new ArrayList<>();
         List<ApprovalNodeApprover> allApproverNodes = new ArrayList<>();
         List<ApprovalNodeCondition> allConditionNodes = new ArrayList<>();
 
-        // 递归收集所有节点信息
+        // 构建前端ID到数据库ID的映射
+        Map<String, String> nodeIdMap = new HashMap<>();
+
+        // 收集所有节点信息，按数组顺序设置 sort
+        // 所有节点都生成新的数据库ID，前端传的ID仅用于关联关系映射
+        int nodeSort = 0;
         for (ApprovalNodeRequest nodeRequest : nodes) {
-            collectNodeInfo(nodeRequest, flowVersionId, userId, null, allNodes, allLinks, allApproverNodes, allConditionNodes);
+            String frontEndId = nodeRequest.getId();
+            String newNodeId = IDGenerator.nextStr();
+            // 前端ID映射到新的数据库ID
+            if (StringUtils.isNotBlank(frontEndId)) {
+                nodeIdMap.put(frontEndId, newNodeId);
+            }
+
+            // 收集节点基本信息
+            ApprovalNode node = BeanUtils.copyBean(new ApprovalNode(), nodeRequest);
+            node.setId(newNodeId);
+            node.setFlowVersionId(flowVersionId);
+            node.setSort(nodeSort++);
+            allNodes.add(node);
+
+            // 收集审批人节点配置
+            if (nodeRequest instanceof ApprovalNodeApproverRequest approverRequest) {
+                ApprovalNodeApprover approverNode = BeanUtils.copyBean(new ApprovalNodeApprover(), approverRequest,
+                        "approverList", "ccList", "passPostConfig", "rejectPostConfig", "fieldPermissions");
+                approverNode.setId(newNodeId);
+                approverNode.setFlowVersionId(flowVersionId);
+                approverNode.setApproverList(JSON.toJSONString(approverRequest.getApproverList()));
+                approverNode.setCcList(JSON.toJSONString(approverRequest.getCcList()));
+                approverNode.setPassPostConfig(JSON.toJSONString(approverRequest.getPassPostConfig()));
+                approverNode.setRejectPostConfig(JSON.toJSONString(approverRequest.getRejectPostConfig()));
+                approverNode.setFieldPermissions(JSON.toJSONString(approverRequest.getFieldPermissions()));
+                allApproverNodes.add(approverNode);
+            }
+            // 收集条件节点配置
+            else if (nodeRequest instanceof ApprovalNodeConditionRequest conditionRequest) {
+                ApprovalNodeCondition conditionNode = BeanUtils.copyBean(new ApprovalNodeCondition(), conditionRequest,
+                        "rules");
+                conditionNode.setId(newNodeId);
+                conditionNode.setFlowVersionId(flowVersionId);
+                conditionNode.setConditionConfig(JSON.toJSONString(conditionRequest.getConditionConfig()));
+                allConditionNodes.add(conditionNode);
+            }
+        }
+
+        // 收集连接信息，按数组顺序设置 sort
+        // 所有连接都使用映射后的新节点ID
+        List<ApprovalNodeLink> allLinks = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(links)) {
+            int linkSort = 0;
+            for (ApprovalNodeLinkRequest linkRequest : links) {
+                String fromNodeId = nodeIdMap.get(linkRequest.getFromNodeId());
+                String toNodeId = nodeIdMap.get(linkRequest.getToNodeId());
+                // 只有当 from 和 to 节点都存在时才创建连接
+                if (fromNodeId == null || toNodeId == null) {
+                    continue;
+                }
+
+                ApprovalNodeLink link = new ApprovalNodeLink();
+                link.setId(IDGenerator.nextStr());
+                link.setFlowVersionId(flowVersionId);
+                link.setFromNodeId(fromNodeId);
+                link.setToNodeId(toNodeId);
+                link.setSort(linkSort++);
+                allLinks.add(link);
+            }
         }
 
         // 批量插入
-        if (CollectionUtils.isNotEmpty(allNodes)) {
-            approvalNodeMapper.batchInsert(allNodes);
-        }
+        approvalNodeMapper.batchInsert(allNodes);
         if (CollectionUtils.isNotEmpty(allLinks)) {
             approvalNodeLinkMapper.batchInsert(allLinks);
         }
@@ -694,62 +722,6 @@ public class ApprovalFlowService {
         }
         if (CollectionUtils.isNotEmpty(allConditionNodes)) {
             approvalNodeConditionMapper.batchInsert(allConditionNodes);
-        }
-    }
-
-    /**
-     * 递归收集节点信息到列表中
-     */
-    private void collectNodeInfo(ApprovalNodeRequest nodeRequest, String flowVersionId, String userId, String parentId,
-                                  List<ApprovalNode> allNodes, List<ApprovalNodeLink> allLinks,
-                                  List<ApprovalNodeApprover> allApproverNodes, List<ApprovalNodeCondition> allConditionNodes) {
-        String nodeId = IDGenerator.nextStr();
-
-        // 收集节点基本信息
-        ApprovalNode node = BeanUtils.copyBean(new ApprovalNode(), nodeRequest);
-        node.setId(nodeId);
-        node.setFlowVersionId(flowVersionId);
-        allNodes.add(node);
-
-        // 收集节点连接信息（如果有父节点）
-        if (StringUtils.isNotBlank(parentId)) {
-            ApprovalNodeLink link = new ApprovalNodeLink();
-            link.setId(IDGenerator.nextStr());
-            link.setFlowVersionId(flowVersionId);
-            link.setFromNodeId(parentId);
-            link.setToNodeId(nodeId);
-            link.setSort(nodeRequest.getSort());
-            allLinks.add(link);
-        }
-
-        // 收集审批人节点配置
-        if (nodeRequest instanceof ApprovalNodeApproverRequest approverRequest) {
-            ApprovalNodeApprover approverNode = BeanUtils.copyBean(new ApprovalNodeApprover(), approverRequest,
-                    "approverList", "ccList", "passPostConfig", "rejectPostConfig", "fieldPermissions");
-            approverNode.setId(nodeId);
-            approverNode.setFlowVersionId(flowVersionId);
-            approverNode.setApproverList(JSON.toJSONString(approverRequest.getApproverList()));
-            approverNode.setCcList(JSON.toJSONString(approverRequest.getCcList()));
-            approverNode.setPassPostConfig(JSON.toJSONString(approverRequest.getPassPostConfig()));
-            approverNode.setRejectPostConfig(JSON.toJSONString(approverRequest.getRejectPostConfig()));
-            approverNode.setFieldPermissions(JSON.toJSONString(approverRequest.getFieldPermissions()));
-            allApproverNodes.add(approverNode);
-        }
-        // 收集条件节点配置
-        else if (nodeRequest instanceof ApprovalNodeConditionRequest conditionRequest) {
-            ApprovalNodeCondition conditionNode = BeanUtils.copyBean(new ApprovalNodeCondition(), conditionRequest,
-                    "rules");
-            conditionNode.setId(nodeId);
-            conditionNode.setFlowVersionId(flowVersionId);
-            conditionNode.setConditionConfig(JSON.toJSONString(conditionRequest.getConditionConfig()));
-            allConditionNodes.add(conditionNode);
-        }
-
-        // 递归收集子节点
-        if (CollectionUtils.isNotEmpty(nodeRequest.getChildren())) {
-            for (ApprovalNodeRequest childRequest : nodeRequest.getChildren()) {
-                collectNodeInfo(childRequest, flowVersionId, userId, nodeId, allNodes, allLinks, allApproverNodes, allConditionNodes);
-            }
         }
     }
 
