@@ -478,7 +478,9 @@ public class ApprovalFlowService {
                 if (conditionNode != null) {
                     ApprovalNodeConditionResponse conditionResponse = BeanUtils.copyBean(
                             new ApprovalNodeConditionResponse(), node);
-                    BeanUtils.copyBean(conditionResponse, conditionNode);
+                    if (StringUtils.isNotBlank(conditionNode.getConditionConfig())) {
+                        conditionResponse.setConditionConfig(JSON.parseObject(conditionNode.getConditionConfig(), CombineSearch.class));
+                    }
                     return conditionResponse;
                 }
             }
