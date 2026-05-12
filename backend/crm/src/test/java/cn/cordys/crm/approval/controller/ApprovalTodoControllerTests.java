@@ -1,8 +1,14 @@
 package cn.cordys.crm.approval.controller;
 
 import cn.cordys.common.pager.Pager;
+import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
+import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.crm.base.BaseTest;
+import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Order;
@@ -25,6 +31,12 @@ class ApprovalTodoControllerTests extends BaseTest {
     private static final String PROCESSED_PAGE = "/processed/page";
     private static final String INITIATED_PAGE = "/initiated/page";
     private static final String CC_PAGE = "/cc/page";
+    private static final String PENDING_COUNT = "/pending/count";
+
+    @Resource
+    private ApprovalTodoService approvalTodoService;
+    @Resource
+    private BaseMapper<ApprovalTask> approvalTaskMapper;
 
     @Override
     protected String getBasePath() {
@@ -142,5 +154,54 @@ class ApprovalTodoControllerTests extends BaseTest {
         Assertions.assertEquals(2, pager.getTotal());
         Assertions.assertEquals(2, pager.getList().size());
         Assertions.assertTrue(pager.getList().stream().allMatch(item -> StringUtils.equals("READ", item.getApprovalOperation())));
+    }
+
+    @Sql(
+            scripts = {"/dml/init_approval_todo_list_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Test
+    @Order(6)
+    void testPendingCount() throws Exception {
+        MvcResult mvcResult = requestGetWithOkAndReturn(PENDING_COUNT);
+        ApprovalTodoCountResponse response = getResultData(mvcResult, ApprovalTodoCountResponse.class);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(4, response.getTotal());
+        Assertions.assertEquals(1, response.getQuotation());
+        Assertions.assertEquals(2, response.getContract());
+        Assertions.assertEquals(1, response.getOrder());
+        Assertions.assertEquals(0, response.getInvoice());
+    }
+
+    @Sql(
+            scripts = {"/dml/init_approval_todo_list_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Test
+    @Order(7)
+    void testDeleteApprovalTaskByInstanceId() {
+        approvalTodoService.deleteApprovalTaskByInstanceId("todo_list_inst_contract");
+
+        List<ApprovalTask> remain = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>()
+                .eq(ApprovalTask::getInstanceId, "todo_list_inst_contract"));
+        Assertions.assertTrue(remain.isEmpty());
+    }
+
+    @Sql(
+            scripts = {"/dml/init_approval_todo_list_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Test
+    @Order(8)
+    void testDeleteApprovalTaskByInstanceIds() {
+        approvalTodoService.deleteApprovalTaskByInstanceIds(List.of("todo_list_inst_contract", "todo_list_inst_quote"));
+
+        List<ApprovalTask> remain = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>()
+                .in(ApprovalTask::getInstanceId, List.of("todo_list_inst_contract", "todo_list_inst_quote")));
+        Assertions.assertTrue(remain.isEmpty());
     }
 }

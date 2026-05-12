@@ -48,6 +48,8 @@ public class NotificationService {
         resourceMap.forEach((k, v) -> {
             if (k.contains(NotificationConstants.Module.CUSTOMER)) {
                 countMap.merge(NotificationConstants.Module.CUSTOMER, v.size(), Integer::sum);
+            } else if (k.contains(NotificationConstants.Module.APPROVAL)) {
+                countMap.merge(NotificationConstants.Module.APPROVAL, v.size(), Integer::sum);
             } else if (k.contains(NotificationConstants.Module.CLUE)) {
                 countMap.merge(NotificationConstants.Module.CLUE, v.size(), Integer::sum);
             } else if (k.contains(NotificationConstants.Module.OPPORTUNITY)) {

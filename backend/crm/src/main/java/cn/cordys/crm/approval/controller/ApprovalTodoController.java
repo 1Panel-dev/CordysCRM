@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.controller;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.crm.approval.dto.request.ApprovalProcessedPageRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
+import cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
 import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.security.SessionUtils;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,5 +49,11 @@ public class ApprovalTodoController {
     @Operation(summary = "审核代办-抄送我的审批分页")
     public Pager<List<ApprovalTodoItemResponse>> ccPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
         return approvalTodoService.getCcPage(request, SessionUtils.getUserId());
+    }
+
+    @GetMapping("/pending/count")
+    @Operation(summary = "审核代办-待我审批统计")
+    public ApprovalTodoCountResponse pendingCount() {
+        return approvalTodoService.getPendingCount(SessionUtils.getUserId());
     }
 }
