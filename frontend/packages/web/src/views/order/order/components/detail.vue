@@ -27,7 +27,8 @@
         class="mb-[16px]"
         :stage-config-list="stageConfig?.stageConfigList || []"
         is-limit-back
-        is-order
+        is-no-resign-flow
+        :readonly="!canUpdateStage"
         :back-stage-permission="['ORDER:UPDATE']"
         :source-id="sourceId"
         :operation-permission="['ORDER:UPDATE']"
@@ -211,13 +212,21 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<OrderItem>({
+  const { initApprovalPermission, resolveRowOperation, hasApprovalScopedPermission } = useApprovalOperation<OrderItem>({
     formType: FormDesignKeyEnum.ORDER,
     dataActionMap: orderDetailDataActionMap,
     isDetail: true,
     specialActionFilter: (_row, actionKeys) => {
       return actionKeys.filter((key) => !['review', 'revoke'].includes(key));
     },
+  });
+
+  const canUpdateStage = computed(() => {
+    if (!detailInfo.value) {
+      return false;
+    }
+
+    return hasApprovalScopedPermission(detailInfo.value, ['ORDER:UPDATE']);
   });
 
   const detailActions = computed<{

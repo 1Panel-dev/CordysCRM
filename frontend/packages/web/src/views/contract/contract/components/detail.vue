@@ -3,9 +3,6 @@
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
         <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
-        <div class="text-[14px] font-normal">
-          {{ stageName }}
-        </div>
       </div>
     </template>
     <template #titleRight>
@@ -24,13 +21,28 @@
         </template>
       </CrmOperationButton>
     </template>
-    <!-- todo xinxinwu 详情合同阶段 -->
     <div class="h-full bg-[var(--text-n9)] p-[16px]">
+      <CrmWorkflowCard
+        v-model:stage="currentStatus"
+        class="mb-[16px]"
+        :stage-config-list="stageConfig?.stageConfigList || []"
+        is-limit-back
+        is-no-resign-flow
+        :readonly="!canUpdateStage"
+        :back-stage-permission="['CONTRACT:STAGE']"
+        :source-id="sourceId"
+        :operation-permission="['CONTRACT:STAGE']"
+        :update-api="updateContractStage"
+        :before-change-stage="handleBeforeChangeStage"
+        :afoot-roll-back="stageConfig?.afootRollBack"
+        :end-roll-back="stageConfig?.endRollBack"
+        @load-detail="handleSaved()"
+      />
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
       </CrmCard>
 
-      <CrmCard contentHeight="100%" hide-footer :special-height="64" no-content-padding>
+      <CrmCard contentHeight="100%" hide-footer :special-height="170" no-content-padding>
         <!-- 需要用到 detailInfo 所以这里不用 v-if -->
         <div v-show="activeTab === 'contract'" class="h-full">
           <CrmApprovalDetail :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT" :source-id="props.sourceId">
@@ -102,6 +114,12 @@
       @saved="() => handleSaved()"
       @review="handleFormReview"
     />
+    <VoidReasonModal
+      v-model:visible="showVoidReasonModal"
+      :name="title"
+      :sourceId="props.sourceId"
+      @refresh="handleSaved()"
+    />
     <QuotationDetailDrawer
       v-model:visible="showQuotationDetailDrawer"
       :source-id="activeQuotationSourceId"
@@ -127,6 +145,7 @@
   import { characterLimit } from '@lib/shared/method';
   import type { ContractItem } from '@lib/shared/models/contract';
   import { CollaborationType } from '@lib/shared/models/customer';
+  import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -138,6 +157,8 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
+  import VoidReasonModal from './voidReasonModal.vue';
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
   import PaymentRecordTable from '@/views/contract/contractPaymentRecord/components/paymentTable.vue';
   import InvoiceTable from '@/views/contract/invoice/components/invoiceTable.vue';
@@ -145,7 +166,7 @@
   import QuotationDetailDrawer from '@/views/opportunity/components/quotation/detail.vue';
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
-  import { approvalContract, deleteContract } from '@/api/modules';
+  import { approvalContract, deleteContract, getContractStatusConfig, updateContractStage } from '@/api/modules';
   import { contractStatusOptions } from '@/config/contract';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -177,6 +198,7 @@
   const stageName = computed(() => {
     return contractStatusOptions.find((item) => item.value === detailInfo.value?.stage)?.label;
   });
+  const showVoidReasonModal = ref(false);
 
   const activeTab = ref('contract');
 
@@ -233,17 +255,18 @@
     };
   }
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<ContractItem>({
-    formType: FormDesignKeyEnum.CONTRACT,
-    dataActionMap: createContractDetailActionMap,
-    isDetail: true,
-    identityResolver: {
-      isApplicant: (row, currentUserId) => row.createUser === currentUserId,
-    },
-    specialActionFilter: (row, actionKeys) => {
-      return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
-    },
-  });
+  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
+    useApprovalOperation<ContractItem>({
+      formType: FormDesignKeyEnum.CONTRACT,
+      dataActionMap: createContractDetailActionMap,
+      isDetail: true,
+      identityResolver: {
+        isApplicant: (row, currentUserId) => row.createUser === currentUserId,
+      },
+      specialActionFilter: (row, actionKeys) => {
+        return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
+      },
+    });
 
   const detailActions = computed<{
     groupList: ActionsItem[];
@@ -266,10 +289,14 @@
       }),
     };
   });
-
+  const stageConfig = ref<OpportunityStageConfig>();
+  const currentStatus = ref<string>(stageConfig.value?.stageConfigList[0]?.id || '');
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     title.value = name || '';
     detailInfo.value = detail ?? {};
+    if (detail) {
+      currentStatus.value = detail.stage;
+    }
   }
 
   const formCreateDrawerVisible = ref(false);
@@ -295,6 +322,23 @@
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CONTRACT,
   });
+
+  const canUpdateStage = computed(() => {
+    if (!detailInfo.value) {
+      return false;
+    }
+
+    return hasApprovalScopedPermission(detailInfo.value, ['CONTRACT:STAGE']);
+  });
+
+  function handleBeforeChangeStage(stage: string) {
+    if (stage === ContractStatusEnum.VOID) {
+      showVoidReasonModal.value = true;
+      return false;
+    }
+
+    return true;
+  }
 
   function handleFormReview(res: any) {
     reviewByFormResult(res, {
@@ -339,21 +383,6 @@
         handleSaved();
       },
     });
-  }
-
-  async function handleApproval(approval = false) {
-    const approvalStatus = approval ? ProcessStatusEnum.APPROVED : ProcessStatusEnum.UNAPPROVED;
-    try {
-      await approvalContract({
-        id: props.sourceId,
-        approvalStatus,
-      });
-      Message.success(approval ? t('common.approvedSuccess') : t('common.unApprovedSuccess'));
-      handleSaved();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
   }
 
   // 回款
@@ -437,6 +466,24 @@
         break;
     }
   }
+
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getContractStatusConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        initStageConfig();
+      }
+    }
+  );
 
   function showBusinessTitleDetail(params: { id: string }) {
     emit('openBusinessTitleDrawer', params);

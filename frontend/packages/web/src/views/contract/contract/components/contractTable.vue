@@ -508,30 +508,12 @@
               { default: () => row.customerName, trigger: () => row.customerName }
             );
       },
-      // todo xinxinwu
       stage: (row: ContractItem) => {
-        const disabled = row.approvalStatus !== ProcessStatusEnum.APPROVED || !hasAnyPermission(['CONTRACT:STAGE']);
-        if (disabled && enableApproval.value) {
-          return h(
-            NTooltip,
-            { delay: 300 },
-            {
-              trigger: () =>
-                h(
-                  'div',
-                  { class: 'cursor-not-allowed' },
-                  {
-                    default: () => contractStatusOptions.find((item) => item.value === row?.stage)?.label,
-                  }
-                ),
-              default: () => t('contract.changeStageTip'),
-            }
-          );
-        }
+        const canEditStage = hasApprovalScopedPermission(row, ['CONTRACT:STAGE']);
         return h(StatusTagSelect, {
           'status': row.stage as ContractStatusEnum,
           'noRender': true,
-          'disabled': disabled && enableApproval.value,
+          'disabled': !canEditStage,
           'onUpdate:status': async (val) => {
             // 修改为作废的时候需要填写原因
             if (val === ContractStatusEnum.VOID) {
