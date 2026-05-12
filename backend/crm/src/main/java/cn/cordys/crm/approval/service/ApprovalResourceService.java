@@ -5,6 +5,7 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
@@ -22,6 +23,7 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.UserApprovalDTO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -39,24 +41,24 @@ public class ApprovalResourceService {
     private BaseMapper<ApprovalRecord> approvalRecordMapper;
     @Resource
     private BaseMapper<User> userMapper;
-	@Resource
-	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
-	@Resource
-	private ApprovalFlowService approvalFlowService;
-	@Resource
-	private ModuleFormService formService;
+    @Resource
+    private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ModuleFormService formService;
 
-	/**
-	 * 开启的审批流表单表格映射
-	 */
-	private static final Map<String, String> FORM_APPROVAL_TABLE = new HashMap<>(4);
+    /**
+     * 开启的审批流表单表格映射
+     */
+    private static final Map<String, String> FORM_APPROVAL_TABLE = new HashMap<>(4);
 
-	static {
-		FORM_APPROVAL_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
-		FORM_APPROVAL_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
-		FORM_APPROVAL_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
-		FORM_APPROVAL_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
-	}
+    static {
+        FORM_APPROVAL_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
+        FORM_APPROVAL_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
+        FORM_APPROVAL_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
+        FORM_APPROVAL_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
+    }
 
     public ResourceApprovalResponse resourceDetail(String resourceId) {
         // 初始化响应对象，默认返回空审核人列表。
@@ -101,7 +103,7 @@ public class ApprovalResourceService {
         Map<String, User> userMap = approverIds.isEmpty()
                 ? Collections.emptyMap()
                 : userMapper.selectByIds(approverIds).stream()
-                  .collect(Collectors.toMap(User::getId, Function.identity(), (prev, next) -> prev));
+                .collect(Collectors.toMap(User::getId, Function.identity(), (prev, next) -> prev));
 
         // 批量加载任务对应审批记录（用于审批意见）。
         List<String> taskIds = tasks.stream()
@@ -147,26 +149,26 @@ public class ApprovalResourceService {
         return response;
     }
 
-	/**
-	 * 更新业务表的审批状态
-	 *
-	 * @param formKey        表单类型
-	 * @param resourceId     资源ID
-	 * @param approvalStatus 审批状态
-	 */
-	public void updateApprovalStatus(FormKey formKey, String resourceId, String approvalStatus) {
-		String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
-		if (StringUtils.isBlank(tableName)) {
-			throw new GenericException(Translator.get("module.form.illegal"));
-		}
-		extApprovalInstanceMapper.updateApprovalStatus(tableName, resourceId, approvalStatus);
-	}
+    /**
+     * 更新业务表的审批状态
+     *
+     * @param formKey        表单类型
+     * @param resourceId     资源ID
+     * @param approvalStatus 审批状态
+     */
+    public void updateApprovalStatus(FormKey formKey, String resourceId, String approvalStatus) {
+        String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
+        if (StringUtils.isBlank(tableName)) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
+        extApprovalInstanceMapper.updateApprovalStatus(tableName, resourceId, approvalStatus);
+    }
 
     /**
      * 查询对应业务表的业务名
      *
-     * @param formKey        表单类型
-     * @param resourceId     资源ID
+     * @param formKey    表单类型
+     * @param resourceId 资源ID
      */
     public String selectBusinessName(FormKey formKey, String resourceId) {
         String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
@@ -177,54 +179,62 @@ public class ApprovalResourceService {
     }
 
 
-	/**
-	 * 手动提审
-	 * @param param 提审参数
-	 */
-	public void push(ApprovalResourceBaseParam param, String currentOrgId, String currentUserId) {
-		// 更新业务表 approval_status
-		String tableName = FORM_APPROVAL_TABLE.get(param.getFormKey());
-		if (StringUtils.isBlank(tableName)) {
-			throw new GenericException(Translator.get("module.form.illegal"));
-		}
-		extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.APPROVING.name());
-		ApprovalFlowVersion approvalFlowVersion = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
-		if (approvalFlowVersion == null) {
-			throw new GenericException(Translator.get("approval_flow.not.exist"));
-		}
-		// 插入审批实例和第一个审批节点待办任务
-		List<BaseModuleFieldValue> fvs = formService.compressResourceDetail(param.getFormKey(), param.getResourceId());
-		ApprovalNodeApproverResponse firstApproverNode = approvalFlowService.getResourceApprovalFlowFirstApproverNode(approvalFlowVersion.getId(), fvs);
-		ApprovalInstance approvalInstance = new ApprovalInstance();
-		approvalInstance.setId(IDGenerator.nextStr());
-		approvalInstance.setFlowVersionId(approvalFlowVersion.getId());
-		approvalInstance.setType(param.getFormKey());
-		approvalInstance.setResourceId(param.getResourceId());
-		approvalInstance.setSubmitterId(currentUserId);
-		approvalInstance.setSubmitTime(System.currentTimeMillis());
-		approvalInstance.setApprovalStatus(ApprovalStatus.APPROVING.name());
-		approvalInstance.setCurrentNodeId(firstApproverNode.getId());
-		approvalInstance.setCreateTime(System.currentTimeMillis());
-		approvalInstance.setCreateUser(currentUserId);
-		approvalInstance.setUpdateTime(System.currentTimeMillis());
-		approvalInstance.setUpdateUser(currentUserId);
-		approvalInstanceMapper.insert(approvalInstance);
-		new ApprovalActionService().saveNodeApproverTasks(firstApproverNode.getId(), approvalInstance.getId(), currentUserId, currentOrgId, null);
-	}
+    /**
+     * 手动提审
+     *
+     * @param param 提审参数
+     */
+    public void push(ApprovalResourceBaseParam param, String currentOrgId, String currentUserId) {
+        // 更新业务表 approval_status
+        String tableName = FORM_APPROVAL_TABLE.get(param.getFormKey());
+        if (StringUtils.isBlank(tableName)) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
+        extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.APPROVING.name());
+        ApprovalFlowVersion approvalFlowVersion = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
+        if (approvalFlowVersion == null) {
+            throw new GenericException(Translator.get("approval_flow.not.exist"));
+        }
+        // 插入审批实例和第一个审批节点待办任务
+        String instanceId = IDGenerator.nextStr();
+        List<BaseModuleFieldValue> fvs = formService.compressResourceDetail(param.getFormKey(), param.getResourceId());
+        ApprovalNodeApproverResponse firstApproverNode = approvalFlowService.getResourceApprovalFlowFirstApproverNode(approvalFlowVersion.getId(), fvs, instanceId, currentUserId, currentOrgId);
+        ApprovalInstance approvalInstance = new ApprovalInstance();
+        approvalInstance.setId(instanceId);
+        approvalInstance.setFlowVersionId(approvalFlowVersion.getId());
+        approvalInstance.setType(param.getFormKey());
+        approvalInstance.setResourceId(param.getResourceId());
+        approvalInstance.setSubmitterId(currentUserId);
+        approvalInstance.setSubmitTime(System.currentTimeMillis());
+        //todo 如果返回节点类型==end instance状态设置APPROVED？
+        if (Strings.CI.equals(firstApproverNode.getNodeType(), ApprovalNodeTypeEnum.END.name())) {
+            approvalInstance.setApprovalStatus(ApprovalStatus.APPROVED.name());
+        } else {
+            approvalInstance.setApprovalStatus(ApprovalStatus.APPROVING.name());
+        }
+        approvalInstance.setCurrentNodeId(firstApproverNode.getId());
+        approvalInstance.setCreateTime(System.currentTimeMillis());
+        approvalInstance.setCreateUser(currentUserId);
+        approvalInstance.setUpdateTime(System.currentTimeMillis());
+        approvalInstance.setUpdateUser(currentUserId);
+        approvalInstanceMapper.insert(approvalInstance);
+        //todo 如果节点类型==end 是否需要创建任务？ 是否直接更新业务状态为通过？
+        new ApprovalActionService().saveNodeApproverTasks(firstApproverNode.getId(), approvalInstance.getId(), currentUserId, currentOrgId, null);
+    }
 
-	public void revoke(ApprovalResourceRevokeParam param, String currentUserId) {
-		// 更新业务表 approval_status
-		String tableName = FORM_APPROVAL_TABLE.get(param.getFormKey());
-		if (StringUtils.isBlank(tableName)) {
-			throw new GenericException(Translator.get("module.form.illegal"));
-		}
-		extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.REVOKED.name());
-		// 更新审批实例状态
-		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(param.getInstanceId());
-		instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
-		instance.setApprovalTime(System.currentTimeMillis());
-		instance.setUpdateUser(currentUserId);
-		instance.setUpdateTime(System.currentTimeMillis());
-		approvalInstanceMapper.updateById(instance);
-	}
+    public void revoke(ApprovalResourceRevokeParam param, String currentUserId) {
+        // 更新业务表 approval_status
+        String tableName = FORM_APPROVAL_TABLE.get(param.getFormKey());
+        if (StringUtils.isBlank(tableName)) {
+            throw new GenericException(Translator.get("module.form.illegal"));
+        }
+        extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.REVOKED.name());
+        // 更新审批实例状态
+        ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(param.getInstanceId());
+        instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
+        instance.setApprovalTime(System.currentTimeMillis());
+        instance.setUpdateUser(currentUserId);
+        instance.setUpdateTime(System.currentTimeMillis());
+        approvalInstanceMapper.updateById(instance);
+    }
 }
