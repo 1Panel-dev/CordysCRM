@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper">
+
+
+    <update id="updateTaskById">
+        update approval_task
+        <set>
+            <if test="approvalTask.nodeId != null and approvalTask.nodeId != ''">
+                node_id = #{approvalTask.nodeId},
+            </if>
+            <if test="approvalTask.instanceId != null and approvalTask.instanceId != ''">
+                instance_id = #{approvalTask.instanceId},
+            </if>
+            <if test="approvalTask.approverId != null and approvalTask.approverId != ''">
+                approver_id = #{approvalTask.approverId},
+            </if>
+            <if test="approvalTask.status != null and approvalTask.status != ''">
+                status = #{approvalTask.status},
+            </if>
+            <if test="approvalTask.type != null and approvalTask.type != ''">
+                type = #{approvalTask.type},
+            </if>
+            <if test="approvalTask.action != null and approvalTask.action != ''">
+                action = #{approvalTask.action},
+            </if>
+            <if test="approvalTask.createTime != null and approvalTask.createTime != ''">
+                create_time = #{approvalTask.createTime},
+            </if>
+            <if test="approvalTask.updateTime != null and approvalTask.updateTime != ''">
+                update_time = #{approvalTask.updateTime},
+            </if>
+            <if test="approvalTask.createUser != null and approvalTask.createUser != ''">
+                create_user = #{approvalTask.createUser},
+            </if>
+            <if test="approvalTask.updateUser != null and approvalTask.updateUser != ''">
+                update_user = #{approvalTask.updateUser},
+            </if>
+        </set>
+        <where>
+            id = #{approvalTask.id}
+        </where>
+    </update>
+</mapper>

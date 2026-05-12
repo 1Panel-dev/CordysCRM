@@ -11,12 +11,11 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.domain.*;
-import cn.cordys.crm.approval.dto.request.ApprovalActionRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalAddSignRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalReturnBackRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalRevokeRequest;
+import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
+import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.contract.mapper.ExtBusinessTitleMapper;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
@@ -27,11 +26,18 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -63,6 +69,8 @@ public class ApprovalActionService {
 	private ApprovalResourceService approvalResourceService;
 	@Resource
 	private LogService logService;
+	@Resource
+	private SqlSessionFactory sqlSessionFactory;
 
 	/**
 	 * 加签
@@ -150,7 +158,8 @@ public class ApprovalActionService {
 
 		// TODO: 多人审批任务需判断当前任务节点最终执行状态是否通过
 		if (org.apache.commons.collections.CollectionUtils.isEmpty(appendTasks)) {
-			finishApprovalInstance(currentTask.getInstanceId(), ApprovalStatus.APPROVED.name(), currentUserId);
+			ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
+			finishApprovalInstance(instance, ApprovalStatus.APPROVED.name(), currentUserId);
 		}
 
 		// 批量插入待办任务
@@ -187,10 +196,10 @@ public class ApprovalActionService {
 
 		saveApprovalRecord(currentTask, request.getComment(), request.getAttachmentIds(), currentUserId, currentOrgId);
 
-		finishApprovalInstance(currentTask.getInstanceId(), ApprovalStatus.REVOKED.name(), currentUserId);
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
+		finishApprovalInstance(instance, ApprovalStatus.REVOKED.name(), currentUserId);
 
 		//日志
-		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
 		String resourceName = approvalResourceService.selectBusinessName(FormKey.valueOf(instance.getType()), instance.getResourceId());
 		LogDTO logDTO = new LogDTO(currentOrgId, instance.getResourceId(), currentUserId, LogType.APPROVAL, request.getModule(), resourceName);
 		logDTO.setModifiedValue(Translator.get("reject_approval"));
@@ -442,12 +451,11 @@ public class ApprovalActionService {
 
 	/**
 	 * 刷新最终实例状态
-	 * @param instanceId 审批实例ID
+	 * @param instance 审批实例
 	 * @param approvalStatus 审批状态
 	 * @param currentUserId 当前用户ID
 	 */
-	private void finishApprovalInstance(String instanceId, String approvalStatus, String currentUserId) {
-		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(instanceId);
+	private void finishApprovalInstance(ApprovalInstance instance, String approvalStatus, String currentUserId) {
 		instance.setApprovalStatus(approvalStatus);
 		instance.setApprovalTime(System.currentTimeMillis());
 		instance.setUpdateUser(currentUserId);
@@ -511,5 +519,51 @@ public class ApprovalActionService {
 		}
 
 		return approvalTasks;
+	}
+
+
+	/**
+	 * 批量驳回
+	 * @param request
+	 * @param userId
+	 * @param orgId
+	 */
+	public void batchReject(ApprovalActionBatchRequest request, String userId, String orgId) {
+		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectByIds(request.getIds());
+		if (CollectionUtils.isEmpty(approvalTasks)) {
+			throw new GenericException("审批任务不存在!");
+		}
+		/*
+		 * 驳回: 当前任务所属节点最终执行状态为驳回, 中断审批流程
+		 *     TODO: 特殊场景: 节点多人审批, 会签及依次审批时直接整体走驳回逻辑; 反过来如果是或签, 则需要节点下审批任务都为驳回状态才整体走驳回逻辑
+		 */
+		List<String> instanceIds = approvalTasks.stream().map(ApprovalTask::getInstanceId).toList();
+		List<ApprovalInstance> approvalInstances = approvalInstanceMapper.selectByIds(instanceIds);
+		Map<String, ApprovalInstance> instanceMaps = approvalInstances.stream().collect(Collectors.toMap(ApprovalInstance::getId, Function.identity()));
+		List<LogDTO> logs = new ArrayList<>();
+		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+		ExtApprovalTaskMapper taskMapper = sqlSession.getMapper(ExtApprovalTaskMapper.class);
+		approvalTasks.stream().forEach(approvalTask -> {
+			approvalTask.setAction(ApprovalAction.REJECT.name());
+			approvalTask.setStatus(ApprovalStatus.UNAPPROVED.name());
+			approvalTask.setUpdateUser(userId);
+			approvalTask.setUpdateTime(System.currentTimeMillis());
+			taskMapper.updateTaskById(approvalTask);
+
+			saveApprovalRecord(approvalTask, request.getRejectReason(), request.getAttachmentIds(), userId, orgId);
+			if (instanceMaps.containsKey(approvalTask.getInstanceId())) {
+				ApprovalInstance approvalInstance = instanceMaps.get(approvalTask.getInstanceId());
+				finishApprovalInstance(approvalInstance, ApprovalStatus.REVOKED.name(), userId);
+
+
+				String resourceName = approvalResourceService.selectBusinessName(FormKey.valueOf(approvalInstance.getType()), approvalInstance.getResourceId());
+				LogDTO logDTO = new LogDTO(orgId, approvalInstance.getResourceId(), userId, LogType.APPROVAL, request.getModule(), resourceName);
+				logDTO.setModifiedValue(Translator.get("reject_approval"));
+				logs.add(logDTO);
+			}
+		});
+		sqlSession.flushStatements();
+		SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+		logService.batchAdd(logs);
 	}
 }
