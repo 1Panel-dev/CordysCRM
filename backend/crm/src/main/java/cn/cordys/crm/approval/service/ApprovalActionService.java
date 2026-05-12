@@ -1,5 +1,9 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
@@ -16,6 +20,7 @@ import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -54,6 +59,10 @@ public class ApprovalActionService {
 	private AttachmentService attachmentService;
 	@Resource
 	private BaseMapper<ApprovalInstanceAttachment> approvalInstanceAttachmentMapper;
+	@Resource
+	private ApprovalResourceService approvalResourceService;
+	@Resource
+	private LogService logService;
 
 	/**
 	 * 加签
@@ -76,6 +85,12 @@ public class ApprovalActionService {
 		processOldSignedTask(request, userId, orgId);
 		// 保存加签附件
 		saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), addSignTask.getId(), userId, orgId);
+
+		//日志
+		String resourceName = approvalResourceService.selectBusinessName(FormKey.valueOf(instance.getType()), instance.getResourceId());
+		LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, request.getModule(), resourceName);
+		logDTO.setModifiedValue(Translator.get("sign_approval"));
+		logService.add(logDTO);
 	}
 
 	/**
@@ -94,6 +109,13 @@ public class ApprovalActionService {
 		approvalTaskMapper.update(approvalTask);
 		// 保存退回附件
 		saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), backRecord.getId(), userId, orgId);
+
+		//日志
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
+		String resourceName = approvalResourceService.selectBusinessName(FormKey.valueOf(instance.getType()), instance.getResourceId());
+		LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, request.getModule(), resourceName);
+		logDTO.setModifiedValue(Translator.get("back_approval"));
+		logService.add(logDTO);
 	}
 
 	/**
@@ -135,6 +157,13 @@ public class ApprovalActionService {
 		if (org.apache.commons.collections.CollectionUtils.isNotEmpty(appendTasks)) {
 			approvalTaskMapper.batchInsert(appendTasks);
 		}
+
+		//日志
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
+		String resourceName = approvalResourceService.selectBusinessName(FormKey.valueOf(instance.getType()), instance.getResourceId());
+		LogDTO logDTO = new LogDTO(currentOrgId, instance.getResourceId(), currentUserId, LogType.APPROVAL, request.getModule(), resourceName);
+		logDTO.setModifiedValue(Translator.get("agree_approval"));
+		logService.add(logDTO);
 	}
 
 	/**
@@ -159,6 +188,13 @@ public class ApprovalActionService {
 		saveApprovalRecord(currentTask, request.getComment(), request.getAttachmentIds(), currentUserId, currentOrgId);
 
 		finishApprovalInstance(currentTask.getInstanceId(), ApprovalStatus.REVOKED.name(), currentUserId);
+
+		//日志
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
+		String resourceName = approvalResourceService.selectBusinessName(FormKey.valueOf(instance.getType()), instance.getResourceId());
+		LogDTO logDTO = new LogDTO(currentOrgId, instance.getResourceId(), currentUserId, LogType.APPROVAL, request.getModule(), resourceName);
+		logDTO.setModifiedValue(Translator.get("reject_approval"));
+		logService.add(logDTO);
 	}
 
     public void sendNotice(ApprovalInstance instance, String resourceName, String orgId, String context) {

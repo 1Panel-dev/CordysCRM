@@ -24,9 +24,12 @@ public class ApprovalActionRequest {
     @Schema(description = "审批人ID")
     private String approverId;
 
-	@Schema(description = "加签意见")
+	@Schema(description = "意见")
 	private String comment;
 
-	@Schema(description = "加签意见的附件集合")
+	@Schema(description = "意见的附件集合")
 	private List<String> attachmentIds;
+
+    @Schema(description="操作模块:首页/具体模块详情页")
+    private String module;
 }
