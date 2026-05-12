@@ -44,8 +44,6 @@ public class ApprovalResourceService {
 	@Resource
 	private ApprovalFlowService approvalFlowService;
 	@Resource
-	private ApprovalActionService approvalActionService;
-	@Resource
 	private ModuleFormService formService;
 
 	/**
@@ -211,7 +209,7 @@ public class ApprovalResourceService {
 		approvalInstance.setUpdateTime(System.currentTimeMillis());
 		approvalInstance.setUpdateUser(currentUserId);
 		approvalInstanceMapper.insert(approvalInstance);
-		approvalActionService.saveNodeApproverTasks(firstApproverNode.getId(), approvalInstance.getId(), currentUserId, currentOrgId, null);
+		new ApprovalActionService().saveNodeApproverTasks(firstApproverNode.getId(), approvalInstance.getId(), currentUserId, currentOrgId, null);
 	}
 
 	public void revoke(ApprovalResourceRevokeParam param, String currentUserId) {
