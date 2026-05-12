@@ -6,6 +6,7 @@ import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalNode;
 import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
+import cn.cordys.crm.approval.domain.ApprovalNodeLink;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowByFormTypeResponse;
@@ -47,6 +48,8 @@ class ApprovalFlowControllerTests extends BaseTest {
     private BaseMapper<ApprovalNode> approvalNodeMapper;
     @Resource
     private BaseMapper<ApprovalNodeApprover> approvalNodeApproverMapper;
+    @Resource
+    private BaseMapper<ApprovalNodeLink> approvalNodeLinkMapper;
 
     @Override
     protected String getBasePath() {
@@ -56,11 +59,11 @@ class ApprovalFlowControllerTests extends BaseTest {
     /**
      * 构建简单的审批人节点请求
      */
-    private ApprovalNodeApproverRequest buildApproverNodeRequest(String name, int sort) {
+    private ApprovalNodeApproverRequest buildApproverNodeRequest(String id, String name) {
         ApprovalNodeApproverRequest node = new ApprovalNodeApproverRequest();
+        node.setId(id);
         node.setName(name);
         node.setNodeType(ApprovalNodeTypeEnum.APPROVER.name());
-        node.setSort(sort);
         node.setApprovalType(ApprovalTypeEnum.MANUAL.name());
         node.setMultiApproverMode(MultiApproverModeEnum.ALL.name());
 
@@ -78,23 +81,33 @@ class ApprovalFlowControllerTests extends BaseTest {
     /**
      * 构建开始节点请求
      */
-    private ApprovalNodeRequest buildStartNodeRequest() {
+    private ApprovalNodeRequest buildStartNodeRequest(String id) {
         ApprovalNodeRequest node = new ApprovalNodeRequest();
+        node.setId(id);
         node.setName("开始");
         node.setNodeType(ApprovalNodeTypeEnum.START.name());
-        node.setSort(0);
         return node;
     }
 
     /**
      * 构建结束节点请求
      */
-    private ApprovalNodeRequest buildEndNodeRequest() {
+    private ApprovalNodeRequest buildEndNodeRequest(String id) {
         ApprovalNodeRequest node = new ApprovalNodeRequest();
+        node.setId(id);
         node.setName("结束");
         node.setNodeType(ApprovalNodeTypeEnum.END.name());
-        node.setSort(999);
         return node;
+    }
+
+    /**
+     * 构建节点连接请求
+     */
+    private ApprovalNodeLinkRequest buildLinkRequest(String fromNodeId, String toNodeId) {
+        ApprovalNodeLinkRequest link = new ApprovalNodeLinkRequest();
+        link.setFromNodeId(fromNodeId);
+        link.setToNodeId(toNodeId);
+        return link;
     }
 
     /**
@@ -137,11 +150,21 @@ class ApprovalFlowControllerTests extends BaseTest {
         request.setStatusPermissions(buildStatusPermissions());
 
         // 构建节点配置: 开始 -> 审批人 -> 结束
+        String startNodeId = "start_" + System.currentTimeMillis();
+        String approverNodeId = "approver_" + System.currentTimeMillis();
+        String endNodeId = "end_" + System.currentTimeMillis();
+
         List<ApprovalNodeRequest> nodes = new ArrayList<>();
-        nodes.add(buildStartNodeRequest());
-        nodes.add(buildApproverNodeRequest("主管审批", 1));
-        nodes.add(buildEndNodeRequest());
+        nodes.add(buildStartNodeRequest(startNodeId));
+        nodes.add(buildApproverNodeRequest(approverNodeId, "主管审批"));
+        nodes.add(buildEndNodeRequest(endNodeId));
         request.setNodes(nodes);
+
+        // 构建连接配置: 开始 -> 审批人 -> 结束
+        List<ApprovalNodeLinkRequest> links = new ArrayList<>();
+        links.add(buildLinkRequest(startNodeId, approverNodeId));
+        links.add(buildLinkRequest(approverNodeId, endNodeId));
+        request.setLinks(links);
 
         return request;
     }
@@ -202,6 +225,10 @@ class ApprovalFlowControllerTests extends BaseTest {
         ApprovalNodeApprover approverConfig = approvalNodeApproverMapper.selectByPrimaryKey(approverNode.getId());
         Assertions.assertNotNull(approverConfig);
 
+        // 校验节点连接配置
+        List<ApprovalNodeLink> links = getLinksByFlowVersionId(flow.getCurrentVersionId());
+        Assertions.assertEquals(2, links.size());
+
         // 添加另一条数据，不同表单类型
         ApprovalFlowAddRequest anotherRequest = buildAddRequest("合同审批流", ApprovalFormTypeEnum.CONTRACT, true);
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, anotherRequest);
@@ -236,13 +263,23 @@ class ApprovalFlowControllerTests extends BaseTest {
         request.setStatusPermissions(buildStatusPermissions());
 
         // 更新节点配置
+        String startNodeId = "start_update_" + System.currentTimeMillis();
+        String approverNodeId = "approver_update_" + System.currentTimeMillis();
+        String endNodeId = "end_update_" + System.currentTimeMillis();
+
         List<ApprovalNodeRequest> nodes = new ArrayList<>();
-        nodes.add(buildStartNodeRequest());
-        ApprovalNodeApproverRequest approverNode = buildApproverNodeRequest("经理审批", 1);
+        nodes.add(buildStartNodeRequest(startNodeId));
+        ApprovalNodeApproverRequest approverNode = buildApproverNodeRequest(approverNodeId, "经理审批");
         approverNode.setApprovalType(ApprovalTypeEnum.AUTO_PASS.name());
         nodes.add(approverNode);
-        nodes.add(buildEndNodeRequest());
+        nodes.add(buildEndNodeRequest(endNodeId));
         request.setNodes(nodes);
+
+        // 构建连接配置
+        List<ApprovalNodeLinkRequest> links = new ArrayList<>();
+        links.add(buildLinkRequest(startNodeId, approverNodeId));
+        links.add(buildLinkRequest(approverNodeId, endNodeId));
+        request.setLinks(links);
 
         this.requestPostWithOk(DEFAULT_UPDATE, request);
 
@@ -349,6 +386,9 @@ class ApprovalFlowControllerTests extends BaseTest {
         // 校验节点配置
         Assertions.assertFalse(CollectionUtils.isEmpty(response.getNodes()));
 
+        // 校验连接配置
+        Assertions.assertFalse(CollectionUtils.isEmpty(response.getLinks()));
+
         // 校验权限
         requestGetPermissionTest(PermissionConstants.APPROVAL_FLOW_READ, DEFAULT_GET, addApprovalFlow.getId());
     }
@@ -422,6 +462,9 @@ class ApprovalFlowControllerTests extends BaseTest {
         // 校验节点配置也被删除（通过查询所有版本对应的节点）
         Assertions.assertTrue(CollectionUtils.isEmpty(getNodesByFlowVersionId(addApprovalFlow.getCurrentVersionId())));
 
+        // 校验节点连接配置也被删除
+        Assertions.assertTrue(CollectionUtils.isEmpty(getLinksByFlowVersionId(addApprovalFlow.getCurrentVersionId())));
+
         // 删除另一条创建的审批流
         this.requestGetWithOk(DEFAULT_DELETE, anotherApprovalFlow.getId());
         Assertions.assertNull(approvalFlowMapper.selectByPrimaryKey(anotherApprovalFlow.getId()));
@@ -444,6 +487,15 @@ class ApprovalFlowControllerTests extends BaseTest {
         ApprovalNode criteria = new ApprovalNode();
         criteria.setFlowVersionId(flowVersionId);
         return approvalNodeMapper.select(criteria);
+    }
+
+    /**
+     * 获取版本对应的节点连接列表
+     */
+    private List<ApprovalNodeLink> getLinksByFlowVersionId(String flowVersionId) {
+        ApprovalNodeLink criteria = new ApprovalNodeLink();
+        criteria.setFlowVersionId(flowVersionId);
+        return approvalNodeLinkMapper.select(criteria);
     }
 
     /**
