@@ -78,7 +78,6 @@ export interface ApprovalPostConfig {
 export interface ApprovalProcessNodeBase<TNodeType extends ApprovalNodeTypeEnum> extends BaseItem {
   nodeType: TNodeType;
   sort: number;
-  children: ApprovalProcessNode[];
 }
 
 // 审批节点里前后端共用的业务配置
@@ -162,9 +161,16 @@ export interface MoreSettingsParams {
   statusPermissions: StatusPermissions[];
 }
 
+export interface ApprovalNodeLinkResponse {
+  id: string;
+  fromNodeId: string;
+  toNodeId: string;
+}
+
 export interface AddApprovalProcessParams extends BasicFormParams, MoreSettingsParams {
   enable: boolean;
   nodes: ApprovalProcessNode[];
+  links: ApprovalNodeLinkResponse[];
 }
 
 export interface UpdateApprovalProcessParams extends AddApprovalProcessParams {
@@ -181,6 +187,7 @@ export interface ApprovalProcessForm {
   id: string;
   enable: boolean;
   nodes: ApprovalProcessNode[];
+  links: ApprovalNodeLinkResponse[];
   basicConfig: BasicFormParams;
   moreConfig: MoreSettingsParams;
 }
