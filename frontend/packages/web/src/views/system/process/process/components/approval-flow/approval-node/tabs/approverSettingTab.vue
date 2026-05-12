@@ -334,7 +334,7 @@
     resolveApprovalActionNodeDescription,
   } from '@/config/process';
 
-  import { canClearInvalidState, clearInvalidState, unlockInvalidClearState } from '../../validation/flowValidation';
+  import { canClearInvalidState, clearInvalidState, unlockInvalidClearState } from '../../flow/validation';
 
   defineOptions({
     name: 'ApproverSettingTab',

@@ -95,6 +95,7 @@
     id: '',
     enable: false,
     nodes: [],
+    links: [],
     basicConfig: {
       ...cloneDeep(defaultBasicForm),
     },
@@ -143,6 +144,7 @@
         ...form.value.basicConfig,
         ...form.value.moreConfig,
         nodes: approvalFlowDesignRef.value?.getProcessNodes() ?? [],
+        links: approvalFlowDesignRef.value?.getProcessLinks() ?? [],
       };
       if (props.sourceId) {
         await updateApprovalProcess(params);
@@ -200,7 +202,7 @@
       };
       editingName.value = result.name;
       nextTick(() => {
-        approvalFlowDesignRef.value?.setProcessNodes(result.nodes ?? []);
+        approvalFlowDesignRef.value?.setProcessData(result.nodes ?? [], result.links ?? []);
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -219,6 +221,7 @@
           ...form.value.basicConfig,
           ...form.value.moreConfig,
           nodes: approvalFlowDesignRef.value?.getProcessNodes() ?? [],
+          links: approvalFlowDesignRef.value?.getProcessLinks() ?? [],
           name: newName,
         };
         await updateApprovalProcess(params);

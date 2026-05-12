@@ -56,9 +56,9 @@
   import type { ApprovalConditionBranch } from '@lib/shared/models/system/process';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
-  import type { FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
+  import type { ConditionsItem, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import { getFormConfigApiMap } from '@/components/business/crm-form-create/config';
+  import { getFormConfigApiMap, multipleValueTypeList } from '@/components/business/crm-form-create/config';
 
   import { getOrderStatusConfig } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
@@ -120,7 +120,18 @@
   function initDraft(branch: ApprovalConditionBranch | null) {
     form.value = {
       name: branch?.name ?? '',
-      conditionConfig: branch?.conditionConfig ? cloneDeep(branch.conditionConfig) : createDefaultFormModel(),
+      conditionConfig: branch?.conditionConfig
+        ? {
+            ...branch.conditionConfig,
+            list:
+              branch.conditionConfig.conditions?.map((item) => ({
+                value: item.value,
+                operator: item.operator,
+                dataIndex: item.name ?? null,
+                type: item.type ?? FieldTypeEnum.INPUT,
+              })) ?? [],
+          }
+        : createDefaultFormModel(),
     };
   }
 
@@ -237,6 +248,22 @@
     }
   );
 
+  function getParams() {
+    const conditions: ConditionsItem[] = form.value.conditionConfig.list.map((item: any) => ({
+      value: item.value,
+      operator: item.operator,
+      name: item.dataIndex ?? '',
+      multipleValue: multipleValueTypeList.includes(item.type),
+      type: item.type,
+    }));
+
+    return {
+      list: form.value.conditionConfig.list,
+      searchMode: form.value.conditionConfig.searchMode,
+      conditions,
+    };
+  }
+
   async function handleConfirm() {
     try {
       await formRef.value?.validate();
@@ -244,7 +271,7 @@
 
       emit('confirm', {
         name: form.value.name.trim(),
-        conditionConfig: cloneDeep(form.value.conditionConfig),
+        conditionConfig: getParams(),
       });
 
       show.value = false;

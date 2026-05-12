@@ -65,6 +65,7 @@
   import type {
     ApprovalActionNode,
     ApprovalConditionBranch,
+    ApprovalNodeLinkResponse,
     ApprovalProcessNode,
   } from '@lib/shared/models/system/process';
   import { BasicFormParams } from '@lib/shared/models/system/process';
@@ -86,15 +87,9 @@
     executionTimingList,
   } from '@/config/process';
 
-  import {
-    addApprovalConditionBranch,
-    createDefaultFlow,
-    deserializeProcessNodes,
-    insertFromAnchor,
-    resolveConditionDescription,
-    serializeFlowNodes,
-  } from './flow';
-  import useFlowValidation from './validation/flowValidation';
+  import { addApprovalConditionBranch, createDefaultFlow, insertFromAnchor, resolveConditionDescription } from './flow';
+  import { deserializeProcessNodes, serializeFlowNodes } from './flow/transform';
+  import useFlowValidation from './flow/validation';
 
   defineOptions({
     name: 'ApprovalFlowView',
@@ -157,11 +152,15 @@
   }
 
   function getProcessNodes(): ApprovalProcessNode[] {
-    return serializeFlowNodes(flowSchema.value.nodes);
+    return serializeFlowNodes(flowSchema.value.nodes).nodes;
   }
 
-  function setProcessNodes(nodes: ApprovalProcessNode[]) {
-    flowSchema.value = deserializeProcessNodes(nodes, startNodeDescription.value);
+  function getProcessLinks(): ApprovalNodeLinkResponse[] {
+    return serializeFlowNodes(flowSchema.value.nodes).links;
+  }
+
+  function setProcessData(nodes: ApprovalProcessNode[], links: ApprovalNodeLinkResponse[]) {
+    flowSchema.value = deserializeProcessNodes(nodes, links, startNodeDescription.value);
     nextTick(() => {
       selectStartNodeOnInit();
     });
@@ -254,7 +253,8 @@
   defineExpose({
     validateFlowNodes,
     getProcessNodes,
-    setProcessNodes,
+    getProcessLinks,
+    setProcessData,
   });
 </script>
 

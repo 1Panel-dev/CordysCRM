@@ -5,6 +5,9 @@ import type { ApprovalActionNode, ApprovalConditionBranch, BasicFormParams } fro
 
 import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
 
+import { hasConfiguredCondition } from './index';
+import type { Ref } from 'vue';
+
 interface FlowValidationResult {
   invalidNodeIds: string[];
   invalidBranchIds: string[];
@@ -114,8 +117,7 @@ function validateConditionBranch(branch: ApprovalConditionBranch, result: FlowVa
     return;
   }
 
-  // if 分支至少要有一个有效条件
-  if (!branch.conditionConfig?.list?.some((item) => item.dataIndex)) {
+  if (!hasConfiguredCondition(branch.conditionConfig)) {
     result.invalidBranchIds.push(branch.id);
   }
 }
@@ -156,7 +158,6 @@ export function unlockInvalidClearState() {
 export default function useFlowValidation(params: { flowSchema: Ref<FlowSchema>; basicConfig: Ref<BasicFormParams> }) {
   // 给保存按钮调用：一次完成“清旧状态 -> 全量校验 -> 回写红框”。
   function validateFlowNodes() {
-    // 校验开始后先锁住自动清红框，避免右侧表单回填把刚打上的红框清掉
     invalidClearLocked = true;
     clearFlowInvalidMarks(params.flowSchema.value);
     const result = validateFlow(params.flowSchema.value, params.basicConfig.value);
