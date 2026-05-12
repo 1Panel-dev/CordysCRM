@@ -1,4 +1,4 @@
-import { nextTick, watch } from 'vue';
+import { watch } from 'vue';
 
 import { ApprovalTypeEnum, ApproverTypeEnum, EmptyApproverActionEnum } from '@lib/shared/enums/process';
 import type { ApprovalActionNode, ApprovalConditionBranch, BasicFormParams } from '@lib/shared/models/system/process';
@@ -7,9 +7,10 @@ import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types'
 
 interface FlowValidationResult {
   invalidNodeIds: string[];
+  invalidBranchIds: string[];
 }
 
-// 流程图不是单链表，条件组下面还会递归挂子节点，所以统一用一个 DFS 遍历入口。
+// 流程图不是单链表，条件组下面还会递归挂子节点，所以统一用一个 DFS 遍历入口
 function walkFlowNodes(
   nodes: FlowNode[],
   visitor: (payload: { node?: FlowNode; branch?: ApprovalConditionBranch }) => void
@@ -36,20 +37,16 @@ function isEmptyValue(value: unknown) {
   return value === null || value === undefined || (typeof value === 'string' && !value.trim());
 }
 
-function isMemberOrRole(type?: ApproverTypeEnum | null) {
-  return !!type && [ApproverTypeEnum.SPECIFIED_MEMBER, ApproverTypeEnum.ROLE].includes(type);
-}
-
 // 只挑“开始节点校验相关”的字段做监听，避免无关字段变化时也触发清错。
 function createBasicConfigValidationSnapshot(basicConfig: BasicFormParams) {
   return {
     name: basicConfig.name,
-    formType: basicConfig.formType,
     createExecute: basicConfig.createExecute,
     updateExecute: basicConfig.updateExecute,
   };
 }
 
+// 清除红框
 export function clearInvalidState(target?: { invalid?: boolean } | null) {
   if (!target) {
     return;
@@ -66,35 +63,35 @@ function clearFlowInvalidMarks(flowSchema: FlowSchema) {
   });
 }
 
-// 当前业务只有开始节点和审批节点会参与红框校验，所以这里只回写 node.invalid。
+// 根据本次校验结果回写红框：开始/审批节点写 node.invalid，if 分支写 branch.invalid。
 function applyFlowInvalidMarks(flowSchema: FlowSchema, result: FlowValidationResult) {
   const invalidNodeIds = new Set(result.invalidNodeIds);
+  const invalidBranchIds = new Set(result.invalidBranchIds);
 
-  walkFlowNodes(flowSchema.nodes, ({ node }) => {
+  walkFlowNodes(flowSchema.nodes, ({ node, branch }) => {
     if (node && invalidNodeIds.has(node.id)) {
       node.invalid = true;
+    }
+
+    if (branch && invalidBranchIds.has(branch.id)) {
+      branch.invalid = true;
     }
   });
 }
 
-function clearStartNodeInvalid(flowSchema: FlowSchema) {
-  clearInvalidState(findStartNode(flowSchema.nodes));
-}
-
-// 开始节点的红框来自流程基础配置，而不是节点自身表单数据，所以单独映射到 start 节点。
+// 开始节点校验
 function validateBasicConfig(flowSchema: FlowSchema, basicConfig: BasicFormParams, result: FlowValidationResult) {
   const startNode = findStartNode(flowSchema.nodes);
-  if (
-    startNode &&
-    (isEmptyValue(basicConfig.name) ||
-      isEmptyValue(basicConfig.formType) ||
-      (!basicConfig.createExecute && !basicConfig.updateExecute))
-  ) {
+  if (startNode && (isEmptyValue(basicConfig.name) || (!basicConfig.createExecute && !basicConfig.updateExecute))) {
     result.invalidNodeIds.push(startNode.id);
   }
 }
 
-// 审批节点的规则全部走纯数据校验，不依赖右侧面板有没有渲染。
+function isMemberOrRole(type?: ApproverTypeEnum | null) {
+  return !!type && [ApproverTypeEnum.SPECIFIED_MEMBER, ApproverTypeEnum.ROLE].includes(type);
+}
+
+// 审批节点校验
 function validateApprovalActionNode(node: ApprovalActionNode, result: FlowValidationResult) {
   const isManualApproval = node.approvalType === ApprovalTypeEnum.MANUAL;
   const approverList = node.approverList ?? [];
@@ -102,8 +99,7 @@ function validateApprovalActionNode(node: ApprovalActionNode, result: FlowValida
   const isInvalid =
     isEmptyValue(node.name) ||
     (isManualApproval &&
-      (isEmptyValue(node.approverType) ||
-        (isMemberOrRole(node.approverType) && approverList.length === 0) ||
+      ((isMemberOrRole(node.approverType) && approverList.length === 0) ||
         (node.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_SPECIFIC && isEmptyValue(node.fallbackApprover)) ||
         (isMemberOrRole(node.ccType) && ccList.length === 0)));
 
@@ -112,47 +108,65 @@ function validateApprovalActionNode(node: ApprovalActionNode, result: FlowValida
   }
 }
 
-// 保存前的总入口：收集所有需要标红的节点 id，但不直接处理 UI 选中态。
+// if分支校验
+function validateConditionBranch(branch: ApprovalConditionBranch, result: FlowValidationResult) {
+  if (branch.isElse) {
+    return;
+  }
+
+  // if 分支至少要有一个有效条件
+  if (!branch.conditionConfig?.list?.some((item) => item.dataIndex)) {
+    result.invalidBranchIds.push(branch.id);
+  }
+}
+
+// 保存前的总入口：只做纯数据校验，收集需要标红的节点和分支
 function validateFlow(flowSchema: FlowSchema, basicConfig: BasicFormParams): FlowValidationResult {
   const result: FlowValidationResult = {
     invalidNodeIds: [],
+    invalidBranchIds: [],
   };
 
   validateBasicConfig(flowSchema, basicConfig, result);
-  walkFlowNodes(flowSchema.nodes, ({ node }) => {
+  walkFlowNodes(flowSchema.nodes, ({ node, branch }) => {
     if (node?.type === 'action' && node.actionType === 'approval') {
       validateApprovalActionNode(node as ApprovalActionNode, result);
+    }
+
+    if (branch) {
+      validateConditionBranch(branch, result);
     }
   });
 
   return result;
 }
 
-export default function useFlowValidation(params: {
-  flowSchema: Ref<FlowSchema>;
-  basicConfig: Ref<BasicFormParams>;
-  selectNode?: (id: string) => void;
-}) {
-  // 校验失败时只跳到第一个错误节点，交互上更明确，也避免来回切换选中态。
-  function selectInvalidFlowItem(invalidNodeIds: string[]) {
-    const firstNodeId = invalidNodeIds[0];
-    if (firstNodeId) {
-      params.selectNode?.(firstNodeId);
-    }
-  }
+// 保存校验后，当前已选中的审批节点右侧表单可能触发回填更新
+// 这里先锁住“自动清红框”，只在用户真的开始编辑当前节点时再解锁。
+let invalidClearLocked = false;
 
-  // 给保存按钮调用：一次完成“清旧状态 -> 全量校验 -> 回写红框 -> 定位首个错误节点”。
+export function canClearInvalidState() {
+  return !invalidClearLocked;
+}
+
+export function unlockInvalidClearState() {
+  invalidClearLocked = false;
+}
+
+export default function useFlowValidation(params: { flowSchema: Ref<FlowSchema>; basicConfig: Ref<BasicFormParams> }) {
+  // 给保存按钮调用：一次完成“清旧状态 -> 全量校验 -> 回写红框”。
   function validateFlowNodes() {
+    // 校验开始后先锁住自动清红框，避免右侧表单回填把刚打上的红框清掉
+    invalidClearLocked = true;
     clearFlowInvalidMarks(params.flowSchema.value);
     const result = validateFlow(params.flowSchema.value, params.basicConfig.value);
     applyFlowInvalidMarks(params.flowSchema.value, result);
 
-    if (result.invalidNodeIds.length) {
-      nextTick(() => {
-        selectInvalidFlowItem(result.invalidNodeIds);
-      });
+    if (result.invalidNodeIds.length || result.invalidBranchIds.length) {
       return false;
     }
+
+    invalidClearLocked = false;
 
     return true;
   }
@@ -161,7 +175,7 @@ export default function useFlowValidation(params: {
   watch(
     () => createBasicConfigValidationSnapshot(params.basicConfig.value),
     () => {
-      clearStartNodeInvalid(params.flowSchema.value);
+      clearInvalidState(findStartNode(params.flowSchema.value.nodes));
     },
     {
       deep: true,

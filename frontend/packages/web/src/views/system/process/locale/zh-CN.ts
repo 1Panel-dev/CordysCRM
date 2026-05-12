@@ -47,7 +47,7 @@ export default {
   'process.process.flow.conditionName': '条件名称',
   'process.process.flow.conditionUnset': '请设置条件',
   'process.process.flow.conditionConfigured': '已设置',
-  'process.process.flow.nodeNameNotSet': '节点名称未设置，请设置',
+  'process.process.flow.nodeNameNotSet': '节点未设置，请设置',
   'process.process.flow.toConfig': '去设置',
   'process.process.flow.approverSetting': '审批人设置',
   'process.process.flow.approverType.specifiedMember': '指定成员',

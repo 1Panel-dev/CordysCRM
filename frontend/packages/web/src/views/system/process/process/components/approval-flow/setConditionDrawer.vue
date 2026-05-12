@@ -3,31 +3,51 @@
     v-model:show="show"
     :width="1000"
     :min-width="600"
-    :okText="t('common.confirm')"
-    footer
+    :ok-text="t('common.confirm')"
+    :ok-disabled="loading"
     :title="t('process.process.flow.setTriggerCondition')"
+    :footer="!props.readonly"
     @confirm="handleConfirm"
   >
-    <div class="flex flex-col gap-[16px]">
-      <n-form label-placement="top" require-mark-placement="right">
-        <n-form-item :label="t('process.process.flow.conditionName')">
-          <n-input v-model:value="form.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
-        </n-form-item>
-      </n-form>
+    <n-spin :show="loading">
+      <div class="flex flex-col gap-[16px]">
+        <n-form ref="formRef" :model="form" label-placement="top" require-mark-placement="right">
+          <n-form-item
+            :label="t('process.process.flow.conditionName')"
+            path="name"
+            :rule="[
+              {
+                required: true,
+                message: t('common.notNull', { value: t('process.process.flow.conditionName') }),
+                trigger: ['input', 'blur'],
+              },
+            ]"
+          >
+            <n-input
+              v-model:value="form.name"
+              :disabled="props.readonly"
+              :maxlength="255"
+              type="text"
+              :placeholder="t('common.pleaseInput')"
+            />
+          </n-form-item>
+        </n-form>
 
-      <FilterContent
-        ref="filterContentRef"
-        v-model:form-model="form.conditionConfig"
-        :config-list="filterConfigList"
-        :custom-list="customFieldsFilterConfig"
-      />
-    </div>
+        <FilterContent
+          ref="filterContentRef"
+          v-model:form-model="form.conditionConfig"
+          :readonly="props.readonly"
+          :config-list="filterConfigList"
+          :custom-list="customFieldsFilterConfig"
+        />
+      </div>
+    </n-spin>
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref, watch } from 'vue';
-  import { NForm, NFormItem, NInput } from 'naive-ui';
+  import { ref, watch } from 'vue';
+  import { FormInst, NForm, NFormItem, NInput, NSpin } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -52,7 +72,9 @@
   const props = defineProps<{
     branch: ApprovalConditionBranch | null;
     formType: string;
+    readonly?: boolean;
   }>();
+
   const emit = defineEmits<{
     (
       e: 'confirm',
@@ -70,9 +92,14 @@
   const { t } = useI18n();
   const { getFilterListConfig } = useFormCreateFilter();
 
-  const filterContentRef = ref<InstanceType<typeof FilterContent>>();
+  const formRef = ref<FormInst | null>(null);
+  const filterContentRef = ref<InstanceType<typeof FilterContent> | null>(null);
+
+  const loading = ref(false);
+
   const filterConfigList = ref<FilterFormItem[]>([]);
   const customFieldsFilterConfig = ref<FilterFormItem[]>([]);
+
   const orderStageConfig = ref<OpportunityStageConfig | null>(null);
 
   function createDefaultFormModel(): FilterForm {
@@ -82,7 +109,7 @@
     };
   }
 
-  const form = reactive<{
+  const form = ref<{
     name: string;
     conditionConfig: FilterForm;
   }>({
@@ -91,8 +118,10 @@
   });
 
   function initDraft(branch: ApprovalConditionBranch | null) {
-    form.name = branch?.name ?? '';
-    form.conditionConfig = cloneDeep(branch?.conditionConfig ?? createDefaultFormModel());
+    form.value = {
+      name: branch?.name ?? '',
+      conditionConfig: branch?.conditionConfig ? cloneDeep(branch.conditionConfig) : createDefaultFormModel(),
+    };
   }
 
   function createDepartmentFilterItem(): FilterFormItem {
@@ -122,91 +151,106 @@
     };
   }
 
+  function createOrderStatusFilterItem(): FilterFormItem {
+    return {
+      title: t('order.status'),
+      dataIndex: 'stage',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options:
+          orderStageConfig.value?.stageConfigList.map((item) => ({
+            label: item.name,
+            value: item.id,
+          })) ?? [],
+      },
+    };
+  }
+
+  const formTypeConfigMap: Partial<Record<FormDesignKeyEnum, () => FilterFormItem[]>> = {
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: () => [
+      createApprovalStatusFilterItem(t('common.approvalStatus')),
+      createDepartmentFilterItem(),
+      ...baseFilterConfigList,
+    ],
+
+    [FormDesignKeyEnum.CONTRACT]: () => [
+      createDepartmentFilterItem(),
+      createApprovalStatusFilterItem(t('contract.approvalStatus')),
+      ...baseFilterConfigList,
+    ],
+
+    [FormDesignKeyEnum.INVOICE]: () => [
+      createDepartmentFilterItem(),
+      createApprovalStatusFilterItem(t('contract.approvalStatus')),
+      ...baseFilterConfigList,
+    ],
+
+    [FormDesignKeyEnum.ORDER]: () => [
+      createDepartmentFilterItem(),
+      createOrderStatusFilterItem(),
+      createApprovalStatusFilterItem(t('common.approvalStatus')),
+      ...baseFilterConfigList,
+    ],
+  };
+
   function createSystemFilterConfigList(): FilterFormItem[] {
-    if (props.formType === FormDesignKeyEnum.OPPORTUNITY_QUOTATION) {
-      return [
-        createApprovalStatusFilterItem(t('common.approvalStatus')),
-        createDepartmentFilterItem(),
-        ...baseFilterConfigList,
-      ];
-    }
-
-    if ([FormDesignKeyEnum.CONTRACT, FormDesignKeyEnum.INVOICE].includes(props.formType as FormDesignKeyEnum)) {
-      return [
-        createDepartmentFilterItem(),
-        createApprovalStatusFilterItem(t('contract.approvalStatus')),
-        ...baseFilterConfigList,
-      ];
-    }
-
-    if (props.formType === FormDesignKeyEnum.ORDER) {
-      return [
-        createDepartmentFilterItem(),
-        {
-          title: t('order.status'),
-          dataIndex: 'stage',
-          type: FieldTypeEnum.SELECT_MULTIPLE,
-          selectProps: {
-            options:
-              orderStageConfig.value?.stageConfigList.map((item) => ({
-                label: item.name,
-                value: item.id,
-              })) ?? [],
-          },
-        },
-        createApprovalStatusFilterItem(t('common.approvalStatus')),
-        ...baseFilterConfigList,
-      ];
-    }
-
-    return [...baseFilterConfigList];
+    return formTypeConfigMap[props.formType as FormDesignKeyEnum]?.() ?? [...baseFilterConfigList];
   }
 
   async function loadFilterConfig() {
-    try {
-      if (props.formType === FormDesignKeyEnum.ORDER) {
-        orderStageConfig.value = await getOrderStatusConfig();
-      } else {
-        orderStageConfig.value = null;
-      }
+    loading.value = true;
 
+    try {
       const api = getFormConfigApiMap[props.formType as FormDesignKeyEnum];
-      const res = await api();
+
+      const [stageConfig, formConfig] = await Promise.all([
+        props.formType === FormDesignKeyEnum.ORDER ? getOrderStatusConfig() : Promise.resolve(null),
+        api(),
+      ]);
+
+      orderStageConfig.value = stageConfig;
+
       filterConfigList.value = createSystemFilterConfigList();
-      customFieldsFilterConfig.value = getFilterListConfig(res);
+
+      customFieldsFilterConfig.value = getFilterListConfig(formConfig);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
       filterConfigList.value = [];
       customFieldsFilterConfig.value = [];
+    } finally {
+      loading.value = false;
     }
   }
 
+  async function initialize() {
+    await loadFilterConfig();
+    initDraft(props.branch);
+  }
+
   watch(
-    () => show.value,
-    (visible) => {
+    () => [show.value, props.branch?.id, props.formType],
+    async ([visible]) => {
       if (visible) {
-        loadFilterConfig();
-        initDraft(props.branch);
+        await initialize();
       }
     }
   );
 
-  watch(
-    () => [props.branch?.id, props.formType],
-    () => {
-      if (show.value) {
-        loadFilterConfig();
-        initDraft(props.branch);
-      }
-    }
-  );
+  async function handleConfirm() {
+    try {
+      await formRef.value?.validate();
+      await filterContentRef.value?.formRef?.validate();
 
-  function handleConfirm() {
-    emit('confirm', {
-      name: form.name.trim(),
-      conditionConfig: cloneDeep(form.conditionConfig),
-    });
-    show.value = false;
+      emit('confirm', {
+        name: form.value.name.trim(),
+        conditionConfig: cloneDeep(form.value.conditionConfig),
+      });
+
+      show.value = false;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 </script>

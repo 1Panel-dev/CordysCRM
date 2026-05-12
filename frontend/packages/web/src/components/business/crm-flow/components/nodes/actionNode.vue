@@ -1,5 +1,4 @@
 <template>
-  <!-- TODO lmy edit-permission -->
   <BaseFlowNode
     :name="nodeData.name ?? ''"
     :description="nodeData.description"
@@ -8,9 +7,8 @@
     :invalid="Boolean(nodeData.invalid)"
     node-type="action"
     :icon="iconConfig"
-    :title-editable="Boolean(!nodeData.isPanMode)"
-    :edit-permission="['']"
-    deletable
+    :title-editable="Boolean(!nodeData.isPanMode && !nodeData.readonly)"
+    :deletable="!nodeData.readonly"
     @delete="handleDelete"
     @title-edit="handleTitleEdit"
   />
@@ -58,6 +56,7 @@
     showContent?: boolean;
     selected?: boolean;
     invalid?: boolean;
+    readonly?: boolean;
     isPanMode?: boolean;
   }>(toRef(props, 'node'));
 

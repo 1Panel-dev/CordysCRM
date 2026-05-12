@@ -28,6 +28,7 @@
 
   const props = defineProps<{
     formType: string;
+    readonly?: boolean;
   }>();
 
   const nodeConfig = defineModel<ApprovalActionNode>('nodeConfig', {
@@ -119,7 +120,7 @@
             h('div', { class: 'flex items-center justify-center gap-[8px]' }, [
               h(NRadio, {
                 checked: isColumnChecked(item.value),
-                disabled: getSelectableFields(item.value).length === 0,
+                disabled: props.readonly || getSelectableFields(item.value).length === 0,
                 onUpdateChecked: (checked: boolean) => {
                   if (checked) {
                     setColumnPermission(item.value);
@@ -132,7 +133,7 @@
           render: (row) =>
             h(NRadio, {
               checked: getFieldPermission(row.id) === item.value,
-              disabled: isPermissionDisabled(row, item.value),
+              disabled: props.readonly || isPermissionDisabled(row, item.value),
               onUpdateChecked: (checked: boolean) => {
                 if (checked) {
                   setFieldPermission(row.id, item.value);
