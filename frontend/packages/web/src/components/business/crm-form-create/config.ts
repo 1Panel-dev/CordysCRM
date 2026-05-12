@@ -31,7 +31,6 @@ import {
   addQuotation,
   advancedSearchOptPage,
   ClueTransitionCustomer,
-  deleteOrder,
   geAdvancedCustomerList,
   getAdvancedCluePoolList,
   getAdvancedCustomerContactList,

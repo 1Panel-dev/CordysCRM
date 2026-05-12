@@ -81,3 +81,18 @@ export enum ApprovalFieldPermissionModeEnum {
   VIEW = 'VIEW', // 仅查看
   EDIT = 'EDIT', // 可编辑
 }
+
+export enum ApprovalResourceTypeEnum {
+  QUOTATION = 'QUOTATION',
+  CONTRACT = 'CONTRACT',
+  ORDER = 'ORDER',
+  INVOICE = 'INVOICE',
+  ALL = 'ALL',
+}
+
+export enum ApprovalListTypeEnum {
+  PENDING = 'pending',
+  APPROVAL = 'approved',
+  INITIATED = 'initiated',
+  COPIED = 'copied',
+}

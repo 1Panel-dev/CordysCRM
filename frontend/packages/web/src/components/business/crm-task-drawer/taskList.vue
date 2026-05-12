@@ -78,14 +78,22 @@
   import { NButton, NCheckbox, NCheckboxGroup, NSpin } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import { ApprovalOperationEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { ApprovalListTypeEnum, ApprovalOperationEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { ApprovalTodoItem } from '@lib/shared/models/system/process';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import approvalModal from './approvalModal.vue';
+
+  import {
+    getCcApprovalList,
+    getInitiatedApprovalList,
+    getPendingApprovalList,
+    getProcessedApprovalList,
+  } from '@/api/modules/index';
 
   const { t } = useI18n();
 
@@ -94,11 +102,12 @@
     virtualScrollHeight: string;
     emptyText?: string;
     loadParams?: Record<string, any>;
-    activeTaskType?: string;
+    activeTaskType: string;
   }>();
 
   const emit = defineEmits<{
     (e: 'openDetail', id: number): void;
+    (e: 'listInit', total: number, keys: string[]): void;
   }>();
 
   const selectedKeys = defineModel<any[]>('selectedKeys', {
@@ -106,26 +115,7 @@
     default: () => [],
   });
 
-  const list = ref<any[]>([
-    {
-      resourceId: 'quotation_20260508009',
-      resourceName: '华东项目报价单-三期',
-      resourceType: 'QUOTATION',
-      applicant: '李四',
-      submitTime: 1746676800000,
-      approvalOperation: 'SIGN',
-      dataResult: 'APPROVED',
-    },
-    {
-      resourceId: 'quotation_20260508009',
-      resourceName: '华东项目报价单-三期',
-      resourceType: 'QUOTATION',
-      applicant: '李四',
-      submitTime: 1746676800000,
-      approvalOperation: 'SIGN',
-      dataResult: 'PENDING',
-    },
-  ]);
+  const list = ref<ApprovalTodoItem[]>([]);
   const loading = ref(false);
 
   const pageNation = ref({
@@ -135,20 +125,36 @@
   });
 
   const finished = ref(false);
-  async function loadTaskList(refresh = true) {
+  const lisApiMap = {
+    [ApprovalListTypeEnum.PENDING]: getPendingApprovalList,
+    [ApprovalListTypeEnum.APPROVAL]: getProcessedApprovalList,
+    [ApprovalListTypeEnum.INITIATED]: getInitiatedApprovalList,
+    [ApprovalListTypeEnum.COPIED]: getCcApprovalList,
+  };
+  async function loadTaskList(refresh = true, keyword?: string) {
     try {
-      if (!props.loadParams) return;
       loading.value = true;
-
       if (refresh) {
         finished.value = false;
         pageNation.value.current = 1;
         list.value = [];
       }
-      const res = [] as any; // TODO:
+      const [listType, resourceType] = props.activeTaskType.split('-');
+      const res = await lisApiMap[listType as ApprovalListTypeEnum]({
+        current: pageNation.value.current,
+        pageSize: 20,
+        resourceType: resourceType as ApprovalResourceTypeEnum,
+        ...props.loadParams,
+        keyword: keyword !== undefined ? keyword : props.loadParams?.keyword || '',
+      });
       if (res) {
         list.value = list.value.concat(res.list);
         pageNation.value.total = res.total;
+        emit(
+          'listInit',
+          res.total,
+          list.value.map((e) => e.approvalTaskId)
+        );
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -167,17 +173,29 @@
     loadTaskList(false);
   }
 
+  watch(
+    () => props.activeTaskType,
+    (val) => {
+      if (val) {
+        loadTaskList();
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
+
   const approvalVisible = ref(false);
   const approvalType = ref<'approve' | 'reject'>('approve');
-  const approvalItem = ref<any>({});
+  const approvalItem = ref<ApprovalTodoItem>();
 
-  function handleReject(item: any) {
+  function handleReject(item: ApprovalTodoItem) {
     approvalItem.value = item;
     approvalType.value = 'reject';
     approvalVisible.value = true;
   }
 
-  function handleApprove(item: any) {
+  function handleApprove(item: ApprovalTodoItem) {
     approvalItem.value = item;
     approvalType.value = 'approve';
     approvalVisible.value = true;

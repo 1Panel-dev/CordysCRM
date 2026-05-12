@@ -53,7 +53,7 @@
                   <div class="title-name">{{ t('workbench.dataOverview.myTasks') }}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-[8px_16px]">
-                  <div class="task-item" @click="openTaskDrawer('pending')">
+                  <div class="task-item" @click="openTaskDrawer(ApprovalListTypeEnum.PENDING)">
                     <div class="task-icon bg-[var(--info-blue)]">
                       <CrmIcon type="iconicon_contract" :size="16" color="var(--text-n10)" />
                     </div>
@@ -62,19 +62,19 @@
                       <div class="font-semibold text-[var(--primary-8)]">{{ pendingApprovalCount }}</div>
                     </div>
                   </div>
-                  <div class="task-item" @click="openTaskDrawer('approved')">
+                  <div class="task-item" @click="openTaskDrawer(ApprovalListTypeEnum.APPROVAL)">
                     <div class="task-icon bg-[var(--success-green)]">
                       <CrmIcon type="iconicon_check_circle" :size="16" color="var(--text-n10)" />
                     </div>
                     {{ t('workbench.dataOverview.approvedByMe') }}
                   </div>
-                  <div class="task-item" @click="openTaskDrawer('initiated')">
+                  <div class="task-item" @click="openTaskDrawer(ApprovalListTypeEnum.INITIATED)">
                     <div class="task-icon bg-[var(--primary-8)]">
                       <CrmIcon type="iconicon_add" :size="16" color="var(--text-n10)" />
                     </div>
                     {{ t('workbench.dataOverview.initiatedByMe') }}
                   </div>
-                  <div class="task-item" @click="openTaskDrawer('copied')">
+                  <div class="task-item" @click="openTaskDrawer(ApprovalListTypeEnum.COPIED)">
                     <div class="task-icon bg-[var(--warning-yellow)]">
                       <CrmIcon type="iconicon_send" :size="16" color="var(--text-n10)" />
                     </div>
@@ -116,6 +116,7 @@
   import { NAlert, NButton, NScrollbar } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ApprovalListTypeEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -131,6 +132,7 @@
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
+  import { getPendingApprovalList } from '@/api/modules/index';
   import { quickAccessList } from '@/config/workbench';
   import { useAppStore, useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
@@ -193,8 +195,8 @@
   // 待办
   const pendingApprovalCount = ref(0);
   const showTaskDrawer = ref(false);
-  const activeTaskType = ref<'pending' | 'approved' | 'initiated' | 'copied'>('pending');
-  function openTaskDrawer(type: 'pending' | 'approved' | 'initiated' | 'copied') {
+  const activeTaskType = ref<ApprovalListTypeEnum>(ApprovalListTypeEnum.PENDING);
+  function openTaskDrawer(type: ApprovalListTypeEnum) {
     activeTaskType.value = type;
     showTaskDrawer.value = true;
   }
@@ -206,8 +208,23 @@
     return appStore.messageInfo.notificationDTOList;
   });
 
+  async function initApprovalPendingCount() {
+    try {
+      const res = await getPendingApprovalList({
+        current: 1,
+        pageSize: 10,
+        resourceType: ApprovalResourceTypeEnum.ALL,
+      });
+      pendingApprovalCount.value = res.total;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   onBeforeMount(() => {
     appStore.initMessage();
+    initApprovalPendingCount();
   });
 </script>
 

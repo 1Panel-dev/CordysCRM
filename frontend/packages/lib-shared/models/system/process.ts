@@ -1,4 +1,10 @@
-import {  ApprovalOperationEnum, ApprovalTypeEnum, ApproverTypeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+import {
+  ApprovalOperationEnum,
+  ApprovalTypeEnum,
+  ApproverTypeEnum,
+  ProcessStatusEnum,
+  type ApprovalResourceTypeEnum,
+} from '@lib/shared/enums/process';
 import type { SelectedUsersItem } from './module';
 import type { FilterForm } from '@cordys/web/src/components/pure/crm-advance-filter/type';
 import type { UserInfo } from '@lib/shared/models/user';
@@ -10,6 +16,7 @@ import {
   SameSubmitterActionEnum,
 } from '@lib/shared/enums/process';
 import type { ActionNode, ConditionBranch } from '@cordys/web/src/components/business/crm-flow/types';
+import type { TableQueryParams } from '../common';
 
 export interface BaseItem {
   id: string;
@@ -175,7 +182,6 @@ export interface ApprovalProcessForm {
   moreConfig: MoreSettingsParams;
 }
 
-
 export interface ApproverItem extends Pick<UserInfo, 'id' | 'name' | 'avatar'> {
   approveResult: ApprovalOperationEnum;
   approveReason: string;
@@ -190,4 +196,41 @@ export interface ApprovalPopoverDetail {
 export interface CommonApprovalActionParams {
   resourceId: string;
   formKey: string;
+}
+
+export interface ApprovalTodoTableParams extends TableQueryParams {
+  resourceName?: string;
+  resourceType: ApprovalResourceTypeEnum;
+}
+
+export interface ApprovalTodoItem {
+  approvalTaskId: string;
+  approvalNodeId: string;
+  approvalInstanceId: string;
+  approvalId: string;
+  resourceId: string;
+  resourceName: string;
+  resourceType: string;
+  applicant: string;
+  submitTime: number;
+  approvalOperation: ApprovalOperationEnum;
+  dataResult: ProcessStatusEnum;
+}
+
+export interface ApprovalOperationParams {
+  id: string;
+  nodeId: string;
+  instanceId: string;
+  attachmentIds: string[];
+}
+
+export interface ApprovalBackParams extends ApprovalOperationParams {
+  returnToTaskId: string;
+  returnReason: string;
+}
+
+export interface ApprovalAddSignParams extends ApprovalOperationParams {
+  type: string;
+  approverId: string;
+  comment: string;
 }
