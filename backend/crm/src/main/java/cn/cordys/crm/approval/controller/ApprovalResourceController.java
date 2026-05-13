@@ -3,7 +3,6 @@ package cn.cordys.crm.approval.controller;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
-import cn.cordys.crm.approval.dto.ApprovalResourceRevokeParam;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalInstanceService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
@@ -34,7 +33,7 @@ public class ApprovalResourceController {
 
 	@PostMapping("/revoke")
 	@Operation(summary = "撤销")
-	public void revoke(@RequestBody ApprovalResourceRevokeParam param) {
+	public void revoke(@RequestBody ApprovalResourceBaseParam param) {
 		approvalResourceService.revoke(param, SessionUtils.getUserId());
 	}
 

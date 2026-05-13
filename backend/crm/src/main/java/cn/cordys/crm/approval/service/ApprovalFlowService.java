@@ -36,6 +36,7 @@ import cn.cordys.crm.system.mapper.ExtDepartmentCommanderMapper;
 import cn.cordys.crm.system.mapper.ExtRoleMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
+import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -90,6 +91,10 @@ public class ApprovalFlowService {
     private ExtRoleMapper extRoleMapper;
     @Resource
     private BaseMapper<ApprovalRecord> approvalRecordMapper;
+	@Resource
+	private BaseMapper<ApprovalInstance> approvalInstanceMapper;
+	@Resource
+	private ModuleFormService formService;
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -1414,6 +1419,17 @@ public class ApprovalFlowService {
 	}
 
 	/**
+	 * 获取审批节点审批人
+	 * @param approverNode 审批节点
+	 * @param userId 用户ID
+	 * @param currentOrgId 当前组织ID
+	 * @return 审批人ID集合
+	 */
+	public List<User> getApprovalNodeMultiApprover(ApprovalNodeApproverResponse approverNode, String userId, String currentOrgId) {
+		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(approverNode.getApproverType()), approverNode.getApproverList());
+	}
+
+	/**
 	 * 获取当前资源审批流第一个审批节点
 	 * @param flowVersionId 审批流版本ID
 	 * @param resourceFvs 业务资源字段值
@@ -1432,5 +1448,27 @@ public class ApprovalFlowService {
 		return (ApprovalNodeApproverResponse) curr;
 	}
 
+	/**
+	 * 获取当前待办任务下一个审批节点
+	 * @param currentTask 待办任务
+	 * @return 下一个审批节点
+	 */
+	public ApprovalNodeResponse getTaskNextApproverNode(ApprovalTask currentTask, ApprovalInstance instance) {
+		List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
+		return getNextApproverNode(currentTask.getNodeId(), resourceFvs);
+	}
 
+	/**
+	 * 获取下一个节点 (审批或者结束类型)
+	 * @param nodeId 节点ID
+	 * @param resourceFvs 业务字段值
+	 * @return 下一个审批节点
+	 */
+	private ApprovalNodeResponse getNextApproverNode(String nodeId, List<BaseModuleFieldValue> resourceFvs) {
+		ApprovalNodeResponse next = getNextNode(nodeId, resourceFvs);
+		if (Strings.CI.equalsAny(next.getNodeType(), ApprovalNodeTypeEnum.APPROVER.name(), ApprovalNodeTypeEnum.END.name())) {
+			return next;
+		}
+		return getNextApproverNode(next.getId(), resourceFvs);
+	}
 }

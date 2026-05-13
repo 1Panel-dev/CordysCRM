@@ -73,7 +73,7 @@ public class ApprovalInstanceService {
 	/**
 	 * 获取最新审批实例
 	 */
-	private ApprovalInstance getLatestInstance(String resourceId) {
+	public ApprovalInstance getLatestInstance(String resourceId) {
 		LambdaQueryWrapper<ApprovalInstance> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(ApprovalInstance::getResourceId, resourceId).orderByDesc(ApprovalInstance::getSubmitTime);
 		List<ApprovalInstance> list = approvalInstanceMapper.selectListByLambda(wrapper);
