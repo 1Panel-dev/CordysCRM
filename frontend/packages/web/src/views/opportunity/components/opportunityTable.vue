@@ -200,6 +200,7 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import { OpenDetailType } from '@/components/business/crm-stage-board/types';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
@@ -1019,7 +1020,7 @@
     }
   }
 
-  function handleOpenDetail(type: 'customer' | 'opportunity', item: any) {
+  function handleOpenDetail(type: OpenDetailType, item: any) {
     if (type === 'customer') {
       showCustomerDrawer(item);
     } else if (type === 'opportunity') {

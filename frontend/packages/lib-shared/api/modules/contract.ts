@@ -109,6 +109,7 @@ import {
   GetContractDetailSnapshotUrl,
   ContractInvoicedDetailSnapshotUrl,
   ContractStatisticUrl,
+  SortContractUrl,
   GetPaymentRecordStatisticUrl,
   UpdateContractStatusUrl,
   UpdateContractStatusRollbackUrl,
@@ -151,7 +152,12 @@ import type {
   UpdateContractInvoiceParams,
   ContractInvoiceDetail,
 } from '@lib/shared/models/contract';
-import type { BatchOperationResult, BatchUpdateQuotationStatusParams } from '@lib/shared/models/opportunity';
+import type {
+  BatchOperationResult,
+  BatchUpdateQuotationStatusParams,
+  StageBoardDraggedParams,
+  StageBoardPageQueryParams,
+} from '@lib/shared/models/opportunity';
 import type { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
 import {
   StageBaseParams,
@@ -161,8 +167,13 @@ import {
 } from '@lib/shared/models/opportunity';
 export default function useContractApi(CDR: CordysAxios) {
   // 合同列表
-  function getContractList(data: TableQueryParams) {
+  function getContractList(data: StageBoardPageQueryParams) {
     return CDR.post<CommonList<ContractItem>>({ url: ContractPageUrl, data }, { ignoreCancelToken: true });
+  }
+
+  // 合同看板拖拽排序
+  function sortContract(data: StageBoardDraggedParams) {
+    return CDR.post({ url: SortContractUrl, data });
   }
 
   // 添加合同
@@ -751,6 +762,7 @@ export default function useContractApi(CDR: CordysAxios) {
     getContractDetail,
     getContractDetailSnapshot,
     getContractList,
+    sortContract,
     getContractTab,
     getContractViewDetail,
     getContractViewList,

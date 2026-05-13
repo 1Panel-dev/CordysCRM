@@ -64,11 +64,11 @@ export interface UpdateStageParams {
   failureReason?: string | null; // 失败原因
 }
 
-export interface OpportunityPageQueryParams extends TableQueryParams {
+export interface StageBoardPageQueryParams extends TableQueryParams {
   board?: boolean; // 是否是看板模式
 }
 
-export interface OpportunityBillboardDraggedParams {
+export interface StageBoardDraggedParams {
   dragNodeId: string;
   dropNodeId: string;
   dropPosition: number;

@@ -1,30 +1,29 @@
 <template>
-  <n-scrollbar
-    :content-style="{ gridTemplateColumns: `repeat(${(stageConfig?.stageConfigList || []).length || 7}, 300px)` }"
-    content-class="grid gap-[16px] h-full"
-    class="mb-[16px] flex-1"
-    x-scrollable
+  <CrmStageBoard
+    ref="boardRef"
+    :stages="stageConfig?.stageConfigList || []"
+    :keyword="keyword"
+    :view-id="props.viewId"
+    :field-list="fieldList"
+    :advance-filter="advanceFilter"
+    :load-stage-list="loadStageList"
+    :load-stage-statistic="loadStageStatistic"
+    :move-stage-item="moveStageItem"
+    :can-move-item="canMoveItem"
+    :before-move-to-stage="beforeMoveToStage"
+    @change="refreshList"
+    @openDetail="(type, item) => emit('openDetail', type, item)"
+    @init="handleListInit"
   >
-    <list
-      v-for="(item, index) in stageConfig?.stageConfigList"
-      ref="listRef"
-      :key="item.id"
-      :index="index"
-      :view-id="props.viewId"
-      :stage-ids="stageConfig?.stageConfigList.map((i) => i.id) || []"
-      :keyword="keyword"
-      :field-list="fieldList"
-      :stage-config="item"
-      :refresh-time-stamp="refreshTimeStamp"
-      :advance-filter="advanceFilter"
-      :enable-reason="enableReason"
-      :fail-id="stageConfig?.stageConfigList.slice(-1)[0].id"
-      @fail="handleFailItem"
-      @change="refreshList"
-      @open-detail="(type, item) => emit('openDetail', type, item)"
-      @init="(total) => handleListInit(item.id, total)"
-    />
-  </n-scrollbar>
+    <template #card="{ item, fieldList: currentFieldList, optionMap, openDetail }">
+      <OpportunityBillboardCard
+        :item="item"
+        :field-list="currentFieldList as FormCreateField[]"
+        :option-map="optionMap"
+        @open-detail="openDetail"
+      />
+    </template>
+  </CrmStageBoard>
   <CrmModal
     v-model:show="updateStatusModal"
     :title="t('common.complete')"
@@ -48,20 +47,39 @@
 </template>
 
 <script setup lang="ts">
-  import { NForm, NFormItem, NScrollbar, NSelect } from 'naive-ui';
+  import { NForm, NFormItem, NSelect } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
+  import { TableQueryParams } from '@lib/shared/models/common';
+  import { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import { FormCreateField } from '@/components/business/crm-form-create/types';
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
-  import list from './list.vue';
+  import CrmStageBoard from '@/components/business/crm-stage-board/index.vue';
+  import type {
+    OpenDetailType,
+    StageBoardBlockedMovePayload,
+    StageBoardLoadParams,
+    StageBoardMoveCheckPayload,
+    StageBoardMovePayload,
+    StageBoardStatistic,
+  } from '@/components/business/crm-stage-board/types';
+  import OpportunityBillboardCard from './card.vue';
 
-  import { getOpportunityStageConfig, getReasonConfig, updateOptStage } from '@/api/modules';
+  import {
+    getOpportunityList,
+    getOpportunityStageConfig,
+    getOptStatistic,
+    getReasonConfig,
+    sortOpportunity,
+    updateOptStage,
+  } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     advanceFilter?: FilterResult;
@@ -71,7 +89,7 @@
   const emit = defineEmits<{
     (e: 'change'): void;
     (e: 'init', total: number): void;
-    (e: 'openDetail', type: 'customer' | 'opportunity', item: any): void;
+    (e: 'openDetail', type: OpenDetailType, item: any): void;
   }>();
 
   const { t } = useI18n();
@@ -90,29 +108,16 @@
     }
   }
 
-  const refreshTimeStamp = ref(0);
+  const boardRef = ref<InstanceType<typeof CrmStageBoard>>();
   function refresh() {
-    nextTick(() => {
-      refreshTimeStamp.value += 1;
-    });
+    boardRef.value?.refresh();
   }
-
-  const listRef = ref<InstanceType<typeof list>[]>();
-  function refreshList(stage: string) {
-    const index = stageConfig.value?.stageConfigList.findIndex((item) => item.id === stage) || 0;
-    listRef.value?.[index].refreshList();
+  function refreshList() {
     emit('change');
   }
 
-  const totalMap = ref<Record<string, number>>({});
-  const sumTotal = computed(() => {
-    return Object.values(totalMap.value).reduce((acc, curr) => acc + curr, 0);
-  });
-  function handleListInit(id: string, total: number) {
-    totalMap.value[id] = total;
-    nextTick(() => {
-      emit('init', sumTotal.value);
-    });
+  function handleListInit(total: number) {
+    emit('init', total);
   }
 
   const form = ref({
@@ -143,7 +148,7 @@
   async function handleConfirm() {
     try {
       updateStageLoading.value = true;
-      await listRef.value?.[(stageConfig.value?.stageConfigList.length || 1) - 1].sortItem(updateOptItem.value);
+      await boardRef.value?.sortStageItem((stageConfig.value?.stageConfigList.length || 1) - 1, updateOptItem.value);
       await updateOptStage({
         id: updateOptItem.value.data.id,
         stage: stageConfig.value?.stageConfigList.slice(-1)[0].id || '',
@@ -164,6 +169,97 @@
     form.value.failureReason = null;
   }
 
+  async function loadStageList(params: TableQueryParams) {
+    return getOpportunityList({
+      current: params.current,
+      pageSize: params.pageSize,
+      keyword: params.keyword,
+      combineSearch: params.advanceFilter,
+      filters: [
+        {
+          name: 'stage',
+          value: params.stageId,
+          multipleValue: false,
+          operator: 'EQUALS',
+        },
+      ],
+      board: true,
+      viewId: params.viewId,
+    });
+  }
+
+  async function loadStageStatistic(params: Omit<StageBoardLoadParams, 'current' | 'pageSize'>) {
+    return getOptStatistic({
+      keyword: params.keyword,
+      combineSearch: params.advanceFilter,
+      filters: [
+        {
+          name: 'stage',
+          value: params.stageId,
+          multipleValue: false,
+          operator: 'EQUALS',
+        },
+      ],
+      viewId: params.viewId,
+    }) as Promise<StageBoardStatistic>;
+  }
+
+  async function moveStageItem(payload: StageBoardMovePayload<OpportunityItem>) {
+    await sortOpportunity({
+      dropNodeId: payload.nextItem?.id || payload.previousItem?.id || '',
+      dragNodeId: payload.item.id,
+      dropPosition: payload.nextItem ? -1 : 1,
+      stage: payload.toStageId,
+    });
+  }
+
+  function beforeMoveToStage(payload: StageBoardBlockedMovePayload<OpportunityItem>) {
+    const isFailStage =
+      stageConfig.value?.stageConfigList.find((item) => item.id === payload.toStageId)?.type === 'END' &&
+      stageConfig.value?.stageConfigList.find((item) => item.id === payload.toStageId)?.rate === '0';
+
+    if (payload.item.stage !== payload.toStageId && isFailStage && enableReason.value) {
+      handleFailItem(payload.rawItem);
+      return false;
+    }
+
+    return true;
+  }
+
+  function canMoveItem(payload: StageBoardMoveCheckPayload) {
+    const targetIndex = stageConfig.value?.stageConfigList.findIndex((item) => item.id === payload.toStageId) ?? -1;
+    const fromIndex = stageConfig.value?.stageConfigList.findIndex((item) => item.id === payload.fromStageId) ?? -1;
+    const currentStage = stageConfig.value?.stageConfigList.find((item) => item.id === payload.toStageId);
+    const isSuccess = currentStage?.type === 'END' && currentStage?.rate === '100';
+    const isFail = currentStage?.type === 'END' && currentStage?.rate === '0';
+
+    if (
+      payload.rawEvent.to.className.includes(payload.toStageId) &&
+      payload.rawEvent.from.className.includes(payload.toStageId)
+    ) {
+      return true;
+    }
+
+    if (isSuccess) {
+      return (
+        (!!currentStage?.endRollBack &&
+          !payload.rawEvent.to.className.includes(stageConfig.value?.stageConfigList.slice(-1)[0].id)) ||
+        (hasAnyPermission(['OPPORTUNITY_MANAGEMENT:RESIGN']) &&
+          payload.rawEvent.to.className.includes(stageConfig.value?.stageConfigList.slice(-1)[0].id))
+      );
+    }
+
+    if (isFail) {
+      return !!currentStage?.endRollBack;
+    }
+
+    if (targetIndex < fromIndex) {
+      return !!currentStage?.afootRollBack;
+    }
+
+    return true;
+  }
+
   onBeforeMount(async () => {
     await initStageConfig();
     initOptFormConfig();
@@ -174,14 +270,3 @@
     refresh,
   });
 </script>
-
-<style lang="less" scoped>
-  .show-type-tabs {
-    :deep(.n-tabs-tab) {
-      padding: 6px;
-    }
-  }
-  :deep(.n-scrollbar-rail--horizontal--bottom) {
-    bottom: 0 !important;
-  }
-</style>
