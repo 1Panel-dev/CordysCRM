@@ -1396,13 +1396,13 @@ public class ApprovalFlowService {
 	/**
 	 * 判断当前实例节点是否支持多人审批
 	 * @param currentNodeId 当前节点ID
-	 * @param userId 用户ID
+	 * @param submitterId 提审人
 	 * @param currentOrgId 当前组织ID
 	 * @return 是否支持多人审批
 	 */
-	public boolean isCurrentNodeMultiApprover(String currentNodeId, String userId, String currentOrgId) {
+	public boolean isCurrentNodeMultiApprover(String currentNodeId, String submitterId, String currentOrgId) {
 		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
-		List<User> approvers = resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
+		List<User> approvers = resolveApprovers(submitterId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
 		return approvers.size() > 1;
 	}
 
@@ -1449,11 +1449,11 @@ public class ApprovalFlowService {
 	}
 
 	/**
-	 * 获取当前待办任务下一个审批节点
+	 * 获取当前待办任务下一个节点
 	 * @param currentTask 待办任务
-	 * @return 下一个审批节点
+	 * @return 下一个节点
 	 */
-	public ApprovalNodeResponse getTaskNextApproverNode(ApprovalTask currentTask, ApprovalInstance instance) {
+	public ApprovalNodeResponse getTaskNextNode(ApprovalTask currentTask, ApprovalInstance instance) {
 		List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
 		return getNextApproverNode(currentTask.getNodeId(), resourceFvs);
 	}
@@ -1462,7 +1462,7 @@ public class ApprovalFlowService {
 	 * 获取下一个节点 (审批或者结束类型)
 	 * @param nodeId 节点ID
 	 * @param resourceFvs 业务字段值
-	 * @return 下一个审批节点
+	 * @return 下一个节点
 	 */
 	private ApprovalNodeResponse getNextApproverNode(String nodeId, List<BaseModuleFieldValue> resourceFvs) {
 		ApprovalNodeResponse next = getNextNode(nodeId, resourceFvs);

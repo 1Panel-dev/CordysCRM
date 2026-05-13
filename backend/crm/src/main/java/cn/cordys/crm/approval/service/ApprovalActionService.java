@@ -93,7 +93,7 @@ public class ApprovalActionService {
 		saveActionTask(request, ApprovalAction.SIGN, userId, orgId, ApprovalAddSignType.valueOf(request.getType()));
 		// 之后加签(多人或签), 需要刷新实例当前审批节点
 		if (ApprovalAddSignType.valueOf(request.getType()) == ApprovalAddSignType.AFTER && isMultiAnyMode(appendActionTask.getNodeId(), userId, orgId)) {
-			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextApproverNode(appendActionTask, instance);
+			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(appendActionTask, instance);
 			instance.setCurrentNodeId(nextNode.getId());
 			approvalInstanceMapper.updateById(instance);
 		}
@@ -127,7 +127,10 @@ public class ApprovalActionService {
 	 * @param orgId         当前组织
 	 */
 	public void revoke(ApprovalRevokeRequest request, String currentUserId, String orgId) {
-
+		ApprovalTask currentTask = getTaskById(request.getId());
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
+		revokeProcess(currentTask, instance, orgId);
+		refreshRevokeTask(currentTask, instance, currentUserId);
 	}
 
 	/**
@@ -152,50 +155,6 @@ public class ApprovalActionService {
 	public void reject(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.REJECT, currentUserId, currentOrgId, null);
 		rejectProcess(currentTask, currentUserId, currentOrgId);
-	}
-
-	public void sendNotice(ApprovalInstance instance, String resourceName, String orgId, String context) {
-		// Notification notification = new Notification();
-		// String id = IDGenerator.nextStr();
-		// notification.setId(id);
-		// notification.setSubject(Translator.get("notice.default.subject"));
-		// notification.setOrganizationId(orgId);
-		// notification.setOperator(InternalUser.ADMIN.name());
-		// notification.setOperation("APPROVAL_NOTICE");
-		// notification.setResourceId(instance.getResourceId());
-		// notification.setResourceType(instance.getType());
-		// notification.setResourceName(resourceName);
-		// notification.setType(NotificationConstants.Type.SYSTEM_NOTICE.name());
-		// notification.setStatus(NotificationConstants.Status.UNREAD.name());
-		// notification.setCreateTime(System.currentTimeMillis());
-		// notification.setReceiver(instance.getSubmitterId());
-		// notification.setContent(context.getBytes());
-		// notification.setCreateUser(InternalUser.ADMIN.name());
-		// notification.setUpdateUser(InternalUser.ADMIN.name());
-		// notification.setCreateTime(System.currentTimeMillis());
-		// notification.setUpdateTime(System.currentTimeMillis());
-		// notificationBaseMapper.insert(notification);
-		// String messageText = JSON.toJSONString(notification);
-		// //储存信息
-		// stringRedisTemplate.opsForZSet().add(USER_PREFIX + instance.getSubmitterId(), id, System.currentTimeMillis());
-		// stringRedisTemplate.opsForValue().set(MSG_PREFIX + id, messageText);
-		// // 限制 Redis 只存 5 条消息
-		// Set<String> oldNotificationIds = stringRedisTemplate.opsForZSet()
-		//         .reverseRange(USER_PREFIX + instance.getSubmitterId(), 4, -1);
-		// if (org.apache.commons.collections.CollectionUtils.isNotEmpty(oldNotificationIds)) {
-		//     for (String oldNotificationId : oldNotificationIds) {
-		//         stringRedisTemplate.delete(MSG_PREFIX + oldNotificationId);
-		//     }
-		// }
-		// stringRedisTemplate.opsForZSet().removeRange(USER_PREFIX + instance.getSubmitterId(), 0, -6);
-		// //更新用户的已读全部消息状态 0 为未读，1为已读
-		// stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + instance.getSubmitterId(), "False");
-		//
-		// // 发送消息
-		// NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
-		// noticeRedisMessage.setMessage(instance.getSubmitterId());
-		// noticeRedisMessage.setNoticeType(NotificationConstants.Type.SYSTEM_NOTICE.toString());
-		// messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
 	}
 
 	/**
@@ -468,7 +427,7 @@ public class ApprovalActionService {
 		boolean multiNode = approvalFlowService.isCurrentNodeMultiApprover(currentTask.getNodeId(), instance.getSubmitterId(), currentOrgId);
 		if (!multiNode || isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())) {
 			// 单人审批或者多人审批但节点流转通过
-			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextApproverNode(currentTask, instance);
+			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(currentTask, instance);
 			if (nextNode instanceof ApprovalNodeApproverResponse approverNode) {
 				List<ApprovalTask> approvedTasks = getNodeApproverTasks(approverNode, currentTask.getInstanceId(), instance.getSubmitterId(), currentOrgId, ApprovalTaskType.NL.name());
 				approvalTasks.addAll(approvedTasks);
@@ -700,6 +659,13 @@ public class ApprovalActionService {
 		return old;
 	}
 
+	/**
+	 * 获取多人依次审批下一个审批人
+	 * @param nodeId 节点ID
+	 * @param instanceId 实例ID
+	 * @param currentOrgId 组织ID
+	 * @return 下一个审批人
+	 */
 	private User getMultiSeqNextOne(String nodeId, String instanceId, String currentOrgId) {
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(instanceId);
 		List<User> approvers = approvalFlowService.getCurrentNodeMultiApprover(nodeId, instance.getSubmitterId(), currentOrgId);
@@ -712,6 +678,25 @@ public class ApprovalActionService {
 		if (approvedTask.size() < approvers.size()) {
 			// 依次审批, 返回下一个审批人
 			return approvers.get(approvedTask.size());
+		}
+		return null;
+	}
+
+	/**
+	 * 获取多人依次审批当前用户下一个审批人
+	 * @param nodeId 节点ID
+	 * @param instanceId 实例ID
+	 * @param currentOrgId 组织ID
+	 * @param currentApprover 当前审批人
+	 * @return 下一个审批人
+	 */
+	private User getMultiSeqCurrentNextOne(String nodeId, String instanceId, String currentOrgId, String currentApprover) {
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(instanceId);
+		List<User> approvers = approvalFlowService.getCurrentNodeMultiApprover(nodeId, instance.getSubmitterId(), currentOrgId);
+		for (int i = 0; i < approvers.size(); i++) {
+			if (Strings.CI.equals(approvers.get(i).getId(), currentApprover)) {
+				return approvers.get(i + 1);
+			}
 		}
 		return null;
 	}
@@ -757,10 +742,125 @@ public class ApprovalActionService {
 	}
 
 	/**
+	 * 当前多人节点是否审批中
+	 * @param currentNodeId 当前节点ID
+	 * @param instanceId 实例ID
+	 * @return 是否审批中
+	 */
+	private boolean isCurrentMultiNodeApproving(String currentNodeId, String instanceId) {
+		LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(ApprovalTask::getNodeId, currentNodeId)
+				.eq(ApprovalTask::getInstanceId, instanceId);
+		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
+		ApprovalNodeApprover nodeApprover = getNodeApprover(currentNodeId);
+		if (MultiApproverModeEnum.valueOf(nodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
+			// 或签, 只要没有审批通过任务即可
+			return approvalTasks.stream().noneMatch(task -> ApprovalStatus.APPROVED.name().equals(task.getStatus()));
+		} else {
+			// 会签或者依次审批, 只要存在审批中的任务即整个节点为审批中
+			return approvalTasks.stream().anyMatch(task -> ApprovalStatus.APPROVING.name().equals(task.getStatus()));
+		}
+	}
+
+	/**
+	 * 是否当前节点不是审批中
+	 * @param currentNodeId 当前节点ID
+	 * @param instance 实例
+	 * @param currentOrgId 当前组织ID
+	 * @return 是否不是审批中
+	 */
+	private boolean isCurrentNodeNotApproving(String currentNodeId, ApprovalInstance instance, String currentOrgId) {
+		boolean multiApprover = approvalFlowService.isCurrentNodeMultiApprover(currentNodeId, instance.getSubmitterId(), currentOrgId);
+		if (multiApprover) {
+			return !isCurrentMultiNodeApproving(currentNodeId, instance.getId());
+		} else {
+			LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
+			queryWrapper.eq(ApprovalTask::getNodeId, currentNodeId)
+					.eq(ApprovalTask::getInstanceId, instance.getId());
+			List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
+			return approvalTasks.stream().noneMatch(task -> ApprovalStatus.APPROVING.name().equals(task.getStatus()));
+		}
+	}
+
+	/**
+	 * 撤回操作执行
+	 * @param currentTask 当前任务
+	 * @param instance 当前实例
+	 * @param currentOrgId 当前组织ID
+	 */
+	private void revokeProcess(ApprovalTask currentTask, ApprovalInstance instance, String currentOrgId) {
+		boolean multiApprover = approvalFlowService.isCurrentNodeMultiApprover(currentTask.getNodeId(), instance.getSubmitterId(), currentOrgId);
+		ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(currentTask, instance);
+		if (multiApprover) {
+			ApprovalNodeApprover nodeApprover = getNodeApprover(currentTask.getNodeId());
+			boolean nodeApproving = isCurrentMultiNodeApproving(currentTask.getNodeId(), currentTask.getInstanceId());
+			if (!nodeApproving && MultiApproverModeEnum.valueOf(nodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.ALL) {
+				// 多人会签, 但当前节点非审批中, 节点任务不允许撤回
+				throw new GenericException(Translator.get("no.revoke.approval"));
+			}
+			if (MultiApproverModeEnum.valueOf(nodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.ANY && isCurrentNodeNotApproving(nextNode.getId(), instance, currentOrgId)) {
+				// 多人或签, 但下一个节点非审批中, 节点任务不允许撤回
+				throw new GenericException(Translator.get("no.revoke.approval"));
+			}
+			if (MultiApproverModeEnum.valueOf(nodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.SEQUENTIAL) {
+				// 多人依次审批, 但当前节点非审批中, 节点任务不允许撤回
+				if (!nodeApproving) {
+					throw new GenericException(Translator.get("no.revoke.approval"));
+				}
+				User nextUser = getMultiSeqCurrentNextOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, currentTask.getApproverId());
+				if (nextUser == null) {
+					throw new GenericException(Translator.get("no.revoke.approval"));
+				}
+				ApprovalTask taskCriteria = new ApprovalTask();
+				taskCriteria.setApproverId(nextUser.getId());
+				taskCriteria.setInstanceId(instance.getId());
+				taskCriteria.setNodeId(currentTask.getNodeId());
+				taskCriteria.setStatus(ApprovalStatus.APPROVING.name());
+				ApprovalTask nextTask = approvalTaskMapper.selectOne(taskCriteria);
+				if (nextTask == null) {
+					// 多人依次审批, 撤销任务的下一个审批任务已经执行, 无法撤销
+					throw new GenericException(Translator.get("no.revoke.approval"));
+				}
+				// 否则清理掉, 后续重新生成
+				approvalTaskMapper.delete(nextTask);
+			}
+		} else {
+			// 单人审批
+			if (ApprovalNodeTypeEnum.valueOf(nextNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
+				// 后续节点已结束, 不允许撤回
+				throw new GenericException(Translator.get("no.revoke.approval"));
+			}
+			if (ApprovalNodeTypeEnum.valueOf(nextNode.getNodeType()) == ApprovalNodeTypeEnum.APPROVER && isCurrentNodeNotApproving(nextNode.getId(), instance, currentOrgId)) {
+				// 后续审批节点不为审批中, 不允许撤回
+				throw new GenericException(Translator.get("no.revoke.approval"));
+			}
+		}
+		// 清理后续审批节点的待办任务, 后续执行重新生成
+		LambdaQueryWrapper<ApprovalTask> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(ApprovalTask::getNodeId, nextNode.getId()).eq(ApprovalTask::getInstanceId, instance.getId());
+		approvalTaskMapper.deleteByLambda(wrapper);
+	}
+
+	/**
+	 * 刷新撤回的任务
+	 * @param approvalTask 任务
+	 * @param instance 实例
+	 * @param currentUserId 当前用户ID
+	 */
+	private void refreshRevokeTask(ApprovalTask approvalTask, ApprovalInstance instance, String currentUserId) {
+		approvalTask.setStatus(ApprovalStatus.APPROVING.name());
+		approvalTask.setUpdateTime(System.currentTimeMillis());
+		approvalTask.setUpdateUser(currentUserId);
+		approvalTaskMapper.updateById(approvalTask);
+		instance.setCurrentNodeId(approvalTask.getNodeId());
+		approvalInstanceMapper.updateById(instance);
+	}
+
+	/**
 	 * 批量驳回
-	 * @param request
-	 * @param userId
-	 * @param orgId
+	 * @param request 请求参数
+	 * @param userId 当前用户ID
+	 * @param orgId 当前组织ID
 	 */
 	public void batchReject(ApprovalActionBatchRequest request, String userId, String orgId) {
 		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectByIds(request.getIds());
@@ -777,7 +877,7 @@ public class ApprovalActionService {
 		List<LogDTO> logs = new ArrayList<>();
 		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
 		ExtApprovalTaskMapper taskMapper = sqlSession.getMapper(ExtApprovalTaskMapper.class);
-		approvalTasks.stream().forEach(approvalTask -> {
+		approvalTasks.forEach(approvalTask -> {
 			approvalTask.setAction(ApprovalAction.REJECT.name());
 			approvalTask.setStatus(ApprovalStatus.UNAPPROVED.name());
 			approvalTask.setUpdateUser(userId);
