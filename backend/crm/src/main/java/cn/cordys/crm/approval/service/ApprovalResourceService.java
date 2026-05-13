@@ -4,8 +4,8 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
@@ -23,7 +23,6 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.UserApprovalDTO;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -196,30 +195,18 @@ public class ApprovalResourceService {
             throw new GenericException(Translator.get("approval_flow.not.exist"));
         }
         // 插入审批实例和第一个审批节点待办任务
+        //提前创建实例id
         String instanceId = IDGenerator.nextStr();
         List<BaseModuleFieldValue> fvs = formService.compressResourceDetail(param.getFormKey(), param.getResourceId());
-        ApprovalNodeApproverResponse firstApproverNode = approvalFlowService.getResourceApprovalFlowFirstApproverNode(approvalFlowVersion.getId(), fvs, instanceId, currentUserId, currentOrgId);
-        ApprovalInstance approvalInstance = new ApprovalInstance();
-        approvalInstance.setId(instanceId);
-        approvalInstance.setFlowVersionId(approvalFlowVersion.getId());
-        approvalInstance.setType(param.getFormKey());
-        approvalInstance.setResourceId(param.getResourceId());
-        approvalInstance.setSubmitterId(currentUserId);
-        approvalInstance.setSubmitTime(System.currentTimeMillis());
-        //todo 如果返回节点类型==end instance状态设置APPROVED？
-        if (Strings.CI.equals(firstApproverNode.getNodeType(), ApprovalNodeTypeEnum.END.name())) {
-            approvalInstance.setApprovalStatus(ApprovalStatus.APPROVED.name());
-        } else {
-            approvalInstance.setApprovalStatus(ApprovalStatus.APPROVING.name());
-        }
-        approvalInstance.setCurrentNodeId(firstApproverNode.getId());
-        approvalInstance.setCreateTime(System.currentTimeMillis());
-        approvalInstance.setCreateUser(currentUserId);
-        approvalInstance.setUpdateTime(System.currentTimeMillis());
-        approvalInstance.setUpdateUser(currentUserId);
-        approvalInstanceMapper.insert(approvalInstance);
-        //todo 如果节点类型==end 是否需要创建任务？ 是否直接更新业务状态为通过？
-        new ApprovalActionService().saveNodeApproverTasks(firstApproverNode.getId(), approvalInstance.getId(), currentUserId, currentOrgId, null);
+        //获取第一个节点
+        ApprovalNodeApproverResponse firstApproverNode = approvalFlowService.getResourceApprovalFlowFirstApproverNode(approvalFlowVersion.getId(), fvs);
+        //节点逻辑处理,返回最终需要操作的节点
+        String resourceOwner = extApprovalInstanceMapper.getResourceOwner(tableName, param.getResourceId());
+        ApprovalExceptionService approvalExceptionService = CommonBeanFactory.getBean(ApprovalExceptionService.class);
+        ApprovalNodeApproverResponse finalNode = approvalExceptionService.nodeHandleAndSaveTask(firstApproverNode, fvs, instanceId, currentUserId, currentOrgId,
+                param, approvalFlowVersion.getId(), resourceOwner);
+
+
     }
 
     public void revoke(ApprovalResourceRevokeParam param, String currentUserId) {
