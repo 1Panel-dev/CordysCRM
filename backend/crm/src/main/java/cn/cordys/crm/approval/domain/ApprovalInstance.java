@@ -26,7 +26,7 @@ public class ApprovalInstance extends BaseModel {
     @Schema(description = "提交人ID")
     private String submitterId;
 
-    @Schema(description = "当前节点id")
+    @Schema(description = "当前节点ID")
     private String currentNodeId;
 
     @Schema(description = "审批状态")

@@ -24,7 +24,7 @@ public class ApprovalActionController {
     @PostMapping("/sign")
     @Operation(summary = "加签")
     public void add(@Validated @RequestBody ApprovalAddSignRequest request) {
-		approvalActionService.addSign(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+		approvalActionService.sign(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/back")
@@ -50,7 +50,6 @@ public class ApprovalActionController {
     public void reject(@Validated @RequestBody ApprovalActionRequest request) {
 		approvalActionService.reject(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/batch-reject")
     @Operation(summary = "批量驳回")

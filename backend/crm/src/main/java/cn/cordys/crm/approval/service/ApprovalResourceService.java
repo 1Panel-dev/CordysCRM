@@ -12,7 +12,6 @@ import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
-import cn.cordys.crm.approval.dto.ApprovalResourceRevokeParam;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
@@ -40,12 +39,14 @@ public class ApprovalResourceService {
     private BaseMapper<ApprovalRecord> approvalRecordMapper;
     @Resource
     private BaseMapper<User> userMapper;
-    @Resource
-    private ExtApprovalInstanceMapper extApprovalInstanceMapper;
-    @Resource
-    private ApprovalFlowService approvalFlowService;
-    @Resource
-    private ModuleFormService formService;
+	@Resource
+	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+	@Resource
+	private ApprovalFlowService approvalFlowService;
+	@Resource
+	private ApprovalInstanceService instanceService;
+	@Resource
+	private ModuleFormService formService;
 
     /**
      * 开启的审批流表单表格映射
@@ -209,19 +210,19 @@ public class ApprovalResourceService {
 
     }
 
-    public void revoke(ApprovalResourceRevokeParam param, String currentUserId) {
-        // 更新业务表 approval_status
-        String tableName = FORM_APPROVAL_TABLE.get(param.getFormKey());
-        if (StringUtils.isBlank(tableName)) {
-            throw new GenericException(Translator.get("module.form.illegal"));
-        }
-        extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.REVOKED.name());
-        // 更新审批实例状态
-        ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(param.getInstanceId());
-        instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
-        instance.setApprovalTime(System.currentTimeMillis());
-        instance.setUpdateUser(currentUserId);
-        instance.setUpdateTime(System.currentTimeMillis());
-        approvalInstanceMapper.updateById(instance);
-    }
+	public void revoke(ApprovalResourceBaseParam param, String currentUserId) {
+		// 更新业务表 approval_status
+		String tableName = FORM_APPROVAL_TABLE.get(param.getFormKey());
+		if (StringUtils.isBlank(tableName)) {
+			throw new GenericException(Translator.get("module.form.illegal"));
+		}
+		extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.REVOKED.name());
+		// 更新审批实例状态
+		ApprovalInstance instance = instanceService.getLatestInstance(param.getResourceId());
+		instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
+		instance.setApprovalTime(System.currentTimeMillis());
+		instance.setUpdateUser(currentUserId);
+		instance.setUpdateTime(System.currentTimeMillis());
+		approvalInstanceMapper.updateById(instance);
+	}
 }

@@ -166,9 +166,12 @@ CREATE INDEX idx_cc_user_id ON approval_cc_task(cc_user_id ASC);
 
 CREATE TABLE approval_add_sign_task(
     `id` VARCHAR(32) NOT NULL   COMMENT '主键ID' ,
+    `type` VARCHAR(20) NOT NULL   COMMENT '加签方式; before: 在我之前、after: 在我之后' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '加签任务ID' ,
-    `sign_node_id` VARCHAR(32) NOT NULL   COMMENT '加签目标节点ID' ,
-    `type` VARCHAR(20) NOT NULL   COMMENT '加签方式; 在我之前: BEFORE: 在我之后: AFTER' ,
+    `sign_task_id` VARCHAR(32) NOT NULL   COMMENT '被加签的任务ID' ,
+    `base_node_id` VARCHAR(32) NOT NULL   COMMENT '原始加签节点ID, 用于查询节点加签链路' ,
+    `parent_add_sign_id` VARCHAR(32)    COMMENT '父加签任务ID, 用于保证层级加签的顺序' ,
+    `sort` BIGINT NOT NULL   COMMENT '顺序; 排序越小越往前' ,
     `comment` TEXT    COMMENT '加签意见' ,
     PRIMARY KEY (id)
 )  COMMENT = '加签任务表'
@@ -177,7 +180,9 @@ CREATE TABLE approval_add_sign_task(
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_task_id ON approval_add_sign_task(task_id ASC);
-CREATE INDEX idx_sign_node_id ON approval_add_sign_task(sign_node_id ASC);
+CREATE INDEX idx_sign_task_id ON approval_add_sign_task(sign_task_id ASC);
+CREATE INDEX idx_base_node_id ON approval_add_sign_task(base_node_id ASC);
+CREATE INDEX idx_parent_id ON approval_add_sign_task(parent_add_sign_id ASC);
 
 CREATE TABLE approval_return_back_record(
     `id` VARCHAR(32) NOT NULL   COMMENT '主键ID' ,

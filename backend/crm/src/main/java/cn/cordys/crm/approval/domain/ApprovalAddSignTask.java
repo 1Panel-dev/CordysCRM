@@ -18,10 +18,16 @@ public class ApprovalAddSignTask {
 	private String taskId;
 
 	@Schema(description = "加签的节点ID")
-	private String signNodeId;
+	private String signTaskId;
 
 	@Schema(description = "加签方式")
 	private String type;
+
+	@Schema(description = "根任务ID(同一加签链的根节点)")
+	private String rootTaskId;
+
+	@Schema(description = "顺序")
+	private Long sort;
 
 	@Schema(description = "加签意见")
 	private String comment;
