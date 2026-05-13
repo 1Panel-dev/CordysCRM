@@ -1,6 +1,5 @@
 package cn.cordys.crm.approval.service;
 
-import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
@@ -15,7 +14,6 @@ import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
-import cn.cordys.crm.contract.mapper.ExtBusinessTitleMapper;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
@@ -508,7 +506,8 @@ public class ApprovalActionService {
         } else {
             ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
             List<BaseModuleFieldValue> fvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
-            ApprovalNodeResponse nextNode = approvalFlowService.getNextNode(currentTask.getNodeId(), fvs, instance.getId(), currentUserId, orgId);
+            ApprovalNodeResponse nextNode = approvalFlowService.getNextNode(currentTask.getNodeId(), fvs);
+            //TODO: 处理下一个节点(approvalExceptionService.nodeHandleAndSaveTask)
             if (Strings.CI.equals(nextNode.getNodeType(), ApprovalNodeTypeEnum.END.name())) {
                 return approvalTasks;
             }

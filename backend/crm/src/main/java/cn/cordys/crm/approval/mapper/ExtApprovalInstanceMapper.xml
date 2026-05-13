@@ -10,4 +10,9 @@
     <select id="selectBusinessName" resultType="java.lang.String">
         select name from ${sourceTable} where id = #{id}
     </select>
+
+
+    <select id="getResourceOwner" resultType="java.lang.String">
+        select owner from ${sourceTable} where id = #{id}
+    </select>
 </mapper>
