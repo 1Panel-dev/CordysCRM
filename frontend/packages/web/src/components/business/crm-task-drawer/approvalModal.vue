@@ -55,12 +55,19 @@
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
   import CrmFileInput from '@/components/business/crm-file-input/index.vue';
 
-  import { rejectApproval } from '@/api/modules/index';
+  import {
+    agreeApproval,
+    backApproval,
+    batchAgreeApproval,
+    batchRejectApproval,
+    rejectApproval,
+  } from '@/api/modules/index';
 
   const props = defineProps<{
     approvalItem?: ApprovalTodoItem;
     approvalItemKeys?: string[];
     approvalType: 'approve' | 'reject';
+    module: 'WORKBENCH' | 'CONTRACT_INDEX' | 'ORDER_INDEX' | 'OPPORTUNITY_QUOTATION' | 'CONTRACT_INVOICE';
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;
@@ -91,23 +98,75 @@
     emit('approvalCancel');
   }
 
+  async function approval() {
+    if (!props.approvalItem) {
+      return;
+    }
+    try {
+      if (props.approvalType === 'reject') {
+        await rejectApproval({
+          id: props.approvalItem.approvalTaskId,
+          nodeId: props.approvalItem.approvalNodeId,
+          instanceId: props.approvalItem.approvalInstanceId,
+          attachmentIds: fileList.value.map((e) => e.id),
+          approverId: props.approvalItem.approvalId,
+          comment: approvalForm.value.reason,
+          module: props.module,
+        });
+      } else {
+        await agreeApproval({
+          id: props.approvalItem.approvalTaskId,
+          nodeId: props.approvalItem.approvalNodeId,
+          instanceId: props.approvalItem.approvalInstanceId,
+          attachmentIds: fileList.value.map((e) => e.id),
+          approverId: props.approvalItem.approvalId,
+          comment: approvalForm.value.reason,
+          module: props.module,
+        });
+      }
+      message.success(props.approvalType === 'approve' ? t('taskDrawer.approved') : t('taskDrawer.rejected'));
+      handleApprovalCancel();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function batchApproval() {
+    if (!props.approvalItemKeys) {
+      return;
+    }
+    try {
+      if (props.approvalType === 'reject') {
+        await batchRejectApproval({
+          ids: props.approvalItemKeys,
+          rejectReason: approvalForm.value.reason,
+          attachmentIds: fileList.value.map((e) => e.id),
+          module: props.module,
+        });
+      } else {
+        await batchAgreeApproval({
+          ids: props.approvalItemKeys,
+          rejectReason: approvalForm.value.reason,
+          attachmentIds: fileList.value.map((e) => e.id),
+          module: props.module,
+        });
+      }
+      message.success(props.approvalType === 'approve' ? t('taskDrawer.approved') : t('taskDrawer.rejected'));
+      handleApprovalCancel();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   function handleApprovalSave() {
     approvalFormRef.value?.validate(async (errors) => {
-      if (!errors && props.approvalItem) {
-        try {
-          if (props.approvalType === 'reject') {
-            rejectApproval({
-              id: props.approvalItem.approvalTaskId,
-              nodeId: props.approvalItem.approvalNodeId,
-              instanceId: props.approvalItem.approvalInstanceId,
-              attachmentIds: fileList.value.map((e) => e.id),
-            });
-          }
-          message.success(props.approvalType === 'approve' ? t('taskDrawer.approved') : t('taskDrawer.rejected'));
-          handleApprovalCancel();
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
+      if (!errors) {
+        if (props.approvalItemKeys?.length) {
+          batchApproval();
+        } else {
+          approval();
         }
       }
     });

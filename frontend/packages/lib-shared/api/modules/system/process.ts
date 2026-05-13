@@ -20,6 +20,11 @@ import {
   RejectApprovalUrl,
   BackApprovalUrl,
   AddSignApprovalUrl,
+  GetTodoStatisticUrl,
+  AgreeApprovalUrl,
+  RevokeApprovalUrl,
+  BatchRejectApprovalUrl,
+  BatchApprovalApprovalUrl,
 } from '@lib/shared/api/requrls/system/process';
 import {
   AddApprovalProcessParams,
@@ -33,6 +38,8 @@ import {
   type ApprovalOperationParams,
   type ApprovalTodoItem,
   type ApprovalTodoTableParams,
+  type BatchRejectApprovalParams,
+  type TodoStatistic,
 } from '@lib/shared/models/system/process';
 import type { CommonList } from '@lib/shared/models/common';
 import type { TableQueryParams } from '@lib/shared/models/common';
@@ -110,6 +117,26 @@ export default function useProcessApi(CDR: CordysAxios) {
     return CDR.post({ url: AddSignApprovalUrl, data });
   }
 
+  // 撤回
+  function revokeApproval(data: { id: string }) {
+    return CDR.post({ url: RevokeApprovalUrl, data });
+  }
+
+  // 同意
+  function agreeApproval(data: ApprovalOperationParams) {
+    return CDR.post({ url: AgreeApprovalUrl, data });
+  }
+
+  // 批量驳回
+  function batchRejectApproval(data: BatchRejectApprovalParams) {
+    return CDR.post({ url: BatchRejectApprovalUrl, data });
+  }
+
+  // 批量同意
+  function batchAgreeApproval(data: BatchRejectApprovalParams) {
+    return CDR.post({ url: BatchApprovalApprovalUrl, data });
+  }
+
   // 获取审批记录
   function getApprovalRecord(id: string) {
     return CDR.get({ url: `${GetApprovalRecordUrl}/${id}` });
@@ -119,6 +146,12 @@ export default function useProcessApi(CDR: CordysAxios) {
   function getApprovalResourceDetail(id: string) {
     return CDR.get({ url: `${GetApprovalResourceDetailUrl}/${id}` });
   }
+
+  // 获取待办统计
+  function getTodoStatistic() {
+    return CDR.get<TodoStatistic>({ url: GetTodoStatisticUrl });
+  }
+
   // 提审
   function reviewResource(data: CommonApprovalActionParams) {
     return CDR.post({ url: ReviewResourceUrl, data });
@@ -150,5 +183,10 @@ export default function useProcessApi(CDR: CordysAxios) {
     addSignApproval,
     getApprovalRecord,
     getApprovalResourceDetail,
+    getTodoStatistic,
+    revokeApproval,
+    agreeApproval,
+    batchRejectApproval,
+    batchAgreeApproval,
   };
 }

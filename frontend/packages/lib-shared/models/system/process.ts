@@ -231,16 +231,31 @@ export interface ApprovalOperationParams {
   id: string;
   nodeId: string;
   instanceId: string;
+  approverId: string;
+  comment?: string;
   attachmentIds: string[];
+  module: string;
 }
 
 export interface ApprovalBackParams extends ApprovalOperationParams {
-  returnToTaskId: string;
-  returnReason: string;
+  returnToNodeId: string;
 }
 
 export interface ApprovalAddSignParams extends ApprovalOperationParams {
   type: string;
-  approverId: string;
-  comment: string;
+}
+
+export interface BatchRejectApprovalParams {
+  ids: string[];
+  rejectReason: string;
+  attachmentIds: string[];
+  module: string;
+}
+
+export interface TodoStatistic {
+  total: number;
+  quotation: number;
+  contract: number;
+  order: number;
+  invoice: number;
 }

@@ -791,4 +791,9 @@ export const {
   addSignApproval,
   getApprovalRecord,
   getApprovalResourceDetail,
+  getTodoStatistic,
+  revokeApproval,
+  batchRejectApproval,
+  agreeApproval,
+  batchAgreeApproval,
 } = processApi;

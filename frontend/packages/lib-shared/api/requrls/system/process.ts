@@ -15,11 +15,16 @@ export const GetProcessedApprovalTodosUrl = '/approval-todo/processed/page'; // 
 export const GetPendingApprovalTodosUrl = '/approval-todo/pending/page'; // 待处理审批待办列表
 export const GetInitiatedApprovalTodosUrl = '/approval-todo/initiated/page'; // 我发起审批待办列表
 export const GetCcApprovalTodosUrl = '/approval-todo/cc/page'; // 抄送我的审批待办列表
+export const GetTodoStatisticUrl = '/approval-todo/pending/count'; // 获取待办统计
 
 // 审批
 export const RejectApprovalUrl = '/approval-operation/reject'; // 驳回
 export const BackApprovalUrl = '/approval-operation/back'; // 回退
-export const AddSignApprovalUrl = '/approval-operation/add'; // 加签
+export const AddSignApprovalUrl = '/approval-action/sign'; // 加签
+export const RevokeApprovalUrl = '/approval-action/revoke'; // 撤回
+export const AgreeApprovalUrl = '/approval-action/approve'; // 同意
+export const BatchRejectApprovalUrl = '/approval-action/batch-reject'; // 批量驳回
+export const BatchApprovalApprovalUrl = '/approval-action/batch-approve'; // 批量同意
 
 // 审批记录
 export const GetApprovalRecordUrl = '/resource-approval/record-detail'; // 审批记录详情
