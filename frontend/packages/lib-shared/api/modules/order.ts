@@ -11,6 +11,7 @@ import {
   FixedOrderViewUrl,
   GetOrderDetailUrl,
   OrderPageUrl,
+  SortOrderUrl,
   OrderDetailSnapshotUrl,
   OrderFormConfigUrl,
   OrderFormConfigSnapshotUrl,
@@ -37,6 +38,8 @@ import type { TableQueryParams } from '@lib/shared/models/common';
 
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 import {
+  StageBoardPageQueryParams,
+  StageBoardDraggedParams,
   StageBaseParams,
   OpportunityStageConfig,
   UpdateOpportunityStageRollbackParams,
@@ -45,8 +48,8 @@ import {
 
 export default function useOrderApi(CDR: CordysAxios) {
   // 列表
-  function getOrderList(data: TableQueryParams) {
-    return CDR.post<CommonList<OrderItem>>({ url: OrderPageUrl, data });
+  function getOrderList(data: StageBoardPageQueryParams) {
+    return CDR.post<CommonList<OrderItem>>({ url: OrderPageUrl, data }, { ignoreCancelToken: true });
   }
 
   // 合同下的列表
@@ -175,6 +178,11 @@ export default function useOrderApi(CDR: CordysAxios) {
     return CDR.post({ url: UpdateOrderStageUrl, data });
   }
 
+  // 订单看板拖拽排序
+  function sortOrder(data: StageBoardDraggedParams) {
+    return CDR.post({ url: SortOrderUrl, data });
+  }
+
   // 订单统计
   function getOrderStatistic(data: TableQueryParams) {
     return CDR.post({ url: OrderStatisticUrl, data }, { ignoreCancelToken: true });
@@ -207,6 +215,7 @@ export default function useOrderApi(CDR: CordysAxios) {
     getOrderStatusConfig,
     deleteOrderStatus,
     updateOrderStage,
+    sortOrder,
     downloadOrder,
     getOrderStatistic,
   };

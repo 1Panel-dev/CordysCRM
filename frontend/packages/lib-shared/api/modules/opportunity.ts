@@ -103,10 +103,10 @@ import type {
   BatchOperationResult,
   BatchUpdateQuotationStatusParams,
   BatchVoidQuotationStatusParams,
-  OpportunityBillboardDraggedParams,
+  StageBoardPageQueryParams,
+  StageBoardDraggedParams,
   OpportunityDetail,
   OpportunityItem,
-  OpportunityPageQueryParams,
   OpportunityStageConfig,
   QuotationItem,
   QuotationQueryParams,
@@ -123,7 +123,7 @@ import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 商机列表
-  function getOpportunityList(data: OpportunityPageQueryParams) {
+  function getOpportunityList(data: StageBoardPageQueryParams) {
     return CDR.post<CommonList<OpportunityItem>>({ url: OptPageUrl, data }, { ignoreCancelToken: true });
   }
 
@@ -143,7 +143,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 商机看板拖拽排序
-  function sortOpportunity(data: OpportunityBillboardDraggedParams) {
+  function sortOpportunity(data: StageBoardDraggedParams) {
     return CDR.post({ url: SortOpportunityUrl, data });
   }
 

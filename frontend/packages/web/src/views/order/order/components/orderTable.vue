@@ -4,9 +4,12 @@
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
     :class="`crm-order-table-${props.formKey}`"
+    :not-show-table="activeShowType === 'billboard'"
     :not-show-table-filter="isAdvancedSearchMode"
     :fullscreen-target-ref="props.fullscreenTargetRef"
     :action-config="actionConfig"
+    :hiddenBackToTop="activeShowType === 'billboard'"
+    :customTotal="activeShowType === 'billboard'"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
@@ -35,6 +38,20 @@
         @adv-search="handleAdvSearch"
         @keyword-search="searchData"
       />
+      <n-tabs
+        v-if="!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter"
+        v-model:value="activeShowType"
+        type="segment"
+        size="large"
+        class="show-type-tabs"
+      >
+        <n-tab-pane name="table" class="hidden">
+          <template #tab><CrmIcon type="iconicon_list" /></template>
+        </n-tab-pane>
+        <n-tab-pane name="billboard" class="hidden">
+          <template #tab><CrmIcon type="iconicon_waterfalls" /></template>
+        </n-tab-pane>
+      </n-tabs>
     </template>
     <template #view>
       <CrmViewSelect
@@ -46,7 +63,24 @@
         @refresh-table-data="searchData"
       />
     </template>
-    <template #totalRight>
+    <template v-if="activeShowType === 'billboard'" #other>
+      <billboard
+        ref="billboardRef"
+        :keyword="keyword"
+        :view-id="activeTab"
+        :advance-filter="advanceFilter"
+        :readonly="props.readonly"
+        :enable-approval="enableApproval"
+        :has-stage-permission="hasOrderStagePermission"
+        @change="getStatistic()"
+        @open-detail="handleOpenDetail"
+        @init="handleBillboardInit"
+      />
+    </template>
+    <template v-if="showStatisticInfo" #totalRight>
+      <div v-if="activeShowType === 'billboard'">
+        {{ t('crmPagination.total', { count: billboardTotalCount }) }}
+      </div>
       <div class="ml-[24px]">
         {{ t('opportunity.averageAmount') }}
         <span class="ml-[4px]">
@@ -99,7 +133,7 @@
 
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
-  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, NTabPane, NTabs, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
@@ -111,6 +145,7 @@
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -119,7 +154,9 @@
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import { OpenDetailType } from '@/components/business/crm-stage-board/types';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
+  import billboard from './billboard/index.vue';
   import DetailDrawer from './detail.vue';
 
   import { deleteOrder, getOrderStatistic, getOrderStatusConfig } from '@/api/modules';
@@ -129,6 +166,7 @@
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAnyPermission } from '@/utils/permission';
@@ -142,6 +180,7 @@
   const { currentLocale } = useLocale(Message.loading);
   const { openModal } = useModal();
   const { openNewPage } = useOpenNewPage();
+  const { getItem, setItem } = useLocalForage();
 
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
@@ -158,9 +197,11 @@
     (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
+  const activeShowType = ref<'table' | 'billboard'>();
   const activeTab = ref();
   const keyword = ref('');
   const tableRefreshId = ref(0);
+  const billboardTotalCount = ref(0);
   const tableItemRefreshId = ref('');
 
   const stageConfig = ref<OpportunityStageConfig>();
@@ -376,6 +417,22 @@
     });
   }
 
+  function handleOpenDetail(type: OpenDetailType, item: OrderItem) {
+    if (type === 'contract') {
+      showContractDrawer({ id: item.contractId });
+      return;
+    }
+    if (type === 'customer') {
+      showCustomerDrawer(item);
+      return;
+    }
+    showDetail(item);
+  }
+
+  function hasOrderStagePermission(row: OrderItem) {
+    return hasApprovalScopedPermission(row, ['ORDER:UPDATE']);
+  }
+
   await initApprovalPermission();
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
@@ -476,6 +533,7 @@
     useTableRes;
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const billboardRef = ref<InstanceType<typeof billboard>>();
 
   // 表格
   const filterConfigList = computed<FilterFormItem[]>(() => [
@@ -517,6 +575,9 @@
     ...baseFilterConfigList,
   ]);
 
+  const showStatisticInfo = computed(
+    () => propsRes.value.columns.find((item) => item.key === 'amount') || activeShowType.value === 'billboard'
+  );
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {
     try {
@@ -555,28 +616,51 @@
   }
 
   const isAdvancedSearchMode = ref(false);
-  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, _originalForm?: FilterForm) {
     keyword.value = '';
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
-    loadList();
-    getStatistic();
-    crmTableRef.value?.scrollTo({ top: 0 });
+    if (activeShowType.value === 'billboard') {
+      billboardRef.value?.refresh();
+      getStatistic();
+    } else {
+      loadList();
+      getStatistic();
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
 
   function searchData(val?: string, refreshId?: string) {
+    if (!activeTab.value && !props.isContractTab && !props.isCustomerTab) return;
     setLoadListParams({
       keyword: val ?? keyword.value,
       viewId: activeTab.value,
       ...(props.formKey === FormDesignKeyEnum.CONTRACT_ORDER ? { contractId: props.sourceId } : {}),
       ...(props.formKey === FormDesignKeyEnum.CUSTOMER_ORDER ? { customerId: props.sourceId } : {}),
     });
-    loadList(false, refreshId);
-    getStatistic(val);
-    if (!refreshId) {
-      crmTableRef.value?.scrollTo({ top: 0 });
+    if (activeShowType.value === 'billboard') {
+      billboardRef.value?.refresh();
+      getStatistic(val);
+    } else {
+      loadList(false, refreshId);
+      getStatistic(val);
+      if (!refreshId) {
+        crmTableRef.value?.scrollTo({ top: 0 });
+      }
     }
   }
+
+  watch(
+    () => activeShowType.value,
+    async (val) => {
+      if (val) {
+        if (!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter) {
+          await setItem('order-active-show-type', activeShowType.value as 'table' | 'billboard');
+        }
+        searchData();
+      }
+    }
+  );
 
   watch(
     () => tableRefreshId.value,
@@ -656,9 +740,27 @@
   );
 
   onMounted(async () => {
+    if (!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter) {
+      activeShowType.value = (await getItem<'billboard' | 'table'>('order-active-show-type')) ?? 'table';
+    } else {
+      activeShowType.value = 'table';
+    }
+
     if (route.query.id && !(props.isContractTab || props.isCustomerTab)) {
       activeSourceId.value = route.query.id as string;
       showDetailDrawer.value = true;
     }
   });
+
+  function handleBillboardInit(total: number) {
+    billboardTotalCount.value = total;
+  }
 </script>
+
+<style lang="less" scoped>
+  .show-type-tabs {
+    :deep(.n-tabs-tab) {
+      padding: 6px;
+    }
+  }
+</style>

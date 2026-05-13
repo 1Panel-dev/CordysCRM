@@ -14,6 +14,7 @@ export const BatchUpdateContractUrl = '/contract/batch/update';
 export const ApproveContractUrl = '/contract/approval';
 export const RevokeContractUrl = '/contract/revoke';
 export const ContractStatisticUrl = '/contract/statistic';
+export const SortContractUrl = '/contract/sort';
 
 // 合同导出
 export const ExportContractAllUrl = '/contract/export-all'; // 合同导出全量
