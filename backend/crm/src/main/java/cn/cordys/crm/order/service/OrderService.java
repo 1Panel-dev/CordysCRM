@@ -26,6 +26,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.customer.domain.Customer;
@@ -116,11 +117,14 @@ public class OrderService {
             throw new GenericException(Translator.get("order.form.config.required"));
         }
         List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
+        Long nextPos = getNextPos(orgId, stageConfigList.getFirst().getId());
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         Order order = new Order();
         BeanUtils.copyBean(order, request);
         order.setId(IDGenerator.nextStr());
         order.setStage(stageConfigList.getFirst().getId());
+        order.setPos(nextPos);
+        order.setApprovalStatus(ApprovalStatus.PENDING.name());
         order.setOrganizationId(orgId);
         order.setCreateTime(System.currentTimeMillis());
         order.setCreateUser(operatorId);
@@ -144,6 +148,11 @@ public class OrderService {
         return order;
     }
 
+
+    private Long getNextPos(String orgId, String stage) {
+        Long pos = extOrderMapper.selectNextPos(orgId, stage);
+        return pos == null ? 1 : pos + 1;
+    }
 
     /**
      * 保存订单快照

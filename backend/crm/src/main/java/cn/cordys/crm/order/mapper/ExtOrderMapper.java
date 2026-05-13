@@ -30,4 +30,6 @@ public interface ExtOrderMapper {
     void moveUpStageOrder(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
     void moveDownStageOrder(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
+
+    Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
 }
