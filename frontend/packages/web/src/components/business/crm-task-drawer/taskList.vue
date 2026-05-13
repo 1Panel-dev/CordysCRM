@@ -1,6 +1,6 @@
 <template>
   <n-spin :show="loading" class="min-h-[300px]">
-    <n-checkbox-group v-model:value="selectedKeys">
+    <n-checkbox-group v-model:value="selectedKeys" :disabled="!approvalConfigDetail?.allowBatchProcess">
       <CrmList
         v-if="list.length"
         v-model:data="list"
@@ -12,7 +12,11 @@
       >
         <template #item="{ item }">
           <div class="task-item" :class="selectedKeys.includes(item.id) ? '!border-[var(--primary-8)]' : ''">
-            <n-checkbox v-if="props.activeTaskType?.includes('pending')" :value="item.id" class="mt-[4px]" />
+            <n-checkbox
+              v-if="props.activeTaskType?.includes('pending') && approvalConfigDetail?.allowBatchProcess"
+              :value="item.id"
+              class="mt-[4px]"
+            />
             <div class="task-item-content">
               <div class="flex w-full items-center justify-between">
                 <div class="flex items-center gap-[8px]">
@@ -70,6 +74,7 @@
     :approval-type="approvalType"
     :approval-item="approvalItem"
     :approval-item-keys="selectedKeys"
+    module="WORKBENCH"
     @approval-cancel="handleApproveCancel"
   />
 </template>
@@ -80,7 +85,7 @@
 
   import { ApprovalListTypeEnum, ApprovalOperationEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ApprovalTodoItem } from '@lib/shared/models/system/process';
+  import type { ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -103,10 +108,11 @@
     emptyText?: string;
     loadParams?: Record<string, any>;
     activeTaskType: string;
+    approvalConfigDetail?: ApprovalProcessDetail;
   }>();
 
   const emit = defineEmits<{
-    (e: 'openDetail', id: number): void;
+    (e: 'openDetail', id: string): void;
     (e: 'listInit', total: number, keys: string[]): void;
   }>();
 

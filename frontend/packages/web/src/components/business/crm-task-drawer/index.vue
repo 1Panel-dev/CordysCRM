@@ -17,13 +17,13 @@
                 @click="activeTaskType = child.name"
               >
                 {{ child.title }}
-                <div class="task-count">{{ item.count }}</div>
+                <div v-if="item.name === 'pending'" class="task-count">{{ item.count }}</div>
               </div>
               <template #arrow>
                 <CrmIcon type="iconicon_right" :size="12" color="var(--text-n2)" class="mr-[4px]" />
               </template>
               <template #header-extra>
-                <div class="task-count mr-[16px]">{{ item.count }}</div>
+                <div v-if="item.name === 'pending'" class="task-count mr-[16px]">{{ item.count }}</div>
               </template>
             </n-collapse-item>
           </n-collapse>
@@ -34,7 +34,7 @@
           <div class="flex flex-1 items-center gap-[8px]">
             <div class="font-semibold">
               <n-checkbox
-                v-if="activeTaskType.includes('pending')"
+                v-if="activeTaskType.includes('pending') && approvalConfigDetail?.allowBatchProcess"
                 :value="allSelect"
                 :label="activeModuleTitle"
                 :indeterminate="indeterminate"
@@ -64,12 +64,23 @@
           virtualScrollHeight="100%"
           :activeTaskType="activeTaskType"
           :load-params="{ keyword }"
+          :approval-config-detail="approvalConfigDetail"
           @list-init="handleListInit"
+          @open-detail="handleOpenDetail"
         />
       </div>
     </div>
   </CrmDrawer>
-  <approvalModal v-model:show="approvalVisible" :approval-type="approvalType" :approval-item-keys="selectedKeys" />
+  <approvalModal
+    v-model:show="approvalVisible"
+    :approval-type="approvalType"
+    :approval-item-keys="selectedKeys"
+    module="WORKBENCH"
+  />
+  <ContractDetailDrawer v-model:visible="contractDetailVisible" :source-id="activeResourceId" />
+  <QuotationDetailDrawer v-model:visible="quotationDetailVisible" :source-id="activeResourceId" />
+  <OrderDetailDrawer v-model:visible="orderDetailVisible" :source-id="activeResourceId" />
+  <InvoiceDetailDrawer v-model:visible="invoiceDetailVisible" :source-id="activeResourceId" />
 </template>
 
 <script setup lang="ts">
@@ -78,12 +89,19 @@
 
   import { type ApprovalListTypeEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { ApprovalProcessDetail } from '@lib/shared/models/system/process';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import approvalModal from './approvalModal.vue';
   import taskList from './taskList.vue';
+  import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
+  import InvoiceDetailDrawer from '@/views/contract/invoice/components/detail.vue';
+  import QuotationDetailDrawer from '@/views/opportunity/components/quotation/detail.vue';
+  import OrderDetailDrawer from '@/views/order/order/components/detail.vue';
+
+  import { getApprovalConfigDetail, getTodoStatistic } from '@/api/modules';
 
   const props = defineProps<{
     type?: ApprovalListTypeEnum;
@@ -170,9 +188,49 @@
       allSelect.value = 'N';
     } else {
       allSelect.value = 'Y';
-      selectedKeys.value = [];
+      selectedKeys.value = [...listAllKeys.value];
     }
   }
+
+  const statistic = ref<Record<string, any>>({
+    total: 0,
+    contract: 0,
+    quotation: 0,
+    order: 0,
+    invoice: 0,
+  });
+  async function initStatistic() {
+    try {
+      statistic.value = await getTodoStatistic();
+      collapseItems.value = collapseItems.value.map((e) => {
+        if (e.name === 'pending') {
+          e.children = e.children.map((child) => {
+            const [_, name] = child.name.split('-');
+            return {
+              ...child,
+              count: statistic.value[name.toLowerCase()],
+            };
+          });
+        }
+        return e;
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  watch(
+    () => show.value,
+    (val) => {
+      if (val) {
+        initStatistic();
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 
   function handleListInit(total: number, keys: string[]) {
     listTotal.value = total;
@@ -212,6 +270,54 @@
       }
     }
   );
+
+  const approvalConfigDetail = ref<ApprovalProcessDetail>();
+
+  async function initApprovalConfigDetail() {
+    try {
+      const [_, resourceType] = activeTaskType.value.split('-');
+      approvalConfigDetail.value = await getApprovalConfigDetail(resourceType);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  watch(
+    () => activeTaskType.value,
+    () => {
+      initApprovalConfigDetail();
+    },
+    {
+      immediate: true,
+    }
+  );
+
+  const activeResourceId = ref('');
+  const contractDetailVisible = ref(false);
+  const quotationDetailVisible = ref(false);
+  const orderDetailVisible = ref(false);
+  const invoiceDetailVisible = ref(false);
+  function handleOpenDetail(resourceId: string) {
+    activeResourceId.value = resourceId;
+    const [_, resourceType] = activeTaskType.value.split('-');
+    switch (resourceType) {
+      case ApprovalResourceTypeEnum.CONTRACT:
+        contractDetailVisible.value = true;
+        break;
+      case ApprovalResourceTypeEnum.QUOTATION:
+        quotationDetailVisible.value = true;
+        break;
+      case ApprovalResourceTypeEnum.ORDER:
+        orderDetailVisible.value = true;
+        break;
+      case ApprovalResourceTypeEnum.INVOICE:
+        invoiceDetailVisible.value = true;
+        break;
+      default:
+        break;
+    }
+  }
 </script>
 
 <style lang="less" scoped>
