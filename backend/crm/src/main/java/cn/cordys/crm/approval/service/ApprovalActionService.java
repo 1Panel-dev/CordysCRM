@@ -128,6 +128,11 @@ public class ApprovalActionService {
 	 */
 	public void revoke(ApprovalRevokeRequest request, String currentUserId, String orgId) {
 		ApprovalTask currentTask = getTaskById(request.getId());
+		// 审批流是否允许撤回
+		ApprovalFlowVersion flowVersion = getFlowVersionOfInstanceId(currentTask.getInstanceId());
+		if (flowVersion == null || !flowVersion.getAllowWithdraw()) {
+			throw new GenericException(Translator.get("no.operation.permission"));
+		}
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		revokeProcess(currentTask, instance, orgId);
 		refreshRevokeTask(currentTask, instance, currentUserId);
@@ -901,4 +906,14 @@ public class ApprovalActionService {
 		logService.batchAdd(logs);
 	}
 
+
+	/**
+	 * 批量同意
+	 * @param request
+	 * @param userId
+	 * @param organizationId
+	 */
+	public void batchApprove(ApprovalActionBatchRequest request, String userId, String organizationId) {
+
+	}
 }
