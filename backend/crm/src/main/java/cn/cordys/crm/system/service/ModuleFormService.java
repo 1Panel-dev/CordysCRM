@@ -18,6 +18,7 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.resolver.field.TextMultipleResolver;
 import cn.cordys.common.resolver.field.TextResolver;
+import org.springframework.web.util.HtmlUtils;
 import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.FieldSourceServiceProvider;
 import cn.cordys.common.uid.IDGenerator;
@@ -261,11 +262,221 @@ public class ModuleFormService {
             extModuleFieldMapper.deletePropByIds(fieldIds);
         }
         if (CollectionUtils.isNotEmpty(saveParam.getFields())) {
+            // 防止存储型XSS: 对字段描述、占位文本、名称等用户输入进行HTML编码
+            sanitizeFieldHtml(saveParam.getFields());
             saveFields(saveParam.getFields(), form.getId(), currentUserId);
         }
 
         // 返回表单配置
         return getConfig(form.getFormKey(), currentOrgId);
+    }
+
+    /**
+     * 防止存储型XSS: 对字段中的用户输入文本属性进行HTML编码
+     *
+     * @param fields 待保存的字段集合
+     */
+    private void sanitizeFieldHtml(List<BaseField> fields) {
+        if (CollectionUtils.isEmpty(fields)) {
+            return;
+        }
+        for (BaseField field : fields) {
+            // === BaseField 通用文本字段 ===
+            if (StringUtils.isNotEmpty(field.getDescription())) {
+                field.setDescription(HtmlUtils.htmlEscape(field.getDescription()));
+            }
+            if (StringUtils.isNotEmpty(field.getPlaceholder())) {
+                field.setPlaceholder(HtmlUtils.htmlEscape(field.getPlaceholder()));
+            }
+            if (StringUtils.isNotEmpty(field.getName())) {
+                field.setName(HtmlUtils.htmlEscape(field.getName()));
+            }
+
+            // === 选项字段: 选项文本 & 引用属性 ===
+            if (field instanceof HasOption hasOption) {
+                // 选项标签和值
+                List<OptionProp> options = hasOption.getOptions();
+                if (CollectionUtils.isNotEmpty(options)) {
+                    for (OptionProp option : options) {
+                        if (StringUtils.isNotEmpty(option.getLabel())) {
+                            option.setLabel(HtmlUtils.htmlEscape(option.getLabel()));
+                        }
+                        if (StringUtils.isNotEmpty(option.getValue())) {
+                            option.setValue(HtmlUtils.htmlEscape(option.getValue()));
+                        }
+                    }
+                }
+                // 自定义选项
+                List<OptionProp> customOptions = hasOption.getCustomOptions();
+                if (CollectionUtils.isNotEmpty(customOptions)) {
+                    for (OptionProp option : customOptions) {
+                        if (StringUtils.isNotEmpty(option.getLabel())) {
+                            option.setLabel(HtmlUtils.htmlEscape(option.getLabel()));
+                        }
+                        if (StringUtils.isNotEmpty(option.getValue())) {
+                            option.setValue(HtmlUtils.htmlEscape(option.getValue()));
+                        }
+                    }
+                }
+                // 选项来源/引用ID/引用表单Key
+                if (StringUtils.isNotEmpty(hasOption.getOptionSource())) {
+                    hasOption.setOptionSource(HtmlUtils.htmlEscape(hasOption.getOptionSource()));
+                }
+            }
+
+            // === InputField: 默认值 & 公式 ===
+            if (field instanceof InputField inputField) {
+                if (StringUtils.isNotEmpty(inputField.getDefaultValue())) {
+                    inputField.setDefaultValue(HtmlUtils.htmlEscape(inputField.getDefaultValue()));
+                }
+                if (StringUtils.isNotEmpty(inputField.getFormula())) {
+                    inputField.setFormula(HtmlUtils.htmlEscape(inputField.getFormula()));
+                }
+            }
+
+            // === TextAreaField: 默认值 ===
+            if (field instanceof TextAreaField textAreaField) {
+                if (StringUtils.isNotEmpty(textAreaField.getDefaultValue())) {
+                    textAreaField.setDefaultValue(HtmlUtils.htmlEscape(textAreaField.getDefaultValue()));
+                }
+            }
+
+            // === RadioField: 默认值 ===
+            if (field instanceof RadioField radioField) {
+                if (StringUtils.isNotEmpty(radioField.getDefaultValue())) {
+                    radioField.setDefaultValue(HtmlUtils.htmlEscape(radioField.getDefaultValue()));
+                }
+            }
+
+            // === SelectField: 默认值 & 选项引用表单Key ===
+            if (field instanceof SelectField selectField) {
+                if (StringUtils.isNotEmpty(selectField.getDefaultValue())) {
+                    selectField.setDefaultValue(HtmlUtils.htmlEscape(selectField.getDefaultValue()));
+                }
+                if (StringUtils.isNotEmpty(selectField.getRefFormKey())) {
+                    selectField.setRefFormKey(HtmlUtils.htmlEscape(selectField.getRefFormKey()));
+                }
+            }
+
+            // === DividerField: CSS属性 ===
+            if (field instanceof DividerField dividerField) {
+                if (StringUtils.isNotEmpty(dividerField.getDividerClass())) {
+                    dividerField.setDividerClass(HtmlUtils.htmlEscape(dividerField.getDividerClass()));
+                }
+                if (StringUtils.isNotEmpty(dividerField.getDividerColor())) {
+                    dividerField.setDividerColor(HtmlUtils.htmlEscape(dividerField.getDividerColor()));
+                }
+                if (StringUtils.isNotEmpty(dividerField.getTitleColor())) {
+                    dividerField.setTitleColor(HtmlUtils.htmlEscape(dividerField.getTitleColor()));
+                }
+            }
+
+            // === LinkField: 链接来源 & 打开方式 (使用全限定名避免与 dto.form.base.LinkField 冲突) ===
+            if (field instanceof cn.cordys.crm.system.dto.field.LinkField linkField) {
+                if (StringUtils.isNotEmpty(linkField.getLinkSource())) {
+                    linkField.setLinkSource(HtmlUtils.htmlEscape(linkField.getLinkSource()));
+                }
+                if (StringUtils.isNotEmpty(linkField.getOpenMode())) {
+                    linkField.setOpenMode(HtmlUtils.htmlEscape(linkField.getOpenMode()));
+                }
+            }
+
+            // === FormulaField: 公式 ===
+            if (field instanceof FormulaField formulaField) {
+                if (StringUtils.isNotEmpty(formulaField.getFormula())) {
+                    formulaField.setFormula(HtmlUtils.htmlEscape(formulaField.getFormula()));
+                }
+            }
+
+            // === SerialNumberField: 流水号规则 & 公式 ===
+            if (field instanceof SerialNumberField snField) {
+                List<String> rules = snField.getSerialNumberRules();
+                if (CollectionUtils.isNotEmpty(rules)) {
+                    snField.setSerialNumberRules(
+                            rules.stream()
+                                    .map(r -> HtmlUtils.htmlEscape(r))
+                                    .collect(Collectors.toList())
+                    );
+                }
+                if (StringUtils.isNotEmpty(snField.getFormula())) {
+                    snField.setFormula(HtmlUtils.htmlEscape(snField.getFormula()));
+                }
+            }
+
+            // === MemberField: 默认值 ===
+            if (field instanceof MemberField memberField) {
+                if (StringUtils.isNotEmpty(memberField.getDefaultValue())) {
+                    memberField.setDefaultValue(HtmlUtils.htmlEscape(memberField.getDefaultValue()));
+                }
+            }
+
+            // === DepartmentField: 默认值 ===
+            if (field instanceof DepartmentField departmentField) {
+                if (StringUtils.isNotEmpty(departmentField.getDefaultValue())) {
+                    departmentField.setDefaultValue(HtmlUtils.htmlEscape(departmentField.getDefaultValue()));
+                }
+            }
+
+            // === AttachmentField: 接受类型 & 大小限制 ===
+            if (field instanceof AttachmentField attachmentField) {
+                if (StringUtils.isNotEmpty(attachmentField.getAccept())) {
+                    attachmentField.setAccept(HtmlUtils.htmlEscape(attachmentField.getAccept()));
+                }
+                if (StringUtils.isNotEmpty(attachmentField.getLimitSize())) {
+                    attachmentField.setLimitSize(HtmlUtils.htmlEscape(attachmentField.getLimitSize()));
+                }
+            }
+
+            // === LocationField: 范围 & 类型 ===
+            if (field instanceof LocationField locationField) {
+                if (StringUtils.isNotEmpty(locationField.getScope())) {
+                    locationField.setScope(HtmlUtils.htmlEscape(locationField.getScope()));
+                }
+                if (StringUtils.isNotEmpty(locationField.getLocationType())) {
+                    locationField.setLocationType(HtmlUtils.htmlEscape(locationField.getLocationType()));
+                }
+            }
+
+            // === PhoneField: 格式 ===
+            if (field instanceof PhoneField phoneField) {
+                if (StringUtils.isNotEmpty(phoneField.getFormat())) {
+                    phoneField.setFormat(HtmlUtils.htmlEscape(phoneField.getFormat()));
+                }
+            }
+
+            // === InputNumberField: 数字格式 ===
+            if (field instanceof InputNumberField inputNumberField) {
+                if (StringUtils.isNotEmpty(inputNumberField.getNumberFormat())) {
+                    inputNumberField.setNumberFormat(HtmlUtils.htmlEscape(inputNumberField.getNumberFormat()));
+                }
+            }
+
+            // === CheckBoxField: 引用表单Key & 排列方向 ===
+            if (field instanceof CheckBoxField checkBoxField) {
+                if (StringUtils.isNotEmpty(checkBoxField.getRefFormKey())) {
+                    checkBoxField.setRefFormKey(HtmlUtils.htmlEscape(checkBoxField.getRefFormKey()));
+                }
+            }
+
+            // === SelectMultipleField: 引用表单Key ===
+            if (field instanceof SelectMultipleField selectMultipleField) {
+                if (StringUtils.isNotEmpty(selectMultipleField.getRefFormKey())) {
+                    selectMultipleField.setRefFormKey(HtmlUtils.htmlEscape(selectMultipleField.getRefFormKey()));
+                }
+            }
+
+            // === RadioField: 引用表单Key ===
+            if (field instanceof RadioField radioField) {
+                if (StringUtils.isNotEmpty(radioField.getRefFormKey())) {
+                    radioField.setRefFormKey(HtmlUtils.htmlEscape(radioField.getRefFormKey()));
+                }
+            }
+
+            // === 递归处理子表格字段 ===
+            if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+                sanitizeFieldHtml(subField.getSubFields());
+            }
+        }
     }
 
     /**
