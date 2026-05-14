@@ -14,5 +14,7 @@ public enum ApprovalNodeTypeEnum {
     /** 默认节点，条件不满足时的节点 */
     DEFAULT,
     /** 结束节点 */
-    END
+    END,
+	/** 异常节点 */
+	EXCEPTION;
 }
