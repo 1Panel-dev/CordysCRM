@@ -42,6 +42,7 @@
           v-if="selection.type === 'node' && isApprovalActionNode(selection.node)"
           v-model:node="selection.node"
           :form-type="basicConfig.formType"
+          :option-map="props.optionMap"
           :readonly="props.readonly"
           @switch-more-setting="emit('switchMoreSetting')"
         />
@@ -51,6 +52,7 @@
       v-model:show="setConditionDrawerVisible"
       :branch="activeConditionBranch"
       :form-type="basicConfig.formType"
+      :option-map="props.optionMap"
       :readonly="props.readonly"
       @confirm="handleConditionConfirm"
     />
@@ -98,6 +100,7 @@
   const props = defineProps<{
     needDetail?: boolean;
     readonly?: boolean;
+    optionMap?: Record<string, any[]>;
   }>();
 
   const emit = defineEmits<{

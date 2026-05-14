@@ -18,7 +18,9 @@
         :disabled="props.disabled"
         :drawer-title="label"
         :max-tag-count="false"
+        :api-type-key="apiTypeKey"
         :member-types="memberTypes"
+        :disabled-node-types="disabledNodeTypes"
         @delete-tag="handleDeleteTag"
       />
       <div v-if="!selectedList?.length" class="approval-member-selector__placeholder">
@@ -41,6 +43,8 @@
   import { computed } from 'vue';
   import { NButton } from 'naive-ui';
 
+  import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { SelectedUsersItem } from '@lib/shared/models/system/module';
 
@@ -55,6 +59,8 @@
       required?: boolean;
       maxCount?: number;
       memberTypes?: Option[];
+      apiTypeKey?: MemberApiTypeEnum;
+      disabledNodeTypes?: DeptNodeTypeEnum[];
       limitLabel?: string;
       disabled?: boolean;
     }>(),

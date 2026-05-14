@@ -15,7 +15,13 @@
         :form-type="formType"
         :readonly="props.readonly"
       />
-      <AfterApprovalTab v-else v-model:node-config="nodeConfig" :form-type="formType" :readonly="props.readonly" />
+      <AfterApprovalTab
+        v-else
+        v-model:node-config="nodeConfig"
+        :form-type="formType"
+        :option-map="props.optionMap"
+        :readonly="props.readonly"
+      />
     </div>
   </div>
 </template>
@@ -42,6 +48,7 @@
 
   const props = defineProps<{
     formType: string;
+    optionMap?: Record<string, any[]>;
     readonly?: boolean;
   }>();
 

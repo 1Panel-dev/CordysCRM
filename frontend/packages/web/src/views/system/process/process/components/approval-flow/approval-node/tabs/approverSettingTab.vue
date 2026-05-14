@@ -35,6 +35,7 @@
             v-model:value="nodeConfig.approverType"
             :disabled="props.readonly"
             :options="approverTypeOptions"
+            :placeholder="t('common.pleaseSelect')"
             @update:value="handleApproverTypeUpdate"
           />
         </n-form-item>
@@ -47,7 +48,7 @@
           :show-feedback="false"
         >
           <ApprovalMemberSelector
-            :key="nodeConfig.approverType"
+            :key="nodeConfig.approverType ?? 'none'"
             v-model:value="nodeConfig.approverList"
             v-model:selected-list="nodeConfig.approverSelectedList"
             class="mb-[24px]"
@@ -56,7 +57,15 @@
             :limit-label="
               nodeConfig.approverType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.member')
             "
-            :member-types="nodeConfig.approverType === ApproverTypeEnum.ROLE ? roleMemberTypes : undefined"
+            :api-type-key="
+              nodeConfig.approverType === ApproverTypeEnum.ROLE
+                ? MemberApiTypeEnum.MODULE_ROLE
+                : MemberApiTypeEnum.FORM_FIELD
+            "
+            :member-types="nodeConfig.approverType === ApproverTypeEnum.ROLE ? roleMemberTypes : userMemberTypes"
+            :disabled-node-types="
+              nodeConfig.approverType === ApproverTypeEnum.ROLE ? undefined : disabledMemberNodeTypes
+            "
             required
             :max-count="approverMaxCount"
             :disabled="props.readonly"
@@ -183,7 +192,10 @@
                 class="mb-[24px]"
                 :label="t('org.addMember')"
                 :add-text="t('role.addMember')"
+                :api-type-key="MemberApiTypeEnum.FORM_FIELD"
                 :limit-label="t('process.process.flow.member')"
+                :member-types="userMemberTypes"
+                :disabled-node-types="disabledMemberNodeTypes"
                 :max-count="fallbackApproverMaxCount"
                 required
                 :disabled="props.readonly"
@@ -231,6 +243,8 @@
             v-model:value="nodeConfig.ccType"
             :disabled="props.readonly"
             :options="approverTypeOptions"
+            clearable
+            :placeholder="t('common.pleaseSelect')"
             @update:value="handleCcTypeUpdate"
           />
         </n-form-item>
@@ -252,7 +266,13 @@
             :limit-label="
               nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.ccMember')
             "
-            :member-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? roleMemberTypes : undefined"
+            :api-type-key="
+              nodeConfig.approverType === ApproverTypeEnum.ROLE
+                ? MemberApiTypeEnum.MODULE_ROLE
+                : MemberApiTypeEnum.FORM_FIELD
+            "
+            :member-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? roleMemberTypes : userMemberTypes"
+            :disabled-node-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? undefined : disabledMemberNodeTypes"
             :max-count="ccMaxCount"
             :disabled="props.readonly"
             @update:value="clearCurrentNodeInvalid"
@@ -309,7 +329,7 @@
     NTooltip,
   } from 'naive-ui';
 
-  import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import {
     ApprovalTypeEnum,
     ApproverTypeEnum,
@@ -317,6 +337,7 @@
     MultiApproverModeEnum,
     SameSubmitterActionEnum,
   } from '@lib/shared/enums/process';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ApprovalActionNode } from '@lib/shared/models/system/process';
 
@@ -375,6 +396,15 @@
       value: MemberSelectTypeEnum.ROLE,
     },
   ];
+
+  const userMemberTypes = [
+    {
+      label: t('menu.settings.org'),
+      value: MemberSelectTypeEnum.ORG,
+    },
+  ];
+
+  const disabledMemberNodeTypes = [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE];
 
   const exceptionTabList = [
     {
@@ -510,6 +540,15 @@
         trigger: ['blur'],
       },
     ],
+    approverType: [
+      {
+        required: true,
+        message: t('common.notNull', {
+          value: t('process.process.flow.approver'),
+        }),
+        trigger: ['change', 'blur'],
+      },
+    ],
     approverList: [
       {
         trigger: ['change', 'blur'],
@@ -607,14 +646,16 @@
     };
   }
 
-  const approverLevelConfig = computed(() => createLevelConfig(nodeConfig.value.approverType));
+  const approverLevelConfig = computed(() =>
+    nodeConfig.value.approverType ? createLevelConfig(nodeConfig.value.approverType) : null
+  );
 
   const ccLevelConfig = computed(() => {
     return nodeConfig.value.ccType ? createLevelConfig(nodeConfig.value.ccType) : null;
   });
 
-  function resetLevelList(type: ApproverTypeEnum) {
-    return [...supervisorLevelApproverTypes, ...departmentLevelApproverTypes].includes(type) ? ['1'] : [];
+  function resetLevelList(type: ApproverTypeEnum | null) {
+    return type && [...supervisorLevelApproverTypes, ...departmentLevelApproverTypes].includes(type) ? ['1'] : [];
   }
 
   function handleApprovalTypeUpdate(type: ApprovalTypeEnum) {
@@ -626,7 +667,7 @@
     clearCurrentNodeInvalid();
   }
 
-  function handleApproverTypeUpdate(type: ApproverTypeEnum) {
+  function handleApproverTypeUpdate(type: ApproverTypeEnum | null) {
     if (props.readonly) {
       return;
     }
@@ -637,7 +678,7 @@
     clearCurrentNodeInvalid();
   }
 
-  function handleCcTypeUpdate(type: ApproverTypeEnum) {
+  function handleCcTypeUpdate(type: ApproverTypeEnum | null) {
     if (props.readonly) {
       return;
     }

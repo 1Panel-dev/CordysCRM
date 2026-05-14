@@ -65,7 +65,7 @@ export interface ApprovalFieldPermission {
 }
 
 export interface ApprovalFieldUpdateConfig {
-  fieldId: string;
+  fieldId: string | null;
   fieldValue: any;
   enable: boolean;
 }
@@ -83,7 +83,7 @@ export interface ApprovalProcessNodeBase<TNodeType extends ApprovalNodeTypeEnum>
 // 审批节点里前后端共用的业务配置
 export interface ApprovalNodeParticipantConfig {
   approvalType: ApprovalTypeEnum; // 审批类型：人工审批/自动通过/自动拒绝
-  approverType: ApproverTypeEnum;
+  approverType: ApproverTypeEnum | null;
   approverList: string[]; // 审批人配置列表：成员 ID / 角色 ID / 层级等
   approverSelectOptions?: OptionDTO[]; // 审批人选择项（用于前端回显）
   multiApproverMode: MultiApproverModeEnum; // 多人审批方式
@@ -181,6 +181,7 @@ export interface ApprovalProcessDetail extends UpdateApprovalProcessParams {
   permissions: PermissionItem[];
   id: string;
   number: string;
+  optionMap?: Record<string, any[]>;
 }
 
 export interface ApprovalProcessForm {

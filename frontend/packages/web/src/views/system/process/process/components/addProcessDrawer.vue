@@ -40,6 +40,7 @@
         v-model:basicConfig="form.basicConfig"
         :need-detail="!!props.sourceId"
         :readonly="isDetail"
+        :option-map="detailOptionMap"
         @switch-more-setting="activeTab = 'moreSetting'"
       />
       <moreSetting
@@ -108,6 +109,7 @@
 
   const editingName = ref('');
   const approvalFlowDesignRef = ref<InstanceType<typeof ApprovalFlowDesign> | null>(null);
+  const detailOptionMap = ref<Record<string, any[]>>({});
   const tabList = [
     {
       name: 'process',
@@ -122,6 +124,7 @@
   function handleCancel() {
     visible.value = false;
     form.value = cloneDeep(initForm);
+    detailOptionMap.value = {};
     emit('cancel');
   }
 
@@ -193,6 +196,7 @@
     try {
       const result = await approvalProcessDetail(val);
 
+      detailOptionMap.value = result.optionMap ?? {};
       const basicConfig = pickFormConfig<BasicFormParams>(result, defaultBasicForm);
       const moreConfig = pickFormConfig<MoreSettingsParams>(result, defaultMoreConfig);
       form.value = {

@@ -44,6 +44,7 @@
               :path="`fieldUpdateConfigs.${index}.fieldValue`"
               :field-config="getFieldValueConfig(line)!"
               :form-detail="line"
+              :need-init-detail="true"
             />
             <n-form-item
               v-else
@@ -65,7 +66,13 @@
         </div>
       </n-form>
 
-      <n-button v-if="!props.readonly" type="primary" text @click="handleAddFieldUpdate">
+      <n-button
+        v-if="!props.readonly"
+        type="primary"
+        text
+        :disabled="isAddFieldUpdateDisabled"
+        @click="handleAddFieldUpdate"
+      >
         <template #icon>
           <CrmIcon type="iconicon_add" :size="16" />
         </template>
@@ -116,6 +123,7 @@
 
   const props = defineProps<{
     formType: string;
+    optionMap?: Record<string, any[]>;
     readonly?: boolean;
   }>();
 
@@ -208,12 +216,15 @@
   } as const;
   type SupportedFieldValueType = keyof typeof fieldValueComponentMap;
 
-  function getFieldOptions(currentFieldId: string) {
-    // 每个字段只能选择一次
-    const selectedFieldIds = fieldUpdateRows.value.map((item) => item.fieldId).filter(Boolean);
+  const selectedFieldIdSet = computed(() => new Set(fieldUpdateRows.value.map((item) => item.fieldId).filter(Boolean)));
+  const isAddFieldUpdateDisabled = computed(
+    () => editableFields.value.length > 0 && selectedFieldIdSet.value.size >= editableFields.value.length
+  );
 
+  function getFieldOptions(currentFieldId: string | null) {
+    // 每个字段只能选择一次
     return editableFields.value
-      .filter((field) => field.id === currentFieldId || !selectedFieldIds.includes(field.id))
+      .filter((field) => field.id === currentFieldId || !selectedFieldIdSet.value.has(field.id))
       .map((field) => ({
         label: field.name,
         value: field.id,
@@ -284,11 +295,16 @@
 
     currentField.rules = fullRules;
 
+    const initialOptions = props.optionMap?.[field.id] ?? [];
+    if (initialOptions.length) {
+      currentField.initialOptions = [...initialOptions];
+    }
+
     // 成员/部门字段补默认值和回显选项
     if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(field.type) && field.hasCurrentUser) {
       currentField.defaultValue = userStore.userInfo.id;
       currentField.initialOptions = [
-        ...(field.initialOptions || []),
+        ...(currentField.initialOptions || []),
         {
           id: userStore.userInfo.id,
           name: userStore.userInfo.name,
@@ -300,7 +316,7 @@
     ) {
       currentField.defaultValue = userStore.userInfo.departmentId;
       currentField.initialOptions = [
-        ...(field.initialOptions || []),
+        ...(currentField.initialOptions || []),
         {
           id: userStore.userInfo.departmentId,
           name: userStore.userInfo.departmentName,
@@ -311,10 +327,16 @@
     return currentField;
   }
 
+  const fieldValueConfigMap = computed(
+    () => new Map(editableFields.value.map((field) => [field.id, buildFieldValueConfig(field)]))
+  );
+
   function getFieldValueConfig(line: ApprovalFieldUpdateConfig) {
-    return (
-      new Map(editableFields.value.map((field) => [field.id, buildFieldValueConfig(field)])).get(line.fieldId) ?? null
-    );
+    if (!line.fieldId) {
+      return null;
+    }
+
+    return fieldValueConfigMap.value.get(line.fieldId) ?? null;
   }
 
   function isSupportedFieldValueType(fieldType: FieldTypeEnum): fieldType is SupportedFieldValueType {
@@ -346,7 +368,7 @@
   }
 
   function handleAddFieldUpdate() {
-    if (props.readonly) {
+    if (props.readonly || isAddFieldUpdateDisabled.value) {
       return;
     }
 
@@ -357,7 +379,7 @@
 
       // 只有当前规则都填完整了，才允许继续新增下一条
       ensureActivePostConfig().fieldUpdateConfigs.push({
-        fieldId: '',
+        fieldId: null,
         fieldValue: '',
         enable: true,
       });

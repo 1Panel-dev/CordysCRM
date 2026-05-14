@@ -1,4 +1,4 @@
-import { ApprovalNodeTypeEnum, ApproverTypeEnum } from '@lib/shared/enums/process';
+import { ApprovalNodeTypeEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type {
   ApprovalActionNode,
@@ -19,12 +19,7 @@ import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types'
 
 import { resolveApprovalActionNodeDescription } from '@/config/process';
 
-import {
-  buildConditionFormList,
-  createApprovalConditionBranch,
-  createDefaultFlow,
-  resolveConditionDescription,
-} from './index';
+import { createApprovalConditionBranch, createDefaultFlow, resolveConditionDescription } from './index';
 
 const { t } = useI18n();
 
@@ -244,9 +239,9 @@ function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalAct
     type: 'action',
     actionType: 'approval',
     name: node.name,
-    description: resolveApprovalActionNodeDescription(node.approvalType, node.approverType ?? undefined),
+    description: resolveApprovalActionNodeDescription(node.approvalType, node.approverType ?? null),
     approvalType: node.approvalType,
-    approverType: node.approverType ?? ApproverTypeEnum.SPECIFIED_MEMBER,
+    approverType: node.approverType ?? null,
     approverList,
     approverSelectedList: mapSelectedOptions(node.approverSelectOptions),
     multiApproverMode: node.multiApproverMode,
@@ -410,12 +405,7 @@ function deserializeProcessNodeList(
         name: branchNode.name,
         description: toConditionBranchDescription(branchNode),
         conditionConfig:
-          branchNode.nodeType === ApprovalNodeTypeEnum.CONDITION
-            ? {
-                ...branchNode.conditionConfig,
-                list: buildConditionFormList(branchNode.conditionConfig),
-              }
-            : undefined,
+          branchNode.nodeType === ApprovalNodeTypeEnum.CONDITION ? branchNode.conditionConfig : undefined,
         children,
       });
     });

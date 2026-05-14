@@ -102,7 +102,8 @@ function validateApprovalActionNode(node: ApprovalActionNode, result: FlowValida
   const isInvalid =
     isEmptyValue(node.name) ||
     (isManualApproval &&
-      ((isMemberOrRole(node.approverType) && approverList.length === 0) ||
+      (isEmptyValue(node.approverType) ||
+        (isMemberOrRole(node.approverType) && approverList.length === 0) ||
         (node.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_SPECIFIC && isEmptyValue(node.fallbackApprover)) ||
         (isMemberOrRole(node.ccType) && ccList.length === 0)));
 

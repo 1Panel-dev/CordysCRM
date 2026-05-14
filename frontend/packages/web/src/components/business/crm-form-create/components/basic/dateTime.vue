@@ -75,6 +75,10 @@
   watch(
     () => props.fieldConfig.dateDefaultType,
     (val) => {
+      if (props.needInitDetail) {
+        return;
+      }
+
       if (val === 'current') {
         value.value = new Date().getTime();
       } else if (val === 'custom' && props.fieldConfig.defaultValue === null) {
