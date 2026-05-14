@@ -17,10 +17,12 @@ import cn.cordys.common.permission.PermissionDefinitionItem;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
-import cn.cordys.crm.approval.constants.*;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
+import cn.cordys.crm.approval.constants.ApproverLevelEnum;
+import cn.cordys.crm.approval.constants.ApproverTypeEnum;
 import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
@@ -36,8 +38,10 @@ import cn.cordys.crm.system.mapper.ExtDepartmentCommanderMapper;
 import cn.cordys.crm.system.mapper.ExtRoleMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.RoleService;
+import cn.cordys.crm.system.service.UserViewService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -90,11 +94,13 @@ public class ApprovalFlowService {
     @Resource
     private ExtRoleMapper extRoleMapper;
     @Resource
-    private BaseMapper<ApprovalRecord> approvalRecordMapper;
-	@Resource
-	private BaseMapper<ApprovalInstance> approvalInstanceMapper;
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ModuleFormService moduleFormService;
 	@Resource
 	private ModuleFormService formService;
+    @Resource
+	private UserViewService userViewService;
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -187,7 +193,7 @@ public class ApprovalFlowService {
         }
 
         // 查询节点配置和连接关系
-        buildNodesAndLinks(flow.getCurrentVersionId(), response);
+        buildNodesAndLinks(flow.getCurrentVersionId(), response, organizationId);
 
         return response;
     }
@@ -587,10 +593,11 @@ public class ApprovalFlowService {
     /**
      * 构建节点和连接关系
      */
-    private void buildNodesAndLinks(String flowVersionId, ApprovalFlowDetailResponse response) {
+    private void buildNodesAndLinks(String flowVersionId, ApprovalFlowDetailResponse response, String organizationId) {
         if (StringUtils.isBlank(flowVersionId)) {
             response.setNodes(List.of());
             response.setLinks(List.of());
+            response.setOptionMap(Map.of());
             return;
         }
         // 获取所有节点并按 sort 排序
@@ -635,6 +642,30 @@ public class ApprovalFlowService {
                 .collect(Collectors.toList());
 
         response.setLinks(linkResponses);
+
+        // 构建条件节点字段选项映射
+        Map<String, List<OptionDTO>> optionMap = buildConditionOptionMap(allNodes, response.getFormType(), organizationId);
+        response.setOptionMap(optionMap);
+    }
+
+    /**
+     * 构建条件节点字段选项映射
+     */
+    private Map<String, List<OptionDTO>> buildConditionOptionMap(List<ApprovalNodeResponse> nodes, String formType, String organizationId) {
+        // 收集所有条件节点的条件配置
+        List<FilterCondition> allConditions = nodes.stream()
+                .filter(node -> node instanceof ApprovalNodeConditionResponse)
+                .map(node -> (ApprovalNodeConditionResponse) node)
+                .filter(node -> node.getConditionConfig() != null && CollectionUtils.isNotEmpty(node.getConditionConfig().getConditions()))
+                .map(node -> node.getConditionConfig().getConditions())
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(allConditions)) {
+            return Map.of();
+        }
+
+       return userViewService.buildOptionMap(organizationId, formType, allConditions);
     }
 
     /**
