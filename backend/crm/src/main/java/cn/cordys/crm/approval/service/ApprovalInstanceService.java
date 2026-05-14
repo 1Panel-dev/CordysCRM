@@ -1,17 +1,23 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalRecordNode;
+import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +26,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static cn.cordys.crm.approval.service.ApprovalResourceService.FORM_APPROVAL_TABLE;
 
 @Service
 public class ApprovalInstanceService {
@@ -38,6 +46,12 @@ public class ApprovalInstanceService {
 	private BaseMapper<ApprovalInstanceAttachment> approvalInstanceAttachmentMapper;
 	@Resource
 	private BaseMapper<Attachment> attachmentMapper;
+	@Resource
+	private BaseMapper<ApprovalFlowVersion> flowVersionMapper;
+	@Resource
+	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+	@Resource
+	private AttachmentService attachmentService;
 
 	/**
 	 * 获取资源最新审批实例详情
@@ -277,5 +291,39 @@ public class ApprovalInstanceService {
 		instance.setUpdateUser(currentUserId);
 		instance.setUpdateTime(System.currentTimeMillis());
 		approvalInstanceMapper.updateById(instance);
+	}
+
+	/**
+	 * 清除审批中的实例数据 (审批流删除时调用)
+	 * @param flowId 审批流ID
+	 */
+	public void clearApprovingInstanceOfFlow(String flowId) {
+		ApprovalFlowVersion versionCriteria = new ApprovalFlowVersion();
+		versionCriteria.setFlowId(flowId);
+		List<ApprovalFlowVersion> versions = flowVersionMapper.select(versionCriteria);
+		List<String> flowVersionIds = versions.stream().map(ApprovalFlowVersion::getId).toList();
+		// 筛选出审批中的实例
+		LambdaQueryWrapper<ApprovalInstance> instanceLambdaQueryWrapper = new LambdaQueryWrapper<ApprovalInstance>()
+				.in(ApprovalInstance::getFlowVersionId, flowVersionIds)
+				.eq(ApprovalInstance::getApprovalStatus, ApprovalStatus.APPROVING.name());
+		List<ApprovalInstance> instances = approvalInstanceMapper.selectListByLambda(instanceLambdaQueryWrapper);
+		instances.forEach(instance -> {
+			String tableName = FORM_APPROVAL_TABLE.get(instance.getType());
+			extApprovalInstanceMapper.updateApprovalStatus(tableName, instance.getResourceId(), ApprovalStatus.NONE.name());
+		});
+		approvalInstanceMapper.deleteByLambda(instanceLambdaQueryWrapper);
+		// 删除审批实例相关数据: 待办任务、加签任务、退回记录、执行记录、实例附件等
+		List<String> instanceIds = instances.stream().map(ApprovalInstance::getId).toList();
+		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().in(ApprovalTask::getInstanceId, instanceIds));
+		List<String> taskIds = approvalTasks.stream().map(ApprovalTask::getId).toList();
+		approvalTaskMapper.deleteByIds(taskIds);
+		approvalAddSignTaskMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalAddSignTask>().in(ApprovalAddSignTask::getTaskId, taskIds));
+		approvalReturnBackRecordMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalReturnBackRecord>().in(ApprovalReturnBackRecord::getTaskId, taskIds));
+		approvalRecordMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalRecord>().in(ApprovalRecord::getInstanceId, instanceIds));
+		List<ApprovalInstanceAttachment> instanceAttachments = approvalInstanceAttachmentMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalInstanceAttachment>().in(ApprovalInstanceAttachment::getInstanceId, instanceIds));
+		approvalInstanceAttachmentMapper.deleteByIds(instanceAttachments.stream().map(ApprovalInstanceAttachment::getId).toList());
+		List<String> attachmentIds = instanceAttachments.stream().map(ApprovalInstanceAttachment::getAttachmentId).toList();
+		attachmentIds.forEach(id -> attachmentService.delete(id));
+		attachmentMapper.deleteByIds(attachmentIds);
 	}
 }
