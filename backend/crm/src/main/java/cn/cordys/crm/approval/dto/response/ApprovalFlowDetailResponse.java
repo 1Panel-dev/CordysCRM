@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class ApprovalFlowDetailResponse {
@@ -84,4 +85,7 @@ public class ApprovalFlowDetailResponse {
 
     @Schema(description = "节点连接配置列表")
     private List<ApprovalNodeLinkResponse> links;
+
+    @Schema(description = "条件节点字段选项映射")
+    private Map<String, List<OptionDTO>> optionMap;
 }
