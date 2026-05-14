@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.util.HtmlUtils;
 
 import java.io.IOException;
 
@@ -20,6 +22,9 @@ import java.io.IOException;
  */
 @Configuration
 public class RequestParamTrimConfig {
+
+    @Value("${xss.escape.all.enabled:false}")
+    private boolean escape;
 
     /**
      * 定义一个 {@link Jackson2ObjectMapperBuilderCustomizer} Bean，
@@ -40,9 +45,16 @@ public class RequestParamTrimConfig {
                         public String deserialize(JsonParser jsonParser, DeserializationContext ctx)
                                 throws IOException {
                             // 在反序列化时去除前后空格
-                            return StringUtils.trim(jsonParser.getValueAsString());
+                            String value = StringUtils.trim(jsonParser.getValueAsString());
+
+                            // 进一步清理可能的 XSS 攻击内容,开启后可能会导致一些特殊字符被转义，如 <、>、& 等
+                            if (escape) {
+                                return HtmlUtils.htmlEscape(value);
+                            }
+                            return value;
                         }
                     });
         };
     }
+
 }
