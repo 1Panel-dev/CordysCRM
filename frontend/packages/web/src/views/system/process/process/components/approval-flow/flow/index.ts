@@ -1,7 +1,5 @@
-import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import {
   ApprovalTypeEnum,
-  ApproverTypeEnum,
   EmptyApproverActionEnum,
   MultiApproverModeEnum,
   SameSubmitterActionEnum,
@@ -9,7 +7,7 @@ import {
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/models/system/process';
 
-import type { FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
+import type { FilterForm } from '@/components/pure/crm-advance-filter/type';
 import {
   addConditionBranch,
   insertNodeAfterNode,
@@ -38,7 +36,7 @@ export function createApprovalActionNode(approvalType: ApprovalTypeEnum = Approv
     description: defaults.description,
     actionType: 'approval',
     approvalType,
-    approverType: ApproverTypeEnum.SPECIFIED_MEMBER,
+    approverType: null,
     approverList: [],
     approverSelectedList: [],
     multiApproverMode: MultiApproverModeEnum.ALL,
@@ -190,18 +188,6 @@ export function insertFromAnchor(payload: {
 // 条件组新增 if 分支时，默认仍然补一个审批节点，保持分支规则一致
 export function addApprovalConditionBranch(flowSchema: FlowSchema, groupId: string) {
   addConditionBranch(flowSchema, groupId, createApprovalConditionBranch());
-}
-
-// 后端条件配置只返回 conditions，这里补成前端筛选器可直接消费的 list 结构。
-export function buildConditionFormList(conditionConfig?: FilterForm): FilterFormItem[] {
-  return (
-    conditionConfig?.conditions?.map((item) => ({
-      value: item.value,
-      operator: item.operator,
-      dataIndex: item.name ?? null,
-      type: item.type ?? FieldTypeEnum.INPUT,
-    })) ?? []
-  );
 }
 
 // 是否已设置条件

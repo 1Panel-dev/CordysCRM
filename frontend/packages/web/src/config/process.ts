@@ -214,7 +214,7 @@ export const approverTypeOptions: Array<{ label: string; value: ApproverTypeEnum
 
 export function resolveApprovalActionNodeDescription(
   approvalType: ApprovalTypeEnum,
-  approverType: ApproverTypeEnum = ApproverTypeEnum.SPECIFIED_MEMBER
+  approverType?: ApproverTypeEnum | null
 ) {
   if (approvalType === ApprovalTypeEnum.AUTO_PASS) {
     return t('process.process.flow.autoApprove');
@@ -224,7 +224,9 @@ export function resolveApprovalActionNodeDescription(
     return t('process.process.flow.autoReject');
   }
 
-  return approverTypeOptions.find((item) => item.value === approverType)?.label ?? approverTypeOptions[0].label;
+  return approverType
+    ? approverTypeOptions.find((item) => item.value === approverType)?.label ?? t('process.process.flow.selectApprover')
+    : t('process.process.flow.selectApprover');
 }
 
 export function resolveApprovalActionNodeDefaults(approvalType: ApprovalTypeEnum) {

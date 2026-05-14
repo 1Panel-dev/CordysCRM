@@ -36,6 +36,7 @@
         <FilterContent
           ref="filterContentRef"
           v-model:form-model="form.conditionConfig"
+          no-filter-option
           :readonly="props.readonly"
           :config-list="filterConfigList"
           :custom-list="customFieldsFilterConfig"
@@ -56,7 +57,12 @@
   import type { ApprovalConditionBranch } from '@lib/shared/models/system/process';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
-  import type { ConditionsItem, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
+  import {
+    type ConditionsItem,
+    type FilterForm,
+    type FilterFormItem,
+    filterOptionKeyMap,
+  } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { getFormConfigApiMap, multipleValueTypeList } from '@/components/business/crm-form-create/config';
 
@@ -72,6 +78,7 @@
   const props = defineProps<{
     branch: ApprovalConditionBranch | null;
     formType: string;
+    optionMap?: Record<string, any[]>;
     readonly?: boolean;
   }>();
 
@@ -117,19 +124,44 @@
     conditionConfig: createDefaultFormModel(),
   });
 
+  function normalizeConditionList(conditionConfig: FilterForm) {
+    const sourceList = conditionConfig.list?.length
+      ? cloneDeep(conditionConfig.list)
+      : conditionConfig.conditions?.map((item) => ({
+          ...item,
+          dataIndex: item.name ?? null,
+          type: item.type ?? FieldTypeEnum.INPUT,
+        })) ?? [];
+
+    const configMap = new Map(
+      [...filterConfigList.value, ...customFieldsFilterConfig.value].map((item) => [item.dataIndex, item])
+    );
+
+    return sourceList.map((sourceItem): FilterFormItem => {
+      const item = cloneDeep(sourceItem) as FilterFormItem;
+      const configItem = configMap.get(item.dataIndex);
+      const optionKey = filterOptionKeyMap[item.type];
+
+      if (optionKey && item.dataIndex) {
+        const values = Array.isArray(item.value) ? item.value : [item.value];
+        item[optionKey] =
+          props.optionMap?.[item.dataIndex]?.filter((option: { id: string }) => values.includes(option.id)) ?? [];
+      }
+
+      return {
+        ...cloneDeep(configItem),
+        ...item,
+      };
+    });
+  }
+
   function initDraft(branch: ApprovalConditionBranch | null) {
     form.value = {
       name: branch?.name ?? '',
       conditionConfig: branch?.conditionConfig
         ? {
             ...branch.conditionConfig,
-            list:
-              branch.conditionConfig.conditions?.map((item) => ({
-                value: item.value,
-                operator: item.operator,
-                dataIndex: item.name ?? null,
-                type: item.type ?? FieldTypeEnum.INPUT,
-              })) ?? [],
+            list: normalizeConditionList(branch.conditionConfig),
           }
         : createDefaultFormModel(),
     };
@@ -255,6 +287,7 @@
       name: item.dataIndex ?? '',
       multipleValue: multipleValueTypeList.includes(item.type),
       type: item.type,
+      containChildIds: item.containChildIds || [],
     }));
 
     return {

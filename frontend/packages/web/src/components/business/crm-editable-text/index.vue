@@ -35,6 +35,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
+  import useDiscreteApi from '@/hooks/useDiscreteApi';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -57,7 +58,7 @@
     try {
       return useMessage();
     } catch (error) {
-      return null;
+      return useDiscreteApi().message;
     }
   })();
 

@@ -42,6 +42,15 @@ export interface FilterFormItem {
   containChildIds?: string[]; // 用于树形选择器，存储包含子级新增的节点 id 集合
 }
 
+export const filterOptionKeyMap: Partial<Record<FieldTypeEnum, 'selectedRows' | 'selectedUserList'>> = {
+  [FieldTypeEnum.DATA_SOURCE]: 'selectedRows',
+  [FieldTypeEnum.DATA_SOURCE_MULTIPLE]: 'selectedRows',
+  [FieldTypeEnum.DEPARTMENT]: 'selectedUserList',
+  [FieldTypeEnum.DEPARTMENT_MULTIPLE]: 'selectedUserList',
+  [FieldTypeEnum.MEMBER]: 'selectedUserList',
+  [FieldTypeEnum.MEMBER_MULTIPLE]: 'selectedUserList',
+};
+
 export type CombineItem = Pick<FilterFormItem, 'value' | 'operator'>;
 export interface ConditionsItem extends CombineItem {
   name?: string;

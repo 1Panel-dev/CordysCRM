@@ -5,7 +5,7 @@
     :show-content="nodeData.showContent ?? true"
     :selected="Boolean(nodeData.selected)"
     :invalid="Boolean(nodeData.invalid)"
-    :titleEditable="Boolean(!nodeData.isPanMode && !nodeData.readonly)"
+    :titleEditable="Boolean(!displayIsElse && !nodeData.isPanMode && !nodeData.readonly)"
     node-type="condition-branch"
     :deletable="!displayIsElse && !nodeData.readonly"
     :icon="{
@@ -59,6 +59,10 @@
   }
 
   function handleTitleEdit(value: string, done?: () => void) {
+    if (displayIsElse.value) {
+      return;
+    }
+
     const data = nodeData.value;
     renameFlowByGraphData(data, value);
     props.node?.setData?.({
