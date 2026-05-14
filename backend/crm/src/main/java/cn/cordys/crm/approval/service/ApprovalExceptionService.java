@@ -96,7 +96,7 @@ public class ApprovalExceptionService {
                               String taskType, List<BaseModuleFieldValue> fieldValues, ApprovalResourceBaseParam param, String flowVersionId) {
         List<ApprovalTask> approvalTasks = new ArrayList<>();
         ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(finalNode.getId());
-        List<User> approvers = approvalFlowService.getCurrentNodeMultiApprover(finalNode.getId(), userId, orgId);
+        List<User> approvers = approvalFlowService.getCurrentNodeApproverList(finalNode.getId(), userId, orgId);
         if (Strings.CI.equals(approvalNodeApprover.getMultiApproverMode(), MultiApproverModeEnum.SEQUENTIAL.name()) || approvers.size() == 1) {
             // 单人或者依次审批, 只会产生一条待办任务
             User approverUser = approvers.getFirst();
@@ -227,7 +227,7 @@ public class ApprovalExceptionService {
 
                 //审批类型 == 人工审批 1.处理异常逻辑
                 //获取当前节点的审批人
-                List<User> approvers = approvalFlowService.getCurrentNodeMultiApprover(nodeApprover.getId(), userId, orgId);
+                List<User> approvers = approvalFlowService.getCurrentNodeApproverList(nodeApprover.getId(), userId, orgId);
                 //如果审批人是空异常逻辑处理
                 if (CollectionUtils.isEmpty(approvers)) {
                     //自动通过/指定人员处理/转交给审批管理员

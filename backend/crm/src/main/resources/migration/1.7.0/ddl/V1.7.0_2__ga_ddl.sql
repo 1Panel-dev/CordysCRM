@@ -151,19 +151,6 @@ CREATE TABLE approval_task(
 CREATE INDEX idx_instance_node_id ON approval_task(instance_id ASC,node_id ASC);
 CREATE INDEX idx_approver_id ON approval_task(approver_id ASC);
 
-CREATE TABLE approval_cc_task(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `task_id` VARCHAR(32) NOT NULL   COMMENT '抄送任务ID' ,
-    `cc_user_id` VARCHAR(32) NOT NULL   COMMENT '抄送人ID' ,
-    PRIMARY KEY (id)
-)  COMMENT = '审批抄送任务扩展表'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
-
-CREATE INDEX idx_task_id ON approval_cc_task(task_id ASC);
-CREATE INDEX idx_cc_user_id ON approval_cc_task(cc_user_id ASC);
-
 CREATE TABLE approval_add_sign_task(
     `id` VARCHAR(32) NOT NULL   COMMENT '主键ID' ,
     `type` VARCHAR(20) NOT NULL   COMMENT '加签方式; before: 在我之前、after: 在我之后' ,

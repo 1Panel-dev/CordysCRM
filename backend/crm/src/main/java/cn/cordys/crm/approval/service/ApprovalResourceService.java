@@ -1,11 +1,10 @@
 package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
@@ -13,14 +12,16 @@ import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
+import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.domain.User;
-import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.UserApprovalDTO;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -46,12 +47,12 @@ public class ApprovalResourceService {
 	@Resource
 	private ApprovalInstanceService instanceService;
 	@Resource
-	private ModuleFormService formService;
+	private ApprovalActionService approvalActionService;
 
     /**
      * 开启的审批流表单表格映射
      */
-    private static final Map<String, String> FORM_APPROVAL_TABLE = new HashMap<>(4);
+    public static final Map<String, String> FORM_APPROVAL_TABLE = new HashMap<>(4);
 
     static {
         FORM_APPROVAL_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
@@ -103,7 +104,7 @@ public class ApprovalResourceService {
         Map<String, User> userMap = approverIds.isEmpty()
                 ? Collections.emptyMap()
                 : userMapper.selectByIds(approverIds).stream()
-                .collect(Collectors.toMap(User::getId, Function.identity(), (prev, next) -> prev));
+                .collect(Collectors.toMap(User::getId, Function.identity(), (prev, _) -> prev));
 
         // 批量加载任务对应审批记录（用于审批意见）。
         List<String> taskIds = tasks.stream()
@@ -118,7 +119,7 @@ public class ApprovalResourceService {
             List<ApprovalRecord> records = approvalRecordMapper.selectListByLambda(recordWrapper);
             taskRecordMap = records.stream()
                     .filter(record -> StringUtils.isNotBlank(record.getTaskId()))
-                    .collect(Collectors.toMap(ApprovalRecord::getTaskId, Function.identity(), (prev, next) -> next));
+                    .collect(Collectors.toMap(ApprovalRecord::getTaskId, Function.identity(), (_, next) -> next));
         }
 
         // 组装审核人明细并按审批人去重返回。
@@ -164,20 +165,6 @@ public class ApprovalResourceService {
         extApprovalInstanceMapper.updateApprovalStatus(tableName, resourceId, approvalStatus);
     }
 
-    /**
-     * 查询对应业务表的业务名
-     *
-     * @param formKey    表单类型
-     * @param resourceId 资源ID
-     */
-    public String selectBusinessName(FormKey formKey, String resourceId) {
-        String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
-        if (StringUtils.isBlank(tableName)) {
-            throw new GenericException(Translator.get("module.form.illegal"));
-        }
-        return extApprovalInstanceMapper.selectBusinessName(tableName, resourceId);
-    }
-
 
     /**
      * 手动提审
@@ -190,25 +177,48 @@ public class ApprovalResourceService {
         if (StringUtils.isBlank(tableName)) {
             throw new GenericException(Translator.get("module.form.illegal"));
         }
+		ApprovalFlowVersion approvalFlowVersion = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
+		if (approvalFlowVersion == null) {
+			throw new GenericException(Translator.get("approval_flow.not.exist"));
+		}
+		// 初始化审批实例
+		ApprovalInstance instance = initInstance(approvalFlowVersion, param, currentUserId);
+		// 获取第一个节点
+		ApprovalNodeResponse firstApprovalNode = approvalFlowService.getResourceApprovalInstanceFirstNode(instance, currentOrgId);
+		instance.setCurrentNodeId(firstApprovalNode.getId());
+		if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.EXCEPTION) {
+			// 异常节点, 目前只有自动拒绝的场景, 直接驳回
+			extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.UNAPPROVED.name());
+			instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
+			instance.setApprovalTime(System.currentTimeMillis());
+			approvalInstanceMapper.insert(instance);
+			return;
+		}
+		if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
+			// 直接结束
+			extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.APPROVED.name());
+			instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
+			instance.setApprovalTime(System.currentTimeMillis());
+			approvalInstanceMapper.insert(instance);
+			return;
+		}
+		/*
+		 * 正常审批流程
+		 * 1. 更新业务表审批状态为审批中
+		 * 2. 创建审批实例
+		 * 3. 创建审批待办任务
+		 * 4. 抄送任务
+		 */
         extApprovalInstanceMapper.updateApprovalStatus(tableName, param.getResourceId(), ApprovalStatus.APPROVING.name());
-        ApprovalFlowVersion approvalFlowVersion = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
-        if (approvalFlowVersion == null) {
-            throw new GenericException(Translator.get("approval_flow.not.exist"));
-        }
-        // 插入审批实例和第一个审批节点待办任务
-        //提前创建实例id
-        String instanceId = IDGenerator.nextStr();
-        List<BaseModuleFieldValue> fvs = formService.compressResourceDetail(param.getFormKey(), param.getResourceId());
-        //获取第一个节点
-        ApprovalNodeApproverResponse firstApproverNode = approvalFlowService.getResourceApprovalFlowFirstApproverNode(approvalFlowVersion.getId(), fvs);
-        //节点逻辑处理,返回最终需要操作的节点
-        String resourceOwner = extApprovalInstanceMapper.getResourceOwner(tableName, param.getResourceId());
-        ApprovalExceptionService approvalExceptionService = CommonBeanFactory.getBean(ApprovalExceptionService.class);
-        ApprovalNodeApproverResponse finalNode = approvalExceptionService.nodeHandleAndSaveTask(firstApproverNode, fvs, instanceId, currentUserId, currentOrgId,
-                param, approvalFlowVersion.getId(), resourceOwner);
-
-
-    }
+		approvalInstanceMapper.insert(instance);
+		ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
+		List<ApprovalTask> approvalTasks = approvalActionService.getNodeApproverTasks(approverNode, instance.getId(), currentUserId, null);
+		List<ApprovalTask> ccTasks = approvalActionService.getNodeCcTasks(approverNode, instance.getId(), currentUserId);
+		List<ApprovalTask> allTasks = ListUtils.union(approvalTasks, ccTasks);
+		if (CollectionUtils.isNotEmpty(allTasks)) {
+			approvalTaskMapper.batchInsert(allTasks);
+		}
+	}
 
 	public void revoke(ApprovalResourceBaseParam param, String currentUserId) {
 		// 更新业务表 approval_status
@@ -224,5 +234,17 @@ public class ApprovalResourceService {
 		instance.setUpdateUser(currentUserId);
 		instance.setUpdateTime(System.currentTimeMillis());
 		approvalInstanceMapper.updateById(instance);
+	}
+
+	private ApprovalInstance initInstance(ApprovalFlowVersion flowVersion, ApprovalResourceBaseParam param, String currentUserId) {
+		ApprovalInstance instance = new ApprovalInstance();
+		instance.setId(IDGenerator.nextStr());
+		instance.setFlowVersionId(flowVersion.getId());
+		instance.setType(param.getFormKey());
+		instance.setApprovalStatus(ApprovalStatus.APPROVING.name());
+		instance.setResourceId(param.getResourceId());
+		instance.setSubmitterId(currentUserId);
+		instance.setSubmitTime(System.currentTimeMillis());
+		return instance;
 	}
 }

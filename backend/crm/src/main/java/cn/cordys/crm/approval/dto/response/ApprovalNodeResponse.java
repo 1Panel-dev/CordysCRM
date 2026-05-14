@@ -10,6 +10,7 @@ import lombok.Data;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = ApprovalNodeApproverResponse.class, name = "APPROVER"),
     @JsonSubTypes.Type(value = ApprovalNodeConditionResponse.class, name = "CONDITION"),
+    @JsonSubTypes.Type(value = ApprovalNodeExceptionResponse.class, name = "EXCEPTION"),
     @JsonSubTypes.Type(value = ApprovalNodeResponse.class, name = "START"),
     @JsonSubTypes.Type(value = ApprovalNodeResponse.class, name = "END"),
     @JsonSubTypes.Type(value = ApprovalNodeResponse.class, name = "DEFAULT"),
