@@ -713,28 +713,34 @@ public class ModuleFormService {
         var staticOptions = new HashMap<String, List<OptionDTO>>(4);
         var idTypeMap = new HashMap<String, String>(8);
         for (var field : allFields) {
-            var key = getOptionKey(showFields, field);
-            switch (field) {
-                case RadioField radioField when Strings.CS.equals(field.getType(), FieldType.RADIO.name()) ->
-                        staticOptions.put(key, optionPropToDto(radioField.getOptions()));
-                case CheckBoxField checkBoxField when Strings.CS.equals(field.getType(), FieldType.CHECKBOX.name()) ->
-                        staticOptions.put(key, optionPropToDto(checkBoxField.getOptions()));
-                case HasOption optionField when Strings.CS.equalsAny(field.getType(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name()) ->
-                        staticOptions.put(key, optionPropToDto(optionField.getOptions()));
-                default -> {
-                }
-            }
-            if (Strings.CS.equalsAny(field.getType(), FieldType.DATA_SOURCE.name(), FieldType.DATA_SOURCE_MULTIPLE.name()) && field instanceof DatasourceField sourceField) {
-                idTypeMap.put(key, sourceField.getDataSourceType());
-            }
-            if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name())) {
-                idTypeMap.put(key, FieldType.MEMBER.name());
-            }
-            if (Strings.CS.equalsAny(field.getType(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
-                idTypeMap.put(key, FieldType.DEPARTMENT.name());
+            putOptionMap(staticOptions, idTypeMap, field, field.getId());
+            if (StringUtils.isNotBlank(field.getBusinessKey())) {
+                putOptionMap(staticOptions, idTypeMap, field, field.getBusinessKey());
             }
         }
         return new OptionMetadata(staticOptions, idTypeMap);
+    }
+
+    private void putOptionMap(HashMap<String, List<OptionDTO>> staticOptions, HashMap<String, String> idTypeMap, BaseField field, String key) {
+        switch (field) {
+            case RadioField radioField when Strings.CS.equals(field.getType(), FieldType.RADIO.name()) ->
+                    staticOptions.put(key, optionPropToDto(radioField.getOptions()));
+            case CheckBoxField checkBoxField when Strings.CS.equals(field.getType(), FieldType.CHECKBOX.name()) ->
+                    staticOptions.put(key, optionPropToDto(checkBoxField.getOptions()));
+            case HasOption optionField when Strings.CS.equalsAny(field.getType(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name()) ->
+                    staticOptions.put(key, optionPropToDto(optionField.getOptions()));
+            default -> {
+            }
+        }
+        if (Strings.CS.equalsAny(field.getType(), FieldType.DATA_SOURCE.name(), FieldType.DATA_SOURCE_MULTIPLE.name()) && field instanceof DatasourceField sourceField) {
+            idTypeMap.put(key, sourceField.getDataSourceType());
+        }
+        if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name())) {
+            idTypeMap.put(key, FieldType.MEMBER.name());
+        }
+        if (Strings.CS.equalsAny(field.getType(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
+            idTypeMap.put(key, FieldType.DEPARTMENT.name());
+        }
     }
 
     private Map<String, List<String>> collectOptionIds(List<BaseModuleFieldValue> allFieldValues, Map<String, String> idTypeMap) {

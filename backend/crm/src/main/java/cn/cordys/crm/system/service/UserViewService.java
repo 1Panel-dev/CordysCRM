@@ -232,9 +232,22 @@ public class UserViewService {
                 .filter(baseField -> businessKeys.contains(baseField.getBusinessKey()))
                 .collect(Collectors.toMap(BaseField::getId, BaseField::getBusinessKey));
 
+        // 获取表单配置，用于查询字段类型
+        Map<String, String> fieldIdTypeMap = new HashMap<>();
+        if (customerFormConfig != null && CollectionUtils.isNotEmpty(customerFormConfig.getFields())) {
+            customerFormConfig.getFields().stream()
+                    .forEach(baseField -> {
+                        fieldIdTypeMap.put(baseField.getId(), baseField.getType());
+                        if (StringUtils.isNotBlank(baseField.getBusinessKey())) {
+                            fieldIdTypeMap.put(baseField.getBusinessKey(), baseField.getType());
+                        }
+                    });
+        }
+
         // 获取数据源类型的字段值
         List<BaseModuleFieldValue> moduleFieldValues = conditions.stream()
-                .filter(condition -> Strings.CS.equalsAny(condition.getType(),
+                .filter(condition -> StringUtils.isNotBlank(fieldIdTypeMap.get(condition.getName()))
+                        && Strings.CS.equalsAny(fieldIdTypeMap.get(condition.getName()),
                         FieldType.DATA_SOURCE.name(),
                         FieldType.DATA_SOURCE_MULTIPLE.name(),
                         FieldType.MEMBER.name(),
@@ -255,7 +268,6 @@ public class UserViewService {
             if (optionMap.containsKey(fieldId)) {
                 List<OptionDTO> options = optionMap.get(fieldId);
                 optionMap.put(businessKey, options);
-                optionMap.remove(fieldId);
             }
         });
         return optionMap;
