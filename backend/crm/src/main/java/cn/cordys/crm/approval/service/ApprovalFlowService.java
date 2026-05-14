@@ -661,11 +661,48 @@ public class ApprovalFlowService {
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
-        if (CollectionUtils.isEmpty(allConditions)) {
+        List<BaseModuleFieldValue> postConfigFieldValues = getNodePostConfigFieldValues(nodes);
+
+        if (CollectionUtils.isEmpty(allConditions) && CollectionUtils.isEmpty(postConfigFieldValues)) {
             return Map.of();
         }
 
-       return userViewService.buildOptionMap(organizationId, formType, allConditions);
+        List<FilterCondition> postConfigConditions = postConfigFieldValues.stream()
+                .filter(BaseModuleFieldValue::valid)
+                .map(fieldValue -> {
+                    FilterCondition condition = new FilterCondition();
+                    condition.setName(fieldValue.getFieldId());
+                    condition.setValue(fieldValue.getFieldValue());
+                    return condition;
+                })
+                .collect(Collectors.toList());
+
+        // 合并所有条件
+        List<FilterCondition> combinedConditions = new ArrayList<>(allConditions);
+        combinedConditions.addAll(postConfigConditions);
+
+        return userViewService.buildOptionMap(organizationId, formType, combinedConditions);
+    }
+
+    private List<BaseModuleFieldValue> getNodePostConfigFieldValues(List<ApprovalNodeResponse> nodes) {
+        // 收集审批人节点中的 passPostConfig 和 rejectPostConfig 中的字段值
+        List<BaseModuleFieldValue> postConfigFieldValues = nodes.stream()
+                .filter(node -> node instanceof ApprovalNodeApproverResponse)
+                .map(node -> (ApprovalNodeApproverResponse) node)
+                .flatMap(approverNode -> {
+                    List<BaseModuleFieldValue> fieldValues = new ArrayList<>();
+                    if (approverNode.getPassPostConfig() != null
+                            && CollectionUtils.isNotEmpty(approverNode.getPassPostConfig().getFieldUpdateConfigs())) {
+                        fieldValues.addAll(approverNode.getPassPostConfig().getFieldUpdateConfigs());
+                    }
+                    if (approverNode.getRejectPostConfig() != null
+                            && CollectionUtils.isNotEmpty(approverNode.getRejectPostConfig().getFieldUpdateConfigs())) {
+                        fieldValues.addAll(approverNode.getRejectPostConfig().getFieldUpdateConfigs());
+                    }
+                    return fieldValues.stream();
+                })
+                .collect(Collectors.toList());
+        return postConfigFieldValues;
     }
 
     /**
