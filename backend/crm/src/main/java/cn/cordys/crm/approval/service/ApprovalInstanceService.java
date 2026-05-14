@@ -4,7 +4,6 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.*;
-import cn.cordys.crm.approval.dto.ApprovalCcNode;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalRecordNode;
 import cn.cordys.crm.system.domain.Attachment;
@@ -31,8 +30,6 @@ public class ApprovalInstanceService {
 	private BaseMapper<ApprovalTask> approvalTaskMapper;
 	@Resource
 	private BaseMapper<ApprovalAddSignTask> approvalAddSignTaskMapper;
-	@Resource
-	private BaseMapper<ApprovalCcTask> approvalCcTaskMapper;
 	@Resource
 	private BaseMapper<ApprovalReturnBackRecord> approvalReturnBackRecordMapper;
 	@Resource
@@ -61,12 +58,11 @@ public class ApprovalInstanceService {
 		}
 
 		Map<String, List<ApprovalAddSignTask>> signTaskGroupMap = queryAddSignTasks(approvalTasks);
-		Map<String, List<ApprovalCcTask>> ccTaskGroupMap = queryCcTasks(approvalTasks);
 		Map<String, ApprovalReturnBackRecord> returnRecordMap = queryReturnRecords(approvalTasks);
 		Map<String, ApprovalRecord> taskRecordMap = queryTaskRecords(approvalTasks, signTaskGroupMap);
 		Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(approvalTasks, taskRecordMap, signTaskGroupMap);
 
-		instanceDetail.setNodes(buildApprovalRecordNodeList(approvalTasks, signTaskGroupMap, ccTaskGroupMap, returnRecordMap, taskRecordMap, elementAttachmentsMap));
+		instanceDetail.setNodes(buildApprovalRecordNodeList(approvalTasks, signTaskGroupMap, returnRecordMap, taskRecordMap, elementAttachmentsMap));
 		return instanceDetail;
 	}
 
@@ -106,19 +102,6 @@ public class ApprovalInstanceService {
 		List<ApprovalAddSignTask> list = approvalAddSignTaskMapper.selectListByLambda(
 				new LambdaQueryWrapper<ApprovalAddSignTask>().in(ApprovalAddSignTask::getTaskId, ids));
 		return list.stream().collect(Collectors.groupingBy(ApprovalAddSignTask::getTaskId));
-	}
-
-	/**
-	 * 查询抄送任务并分组
-	 */
-	private Map<String, List<ApprovalCcTask>> queryCcTasks(List<ApprovalTask> tasks) {
-		List<String> ids = tasks.stream().filter(task -> Strings.CI.equals(task.getType(), ApprovalTaskType.CC.name())).map(ApprovalTask::getId).toList();
-		if (CollectionUtils.isEmpty(ids)) {
-			return Map.of();
-		}
-		List<ApprovalCcTask> list = approvalCcTaskMapper.selectListByLambda(
-				new LambdaQueryWrapper<ApprovalCcTask>().in(ApprovalCcTask::getTaskId, ids));
-		return list.stream().collect(Collectors.groupingBy(ApprovalCcTask::getTaskId));
 	}
 
 	/**
@@ -178,14 +161,12 @@ public class ApprovalInstanceService {
 	 * 构建审批记录节点列表
 	 * @param approvalTasks 审批任务列表
 	 * @param signTaskGroupMap 加签任务分组
-	 * @param ccTaskGroupMap 抄送任务分组
 	 * @param returnRecordMap 退回记录映射
 	 * @param taskRecordMap 任务执行记录映射
 	 * @param elementAttachmentsMap 元素附件映射
 	 * @return 审批记录节点列表
 	 */
-	private List<ApprovalRecordNode> buildApprovalRecordNodeList(List<ApprovalTask> approvalTasks, Map<String, List<ApprovalAddSignTask>> signTaskGroupMap,
-																 Map<String, List<ApprovalCcTask>> ccTaskGroupMap, Map<String, ApprovalReturnBackRecord> returnRecordMap,
+	private List<ApprovalRecordNode> buildApprovalRecordNodeList(List<ApprovalTask> approvalTasks, Map<String, List<ApprovalAddSignTask>> signTaskGroupMap, Map<String, ApprovalReturnBackRecord> returnRecordMap,
 																 Map<String, ApprovalRecord> taskRecordMap,
 										 						 Map<String, List<Attachment>> elementAttachmentsMap) {
 		/*
@@ -234,13 +215,7 @@ public class ApprovalInstanceService {
 				}
 				nodes.add(node);
 			} else if (Strings.CI.equals(task.getType(), ApprovalTaskType.CC.name())) {
-				// 处理抄送任务节点: 查询该任务节点下所有的抄送任务
-				List<ApprovalCcTask> ccTaskList = ccTaskGroupMap.get(task.getId());
-				if (CollectionUtils.isNotEmpty(ccTaskList)) {
-					List<ApprovalCcNode> ccNodes = ccTaskList.stream().map(this::buildCcNode).toList();
-					node.setCcNodes(ccNodes);
-				}
-				nodes.add(node);
+				// TODO: 处理抄送任务节点: 查询该任务节点下所有的抄送任务
 			} else {
 				// 普通任务节点直接添加
 				nodes.add(node);
@@ -291,12 +266,16 @@ public class ApprovalInstanceService {
 	}
 
 	/**
-	 * 构建抄送节点
+	 * 刷新最终实例状态
+	 *
+	 * @param instance     审批实例
+	 * @param currentUserId  当前用户ID
 	 */
-	private ApprovalCcNode buildCcNode(ApprovalCcTask ccTask) {
-		ApprovalCcNode ccNode = new ApprovalCcNode();
-		ccNode.setCcUserId(ccTask.getCcUserId());
-		// TODO: 需查询用户信息获取名称和头像
-		return ccNode;
+	public void rejectApprovalInstance(ApprovalInstance instance, String currentUserId) {
+		instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
+		instance.setApprovalTime(System.currentTimeMillis());
+		instance.setUpdateUser(currentUserId);
+		instance.setUpdateTime(System.currentTimeMillis());
+		approvalInstanceMapper.updateById(instance);
 	}
 }
