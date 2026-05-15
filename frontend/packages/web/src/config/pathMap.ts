@@ -212,7 +212,7 @@ export const pathMap: PathMapItem[] = [
         locale: 'menu.settings.processSetting',
         children: [
           {
-            key: 'SYSTEM_PROCESS_INDEX',
+            key: 'SYSTEM_PROCESS_APPROVAL',
             route: AppRouteEnum.SYSTEM_PROCESS_INDEX,
             locale: 'menu.settings.approvalFlow',
           },
