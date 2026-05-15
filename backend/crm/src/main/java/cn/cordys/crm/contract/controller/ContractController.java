@@ -132,34 +132,12 @@ public class ContractController {
         return contractService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
     }
 
-
-    @PostMapping("/approval")
-    @RequiresPermissions(PermissionConstants.CONTRACT_APPROVAL)
-    @Operation(summary = "审核通过/不通过")
-    public void approval(@Validated @RequestBody ContractApprovalRequest request) {
-        contractService.approvalContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-    @GetMapping("/revoke/{id}")
-    @Operation(summary = "撤销审批")
-    public String revoke(@PathVariable("id") String id) {
-        return contractService.revoke(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-    @PostMapping("/batch/approval")
-    @RequiresPermissions(PermissionConstants.CONTRACT_APPROVAL)
-    @Operation(summary = "批量审核通过/不通过")
-    public BatchAffectSkipResponse batchApproval(@Validated @RequestBody ContractApprovalBatchRequest request) {
-        return contractService.batchApprovalContract(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.CONTRACT_UPDATE)
     @Operation(summary = "批量更新合同")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         contractService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
-
 
     @PostMapping("/contract-payment-plan/page")
     @RequiresPermissions({PermissionConstants.CONTRACT_READ, PermissionConstants.CONTRACT_PAYMENT_PLAN_READ})

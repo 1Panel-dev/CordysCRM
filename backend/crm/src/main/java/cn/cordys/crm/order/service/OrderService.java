@@ -26,8 +26,10 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.order.domain.Order;
@@ -93,6 +95,8 @@ public class OrderService {
     private ExtOrderStageConfigMapper extOrderStageConfigMapper;
     @Resource
     private BaseMapper<Customer> customerBaseMapper;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
@@ -599,21 +603,46 @@ public class OrderService {
         BaseField field = orderFieldService.getAndCheckField(request.getFieldId(), orgId);
         moduleFormService.setFieldBusinessParam(field);
         List<Order> originOrders = orderMapper.selectByIds(request.getIds());
-        orderFieldService.batchUpdate(request, field, originOrders, Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, orgId);
+
+        // 校验状态权限，过滤出有权限操作的订单
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.ORDER.getValue(),
+                originOrders,
+                PermissionConstants.ORDER_UPDATE,
+                userId,
+                orgId,
+                Order::getId,
+                Order::getApprovalStatus
+        );
+
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return;
+        }
+
+        List<Order> permittedOrders = originOrders.stream()
+                .filter(o -> permittedIds.contains(o.getId()))
+                .collect(Collectors.toList());
+
+        ResourceBatchEditRequest filteredRequest = new ResourceBatchEditRequest();
+        filteredRequest.setIds(permittedIds);
+        filteredRequest.setFieldId(request.getFieldId());
+        filteredRequest.setFieldValue(request.getFieldValue());
+
+        orderFieldService.batchUpdate(filteredRequest, field, permittedOrders, Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, orgId);
 
         ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(orgId);
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
 
         LambdaQueryWrapper<OrderSnapshot> delWrapper = new LambdaQueryWrapper<>();
-        delWrapper.in(OrderSnapshot::getOrderId, request.getIds());
+        delWrapper.in(OrderSnapshot::getOrderId, permittedIds);
         snapshotBaseMapper.deleteByLambda(delWrapper);
 
-        List<Order> latestOrders = orderMapper.selectByIds(request.getIds());
+        List<Order> latestOrders = orderMapper.selectByIds(permittedIds);
         Map<String, Order> latestOrderMap = latestOrders.stream().collect(Collectors.toMap(Order::getId, item -> item));
-        Map<String, List<BaseModuleFieldValue>> fieldMap = orderFieldService.getResourceFieldMap(request.getIds(), true);
+        Map<String, List<BaseModuleFieldValue>> fieldMap = orderFieldService.getResourceFieldMap(permittedIds, true);
 
         List<OrderSnapshot> snapshots = new ArrayList<>();
-        for (String id : request.getIds()) {
+        for (String id : permittedIds) {
             Order order = latestOrderMap.get(id);
             if (order == null) {
                 continue;

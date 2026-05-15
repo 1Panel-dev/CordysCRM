@@ -6,7 +6,6 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
-import cn.cordys.common.constants.CommonResultCode;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
@@ -29,31 +28,32 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractPaymentRecord;
 import cn.cordys.crm.contract.domain.ContractSnapshot;
-import cn.cordys.crm.contract.dto.request.*;
+import cn.cordys.crm.contract.dto.request.ContractAddRequest;
+import cn.cordys.crm.contract.dto.request.ContractPageRequest;
+import cn.cordys.crm.contract.dto.request.ContractStageRequest;
+import cn.cordys.crm.contract.dto.request.ContractUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.dto.response.ContractStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
-import cn.cordys.crm.contract.mapper.ExtContractSnapshotMapper;
 import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
 import cn.cordys.crm.customer.domain.Customer;
-import cn.cordys.crm.approval.constants.ApprovalState;
-import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
-import cn.cordys.crm.system.dto.response.BatchAffectSkipResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.DictService;
@@ -68,16 +68,11 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -105,8 +100,6 @@ public class ContractService {
     @Resource
     private LogService logService;
     @Resource
-    private SqlSessionFactory sqlSessionFactory;
-    @Resource
     private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private BaseMapper<MessageTaskConfig> messageTaskConfigMapper;
@@ -120,6 +113,8 @@ public class ContractService {
     private DictService dictService;
     @Resource
     private ExtContractStageConfigMapper extContractStageConfigMapper;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
@@ -684,124 +679,6 @@ public class ContractService {
         return extContractMapper.calculateContractStatisticByCustomerId(customerId, userId, orgId, deptDataPermission);
     }
 
-
-    /**
-     * 审核通过/不通过
-     *
-     * @param request
-     * @param userId
-     */
-    public void approvalContract(ContractApprovalRequest request, String userId, String orgId) {
-        Contract contract = contractMapper.selectByPrimaryKey(request.getId());
-        if (contract == null) {
-            throw new GenericException(Translator.get("contract.not.exist"));
-        }
-
-        checkApprovalConfig(orgId);
-
-        String state = contract.getApprovalStatus();
-        contract.setApprovalStatus(request.getApprovalStatus());
-        contract.setUpdateTime(System.currentTimeMillis());
-        contract.setUpdateUser(userId);
-        contractMapper.update(contract);
-
-        updateStatusSnapshot(request.getId(), null, request.getApprovalStatus());
-
-        // 添加日志上下文
-        LogDTO logDTO = getApprovalLogDTO(orgId, request.getId(), userId, contract.getName(), state, request.getApprovalStatus());
-        logService.add(logDTO);
-    }
-
-    public String revoke(String id, String userId, String orgId) {
-        Contract contract = contractMapper.selectByPrimaryKey(id);
-        if (contract == null) {
-            throw new GenericException(Translator.get("contract.not.exist"));
-        }
-
-        checkApprovalConfig(orgId);
-
-        String originApprovalStatus = contract.getApprovalStatus();
-        if (!Strings.CI.equals(contract.getCreateUser(), userId) || !Strings.CI.equals(contract.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
-            return contract.getApprovalStatus();
-        }
-        contract.setApprovalStatus(ApprovalState.REVOKED.toString());
-        contract.setUpdateUser(userId);
-        contract.setUpdateTime(System.currentTimeMillis());
-        contractMapper.update(contract);
-
-        //更新快照
-        updateStatusSnapshot(id, null, ApprovalState.REVOKED.toString());
-
-        // 添加日志上下文
-        LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, contract.getName(), originApprovalStatus, ApprovalState.REVOKED.toString());
-        logService.add(logDTO);
-
-        return contract.getApprovalStatus();
-    }
-
-    private void checkApprovalConfig(String orgId) {
-        if (!dictService.isDictConfigEnable(DictModule.CONTRACT_APPROVAL.name(), orgId)) {
-            // 未开启审批
-            throw new GenericException(CommonResultCode.APPROVAL_NOT_ENABLED_ERROR);
-        }
-    }
-
-
-    /**
-     * 批量审核
-     *
-     * @param request
-     * @param userId
-     * @param orgId
-     */
-    public BatchAffectSkipResponse batchApprovalContract(ContractApprovalBatchRequest request, String userId, String orgId) {
-        checkApprovalConfig(orgId);
-
-        List<String> ids = extContractMapper.selectByStatusAndIds(request.getIds(), ContractApprovalStatus.APPROVING.name());
-
-        if (CollectionUtils.isEmpty(ids)) {
-            return BatchAffectSkipResponse.builder().success(0).fail(0).skip(request.getIds().size()).build();
-        }
-
-        LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(ContractSnapshot::getContractId, ids);
-        List<ContractSnapshot> contractSnapshots = snapshotBaseMapper.selectListByLambda(wrapper);
-        Map<String, ContractSnapshot> snapshotsMaps = contractSnapshots.stream().collect(Collectors.toMap(ContractSnapshot::getContractId, Function.identity()));
-
-        List<LogDTO> logs = new ArrayList<>();
-        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-        ExtContractMapper batchUpdateMapper = sqlSession.getMapper(ExtContractMapper.class);
-        ExtContractSnapshotMapper snapshotMapper = sqlSession.getMapper(ExtContractSnapshotMapper.class);
-
-        ids.forEach(id -> {
-            batchUpdateMapper.updateStatus(id, request.getApprovalStatus(), userId, System.currentTimeMillis());
-            ContractSnapshot contractSnapshot = snapshotsMaps.get(id);
-            ContractGetResponse response = JSON.parseObject(contractSnapshot.getContractValue(), ContractGetResponse.class);
-            String state = response.getApprovalStatus();
-            response.setApprovalStatus(request.getApprovalStatus());
-            contractSnapshot.setContractValue(JSON.toJSONString(response));
-            snapshotMapper.update(contractSnapshot);
-            LogDTO logDTO = getApprovalLogDTO(orgId, id, userId, response.getName(), state, request.getApprovalStatus());
-            logs.add(logDTO);
-        });
-        sqlSession.flushStatements();
-        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-        logService.batchAdd(logs);
-
-        return BatchAffectSkipResponse.builder().success(ids.size()).fail(0).skip(request.getIds().size() - ids.size()).build();
-    }
-
-    private LogDTO getApprovalLogDTO(String orgId, String id, String userId, String response, String state, String newState) {
-        LogDTO logDTO = new LogDTO(orgId, id, userId, LogType.APPROVAL, LogModule.CONTRACT_INDEX, response);
-        Map<String, String> oldMap = new HashMap<>();
-        oldMap.put("approvalStatus", Translator.get("contract.approval_status." + state.toLowerCase()));
-        logDTO.setOriginalValue(oldMap);
-        Map<String, String> newMap = new HashMap<>();
-        newMap.put("approvalStatus", Translator.get("contract.approval_status." + newState.toLowerCase()));
-        logDTO.setModifiedValue(newMap);
-        return logDTO;
-    }
-
     public String getContractName(String id) {
         Contract contract = contractMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(contract).map(Contract::getName).orElse(null);
@@ -883,7 +760,32 @@ public class ContractService {
         // getAndCheckField 走的是 getConfig()，不会设置 businessKey，需要手动补充
         moduleFormService.setFieldBusinessParam(field);
         List<Contract> originContracts = contractMapper.selectByIds(request.getIds());
-        contractFieldService.batchUpdate(request, field, originContracts, Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, organizationId);
+
+        // 校验状态权限，过滤出有权限操作的合同
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CONTRACT.getValue(),
+                originContracts,
+                PermissionConstants.CONTRACT_UPDATE,
+                userId,
+                organizationId,
+                Contract::getId,
+                Contract::getApprovalStatus
+        );
+
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return;
+        }
+
+        List<Contract> permittedContracts = originContracts.stream()
+                .filter(c -> permittedIds.contains(c.getId()))
+                .collect(Collectors.toList());
+
+        ResourceBatchEditRequest filteredRequest = new ResourceBatchEditRequest();
+        filteredRequest.setIds(permittedIds);
+        filteredRequest.setFieldId(request.getFieldId());
+        filteredRequest.setFieldValue(request.getFieldValue());
+
+        contractFieldService.batchUpdate(filteredRequest, field, permittedContracts, Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, organizationId);
 
         // 批量更新后重建每条合同的快照
         ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(organizationId);
@@ -891,20 +793,20 @@ public class ContractService {
 
         // 批量删除旧快照（1次）
         LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
-        delWrapper.in(ContractSnapshot::getContractId, request.getIds());
+        delWrapper.in(ContractSnapshot::getContractId, permittedIds);
         snapshotBaseMapper.deleteByLambda(delWrapper);
 
         // 批量重新获取最新合同数据，因为业务字段已更新（1次替代N次）
-        List<Contract> latestContracts = contractMapper.selectByIds(request.getIds());
+        List<Contract> latestContracts = contractMapper.selectByIds(permittedIds);
         Map<String, Contract> latestContractMap = latestContracts.stream()
                 .collect(Collectors.toMap(Contract::getId, c -> c));
 
         // 批量获取所有合同的自定义字段值（1次替代N次）
-        Map<String, List<BaseModuleFieldValue>> fieldMap = contractFieldService.getResourceFieldMap(request.getIds(), true);
+        Map<String, List<BaseModuleFieldValue>> fieldMap = contractFieldService.getResourceFieldMap(permittedIds, true);
 
         // 逐条构建快照，批量写入
         List<ContractSnapshot> snapshots = new ArrayList<>();
-        for (String id : request.getIds()) {
+        for (String id : permittedIds) {
             Contract contract = latestContractMap.get(id);
             if (contract == null) continue;
             List<BaseModuleFieldValue> contractFields = fieldMap.getOrDefault(id, Collections.emptyList());
