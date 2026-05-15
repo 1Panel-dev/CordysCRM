@@ -129,7 +129,7 @@
 
   import { batchVoided, deleteQuotation, getOpenSeaOptions, voidQuotation } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { quotationDataActionMap } from '@/config/opportunity';
+  import { quotationDataActionMap, quotationStatus } from '@/config/opportunity';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -564,6 +564,14 @@
         type: FieldTypeEnum.SELECT_MULTIPLE,
         selectProps: {
           options: processStatusOptions,
+        },
+      },
+      {
+        title: t('common.status'),
+        dataIndex: 'invalid',
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        selectProps: {
+          options: quotationStatus,
         },
       },
       {
