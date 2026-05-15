@@ -21,6 +21,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalState;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.ContractField;
@@ -130,17 +131,13 @@ public class OpportunityQuotationService {
         opportunityQuotation.setId(IDGenerator.nextStr());
         opportunityQuotation.setOrganizationId(orgId);
         opportunityQuotation.setName(request.getName());
-        opportunityQuotation.setApprovalStatus(ApprovalState.APPROVING.toString());
+        opportunityQuotation.setApprovalStatus(ApprovalStatus.NONE.name());
         opportunityQuotation.setOpportunityId(request.getOpportunityId());
         opportunityQuotation.setUntilTime(request.getUntilTime());
         opportunityQuotation.setCreateUser(userId);
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setCreateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
-
-        if (!dictService.isDictConfigEnable(DictModule.QUOTATION_APPROVAL.name(), orgId)) {
-            opportunityQuotation.setApprovalStatus(ContractApprovalStatus.NONE.name());
-        }
 
         //判断总金额
         setAmount(request.getAmount(), opportunityQuotation);

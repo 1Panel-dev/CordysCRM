@@ -24,12 +24,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class ApprovalResourceService {
 
     @Resource
@@ -245,6 +247,10 @@ public class ApprovalResourceService {
 		instance.setResourceId(param.getResourceId());
 		instance.setSubmitterId(currentUserId);
 		instance.setSubmitTime(System.currentTimeMillis());
+		instance.setCreateUser(currentUserId);
+		instance.setCreateTime(System.currentTimeMillis());
+		instance.setUpdateUser(currentUserId);
+		instance.setUpdateTime(System.currentTimeMillis());
 		return instance;
 	}
 }

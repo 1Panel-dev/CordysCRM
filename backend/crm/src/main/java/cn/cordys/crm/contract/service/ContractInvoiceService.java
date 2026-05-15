@@ -23,6 +23,8 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalState;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.contract.constants.BusinessTitleConstants;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
@@ -37,7 +39,6 @@ import cn.cordys.crm.contract.dto.request.ContractInvoiceUpdateRequest;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
-import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -168,10 +169,7 @@ public class ContractInvoiceService {
         invoice.setCreateUser(operatorId);
         invoice.setUpdateTime(System.currentTimeMillis());
         invoice.setUpdateUser(operatorId);
-        invoice.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
-        if (!dictService.isDictConfigEnable(DictModule.INVOICE_APPROVAL.name(), orgId)) {
-            invoice.setApprovalStatus(ContractApprovalStatus.NONE.name());
-        }
+        invoice.setApprovalStatus(ApprovalStatus.NONE.name());
 
         if (StringUtils.isBlank(request.getOwner())) {
             invoice.setOwner(operatorId);
