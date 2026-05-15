@@ -43,14 +43,7 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
       };
     }
 
-    if (!isEdit) {
-      return {
-        visible: true,
-        text: t('common.review'),
-      };
-    }
-
-    if (approvalStatus === ProcessStatusEnum.PENDING) {
+    if (!isEdit || approvalStatus === ProcessStatusEnum.PENDING || !approvalStatus) {
       return {
         visible: true,
         text: t('common.review'),

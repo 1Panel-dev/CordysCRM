@@ -6,9 +6,9 @@ export const UpdateApprovalProcessUrl = '/approval-flow/update'; // 修改审批
 export const DeleteApprovalProcessUrl = '/approval-flow/delete'; // 删除审批流
 export const ApprovalProcessDetailUrl = '/approval-flow/get'; // 审批流详情
 export const ToggleApprovalProcessUrl = '/approval-flow/enable'; // 启用｜禁用审批流
-export const GetResourceApprovingDetailUrl = '/resource-approval/detail'; // 资源审批状态详情
-export const ReviewResourceUrl = '/resource-approval/push'; // 提审
-export const RevokeResourceUrl = '/resource-approval/pop'; // 撤销 todo xinxinwu
+export const GetResourceApprovingDetailUrl = '/approval-resource/simple-detail'; // 资源审批状态详情
+export const ReviewResourceUrl = '/approval-resource/push'; // 提审
+export const RevokeResourceUrl = '/approval-resource/revoke'; // 撤销
 
 // 审批待办
 export const GetProcessedApprovalTodosUrl = '/approval-todo/processed/page'; // 已处理审批待办列表

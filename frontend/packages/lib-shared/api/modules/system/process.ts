@@ -157,7 +157,7 @@ export default function useProcessApi(CDR: CordysAxios) {
     return CDR.post({ url: ReviewResourceUrl, data });
   }
 
-  // 撤销 todo xinxinwu
+  // 撤销
   function revokeResource(data: CommonApprovalActionParams) {
     return CDR.post({ url: RevokeResourceUrl, data });
   }
