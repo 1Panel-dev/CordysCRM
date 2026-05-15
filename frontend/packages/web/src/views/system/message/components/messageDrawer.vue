@@ -236,11 +236,9 @@
 
     const todoListMessage = [
       {
-        value: 'todo',
+        value: 'approval',
         label: t('system.message.todoList'),
-        count: isAnnouncementTab
-          ? messageCount.value[SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE]
-          : messageCount.value?.total, // todo 待办数量
+        count: messageCount.value?.approval || 0,
       },
     ];
 
