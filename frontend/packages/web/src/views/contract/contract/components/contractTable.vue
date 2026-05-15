@@ -203,7 +203,6 @@
     getContractStatusConfig,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { contractStatusOptions } from '@/config/contract';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -572,7 +571,11 @@
               if (res) row.stage = val;
             }
           },
-          'statusOptions': contractStatusOptions,
+          'statusOptions':
+            stageConfig.value?.stageConfigList?.map((e) => ({
+              label: e.name,
+              value: e.id,
+            })) || [],
         });
       },
       approvalStatus: (row: ContractItem) =>
@@ -695,7 +698,11 @@
       type: FieldTypeEnum.SELECT_MULTIPLE,
       operatorOption: COMMON_SELECTION_OPERATORS,
       selectProps: {
-        options: contractStatusOptions,
+        options:
+          stageConfig.value?.stageConfigList.map((e: any) => ({
+            label: e.name,
+            value: e.id,
+          })) || [],
       },
     },
     {

@@ -106,6 +106,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
@@ -114,7 +115,7 @@
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
 
-  import { contractStatusOptions } from '@/config/contract';
+  import { getContractStatusConfig } from '@/api/modules';
   import type { TimelineType } from '@/hooks/useContractTimeline';
   import useContractTimeline from '@/hooks/useContractTimeline';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
@@ -144,10 +145,30 @@
     }
   }
 
+  const stageConfig = ref<OpportunityStageConfig>();
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getContractStatusConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const contractStatusOptions = computed(() => {
+    return (
+      stageConfig.value?.stageConfigList?.map((item) => ({
+        label: item.name,
+        value: item.id,
+      })) || []
+    );
+  });
+
   onMounted(async () => {
     await getFormConfig();
     loadList();
     getStatistic();
+    initStageConfig();
   });
 </script>
 

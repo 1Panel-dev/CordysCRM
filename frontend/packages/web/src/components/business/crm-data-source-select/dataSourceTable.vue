@@ -65,7 +65,7 @@
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
 
   import { getOpportunityStageConfig, getOrderStatusConfig } from '@/api/modules';
-  import { contractPaymentPlanStatusOptions, contractStatusOptions } from '@/config/contract';
+  import { contractPaymentPlanStatusOptions } from '@/config/contract';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateSystemColumns from '@/hooks/useFormCreateSystemColumns';
   import { FormKey } from '@/hooks/useFormCreateTable';
@@ -159,12 +159,7 @@
     },
     [FieldDataSourceTypeEnum.CONTRACT]: {
       stage: (row: ContractItem) => {
-        return h(StatusTagSelect, {
-          status: row.stage as ContractStatusEnum,
-          noRender: true,
-          disabled: true,
-          statusOptions: contractStatusOptions,
-        });
+        return row.stageName || '-';
       },
       approvalStatus: (row: ContractItem) =>
         h(CrmApprovalPopover, {
