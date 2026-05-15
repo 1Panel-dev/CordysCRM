@@ -63,6 +63,7 @@ public class NotificationService {
             }
         });
         countMap.putIfAbsent(NotificationConstants.Module.CUSTOMER, 0);
+        countMap.putIfAbsent(NotificationConstants.Module.APPROVAL, 0);
         countMap.putIfAbsent(NotificationConstants.Module.CLUE, 0);
         countMap.putIfAbsent(NotificationConstants.Module.OPPORTUNITY, 0);
         countMap.putIfAbsent(NotificationConstants.Module.CONTRACT, 0);
