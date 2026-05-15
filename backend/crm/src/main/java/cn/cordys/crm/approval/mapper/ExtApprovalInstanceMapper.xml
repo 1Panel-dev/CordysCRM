@@ -15,4 +15,11 @@
     <select id="getResourceOwner" resultType="java.lang.String">
         select owner from ${sourceTable} where id = #{id}
     </select>
+
+    <select id="getNextNodeRound" resultType="java.lang.Integer">
+        SELECT IFNULL(GREATEST(
+            (SELECT MAX(node_round) FROM approval_task WHERE instance_id = #{instanceId} AND node_id = #{nodeId}),
+            (SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId})
+        ), 0) + 1
+    </select>
 </mapper>

@@ -22,4 +22,14 @@ public interface ExtApprovalInstanceMapper {
 	String selectBusinessName(@Param("sourceTable") String sourceTable, @Param("id") String id);
 
 	String getResourceOwner(@Param("sourceTable")String sourceTable, @Param("id")String id);
+
+	/**
+	 * 获取节点下一个执行轮次
+	 * 从 approval_task 和 approval_record 中一起获取，取最大轮次 +1
+	 *
+	 * @param instanceId 审批实例ID
+	 * @param nodeId     节点ID
+	 * @return 下一个轮次
+	 */
+	Integer getNextNodeRound(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId);
 }

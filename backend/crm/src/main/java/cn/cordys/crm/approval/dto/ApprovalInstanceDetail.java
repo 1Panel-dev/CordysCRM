@@ -14,16 +14,16 @@ public class ApprovalInstanceDetail {
 	@Schema(description = "提交人ID")
 	private String submitterId;
 
+	@Schema(description = "提交人头像")
+	private String submitAvatar;
+
 	@Schema(description = "提交人")
 	private String submitter;
 
 	@Schema(description = "提交时间")
 	private Long submitTime;
 
-	@Schema(description = "审批结果")
-	private  String result;
-
-	@Schema(description = "审批实例状态")
+	@Schema(description = "审批状态")
 	private String approvalStatus;
 
 	@Schema(description = "当前节点ID")

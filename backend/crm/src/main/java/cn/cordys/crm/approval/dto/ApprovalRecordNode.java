@@ -17,6 +17,9 @@ public class ApprovalRecordNode {
 	@Schema(description = "节点ID")
 	private String nodeId;
 
+	@Schema(description = "节点轮次")
+	private Integer nodeRound;
+
 	@Schema(description = "审批状态")
 	private String approvalStatus;
 

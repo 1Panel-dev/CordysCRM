@@ -31,6 +31,7 @@ import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.*;
 import cn.cordys.crm.approval.log.ApprovalFlowLogDTO;
 import cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper;
+import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.domain.Department;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
@@ -99,7 +100,7 @@ public class ApprovalFlowService {
     @Resource
 	private UserViewService userViewService;
 	@Resource
-	private BaseMapper<ApprovalTask> approvalTaskMapper;
+	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -1653,7 +1654,7 @@ public class ApprovalFlowService {
 				return getNextNodeWithExceptionHandler(instance, nodeId, fieldValues, currentOrgId);
 			}
 			if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_REJECT) {
-				// 自动驳回, 插入审批记录,
+				// 自动驳回, 插入审批记录
 				saveAutoRecord(instance.getId(), nodeId, ApprovalStatus.UNAPPROVED, null);
 				ApprovalNodeExceptionResponse exNode = BeanUtils.copyBean(new ApprovalNodeExceptionResponse(), nextApproverNode);
 				exNode.setNodeType(ApprovalNodeTypeEnum.EXCEPTION.name());
@@ -1706,10 +1707,12 @@ public class ApprovalFlowService {
 	 * @param approvalStatus 审批状态
 	 */
 	private void saveAutoRecord(String instanceId, String nodeId, ApprovalStatus approvalStatus, String comment) {
+		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, nodeId);
 		ApprovalRecord record = new ApprovalRecord();
 		record.setId(IDGenerator.nextStr());
 		record.setInstanceId(instanceId);
 		record.setNodeId(nodeId);
+		record.setNodeRound(nextRound);
 		record.setResult(approvalStatus.name());
 		if (StringUtils.isBlank(comment)) {
 			record.setComment(approvalStatus == ApprovalStatus.APPROVED ? Translator.get("auto.approval.passed") : Translator.get("auto.approval.rejected"));

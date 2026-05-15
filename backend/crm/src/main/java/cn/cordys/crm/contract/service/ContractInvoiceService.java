@@ -25,16 +25,15 @@ import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.BusinessTitleConstants;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
-import cn.cordys.crm.contract.domain.BusinessTitle;
-import cn.cordys.crm.contract.domain.Contract;
-import cn.cordys.crm.contract.domain.ContractInvoice;
-import cn.cordys.crm.contract.domain.ContractInvoiceSnapshot;
+import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceUpdateRequest;
+import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
@@ -579,4 +578,20 @@ public class ContractInvoiceService {
         }
         return businessFormConfig;
     }
+
+	/**
+	 * 由审批执行操作统一调用, 勿修改
+	 * @param param 参数
+	 */
+	public void updateSnapshotApprovalStatus(ResourceSnapshotApprovalParam param) {
+		ContractInvoiceSnapshot snapshotCriteria = new ContractInvoiceSnapshot();
+		snapshotCriteria.setInvoiceId(param.getResourceId());
+		ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+		if (snapshot != null) {
+			ContractInvoiceGetResponse response = JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
+			response.setApprovalStatus(param.getApprovalStatus());
+			snapshot.setInvoiceValue(JSON.toJSONString(response));
+			snapshotBaseMapper.update(snapshot);
+		}
+	}
 }

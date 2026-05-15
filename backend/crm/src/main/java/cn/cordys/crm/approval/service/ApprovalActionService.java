@@ -6,6 +6,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.domain.*;
@@ -92,11 +93,11 @@ public class ApprovalActionService {
 			throw new GenericException(Translator.get("no.operation.permission"));
 		}
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
-		// 加签操作的待办任务
-		ApprovalTask appendActionTask = appendSignTask(request, userId);
-		ApprovalAddSignTask addSignTask = saveAddSignTask(request, appendActionTask.getId());
 		// 刷新被加签任务状态 && 插入审批记录
-		saveActionTask(request, ApprovalAction.SIGN, userId, orgId, ApprovalAddSignType.valueOf(request.getType()));
+		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.SIGN, userId, orgId, ApprovalAddSignType.valueOf(request.getType()));
+		// 加签操作的待办任务
+		ApprovalTask appendActionTask = appendSignTask(request, userId, currentTask.getNodeRound());
+		ApprovalAddSignTask addSignTask = saveAddSignTask(request, appendActionTask.getId());
 		// 之后加签(多人或签), 需要刷新实例当前审批节点
 		if (ApprovalAddSignType.valueOf(request.getType()) == ApprovalAddSignType.AFTER && isMultiAnyMode(appendActionTask.getNodeId(), userId, orgId)) {
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(appendActionTask, instance, orgId);
@@ -231,10 +232,11 @@ public class ApprovalActionService {
 	 * @param request 加签参数
 	 * @param userId  当前用户
 	 */
-	private ApprovalTask appendSignTask(ApprovalActionRequest request, String userId) {
+	private ApprovalTask appendSignTask(ApprovalActionRequest request, String userId, int round) {
 		ApprovalTask approvalTask = new ApprovalTask();
 		BeanUtils.copyBean(approvalTask, request);
 		approvalTask.setId(IDGenerator.nextStr());
+		approvalTask.setNodeRound(round);
 		approvalTask.setCreateTime(System.currentTimeMillis());
 		approvalTask.setUpdateTime(System.currentTimeMillis());
 		approvalTask.setCreateUser(userId);
@@ -287,6 +289,7 @@ public class ApprovalActionService {
 		record.setId(IDGenerator.nextStr());
 		record.setInstanceId(currentTask.getInstanceId());
 		record.setTaskId(currentTask.getId());
+		record.setNodeRound(currentTask.getNodeRound());
 		record.setNodeId(currentTask.getNodeId());
 		record.setComment(comment);
 		record.setCreateTime(System.currentTimeMillis());
@@ -334,7 +337,7 @@ public class ApprovalActionService {
 			if (approvingTasks.isEmpty()) {
 				User nextUser = getMultiSeqNextOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId);
 				if (nextUser != null) {
-					ApprovalTask multiSeqNextTask = buildTask(currentTask.getNodeId(), currentTask.getInstanceId(), nextUser.getId(), ApprovalTaskType.NL.name(), currentUserId);
+					ApprovalTask multiSeqNextTask = buildTask(currentTask.getNodeId(), currentTask.getInstanceId(), nextUser.getId(), ApprovalTaskType.NL.name(), currentUserId, currentTask.getNodeRound());
 					approvalTaskMapper.insert(multiSeqNextTask);
 				}
 			}
@@ -374,6 +377,10 @@ public class ApprovalActionService {
 		if (!multiNode || nodeRejected) {
 			// 单人审批或者多人审批但节点流转失败, 实例直接驳回结束
 			approvalInstanceService.rejectApprovalInstance(instance, currentUserId);
+			ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+			if (resourceService != null) {
+				resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus());
+			}
 		}
 	}
 
@@ -833,6 +840,10 @@ public class ApprovalActionService {
 			instance.setApprovalTime(System.currentTimeMillis());
 		}
 		approvalInstanceMapper.updateById(instance);
+		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+		if (resourceService != null) {
+			resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus());
+		}
 		if (ApprovalNodeTypeEnum.valueOf(node.getNodeType()) == ApprovalNodeTypeEnum.APPROVER) {
 			List<ApprovalTask> approvalTasks = getNodeApproverTasks((ApprovalNodeApproverResponse) node, instance.getId(), currentUserId, ApprovalTaskType.NL.name());
 			List<ApprovalTask> ccTasks = getNodeCcTasks((ApprovalNodeApproverResponse) node, instance.getId(), currentUserId);
@@ -882,9 +893,10 @@ public class ApprovalActionService {
 		if (approverNode == null) {
 			return approvalTasks;
 		}
+		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, approverNode.getId());
 		if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(approverNode.getApproverList())) {
 			approverNode.getApproverList().forEach(approver -> {
-				ApprovalTask approvalTask = buildTask(approverNode.getId(), instanceId, approver, taskType, userId);
+				ApprovalTask approvalTask = buildTask(approverNode.getId(), instanceId, approver, taskType, userId, nextRound);
 				approvalTasks.add(approvalTask);
 			});
 		}
@@ -896,19 +908,21 @@ public class ApprovalActionService {
 		if (approverNode == null) {
 			return approvalTasks;
 		}
+		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, approverNode.getId());
 		if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(approverNode.getCcList())) {
 			approverNode.getCcList().forEach(cc -> {
-				ApprovalTask approvalTask = buildTask(approverNode.getId(), instanceId, cc, ApprovalTaskType.CC.name(), userId);
+				ApprovalTask approvalTask = buildTask(approverNode.getId(), instanceId, cc, ApprovalTaskType.CC.name(), userId, nextRound);
 				approvalTasks.add(approvalTask);
 			});
 		}
 		return approvalTasks;
 	}
 
-	public ApprovalTask buildTask(String nodeId, String instanceId, String approverId, String taskType, String currentUserId) {
+	public ApprovalTask buildTask(String nodeId, String instanceId, String approverId, String taskType, String currentUserId, Integer round) {
 		ApprovalTask approvalTask = new ApprovalTask();
 		approvalTask.setId(IDGenerator.nextStr());
 		approvalTask.setNodeId(nodeId);
+		approvalTask.setNodeRound(round);
 		approvalTask.setInstanceId(instanceId);
 		approvalTask.setApproverId(approverId);
 		approvalTask.setStatus(ApprovalStatus.APPROVING.name());
@@ -934,14 +948,15 @@ public class ApprovalActionService {
 		List<ApprovalTask> approvalTasks = new ArrayList<>();
 		ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
 		List<User> approvers = approvalFlowService.getCurrentNodeApproverList(currentNodeId, userId, currentOrgId);
+		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, currentNodeId);
 		if (Strings.CI.equals(approvalNodeApprover.getMultiApproverMode(), MultiApproverModeEnum.SEQUENTIAL.name()) || approvers.size() == 1) {
 			// 单人或者依次审批, 只会产生一条待办任务
 			User approverUser = approvers.getFirst();
-			approvalTasks.add(buildTask(currentNodeId, instanceId, approverUser.getId(), taskType, userId));
+			approvalTasks.add(buildTask(currentNodeId, instanceId, approverUser.getId(), taskType, userId, nextRound));
 		} else {
 			// 多人审批, 且为会签或签方式
 			approvers.forEach(approver -> {
-				ApprovalTask approvalTask = buildTask(currentNodeId, instanceId, approver.getId(), taskType, userId);
+				ApprovalTask approvalTask = buildTask(currentNodeId, instanceId, approver.getId(), taskType, userId, nextRound);
 				approvalTasks.add(approvalTask);
 			});
 		}

@@ -6,8 +6,10 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.ScopeKey;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.domain.UserExtend;
 import cn.cordys.crm.system.domain.UserRole;
 import cn.cordys.crm.system.dto.ScopeNameDTO;
+import cn.cordys.crm.system.dto.UserSimple;
 import cn.cordys.crm.system.mapper.ExtUserExtendMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -38,6 +40,8 @@ public class UserExtendService {
     private BaseMapper<UserRole> userRoleMapper;
     @Resource
     private BaseMapper<User> userMapper;
+	@Resource
+	private BaseMapper<UserExtend> userExtendMapper;
 
     /**
      * 获取范围的所有负责人ID
@@ -369,5 +373,17 @@ public class UserExtendService {
             collectDeptNodes(node.getChildren(), deptMap);
         }
     }
+
+	/**
+	 * 获取用户头像集合
+	 * @return 用户头像集合
+	 */
+	public Map<String, UserSimple> getAllUserSimpleMap() {
+		List<UserExtend> userExtends = userExtendMapper.selectAll(null);
+		List<User> users = userMapper.selectAll(null);
+		Map<String, String> avatarMap = userExtends.stream().collect(Collectors.toMap(UserExtend::getId, UserExtend::getAvatar));
+		List<UserSimple> simples = users.stream().map(user -> new UserSimple(user.getId(), user.getName(), avatarMap.get(user.getId()))).toList();
+		return simples.stream().collect(Collectors.toMap(UserSimple::getId, u -> u));
+	}
 
 }

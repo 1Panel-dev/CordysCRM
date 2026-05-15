@@ -30,6 +30,7 @@ import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
@@ -48,6 +49,8 @@ import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.opportunity.domain.OpportunityQuotationSnapshot;
+import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
@@ -674,6 +677,22 @@ public class ContractService {
             snapshotBaseMapper.update(first);
         }
     }
+
+	/**
+	 * 由审批执行操作统一调用, 勿修改
+	 * @param param 参数
+	 */
+	public void updateSnapshotApprovalStatus(ResourceSnapshotApprovalParam param) {
+		ContractSnapshot snapshotCriteria = new ContractSnapshot();
+		snapshotCriteria.setContractId(param.getResourceId());
+		ContractSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+		if (snapshot != null) {
+			ContractGetResponse response = JSON.parseObject(snapshot.getContractValue(), ContractGetResponse.class);
+			response.setApprovalStatus(param.getApprovalStatus());
+			snapshot.setContractValue(JSON.toJSONString(response));
+			snapshotBaseMapper.update(snapshot);
+		}
+	}
 
     public CustomerContractStatisticResponse calculateContractStatisticByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         return extContractMapper.calculateContractStatisticByCustomerId(customerId, userId, orgId, deptDataPermission);

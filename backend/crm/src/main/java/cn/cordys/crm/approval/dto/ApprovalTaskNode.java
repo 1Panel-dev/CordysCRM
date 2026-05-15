@@ -43,5 +43,5 @@ public class ApprovalTaskNode {
 	private Long approvalTime;
 
 	@Schema(description = "是否加签任务")
-	private boolean isAddSign;
+	private boolean sign;
 }

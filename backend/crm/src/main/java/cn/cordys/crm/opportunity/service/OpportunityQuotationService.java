@@ -24,6 +24,7 @@ import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.ContractField;
@@ -455,6 +456,22 @@ public class OpportunityQuotationService {
             snapshotBaseMapper.update(first);
         }
     }
+
+	/**
+	 * 由审批执行操作统一调用, 勿修改
+	 * @param param 参数
+	 */
+	public void updateSnapshotApprovalStatus(ResourceSnapshotApprovalParam param) {
+		OpportunityQuotationSnapshot snapshotCriteria = new OpportunityQuotationSnapshot();
+		snapshotCriteria.setQuotationId(param.getResourceId());
+		OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+		if (snapshot != null) {
+			OpportunityQuotationGetResponse response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
+			response.setApprovalStatus(param.getApprovalStatus());
+			snapshot.setQuotationValue(JSON.toJSONString(response));
+			snapshotBaseMapper.update(snapshot);
+		}
+	}
 
 	/**
 	 * 作废报价快照
