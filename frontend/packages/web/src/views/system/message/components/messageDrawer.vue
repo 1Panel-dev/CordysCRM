@@ -236,9 +236,9 @@
 
     const todoListMessage = [
       {
-        value: 'approval',
+        value: 'APPROVAL',
         label: t('system.message.todoList'),
-        count: messageCount.value?.approval || 0,
+        count: messageCount.value?.APPROVAL || 0,
       },
     ];
 

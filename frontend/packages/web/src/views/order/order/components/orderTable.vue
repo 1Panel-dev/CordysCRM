@@ -440,7 +440,7 @@
     excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',
-      width: currentLocale.value === 'en-US' ? 180 : 150,
+      width: currentLocale.value === 'en-US' ? 180 : 170,
       fixed: 'right',
       render: (row: OrderItem) => {
         const operation = resolveRowOperation(row);
