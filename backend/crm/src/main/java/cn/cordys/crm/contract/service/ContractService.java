@@ -28,6 +28,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
@@ -155,7 +156,7 @@ public class ContractService {
         contract.setStage(stageConfigList.getFirst().getId());
         contract.setPos(nextPos);
         contract.setOrganizationId(orgId);
-        contract.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
+        contract.setApprovalStatus(ApprovalStatus.NONE.name());
         contract.setStartTime(request.getStartTime());
         contract.setEndTime(request.getEndTime());
         contract.setCreateTime(System.currentTimeMillis());

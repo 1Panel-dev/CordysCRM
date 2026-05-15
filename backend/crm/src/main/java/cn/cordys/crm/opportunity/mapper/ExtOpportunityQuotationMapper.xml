@@ -136,6 +136,7 @@
                     <otherwise>
                         <if test="condition.name != 'name'
                             and condition.name != 'approvalStatus'
+                            and condition.name != 'invalid'
                             and condition.name != 'amount'
                             and condition.name != 'opportunityId'
                             and condition.name != 'departmentId'
@@ -171,7 +172,7 @@
 
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
-                {'name', 'approval_status', 'amount', 'opportunity_id', 'update_user', 'create_time', 'update_time', 'until_time',
+                {'name', 'approval_status', 'invalid', 'amount', 'opportunity_id', 'update_user', 'create_time', 'update_time', 'until_time',
                 'create_user', 'department_id' }">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_quotation_field sort_table
@@ -194,6 +195,9 @@
                     </when>
                     <when test="${sort}.name == 'approval_status'">
                         oq.`approval_status` ${sortType}, oq.id ASC
+                    </when>
+                    <when test="${sort}.name == 'invalid'">
+                        oq.`invalid` ${sortType}, oq.id ASC
                     </when>
                     <when test="${sort}.name == 'amount'">
                         oq.`amount` ${sortType}, oq.id ASC
@@ -279,6 +283,12 @@
                         <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                             <property name="condition" value="condition"/>
                             <property name="column" value="oq.approval_status"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'invalid'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="oq.invalid"/>
                         </include>
                     </when>
                     <when test="condition.name == 'amount'">

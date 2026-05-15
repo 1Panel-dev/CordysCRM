@@ -1,14 +1,13 @@
 package cn.cordys.crm.approval.service;
 
-import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.*;
+import cn.cordys.crm.approval.dto.ApprovalCcNode;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalRecordNode;
+import cn.cordys.crm.approval.dto.ApprovalTaskNode;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.service.AttachmentService;
@@ -17,7 +16,6 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
@@ -177,12 +175,12 @@ public class ApprovalInstanceService {
 	 * @param signTaskGroupMap 加签任务分组
 	 * @param returnRecordMap 退回记录映射
 	 * @param taskRecordMap 任务执行记录映射
-	 * @param elementAttachmentsMap 元素附件映射
+	 * @param attachmentsMap 元素附件映射
 	 * @return 审批记录节点列表
 	 */
 	private List<ApprovalRecordNode> buildApprovalRecordNodeList(List<ApprovalTask> approvalTasks, Map<String, List<ApprovalAddSignTask>> signTaskGroupMap, Map<String, ApprovalReturnBackRecord> returnRecordMap,
 																 Map<String, ApprovalRecord> taskRecordMap,
-										 						 Map<String, List<Attachment>> elementAttachmentsMap) {
+										 						 Map<String, List<Attachment>> attachmentsMap) {
 		/*
 		 * 处理不同类型的任务:
 		 * 1. 加签任务: 需单独查询加签任务表, 并按位次配置追加。
@@ -190,93 +188,27 @@ public class ApprovalInstanceService {
 		 * 3. 抄送任务: 查询该任务节点下所有的抄送任务, 并一起返回。
 		 */
 		List<ApprovalRecordNode> nodes = new ArrayList<>();
-		for (ApprovalTask task : approvalTasks) {
-			ApprovalRecordNode node = buildRecordNode(task, taskRecordMap.get(task.getId()), elementAttachmentsMap);
-			// 处理加签任务节点
-			if (Strings.CI.equals(task.getType(), ApprovalTaskType.SN.name())) {
-				List<ApprovalAddSignTask> addSignTasks = signTaskGroupMap.get(task.getId());
-				if (CollectionUtils.isNotEmpty(addSignTasks)) {
-					// 按加签类型分组, 并按位次排序
-					List<ApprovalAddSignTask> beforeTasks = addSignTasks.stream()
-							.filter(t -> "before".equals(t.getType()))
-							.toList();
-					List<ApprovalAddSignTask> afterTasks = addSignTasks.stream()
-							.filter(t -> "after".equals(t.getType()))
-							.toList();
-
-					// 之前的节点
-					for (ApprovalAddSignTask signTask : beforeTasks) {
-						ApprovalRecordNode beforeNode = buildAddSignNode(signTask, taskRecordMap.get(signTask.getTaskId()), elementAttachmentsMap);
-						beforeNode.setAddSignNode(true);
-						nodes.add(beforeNode);
-					}
-					// 当前节点（当普通节点处理，有执行记录则从记录取意见和附件）
-					nodes.add(node);
-					// 之后节点
-					for (ApprovalAddSignTask signTask : afterTasks) {
-						ApprovalRecordNode afterNode = buildAddSignNode(signTask, taskRecordMap.get(signTask.getTaskId()), elementAttachmentsMap);
-						afterNode.setAddSignNode(true);
-						nodes.add(afterNode);
-					}
-				}
-			} else if (Strings.CI.equals(task.getType(), ApprovalTaskType.BK.name()) && ApprovalStatus.APPROVING.name().equals(task.getStatus())) {
-				// 退回任务节点: 仅在审批中时显示为退回节点, 并从退回记录获取意见和附件
-				ApprovalReturnBackRecord returnRecord = returnRecordMap.get(task.getId());
-				node.setReturnNode(true);
-				if (returnRecord != null) {
-					node.setComment(returnRecord.getReturnReason());
-					node.setAttachments(elementAttachmentsMap.get(task.getId()));
-				}
-				nodes.add(node);
-			} else if (Strings.CI.equals(task.getType(), ApprovalTaskType.CC.name())) {
-				// TODO: 处理抄送任务节点: 查询该任务节点下所有的抄送任务
-			} else {
-				// 普通任务节点直接添加
-				nodes.add(node);
-			}
-		}
+		Map<String, List<ApprovalTask>> nodeTasks = approvalTasks.stream().collect(Collectors.groupingBy(ApprovalTask::getNodeId));
+		nodeTasks.forEach((nodeId, tasks) -> {
+			List<ApprovalTask> ccTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.CC).toList();
+			List<ApprovalCcNode> ccNodes = ccTasks.stream().map(ccTask -> new ApprovalCcNode(ccTask.getApproverId(), ccTask.getApproverId(), ccTask.getApproverId())).toList();
+			List<ApprovalTask> normalTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) != ApprovalTaskType.NL).toList();
+			List<ApprovalTaskNode> taskNodes = normalTasks.stream().map(task -> buildTaskNode(task, taskRecordMap, attachmentsMap)).toList();
+			ApprovalRecordNode recordNode = ApprovalRecordNode.builder().ccNodes(ccNodes).taskNodes(taskNodes).build();
+			nodes.add(recordNode);
+		});
 
 		return nodes;
 	}
 
-	/**
-	 * 构建审批记录节点
-	 */
-	private ApprovalRecordNode buildRecordNode(ApprovalTask task, ApprovalRecord record,
-												Map<String, List<Attachment>> elementAttachmentsMap) {
-		ApprovalRecordNode node = ApprovalRecordNode.builder().taskId(task.getId())
-				.nodeId(task.getNodeId()).approverId(task.getApproverId())
-				.approvalStatus(task.getStatus()).approvalTime(task.getCreateTime())
-				.build();
+	private ApprovalTaskNode buildTaskNode(ApprovalTask task, Map<String, ApprovalRecord> taskRecordMap, Map<String, List<Attachment>> attachmentsMap) {
+		ApprovalRecord record = taskRecordMap.get(task.getId());
+		ApprovalTaskNode taskNode = ApprovalTaskNode.builder().taskId(task.getId()).approverId(task.getApproverId()).approvalStatus(task.getStatus()).approvalTime(task.getUpdateTime()).build();
 		if (record != null) {
-			node.setRecordId(record.getId());
-			node.setComment(record.getComment());
-			// 从执行记录获取附件
-			node.setAttachments(elementAttachmentsMap.get(record.getId()));
+			taskNode.setComment(record.getComment());
+			taskNode.setAttachments(attachmentsMap.get(record.getId()));
 		}
-		return node;
-	}
-
-	/**
-	 * 构建加签任务节点
-	 */
-	private ApprovalRecordNode buildAddSignNode(ApprovalAddSignTask signTask, ApprovalRecord record,
-												Map<String, List<Attachment>> elementAttachmentsMap) {
-		// ApprovalRecordNode node = ApprovalRecordNode.builder().taskId(signTask.getTaskId()).recordId(record != null ? record.getId() : null)
-		// 		.approverId(signTask.getApproverId()).approvalStatus(signTask.getStatus())
-		// 		.approvalTime(signTask.getCreateTime())
-		// 		.build();
-		// // 如果有执行记录，从记录中获取意见和附件
-		// if (record != null) {
-		// 	node.setComment(record.getComment());
-		// 	node.setAttachments(elementAttachmentsMap.get(record.getId()));
-		// } else if (ApprovalStatus.APPROVING.name().equals(signTask.getStatus())) {
-		// 	// 审批中：从加签信息中取意见
-		// 	node.setComment(signTask.getComment());
-		// 	// 从加签任务获取附件
-		// 	node.setAttachments(elementAttachmentsMap.get(signTask.getId()));
-		// }
-		return null;
+		return taskNode;
 	}
 
 	/**

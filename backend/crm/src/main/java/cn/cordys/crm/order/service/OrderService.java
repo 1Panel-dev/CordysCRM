@@ -124,7 +124,7 @@ public class OrderService {
         order.setId(IDGenerator.nextStr());
         order.setStage(stageConfigList.getFirst().getId());
         order.setPos(nextPos);
-        order.setApprovalStatus(ApprovalStatus.PENDING.name());
+        order.setApprovalStatus(ApprovalStatus.NONE.name());
         order.setOrganizationId(orgId);
         order.setCreateTime(System.currentTimeMillis());
         order.setCreateUser(operatorId);
