@@ -2,6 +2,7 @@
   <div class="crm-flow relative flex h-full w-full">
     <div class="crm-flow__main relative flex-1 overflow-hidden">
       <FlowCanvas
+        ref="flowCanvasRef"
         :readonly="props.readonly"
         :flow="flow"
         :selection="selection"
@@ -25,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, useSlots } from 'vue';
+  import { computed, ref, useSlots } from 'vue';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -114,9 +115,16 @@
     });
   }
 
+  const flowCanvasRef = ref<InstanceType<typeof FlowCanvas> | null>(null);
+
+  function refreshCanvas() {
+    flowCanvasRef.value?.refreshCanvas();
+  }
+
   defineExpose({
     flow,
     selectNode,
+    refreshCanvas,
   });
 </script>
 

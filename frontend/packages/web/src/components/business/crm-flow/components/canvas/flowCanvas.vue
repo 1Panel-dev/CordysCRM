@@ -199,6 +199,24 @@
     graphController.value.render(cellsWithSelection);
   }
 
+  const canvasRef = ref<HTMLElement | null>(null);
+
+  function refreshCanvas() {
+    nextTick(() => {
+      const graph = graphController.value?.getGraph();
+      const resizeTarget = flowCanvasRef.value ?? canvasRef.value;
+      if (!graph || !resizeTarget) {
+        return;
+      }
+
+      const { clientWidth, clientHeight } = resizeTarget;
+      if (clientWidth && clientHeight) {
+        graph.resize(clientWidth, clientHeight);
+      }
+      renderFlow();
+    });
+  }
+
   function updateRenderedNodeState() {
     const graph = graphController.value?.getGraph();
     if (!graph) {
@@ -247,7 +265,6 @@
   }
 
   let hasAutoFitted = false;
-  const canvasRef = ref<HTMLElement | null>(null);
 
   function fitAfterInit() {
     if (!graphController.value || !canvasRef.value || hasAutoFitted) {
@@ -382,6 +399,10 @@
     hasAutoFitted = false;
     graphController.value = null;
     closeAddPopover();
+  });
+
+  defineExpose({
+    refreshCanvas,
   });
 </script>
 

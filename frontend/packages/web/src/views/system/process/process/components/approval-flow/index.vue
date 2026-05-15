@@ -105,6 +105,7 @@
 
   const emit = defineEmits<{
     (event: 'switchMoreSetting'): void;
+    (event: 'change'): void;
   }>();
   const { t } = useI18n();
 
@@ -167,6 +168,10 @@
     nextTick(() => {
       selectStartNodeOnInit();
     });
+  }
+
+  function refreshCanvas() {
+    crmFlowRef.value?.refreshCanvas();
   }
 
   onMounted(() => {
@@ -253,11 +258,45 @@
     }
   );
 
+  function resetToDefaultFlow() {
+    setConditionDrawerVisible.value = false;
+    activeConditionBranch.value = null;
+    flowSchema.value = createDefaultFlow(startNodeDescription.value);
+
+    nextTick(() => {
+      selectStartNodeOnInit();
+    });
+  }
+
+  watch(
+    () => basicConfig.value.formType,
+    (formType, oldFormType) => {
+      if (props.readonly || !oldFormType || formType === oldFormType) {
+        return;
+      }
+
+      resetToDefaultFlow();
+    }
+  );
+
+  watch(
+    flowSchema,
+    () => {
+      if (!props.readonly) {
+        emit('change');
+      }
+    },
+    {
+      deep: true,
+    }
+  );
+
   defineExpose({
     validateFlowNodes,
     getProcessNodes,
     getProcessLinks,
     setProcessData,
+    refreshCanvas,
   });
 </script>
 

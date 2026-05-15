@@ -5,6 +5,8 @@
     :tabList="tabList"
     :loading="loading"
     :readonly="isDetail"
+    @pointerdown.capture="handleUserInteraction"
+    @keydown.capture="handleUserInteraction"
     @save="handleSave"
     @next-step="handleNextStep"
     @cancel="handleCancel"
@@ -41,6 +43,7 @@
         :need-detail="!!props.sourceId"
         :readonly="isDetail"
         :option-map="detailOptionMap"
+        @change="markUnsaved"
         @switch-more-setting="activeTab = 'moreSetting'"
       />
       <moreSetting
@@ -121,11 +124,52 @@
     },
   ];
 
-  function handleCancel() {
+  const unsaved = ref(false);
+  const userInteracted = ref(false); // 防止没编辑就弹出提示
+  const loading = ref(false);
+
+  function markUnsaved() {
+    if (!props.readonly && !props.isDetail && userInteracted.value) {
+      unsaved.value = true;
+    }
+  }
+
+  function handleUserInteraction() {
+    if (!props.readonly && !props.isDetail) {
+      userInteracted.value = true;
+    }
+  }
+
+  function closeDrawer() {
+    unsaved.value = false;
+    userInteracted.value = false;
     visible.value = false;
     form.value = cloneDeep(initForm);
     detailOptionMap.value = {};
     emit('cancel');
+  }
+
+  function showUnsavedLeaveTip() {
+    openModal({
+      type: 'warning',
+      title: t('common.unSaveLeaveTitle'),
+      content: t('common.editUnsavedLeave'),
+      positiveText: t('common.confirm'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        closeDrawer();
+      },
+    });
+  }
+
+  function handleCancel() {
+    if (!loading.value) {
+      if (unsaved.value) {
+        showUnsavedLeaveTip();
+      } else {
+        closeDrawer();
+      }
+    }
   }
 
   function handleNextStep() {
@@ -135,8 +179,6 @@
     }
     activeTab.value = tabList[index + 1].name;
   }
-
-  const loading = ref(false);
 
   async function handleSubmit() {
     try {
@@ -157,7 +199,7 @@
         Message.success(t('common.addSuccess'));
       }
       emit('refresh');
-      handleCancel();
+      closeDrawer();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -173,9 +215,14 @@
         title: t('common.saveFailed'),
         positiveText: t('process.process.flow.toConfig'),
         content: t('process.process.flow.nodeNameNotSet'),
-        onPositiveClick: async () => undefined,
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          activeTab.value = 'process';
+          nextTick(() => {
+            approvalFlowDesignRef.value?.refreshCanvas();
+          });
+        },
       });
-      activeTab.value = 'process';
       return;
     }
 
@@ -207,6 +254,10 @@
       editingName.value = result.name;
       nextTick(() => {
         approvalFlowDesignRef.value?.setProcessData(result.nodes ?? [], result.links ?? []);
+        nextTick(() => {
+          unsaved.value = false;
+          userInteracted.value = false;
+        });
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -270,7 +321,24 @@
     (val) => {
       if (!val) {
         activeTab.value = 'process';
+        userInteracted.value = false;
+        return;
       }
+
+      if (!props.sourceId) {
+        unsaved.value = false;
+        userInteracted.value = false;
+      }
+    }
+  );
+
+  watch(
+    () => [form.value.basicConfig, form.value.moreConfig],
+    () => {
+      markUnsaved();
+    },
+    {
+      deep: true,
     }
   );
 </script>

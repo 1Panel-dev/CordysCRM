@@ -56,7 +56,7 @@
             </n-form-item>
           </div>
           <n-form-item :path="`${index}.enable`">
-            <n-switch v-model:value="line.enable" :disabled="props.readonly" />
+            <n-switch v-model:value="line.enable" :disabled="isFieldUpdateSwitchDisabled(line)" />
           </n-form-item>
           <n-button ghost class="px-[7px]" :disabled="props.readonly" @click="handleDeleteFieldUpdate(index)">
             <template #icon>
@@ -346,6 +346,18 @@
   function getFieldValueComponent(line: ApprovalFieldUpdateConfig) {
     const fieldType = getFieldValueConfig(line)?.type;
     return fieldType && isSupportedFieldValueType(fieldType) ? fieldValueComponentMap[fieldType] : null;
+  }
+
+  function isEmptyFieldValue(value: unknown) {
+    if (Array.isArray(value)) {
+      return !value.length;
+    }
+
+    return value === null || value === undefined || value === '';
+  }
+
+  function isFieldUpdateSwitchDisabled(line: ApprovalFieldUpdateConfig) {
+    return props.readonly || !line.fieldId || isEmptyFieldValue(line.fieldValue);
   }
 
   // 切换左侧字段时，右侧值按批量编辑逻辑重置成该字段自己的默认值
