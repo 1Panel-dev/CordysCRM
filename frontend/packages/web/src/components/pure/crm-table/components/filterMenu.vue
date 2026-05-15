@@ -2,14 +2,16 @@
   <div class="crm-table-filter-menu min-h-[80px]">
     <n-scrollbar content-class="p-[8px] max-w-[160px]" style="max-height: 400px">
       <n-checkbox-group v-model:value="filterConditionMap[props.columnKey]">
-        <div v-for="(item, index) of displayFilterOptions" :key="`${item.value}-${index}`" class="h-[32px] p-[4px]">
+        <div
+          v-for="(item, index) of displayFilterOptions"
+          :key="`${item.value}-${index}`"
+          class="crm-table-filter-option"
+        >
           <n-tooltip to="body" :delay="300" flip>
             <template #trigger>
-              <div class="flex items-center gap-[8px]">
-                <n-checkbox :value="item.value" label="" class="overflow-hidden">
-                  <div class="one-line-text max-w-[116px]">{{ item.label }}</div>
-                </n-checkbox>
-              </div>
+              <n-checkbox :value="item.value" label="" class="crm-table-filter-checkbox">
+                <div class="one-line-text max-w-[116px]">{{ item.label }}</div>
+              </n-checkbox>
             </template>
             {{ item.label }}
           </n-tooltip>
@@ -78,6 +80,19 @@
   .crm-table-filter-menu {
     border-radius: 4px;
     background: var(--text-n10);
+    .crm-table-filter-option {
+      padding: 4px;
+      height: 32px;
+      @apply flex items-center;
+    }
+    :deep(.crm-table-filter-checkbox) {
+      @apply flex w-full items-center overflow-hidden;
+      .n-checkbox__label {
+        @apply flex min-w-0 items-center;
+
+        line-height: 20px;
+      }
+    }
     .crm-table-filter-footer {
       border-top: 1px solid var(--text-n8);
       border-radius: 2px;

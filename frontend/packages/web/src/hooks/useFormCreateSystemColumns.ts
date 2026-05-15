@@ -5,7 +5,7 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 
-import { contractPaymentPlanStatusOptions, contractStatusOptions } from '@/config/contract';
+import { contractPaymentPlanStatusOptions } from '@/config/contract';
 import { quotationStatus } from '@/config/opportunity';
 import { processStatusOptions } from '@/config/process';
 import useReasonConfig from '@/hooks/useReasonConfig';

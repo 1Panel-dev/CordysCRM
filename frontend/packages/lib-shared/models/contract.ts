@@ -14,6 +14,7 @@ export interface ContractItem {
   alreadyPayAmount: number;
   approvalStatus: ProcessStatusEnum;
   stage: string;
+  stageName: string;
   owner: string;
   ownerName: string;
   createUser: string;

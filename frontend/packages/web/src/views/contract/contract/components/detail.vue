@@ -166,8 +166,7 @@
   import QuotationDetailDrawer from '@/views/opportunity/components/quotation/detail.vue';
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
-  import { approvalContract, deleteContract, getContractStatusConfig, updateContractStage } from '@/api/modules';
-  import { contractStatusOptions } from '@/config/contract';
+  import { deleteContract, getContractStatusConfig, updateContractStage } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -195,9 +194,6 @@
   const title = ref('');
   const detailInfo = ref();
 
-  const stageName = computed(() => {
-    return contractStatusOptions.find((item) => item.value === detailInfo.value?.stage)?.label;
-  });
   const showVoidReasonModal = ref(false);
 
   const activeTab = ref('contract');
