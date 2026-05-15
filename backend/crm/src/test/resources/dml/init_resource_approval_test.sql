@@ -12,12 +12,12 @@ INSERT INTO approval_instance (`id`, `flow_version_id`, `type`, `resource_id`, `
 VALUES
     ('approval_instance_test_001', 'approval_flow_test_001', 'contract', 'approval_resource_test_001', 'admin', 'node_current', 'APPROVING', 1736240043609, NULL, 1736240043609, 1736240043609, 'admin', 'admin');
 
-INSERT INTO approval_task (`id`, `node_id`, `instance_id`, `approver_id`, `status`, `type`, `action`, `create_time`, `update_time`, `create_user`, `update_user`)
+INSERT INTO approval_task (`id`, `node_id`, `node_round`, `instance_id`, `approver_id`, `status`, `type`, `action`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES
-    ('approval_task_current', 'node_current', 'approval_instance_test_001', 'appr_user_curr', 'APPROVED', 'NL', 'APPROVE', 1736240043609, 1736240043609, 'admin', 'admin'),
-    ('approval_task_other', 'node_other', 'approval_instance_test_001', 'appr_user_othr', 'APPROVED', 'NL', 'APPROVE',1736241043609, 1736241043609, 'admin', 'admin');
+    ('approval_task_current', 'node_current', 1, 'approval_instance_test_001', 'appr_user_curr', 'APPROVED', 'NL', 'APPROVE', 1736240043609, 1736240043609, 'admin', 'admin'),
+    ('approval_task_other', 'node_other', 1, 'approval_instance_test_001', 'appr_user_othr', 'APPROVED', 'NL', 'APPROVE',1736241043609, 1736241043609, 'admin', 'admin');
 
-INSERT INTO approval_record (`id`, `instance_id`, `task_id`, `node_id`, `result`, `comment`, `create_time`, `update_time`, `create_user`, `update_user`)
+INSERT INTO approval_record (`id`, `instance_id`, `task_id`, `node_id`, `node_round`, `result`, `comment`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES
-    ('approval_record_current', 'approval_instance_test_001', 'approval_task_current', 'node_current', 'APPROVED', 'current-node-comment', 1736240043609, 1736240043609, 'admin', 'admin'),
-    ('approval_record_other', 'approval_instance_test_001', 'approval_task_other', 'node_other', 'UNAPPROVED', 'other-node-comment', 1736241043609, 1736241043609, 'admin', 'admin');
+    ('approval_record_current', 'approval_instance_test_001', 'approval_task_current', 'node_current', 1, 'APPROVED', 'current-node-comment', 1736240043609, 1736240043609, 'admin', 'admin'),
+    ('approval_record_other', 'approval_instance_test_001', 'approval_task_other', 'node_other', 1, 'UNAPPROVED', 'other-node-comment', 1736241043609, 1736241043609, 'admin', 'admin');

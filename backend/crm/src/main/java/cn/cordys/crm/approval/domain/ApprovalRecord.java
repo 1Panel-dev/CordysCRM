@@ -18,6 +18,9 @@ public class ApprovalRecord extends BaseModel {
 	@Schema(description = "任务ID")
 	private String taskId;
 
+	@Schema(description = "节点轮次")
+	private Integer nodeRound;
+
 	@Schema(description = "节点ID")
 	private String nodeId;
 

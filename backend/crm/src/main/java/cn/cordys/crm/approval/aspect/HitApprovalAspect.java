@@ -75,7 +75,7 @@ public class HitApprovalAspect {
 
 			if (hit) {
 				// 命中审批流, 修改业务资源审批状态为待提审
-				approvalResourceService.updateApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name());
+				approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name());
 			}
 		} catch (Exception e) {
 			log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);

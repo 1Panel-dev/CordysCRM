@@ -1,6 +1,8 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.*;
@@ -10,19 +12,17 @@ import cn.cordys.crm.approval.dto.ApprovalRecordNode;
 import cn.cordys.crm.approval.dto.ApprovalTaskNode;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.dto.UserSimple;
 import cn.cordys.crm.system.service.AttachmentService;
+import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static cn.cordys.crm.approval.service.ApprovalResourceService.FORM_APPROVAL_TABLE;
@@ -50,6 +50,8 @@ public class ApprovalInstanceService {
 	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
 	@Resource
 	private AttachmentService attachmentService;
+	@Resource
+	private UserExtendService userExtendService;
 
 	/**
 	 * 获取资源最新审批实例详情
@@ -61,97 +63,52 @@ public class ApprovalInstanceService {
 		if (latestInstance == null) {
 			return null;
 		}
-
+		Map<String, UserSimple> simpleUserMap = userExtendService.getAllUserSimpleMap();
 		ApprovalInstanceDetail instanceDetail = BeanUtils.copyBean(new ApprovalInstanceDetail(), latestInstance);
-		List<ApprovalTask> approvalTasks = getFilteredTasks(latestInstance);
-		if (CollectionUtils.isEmpty(approvalTasks)) {
-			instanceDetail.setNodes(null);
-			return instanceDetail;
+		if (simpleUserMap.containsKey(instanceDetail.getSubmitterId())) {
+			instanceDetail.setSubmitAvatar(simpleUserMap.get(instanceDetail.getSubmitterId()).getAvatar());
+			instanceDetail.setSubmitter(simpleUserMap.get(instanceDetail.getSubmitterId()).getName());
 		}
-
-		Map<String, List<ApprovalAddSignTask>> signTaskGroupMap = queryAddSignTasks(approvalTasks);
-		Map<String, ApprovalReturnBackRecord> returnRecordMap = queryReturnRecords(approvalTasks);
-		Map<String, ApprovalRecord> taskRecordMap = queryTaskRecords(approvalTasks, signTaskGroupMap);
-		Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(approvalTasks, taskRecordMap, signTaskGroupMap);
-
-		instanceDetail.setNodes(buildApprovalRecordNodeList(approvalTasks, signTaskGroupMap, returnRecordMap, taskRecordMap, elementAttachmentsMap));
+		List<ApprovalTask> tasks = getAllTasks(latestInstance);
+		List<ApprovalRecord> records = getAllRecords(latestInstance);
+		Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(records);
+		instanceDetail.setNodes(buildApprovalRecordNodeList(tasks, records, elementAttachmentsMap, simpleUserMap));
 		return instanceDetail;
 	}
 
 	/**
-	 * 获取最新审批实例
+	 * 获取资源最新审批实例
 	 */
 	public ApprovalInstance getLatestInstance(String resourceId) {
 		LambdaQueryWrapper<ApprovalInstance> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ApprovalInstance::getResourceId, resourceId).orderByDesc(ApprovalInstance::getSubmitTime);
+		wrapper.eq(ApprovalInstance::getResourceId, resourceId);
 		List<ApprovalInstance> list = approvalInstanceMapper.selectListByLambda(wrapper);
-		return CollectionUtils.isEmpty(list) ? null : list.getFirst();
+		return CollectionUtils.isEmpty(list) ? null : list.stream().sorted(Comparator.comparing(ApprovalInstance::getSubmitTime)).toList().getLast();
 	}
 
 	/**
-	 * 获取过滤后的任务列表(按节点分组取最新)
+	 * 获取所有的任务列表
 	 */
-	private List<ApprovalTask> getFilteredTasks(ApprovalInstance latestInstance) {
+	private List<ApprovalTask> getAllTasks(ApprovalInstance latestInstance) {
 		LambdaQueryWrapper<ApprovalTask> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ApprovalTask::getInstanceId, latestInstance.getId()).orderByDesc(ApprovalTask::getCreateTime);
-		List<ApprovalTask> allTasks = approvalTaskMapper.selectListByLambda(wrapper);
-		if (CollectionUtils.isEmpty(allTasks)) {
-			return null;
-		}
-		return allTasks.stream().collect(Collectors.groupingBy(ApprovalTask::getNodeId))
-				.values().stream().map(List::getFirst)
-				.sorted(Comparator.comparing(ApprovalTask::getCreateTime)).toList();
+		wrapper.eq(ApprovalTask::getInstanceId, latestInstance.getId());
+		return approvalTaskMapper.selectListByLambda(wrapper);
 	}
 
 	/**
-	 * 查询加签任务并分组
+	 * 获取所有的记录列表
 	 */
-	private Map<String, List<ApprovalAddSignTask>> queryAddSignTasks(List<ApprovalTask> tasks) {
-		List<String> ids = tasks.stream().filter(task -> Strings.CI.equals(task.getType(), ApprovalTaskType.SN.name())).map(ApprovalTask::getId).toList();
-		if (CollectionUtils.isEmpty(ids)) {
-			return Map.of();
-		}
-		List<ApprovalAddSignTask> list = approvalAddSignTaskMapper.selectListByLambda(
-				new LambdaQueryWrapper<ApprovalAddSignTask>().in(ApprovalAddSignTask::getTaskId, ids));
-		return list.stream().collect(Collectors.groupingBy(ApprovalAddSignTask::getTaskId));
+	private List<ApprovalRecord> getAllRecords(ApprovalInstance latestInstance) {
+		LambdaQueryWrapper<ApprovalRecord> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(ApprovalRecord::getInstanceId, latestInstance.getId());
+		return approvalRecordMapper.selectListByLambda(wrapper);
 	}
 
 	/**
-	 * 查询退回记录
+	 * 查询附件信息并按节点ID分组
 	 */
-	private Map<String, ApprovalReturnBackRecord> queryReturnRecords(List<ApprovalTask> tasks) {
-		List<String> ids = tasks.stream().filter(task -> Strings.CI.equals(task.getType(), ApprovalTaskType.BK.name())).map(ApprovalTask::getId).toList();
-		if (CollectionUtils.isEmpty(ids)) {
-			return Map.of();
-		}
-		List<ApprovalReturnBackRecord> list = approvalReturnBackRecordMapper.selectListByLambda(
-				new LambdaQueryWrapper<ApprovalReturnBackRecord>().in(ApprovalReturnBackRecord::getTaskId, ids));
-		return list.stream().collect(Collectors.toMap(ApprovalReturnBackRecord::getTaskId, r -> r, (v1, v2) -> v1));
-	}
-
-	/**
-	 * 查询任务执行记录
-	 */
-	private Map<String, ApprovalRecord> queryTaskRecords(List<ApprovalTask> tasks, Map<String, List<ApprovalAddSignTask>> signTaskGroupMap) {
-		List<String> taskIds = tasks.stream().map(ApprovalTask::getId).toList();
-		List<String> signIds = signTaskGroupMap.values().stream().flatMap(List::stream)
-				.map(ApprovalAddSignTask::getTaskId).toList();
-		List<ApprovalRecord> records = approvalRecordMapper.selectByIds(ListUtils.union(taskIds, signIds));
-		return records.stream().collect(Collectors.toMap(ApprovalRecord::getTaskId, r -> r));
-	}
-
-	/**
-	 * 查询附件信息并按元素ID分组
-	 */
-	private Map<String, List<Attachment>> queryAttachments(List<ApprovalTask> tasks, Map<String, ApprovalRecord> taskRecordMap,
-															Map<String, List<ApprovalAddSignTask>> signTaskGroupMap) {
-		List<String> elementIds = new ArrayList<>();
-		// elementIds.addAll(taskRecordMap.values().stream().map(ApprovalRecord::getId).toList());
-		// elementIds.addAll(signTaskGroupMap.values().stream().flatMap(List::stream)
-		// 		.filter(t -> ApprovalStatus.APPROVING.name().equals(t.getStatus())).map(ApprovalAddSignTask::getId).toList());
-		// elementIds.addAll(tasks.stream().filter(t -> t.getIsReturn() && ApprovalStatus.APPROVING.name().equals(t.getTaskStatus()))
-		// 		.map(ApprovalTask::getId).toList());
-
+	private Map<String, List<Attachment>> queryAttachments(List<ApprovalRecord> records) {
+		List<String> elementIds = new ArrayList<>(records.stream().map(ApprovalRecord::getId).toList());
 		if (CollectionUtils.isEmpty(elementIds)) {
 			return Map.of();
 		}
@@ -171,16 +128,14 @@ public class ApprovalInstanceService {
 
 	/**
 	 * 构建审批记录节点列表
-	 * @param approvalTasks 审批任务列表
-	 * @param signTaskGroupMap 加签任务分组
-	 * @param returnRecordMap 退回记录映射
-	 * @param taskRecordMap 任务执行记录映射
-	 * @param attachmentsMap 元素附件映射
+	 * @param tasks 审批任务列表
+	 * @param records 记录列表
+	 * @param attachmentsMap 附件集合
+	 * @param simpleUserMap 用户信息集合
 	 * @return 审批记录节点列表
 	 */
-	private List<ApprovalRecordNode> buildApprovalRecordNodeList(List<ApprovalTask> approvalTasks, Map<String, List<ApprovalAddSignTask>> signTaskGroupMap, Map<String, ApprovalReturnBackRecord> returnRecordMap,
-																 Map<String, ApprovalRecord> taskRecordMap,
-										 						 Map<String, List<Attachment>> attachmentsMap) {
+	private List<ApprovalRecordNode> buildApprovalRecordNodeList(List<ApprovalTask> tasks, List<ApprovalRecord> records,
+										 						 Map<String, List<Attachment>> attachmentsMap, Map<String, UserSimple> simpleUserMap) {
 		/*
 		 * 处理不同类型的任务:
 		 * 1. 加签任务: 需单独查询加签任务表, 并按位次配置追加。
@@ -188,22 +143,96 @@ public class ApprovalInstanceService {
 		 * 3. 抄送任务: 查询该任务节点下所有的抄送任务, 并一起返回。
 		 */
 		List<ApprovalRecordNode> nodes = new ArrayList<>();
-		Map<String, List<ApprovalTask>> nodeTasks = approvalTasks.stream().collect(Collectors.groupingBy(ApprovalTask::getNodeId));
-		nodeTasks.forEach((nodeId, tasks) -> {
-			List<ApprovalTask> ccTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.CC).toList();
-			List<ApprovalCcNode> ccNodes = ccTasks.stream().map(ccTask -> new ApprovalCcNode(ccTask.getApproverId(), ccTask.getApproverId(), ccTask.getApproverId())).toList();
-			List<ApprovalTask> normalTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) != ApprovalTaskType.NL).toList();
-			List<ApprovalTaskNode> taskNodes = normalTasks.stream().map(task -> buildTaskNode(task, taskRecordMap, attachmentsMap)).toList();
-			ApprovalRecordNode recordNode = ApprovalRecordNode.builder().ccNodes(ccNodes).taskNodes(taskNodes).build();
-			nodes.add(recordNode);
+		Map<String, ApprovalRecord> recordMap = records.stream().collect(Collectors.toMap(ApprovalRecord::getTaskId, r -> r));
+		List<ApprovalTask> nTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL).toList();
+		Map<String, Integer> nodeMaxRoundMap = mergeNodeMaxRound(nTasks, records);
+		List<String> sortHisNodes = sortNodeRoundMap(nodeMaxRoundMap, nTasks, records);
+		sortHisNodes.forEach(hisNode -> {
+			Integer maxRound = nodeMaxRoundMap.get(hisNode);
+			// 获取节点下最后一轮正常待办任务
+			List<ApprovalTask> nlTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL
+					&& Strings.CI.equals(task.getNodeId(), hisNode) && task.getNodeRound().equals(maxRound)).toList();
+			List<ApprovalTaskNode> taskNodes = nlTasks.stream().map(nTask -> buildTaskNode(nTask, recordMap, attachmentsMap, simpleUserMap)).toList();
+			// 获取节点下最后一轮抄送任务
+			List<ApprovalTask> ccTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.CC
+					&& Strings.CI.equals(task.getNodeId(), hisNode) && task.getNodeRound().equals(maxRound)).toList();
+			List<ApprovalCcNode> ccNodes = ccTasks.stream().map(cc -> {
+				ApprovalCcNode ccNode = new ApprovalCcNode();
+				ccNode.setCcUserId(cc.getApproverId());
+				if (simpleUserMap.containsKey(cc.getApproverId())) {
+					ccNode.setCcUserName(simpleUserMap.get(cc.getApproverId()).getName());
+					ccNode.setCcUserAvatar(simpleUserMap.get(cc.getApproverId()).getAvatar());
+				}
+				return ccNode;
+			}).toList();
+			ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).taskNodes(taskNodes).ccNodes(ccNodes).build();
+			nodes.addLast(recordNode);
 		});
 
 		return nodes;
 	}
 
-	private ApprovalTaskNode buildTaskNode(ApprovalTask task, Map<String, ApprovalRecord> taskRecordMap, Map<String, List<Attachment>> attachmentsMap) {
+	/**
+	 * 获取最终的节点顺序 (同一节点可能执行多轮)
+	 * @param tasks 节点待办
+	 * @param records 节点执行记录
+	 * @return 节点ID -> 最大轮次
+	 */
+	private Map<String, Integer> mergeNodeMaxRound(List<ApprovalTask> tasks, List<ApprovalRecord> records) {
+		// 待办中提取节点和最大轮次
+		Map<String, Integer> taskNodeMaxRoundMap = tasks.stream().collect(Collectors.toMap(ApprovalTask::getNodeId, ApprovalTask::getNodeRound, Math::max));
+		// 记录中提取节点和最大轮次
+		Map<String, Integer> recordNodeMaxRoundMap = records.stream().collect(Collectors.toMap(ApprovalRecord::getNodeId, ApprovalRecord::getNodeRound, Math::max));
+		// 合并节点集合, 按照最大轮次保留
+		Map<String, Integer> mergedMap = new HashMap<>(recordNodeMaxRoundMap);
+		taskNodeMaxRoundMap.forEach((nodeId, nodeRound) -> {
+			mergedMap.merge(nodeId, nodeRound, Math::max);
+		});
+		return mergedMap;
+	}
+
+	/**
+	 * 轮次节点的最终执行排序
+	 * 按照该节点的最大轮次中的最小创建时间来排序，早的在前面
+	 * @param nodeRoundMap 节点ID -> 最大轮次
+	 * @param tasks 所有待办
+	 * @param records 所有记录
+	 * @return 排序后的节点ID列表
+	 */
+	private List<String> sortNodeRoundMap(Map<String, Integer> nodeRoundMap, List<ApprovalTask> tasks, List<ApprovalRecord> records) {
+		// 找出每个节点最大轮次中的最小创建时间
+		Map<String, Long> nodeMinCreateTimeMap = new HashMap<>(nodeRoundMap.size());
+
+		// 从待办中找：筛选出每个节点最大轮次的待办，取最小创建时间
+		tasks.forEach(task -> {
+			Integer maxRound = nodeRoundMap.get(task.getNodeId());
+			if (task.getNodeRound() != null && task.getNodeRound().equals(maxRound)) {
+				nodeMinCreateTimeMap.merge(task.getNodeId(), task.getCreateTime(), Math::min);
+			}
+		});
+
+		// 从记录中找：筛选出每个节点最大轮次的记录，取最小创建时间
+		records.forEach(record -> {
+			Integer maxRound = nodeRoundMap.get(record.getNodeId());
+			if (record.getNodeRound() != null && record.getNodeRound().equals(maxRound)) {
+				nodeMinCreateTimeMap.merge(record.getNodeId(), record.getCreateTime(), Math::min);
+			}
+		});
+
+		// 按最小创建时间升序排序
+		return nodeMinCreateTimeMap.entrySet().stream()
+			.sorted(Map.Entry.comparingByValue())
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toList());
+	}
+
+	private ApprovalTaskNode buildTaskNode(ApprovalTask task, Map<String, ApprovalRecord> taskRecordMap, Map<String, List<Attachment>> attachmentsMap, Map<String, UserSimple> simpleUserMap) {
 		ApprovalRecord record = taskRecordMap.get(task.getId());
 		ApprovalTaskNode taskNode = ApprovalTaskNode.builder().taskId(task.getId()).approverId(task.getApproverId()).approvalStatus(task.getStatus()).approvalTime(task.getUpdateTime()).build();
+		if (simpleUserMap.containsKey(task.getApproverId())) {
+			taskNode.setApprover(simpleUserMap.get(task.getApproverId()).getName());
+			taskNode.setApproverAvatar(simpleUserMap.get(task.getApproverId()).getAvatar());
+		}
 		if (record != null) {
 			taskNode.setComment(record.getComment());
 			taskNode.setAttachments(attachmentsMap.get(record.getId()));
@@ -240,8 +269,10 @@ public class ApprovalInstanceService {
 				.eq(ApprovalInstance::getApprovalStatus, ApprovalStatus.APPROVING.name());
 		List<ApprovalInstance> instances = approvalInstanceMapper.selectListByLambda(instanceLambdaQueryWrapper);
 		instances.forEach(instance -> {
-			String tableName = FORM_APPROVAL_TABLE.get(instance.getType());
-			extApprovalInstanceMapper.updateApprovalStatus(tableName, instance.getResourceId(), ApprovalStatus.NONE.name());
+			ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+			if (resourceService != null) {
+				resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), ApprovalStatus.NONE.name());
+			}
 		});
 		approvalInstanceMapper.deleteByLambda(instanceLambdaQueryWrapper);
 		// 删除审批实例相关数据: 待办任务、加签任务、退回记录、执行记录、实例附件等

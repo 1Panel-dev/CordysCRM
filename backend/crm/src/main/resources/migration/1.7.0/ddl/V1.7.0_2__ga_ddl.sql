@@ -133,6 +133,7 @@ CREATE INDEX idx_submitter_id ON approval_instance(submitter_id ASC);
 CREATE TABLE approval_task(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
     `node_id` VARCHAR(32) NOT NULL   COMMENT '节点ID' ,
+    `node_round` INT NOT NULL   COMMENT '节点轮次' ,
     `instance_id` VARCHAR(32) NOT NULL   COMMENT '审批实例ID' ,
     `approver_id` VARCHAR(20) NOT NULL   COMMENT '审批人ID' ,
     `status` VARCHAR(20) NOT NULL   COMMENT '任务状态; 待审批: PENDING, 审批中: APPROVING, 已通过: APPROVED, 已驳回: UNAPPROVED, 已撤销: REVOKED' ,
@@ -191,6 +192,7 @@ CREATE TABLE approval_record(
     `instance_id` VARCHAR(32) NOT NULL   COMMENT '审批实例ID' ,
     `task_id` VARCHAR(32)    COMMENT '任务ID' ,
     `node_id` VARCHAR(32) NOT NULL   COMMENT '节点ID' ,
+    `node_round` INT NOT NULL   COMMENT '节点轮次' ,
     `result` VARCHAR(255)    COMMENT '审批结果' ,
     `comment` VARCHAR(255)    COMMENT '审批意见' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
