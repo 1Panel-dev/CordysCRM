@@ -178,7 +178,7 @@ public class SysOperationLogService {
                 .stream()
                 .filter(differ -> !Strings.CS.equalsAny(differ.getColumn(),
                         "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage", "pos"))
-                .toList();
+                .collect(Collectors.toList());
         return differences;
     }
 }

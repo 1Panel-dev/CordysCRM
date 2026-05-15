@@ -381,16 +381,17 @@ public class ApprovalFlowService {
         // 保存节点配置
         saveNodesAndLinks(request.getNodes(), request.getLinks(), version.getId(), userId);
 
+        ApprovalFlowDetailResponse detail = getDetail(flow.getId(), organizationId);
+
         // 设置日志上下文
-        ApprovalFlowLogDTO approvalFlowLogDTO = buildAddLogDTO(request, flow);
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(flow.getId())
-                        .modifiedValue(approvalFlowLogDTO)
+                        .modifiedValue(detail)
                         .build()
         );
 
-        return getDetail(flow.getId(), organizationId);
+        return detail;
     }
 
     /**
@@ -422,22 +423,17 @@ public class ApprovalFlowService {
      */
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.UPDATE, resourceId = "{#request.id}")
     public ApprovalFlowDetailResponse update(ApprovalFlowUpdateRequest request, String userId, String organizationId) {
-        ApprovalFlow existing = approvalFlowMapper.selectByPrimaryKey(request.getId());
-        if (existing == null || !existing.getOrganizationId().equals(organizationId)) {
-            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
-        }
-
         // 获取原始日志DTO
-        ApprovalFlowLogDTO originLogDTO = buildOriginLogDTO(existing);
+        ApprovalFlowDetailResponse originDetail = getDetail(request.getId(), organizationId);
 
         // 如果启用，先关闭同类型的其他审批流
         if (Boolean.TRUE.equals(request.getEnable())) {
-            disableOtherFlows(existing.getFormType(), request.getId(), userId, organizationId);
+            disableOtherFlows(originDetail.getFormType(), request.getId(), userId, organizationId);
         }
 
         ApprovalFlow flow = BeanUtils.copyBean(new ApprovalFlow(), request);
 
-        ApprovalFlowVersion originApprovalFlowVersion = approvalFlowVersionMapper.selectByPrimaryKey(existing.getCurrentVersionId());
+        ApprovalFlowVersion originApprovalFlowVersion = approvalFlowVersionMapper.selectByPrimaryKey(originDetail.getCurrentVersionId());
         // 创建新版本
         ApprovalFlowVersion newVersion = createFlowVersionFromUpdate(request, originApprovalFlowVersion, userId, organizationId);
         approvalFlowVersionMapper.insert(newVersion);
@@ -454,17 +450,18 @@ public class ApprovalFlowService {
         flow.setUpdateTime(System.currentTimeMillis());
         approvalFlowMapper.updateById(flow);
 
+        ApprovalFlowDetailResponse detail = getDetail(flow.getId(), organizationId);
+
         // 获取更新后的日志DTO
-        ApprovalFlow updatedFlow = approvalFlowMapper.selectByPrimaryKey(request.getId());
-        ApprovalFlowLogDTO modifiedLogDTO = buildModifiedLogDTO(request, updatedFlow);
         OperationLogContext.setContext(
                 LogContextInfo.builder()
-                        .originalValue(originLogDTO)
-                        .modifiedValue(modifiedLogDTO)
+                        .resourceName(detail.getName())
+                        .originalValue(originDetail)
+                        .modifiedValue(detail)
                         .build()
         );
 
-        return getDetail(flow.getId(), organizationId);
+        return detail;
     }
 
     /**
@@ -528,11 +525,14 @@ public class ApprovalFlowService {
      * 启用/禁用审批流
      * 启用时直接启用当前审批流，并关闭同类型的其他审批流
      */
+    @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.UPDATE, resourceId = "{#id}")
     public void updateEnable(String id, Boolean enable, String userId, String organizationId) {
         ApprovalFlow flow = approvalFlowMapper.selectByPrimaryKey(id);
         if (flow == null || !flow.getOrganizationId().equals(organizationId)) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
+
+        Boolean oldEnable = flow.getEnable();
 
         if (Boolean.TRUE.equals(enable)) {
             // 关闭同类型的其他审批流
@@ -545,6 +545,19 @@ public class ApprovalFlowService {
         update.setUpdateUser(userId);
         update.setUpdateTime(System.currentTimeMillis());
         approvalFlowMapper.updateById(update);
+
+        // 设置日志上下文
+        Map<String, Object> originalVal = new HashMap<>();
+        originalVal.put("enable", oldEnable);
+        Map<String, Object> modifiedVal = new HashMap<>();
+        modifiedVal.put("enable", enable);
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(flow.getName())
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
+                        .build()
+        );
     }
 
     /**
@@ -952,26 +965,6 @@ public class ApprovalFlowService {
     }
 
     private ApprovalFlowLogDTO buildAddLogDTO(ApprovalFlowAddRequest request, ApprovalFlow flow) {
-        ApprovalFlowLogDTO logDTO = new ApprovalFlowLogDTO();
-        logDTO.setId(flow.getId());
-        logDTO.setNumber(flow.getNumber());
-        logDTO.setName(flow.getName());
-        logDTO.setFormType(flow.getFormType());
-        logDTO.setDescription(request.getDescription());
-        return logDTO;
-    }
-
-    private ApprovalFlowLogDTO buildOriginLogDTO(ApprovalFlow existing) {
-        ApprovalFlowLogDTO logDTO = new ApprovalFlowLogDTO();
-        logDTO.setId(existing.getId());
-        logDTO.setNumber(existing.getNumber());
-        logDTO.setName(existing.getName());
-        logDTO.setFormType(existing.getFormType());
-        logDTO.setDescription(existing.getDescription());
-        return logDTO;
-    }
-
-    private ApprovalFlowLogDTO buildModifiedLogDTO(ApprovalFlowUpdateRequest request, ApprovalFlow flow) {
         ApprovalFlowLogDTO logDTO = new ApprovalFlowLogDTO();
         logDTO.setId(flow.getId());
         logDTO.setNumber(flow.getNumber());
