@@ -30,7 +30,13 @@ public class ApprovalTaskNode {
 	@Schema(description = "审批状态")
 	private String approvalStatus;
 
-	@Schema(description = "审批记录ID")
+	@Schema(description = "是否加签任务")
+	private boolean sign;
+
+	@Schema(description = "是否进行加签操作")
+	private boolean signAction;
+
+	@Schema(description = "执行记录ID")
 	private String recordId;
 
 	@Schema(description = "审批意见")
@@ -41,7 +47,4 @@ public class ApprovalTaskNode {
 
 	@Schema(description = "审批完成时间")
 	private Long approvalTime;
-
-	@Schema(description = "是否加签任务")
-	private boolean sign;
 }

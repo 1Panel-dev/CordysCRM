@@ -323,7 +323,7 @@ public class ApprovalActionService {
 	 */
 	private void approvedProcess(ApprovalTask currentTask, String currentUserId, String currentOrgId) {
 		// 加签类型的待办任务
-		appendProcessSignTask(currentTask, currentUserId);
+		appendProcessSignTask(currentTask);
 
 		// 多人依次审批类型的待办
 		ApprovalNodeApprover nodeApprover = getNodeApprover(currentTask.getNodeId());
@@ -372,7 +372,7 @@ public class ApprovalActionService {
 		boolean nodeRejected = isCurrentMultiNodeRejected(currentTask.getNodeId(), currentTask.getInstanceId());
 		if (!nodeRejected) {
 			// 多人审批驳回但节点尚未流转失败, 需要发送加签待办
-			appendProcessSignTask(currentTask, currentUserId);
+			appendProcessSignTask(currentTask);
 		}
 		if (!multiNode || nodeRejected) {
 			// 单人审批或者多人审批但节点流转失败, 实例直接驳回结束
@@ -384,13 +384,12 @@ public class ApprovalActionService {
 		}
 	}
 
-	private void appendProcessSignTask(ApprovalTask currentTask, String currentUserId) {
+	private void appendProcessSignTask(ApprovalTask currentTask) {
 		if (Strings.CI.equals(currentTask.getType(), ApprovalTaskType.SN.name())) {
 			// 加签任务执行, 需要获取同一加签链路的下一个待办任务
 			ApprovalTask nextTask = getNextAddSignTask(currentTask.getId());
-			if (nextTask != null && ApprovalStatus.valueOf(nextTask.getStatus()) == ApprovalStatus.PENDING) {
-				ApprovalTask signAppendTask = copyEmptyTask(nextTask, currentUserId);
-				approvalTaskMapper.insert(signAppendTask);
+			if (nextTask != null) {
+				approvalTaskMapper.insert(nextTask);
 			}
 		}
 	}
@@ -552,28 +551,29 @@ public class ApprovalActionService {
 		List<ApprovalAddSignTask> signTasks = approvalAddSignTaskMapper.selectListByLambda(queryWrapper);
 
 		if (CollectionUtils.isNotEmpty(signTasks)) {
-			// 3. 找到下一个加签任务，返回对应的审批任务
-			return approvalTaskMapper.selectByPrimaryKey(signTasks.getFirst().getTaskId());
+			// 下一个加签节点 (断开, 指向新的任务节点)
+			ApprovalAddSignTask nextAddSignTask = signTasks.getFirst();
+			ApprovalTask oldTask = approvalTaskMapper.selectByPrimaryKey(nextAddSignTask.getTaskId());
+			ApprovalTask newTask = copyEmptyTask(oldTask);
+			nextAddSignTask.setTaskId(newTask.getId());
+			approvalAddSignTaskMapper.updateById(nextAddSignTask);
+			return newTask;
 		}
 
 		// 4. 没有下一个加签任务了，返回根任务（原始流程节点的任务）
-		return approvalTaskMapper.selectByPrimaryKey(currentAddSign.getRootTaskId());
+		ApprovalTask rootTask = approvalTaskMapper.selectByPrimaryKey(currentAddSign.getRootTaskId());
+		return ApprovalStatus.valueOf(rootTask.getStatus()) == ApprovalStatus.PENDING ? copyEmptyTask(rootTask) : null;
 	}
 
 	/**
-	 * 复制一个空待办任务
+	 * 复制新加签待办任务
 	 * @param old 旧加签任务
-	 * @param currentUserId 执行人
 	 * @return 新待办任务
 	 */
-	private ApprovalTask copyEmptyTask(ApprovalTask old, String currentUserId) {
+	private ApprovalTask copyEmptyTask(ApprovalTask old) {
 		old.setId(IDGenerator.nextStr());
 		old.setAction(null);
 		old.setStatus(ApprovalStatus.APPROVING.name());
-		old.setCreateTime(System.currentTimeMillis());
-		old.setUpdateTime(System.currentTimeMillis());
-		old.setCreateUser(currentUserId);
-		old.setUpdateUser(currentUserId);
 		return old;
 	}
 
