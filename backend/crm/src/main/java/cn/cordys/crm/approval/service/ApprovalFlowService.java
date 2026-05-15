@@ -101,6 +101,8 @@ public class ApprovalFlowService {
 	private UserViewService userViewService;
 	@Resource
 	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+    @Resource
+	private ApprovalInstanceService approvalInstanceService;
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -516,6 +518,9 @@ public class ApprovalFlowService {
 
         // 删除主表
         approvalFlowMapper.deleteByPrimaryKey(id);
+
+        // 清除审批中的资源和待办
+        approvalInstanceService.clearApprovingInstanceOfFlow(id);
 
         // 设置日志上下文
         OperationLogContext.setResourceName(flow.getName());
@@ -1113,10 +1118,14 @@ public class ApprovalFlowService {
         String fieldName = condition.getName();
         Object actualValue = fieldValueMap.get(fieldName);
 
+        // 获取动态转换后的值和操作符
+        Object expectedValue = condition.getCombineValue();
+        String operatorStr = condition.getCombineOperator();
+
         // 获取操作符枚举
         FilterCondition.CombineConditionOperator operator;
         try {
-            operator = FilterCondition.CombineConditionOperator.valueOf(condition.getOperator());
+            operator = FilterCondition.CombineConditionOperator.valueOf(operatorStr);
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -1132,8 +1141,6 @@ public class ApprovalFlowService {
         if (actualValue == null) {
             return false;
         }
-
-        Object expectedValue = condition.getValue();
 
         try {
             return switch (operator) {
