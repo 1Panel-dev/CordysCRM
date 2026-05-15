@@ -15,6 +15,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.Permission;
 import cn.cordys.common.permission.PermissionDefinitionItem;
+import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
@@ -142,6 +143,115 @@ public class ApprovalFlowService {
         // 解析状态权限配置
         response.setStatusPermissions(parseStatusPermissions(permissions, version.getStatusPermissions()));
         return response;
+    }
+
+    /**
+     * 检查用户是否有某个审批状态的某个操作权限
+     *
+     * @param formType        表单类型
+     * @param approvalStatus  审批状态
+     * @param permission      权限标识
+     * @param userId          用户ID
+     * @param organizationId  组织ID
+     * @return 如果没有配置权限限制或用户有权限返回true，否则返回false
+     */
+    public boolean hasStatusPermission(String formType, String approvalStatus, String permission,
+                                        String userId, String organizationId) {
+        if (StringUtils.isBlank(approvalStatus) || StringUtils.isBlank(permission)) {
+            return true;
+        }
+
+        StatusPermissionSettingResponse setting = getStatusPermissionsByFormType(formType, organizationId);
+        List<StatusPermissionDTO> statusPermissions = setting.getStatusPermissions();
+
+        if (CollectionUtils.isEmpty(statusPermissions)) {
+            // 没有配置状态权限限制，允许操作
+            return true;
+        }
+
+        // 查找当前审批状态下该权限的配置
+        Optional<StatusPermissionDTO> permissionConfig = statusPermissions.stream()
+                .filter(sp -> approvalStatus.equals(sp.getApprovalStatus())
+                        && permission.equals(sp.getPermission()))
+                .findFirst();
+
+        if (permissionConfig.isEmpty() || !Boolean.TRUE.equals(permissionConfig.get().getEnabled())) {
+            // 没有配置或未启用，允许操作
+            return true;
+        }
+
+        // 检查用户是否有该权限
+        return PermissionUtils.hasPermission(permission);
+    }
+
+    /**
+     * 批量检查资源的操作权限
+     *
+     * @param formType           表单类型
+     * @param resources          资源列表
+     * @param permission         权限标识
+     * @param userId             用户ID
+     * @param organizationId     组织ID
+     * @param idGetter           获取资源ID的函数
+     * @param statusGetter       获取审批状态的函数
+     * @return 有权限的资源ID列表
+     */
+    public <T> List<String> filterResourcesWithPermission(
+            String formType, List<T> resources, String permission, String userId, String organizationId,
+            java.util.function.Function<T, String> idGetter,
+            java.util.function.Function<T, String> statusGetter) {
+        if (CollectionUtils.isEmpty(resources)) {
+            return List.of();
+        }
+
+        // 检查是否所有资源都没有审批状态，如果是则直接返回所有资源ID，无需权限校验
+        boolean anyHaveStatus = resources.stream()
+                .anyMatch(resource -> StringUtils.isNotBlank(statusGetter.apply(resource))
+                        && Strings.CS.equals(statusGetter.apply(resource), ApprovalStatus.NONE.name()));
+
+        if (!anyHaveStatus) {
+            // 所有资源都没有审批状态，则无需校验权限，直接返回所有资源ID
+            return resources.stream().map(idGetter).collect(Collectors.toList());
+        }
+
+        // 获取状态权限配置
+        StatusPermissionSettingResponse setting = getStatusPermissionsByFormType(formType, organizationId);
+        List<StatusPermissionDTO> statusPermissions = setting.getStatusPermissions();
+
+        if (CollectionUtils.isEmpty(statusPermissions)) {
+            // 没有配置状态权限限制，全部允许操作
+            return resources.stream().map(idGetter).collect(Collectors.toList());
+        }
+
+        // 构建需要权限的状态集合：(审批状态, 权限) -> 是否需要权限
+        Map<String, Boolean> permissionRequiredMap = new HashMap<>();
+        for (StatusPermissionDTO sp : statusPermissions) {
+            if (permission.equals(sp.getPermission())) {
+                permissionRequiredMap.put(sp.getApprovalStatus(), sp.getEnabled());
+            }
+        }
+
+        // 检查用户是否有该权限
+        boolean hasPermission = PermissionUtils.hasPermission(permission);
+
+        // 过滤出有权限的资源
+        return resources.stream()
+                .filter(resource -> {
+                    String status = statusGetter.apply(resource);
+                    if (StringUtils.isBlank(status)) {
+                        // 没有审批状态，不受限制
+                        return true;
+                    }
+                    Boolean required = permissionRequiredMap.get(status);
+                    if (required == null || !required) {
+                        // 该状态没有配置权限限制或未启用，允许操作
+                        return true;
+                    }
+                    // 需要权限，检查用户是否有权限
+                    return hasPermission;
+                })
+                .map(idGetter)
+                .collect(Collectors.toList());
     }
 
     /**

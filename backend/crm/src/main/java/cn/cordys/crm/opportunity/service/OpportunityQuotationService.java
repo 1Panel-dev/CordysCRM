@@ -20,9 +20,11 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.contract.domain.ContractFieldBlob;
@@ -106,6 +108,8 @@ public class OpportunityQuotationService {
     private BaseMapper<Opportunity> opportunityBaseMapper;
     @Resource
     private DictService dictService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -778,6 +782,21 @@ public class OpportunityQuotationService {
         if (CollectionUtils.isEmpty(list)) {
             return BatchAffectSkipResponse.builder().success(0).fail(0).skip(0).build();
         }
+
+        // 校验状态权限，过滤出有权限操作的报价单
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.QUOTATION.getValue(),
+                list,
+                PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL,
+                userId,
+                orgId,
+                OpportunityQuotation::getId,
+                OpportunityQuotation::getApprovalStatus
+        );
+
+        Set<String> permittedIdSet = new HashSet<>(permittedIds);
+        AtomicInteger permissionDeniedCount = new AtomicInteger(0);
+
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityQuotationMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityQuotationMapper.class);
         ExtOpportunityQuotationSnapshotMapper extOpportunityQuotationSnapshotMapper = sqlSession.getMapper(ExtOpportunityQuotationSnapshotMapper.class);
@@ -786,6 +805,11 @@ public class OpportunityQuotationService {
         List<String> approvingIds = new ArrayList<>();
         AtomicInteger skipCount = new AtomicInteger(0);
         list.stream().filter(item -> {
+            // 检查状态权限
+            if (!permittedIdSet.contains(item.getId())) {
+                permissionDeniedCount.getAndIncrement();
+                return false;
+            }
             if (!Strings.CI.equals(item.getApprovalStatus(), ApprovalState.APPROVING.toString())) {
                 skipCount.getAndIncrement();
                 return false;
@@ -829,7 +853,7 @@ public class OpportunityQuotationService {
                 item -> sendNotice((Strings.CI.equals(approvalStatus, ApprovalState.APPROVED.toString()) ?
                         Translator.get("opportunity.quotation.status.approved") : Translator.get("opportunity.quotation.status.unapproved")), item, userId, orgId, NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL)
         );
-        return BatchAffectSkipResponse.builder().success(list.size() - skipCount.get()).fail(0).skip(skipCount.get()).build();
+        return BatchAffectSkipResponse.builder().success(approvingIds.size()).fail(permissionDeniedCount.get()).skip(skipCount.get()).build();
     }
 
     /**
@@ -843,10 +867,36 @@ public class OpportunityQuotationService {
         BaseField field = opportunityQuotationFieldService.getAndCheckField(request.getFieldId(), organizationId);
         moduleFormService.setFieldBusinessParam(field);
         List<OpportunityQuotation> originQuotations = opportunityQuotationMapper.selectByIds(request.getIds());
-        opportunityQuotationFieldService.batchUpdate(
-                request,
-                field,
+
+        // 校验状态权限，过滤出有权限操作的报价单
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.QUOTATION.getValue(),
                 originQuotations,
+                PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE,
+                userId,
+                organizationId,
+                OpportunityQuotation::getId,
+                OpportunityQuotation::getApprovalStatus
+        );
+
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return;
+        }
+
+        // 只对有权限的报价单进行操作
+        List<OpportunityQuotation> permittedQuotations = originQuotations.stream()
+                .filter(q -> permittedIds.contains(q.getId()))
+                .collect(Collectors.toList());
+
+        ResourceBatchEditRequest filteredRequest = new ResourceBatchEditRequest();
+        filteredRequest.setIds(permittedIds);
+        filteredRequest.setFieldId(request.getFieldId());
+        filteredRequest.setFieldValue(request.getFieldValue());
+
+        opportunityQuotationFieldService.batchUpdate(
+                filteredRequest,
+                field,
+                permittedQuotations,
                 OpportunityQuotation.class,
                 LogModule.OPPORTUNITY_QUOTATION,
                 extOpportunityQuotationMapper::batchUpdate,
@@ -858,16 +908,16 @@ public class OpportunityQuotationService {
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
 
         LambdaQueryWrapper<OpportunityQuotationSnapshot> delWrapper = new LambdaQueryWrapper<>();
-        delWrapper.in(OpportunityQuotationSnapshot::getQuotationId, request.getIds());
+        delWrapper.in(OpportunityQuotationSnapshot::getQuotationId, permittedIds);
         snapshotBaseMapper.deleteByLambda(delWrapper);
 
-        List<OpportunityQuotation> latestQuotations = opportunityQuotationMapper.selectByIds(request.getIds());
+        List<OpportunityQuotation> latestQuotations = opportunityQuotationMapper.selectByIds(permittedIds);
         Map<String, OpportunityQuotation> latestQuotationMap = latestQuotations.stream()
                 .collect(Collectors.toMap(OpportunityQuotation::getId, item -> item));
-        Map<String, List<BaseModuleFieldValue>> fieldMap = opportunityQuotationFieldService.getResourceFieldMap(request.getIds(), true);
+        Map<String, List<BaseModuleFieldValue>> fieldMap = opportunityQuotationFieldService.getResourceFieldMap(permittedIds, true);
 
         List<OpportunityQuotationSnapshot> snapshots = new ArrayList<>();
-        for (String id : request.getIds()) {
+        for (String id : permittedIds) {
             OpportunityQuotation opportunityQuotation = latestQuotationMap.get(id);
             if (opportunityQuotation == null) {
                 continue;
@@ -917,11 +967,35 @@ public class OpportunityQuotationService {
             return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0).errorMessages(Translator.get("opportunity.quotation.not.exist")).build();
         }
 
+        // 校验状态权限，过滤出有权限操作的报价单
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.QUOTATION.getValue(),
+                list,
+                PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED,
+                userId,
+                organizationId,
+                OpportunityQuotation::getId,
+                OpportunityQuotation::getApprovalStatus
+        );
+
+        Set<String> permittedIdSet = new HashSet<>(permittedIds);
+        AtomicInteger permissionDeniedCount = new AtomicInteger(0);
+
+        // 过滤出有权限的报价单
+        List<OpportunityQuotation> permittedList = list.stream()
+                .filter(item -> {
+                    if (!permittedIdSet.contains(item.getId())) {
+                        permissionDeniedCount.getAndIncrement();
+                        return false;
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
 
         // 校验商机报价单是否可以作废
-        List<OpportunityQuotation> validateList = validateVoidQuotation(list);
+        List<OpportunityQuotation> validateList = validateVoidQuotation(permittedList);
         if (CollectionUtils.isEmpty(validateList)) {
-            return BatchAffectReasonResponse.builder().success(0).fail(list.size()).skip(0).errorMessages(Translator.get("opportunity.quotation.batch.no.voided")).build();
+            return BatchAffectReasonResponse.builder().success(0).fail(permissionDeniedCount.get() + (permittedList.size())).skip(0).errorMessages(Translator.get("opportunity.quotation.batch.no.voided")).build();
         }
 
         List<LogDTO> logs = new ArrayList<>();
@@ -973,7 +1047,7 @@ public class OpportunityQuotationService {
             );
         }
 
-        return BatchAffectReasonResponse.builder().success(successIds.size()).fail(list.size() - validateList.size()).skip(skipCount.get()).errorMessages(Translator.get("opportunity.quotation.batch.no.voided")).build();
+        return BatchAffectReasonResponse.builder().success(successIds.size()).fail(permissionDeniedCount.get() + (permittedList.size() - validateList.size())).skip(skipCount.get()).errorMessages(Translator.get("opportunity.quotation.batch.no.voided")).build();
     }
 
 
