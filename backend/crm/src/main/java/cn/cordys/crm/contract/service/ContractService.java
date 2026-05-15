@@ -536,6 +536,10 @@ public class ContractService {
         Map<String, String> userNameMap = baseService.getUserNameMap(ownerIds);
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
+        Map<String, String> stageNameMap = extContractStageConfigMapper.getStageConfigList(orgId).stream()
+                .collect(Collectors.toMap(StageConfigResponse::getId,
+                        StageConfigResponse::getName));
+
         list.forEach(item -> {
             item.setOwnerName(userNameMap.get(item.getOwner()));
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getOwner());
@@ -543,6 +547,7 @@ public class ContractService {
                 item.setDepartmentId(userDeptDTO.getDeptId());
                 item.setDepartmentName(userDeptDTO.getDeptName());
             }
+            item.setStageName(stageNameMap.get(item.getStage()));
             // 获取自定义字段
             List<BaseModuleFieldValue> contractFields = resolvefieldValueMap.get(item.getId());
             item.setModuleFields(contractFields);
