@@ -1402,7 +1402,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     form: Record<string, any>,
     isContinue: boolean,
     callback?: (_isContinue: boolean, res: any) => void,
-    noReset = false
+    noReset = false,
+    isReview = false
   ) {
     try {
       loading.value = true;
@@ -1451,10 +1452,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         Message.success(t('common.updateSuccess'));
       } else {
         res = await createFormApi[props.formKey.value](params);
-        if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
-          Message.success(t('clue.transferredToCustomer'));
-        } else {
-          Message.success(t('common.createSuccess'));
+        if (!isReview) {
+          if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
+            Message.success(t('clue.transferredToCustomer'));
+          } else {
+            Message.success(t('common.createSuccess'));
+          }
         }
       }
       if (callback) {
