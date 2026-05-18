@@ -15,6 +15,6 @@ VALUES
 
 INSERT INTO approval_task (`id`, `node_id`, `node_round`, `instance_id`, `approver_id`, `status`, `type`, `action`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES
-    ('todo_list_task_contract', 'node_contract_current', 1,'todo_list_inst_contract', 'admin', 'PENDING', 'approve', 'PENDING', 1736240043609, 1736240043609, 'admin', 'admin'),
-    ('todo_list_task_quote', 'node_quote_current', 1,'todo_list_inst_quote', 'admin', 'PENDING', 'approve', 'PENDING', 1736241043609, 1736241043609, 'admin', 'admin'),
-    ('todo_list_task_old_node', 'node_contract_old', 1,'todo_list_inst_contract', 'admin', 'PENDING', 'approve', 'PENDING', 1736242043609, 1736242043609, 'admin', 'admin');
+    ('todo_list_task_contract', 'node_contract_current', 1,'todo_list_inst_contract', 'admin', 'APPROVING', 'approve', 'APPROVING', 1736240043609, 1736240043609, 'admin', 'admin'),
+    ('todo_list_task_quote', 'node_quote_current', 1,'todo_list_inst_quote', 'admin', 'APPROVING', 'approve', 'APPROVING', 1736241043609, 1736241043609, 'admin', 'admin'),
+    ('todo_list_task_old_node', 'node_contract_old', 1,'todo_list_inst_contract', 'admin', 'APPROVING', 'approve', 'APPROVING', 1736242043609, 1736242043609, 'admin', 'admin');

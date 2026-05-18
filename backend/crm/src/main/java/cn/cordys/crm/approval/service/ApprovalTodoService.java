@@ -2,15 +2,15 @@ package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
-import cn.cordys.crm.approval.dto.request.ApprovalProcessedPageRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
-import cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse;
-import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.dto.request.ApprovalProcessedPageRequest;
+import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
+import cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
+import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractInvoice;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
@@ -84,7 +84,7 @@ public class ApprovalTodoService {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
         taskWrapper.eq(ApprovalTask::getApproverId, userId)
-                .eq(ApprovalTask::getStatus, ApprovalState.PENDING.getId())
+                .eq(ApprovalTask::getStatus, ApprovalState.APPROVING.getId())
                 .orderByDesc(ApprovalTask::getUpdateTime);
         if (!finalScopedInstanceIds.isEmpty()) {
             taskWrapper.in(ApprovalTask::getInstanceId, finalScopedInstanceIds);
@@ -182,7 +182,7 @@ public class ApprovalTodoService {
             return response;
         }
         // 通过聚合SQL统计待我审批总数及资源类型分布。
-        ApprovalTodoCountResponse count = extApprovalTaskMapper.countPendingByApprover(userId, ApprovalState.PENDING.getId());
+        ApprovalTodoCountResponse count = extApprovalTaskMapper.countPendingByApprover(userId, ApprovalState.APPROVING.getId());
         if (count == null) {
             return response;
         }
