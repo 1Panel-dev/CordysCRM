@@ -22,6 +22,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 
@@ -154,13 +155,20 @@ public class ApprovalInstanceService {
 										 						 Map<String, List<Attachment>> attachmentsMap, Map<String, UserSimple> simpleUserMap,
 																 Map<String, List<ApprovalAddSignTask>> addSignTaskMap, String currentNodeId) {
 		List<ApprovalRecordNode> nodes = new ArrayList<>();
-		Map<String, ApprovalRecord> recordMap = records.stream().collect(Collectors.toMap(ApprovalRecord::getTaskId, r -> r));
+		Map<String, ApprovalRecord> autoNodeRecordMap = records.stream().filter(record -> StringUtils.isBlank(record.getTaskId())).collect(Collectors.toMap(ApprovalRecord::getNodeId, r -> r));
+		Map<String, ApprovalRecord> taskRecordMap = records.stream().filter(record -> StringUtils.isNotBlank(record.getTaskId())).collect(Collectors.toMap(ApprovalRecord::getTaskId, r -> r));
 		List<ApprovalTask> nTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL).toList();
 		Map<String, Integer> nodeMaxRoundMap = mergeNodeMaxRound(nTasks, records);
 		List<String> sortHisNodes = sortNodeRoundMap(nodeMaxRoundMap, nTasks, records);
 		// 处理历史节点
 		sortHisNodes.forEach(hisNode -> {
 			Integer maxRound = nodeMaxRoundMap.get(hisNode);
+			if (autoNodeRecordMap.containsKey(hisNode) && autoNodeRecordMap.get(hisNode).getNodeRound().equals(maxRound)) {
+				// 当前节点的最后一轮执行是自动执行
+				ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).approvalStatus(autoNodeRecordMap.get(hisNode).getResult()).taskNodes(null).ccNodes(null).build();
+				nodes.addLast(recordNode);
+				return;
+			}
 			// 获取节点下最后一轮抄送任务
 			List<ApprovalTask> ccTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.CC
 					&& Strings.CI.equals(task.getNodeId(), hisNode) && task.getNodeRound().equals(maxRound)).toList();
@@ -184,8 +192,8 @@ public class ApprovalInstanceService {
 				// 单人执行
 				List<ApprovalTask> flatSignTasks = flatSignTask(nlTasks.getFirst(), addSignTaskMap, snTasks.stream().collect(Collectors.toMap(ApprovalTask::getId, t -> t)));
 				flatSignTasks.forEach(signTask -> {
-					ApprovalTaskNode taskNode = buildTaskNode(signTask, recordMap, attachmentsMap, simpleUserMap);
-					ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).taskNodes(List.of(taskNode)).build();
+					ApprovalTaskNode taskNode = buildTaskNode(signTask, taskRecordMap, attachmentsMap, simpleUserMap);
+					ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).approvalStatus(taskNode.getApprovalStatus()).taskNodes(List.of(taskNode)).build();
 					if (ApprovalTaskType.valueOf(signTask.getType()) == ApprovalTaskType.NL) {
 						recordNode.setCcNodes(ccNodes);
 					}
@@ -198,7 +206,7 @@ public class ApprovalInstanceService {
 					List<ApprovalTask> flatSignTasks = flatSignTask(nlTask, addSignTaskMap, snTasks.stream().collect(Collectors.toMap(ApprovalTask::getId, t -> t)));
 					allTask.addAll(flatSignTasks);
 				});
-				List<ApprovalTaskNode> taskNodes = allTask.stream().map(nTask -> buildTaskNode(nTask, recordMap, attachmentsMap, simpleUserMap)).toList();
+				List<ApprovalTaskNode> taskNodes = allTask.stream().map(nTask -> buildTaskNode(nTask, taskRecordMap, attachmentsMap, simpleUserMap)).toList();
 				ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).taskNodes(taskNodes).ccNodes(ccNodes).build();
 				nodes.addLast(recordNode);
 			}
@@ -209,10 +217,57 @@ public class ApprovalInstanceService {
 			ApprovalNodeApprover approverNode = approverNodeMap.get(node.getNodeId());
 			if (approverNode != null) {
 				node.setMultiApproverMode(MultiApproverModeEnum.valueOf(approverNode.getMultiApproverMode()));
+				if (node.getTaskNodes().size() > 1) {
+					ApprovalStatus approvalStatusOfMultiNode = getNodeApprovalStatusOfMultiTask(node.getTaskNodes(), node.getMultiApproverMode());
+					node.setApprovalStatus(approvalStatusOfMultiNode == null ? null : approvalStatusOfMultiNode.name());
+				}
 			}
 
 		});
 		return nodes;
+	}
+
+	/**
+	 * 处理多人节点的审批状态
+	 * @param taskNodes 任务节点
+	 * @param approverMode 多人审批方式
+	 * @return 审批状态
+	 */
+	private ApprovalStatus getNodeApprovalStatusOfMultiTask(List<ApprovalTaskNode> taskNodes, MultiApproverModeEnum approverMode) {
+		boolean anyReject = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.UNAPPROVED);
+		boolean anyAutoReject = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.AUTO_UNAPPROVED);
+		boolean anyApproved = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.APPROVED);
+		boolean anyAutoApproved = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.AUTO_APPROVED);
+		if (approverMode == MultiApproverModeEnum.ALL || approverMode == MultiApproverModeEnum.SEQUENTIAL) {
+			// 会签, 依次审批  (状态优先级: 驳回 > 自动驳回 -> 已通过 -> 自动通过)
+			if (anyReject) {
+				return ApprovalStatus.UNAPPROVED;
+			}
+			if (anyAutoReject) {
+				return ApprovalStatus.AUTO_UNAPPROVED;
+			}
+			if (anyApproved) {
+				return ApprovalStatus.APPROVED;
+			}
+			if (anyAutoApproved) {
+				return ApprovalStatus.AUTO_APPROVED;
+			}
+		} else if (approverMode == MultiApproverModeEnum.ANY){
+			// 或签 (状态优先级: 已通过 > 自动通过 -> 自动驳回 -> 驳回)
+			if (anyApproved) {
+				return ApprovalStatus.APPROVED;
+			}
+			if (anyAutoApproved) {
+				return ApprovalStatus.AUTO_APPROVED;
+			}
+			if (anyAutoReject) {
+				return ApprovalStatus.AUTO_UNAPPROVED;
+			}
+			if (anyReject) {
+				return ApprovalStatus.UNAPPROVED;
+			}
+		}
+		return null;
 	}
 
 	/**
