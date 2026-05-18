@@ -106,8 +106,12 @@
   const { t } = useI18n();
 
   const stageColor = computed(() => {
-    const isSuccess = props.stage?.type === 'END' && String(props.stage?.rate) === '100';
-    const isFail = props.stage?.type === 'END' && String(props.stage?.rate) === '0';
+    const isSuccess =
+      (props.stage?.type === 'END' && String(props.stage?.rate) === '100') ||
+      (props.stage?.type === 'END' && ['COMPLETED', 'ARCHIVED'].includes(props.stage.id));
+    const isFail =
+      (props.stage?.type === 'END' && String(props.stage?.rate) === '0') ||
+      (props.stage?.type === 'END' && ['VOIDED', 'VOID'].includes(props.stage.id));
 
     if (isSuccess) {
       return 'success';
