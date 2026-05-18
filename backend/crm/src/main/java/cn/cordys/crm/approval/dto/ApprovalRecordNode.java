@@ -1,5 +1,6 @@
 package cn.cordys.crm.approval.dto;
 
+import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,9 @@ public class ApprovalRecordNode {
 
 	@Schema(description = "审批任务")
 	private List<ApprovalTaskNode> taskNodes;
+
+	@Schema(description = "多人审批方式", allowableValues = {"ALL: 会签", "ANY: 或签", "SEQUENTIAL: 依次审批"})
+	private MultiApproverModeEnum multiApproverMode;
 
 	@Schema(description = "是否退回节点")
 	private boolean isReturnNode;

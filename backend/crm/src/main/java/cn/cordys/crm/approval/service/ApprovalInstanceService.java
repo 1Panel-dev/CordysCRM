@@ -5,16 +5,15 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.approval.constants.ApprovalAction;
 import cn.cordys.crm.approval.constants.ApprovalAddSignType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
+import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
 import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.ApprovalCcNode;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalRecordNode;
 import cn.cordys.crm.approval.dto.ApprovalTaskNode;
-import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.dto.UserSimple;
 import cn.cordys.crm.system.service.AttachmentService;
@@ -52,6 +51,8 @@ public class ApprovalInstanceService {
 	private AttachmentService attachmentService;
 	@Resource
 	private UserExtendService userExtendService;
+	@Resource
+	private BaseMapper<ApprovalNodeApprover> approvalNodeApproverMapper;
 
 	/**
 	 * 获取资源最新审批实例详情
@@ -203,7 +204,28 @@ public class ApprovalInstanceService {
 			}
 		});
 
+		Map<String, ApprovalNodeApprover> approverNodeMap = getApproverNodeMapByIds(sortHisNodes);
+		nodes.forEach(node -> {
+			ApprovalNodeApprover approverNode = approverNodeMap.get(node.getNodeId());
+			if (approverNode != null) {
+				node.setMultiApproverMode(MultiApproverModeEnum.valueOf(approverNode.getMultiApproverMode()));
+			}
+
+		});
 		return nodes;
+	}
+
+	/**
+	 * 获取所有审批节点集合
+	 * @param nodeIds 节点ID集合
+	 * @return 审批节点集合
+	 */
+	private Map<String, ApprovalNodeApprover> getApproverNodeMapByIds(List<String> nodeIds) {
+		if (CollectionUtils.isEmpty(nodeIds)) {
+			return Map.of();
+		}
+		List<ApprovalNodeApprover> approvalNodeApprovers = approvalNodeApproverMapper.selectByIds(nodeIds);
+		return approvalNodeApprovers.stream().collect(Collectors.toMap(ApprovalNodeApprover::getId, n -> n));
 	}
 
 	private List<ApprovalTask> flatSignTask(ApprovalTask currentTask, Map<String, List<ApprovalAddSignTask>> addSignTaskMap, Map<String, ApprovalTask> signTaskMap) {
