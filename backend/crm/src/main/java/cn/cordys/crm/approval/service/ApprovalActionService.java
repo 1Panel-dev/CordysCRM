@@ -930,8 +930,8 @@ public class ApprovalActionService {
 		if (approverNode == null) {
 			return approvalTasks;
 		}
-		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, approverNode.getId());
 		if (CollectionUtils.isNotEmpty(approverNode.getCcList())) {
+			Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, approverNode.getId());
 			approverNode.getCcList().forEach(cc -> {
 				ApprovalTask approvalTask = buildTask(approverNode.getId(), instanceId, cc, ApprovalTaskType.CC.name(), userId, nextRound);
 				approvalTasks.add(approvalTask);
