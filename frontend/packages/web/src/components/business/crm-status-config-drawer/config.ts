@@ -120,7 +120,7 @@ export function useStatusFormItemModelConfig(): Record<StatusBizType, FormItemMo
         formItemClass: 'w-full flex-initial',
         inputProps: { maxlength: 16 },
         rule: [
-          { required: true, message: t('common.notNull', { value: '' }) },
+          { required: true, message: t('common.notNull', { value: t('opportunity.opportunityStage') }) },
           { notRepeat: true, message: t('module.capacitySet.repeatMsg') },
         ],
       },
@@ -189,7 +189,7 @@ export function useStatusFormItemModelConfig(): Record<StatusBizType, FormItemMo
         rule: [
           {
             required: true,
-            message: t('common.notNull', { value: t('order.status') }),
+            message: t('common.notNull', { value: t('module.contract.stage') }),
           },
           { notRepeat: true, message: t('module.capacitySet.repeatMsg') },
         ],

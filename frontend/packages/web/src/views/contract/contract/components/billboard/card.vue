@@ -35,7 +35,7 @@
     </n-tooltip>
     <div class="crm-stage-board-item-desc-value">
       <CrmTableButton
-        v-if="props.item.customerName"
+        v-if="props.item.customerName && hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])"
         size="small"
         class="text-[14px]"
         @click="emit('openDetail', 'customer', props.item)"
@@ -43,7 +43,7 @@
         <template #trigger>{{ props.item.customerName }}</template>
         {{ props.item.customerName }}
       </CrmTableButton>
-      <div v-else>-</div>
+      <CrmNameTooltip v-else :text="props.item.customerName ?? '-'" />
     </div>
   </div>
   <div class="crm-stage-board-item-desc crm-stage-board-item-desc--wide">
@@ -67,12 +67,7 @@
       {{ fieldLabelMap.alreadyPayAmount }}
     </n-tooltip>
     <div class="crm-stage-board-item-desc-value">
-      {{
-        formatNumberValue(
-          props.item.alreadyPayAmount,
-          (props.fieldList.find((field) => field.businessKey === 'alreadyPayAmount') as FormCreateField) || {}
-        )
-      }}
+      {{ formatThousands(props.item.alreadyPayAmount) || '-' }}
     </div>
   </div>
   <div class="crm-stage-board-item-desc crm-stage-board-item-desc--wide">
@@ -111,10 +106,14 @@
   import dayjs from 'dayjs';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatThousands } from '@lib/shared/method';
   import { formatNumberValue } from '@lib/shared/method/formCreate';
 
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     item: any;

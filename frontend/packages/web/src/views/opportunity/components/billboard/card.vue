@@ -49,7 +49,7 @@
     </n-tooltip>
     <div class="crm-stage-board-item-desc-value">
       <CrmTableButton
-        v-if="props.item.customerName"
+        v-if="props.item.customerName && hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])"
         size="small"
         class="text-[14px]"
         @click="emit('openDetail', 'customer', props.item)"
@@ -57,7 +57,7 @@
         <template #trigger>{{ props.item.customerName }}</template>
         {{ props.item.customerName }}
       </CrmTableButton>
-      <div v-else>-</div>
+      <CrmNameTooltip v-else :text="props.item.customerName ?? '-'" />
     </div>
   </div>
   <div class="crm-stage-board-item-desc">
@@ -95,9 +95,12 @@
 
   import { formatNumberValue } from '@lib/shared/method/formCreate';
 
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     item: any;
