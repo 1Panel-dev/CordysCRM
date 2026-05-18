@@ -92,6 +92,6 @@ public enum FormKey {
 	}
 
 	public boolean hasSnapshot() {
-		return Strings.CI.equalsAny(this.key, CONTRACT.getKey(), INVOICE.getKey(), QUOTATION.getKey());
+		return Strings.CI.equalsAny(this.key, CONTRACT.getKey(), INVOICE.getKey(), QUOTATION.getKey(), ORDER.getKey());
 	}
 }

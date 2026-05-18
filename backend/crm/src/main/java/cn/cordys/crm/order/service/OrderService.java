@@ -29,8 +29,11 @@ import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.domain.Contract;
+import cn.cordys.crm.contract.domain.ContractSnapshot;
+import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.order.domain.OrderSnapshot;
@@ -445,6 +448,22 @@ public class OrderService {
         }
         return response;
     }
+
+	/**
+	 * ⚠️反射调用: 由审批执行操作统一调用, 勿修改
+	 * @param param 参数
+	 */
+	public void updateSnapshotApprovalStatus(ResourceSnapshotApprovalParam param) {
+		OrderSnapshot snapshotCriteria = new OrderSnapshot();
+		snapshotCriteria.setOrderId(param.getResourceId());
+		OrderSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+		if (snapshot != null) {
+			OrderGetResponse response = JSON.parseObject(snapshot.getOrderValue(), OrderGetResponse.class);
+			response.setApprovalStatus(param.getApprovalStatus());
+			snapshot.setOrderValue(JSON.toJSONString(response));
+			snapshotBaseMapper.update(snapshot);
+		}
+	}
 
 
     /**

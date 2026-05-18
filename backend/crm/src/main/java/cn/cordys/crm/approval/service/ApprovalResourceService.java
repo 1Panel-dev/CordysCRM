@@ -193,7 +193,8 @@ public class ApprovalResourceService {
 		Map<FormKey, String> snapshotServiceMap = Map.of(
 			FormKey.INVOICE, "contractInvoiceService",
 			FormKey.QUOTATION, "opportunityQuotationService",
-			FormKey.CONTRACT, "customerContactService"
+			FormKey.CONTRACT, "contractService",
+			FormKey.ORDER, "orderService"
 		);
 
 		String serviceBeanName = snapshotServiceMap.get(formKey);

@@ -1359,16 +1359,12 @@ public class ApprovalFlowService {
 
         // 获取当前用户的组织用户信息
         OrganizationUser currentUser = getOrganizationUser(userId, orgId);
-        if (currentUser == null) {
-            return List.of();
-        }
-
         return switch (approverType) {
             case MEMBER -> resolveMemberApprovers(orgId, approverList);
             case ROLE -> resolveRoleApprovers(orgId, approverList);
             case SUPERIOR -> resolveSuperiorApprovers(orgId, currentUser, approverList);
             case MULTIPLE_SUPERIOR -> resolveMultipleSuperiorApprovers(orgId, currentUser, approverList);
-            case DEPT_HEAD -> resolveDeptHeadApprovers(orgId, currentUser.getDepartmentId(), approverList);
+            case DEPT_HEAD -> resolveDeptHeadApprovers(orgId, currentUser, approverList);
             case MULTIPLE_DEPT_HEAD -> resolveMultipleDeptHeadApprovers(orgId, currentUser, approverList);
         };
     }
@@ -1410,6 +1406,9 @@ public class ApprovalFlowService {
      * 解析指定上级审批人
      */
     private List<User> resolveSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+		if (currentUser == null) {
+			return List.of();
+		}
         // 值是单选
         Integer approvalLevel = getValidLevel(approverList);
 
@@ -1439,6 +1438,9 @@ public class ApprovalFlowService {
      * 解析多级上级审批人
      */
     private List<User> resolveMultipleSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+		if (currentUser == null) {
+			return List.of();
+		}
         // 值是单选
         Integer approvalLevel = getValidLevel(approverList);
 
@@ -1483,7 +1485,11 @@ public class ApprovalFlowService {
     /**
      * 解析部门负责人审批人
      */
-    private List<User> resolveDeptHeadApprovers(String orgId, String departmentId, List<String> approverList) {
+    private List<User> resolveDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+		if (currentUser == null) {
+			return List.of();
+		}
+		String departmentId = currentUser.getDepartmentId();
         if (StringUtils.isBlank(departmentId)) {
             return List.of();
         }
@@ -1523,6 +1529,9 @@ public class ApprovalFlowService {
      * 解析多级部门负责人审批人
      */
     private List<User> resolveMultipleDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+		if (currentUser == null) {
+			return List.of();
+		}
         String departmentId = currentUser.getDepartmentId();
         if (StringUtils.isBlank(departmentId)) {
             return List.of();
@@ -1587,6 +1596,18 @@ public class ApprovalFlowService {
 	}
 
 	/**
+	 * 获取当前实例节点审批人
+	 * @param approverType 审批类型
+	 * @param approverList 审批人集合
+	 * @param userId 用户ID
+	 * @param currentOrgId 当前组织ID
+	 * @return 审批人ID集合
+	 */
+	public List<User> getCurrentNodeApproverList(String approverType, List<String> approverList, String userId, String currentOrgId) {
+		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList);
+	}
+
+	/**
 	 * 获取当前实例节点抄送人
 	 * @param currentNodeId 当前节点ID
 	 * @param userId 用户ID
@@ -1596,6 +1617,18 @@ public class ApprovalFlowService {
 	public List<User> getCurrentNodeCcList(String currentNodeId, String userId, String currentOrgId) {
 		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
 		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getCcType()), JSON.parseArray(nodeApprover.getCcList(), String.class));
+	}
+
+	/**
+	 * 获取当前实例节点抄送人
+	 * @param ccType 抄送类型
+	 * @param ccList 抄送人集合
+	 * @param userId 用户ID
+	 * @param currentOrgId 当前组织ID
+	 * @return 抄送人ID集合
+	 */
+	public List<User> getCurrentNodeCcList(String ccType, List<String> ccList, String userId, String currentOrgId) {
+		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(ccType), ccList);
 	}
 
 	/**
@@ -1643,8 +1676,8 @@ public class ApprovalFlowService {
 			ApprovalNodeApproverResponse nextApproverNode = (ApprovalNodeApproverResponse) nextNode;
 			if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_PASS) {
 				// 自动通过, 插入审批记录, 获取下一个节点
-				saveAutoRecord(instance.getId(), nodeId, ApprovalStatus.APPROVED, null);
-				return getNextNodeWithExceptionHandler(instance, nodeId, fieldValues, currentOrgId);
+				saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.APPROVED, null);
+				return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId);
 			}
 			if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_REJECT) {
 				// 自动驳回, 插入审批记录
@@ -1654,8 +1687,8 @@ public class ApprovalFlowService {
 				return exNode;
 			}
 			// 人工审批, 异常处理
-			List<User> nextApprovers = getCurrentNodeApproverList(nextApproverNode.getId(), instance.getSubmitterId(), currentOrgId);
-			List<User> nextCcList = getCurrentNodeCcList(nextApproverNode.getId(), instance.getSubmitterId(), currentOrgId);
+			List<User> nextApprovers = getCurrentNodeApproverList(nextApproverNode.getApproverType(), nextApproverNode.getApproverList(), instance.getSubmitterId(), currentOrgId);
+			List<User> nextCcList = getCurrentNodeCcList(nextApproverNode.getCcType(), nextApproverNode.getCcList(), instance.getSubmitterId(), currentOrgId);
 			nextApproverNode.setApproverList(nextApprovers.stream().map(User::getId).collect(Collectors.toList()));
 			nextApproverNode.setCcList(nextCcList.stream().map(User::getId).collect(Collectors.toList()));
 			// 审批人为空
@@ -1664,8 +1697,8 @@ public class ApprovalFlowService {
 				switch (emptyAction) {
 					case AUTO_PASS -> {
 						// 自动通过, 插入审批记录, 获取下一个节点
-						saveAutoRecord(instance.getId(), nodeId, ApprovalStatus.APPROVED, "审批人为空，自动通过");
-						return getNextNodeWithExceptionHandler(instance, nodeId, fieldValues, currentOrgId);
+						saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.APPROVED, "审批人为空，自动通过");
+						return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId);
 					}
 					case ASSIGN_SPECIFIC -> {
 						//指定人员处理： 返回人员列表

@@ -1,8 +1,10 @@
 package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalAction;
 import cn.cordys.crm.approval.constants.ApprovalAddSignType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
@@ -83,6 +85,9 @@ public class ApprovalInstanceService {
 		LambdaQueryWrapper<ApprovalInstance> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(ApprovalInstance::getResourceId, resourceId);
 		List<ApprovalInstance> list = approvalInstanceMapper.selectListByLambda(wrapper);
+		if (CollectionUtils.isEmpty(list)) {
+			throw new GenericException(Translator.get("no.approval.instance"));
+		}
 		return CollectionUtils.isEmpty(list) ? null : list.stream().sorted(Comparator.comparing(ApprovalInstance::getSubmitTime)).toList().getLast();
 	}
 
