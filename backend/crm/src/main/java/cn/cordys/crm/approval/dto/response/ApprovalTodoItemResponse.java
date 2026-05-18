@@ -38,4 +38,10 @@ public class ApprovalTodoItemResponse {
 
     @Schema(description = "审批人ID")
     private String approvalId;
+
+    @Schema(description = "审批流ID")
+    private String approvalFlowId;
+
+    @Schema(description = "审批流版本ID")
+    private String approvalFlowVersionId;
 }

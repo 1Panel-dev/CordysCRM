@@ -28,25 +28,25 @@ public class ApprovalTodoController {
     private ApprovalTodoService approvalTodoService;
 
     @PostMapping("/pending/page")
-    @Operation(summary = "审核代办-当前用户待审核资源分页")
+    @Operation(summary = "审核代办-当前用户待审核资源分页", description = "返回值：Pager<List<ApprovalTodoItemResponse>>")
     public Pager<List<ApprovalTodoItemResponse>> todo(@Validated @RequestBody ApprovalTodoPageRequest request) {
         return approvalTodoService.getTodoPage(request, SessionUtils.getUserId());
     }
 
     @PostMapping("/processed/page")
-    @Operation(summary = "审核代办-当前用户已处理审批分页")
+    @Operation(summary = "审核代办-当前用户已处理审批分页", description = "返回值：Pager<List<ApprovalTodoItemResponse>>")
     public Pager<List<ApprovalTodoItemResponse>> processedPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
         return approvalTodoService.getProcessedPage(request, SessionUtils.getUserId());
     }
 
     @PostMapping("/initiated/page")
-    @Operation(summary = "审核代办-我发起的审批分页")
+    @Operation(summary = "审核代办-我发起的审批分页", description = "返回值：Pager<List<ApprovalTodoItemResponse>>")
     public Pager<List<ApprovalTodoItemResponse>> initiatedPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
         return approvalTodoService.getInitiatedPage(request, SessionUtils.getUserId());
     }
 
     @PostMapping("/cc/page")
-    @Operation(summary = "审核代办-抄送我的审批分页")
+    @Operation(summary = "审核代办-抄送我的审批分页", description = "返回值：Pager<List<ApprovalTodoItemResponse>>")
     public Pager<List<ApprovalTodoItemResponse>> ccPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
         return approvalTodoService.getCcPage(request, SessionUtils.getUserId());
     }
