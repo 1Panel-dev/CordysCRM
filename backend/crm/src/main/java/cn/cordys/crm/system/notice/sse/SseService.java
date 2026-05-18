@@ -21,6 +21,7 @@ import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -155,12 +156,18 @@ public class SseService {
                 .map(val -> stringRedisTemplate.opsForValue().get(prefix + val))
                 .filter(StringUtils::isNotBlank)
                 .map(json -> {
-                    Notification notification = JSON.parseObject(json, Notification.class);
-                    NotificationDTO dto = new NotificationDTO();
-                    BeanUtils.copyBean(dto, notification);
-                    dto.setContentText(new String(notification.getContent()));
-                    return dto;
+                    try {
+                        Notification notification = JSON.parseObject(json, Notification.class);
+                        NotificationDTO dto = new NotificationDTO();
+                        BeanUtils.copyBean(dto, notification);
+                        dto.setContentText(new String(notification.getContent()));
+                        return dto;
+                    } catch (Exception e) {
+                        log.warn("Failed to parse notification from Redis: {}", e.getMessage());
+                        return null;
+                    }
                 })
+                .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed())
                 .toList();
     }

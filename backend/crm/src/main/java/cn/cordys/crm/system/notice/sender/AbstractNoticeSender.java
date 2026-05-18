@@ -13,9 +13,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class AbstractNoticeSender implements NoticeSender {
 
@@ -29,10 +28,7 @@ public abstract class AbstractNoticeSender implements NoticeSender {
         if (StringUtils.isNotBlank(messageDetailDTO.getTemplate())) {
             return MessageTemplateUtils.getContent(messageDetailDTO.getTemplate(), noticeModel.getParamMap());
         }
-        String context = StringUtils.EMPTY;
-        if (StringUtils.isBlank(context)) {
-            context = noticeModel.getContext();
-        }
+        String context = noticeModel.getContext();
         return MessageTemplateUtils.getContent(context, noticeModel.getParamMap());
     }
 
@@ -54,13 +50,13 @@ public abstract class AbstractNoticeSender implements NoticeSender {
     private List<Receiver> getRealUserIds(NoticeModel noticeModel, String orgId) {
         List<Receiver> toUsers = noticeModel.getReceivers();
         if (CollectionUtils.isEmpty(toUsers)) {
-            toUsers = new ArrayList<>();
+            return new ArrayList<>();
         }
 
         // 去重复
-        List<String> userIds = toUsers.stream().map(Receiver::getUserId).toList();
+        List<String> userIds = toUsers.stream().map(Receiver::getUserId).distinct().toList();
         List<User> users = getUsers(userIds, orgId);
-        List<String> realUserIds = new ArrayList<>(users.stream().map(User::getId).distinct().toList());
+        Set<String> realUserIds = users.stream().map(User::getId).collect(Collectors.toSet());
         //如果是admin用户，为特殊用户，将admin加入
         if (userIds.contains("admin")) {
             realUserIds.add("admin");
@@ -84,7 +80,7 @@ public abstract class AbstractNoticeSender implements NoticeSender {
         }
     }
 
-    protected List<Receiver> getReceivers(List<Receiver> receivers, Boolean excludeSelf, String operator) {
+    protected List<Receiver> getReceivers(List<Receiver> receivers, boolean excludeSelf, String operator) {
         // 排除自己
         List<Receiver> realReceivers = new ArrayList<>();
         if (excludeSelf) {
