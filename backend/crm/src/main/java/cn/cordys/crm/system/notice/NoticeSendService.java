@@ -29,22 +29,27 @@ public class NoticeSendService {
     private final InSiteNoticeSender inSiteNoticeSender;
     private final MessageDetailService messageDetailService;
 
-    @Async("threadPoolTaskExecutor")
-    public void send(String module, NoticeModel noticeModel) {
+    private void doSend(String module, NoticeModel noticeModel, String organizationId) {
         setLanguage(noticeModel.getParamMap().get("Language"));
-        boolean useTemplate = Boolean.getBoolean((String) noticeModel.getParamMap().get("useTemplate"));
+        boolean useTemplate = Boolean.parseBoolean(
+                (String) noticeModel.getParamMap().getOrDefault("useTemplate", "false"));
         String template = (String) noticeModel.getParamMap().get("template");
         try {
-            String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-            List<MessageDetailDTO> messageDetails = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
+            List<MessageDetailDTO> messageDetails = messageDetailService
+                    .searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
             messageDetails.stream()
-                    .filter(messageDetail -> Strings.CS.equals(messageDetail.getEvent(), noticeModel.getEvent()))
-                    .forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
-
+                    .filter(md -> Strings.CS.equals(md.getEvent(), noticeModel.getEvent()))
+                    .forEach(md -> sendNotification(md, noticeModel));
         } catch (Exception e) {
             log.error("Error sending notification", e);
         }
+    }
+
+    @Async("threadPoolTaskExecutor")
+    public void send(String module, NoticeModel noticeModel) {
+        String organizationId = (String) noticeModel.getParamMap().get("organizationId");
+        doSend(module, noticeModel, organizationId);
     }
 
     private void setLanguage(Object languageObj) {
@@ -97,38 +102,13 @@ public class NoticeSendService {
 
     @Async("threadPoolTaskExecutor")
     public void send(String organizationId, String module, NoticeModel noticeModel) {
-        setLanguage(noticeModel.getParamMap().get("Language"));
-        boolean useTemplate = Boolean.getBoolean((String) noticeModel.getParamMap().get("useTemplate"));
-        String template = (String) noticeModel.getParamMap().get("template");
-        try {
-            List<MessageDetailDTO> messageDetails = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
-
-            messageDetails.stream()
-                    .filter(messageDetail -> Strings.CS.equals(messageDetail.getEvent(), noticeModel.getEvent()))
-                    .forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
-
-        } catch (Exception e) {
-            log.error("Error sending notification", e);
-        }
+        doSend(module, noticeModel, organizationId);
     }
 
     @Async("threadPoolTaskExecutor")
     public void sendOther(String module, NoticeModel noticeModel, boolean excludeSelf) {
-        setLanguage(noticeModel.getParamMap().get("Language"));
-        boolean useTemplate = Boolean.parseBoolean((String) noticeModel.getParamMap().get("useTemplate"));
-        String template = (String) noticeModel.getParamMap().get("template");
         noticeModel.setExcludeSelf(excludeSelf);
-        try {
-            String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-            List<MessageDetailDTO> messageDetails = messageDetailService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId)
-                    .stream()
-                    .filter(messageDetail -> Strings.CS.equals(messageDetail.getEvent(), noticeModel.getEvent()))
-                    .toList();
-
-            messageDetails.forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
-
-        } catch (Exception e) {
-            log.error("Error sending other notifications", e);
-        }
+        String organizationId = (String) noticeModel.getParamMap().get("organizationId");
+        doSend(module, noticeModel, organizationId);
     }
 }

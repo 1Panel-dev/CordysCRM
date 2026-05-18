@@ -49,7 +49,7 @@ public class CommonNoticeSendService {
         LocaleContextHolder.setLocale(locale);
     }
 
-    @Async
+    @Async("threadPoolTaskExecutor")
     public void sendNotice(String module, String event, List<Map> resources, String userId, String currentOrganizationId) {
         User operator = userBaseMapper.selectByPrimaryKey(userId);
         setLanguage(operator.getLanguage());
@@ -150,6 +150,9 @@ public class CommonNoticeSendService {
     }
 
     private String getContext(String event) {
+        if (StringUtils.isBlank(event)) {
+            return null;
+        }
         Map<String, String> defaultTemplateMap = MessageTemplateUtils.getDefaultTemplateMap();
         return defaultTemplateMap.get(event + "_TEXT");
     }
@@ -183,6 +186,10 @@ public class CommonNoticeSendService {
         }
 
         if (!messageTaskConfigDTO.isOwnerEnable()) {
+            return receiveUserIds;
+        }
+
+        if (StringUtils.isBlank(orgId)) {
             return receiveUserIds;
         }
 
