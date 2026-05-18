@@ -51,14 +51,14 @@ public class MessageDetailService {
         if (messageTaskLists == null) {
             return new ArrayList<>();
         }
-        getMessageDetailDTOs(useTemplate, template, messageDetails, messageTaskLists);
+        buildMessageDetails(useTemplate, template, messageDetails, messageTaskLists);
         return messageDetails.stream()
                 .sorted(Comparator.comparing(MessageDetailDTO::getCreateTime, Comparator.nullsLast(Long::compareTo)).reversed())
                 .distinct()
                 .collect(Collectors.toList());
     }
 
-    private void getMessageDetailDTOs(boolean useTemplate, String customTemplate, List<MessageDetailDTO> messageDetails, List<MessageTask> messageTaskLists) {
+    private void buildMessageDetails(boolean useTemplate, String customTemplate, List<MessageDetailDTO> messageDetails, List<MessageTask> messageTaskLists) {
         //消息通知任务以消息类型事件接收类型唯一进行分组
         Map<String, List<MessageTask>> messageTaskGroup = messageTaskLists.stream().collect(Collectors.groupingBy(t -> (t.getTaskType() + t.getEvent())));
         messageTaskGroup.forEach((messageTaskId, messageTaskList) -> {

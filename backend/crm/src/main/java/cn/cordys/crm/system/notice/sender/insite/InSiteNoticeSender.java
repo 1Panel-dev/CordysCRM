@@ -70,7 +70,6 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             }
             notification.setType(receiver.getType());
             notification.setStatus(NotificationConstants.Status.UNREAD.name());
-            notification.setCreateTime(System.currentTimeMillis());
             notification.setReceiver(receiver.getUserId());
             notification.setContent(context.getBytes());
             notification.setCreateUser(noticeModel.getOperator());
@@ -80,17 +79,18 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             notificationBaseMapper.insert(notification);
             String messageText = JSON.toJSONString(notification);
             //储存信息
-            stringRedisTemplate.opsForZSet().add(USER_PREFIX + receiver.getUserId(), id, System.currentTimeMillis());
+            String userRedisKey = USER_PREFIX + receiver.getUserId();
+            stringRedisTemplate.opsForZSet().add(userRedisKey, id, System.currentTimeMillis());
             stringRedisTemplate.opsForValue().set(MSG_PREFIX + id, messageText);
-            // 限制 Redis 只存 5 条消息
+            // 限制 Redis 只存 5 条消息：移除排名 5 之后的所有条目
             Set<String> oldNotificationIds = stringRedisTemplate.opsForZSet()
-                    .reverseRange(USER_PREFIX + receiver.getUserId(), 4, -1);
+                    .reverseRange(userRedisKey, 4, -1);
             if (CollectionUtils.isNotEmpty(oldNotificationIds)) {
-                for (String oldNotificationId : oldNotificationIds) {
-                    stringRedisTemplate.delete(MSG_PREFIX + oldNotificationId);
-                }
+                stringRedisTemplate.delete(oldNotificationIds.stream()
+                        .map(nid -> MSG_PREFIX + nid)
+                        .toList());
+                stringRedisTemplate.opsForZSet().removeRange(userRedisKey, 0, -6);
             }
-            stringRedisTemplate.opsForZSet().removeRange(USER_PREFIX + receiver.getUserId(), 0, -6);
             //更新用户的已读全部消息状态 0 为未读，1为已读
             stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + receiver.getUserId(), "False");
 
