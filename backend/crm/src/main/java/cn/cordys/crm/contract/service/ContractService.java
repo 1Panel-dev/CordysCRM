@@ -679,7 +679,7 @@ public class ContractService {
     }
 
 	/**
-	 * 由审批执行操作统一调用, 勿修改
+	 * ⚠️反射调用: 由审批执行操作统一调用, 勿修改
 	 * @param param 参数
 	 */
 	public void updateSnapshotApprovalStatus(ResourceSnapshotApprovalParam param) {
