@@ -79,13 +79,29 @@
     <n-tooltip trigger="hover" :delay="300">
       <template #trigger>
         <div class="crm-stage-board-item-desc-label">
-          {{ fieldLabelMap.createTime }}
+          {{ fieldLabelMap.startTime }}
         </div>
       </template>
-      {{ fieldLabelMap.createTime }}
+      {{ fieldLabelMap.startTime }}
     </n-tooltip>
     <div class="crm-stage-board-item-desc-value">
-      {{ props.item.createTime ? dayjs(props.item.createTime).format('YYYY-MM-DD') : '-' }}
+      {{ props.item.startTime ? dayjs(props.item.startTime).format('YYYY-MM-DD') : '-' }}
+    </div>
+  </div>
+  <div class="crm-stage-board-item-desc crm-stage-board-item-desc--wide">
+    <n-tooltip trigger="hover" :delay="300">
+      <template #trigger>
+        <div class="crm-stage-board-item-desc-label">
+          {{ fieldLabelMap.endTime }}
+        </div>
+      </template>
+      {{ fieldLabelMap.endTime }}
+    </n-tooltip>
+    <div
+      class="crm-stage-board-item-desc-value"
+      :class="{ '!text-[var(--error-red)]': dayjs(props.item.endTime).isSame(dayjs(), 'M') }"
+    >
+      {{ props.item.endTime ? dayjs(props.item.endTime).format('YYYY-MM-DD') : '-' }}
     </div>
   </div>
 </template>
