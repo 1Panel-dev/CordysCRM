@@ -932,5 +932,7 @@ public class ContractService {
         dragContract.setUpdateTime(System.currentTimeMillis());
         contractMapper.updateById(dragContract);
 
+        updateStatusSnapshot(request.getDragNodeId(), request.getStage(), null);
+
     }
 }

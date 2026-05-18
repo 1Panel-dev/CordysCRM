@@ -788,5 +788,7 @@ public class OrderService {
         dragOrder.setUpdateTime(System.currentTimeMillis());
         orderMapper.updateById(dragOrder);
 
+        updateStageSnapshot(request.getDragNodeId(), request.getStage());
+
     }
 }
