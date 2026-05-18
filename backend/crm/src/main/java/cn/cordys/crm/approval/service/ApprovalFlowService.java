@@ -1615,7 +1615,7 @@ public class ApprovalFlowService {
 			return handleNextApproverNodeWithExceptionHandler(instance, nextNode, fieldValues, currentOrgId);
 		}
 		// 条件类型节点, 继续往下获取
-		return getNextNodeWithExceptionHandler(instance, nodeId, fieldValues, currentOrgId);
+		return getNextNodeWithExceptionHandler(instance, nextNode.getId(), fieldValues, currentOrgId);
 	}
 
 	/**
