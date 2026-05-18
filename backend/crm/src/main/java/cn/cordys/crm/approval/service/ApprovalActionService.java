@@ -1,7 +1,5 @@
 package cn.cordys.crm.approval.service;
 
-import cn.cordys.aspectj.constants.LogType;
-import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
@@ -15,11 +13,9 @@ import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
-import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
-import cn.cordys.crm.system.service.LogService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -27,20 +23,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static cn.cordys.crm.approval.service.ApprovalResourceService.FORM_APPROVAL_TABLE;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -68,10 +55,6 @@ public class ApprovalActionService {
 	private AttachmentService attachmentService;
 	@Resource
 	private BaseMapper<ApprovalInstanceAttachment> approvalInstanceAttachmentMapper;
-	@Resource
-	private LogService logService;
-	@Resource
-	private SqlSessionFactory sqlSessionFactory;
 	@Resource
 	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
 
@@ -166,6 +149,33 @@ public class ApprovalActionService {
 	public void reject(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.REJECT, currentUserId, currentOrgId, null);
 		rejectProcess(currentTask, currentUserId, currentOrgId);
+	}
+
+	/**
+	 * 批量同意
+	 * @param request 请求参数
+	 * @param userId 用户ID
+	 * @param organizationId 组织ID
+	 */
+	public void batchApprove(ApprovalActionBatchRequest request, String userId, String organizationId) {
+		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectByIds(request.getIds());
+		approvalTasks.forEach(approvalTask -> approve(ApprovalActionRequest.builder().id(approvalTask.getId()).instanceId(approvalTask.getInstanceId())
+				.nodeId(approvalTask.getNodeId()).approverId(approvalTask.getApproverId())
+				.comment(request.getComment()).attachmentIds(request.getAttachmentIds())
+				.build(), userId, organizationId));
+	}
+
+	/**
+	 * 批量驳回
+	 * @param request 请求参数
+	 * @param userId 当前用户ID
+	 * @param orgId 当前组织ID
+	 */
+	public void batchReject(ApprovalActionBatchRequest request, String userId, String orgId) {
+		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectByIds(request.getIds());
+		approvalTasks.forEach(approvalTask -> reject(ApprovalActionRequest.builder().id(approvalTask.getId()).nodeId(approvalTask.getNodeId()).instanceId(approvalTask.getInstanceId())
+						.approverId(approvalTask.getApproverId()).comment(request.getComment()).attachmentIds(request.getAttachmentIds()).build(),
+				userId, orgId));
 	}
 
 	/**
@@ -336,7 +346,7 @@ public class ApprovalActionService {
 						nextTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
 						approvalFlowService.saveAutoRecord(currentTask.getInstanceId(), currentTask.getNodeId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动同意跳过", nextTask.getId());
 						// 依次审批下一位自动同意跳过, 发送下下一个位次的待办
-						User nextPlusUser = getMultiSeqNextPlusOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId);
+						User nextPlusUser = getMultiSeqNextNextOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId);
 						if (nextPlusUser != null) {
 							ApprovalTask nextNextTask = buildTask(currentTask.getNodeId(), currentTask.getInstanceId(), nextPlusUser.getId(), ApprovalTaskType.NL.name(), currentUserId, currentTask.getNodeRound());
 							multiSeqApprovalTasks.add(nextNextTask);
@@ -389,6 +399,10 @@ public class ApprovalActionService {
 		}
 	}
 
+	/**
+	 * 加签操作导致的后续待办任务
+	 * @param currentTask 当前节点任务
+	 */
 	private void appendProcessSignTask(ApprovalTask currentTask) {
 		if (Strings.CI.equals(currentTask.getType(), ApprovalTaskType.SN.name())) {
 			// 加签任务执行, 需要获取同一加签链路的下一个待办任务
@@ -412,21 +426,21 @@ public class ApprovalActionService {
 		// 保存执行的任务及记录
 		ApprovalTask currentTask = getTaskById(request.getId());
 		switch (action) {
-			case ApprovalAction.APPROVE: {
+			case APPROVE: {
 				currentTask.setAction(ApprovalAction.APPROVE.name());
 				currentTask.setStatus(ApprovalStatus.APPROVED.name());
 				break;
 			}
-			case ApprovalAction.REJECT: {
+			case REJECT: {
 				currentTask.setAction(ApprovalAction.REJECT.name());
 				currentTask.setStatus(ApprovalStatus.UNAPPROVED.name());
 				break;
 			}
-			case ApprovalAction.BACK: {
+			case BACK: {
 				currentTask.setAction(ApprovalAction.BACK.name());
 				break;
 			}
-			case ApprovalAction.SIGN: {
+			case SIGN: {
 				if (signType == ApprovalAddSignType.BEFORE) {
 					currentTask.setStatus(ApprovalStatus.PENDING.name());
 					currentTask.setAction(ApprovalAction.SIGN.name());
@@ -590,19 +604,7 @@ public class ApprovalActionService {
 	 * @return 下一个审批人
 	 */
 	private User getMultiSeqNextOne(String nodeId, String instanceId, String currentOrgId) {
-		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(instanceId);
-		List<User> approvers = approvalFlowService.getCurrentNodeApproverList(nodeId, instance.getSubmitterId(), currentOrgId);
-		LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.eq(ApprovalTask::getNodeId, nodeId)
-				.eq(ApprovalTask::getInstanceId, instanceId)
-				.eq(ApprovalTask::getType, ApprovalTaskType.NL.name())
-				.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVED.name());
-		List<ApprovalTask> approvedTask = approvalTaskMapper.selectListByLambda(queryWrapper);
-		if (approvedTask.size() < approvers.size()) {
-			// 依次审批, 返回下一个审批人
-			return approvers.get(approvedTask.size());
-		}
-		return null;
+		return getMultiSeqAfterOne(nodeId, instanceId, currentOrgId, 0);
 	}
 
 	/**
@@ -612,7 +614,19 @@ public class ApprovalActionService {
 	 * @param currentOrgId 组织ID
 	 * @return 下一个审批人
 	 */
-	private User getMultiSeqNextPlusOne(String nodeId, String instanceId, String currentOrgId) {
+	private User getMultiSeqNextNextOne(String nodeId, String instanceId, String currentOrgId) {
+		return getMultiSeqAfterOne(nodeId, instanceId, currentOrgId, 1);
+	}
+
+	/**
+	 * 获取多人依次审批后续审批人
+	 * @param nodeId 节点ID
+	 * @param instanceId 实例ID
+	 * @param currentOrgId 组织ID
+	 * @param next 后续位次 (从0开始, 0为下一个)
+	 * @return 后续审批人
+	 */
+	private User getMultiSeqAfterOne(String nodeId, String instanceId, String currentOrgId, Integer next) {
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(instanceId);
 		List<User> approvers = approvalFlowService.getCurrentNodeApproverList(nodeId, instance.getSubmitterId(), currentOrgId);
 		LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
@@ -623,7 +637,7 @@ public class ApprovalActionService {
 		List<ApprovalTask> approvedTask = approvalTaskMapper.selectListByLambda(queryWrapper);
 		if (approvedTask.size() < approvers.size()) {
 			// 依次审批, 返回下下一个审批人
-			return approvers.get(approvedTask.size() + 1);
+			return approvers.get(approvedTask.size() + next);
 		}
 		return null;
 	}
@@ -804,50 +818,6 @@ public class ApprovalActionService {
 	}
 
 	/**
-	 * 批量驳回
-	 * @param request 请求参数
-	 * @param userId 当前用户ID
-	 * @param orgId 当前组织ID
-	 */
-	public void batchReject(ApprovalActionBatchRequest request, String userId, String orgId) {
-		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectByIds(request.getIds());
-		if (CollectionUtils.isEmpty(approvalTasks)) {
-			throw new GenericException("审批任务不存在!");
-		}
-		/*
-		 * 驳回: 当前任务所属节点最终执行状态为驳回, 中断审批流程
-		 *     TODO: 特殊场景: 节点多人审批, 会签及依次审批时直接整体走驳回逻辑; 反过来如果是或签, 则需要节点下审批任务都为驳回状态才整体走驳回逻辑
-		 */
-		List<String> instanceIds = approvalTasks.stream().map(ApprovalTask::getInstanceId).toList();
-		List<ApprovalInstance> approvalInstances = approvalInstanceMapper.selectByIds(instanceIds);
-		Map<String, ApprovalInstance> instanceMaps = approvalInstances.stream().collect(Collectors.toMap(ApprovalInstance::getId, Function.identity()));
-		List<LogDTO> logs = new ArrayList<>();
-		SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
-		ExtApprovalTaskMapper taskMapper = sqlSession.getMapper(ExtApprovalTaskMapper.class);
-		approvalTasks.forEach(approvalTask -> {
-			approvalTask.setAction(ApprovalAction.REJECT.name());
-			approvalTask.setStatus(ApprovalStatus.UNAPPROVED.name());
-			approvalTask.setUpdateUser(userId);
-			approvalTask.setUpdateTime(System.currentTimeMillis());
-			taskMapper.updateTaskById(approvalTask);
-
-			saveApprovalRecord(approvalTask, request.getRejectReason(), request.getAttachmentIds(), userId, orgId);
-			if (instanceMaps.containsKey(approvalTask.getInstanceId())) {
-				ApprovalInstance approvalInstance = instanceMaps.get(approvalTask.getInstanceId());
-				approvalInstanceService.rejectApprovalInstance(approvalInstance, userId);
-
-				String resourceName = selectBusinessName(FormKey.valueOf(approvalInstance.getType()), approvalInstance.getResourceId());
-				LogDTO logDTO = new LogDTO(orgId, approvalInstance.getResourceId(), userId, LogType.APPROVAL, request.getModule(), resourceName);
-				logDTO.setModifiedValue(Translator.get("reject_approval"));
-				logs.add(logDTO);
-			}
-		});
-		sqlSession.flushStatements();
-		SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
-		logService.batchAdd(logs);
-	}
-
-	/**
 	 * 处理下一个节点
 	 * @param node 下一个节点
 	 * @param instance 审批实例
@@ -881,32 +851,6 @@ public class ApprovalActionService {
 			}
 		}
 	}
-
-
-	/**
-	 * 批量同意
-	 * @param request
-	 * @param userId
-	 * @param organizationId
-	 */
-	public void batchApprove(ApprovalActionBatchRequest request, String userId, String organizationId) {
-
-	}
-
-	/**
-	 * 查询对应业务表的业务名
-	 *
-	 * @param formKey    表单类型
-	 * @param resourceId 资源ID
-	 */
-	public String selectBusinessName(FormKey formKey, String resourceId) {
-		String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
-		if (StringUtils.isBlank(tableName)) {
-			throw new GenericException(Translator.get("module.form.illegal"));
-		}
-		return extApprovalInstanceMapper.selectBusinessName(tableName, resourceId);
-	}
-
 
 	/**
 	 * 获取审批节点待办任务
@@ -946,7 +890,7 @@ public class ApprovalActionService {
 						}
 						approvalTasks.add(firstTask);
 					}
-					case ALL -> {
+					case ALL ->
 						// 如果是会签, 需要发送所有审批人的待办
 						approverNode.getApproverList().forEach(approver -> {
 							ApprovalTask approvalTask = buildTask(approverNode.getId(), instanceId, approver, taskType, userId, nextRound);
@@ -958,7 +902,6 @@ public class ApprovalActionService {
 							}
 							approvalTasks.add(approvalTask);
 						});
-					}
 					default -> {
 
 					}
@@ -997,6 +940,16 @@ public class ApprovalActionService {
 		return approvalTasks;
 	}
 
+	/**
+	 * 生成待办任务
+	 * @param nodeId 节点ID
+	 * @param instanceId 实例ID
+	 * @param approverId 审批人ID
+	 * @param taskType 任务类型
+	 * @param currentUserId 当前用户ID
+	 * @param round 任务轮次
+	 * @return 待办任务
+	 */
 	public ApprovalTask buildTask(String nodeId, String instanceId, String approverId, String taskType, String currentUserId, Integer round) {
 		ApprovalTask approvalTask = new ApprovalTask();
 		approvalTask.setId(IDGenerator.nextStr());

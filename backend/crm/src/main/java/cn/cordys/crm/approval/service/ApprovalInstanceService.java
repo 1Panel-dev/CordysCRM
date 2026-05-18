@@ -54,6 +54,8 @@ public class ApprovalInstanceService {
 	private UserExtendService userExtendService;
 	@Resource
 	private BaseMapper<ApprovalNodeApprover> approvalNodeApproverMapper;
+	@Resource
+	private BaseMapper<ApprovalNode> approvalNodeMapper;
 
 	/**
 	 * 获取资源最新审批实例详情
@@ -76,7 +78,7 @@ public class ApprovalInstanceService {
 		Map<String, List<ApprovalAddSignTask>> addSignMap = getAddSignMap(tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL ||
 				ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.BK).map(ApprovalTask::getId).toList());
 		Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(records);
-		instanceDetail.setNodes(buildApprovalRecordNodeList(tasks, records, elementAttachmentsMap, simpleUserMap, addSignMap, instanceDetail.getCurrentNodeId()));
+		instanceDetail.setNodes(buildApprovalRecordNodeList(tasks, records, elementAttachmentsMap, simpleUserMap, addSignMap));
 		return instanceDetail;
 	}
 
@@ -153,7 +155,7 @@ public class ApprovalInstanceService {
 	 */
 	private List<ApprovalRecordNode> buildApprovalRecordNodeList(List<ApprovalTask> tasks, List<ApprovalRecord> records,
 										 						 Map<String, List<Attachment>> attachmentsMap, Map<String, UserSimple> simpleUserMap,
-																 Map<String, List<ApprovalAddSignTask>> addSignTaskMap, String currentNodeId) {
+																 Map<String, List<ApprovalAddSignTask>> addSignTaskMap) {
 		List<ApprovalRecordNode> nodes = new ArrayList<>();
 		Map<String, ApprovalRecord> autoNodeRecordMap = records.stream().filter(record -> StringUtils.isBlank(record.getTaskId())).collect(Collectors.toMap(ApprovalRecord::getNodeId, r -> r));
 		Map<String, ApprovalRecord> taskRecordMap = records.stream().filter(record -> StringUtils.isNotBlank(record.getTaskId())).collect(Collectors.toMap(ApprovalRecord::getTaskId, r -> r));
@@ -213,8 +215,10 @@ public class ApprovalInstanceService {
 		});
 
 		Map<String, ApprovalNodeApprover> approverNodeMap = getApproverNodeMapByIds(sortHisNodes);
+		Map<String, ApprovalNode> approvalNodeMap = getApprovalNodeMapByIds(sortHisNodes);
 		nodes.forEach(node -> {
 			ApprovalNodeApprover approverNode = approverNodeMap.get(node.getNodeId());
+			ApprovalNode approvalNode = approvalNodeMap.get(node.getNodeId());
 			if (approverNode != null) {
 				node.setMultiApproverMode(MultiApproverModeEnum.valueOf(approverNode.getMultiApproverMode()));
 				if (node.getTaskNodes().size() > 1) {
@@ -222,8 +226,11 @@ public class ApprovalInstanceService {
 					node.setApprovalStatus(approvalStatusOfMultiNode == null ? null : approvalStatusOfMultiNode.name());
 				}
 			}
-
+			node.setNodeName(approvalNode.getName());
+			node.setSort(approvalNode.getSort());
 		});
+		// 节点流程配置顺序
+		nodes.sort(Comparator.comparing(ApprovalRecordNode::getSort));
 		return nodes;
 	}
 
@@ -283,6 +290,19 @@ public class ApprovalInstanceService {
 		return approvalNodeApprovers.stream().collect(Collectors.toMap(ApprovalNodeApprover::getId, n -> n));
 	}
 
+	/**
+	 * 获取所有审批节点集合
+	 * @param nodeIds 节点ID集合
+	 * @return 审批节点集合
+	 */
+	private Map<String, ApprovalNode> getApprovalNodeMapByIds(List<String> nodeIds) {
+		if (CollectionUtils.isEmpty(nodeIds)) {
+			return Map.of();
+		}
+		List<ApprovalNode> approvalNodes = approvalNodeMapper.selectByIds(nodeIds);
+		return approvalNodes.stream().collect(Collectors.toMap(ApprovalNode::getId, n -> n));
+	}
+
 	private List<ApprovalTask> flatSignTask(ApprovalTask currentTask, Map<String, List<ApprovalAddSignTask>> addSignTaskMap, Map<String, ApprovalTask> signTaskMap) {
 		if (!signTaskMap.containsKey(currentTask.getId())) {
 			// 不存在加签链
@@ -321,9 +341,7 @@ public class ApprovalInstanceService {
 		Map<String, Integer> recordNodeMaxRoundMap = records.stream().collect(Collectors.toMap(ApprovalRecord::getNodeId, ApprovalRecord::getNodeRound, Math::max));
 		// 合并节点集合, 按照最大轮次保留
 		Map<String, Integer> mergedMap = new HashMap<>(recordNodeMaxRoundMap);
-		taskNodeMaxRoundMap.forEach((nodeId, nodeRound) -> {
-			mergedMap.merge(nodeId, nodeRound, Math::max);
-		});
+		taskNodeMaxRoundMap.forEach((nodeId, nodeRound) -> mergedMap.merge(nodeId, nodeRound, Math::max));
 		return mergedMap;
 	}
 

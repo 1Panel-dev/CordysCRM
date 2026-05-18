@@ -51,15 +51,15 @@ public class ApprovalActionController {
 		approvalActionService.reject(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+	@PostMapping("/batch-approve")
+	@Operation(summary = "批量同意")
+	public void batchApprove(@Validated @RequestBody ApprovalActionBatchRequest request) {
+		approvalActionService.batchApprove(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
     @PostMapping("/batch-reject")
     @Operation(summary = "批量驳回")
     public void batchReject(@Validated @RequestBody ApprovalActionBatchRequest request) {
         approvalActionService.batchReject(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-    @PostMapping("/batch-approve")
-    @Operation(summary = "批量同意")
-    public void batchApprove(@Validated @RequestBody ApprovalActionBatchRequest request) {
-        approvalActionService.batchApprove(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
