@@ -147,18 +147,4 @@
             </otherwise>
         </choose>
     </sql>
-
-    <update id="disableByFormType">
-        UPDATE approval_flow
-        SET enable = 0,
-            update_user = #{updateUser},
-            update_time = #{updateTime}
-        WHERE form_type = #{formType}
-          AND organization_id = #{organizationId}
-          AND enable = 1
-          <if test="excludeId != null">
-              AND id != #{excludeId}
-          </if>
-    </update>
-
 </mapper>

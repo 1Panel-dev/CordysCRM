@@ -112,11 +112,11 @@ public class ApprovalFlowService {
      */
     public StatusPermissionSettingResponse getStatusPermissionsByFormType(String formType, String organizationId) {
         StatusPermissionSettingResponse response = new StatusPermissionSettingResponse();
-        
+
         // 获取权限列表
         List<OptionDTO> permissions = getResourcePermissions(getPermissionsByFormType(formType));
         response.setPermissions(permissions);
-        
+
         // 查询该表单类型对应的审批流
         ApprovalFlow criteria = new ApprovalFlow();
         criteria.setFormType(formType);
@@ -135,19 +135,14 @@ public class ApprovalFlowService {
                 .findFirst()
                 .orElse(flows.getFirst());
 
-        // 查询当前版本获取状态权限配置
-        if (StringUtils.isBlank(targetFlow.getCurrentVersionId())) {
-            response.setStatusPermissions(List.of());
-            return response;
-        }
-        ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(targetFlow.getCurrentVersionId());
-        if (version == null || StringUtils.isBlank(version.getStatusPermissions())) {
+        // 从主表获取状态权限配置
+        if (StringUtils.isBlank(targetFlow.getStatusPermissions())) {
             response.setStatusPermissions(List.of());
             return response;
         }
 
         // 解析状态权限配置
-        response.setStatusPermissions(parseStatusPermissions(permissions, version.getStatusPermissions()));
+        response.setStatusPermissions(parseStatusPermissions(permissions, targetFlow.getStatusPermissions()));
         return response;
     }
 
@@ -290,21 +285,8 @@ public class ApprovalFlowService {
         // 设置对应资源的权限列表
         response.setPermissions(getResourcePermissions(permissions));
 
-        // 查询当前版本
-        if (StringUtils.isNotBlank(flow.getCurrentVersionId())) {
-            ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(flow.getCurrentVersionId());
-            if (version != null) {
-                response.setCreateExecute(version.getCreateExecute());
-                response.setUpdateExecute(version.getUpdateExecute());
-                response.setSubmitterCanRevoke(version.getSubmitterCanRevoke());
-                response.setAllowBatchProcess(version.getAllowBatchProcess());
-                response.setAllowWithdraw(version.getAllowWithdraw());
-                response.setAllowAddSign(version.getAllowAddSign());
-                response.setDuplicateApproverRule(version.getDuplicateApproverRule());
-                response.setRequireComment(version.getRequireComment());
-                response.setStatusPermissions(parseStatusPermissions(response.getPermissions(), version.getStatusPermissions()));
-            }
-        }
+        // 解析状态权限配置
+        response.setStatusPermissions(parseStatusPermissions(response.getPermissions(), flow.getStatusPermissions()));
 
         // 查询节点配置和连接关系
         buildNodesAndLinks(flow.getCurrentVersionId(), response, organizationId);
@@ -336,21 +318,8 @@ public class ApprovalFlowService {
         List<Permission> permissions = getPermissionsByFormType(targetFlow.getFormType());
         response.setPermissions(getResourcePermissions(permissions));
 
-        // 查询当前版本
-        if (StringUtils.isNotBlank(targetFlow.getCurrentVersionId())) {
-            ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(targetFlow.getCurrentVersionId());
-            if (version != null) {
-                response.setCreateExecute(version.getCreateExecute());
-                response.setUpdateExecute(version.getUpdateExecute());
-                response.setSubmitterCanRevoke(version.getSubmitterCanRevoke());
-                response.setAllowBatchProcess(version.getAllowBatchProcess());
-                response.setAllowWithdraw(version.getAllowWithdraw());
-                response.setAllowAddSign(version.getAllowAddSign());
-                response.setDuplicateApproverRule(version.getDuplicateApproverRule());
-                response.setRequireComment(version.getRequireComment());
-                response.setStatusPermissions(parseStatusPermissions(response.getPermissions(), version.getStatusPermissions()));
-            }
-        }
+        // 解析状态权限配置（从主表获取）
+        response.setStatusPermissions(parseStatusPermissions(response.getPermissions(), targetFlow.getStatusPermissions()));
 
         return response;
     }
@@ -360,9 +329,10 @@ public class ApprovalFlowService {
      */
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.ADD, resourceName = "{#request.name}")
     public ApprovalFlowDetailResponse add(ApprovalFlowAddRequest request, String userId, String organizationId) {
-        // 如果启用，先关闭同类型的其他审批流
-        if (Boolean.TRUE.equals(request.getEnable())) {
-            disableOtherFlows(request.getFormType(), null, userId, organizationId);
+        // 检查该表单类型是否已存在审批流（每个表单类型只能创建一个）
+        ApprovalFlow existFlow = selectApprovalFlowByFormType(request.getFormType(), organizationId);
+        if (existFlow != null) {
+            throw new GenericException(Translator.get("approval_flow.type.already.exists"));
         }
 
         // 创建审批流主表
@@ -375,8 +345,13 @@ public class ApprovalFlowService {
         flow.setUpdateTime(System.currentTimeMillis());
         flow.setOrganizationId(organizationId);
 
-        // 创建版本
-        ApprovalFlowVersion version = createFlowVersion(flow.getId(), request, userId, organizationId);
+        // 保存状态权限配置到主表
+        if (request.getStatusPermissions() != null) {
+            flow.setStatusPermissions(JSON.toJSONString(request.getStatusPermissions()));
+        }
+
+        // 创建版本（版本表只存储节点配置的关联）
+        ApprovalFlowVersion version = createFlowVersion(flow.getId(), userId, organizationId);
         approvalFlowVersionMapper.insert(version);
 
         // 更新当前版本ID
@@ -399,25 +374,25 @@ public class ApprovalFlowService {
         return detail;
     }
 
+    public ApprovalFlow selectApprovalFlowByFormType(String formType, String organizationId) {
+        ApprovalFlow existCriteria = new ApprovalFlow();
+        existCriteria.setFormType(formType);
+        existCriteria.setOrganizationId(organizationId);
+        List<ApprovalFlow> existFlows = approvalFlowMapper.select(existCriteria);
+        if (CollectionUtils.isEmpty(existFlows)) {
+            return null;
+        }
+        return existFlows.getFirst();
+    }
+
     /**
      * 创建审批流版本
      */
-    private ApprovalFlowVersion createFlowVersion(String flowId, ApprovalFlowAddRequest request, String userId, String organizationId) {
+    private ApprovalFlowVersion createFlowVersion(String flowId, String userId, String organizationId) {
         ApprovalFlowVersion version = new ApprovalFlowVersion();
         version.setId(IDGenerator.nextStr());
         version.setFlowId(flowId);
-        version.setCreateExecute(request.getCreateExecute());
-        version.setUpdateExecute(request.getUpdateExecute());
-        version.setSubmitterCanRevoke(request.getSubmitterCanRevoke());
-        version.setAllowBatchProcess(request.getAllowBatchProcess());
-        version.setAllowWithdraw(request.getAllowWithdraw());
-        version.setAllowAddSign(request.getAllowAddSign());
-        version.setDuplicateApproverRule(request.getDuplicateApproverRule());
-        version.setRequireComment(request.getRequireComment());
         version.setOrganizationId(organizationId);
-        if (request.getStatusPermissions() != null) {
-            version.setStatusPermissions(JSON.toJSONString(request.getStatusPermissions()));
-        }
         version.setCreateUser(userId);
         version.setCreateTime(System.currentTimeMillis());
         return version;
@@ -431,28 +406,28 @@ public class ApprovalFlowService {
         // 获取原始日志DTO
         ApprovalFlowDetailResponse originDetail = getDetail(request.getId(), organizationId);
 
-        // 如果启用，先关闭同类型的其他审批流
-        if (Boolean.TRUE.equals(request.getEnable())) {
-            disableOtherFlows(originDetail.getFormType(), request.getId(), userId, organizationId);
-        }
-
+        // 更新审批流主表（配置字段直接保存到主表）
         ApprovalFlow flow = BeanUtils.copyBean(new ApprovalFlow(), request);
-
-        ApprovalFlowVersion originApprovalFlowVersion = approvalFlowVersionMapper.selectByPrimaryKey(originDetail.getCurrentVersionId());
-        // 创建新版本
-        ApprovalFlowVersion newVersion = createFlowVersionFromUpdate(request, originApprovalFlowVersion, userId, organizationId);
-        approvalFlowVersionMapper.insert(newVersion);
-
-        // 更新当前版本ID
-        flow.setCurrentVersionId(newVersion.getId());
-        String versionId = newVersion.getId();
-
-        // 保存新节点配置
-        saveNodesAndLinks(request.getNodes(), request.getLinks(), versionId, userId);
-
-        // 更新审批流主表
         flow.setUpdateUser(userId);
         flow.setUpdateTime(System.currentTimeMillis());
+
+        // 保存状态权限配置到主表
+        if (request.getStatusPermissions() != null) {
+            flow.setStatusPermissions(JSON.toJSONString(request.getStatusPermissions()));
+        }
+
+        // 如果有节点更新，创建新版本
+        if (CollectionUtils.isNotEmpty(request.getNodes())) {
+            ApprovalFlowVersion newVersion = createFlowVersion(originDetail.getId(), userId, organizationId);
+            approvalFlowVersionMapper.insert(newVersion);
+
+            // 更新当前版本ID
+            flow.setCurrentVersionId(newVersion.getId());
+
+            // 保存新节点配置
+            saveNodesAndLinks(request.getNodes(), request.getLinks(), newVersion.getId(), userId);
+        }
+
         approvalFlowMapper.updateById(flow);
 
         ApprovalFlowDetailResponse detail = getDetail(flow.getId(), organizationId);
@@ -467,28 +442,6 @@ public class ApprovalFlowService {
         );
 
         return detail;
-    }
-
-    /**
-     * 从更新请求创建新版本
-     */
-    private ApprovalFlowVersion createFlowVersionFromUpdate(ApprovalFlowUpdateRequest request, ApprovalFlowVersion originVersion, String userId, String organizationId) {
-        ApprovalFlowVersion version = new ApprovalFlowVersion();
-        version.setId(IDGenerator.nextStr());
-        version.setFlowId(originVersion.getFlowId());
-        version.setCreateExecute(request.getCreateExecute() != null ? request.getCreateExecute() : originVersion.getCreateExecute());
-        version.setUpdateExecute(request.getUpdateExecute() != null ? request.getUpdateExecute() : originVersion.getUpdateExecute());
-        version.setSubmitterCanRevoke(request.getSubmitterCanRevoke() != null ? request.getSubmitterCanRevoke() : originVersion.getSubmitterCanRevoke());
-        version.setAllowBatchProcess(request.getAllowBatchProcess() != null ? request.getAllowBatchProcess() : originVersion.getAllowBatchProcess());
-        version.setAllowWithdraw(request.getAllowWithdraw() != null ? request.getAllowWithdraw() : originVersion.getAllowWithdraw());
-        version.setAllowAddSign(request.getAllowAddSign() != null ? request.getAllowAddSign() : originVersion.getAllowAddSign());
-        version.setDuplicateApproverRule(request.getDuplicateApproverRule() != null ? request.getDuplicateApproverRule() : originVersion.getDuplicateApproverRule());
-        version.setRequireComment(request.getRequireComment() != null ? request.getRequireComment() : originVersion.getRequireComment());
-        version.setOrganizationId(organizationId);
-        version.setStatusPermissions(request.getStatusPermissions() != null ? JSON.toJSONString(request.getStatusPermissions()) : originVersion.getStatusPermissions());
-        version.setCreateUser(userId);
-        version.setCreateTime(System.currentTimeMillis());
-        return version;
     }
 
     /**
@@ -531,7 +484,6 @@ public class ApprovalFlowService {
 
     /**
      * 启用/禁用审批流
-     * 启用时直接启用当前审批流，并关闭同类型的其他审批流
      */
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.UPDATE, resourceId = "{#id}")
     public void updateEnable(String id, Boolean enable, String userId, String organizationId) {
@@ -541,11 +493,6 @@ public class ApprovalFlowService {
         }
 
         Boolean oldEnable = flow.getEnable();
-
-        if (Boolean.TRUE.equals(enable)) {
-            // 关闭同类型的其他审批流
-            disableOtherFlows(flow.getFormType(), id, userId, organizationId);
-        }
 
         ApprovalFlow update = new ApprovalFlow();
         update.setId(id);
@@ -566,13 +513,6 @@ public class ApprovalFlowService {
                         .modifiedValue(modifiedVal)
                         .build()
         );
-    }
-
-    /**
-     * 关闭同类型的其他审批流
-     */
-    private void disableOtherFlows(String formType, String excludeId, String userId, String organizationId) {
-        extApprovalFlowMapper.disableByFormType(formType, organizationId, excludeId, userId, System.currentTimeMillis());
     }
 
     /**
@@ -1339,7 +1279,7 @@ public class ApprovalFlowService {
      * @param organizationId 组织ID
      * @return 审批流配置，如果不存在或未启用返回null
      */
-    public ApprovalFlowVersion getEnabledFlow(String formKey, String organizationId) {
+    public ApprovalFlow getEnabledFlow(String formKey, String organizationId) {
         if (StringUtils.isBlank(formKey) || StringUtils.isBlank(organizationId)) {
             return null;
         }
@@ -1351,7 +1291,7 @@ public class ApprovalFlowService {
         if (CollectionUtils.isEmpty(approvalFlows)) {
             return null;
         }
-        return approvalFlowVersionMapper.selectByPrimaryKey(approvalFlows.getFirst().getCurrentVersionId());
+        return approvalFlows.getFirst();
     }
 
     /**

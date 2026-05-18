@@ -1,26 +1,22 @@
 package cn.cordys.crm.approval.controller;
 
-import cn.cordys.aspectj.annotation.OperationLog;
-import cn.cordys.aspectj.constants.LogModule;
-import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.approval.dto.request.ApprovalFlowAddRequest;
+import cn.cordys.crm.approval.dto.request.ApprovalFlowPageRequest;
+import cn.cordys.crm.approval.dto.request.ApprovalFlowUpdateRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowByFormTypeResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse;
 import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
-import cn.cordys.crm.approval.dto.request.ApprovalFlowAddRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalFlowPageRequest;
-import cn.cordys.crm.approval.dto.request.ApprovalFlowUpdateRequest;
-import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,7 +41,6 @@ public class ApprovalFlowController {
 
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_ADD)
-    @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.ADD)
     @Operation(summary = "新建审批流")
     public ApprovalFlowDetailResponse add(@Validated @RequestBody ApprovalFlowAddRequest request) {
         return approvalFlowService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -53,7 +48,6 @@ public class ApprovalFlowController {
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_UPDATE)
-    @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.UPDATE)
     @Operation(summary = "更新审批流")
     public ApprovalFlowDetailResponse update(@Validated @RequestBody ApprovalFlowUpdateRequest request) {
         return approvalFlowService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -61,7 +55,6 @@ public class ApprovalFlowController {
 
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_DELETE)
-    @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.DELETE)
     @Operation(summary = "删除审批流")
     public void delete(@PathVariable("id") String id) {
         approvalFlowService.delete(id, OrganizationContext.getOrganizationId());
@@ -76,7 +69,6 @@ public class ApprovalFlowController {
 
     @GetMapping("/enable/{id}")
     @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_UPDATE)
-    @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.UPDATE)
     @Operation(summary = "启用/禁用审批流")
     public void updateEnable(@PathVariable("id") String id, @RequestParam("enable") Boolean enable) {
         approvalFlowService.updateEnable(id, enable, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

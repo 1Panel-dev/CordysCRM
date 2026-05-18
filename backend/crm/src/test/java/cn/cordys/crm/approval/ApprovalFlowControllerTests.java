@@ -200,17 +200,19 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertNotNull(flow.getNumber());
         Assertions.assertEquals(request.getDescription(), flow.getDescription());
 
-        // 校验版本配置
+        // 校验配置字段存储在主表
+        Assertions.assertEquals(request.getSubmitterCanRevoke(), flow.getSubmitterCanRevoke());
+        Assertions.assertEquals(request.getAllowBatchProcess(), flow.getAllowBatchProcess());
+        Assertions.assertEquals(request.getAllowWithdraw(), flow.getAllowWithdraw());
+        Assertions.assertEquals(request.getAllowAddSign(), flow.getAllowAddSign());
+        Assertions.assertEquals(request.getDuplicateApproverRule(), flow.getDuplicateApproverRule());
+        Assertions.assertEquals(request.getRequireComment(), flow.getRequireComment());
+        Assertions.assertEquals(request.getCreateExecute(), flow.getCreateExecute());
+        Assertions.assertEquals(request.getUpdateExecute(), flow.getUpdateExecute());
+
+        // 校验版本表存在
         ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(flow.getCurrentVersionId());
         Assertions.assertNotNull(version);
-        Assertions.assertEquals(request.getSubmitterCanRevoke(), version.getSubmitterCanRevoke());
-        Assertions.assertEquals(request.getAllowBatchProcess(), version.getAllowBatchProcess());
-        Assertions.assertEquals(request.getAllowWithdraw(), version.getAllowWithdraw());
-        Assertions.assertEquals(request.getAllowAddSign(), version.getAllowAddSign());
-        Assertions.assertEquals(request.getDuplicateApproverRule(), version.getDuplicateApproverRule());
-        Assertions.assertEquals(request.getRequireComment(), version.getRequireComment());
-        Assertions.assertEquals(request.getCreateExecute(), version.getCreateExecute());
-        Assertions.assertEquals(request.getUpdateExecute(), version.getUpdateExecute());
 
         // 校验节点配置
         List<ApprovalNode> nodes = getNodesByFlowVersionId(flow.getCurrentVersionId());
@@ -246,6 +248,17 @@ class ApprovalFlowControllerTests extends BaseTest {
 
     @Test
     @Order(2)
+    void testAddDuplicateType() throws Exception {
+        // 测试重复创建同一表单类型的审批流应该失败
+        ApprovalFlowAddRequest duplicateRequest = buildAddRequest("重复的报价审批流", ApprovalFormTypeEnum.QUOTATION, true);
+        MvcResult result = this.requestPost(DEFAULT_ADD, duplicateRequest).andReturn();
+        // 应该返回错误状态码而不是成功
+        String response = result.getResponse().getContentAsString();
+        Assertions.assertTrue(response.contains("该表单类型的审批流已存在") || response.contains("already exists"));
+    }
+
+    @Test
+    @Order(3)
     void testUpdate() throws Exception {
         // 请求成功
         ApprovalFlowUpdateRequest request = new ApprovalFlowUpdateRequest();
@@ -288,18 +301,16 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(request.getName(), updatedFlow.getName());
         Assertions.assertEquals(request.getDescription(), updatedFlow.getDescription());
 
+        // 校验配置字段存储在主表
+        Assertions.assertEquals(request.getSubmitterCanRevoke(), updatedFlow.getSubmitterCanRevoke());
+        Assertions.assertEquals(request.getAllowBatchProcess(), updatedFlow.getAllowBatchProcess());
+        Assertions.assertEquals(request.getAllowWithdraw(), updatedFlow.getAllowWithdraw());
+        Assertions.assertEquals(request.getAllowAddSign(), updatedFlow.getAllowAddSign());
+        Assertions.assertEquals(request.getDuplicateApproverRule(), updatedFlow.getDuplicateApproverRule());
+        Assertions.assertEquals(request.getRequireComment(), updatedFlow.getRequireComment());
+
         // 校验更新后产生了新版本
         Assertions.assertNotEquals(addApprovalFlow.getCurrentVersionId(), updatedFlow.getCurrentVersionId());
-
-        // 校验版本配置
-        ApprovalFlowVersion updatedVersion = approvalFlowVersionMapper.selectByPrimaryKey(updatedFlow.getCurrentVersionId());
-        Assertions.assertNotNull(updatedVersion);
-        Assertions.assertEquals(request.getSubmitterCanRevoke(), updatedVersion.getSubmitterCanRevoke());
-        Assertions.assertEquals(request.getAllowBatchProcess(), updatedVersion.getAllowBatchProcess());
-        Assertions.assertEquals(request.getAllowWithdraw(), updatedVersion.getAllowWithdraw());
-        Assertions.assertEquals(request.getAllowAddSign(), updatedVersion.getAllowAddSign());
-        Assertions.assertEquals(request.getDuplicateApproverRule(), updatedVersion.getDuplicateApproverRule());
-        Assertions.assertEquals(request.getRequireComment(), updatedVersion.getRequireComment());
 
         // 校验节点配置已更新（删除旧节点，插入新节点）
         List<ApprovalNode> updatedNodes = getNodesByFlowVersionId(updatedFlow.getCurrentVersionId());
@@ -315,7 +326,7 @@ class ApprovalFlowControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void testPage() throws Exception {
         ApprovalFlowPageRequest request = new ApprovalFlowPageRequest();
         request.setCurrent(1);
@@ -357,7 +368,7 @@ class ApprovalFlowControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     void testGet() throws Exception {
         // 请求成功
         MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, addApprovalFlow.getId());
@@ -373,15 +384,13 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(approvalFlow.getEnable(), response.getEnable());
         Assertions.assertEquals(approvalFlow.getDescription(), response.getDescription());
 
-        // 校验版本配置
-        ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(approvalFlow.getCurrentVersionId());
-        Assertions.assertNotNull(version);
-        Assertions.assertEquals(response.getSubmitterCanRevoke(), version.getSubmitterCanRevoke());
-        Assertions.assertEquals(response.getAllowBatchProcess(), version.getAllowBatchProcess());
-        Assertions.assertEquals(response.getAllowWithdraw(), version.getAllowWithdraw());
-        Assertions.assertEquals(response.getAllowAddSign(), version.getAllowAddSign());
-        Assertions.assertEquals(response.getDuplicateApproverRule(), version.getDuplicateApproverRule());
-        Assertions.assertEquals(response.getRequireComment(), version.getRequireComment());
+        // 校验配置字段从主表获取
+        Assertions.assertEquals(approvalFlow.getSubmitterCanRevoke(), response.getSubmitterCanRevoke());
+        Assertions.assertEquals(approvalFlow.getAllowBatchProcess(), response.getAllowBatchProcess());
+        Assertions.assertEquals(approvalFlow.getAllowWithdraw(), response.getAllowWithdraw());
+        Assertions.assertEquals(approvalFlow.getAllowAddSign(), response.getAllowAddSign());
+        Assertions.assertEquals(approvalFlow.getDuplicateApproverRule(), response.getDuplicateApproverRule());
+        Assertions.assertEquals(approvalFlow.getRequireComment(), response.getRequireComment());
 
         // 校验节点配置
         Assertions.assertFalse(CollectionUtils.isEmpty(response.getNodes()));
@@ -394,7 +403,7 @@ class ApprovalFlowControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     void testEnable() throws Exception {
         // 启用之前创建的禁用审批流
         ApprovalFlow disabledFlow = getDisabledFlow();
@@ -418,7 +427,7 @@ class ApprovalFlowControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     void testPageWithEnableFilter() throws Exception {
         // 筛选启用的审批流
         ApprovalFlowPageRequest request = new ApprovalFlowPageRequest();
@@ -511,7 +520,7 @@ class ApprovalFlowControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(8)
+    @Order(9)
     void testGetStatusPermissionSetting() throws Exception {
         // 请求成功 - 获取报价审批流的状态权限配置
         MvcResult mvcResult = this.requestGetWithOkAndReturn(STATUS_PERMISSION_SETTING, ApprovalFormTypeEnum.QUOTATION.getValue());
@@ -540,7 +549,7 @@ class ApprovalFlowControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(9)
+    @Order(10)
     void testGetByFormType() throws Exception {
         // 请求成功 - 根据表单类型获取审批流信息
         MvcResult mvcResult = this.requestGetWithOkAndReturn(GET_BY_FORM_TYPE, ApprovalFormTypeEnum.QUOTATION.getValue());
@@ -555,15 +564,15 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertTrue(response.getEnable());
         Assertions.assertNotNull(response.getDescription());
 
-        // 校验版本配置
-        ApprovalFlowVersion version = approvalFlowVersionMapper.selectByPrimaryKey(response.getCurrentVersionId());
-        Assertions.assertNotNull(version);
-        Assertions.assertEquals(response.getSubmitterCanRevoke(), version.getSubmitterCanRevoke());
-        Assertions.assertEquals(response.getAllowBatchProcess(), version.getAllowBatchProcess());
-        Assertions.assertEquals(response.getAllowWithdraw(), version.getAllowWithdraw());
-        Assertions.assertEquals(response.getAllowAddSign(), version.getAllowAddSign());
-        Assertions.assertEquals(response.getDuplicateApproverRule(), version.getDuplicateApproverRule());
-        Assertions.assertEquals(response.getRequireComment(), version.getRequireComment());
+        // 校验配置字段从主表获取
+        ApprovalFlow flow = approvalFlowMapper.selectByPrimaryKey(response.getId());
+        Assertions.assertNotNull(flow);
+        Assertions.assertEquals(flow.getSubmitterCanRevoke(), response.getSubmitterCanRevoke());
+        Assertions.assertEquals(flow.getAllowBatchProcess(), response.getAllowBatchProcess());
+        Assertions.assertEquals(flow.getAllowWithdraw(), response.getAllowWithdraw());
+        Assertions.assertEquals(flow.getAllowAddSign(), response.getAllowAddSign());
+        Assertions.assertEquals(flow.getDuplicateApproverRule(), response.getDuplicateApproverRule());
+        Assertions.assertEquals(flow.getRequireComment(), response.getRequireComment());
 
         // 校验权限列表
         Assertions.assertNotNull(response.getPermissions());

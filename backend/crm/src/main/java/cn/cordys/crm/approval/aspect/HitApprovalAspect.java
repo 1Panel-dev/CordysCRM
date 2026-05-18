@@ -5,7 +5,7 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
-import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
+import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import jakarta.annotation.Resource;
@@ -161,7 +161,7 @@ public class HitApprovalAspect {
 	private boolean checkHitApprovalFlow(FormKey formKey, ExecuteTimingEnum executeTiming, String organizationId) {
 		try {
 			// 查询当前组织表单审批流配置
-			ApprovalFlowVersion flow = approvalFlowService.getEnabledFlow(formKey.getKey(), organizationId);
+			ApprovalFlow flow = approvalFlowService.getEnabledFlow(formKey.getKey(), organizationId);
 
 			if (flow == null) {
 				return false;
