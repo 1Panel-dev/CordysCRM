@@ -51,8 +51,6 @@ public class ApprovalActionService {
 	@Resource
 	private ApprovalInstanceService approvalInstanceService;
 	@Resource
-	private BaseMapper<ApprovalFlowVersion> approvalFlowVersionMapper;
-	@Resource
 	private BaseMapper<ApprovalInstance> approvalInstanceMapper;
 	@Resource
 	private BaseMapper<ApprovalTask> approvalTaskMapper;
@@ -87,12 +85,14 @@ public class ApprovalActionService {
 	 * @param orgId   当前组织
 	 */
 	public void sign(ApprovalAddSignRequest request, String userId, String orgId) {
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
+
 		// 审批流是否允许加签
-		ApprovalFlowVersion flowVersion = getFlowVersionOfInstanceId(request.getInstanceId());
-		if (flowVersion == null || !flowVersion.getAllowAddSign()) {
+		ApprovalFlow approvalFlow = approvalFlowService.selectApprovalFlowByFormType(instance.getType(), orgId);
+		if (approvalFlow == null || !approvalFlow.getAllowAddSign()) {
 			throw new GenericException(Translator.get("no.operation.permission"));
 		}
-		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
+
 		// 刷新被加签任务状态 && 插入审批记录
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.SIGN, userId, orgId, ApprovalAddSignType.valueOf(request.getType()));
 		// 加签操作的待办任务
@@ -134,12 +134,12 @@ public class ApprovalActionService {
 	 */
 	public void revoke(ApprovalRevokeRequest request, String currentUserId, String orgId) {
 		ApprovalTask currentTask = getTaskById(request.getId());
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		// 审批流是否允许撤回
-		ApprovalFlowVersion flowVersion = getFlowVersionOfInstanceId(currentTask.getInstanceId());
-		if (flowVersion == null || !flowVersion.getAllowWithdraw()) {
+		ApprovalFlow approvalFlow = approvalFlowService.selectApprovalFlowByFormType(currentTask.getType(), orgId);
+		if (approvalFlow == null || !approvalFlow.getAllowWithdraw()) {
 			throw new GenericException(Translator.get("no.operation.permission"));
 		}
-		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		revokeProcess(currentTask, instance, orgId);
 		refreshRevokeTask(currentTask, instance, currentUserId);
 	}
@@ -166,17 +166,6 @@ public class ApprovalActionService {
 	public void reject(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.REJECT, currentUserId, currentOrgId, null);
 		rejectProcess(currentTask, currentUserId, currentOrgId);
-	}
-
-	/**
-	 * 获取流程配置相关权限
-	 *
-	 * @param id 审批实例ID
-	 * @return 审批流
-	 */
-	private ApprovalFlowVersion getFlowVersionOfInstanceId(String id) {
-		ApprovalInstance approvalInstance = approvalInstanceMapper.selectByPrimaryKey(id);
-		return approvalFlowVersionMapper.selectByPrimaryKey(approvalInstance.getFlowVersionId());
 	}
 
 	/**

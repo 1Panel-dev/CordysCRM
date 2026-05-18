@@ -17,14 +17,4 @@ public interface ExtApprovalFlowMapper {
     List<ApprovalFlowListResponse> list(
             @Param("request") ApprovalFlowPageRequest request,
             @Param("organizationId") String organizationId);
-
-    /**
-     * 批量禁用同类型审批流
-     */
-    int disableByFormType(
-            @Param("formType") String formType,
-            @Param("organizationId") String organizationId,
-            @Param("excludeId") String excludeId,
-            @Param("updateUser") String updateUser,
-            @Param("updateTime") Long updateTime);
 }

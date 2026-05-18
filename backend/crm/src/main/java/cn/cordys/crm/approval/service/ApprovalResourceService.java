@@ -6,7 +6,7 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
-import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
+import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
@@ -219,12 +219,12 @@ public class ApprovalResourceService {
      * @param param 提审参数
      */
     public void push(ApprovalResourceBaseParam param, String currentOrgId, String currentUserId) {
-		ApprovalFlowVersion approvalFlowVersion = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
-		if (approvalFlowVersion == null) {
+		ApprovalFlow approvalFlow = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
+		if (approvalFlow == null) {
 			throw new GenericException(Translator.get("approval_flow.not.exist"));
 		}
 		// 初始化审批实例
-		ApprovalInstance instance = initInstance(approvalFlowVersion, param, currentUserId);
+		ApprovalInstance instance = initInstance(approvalFlow, param, currentUserId);
 		// 获取第一个节点
 		ApprovalNodeResponse firstApprovalNode = approvalFlowService.getResourceApprovalInstanceFirstNode(instance, currentOrgId);
 		instance.setCurrentNodeId(firstApprovalNode.getId());
@@ -274,10 +274,10 @@ public class ApprovalResourceService {
 		approvalInstanceMapper.updateById(instance);
 	}
 
-	private ApprovalInstance initInstance(ApprovalFlowVersion flowVersion, ApprovalResourceBaseParam param, String currentUserId) {
+	private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalResourceBaseParam param, String currentUserId) {
 		ApprovalInstance instance = new ApprovalInstance();
 		instance.setId(IDGenerator.nextStr());
-		instance.setFlowVersionId(flowVersion.getId());
+		instance.setFlowVersionId(flow.getCurrentVersionId());
 		instance.setType(param.getFormKey());
 		instance.setApprovalStatus(ApprovalStatus.APPROVING.name());
 		instance.setResourceId(param.getResourceId());
