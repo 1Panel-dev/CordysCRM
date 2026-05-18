@@ -1563,6 +1563,9 @@ public class ApprovalFlowService {
 	 * @return 抄送人ID集合
 	 */
 	public List<User> getCurrentNodeCcList(String ccType, List<String> ccList, String userId, String currentOrgId) {
+		if (StringUtils.isBlank(ccType)) {
+			return List.of();
+		}
 		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(ccType), ccList);
 	}
 
@@ -1645,26 +1648,13 @@ public class ApprovalFlowService {
 
 		// 审批人为空时
 		if (CollectionUtils.isEmpty(nextApprovers)) {
-			EmptyApproverActionEnum emptyAction = EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction());
-			switch (emptyAction) {
-				case AUTO_PASS -> {
-					// 自动通过, 插入审批记录, 获取下一个节点
-					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人为空，自动通过", null);
-					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId);
-				}
-				case ASSIGN_SPECIFIC -> {
-					//指定人员处理： 返回人员列表
-					nextApproverNode.setApproverType(ApproverTypeEnum.MEMBER.name());
-					nextApproverNode.setApproverList(List.of(nextApproverNode.getFallbackApprover()));
-				}
-				case ASSIGN_ADMIN -> {
-					//审批管理员：返回人员
-					nextApproverNode.setApproverType(ApproverTypeEnum.MEMBER.name());
-					nextApproverNode.setApproverList(List.of(nextApproverNode.getFallbackApprover()));
-				}
-				default -> {
-
-				}
+			if (EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction()) == EmptyApproverActionEnum.AUTO_PASS) {
+				// 自动通过, 插入审批记录, 获取下一个节点
+				saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人为空，自动通过", null);
+				return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId);
+			} else {// 指定人员, 审批管理员处理, 返回兜底审批人
+				nextApproverNode.setApproverType(ApproverTypeEnum.MEMBER.name());
+				nextApproverNode.setApproverList(List.of(nextApproverNode.getFallbackApprover()));
 			}
 		}
 
