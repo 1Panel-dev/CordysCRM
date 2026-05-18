@@ -112,7 +112,7 @@
 
     <select id="selectUserDeptForOrg" resultType="cn.cordys.common.dto.DeptUserTreeNode">
         select su.id, su.name, sou.department_id as parentId, 'USER' as nodeType from sys_organization_user sou
-        join sys_user su on sou.organization_id = #{orgId} and sou.user_id = su.id
+        join sys_user su on sou.organization_id = #{orgId} and sou.user_id = su.id and sou.enable = true
     </select>
 
     <select id="selectUserRoleForRelevance" resultType="cn.cordys.common.dto.RoleUserTreeNode">
