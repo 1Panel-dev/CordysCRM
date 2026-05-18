@@ -254,7 +254,7 @@ public class ApprovalResourceService {
 		updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name());
 		approvalInstanceMapper.insert(instance);
 		ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
-		List<ApprovalTask> approvalTasks = approvalActionService.getNodeApproverTasks(approverNode, instance.getId(), currentUserId, null);
+		List<ApprovalTask> approvalTasks = approvalActionService.getNodeApproverTasks(approverNode, instance.getId(), currentUserId, null, instance.getSubmitterId());
 		List<ApprovalTask> ccTasks = approvalActionService.getNodeCcTasks(approverNode, instance.getId(), currentUserId);
 		List<ApprovalTask> allTasks = ListUtils.union(approvalTasks, ccTasks);
 		if (CollectionUtils.isNotEmpty(allTasks)) {

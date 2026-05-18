@@ -381,7 +381,7 @@ public class UserExtendService {
 	public Map<String, UserSimple> getAllUserSimpleMap() {
 		List<UserExtend> userExtends = userExtendMapper.selectAll(null);
 		List<User> users = userMapper.selectAll(null);
-		Map<String, String> avatarMap = userExtends.stream().collect(Collectors.toMap(UserExtend::getId, UserExtend::getAvatar));
+		Map<String, String> avatarMap = userExtends.stream().filter(userExtend -> StringUtils.isNotBlank(userExtend.getAvatar())).collect(Collectors.toMap(UserExtend::getId, UserExtend::getAvatar));
 		List<UserSimple> simples = users.stream().map(user -> new UserSimple(user.getId(), user.getName(), avatarMap.get(user.getId()))).toList();
 		return simples.stream().collect(Collectors.toMap(UserSimple::getId, u -> u));
 	}

@@ -16,5 +16,11 @@ public enum ApprovalStatus {
 	/** 已驳回 */
 	UNAPPROVED,
 	/** 已撤销 */
-	REVOKED
+	REVOKED,
+
+	// 扩展项
+	/** 自动通过 */
+	AUTO_APPROVED,
+	/** 自动拒绝 */
+	AUTO_UNAPPROVED
 }

@@ -105,7 +105,7 @@ public class ApprovalInstanceService {
 	 */
 	private Map<String, List<ApprovalAddSignTask>> getAddSignMap(List<String> taskIds) {
 		LambdaQueryWrapper<ApprovalAddSignTask> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ApprovalAddSignTask::getRootTaskId, taskIds);
+		wrapper.in(ApprovalAddSignTask::getRootTaskId, taskIds);
 		List<ApprovalAddSignTask> approvalAddSignTasks = approvalAddSignTaskMapper.selectListByLambda(wrapper);
 		return approvalAddSignTasks.stream().collect(Collectors.groupingBy(ApprovalAddSignTask::getSignTaskId));
 	}
