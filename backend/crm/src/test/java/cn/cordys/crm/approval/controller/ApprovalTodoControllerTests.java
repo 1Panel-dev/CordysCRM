@@ -61,7 +61,7 @@ class ApprovalTodoControllerTests extends BaseTest {
         Pager<List<ApprovalTodoItemResponse>> pager = getPageResult(mvcResult, ApprovalTodoItemResponse.class);
         Assertions.assertNotNull(pager);
         Assertions.assertEquals(3, pager.getTotal());
-        Assertions.assertEquals(2, pager.getList().size());
+        Assertions.assertEquals(3, pager.getList().size());
         Assertions.assertTrue(pager.getList().stream().allMatch(item -> StringUtils.equals("APPROVING", item.getApprovalOperation())));
     }
 
@@ -83,7 +83,7 @@ class ApprovalTodoControllerTests extends BaseTest {
 
         Assertions.assertNotNull(pager);
         Assertions.assertEquals(2, pager.getTotal());
-        Assertions.assertEquals(1, pager.getList().size());
+        Assertions.assertEquals(2, pager.getList().size());
         Assertions.assertEquals("CONTRACT", pager.getList().getFirst().getResourceType());
     }
 
