@@ -87,7 +87,9 @@ public class ApprovalActionService {
 			handleNextApprovalNode(nextNode, instance, userId);
 		}
 		// 保存加签附件
-		saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), addSignTask.getId(), userId, orgId);
+		if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
+			saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), addSignTask.getId(), userId, orgId);
+		}
 	}
 
 	/**
@@ -105,7 +107,9 @@ public class ApprovalActionService {
 		// 保存执行任务
 		saveActionTask(request, ApprovalAction.BACK, userId, orgId, null);
 		// 保存退回附件
-		saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), backRecord.getId(), userId, orgId);
+		if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
+			saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), backRecord.getId(), userId, orgId);
+		}
 	}
 
 	/**
@@ -296,7 +300,9 @@ public class ApprovalActionService {
 		record.setUpdateTime(System.currentTimeMillis());
 		record.setUpdateUser(currentUserId);
 		approvalRecordMapper.insert(record);
-		saveInstanceAttachment(attachmentIds, currentTask.getInstanceId(), record.getId(), currentUserId, orgId);
+		if (CollectionUtils.isNotEmpty(attachmentIds)) {
+			saveInstanceAttachment(attachmentIds, currentTask.getInstanceId(), record.getId(), currentUserId, orgId);
+		}
 	}
 
 	/**
