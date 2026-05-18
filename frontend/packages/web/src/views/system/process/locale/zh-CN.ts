@@ -21,10 +21,9 @@ export default {
   'process.process.approvalRejectOpinion': '审批人同意或驳回流程时，需要填写审批意见',
   'process.process.approvalAuthority': '审批权限',
   'process.process.approvalAuthority.batchAction': '允许审批人批量处理',
-  'process.process.approvalAuthority.batchActionTip':
-    '第一个审批节点通过后，提交人仍可撤销申请(配置前已发起的申请不生效)',
+  'process.process.approvalAuthority.batchActionTip': '勾选后，审批人在处理此流程任务时，可批量处理多个任务',
   'process.process.approvalAuthority.revokable': '允许审批人撤回',
-  'process.process.approvalAuthority.addTempApprover': '勾选后，审批人可在审批流程中增加临时审批人',
+  'process.process.approvalAuthority.addTempApprover': '勾选后，若审批人同意且后续审批人尚未审批，可撤回重新进行审批',
   'process.process.approvalAuthority.allowAddSign': '允许加签',
   'process.process.approvalAuthority.allowAddTempApprover': '勾选后，审批人可在审批流程中增加临时审批人',
   'process.process.processName': '流程名称',

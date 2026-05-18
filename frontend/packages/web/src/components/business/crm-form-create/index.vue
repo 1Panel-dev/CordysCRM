@@ -564,7 +564,7 @@
     fieldList.value.forEach((item) => {
       if ([FieldTypeEnum.FORMULA, FieldTypeEnum.INPUT, FieldTypeEnum.SERIAL_NUMBER].includes(item.type)) {
         const { fields } = safeParseFormula(item.formula ?? '');
-        fields.forEach((e: any) => {
+        fields?.forEach((e: any) => {
           let options = [];
           const targetField = fieldMap.get(e.fieldId);
 

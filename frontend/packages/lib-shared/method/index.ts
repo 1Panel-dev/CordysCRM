@@ -705,3 +705,33 @@ export function getCopiedName(name: string, suffix = 'copy', maxLen = 255): stri
   }
   return baseName + suffix;
 }
+
+/**
+ * 通用数字千分位展示
+ * @param value 数值或数值字符串
+ * @param options 小数位配置
+ * @returns 格式化后的字符串
+ */
+export function formatThousands(
+  value: string | number | null | undefined,
+  options?: {
+    minimumFractionDigits?: number;
+    maximumFractionDigits?: number;
+  }
+) {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue)) {
+    return String(value);
+  }
+
+  const decimalLength = String(value).includes('.') ? String(value).split('.')[1]?.length || 0 : 0;
+
+  return numberValue.toLocaleString('en-US', {
+    minimumFractionDigits: options?.minimumFractionDigits,
+    maximumFractionDigits: options?.maximumFractionDigits ?? decimalLength,
+  });
+}

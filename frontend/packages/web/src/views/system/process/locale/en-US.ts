@@ -24,13 +24,13 @@ export default {
   'process.process.approvalAuthority': 'Approval permissions',
   'process.process.approvalAuthority.batchAction': 'Allow approver to batch process',
   'process.process.approvalAuthority.batchActionTip':
-    'Submitter can still cancel after first approval node passes (does not apply to applications initiated before configuration)',
+    'After checked, the approver in handling this process, can be batch processing tasks',
   'process.process.approvalAuthority.revokable': 'Allow approver to revoke',
   'process.process.approvalAuthority.addTempApprover':
-    'When checked, approver can add temporary approver in the approval flow',
+    'After checking, if the approver agrees and the subsequent approver has not approved, it can be withdrawn for new approval',
   'process.process.approvalAuthority.allowAddSign': 'Allow adding signatory',
   'process.process.approvalAuthority.allowAddTempApprover':
-    'When checked, approver can add temporary approver in the approval flow',
+    'After checking, the approver can add temporary approvers to the approval process',
   'process.process.processName': 'Process Name',
   'process.process.basic.businessType': 'Business Type',
   'process.process.basic.executionTiming': 'Execution timing',

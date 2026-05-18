@@ -77,6 +77,17 @@
     default: [],
   });
 
+  function normalizeSelectedIds(defaultValue?: string | number | (string | number)[]) {
+    let defaultIds: (string | number)[] = [];
+    if (Array.isArray(defaultValue)) {
+      defaultIds = defaultValue;
+    } else if (defaultValue !== undefined && defaultValue !== null && defaultValue !== '') {
+      defaultIds = [defaultValue];
+    }
+    const currentValueIds = Array.isArray(value.value) ? value.value : [];
+    return [...new Set([...defaultIds, ...currentValueIds])];
+  }
+
   function getParams(): FilterResult {
     const conditions = props.fieldConfig.combineSearch?.conditions
       .map((item) => ({
@@ -129,11 +140,14 @@
           keyword: val?.[0]?.name || '',
         });
         await loadList();
-        const newRows = propsRes.value.data.filter(
-          (item) => props.fieldConfig.defaultValue?.includes(item.id) || value.value.includes(item.id)
-        );
-        value.value = newRows.map((e) => e.id) as (string | number)[];
-        emit('change', value.value, newRows, fieldList.value);
+        const selectedIds = normalizeSelectedIds(props.fieldConfig.defaultValue);
+        const newRows = propsRes.value.data.filter((item) => selectedIds.includes(item.id));
+        const fallbackRows = val.filter((item) => selectedIds.includes(item.id));
+
+        // 如果补全请求未查到目标项，仍需保留初始化值，避免出现先带入后被清空的问题
+        const mergedRows = [...newRows, ...fallbackRows.filter((item) => !newRows.some((row) => row.id === item.id))];
+        value.value = selectedIds;
+        emit('change', value.value, mergedRows, fieldList.value);
       } else if (val?.some((e) => e.isFormLinkFilled)) {
         // 这里将表单联动填充的初始化选项 emit 出去，触发 change  让数据源显示字段回显
         emit('change', value.value, val, fieldList.value);
