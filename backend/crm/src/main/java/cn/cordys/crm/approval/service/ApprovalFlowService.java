@@ -56,7 +56,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -745,7 +744,7 @@ public class ApprovalFlowService {
                     condition.setValue(fieldValue.getFieldValue());
                     return condition;
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         // 合并所有条件
         List<FilterCondition> combinedConditions = new ArrayList<>(allConditions);
@@ -756,23 +755,22 @@ public class ApprovalFlowService {
 
     private List<BaseModuleFieldValue> getNodePostConfigFieldValues(List<ApprovalNodeResponse> nodes) {
         // 收集审批人节点中的 passPostConfig 和 rejectPostConfig 中的字段值
-        List<BaseModuleFieldValue> postConfigFieldValues = nodes.stream()
-                .filter(node -> node instanceof ApprovalNodeApproverResponse)
-                .map(node -> (ApprovalNodeApproverResponse) node)
-                .flatMap(approverNode -> {
-                    List<BaseModuleFieldValue> fieldValues = new ArrayList<>();
-                    if (approverNode.getPassPostConfig() != null
-                            && CollectionUtils.isNotEmpty(approverNode.getPassPostConfig().getFieldUpdateConfigs())) {
-                        fieldValues.addAll(approverNode.getPassPostConfig().getFieldUpdateConfigs());
-                    }
-                    if (approverNode.getRejectPostConfig() != null
-                            && CollectionUtils.isNotEmpty(approverNode.getRejectPostConfig().getFieldUpdateConfigs())) {
-                        fieldValues.addAll(approverNode.getRejectPostConfig().getFieldUpdateConfigs());
-                    }
-                    return fieldValues.stream();
-                })
-                .collect(Collectors.toList());
-        return postConfigFieldValues;
+		return nodes.stream()
+				.filter(node -> node instanceof ApprovalNodeApproverResponse)
+				.map(node -> (ApprovalNodeApproverResponse) node)
+				.flatMap(approverNode -> {
+					List<BaseModuleFieldValue> fieldValues = new ArrayList<>();
+					if (approverNode.getPassPostConfig() != null
+							&& CollectionUtils.isNotEmpty(approverNode.getPassPostConfig().getFieldUpdateConfigs())) {
+						fieldValues.addAll(approverNode.getPassPostConfig().getFieldUpdateConfigs());
+					}
+					if (approverNode.getRejectPostConfig() != null
+							&& CollectionUtils.isNotEmpty(approverNode.getRejectPostConfig().getFieldUpdateConfigs())) {
+						fieldValues.addAll(approverNode.getRejectPostConfig().getFieldUpdateConfigs());
+					}
+					return fieldValues.stream();
+				})
+				.collect(Collectors.toList());
     }
 
     /**
@@ -1046,10 +1044,10 @@ public class ApprovalFlowService {
 
         // 根据匹配模式进行条件判断
         if (CombineSearch.SearchMode.AND.name().equals(searchMode)) {
-            // AND 模式：所有条件都必须满足
+            // AND 模式：所有都必须满足
             return conditions.stream().allMatch(condition -> matchSingleCondition(condition, fieldValueMap));
         } else {
-            // OR 模式：任一条件满足即可
+            // OR 模式：任一满足即可
             return conditions.stream().anyMatch(condition -> matchSingleCondition(condition, fieldValueMap));
         }
     }
@@ -1295,7 +1293,7 @@ public class ApprovalFlowService {
     }
 
     /**
-     * 根据审批人类型解析具体的审批人用户列表
+     * 根据审批人类型解析具体审批人用户列表
      *
      * @param userId       当前用户ID
      * @param approverType 审批人类型枚举
@@ -1323,8 +1321,7 @@ public class ApprovalFlowService {
         OrganizationUser criteria = new OrganizationUser();
         criteria.setUserId(userId);
         criteria.setOrganizationId(orgId);
-        OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
-        return currentUser;
+		return organizationUserMapper.selectOne(criteria);
     }
 
     /**
@@ -1392,7 +1389,7 @@ public class ApprovalFlowService {
 			return List.of();
 		}
         // 值是单选
-        Integer approvalLevel = getValidLevel(approverList);
+        int approvalLevel = getValidLevel(approverList);
 
         List<String> userIds = new ArrayList<>();
         String currentSupervisorId = currentUser.getSupervisorId();
@@ -1433,7 +1430,7 @@ public class ApprovalFlowService {
     }
 
     /**
-     * 解析部门负责人审批人
+     * 解析部门的负责人审批人
      */
     private List<User> resolveDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
 		if (currentUser == null) {
@@ -1476,7 +1473,7 @@ public class ApprovalFlowService {
     }
 
     /**
-     * 解析多级部门负责人审批人
+     * 解析多级部门的负责人审批人
      */
     private List<User> resolveMultipleDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
 		if (currentUser == null) {
@@ -1488,7 +1485,7 @@ public class ApprovalFlowService {
         }
 
         // 值是单选
-        Integer approvalLevel = getValidLevel(approverList);
+        int approvalLevel = getValidLevel(approverList);
 
         List<String> userIds = new ArrayList<>();
         String currentDepartmentId = departmentId;
@@ -1555,18 +1552,6 @@ public class ApprovalFlowService {
 	 */
 	public List<User> getCurrentNodeApproverList(String approverType, List<String> approverList, String userId, String currentOrgId) {
 		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList);
-	}
-
-	/**
-	 * 获取当前实例节点抄送人
-	 * @param currentNodeId 当前节点ID
-	 * @param userId 用户ID
-	 * @param currentOrgId 当前组织ID
-	 * @return 抄送人ID集合
-	 */
-	public List<User> getCurrentNodeCcList(String currentNodeId, String userId, String currentOrgId) {
-		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getCcType()), JSON.parseArray(nodeApprover.getCcList(), String.class));
 	}
 
 	/**
@@ -1709,13 +1694,13 @@ public class ApprovalFlowService {
 				// 自动跳过
 				if (nextApproverNode.getApproverList().size() == 1) {
 					// 如果刚好为单人审批, 直接插入待办任务和记录, 流转到下一个节点
-					ApprovalTask autoTask = saveAutoTask(instance.getId(), nextApproverNode.getId(), findSame.get(), ApprovalStatus.APPROVED);
+					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
 					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动同意跳过", autoTask.getId());
 					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId);
 				}
 				if (MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
 					// 如果为多人或签, 插入待办任务和记录, 且需要流转到下一个节点
-					ApprovalTask autoTask = saveAutoTask(instance.getId(), nextApproverNode.getId(), findSame.get(), ApprovalStatus.APPROVED);
+					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
 					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动同意跳过", autoTask.getId());
 					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId);
 				}
@@ -1729,13 +1714,12 @@ public class ApprovalFlowService {
 	}
 
 	/**
-	 * 自动审批的记录
+	 * 自动跳过的待办任务
 	 *
 	 * @param instanceId 实例ID
 	 * @param nodeId 节点ID
-	 * @param approvalStatus 审批状态
 	 */
-	private ApprovalTask saveAutoTask(String instanceId, String nodeId, String approver, ApprovalStatus approvalStatus) {
+	private ApprovalTask saveAutoSkipTask(String instanceId, String nodeId, String approver) {
 		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, nodeId);
 		ApprovalTask task = new ApprovalTask();
 		task.setId(IDGenerator.nextStr());
@@ -1744,12 +1728,8 @@ public class ApprovalFlowService {
 		task.setNodeRound(nextRound);
 		task.setApproverId(approver);
 		task.setType(ApprovalTaskType.NL.name());
-		task.setStatus(approvalStatus.name());
-		if (approvalStatus == ApprovalStatus.AUTO_APPROVED) {
-			task.setAction(ApprovalAction.APPROVE.name());
-		} else {
-			task.setAction(ApprovalAction.REJECT.name());
-		}
+		task.setStatus(ApprovalStatus.APPROVED.name());
+		task.setAction(ApprovalAction.APPROVE.name());
 		task.setCreateTime(System.currentTimeMillis());
 		task.setCreateUser(InternalUser.ADMIN.getValue());
 		task.setUpdateTime(System.currentTimeMillis());
