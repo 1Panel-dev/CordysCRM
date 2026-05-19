@@ -34,7 +34,7 @@
         path="reason"
         :rule="[
           {
-            required: props.approvalType === 'reject',
+            required: approvalConfig?.requireComment,
             message: t('common.notNull', { value: t('taskDrawer.rejectReason') }),
           },
         ]"
@@ -49,7 +49,7 @@
   import { type FormInst, NForm, NFormItem, NTooltip, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ApprovalTodoItem } from '@lib/shared/models/system/process';
+  import type { ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
@@ -57,7 +57,7 @@
 
   import {
     agreeApproval,
-    backApproval,
+    approvalProcessDetail,
     batchAgreeApproval,
     batchRejectApproval,
     rejectApproval,
@@ -68,6 +68,7 @@
     approvalItemKeys?: string[];
     approvalType: 'approve' | 'reject';
     module: 'WORKBENCH' | 'CONTRACT_INDEX' | 'ORDER_INDEX' | 'OPPORTUNITY_QUOTATION' | 'CONTRACT_INVOICE';
+    approvalFlowId: string; // 审批流 id
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;
@@ -103,6 +104,7 @@
       return;
     }
     try {
+      loading.value = true;
       if (props.approvalType === 'reject') {
         await rejectApproval({
           id: props.approvalItem.approvalTaskId,
@@ -129,6 +131,8 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -171,6 +175,35 @@
       }
     });
   }
+
+  const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
+  async function initApprovalConfig() {
+    try {
+      if (props.approvalFlowId) {
+        approvalConfig.value = await approvalProcessDetail(props.approvalFlowId);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  watch(
+    () => show.value,
+    (val) => {
+      if (!val) {
+        approvalForm.value = {
+          reason: '',
+        };
+        fileList.value = [];
+      } else {
+        initApprovalConfig();
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

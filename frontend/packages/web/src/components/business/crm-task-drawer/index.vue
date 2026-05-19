@@ -17,7 +17,7 @@
                 @click="activeTaskType = child.name"
               >
                 {{ child.title }}
-                <div v-if="item.name === 'pending'" class="task-count">{{ item.count }}</div>
+                <div v-if="item.name === 'pending'" class="task-count">{{ child.count }}</div>
               </div>
               <template #arrow>
                 <CrmIcon type="iconicon_right" :size="12" color="var(--text-n2)" class="mr-[4px]" />
@@ -75,12 +75,29 @@
     v-model:show="approvalVisible"
     :approval-type="approvalType"
     :approval-item-keys="selectedKeys"
+    :approval-flow-id="approvalFlowId"
     module="WORKBENCH"
   />
-  <ContractDetailDrawer v-model:visible="contractDetailVisible" :source-id="activeResourceId" />
-  <QuotationDetailDrawer v-model:visible="quotationDetailVisible" :source-id="activeResourceId" />
-  <OrderDetailDrawer v-model:visible="orderDetailVisible" :source-id="activeResourceId" />
-  <InvoiceDetailDrawer v-model:visible="invoiceDetailVisible" :source-id="activeResourceId" />
+  <ContractDetailDrawer
+    v-model:visible="contractDetailVisible"
+    :source-id="activeResourceId"
+    :approvalFlowId="approvalFlowId"
+  />
+  <QuotationDetailDrawer
+    v-model:visible="quotationDetailVisible"
+    :source-id="activeResourceId"
+    :approvalFlowId="approvalFlowId"
+  />
+  <OrderDetailDrawer
+    v-model:visible="orderDetailVisible"
+    :source-id="activeResourceId"
+    :approvalFlowId="approvalFlowId"
+  />
+  <InvoiceDetailDrawer
+    v-model:visible="invoiceDetailVisible"
+    :source-id="activeResourceId"
+    :approvalFlowId="approvalFlowId"
+  />
 </template>
 
 <script setup lang="ts">
@@ -117,6 +134,13 @@
   const keyword = ref('');
   const activeTaskType = ref<string>('pending-QUOTATION');
 
+  const statistic = ref<Record<string, any>>({
+    total: 0,
+    contract: 0,
+    quotation: 0,
+    order: 0,
+    invoice: 0,
+  });
   const moduleItems = [
     {
       name: ApprovalResourceTypeEnum.QUOTATION,
@@ -139,7 +163,7 @@
       count: 0,
     },
   ];
-  const collapseItems = ref([
+  const allItems = [
     {
       name: 'pending',
       title: t('workbench.dataOverview.pendingApproval'),
@@ -164,7 +188,22 @@
       count: 0,
       children: cloneDeep(moduleItems).map((e) => ({ ...e, name: `copied-${e.name}` })),
     },
-  ]);
+  ];
+  const collapseItems = computed(() => {
+    return allItems.map((e) => {
+      if (e.name === 'pending') {
+        e.count = statistic.value.total;
+        e.children = e.children.map((child) => {
+          const [_, name] = child.name.split('-');
+          return {
+            ...child,
+            count: statistic.value[name.toLowerCase()],
+          };
+        });
+      }
+      return e;
+    });
+  });
 
   const activeModuleTitle = computed(() => {
     const [_, moduleName] = activeTaskType.value.split('-');
@@ -192,28 +231,9 @@
     }
   }
 
-  const statistic = ref<Record<string, any>>({
-    total: 0,
-    contract: 0,
-    quotation: 0,
-    order: 0,
-    invoice: 0,
-  });
   async function initStatistic() {
     try {
       statistic.value = await getTodoStatistic();
-      collapseItems.value = collapseItems.value.map((e) => {
-        if (e.name === 'pending') {
-          e.children = e.children.map((child) => {
-            const [_, name] = child.name.split('-');
-            return {
-              ...child,
-              count: statistic.value[name.toLowerCase()],
-            };
-          });
-        }
-        return e;
-      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -298,8 +318,10 @@
   const quotationDetailVisible = ref(false);
   const orderDetailVisible = ref(false);
   const invoiceDetailVisible = ref(false);
-  function handleOpenDetail(resourceId: string) {
+  const approvalFlowId = ref('');
+  function handleOpenDetail(resourceId: string, _approvalFlowId: string) {
     activeResourceId.value = resourceId;
+    approvalFlowId.value = _approvalFlowId;
     const [_, resourceType] = activeTaskType.value.split('-');
     switch (resourceType) {
       case ApprovalResourceTypeEnum.CONTRACT:
@@ -369,7 +391,7 @@
     }
     .task-content {
       width: calc(100% - 268px);
-      @apply h-full;
+      @apply h-full overflow-hidden;
       :deep(.n-checkbox__label) {
         font-weight: 600;
       }

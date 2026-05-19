@@ -18,6 +18,7 @@ import {
 } from '@lib/shared/enums/process';
 import type { ActionNode, ConditionBranch } from '@cordys/web/src/components/business/crm-flow/types';
 import type { TableQueryParams } from '../common';
+import type { AttachmentInfo } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export interface BaseItem {
   id: string;
@@ -125,7 +126,7 @@ export type ApprovalProcessNode =
 export interface ApprovalActionNode extends ActionNode, ApprovalNodeParticipantConfig {
   approverSelectedList?: SelectedUsersItem[]; // 前端展示用的审批人选中列表
   emptyApproverSelectedList?: SelectedUsersItem[]; // 异常处理-前端展示用的
-  ccSelectedList?: SelectedUsersItem[];// 前端展示用的抄送选中列表
+  ccSelectedList?: SelectedUsersItem[]; // 前端展示用的抄送选中列表
 }
 
 // 审批条件分支（前端审批流图使用）
@@ -219,6 +220,8 @@ export interface ApprovalTodoItem {
   approvalNodeId: string;
   approvalInstanceId: string;
   approvalId: string;
+  approvalFlowId: string;
+  approvalFlowVersionId: string;
   resourceId: string;
   resourceName: string;
   resourceType: string;
@@ -259,4 +262,52 @@ export interface TodoStatistic {
   contract: number;
   order: number;
   invoice: number;
+}
+
+export interface ApprovalDetail {
+  id: string;
+  submitterId: string;
+  submitAvatar: string;
+  submitter: string;
+  submitTime: number;
+  result: string;
+  approvalStatus: ProcessStatusEnum;
+  currentNodeId: string;
+  nodes: ApprovalNode[];
+}
+
+export interface ApprovalNode {
+  taskId: string;
+  recordId: string;
+  nodeId: string;
+  approverId: string;
+  approver: string;
+  approvalStatus: ProcessStatusEnum;
+  approvalTime: number;
+  comment: string;
+  attachments: AttachmentInfo[];
+  ccNodes: CcNode[];
+  returnNode: boolean;
+  addSignNode: boolean;
+  nodeRound: number; // 节点轮次
+  taskNodes: ApprovalNodeTaskNode[];
+}
+
+export interface ApprovalNodeTaskNode {
+  taskId: string;
+  approverId: string;
+  approver: string;
+  approverAvatar: string;
+  approvalStatus: ProcessStatusEnum;
+  recordId: string;
+  comment: string;
+  attachments: AttachmentInfo[];
+  approvalTime: number;
+  sign: boolean; // 是否加签任务
+}
+
+export interface CcNode {
+  ccUserId: string;
+  ccUserName: string;
+  ccUserAvatar: string;
 }

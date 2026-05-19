@@ -45,7 +45,11 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="170" no-content-padding>
         <!-- 需要用到 detailInfo 所以这里不用 v-if -->
         <div v-show="activeTab === 'contract'" class="h-full">
-          <CrmApprovalDetail :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT" :source-id="props.sourceId">
+          <CrmApprovalDetail
+            :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
+            :source-id="props.sourceId"
+            :approvalFlowId="approvalFlowId"
+          >
             <template #left>
               <CrmFormDescription
                 :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
@@ -176,6 +180,7 @@
   const props = defineProps<{
     sourceId: string;
     isContractTableDetail?: boolean;
+    approvalFlowId?: string; // 审批流 id
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;

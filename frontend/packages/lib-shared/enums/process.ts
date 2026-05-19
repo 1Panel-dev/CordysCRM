@@ -46,14 +46,6 @@ export enum ApproverTypeEnum {
   ROLE = 'ROLE', // 角色
 }
 
-// 审批流程类型
-export enum ProcessTypeEnum {
-  OR_APPROVAL = 'OR_APPROVAL', // 或签
-  AND_APPROVAL = 'AND_APPROVAL', // 会签
-  SEQUENTIAL_APPROVAL = 'SEQUENTIAL_APPROVAL', // 依次审批
-  COUNTERSIGNATURE = 'COUNTERSIGNATURE', // 加签
-}
-
 // 多人审批方式
 export enum MultiApproverModeEnum {
   ALL = 'ALL', // 会签

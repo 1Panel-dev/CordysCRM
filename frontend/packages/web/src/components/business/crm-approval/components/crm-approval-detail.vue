@@ -10,9 +10,20 @@
       </template>
       <template #2>
         <div class="flex h-full w-full flex-col overflow-hidden border-l border-[var(--text-n8)]">
-          <div class="flex-1 overflow-hidden p-[24px] pl-[16px]">
+          <div class="flex-1 overflow-hidden px-[16px] py-[24px]">
             <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
-            <CrmApprovalLine />
+            <CrmApprovalLine
+              :nodes="approvalInfo?.nodes || []"
+              :submitter="{
+                submitAvatar: approvalInfo?.submitAvatar,
+                submitter: approvalInfo?.submitter,
+                submitTime: approvalInfo?.submitTime,
+                submitterId: approvalInfo?.submitterId,
+              }"
+              :currentApprovalNode="currentApprovalNode"
+              :currentApprovalNodeIndex="currentApprovalNodeIndex"
+              class="h-[calc(100%-26px)] pr-[8px]"
+            />
           </div>
           <div class="border-t border-[var(--text-n8)] p-[16px]">
             <template v-if="isApprover">
@@ -21,7 +32,7 @@
                 ref="CrmFileInputRef"
                 v-model:value="approvalOpinion"
                 v-model:file-list="fileList"
-                required
+                :required="approvalConfig?.requireComment"
               />
               <div class="mt-[12px] flex gap-[12px]">
                 <n-button type="primary" class="flex-1" @click="handleApprove">{{ t('common.approve') }}</n-button>
@@ -29,7 +40,7 @@
                 <CrmMoreAction :options="moreActions" trigger="click" size="medium" @select="handleMoreActionSelect" />
               </div>
             </template>
-            <n-button type="primary" ghost block @click="cancelApproval">
+            <n-button v-if="approvalConfig?.allowWithdraw" type="primary" ghost block @click="cancelApproval">
               <template #icon>
                 <CrmIcon type="iconicon_rollfront" :size="16" />
               </template>
@@ -74,7 +85,7 @@
   </CrmModal>
   <CrmModal
     v-model:show="fallbackModalVisible"
-    :title="t('common.FALLBACK')"
+    :title="t('taskDrawer.operation.BACK')"
     :ok-loading="fallbackLoading"
     :positive-text="t('crm.approval.confirmFallback')"
     @confirm="handleFallback"
@@ -106,6 +117,7 @@
     NRadioGroup,
     NScrollbar,
     NSelect,
+    type UploadFileInfo,
     useMessage,
   } from 'naive-ui';
 
@@ -113,6 +125,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig } from '@lib/shared/models/system/module';
+  import type { ApprovalDetail, ApprovalNode, ApprovalProcessDetail } from '@lib/shared/models/system/process';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -124,12 +137,22 @@
   import CrmMemberSelect from '@/components/business/crm-user-tag-selector/index.vue';
   import CrmApprovalLine from './crm-approval-line.vue';
 
+  import {
+    addSignApproval,
+    agreeApproval,
+    approvalProcessDetail,
+    getApprovalResourceDetail,
+    rejectApproval,
+  } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+
+  import type { SelectMixedOption } from 'naive-ui/es/select/src/interface';
 
   const props = defineProps<{
     sourceId: string;
     formKey: FormDesignKeyEnum;
     layout?: 'horizontal' | 'vertical';
+    approvalFlowId?: string; // 审批流 id
   }>();
   const emit = defineEmits<{
     (
@@ -147,15 +170,56 @@
 
   const isApprover = ref(true); // 是否是审批人，测试数据，后续根据接口返回设置
   const approvalOpinion = ref('');
-  const fileList = ref([]);
+  const fileList = ref<UploadFileInfo[]>([]);
   const CrmFileInputRef = ref<InstanceType<typeof CrmFileInput>>();
+  const approvalInfo = ref<ApprovalDetail>();
+  const currentApprovalNode = ref<ApprovalNode>();
+  const currentApprovalNodeIndex = ref(0);
+  const moduleKeyMap: Partial<Record<FormDesignKeyEnum, string>> = {
+    [FormDesignKeyEnum.CONTACT]: 'CONTRACT_INDEX',
+    [FormDesignKeyEnum.INVOICE]: 'CONTRACT_INVOICE',
+    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: 'OPPORTUNITY_QUOTATION',
+    [FormDesignKeyEnum.ORDER]: 'ORDER_INDEX',
+  };
 
-  function handleApprove() {
-    // 审批通过
+  async function initApprovalDetail() {
+    try {
+      approvalInfo.value = await getApprovalResourceDetail(props.sourceId);
+      currentApprovalNodeIndex.value = approvalInfo.value.nodes.findIndex(
+        (node) => node.nodeId === approvalInfo.value?.currentNodeId
+      );
+      currentApprovalNode.value = approvalInfo.value.nodes[currentApprovalNodeIndex.value];
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function handleApprove() {
+    if (!CrmFileInputRef.value?.validate() || !currentApprovalNode.value) {
+      return;
+    }
+    try {
+      await agreeApproval({
+        id: currentApprovalNode.value.taskId,
+        nodeId: currentApprovalNode.value.nodeId,
+        instanceId: currentApprovalNode.value.recordId,
+        attachmentIds: fileList.value.map((e) => e.id),
+        approverId: currentApprovalNode.value.approverId,
+        comment: approvalOpinion.value,
+        module: moduleKeyMap[props.formKey]!,
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
     message.success(t('common.approved'));
   }
 
   function handleReject() {
+    if (!CrmFileInputRef.value?.validate()) {
+      return;
+    }
     // 审批驳回
     openModal({
       title: t('crm.approval.rejectConfirm'),
@@ -163,21 +227,39 @@
       type: 'error',
       positiveText: t('crm.approval.confirmReject'),
       onPositiveClick: async () => {
-        message.success(t('common.rejected'));
+        if (!currentApprovalNode.value) {
+          return;
+        }
+        try {
+          await rejectApproval({
+            id: currentApprovalNode.value.taskId,
+            nodeId: currentApprovalNode.value.nodeId,
+            instanceId: currentApprovalNode.value.recordId,
+            attachmentIds: fileList.value.map((e) => e.id),
+            approverId: currentApprovalNode.value.approverId,
+            comment: approvalOpinion.value,
+            module: moduleKeyMap[props.formKey]!,
+          });
+          message.success(t('common.rejected'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
       },
     });
   }
 
-  const moreActions: ActionsItem[] = [
-    {
-      key: 'addSign',
-      label: t('common.COUNTERSIGNATURE'),
-    },
-    {
-      key: 'fallback',
-      label: t('taskDrawer.result.FALLBACK'),
-    },
-  ];
+  const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
+  async function initApprovalConfig() {
+    try {
+      if (props.approvalFlowId) {
+        approvalConfig.value = await approvalProcessDetail(props.approvalFlowId);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   const addSignModalVisible = ref(false);
   const addSignLoading = ref(false);
@@ -185,16 +267,25 @@
     type: 'before',
     reviewer: undefined,
     reason: '',
-    fileList: [],
+    fileList: [] as UploadFileInfo[],
   });
   const addSignFormRef = ref<FormInst>();
 
   function handleAddSign() {
-    addSignFormRef.value?.validate((errors) => {
-      if (!errors) {
-        addSignLoading.value = true;
-        setTimeout(() => {
-          addSignLoading.value = false;
+    addSignFormRef.value?.validate(async (errors) => {
+      if (!errors && currentApprovalNode.value) {
+        try {
+          addSignLoading.value = true;
+          await addSignApproval({
+            id: props.sourceId,
+            nodeId: currentApprovalNode.value.nodeId,
+            instanceId: currentApprovalNode.value.recordId,
+            approverId: currentApprovalNode.value.approverId,
+            comment: addSignForm.value.reason,
+            attachmentIds: addSignForm.value.fileList.map((e) => e.id),
+            type: addSignForm.value.type,
+            module: moduleKeyMap[props.formKey]!,
+          });
           addSignModalVisible.value = false;
           message.success(t('crm.approval.addSignSuccess'));
           addSignForm.value = {
@@ -203,7 +294,13 @@
             reason: '',
             fileList: [],
           };
-        }, 1000);
+          initApprovalDetail();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        } finally {
+          addSignLoading.value = false;
+        }
       }
     });
   }
@@ -214,16 +311,16 @@
     node: undefined,
     reason: '',
   });
-  const fallbackOptions = ref([
-    {
-      label: '审批节点1',
-      value: 'node1',
-    },
-    {
-      label: '审批节点2',
-      value: 'node2',
-    },
-  ]);
+  const fallbackOptions = computed(() => {
+    const options: SelectMixedOption[] = [];
+    for (let i = 0; i < currentApprovalNodeIndex.value; i++) {
+      options.push({
+        label: t('crm.approval.preNode', { index: i + 1 }),
+        value: approvalInfo.value?.nodes[i].nodeId || '',
+      });
+    }
+    return options;
+  });
   const fallbackFormRef = ref<FormInst>();
 
   function handleFallback() {
@@ -242,6 +339,23 @@
       }
     });
   }
+
+  const moreActions = computed(() => {
+    const fullActions: ActionsItem[] = [];
+    if (approvalConfig.value?.allowAddSign) {
+      fullActions.push({
+        key: 'addSign',
+        label: t('common.COUNTERSIGNATURE'),
+      });
+    }
+    if (fallbackOptions.value.length) {
+      fullActions.push({
+        key: 'fallback',
+        label: t('taskDrawer.operation.BACK'),
+      });
+    }
+    return fullActions;
+  });
 
   function handleMoreActionSelect(item: ActionsItem) {
     if (item.key === 'addSign') {
@@ -276,6 +390,11 @@
       });
     }
   }
+
+  onBeforeMount(() => {
+    initApprovalDetail();
+    initApprovalConfig();
+  });
 </script>
 
 <style lang="less" scoped></style>
