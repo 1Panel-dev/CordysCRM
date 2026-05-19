@@ -1595,6 +1595,22 @@ public class ApprovalFlowService {
 	}
 
 	/**
+	 * 获取实例当前节点后续所有审批节点
+	 * @param instance 当前节点ID
+	 * @return 后续所有审批节点
+	 */
+	public List<ApprovalNodeApproverResponse> getInstanceCurrentFollowNode(ApprovalInstance instance, String currentOrgId) {
+		List<ApprovalNodeApproverResponse> nodes = new ArrayList<>();
+		List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
+		ApprovalNodeResponse next = getNextNodeWithExceptionHandler(instance, instance.getCurrentNodeId(), resourceFvs, currentOrgId);
+		while (ApprovalNodeTypeEnum.valueOf(next.getNodeType()) == ApprovalNodeTypeEnum.APPROVER) {
+			nodes.add((ApprovalNodeApproverResponse) next);
+			next = getNextNodeWithExceptionHandler(instance, next.getId(), resourceFvs, currentOrgId);
+		}
+		return nodes;
+	}
+
+	/**
 	 * 获取实例下一个节点，包含异常处理和自动审批, 跳过条件节点
 	 * @param instance 审批实例
 	 * @param nodeId 节点ID
@@ -1747,7 +1763,7 @@ public class ApprovalFlowService {
 		record.setNodeRound(nextRound);
 		record.setResult(approvalStatus.name());
 		if (StringUtils.isBlank(comment)) {
-			record.setComment(approvalStatus == ApprovalStatus.APPROVED ? Translator.get("auto.approval.passed") : Translator.get("auto.approval.rejected"));
+			record.setComment(approvalStatus == ApprovalStatus.AUTO_APPROVED ? Translator.get("auto.approval.passed") : Translator.get("auto.approval.rejected"));
 		} else {
 			record.setComment(comment);
 		}

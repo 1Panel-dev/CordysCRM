@@ -46,6 +46,6 @@ public class ApprovalResourceController {
 	@GetMapping("/detail/{resourceId}")
 	@Operation(summary = "记录详情")
 	public ApprovalInstanceDetail getRecordDetail(@PathVariable String resourceId) {
-		return approvalInstanceService.getLatestApprovalInstanceDetail(resourceId);
+		return approvalInstanceService.getLatestApprovalInstanceDetail(resourceId, OrganizationContext.getOrganizationId());
 	}
 }
