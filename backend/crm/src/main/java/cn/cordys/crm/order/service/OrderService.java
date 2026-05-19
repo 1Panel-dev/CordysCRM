@@ -4,6 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
@@ -586,11 +587,17 @@ public class OrderService {
         return orderMapper.selectByPrimaryKey(id);
     }
 
+
+    @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void updateStage(OrderStageRequest request, String userId, String orgId) {
         Order order = orderMapper.selectByPrimaryKey(request.getId());
         if (order == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
+
+        List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
+        Map<String, String> stageMap = stageConfigList.stream()
+                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
         Map<String, String> oldMap = new HashMap<>();
         oldMap.put("orderStage", Translator.get("order.stage." + order.getStage().toLowerCase()));
@@ -603,12 +610,17 @@ public class OrderService {
 
         updateStageSnapshot(request.getId(), request.getStage());
 
-        LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.ORDER_INDEX, order.getName());
-        Map<String, String> newMap = new HashMap<>();
-        newMap.put("orderStage", Translator.get("order.stage." + request.getStage().toLowerCase()));
-        logDTO.setOriginalValue(oldMap);
-        logDTO.setModifiedValue(newMap);
-        logService.add(logDTO);
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("orderStage", stageMap.get(order.getStage()));
+        final Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("orderStage", stageMap.get(request.getStage()));
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(order.getName())
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
+                        .build()
+        );
     }
 
     /**

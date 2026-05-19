@@ -4,6 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
@@ -593,14 +594,17 @@ public class ContractService {
      * @param request
      * @param userId
      */
+    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void updateStage(ContractStageRequest request, String userId, String orgId) {
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
 
-        Map<String, String> oldMap = new HashMap<>();
-        oldMap.put("contractStage", Translator.get("contract.stage." + contract.getStage().toLowerCase()));
+        List<StageConfigResponse> stageConfigList = extContractStageConfigMapper.getStageConfigList(orgId);
+
+        Map<String, String> stageMap = stageConfigList.stream()
+                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
         contract.setStage(request.getStage());
         if (StringUtils.isNotBlank(request.getVoidReason())) {
@@ -613,19 +617,24 @@ public class ContractService {
 
         updateStatusSnapshot(request.getId(), request.getStage(), null);
 
-        LogDTO logDTO = new LogDTO(orgId, request.getId(), userId, LogType.UPDATE, LogModule.CONTRACT_INDEX, contract.getName());
-        Map<String, String> newMap = new HashMap<>();
-        newMap.put("contractStage", Translator.get("contract.stage." + request.getStage().toLowerCase()));
-        logDTO.setOriginalValue(oldMap);
-        logDTO.setModifiedValue(newMap);
-        logService.add(logDTO);
-
         if (Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) || Strings.CI.equals(request.getStage(), ContractStage.ARCHIVED.name())) {
             String event = Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) ?
                     NotificationConstants.Event.CONTRACT_VOID : NotificationConstants.Event.CONTRACT_ARCHIVED;
             Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
             sendNotice(contract, userId, orgId, event, customer.getName());
         }
+
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("contractStage", stageMap.get(contract.getStage()));
+        final Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("contractStage", stageMap.get(request.getStage()));
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(contract.getName())
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
+                        .build()
+        );
 
     }
 
