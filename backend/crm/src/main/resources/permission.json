@@ -131,20 +131,20 @@
         ]
       },
       {
-        "id": "APPROVAL_FLOW",
-        "name": "permission.approval_flow.name",
+        "id": "PROCESS_SETTING",
+        "name": "permission.process_setting.name",
         "permissions": [
           {
-            "id": "APPROVAL_FLOW:READ"
+            "id": "PROCESS_SETTING:READ"
           },
           {
-            "id": "APPROVAL_FLOW:ADD"
+            "id": "PROCESS_SETTING:ADD"
           },
           {
-            "id": "APPROVAL_FLOW:UPDATE"
+            "id": "PROCESS_SETTING:UPDATE"
           },
           {
-            "id": "APPROVAL_FLOW:DELETE"
+            "id": "PROCESS_SETTING:DELETE"
           }
         ]
       }

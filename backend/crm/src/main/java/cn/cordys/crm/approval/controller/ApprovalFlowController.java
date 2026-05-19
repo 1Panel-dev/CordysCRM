@@ -33,42 +33,42 @@ public class ApprovalFlowController {
     private ApprovalFlowService approvalFlowService;
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_READ)
+    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_READ)
     @Operation(summary = "审批流列表")
     public Pager<List<ApprovalFlowListResponse>> list(@Validated @RequestBody ApprovalFlowPageRequest request) {
         return approvalFlowService.list(request, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_ADD)
+    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_ADD)
     @Operation(summary = "新建审批流")
     public ApprovalFlowDetailResponse add(@Validated @RequestBody ApprovalFlowAddRequest request) {
         return approvalFlowService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_UPDATE)
+    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_UPDATE)
     @Operation(summary = "更新审批流")
     public ApprovalFlowDetailResponse update(@Validated @RequestBody ApprovalFlowUpdateRequest request) {
         return approvalFlowService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_DELETE)
+    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_DELETE)
     @Operation(summary = "删除审批流")
     public void delete(@PathVariable("id") String id) {
         approvalFlowService.delete(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_READ)
+    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_READ)
     @Operation(summary = "获取审批流详情")
     public ApprovalFlowDetailResponse get(@PathVariable("id") String id) {
         return approvalFlowService.getDetail(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/enable/{id}")
-    @RequiresPermissions(PermissionConstants.APPROVAL_FLOW_UPDATE)
+    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_UPDATE)
     @Operation(summary = "启用/禁用审批流")
     public void updateEnable(@PathVariable("id") String id, @RequestParam("enable") Boolean enable) {
         approvalFlowService.updateEnable(id, enable, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

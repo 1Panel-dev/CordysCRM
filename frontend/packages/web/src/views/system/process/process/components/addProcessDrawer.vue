@@ -17,7 +17,7 @@
           :status="errorStatus"
           size="small"
           :value="form.basicConfig.name"
-          :permission="['APPROVAL_FLOW:UPDATE']"
+          :permission="['PROCESS_SETTING:UPDATE']"
           :click-to-edit="!isDetail"
           :disabled="isDetail"
           :emptyTextTip="t('common.notNull', { value: t('process.process.processName') })"

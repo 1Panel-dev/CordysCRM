@@ -37,7 +37,7 @@ public class ModuleFormController {
 
     @GetMapping("/config/{formKey}")
     @Operation(summary = "获取表单配置")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE, PermissionConstants.APPROVAL_FLOW_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
     public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
         return moduleFormService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
     }
