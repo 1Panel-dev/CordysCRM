@@ -2,7 +2,7 @@ export default {
   'process.processDesign': '流程设计',
   'process.processDesign.moreSetting': '更多设置',
   'process.process.processType': '业务类型',
-  'process.process.name': '审批流名称',
+  'process.process.name': '流程名称',
   'process.executionTiming': '执行时机',
   'process.process.newProcess': '新建审批流',
   'process.process.enableProcessTip': '同一表单只能有一个启用状态的审批流',
