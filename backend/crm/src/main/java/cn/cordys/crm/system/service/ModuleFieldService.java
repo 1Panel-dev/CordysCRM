@@ -281,7 +281,7 @@ public class ModuleFieldService {
         Map<String, Object> orderProductsField = JSON.parseMap(orderProductsFieldBlob.getProp());
 
         List<Map<String, Object>> subFields = (List<Map<String, Object>>) orderProductsField.get("subFields");
-        Map<String, Object> orderProductAmount = null;
+        Map<String, Object> orderProductAmount = new HashMap<>();
         String orderProductPriceId = null;
         String orderProductNumberId = null;
         for (Map<String, Object> subField : subFields) {
@@ -311,7 +311,7 @@ public class ModuleFieldService {
     }
 
     private String getOrderAmountFormula(String orderAmountFormulaId) {
-        String orderProductAmountFormula = String.format("""
+        return String.format("""
                 {
                     "source": "SUM(${%s})",
                     "display": "SUM(产品明细.金额)",
@@ -338,7 +338,6 @@ public class ModuleFieldService {
                         ]
                     }
                 }""", orderAmountFormulaId, orderAmountFormulaId, orderAmountFormulaId);
-        return orderProductAmountFormula;
     }
 
     private String getOrderProductAmountFormula(String orderProductPriceId, String orderProductNumberId) {
