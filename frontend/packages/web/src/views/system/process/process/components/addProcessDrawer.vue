@@ -18,7 +18,8 @@
           size="small"
           :value="form.basicConfig.name"
           :permission="['APPROVAL_FLOW:UPDATE']"
-          click-to-edit
+          :click-to-edit="!isDetail"
+          :disabled="isDetail"
           :emptyTextTip="t('common.notNull', { value: t('process.process.processName') })"
           @handle-edit="handleEditName"
           @input="handleInput"

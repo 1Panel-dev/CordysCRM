@@ -14,11 +14,11 @@
     v-else
     class="crm-editable-text-view flex min-w-0 max-w-full items-center gap-[8px]"
     :class="{ 'cursor-pointer': props.clickToEdit && hasEditPermission }"
-    @click="props.clickToEdit && hasEditPermission ? enableEditMode() : undefined"
+    @click="props.clickToEdit && hasEditPermission && !disabled ? enableEditMode() : undefined"
   >
     <slot>{{ value }} </slot>
     <CrmIcon
-      v-if="hasEditPermission"
+      v-if="hasEditPermission && !disabled"
       class="table-row-edit cursor-pointer text-[var(--text-n4)]"
       type="iconicon_edit"
       :size="16"
@@ -43,6 +43,7 @@
     permission: string[];
     clickToEdit?: boolean;
     emptyTextTip?: string;
+    disabled?: boolean;
   }>();
 
   const emit = defineEmits<{
