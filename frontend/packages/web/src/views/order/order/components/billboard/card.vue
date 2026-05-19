@@ -129,7 +129,7 @@
       number: t('common.number'),
     };
     props.fieldList.forEach((field) => {
-      if (field.businessKey) {
+      if (field.businessKey && !field.resourceFieldId) {
         map[field.businessKey] = field.name;
       }
     });

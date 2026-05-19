@@ -209,18 +209,25 @@
               h(
                 'div',
                 {
-                  class: ' w-[fit-content]',
+                  class: 'flex min-w-0 max-w-full items-center',
                 },
                 h(
-                  CrmTableButton,
+                  'div',
                   {
-                    onClick: () => {
-                      activeSourceId.value = row.id;
-                      showProcessDrawer.value = true;
-                      isDetail.value = true;
-                    },
+                    class: 'one-line-text inline-block min-w-0 max-w-full',
                   },
-                  { default: () => row.name, trigger: () => row.name }
+                  h(
+                    CrmTableButton,
+                    {
+                      class: 'inline-block max-w-full',
+                      onClick: () => {
+                        activeSourceId.value = row.id;
+                        showProcessDrawer.value = true;
+                        isDetail.value = true;
+                      },
+                    },
+                    { default: () => row.name, trigger: () => row.name }
+                  )
                 )
               ),
           }
