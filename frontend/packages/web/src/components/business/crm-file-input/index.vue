@@ -24,7 +24,7 @@
       </n-tooltip>
     </div>
     <n-input
-      v-model="value"
+      v-model:value="value"
       type="textarea"
       :maxlength="300"
       :autosize="{

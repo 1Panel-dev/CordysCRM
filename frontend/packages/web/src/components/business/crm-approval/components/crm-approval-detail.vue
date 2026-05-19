@@ -1,6 +1,14 @@
 <template>
   <CrmCard hide-footer no-content-padding>
-    <CrmSplitPanel :size="0.7" :max="1" :min="0.7" :default-size="0.7" collapse-side="right" disabled>
+    <CrmSplitPanel
+      v-if="props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)"
+      :size="0.7"
+      :max="1"
+      :min="0.7"
+      :default-size="0.7"
+      collapse-side="right"
+      disabled
+    >
       <template #1>
         <div class="flex h-full w-full p-[24px_16px_24px_24px]">
           <n-scrollbar x-scrollable>
@@ -25,7 +33,10 @@
               class="h-[calc(100%-26px)] pr-[8px]"
             />
           </div>
-          <div class="border-t border-[var(--text-n8)] p-[16px]">
+          <div
+            v-if="isApprover || canCancelApply || canCancelApproval"
+            class="border-t border-[var(--text-n8)] p-[16px]"
+          >
             <template v-if="isApprover">
               <div class="mb-[8px] font-semibold">{{ t('crm.approval.opinion') }}</div>
               <CrmFileInput
@@ -35,21 +46,48 @@
                 :required="approvalConfig?.requireComment"
               />
               <div class="mt-[12px] flex gap-[12px]">
-                <n-button type="primary" class="flex-1" @click="handleApprove">{{ t('common.approve') }}</n-button>
+                <n-button type="primary" class="flex-1" :loading="approvalLoading" @click="handleApprove">
+                  {{ t('common.approve') }}
+                </n-button>
                 <n-button type="error" ghost @click="handleReject">{{ t('common.reject') }}</n-button>
                 <CrmMoreAction :options="moreActions" trigger="click" size="medium" @select="handleMoreActionSelect" />
               </div>
             </template>
-            <n-button v-if="approvalConfig?.allowWithdraw" type="primary" ghost block @click="cancelApproval">
+            <n-button
+              v-if="canCancelApply"
+              type="primary"
+              class="mt-[16px]"
+              ghost
+              block
+              @click="cancelApproval('apply')"
+            >
               <template #icon>
                 <CrmIcon type="iconicon_rollfront" :size="16" />
               </template>
-              {{ isApprover ? t('crm.approval.cancelApproval') : t('crm.approval.cancelApprovalApply') }}
+              {{ t('crm.approval.cancelApprovalApply') }}
+            </n-button>
+            <n-button
+              v-if="canCancelApproval"
+              type="primary"
+              class="mt-[16px]"
+              ghost
+              block
+              @click="() => cancelApproval()"
+            >
+              <template #icon>
+                <CrmIcon type="iconicon_rollfront" :size="16" />
+              </template>
+              {{ t('crm.approval.cancelApproval') }}
             </n-button>
           </div>
         </div>
       </template>
     </CrmSplitPanel>
+    <div v-else class="flex h-full w-full p-[24px_16px_24px_24px]">
+      <n-scrollbar x-scrollable>
+        <slot name="left"></slot>
+      </n-scrollbar>
+    </div>
   </CrmCard>
   <CrmModal
     v-model:show="addSignModalVisible"
@@ -122,6 +160,7 @@
   } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig } from '@lib/shared/models/system/module';
@@ -140,11 +179,14 @@
   import {
     addSignApproval,
     agreeApproval,
-    approvalProcessDetail,
+    getApprovalConfigDetail,
     getApprovalResourceDetail,
     rejectApproval,
+    revokeApproval,
   } from '@/api/modules';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useModal from '@/hooks/useModal';
+  import useUserStore from '@/store/modules/user';
 
   import type { SelectMixedOption } from 'naive-ui/es/select/src/interface';
 
@@ -152,7 +194,7 @@
     sourceId: string;
     formKey: FormDesignKeyEnum;
     layout?: 'horizontal' | 'vertical';
-    approvalFlowId?: string; // 审批流 id
+    approvalStatus: ProcessStatusEnum;
   }>();
   const emit = defineEmits<{
     (
@@ -167,14 +209,135 @@
   const { t } = useI18n();
   const { openModal } = useModal();
   const message = useMessage();
+  const userStore = useUserStore();
+  const { revokeByResourceId } = useApprovalResourceAction({
+    formKey: props.formKey,
+  });
 
-  const isApprover = ref(true); // 是否是审批人，测试数据，后续根据接口返回设置
+  const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
+  async function initApprovalConfig() {
+    try {
+      if (props.formKey) {
+        approvalConfig.value = await getApprovalConfigDetail(props.formKey);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   const approvalOpinion = ref('');
   const fileList = ref<UploadFileInfo[]>([]);
   const CrmFileInputRef = ref<InstanceType<typeof CrmFileInput>>();
   const approvalInfo = ref<ApprovalDetail>();
   const currentApprovalNode = ref<ApprovalNode>();
   const currentApprovalNodeIndex = ref(0);
+  // 我审批的上一个节点
+  const prevMineApprovalNode = computed(() => {
+    if (!currentApprovalNode.value) {
+      return undefined;
+    }
+    const prevMineApprovalIndex = currentApprovalNode.value.taskNodes.findIndex(
+      (e) =>
+        [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED].includes(e.approvalStatus) &&
+        e.approverId === userStore.userInfo.id
+    );
+    if (prevMineApprovalIndex !== -1) {
+      return currentApprovalNode.value?.taskNodes[prevMineApprovalIndex];
+    }
+    const prevApprovalNode = approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1];
+    if (prevApprovalNode) {
+      return prevApprovalNode.taskNodes.find(
+        (e) =>
+          [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED].includes(e.approvalStatus) &&
+          e.approverId === userStore.userInfo.id
+      );
+    }
+  });
+  const currentTaskNode = computed(() => {
+    if (!currentApprovalNode.value) {
+      return undefined;
+    }
+    return currentApprovalNode.value.taskNodes.find(
+      (e) => e.approvalStatus === ProcessStatusEnum.APPROVING && e.approverId === userStore.userInfo.id
+    );
+  });
+  // 是否是审批人
+  const isApprover = computed(() => {
+    if (currentApprovalNode.value?.multiApproverMode === MultiApproverModeEnum.SEQUENTIAL) {
+      // 顺序审批，只有当前审批人可以操作
+      return (
+        currentApprovalNode.value?.taskNodes.find((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
+          ?.approverId === userStore.userInfo.id
+      );
+    }
+    return currentApprovalNode.value?.taskNodes.some((taskNode) => taskNode.approverId === userStore.userInfo.id); // 会签/或签/单人审批
+  });
+  // 是否可以撤销审批申请
+  const canCancelApply = computed(() => {
+    // 只有提交人可以撤销审批申请
+    if (approvalInfo.value?.submitterId !== userStore.userInfo.id) {
+      return false;
+    }
+    // 当前没有审批完成节点时可撤销
+    if (
+      !approvalInfo.value?.nodes.some(
+        (node) =>
+          node.approvalStatus === ProcessStatusEnum.APPROVED || node.approvalStatus === ProcessStatusEnum.UNAPPROVED
+      )
+    ) {
+      return true;
+    }
+    // 第一个节点完成审批，且配置了可撤销配置，允许撤销
+    if (
+      approvalInfo.value?.nodes[0].approvalStatus === ProcessStatusEnum.APPROVED &&
+      approvalConfig.value?.submitterCanRevoke
+    ) {
+      return true;
+    }
+  });
+  // 是否可以撤销审批
+  const canCancelApproval = computed(() => {
+    // 未配置撤销
+    if (!approvalConfig.value?.allowWithdraw) {
+      return false;
+    }
+    // 当前节点包含自己审批的任务节点，则说明是多人审批节点且节点未结束，判断当前节点情况即可
+    if (
+      currentApprovalNode.value?.taskNodes.findIndex(
+        (e) =>
+          [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED].includes(e.approvalStatus) &&
+          e.approverId === userStore.userInfo.id
+      ) !== -1
+    ) {
+      // 当前是顺序审批节点，上一个审批节点是自己，并且下一个节点未审批，允许撤销自己的审批
+      if (currentApprovalNode.value?.multiApproverMode === MultiApproverModeEnum.SEQUENTIAL) {
+        const currentTaskNodeIndex = currentApprovalNode.value?.taskNodes.findIndex(
+          (e) => e.approvalStatus === ProcessStatusEnum.APPROVING
+        );
+        return currentApprovalNode.value?.taskNodes[currentTaskNodeIndex - 1]?.approverId === userStore.userInfo.id;
+      }
+      // 当前是会签节点，且自己已经审批时允许撤回
+      if (
+        currentApprovalNode.value?.taskNodes.findIndex(
+          (e) =>
+            [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED].includes(e.approvalStatus) &&
+            e.approverId === userStore.userInfo.id
+        ) !== -1
+      ) {
+        return true;
+      }
+    }
+    // 当前节点未包含自己审批的任务节点，则判断上一个节点情况
+    // 上一个节点非多人审批，是自己审批的，且当前节点下所有人都未审批
+    if (approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1]?.taskNodes?.length === 1) {
+      return (
+        approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].taskNodes[0].approverId ===
+          userStore.userInfo.id &&
+        currentApprovalNode.value?.taskNodes.every((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
+      );
+    }
+  });
   const moduleKeyMap: Partial<Record<FormDesignKeyEnum, string>> = {
     [FormDesignKeyEnum.CONTACT]: 'CONTRACT_INDEX',
     [FormDesignKeyEnum.INVOICE]: 'CONTRACT_INVOICE',
@@ -195,25 +358,30 @@
     }
   }
 
+  const approvalLoading = ref(false);
   async function handleApprove() {
-    if (!CrmFileInputRef.value?.validate() || !currentApprovalNode.value) {
+    if (!CrmFileInputRef.value?.validate() || !currentTaskNode.value || !currentApprovalNode.value) {
       return;
     }
     try {
+      approvalLoading.value = true;
       await agreeApproval({
-        id: currentApprovalNode.value.taskId,
+        id: currentTaskNode.value.taskId,
         nodeId: currentApprovalNode.value.nodeId,
-        instanceId: currentApprovalNode.value.recordId,
+        instanceId: approvalConfig.value?.id || '',
         attachmentIds: fileList.value.map((e) => e.id),
-        approverId: currentApprovalNode.value.approverId,
+        approverId: currentTaskNode.value.approverId,
         comment: approvalOpinion.value,
         module: moduleKeyMap[props.formKey]!,
       });
+      message.success(t('common.approved'));
+      initApprovalDetail();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      approvalLoading.value = false;
     }
-    message.success(t('common.approved'));
   }
 
   function handleReject() {
@@ -227,16 +395,16 @@
       type: 'error',
       positiveText: t('crm.approval.confirmReject'),
       onPositiveClick: async () => {
-        if (!currentApprovalNode.value) {
+        if (!currentApprovalNode.value || !currentTaskNode.value) {
           return;
         }
         try {
           await rejectApproval({
-            id: currentApprovalNode.value.taskId,
+            id: currentTaskNode.value.taskId,
             nodeId: currentApprovalNode.value.nodeId,
-            instanceId: currentApprovalNode.value.recordId,
+            instanceId: approvalConfig.value?.id || '',
             attachmentIds: fileList.value.map((e) => e.id),
-            approverId: currentApprovalNode.value.approverId,
+            approverId: currentTaskNode.value.approverId,
             comment: approvalOpinion.value,
             module: moduleKeyMap[props.formKey]!,
           });
@@ -247,18 +415,6 @@
         }
       },
     });
-  }
-
-  const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
-  async function initApprovalConfig() {
-    try {
-      if (props.approvalFlowId) {
-        approvalConfig.value = await approvalProcessDetail(props.approvalFlowId);
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
   }
 
   const addSignModalVisible = ref(false);
@@ -367,34 +523,49 @@
     }
   }
 
-  function cancelApproval() {
-    if (isApprover.value) {
-      openModal({
-        title: t('crm.approval.cancelApprovalConfirm'),
-        content: t('crm.approval.cancelApprovalTip'),
-        type: 'error',
-        positiveText: t('crm.approval.confirmCancelApproval'),
-        onPositiveClick: async () => {
-          message.success(t('crm.approval.cancelApprovalSuccess'));
-        },
-      });
-    } else {
+  function cancelApproval(type?: 'apply' | 'approval') {
+    if (type === 'apply') {
       openModal({
         title: t('crm.approval.cancelApprovalApplyConfirm'),
         content: t('crm.approval.cancelApprovalApplyTip'),
         type: 'error',
         positiveText: t('crm.approval.confirmCancelApprovalApply'),
+        negativeText: t('common.cancel'),
         onPositiveClick: async () => {
+          await revokeByResourceId(props.sourceId);
+          initApprovalDetail();
+        },
+      });
+    } else {
+      openModal({
+        title: t('crm.approval.cancelApprovalConfirm'),
+        content: t('crm.approval.cancelApprovalTip'),
+        type: 'error',
+        positiveText: t('crm.approval.confirmCancelApproval'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          await revokeApproval({
+            id: prevMineApprovalNode.value?.taskId || '',
+          });
           message.success(t('crm.approval.cancelApprovalSuccess'));
+          initApprovalDetail();
         },
       });
     }
   }
 
-  onBeforeMount(() => {
-    initApprovalDetail();
-    initApprovalConfig();
-  });
+  watch(
+    () => props.approvalStatus,
+    () => {
+      if (props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)) {
+        initApprovalDetail();
+        initApprovalConfig();
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

@@ -67,6 +67,7 @@
           :approval-config-detail="approvalConfigDetail"
           @list-init="handleListInit"
           @open-detail="handleOpenDetail"
+          @approval-success="initStatistic"
         />
       </div>
     </div>
@@ -77,6 +78,7 @@
     :approval-item-keys="selectedKeys"
     :approval-flow-id="approvalFlowId"
     module="WORKBENCH"
+    @approval-success="handleApproveSuccess"
   />
   <ContractDetailDrawer
     v-model:visible="contractDetailVisible"
@@ -339,6 +341,11 @@
       default:
         break;
     }
+  }
+
+  function handleApproveSuccess() {
+    initStatistic();
+    taskListRef.value?.loadTaskList(true);
   }
 </script>
 

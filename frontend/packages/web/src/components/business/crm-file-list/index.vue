@@ -18,6 +18,7 @@
       </div>
       <div class="flex items-center gap-[4px]">
         <CrmPopConfirm
+          v-if="!props.readonly"
           :title="t('crm.fileListModal.deleteTipTitle')"
           icon-type="error"
           :content="t('crm.fileListModal.deleteTipContent')"
@@ -30,7 +31,7 @@
           <n-button :disabled="props.readonly" type="error" text>{{ t('common.delete') }}</n-button>
         </CrmPopConfirm>
         <template v-if="/(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.type)">
-          <n-divider vertical />
+          <n-divider v-if="!props.readonly" vertical />
           <n-button type="default" text @click="handlePreview(file)">{{ t('common.preview') }}</n-button>
         </template>
         <n-divider vertical />

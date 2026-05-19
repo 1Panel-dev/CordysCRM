@@ -1,5 +1,5 @@
 <template>
-  <CrmDrawer v-model:show="show" :title="sourceName" :width="800" :footer="false">
+  <CrmDrawer v-model:show="show" :title="sourceName" :width="800" :footer="false" :view-size="formViewSize">
     <template #titleRight>
       <n-button
         v-permission="['PRICE:UPDATE']"
@@ -31,9 +31,9 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
+  import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
 
   const props = defineProps<{
@@ -50,13 +50,15 @@
   });
 
   const sourceName = ref<string>('');
-
+  const formViewSize = ref<FormViewSize>('medium');
   function handleDescriptionInit(
     _collaborationType?: CollaborationType,
     _sourceName?: string,
-    detail?: Record<string, any>
+    detail?: Record<string, any>,
+    config?: FormConfig
   ) {
     sourceName.value = _sourceName || '';
+    formViewSize.value = config?.viewSize || 'medium';
   }
 
   function handleEdit() {

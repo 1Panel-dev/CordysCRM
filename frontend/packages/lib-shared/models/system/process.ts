@@ -280,6 +280,7 @@ export interface ApprovalNode {
   taskId: string;
   recordId: string;
   nodeId: string;
+  nodeName: string;
   approverId: string;
   approver: string;
   approvalStatus: ProcessStatusEnum;
@@ -291,6 +292,7 @@ export interface ApprovalNode {
   addSignNode: boolean;
   nodeRound: number; // 节点轮次
   taskNodes: ApprovalNodeTaskNode[];
+  multiApproverMode: MultiApproverModeEnum; // 多人审批方式
 }
 
 export interface ApprovalNodeTaskNode {
@@ -304,6 +306,7 @@ export interface ApprovalNodeTaskNode {
   attachments: AttachmentInfo[];
   approvalTime: number;
   sign: boolean; // 是否加签任务
+  signAction: boolean; // 是否操作加签
 }
 
 export interface CcNode {

@@ -90,12 +90,16 @@
   const approvalFormRef = ref<FormInst>();
   const fileList = ref<CrmFileItem[]>([]);
 
-  function handleApprovalCancel() {
+  function reset() {
     show.value = false;
     approvalForm.value = {
       reason: '',
     };
     fileList.value = [];
+  }
+
+  function handleApprovalCancel() {
+    reset();
     emit('approvalCancel');
   }
 
@@ -127,7 +131,8 @@
         });
       }
       message.success(props.approvalType === 'approve' ? t('taskDrawer.approved') : t('taskDrawer.rejected'));
-      handleApprovalCancel();
+      emit('approvalSuccess');
+      reset();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
