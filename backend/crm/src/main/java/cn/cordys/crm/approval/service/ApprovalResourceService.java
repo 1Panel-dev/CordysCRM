@@ -23,7 +23,6 @@ import cn.cordys.security.UserApprovalDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -247,18 +246,14 @@ public class ApprovalResourceService {
 		/*
 		 * 正常审批流程
 		 * 1. 更新业务表审批状态为审批中
-		 * 2. 创建审批实例
-		 * 3. 创建审批待办任务
-		 * 4. 抄送任务
+		 * 2. 插入审批实例, 审批待办任务
 		 */
 		updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name());
 		approvalInstanceMapper.insert(instance);
 		ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
-		List<ApprovalTask> approvalTasks = approvalActionService.getNodeApproverTasks(approverNode, instance.getId(), currentUserId, null, instance.getSubmitterId());
-		List<ApprovalTask> ccTasks = approvalActionService.getNodeCcTasks(approverNode, instance.getId(), currentUserId);
-		List<ApprovalTask> allTasks = ListUtils.union(approvalTasks, ccTasks);
-		if (CollectionUtils.isNotEmpty(allTasks)) {
-			approvalTaskMapper.batchInsert(allTasks);
+		List<ApprovalTask> approvalTasks = approvalActionService.getNextNodeApproverTasks(approverNode, instance.getId(), currentUserId, null, instance.getSubmitterId());
+		if (CollectionUtils.isNotEmpty(approvalTasks)) {
+			approvalTaskMapper.batchInsert(approvalTasks);
 		}
 	}
 
