@@ -1,15 +1,10 @@
 package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.Translator;
-import cn.cordys.crm.approval.constants.ApprovalAddSignType;
-import cn.cordys.crm.approval.constants.ApprovalStatus;
-import cn.cordys.crm.approval.constants.ApprovalTaskType;
-import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
+import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.ApprovalCcNode;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
@@ -376,6 +371,13 @@ public class ApprovalInstanceService {
 		return approvalNodes.stream().collect(Collectors.toMap(ApprovalNode::getId, n -> n));
 	}
 
+	/**
+	 * 平铺加签任务链
+	 * @param currentTask 当前任务
+	 * @param addSignTaskMap 加签信息集合
+	 * @param signTaskMap 加签任务集合
+	 * @return 加签任务集合
+	 */
 	private List<ApprovalTask> flatSignTask(ApprovalTask currentTask, Map<String, List<ApprovalAddSignTask>> addSignTaskMap, Map<String, ApprovalTask> signTaskMap) {
 		if (!signTaskMap.containsKey(currentTask.getId())) {
 			// 不存在加签链
@@ -453,9 +455,19 @@ public class ApprovalInstanceService {
 			.collect(Collectors.toList());
 	}
 
+	/**
+	 * 处理任务节点信息
+	 * @param task 任务信息
+	 * @param taskRecordMap 记录信息
+	 * @param attachmentsMap 附件信息
+	 * @param simpleUserMap 用户信息集合
+	 * @return 任务节点信息
+	 */
 	private ApprovalTaskNode buildTaskNode(ApprovalTask task, Map<String, ApprovalRecord> taskRecordMap, Map<String, List<Attachment>> attachmentsMap, Map<String, UserSimple> simpleUserMap) {
 		ApprovalRecord record = taskRecordMap.get(task.getId());
-		ApprovalTaskNode taskNode = ApprovalTaskNode.builder().taskId(task.getId()).sign(ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.SN)
+		ApprovalTaskNode taskNode = ApprovalTaskNode.builder().taskId(task.getId())
+				.sign(ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.SN)
+				.signAction(ApprovalAction.valueOf(task.getAction()) == ApprovalAction.SIGN)
 				.approverId(task.getApproverId()).approvalStatus(task.getStatus()).build();
 		if (simpleUserMap.containsKey(task.getApproverId())) {
 			taskNode.setApprover(simpleUserMap.get(task.getApproverId()).getName());
