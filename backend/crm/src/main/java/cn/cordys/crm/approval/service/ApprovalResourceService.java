@@ -262,6 +262,9 @@ public class ApprovalResourceService {
 		updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.REVOKED.name());
 		// 更新审批实例状态
 		ApprovalInstance instance = instanceService.getLatestInstance(param.getResourceId());
+		if (instance == null) {
+			throw new GenericException(Translator.get("no.approval.instance"));
+		}
 		instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
 		instance.setApprovalTime(System.currentTimeMillis());
 		instance.setUpdateUser(currentUserId);
