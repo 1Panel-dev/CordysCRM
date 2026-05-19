@@ -1,5 +1,13 @@
 <template>
-  <CrmDrawer v-model:show="visible" :title="detailInfo?.name" resizable no-padding :width="800" :footer="false">
+  <CrmDrawer
+    v-model:show="visible"
+    :title="detailInfo?.name"
+    resizable
+    no-padding
+    :width="800"
+    :footer="false"
+    :view-size="formViewSize"
+  >
     <template #titleLeft>
       <div class="text-[14px] font-normal">
         <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
@@ -60,6 +68,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { ContractInvoiceItem } from '@lib/shared/models/contract';
   import { CollaborationType } from '@lib/shared/models/customer';
+  import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -96,9 +105,11 @@
   const { t } = useI18n();
 
   const detailInfo = ref();
+  const formViewSize = ref<FormViewSize>('large');
 
-  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
+  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     detailInfo.value = detail;
+    formViewSize.value = config?.viewSize || 'large';
   }
 
   const invoiceDetailDataActionMap = {

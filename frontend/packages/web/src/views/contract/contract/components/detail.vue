@@ -1,5 +1,5 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="title">
+  <CrmDrawer v-model:show="visible" resizable no-padding :footer="false" :title="title" :view-size="formViewSize">
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
         <CrmApprovalStatus :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
@@ -46,9 +46,10 @@
         <!-- 需要用到 detailInfo 所以这里不用 v-if -->
         <div v-show="activeTab === 'contract'" class="h-full">
           <CrmApprovalDetail
-            :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
+            :form-key="FormDesignKeyEnum.CONTRACT"
             :source-id="props.sourceId"
             :approvalFlowId="approvalFlowId"
+            :approval-status="detailInfo?.approvalStatus"
           >
             <template #left>
               <CrmFormDescription
@@ -150,6 +151,7 @@
   import type { ContractItem } from '@lib/shared/models/contract';
   import { CollaborationType } from '@lib/shared/models/customer';
   import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
+  import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -292,9 +294,11 @@
   });
   const stageConfig = ref<OpportunityStageConfig>();
   const currentStatus = ref<string>(stageConfig.value?.stageConfigList[0]?.id || '');
-  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
+  const formViewSize = ref<FormViewSize>('large');
+  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     title.value = name || '';
     detailInfo.value = detail ?? {};
+    formViewSize.value = config?.viewSize || 'large';
     if (detail) {
       currentStatus.value = detail.stage;
     }

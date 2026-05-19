@@ -77,6 +77,7 @@
     :approval-flow-id="approvalItem?.approvalFlowId || ''"
     module="WORKBENCH"
     @approval-cancel="handleApproveCancel"
+    @approval-success="handleApproveSuccess"
   />
 </template>
 
@@ -115,6 +116,7 @@
   const emit = defineEmits<{
     (e: 'openDetail', id: string, approvalFlowId: string): void;
     (e: 'listInit', total: number, keys: string[]): void;
+    (e: 'approvalSuccess'): void;
   }>();
 
   const selectedKeys = defineModel<any[]>('selectedKeys', {
@@ -206,6 +208,11 @@
     approvalItem.value = item;
     approvalType.value = 'approve';
     approvalVisible.value = true;
+  }
+
+  function handleApproveSuccess() {
+    loadTaskList(true);
+    emit('approvalSuccess');
   }
 
   function handleApproveCancel() {

@@ -1,5 +1,13 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="detailInfo?.name ?? ''">
+  <CrmDrawer
+    v-model:show="visible"
+    resizable
+    no-padding
+    :width="800"
+    :footer="false"
+    :title="detailInfo?.name ?? ''"
+    :view-size="formViewSize"
+  >
     <template #titleLeft>
       <div class="text-[14px] font-normal">
         <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
@@ -90,7 +98,7 @@
   import { CollaborationType } from '@lib/shared/models/customer';
   import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
   import { OrderItem } from '@lib/shared/models/order';
-  import { CluePoolItem } from '@lib/shared/models/system/module';
+  import { CluePoolItem, type FormConfig, type FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -154,9 +162,10 @@
   );
 
   const currentStatus = ref<string>(stageConfig.value?.stageConfigList[0]?.id || '');
-
-  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
+  const formViewSize = ref<FormViewSize>('large');
+  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     detailInfo.value = detail;
+    formViewSize.value = config?.viewSize || 'large';
     if (detail) {
       currentStatus.value = detail.stage;
     }

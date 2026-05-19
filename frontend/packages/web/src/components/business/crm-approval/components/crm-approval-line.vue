@@ -36,13 +36,14 @@
         <template #header>
           <div class="mb-[8px] flex items-center justify-between">
             <div class="flex items-center gap-[8px]">
-              <div class="font-semibold leading-[22px]">{{ t('crm.approval.approver') }}</div>
+              <div class="font-semibold leading-[22px]">{{ node.nodeName }}</div>
               <CrmTag v-if="node.addSignNode" type="info" theme="outline">
                 {{ t('common.COUNTERSIGNATURE') }}
               </CrmTag>
               <CrmApprovalStatus
                 :status="index > props.currentApprovalNodeIndex ? ProcessStatusEnum.PENDING : node.approvalStatus"
                 isTag
+                class="font-normal"
               />
               <n-popover v-if="node.returnNode" trigger="hover">
                 <template #trigger>
@@ -81,13 +82,13 @@
                 </div>
               </n-popover>
             </div>
-            <div class="text-[var(--text-n4)]">
+            <div class="font-normal text-[var(--text-n4)]">
               {{ dayjs(node.approvalTime).format('YYYY-MM-DD HH:mm') }}
             </div>
           </div>
         </template>
         <div class="mb-[16px] mt-[2px] p-[8px] pl-0">
-          <n-collapse v-if="node.taskNodes.length" :default-expanded-names="[node.taskNodes[0]?.taskId]">
+          <n-collapse v-if="node.taskNodes?.length" :default-expanded-names="[node.taskNodes[0]?.taskId]">
             <template #arrow><div></div></template>
             <n-collapse-item v-for="task in node.taskNodes" :name="task.taskId">
               <template #header>
@@ -103,17 +104,19 @@
                 </div>
               </template>
               <template #header-extra>
-                <div class="text-[var(--text-n4)]">{{ task.approvalTime }}</div>
+                <div class="text-[var(--text-n4)]">
+                  {{ task.approvalTime ? dayjs(task.approvalTime).format('YYYY-MM-DD HH:mm') : '-' }}
+                </div>
               </template>
               <div class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
-                <div class="text-[var(--text-n4)]">{{ node.comment }}</div>
-                <CrmFileList v-if="task.attachments?.length > 0" :files="task.attachments" class="mt-[8px]" readonly />
+                <div class="text-[var(--text-n4)]">{{ task.comment }}</div>
               </div>
+              <CrmFileList v-if="task.attachments?.length > 0" :files="task.attachments" class="mt-[8px]" readonly />
             </n-collapse-item>
           </n-collapse>
         </div>
         <CrmFileList v-if="node.attachments?.length > 0" :files="node.attachments" class="mt-[8px]" readonly />
-        <n-collapse v-if="node.ccNodes.length">
+        <n-collapse v-if="node.ccNodes?.length">
           <template #arrow><div></div></template>
           <n-collapse-item :title="t('common.copyTo')" name="copyTo">
             <template #header>

@@ -89,6 +89,7 @@
   import { ChevronBackOutline } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
@@ -113,6 +114,7 @@
       noPadding?: boolean; // 无内边距
       disabledWidthDrag?: boolean; // 禁止拖拽宽度
       minWidth?: number;
+      viewSize?: FormViewSize;
     }>(),
     {
       placement: 'right',
@@ -154,7 +156,20 @@
   }
 
   const resizing = ref(false); // 是否正在拖拽
-  const drawerWidth = ref(props.width); // 抽屉初始宽度
+  const drawerInitWidth = computed(() => {
+    switch (props.viewSize) {
+      case 'small':
+        return '50%';
+      case 'medium':
+        return '75%';
+      case 'large':
+        return '100%';
+      default:
+        return props.width;
+    }
+  });
+  const drawerWidth = ref(drawerInitWidth.value); // 抽屉初始宽度
+
   /**
    * 鼠标单击开始监听拖拽移动
    */
@@ -172,7 +187,7 @@
     const handleMouseMove = (_event: MouseEvent) => {
       if (resizing.value) {
         const newWidth = initialWidth + (startX - _event.clientX); // 新的宽度等于当前抽屉宽度+鼠标移动的距离
-        if (newWidth >= (props.minWidth || 480) && newWidth <= window.innerWidth * 0.9) {
+        if (newWidth >= (props.minWidth || 480) && newWidth <= window.innerWidth) {
           // 最大最小宽度限制，最小宽度为480，最大宽度为视图窗口宽度的90%
           drawerWidth.value = newWidth;
         }
@@ -194,7 +209,7 @@
   };
 
   watch(
-    () => props.width,
+    () => drawerInitWidth.value,
     (newWidth) => {
       drawerWidth.value = newWidth;
     },

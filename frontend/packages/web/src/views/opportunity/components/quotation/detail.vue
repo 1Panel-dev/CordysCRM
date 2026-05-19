@@ -1,5 +1,13 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="detailInfo?.name ?? ''">
+  <CrmDrawer
+    v-model:show="visible"
+    resizable
+    no-padding
+    :width="800"
+    :footer="false"
+    :title="detailInfo?.name ?? ''"
+    :view-size="formViewSize"
+  >
     <template #titleLeft>
       <div class="text-[14px]b flex items-center gap-[8px] font-normal">
         <CrmApprovalStatus v-if="isShowApprovalStatus" :status="detailInfo?.approvalStatus || ProcessStatusEnum.NONE" />
@@ -49,6 +57,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { CollaborationType } from '@lib/shared/models/customer';
+  import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -89,10 +98,12 @@
   const refreshKey = ref(0);
   const title = ref('');
   const detailInfo = ref();
+  const formViewSize = ref<FormViewSize>('large');
 
-  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
+  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     title.value = name || '';
     detailInfo.value = detail ?? {};
+    formViewSize.value = config?.viewSize || 'large';
   }
 
   function handleDownload() {
