@@ -132,7 +132,7 @@
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
-  import { getPendingApprovalList } from '@/api/modules/index';
+  import { getTodoStatistic } from '@/api/modules/index';
   import { quickAccessList } from '@/config/workbench';
   import { useAppStore, useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
@@ -210,11 +210,7 @@
 
   async function initApprovalPendingCount() {
     try {
-      const res = await getPendingApprovalList({
-        current: 1,
-        pageSize: 10,
-        resourceType: ApprovalResourceTypeEnum.ALL,
-      });
+      const res = await getTodoStatistic();
       pendingApprovalCount.value = res.total;
     } catch (error) {
       // eslint-disable-next-line no-console

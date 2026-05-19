@@ -791,7 +791,6 @@ export const {
   rejectApproval,
   backApproval,
   addSignApproval,
-  getApprovalRecord,
   getApprovalResourceDetail,
   getTodoStatistic,
   revokeApproval,

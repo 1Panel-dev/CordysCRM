@@ -190,6 +190,16 @@
       onProgress({ percent: 100 });
       clearInterval(timer as unknown as number);
       onFinish();
+      fileList.value = fileList.value.map((f) => {
+        if (f.id === file.id) {
+          return {
+            ...f,
+            id: res.data[0],
+            local: false,
+          };
+        }
+        return f;
+      });
       emit('change', value.value, fileList.value);
     } catch (error) {
       // eslint-disable-next-line no-console

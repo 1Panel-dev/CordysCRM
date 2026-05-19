@@ -26,4 +26,8 @@ export default {
   'crm.approval.cancelApprovalTip': '撤回后，审批流将重新审批，请谨慎操作！',
   'crm.approval.confirmCancelApproval': '确认撤回',
   'crm.approval.cancelApprovalSuccess': '已撤回',
+  'crm.approval.submit': '提交申请',
+  'crm.approval.approver': '审批人',
+  'crm.approval.addSign': '加签',
+  'crm.approval.preNode': '前{index}节点',
 };

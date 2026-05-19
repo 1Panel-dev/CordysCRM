@@ -1,6 +1,6 @@
 <template>
-  <n-spin :show="loading" class="min-h-[300px]">
-    <n-checkbox-group v-model:value="selectedKeys" :disabled="!approvalConfigDetail?.allowBatchProcess">
+  <n-spin :show="loading" class="h-[calc(100%-48px)] min-h-[300px]">
+    <n-checkbox-group v-model:value="selectedKeys" :disabled="!approvalConfigDetail?.allowBatchProcess" class="h-full">
       <CrmList
         v-if="list.length"
         v-model:data="list"
@@ -34,7 +34,7 @@
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.resourceId)"
+                  @click="emit('openDetail', item.resourceId, item.approvalFlowId)"
                 >
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
@@ -74,6 +74,7 @@
     :approval-type="approvalType"
     :approval-item="approvalItem"
     :approval-item-keys="selectedKeys"
+    :approval-flow-id="approvalItem?.approvalFlowId || ''"
     module="WORKBENCH"
     @approval-cancel="handleApproveCancel"
   />
@@ -112,7 +113,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'openDetail', id: string): void;
+    (e: 'openDetail', id: string, approvalFlowId: string): void;
     (e: 'listInit', total: number, keys: string[]): void;
   }>();
 

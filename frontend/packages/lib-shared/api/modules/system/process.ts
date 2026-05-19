@@ -11,7 +11,6 @@ import {
   GetResourceApprovingDetailUrl,
   ReviewResourceUrl,
   RevokeResourceUrl,
-  GetApprovalRecordUrl,
   GetApprovalResourceDetailUrl,
   GetProcessedApprovalTodosUrl,
   GetPendingApprovalTodosUrl,
@@ -35,6 +34,7 @@ import {
   UpdateApprovalProcessParams,
   type ApprovalAddSignParams,
   type ApprovalBackParams,
+  type ApprovalDetail,
   type ApprovalOperationParams,
   type ApprovalTodoItem,
   type ApprovalTodoTableParams,
@@ -137,14 +137,9 @@ export default function useProcessApi(CDR: CordysAxios) {
     return CDR.post({ url: BatchApprovalApprovalUrl, data });
   }
 
-  // 获取审批记录
-  function getApprovalRecord(id: string) {
-    return CDR.get({ url: `${GetApprovalRecordUrl}/${id}` });
-  }
-
   // 获取审批资源详情
   function getApprovalResourceDetail(id: string) {
-    return CDR.get({ url: `${GetApprovalResourceDetailUrl}/${id}` });
+    return CDR.get<ApprovalDetail>({ url: `${GetApprovalResourceDetailUrl}/${id}` });
   }
 
   // 获取待办统计
@@ -181,7 +176,6 @@ export default function useProcessApi(CDR: CordysAxios) {
     rejectApproval,
     backApproval,
     addSignApproval,
-    getApprovalRecord,
     getApprovalResourceDetail,
     getTodoStatistic,
     revokeApproval,

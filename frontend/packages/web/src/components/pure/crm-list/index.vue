@@ -1,5 +1,5 @@
 <template>
-  <n-spin :show="props.loading" content-class="h-full">
+  <n-spin :show="props.loading" class="h-full" content-class="h-full">
     <n-virtual-list
       v-bind="props"
       ref="listRef"

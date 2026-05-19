@@ -27,5 +27,4 @@ export const BatchRejectApprovalUrl = '/approval-action/batch-reject'; // 批量
 export const BatchApprovalApprovalUrl = '/approval-action/batch-approve'; // 批量同意
 
 // 审批记录
-export const GetApprovalRecordUrl = '/resource-approval/record-detail'; // 审批记录详情
-export const GetApprovalResourceDetailUrl = '/resource-approval/detail'; // 审批资源详情
+export const GetApprovalResourceDetailUrl = '/approval-resource/detail'; // 审批资源详情
