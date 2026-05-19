@@ -97,9 +97,6 @@ public class ApprovalInstanceService {
 		LambdaQueryWrapper<ApprovalInstance> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(ApprovalInstance::getResourceId, resourceId);
 		List<ApprovalInstance> list = approvalInstanceMapper.selectListByLambda(wrapper);
-		if (CollectionUtils.isEmpty(list)) {
-			throw new GenericException(Translator.get("no.approval.instance"));
-		}
 		return CollectionUtils.isEmpty(list) ? null : list.stream().sorted(Comparator.comparing(ApprovalInstance::getSubmitTime)).toList().getLast();
 	}
 
