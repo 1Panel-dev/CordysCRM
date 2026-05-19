@@ -5,19 +5,19 @@
 
     <select id="selectPendingTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
         SELECT
-            ai.resource_id AS resourceId,
-            COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
-            UPPER(ai.type) AS resourceType,
-            u.name AS applicant,
-            ai.submit_time AS submitTime,
-            CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
-            ai.approval_status AS dataResult,
-            at.id AS approvalTaskId,
-            at.node_id AS approvalNodeId,
-            at.instance_id AS approvalInstanceId,
-            at.approver_id AS approvalId,
-            afv.flow_id AS approvalFlowId,
-            afv.id AS approvalFlowVersionId
+        ai.resource_id AS resourceId,
+        COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
+        UPPER(ai.type) AS resourceType,
+        u.name AS applicant,
+        ai.submit_time AS submitTime,
+        CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
+        ai.approval_status AS dataResult,
+        at.id AS approvalTaskId,
+        at.node_id AS approvalNodeId,
+        at.instance_id AS approvalInstanceId,
+        at.approver_id AS approvalId,
+        afv.flow_id AS approvalFlowId,
+        afv.id AS approvalFlowVersionId
         FROM approval_task at
         INNER JOIN approval_instance ai ON ai.id = at.instance_id
         INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
@@ -27,7 +27,7 @@
         LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
         LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
         WHERE at.approver_id = #{approverId}
-          AND at.status = #{pendingStatus}
+        AND at.status = #{pendingStatus}
         <if test="resourceType != null and resourceType != ''">
             AND ai.type = #{resourceType}
         </if>
@@ -39,19 +39,19 @@
 
     <select id="selectProcessedTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
         SELECT
-            ai.resource_id AS resourceId,
-            COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
-            UPPER(ai.type) AS resourceType,
-            u.name AS applicant,
-            ai.submit_time AS submitTime,
-            CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
-            ai.approval_status AS dataResult,
-            at.id AS approvalTaskId,
-            at.node_id AS approvalNodeId,
-            at.instance_id AS approvalInstanceId,
-            at.approver_id AS approvalId,
-            afv.flow_id AS approvalFlowId,
-            afv.id AS approvalFlowVersionId
+        ai.resource_id AS resourceId,
+        COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
+        UPPER(ai.type) AS resourceType,
+        u.name AS applicant,
+        ai.submit_time AS submitTime,
+        CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
+        ai.approval_status AS dataResult,
+        at.id AS approvalTaskId,
+        at.node_id AS approvalNodeId,
+        at.instance_id AS approvalInstanceId,
+        at.approver_id AS approvalId,
+        afv.flow_id AS approvalFlowId,
+        afv.id AS approvalFlowVersionId
         FROM approval_task at
         INNER JOIN approval_instance ai ON ai.id = at.instance_id
         INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
@@ -61,7 +61,7 @@
         LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
         LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
         WHERE at.approver_id = #{approverId}
-          AND at.status != #{pendingStatus}
+        AND at.status != #{pendingStatus}
         <if test="keyword != null and keyword != ''">
             AND COALESCE(oq.name, c.name, so.name, ci.name) LIKE CONCAT('%', #{keyword}, '%')
         </if>
@@ -70,19 +70,19 @@
 
     <select id="selectInitiatedTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
         SELECT
-            ai.resource_id AS resourceId,
-            COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
-            UPPER(ai.type) AS resourceType,
-            u.name AS applicant,
-            ai.submit_time AS submitTime,
-            ai.approval_status AS approvalOperation,
-            ai.approval_status AS dataResult,
-            NULL AS approvalTaskId,
-            ai.current_node_id AS approvalNodeId,
-            ai.id AS approvalInstanceId,
-            ai.submitter_id AS approvalId,
-            afv.flow_id AS approvalFlowId,
-            afv.id AS approvalFlowVersionId
+        ai.resource_id AS resourceId,
+        COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
+        UPPER(ai.type) AS resourceType,
+        u.name AS applicant,
+        ai.submit_time AS submitTime,
+        ai.approval_status AS approvalOperation,
+        ai.approval_status AS dataResult,
+        NULL AS approvalTaskId,
+        ai.current_node_id AS approvalNodeId,
+        ai.id AS approvalInstanceId,
+        ai.submitter_id AS approvalId,
+        afv.flow_id AS approvalFlowId,
+        afv.id AS approvalFlowVersionId
         FROM approval_instance ai
         INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
         LEFT JOIN sys_user u ON u.id = ai.submitter_id
@@ -99,19 +99,19 @@
 
     <select id="selectCcTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
         SELECT
-            ai.resource_id AS resourceId,
-            COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
-            UPPER(ai.type) AS resourceType,
-            u.name AS applicant,
-            ai.submit_time AS submitTime,
-            CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
-            ai.approval_status AS dataResult,
-            at.id AS approvalTaskId,
-            at.node_id AS approvalNodeId,
-            at.instance_id AS approvalInstanceId,
-            at.approver_id AS approvalId,
-            afv.flow_id AS approvalFlowId,
-            afv.id AS approvalFlowVersionId
+        ai.resource_id AS resourceId,
+        COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
+        UPPER(ai.type) AS resourceType,
+        u.name AS applicant,
+        ai.submit_time AS submitTime,
+        CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
+        ai.approval_status AS dataResult,
+        at.id AS approvalTaskId,
+        at.node_id AS approvalNodeId,
+        at.instance_id AS approvalInstanceId,
+        at.approver_id AS approvalId,
+        afv.flow_id AS approvalFlowId,
+        afv.id AS approvalFlowVersionId
         FROM approval_task at
         INNER JOIN approval_instance ai ON ai.id = at.instance_id
         INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
@@ -121,7 +121,7 @@
         LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
         LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
         WHERE at.approver_id = #{approverId}
-          AND at.type IN ('cc', 'CC')
+        AND at.type IN ('cc', 'CC')
         <if test="keyword != null and keyword != ''">
             AND COALESCE(oq.name, c.name, so.name, ci.name) LIKE CONCAT('%', #{keyword}, '%')
         </if>
@@ -129,27 +129,23 @@
     </select>
 
     <select id="countPendingByApprover" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse">
-        SELECT
-            IFNULL(SUM(t.cnt), 0) AS total,
-            IFNULL(SUM(CASE WHEN t.type IN ('quotation', 'quote') THEN t.cnt ELSE 0 END), 0) AS quotation,
-            IFNULL(SUM(CASE WHEN t.type = 'contract' THEN t.cnt ELSE 0 END), 0) AS contract,
-            IFNULL(SUM(CASE WHEN t.type = 'order' THEN t.cnt ELSE 0 END), 0) AS `order`,
-            IFNULL(SUM(CASE WHEN t.type = 'invoice' THEN t.cnt ELSE 0 END), 0) AS invoice
-        FROM (
-            SELECT
-                ai.type AS type,
-                COUNT(*) AS cnt
-            FROM (
-                SELECT DISTINCT at.instance_id
-                FROM approval_task at
-                INNER JOIN approval_instance ai ON ai.id = at.instance_id
-                WHERE at.approver_id = #{approverId}
-                  AND at.status = #{pendingStatus}
-                  AND ai.current_node_id = at.node_id
-            ) pending
-            INNER JOIN approval_instance ai ON ai.id = pending.instance_id
-            GROUP BY ai.type
-        ) t
+        SELECT IFNULL(SUM(t.cnt), 0)                                                            AS total,
+               IFNULL(SUM(CASE WHEN t.type IN ('quotation', 'quote') THEN t.cnt ELSE 0 END), 0) AS quotation,
+               IFNULL(SUM(CASE WHEN t.type = 'contract' THEN t.cnt ELSE 0 END), 0)              AS contract,
+               IFNULL(SUM(CASE WHEN t.type = 'order' THEN t.cnt ELSE 0 END), 0)                 AS `order`,
+               IFNULL(SUM(CASE WHEN t.type = 'invoice' THEN t.cnt ELSE 0 END), 0)               AS invoice
+        FROM (SELECT ai.type  AS type,
+                     COUNT(*) AS cnt
+              FROM (SELECT DISTINCT at.instance_id
+                    FROM approval_task at
+                    INNER JOIN approval_instance ai
+                    ON ai.id = at.instance_id
+                        INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+                    WHERE at.approver_id = #{approverId}
+                      AND at.status = #{pendingStatus}
+                      AND ai.current_node_id = at.node_id) pending
+                       INNER JOIN approval_instance ai ON ai.id = pending.instance_id
+              GROUP BY ai.type) t
     </select>
 
     <update id="updateTaskById">
