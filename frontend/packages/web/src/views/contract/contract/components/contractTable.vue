@@ -479,6 +479,36 @@
   }
 
   const stageConfig = ref<OpportunityStageConfig>();
+  const contractStageList = computed(() => stageConfig.value?.stageConfigList || []);
+  const contractEndStages = computed(() =>
+    contractStageList.value.filter((item) => item.type === 'END').map((i) => i.id)
+  );
+
+  function isContractStageOptionDisabled(row: ContractItem, targetStage: string) {
+    const currentStage = row.stage;
+    const isSameStage = currentStage === targetStage;
+    const currentIndex = contractStageList.value.findIndex((item) => item.id === currentStage);
+    const targetIndex = contractStageList.value.findIndex((item) => item.id === targetStage);
+    const isCurrentEndStage = contractEndStages.value.includes(currentStage);
+
+    if (isCurrentEndStage) {
+      return isSameStage || !stageConfig.value?.endRollBack;
+    }
+
+    if (stageConfig.value?.afootRollBack) {
+      return isSameStage;
+    }
+
+    return isSameStage || targetIndex < currentIndex;
+  }
+
+  function getContractStageOptions(row: ContractItem) {
+    return contractStageList.value.map((item) => ({
+      label: item.name,
+      value: item.id,
+      disabled: isContractStageOptionDisabled(row, item.id),
+    }));
+  }
 
   async function initStageConfig() {
     try {
@@ -571,11 +601,7 @@
               if (res) row.stage = val;
             }
           },
-          'statusOptions':
-            stageConfig.value?.stageConfigList?.map((e) => ({
-              label: e.name,
-              value: e.id,
-            })) || [],
+          'statusOptions': getContractStageOptions(row),
         });
       },
       approvalStatus: (row: ContractItem) =>

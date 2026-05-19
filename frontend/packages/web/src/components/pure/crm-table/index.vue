@@ -21,6 +21,7 @@
           <ColumnSetting
             v-if="attrs.showSetting && props.actionConfig"
             :table-key="attrs.tableKey as TableKeyEnum"
+            :disabled="!!notShowTable"
             :no-pagination="props.noPagination"
             @change-columns-setting="changeColumnsSetting"
           />
@@ -56,6 +57,7 @@
         v-if="attrs.showSetting && !props.actionConfig"
         :table-key="attrs.tableKey as TableKeyEnum"
         :no-pagination="props.noPagination"
+        :disabled="!!notShowTable"
         @change-columns-setting="changeColumnsSetting"
       />
       <n-button
@@ -111,7 +113,7 @@
     </template>
     <template v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen) || hasFinished">
       <CrmPagination
-        v-if="paginationType === 'pagePagination' && !props.noPagination"
+        v-if="paginationType === 'pagePagination' && !props.noPagination && !notShowTable"
         :item-count="(attrs.crmPagination as PaginationProps)?.itemCount"
         :page-size="(attrs.crmPagination as PaginationProps)?.pageSize"
         :page="(attrs.crmPagination as PaginationProps)?.page"

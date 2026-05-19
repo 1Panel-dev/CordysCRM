@@ -10,6 +10,7 @@
       <n-button
         :ghost="popoverVisible"
         :type="popoverVisible ? 'primary' : 'default'"
+        :disabled="disabled"
         class="outline--secondary px-[8px]"
       >
         <CrmIcon
@@ -167,6 +168,7 @@
   const props = defineProps<{
     tableKey: TableKeyEnum;
     noPagination?: boolean;
+    disabled: boolean;
   }>();
 
   const emit = defineEmits<{
