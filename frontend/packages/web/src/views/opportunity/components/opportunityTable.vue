@@ -1044,6 +1044,11 @@
   }
 
   function removeItemFromList(id: string) {
+    if (activeShowType.value === 'billboard') {
+      billboardRef.value?.refresh();
+      getStatistic();
+      return;
+    }
     propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
     propsRes.value.crmPagination = {
       ...propsRes.value.crmPagination,
