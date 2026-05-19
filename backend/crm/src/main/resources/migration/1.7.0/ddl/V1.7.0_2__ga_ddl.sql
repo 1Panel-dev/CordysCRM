@@ -5,7 +5,7 @@ CREATE TABLE approval_flow(
   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
   `current_version_id` VARCHAR(32) NOT NULL   COMMENT '当前版本ID' ,
   `number` VARCHAR(50) NOT NULL   COMMENT '流程编码;流程编码，自增，格式：CTR-APV-001（合同），INV-APV-001（发票），ORD-APV-001（订单）' ,
-  `name` VARCHAR(200) NOT NULL   COMMENT '流程名称;流程名称' ,
+  `name` VARCHAR(255) NOT NULL   COMMENT '流程名称;流程名称' ,
   `form_type` VARCHAR(50) NOT NULL   COMMENT '表单类型;表单类型：QUOTATION(报价)、CONTRACT(合同)、INVOICE(发票)、ORDER(订单)' ,
   `create_execute` TINYINT(1) NOT NULL  DEFAULT 1 COMMENT '新建时执行;新建时是否执行审批流' ,
   `update_execute` TINYINT(1) NOT NULL  DEFAULT 1 COMMENT '编辑时执行;编辑时是否执行审批流' ,
@@ -46,7 +46,7 @@ CREATE INDEX idx_flow_id ON approval_flow_version(flow_id ASC);
 CREATE TABLE approval_node(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `flow_version_id` VARCHAR(32) NOT NULL   COMMENT '审批流版本ID' ,
-    `name` VARCHAR(200) NOT NULL   COMMENT '节点名称' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '节点名称' ,
     `node_type` VARCHAR(50) NOT NULL   COMMENT '节点类型：START\CONDITION\DEFAULT\END' ,
     `sort` INT(11) NOT NULL  DEFAULT 0 COMMENT '排序序号' ,
     PRIMARY KEY (id)
