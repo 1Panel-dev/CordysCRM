@@ -152,7 +152,7 @@ public class OrganizationUserController {
 
     @GetMapping(value = "/role/option")
     @Operation(summary = "获取用户角色下拉option")
-    @RequiresPermissions(value = {PermissionConstants.SYS_ORGANIZATION_READ, PermissionConstants.APPROVAL_FLOW_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = {PermissionConstants.SYS_ORGANIZATION_READ, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
     public List<OptionDTO> getUserRoleList() {
         List<RoleListResponse> list = roleService.list(OrganizationContext.getOrganizationId());
         return list.stream().map(role -> new OptionDTO(role.getId(), role.getName())).toList();

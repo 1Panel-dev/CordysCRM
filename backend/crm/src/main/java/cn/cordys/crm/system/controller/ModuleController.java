@@ -63,7 +63,7 @@ public class ModuleController {
 
     @GetMapping("/role/tree")
     @Operation(summary = "获取角色树")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_READ, PermissionConstants.APPROVAL_FLOW_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_READ, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
     public List<RoleUserTreeNode> getRoleTree() {
         return moduleService.getRoleTree(OrganizationContext.getOrganizationId());
     }

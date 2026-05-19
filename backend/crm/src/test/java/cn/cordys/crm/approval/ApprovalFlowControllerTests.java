@@ -179,7 +179,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.APPROVAL_FLOW_READ, DEFAULT_PAGE, request);
+        requestPostPermissionTest(PermissionConstants.PROCESS_SETTING_READ, DEFAULT_PAGE, request);
     }
 
     @Test
@@ -243,7 +243,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertFalse(disabledFlow.getEnable());
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.APPROVAL_FLOW_ADD, DEFAULT_ADD, request);
+        requestPostPermissionTest(PermissionConstants.PROCESS_SETTING_ADD, DEFAULT_ADD, request);
     }
 
     @Test
@@ -322,7 +322,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.APPROVAL_FLOW_UPDATE, DEFAULT_UPDATE, request);
+        requestPostPermissionTest(PermissionConstants.PROCESS_SETTING_UPDATE, DEFAULT_UPDATE, request);
     }
 
     @Test
@@ -364,7 +364,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         formTypePageResult.forEach(flow -> Assertions.assertEquals(ApprovalFormTypeEnum.QUOTATION.getValue(), flow.getFormType()));
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.APPROVAL_FLOW_READ, DEFAULT_PAGE, request);
+        requestPostPermissionTest(PermissionConstants.PROCESS_SETTING_READ, DEFAULT_PAGE, request);
     }
 
     @Test
@@ -399,7 +399,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertFalse(CollectionUtils.isEmpty(response.getLinks()));
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.APPROVAL_FLOW_READ, DEFAULT_GET, addApprovalFlow.getId());
+        requestGetPermissionTest(PermissionConstants.PROCESS_SETTING_READ, DEFAULT_GET, addApprovalFlow.getId());
     }
 
     @Test
@@ -423,7 +423,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertFalse(disabledAgainFlow.getEnable());
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.APPROVAL_FLOW_UPDATE, enableUrl, disabledFlow.getId());
+        requestGetPermissionTest(PermissionConstants.PROCESS_SETTING_UPDATE, enableUrl, disabledFlow.getId());
     }
 
     @Test
@@ -486,7 +486,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         }
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.APPROVAL_FLOW_DELETE, DEFAULT_DELETE, addApprovalFlow.getId());
+        requestGetPermissionTest(PermissionConstants.PROCESS_SETTING_DELETE, DEFAULT_DELETE, addApprovalFlow.getId());
     }
 
     /**
