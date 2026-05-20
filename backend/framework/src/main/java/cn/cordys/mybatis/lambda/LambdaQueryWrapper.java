@@ -88,9 +88,8 @@ public class LambdaQueryWrapper<T> {
      * @param column 列名的 Lambda 表达式
      * @param value  值
      */
-    public LambdaQueryWrapper<T> nq(XFunction<T, ?> column, Object value) {
+    public void nq(XFunction<T, ?> column, Object value) {
         addCondition(column, value, "!=");
-        return this;
     }
 
     /**
@@ -216,14 +215,13 @@ public class LambdaQueryWrapper<T> {
      *
      * @param column 列名的 Lambda 表达式
      */
-    public LambdaQueryWrapper<T> orderByAsc(XFunction<T, ?> column) {
+    public void orderByAsc(XFunction<T, ?> column) {
         String columnName = columnToString(column);
         checkSqlInjection(columnName);
         String paramKey = String.format("order_%s", columnName);
 
         orderByClauses.add(String.format("#{%s} ASC", paramKey));
         params.put(paramKey, columnName);
-        return this;
     }
 
     /**

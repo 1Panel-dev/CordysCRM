@@ -49,7 +49,7 @@ public class FileCenter {
         if (defStorageType == null) {
             defStorageType = LOCAL;
         }
-        log.info("Default storage type is set to: " + defStorageType);
+        log.info("Default storage type is set to: {}", defStorageType);
         return getRepository(defStorageType.name());
     }
 }
