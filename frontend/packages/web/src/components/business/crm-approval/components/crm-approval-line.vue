@@ -43,6 +43,7 @@
               <CrmApprovalStatus
                 :status="index > props.currentApprovalNodeIndex ? ProcessStatusEnum.PENDING : node.approvalStatus"
                 isTag
+                scene="approvalRecord"
                 class="font-normal"
               />
               <n-popover v-if="node.returnNode" trigger="hover">
@@ -100,7 +101,7 @@
                   <CrmTag v-if="task.sign" type="info" theme="outline">
                     {{ t('common.COUNTERSIGNATURE') }}
                   </CrmTag>
-                  <CrmApprovalStatus :status="task.approvalStatus" isTag />
+                  <CrmApprovalStatus :status="task.approvalStatus" isTag scene="approvalRecord" />
                 </div>
               </template>
               <template #header-extra>
