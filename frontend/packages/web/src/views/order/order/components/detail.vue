@@ -225,9 +225,6 @@
     formType: FormDesignKeyEnum.ORDER,
     dataActionMap: orderDetailDataActionMap,
     isDetail: true,
-    specialActionFilter: (_row, actionKeys) => {
-      return actionKeys.filter((key) => !['review', 'revoke'].includes(key));
-    },
   });
 
   const canUpdateStage = computed(() => {
