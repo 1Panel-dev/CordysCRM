@@ -7,26 +7,12 @@
         class="crm-approver-avatar-list__item"
         :class="{ 'crm-approver-avatar-list__item--active': approver.id === activeApproverId }"
       >
-        <div
-          class="crm-approver-avatar-list__avatar-wrap"
-          :class="{ 'crm-approver-avatar-list__avatar-wrap--active': approver.id === activeApproverId }"
-        >
-          <CrmAvatar
-            :avatar="approver.avatar"
-            :word="approver.name"
-            :is-user="false"
-            :size="props.size"
-            class="cursor-pointer"
-            @click="toggleActive(approver)"
-          />
-          <div
-            v-if="approver.approveResult"
-            :class="getStatusClass(approver.approveResult)"
-            class="crm-approver-avatar-list__status"
-          >
-            <CrmIcon :type="getStatusIcon(approver.approveResult)" :size="14" />
-          </div>
-        </div>
+        <CrmApprovalAvatar
+          :approver="approver"
+          :size="props.size"
+          :activeApproverId="activeApproverId"
+          @toggleActive="toggleActive(approver)"
+        />
         <div
           class="one-line-text crm-approver-avatar-list__name cursor-pointer"
           :class="{
@@ -49,11 +35,10 @@
 </template>
 
 <script setup lang="ts">
-  import { ApprovalOperationEnum } from '@lib/shared/enums/process';
+  import { ApprovalOperationEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { ApproverItem } from '@lib/shared/models/system/process';
 
-  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
+  import CrmApprovalAvatar from './crm-approval-avatar.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -77,27 +62,12 @@
     () => currentApproverMap.value.get(String(activeApproverId.value))?.approveReason ?? ''
   );
 
-  function getStatusIcon(status: ApprovalOperationEnum) {
-    return status === ApprovalOperationEnum.REJECT ? 'iconicon_close_circle_filled' : 'iconicon_succeed_filled';
-  }
-
-  function getStatusClass(status: ApprovalOperationEnum) {
-    switch (status) {
-      case ApprovalOperationEnum.REJECT:
-        return 'text-[var(--error-red)]';
-      case ApprovalOperationEnum.APPROVE:
-        return 'text-[var(--success-green)]';
-      default:
-        return 'text-[var(--text-n4)]';
-    }
-  }
-
   function isActiveApproval(approver: ApproverItem) {
-    return approver.approveResult === ApprovalOperationEnum.APPROVE && approver.id === activeApproverId.value;
+    return approver.approveResult === ProcessStatusEnum.APPROVED && approver.id === activeApproverId.value;
   }
 
   function isActiveRejected(approver: ApproverItem) {
-    return approver.approveResult === ApprovalOperationEnum.REJECT && approver.id === activeApproverId.value;
+    return approver.approveResult === ProcessStatusEnum.UNAPPROVED && approver.id === activeApproverId.value;
   }
 
   function toggleActive(approver: ApproverItem) {
@@ -156,18 +126,6 @@
       .crm-approver-avatar-list__name {
         color: var(--primary-8);
       }
-    }
-    .crm-approver-avatar-list__status {
-      position: absolute;
-      top: -3px;
-      right: -3px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background-color: var(--text-n10);
     }
     .crm-approver-avatar-list__name {
       color: var(--text-n1);
