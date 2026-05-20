@@ -36,4 +36,7 @@ public class ApprovalActionRequest {
 
 	@Schema(description = "附件ID集合")
 	private List<String> attachmentIds;
+
+	@Schema(description = "是否从待办入口执行")
+	private boolean fromToDo;
 }

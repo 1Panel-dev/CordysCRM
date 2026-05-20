@@ -149,4 +149,9 @@ public class LogModule {
     public static final String ORDER_INDEX = "ORDER_INDEX";
 
     public static final String APPROVAL_FLOW = "SYSTEM_PROCESS_APPROVAL";
+
+	/**
+	 * 首页
+	 */
+	public static final String WORKBENCH = "WORKBENCH";
 }

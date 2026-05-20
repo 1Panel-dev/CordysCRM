@@ -183,7 +183,7 @@
                     </when>
                     <otherwise>
                         <if test="condition.name not in
-                            {'name', 'owner', 'createTime', 'updateTime', 'customerId', 'contractId', 'createUser', 'updateUser',
+                            {'name', 'owner', 'approvalStatus', 'createTime', 'updateTime', 'customerId', 'contractId', 'createUser', 'updateUser',
                              'departmentId', 'number', 'stage', 'amount', 'startTime', 'endTime'}">
                             <if test="condition.blob">
                                 left join sales_order_field_blob ${tablePrefix}_${i}
@@ -206,7 +206,7 @@
 
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
-                {'name', 'number', 'owner', 'name', 'amount', 'stage', 'update_user', 'create_time', 'customer_id',
+                {'name', 'number', 'owner', 'name', 'approval_status', 'amount', 'stage', 'update_user', 'create_time', 'customer_id',
                  'contract_id', 'update_time', 'create_user', 'department_id'}">
             <bind name="sortName" value="${sort}.name"/>
             left join sales_order_field sort_table
@@ -262,6 +262,12 @@
                         <include refid="cn.cordys.common.mapper.CommonMapper.dataSourceCondition">
                             <property name="condition" value="condition"/>
                             <property name="column" value="cc.id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'approvalStatus'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="so.approval_status"/>
                         </include>
                     </when>
                     <when test="condition.name == 'contractId'">
@@ -388,6 +394,9 @@
                 <choose>
                     <when test="${sort}.name == 'name'">
                         so.`name` ${sortType}, so.id ASC
+                    </when>
+                    <when test="${sort}.name == 'approval_status'">
+                        FIELD(so.approval_status, 'NONE', 'PENDING', 'APPROVING', 'APPROVED', 'REVOKED', 'UNAPPROVED') ${sortType}, so.id ASC
                     </when>
                     <when test="${sort}.name == 'contract_id'">
                         c.`name` ${sortType}, so.id ASC

@@ -385,7 +385,7 @@
                         ci.`business_title_id` ${sortType},  ci.id ASC
                     </when>
                     <when test="${sort}.name == 'approval_status'">
-                        ci.`approval_status` ${sortType},  ci.id ASC
+                        FIELD(ci.approval_status, 'NONE', 'PENDING', 'APPROVING', 'APPROVED', 'REVOKED', 'UNAPPROVED') ${sortType}, ci.id ASC
                     </when>
 
                     <otherwise>

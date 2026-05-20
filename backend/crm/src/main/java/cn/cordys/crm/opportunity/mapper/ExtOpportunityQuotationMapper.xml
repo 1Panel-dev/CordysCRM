@@ -194,7 +194,7 @@
                         oq.`name` ${sortType}, oq.id ASC
                     </when>
                     <when test="${sort}.name == 'approval_status'">
-                        oq.`approval_status` ${sortType}, oq.id ASC
+                        FIELD(oq.approval_status, 'NONE', 'PENDING', 'APPROVING', 'APPROVED', 'REVOKED', 'UNAPPROVED') ${sortType}, oq.id ASC
                     </when>
                     <when test="${sort}.name == 'invalid'">
                         oq.`invalid` ${sortType}, oq.id ASC
