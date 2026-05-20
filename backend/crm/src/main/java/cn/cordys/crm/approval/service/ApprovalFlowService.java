@@ -1625,6 +1625,16 @@ public class ApprovalFlowService {
 	}
 
 	/**
+	 * 获取当前节点下一个节点
+	 * @param currentNodeId 当前节点ID
+	 * @return 下一个节点
+	 */
+	public ApprovalNodeResponse getCurrentNextNode(String currentNodeId, ApprovalInstance instance, String currentOrgId) {
+		List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
+		return getNextNodeWithExceptionHandler(instance, currentNodeId, resourceFvs, currentOrgId, false);
+	}
+
+	/**
 	 * 获取实例当前节点后续所有审批节点
 	 * @param instance 当前节点ID
 	 * @return 后续所有审批节点

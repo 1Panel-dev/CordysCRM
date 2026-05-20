@@ -32,4 +32,32 @@ public interface ExtApprovalInstanceMapper {
 	 * @return 下一个轮次
 	 */
 	Integer getNextNodeRound(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId);
+
+	/**
+	 * 获取节点下一个执行轮次
+	 * 从 approval_task 和 approval_record 中一起获取，取最大轮次 +1
+	 *
+	 * @param instanceId 审批实例ID
+	 * @param nodeId     节点ID
+	 * @return 下一个轮次
+	 */
+	Integer getNodeRound(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId);
+
+	/**
+	 * 批量清理节点执行的任务
+	 *
+	 * @param instanceId 审批实例ID
+	 * @param nodeId     节点ID
+	 * @param nodeRound 轮次
+	 */
+	void batchClearTask(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId, @Param("nodeRound") Integer nodeRound);
+
+	/**
+	 * 批量清理节点执行的任务
+	 *
+	 * @param instanceId 审批实例ID
+	 * @param nodeId     节点ID
+	 * @param nodeRound 轮次
+	 */
+	void batchClearRecord(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId, @Param("nodeRound") Integer nodeRound);
 }

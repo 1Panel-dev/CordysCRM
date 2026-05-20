@@ -80,8 +80,11 @@ public class ApprovalInstanceService {
 		List<ApprovalRecord> records = getAllRecords(latestInstance);
 		Map<String, List<ApprovalAddSignTask>> addSignMap = getAddSignMap(tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL ||
 				ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.BK).map(ApprovalTask::getId).toList());
-		Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(records);
-		instanceDetail.setNodes(buildApprovalRecordNodeList(latestInstance, tasks, records, addSignMap, elementAttachmentsMap, simpleUserMap, currentOrgId));
+		ApprovalReturnBackRecord returnBackRecord = new ApprovalReturnBackRecord();
+		returnBackRecord.setReturnToNodeId(latestInstance.getCurrentNodeId());
+		ApprovalReturnBackRecord backRecord = approvalReturnBackRecordMapper.selectOne(returnBackRecord);
+		Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(records, backRecord);
+		instanceDetail.setNodes(buildApprovalRecordNodeList(latestInstance, tasks, records, addSignMap, backRecord, elementAttachmentsMap, simpleUserMap, currentOrgId));
 		return instanceDetail;
 	}
 
@@ -100,7 +103,7 @@ public class ApprovalInstanceService {
 	 */
 	private List<ApprovalTask> getAllTasks(ApprovalInstance latestInstance) {
 		LambdaQueryWrapper<ApprovalTask> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ApprovalTask::getInstanceId, latestInstance.getId());
+		wrapper.eq(ApprovalTask::getInstanceId, latestInstance.getId()).nq(ApprovalTask::getNodeRound, -1);
 		return approvalTaskMapper.selectListByLambda(wrapper);
 	}
 
@@ -119,15 +122,18 @@ public class ApprovalInstanceService {
 	 */
 	private List<ApprovalRecord> getAllRecords(ApprovalInstance latestInstance) {
 		LambdaQueryWrapper<ApprovalRecord> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ApprovalRecord::getInstanceId, latestInstance.getId());
+		wrapper.eq(ApprovalRecord::getInstanceId, latestInstance.getId()).nq(ApprovalRecord::getNodeRound, -1);;
 		return approvalRecordMapper.selectListByLambda(wrapper);
 	}
 
 	/**
 	 * 查询附件信息并按节点ID分组
 	 */
-	private Map<String, List<Attachment>> queryAttachments(List<ApprovalRecord> records) {
+	private Map<String, List<Attachment>> queryAttachments(List<ApprovalRecord> records, ApprovalReturnBackRecord backRecord) {
 		List<String> elementIds = new ArrayList<>(records.stream().map(ApprovalRecord::getId).toList());
+		if (backRecord != null) {
+			elementIds.add(backRecord.getId());
+		}
 		if (CollectionUtils.isEmpty(elementIds)) {
 			return Map.of();
 		}
@@ -155,8 +161,8 @@ public class ApprovalInstanceService {
 	 * @return 审批记录节点列表
 	 */
 	private List<ApprovalRecordNode> buildApprovalRecordNodeList(ApprovalInstance instance, List<ApprovalTask> tasks, List<ApprovalRecord> records, Map<String, List<ApprovalAddSignTask>> addSignTaskMap,
-										 						 Map<String, List<Attachment>> attachmentMap, Map<String, UserSimple> simpleUserMap, String currentOrgId) {
-		List<ApprovalRecordNode> processedApprovalNodes = buildProcessedApprovalNodes(instance, tasks, records, addSignTaskMap, attachmentMap, simpleUserMap, currentOrgId);
+																 ApprovalReturnBackRecord backRecord, Map<String, List<Attachment>> attachmentMap, Map<String, UserSimple> simpleUserMap, String currentOrgId) {
+		List<ApprovalRecordNode> processedApprovalNodes = buildProcessedApprovalNodes(instance, tasks, records, addSignTaskMap, backRecord, attachmentMap, simpleUserMap, currentOrgId);
 		List<ApprovalRecordNode> pendingApprovalNodes = buildPendingApprovalNodes(instance, simpleUserMap, currentOrgId);
 		List<ApprovalRecordNode> nodes = new ArrayList<>(ListUtils.union(processedApprovalNodes, pendingApprovalNodes));
 		List<String> allNodeIds = nodes.stream().map(ApprovalRecordNode::getNodeId).distinct().toList();
@@ -194,7 +200,7 @@ public class ApprovalInstanceService {
 	 * @param simpleUserMap 用户信息集合
 	 * @return 审批记录节点集合
 	 */
-	private List<ApprovalRecordNode> buildProcessedApprovalNodes(ApprovalInstance instance, List<ApprovalTask> tasks, List<ApprovalRecord> records, Map<String, List<ApprovalAddSignTask>> addSignTaskMap,
+	private List<ApprovalRecordNode> buildProcessedApprovalNodes(ApprovalInstance instance, List<ApprovalTask> tasks, List<ApprovalRecord> records, Map<String, List<ApprovalAddSignTask>> addSignTaskMap, ApprovalReturnBackRecord backRecord,
 														   Map<String, List<Attachment>> attachmentsMap, Map<String, UserSimple> simpleUserMap, String currentOrgId) {
 		List<ApprovalRecordNode> nodes = new ArrayList<>();
 		Map<String, ApprovalRecord> autoNodeRecordMap = records.stream().filter(record -> StringUtils.isBlank(record.getTaskId()))
@@ -245,6 +251,11 @@ public class ApprovalInstanceService {
 				flatSignTasks.forEach(signTask -> {
 					ApprovalTaskNode taskNode = buildTaskNode(signTask, taskRecordMap, attachmentsMap, simpleUserMap);
 					ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).approvalStatus(taskNode.getApprovalStatus()).taskNodes(List.of(taskNode)).build();
+					if (Strings.CI.equals(hisNode, backRecord.getReturnToNodeId())) {
+						recordNode.setBackNode(true);
+						recordNode.setBackReason(backRecord.getReturnReason());
+						recordNode.setBackAttachments(attachmentsMap.get(backRecord.getId()));
+					}
 					if (ApprovalTaskType.valueOf(signTask.getType()) == ApprovalTaskType.NL) {
 						recordNode.setCcNodes(ccNodes);
 					}
@@ -275,6 +286,11 @@ public class ApprovalInstanceService {
 				}
 				List<ApprovalTaskNode> taskNodes = allTask.stream().map(nTask -> buildTaskNode(nTask, taskRecordMap, attachmentsMap, simpleUserMap)).toList();
 				ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).taskNodes(taskNodes).ccNodes(ccNodes).build();
+				if (Strings.CI.equals(hisNode, backRecord.getReturnToNodeId())) {
+					recordNode.setBackNode(true);
+					recordNode.setBackReason(backRecord.getReturnReason());
+					recordNode.setBackAttachments(attachmentsMap.get(backRecord.getId()));
+				}
 				nodes.addLast(recordNode);
 			}
 		});
