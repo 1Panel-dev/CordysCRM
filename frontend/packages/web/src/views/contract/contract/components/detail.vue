@@ -48,7 +48,6 @@
           <CrmApprovalDetail
             :form-key="FormDesignKeyEnum.CONTRACT"
             :source-id="props.sourceId"
-            :approvalFlowId="approvalFlowId"
             :approval-status="detailInfo?.approvalStatus"
           >
             <template #left>
@@ -182,7 +181,6 @@
   const props = defineProps<{
     sourceId: string;
     isContractTableDetail?: boolean;
-    approvalFlowId?: string; // 审批流 id
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;

@@ -1,6 +1,6 @@
 <template>
-  <n-scrollbar x-scrollable>
-    <n-timeline :icon-size="20" class="min-w-[300px] gap-[4px]">
+  <n-scrollbar :content-style="{ width: '100%', overflowX: 'hidden' }" x-scrollable>
+    <n-timeline :icon-size="20" class="w-full min-w-[300px] gap-[4px]">
       <n-timeline-item>
         <template #icon>
           <div class="timeline-icon-wrapper bg-[var(--primary-8)]">
@@ -34,9 +34,9 @@
           </div>
         </template>
         <template #header>
-          <div class="mb-[8px] flex items-center justify-between">
-            <div class="flex items-center gap-[8px]">
-              <div class="font-semibold leading-[22px]">{{ node.nodeName }}</div>
+          <div class="mb-[8px] flex w-full items-center justify-between gap-[8px]">
+            <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
+              <div class="one-line-text font-semibold leading-[22px]">{{ node.nodeName }}</div>
               <CrmTag v-if="node.addSignNode" type="info" theme="outline">
                 {{ t('common.COUNTERSIGNATURE') }}
               </CrmTag>
@@ -83,7 +83,7 @@
                 </div>
               </n-popover>
             </div>
-            <div class="font-normal text-[var(--text-n4)]">
+            <div class="whitespace-nowrap font-normal text-[var(--text-n4)]">
               {{ dayjs(node.approvalTime).format('YYYY-MM-DD HH:mm') }}
             </div>
           </div>
@@ -157,6 +157,8 @@
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import CrmFileList from '@/components/business/crm-file-list/index.vue';
+
+  import type { width } from '@antv/x6/lib/common/dom/position';
 
   const props = defineProps<{
     nodes: ApprovalNode[];

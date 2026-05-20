@@ -32,19 +32,27 @@
     <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
       <CrmCard hide-footer>
         <div class="flex-1">
-          <CrmFormDescription
-            :form-key="FormDesignKeyEnum.INVOICE_SNAPSHOT"
+          <CrmApprovalDetail
+            :form-key="FormDesignKeyEnum.INVOICE"
             :source-id="props.sourceId"
-            :column="2"
-            :refresh-key="refreshKey"
-            label-width="auto"
-            value-align="start"
-            tooltip-position="top-start"
-            readonly
-            @init="handleInit"
-            @open-contract-detail="emit('openContractDrawer', $event)"
-            @open-customer-detail="emit('openCustomerDrawer', $event)"
-          />
+            :approval-status="detailInfo?.approvalStatus"
+          >
+            <template #left>
+              <CrmFormDescription
+                :form-key="FormDesignKeyEnum.INVOICE_SNAPSHOT"
+                :source-id="props.sourceId"
+                :column="2"
+                :refresh-key="refreshKey"
+                label-width="auto"
+                value-align="start"
+                tooltip-position="top-start"
+                readonly
+                @init="handleInit"
+                @open-contract-detail="emit('openContractDrawer', $event)"
+                @open-customer-detail="emit('openCustomerDrawer', $event)"
+              />
+            </template>
+          </CrmApprovalDetail>
         </div>
       </CrmCard>
     </div>
@@ -74,6 +82,7 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
