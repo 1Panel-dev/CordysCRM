@@ -95,7 +95,7 @@ public class ApprovalActionService {
 			saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), addSignTask.getId(), userId, orgId);
 		}
 
-		saveLogAndNotice(instance, userId, orgId, ApprovalAction.SIGN);
+		saveLogAndNotice(instance, userId, orgId, ApprovalAction.SIGN, false);
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class ApprovalActionService {
 		if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
 			saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), backRecord.getId(), userId, orgId);
 		}
-		saveLogAndNotice(instance, userId, orgId, ApprovalAction.BACK);
+		saveLogAndNotice(instance, userId, orgId, ApprovalAction.BACK, false);
 	}
 
 	/**
@@ -136,7 +136,7 @@ public class ApprovalActionService {
 		}
 		revokeProcess(currentTask, instance, orgId);
 		refreshRevokeTask(currentTask, instance, currentUserId);
-		saveLogAndNotice(instance, currentUserId, orgId, ApprovalAction.REVOKE);
+		saveLogAndNotice(instance, currentUserId, orgId, ApprovalAction.REVOKE, false);
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class ApprovalActionService {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.APPROVE, currentUserId, currentOrgId, null);
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		approvedProcess(instance, currentTask, currentUserId, currentOrgId);
-		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.APPROVE);
+		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.APPROVE, request.isFromToDo());
 	}
 
 	/**
@@ -164,7 +164,7 @@ public class ApprovalActionService {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.REJECT, currentUserId, currentOrgId, null);
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		rejectProcess(instance, currentTask, currentUserId, currentOrgId);
-		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.REJECT);
+		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.REJECT, request.isFromToDo());
 	}
 
 	/**
@@ -1037,13 +1037,13 @@ public class ApprovalActionService {
 	 * @param userId 当前用户ID
 	 * @param orgId 当前组织ID
 	 */
-	private void saveLogAndNotice(ApprovalInstance instance, String userId, String orgId, ApprovalAction action) {
+	private void saveLogAndNotice(ApprovalInstance instance, String userId, String orgId, ApprovalAction action, boolean fromToDO) {
 		// 日志
 		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
 		if (resourceService != null) {
-			LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, getLogModuleOfFormKey(FormKey.ofKey(instance.getType())),
+			LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, fromToDO ? LogModule.WORKBENCH : getLogModuleOfFormKey(FormKey.ofKey(instance.getType())),
 					resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId()));
-			logDTO.setDetail(Translator.get(StringUtils.lowerCase(action.name())));
+			logDTO.setModifiedValue(Translator.get(StringUtils.lowerCase(action.name())));
 			logService.add(logDTO);
 		}
 		// TODO: 消息通知

@@ -418,7 +418,7 @@
                         souc_sort.`id` ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'approval_status'">
-                        ct.`approval_status` ${sortType}, ct.id ASC
+                        FIELD(ct.approval_status, 'NONE', 'PENDING', 'APPROVING', 'APPROVED', 'REVOKED', 'UNAPPROVED') ${sortType}, ct.id ASC
                     </when>
                     <when test="${sort}.name == 'start_time'">
                         ct.`start_time` ${sortType}, ct.id ASC
