@@ -5,6 +5,7 @@ import { ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { getApprovalConfigDetail } from '@/api/modules';
+import { useUserStore } from '@/store';
 
 export interface FormReviewAction {
   visible: boolean;
@@ -15,17 +16,24 @@ export interface GetFormReviewActionParams {
   enabledApproval: boolean;
   isEdit: boolean;
   approvalStatus?: ProcessStatusEnum;
+  canReview: boolean;
+  createExecute: boolean;
+  updateExecute: boolean;
 }
 
 interface UseFormReviewActionOptions {
   formKey: Ref<FormDesignKeyEnum>;
   isEdit: Ref<boolean | undefined>;
   approvalStatus: Ref<ProcessStatusEnum | undefined>;
+  detail?: Ref<Record<string, any> | undefined>;
 }
 
 export default function useFormReviewAction(options: UseFormReviewActionOptions) {
   const { t } = useI18n();
+  const userStore = useUserStore();
   const enabledApproval = ref(false);
+  const createExecute = ref(false);
+  const updateExecute = ref(false);
   const approvalFormKeys = [
     FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
     FormDesignKeyEnum.CONTRACT,
@@ -34,9 +42,36 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
   ];
 
   function getFormReviewAction(params: GetFormReviewActionParams): FormReviewAction {
-    const { isEdit, approvalStatus } = params;
+    const {
+      isEdit,
+      approvalStatus,
+      canReview,
+      createExecute: canCreateReview,
+      updateExecute: canUpdateReview,
+    } = params;
 
     if (!enabledApproval.value) {
+      return {
+        visible: false,
+        text: '',
+      };
+    }
+
+    if (!isEdit && !canCreateReview) {
+      return {
+        visible: false,
+        text: '',
+      };
+    }
+
+    if (isEdit && !canUpdateReview) {
+      return {
+        visible: false,
+        text: '',
+      };
+    }
+
+    if (isEdit && !canReview) {
       return {
         visible: false,
         text: '',
@@ -72,6 +107,12 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
       approvalStatus: options.isEdit.value
         ? options.approvalStatus.value
         : options.approvalStatus.value ?? ProcessStatusEnum.PENDING,
+      canReview:
+        !options.isEdit.value ||
+        options.detail?.value?.createUser === userStore.userInfo.id ||
+        options.detail?.value?.owner === userStore.userInfo.id,
+      createExecute: createExecute.value,
+      updateExecute: updateExecute.value,
     })
   );
 
@@ -84,8 +125,12 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
     try {
       const result = await getApprovalConfigDetail(options.formKey.value);
       enabledApproval.value = Boolean(result?.enable);
+      createExecute.value = Boolean(result?.createExecute);
+      updateExecute.value = Boolean(result?.updateExecute);
     } catch (error) {
       enabledApproval.value = false;
+      createExecute.value = false;
+      updateExecute.value = false;
       // eslint-disable-next-line no-console
       console.error(error);
     }
@@ -93,6 +138,8 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
 
   return {
     enabledApproval,
+    createExecute,
+    updateExecute,
     isApprovalForm,
     getFormReviewAction,
     reviewAction,
