@@ -1,5 +1,8 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
@@ -16,6 +19,7 @@ import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -56,6 +60,8 @@ public class ApprovalActionService {
 	private BaseMapper<ApprovalInstanceAttachment> approvalInstanceAttachmentMapper;
 	@Resource
 	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+	@Resource
+	private LogService logService;
 
 	public static final Long DEFAULT_SIGN_SORT_STEP = 100L;
 
@@ -88,6 +94,8 @@ public class ApprovalActionService {
 		if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
 			saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), addSignTask.getId(), userId, orgId);
 		}
+
+		saveLogAndNotice(instance, userId, orgId, ApprovalAction.SIGN);
 	}
 
 	/**
@@ -108,6 +116,7 @@ public class ApprovalActionService {
 		if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
 			saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), backRecord.getId(), userId, orgId);
 		}
+		saveLogAndNotice(instance, userId, orgId, ApprovalAction.BACK);
 	}
 
 	/**
@@ -127,6 +136,7 @@ public class ApprovalActionService {
 		}
 		revokeProcess(currentTask, instance, orgId);
 		refreshRevokeTask(currentTask, instance, currentUserId);
+		saveLogAndNotice(instance, currentUserId, orgId, ApprovalAction.REVOKE);
 	}
 
 	/**
@@ -138,7 +148,9 @@ public class ApprovalActionService {
 	 */
 	public void approve(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.APPROVE, currentUserId, currentOrgId, null);
-		approvedProcess(currentTask, currentUserId, currentOrgId);
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
+		approvedProcess(instance, currentTask, currentUserId, currentOrgId);
+		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.APPROVE);
 	}
 
 	/**
@@ -150,7 +162,9 @@ public class ApprovalActionService {
 	 */
 	public void reject(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.REJECT, currentUserId, currentOrgId, null);
-		rejectProcess(currentTask, currentUserId, currentOrgId);
+		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
+		rejectProcess(instance, currentTask, currentUserId, currentOrgId);
+		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.REJECT);
 	}
 
 	/**
@@ -324,7 +338,7 @@ public class ApprovalActionService {
 	 * @param currentUserId 当前用户ID
 	 * @param currentOrgId 当前组织ID
 	 */
-	private void approvedProcess(ApprovalTask currentTask, String currentUserId, String currentOrgId) {
+	private void approvedProcess(ApprovalInstance instance, ApprovalTask currentTask, String currentUserId, String currentOrgId) {
 		// 加签类型的待办任务
 		appendProcessSignTask(currentTask);
 
@@ -344,7 +358,6 @@ public class ApprovalActionService {
 					ApprovalTask nextTask = buildTask(currentTask.getNodeId(), currentTask.getInstanceId(), nextUser.getId(), ApprovalTaskType.NL.name(), currentUserId, currentTask.getNodeRound());
 					// 如果配置审批人提审人相同跳过
 					SameSubmitterActionEnum sameAction = SameSubmitterActionEnum.valueOf(nodeApprover.getSameSubmitterAction());
-					ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 					if (sameAction == SameSubmitterActionEnum.SKIP && Strings.CI.equals(nextUser.getId(), instance.getSubmitterId())) {
 						nextTask.setAction(ApprovalAction.APPROVE.name());
 						nextTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
@@ -364,7 +377,6 @@ public class ApprovalActionService {
 
 		// 节点状态流转类型的待办
 		List<ApprovalTask> approvalTasks = new ArrayList<>();
-		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		boolean multiNode = approvalFlowService.isCurrentNodeMultiApprover(currentTask.getNodeId(), instance.getSubmitterId(), currentOrgId);
 		if (!multiNode || isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())) {
 			// 流转之前需要发送当前节点的抄送
@@ -387,8 +399,7 @@ public class ApprovalActionService {
 	 * @param currentUserId 当前用户ID
 	 * @param currentOrgId 当前组织ID
 	 */
-	private void rejectProcess(ApprovalTask currentTask, String currentUserId, String currentOrgId) {
-		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
+	private void rejectProcess(ApprovalInstance instance, ApprovalTask currentTask, String currentUserId, String currentOrgId) {
 		boolean multiNode = approvalFlowService.isCurrentNodeMultiApprover(currentTask.getNodeId(), instance.getSubmitterId(), currentOrgId);
 		boolean nodeRejected = isCurrentMultiNodeRejected(currentTask.getNodeId(), currentTask.getInstanceId());
 		if (!nodeRejected) {
@@ -1015,6 +1026,53 @@ public class ApprovalActionService {
 		List<ApprovalTask> approvalTasks = getNodeApproverTasks(currentNodeId, instanceId, userId, currentOrgId, taskType);
 		if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(approvalTasks)) {
 			approvalTaskMapper.batchInsert(approvalTasks);
+		}
+	}
+
+	/**
+	 * 保存审批执行的日志和消息通知
+	 * @param instance 审批实例
+	 * @param userId 当前用户ID
+	 * @param orgId 当前组织ID
+	 */
+	private void saveLogAndNotice(ApprovalInstance instance, String userId, String orgId, ApprovalAction action) {
+		// 日志
+		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+		if (resourceService != null) {
+			LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, getLogModuleOfFormKey(FormKey.ofKey(instance.getType())),
+					resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId()));
+			logDTO.setDetail(Translator.get(StringUtils.lowerCase(action.name())));
+			logService.add(logDTO);
+		}
+		// TODO: 消息通知
+
+	}
+
+	/**
+	 * 表单类型 => 日志模块
+	 * @param formKey 表单Key
+	 * @return 日志模块
+	 */
+	private String getLogModuleOfFormKey(FormKey formKey) {
+		if (formKey == null) {
+			return null;
+		}
+		switch (formKey) {
+			case QUOTATION -> {
+				return LogModule.OPPORTUNITY_QUOTATION;
+			}
+			case CONTRACT ->  {
+				return LogModule.CONTRACT_INDEX;
+			}
+			case INVOICE ->  {
+				return LogModule.CONTRACT_INVOICE;
+			}
+			case ORDER ->  {
+				return LogModule.ORDER_INDEX;
+			}
+			default -> {
+				return null;
+			}
 		}
 	}
 }

@@ -9,5 +9,7 @@ public enum ApprovalAction {
 	/** 加签 **/
 	SIGN,
 	/** 退回 **/
-	BACK
+	BACK,
+	/** 撤回 **/
+	REVOKE
 }

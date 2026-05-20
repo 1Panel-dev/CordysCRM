@@ -181,6 +181,23 @@ public class ApprovalResourceService {
     }
 
 	/**
+	 * 获取审批实例资源名称
+	 *
+	 * @param formKey        表单类型
+	 * @param resourceId     资源ID
+	 */
+	public String getInstanceResourceName(FormKey formKey, String resourceId) {
+		if (formKey == null) {
+			throw new GenericException(Translator.get("module.form.illegal"));
+		}
+		String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
+		if (StringUtils.isBlank(tableName)) {
+			throw new GenericException(Translator.get("module.form.illegal"));
+		}
+		return extApprovalInstanceMapper.selectBusinessName(tableName, resourceId);
+	}
+
+	/**
 	 * 更新业务快照审批状态值
 	 *
 	 * @param formKey        表单类型
