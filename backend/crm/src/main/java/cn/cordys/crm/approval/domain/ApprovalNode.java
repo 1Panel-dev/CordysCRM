@@ -14,6 +14,9 @@ public class ApprovalNode {
     @Schema(description = "审批流版本ID")
     private String flowVersionId;
 
+    @Schema(description = "节点编码")
+    private String number;
+
     @Schema(description = "节点名称")
     private String name;
 

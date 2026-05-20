@@ -78,6 +78,7 @@ export interface ApprovalPostConfig {
 // 后端审批流节点的基础结构
 export interface ApprovalProcessNodeBase<TNodeType extends ApprovalNodeTypeEnum> extends BaseItem {
   nodeType: TNodeType;
+  number?: string;
   sort: number;
 }
 
