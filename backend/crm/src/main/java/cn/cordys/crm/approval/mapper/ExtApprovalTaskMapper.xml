@@ -61,7 +61,10 @@
         LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
         LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
         WHERE at.approver_id = #{approverId}
-        AND at.status != #{pendingStatus}
+          AND at.status != #{pendingStatus}
+        <if test="resourceType != null and resourceType != ''">
+            AND ai.type = #{resourceType}
+        </if>
         <if test="keyword != null and keyword != ''">
             AND COALESCE(oq.name, c.name, so.name, ci.name) LIKE CONCAT('%', #{keyword}, '%')
         </if>
@@ -91,6 +94,9 @@
         LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
         LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
         WHERE ai.submitter_id = #{submitterId}
+        <if test="resourceType != null and resourceType != ''">
+            AND ai.type = #{resourceType}
+        </if>
         <if test="keyword != null and keyword != ''">
             AND COALESCE(oq.name, c.name, so.name, ci.name) LIKE CONCAT('%', #{keyword}, '%')
         </if>
@@ -121,7 +127,10 @@
         LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
         LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
         WHERE at.approver_id = #{approverId}
-        AND at.type IN ('cc', 'CC')
+          AND at.type IN ('cc', 'CC')
+        <if test="resourceType != null and resourceType != ''">
+            AND ai.type = #{resourceType}
+        </if>
         <if test="keyword != null and keyword != ''">
             AND COALESCE(oq.name, c.name, so.name, ci.name) LIKE CONCAT('%', #{keyword}, '%')
         </if>
