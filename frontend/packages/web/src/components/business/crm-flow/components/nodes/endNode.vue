@@ -1,6 +1,7 @@
 <template>
   <BaseFlowNode
     :name="nodeData.name ?? ''"
+    :number="nodeData.number"
     :selected="Boolean(nodeData.selected)"
     node-type="end"
     :icon="{
@@ -26,5 +27,5 @@
     node?: Node;
   }>();
 
-  const { nodeData } = useX6NodeData<{ name?: string; selected?: boolean }>(toRef(props, 'node'));
+  const { nodeData } = useX6NodeData<{ name?: string; number?: string; selected?: boolean }>(toRef(props, 'node'));
 </script>

@@ -1,6 +1,7 @@
 <template>
   <BaseFlowNode
     :name="nodeData.name ?? ''"
+    :number="nodeData.number"
     :description="nodeData.description"
     :show-content="nodeData.showContent ?? true"
     :selected="Boolean(nodeData.selected)"
@@ -51,6 +52,7 @@
     kind: 'action';
     nodeId?: string;
     name?: string;
+    number?: string;
     description?: string;
     actionType?: string;
     showContent?: boolean;
