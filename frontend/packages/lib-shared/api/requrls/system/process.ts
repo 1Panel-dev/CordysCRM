@@ -18,8 +18,8 @@ export const GetCcApprovalTodosUrl = '/approval-todo/cc/page'; // 抄送我的�
 export const GetTodoStatisticUrl = '/approval-todo/pending/count'; // 获取待办统计
 
 // 审批
-export const RejectApprovalUrl = '/approval-operation/reject'; // 驳回
-export const BackApprovalUrl = '/approval-operation/back'; // 回退
+export const RejectApprovalUrl = '/approval-action/reject'; // 驳回
+export const BackApprovalUrl = '/approval-action/back'; // 回退
 export const AddSignApprovalUrl = '/approval-action/sign'; // 加签
 export const RevokeApprovalUrl = '/approval-action/revoke'; // 撤回
 export const AgreeApprovalUrl = '/approval-action/approve'; // 同意

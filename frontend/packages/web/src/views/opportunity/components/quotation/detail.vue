@@ -32,19 +32,27 @@
         </template>
       </CrmOperationButton>
     </template>
-    <CrmFormDescription
-      ref="formDescriptionRef"
-      :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
+    <CrmApprovalDetail
+      :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
       :source-id="props.sourceId"
-      :column="2"
-      :refresh-key="refreshKey"
-      label-width="auto"
-      value-align="start"
-      tooltip-position="top-start"
-      class="p-[16px]"
-      readonly
-      @init="handleInit"
-    />
+      :approval-status="detailInfo?.approvalStatus"
+    >
+      <template #left>
+        <CrmFormDescription
+          ref="formDescriptionRef"
+          :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
+          :source-id="props.sourceId"
+          :column="2"
+          :refresh-key="refreshKey"
+          label-width="auto"
+          value-align="start"
+          tooltip-position="top-start"
+          class="p-[16px]"
+          readonly
+          @init="handleInit"
+        />
+      </template>
+    </CrmApprovalDetail>
   </CrmDrawer>
 </template>
 
@@ -62,6 +70,7 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';

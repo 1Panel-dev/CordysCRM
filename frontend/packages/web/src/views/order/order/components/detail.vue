@@ -45,21 +45,29 @@
         :end-roll-back="stageConfig?.endRollBack"
         @load-detail="handleSaved()"
       />
-      <CrmCard hide-footer>
+      <CrmCard contentHeight="100%" hide-footer :special-height="122" no-content-padding>
         <div class="flex-1">
-          <CrmFormDescription
-            :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
+          <CrmApprovalDetail
+            :form-key="FormDesignKeyEnum.ORDER"
             :source-id="props.sourceId"
-            :column="2"
-            :refresh-key="refreshKey"
-            label-width="auto"
-            value-align="start"
-            tooltip-position="top-start"
-            readonly
-            @init="handleInit"
-            @open-contract-detail="handleOpenContractDrawer"
-            @open-customer-detail="handleOpenCustomerDrawer"
-          />
+            :approval-status="detailInfo?.approvalStatus"
+          >
+            <template #left>
+              <CrmFormDescription
+                :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
+                :source-id="props.sourceId"
+                :column="2"
+                :refresh-key="refreshKey"
+                label-width="auto"
+                value-align="start"
+                tooltip-position="top-start"
+                readonly
+                @init="handleInit"
+                @open-contract-detail="handleOpenContractDrawer"
+                @open-customer-detail="handleOpenCustomerDrawer"
+              />
+            </template>
+          </CrmApprovalDetail>
         </div>
       </CrmCard>
     </div>
@@ -104,6 +112,7 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';

@@ -179,6 +179,7 @@
   import {
     addSignApproval,
     agreeApproval,
+    backApproval,
     getApprovalConfigDetail,
     getApprovalResourceDetail,
     rejectApproval,
@@ -232,15 +233,14 @@
   const approvalInfo = ref<ApprovalDetail>();
   const currentApprovalNode = ref<ApprovalNode>();
   const currentApprovalNodeIndex = ref(0);
+  const hasApprovalStatus = [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.NONE];
   // 我审批的上一个节点
   const prevMineApprovalNode = computed(() => {
     if (!currentApprovalNode.value) {
       return undefined;
     }
     const prevMineApprovalIndex = currentApprovalNode.value.taskNodes.findIndex(
-      (e) =>
-        [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED].includes(e.approvalStatus) &&
-        e.approverId === userStore.userInfo.id
+      (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
     );
     if (prevMineApprovalIndex !== -1) {
       return currentApprovalNode.value?.taskNodes[prevMineApprovalIndex];
@@ -248,9 +248,7 @@
     const prevApprovalNode = approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1];
     if (prevApprovalNode) {
       return prevApprovalNode.taskNodes.find(
-        (e) =>
-          [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED].includes(e.approvalStatus) &&
-          e.approverId === userStore.userInfo.id
+        (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
       );
     }
   });
@@ -271,12 +269,18 @@
           ?.approverId === userStore.userInfo.id
       );
     }
-    return currentApprovalNode.value?.taskNodes.some((taskNode) => taskNode.approverId === userStore.userInfo.id); // 会签/或签/单人审批
+    return currentApprovalNode.value?.taskNodes.some(
+      (taskNode) =>
+        taskNode.approvalStatus === ProcessStatusEnum.APPROVING && taskNode.approverId === userStore.userInfo.id
+    ); // 会签/或签/单人审批
   });
   // 是否可以撤销审批申请
   const canCancelApply = computed(() => {
-    // 只有提交人可以撤销审批申请
-    if (approvalInfo.value?.submitterId !== userStore.userInfo.id) {
+    // 只有提交人可以撤销审批申请，已撤销状态不显示撤销按钮
+    if (
+      approvalInfo.value?.submitterId !== userStore.userInfo.id ||
+      props.approvalStatus === ProcessStatusEnum.REVOKED
+    ) {
       return false;
     }
     // 当前没有审批完成节点时可撤销
@@ -304,10 +308,9 @@
     }
     // 当前节点包含自己审批的任务节点，则说明是多人审批节点且节点未结束，判断当前节点情况即可
     if (
-      currentApprovalNode.value?.taskNodes.findIndex(
-        (e) =>
-          [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED].includes(e.approvalStatus) &&
-          e.approverId === userStore.userInfo.id
+      currentApprovalNode.value &&
+      currentApprovalNode.value.taskNodes.findIndex(
+        (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
       ) !== -1
     ) {
       // 当前是顺序审批节点，上一个审批节点是自己，并且下一个节点未审批，允许撤销自己的审批
@@ -319,10 +322,8 @@
       }
       // 当前是会签节点，且自己已经审批时允许撤回
       if (
-        currentApprovalNode.value?.taskNodes.findIndex(
-          (e) =>
-            [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED].includes(e.approvalStatus) &&
-            e.approverId === userStore.userInfo.id
+        currentApprovalNode.value.taskNodes.findIndex(
+          (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
         ) !== -1
       ) {
         return true;
@@ -348,10 +349,10 @@
   async function initApprovalDetail() {
     try {
       approvalInfo.value = await getApprovalResourceDetail(props.sourceId);
-      currentApprovalNodeIndex.value = approvalInfo.value.nodes.findIndex(
+      currentApprovalNodeIndex.value = approvalInfo.value?.nodes.findIndex(
         (node) => node.nodeId === approvalInfo.value?.currentNodeId
       );
-      currentApprovalNode.value = approvalInfo.value.nodes[currentApprovalNodeIndex.value];
+      currentApprovalNode.value = approvalInfo.value?.nodes[currentApprovalNodeIndex.value];
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -435,8 +436,8 @@
           await addSignApproval({
             id: props.sourceId,
             nodeId: currentApprovalNode.value.nodeId,
-            instanceId: currentApprovalNode.value.recordId,
-            approverId: currentApprovalNode.value.approverId,
+            instanceId: approvalInfo.value?.id || '',
+            approverId: currentTaskNode.value?.approverId || '',
             comment: addSignForm.value.reason,
             attachmentIds: addSignForm.value.fileList.map((e) => e.id),
             type: addSignForm.value.type,
@@ -480,10 +481,20 @@
   const fallbackFormRef = ref<FormInst>();
 
   function handleFallback() {
-    fallbackFormRef.value?.validate((errors) => {
-      if (!errors) {
-        fallbackLoading.value = true;
-        setTimeout(() => {
+    fallbackFormRef.value?.validate(async (errors) => {
+      if (!errors && currentApprovalNode.value) {
+        try {
+          fallbackLoading.value = true;
+          await backApproval({
+            id: props.sourceId,
+            nodeId: currentApprovalNode.value.nodeId,
+            instanceId: approvalInfo.value?.id || '',
+            approverId: currentTaskNode.value?.approverId || '',
+            comment: addSignForm.value.reason,
+            attachmentIds: addSignForm.value.fileList.map((e) => e.id),
+            module: moduleKeyMap[props.formKey]!,
+            returnToNodeId: fallbackForm.value.node || '',
+          });
           fallbackLoading.value = false;
           fallbackModalVisible.value = false;
           message.success(t('crm.approval.fallbackSuccess'));
@@ -491,7 +502,10 @@
             node: undefined,
             reason: '',
           };
-        }, 1000);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
       }
     });
   }
