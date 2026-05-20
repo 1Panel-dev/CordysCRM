@@ -105,13 +105,13 @@ public class ApprovalInstanceService {
 	}
 
 	/**
-	 * 获取所有的任务列表
+	 * 获取所有的加签任务列表
 	 */
 	private Map<String, List<ApprovalAddSignTask>> getAddSignMap(List<String> taskIds) {
 		LambdaQueryWrapper<ApprovalAddSignTask> wrapper = new LambdaQueryWrapper<>();
 		wrapper.in(ApprovalAddSignTask::getRootTaskId, taskIds);
 		List<ApprovalAddSignTask> approvalAddSignTasks = approvalAddSignTaskMapper.selectListByLambda(wrapper);
-		return approvalAddSignTasks.stream().collect(Collectors.groupingBy(ApprovalAddSignTask::getSignTaskId));
+		return approvalAddSignTasks.stream().collect(Collectors.groupingBy(ApprovalAddSignTask::getRootTaskId));
 	}
 
 	/**
