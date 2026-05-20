@@ -26,6 +26,7 @@ export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   getBizStatus?: (row: Row) => string | undefined;
   identityResolver?: {
     isApplicant?: (row: Row, currentUserId: string) => boolean;
+    isOwner?: (row: Row, currentUserId: string) => boolean;
   };
   specialActionFilter?: (row: Row, actionKeys: string[]) => string[];
   shouldUseRolePermissionOnly?: (row: Row) => boolean; // 应该回退成“只按角色权限”处理，例如报价单作废状态下，但是审批状态还是审批中，此刻按照角色权限处理只展示删除
@@ -73,9 +74,12 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   }
 
   function isApplicant(row: Row) {
-    return (
-      options.identityResolver?.isApplicant?.(row, userStore.userInfo.id) ?? row.createUser === userStore.userInfo.id
-    );
+    const isCreator =
+      options.identityResolver?.isApplicant?.(row, userStore.userInfo.id) ?? row.createUser === userStore.userInfo.id;
+    const isOwner =
+      options.identityResolver?.isOwner?.(row, userStore.userInfo.id) ?? row.owner === userStore.userInfo.id;
+
+    return isCreator || isOwner;
   }
 
   function shouldUseRolePermissionOnly(row: Row) {
@@ -88,20 +92,24 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     switch (approvalStatus) {
       case ProcessStatusEnum.PENDING:
         // 返回提审
-        return [
-          {
-            label: t('common.review'),
-            key: 'review',
-          },
-        ];
+        return isApplicant(row)
+          ? [
+              {
+                label: t('common.review'),
+                key: 'review',
+              },
+            ]
+          : [];
       case ProcessStatusEnum.UNAPPROVED:
       case ProcessStatusEnum.REVOKED:
-        return [
-          {
-            label: t('common.resubmit'),
-            key: 'review',
-          },
-        ];
+        return isApplicant(row)
+          ? [
+              {
+                label: t('common.resubmit'),
+                key: 'review',
+              },
+            ]
+          : [];
       case ProcessStatusEnum.APPROVING:
         return [
           ...(isApplicant(row)

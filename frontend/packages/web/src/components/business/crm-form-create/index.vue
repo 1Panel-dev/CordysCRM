@@ -159,6 +159,7 @@
     formKey,
     isEdit: computed(() => props.isEdit),
     approvalStatus: computed(() => detail.value?.approvalStatus),
+    detail,
   });
 
   function getItemComponent(item: FormCreateField) {
