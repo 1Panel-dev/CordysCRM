@@ -389,7 +389,7 @@ public class ApprovalInstanceService {
 	 * @return 加签任务集合
 	 */
 	private List<ApprovalTask> flatSignTask(ApprovalTask currentTask, Map<String, List<ApprovalAddSignTask>> addSignTaskMap, Map<String, ApprovalTask> signTaskMap) {
-		if (!signTaskMap.containsKey(currentTask.getId())) {
+		if (!addSignTaskMap.containsKey(currentTask.getId())) {
 			// 不存在加签链
 			return List.of(currentTask);
 		}
