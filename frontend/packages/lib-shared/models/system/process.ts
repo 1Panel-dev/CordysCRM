@@ -196,7 +196,7 @@ export interface ApprovalProcessForm {
 }
 
 export interface ApproverItem extends Pick<UserInfo, 'id' | 'name' | 'avatar'> {
-  approveResult: ApprovalOperationEnum;
+  approveResult: ProcessStatusEnum;
   approveReason: string;
 }
 

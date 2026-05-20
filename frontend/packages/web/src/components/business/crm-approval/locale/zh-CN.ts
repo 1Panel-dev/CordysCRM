@@ -29,5 +29,7 @@ export default {
   'crm.approval.submit': '提交申请',
   'crm.approval.approver': '审批人',
   'crm.approval.addSign': '加签',
+  'crm.approval.addSignSuccess': '加签成功',
   'crm.approval.preNode': '前{index}节点',
+  'crm.approval.fallbackSuccess': '已退回',
 };

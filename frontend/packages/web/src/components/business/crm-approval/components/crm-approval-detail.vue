@@ -93,7 +93,7 @@
     v-model:show="addSignModalVisible"
     :title="t('common.COUNTERSIGNATURE')"
     :ok-loading="addSignLoading"
-    :positive-text="addSignForm.type === 'after' ? t('crm.approval.agreeAndAddSign') : t('crm.approval.confirmAddSign')"
+    :positive-text="addSignForm.type === 'AFTER' ? t('crm.approval.agreeAndAddSign') : t('crm.approval.confirmAddSign')"
     @confirm="handleAddSign"
   >
     <n-form
@@ -105,10 +105,10 @@
     >
       <n-form-item path="type" :label="t('crm.approval.addSignMethod')">
         <n-radio-group v-model:value="addSignForm.type" name="radiogroup">
-          <n-radio key="before" value="before">
+          <n-radio key="BEFORE" value="BEFORE">
             {{ t('crm.approval.beforeMethod') }}
           </n-radio>
-          <n-radio key="after" value="after">
+          <n-radio key="AFTER" value="AFTER">
             {{ t('crm.approval.afterMethod') }}
           </n-radio>
         </n-radio-group>
@@ -421,7 +421,7 @@
   const addSignModalVisible = ref(false);
   const addSignLoading = ref(false);
   const addSignForm = ref({
-    type: 'before',
+    type: 'BEFORE',
     reviewer: undefined,
     reason: '',
     fileList: [] as UploadFileInfo[],
@@ -430,11 +430,11 @@
 
   function handleAddSign() {
     addSignFormRef.value?.validate(async (errors) => {
-      if (!errors && currentApprovalNode.value) {
+      if (!errors && currentApprovalNode.value && currentTaskNode.value) {
         try {
           addSignLoading.value = true;
           await addSignApproval({
-            id: props.sourceId,
+            id: currentTaskNode.value.taskId,
             nodeId: currentApprovalNode.value.nodeId,
             instanceId: approvalInfo.value?.id || '',
             approverId: currentTaskNode.value?.approverId || '',
@@ -446,7 +446,7 @@
           addSignModalVisible.value = false;
           message.success(t('crm.approval.addSignSuccess'));
           addSignForm.value = {
-            type: 'before',
+            type: 'BEFORE',
             reviewer: undefined,
             reason: '',
             fileList: [],
@@ -470,9 +470,9 @@
   });
   const fallbackOptions = computed(() => {
     const options: SelectMixedOption[] = [];
-    for (let i = 0; i < currentApprovalNodeIndex.value; i++) {
+    for (let i = currentApprovalNodeIndex.value - 1; i >= 0; i--) {
       options.push({
-        label: t('crm.approval.preNode', { index: i + 1 }),
+        label: t('crm.approval.preNode', { index: currentApprovalNodeIndex.value - i }),
         value: approvalInfo.value?.nodes[i].nodeId || '',
       });
     }
@@ -482,11 +482,11 @@
 
   function handleFallback() {
     fallbackFormRef.value?.validate(async (errors) => {
-      if (!errors && currentApprovalNode.value) {
+      if (!errors && currentApprovalNode.value && currentTaskNode.value) {
         try {
           fallbackLoading.value = true;
           await backApproval({
-            id: props.sourceId,
+            id: currentTaskNode.value.taskId,
             nodeId: currentApprovalNode.value.nodeId,
             instanceId: approvalInfo.value?.id || '',
             approverId: currentTaskNode.value?.approverId || '',
@@ -495,9 +495,9 @@
             module: moduleKeyMap[props.formKey]!,
             returnToNodeId: fallbackForm.value.node || '',
           });
-          fallbackLoading.value = false;
           fallbackModalVisible.value = false;
           message.success(t('crm.approval.fallbackSuccess'));
+          initApprovalDetail();
           fallbackForm.value = {
             node: undefined,
             reason: '',
@@ -505,6 +505,8 @@
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
+        } finally {
+          fallbackLoading.value = false;
         }
       }
     });

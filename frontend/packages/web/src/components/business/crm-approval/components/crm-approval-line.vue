@@ -40,8 +40,15 @@
               <CrmTag v-if="node.addSignNode" type="info" theme="outline">
                 {{ t('common.COUNTERSIGNATURE') }}
               </CrmTag>
+              <CrmTag v-else type="info" theme="outline">
+                {{ MultiApproverModeMap[node.multiApproverMode] }}
+              </CrmTag>
               <CrmApprovalStatus
-                :status="index > props.currentApprovalNodeIndex ? ProcessStatusEnum.PENDING : node.approvalStatus"
+                :status="
+                  index > props.currentApprovalNodeIndex && props.currentApprovalNodeIndex !== -1
+                    ? ProcessStatusEnum.PENDING
+                    : node.approvalStatus
+                "
                 isTag
                 scene="approvalRecord"
                 class="font-normal"
@@ -89,13 +96,22 @@
           </div>
         </template>
         <div class="mb-[16px] mt-[2px] p-[8px] pl-0">
-          <n-collapse v-if="node.taskNodes?.length" :default-expanded-names="[node.taskNodes[0]?.taskId]">
+          <n-collapse v-if="node.taskNodes?.length">
             <template #arrow><div></div></template>
             <n-collapse-item v-for="task in node.taskNodes" :name="task.taskId">
               <template #header>
                 <div class="flex items-center gap-[8px]">
-                  <div class="h-[24px] w-[24px]">
-                    <CrmAvatar :avatar="task.approverAvatar" :word="task.approver" :is-user="false" :size="24" />
+                  <div class="relative h-[24px] w-[30px]">
+                    <CrmApprovalAvatar
+                      :size="24"
+                      :approver="{
+                        avatar: task.approverAvatar,
+                        name: task.approver,
+                        id: task.approverId,
+                        approveResult: task.approvalStatus,
+                      } as any"
+                      :sign-node="task.signAction"
+                    />
                   </div>
                   <div class="one-line-text max-w-[60px]">{{ task.approver }}</div>
                   <CrmTag v-if="task.sign" type="info" theme="outline">
@@ -148,7 +164,7 @@
   import { NCollapse, NCollapseItem, NPopover, NScrollbar, NTimeline, NTimelineItem } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import { ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ApprovalNode } from '@lib/shared/models/system/process';
 
@@ -157,8 +173,7 @@
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import CrmFileList from '@/components/business/crm-file-list/index.vue';
-
-  import type { width } from '@antv/x6/lib/common/dom/position';
+  import CrmApprovalAvatar from './crm-approval-avatar.vue';
 
   const props = defineProps<{
     nodes: ApprovalNode[];
@@ -173,6 +188,12 @@
   }>();
 
   const { t } = useI18n();
+
+  const MultiApproverModeMap = {
+    [MultiApproverModeEnum.ALL]: t('process.process.flow.multiApprovalType.all'),
+    [MultiApproverModeEnum.ANY]: t('process.process.flow.multiApprovalType.majority'),
+    [MultiApproverModeEnum.SEQUENTIAL]: t('process.process.flow.multiApprovalType.sequential'),
+  };
 </script>
 
 <style lang="less" scoped>
