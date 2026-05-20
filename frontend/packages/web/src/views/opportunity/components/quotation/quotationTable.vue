@@ -5,6 +5,7 @@
     v-bind="propsRes"
     :class="`crm-quotation-table-${props.formKey}`"
     :action-config="actionConfig"
+    :not-show-table-filter="isAdvancedSearchMode"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
@@ -516,18 +517,16 @@
       },
       approvalStatus: (row: QuotationItem) => {
         const canOpenDetail = hasApprovalScopedPermission(row, ['OPPORTUNITY_QUOTATION:READ']);
-        return row.invalid
-          ? '-'
-          : h(CrmApprovalPopover, {
-              status: row.approvalStatus,
-              formKey: props.formKey,
-              sourceId: row.id,
-              showMore: canOpenDetail,
-              disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
-              onMore: () => {
-                handleApproval(row);
-              },
-            });
+        return h(CrmApprovalPopover, {
+          status: row.approvalStatus,
+          formKey: props.formKey,
+          sourceId: row.id,
+          showMore: canOpenDetail,
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            handleApproval(row);
+          },
+        });
       },
     },
     permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
