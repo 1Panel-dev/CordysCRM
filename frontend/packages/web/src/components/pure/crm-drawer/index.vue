@@ -8,6 +8,7 @@
     class="crm-drawer"
     @after-leave="emit('cancel')"
     @esc="emit('esc')"
+    @mask-click="emit('maskClick')"
   >
     <n-drawer-content
       :title="props.title"
@@ -132,6 +133,7 @@
     (e: 'confirm'): void;
     (e: 'cancel'): void;
     (e: 'esc'): void;
+    (e: 'maskClick'): void;
   }>();
 
   const show = defineModel<boolean>('show', {

@@ -5,6 +5,7 @@
       :data="formFields"
       :pagination="false"
       :bordered="false"
+      :loading="loading"
       class="form-permission-table crm-data-table-compact"
     />
   </n-scrollbar>
@@ -37,6 +38,7 @@
 
   const { t } = useI18n();
   const formFields = ref<FormCreateField[]>([]);
+  const loading = ref(false);
 
   const permissionOptions: Array<{ label: string; value: ApprovalFieldPermissionModeEnum }> = [
     {
@@ -163,6 +165,7 @@
 
   async function loadFormFields() {
     try {
+      loading.value = true;
       const api = getFormConfigApiMap[props.formType as FormDesignKeyEnum];
       const res = await api();
       // 仅使用顶层字段；子表格保留父字段名，不展开 subFields 明细。
@@ -171,6 +174,8 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      loading.value = false;
     }
   }
 

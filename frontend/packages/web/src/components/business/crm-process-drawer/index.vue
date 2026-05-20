@@ -6,9 +6,11 @@
     :footer="false"
     :closable="false"
     :close-on-esc="false"
+    :mask-closable="false"
     :loading="loading"
     header-class="crm-process-drawer-header"
     body-content-class="!p-0"
+    @mask-click="handleCancel"
   >
     <template #header>
       <div class="crm-process-drawer-header-content">
