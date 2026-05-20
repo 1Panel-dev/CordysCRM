@@ -837,7 +837,9 @@ public class ApprovalActionService {
 	private void handlePreCcTasks(String currentNodeId, ApprovalInstance instance, String currentUserId, String currentOrgId) {
 		List<User> ccList = approvalFlowService.getCurrentNodeCcList(currentNodeId, instance.getSubmitterId(), currentOrgId);
 		List<ApprovalTask> ccTasks = getNodeCcTasks(currentNodeId, ccList.stream().map(User::getId).toList(), instance.getId(), currentUserId);
-		approvalTaskMapper.batchInsert(ccTasks);
+		if (CollectionUtils.isNotEmpty(ccTasks)) {
+			approvalTaskMapper.batchInsert(ccTasks);
+		}
 	}
 
 	/**

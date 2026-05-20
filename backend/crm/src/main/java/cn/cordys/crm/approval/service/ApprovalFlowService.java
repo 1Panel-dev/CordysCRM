@@ -1564,6 +1564,9 @@ public class ApprovalFlowService {
 	 */
 	public List<User> getCurrentNodeCcList(String currentNodeId, String userId, String currentOrgId) {
 		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+		if (StringUtils.isBlank(nodeApprover.getCcType())) {
+			return new ArrayList<>();
+		}
 		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getCcType()), JSON.parseArray(nodeApprover.getCcList(), String.class));
 	}
 
