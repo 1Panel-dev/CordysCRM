@@ -36,6 +36,9 @@ public class ApprovalRecordNode {
 	@Schema(description = "多人审批方式", allowableValues = {"ALL: 会签", "ANY: 或签", "SEQUENTIAL: 依次审批"})
 	private MultiApproverModeEnum multiApproverMode;
 
+	@Schema(description = "是否结束节点")
+	private boolean endNode;
+
 	@Schema(description = "是否退回节点")
 	private boolean isReturnNode;
 
