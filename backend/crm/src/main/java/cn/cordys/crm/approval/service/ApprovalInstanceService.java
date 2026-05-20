@@ -172,8 +172,13 @@ public class ApprovalInstanceService {
 				}
 			}
 			ApprovalNode approvalNode = approvalNodeMap.get(node.getNodeId());
-			node.setNodeName(approvalNode.getName());
-			node.setSort(approvalNode.getSort());
+			if (approvalNode != null) {
+				node.setNodeName(approvalNode.getName());
+				node.setSort(approvalNode.getSort());
+				if (ApprovalNodeTypeEnum.valueOf(approvalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
+					node.setEndNode(true);
+				}
+			}
 		});
 		// 节点流程配置顺序
 		nodes.sort(Comparator.comparing(ApprovalRecordNode::getSort));
@@ -273,6 +278,11 @@ public class ApprovalInstanceService {
 				nodes.addLast(recordNode);
 			}
 		});
+		// 处理结束节点
+		if (ApprovalStatus.valueOf(instance.getApprovalStatus()) == ApprovalStatus.APPROVED) {
+			ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(instance.getCurrentNodeId()).build();
+			nodes.addLast(recordNode);
+		}
 		return nodes;
 	}
 
