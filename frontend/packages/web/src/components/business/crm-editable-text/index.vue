@@ -5,6 +5,7 @@
     v-model:value="inputValue"
     class="crm-editable-text-input-wrap"
     :maxlength="255"
+    :placeholder="props.placeholder ?? t('common.pleaseInput')"
     clearable
     @update-value="handleInput"
     @keydown.enter="confirmEdit"
@@ -43,6 +44,7 @@
     permission: string[];
     clickToEdit?: boolean;
     emptyTextTip?: string;
+    placeholder?: string;
     disabled?: boolean;
   }>();
 

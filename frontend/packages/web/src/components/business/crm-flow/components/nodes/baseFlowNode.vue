@@ -33,7 +33,12 @@
           </n-tooltip>
         </CrmEditableText>
 
-        <span v-else class="base-flow-node__title">{{ name }}</span>
+        <n-tooltip v-else trigger="hover" :delay="300" :disabled="!name">
+          <template #trigger>
+            <span class="base-flow-node__title one-line-text">{{ name }}</span>
+          </template>
+          {{ name ?? '-' }}
+        </n-tooltip>
       </div>
       <div class="base-flow-node__header-extra">
         <n-tooltip v-if="deletable" :delay="300" trigger="hover">
