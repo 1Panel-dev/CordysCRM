@@ -467,8 +467,10 @@ public class ApprovalInstanceService {
 		ApprovalRecord record = taskRecordMap.get(task.getId());
 		ApprovalTaskNode taskNode = ApprovalTaskNode.builder().taskId(task.getId())
 				.sign(ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.SN)
-				.signAction(ApprovalAction.valueOf(task.getAction()) == ApprovalAction.SIGN)
 				.approverId(task.getApproverId()).approvalStatus(task.getStatus()).build();
+		if (StringUtils.isNotBlank(task.getAction()) && ApprovalAction.valueOf(task.getAction()) == ApprovalAction.SIGN) {
+			taskNode.setSignAction(true);
+		}
 		if (simpleUserMap.containsKey(task.getApproverId())) {
 			taskNode.setApprover(simpleUserMap.get(task.getApproverId()).getName());
 			taskNode.setApproverAvatar(simpleUserMap.get(task.getApproverId()).getAvatar());
