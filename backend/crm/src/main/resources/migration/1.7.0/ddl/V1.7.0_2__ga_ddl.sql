@@ -46,6 +46,7 @@ CREATE INDEX idx_flow_id ON approval_flow_version(flow_id ASC);
 CREATE TABLE approval_node(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `flow_version_id` VARCHAR(32) NOT NULL   COMMENT '审批流版本ID' ,
+    `number` VARCHAR(50) NOT NULL   COMMENT '节点编码;格式：PN001、PN002' ,
     `name` VARCHAR(255) NOT NULL   COMMENT '节点名称' ,
     `node_type` VARCHAR(50) NOT NULL   COMMENT '节点类型：START\CONDITION\DEFAULT\END' ,
     `sort` INT(11) NOT NULL  DEFAULT 0 COMMENT '排序序号' ,

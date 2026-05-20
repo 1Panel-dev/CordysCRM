@@ -15,6 +15,7 @@ export function createStartNode(partial: Partial<StartNode> = {}): StartNode {
     id: partial.id ?? createFlowId('start'),
     type: 'start',
     name: partial.name ?? t('common.start'),
+    number: partial.number,
     description: partial.description,
   };
 }
@@ -35,6 +36,7 @@ export function createEndNode(partial: Partial<EndNode> = {}): EndNode {
     id: partial.id ?? createFlowId('end'),
     type: 'end',
     name: partial.name ?? t('common.end'),
+    number: partial.number,
   };
 }
 

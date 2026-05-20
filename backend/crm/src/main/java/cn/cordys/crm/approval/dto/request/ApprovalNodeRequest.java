@@ -23,6 +23,9 @@ public class ApprovalNodeRequest {
     @NotBlank
     private String id;
 
+    @Schema(description = "节点编码")
+    private String number;
+
     @Schema(description = "节点名称")
     private String name;
 

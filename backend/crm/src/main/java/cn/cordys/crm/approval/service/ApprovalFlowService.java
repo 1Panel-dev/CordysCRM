@@ -359,7 +359,7 @@ public class ApprovalFlowService {
         approvalFlowMapper.insert(flow);
 
         // 保存节点配置
-        saveNodesAndLinks(request.getNodes(), request.getLinks(), version.getId(), userId);
+        saveNodesAndLinks(request.getNodes(), request.getLinks(), version.getId(), flow.getId(), userId);
 
         ApprovalFlowDetailResponse detail = getDetail(flow.getId(), organizationId);
 
@@ -425,7 +425,7 @@ public class ApprovalFlowService {
             flow.setCurrentVersionId(newVersion.getId());
 
             // 保存新节点配置
-            saveNodesAndLinks(request.getNodes(), request.getLinks(), newVersion.getId(), userId);
+            saveNodesAndLinks(request.getNodes(), request.getLinks(), newVersion.getId(), originDetail.getId(), userId);
         }
 
         approvalFlowMapper.updateById(flow);
@@ -523,6 +523,15 @@ public class ApprovalFlowService {
         String key = "approval_flow_num:" + organizationId + ":" + formType;
         long seq = stringRedisTemplate.opsForValue().increment(key);
         return String.format("%s-%05d", prefix, seq);
+    }
+
+    /**
+     * 生成节点编码
+     */
+    private String generateNodeNumber(String flowId) {
+        String key = "approval_node_num:" + ":" + flowId;
+        long seq = stringRedisTemplate.opsForValue().increment(key);
+        return String.format("PN%03d", seq);
     }
 
     private String getNumberPrefix(String formType) {
@@ -778,7 +787,7 @@ public class ApprovalFlowService {
      * 批量保存节点配置和连接关系
      */
     private void saveNodesAndLinks(List<ApprovalNodeRequest> nodes, List<ApprovalNodeLinkRequest> links,
-                                    String flowVersionId, String userId) {
+                                    String flowVersionId, String flowId, String userId) {
         if (CollectionUtils.isEmpty(nodes)) {
             return;
         }
@@ -806,6 +815,12 @@ public class ApprovalFlowService {
             ApprovalNode node = BeanUtils.copyBean(new ApprovalNode(), nodeRequest);
             node.setId(newNodeId);
             node.setFlowVersionId(flowVersionId);
+            // 如果前端传了number则使用，否则生成新的number
+            if (StringUtils.isBlank(nodeRequest.getNumber())) {
+                node.setNumber(generateNodeNumber(flowId));
+            } else {
+                node.setNumber(nodeRequest.getNumber());
+            }
             node.setSort(nodeSort++);
             allNodes.add(node);
 

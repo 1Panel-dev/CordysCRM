@@ -11,6 +11,7 @@ export interface BaseFlowNode {
   type: FlowNodeType;
   name: string;
   invalid?: boolean;
+  number?: string;
 }
 
 export interface StartNode extends BaseFlowNode {

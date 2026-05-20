@@ -42,6 +42,7 @@ function createProcessNodeBase(node: FlowNode, sort: number) {
   return {
     id: node.id,
     name: node.name,
+    number: node.number,
     sort,
   };
 }
@@ -239,6 +240,7 @@ function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalAct
     type: 'action',
     actionType: 'approval',
     name: node.name,
+    number: node.number,
     description: resolveApprovalActionNodeDescription(node.approvalType, node.approverType ?? null),
     approvalType: node.approvalType,
     approverType: node.approverType ?? null,
@@ -344,6 +346,7 @@ function deserializeProcessNode(node: ApprovalProcessNode): FlowNode {
     return createStartNode({
       id: node.id,
       name: node.name,
+      number: node.number,
     });
   }
 
@@ -351,6 +354,7 @@ function deserializeProcessNode(node: ApprovalProcessNode): FlowNode {
     return createEndNode({
       id: node.id,
       name: node.name,
+      number: node.number,
     });
   }
 
