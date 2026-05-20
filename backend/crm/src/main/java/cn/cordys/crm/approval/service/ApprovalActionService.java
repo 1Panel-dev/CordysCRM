@@ -130,7 +130,7 @@ public class ApprovalActionService {
 		ApprovalTask currentTask = getTaskById(request.getId());
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		// 审批流是否允许撤回
-		ApprovalFlow approvalFlow = approvalFlowService.selectApprovalFlowByFormType(currentTask.getType(), orgId);
+		ApprovalFlow approvalFlow = approvalFlowService.selectApprovalFlowByFormType(instance.getType(), orgId);
 		if (approvalFlow == null || !approvalFlow.getAllowWithdraw()) {
 			throw new GenericException(Translator.get("no.operation.permission"));
 		}
