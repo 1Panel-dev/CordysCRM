@@ -33,6 +33,12 @@ public class ApprovalTaskNode {
 	@Schema(description = "是否加签任务")
 	private boolean sign;
 
+	@Schema(description = "加签意见")
+	private String signComment;
+
+	@Schema(description = "加签附件")
+	private List<Attachment> signAttachments;
+
 	@Schema(description = "是否进行加签操作")
 	private boolean signAction;
 
