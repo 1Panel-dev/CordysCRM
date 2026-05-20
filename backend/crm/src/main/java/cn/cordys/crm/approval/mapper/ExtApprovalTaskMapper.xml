@@ -61,7 +61,7 @@
         LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
         LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
         WHERE at.approver_id = #{approverId}
-          AND at.status != #{pendingStatus}
+        AND at.status != #{pendingStatus}
         <if test="resourceType != null and resourceType != ''">
             AND ai.type = #{resourceType}
         </if>
@@ -127,7 +127,7 @@
         LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
         LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
         WHERE at.approver_id = #{approverId}
-          AND at.type IN ('cc', 'CC')
+        AND at.type IN ('cc', 'CC')
         <if test="resourceType != null and resourceType != ''">
             AND ai.type = #{resourceType}
         </if>
