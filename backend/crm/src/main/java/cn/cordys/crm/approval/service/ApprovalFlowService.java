@@ -531,8 +531,7 @@ public class ApprovalFlowService {
     private String generateNodeNumber(String flowId) {
         String key = "approval_node_num:" + ":" + flowId;
         long seq = stringRedisTemplate.opsForValue().increment(key);
-        return String.format("PN%03d", seq);
-    }
+        return String.format("P" + "N%03d", seq);    }
 
     private String getNumberPrefix(String formType) {
         try {

@@ -1,6 +1,5 @@
 [default.extend-words]
 AKE = "AKE"
-SN="SN"
 [default.extend-identifiers]
 maintain_column_froms = "maintain_column_froms"
 RegistCapi="RegistCapi"
