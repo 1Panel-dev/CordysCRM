@@ -283,8 +283,8 @@ public class ApprovalInstanceService {
 	 * @return 后续待审批节点列表
 	 */
 	private List<ApprovalRecordNode> buildPendingApprovalNodes(ApprovalInstance instance, Map<String, UserSimple> simpleUserMap, String currentOrgId) {
-		if (StringUtils.isBlank(instance.getCurrentNodeId())) {
-			// 当前节点为空, 或非审批中的实例
+		if (StringUtils.isBlank(instance.getCurrentNodeId()) || ApprovalStatus.valueOf(instance.getApprovalStatus()) == ApprovalStatus.APPROVED) {
+			// 当前节点为空, 或审批完成的实例, 不存在后续待审批的节点
 			return new ArrayList<>();
 		}
 		List<ApprovalNodeApproverResponse> nodes = approvalFlowService.getInstanceCurrentFollowNode(instance, currentOrgId);
