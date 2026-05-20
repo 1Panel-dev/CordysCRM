@@ -20,12 +20,15 @@ public interface ExtApprovalTaskMapper {
 
     java.util.List<ApprovalTodoItemResponse> selectProcessedTasks(@Param("approverId") String approverId,
                                                                   @Param("pendingStatus") String pendingStatus,
+                                                                  @Param("resourceType") String resourceType,
                                                                   @Param("keyword") String keyword);
 
     java.util.List<ApprovalTodoItemResponse> selectInitiatedTasks(@Param("submitterId") String submitterId,
+                                                                  @Param("resourceType") String resourceType,
                                                                   @Param("keyword") String keyword);
 
     java.util.List<ApprovalTodoItemResponse> selectCcTasks(@Param("approverId") String approverId,
+                                                           @Param("resourceType") String resourceType,
                                                            @Param("keyword") String keyword);
 
     /**

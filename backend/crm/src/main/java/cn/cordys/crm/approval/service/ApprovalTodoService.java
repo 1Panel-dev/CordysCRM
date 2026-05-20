@@ -6,7 +6,6 @@ import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
-import cn.cordys.crm.approval.dto.request.ApprovalProcessedPageRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
@@ -102,46 +101,70 @@ public class ApprovalTodoService {
         return response;
     }
 
-    public Pager<List<ApprovalTodoItemResponse>> getProcessedPage(ApprovalProcessedPageRequest request, String userId) {
+    public Pager<List<ApprovalTodoItemResponse>> getProcessedPage(ApprovalTodoPageRequest request, String userId) {
         // 在未登录场景下直接返回空分页数据。
         if (StringUtils.isBlank(userId)) {
             return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
         }
+        // 解析资源类型过滤参数，支持 ALL 或具体类型。
+        ApprovalFormTypeEnum filterType = parseFilterType(request.getResourceType());
+        if (!isAllType(request.getResourceType()) && filterType == null) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
         // 分页查询当前用户已处理任务，并按更新时间倒序返回最新处理记录。
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        String keyword = StringUtils.trimToNull(StringUtils.defaultIfBlank(request.getKeyword(), request.getResourceName()));
+        String keyword = StringUtils.trimToNull(request.getResourceName());
         List<ApprovalTodoItemResponse> items = extApprovalTaskMapper.selectProcessedTasks(
                 userId,
                 ApprovalState.PENDING.getId(),
+                filterType == null ? null : filterType.name().toLowerCase(),
                 keyword
         );
         return PageUtils.setPageInfo(page, items);
     }
 
-    public Pager<List<ApprovalTodoItemResponse>> getInitiatedPage(ApprovalProcessedPageRequest request, String userId) {
+    public Pager<List<ApprovalTodoItemResponse>> getInitiatedPage(ApprovalTodoPageRequest request, String userId) {
         // 在未登录场景下直接返回空分页数据。
         if (StringUtils.isBlank(userId)) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
+        // 解析资源类型过滤参数，支持 ALL 或具体类型。
+        ApprovalFormTypeEnum filterType = parseFilterType(request.getResourceType());
+        if (!isAllType(request.getResourceType()) && filterType == null) {
             return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
         }
 
         // 分页查询当前用户发起的审批实例，并按更新时间倒序返回。
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        String keyword = StringUtils.trimToNull(StringUtils.defaultIfBlank(request.getKeyword(), request.getResourceName()));
-        List<ApprovalTodoItemResponse> items = extApprovalTaskMapper.selectInitiatedTasks(userId, keyword);
+        String keyword = StringUtils.trimToNull(request.getResourceName());
+        List<ApprovalTodoItemResponse> items = extApprovalTaskMapper.selectInitiatedTasks(
+                userId,
+                filterType == null ? null : filterType.name().toLowerCase(),
+                keyword
+        );
         // 返回分页结果，分页元信息沿用 PageHelper 查询结果。
         return PageUtils.setPageInfo(page, items);
     }
 
-    public Pager<List<ApprovalTodoItemResponse>> getCcPage(ApprovalProcessedPageRequest request, String userId) {
+    public Pager<List<ApprovalTodoItemResponse>> getCcPage(ApprovalTodoPageRequest request, String userId) {
         // 在未登录场景下直接返回空分页数据。
         if (StringUtils.isBlank(userId)) {
+            return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
+        }
+        // 解析资源类型过滤参数，支持 ALL 或具体类型。
+        ApprovalFormTypeEnum filterType = parseFilterType(request.getResourceType());
+        if (!isAllType(request.getResourceType()) && filterType == null) {
             return new Pager<>(Collections.<ApprovalTodoItemResponse>emptyList(), 0, request.getPageSize(), request.getCurrent());
         }
 
         // 分页查询抄送给当前用户的任务记录，并按更新时间倒序返回。
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        String keyword = StringUtils.trimToNull(StringUtils.defaultIfBlank(request.getKeyword(), request.getResourceName()));
-        List<ApprovalTodoItemResponse> items = extApprovalTaskMapper.selectCcTasks(userId, keyword);
+        String keyword = StringUtils.trimToNull(request.getResourceName());
+        List<ApprovalTodoItemResponse> items = extApprovalTaskMapper.selectCcTasks(
+                userId,
+                filterType == null ? null : filterType.name().toLowerCase(),
+                keyword
+        );
         return PageUtils.setPageInfo(page, items);
     }
 

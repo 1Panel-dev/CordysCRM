@@ -1,7 +1,6 @@
 package cn.cordys.crm.approval.controller;
 
 import cn.cordys.common.pager.Pager;
-import cn.cordys.crm.approval.dto.request.ApprovalProcessedPageRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
@@ -35,19 +34,19 @@ public class ApprovalTodoController {
 
     @PostMapping("/processed/page")
     @Operation(summary = "审核代办-当前用户已处理审批分页", description = "返回值：Pager<List<ApprovalTodoItemResponse>>")
-    public Pager<List<ApprovalTodoItemResponse>> processedPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
+    public Pager<List<ApprovalTodoItemResponse>> processedPage(@Validated @RequestBody ApprovalTodoPageRequest request) {
         return approvalTodoService.getProcessedPage(request, SessionUtils.getUserId());
     }
 
     @PostMapping("/initiated/page")
     @Operation(summary = "审核代办-我发起的审批分页", description = "返回值：Pager<List<ApprovalTodoItemResponse>>")
-    public Pager<List<ApprovalTodoItemResponse>> initiatedPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
+    public Pager<List<ApprovalTodoItemResponse>> initiatedPage(@Validated @RequestBody ApprovalTodoPageRequest request) {
         return approvalTodoService.getInitiatedPage(request, SessionUtils.getUserId());
     }
 
     @PostMapping("/cc/page")
     @Operation(summary = "审核代办-抄送我的审批分页", description = "返回值：Pager<List<ApprovalTodoItemResponse>>")
-    public Pager<List<ApprovalTodoItemResponse>> ccPage(@Validated @RequestBody ApprovalProcessedPageRequest request) {
+    public Pager<List<ApprovalTodoItemResponse>> ccPage(@Validated @RequestBody ApprovalTodoPageRequest request) {
         return approvalTodoService.getCcPage(request, SessionUtils.getUserId());
     }
 
