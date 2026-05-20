@@ -953,7 +953,7 @@ public class ApprovalActionService {
 		if (CollectionUtils.isNotEmpty(ccList)) {
 			Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, nodeId);
 			ccList.forEach(cc -> {
-				ApprovalTask approvalTask = buildTask(nodeId, instanceId, cc, ApprovalTaskType.CC.name(), userId, nextRound);
+				ApprovalTask approvalTask = buildTask(nodeId, instanceId, cc, ApprovalTaskType.CC.name(), userId, nextRound - 1);
 				approvalTasks.add(approvalTask);
 			});
 		}
