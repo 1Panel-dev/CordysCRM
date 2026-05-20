@@ -364,11 +364,9 @@ public class RoleService {
     }
 
     public List<PermissionDefinitionItem> getPermissionSetting(String id) {
-        // 获取角色
-        Role role = roleMapper.selectByPrimaryKey(id);
         // 获取该角色拥有的权限
-        Set<String> permissionIds = getPermissionIdSetByRoleId(role.getId());
-        return getPermissionDefinitionItems(role, permissionIds);
+        Set<String> permissionIds = getPermissionIdSetByRoleId(id);
+        return getPermissionDefinitionItems(permissionIds);
     }
 
     /**
@@ -377,10 +375,10 @@ public class RoleService {
      * @return
      */
     public List<PermissionDefinitionItem> getPermissionSetting() {
-        return getPermissionDefinitionItems(null, Set.of());
+        return getPermissionDefinitionItems(Set.of());
     }
 
-    private List<PermissionDefinitionItem> getPermissionDefinitionItems(Role role, Set<String> permissionIds) {
+    private List<PermissionDefinitionItem> getPermissionDefinitionItems(Set<String> permissionIds) {
         // 获取所有的权限
         List<PermissionDefinitionItem> permissionDefinitions = getPermissionDefinitions();
         // 设置勾选项
@@ -402,9 +400,7 @@ public class RoleService {
                     } else {
                         p.setName(translateDefaultPermissionName(p));
                     }
-                    // 管理员默认勾选全部二级权限位
-                    if (permissionIds.contains(p.getId()) ||
-                            (role != null && Strings.CS.equals(role.getId(), InternalRole.ORG_ADMIN.getValue()))) {
+                    if (permissionIds.contains(p.getId())) {
                         p.setEnable(true);
                     } else {
                         // 如果权限有未勾选，则二级菜单设置为未勾选
