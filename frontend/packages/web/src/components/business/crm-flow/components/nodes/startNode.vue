@@ -1,6 +1,7 @@
 <template>
   <BaseFlowNode
     :name="nodeData.name ?? ''"
+    :number="nodeData.number"
     :description="nodeData.description"
     :show-content="nodeData.showContent ?? true"
     :selected="Boolean(nodeData.selected)"
@@ -31,6 +32,7 @@
 
   const { nodeData } = useX6NodeData<{
     name?: string;
+    number?: string;
     description?: string;
     showContent?: boolean;
     selected?: boolean;

@@ -6,6 +6,7 @@ export type FlowGraphDataKind = 'start' | 'action' | 'end' | 'condition-branch' 
 export interface FlowGraphNodeData {
   kind: FlowGraphDataKind; // 图层节点种类：既包含 DSL 节点，也包含 add-node 等图层辅助节点
   nodeId?: string; // 对应 DSL 节点 id（主链节点）
+  number?: string;
   nodeType?: FlowNodeType; // 锚点业务节点类型（常用于 add-node 场景下识别来源节点类型）
   groupId?: string; // 条件组 id（condition-group）
   branchId?: string; // 条件分支 id（if / else 分支）

@@ -32,6 +32,7 @@ export interface ActionNode extends BaseFlowNode {
 export interface ConditionBranch {
   id: string;
   name: string;
+  number?: string;
   isElse: boolean;
   description?: string;
   invalid?: boolean;

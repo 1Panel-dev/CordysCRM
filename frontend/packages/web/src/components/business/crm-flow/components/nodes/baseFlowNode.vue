@@ -3,6 +3,7 @@
     class="base-flow-node large-box-shadow"
     :class="[`base-flow-node--${nodeType}`, { 'is-selected': selected, 'is-invalid': invalid }]"
   >
+    <span v-if="number" class="base-flow-node__number">{{ number }}</span>
     <div class="base-flow-node__header">
       <div class="base-flow-node__title-wrap">
         <div
@@ -75,6 +76,7 @@
   const props = withDefaults(
     defineProps<{
       name: string;
+      number?: string;
       description?: string;
       nodeType?: string;
       selected?: boolean;
@@ -89,6 +91,7 @@
       };
     }>(),
     {
+      number: '',
       description: '',
       nodeType: 'action',
       selected: false,
@@ -118,6 +121,7 @@
 
 <style scoped lang="less">
   .base-flow-node {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -135,6 +139,14 @@
     &.is-invalid {
       border-color: var(--error-red);
     }
+  }
+  .base-flow-node__number {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: 12px;
+    line-height: 12px;
+    color: var(--text-n8);
   }
   .base-flow-node__header {
     display: flex;

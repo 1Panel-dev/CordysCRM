@@ -75,6 +75,7 @@ function createProcessBranchNode(branch: ApprovalConditionBranch, sort: number):
   return {
     id: branch.id,
     name: branch.name,
+    number: branch.number,
     nodeType: branch.isElse ? ApprovalNodeTypeEnum.DEFAULT : ApprovalNodeTypeEnum.CONDITION,
     sort,
     ...(branch.isElse ? {} : { conditionConfig: branch.conditionConfig }),
@@ -399,6 +400,7 @@ function deserializeProcessNodeList(
         return createElseBranch<ApprovalConditionBranch>({
           id: branchNode.id,
           name: branchNode.name,
+          number: branchNode.number,
           description: toConditionBranchDescription(branchNode),
           children,
         });
@@ -407,6 +409,7 @@ function deserializeProcessNodeList(
       return createApprovalConditionBranch({
         id: branchNode.id,
         name: branchNode.name,
+        number: branchNode.number,
         description: toConditionBranchDescription(branchNode),
         conditionConfig:
           branchNode.nodeType === ApprovalNodeTypeEnum.CONDITION ? branchNode.conditionConfig : undefined,
