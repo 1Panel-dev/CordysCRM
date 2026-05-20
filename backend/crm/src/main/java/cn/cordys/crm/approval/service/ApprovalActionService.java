@@ -247,10 +247,11 @@ public class ApprovalActionService {
 	 * @param request 加签参数
 	 * @param userId  当前用户
 	 */
-	private ApprovalTask appendSignTask(ApprovalActionRequest request, String userId, int round) {
+	private ApprovalTask appendSignTask(ApprovalAddSignRequest request, String userId, int round) {
 		ApprovalTask approvalTask = new ApprovalTask();
 		BeanUtils.copyBean(approvalTask, request);
 		approvalTask.setId(IDGenerator.nextStr());
+		approvalTask.setApproverId(request.getSignApprover());
 		approvalTask.setNodeRound(round);
 		approvalTask.setCreateTime(System.currentTimeMillis());
 		approvalTask.setUpdateTime(System.currentTimeMillis());

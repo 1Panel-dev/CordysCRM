@@ -11,4 +11,7 @@ public class ApprovalAddSignRequest extends ApprovalActionRequest {
 
     @Schema(description = "加签方式 BEFORE: 在我之前，AFTER: 在我之后")
     private String type;
+
+	@Schema(description = "加签审批人")
+	private String signApprover;
 }
