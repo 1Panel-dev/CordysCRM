@@ -109,7 +109,7 @@ public class ApprovalActionService {
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
 		// 追加退回操作的待办任务 && 保存退回记录
 		backProcess(instance, request, orgId);
-		ApprovalReturnBackRecord backRecord = saveBackRecord(request, userId);
+		ApprovalReturnBackRecord backRecord = saveBackRecord(request, instance.getId(), userId);
 		// 保存执行任务
 		saveActionTask(request, ApprovalAction.BACK, userId, orgId, null);
 		// 保存退回附件
@@ -281,17 +281,19 @@ public class ApprovalActionService {
 	 * @param userId  当前用户ID
 	 * @return 退回节点信息
 	 */
-	private ApprovalReturnBackRecord saveBackRecord(ApprovalReturnBackRequest request, String userId) {
-		ApprovalReturnBackRecord returnBack = new ApprovalReturnBackRecord();
-		returnBack.setId(IDGenerator.nextStr());
-		returnBack.setTaskId(request.getId());
-		returnBack.setReturnToNodeId(request.getReturnToNodeId());
-		returnBack.setReturnReason(request.getComment());
-		returnBack.setReturnUserId(userId);
-		// 只保留最新的一条退回节点记录
-		approvalReturnBackRecordMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalReturnBackRecord>().eq(ApprovalReturnBackRecord::getReturnToNodeId, request.getReturnToNodeId()));
-		approvalReturnBackRecordMapper.insert(returnBack);
-		return returnBack;
+	private ApprovalReturnBackRecord saveBackRecord(ApprovalReturnBackRequest request, String instanceId, String userId) {
+		ApprovalReturnBackRecord backRecord = new ApprovalReturnBackRecord();
+		backRecord.setId(IDGenerator.nextStr());
+		backRecord.setInstanceId(instanceId);
+		backRecord.setTaskId(request.getId());
+		backRecord.setReturnToNodeId(request.getReturnToNodeId());
+		backRecord.setReturnReason(request.getComment());
+		backRecord.setReturnUserId(userId);
+		// 每个审批实例, 只保留最新的一条退回节点记录
+		approvalReturnBackRecordMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalReturnBackRecord>().eq(ApprovalReturnBackRecord::getInstanceId, instanceId)
+				.eq(ApprovalReturnBackRecord::getReturnToNodeId, request.getReturnToNodeId()));
+		approvalReturnBackRecordMapper.insert(backRecord);
+		return backRecord;
 	}
 
 	/**
@@ -778,13 +780,21 @@ public class ApprovalActionService {
 			return;
 		}
 		ApprovalNodeResponse next = approvalFlowService.getCurrentNextNode(currentNodeId, instance, orgId);
-		Integer maxRound = extApprovalInstanceMapper.getNodeRound(instance.getId(), next.getId());
-		if (maxRound > 0) {
-			// 执行过, 清理执行待办和记录
-			extApprovalInstanceMapper.batchClearTask(instance.getId(), next.getId(), maxRound);
-			extApprovalInstanceMapper.batchClearRecord(instance.getId(), next.getId(), maxRound);
-		}
+		clearNode(instance.getId(), next.getId());
 		clearBackToCurrentNode(next.getId(), endNodeId, instance, orgId);
+	}
+
+	private void clearNode(String instanceId, String nodeId) {
+		Integer maxRound = extApprovalInstanceMapper.getNodeRound(instanceId, nodeId);
+		if (maxRound > 0) {
+			/*
+			 * 当前节点执行过
+			 * 未处理的直接清理, 已处理的假删除
+			 */
+			extApprovalInstanceMapper.removeApprovingTask(instanceId, nodeId, maxRound);
+			extApprovalInstanceMapper.batchClearTask(instanceId, nodeId, maxRound);
+			extApprovalInstanceMapper.batchClearRecord(instanceId, nodeId, maxRound);
+		}
 	}
 
 	/**
@@ -842,9 +852,7 @@ public class ApprovalActionService {
 			}
 		}
 		// 清理后续审批节点的待办任务, 后续执行重新生成
-		LambdaQueryWrapper<ApprovalTask> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ApprovalTask::getNodeId, nextNode.getId()).eq(ApprovalTask::getInstanceId, instance.getId());
-		approvalTaskMapper.deleteByLambda(wrapper);
+		clearNode(instance.getId(), nextNode.getId());
 	}
 
 	/**

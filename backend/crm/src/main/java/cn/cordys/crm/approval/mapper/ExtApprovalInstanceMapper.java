@@ -44,7 +44,7 @@ public interface ExtApprovalInstanceMapper {
 	Integer getNodeRound(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId);
 
 	/**
-	 * 批量清理节点执行的任务
+	 * 假删除当前节点轮次已处理的待办任务
 	 *
 	 * @param instanceId 审批实例ID
 	 * @param nodeId     节点ID
@@ -53,7 +53,15 @@ public interface ExtApprovalInstanceMapper {
 	void batchClearTask(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId, @Param("nodeRound") Integer nodeRound);
 
 	/**
-	 * 批量清理节点执行的任务
+	 * 清理审批中的节点轮次任务
+	 * @param instanceId 审批实例ID
+	 * @param nodeId     节点ID
+	 * @param nodeRound 轮次
+	 */
+	void removeApprovingTask(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId, @Param("nodeRound") Integer nodeRound);
+
+	/**
+	 * 假删除当前节点的执行记录
 	 *
 	 * @param instanceId 审批实例ID
 	 * @param nodeId     节点ID

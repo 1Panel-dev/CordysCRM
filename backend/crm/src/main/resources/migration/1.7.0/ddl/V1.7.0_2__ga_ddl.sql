@@ -173,8 +173,9 @@ CREATE INDEX idx_root_task_id ON approval_add_sign_task(root_task_id ASC);
 
 CREATE TABLE approval_return_back_record(
     `id` VARCHAR(32) NOT NULL   COMMENT '主键ID' ,
+    `instance_id` VARCHAR(32) NOT NULL   COMMENT '审批实例ID' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '当前任务ID' ,
-    `return_to_node_id` VARCHAR(32)    COMMENT '退回至节点ID' ,
+    `return_to_node_id` VARCHAR(32) NOT NULL   COMMENT '退回至任务ID' ,
     `return_reason` TEXT    COMMENT '退回原因' ,
     `return_user_id` VARCHAR(32) NOT NULL   COMMENT '退回操作人' ,
     PRIMARY KEY (id)
@@ -183,8 +184,7 @@ CREATE TABLE approval_return_back_record(
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_return_user_id ON approval_return_back_record(return_user_id ASC);
-CREATE INDEX idx_task_id ON approval_return_back_record(task_id ASC);
+CREATE INDEX idx_instance_id ON approval_return_back_record(instance_id ASC);
 
 CREATE TABLE approval_record(
     `id` VARCHAR(32) NOT NULL COMMENT 'ID' ,

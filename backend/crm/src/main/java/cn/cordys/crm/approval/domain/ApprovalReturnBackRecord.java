@@ -14,6 +14,9 @@ public class ApprovalReturnBackRecord {
 	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String id;
 
+	@Schema(description = "实例ID")
+	private String instanceId;
+
 	@Schema(description = "当前任务ID")
 	private String taskId;
 
