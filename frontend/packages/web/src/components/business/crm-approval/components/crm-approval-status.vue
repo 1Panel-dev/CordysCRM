@@ -20,17 +20,19 @@
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
-  import { processStatusMap } from '@/config/process';
+  import { approvalRecordStatusMap, processStatusMap } from '@/config/process';
 
   const props = defineProps<{
     status: ProcessStatusEnum;
     isTag?: boolean;
+    scene?: 'process' | 'approvalRecord';
   }>();
 
   export type StatusInfo = { label: string; icon: string; color: string; tagBgColor: string; tagColor: string };
 
   const currentStatus = computed<StatusInfo | undefined>(() => {
-    return processStatusMap[props.status as keyof typeof processStatusMap];
+    const currentMap = props.scene === 'approvalRecord' ? approvalRecordStatusMap : processStatusMap;
+    return currentMap[props.status as keyof typeof currentMap];
   });
 </script>
 

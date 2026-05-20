@@ -27,7 +27,7 @@
                   >
                     {{ t(`taskDrawer.operation.${item.approvalOperation}`) }}
                   </CrmTag>
-                  <CrmApprovalStatus :status="item.dataResult" isTag />
+                  <CrmApprovalStatus :status="item.dataResult" isTag scene="approvalRecord" />
                 </div>
                 <CrmTableButton
                   type="primary"

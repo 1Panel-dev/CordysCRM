@@ -176,6 +176,8 @@
       title: t('process.process.processType'),
       key: 'formType',
       width: 200,
+      filter: true,
+      filterOptions: businessTypeOptions,
       render: (row: ApprovalProcessItem) =>
         h(CrmNameTooltip, {
           text: businessTypeOptions.find((item) => item.value === row.formType)?.label ?? '',
