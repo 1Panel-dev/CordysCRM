@@ -22,4 +22,19 @@
             (SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId})
         ), 0) + 1
     </select>
+
+    <select id="getNodeRound" resultType="java.lang.Integer">
+        SELECT IFNULL(GREATEST(
+                              (SELECT MAX(node_round) FROM approval_task WHERE instance_id = #{instanceId} AND node_id = #{nodeId}),
+                              (SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId})
+                      ), 0)
+    </select>
+
+    <update id="batchClearTask">
+        update approval_task set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound}
+    </update>
+
+    <update id="batchClearRecord">
+        update approval_record set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound}
+    </update>
 </mapper>

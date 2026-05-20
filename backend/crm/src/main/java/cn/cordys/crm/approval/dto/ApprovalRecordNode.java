@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval.dto;
 
 import cn.cordys.crm.approval.constants.MultiApproverModeEnum;
+import cn.cordys.crm.system.domain.Attachment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,7 +41,13 @@ public class ApprovalRecordNode {
 	private boolean endNode;
 
 	@Schema(description = "是否退回节点")
-	private boolean isReturnNode;
+	private boolean backNode;
+
+	@Schema(description = "退回原因")
+	private String backReason;
+
+	@Schema(description = "退回附件")
+	private List<Attachment> backAttachments;
 
 	@Schema(description = "抄送的节点集合")
 	private List<ApprovalCcNode> ccNodes;

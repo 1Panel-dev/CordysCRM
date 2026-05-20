@@ -108,7 +108,7 @@ public class ApprovalActionService {
 	public void back(ApprovalReturnBackRequest request, String userId, String orgId) {
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(request.getInstanceId());
 		// 追加退回操作的待办任务 && 保存退回记录
-		appendBackTasks(request, instance.getSubmitterId(), orgId);
+		backProcess(instance, request, orgId);
 		ApprovalReturnBackRecord backRecord = saveBackRecord(request, userId);
 		// 保存执行任务
 		saveActionTask(request, ApprovalAction.BACK, userId, orgId, null);
@@ -288,6 +288,8 @@ public class ApprovalActionService {
 		returnBack.setReturnToNodeId(request.getReturnToNodeId());
 		returnBack.setReturnReason(request.getComment());
 		returnBack.setReturnUserId(userId);
+		// 只保留最新的一条退回节点记录
+		approvalReturnBackRecordMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalReturnBackRecord>().eq(ApprovalReturnBackRecord::getReturnToNodeId, request.getReturnToNodeId()));
 		approvalReturnBackRecordMapper.insert(returnBack);
 		return returnBack;
 	}
@@ -394,7 +396,7 @@ public class ApprovalActionService {
 	}
 
 	/**
-	 * 同意操作执行
+	 * 驳回操作执行
 	 *
 	 * @param currentTask 当前任务
 	 * @param currentUserId 当前用户ID
@@ -758,6 +760,31 @@ public class ApprovalActionService {
 			List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
 			return approvalTasks.stream().noneMatch(task -> ApprovalStatus.APPROVING.name().equals(task.getStatus()));
 		}
+	}
+
+	private void backProcess(ApprovalInstance instance, ApprovalReturnBackRequest request, String orgId) {
+		if (ApprovalStatus.valueOf(instance.getApprovalStatus()) != ApprovalStatus.APPROVING) {
+			// 非审批中, 无法进行节点退回
+			throw new GenericException(Translator.get("no.back.approval"));
+		}
+		// 追加退回节点的待办
+		appendBackTasks(request, instance.getSubmitterId(), orgId);
+		// 清理后续所有执行过的节点待办轮次
+		clearBackToCurrentNode(request.getReturnToNodeId(), request.getNodeId(), instance, orgId);
+	}
+
+	private void clearBackToCurrentNode(String currentNodeId, String endNodeId, ApprovalInstance instance, String orgId) {
+		if (Strings.CI.equals(currentNodeId, endNodeId)) {
+			return;
+		}
+		ApprovalNodeResponse next = approvalFlowService.getCurrentNextNode(currentNodeId, instance, orgId);
+		Integer maxRound = extApprovalInstanceMapper.getNodeRound(instance.getId(), next.getId());
+		if (maxRound > 0) {
+			// 执行过, 清理执行待办和记录
+			extApprovalInstanceMapper.batchClearTask(instance.getId(), next.getId(), maxRound);
+			extApprovalInstanceMapper.batchClearRecord(instance.getId(), next.getId(), maxRound);
+		}
+		clearBackToCurrentNode(next.getId(), endNodeId, instance, orgId);
 	}
 
 	/**
