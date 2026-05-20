@@ -113,10 +113,10 @@ public class ApprovalTodoService {
         }
         // 分页查询当前用户已处理任务，并按更新时间倒序返回最新处理记录。
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        String keyword = StringUtils.trimToNull(request.getResourceName());
+        String keyword = StringUtils.trimToNull(request.getKeyword());
         List<ApprovalTodoItemResponse> items = extApprovalTaskMapper.selectProcessedTasks(
                 userId,
-                ApprovalState.PENDING.getId(),
+                ApprovalState.APPROVING.getId(),
                 filterType == null ? null : filterType.name().toLowerCase(),
                 keyword
         );
@@ -136,7 +136,7 @@ public class ApprovalTodoService {
 
         // 分页查询当前用户发起的审批实例，并按更新时间倒序返回。
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        String keyword = StringUtils.trimToNull(request.getResourceName());
+        String keyword = StringUtils.trimToNull(request.getKeyword());
         List<ApprovalTodoItemResponse> items = extApprovalTaskMapper.selectInitiatedTasks(
                 userId,
                 filterType == null ? null : filterType.name().toLowerCase(),
@@ -159,7 +159,7 @@ public class ApprovalTodoService {
 
         // 分页查询抄送给当前用户的任务记录，并按更新时间倒序返回。
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        String keyword = StringUtils.trimToNull(request.getResourceName());
+        String keyword = StringUtils.trimToNull(request.getKeyword());
         List<ApprovalTodoItemResponse> items = extApprovalTaskMapper.selectCcTasks(
                 userId,
                 filterType == null ? null : filterType.name().toLowerCase(),

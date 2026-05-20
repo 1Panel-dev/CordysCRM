@@ -1,12 +1,14 @@
 DELETE FROM approval_task WHERE id IN (
     'todo_cc_task_001', 'todo_cc_task_002', 'todo_cc_task_003',
     'todo_list_task_contract', 'todo_list_task_quote', 'todo_list_task_old_node',
-    'todo_processed_task_001', 'todo_pending_task_001'
+    'todo_processed_task_001', 'todo_processed_task_002',
+    'todo_processed_task_003', 'todo_processed_task_004'
 );
 DELETE FROM approval_instance WHERE id IN (
     'todo_cc_inst_001', 'todo_cc_inst_002', 'todo_cc_inst_003',
     'todo_list_inst_contract', 'todo_list_inst_quote',
-    'todo_processed_inst_001', 'todo_pending_inst_001'
+    'todo_processed_inst_001', 'todo_processed_inst_002',
+    'todo_processed_inst_003', 'todo_processed_inst_004'
 );
 DELETE FROM approval_flow_version WHERE id IN ('approval_flow_test_001');
 
