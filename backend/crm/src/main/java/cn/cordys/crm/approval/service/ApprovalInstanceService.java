@@ -256,6 +256,7 @@ public class ApprovalInstanceService {
 			List<User> nodeMultiApproverList = approvalFlowService.getCurrentNodeApproverList(hisNode, instance.getSubmitterId(), currentOrgId);
 			List<ApprovalTask> nlTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL && Strings.CI.equals(task.getNodeId(), hisNode)
 					&& task.getNodeRound().equals(maxRound)).sorted(Comparator.comparing(ApprovalTask::getCreateTime)).toList();
+			nlTasks = filterNodeLatestTasks(nlTasks);
 			List<ApprovalTask> snTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.SN && Strings.CI.equals(task.getNodeId(), hisNode)
 					&& task.getNodeRound().equals(maxRound)).sorted(Comparator.comparing(ApprovalTask::getCreateTime)).toList();
 			// 加签任务追加
@@ -589,5 +590,21 @@ public class ApprovalInstanceService {
 			attachmentIds.forEach(id -> attachmentService.delete(id));
 			attachmentMapper.deleteByIds(attachmentIds);
 		}
+	}
+
+	/**
+	 * 过滤出同一个节点内相同审批人最新的一条待办
+	 * @param nodeTasks 节点任务
+	 * @return 审批人最新的一条待办
+	 */
+	private List<ApprovalTask> filterNodeLatestTasks(List<ApprovalTask> nodeTasks) {
+		Map<String, ApprovalTask> taskMap = new HashMap<>(nodeTasks.size());
+		nodeTasks.forEach(nodeTask -> {
+			boolean exist = taskMap.containsKey(nodeTask.getApproverId());
+			if (!exist || nodeTask.getCreateTime() > taskMap.get(nodeTask.getApproverId()).getCreateTime()) {
+				taskMap.put(nodeTask.getApproverId(), nodeTask);
+			}
+		});
+		return taskMap.values().stream().toList();
 	}
 }

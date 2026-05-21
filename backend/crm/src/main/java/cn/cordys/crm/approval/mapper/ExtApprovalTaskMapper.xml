@@ -195,4 +195,12 @@
             id = #{approvalTask.id}
         </where>
     </update>
+
+    <update id="moveAddSignRoot" parameterType="java.lang.String">
+        update approval_add_sign_task set root_task_id = #{newRootId} where root_task_id = #{oldRootId}
+    </update>
+
+    <update id="updateRootNext" parameterType="java.lang.String">
+        update approval_add_sign_task set sign_task_id = #{newRootId} where sign_task_id = #{oldRootId}
+    </update>
 </mapper>

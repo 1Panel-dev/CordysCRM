@@ -38,4 +38,18 @@ public interface ExtApprovalTaskMapper {
                                                      @Param("pendingStatus") String pendingStatus);
 
     void updateTaskById(@Param("approvalTask") ApprovalTask approvalTask);
+
+	/**
+	 * 移动加签的根节点
+	 * @param oldRootId 旧的根节点ID
+	 * @param newRootId 新的根节点ID
+	 */
+	void moveAddSignRoot(@Param("oldRootId") String oldRootId, @Param("newRootId") String newRootId);
+
+	/**
+	 * 更新加签根节点的下一个指向
+	 * @param oldRootId 旧的根节点ID
+	 * @param newRootId 新的根节点ID
+	 */
+	void updateRootNext(@Param("oldRootId") String oldRootId, @Param("newRootId") String newRootId);
 }

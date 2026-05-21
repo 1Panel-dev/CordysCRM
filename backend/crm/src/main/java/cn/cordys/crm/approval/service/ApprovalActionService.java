@@ -16,6 +16,7 @@ import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
+import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
@@ -62,6 +63,8 @@ public class ApprovalActionService {
 	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
 	@Resource
 	private LogService logService;
+	@Resource
+	private ExtApprovalTaskMapper extApprovalTaskMapper;
 
 	public static final Long DEFAULT_SIGN_SORT_STEP = 100L;
 
@@ -251,7 +254,7 @@ public class ApprovalActionService {
 		ApprovalTask approvalTask = new ApprovalTask();
 		BeanUtils.copyBean(approvalTask, request);
 		approvalTask.setId(IDGenerator.nextStr());
-		approvalTask.setApproverId(request.getSignApprover());
+		approvalTask.setApproverId(request.getSignApprover().getFirst());
 		approvalTask.setNodeRound(round);
 		approvalTask.setCreateTime(System.currentTimeMillis());
 		approvalTask.setUpdateTime(System.currentTimeMillis());
@@ -430,6 +433,8 @@ public class ApprovalActionService {
 			// 加签任务执行, 需要获取同一加签链路的下一个待办任务
 			ApprovalTask nextTask = getNextAddSignTask(currentTask.getId());
 			if (nextTask != null) {
+				nextTask.setCreateTime(System.currentTimeMillis());
+				nextTask.setUpdateTime(System.currentTimeMillis());
 				approvalTaskMapper.insert(nextTask);
 			}
 		}
@@ -603,7 +608,13 @@ public class ApprovalActionService {
 
 		// 4. 没有下一个加签任务了，返回根任务（原始流程节点的任务）
 		ApprovalTask rootTask = approvalTaskMapper.selectByPrimaryKey(currentAddSign.getRootTaskId());
-		return ApprovalStatus.valueOf(rootTask.getStatus()) == ApprovalStatus.PENDING ? copyEmptyTask(rootTask) : null;
+		if (ApprovalStatus.valueOf(rootTask.getStatus()) == ApprovalStatus.PENDING) {
+			ApprovalTask copyRoot = copyEmptyTask(rootTask);
+			extApprovalTaskMapper.moveAddSignRoot(rootTask.getId(), copyRoot.getId());
+			extApprovalTaskMapper.updateRootNext(rootTask.getId(), copyRoot.getId());
+			return copyRoot;
+		}
+		return null;
 	}
 
 	/**
@@ -612,10 +623,11 @@ public class ApprovalActionService {
 	 * @return 新待办任务
 	 */
 	private ApprovalTask copyEmptyTask(ApprovalTask old) {
-		old.setId(IDGenerator.nextStr());
-		old.setAction(null);
-		old.setStatus(ApprovalStatus.APPROVING.name());
-		return old;
+		ApprovalTask newTask = BeanUtils.copyBean(new ApprovalTask(), old);
+		newTask.setId(IDGenerator.nextStr());
+		newTask.setAction(null);
+		newTask.setStatus(ApprovalStatus.APPROVING.name());
+		return newTask;
 	}
 
 	/**
