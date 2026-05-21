@@ -308,6 +308,16 @@ public class ApprovalActionService {
 	 * @param currentUserId 当前操作人
 	 */
 	private void saveApprovalRecord(ApprovalTask currentTask, String comment, List<String> attachmentIds, String currentUserId, String orgId) {
+		List<ApprovalRecord> records = approvalRecordMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalRecord>().eq(ApprovalRecord::getInstanceId, currentTask.getInstanceId())
+				.eq(ApprovalRecord::getTaskId, currentTask.getId()).eq(ApprovalRecord::getNodeRound, currentTask.getNodeRound()).eq(ApprovalRecord::getNodeId, currentTask.getNodeId()));
+		if (CollectionUtils.isNotEmpty(records)) {
+			// 撤回的任务已经产生执行记录
+			if (StringUtils.isBlank(comment) && CollectionUtils.isEmpty(attachmentIds)) {
+				return;
+			}
+			// 如果产生了新的附件和意见, 清理掉
+			approvalRecordMapper.deleteByIds(records.stream().map(ApprovalRecord::getId).toList());
+		}
 		ApprovalRecord record = new ApprovalRecord();
 		record.setId(IDGenerator.nextStr());
 		record.setInstanceId(currentTask.getInstanceId());
@@ -358,7 +368,7 @@ public class ApprovalActionService {
 			LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
 			queryWrapper.eq(ApprovalTask::getNodeId, currentTask.getNodeId())
 					.eq(ApprovalTask::getInstanceId, currentTask.getInstanceId())
-					.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING.name());
+					.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING.name()).nq(ApprovalTask::getType, ApprovalTaskType.CC);
 			List<ApprovalTask> approvingTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
 			if (approvingTasks.isEmpty()) {
 				User nextUser = getMultiSeqNextOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId);
@@ -698,7 +708,7 @@ public class ApprovalActionService {
 		LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(ApprovalTask::getNodeId, currentNodeId)
 				.eq(ApprovalTask::getInstanceId, instanceId)
-				.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING);
+				.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING).nq(ApprovalTask::getType, ApprovalTaskType.CC);
 		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
 		return approvalTasks.isEmpty();
 	}
@@ -711,7 +721,7 @@ public class ApprovalActionService {
 	private boolean isCurrentMultiNodeApproved(String currentNodeId, String instanceId) {
 		LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(ApprovalTask::getNodeId, currentNodeId)
-				.eq(ApprovalTask::getInstanceId, instanceId);
+				.eq(ApprovalTask::getInstanceId, instanceId).nq(ApprovalTask::getType, ApprovalTaskType.CC);
 		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
 		ApprovalNodeApprover nodeApprover = getNodeApprover(currentNodeId);
 		if (MultiApproverModeEnum.valueOf(nodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
@@ -889,13 +899,14 @@ public class ApprovalActionService {
 	}
 
 	/**
-	 * 刷新撤回的任务
+	 * 重置撤回的任务
 	 * @param approvalTask 任务
 	 * @param instance 实例
 	 * @param currentUserId 当前用户ID
 	 */
 	private void refreshRevokeTask(ApprovalTask approvalTask, ApprovalInstance instance, String currentUserId) {
 		approvalTask.setStatus(ApprovalStatus.APPROVING.name());
+		approvalTask.setAction(null);
 		approvalTask.setUpdateTime(System.currentTimeMillis());
 		approvalTask.setUpdateUser(currentUserId);
 		approvalTaskMapper.updateById(approvalTask);

@@ -237,15 +237,15 @@ public class ApprovalInstanceService {
 				nodes.addLast(recordNode);
 				return;
 			}
-			// 获取节点下最后一轮抄送任务
-			List<ApprovalTask> ccTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.CC
-					&& Strings.CI.equals(task.getNodeId(), hisNode) && task.getNodeRound().equals(maxRound)).toList();
-			List<ApprovalCcNode> ccNodes = ccTasks.stream().map(cc -> {
+			// 获取节点下最后一轮抄送人
+			List<String> ccUsers = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.CC
+					&& Strings.CI.equals(task.getNodeId(), hisNode) && task.getNodeRound().equals(maxRound)).map(ApprovalTask::getApproverId).distinct().toList();
+			List<ApprovalCcNode> ccNodes = ccUsers.stream().map(cc -> {
 				ApprovalCcNode ccNode = new ApprovalCcNode();
-				ccNode.setCcUserId(cc.getApproverId());
-				if (simpleUserMap.containsKey(cc.getApproverId())) {
-					ccNode.setCcUserName(simpleUserMap.get(cc.getApproverId()).getName());
-					ccNode.setCcUserAvatar(simpleUserMap.get(cc.getApproverId()).getAvatar());
+				ccNode.setCcUserId(cc);
+				if (simpleUserMap.containsKey(cc)) {
+					ccNode.setCcUserName(simpleUserMap.get(cc).getName());
+					ccNode.setCcUserAvatar(simpleUserMap.get(cc).getAvatar());
 				}
 				return ccNode;
 			}).toList();
