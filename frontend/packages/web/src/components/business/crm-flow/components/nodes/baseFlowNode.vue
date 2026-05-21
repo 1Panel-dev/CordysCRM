@@ -146,7 +146,7 @@
     left: 4px;
     font-size: 12px;
     line-height: 12px;
-    color: var(--text-n8);
+    color: var(--text-n7);
   }
   .base-flow-node__header {
     display: flex;
