@@ -169,9 +169,15 @@ public class ApprovalInstanceService {
 	 */
 	private List<ApprovalRecordNode> buildApprovalRecordNodeList(ApprovalInstance instance, List<ApprovalTask> tasks, List<ApprovalRecord> records, List<ApprovalAddSignTask> signTasks,
 																 List<ApprovalReturnBackRecord> backRecords, Map<String, List<Attachment>> attachmentMap, Map<String, UserSimple> simpleUserMap, String currentOrgId) {
+		// 处理过的节点
 		List<ApprovalRecordNode> processedApprovalNodes = buildProcessedApprovalNodes(instance, tasks, records, signTasks, backRecords, attachmentMap, simpleUserMap, currentOrgId);
+		// 未来节点
 		List<ApprovalRecordNode> pendingApprovalNodes = buildPendingApprovalNodes(instance, simpleUserMap, currentOrgId);
 		List<ApprovalRecordNode> nodes = new ArrayList<>(ListUtils.union(processedApprovalNodes, pendingApprovalNodes));
+		// 处理结束节点
+		ApprovalRecordNode endNode = getInstanceEndNode(instance);
+		nodes.addLast(endNode);
+
 		List<String> allNodeIds = nodes.stream().map(ApprovalRecordNode::getNodeId).distinct().toList();
 		Map<String, ApprovalNodeApprover> approverNodeMap = getApproverNodeMapByIds(allNodeIds);
 		Map<String, ApprovalNode> approvalNodeMap = getApprovalNodeMapByIds(allNodeIds);
@@ -292,11 +298,6 @@ public class ApprovalInstanceService {
 				nodes.addLast(setBackInfo(recordNode, backRecordMap, attachmentsMap));
 			}
 		});
-		// 处理结束节点
-		if (ApprovalStatus.valueOf(instance.getApprovalStatus()) == ApprovalStatus.APPROVED) {
-			ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(instance.getCurrentNodeId()).build();
-			nodes.addLast(recordNode);
-		}
 		return nodes;
 	}
 
@@ -333,6 +334,19 @@ public class ApprovalInstanceService {
 			}).toList();
 			return ApprovalRecordNode.builder().nodeId(node.getId()).nodeRound(1).approvalStatus(ApprovalStatus.PENDING.name()).taskNodes(taskNodes).build();
 		}).toList();
+	}
+
+	/**
+	 * 获取审批流唯一结束节点
+	 * @param instance 审批实例
+	 * @return 结束节点
+	 */
+	private ApprovalRecordNode getInstanceEndNode(ApprovalInstance instance) {
+		ApprovalNode approvalNode = new ApprovalNode();
+		approvalNode.setFlowVersionId(instance.getFlowVersionId());
+		approvalNode.setNodeType(ApprovalNodeTypeEnum.END.name());
+		ApprovalNode endNode = approvalNodeMapper.selectOne(approvalNode);
+		return ApprovalRecordNode.builder().nodeId(endNode.getId()).build();
 	}
 
 
