@@ -39,4 +39,11 @@ public class ApprovalActionRequest {
 
 	@Schema(description = "是否从待办入口执行")
 	private boolean fromToDo;
+
+	public String getNodeId() {
+		if (nodeId.contains("-SN")) {
+			return nodeId.split("-SN")[0];
+		}
+		return nodeId;
+	}
 }

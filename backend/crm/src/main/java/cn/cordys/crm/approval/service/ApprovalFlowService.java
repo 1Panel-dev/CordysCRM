@@ -107,6 +107,8 @@ public class ApprovalFlowService {
     @Resource
 	private ApprovalInstanceService approvalInstanceService;
 
+	public static final String SIGN_SPILT = "-SN";
+
     /**
      * 根据表单类型获取审批流状态权限配置
      */
@@ -1642,7 +1644,11 @@ public class ApprovalFlowService {
 	public List<ApprovalNodeApproverResponse> getInstanceCurrentFollowNode(ApprovalInstance instance, String currentOrgId) {
 		List<ApprovalNodeApproverResponse> nodes = new ArrayList<>();
 		List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
-		ApprovalNodeResponse next = getNextNodeWithExceptionHandler(instance, instance.getCurrentNodeId(), resourceFvs, currentOrgId, true);
+		String currentNodeId = instance.getCurrentNodeId();
+		if (currentNodeId.contains(SIGN_SPILT)) {
+			currentNodeId = currentNodeId.split(SIGN_SPILT)[0];
+		}
+		ApprovalNodeResponse next = getNextNodeWithExceptionHandler(instance, currentNodeId, resourceFvs, currentOrgId, true);
 		while (ApprovalNodeTypeEnum.valueOf(next.getNodeType()) == ApprovalNodeTypeEnum.APPROVER) {
 			nodes.add((ApprovalNodeApproverResponse) next);
 			next = getNextNodeWithExceptionHandler(instance, next.getId(), resourceFvs, currentOrgId, true);

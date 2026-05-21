@@ -31,4 +31,7 @@ public class ApprovalInstanceDetail {
 
 	@Schema(description = "审批节点")
 	private List<ApprovalRecordNode> nodes;
+
+	@Schema(description = "当前节点字段权限")
+	private String currentNodeFieldPermissions;
 }
