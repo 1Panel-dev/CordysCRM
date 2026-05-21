@@ -78,7 +78,11 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
       };
     }
 
-    if (!isEdit || approvalStatus === ProcessStatusEnum.PENDING || !approvalStatus) {
+    if (
+      !isEdit ||
+      [ProcessStatusEnum.NONE, ProcessStatusEnum.PENDING].includes(approvalStatus || ProcessStatusEnum.NONE) ||
+      !approvalStatus
+    ) {
       return {
         visible: true,
         text: t('common.review'),
