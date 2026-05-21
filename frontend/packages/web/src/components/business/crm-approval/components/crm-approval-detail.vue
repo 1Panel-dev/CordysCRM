@@ -34,7 +34,10 @@
             />
           </div>
           <div
-            v-if="isApprover || canCancelApply || canCancelApproval"
+            v-if="
+              approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
+              (isApprover || canCancelApply || canCancelApproval)
+            "
             class="border-t border-[var(--text-n8)] p-[16px]"
           >
             <template v-if="isApprover">
@@ -139,7 +142,7 @@
         <n-select v-model:value="fallbackForm.node" :options="fallbackOptions" clearable />
       </n-form-item>
       <n-form-item path="reason" :label="t('crm.approval.fallbackReason')">
-        <CrmFileInput v-model:value="fallbackForm.reason" v-model:file-list="addSignForm.fileList" />
+        <CrmFileInput v-model:value="fallbackForm.reason" v-model:file-list="fallbackForm.fileList" />
       </n-form-item>
     </n-form>
   </CrmModal>
@@ -390,6 +393,8 @@
       });
       message.success(t('common.approved'));
       initApprovalDetail();
+      approvalOpinion.value = '';
+      fileList.value = [];
       emit('refresh');
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -426,6 +431,8 @@
           });
           message.success(t('common.rejected'));
           initApprovalDetail();
+          approvalOpinion.value = '';
+          fileList.value = [];
           emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -459,7 +466,7 @@
             attachmentIds: addSignForm.value.fileList.map((e) => e.id),
             type: addSignForm.value.type,
             module: moduleKeyMap[props.formKey]!,
-            signApprover: addSignForm.value.reviewer || '',
+            signApprover: addSignForm.value.reviewer?.[0] || '',
           });
           addSignModalVisible.value = false;
           message.success(t('crm.approval.addSignSuccess'));
@@ -486,6 +493,7 @@
   const fallbackForm = ref({
     node: undefined,
     reason: '',
+    fileList: [] as UploadFileInfo[],
   });
   const fallbackOptions = computed(() => {
     const options: SelectMixedOption[] = [];
@@ -509,8 +517,8 @@
             nodeId: currentApprovalNode.value.nodeId,
             instanceId: approvalInfo.value?.id || '',
             approverId: currentTaskNode.value?.approverId || '',
-            comment: addSignForm.value.reason,
-            attachmentIds: addSignForm.value.fileList.map((e) => e.id),
+            comment: fallbackForm.value.reason,
+            attachmentIds: fallbackForm.value.fileList.map((e) => e.id),
             module: moduleKeyMap[props.formKey]!,
             returnToNodeId: fallbackForm.value.node || '',
           });
@@ -520,6 +528,7 @@
           fallbackForm.value = {
             node: undefined,
             reason: '',
+            fileList: [],
           };
           emit('refresh');
         } catch (error) {
