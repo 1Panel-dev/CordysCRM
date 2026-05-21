@@ -287,6 +287,7 @@ public class ApprovalResourceService {
 		instance.setUpdateUser(currentUserId);
 		instance.setUpdateTime(System.currentTimeMillis());
 		approvalInstanceMapper.updateById(instance);
+		approvalActionService.revokeCurrentNode(instance.getId(), instance.getCurrentNodeId());
 	}
 
 	private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalResourceBaseParam param, String currentUserId) {

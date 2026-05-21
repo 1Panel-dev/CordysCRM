@@ -233,7 +233,7 @@ public class ApprovalInstanceService {
 			Integer maxRound = nodeMaxRoundMap.get(hisNode);
 			if (autoNodeRecordMap.containsKey(hisNode) && autoNodeRecordMap.get(hisNode).getNodeRound().equals(maxRound)) {
 				// 当前节点的最后一轮执行是自动执行
-				ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).approvalStatus(autoNodeRecordMap.get(hisNode).getResult()).build();
+				ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).taskNodes(List.of()).approvalStatus(autoNodeRecordMap.get(hisNode).getResult()).build();
 				nodes.addLast(recordNode);
 				return;
 			}
@@ -360,6 +360,8 @@ public class ApprovalInstanceService {
 	private ApprovalStatus getNodeApprovalStatusOfMultiTask(List<ApprovalTaskNode> taskNodes, MultiApproverModeEnum approverMode) {
 		boolean anyReject = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.UNAPPROVED);
 		boolean anyAutoReject = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.AUTO_UNAPPROVED);
+		boolean anyApproving = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.APPROVING);
+		boolean anyRevoked = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.REVOKED);
 		boolean anyApproved = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.APPROVED);
 		boolean anyAutoApproved = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.AUTO_APPROVED);
 		if (approverMode == MultiApproverModeEnum.ALL || approverMode == MultiApproverModeEnum.SEQUENTIAL) {
@@ -369,6 +371,12 @@ public class ApprovalInstanceService {
 			}
 			if (anyAutoReject) {
 				return ApprovalStatus.AUTO_UNAPPROVED;
+			}
+			if (anyApproving) {
+				return ApprovalStatus.APPROVING;
+			}
+			if (anyRevoked) {
+				return ApprovalStatus.NONE;
 			}
 			if (anyApproved) {
 				return ApprovalStatus.APPROVED;

@@ -15,5 +15,5 @@ public class ApprovalAddSignRequest extends ApprovalActionRequest {
 
 	@NotEmpty
 	@Schema(description = "加签审批人")
-	private List<String> signApprover;
+	private String signApprover;
 }
