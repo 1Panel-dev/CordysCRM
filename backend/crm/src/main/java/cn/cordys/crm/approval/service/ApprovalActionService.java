@@ -17,10 +17,12 @@ import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.LogService;
+import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -32,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -65,6 +68,8 @@ public class ApprovalActionService {
 	private LogService logService;
 	@Resource
 	private ExtApprovalTaskMapper extApprovalTaskMapper;
+	@Resource
+	private CommonNoticeSendService commonNoticeSendService;
 
 	public static final Long DEFAULT_SIGN_SORT_STEP = 100L;
 
@@ -1139,6 +1144,27 @@ public class ApprovalActionService {
 			logService.add(logDTO);
 		}
 		// TODO: 消息通知
+		if (StringUtils.isBlank(instance.getApprovalStatus()) || StringUtils.isBlank(instance.getSubmitterId())) {
+			return;
+		}
+		ApprovalStatus approvalStatus = ApprovalStatus.valueOf(instance.getApprovalStatus());
+		if (approvalStatus != ApprovalStatus.APPROVED && approvalStatus != ApprovalStatus.UNAPPROVED) {
+			return;
+		}
+		String resourceName = resourceService == null ? null :
+				resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
+		String state = approvalStatus == ApprovalStatus.APPROVED
+				? Translator.get("contract.approval_status.approved")
+				: Translator.get("contract.approval_status.unapproved");
+		commonNoticeSendService.sendNotice(
+				NotificationConstants.Module.APPROVAL,
+				NotificationConstants.Event.APPROVAL_RESULT,
+				Map.of("name", StringUtils.defaultString(resourceName), "state", state),
+				userId,
+				orgId,
+				List.of(instance.getSubmitterId()),
+				true
+		);
 
 	}
 

@@ -145,6 +145,9 @@ public class NotificationConstants {
         @Schema(description = "message.sync_organization_structure")
         String SYNC_ORGANIZATION_STRUCTURE = "SYNC_ORGANIZATION_STRUCTURE";
 
+        @Schema(description = "message.approval_result")
+        String APPROVAL_RESULT = "APPROVAL_RESULT";
+
 
     }
 
@@ -284,6 +287,9 @@ public class NotificationConstants {
         //同步组织架构完成
         @Schema(description = "message.sync_organization_structure_text")
         String SYNC_ORGANIZATION_STRUCTURE_TEXT = "SYNC_ORGANIZATION_STRUCTURE_TEXT";
+
+        @Schema(description = "message.approval_result_text")
+        String APPROVAL_RESULT_TEXT = "APPROVAL_RESULT_TEXT";
     }
 
 
