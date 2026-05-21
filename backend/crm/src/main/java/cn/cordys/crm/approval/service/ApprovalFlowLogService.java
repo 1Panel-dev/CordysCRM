@@ -119,7 +119,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         }
     }
 
-    private static JsonDifferenceDTO getNodesJsonDifferenceDTO(List<JsonDifferenceDTO> differences) {
+    private JsonDifferenceDTO getNodesJsonDifferenceDTO(List<JsonDifferenceDTO> differences) {
         Optional<JsonDifferenceDTO> nodesDiffOpt = differences.stream()
                 .filter(differ -> Strings.CS.equals(differ.getColumn(), NODES_COLUMN))
                 .findFirst();
@@ -613,11 +613,76 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     private void handleStatusPermissions(JsonDifferenceDTO differ) {
         differ.setColumnName(Translator.get("log.statusPermissions"));
         if (isValidValue(differ.getOldValue())) {
-            differ.setOldValueName(JSON.toJSONString(differ.getOldValue()));
+            differ.setOldValueName(translateStatusPermissions(differ.getOldValue()));
         }
         if (isValidValue(differ.getNewValue())) {
-            differ.setNewValueName(JSON.toJSONString(differ.getNewValue()));
+            differ.setNewValueName(translateStatusPermissions(differ.getNewValue()));
         }
+    }
+
+    /**
+     * 翻译状态权限配置
+     * 将 [{"approvalStatus":"REVOKED","permission":"ORDER:READ","enabled":true}]
+     * 翻译为换行分隔的字符串
+     */
+    @SuppressWarnings("unchecked")
+    private String translateStatusPermissions(Object value) {
+        if (value == null) {
+            return "";
+        }
+        try {
+            List<?> list;
+            if (value instanceof List<?> l) {
+                list = l;
+            } else {
+                String strValue = value.toString();
+                list = JSON.parseArray(strValue, Object.class);
+            }
+
+            List<String> results = new ArrayList<>();
+            for (Object item : list) {
+                if (item instanceof Map<?, ?> map) {
+                    String status = map.get("approvalStatus") != null ? map.get("approvalStatus").toString() : "";
+                    String permission = map.get("permission") != null ? map.get("permission").toString() : "";
+
+                    String translatedStatus = translateApprovalStatus(status);
+                    String translatedPermission = translatePermission(permission);
+
+                    results.add(translatedStatus + "-" + translatedPermission);
+                }
+            }
+
+            return String.join("\n", results);
+        } catch (Exception e) {
+            return value.toString();
+        }
+    }
+
+    /**
+     * 翻译审批状态
+     */
+    private String translateApprovalStatus(String status) {
+        if (StringUtils.isBlank(status)) {
+            return "";
+        }
+        return Translator.get("log.approvalStatus." + status, status);
+    }
+
+    /**
+     * 翻译权限字符串
+     * 将 "ORDER:READ" 翻译为 "订单:查看"
+     */
+    private String translatePermission(String permission) {
+        if (StringUtils.isBlank(permission)) {
+            return "";
+        }
+        String[] parts = permission.split(":");
+        if (parts.length >= 2) {
+            String moduleKey = "permission." + parts[0].toLowerCase() + ".name";
+            String permissionKey = "permission." + parts[1].toLowerCase();
+            return Translator.get(moduleKey, parts[0]) + ":" + Translator.get(permissionKey, parts[1]);
+        }
+        return Translator.get("permission." + permission.toLowerCase(), permission);
     }
 
     private void handleDescription(JsonDifferenceDTO differ) {
