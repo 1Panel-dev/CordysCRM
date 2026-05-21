@@ -94,7 +94,7 @@
           </div>
         </template>
         <div class="mb-[16px] mt-[2px] py-[8px] pl-0">
-          <n-collapse v-if="node.taskNodes?.length">
+          <n-collapse v-if="node.taskNodes?.length" :default-expanded-names="[node.taskNodes[0].taskId]">
             <template #arrow><div></div></template>
             <n-collapse-item v-for="task in node.taskNodes" :name="task.taskId">
               <template #header>
@@ -213,7 +213,7 @@
     const { approvalStatus, endNode, nodeId } = node;
     if (endNode) {
       if (props.currentApprovalNode?.nodeId === nodeId) {
-        return 'bg-[var(--info-blue)]';
+        return 'bg-[var(--success-green)]';
       }
       return 'bg-[var(--text-n4)]';
     }
