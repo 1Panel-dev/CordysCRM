@@ -23,7 +23,6 @@
           :emptyTextTip="t('common.notNull', { value: t('process.process.processName') })"
           @handle-edit="handleEditName"
           @input="handleInput"
-          @cancel="handleCancelEditName"
         >
           <n-tooltip trigger="hover" :delay="300" :disabled="!form.basicConfig.name">
             <template #trigger>
@@ -297,10 +296,6 @@
       editingName.value = newName;
       done?.();
     }
-  }
-
-  function handleCancelEditName() {
-    editingName.value = form.value.basicConfig.name ?? '';
   }
 
   const errorStatus = computed(() => (editingName.value.trim().length ? '' : 'error'));

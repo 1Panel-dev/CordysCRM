@@ -9,7 +9,7 @@
     clearable
     @update-value="handleInput"
     @keydown.enter="confirmEdit"
-    @blur="handleBlur"
+    @blur="confirmEdit"
   />
   <div
     v-else
@@ -51,7 +51,6 @@
   const emit = defineEmits<{
     (e: 'handleEdit', value: string, done?: () => void): void;
     (e: 'input', value: string): void;
-    (e: 'cancel'): void;
   }>();
 
   const { t } = useI18n();
@@ -92,11 +91,6 @@
     emit('handleEdit', inputValue.value, () => {
       isEditing.value = false;
     });
-  }
-
-  function handleBlur() {
-    isEditing.value = false;
-    emit('cancel');
   }
 
   function handleInput(value: string) {
