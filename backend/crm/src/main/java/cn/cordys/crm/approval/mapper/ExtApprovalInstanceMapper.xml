@@ -18,16 +18,16 @@
 
     <select id="getNextNodeRound" resultType="java.lang.Integer">
         SELECT IFNULL(GREATEST(
-            (SELECT MAX(node_round) FROM approval_task WHERE instance_id = #{instanceId} AND node_id = #{nodeId}),
-            (SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId})
+              COALESCE((SELECT MAX(node_round) FROM approval_task WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0),
+              COALESCE((SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0)
         ), 0) + 1
     </select>
 
     <select id="getNodeRound" resultType="java.lang.Integer">
         SELECT IFNULL(GREATEST(
-                              (SELECT MAX(node_round) FROM approval_task WHERE instance_id = #{instanceId} AND node_id = #{nodeId}),
-                              (SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId})
-                      ), 0)
+            COALESCE((SELECT MAX(node_round) FROM approval_task WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0),
+            COALESCE((SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0)
+        ), 0)
     </select>
 
     <update id="batchClearTask">
@@ -35,7 +35,11 @@
     </update>
 
     <delete id="removeApprovingTask">
-        delete from approval_task where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status == 'APPROVING'
+        delete from approval_task where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status = 'APPROVING'
+    </delete>
+
+    <delete id="revokeApprovingTask">
+        update approval_task set status = 'REVOKED' where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status = 'APPROVING'
     </delete>
 
     <update id="batchClearRecord">
