@@ -16,12 +16,26 @@ export const processStatusMap: Record<ProcessStatusEnum, StatusInfo> = {
     tagBgColor: 'var(--success-5)',
     tagColor: 'var(--success-green)',
   },
+  [ProcessStatusEnum.AUTO_APPROVED]: {
+    label: t('common.autoApproved'),
+    icon: 'iconicon_succeed_filled',
+    color: 'var(--success-green)',
+    tagBgColor: 'var(--success-5)',
+    tagColor: 'var(--success-green)',
+  },
   [ProcessStatusEnum.APPROVING]: {
     label: t('common.reviewing'),
     icon: 'iconicon_wait',
     color: 'var(--info-blue)',
     tagBgColor: 'var(--warning-5)',
     tagColor: 'var(--warning-yellow)',
+  },
+  [ProcessStatusEnum.AUTO_UNAPPROVED]: {
+    label: t('common.autoRejected'),
+    icon: 'iconicon_close_circle_filled',
+    color: 'var(--error-red)',
+    tagBgColor: 'var(--error-5)',
+    tagColor: 'var(--error-red)',
   },
   [ProcessStatusEnum.UNAPPROVED]: {
     label: t('common.rejected'),
@@ -63,6 +77,13 @@ export const approvalRecordStatusMap: Record<ProcessStatusEnum, StatusInfo> = {
     tagBgColor: 'var(--success-5)',
     tagColor: 'var(--success-green)',
   },
+  [ProcessStatusEnum.AUTO_APPROVED]: {
+    label: t('common.autoApproved'),
+    icon: 'iconicon_succeed_filled',
+    color: 'var(--success-green)',
+    tagBgColor: 'var(--success-5)',
+    tagColor: 'var(--success-green)',
+  },
   [ProcessStatusEnum.APPROVING]: {
     label: t('common.reviewing'),
     icon: 'iconicon_wait',
@@ -72,6 +93,13 @@ export const approvalRecordStatusMap: Record<ProcessStatusEnum, StatusInfo> = {
   },
   [ProcessStatusEnum.UNAPPROVED]: {
     label: t('common.rejected'),
+    icon: 'iconicon_close_circle_filled',
+    color: 'var(--error-red)',
+    tagBgColor: 'var(--error-5)',
+    tagColor: 'var(--error-red)',
+  },
+  [ProcessStatusEnum.AUTO_UNAPPROVED]: {
+    label: t('common.autoRejected'),
     icon: 'iconicon_close_circle_filled',
     color: 'var(--error-red)',
     tagBgColor: 'var(--error-5)',

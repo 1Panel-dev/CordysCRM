@@ -7,6 +7,8 @@ export enum ProcessStatusEnum {
   APPROVING = 'APPROVING',
   /** 已通过 */
   APPROVED = 'APPROVED',
+  AUTO_APPROVED = 'AUTO_APPROVED', // 自动通过
+  AUTO_UNAPPROVED = 'AUTO_UNAPPROVED', // 自动驳回
   /** 已驳回 */
   UNAPPROVED = 'UNAPPROVED',
   /** 已撤销 */
