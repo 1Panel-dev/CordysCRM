@@ -204,6 +204,20 @@
   },
   {
     "organizationId": "",
+    "module": "APPROVAL",
+    "moduleName": "",
+    "messageTaskDetailDTOList": [
+      {
+        "event": "APPROVAL_RESULT",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      }
+    ]
+  },
+  {
+    "organizationId": "",
     "module": "CONTRACT",
     "moduleName": "",
     "messageTaskDetailDTOList": [
