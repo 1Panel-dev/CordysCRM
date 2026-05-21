@@ -125,7 +125,7 @@ public class RoleLogService extends BaseModuleLogService {
         if (StringUtils.isNotBlank(permissionItem.getName())) {
             return Translator.get(permissionItem.getName());
         } else {
-            return roleService.translateDefaultPermissionName(permissionItem);
+            return roleService.translateDefaultPermissionName(permissionItem.getId());
         }
     }
 

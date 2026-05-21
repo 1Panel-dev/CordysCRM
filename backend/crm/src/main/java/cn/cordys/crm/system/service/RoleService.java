@@ -398,7 +398,7 @@ public class RoleService {
                         // 有 name 字段翻译 name 字段
                         p.setName(Translator.get(p.getName()));
                     } else {
-                        p.setName(translateDefaultPermissionName(p));
+                        p.setName(translateDefaultPermissionName(p.getId()));
                     }
                     if (permissionIds.contains(p.getId())) {
                         p.setEnable(true);
@@ -445,12 +445,12 @@ public class RoleService {
     /**
      * 翻译默认的权限名称
      *
-     * @param p
+     * @param permissionId
      *
      * @return
      */
-    public String translateDefaultPermissionName(Permission p) {
-        String[] idSplit = p.getId().split(":");
+    public String translateDefaultPermissionName(String permissionId) {
+        String[] idSplit = permissionId.split(":");
         String permissionKey = idSplit[idSplit.length - 1];
         String permissionName = "permission." + permissionKey.toLowerCase();
         return Translator.get(permissionName);
