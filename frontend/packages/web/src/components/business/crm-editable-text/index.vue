@@ -8,8 +8,8 @@
     :placeholder="props.placeholder ?? t('common.pleaseInput')"
     clearable
     @update-value="handleInput"
-    @keydown.enter="confirmEdit"
-    @blur="confirmEdit"
+    @keydown.enter.prevent="handleEnterConfirm"
+    @blur="handleBlurConfirm"
   />
   <div
     v-else
@@ -67,6 +67,7 @@
   const isEditing = ref(false);
   const inputRef = ref<InstanceType<typeof NInput> | null>(null);
   const inputValue = ref<string>('');
+  const skipBlurConfirm = ref(false);
   const hasEditPermission = computed(() => hasAnyPermission(props.permission));
 
   function enableEditMode() {
@@ -91,6 +92,20 @@
     emit('handleEdit', inputValue.value, () => {
       isEditing.value = false;
     });
+  }
+
+  function handleEnterConfirm() {
+    skipBlurConfirm.value = true;
+    confirmEdit();
+  }
+
+  function handleBlurConfirm() {
+    if (skipBlurConfirm.value) {
+      skipBlurConfirm.value = false;
+      return;
+    }
+
+    confirmEdit();
   }
 
   function handleInput(value: string) {
