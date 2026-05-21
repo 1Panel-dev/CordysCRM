@@ -37,7 +37,6 @@ export default {
   'process.process.basic.description': 'Description',
   'process.process.flow.approver': 'Approver',
   'process.process.flow.member': 'member',
-  'process.process.flow.ccType': 'CC type',
   'process.process.flow.addCcMember': 'Add CC member',
   'process.process.flow.ccMember': 'CC member',
   'process.process.flow.selectApprover': 'Select approver',
@@ -138,7 +137,6 @@ export default {
   'process.process.flow.exceptionHandling.toAdmin': 'Transfer to approval admin',
   'process.process.flow.selectAdmin': 'Select admin',
   'process.process.flow.sameSubmitter.selfApprove': 'Submitter approves for themselves',
-  'process.process.flow.sameSubmitter.skip': 'Auto skip',
   'process.process.flow.sameSubmitter.transferSupervisor': 'Transfer to direct supervisor',
   'process.process.flow.ccUsers': 'CC users',
 };

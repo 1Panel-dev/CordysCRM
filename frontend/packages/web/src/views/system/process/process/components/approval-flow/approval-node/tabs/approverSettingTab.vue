@@ -226,7 +226,7 @@
                     {{ t('process.process.flow.sameSubmitter.selfApprove') }}
                   </n-radio>
                   <n-radio :value="SameSubmitterActionEnum.SKIP">
-                    {{ t('process.process.flow.sameSubmitter.skip') }}
+                    {{ t('process.process.flow.exceptionHandling.autoPass') }}
                   </n-radio>
                   <n-radio :value="SameSubmitterActionEnum.ASSIGN_SUPERIOR">
                     {{ t('process.process.flow.sameSubmitter.transferSupervisor') }}
@@ -238,7 +238,7 @@
         </div>
 
         <!-- 抄送人 -->
-        <n-form-item path="ccType" :label="t('process.process.flow.ccType')">
+        <n-form-item path="ccType" :label="t('process.process.flow.ccMember')">
           <n-select
             v-model:value="nodeConfig.ccType"
             :disabled="props.readonly"
@@ -259,12 +259,10 @@
             :key="nodeConfig.ccType ?? 'none'"
             v-model:value="nodeConfig.ccList"
             v-model:selected-list="nodeConfig.ccSelectedList"
-            :label="nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.ccUsers')"
-            :add-text="
-              nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.addRole') : t('process.process.flow.addCcMember')
-            "
+            :label="nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('org.addMember')"
+            :add-text="nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.addRole') : t('role.addMember')"
             :limit-label="
-              nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.ccMember')
+              nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.member')
             "
             :api-type-key="
               nodeConfig.approverType === ApproverTypeEnum.ROLE
@@ -273,6 +271,7 @@
             "
             :member-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? roleMemberTypes : userMemberTypes"
             :disabled-node-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? undefined : disabledMemberNodeTypes"
+            required
             :max-count="ccMaxCount"
             :disabled="props.readonly"
             @update:value="clearCurrentNodeInvalid"
@@ -530,6 +529,10 @@
     unlockInvalidClearState();
   }
 
+  function hasSelectedItems(value: unknown[]) {
+    return Array.isArray(value) && value.some((item) => item !== null && item !== undefined && String(item).trim());
+  }
+
   const rules: FormRules = {
     name: [
       {
@@ -557,7 +560,7 @@
             return true;
           }
 
-          if (Array.isArray(value) && value.length > 0 && value.length <= approverMaxCount) {
+          if (hasSelectedItems(value) && value.length <= approverMaxCount) {
             return true;
           }
 
@@ -581,17 +584,14 @@
             return true;
           }
 
-          if (!Array.isArray(value) || value.length <= ccMaxCount) {
+          if (hasSelectedItems(value) && value.length <= ccMaxCount) {
             return true;
           }
 
-          return new Error(
-            t('process.process.flow.maxAddMemberTip', {
-              count: ccMaxCount,
-              target:
-                nodeConfig.value.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.ccMember'),
-            })
-          );
+          const target =
+            nodeConfig.value.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.ccMember');
+
+          return new Error(t('process.process.flow.addMemberLimitTip', { count: ccMaxCount, target }));
         },
       },
     ],
