@@ -32,7 +32,6 @@ export default {
   'process.process.basic.description': '描述信息',
   'process.process.flow.approver': '审批人',
   'process.process.flow.member': '成员',
-  'process.process.flow.ccType': '抄送类型',
   'process.process.flow.addCcMember': '添加抄送人',
   'process.process.flow.ccMember': '抄送人',
   'process.process.flow.selectApprover': '选择审批人',
@@ -129,7 +128,6 @@ export default {
   'process.process.flow.exceptionHandling.toAdmin': '转交给审批管理员',
   'process.process.flow.selectAdmin': '选择管理员',
   'process.process.flow.sameSubmitter.selfApprove': '由提交人对自己审批',
-  'process.process.flow.sameSubmitter.skip': '自动跳过',
   'process.process.flow.sameSubmitter.transferSupervisor': '转交给直属上级审批',
   'process.process.flow.ccUsers': '抄送人',
 };

@@ -94,6 +94,10 @@ function isMemberOrRole(type?: ApproverTypeEnum | null) {
   return !!type && [ApproverTypeEnum.SPECIFIED_MEMBER, ApproverTypeEnum.ROLE].includes(type);
 }
 
+function hasSelectedItems(list?: unknown[]) {
+  return Array.isArray(list) && list.some((item) => !isEmptyValue(item));
+}
+
 // 审批节点校验
 function validateApprovalActionNode(node: ApprovalActionNode, result: FlowValidationResult) {
   const isManualApproval = node.approvalType === ApprovalTypeEnum.MANUAL;
@@ -103,9 +107,9 @@ function validateApprovalActionNode(node: ApprovalActionNode, result: FlowValida
     isEmptyValue(node.name) ||
     (isManualApproval &&
       (isEmptyValue(node.approverType) ||
-        (isMemberOrRole(node.approverType) && approverList.length === 0) ||
+        (isMemberOrRole(node.approverType) && !hasSelectedItems(approverList)) ||
         (node.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_SPECIFIC && isEmptyValue(node.fallbackApprover)) ||
-        (isMemberOrRole(node.ccType) && ccList.length === 0)));
+        (isMemberOrRole(node.ccType) && !hasSelectedItems(ccList))));
 
   if (isInvalid) {
     result.invalidNodeIds.push(node.id);
