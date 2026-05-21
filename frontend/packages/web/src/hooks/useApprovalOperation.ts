@@ -3,7 +3,7 @@ import { type Ref, ref } from 'vue';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { ApprovalPermissionsDetail, StatusPermissions } from '@lib/shared/models/system/process';
+import { ApprovalProcessDetail, StatusPermissions } from '@lib/shared/models/system/process';
 
 import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 
@@ -56,7 +56,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   const { t } = useI18n();
   const userStore = useUserStore();
 
-  const approvalPermissionsDetail = ref<ApprovalPermissionsDetail | null>(null);
+  const approvalPermissionsDetail = ref<ApprovalProcessDetail | null>(null);
   const statusPermissionMap = ref<Map<ProcessStatusEnum, Set<string>>>(new Map());
 
   const enableApproval = ref(false);
@@ -86,6 +86,20 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return options.shouldUseRolePermissionOnly?.(row) ?? false;
   }
 
+  function canRevokeWhileApproving(row: Row) {
+    if (!isApplicant(row)) {
+      return false;
+    }
+
+    // 开启配置：审批中始终允许提交人撤销
+    if (approvalPermissionsDetail.value?.submitterCanRevoke) {
+      return true;
+    }
+
+    // 关闭配置：只允许第一个审批节点通过前撤销
+    return !row.firstApproved;
+  }
+
   function createApprovalActions(row: Row): ActionsItem[] {
     const approvalStatus = getApprovalStatus(row);
 
@@ -112,7 +126,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
           : [];
       case ProcessStatusEnum.APPROVING:
         return [
-          ...(isApplicant(row)
+          ...(canRevokeWhileApproving(row)
             ? [
                 {
                   label: t('common.revoke'),
