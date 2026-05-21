@@ -28,9 +28,22 @@ interface UseFormReviewActionOptions {
   detail?: Ref<Record<string, any> | undefined>;
 }
 
+interface ApprovalReviewConfig {
+  enable: boolean;
+  createExecute: boolean;
+  updateExecute: boolean;
+}
+
+const approvalReviewConfigCache = new Map<FormDesignKeyEnum, ApprovalReviewConfig>();
+const approvalReviewConfigPendingMap = new Map<FormDesignKeyEnum, Promise<ApprovalReviewConfig>>();
+
 export default function useFormReviewAction(options: UseFormReviewActionOptions) {
   const { t } = useI18n();
   const userStore = useUserStore();
+  const hiddenAction: FormReviewAction = {
+    visible: false,
+    text: '',
+  };
   const enabledApproval = ref(false);
   const createExecute = ref(false);
   const updateExecute = ref(false);
@@ -41,65 +54,84 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
     FormDesignKeyEnum.INVOICE,
   ];
 
+  function canShowByExecuteTiming(params: GetFormReviewActionParams) {
+    if (!params.enabledApproval) {
+      return false;
+    }
+
+    return params.isEdit ? params.updateExecute : params.createExecute;
+  }
+
+  function canShowByIdentity(params: GetFormReviewActionParams) {
+    return !params.isEdit || params.canReview;
+  }
+
+  function getReviewActionTextByStatus(params: GetFormReviewActionParams) {
+    const approvalStatus = params.approvalStatus ?? ProcessStatusEnum.NONE;
+
+    if (!params.isEdit || [ProcessStatusEnum.NONE, ProcessStatusEnum.PENDING].includes(approvalStatus)) {
+      return t('common.review');
+    }
+
+    if ([ProcessStatusEnum.REVOKED, ProcessStatusEnum.UNAPPROVED].includes(approvalStatus)) {
+      return t('common.resubmit');
+    }
+
+    return '';
+  }
+
   function getFormReviewAction(params: GetFormReviewActionParams): FormReviewAction {
-    const {
-      isEdit,
-      approvalStatus,
-      canReview,
-      createExecute: canCreateReview,
-      updateExecute: canUpdateReview,
-    } = params;
-
-    if (!enabledApproval.value) {
-      return {
-        visible: false,
-        text: '',
-      };
+    if (!canShowByExecuteTiming(params)) {
+      return hiddenAction;
     }
 
-    if (!isEdit && !canCreateReview) {
-      return {
-        visible: false,
-        text: '',
-      };
+    if (!canShowByIdentity(params)) {
+      return hiddenAction;
     }
 
-    if (isEdit && !canUpdateReview) {
-      return {
-        visible: false,
-        text: '',
-      };
-    }
+    const text = getReviewActionTextByStatus(params);
 
-    if (isEdit && !canReview) {
-      return {
-        visible: false,
-        text: '',
-      };
-    }
-
-    if (
-      !isEdit ||
-      [ProcessStatusEnum.NONE, ProcessStatusEnum.PENDING].includes(approvalStatus || ProcessStatusEnum.NONE) ||
-      !approvalStatus
-    ) {
-      return {
-        visible: true,
-        text: t('common.review'),
-      };
-    }
-
-    if ([ProcessStatusEnum.REVOKED, ProcessStatusEnum.UNAPPROVED].includes(approvalStatus || ProcessStatusEnum.NONE)) {
-      return {
-        visible: true,
-        text: t('common.resubmit'),
-      };
+    if (!text) {
+      return hiddenAction;
     }
 
     return {
-      visible: false,
-      text: '',
+      visible: true,
+      text,
     };
+  }
+
+  async function loadApprovalReviewConfig(formKey: FormDesignKeyEnum) {
+    const cachedConfig = approvalReviewConfigCache.get(formKey);
+
+    if (cachedConfig) {
+      return cachedConfig;
+    }
+
+    const pendingConfig = approvalReviewConfigPendingMap.get(formKey);
+
+    if (pendingConfig) {
+      return pendingConfig;
+    }
+
+    const request = getApprovalConfigDetail(formKey)
+      .then((result) => {
+        const config: ApprovalReviewConfig = {
+          enable: Boolean(result?.enable),
+          createExecute: Boolean(result?.createExecute),
+          updateExecute: Boolean(result?.updateExecute),
+        };
+
+        approvalReviewConfigCache.set(formKey, config);
+        return config;
+      })
+      .finally(() => {
+        approvalReviewConfigPendingMap.delete(formKey);
+      });
+
+    approvalReviewConfigPendingMap.set(formKey, request);
+
+    return request;
   }
 
   const isApprovalForm = computed(() => approvalFormKeys.includes(options.formKey.value));
@@ -123,11 +155,13 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
   async function initApprovalReviewConfig() {
     if (!isApprovalForm.value) {
       enabledApproval.value = false;
+      createExecute.value = false;
+      updateExecute.value = false;
       return;
     }
 
     try {
-      const result = await getApprovalConfigDetail(options.formKey.value);
+      const result = await loadApprovalReviewConfig(options.formKey.value);
       enabledApproval.value = Boolean(result?.enable);
       createExecute.value = Boolean(result?.createExecute);
       updateExecute.value = Boolean(result?.updateExecute);
