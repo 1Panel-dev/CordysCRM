@@ -383,7 +383,7 @@ public class ApprovalActionService {
 		// 节点状态流转类型的待办
 		List<ApprovalTask> approvalTasks = new ArrayList<>();
 		boolean multiNode = approvalFlowService.isCurrentNodeMultiApprover(currentTask.getNodeId(), instance.getSubmitterId(), currentOrgId);
-		if (!multiNode || isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())) {
+		if (isCurrentSingleNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId()) || isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())) {
 			// 流转之前需要发送当前节点的抄送
 			handlePreCcTasks(currentTask.getNodeId(), instance, currentUserId, currentOrgId);
 			// 单人审批或者多人审批但节点流转通过
@@ -681,6 +681,15 @@ public class ApprovalActionService {
 			}
 		}
 		return null;
+	}
+
+	private boolean isCurrentSingleNodeApproved(String currentNodeId, String instanceId) {
+		LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(ApprovalTask::getNodeId, currentNodeId)
+				.eq(ApprovalTask::getInstanceId, instanceId)
+				.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING);
+		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
+		return approvalTasks.isEmpty();
 	}
 
 	/**
