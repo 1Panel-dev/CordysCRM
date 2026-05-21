@@ -577,9 +577,12 @@
         positiveText: t('crm.approval.confirmCancelApprovalApply'),
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
-          await revokeByResourceId(props.sourceId);
-          initApprovalDetail();
-          emit('refresh');
+          await revokeByResourceId(props.sourceId, {
+            onSuccess: () => {
+              initApprovalDetail();
+              emit('refresh');
+            },
+          });
         },
       });
     } else {
