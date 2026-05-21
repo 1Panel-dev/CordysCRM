@@ -29,10 +29,10 @@
       </n-timeline-item>
       <n-timeline-item v-for="(node, index) in props.nodes">
         <template #icon>
-          <div v-if="node.endNode" class="timeline-icon-wrapper bg-[var(--text-n6)]">
+          <div v-if="node.endNode" class="timeline-icon-wrapper" :class="getIconClass(node)">
             <CrmIcon type="iconicon_end" :size="14" color="var(--text-n10)" />
           </div>
-          <div v-else class="timeline-icon-wrapper bg-[var(--info-blue)]">
+          <div v-else class="timeline-icon-wrapper" :class="getIconClass(node)">
             <CrmIcon type="iconicon_contract" :size="14" color="var(--text-n10)" />
           </div>
         </template>
@@ -40,7 +40,7 @@
           <div class="mb-[8px] flex w-full items-center justify-between gap-[8px]">
             <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
               <div class="one-line-text font-semibold !leading-[22px]">{{ node.nodeName }}</div>
-              <CrmTag v-if="!node.endNode && node.taskNodes.length > 1" type="info" theme="outline">
+              <CrmTag v-if="!node.endNode && node.taskNodes?.length > 1" type="info" theme="outline">
                 {{ MultiApproverModeMap[node.multiApproverMode] }}
               </CrmTag>
               <CrmApprovalStatus
@@ -85,7 +85,10 @@
                 <div>自动同意</div>
               </n-popover> -->
             </div>
-            <div class="whitespace-nowrap font-normal text-[var(--text-n4)]">
+            <div
+              v-if="node.approvalStatus !== ProcessStatusEnum.PENDING"
+              class="whitespace-nowrap font-normal text-[var(--text-n4)]"
+            >
               {{ dayjs(node.approvalTime).format('YYYY-MM-DD HH:mm') }}
             </div>
           </div>
@@ -205,6 +208,31 @@
     [MultiApproverModeEnum.ANY]: t('process.process.flow.multiApprovalType.majority'),
     [MultiApproverModeEnum.SEQUENTIAL]: t('process.process.flow.multiApprovalType.sequential'),
   };
+
+  function getIconClass(node: ApprovalNode) {
+    const { approvalStatus, endNode, nodeId } = node;
+    if (endNode) {
+      if (props.currentApprovalNode?.nodeId === nodeId) {
+        return 'bg-[var(--info-blue)]';
+      }
+      return 'bg-[var(--text-n4)]';
+    }
+    if (!approvalStatus && props.currentApprovalNode?.nodeId === nodeId) {
+      return 'bg-[var(--info-blue)]';
+    }
+    switch (approvalStatus) {
+      case ProcessStatusEnum.APPROVED:
+      case ProcessStatusEnum.AUTO_APPROVED:
+        return 'bg-[var(--success-green)]';
+      case ProcessStatusEnum.UNAPPROVED:
+      case ProcessStatusEnum.AUTO_UNAPPROVED:
+        return 'bg-[var(--error-red)]';
+      case ProcessStatusEnum.APPROVING:
+        return 'bg-[var(--info-blue)]';
+      default:
+        return 'bg-[var(--text-n4)]';
+    }
+  }
 </script>
 
 <style lang="less" scoped>

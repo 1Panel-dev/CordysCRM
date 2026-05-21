@@ -135,8 +135,10 @@ export const allBusinessTitleFormConfigList: {
 export const deleteInvoiceContentMap: Record<ProcessStatusEnum, string> = {
   [ProcessStatusEnum.APPROVING]: t('contract.deleteInvoiceUnderReviewContent'),
   [ProcessStatusEnum.APPROVED]: t('contract.deleteInvoiceApprovedContent'),
+  [ProcessStatusEnum.AUTO_APPROVED]: t('contract.deleteInvoiceApprovedContent'),
   [ProcessStatusEnum.REVOKED]: t('contract.deleteInvoiceRevokedContent'),
   [ProcessStatusEnum.UNAPPROVED]: t('contract.deleteInvoiceRejectedContent'),
+  [ProcessStatusEnum.AUTO_UNAPPROVED]: t('contract.deleteInvoiceRejectedContent'),
   [ProcessStatusEnum.PENDING]: t('contract.deleteInvoiceNoneContent'),
   [ProcessStatusEnum.NONE]: t('contract.deleteInvoiceNoneContent'),
 };
