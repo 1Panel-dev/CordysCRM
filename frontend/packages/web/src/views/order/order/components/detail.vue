@@ -51,6 +51,7 @@
             :form-key="FormDesignKeyEnum.ORDER"
             :source-id="props.sourceId"
             :approval-status="detailInfo?.approvalStatus"
+            @refresh="emit('refresh')"
           >
             <template #left>
               <CrmFormDescription

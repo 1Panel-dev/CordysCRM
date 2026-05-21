@@ -29,21 +29,25 @@
       </n-timeline-item>
       <n-timeline-item v-for="(node, index) in props.nodes">
         <template #icon>
-          <div class="timeline-icon-wrapper bg-[var(--info-blue)]">
+          <div v-if="node.endNode" class="timeline-icon-wrapper bg-[var(--text-n6)]">
+            <CrmIcon type="iconicon_end" :size="14" color="var(--text-n10)" />
+          </div>
+          <div v-else class="timeline-icon-wrapper bg-[var(--info-blue)]">
             <CrmIcon type="iconicon_contract" :size="14" color="var(--text-n10)" />
           </div>
         </template>
         <template #header>
           <div class="mb-[8px] flex w-full items-center justify-between gap-[8px]">
             <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
-              <div class="one-line-text font-semibold leading-[22px]">{{ node.nodeName }}</div>
+              <div class="one-line-text font-semibold !leading-[22px]">{{ node.nodeName }}</div>
               <CrmTag v-if="node.addSignNode" type="info" theme="outline">
                 {{ t('common.COUNTERSIGNATURE') }}
               </CrmTag>
-              <CrmTag v-else type="info" theme="outline">
+              <CrmTag v-else-if="!node.endNode" type="info" theme="outline">
                 {{ MultiApproverModeMap[node.multiApproverMode] }}
               </CrmTag>
               <CrmApprovalStatus
+                v-if="!node.endNode"
                 :status="
                   index > props.currentApprovalNodeIndex && props.currentApprovalNodeIndex !== -1
                     ? ProcessStatusEnum.PENDING
@@ -79,11 +83,11 @@
               </n-popover> -->
               <n-popover v-if="node.addSignNode" trigger="hover">
                 <template #trigger>
-                  <CrmIcon type="iconicon_info_circle_filled" color="var(--success-green)" :size="16" />
+                  <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                 </template>
                 <div class="flex flex-col items-center gap-[8px]">
                   <div class="flex items-center gap-[8px]">
-                    <CrmIcon type="iconicon_info_circle_filled" color="var(--success-green)" :size="16" />
+                    <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                     <div>{{ t('crm.approval.addSign') }}</div>
                   </div>
                   <div class="text-[var(--text-n4)]">{{ node.comment }}</div>
@@ -95,7 +99,7 @@
             </div>
           </div>
         </template>
-        <div class="mb-[16px] mt-[2px] p-[8px] pl-0">
+        <div class="mb-[16px] mt-[2px] py-[8px] pl-0">
           <n-collapse v-if="node.taskNodes?.length">
             <template #arrow><div></div></template>
             <n-collapse-item v-for="task in node.taskNodes" :name="task.taskId">
@@ -117,7 +121,6 @@
                   <CrmTag v-if="task.sign" type="info" theme="outline">
                     {{ t('common.COUNTERSIGNATURE') }}
                   </CrmTag>
-                  <CrmApprovalStatus :status="task.approvalStatus" isTag scene="approvalRecord" />
                 </div>
               </template>
               <template #header-extra>

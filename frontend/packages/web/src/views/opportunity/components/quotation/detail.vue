@@ -36,6 +36,7 @@
       :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
       :source-id="props.sourceId"
       :approval-status="detailInfo?.approvalStatus"
+      @refresh="emit('refresh')"
     >
       <template #left>
         <CrmFormDescription
