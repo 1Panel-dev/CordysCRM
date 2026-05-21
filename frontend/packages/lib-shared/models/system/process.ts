@@ -248,6 +248,7 @@ export interface ApprovalBackParams extends ApprovalOperationParams {
 
 export interface ApprovalAddSignParams extends ApprovalOperationParams {
   type: string;
+  signApprover: string;
 }
 
 export interface BatchRejectApprovalParams {
@@ -282,6 +283,7 @@ export interface ApprovalNode {
   recordId: string;
   nodeId: string;
   nodeName: string;
+  endNode: boolean;
   approverId: string;
   approver: string;
   approvalStatus: ProcessStatusEnum;

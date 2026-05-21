@@ -64,7 +64,7 @@
               <template #icon>
                 <CrmIcon type="iconicon_rollfront" :size="16" />
               </template>
-              {{ t('crm.approval.cancelApprovalApply') }}
+              {{ t('common.revoke') }}
             </n-button>
             <n-button
               v-if="canCancelApproval"
@@ -205,6 +205,7 @@
       detail?: Record<string, any>,
       config?: FormConfig
     ): void;
+    (e: 'refresh'): void;
   }>();
 
   const { t } = useI18n();
@@ -239,11 +240,11 @@
     if (!currentApprovalNode.value) {
       return undefined;
     }
-    const prevMineApprovalIndex = currentApprovalNode.value.taskNodes.findIndex(
+    const prevMineApprovalIndex = currentApprovalNode.value.taskNodes?.findIndex(
       (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
     );
     if (prevMineApprovalIndex !== -1) {
-      return currentApprovalNode.value?.taskNodes[prevMineApprovalIndex];
+      return currentApprovalNode.value?.taskNodes?.[prevMineApprovalIndex];
     }
     const prevApprovalNode = approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1];
     if (prevApprovalNode) {
@@ -256,7 +257,7 @@
     if (!currentApprovalNode.value) {
       return undefined;
     }
-    return currentApprovalNode.value.taskNodes.find(
+    return currentApprovalNode.value.taskNodes?.find(
       (e) => e.approvalStatus === ProcessStatusEnum.APPROVING && e.approverId === userStore.userInfo.id
     );
   });
@@ -265,17 +266,25 @@
     if (currentApprovalNode.value?.multiApproverMode === MultiApproverModeEnum.SEQUENTIAL) {
       // 顺序审批，只有当前审批人可以操作
       return (
-        currentApprovalNode.value?.taskNodes.find((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
+        currentApprovalNode.value?.taskNodes?.find((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
           ?.approverId === userStore.userInfo.id
       );
     }
-    return currentApprovalNode.value?.taskNodes.some(
+    return currentApprovalNode.value?.taskNodes?.some(
       (taskNode) =>
         taskNode.approvalStatus === ProcessStatusEnum.APPROVING && taskNode.approverId === userStore.userInfo.id
     ); // 会签/或签/单人审批
   });
   // 是否可以撤销审批申请
   const canCancelApply = computed(() => {
+    // 未配置撤销申请
+    if (!approvalConfig.value?.submitterCanRevoke) {
+      return false;
+    }
+    // 流程结束不允许撤销
+    if (currentApprovalNode.value?.endNode) {
+      return false;
+    }
     // 只有提交人可以撤销审批申请，已撤销状态不显示撤销按钮
     if (
       approvalInfo.value?.submitterId !== userStore.userInfo.id ||
@@ -306,23 +315,27 @@
     if (!approvalConfig.value?.allowWithdraw) {
       return false;
     }
+    // 流程结束不允许撤销
+    if (currentApprovalNode.value?.endNode) {
+      return false;
+    }
     // 当前节点包含自己审批的任务节点，则说明是多人审批节点且节点未结束，判断当前节点情况即可
     if (
       currentApprovalNode.value &&
-      currentApprovalNode.value.taskNodes.findIndex(
+      currentApprovalNode.value.taskNodes?.findIndex(
         (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
       ) !== -1
     ) {
       // 当前是顺序审批节点，上一个审批节点是自己，并且下一个节点未审批，允许撤销自己的审批
       if (currentApprovalNode.value?.multiApproverMode === MultiApproverModeEnum.SEQUENTIAL) {
-        const currentTaskNodeIndex = currentApprovalNode.value?.taskNodes.findIndex(
+        const currentTaskNodeIndex = currentApprovalNode.value?.taskNodes?.findIndex(
           (e) => e.approvalStatus === ProcessStatusEnum.APPROVING
         );
         return currentApprovalNode.value?.taskNodes[currentTaskNodeIndex - 1]?.approverId === userStore.userInfo.id;
       }
       // 当前是会签节点，且自己已经审批时允许撤回
       if (
-        currentApprovalNode.value.taskNodes.findIndex(
+        currentApprovalNode.value.taskNodes?.findIndex(
           (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
         ) !== -1
       ) {
@@ -335,7 +348,7 @@
       return (
         approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].taskNodes[0].approverId ===
           userStore.userInfo.id &&
-        currentApprovalNode.value?.taskNodes.every((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
+        currentApprovalNode.value?.taskNodes?.every((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
       );
     }
   });
@@ -377,6 +390,7 @@
       });
       message.success(t('common.approved'));
       initApprovalDetail();
+      emit('refresh');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -395,6 +409,7 @@
       content: t('crm.approval.rejectTip'),
       type: 'error',
       positiveText: t('crm.approval.confirmReject'),
+      negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         if (!currentApprovalNode.value || !currentTaskNode.value) {
           return;
@@ -410,6 +425,8 @@
             module: moduleKeyMap[props.formKey]!,
           });
           message.success(t('common.rejected'));
+          initApprovalDetail();
+          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -442,6 +459,7 @@
             attachmentIds: addSignForm.value.fileList.map((e) => e.id),
             type: addSignForm.value.type,
             module: moduleKeyMap[props.formKey]!,
+            signApprover: addSignForm.value.reviewer || '',
           });
           addSignModalVisible.value = false;
           message.success(t('crm.approval.addSignSuccess'));
@@ -452,6 +470,7 @@
             fileList: [],
           };
           initApprovalDetail();
+          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -502,6 +521,7 @@
             node: undefined,
             reason: '',
           };
+          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -550,6 +570,7 @@
         onPositiveClick: async () => {
           await revokeByResourceId(props.sourceId);
           initApprovalDetail();
+          emit('refresh');
         },
       });
     } else {
@@ -565,6 +586,7 @@
           });
           message.success(t('crm.approval.cancelApprovalSuccess'));
           initApprovalDetail();
+          emit('refresh');
         },
       });
     }
