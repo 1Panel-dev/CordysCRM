@@ -4,12 +4,10 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
 import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.domain.*;
-import cn.cordys.crm.approval.dto.ApprovalCcNode;
-import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
-import cn.cordys.crm.approval.dto.ApprovalRecordNode;
-import cn.cordys.crm.approval.dto.ApprovalTaskNode;
+import cn.cordys.crm.approval.dto.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.system.domain.Attachment;
 import cn.cordys.crm.system.domain.User;
@@ -60,6 +58,8 @@ public class ApprovalInstanceService {
 	@Lazy
 	private ApprovalFlowService approvalFlowService;
 
+	public static final String SIGN_SPILT = "-SN";
+
 	/**
 	 * 获取资源最新审批实例详情
 	 * @param resourceId 资源ID
@@ -83,6 +83,34 @@ public class ApprovalInstanceService {
 		List<ApprovalReturnBackRecord> backRecords = getBackRecords(latestInstance);
 		Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(records, signTasks, backRecords);
 		instanceDetail.setNodes(buildApprovalRecordNodeList(latestInstance, tasks, records, signTasks, backRecords, elementAttachmentsMap, simpleUserMap, currentOrgId));
+		instanceDetail.setCurrentNodeId(latestInstance.getCurrentNodeId());
+		return setCurrentNodeFieldPermissions(instanceDetail);
+	}
+
+	/**
+	 * 设置当前节点审批表单权限
+	 * @param instanceDetail 实例详情
+	 * @return instanceDetail 实例详情
+	 */
+	private ApprovalInstanceDetail setCurrentNodeFieldPermissions(ApprovalInstanceDetail instanceDetail) {
+		String currentNodeId = instanceDetail.getCurrentNodeId();
+		if (instanceDetail.getCurrentNodeId().contains(SIGN_SPILT)) {
+			currentNodeId = instanceDetail.getCurrentNodeId().split(SIGN_SPILT)[0];
+		}
+		ApprovalNodeApprover currentNode = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+		if (instanceDetail.getCurrentNodeId().contains(SIGN_SPILT)) {
+			// 加签字段
+			if (StringUtils.isNotBlank(currentNode.getFieldPermissions())) {
+				List<FieldPermissionDTO> fieldPermissions = JSON.parseArray(currentNode.getFieldPermissions(), FieldPermissionDTO.class);
+				List<FieldPermissionDTO> viewPermissionsOfSign = fieldPermissions.stream().map(permission -> {
+					permission.setPermissionType(FieldPermissionTypeEnum.VIEW.name());
+					return permission;
+				}).toList();
+				instanceDetail.setCurrentNodeFieldPermissions(JSON.toJSONString(viewPermissionsOfSign));
+			}
+		} else {
+			instanceDetail.setCurrentNodeFieldPermissions(currentNode.getFieldPermissions());
+		}
 		return instanceDetail;
 	}
 
@@ -123,6 +151,11 @@ public class ApprovalInstanceService {
 		return approvalRecordMapper.selectListByLambda(wrapper);
 	}
 
+	/**
+	 * 获取回退记录集合
+	 * @param latestInstance 审批实例
+	 * @return 回退记录集合
+	 */
 	private List<ApprovalReturnBackRecord> getBackRecords(ApprovalInstance latestInstance) {
 		LambdaQueryWrapper<ApprovalReturnBackRecord> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(ApprovalReturnBackRecord::getInstanceId, latestInstance.getId());
@@ -190,7 +223,12 @@ public class ApprovalInstanceService {
 					node.setApprovalStatus(approvalStatusOfMultiNode == null ? null : approvalStatusOfMultiNode.name());
 				}
 			}
-			ApprovalNode approvalNode = approvalNodeMap.get(node.getNodeId());
+			ApprovalNode approvalNode;
+			if (node.getNodeId().contains(SIGN_SPILT)) {
+				approvalNode = approvalNodeMap.get(node.getNodeId().split(SIGN_SPILT)[0]);
+			} else {
+				approvalNode = approvalNodeMap.get(node.getNodeId());
+			}
 			if (approvalNode != null) {
 				node.setNodeName(approvalNode.getName());
 				node.setSort(approvalNode.getSort());
@@ -263,14 +301,18 @@ public class ApprovalInstanceService {
 			if (nodeMultiApproverList.size() == 1) {
 				// 单人执行
 				List<ApprovalTask> flatSignTasks = flatSignTask(nlTasks.getFirst(), addSignTaskMapOfRoot, snTasks.stream().collect(Collectors.toMap(ApprovalTask::getId, t -> t)));
-				flatSignTasks.forEach(signTask -> {
+				for (int i = 0; i < flatSignTasks.size(); i++) {
+					ApprovalTask signTask = flatSignTasks.get(i);
 					ApprovalTaskNode taskNode = buildTaskNode(signTask, taskRecordMap, addSignTaskMapOfTask, attachmentsMap, simpleUserMap);
-					ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).approvalStatus(taskNode.getApprovalStatus()).taskNodes(List.of(taskNode)).build();
+					ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(taskNode.isSign() ? hisNode + SIGN_SPILT + i : hisNode).nodeRound(maxRound).approvalStatus(taskNode.getApprovalStatus()).taskNodes(List.of(taskNode)).build();
 					if (ApprovalTaskType.valueOf(signTask.getType()) == ApprovalTaskType.NL) {
 						recordNode.setCcNodes(ccNodes);
 					}
+					if (ApprovalStatus.valueOf(recordNode.getApprovalStatus()) == ApprovalStatus.APPROVING) {
+						instance.setCurrentNodeId(recordNode.getNodeId());
+					}
 					nodes.addLast(setBackInfo(recordNode, backRecordMap, attachmentsMap));
-				});
+				}
 			} else {
 				List<ApprovalTask> allTask = new ArrayList<>();
 				// 多人执行, 追加在同一节点上
@@ -302,6 +344,13 @@ public class ApprovalInstanceService {
 		return nodes;
 	}
 
+	/**
+	 * 设置回退节点信息
+	 * @param recordNode 记录节点
+	 * @param backRecordMap 回退信息集合
+	 * @param attachmentsMap 附件信息集合
+	 * @return 记录节点
+	 */
 	private ApprovalRecordNode setBackInfo(ApprovalRecordNode recordNode, Map<String, ApprovalReturnBackRecord> backRecordMap, Map<String, List<Attachment>> attachmentsMap) {
 		ApprovalReturnBackRecord backRecord = backRecordMap.get(recordNode.getNodeId());
 		if (backRecord != null) {

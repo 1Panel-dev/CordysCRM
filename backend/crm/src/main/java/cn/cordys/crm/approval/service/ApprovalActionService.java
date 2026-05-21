@@ -254,6 +254,7 @@ public class ApprovalActionService {
 		ApprovalTask approvalTask = new ApprovalTask();
 		BeanUtils.copyBean(approvalTask, request);
 		approvalTask.setId(IDGenerator.nextStr());
+		approvalTask.setNodeId(request.getNodeId());
 		approvalTask.setApproverId(request.getSignApprover());
 		approvalTask.setNodeRound(round);
 		approvalTask.setCreateTime(System.currentTimeMillis());
@@ -794,6 +795,12 @@ public class ApprovalActionService {
 		}
 	}
 
+	/**
+	 * 退回执行
+	 * @param instance 审批实例
+	 * @param request 请求参数
+	 * @param orgId 组织ID
+	 */
 	private void backProcess(ApprovalInstance instance, ApprovalReturnBackRequest request, String orgId) {
 		if (ApprovalStatus.valueOf(instance.getApprovalStatus()) != ApprovalStatus.APPROVING) {
 			// 非审批中, 无法进行节点退回
@@ -827,6 +834,11 @@ public class ApprovalActionService {
 		}
 	}
 
+	/**
+	 * 当前节点撤回
+	 * @param instanceId 审批实例ID
+	 * @param nodeId 节点ID
+	 */
 	public void revokeCurrentNode(String instanceId, String nodeId) {
 		Integer maxRound = extApprovalInstanceMapper.getNodeRound(instanceId, nodeId);
 		if (maxRound > 0) {
