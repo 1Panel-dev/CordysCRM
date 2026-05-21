@@ -40,10 +40,7 @@
           <div class="mb-[8px] flex w-full items-center justify-between gap-[8px]">
             <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
               <div class="one-line-text font-semibold !leading-[22px]">{{ node.nodeName }}</div>
-              <CrmTag v-if="node.addSignNode" type="info" theme="outline">
-                {{ t('common.COUNTERSIGNATURE') }}
-              </CrmTag>
-              <CrmTag v-else-if="!node.endNode" type="info" theme="outline">
+              <CrmTag v-if="!node.endNode && node.taskNodes.length > 1" type="info" theme="outline">
                 {{ MultiApproverModeMap[node.multiApproverMode] }}
               </CrmTag>
               <CrmApprovalStatus
@@ -57,7 +54,7 @@
                 scene="approvalRecord"
                 class="font-normal"
               />
-              <n-popover v-if="node.returnNode" trigger="hover">
+              <n-popover v-if="node.backNode" trigger="hover">
                 <template #trigger>
                   <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                 </template>
@@ -66,7 +63,13 @@
                     <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                     <div>{{ t('crm.approval.fallbackReason') }}</div>
                   </div>
-                  <div class="text-[var(--text-n4)]">{{ node.comment }}</div>
+                  <div class="text-[var(--text-n4)]">{{ node.backReason }}</div>
+                  <CrmFileList
+                    v-if="node.backAttachments?.length > 0"
+                    :files="node.backAttachments"
+                    class="mt-[8px]"
+                    readonly
+                  />
                 </div>
               </n-popover>
               <!-- <n-popover v-if="node.returnNode" trigger="hover">
@@ -81,18 +84,6 @@
                 </template>
                 <div>自动同意</div>
               </n-popover> -->
-              <n-popover v-if="node.addSignNode" trigger="hover">
-                <template #trigger>
-                  <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
-                </template>
-                <div class="flex flex-col items-center gap-[8px]">
-                  <div class="flex items-center gap-[8px]">
-                    <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
-                    <div>{{ t('crm.approval.addSign') }}</div>
-                  </div>
-                  <div class="text-[var(--text-n4)]">{{ node.comment }}</div>
-                </div>
-              </n-popover>
             </div>
             <div class="whitespace-nowrap font-normal text-[var(--text-n4)]">
               {{ dayjs(node.approvalTime).format('YYYY-MM-DD HH:mm') }}
@@ -118,9 +109,26 @@
                     />
                   </div>
                   <div class="one-line-text max-w-[60px]">{{ task.approver }}</div>
-                  <CrmTag v-if="task.sign" type="info" theme="outline">
-                    {{ t('common.COUNTERSIGNATURE') }}
-                  </CrmTag>
+                  <n-popover v-if="task.sign" trigger="hover">
+                    <template #trigger>
+                      <CrmTag type="info" theme="outline" tooltipDisabled>
+                        {{ t('common.COUNTERSIGNATURE') }}
+                      </CrmTag>
+                    </template>
+                    <div class="flex flex-col items-center gap-[8px]">
+                      <div class="flex items-center gap-[8px]">
+                        <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
+                        <div>{{ t('crm.approval.addSign') }}</div>
+                      </div>
+                      <div class="text-[var(--text-n4)]">{{ task.signComment }}</div>
+                      <CrmFileList
+                        v-if="task.signAttachments?.length > 0"
+                        :files="task.signAttachments"
+                        class="mt-[8px]"
+                        readonly
+                      />
+                    </div>
+                  </n-popover>
                 </div>
               </template>
               <template #header-extra>

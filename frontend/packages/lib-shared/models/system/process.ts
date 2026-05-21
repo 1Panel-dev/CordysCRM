@@ -291,11 +291,12 @@ export interface ApprovalNode {
   comment: string;
   attachments: AttachmentInfo[];
   ccNodes: CcNode[];
-  returnNode: boolean;
-  addSignNode: boolean;
   nodeRound: number; // 节点轮次
   taskNodes: ApprovalNodeTaskNode[];
   multiApproverMode: MultiApproverModeEnum; // 多人审批方式
+  backNode: boolean; // 是否回退节点
+  backReason: string; // 回退原因
+  backAttachments: AttachmentInfo[]; // 回退附件
 }
 
 export interface ApprovalNodeTaskNode {
@@ -310,6 +311,8 @@ export interface ApprovalNodeTaskNode {
   approvalTime: number;
   sign: boolean; // 是否加签任务
   signAction: boolean; // 是否操作加签
+  signComment: string; // 加签备注
+  signAttachments: AttachmentInfo[]; // 加签附件
 }
 
 export interface CcNode {
