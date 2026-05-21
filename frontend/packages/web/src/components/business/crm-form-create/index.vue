@@ -771,6 +771,7 @@
   );
 
   onBeforeMount(async () => {
+    const initApprovalReviewConfigPromise = initApprovalReviewConfig();
     await initFormConfig();
     emit('init', formCreateTitle.value, formConfig.value.viewSize);
     if (props.sourceId && props.needInitDetail) {
@@ -778,7 +779,7 @@
     }
     initForm(props.linkScenario);
     initFormulaDataSourceRemark();
-    initApprovalReviewConfig();
+    await initApprovalReviewConfigPromise;
   });
 </script>
 
