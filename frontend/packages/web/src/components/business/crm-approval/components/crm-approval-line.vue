@@ -37,24 +37,11 @@
           </div>
         </template>
         <template #header>
-          <n-collapse
-            :default-expanded-names="
-              ![ProcessStatusEnum.AUTO_APPROVED, ProcessStatusEnum.AUTO_UNAPPROVED].includes(node.approvalStatus) &&
-              !node.endNode
-                ? [node.nodeId]
-                : []
-            "
-          >
+          <n-collapse :default-expanded-names="node.taskNodes?.length && !node.endNode ? [node.nodeId] : []">
             <template #arrow>
               <div></div>
             </template>
-            <n-collapse-item
-              :name="node.nodeId"
-              :disabled="
-                [ProcessStatusEnum.AUTO_APPROVED, ProcessStatusEnum.AUTO_UNAPPROVED].includes(node.approvalStatus) ||
-                node.endNode
-              "
-            >
+            <n-collapse-item :name="node.nodeId" :disabled="!node.taskNodes?.length || node.endNode">
               <template #header>
                 <div class="mb-[8px] flex w-full items-center justify-between gap-[8px]">
                   <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
@@ -96,13 +83,7 @@
                   </div>
                 </div>
               </template>
-              <template
-                v-if="
-                  ![ProcessStatusEnum.AUTO_APPROVED, ProcessStatusEnum.AUTO_UNAPPROVED].includes(node.approvalStatus) &&
-                  !node.endNode
-                "
-                #header-extra="{ collapsed }"
-              >
+              <template v-if="node.taskNodes?.length && !node.endNode" #header-extra="{ collapsed }">
                 <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
               </template>
               <div class="mb-[16px] mt-[2px] py-[8px] pl-0">
