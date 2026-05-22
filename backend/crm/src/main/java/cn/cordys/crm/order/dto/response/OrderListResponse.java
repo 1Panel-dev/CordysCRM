@@ -42,4 +42,7 @@ public class OrderListResponse extends Order {
 
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
+
+	@Schema(description = "审批第一个节点是否通过")
+	private Boolean firstApproved;
 }

@@ -385,7 +385,7 @@ public class ApprovalActionService {
 					if (sameAction == SameSubmitterActionEnum.SKIP && Strings.CI.equals(nextUser.getId(), instance.getSubmitterId())) {
 						nextTask.setAction(ApprovalAction.APPROVE.name());
 						nextTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
-						approvalFlowService.saveAutoRecord(currentTask.getInstanceId(), currentTask.getNodeId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动同意跳过", nextTask.getId(), null, false);
+						approvalFlowService.saveAutoRecord(currentTask.getInstanceId(), currentTask.getNodeId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动同意跳过", nextTask.getId(), null, false, nextTask.getNodeRound());
 						// 依次审批下一位自动同意跳过, 发送下下一个位次的待办
 						User nextPlusUser = getMultiSeqNextNextOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId);
 						if (nextPlusUser != null) {
@@ -1000,7 +1000,7 @@ public class ApprovalActionService {
 							// 自动跳过该审批人
 							firstTask.setAction(ApprovalAction.APPROVE.name());
 							firstTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
-							approvalFlowService.saveAutoRecord(instanceId, approverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动同意跳过", firstTask.getId(), null, false);
+							approvalFlowService.saveAutoRecord(instanceId, approverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动同意跳过", firstTask.getId(), null, false, firstTask.getNodeRound());
 							// 第一个需要自动同意跳过, 发送第二个人待办
 							String secondApprover = approverNode.getApproverList().get(1);
 							if (StringUtils.isNotBlank(secondApprover)) {
@@ -1018,7 +1018,7 @@ public class ApprovalActionService {
 								// 自动跳过该审批人
 								approvalTask.setAction(ApprovalAction.APPROVE.name());
 								approvalTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
-								approvalFlowService.saveAutoRecord(instanceId, approverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动同意跳过", approvalTask.getId(), null, false);
+								approvalFlowService.saveAutoRecord(instanceId, approverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动同意跳过", approvalTask.getId(), null, false, approvalTask.getNodeRound());
 							}
 							approvalTasks.add(approvalTask);
 						});

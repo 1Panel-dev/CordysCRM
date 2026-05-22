@@ -59,6 +59,7 @@ public class ApprovalInstanceService {
 	private ApprovalFlowService approvalFlowService;
 
 	public static final String SIGN_SPILT = "-SN";
+	public static final String NULL_FIELD_PERMISSION_STR = "null";
 
 	/**
 	 * 获取资源最新审批实例详情
@@ -103,7 +104,7 @@ public class ApprovalInstanceService {
 		}
 		if (instanceDetail.getCurrentNodeId().contains(SIGN_SPILT)) {
 			// 加签字段
-			if (StringUtils.isNotBlank(currentNode.getFieldPermissions())) {
+			if (StringUtils.isNotBlank(currentNode.getFieldPermissions()) && !Strings.CI.equals(currentNode.getFieldPermissions(), NULL_FIELD_PERMISSION_STR)) {
 				List<FieldPermissionDTO> fieldPermissions = JSON.parseArray(currentNode.getFieldPermissions(), FieldPermissionDTO.class);
 				List<FieldPermissionDTO> viewPermissionsOfSign = fieldPermissions.stream().peek(permission -> permission.setPermissionType(FieldPermissionTypeEnum.VIEW.name())).toList();
 				instanceDetail.setCurrentNodeFieldPermissions(JSON.toJSONString(viewPermissionsOfSign));
@@ -122,6 +123,25 @@ public class ApprovalInstanceService {
 		wrapper.eq(ApprovalInstance::getResourceId, resourceId);
 		List<ApprovalInstance> list = approvalInstanceMapper.selectListByLambda(wrapper);
 		return CollectionUtils.isEmpty(list) ? null : list.stream().sorted(Comparator.comparing(ApprovalInstance::getSubmitTime)).toList().getLast();
+	}
+
+	/**
+	 * 获取一批资源最新审批实例
+	 */
+	public List<ApprovalInstance> getLatestInstances(List<String> resourceIds) {
+		if (CollectionUtils.isEmpty(resourceIds)) {
+			return Collections.emptyList();
+		}
+		LambdaQueryWrapper<ApprovalInstance> wrapper = new LambdaQueryWrapper<>();
+		wrapper.in(ApprovalInstance::getResourceId, resourceIds);
+		List<ApprovalInstance> list = approvalInstanceMapper.selectListByLambda(wrapper);
+		if (CollectionUtils.isEmpty(list)) {
+			return Collections.emptyList();
+		}
+		Map<String, List<ApprovalInstance>> groupMap = list.stream().collect(Collectors.groupingBy(ApprovalInstance::getResourceId));
+		return groupMap.values().stream().map(instances -> instances.stream()
+				.sorted(Comparator.comparing(ApprovalInstance::getSubmitTime).reversed())
+				.toList().getFirst()).toList();
 	}
 
 	/**
@@ -298,7 +318,7 @@ public class ApprovalInstanceService {
 			if (CollectionUtils.isEmpty(nlTasks)) {
 				return;
 			}
-			List<ApprovalTask> snTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.SN && Strings.CI.equals(task.getNodeId(), hisNode)
+			List<ApprovalTask> snTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.SN && Strings.CI.contains(task.getNodeId(), hisNode)
 					&& task.getNodeRound().equals(maxRound)).sorted(Comparator.comparing(ApprovalTask::getCreateTime)).toList();
 			// 加签任务追加
 			if (nodeMultiApprover.size() == 1) {

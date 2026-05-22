@@ -29,6 +29,7 @@ import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.contract.domain.ContractFieldBlob;
+import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationApproval;
@@ -232,7 +233,7 @@ public class OpportunityQuotationService {
      * @param id 报价单ID
      * @return 报价单详情
      */
-    public OpportunityQuotationGetResponse getSnapshot(String id) {
+    public OpportunityQuotationGetResponse getSnapshot(String id, String orgId) {
         OpportunityQuotationGetResponse response = new OpportunityQuotationGetResponse();
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {
@@ -245,6 +246,10 @@ public class OpportunityQuotationService {
         if (snapshot != null) {
             response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
         }
+		if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
+			response.setFirstApproved(firstNodeApproved.get(response.getId()));
+		}
         return response;
     }
 
@@ -252,7 +257,7 @@ public class OpportunityQuotationService {
      * @param id 报价单ID
      * @return 报价单详情
      */
-    public OpportunityQuotationGetResponse get(String id) {
+    public OpportunityQuotationGetResponse get(String id, String orgId) {
         OpportunityQuotationGetResponse response = new OpportunityQuotationGetResponse();
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {
@@ -287,6 +292,10 @@ public class OpportunityQuotationService {
             response.setDepartmentId(userDeptDTO.getDeptId());
             response.setDepartmentName(userDeptDTO.getDeptName());
         }
+		if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
+			response.setFirstApproved(firstNodeApproved.get(response.getId()));
+		}
         return response;
     }
 
@@ -619,6 +628,9 @@ public class OpportunityQuotationService {
         // 列表项设置自定义字段&&用户名
         List<String> createUserIds = listData.stream().map(OpportunityQuotationListResponse::getCreateUser).toList();
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(createUserIds, organizationId);
+		// 审批相关
+		List<String> approvingResourceIds = listData.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(OpportunityQuotationListResponse::getId).toList();
+		Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, organizationId);
         listData.forEach(item -> {
             item.setModuleFields(resolvefieldValueMap.get(item.getId()));
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getCreateUser());
@@ -626,6 +638,7 @@ public class OpportunityQuotationService {
                 item.setDepartmentId(userDeptDTO.getDeptId());
                 item.setDepartmentName(userDeptDTO.getDeptName());
             }
+			item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
         });
         return baseService.setCreateAndUpdateUserName(listData);
     }

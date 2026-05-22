@@ -79,7 +79,7 @@ public class OpportunityQuotationController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "获取报价单快照详情")
     public OpportunityQuotationGetResponse getSnapshot(@PathVariable("id") String id) {
-        return opportunityQuotationService.getSnapshot(id);
+        return opportunityQuotationService.getSnapshot(id, OrganizationContext.getOrganizationId());
     }
 
     //查询详情
@@ -87,7 +87,7 @@ public class OpportunityQuotationController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_READ)
     @Operation(summary = "获取报价单详情")
     public OpportunityQuotationGetResponse get(@PathVariable("id") String id) {
-        return opportunityQuotationService.get(id);
+        return opportunityQuotationService.get(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/module/form/snapshot/{id}")

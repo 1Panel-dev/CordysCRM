@@ -8,6 +8,16 @@ import cn.cordys.common.dto.UserDeptDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ApprovalTaskType;
+import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.domain.ApprovalNode;
+import cn.cordys.crm.approval.domain.ApprovalNodeLink;
+import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalInstanceService;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
@@ -21,11 +31,13 @@ import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +70,19 @@ public class BaseService {
     private ExtClueMapper extClueMapper;
     @Resource
     private ExtModuleFieldMapper extModuleFieldMapper;
+	@Resource
+	private ApprovalInstanceService approvalInstanceService;
+	@Resource
+	private BaseMapper<ApprovalNodeLink> nodeLinkMapper;
+	@Resource
+	private BaseMapper<ApprovalNode> approvalNodeMapper;
+	@Resource
+	private BaseMapper<ApprovalTask> approvalTaskMapper;
+	@Lazy
+	@Resource
+	private ApprovalFlowService approvalFlowService;
+	@Resource
+	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
 
 
     /**
@@ -634,4 +659,62 @@ public class BaseService {
         return option == null ? Translator.get("common.option.not_exist") : option;
     }
 
+	/**
+	 * 获取审批中的业务资源是否第一个审批节点已通过
+	 * @param resourceIds 资源ID集合
+	 * @return 是否第一个审批节点已通过
+	 */
+	public Map<String, Boolean> getApprovingResourceFirstNodeApproved(List<String> resourceIds, String currentOrgId) {
+		if (CollectionUtils.isEmpty(resourceIds)) {
+			return Map.of();
+		}
+		Map<String, Boolean> firstNodeApproved = new HashMap<>(resourceIds.size());
+		List<ApprovalInstance> latestInstances = approvalInstanceService.getLatestInstances(resourceIds);
+		List<String> flowVersionIds = latestInstances.stream().map(ApprovalInstance::getFlowVersionId).distinct().toList();
+		List<ApprovalNodeLink> nodeLinks = nodeLinkMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalNodeLink>().in(ApprovalNodeLink::getFlowVersionId, flowVersionIds));
+		List<ApprovalNode> allNodes = approvalNodeMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalNode>().in(ApprovalNode::getFlowVersionId, flowVersionIds));
+		List<ApprovalTask> allTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().in(ApprovalTask::getInstanceId, latestInstances.stream().map(ApprovalInstance::getId).toList()));
+		Map<String, String> nodeLinkMap = nodeLinks.stream().collect(Collectors.toMap(ApprovalNodeLink::getToNodeId, ApprovalNodeLink::getFromNodeId));
+		Map<String, String> nodeTypeMap = allNodes.stream().collect(Collectors.toMap(ApprovalNode::getId, ApprovalNode::getNodeType));
+		latestInstances.forEach(latestInstance -> {
+			if (isFirstApproverNode(nodeLinkMap, nodeTypeMap, latestInstance.getCurrentNodeId())) {
+				// 当前审批实例处于第一个审批节点, 所以第一个节点为审批中
+				boolean multiApprover = approvalFlowService.isCurrentNodeMultiApprover(latestInstance.getCurrentNodeId(), latestInstance.getSubmitterId(), currentOrgId);
+				if (!multiApprover) {
+					// 单人审批, 判断是否存在加签通过
+					Integer nodeRound = extApprovalInstanceMapper.getNodeRound(latestInstance.getId(), latestInstance.getCurrentNodeId());
+					Optional<ApprovalTask> signApproved = allTasks.stream().filter(task -> Strings.CI.equals(task.getType(), ApprovalTaskType.SN.name()) && Strings.CI.equals(task.getNodeId(), latestInstance.getCurrentNodeId())
+							&& Strings.CI.equals(task.getInstanceId(), latestInstance.getId()) && nodeRound.equals(task.getNodeRound()) && Strings.CI.equals(task.getStatus(), ApprovalStatus.APPROVED.name())).findAny();
+					if (signApproved.isPresent()) {
+						firstNodeApproved.put(latestInstance.getResourceId(), true);
+						return;
+					}
+				}
+				firstNodeApproved.put(latestInstance.getResourceId(), false);
+			} else {
+				// 当前审批实例不是处于第一个审批节点, 所以第一个节点已完成
+				firstNodeApproved.put(latestInstance.getResourceId(), true);
+			}
+		});
+		return firstNodeApproved;
+	}
+
+
+	/**
+	 * 当前节点是否第一个审批节点
+	 * @param nodeLinkMap 节点链接信息
+	 * @param nodeTypeMap 节点类型集合
+	 * @param currentNodeId 当前节点ID
+	 * @return 是否第一个审批节点
+	 */
+	private boolean isFirstApproverNode(Map<String, String> nodeLinkMap, Map<String, String> nodeTypeMap, String currentNodeId) {
+		String preNodeId = currentNodeId;
+		do {
+			preNodeId = nodeLinkMap.get(preNodeId);
+			if (StringUtils.isBlank(preNodeId) || ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(preNodeId)) == ApprovalNodeTypeEnum.START) {
+				return true;
+			}
+		} while (ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(preNodeId)) == ApprovalNodeTypeEnum.CONDITION || ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(preNodeId)) == ApprovalNodeTypeEnum.DEFAULT);
+		return false;
+	}
 }

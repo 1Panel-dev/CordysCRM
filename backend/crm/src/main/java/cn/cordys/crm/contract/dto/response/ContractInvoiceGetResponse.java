@@ -46,4 +46,7 @@ public class ContractInvoiceGetResponse extends ContractInvoice {
 
     @Schema(description = "附件集合")
     private Map<String, List<Attachment>> attachmentMap;
+
+	@Schema(description = "审批第一个节点是否通过")
+	private Boolean firstApproved;
 }

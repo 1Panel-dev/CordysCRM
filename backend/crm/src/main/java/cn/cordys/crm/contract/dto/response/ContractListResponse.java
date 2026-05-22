@@ -43,4 +43,7 @@ public class ContractListResponse extends Contract {
 
     @Schema(description = "商机阶段")
     private String stageName;
+
+	@Schema(description = "审批第一个节点是否通过")
+	private Boolean firstApproved;
 }
