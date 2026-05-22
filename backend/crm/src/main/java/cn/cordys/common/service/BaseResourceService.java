@@ -80,6 +80,19 @@ public abstract class BaseResourceService {
                         }
                         valueClass = value.getClass();
                     }
+                    case String str -> {
+                        Class<?> type = clazz.getDeclaredField(fieldName).getType();
+                        if (type.equals(BigDecimal.class)) {
+                            value = new BigDecimal(str);
+                            valueClass = BigDecimal.class;
+                        } else if (type.equals(Long.class)) {
+                            value = Long.valueOf(str);
+                            valueClass = Long.class;
+                        } else if (type.equals(Integer.class)) {
+                            value = Integer.valueOf(str);
+                            valueClass = Integer.class;
+                        }
+                    }
                     default -> {
                     }
                 }

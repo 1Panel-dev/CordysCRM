@@ -193,7 +193,7 @@ CREATE TABLE approval_record(
     `node_id` VARCHAR(32) NOT NULL   COMMENT '节点ID' ,
     `node_round` INT NOT NULL   COMMENT '节点轮次' ,
     `result` VARCHAR(255)    COMMENT '审批结果' ,
-    `comment` VARCHAR(255)    COMMENT '审批意见' ,
+    `comment` TEXT    COMMENT '审批意见' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
