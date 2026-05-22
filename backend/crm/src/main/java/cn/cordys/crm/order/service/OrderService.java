@@ -348,6 +348,7 @@ public class OrderService {
             order.setCreateUser(oldOrder.getCreateUser());
             order.setCreateTime(oldOrder.getCreateTime());
             order.setStage(oldOrder.getStage());
+			order.setApprovalStatus(oldOrder.getApprovalStatus());
             //判断总金额
             setAmount(request.getAmount(), order);
             updateFields(moduleFields, order, orgId, userId);
