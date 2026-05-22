@@ -32,4 +32,5 @@ export default {
   'crm.approval.addSignSuccess': '加签成功',
   'crm.approval.preNode': '前{index}节点',
   'crm.approval.fallbackSuccess': '已退回',
+  'crm.approval.autoReject': 'Cbot 自动拒绝',
 };
