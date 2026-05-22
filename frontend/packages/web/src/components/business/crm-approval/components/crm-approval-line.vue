@@ -73,12 +73,12 @@
                 </div>
               </n-popover>
             </div>
-            <div
+            <!-- <div
               v-if="node.approvalStatus !== ProcessStatusEnum.PENDING"
               class="whitespace-nowrap font-normal text-[var(--text-n4)]"
             >
-              {{ dayjs(node.approvalTime).format('YYYY-MM-DD HH:mm') }}
-            </div>
+              {{ node.approvalTime ? dayjs(node.approvalTime).format('YYYY-MM-DD HH:mm') : '-' }}
+            </div> -->
           </div>
         </template>
         <div class="mb-[16px] mt-[2px] py-[8px] pl-0">
