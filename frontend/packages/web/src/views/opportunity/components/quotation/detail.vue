@@ -36,15 +36,15 @@
       :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
       :source-id="props.sourceId"
       :approval-status="detailInfo?.approvalStatus"
-      @refresh="emit('refresh')"
+      @saveApproval="handleSaveApproval"
     >
-      <template #left>
+      <template #left="{ fieldPermissions }">
         <CrmFormDescription
-          ref="formDescriptionRef"
           :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
           :source-id="props.sourceId"
           :column="2"
           :refresh-key="refreshKey"
+          :fieldPermissions="fieldPermissions"
           label-width="auto"
           value-align="start"
           tooltip-position="top-start"
@@ -124,8 +124,6 @@
     refreshKey.value += 1;
     emit('refresh');
   }
-
-  const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription> | null>(null);
 
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
@@ -213,7 +211,7 @@
         break;
     }
   }
-  const { initApprovalPermission, resolveRowOperation, enableApproval } = useApprovalOperation<Record<string, any>>({
+  const { initApprovalPermission, resolveRowOperation } = useApprovalOperation<Record<string, any>>({
     formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
     dataActionMap: quotationDataActionMap,
     isDetail: true,
@@ -254,6 +252,13 @@
     return !detailInfo.value?.invalid;
   });
 
+  const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+  function handleSaveApproval() {
+    formDescriptionRef.value?.handleFormChange(() => {
+      refreshKey.value += 1;
+      emit('refresh');
+    });
+  }
   watch(
     () => visible.value,
     (val) => {

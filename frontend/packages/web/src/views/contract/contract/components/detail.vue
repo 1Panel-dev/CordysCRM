@@ -49,10 +49,11 @@
             :form-key="FormDesignKeyEnum.CONTRACT"
             :source-id="props.sourceId"
             :approval-status="detailInfo?.approvalStatus"
-            @refresh="emit('refresh')"
+            @saveApproval="handleSaveApproval"
           >
-            <template #left>
+            <template #left="{ fieldPermissions }">
               <CrmFormDescription
+                ref="formDescriptionRef"
                 :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
                 :source-id="props.sourceId"
                 :column="2"
@@ -62,6 +63,7 @@
                 tooltip-position="top-start"
                 readonly
                 :isContractTableDetail="props.isContractTableDetail"
+                :fieldPermissions="fieldPermissions"
                 @openCustomerDetail="emit('showCustomerDrawer', $event)"
                 @openOpportunityDetail="openOpportunityDetail"
                 @openQuotationDetail="openQuotationDetail"
@@ -469,6 +471,14 @@
       default:
         break;
     }
+  }
+
+  const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+  function handleSaveApproval() {
+    formDescriptionRef.value?.handleFormChange(() => {
+      refreshKey.value += 1;
+      emit('refresh');
+    });
   }
 
   async function initStageConfig() {

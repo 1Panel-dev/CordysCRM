@@ -275,6 +275,7 @@ export interface ApprovalDetail {
   result: string;
   approvalStatus: ProcessStatusEnum;
   currentNodeId: string;
+  currentNodeFieldPermissions: string;
   nodes: ApprovalNode[];
 }
 

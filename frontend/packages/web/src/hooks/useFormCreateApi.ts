@@ -52,6 +52,8 @@ export interface FormCreateApiProps {
   linkFormKey?: Ref<FormDesignKeyEnum | undefined>; // 关联表单key
   linkScenario?: Ref<FormLinkScenarioEnum | undefined>; // 关联表单场景
   isContractTableDetail?: boolean;
+  hiddenFieldIds?: string[]; // 需要隐藏的字段id列表
+  editableFieldIds?: string[]; // 可编辑的字段id列表
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -290,9 +292,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   // 用于快照保存表单配置
   const needModuleFormConfigParamsType = [
     FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+    FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT,
     FormDesignKeyEnum.CONTRACT,
+    FormDesignKeyEnum.CONTRACT_SNAPSHOT,
     FormDesignKeyEnum.INVOICE,
+    FormDesignKeyEnum.INVOICE_SNAPSHOT,
     FormDesignKeyEnum.ORDER,
+    FormDesignKeyEnum.ORDER_SNAPSHOT,
   ];
 
   function initFormShowControl(value?: any) {
@@ -570,6 +576,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         fieldInfo: item,
         tooltipPosition: 'top-end',
       });
+    } else if (item.type === FieldTypeEnum.INPUT) {
+      descriptions.value.push({
+        label: item.name,
+        value: parseFormDetailValue(item, form),
+        slotName: FieldTypeEnum.INPUT,
+        fieldInfo: item,
+        tooltipPosition: 'top-end',
+      });
     } else {
       descriptions.value.push({
         label: item.name,
@@ -596,6 +610,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       collaborationType.value = form.collaborationType;
       formDescriptionShowControlRulesSet(form);
       fieldList.value.forEach((item) => {
+        if (props.hiddenFieldIds?.includes(item.id)) {
+          return;
+        }
+        if (props.editableFieldIds?.includes(item.id)) {
+          item.editable = true;
+        }
         const value = item.businessKey
           ? form[item.businessKey]
           : form.moduleFields?.find((mf) => mf.fieldId === item.id)?.fieldValue;

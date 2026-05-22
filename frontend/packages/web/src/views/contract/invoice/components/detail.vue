@@ -36,14 +36,15 @@
             :form-key="FormDesignKeyEnum.INVOICE"
             :source-id="props.sourceId"
             :approval-status="detailInfo?.approvalStatus"
-            @refresh="emit('refresh')"
+            @save-approval="handleSaveApproval"
           >
-            <template #left>
+            <template #left="{ fieldPermissions }">
               <CrmFormDescription
                 :form-key="FormDesignKeyEnum.INVOICE_SNAPSHOT"
                 :source-id="props.sourceId"
                 :column="2"
                 :refresh-key="refreshKey"
+                :fieldPermissions="fieldPermissions"
                 label-width="auto"
                 value-align="start"
                 tooltip-position="top-start"
@@ -216,6 +217,14 @@
       // eslint-disable-next-line no-console
       console.error(error);
     }
+  }
+
+  const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+  function handleSaveApproval() {
+    formDescriptionRef.value?.handleFormChange(() => {
+      refreshKey.value += 1;
+      emit('refresh');
+    });
   }
 
   function handleRevoke() {
