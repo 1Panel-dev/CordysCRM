@@ -26,6 +26,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  *  切面后置操作: 当命中表单配置的审批流和执行时机时
@@ -75,6 +76,7 @@ public class HitApprovalAspect {
 
 			if (hit) {
 				// 命中审批流, 修改业务资源审批状态为待提审
+				approvalResourceService.clearResourceApprovalDetail(resourceId);
 				approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name());
 			}
 		} catch (Exception e) {
@@ -144,7 +146,7 @@ public class HitApprovalAspect {
 			if (value == null) {
 				return null;
 			}
-			return value.toString();
+			return value instanceof List ? ((List<?>) value).getFirst().toString() : value.toString();
 		} catch (Exception e) {
 			return null;
 		}

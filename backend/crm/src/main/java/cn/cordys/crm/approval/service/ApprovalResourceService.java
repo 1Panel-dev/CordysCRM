@@ -181,6 +181,20 @@ public class ApprovalResourceService {
     }
 
 	/**
+	 * 清除资源审批记录
+	 * @param resourceId 资源ID
+	 */
+	public void clearResourceApprovalDetail(String resourceId) {
+		List<ApprovalInstance> approvalInstances = approvalInstanceMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalInstance>().eq(ApprovalInstance::getResourceId, resourceId));
+		if (CollectionUtils.isNotEmpty(approvalInstances)) {
+			List<String> instanceIds = approvalInstances.stream().map(ApprovalInstance::getId).toList();
+			approvalTaskMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalTask>().in(ApprovalTask::getInstanceId, instanceIds));
+			approvalRecordMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalRecord>().in(ApprovalRecord::getInstanceId, instanceIds));
+			approvalInstanceMapper.deleteByIds(instanceIds);
+		}
+	}
+
+	/**
 	 * 获取审批实例资源名称
 	 *
 	 * @param formKey        表单类型
