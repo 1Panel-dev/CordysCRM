@@ -91,11 +91,11 @@
   const fileList = ref<CrmFileItem[]>([]);
 
   function reset() {
-    show.value = false;
     approvalForm.value = {
       reason: '',
     };
     fileList.value = [];
+    show.value = false;
   }
 
   function handleApprovalCancel() {
@@ -146,6 +146,7 @@
       return;
     }
     try {
+      loading.value = true;
       if (props.approvalType === 'reject') {
         await batchRejectApproval({
           ids: props.approvalItemKeys,
@@ -162,10 +163,13 @@
         });
       }
       message.success(props.approvalType === 'approve' ? t('taskDrawer.approved') : t('taskDrawer.rejected'));
-      handleApprovalCancel();
+      emit('approvalSuccess');
+      reset();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      loading.value = false;
     }
   }
 
