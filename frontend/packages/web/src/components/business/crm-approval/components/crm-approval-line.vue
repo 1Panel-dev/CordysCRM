@@ -27,7 +27,7 @@
           <div class="one-line-text">{{ props.submitter.submitter }}</div>
         </div>
       </n-timeline-item>
-      <n-timeline-item v-for="(node, index) in props.nodes">
+      <n-timeline-item v-for="(node, index) in props.nodes" :key="node.nodeId">
         <template #icon>
           <div v-if="node.endNode" class="timeline-icon-wrapper" :class="getIconClass(node)">
             <CrmIcon type="iconicon_end" :size="14" color="var(--text-n10)" />
@@ -37,126 +37,167 @@
           </div>
         </template>
         <template #header>
-          <div class="mb-[8px] flex w-full items-center justify-between gap-[8px]">
-            <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
-              <div class="one-line-text font-semibold !leading-[22px]">{{ node.nodeName }}</div>
-              <CrmTag v-if="!node.endNode && node.taskNodes?.length > 1" type="info" theme="outline">
-                {{ MultiApproverModeMap[node.multiApproverMode] }}
-              </CrmTag>
-              <CrmApprovalStatus
-                v-if="!node.endNode"
-                :status="
-                  index > props.currentApprovalNodeIndex && props.currentApprovalNodeIndex !== -1
-                    ? ProcessStatusEnum.PENDING
-                    : node.approvalStatus
-                "
-                isTag
-                scene="approvalRecord"
-                class="font-normal"
-              />
-              <n-popover v-if="node.backNode" trigger="hover">
-                <template #trigger>
-                  <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
-                </template>
-                <div class="flex flex-col items-center gap-[8px]">
-                  <div class="flex items-center gap-[8px]">
-                    <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
-                    <div>{{ t('crm.approval.fallbackReason') }}</div>
-                  </div>
-                  <div class="text-[var(--text-n4)]">{{ node.backReason }}</div>
-                  <CrmFileList
-                    v-if="node.backAttachments?.length > 0"
-                    :files="node.backAttachments"
-                    class="mt-[8px]"
-                    readonly
-                  />
-                </div>
-              </n-popover>
-            </div>
-            <!-- <div
-              v-if="node.approvalStatus !== ProcessStatusEnum.PENDING"
-              class="whitespace-nowrap font-normal text-[var(--text-n4)]"
+          <n-collapse
+            :default-expanded-names="
+              ![ProcessStatusEnum.AUTO_APPROVED, ProcessStatusEnum.AUTO_UNAPPROVED].includes(node.approvalStatus) &&
+              !node.endNode
+                ? [node.nodeId]
+                : []
+            "
+          >
+            <template #arrow>
+              <div></div>
+            </template>
+            <n-collapse-item
+              :name="node.nodeId"
+              :disabled="
+                [ProcessStatusEnum.AUTO_APPROVED, ProcessStatusEnum.AUTO_UNAPPROVED].includes(node.approvalStatus) ||
+                node.endNode
+              "
             >
-              {{ node.approvalTime ? dayjs(node.approvalTime).format('YYYY-MM-DD HH:mm') : '-' }}
-            </div> -->
-          </div>
-        </template>
-        <div class="mb-[16px] mt-[2px] py-[8px] pl-0">
-          <n-collapse v-if="node.taskNodes?.length" :default-expanded-names="[node.taskNodes[0].taskId]">
-            <template #arrow><div></div></template>
-            <n-collapse-item v-for="task in node.taskNodes" :name="task.taskId">
               <template #header>
-                <div class="flex items-center gap-[8px]">
-                  <div class="relative h-[24px] w-[30px]">
-                    <CrmApprovalAvatar
-                      :size="24"
-                      :approver="{
-                        avatar: task.approverAvatar,
-                        name: task.approver,
-                        id: task.approverId,
-                        approveResult: task.approvalStatus,
-                      } as any"
-                      :sign-node="task.signAction"
-                    />
-                  </div>
-                  <div class="one-line-text max-w-[60px]">{{ task.approver }}</div>
-                  <n-popover v-if="task.sign" trigger="hover">
-                    <template #trigger>
-                      <CrmTag type="info" theme="outline" tooltipDisabled>
-                        {{ t('common.COUNTERSIGNATURE') }}
-                      </CrmTag>
-                    </template>
-                    <div class="flex flex-col items-center gap-[8px]">
-                      <div class="flex items-center gap-[8px]">
-                        <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
-                        <div>{{ t('crm.approval.addSign') }}</div>
-                      </div>
-                      <div class="text-[var(--text-n4)]">{{ task.signComment }}</div>
-                      <CrmFileList
-                        v-if="task.signAttachments?.length > 0"
-                        :files="task.signAttachments"
-                        class="mt-[8px]"
-                        readonly
-                      />
+                <div class="mb-[8px] flex w-full items-center justify-between gap-[8px]">
+                  <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
+                    <div class="one-line-text font-semibold !leading-[22px] text-[var(--text-n1)]">
+                      {{ node.nodeName }}
                     </div>
-                  </n-popover>
+                    <CrmTag v-if="!node.endNode && node.taskNodes?.length > 1" type="info" theme="outline">
+                      {{ MultiApproverModeMap[node.multiApproverMode] }}
+                    </CrmTag>
+                    <CrmApprovalStatus
+                      v-if="!node.endNode"
+                      :status="
+                        index > props.currentApprovalNodeIndex && props.currentApprovalNodeIndex !== -1
+                          ? ProcessStatusEnum.PENDING
+                          : node.approvalStatus
+                      "
+                      isTag
+                      scene="approvalRecord"
+                      class="font-normal"
+                    />
+                    <n-popover v-if="node.backNode" trigger="hover">
+                      <template #trigger>
+                        <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
+                      </template>
+                      <div class="flex flex-col items-center gap-[8px]">
+                        <div class="flex items-center gap-[8px]">
+                          <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
+                          <div>{{ t('crm.approval.fallbackReason') }}</div>
+                        </div>
+                        <div class="text-[var(--text-n4)]">{{ node.backReason }}</div>
+                        <CrmFileList
+                          v-if="node.backAttachments?.length > 0"
+                          :files="node.backAttachments"
+                          class="mt-[8px]"
+                          readonly
+                        />
+                      </div>
+                    </n-popover>
+                  </div>
                 </div>
               </template>
-              <template #header-extra>
-                <div class="text-[var(--text-n4)]">
-                  {{ task.approvalTime ? dayjs(task.approvalTime).format('YYYY-MM-DD HH:mm') : '-' }}
-                </div>
+              <template
+                v-if="
+                  ![ProcessStatusEnum.AUTO_APPROVED, ProcessStatusEnum.AUTO_UNAPPROVED].includes(node.approvalStatus) &&
+                  !node.endNode
+                "
+                #header-extra="{ collapsed }"
+              >
+                <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
               </template>
-              <div class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
-                <div class="text-[var(--text-n4)]">{{ task.comment }}</div>
+              <div class="mb-[16px] mt-[2px] py-[8px] pl-0">
+                <n-collapse v-if="node.taskNodes?.length" :default-expanded-names="[node.taskNodes[0].taskId]">
+                  <template #arrow>
+                    <div></div>
+                  </template>
+                  <n-collapse-item v-for="task in node.taskNodes" :name="task.taskId" class="!ml-0">
+                    <template #header>
+                      <div class="flex items-center gap-[8px]">
+                        <div class="relative h-[24px] w-[30px]">
+                          <CrmApprovalAvatar
+                            :size="24"
+                            :approver="{
+                              avatar: task.approverAvatar,
+                              name: task.approver,
+                              id: task.approverId,
+                              approveResult: task.approvalStatus,
+                            } as any"
+                            :sign-node="task.signAction"
+                          />
+                        </div>
+                        <n-tooltip trigger="hover">
+                          <template #trigger>
+                            <div class="one-line-text max-w-[60px]">{{ task.approver }}</div>
+                          </template>
+                          {{ task.approver }}
+                        </n-tooltip>
+                        <n-popover v-if="task.sign" trigger="hover">
+                          <template #trigger>
+                            <CrmTag type="info" theme="outline" tooltipDisabled>
+                              {{ t('common.COUNTERSIGNATURE') }}
+                            </CrmTag>
+                          </template>
+                          <div class="flex flex-col items-center gap-[8px]">
+                            <div class="flex items-center gap-[8px]">
+                              <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
+                              <div>{{ t('crm.approval.addSign') }}</div>
+                            </div>
+                            <div class="text-[var(--text-n4)]">{{ task.signComment }}</div>
+                            <CrmFileList
+                              v-if="task.signAttachments?.length > 0"
+                              :files="task.signAttachments"
+                              class="mt-[8px]"
+                              readonly
+                            />
+                          </div>
+                        </n-popover>
+                      </div>
+                    </template>
+                    <template #header-extra>
+                      <div class="text-[var(--text-n4)]">
+                        {{ task.approvalTime ? dayjs(task.approvalTime).format('YYYY-MM-DD HH:mm') : '-' }}
+                      </div>
+                    </template>
+                    <div class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
+                      <div class="text-[var(--text-n4)]">{{ task.comment }}</div>
+                    </div>
+                    <CrmFileList
+                      v-if="task.attachments?.length > 0"
+                      :files="task.attachments"
+                      class="mt-[8px]"
+                      readonly
+                    />
+                  </n-collapse-item>
+                </n-collapse>
               </div>
-              <CrmFileList v-if="task.attachments?.length > 0" :files="task.attachments" class="mt-[8px]" readonly />
+              <CrmFileList v-if="node.attachments?.length > 0" :files="node.attachments" class="mt-[8px]" readonly />
+              <n-collapse v-if="node.ccNodes?.length">
+                <template #arrow>
+                  <div></div>
+                </template>
+                <n-collapse-item :title="t('common.copyTo')" name="copyTo">
+                  <template #header>
+                    <div class="flex items-center gap-[8px]">
+                      <CrmIcon type="iconicon_send" color="var(--text-n4)" />
+                      <div>{{ t('common.copyTo') }}</div>
+                    </div>
+                  </template>
+                  <template #header-extra="{ collapsed }">
+                    <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
+                  </template>
+                  <div class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
+                    <div v-for="cc in node.ccNodes" :key="cc.ccUserId" class="flex w-[23%] items-center gap-[8px]">
+                      <div class="h-[24px] w-[24px]">
+                        <CrmAvatar :avatar="cc.ccUserAvatar" :word="cc.ccUserName" :is-user="false" :size="24" />
+                      </div>
+                      <div class="one-line-text max-w-[60px]">{{ cc.ccUserName }}</div>
+                    </div>
+                  </div>
+                </n-collapse-item>
+              </n-collapse>
             </n-collapse-item>
           </n-collapse>
-        </div>
-        <CrmFileList v-if="node.attachments?.length > 0" :files="node.attachments" class="mt-[8px]" readonly />
-        <n-collapse v-if="node.ccNodes?.length">
-          <template #arrow><div></div></template>
-          <n-collapse-item :title="t('common.copyTo')" name="copyTo">
-            <template #header>
-              <div class="flex items-center gap-[8px]">
-                <CrmIcon type="iconicon_send" color="var(--text-n4)" />
-                <div>{{ t('common.copyTo') }}</div>
-              </div>
-            </template>
-            <template #header-extra="{ collapsed }">
-              <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
-            </template>
-            <div class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
-              <div v-for="cc in node.ccNodes" :key="cc.ccUserId" class="flex w-[23%] items-center gap-[8px]">
-                <div class="h-[24px] w-[24px]">
-                  <CrmAvatar :avatar="cc.ccUserAvatar" :word="cc.ccUserName" :is-user="false" :size="24" />
-                </div>
-                <div class="one-line-text max-w-[60px]">{{ cc.ccUserName }}</div>
-              </div>
-            </div>
-          </n-collapse-item>
-        </n-collapse>
+        </template>
       </n-timeline-item>
     </n-timeline>
   </n-scrollbar>
