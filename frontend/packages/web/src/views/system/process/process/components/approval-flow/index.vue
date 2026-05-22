@@ -153,6 +153,9 @@
     }
 
     crmFlowRef.value?.selectNode(startNode.id);
+    nextTick(() => {
+      crmFlowRef.value?.refreshCanvas(true);
+    });
   }
 
   function getProcessNodes(): ApprovalProcessNode[] {
@@ -170,8 +173,8 @@
     });
   }
 
-  function refreshCanvas() {
-    crmFlowRef.value?.refreshCanvas();
+  function refreshCanvas(fitToContent = false) {
+    crmFlowRef.value?.refreshCanvas(fitToContent);
   }
 
   onMounted(() => {
