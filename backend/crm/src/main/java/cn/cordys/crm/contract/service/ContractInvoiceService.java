@@ -28,7 +28,6 @@ import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.BusinessTitleConstants;
-import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.BusinessTitle;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractInvoice;
@@ -218,7 +217,7 @@ public class ContractInvoiceService {
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INVOICE, type = LogType.UPDATE, resourceId = "{#request.id}")
-	@HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.EDIT, resourceId = "#{request.id}")
+	@HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.EDIT, resourceId = "{#request.id}")
     public ContractInvoice update(ContractInvoiceUpdateRequest request, String userId, String orgId) {
         ContractInvoice originContractInvoice = invoiceMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
@@ -253,11 +252,6 @@ public class ContractInvoiceService {
             // 保留不可更改的字段
             invoice.setCreateUser(originContractInvoice.getCreateUser());
             invoice.setCreateTime(originContractInvoice.getCreateTime());
-            if (dictService.isDictConfigEnable(DictModule.INVOICE_APPROVAL.name(), orgId)) {
-                invoice.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
-            } else {
-                invoice.setApprovalStatus(originContractInvoice.getApprovalStatus());
-            }
 
             updateFields(moduleFields, invoice, orgId, userId);
             invoiceMapper.update(invoice);
