@@ -366,6 +366,7 @@ public class ContractService {
             contract.setCreateUser(oldContract.getCreateUser());
             contract.setCreateTime(oldContract.getCreateTime());
             contract.setStage(oldContract.getStage());
+			contract.setApprovalStatus(oldContract.getApprovalStatus());
 
             //判断总金额
             setAmount(request.getAmount(), contract);
