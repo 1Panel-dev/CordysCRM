@@ -120,6 +120,8 @@ public class ApprovalActionService {
 		ApprovalReturnBackRecord backRecord = saveBackRecord(request, instance.getId(), userId);
 		// 保存执行任务
 		saveActionTask(request, ApprovalAction.BACK, userId, orgId, null);
+		instance.setCurrentNodeId(request.getReturnToNodeId());
+		approvalInstanceMapper.updateById(instance);
 		// 保存退回附件
 		if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
 			saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), backRecord.getId(), userId, orgId);
@@ -280,7 +282,7 @@ public class ApprovalActionService {
 	 * @param currentOrgId 当前组织ID
 	 */
 	private void appendBackTasks(ApprovalReturnBackRequest backRequest, String userId, String currentOrgId) {
-		saveNodeApproverTasks(backRequest.getReturnToNodeId(), backRequest.getInstanceId(), userId, currentOrgId, ApprovalTaskType.BK.name());
+		saveNodeApproverTasks(backRequest.getReturnToNodeId(), backRequest.getInstanceId(), userId, currentOrgId, ApprovalTaskType.NL.name());
 	}
 
 	/**
@@ -479,6 +481,7 @@ public class ApprovalActionService {
 				break;
 			}
 			case BACK: {
+				currentTask.setStatus(ApprovalStatus.PENDING.name());
 				currentTask.setAction(ApprovalAction.BACK.name());
 				break;
 			}
@@ -830,10 +833,8 @@ public class ApprovalActionService {
 		Integer maxRound = extApprovalInstanceMapper.getNodeRound(instanceId, nodeId);
 		if (maxRound > 0) {
 			/*
-			 * 当前节点执行过
-			 * 未处理的直接清理, 已处理的假删除
+			 * 当前节点执行过, 假删除, 保留历史待办
 			 */
-			extApprovalInstanceMapper.removeApprovingTask(instanceId, nodeId, maxRound);
 			extApprovalInstanceMapper.batchClearTask(instanceId, nodeId, maxRound);
 			extApprovalInstanceMapper.batchClearRecord(instanceId, nodeId, maxRound);
 		}

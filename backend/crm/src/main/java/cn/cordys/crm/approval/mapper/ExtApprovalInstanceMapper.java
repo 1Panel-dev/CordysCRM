@@ -53,14 +53,6 @@ public interface ExtApprovalInstanceMapper {
 	void batchClearTask(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId, @Param("nodeRound") Integer nodeRound);
 
 	/**
-	 * 清理审批中的节点轮次任务
-	 * @param instanceId 审批实例ID
-	 * @param nodeId     节点ID
-	 * @param nodeRound 轮次
-	 */
-	void removeApprovingTask(@Param("instanceId") String instanceId, @Param("nodeId") String nodeId, @Param("nodeRound") Integer nodeRound);
-
-	/**
 	 * 撤销审批中的节点轮次任务
 	 * @param instanceId 审批实例ID
 	 * @param nodeId     节点ID
