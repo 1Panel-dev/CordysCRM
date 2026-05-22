@@ -260,7 +260,7 @@ public class ApprovalTodoService {
     }
 
     private boolean isAllType(String resourceType) {
-        return StringUtils.isBlank(resourceType) || StringUtils.equalsIgnoreCase(resourceType, "ALL");
+        return StringUtils.isBlank(resourceType) || Strings.CS.equals(resourceType, "ALL");
     }
 
     private ApprovalFormTypeEnum parseFilterType(String resourceType) {

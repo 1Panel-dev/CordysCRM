@@ -107,7 +107,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 } else if (oldNode != null && newNode == null) {
                     // 删除节点
                     handleRemovedNode(number, oldNode, nodeDifferences);
-                } else if (oldNode != null && newNode != null) {
+                } else if (oldNode != null) {
                     // 修改节点，比较属性
                     compareNodeProperties(number, oldNode, newNode, nodeDifferences);
                 }
@@ -124,12 +124,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 .filter(differ -> Strings.CS.equals(differ.getColumn(), NODES_COLUMN))
                 .findFirst();
 
-        if (nodesDiffOpt.isEmpty()) {
-            return null;
-        }
-
-        JsonDifferenceDTO nodesDiff = nodesDiffOpt.get();
-        return nodesDiff;
+        return nodesDiffOpt.orElse(null);
     }
 
     /**
