@@ -201,7 +201,13 @@
 
   const canvasRef = ref<HTMLElement | null>(null);
 
-  function refreshCanvas() {
+  function fitCanvasToContent() {
+    requestAnimationFrame(() => {
+      graphController.value?.fitToContent();
+    });
+  }
+
+  function refreshCanvas(fitToContent = false) {
     nextTick(() => {
       const graph = graphController.value?.getGraph();
       const resizeTarget = flowCanvasRef.value ?? canvasRef.value;
@@ -214,6 +220,9 @@
         graph.resize(clientWidth, clientHeight);
       }
       renderFlow();
+      if (fitToContent) {
+        fitCanvasToContent();
+      }
     });
   }
 
@@ -271,12 +280,12 @@
       return;
     }
 
-    const { clientWidth, clientHeight } = canvasRef.value;
+    const { clientWidth, clientHeight } = flowCanvasRef.value ?? canvasRef.value;
     if (!clientWidth || !clientHeight) {
       return;
     }
 
-    graphController.value.fitToContent();
+    fitCanvasToContent();
     hasAutoFitted = true;
   }
 

@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, useSlots } from 'vue';
+  import { computed, nextTick, ref, useSlots, watch } from 'vue';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -117,9 +117,15 @@
 
   const flowCanvasRef = ref<InstanceType<typeof FlowCanvas> | null>(null);
 
-  function refreshCanvas() {
-    flowCanvasRef.value?.refreshCanvas();
+  function refreshCanvas(fitToContent = false) {
+    flowCanvasRef.value?.refreshCanvas(fitToContent);
   }
+
+  watch(showRightContent, () => {
+    nextTick(() => {
+      refreshCanvas(true);
+    });
+  });
 
   defineExpose({
     flow,
