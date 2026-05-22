@@ -98,14 +98,14 @@ public class ApprovalInstanceService {
 			currentNodeId = instanceDetail.getCurrentNodeId().split(SIGN_SPILT)[0];
 		}
 		ApprovalNodeApprover currentNode = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+		if (currentNode == null) {
+			return instanceDetail;
+		}
 		if (instanceDetail.getCurrentNodeId().contains(SIGN_SPILT)) {
 			// 加签字段
 			if (StringUtils.isNotBlank(currentNode.getFieldPermissions())) {
 				List<FieldPermissionDTO> fieldPermissions = JSON.parseArray(currentNode.getFieldPermissions(), FieldPermissionDTO.class);
-				List<FieldPermissionDTO> viewPermissionsOfSign = fieldPermissions.stream().map(permission -> {
-					permission.setPermissionType(FieldPermissionTypeEnum.VIEW.name());
-					return permission;
-				}).toList();
+				List<FieldPermissionDTO> viewPermissionsOfSign = fieldPermissions.stream().peek(permission -> permission.setPermissionType(FieldPermissionTypeEnum.VIEW.name())).toList();
 				instanceDetail.setCurrentNodeFieldPermissions(JSON.toJSONString(viewPermissionsOfSign));
 			}
 		} else {
@@ -186,8 +186,8 @@ public class ApprovalInstanceService {
 		List<Attachment> attachmentList = attachmentMapper.selectByIds(attachmentIds);
 		Map<String, Attachment> attachmentMap = attachmentList.stream().collect(Collectors.toMap(Attachment::getId, a -> a, (v1, v2) -> v1));
 
-		return attachments.stream().collect(Collectors.groupingBy(ApprovalInstanceAttachment::getElementId,
-				Collectors.mapping(a -> attachmentMap.get(a.getAttachmentId()), Collectors.toList())));
+		return attachments.stream().filter(a -> attachmentMap.containsKey(a.getAttachmentId()))
+				.collect(Collectors.groupingBy(ApprovalInstanceAttachment::getElementId, Collectors.mapping(a -> attachmentMap.get(a.getAttachmentId()), Collectors.toList())));
 	}
 
 	/**
@@ -291,14 +291,17 @@ public class ApprovalInstanceService {
 			 * 获取节点下最后一轮正常待办任务 (排除正常加签操作)
 			 * 加签场景下, 同一节点可能存在多条rootTask, 只展示最新创建的那个待办
 			 */
-			List<User> nodeMultiApproverList = approvalFlowService.getCurrentNodeApproverList(hisNode, instance.getSubmitterId(), currentOrgId);
+			List<User> nodeMultiApprover = approvalFlowService.getCurrentNodeApproverList(hisNode, instance.getSubmitterId(), currentOrgId);
 			List<ApprovalTask> nlTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL && Strings.CI.equals(task.getNodeId(), hisNode)
 					&& task.getNodeRound().equals(maxRound)).sorted(Comparator.comparing(ApprovalTask::getCreateTime)).toList();
 			nlTasks = filterNodeLatestTasks(nlTasks);
+			if (CollectionUtils.isEmpty(nlTasks)) {
+				return;
+			}
 			List<ApprovalTask> snTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.SN && Strings.CI.equals(task.getNodeId(), hisNode)
 					&& task.getNodeRound().equals(maxRound)).sorted(Comparator.comparing(ApprovalTask::getCreateTime)).toList();
 			// 加签任务追加
-			if (nodeMultiApproverList.size() == 1) {
+			if (nodeMultiApprover.size() == 1) {
 				// 单人执行
 				List<ApprovalTask> flatSignTasks = flatSignTask(nlTasks.getFirst(), addSignTaskMapOfRoot, snTasks.stream().collect(Collectors.toMap(ApprovalTask::getId, t -> t)));
 				for (int i = 0; i < flatSignTasks.size(); i++) {
@@ -323,18 +326,7 @@ public class ApprovalInstanceService {
 				// 依次审批的后续节点审批人需要作为待审批追加
 				ApprovalNodeApprover approvalNodeApprover = hisApproverNodeMap.get(hisNode);
 				if (MultiApproverModeEnum.valueOf(approvalNodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.SEQUENTIAL) {
-					List<String> processApproverIds = allTask.stream().map(ApprovalTask::getApproverId).toList();
-					ApprovalTask copyTask = allTask.getFirst();
-					List<ApprovalTask> seqTasks = nodeMultiApproverList.stream().filter(approver -> !processApproverIds.contains(approver.getId())).map(user -> {
-						ApprovalTask seqTask = BeanUtils.copyBean(new ApprovalTask(), copyTask);
-						seqTask.setId(IDGenerator.nextStr());
-						seqTask.setApproverId(user.getId());
-						seqTask.setStatus(ApprovalStatus.PENDING.name());
-						seqTask.setType(ApprovalTaskType.NL.name());
-						seqTask.setAction(null);
-						return seqTask;
-					}).toList();
-					allTask.addAll(seqTasks);
+					allTask.addAll(appendSeqTasks(nodeMultiApprover, allTask));
 				}
 				List<ApprovalTaskNode> taskNodes = allTask.stream().map(nTask -> buildTaskNode(nTask, taskRecordMap, addSignTaskMapOfTask, attachmentsMap, simpleUserMap)).toList();
 				ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).taskNodes(taskNodes).ccNodes(ccNodes).build();
@@ -342,6 +334,26 @@ public class ApprovalInstanceService {
 			}
 		});
 		return nodes;
+	}
+
+	/**
+	 * 追加依次审批的待审批任务
+	 * @param nodeMultiApprover 节点审批人
+	 * @param allTask 所有执行任务
+	 * @return 依次审批的待审批任务
+	 */
+	private List<ApprovalTask> appendSeqTasks(List<User> nodeMultiApprover, List<ApprovalTask> allTask) {
+		List<String> processApproverIds = allTask.stream().map(ApprovalTask::getApproverId).toList();
+		ApprovalTask copyTask = allTask.getFirst();
+		return nodeMultiApprover.stream().filter(approver -> !processApproverIds.contains(approver.getId())).map(user -> {
+			ApprovalTask seqTask = BeanUtils.copyBean(new ApprovalTask(), copyTask);
+			seqTask.setId(IDGenerator.nextStr());
+			seqTask.setApproverId(user.getId());
+			seqTask.setStatus(ApprovalStatus.PENDING.name());
+			seqTask.setType(ApprovalTaskType.NL.name());
+			seqTask.setAction(null);
+			return seqTask;
+		}).toList();
 	}
 
 	/**
@@ -356,7 +368,7 @@ public class ApprovalInstanceService {
 		if (backRecord != null) {
 			recordNode.setBackNode(true);
 			recordNode.setBackReason(backRecord.getReturnReason());
-			recordNode.setBackAttachments(attachmentsMap.get(backRecord.getId()));
+			recordNode.setBackAttachments(attachmentsMap.getOrDefault(backRecord.getId(), Collections.emptyList()));
 		}
 		return recordNode;
 	}
@@ -581,7 +593,7 @@ public class ApprovalInstanceService {
 		if (addSignTaskMapOfTask.containsKey(task.getId()) && taskNode.isSign()) {
 			// 加签任务
 			taskNode.setSignComment(addSignTaskMapOfTask.get(task.getId()).getComment());
-			taskNode.setSignAttachments(attachmentsMap.get(addSignTaskMapOfTask.get(task.getId()).getId()));
+			taskNode.setSignAttachments(attachmentsMap.getOrDefault(addSignTaskMapOfTask.get(task.getId()).getId(), Collections.emptyList()));
 		}
 		if (simpleUserMap.containsKey(task.getApproverId())) {
 			taskNode.setApprover(simpleUserMap.get(task.getApproverId()).getName());
@@ -589,7 +601,7 @@ public class ApprovalInstanceService {
 		}
 		if (record != null) {
 			taskNode.setComment(record.getComment());
-			taskNode.setAttachments(attachmentsMap.get(record.getId()));
+			taskNode.setAttachments(attachmentsMap.getOrDefault(record.getId(), Collections.emptyList()));
 			taskNode.setApprovalTime(record.getCreateTime());
 		}
 		return taskNode;
