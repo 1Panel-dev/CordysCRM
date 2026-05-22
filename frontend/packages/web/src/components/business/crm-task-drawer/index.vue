@@ -35,7 +35,7 @@
             <div class="font-semibold">
               <n-checkbox
                 v-if="activeTaskType.includes('pending') && approvalConfigDetail?.allowBatchProcess"
-                :value="allSelect"
+                v-model:checked="allSelect"
                 :label="activeModuleTitle"
                 :indeterminate="indeterminate"
                 @update-checked="handleSelectAll"
@@ -212,7 +212,7 @@
     const module = moduleItems.find((item) => item.name === moduleName);
     return module ? module.title : '';
   });
-  const allSelect = ref<string>('N');
+  const allSelect = ref<boolean>(false);
   const selectedKeys = ref<string[]>([]);
   const listTotal = ref(0);
   const listAllKeys = ref<string[]>([]);
@@ -224,14 +224,25 @@
   });
 
   function handleSelectAll() {
-    if (allSelect.value === 'Y') {
-      selectedKeys.value = [];
-      allSelect.value = 'N';
-    } else {
-      allSelect.value = 'Y';
+    if (allSelect.value === true) {
       selectedKeys.value = [...listAllKeys.value];
+    } else {
+      selectedKeys.value = [];
     }
   }
+
+  watch(
+    () => selectedKeys.value,
+    (val) => {
+      if (val.length === 0) {
+        allSelect.value = false;
+      } else if (val.length === listTotal.value) {
+        allSelect.value = true;
+      } else {
+        allSelect.value = false;
+      }
+    }
+  );
 
   async function initStatistic() {
     try {
@@ -346,6 +357,8 @@
   function handleApproveSuccess() {
     initStatistic();
     taskListRef.value?.loadTaskList(true);
+    allSelect.value = false;
+    selectedKeys.value = [];
   }
 </script>
 

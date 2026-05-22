@@ -11,10 +11,13 @@
         @reach-bottom="handleReachBottom"
       >
         <template #item="{ item }">
-          <div class="task-item" :class="selectedKeys.includes(item.id) ? '!border-[var(--primary-8)]' : ''">
+          <div
+            class="task-item"
+            :class="selectedKeys.includes(item.approvalTaskId) ? '!border-[var(--primary-8)]' : ''"
+          >
             <n-checkbox
               v-if="props.activeTaskType?.includes('pending') && approvalConfigDetail?.allowBatchProcess"
-              :value="item.id"
+              :value="item.approvalTaskId"
               class="mt-[4px]"
             />
             <div class="task-item-content">
@@ -212,12 +215,14 @@
 
   function handleApproveSuccess() {
     loadTaskList(true);
+    selectedKeys.value = [];
     emit('approvalSuccess');
   }
 
   function handleApproveCancel() {
     approvalVisible.value = false;
     approvalItem.value = undefined;
+    selectedKeys.value = [];
   }
 
   function getApprovedTagColor(result: ApprovalOperationEnum) {

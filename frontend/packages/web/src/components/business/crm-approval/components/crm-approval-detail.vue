@@ -117,7 +117,16 @@
         </n-radio-group>
       </n-form-item>
       <n-form-item path="reviewer" :label="t('crm.approval.addSignApprover')" required>
-        <CrmMemberSelect v-model:value="addSignForm.reviewer" :multiple="false" />
+        <CrmMemberSelect
+          v-model:value="addSignForm.reviewer"
+          :multiple="false"
+          :member-types="[
+            {
+              label: t('menu.settings.org'),
+              value: MemberSelectTypeEnum.ORG,
+            },
+          ]"
+        />
       </n-form-item>
       <n-form-item path="reason" :label="t('crm.approval.addSignOpinion')">
         <CrmFileInput v-model:value="addSignForm.reason" v-model:file-list="addSignForm.fileList" />
@@ -163,6 +172,7 @@
   } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CollaborationType } from '@lib/shared/models/customer';

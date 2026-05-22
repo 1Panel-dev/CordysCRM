@@ -36,18 +36,20 @@
       clearable
       show-count
     />
-    <CrmFileList
-      v-if="fileList.length > 0"
-      :files="fileList as unknown as AttachmentInfo[]"
-      class="mt-[8px]"
-      @deleteFile="handleDeleteFile"
-    />
+    <n-scrollbar :content-style="{ maxHeight: '400px' }" class="mt-[8px]">
+      <CrmFileList
+        v-if="fileList.length > 0"
+        :files="fileList as unknown as AttachmentInfo[]"
+        @deleteFile="handleDeleteFile"
+      />
+    </n-scrollbar>
   </div>
 </template>
 
 <script setup lang="ts">
   import {
     NInput,
+    NScrollbar,
     NTooltip,
     NUpload,
     type UploadCustomRequestOptions,

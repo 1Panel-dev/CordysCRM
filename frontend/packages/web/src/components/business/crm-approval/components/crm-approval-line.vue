@@ -72,18 +72,6 @@
                   />
                 </div>
               </n-popover>
-              <!-- <n-popover v-if="node.returnNode" trigger="hover">
-                <template #trigger>
-                  <CrmIcon type="iconicon_info_circle_filled" color="var(--error-red)" :size="16" />
-                </template>
-                <div>自动拒绝</div>
-              </n-popover>
-              <n-popover v-if="node.returnNode" trigger="hover">
-                <template #trigger>
-                  <CrmIcon type="iconicon_info_circle_filled" color="var(--success-green)" :size="16" />
-                </template>
-                <div>自动同意</div>
-              </n-popover> -->
             </div>
             <div
               v-if="node.approvalStatus !== ProcessStatusEnum.PENDING"
