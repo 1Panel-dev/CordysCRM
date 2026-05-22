@@ -220,6 +220,10 @@ public class ContractService {
             throw new GenericException(Translator.get("resource.not.exist"));
         }
         dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_READ);
+		if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+			getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+		}
         return getResponse;
     }
 
@@ -229,6 +233,10 @@ public class ContractService {
             throw new GenericException(Translator.get("resource.not.exist"));
         }
         dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_READ);
+		if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+			getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+		}
         return getResponse;
     }
 
@@ -540,7 +548,10 @@ public class ContractService {
                 .collect(Collectors.toMap(StageConfigResponse::getId,
                         StageConfigResponse::getName));
 
-        list.forEach(item -> {
+		List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(ContractListResponse::getId).toList();
+		Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+
+		list.forEach(item -> {
             item.setOwnerName(userNameMap.get(item.getOwner()));
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getOwner());
             if (userDeptDTO != null) {
@@ -551,6 +562,7 @@ public class ContractService {
             // 获取自定义字段
             List<BaseModuleFieldValue> contractFields = resolvefieldValueMap.get(item.getId());
             item.setModuleFields(contractFields);
+			item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
         });
         return baseService.setCreateAndUpdateUserName(list);
     }

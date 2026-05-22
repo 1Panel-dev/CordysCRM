@@ -29,11 +29,13 @@ import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.BusinessTitleConstants;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
-import cn.cordys.crm.contract.domain.*;
+import cn.cordys.crm.contract.domain.BusinessTitle;
+import cn.cordys.crm.contract.domain.Contract;
+import cn.cordys.crm.contract.domain.ContractInvoice;
+import cn.cordys.crm.contract.domain.ContractInvoiceSnapshot;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceUpdateRequest;
-import cn.cordys.crm.contract.dto.response.ContractGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
@@ -340,6 +342,10 @@ public class ContractInvoiceService {
             throw new GenericException(Translator.get("resource.not.exist"));
         }
         dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_INVOICE_READ);
+		if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+			getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+		}
         return getResponse;
     }
 
@@ -349,6 +355,10 @@ public class ContractInvoiceService {
             throw new GenericException(Translator.get("resource.not.exist"));
         }
         dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_INVOICE_READ);
+		if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+			getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+		}
         return getResponse;
     }
 
@@ -455,6 +465,9 @@ public class ContractInvoiceService {
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
+		List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(ContractInvoiceListResponse::getId).toList();
+		Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+
         list.forEach(item -> {
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getOwner());
             if (userDeptDTO != null) {
@@ -468,6 +481,7 @@ public class ContractInvoiceService {
             // 获取自定义字段
             List<BaseModuleFieldValue> invoiceFields = resolvefieldValueMap.get(item.getId());
             item.setModuleFields(invoiceFields);
+			item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
         });
         return baseService.setCreateUpdateOwnerUserName(list);
     }
@@ -493,6 +507,23 @@ public class ContractInvoiceService {
             return moduleFormCacheService.getBusinessFormConfig(FormKey.INVOICE.getKey(), orgId);
         }
     }
+
+	/**
+	 * 获取发票详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
+	 * @param id 发票ID
+	 * @return 发票详情
+	 */
+	public ContractInvoiceGetResponse getSimple(String id) {
+		ContractInvoice contractInvoice = contractInvoiceMapper.selectByPrimaryKey(id);
+		if (contractInvoice == null) {
+			return null;
+		}
+		ContractInvoiceGetResponse response = BeanUtils.copyBean(new ContractInvoiceGetResponse(), contractInvoice);
+		List<BaseModuleFieldValue> fvs = invoiceFieldService.getModuleFieldValuesByResourceId(id);
+		ModuleFormConfigDTO formConfig = getFormConfig(contractInvoice.getOrganizationId());
+		moduleFormService.processBusinessFieldValues(response, fvs, formConfig);
+		return response;
+	}
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
