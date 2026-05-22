@@ -75,7 +75,6 @@
   const { t } = useI18n();
 
   const loading = ref(false);
-  const loaded = ref(false);
   const approvers = ref<ApproverItem[]>([]);
   const activeApproverId = ref('');
 
@@ -95,7 +94,6 @@
       const detail = await getResourceApprovingDetail(props.sourceId);
       approvers.value = getApprovers(detail);
       activeApproverId.value = approvers.value[0]?.id ?? '';
-      loaded.value = true;
     } catch (error) {
       approvers.value = [];
       activeApproverId.value = '';
@@ -107,14 +105,13 @@
   }
 
   function handlePopoverShow(show: boolean) {
-    if (!show || loaded.value) return;
+    if (!show) return;
     initDetail();
   }
 
   watch(
     () => props.sourceId,
     () => {
-      loaded.value = false;
       approvers.value = [];
       activeApproverId.value = '';
     }

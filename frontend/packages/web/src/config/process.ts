@@ -128,10 +128,14 @@ export const approvalRecordStatusMap: Record<ProcessStatusEnum, StatusInfo> = {
   },
 };
 
-export const processStatusOptions = Object.entries(processStatusMap).map(([key, value]) => ({
-  label: value.label,
-  value: key,
-}));
+export const processStatusOptions = Object.entries(processStatusMap)
+  .filter(
+    ([key]) => ![ProcessStatusEnum.AUTO_APPROVED, ProcessStatusEnum.AUTO_UNAPPROVED].includes(key as ProcessStatusEnum)
+  )
+  .map(([key, value]) => ({
+    label: value.label,
+    value: key,
+  }));
 
 export const defaultBasicForm: BasicFormParams = {
   formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,

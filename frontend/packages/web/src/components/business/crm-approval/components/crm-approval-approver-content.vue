@@ -35,7 +35,8 @@
 </template>
 
 <script setup lang="ts">
-  import { ApprovalOperationEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { ApproverItem } from '@lib/shared/models/system/process';
 
   import CrmApprovalAvatar from './crm-approval-avatar.vue';
@@ -51,6 +52,8 @@
     }
   );
 
+  const { t } = useI18n();
+
   const approvers = computed(() => props.approvers || []);
 
   const activeApproverId = defineModel<string | number>('activeId', {
@@ -58,9 +61,19 @@
   });
 
   const currentApproverMap = computed(() => new Map(approvers.value.map((item) => [String(item.id), item])));
-  const currentApproverReason = computed(
-    () => currentApproverMap.value.get(String(activeApproverId.value))?.approveReason ?? ''
-  );
+  const currentApproverReason = computed(() => {
+    const currentApprover = currentApproverMap.value.get(String(activeApproverId.value));
+
+    if (!currentApprover) {
+      return '';
+    }
+
+    if (currentApprover.approveResult === ProcessStatusEnum.AUTO_UNAPPROVED) {
+      return t('crm.approval.autoReject');
+    }
+
+    return currentApprover.approveReason ?? '';
+  });
 
   function isActiveApproval(approver: ApproverItem) {
     return approver.approveResult === ProcessStatusEnum.APPROVED && approver.id === activeApproverId.value;

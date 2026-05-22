@@ -35,4 +35,5 @@ export default {
   'crm.approval.addSignSuccess': 'Add Signature Successful',
   'crm.approval.preNode': 'Previous {index} Node',
   'crm.approval.fallbackSuccess': 'Fallback Successful',
+  'crm.approval.autoReject': 'Cbot Auto Reject',
 };

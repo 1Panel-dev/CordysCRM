@@ -3,7 +3,11 @@
     class="crm-approver-avatar-list__avatar-wrap"
     :class="{ 'crm-approver-avatar-list__avatar-wrap--active': props.approver?.id === activeApproverId }"
   >
+    <n-avatar v-if="isAutoRejectedBot" round :size="props.size" class="cursor-pointer" @click="emit('toggleActive')">
+      <CrmIcon type="iconicon_bot" :size="18" class="text-[var(--text-n10)]" />
+    </n-avatar>
     <CrmAvatar
+      v-else
       :avatar="props.approver?.avatar"
       :word="props.approver?.name"
       :is-user="false"
@@ -22,6 +26,8 @@
 </template>
 
 <script setup lang="ts">
+  import { NAvatar } from 'naive-ui';
+
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import type { ApproverItem } from '@lib/shared/models/system/process';
 
@@ -44,11 +50,18 @@
     (e: 'toggleActive'): void;
   }>();
 
+  const isAutoRejectedBot = computed(
+    () =>
+      props.approver?.approveResult === ProcessStatusEnum.AUTO_UNAPPROVED &&
+      !props.approver?.avatar &&
+      !props.approver?.name
+  );
+
   function getStatusIcon(status: ProcessStatusEnum) {
     if (props.signNode) {
       return 'iconicon_add_one';
     }
-    if (status === ProcessStatusEnum.UNAPPROVED) {
+    if ([ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.AUTO_UNAPPROVED].includes(status)) {
       return 'iconicon_close_circle_filled';
     }
     return 'iconicon_succeed_filled';
@@ -60,6 +73,7 @@
     }
     switch (status) {
       case ProcessStatusEnum.UNAPPROVED:
+      case ProcessStatusEnum.AUTO_UNAPPROVED:
         return 'text-[var(--error-red)]';
       case ProcessStatusEnum.APPROVED:
         return 'text-[var(--success-green)]';
