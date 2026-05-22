@@ -51,14 +51,15 @@
             :form-key="FormDesignKeyEnum.ORDER"
             :source-id="props.sourceId"
             :approval-status="detailInfo?.approvalStatus"
-            @refresh="emit('refresh')"
+            @saveApproval="handleSaveApproval"
           >
-            <template #left>
+            <template #left="{ fieldPermissions }">
               <CrmFormDescription
                 :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
                 :source-id="props.sourceId"
                 :column="2"
                 :refresh-key="refreshKey"
+                :fieldPermissions="fieldPermissions"
                 label-width="auto"
                 value-align="start"
                 tooltip-position="top-start"
@@ -363,6 +364,14 @@
     const openSeaSetting = openSeaOptions.value.find((item) => item.id === poolId.value);
     return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
   });
+
+  const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+  function handleSaveApproval() {
+    formDescriptionRef.value?.handleFormChange(() => {
+      refreshKey.value += 1;
+      emit('refresh');
+    });
+  }
 
   onBeforeMount(() => {
     initOpenSeaOptions();

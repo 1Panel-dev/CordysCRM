@@ -10,9 +10,12 @@
       disabled
     >
       <template #1>
-        <div class="flex h-full w-full p-[24px_16px_24px_24px]">
-          <n-scrollbar x-scrollable>
-            <slot name="left"></slot>
+        <div class="flex h-full w-full p-[24px_8px_24px_24px]">
+          <n-scrollbar :content-style="{ paddingRight: '8px' }" x-scrollable>
+            <slot
+              name="left"
+              :fieldPermissions="JSON.parse(approvalInfo?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]"
+            ></slot>
           </n-scrollbar>
         </div>
       </template>
@@ -88,7 +91,7 @@
     </CrmSplitPanel>
     <div v-else class="flex h-full w-full p-[24px_16px_24px_24px]">
       <n-scrollbar x-scrollable>
-        <slot name="left"></slot>
+        <slot name="left" :fieldPermissions="[]"></slot>
       </n-scrollbar>
     </div>
   </CrmCard>
@@ -177,7 +180,12 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig } from '@lib/shared/models/system/module';
-  import type { ApprovalDetail, ApprovalNode, ApprovalProcessDetail } from '@lib/shared/models/system/process';
+  import type {
+    ApprovalDetail,
+    ApprovalFieldPermission,
+    ApprovalNode,
+    ApprovalProcessDetail,
+  } from '@lib/shared/models/system/process';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -197,6 +205,7 @@
     getApprovalResourceDetail,
     rejectApproval,
     revokeApproval,
+    revokeResource,
   } from '@/api/modules';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useModal from '@/hooks/useModal';
@@ -218,6 +227,7 @@
       detail?: Record<string, any>,
       config?: FormConfig
     ): void;
+    (e: 'saveApproval'): void;
     (e: 'refresh'): void;
   }>();
 
@@ -405,6 +415,7 @@
       initApprovalDetail();
       approvalOpinion.value = '';
       fileList.value = [];
+      emit('saveApproval');
       emit('refresh');
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -443,6 +454,7 @@
           initApprovalDetail();
           approvalOpinion.value = '';
           fileList.value = [];
+          emit('saveApproval');
           emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -487,6 +499,7 @@
             fileList: [],
           };
           initApprovalDetail();
+          emit('saveApproval');
           emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -540,6 +553,7 @@
             reason: '',
             fileList: [],
           };
+          emit('saveApproval');
           emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -587,12 +601,14 @@
         positiveText: t('crm.approval.confirmCancelApprovalApply'),
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
-          await revokeByResourceId(props.sourceId, {
-            onSuccess: () => {
-              initApprovalDetail();
-              emit('refresh');
-            },
+          await revokeResource({
+            resourceId: props.sourceId,
+            formKey: props.formKey,
           });
+          message.success(t('common.revokeSuccess'));
+          initApprovalDetail();
+          emit('saveApproval');
+          emit('refresh');
         },
       });
     } else {
@@ -608,6 +624,7 @@
           });
           message.success(t('crm.approval.cancelApprovalSuccess'));
           initApprovalDetail();
+          emit('saveApproval');
           emit('refresh');
         },
       });
