@@ -1837,7 +1837,7 @@ public class ApprovalFlowService {
 		task.setNodeRound(nextRound);
 		task.setApproverId(approver);
 		task.setType(ApprovalTaskType.NL.name());
-		task.setStatus(ApprovalStatus.APPROVED.name());
+		task.setStatus(ApprovalStatus.AUTO_APPROVED.name());
 		task.setAction(ApprovalAction.APPROVE.name());
 		task.setCreateTime(System.currentTimeMillis());
 		task.setCreateUser(InternalUser.ADMIN.getValue());
