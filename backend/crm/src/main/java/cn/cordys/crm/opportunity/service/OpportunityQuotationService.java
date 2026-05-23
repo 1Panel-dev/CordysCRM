@@ -19,19 +19,19 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.contract.domain.ContractFieldBlob;
-import cn.cordys.crm.opportunity.domain.Opportunity;
-import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
-import cn.cordys.crm.opportunity.domain.OpportunityQuotationApproval;
-import cn.cordys.crm.opportunity.domain.OpportunityQuotationSnapshot;
+import cn.cordys.crm.opportunity.domain.*;
 import cn.cordys.crm.opportunity.dto.request.*;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationGetResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityQuotationListResponse;
@@ -57,6 +57,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -64,9 +65,11 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -74,6 +77,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class OpportunityQuotationService {
 
     @Resource
@@ -475,6 +479,87 @@ public class OpportunityQuotationService {
 		if (snapshot != null) {
 			OpportunityQuotationGetResponse response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
 			response.setApprovalStatus(param.getApprovalStatus());
+			snapshot.setQuotationValue(JSON.toJSONString(response));
+			snapshotBaseMapper.update(snapshot);
+		}
+	}
+
+	/**
+	 * ⚠️反射调用: 由审批执行后置操作统一调用, 勿修改
+	 * @param postFieldParam 参数
+	 */
+	public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
+		ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), OrganizationContext.getOrganizationId());
+		List<BaseField> fields = formConfig.getFields();
+		Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f));
+		OpportunityQuotation quotation = opportunityQuotationMapper.selectByPrimaryKey(postFieldParam.getResourceId());
+		List<OpportunityQuotationField> quotationFields = new ArrayList<>();
+		List<OpportunityQuotationFieldBlob> quotationFieldBlobs = new ArrayList<>();
+		OpportunityQuotationSnapshot snapshotCriteria = new OpportunityQuotationSnapshot();
+		snapshotCriteria.setQuotationId(postFieldParam.getResourceId());
+		OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+		OpportunityQuotationGetResponse response = new OpportunityQuotationGetResponse();
+		if (snapshot != null) {
+			response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
+		}
+		for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
+			if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())) {
+				return;
+			}
+			BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
+			if (fieldConfig.hasBusinessKey()) {
+				// 业务主表字段
+				opportunityQuotationFieldService.setResourceFieldValue(quotation, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+				// 业务快照表字段
+				Field field = ReflectionUtils.findField(response.getClass(), f -> Strings.CS.equals(f.getName(), fieldConfig.getBusinessKey()));
+				if (field == null) {
+					log.error("Cannot find field `{}`", fieldConfig.getBusinessKey());
+					return;
+				}
+				ReflectionUtils.setField(field, response, fieldUpdateParam.getFieldValue());
+			} else {
+				// 自定义字段
+				Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream().filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId())).findAny();
+				if (findField.isPresent()) {
+					findField.get().setFieldValue(fieldUpdateParam.getFieldValue());
+				} else {
+					BaseModuleFieldValue fv = new BaseModuleFieldValue();
+					fv.setFieldId(fieldUpdateParam.getFieldId());
+					fv.setFieldValue(fieldUpdateParam.getFieldValue());
+					response.getModuleFields().add(fv);
+				}
+				if (fieldConfig.isBlob()) {
+					// 自定义大表
+					opportunityQuotationFieldService.getResourceFieldBlobMapper().deleteByLambda(new LambdaQueryWrapper<OpportunityQuotationFieldBlob>()
+							.eq(OpportunityQuotationFieldBlob::getFieldId, fieldUpdateParam.getFieldId()).eq(OpportunityQuotationFieldBlob::getResourceId, postFieldParam.getResourceId()));
+					OpportunityQuotationFieldBlob field = new OpportunityQuotationFieldBlob();
+					field.setId(IDGenerator.nextStr());
+					field.setResourceId(postFieldParam.getResourceId());
+					field.setFieldId(fieldUpdateParam.getFieldId());
+					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					quotationFieldBlobs.add(field);
+				} else {
+					// 自定义表
+					opportunityQuotationFieldService.getResourceFieldMapper().deleteByLambda(new LambdaQueryWrapper<OpportunityQuotationField>()
+							.eq(OpportunityQuotationField::getFieldId, fieldUpdateParam.getFieldId()).eq(OpportunityQuotationField::getResourceId, postFieldParam.getResourceId()));
+					OpportunityQuotationField field = new OpportunityQuotationField();
+					field.setId(IDGenerator.nextStr());
+					field.setResourceId(postFieldParam.getResourceId());
+					field.setFieldId(fieldUpdateParam.getFieldId());
+					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					quotationFields.add(field);
+				}
+			}
+		}
+		opportunityQuotationMapper.updateById(quotation);
+		if (CollectionUtils.isNotEmpty(quotationFields)) {
+			opportunityQuotationFieldService.getResourceFieldMapper().batchInsert(quotationFields);
+		}
+		if (CollectionUtils.isNotEmpty(quotationFields)) {
+			opportunityQuotationFieldService.getResourceFieldBlobMapper().batchInsert(quotationFieldBlobs);
+		}
+		// 更新快照
+		if (snapshot != null) {
 			snapshot.setQuotationValue(JSON.toJSONString(response));
 			snapshotBaseMapper.update(snapshot);
 		}

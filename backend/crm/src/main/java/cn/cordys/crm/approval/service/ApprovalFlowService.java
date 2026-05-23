@@ -5,6 +5,7 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
@@ -1509,17 +1510,42 @@ public class ApprovalFlowService {
 
 	/**
 	 * 获取当前实例节点审批人
+	 * @param instance 审批实例
 	 * @param currentNodeId 当前节点ID
-	 * @param userId 用户ID
 	 * @param currentOrgId 当前组织ID
 	 * @return 审批人ID集合
 	 */
-	public List<User> getCurrentNodeApproverList(String currentNodeId, String userId, String currentOrgId) {
+	public List<String> getCurrentNodeApproverList(ApprovalInstance instance, String currentNodeId, String currentOrgId) {
 		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
 		if (nodeApprover == null) {
 			return new ArrayList<>();
 		}
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
+		List<User> approvers = resolveApprovers(instance.getSubmitterId(), currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
+		// 审批人为空时
+		if (CollectionUtils.isEmpty(approvers)) {
+			if (EmptyApproverActionEnum.valueOf(nodeApprover.getEmptyApproverAction()) != EmptyApproverActionEnum.AUTO_PASS) {
+				// 指定人员, 审批管理员处理, 返回兜底审批人
+				return List.of(nodeApprover.getFallbackApprover());
+			}
+		}
+
+		// 审批人与提交人同一人时
+		Optional<User> findSame = approvers.stream().filter(approver -> Strings.CS.equals(approver.getId(), instance.getSubmitterId())).findAny();
+		if (SameSubmitterActionEnum.valueOf(nodeApprover.getSameSubmitterAction()) == SameSubmitterActionEnum.ASSIGN_SUPERIOR && findSame.isPresent()) {
+			// 转交给直属上级审批
+			OrganizationUser criteria = new OrganizationUser();
+			criteria.setUserId(findSame.get().getId());
+			criteria.setOrganizationId(currentOrgId);
+			OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
+			if (currentUser != null && StringUtils.isNotEmpty(currentUser.getSupervisorId())) {
+				// 替换审批人列表中与提审人相同审批人 => 直属上级
+				String supervisorId = currentUser.getSupervisorId();
+				return approvers.stream()
+						.map(approver -> Strings.CS.equals(approver.getId(), instance.getSubmitterId()) ? supervisorId : approver.getId())
+						.collect(Collectors.toList());
+			}
+		}
+		return approvers.stream().map(User::getId).toList();
 	}
 
 	/**
@@ -1678,6 +1704,7 @@ public class ApprovalFlowService {
 			if (EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction()) == EmptyApproverActionEnum.AUTO_PASS) {
 				// 自动通过, 插入审批记录, 获取下一个节点
 				saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人为空，自动通过", null, nextApproverNode.getCcList(), true, null);
+				updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
 				return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
 			} else {
 				// 指定人员, 审批管理员处理, 返回兜底审批人
@@ -1710,21 +1737,17 @@ public class ApprovalFlowService {
 					// 不存在直属上级, 自动跳过
 					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
 					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 直属上级为空, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
+					updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
 					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
 				}
 			}
 			case SKIP -> {
 				// 自动跳过
-				if (nextApproverNode.getApproverList().size() == 1) {
-					// 如果刚好为单人审批, 直接插入待办任务和记录, 流转到下一个节点
+				if (nextApproverNode.getApproverList().size() == 1 || MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
+					// 如果刚好为单人审批, 多人或签, 直接插入待办任务和记录, 流转到下一个节点
 					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
 					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
-					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
-				}
-				if (MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
-					// 如果为多人或签, 插入待办任务和记录, 且需要流转到下一个节点
-					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
-					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
+					updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
 					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
 				}
 			}
@@ -1922,5 +1945,20 @@ public class ApprovalFlowService {
 		approverNode.setApproverList(nextApprovers.stream().map(User::getId).distinct().collect(Collectors.toList()));
 		List<User> nextCcList = getCurrentNodeCcList(approverNode.getCcType(), approverNode.getCcList(), submitter, currentOrgId);
 		approverNode.setCcList(nextCcList.stream().map(User::getId).distinct().collect(Collectors.toList()));
+	}
+
+	/**
+	 * 审批后操作 (字段更新)
+	 * @param instance 审批实例
+	 * @param currentNodeId 当前字段ID
+	 * @param action 审批动作
+	 */
+	public void updateApprovalPostField(ApprovalInstance instance, String currentNodeId, ApprovalAction action) {
+		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+		if (resourceService != null) {
+			ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+			resourceService.updateApprovalPostField(FormKey.ofKey(instance.getType()), instance.getResourceId(),
+					action == ApprovalAction.APPROVE ? approvalNodeApprover.getPassPostConfig() : approvalNodeApprover.getRejectPostConfig());
+		}
 	}
 }

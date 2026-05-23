@@ -21,17 +21,17 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.BusinessTitleConstants;
-import cn.cordys.crm.contract.domain.BusinessTitle;
-import cn.cordys.crm.contract.domain.Contract;
-import cn.cordys.crm.contract.domain.ContractInvoice;
-import cn.cordys.crm.contract.domain.ContractInvoiceSnapshot;
+import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceUpdateRequest;
@@ -50,18 +50,22 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class ContractInvoiceService {
 
     @Resource
@@ -615,6 +619,87 @@ public class ContractInvoiceService {
 		if (snapshot != null) {
 			ContractInvoiceGetResponse response = JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
 			response.setApprovalStatus(param.getApprovalStatus());
+			snapshot.setInvoiceValue(JSON.toJSONString(response));
+			snapshotBaseMapper.update(snapshot);
+		}
+	}
+
+	/**
+	 * ⚠️反射调用: 由审批执行后置操作统一调用, 勿修改
+	 * @param postFieldParam 参数
+	 */
+	public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
+		ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
+		List<BaseField> fields = formConfig.getFields();
+		Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f));
+		ContractInvoice contractInvoice = contractInvoiceMapper.selectByPrimaryKey(postFieldParam.getResourceId());
+		List<ContractInvoiceField> contractInvoiceFields = new ArrayList<>();
+		List<ContractInvoiceFieldBlob> contractInvoiceFieldBlobs = new ArrayList<>();
+		ContractInvoiceSnapshot snapshotCriteria = new ContractInvoiceSnapshot();
+		snapshotCriteria.setInvoiceId(postFieldParam.getResourceId());
+		ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+		ContractInvoiceGetResponse response = new ContractInvoiceGetResponse();
+		if (snapshot != null) {
+			response = JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
+		}
+		for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
+			if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())) {
+				return;
+			}
+			BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
+			if (fieldConfig.hasBusinessKey()) {
+				// 业务主表字段
+				invoiceFieldService.setResourceFieldValue(contractInvoice, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+				// 业务快照表字段
+				Field field = ReflectionUtils.findField(response.getClass(), f -> Strings.CS.equals(f.getName(), fieldConfig.getBusinessKey()));
+				if (field == null) {
+					log.error("Cannot find field `{}`", fieldConfig.getBusinessKey());
+					return;
+				}
+				ReflectionUtils.setField(field, response, fieldUpdateParam.getFieldValue());
+			} else {
+				// 自定义字段
+				Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream().filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId())).findAny();
+				if (findField.isPresent()) {
+					findField.get().setFieldValue(fieldUpdateParam.getFieldValue());
+				} else {
+					BaseModuleFieldValue fv = new BaseModuleFieldValue();
+					fv.setFieldId(fieldUpdateParam.getFieldId());
+					fv.setFieldValue(fieldUpdateParam.getFieldValue());
+					response.getModuleFields().add(fv);
+				}
+				if (fieldConfig.isBlob()) {
+					// 自定义大表
+					invoiceFieldService.getResourceFieldBlobMapper().deleteByLambda(new LambdaQueryWrapper<ContractInvoiceFieldBlob>()
+							.eq(ContractInvoiceFieldBlob::getFieldId, fieldUpdateParam.getFieldId()).eq(ContractInvoiceFieldBlob::getResourceId, postFieldParam.getResourceId()));
+					ContractInvoiceFieldBlob field = new ContractInvoiceFieldBlob();
+					field.setId(IDGenerator.nextStr());
+					field.setResourceId(postFieldParam.getResourceId());
+					field.setFieldId(fieldUpdateParam.getFieldId());
+					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					contractInvoiceFieldBlobs.add(field);
+				} else {
+					// 自定义表
+					invoiceFieldService.getResourceFieldMapper().deleteByLambda(new LambdaQueryWrapper<ContractInvoiceField>()
+							.eq(ContractInvoiceField::getFieldId, fieldUpdateParam.getFieldId()).eq(ContractInvoiceField::getResourceId, postFieldParam.getResourceId()));
+					ContractInvoiceField field = new ContractInvoiceField();
+					field.setId(IDGenerator.nextStr());
+					field.setResourceId(postFieldParam.getResourceId());
+					field.setFieldId(fieldUpdateParam.getFieldId());
+					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					contractInvoiceFields.add(field);
+				}
+			}
+		}
+		contractInvoiceMapper.updateById(contractInvoice);
+		if (CollectionUtils.isNotEmpty(contractInvoiceFields)) {
+			invoiceFieldService.getResourceFieldMapper().batchInsert(contractInvoiceFields);
+		}
+		if (CollectionUtils.isNotEmpty(contractInvoiceFieldBlobs)) {
+			invoiceFieldService.getResourceFieldBlobMapper().batchInsert(contractInvoiceFieldBlobs);
+		}
+		// 更新快照
+		if (snapshot != null) {
 			snapshot.setInvoiceValue(JSON.toJSONString(response));
 			snapshotBaseMapper.update(snapshot);
 		}
