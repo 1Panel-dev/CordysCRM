@@ -1163,8 +1163,12 @@ public class ApprovalActionService {
 			logDTO.setModifiedValue(Translator.get(StringUtils.lowerCase(action.name())));
 			logService.add(logDTO);
 		}
-		// TODO: 消息通知
+		// 结束状态的数据发送消息通知
 		if (StringUtils.isBlank(instance.getApprovalStatus()) || StringUtils.isBlank(instance.getSubmitterId())) {
+			return;
+		}
+		FormKey formKey = FormKey.ofKey(instance.getType());
+		if (formKey == null) {
 			return;
 		}
 		ApprovalStatus approvalStatus = ApprovalStatus.valueOf(instance.getApprovalStatus());
@@ -1172,20 +1176,43 @@ public class ApprovalActionService {
 			return;
 		}
 		String resourceName = resourceService == null ? null :
-				resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
+				resourceService.getInstanceResourceName(formKey, instance.getResourceId());
 		String state = approvalStatus == ApprovalStatus.APPROVED
 				? Translator.get("contract.approval_status.approved")
 				: Translator.get("contract.approval_status.unapproved");
+		String module;
+		String event;
+		switch (formKey) {
+			case QUOTATION -> {
+				module = NotificationConstants.Module.OPPORTUNITY;
+				event = NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL;
+			}
+			case CONTRACT -> {
+				module = NotificationConstants.Module.CONTRACT;
+				event = NotificationConstants.Event.CONTRACT_APPROVAL;
+			}
+			case ORDER -> {
+				module = NotificationConstants.Module.CONTRACT;
+				event = NotificationConstants.Event.ORDER_APPROVAL;
+			}
+			case INVOICE -> {
+				module = NotificationConstants.Module.CONTRACT;
+				event = NotificationConstants.Event.INVOICE_APPROVAL;
+			}
+			default -> {
+				return;
+			}
+		}
+
 		commonNoticeSendService.sendNotice(
-				NotificationConstants.Module.APPROVAL,
-				NotificationConstants.Event.APPROVAL_RESULT,
+				module,
+				event,
 				Map.of("name", StringUtils.defaultString(resourceName), "state", state),
 				userId,
 				orgId,
 				List.of(instance.getSubmitterId()),
 				true
 		);
-
 	}
 
 	/**

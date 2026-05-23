@@ -29,6 +29,7 @@
         WHERE at.approver_id = #{approverId}
         AND at.status = #{pendingStatus}
         AND at.type != 'CC'
+        AND ai.approval_status not in ('APPROVED','UNAPPROVED')
         <if test="resourceType != null and resourceType != ''">
             AND ai.type = #{resourceType}
         </if>
