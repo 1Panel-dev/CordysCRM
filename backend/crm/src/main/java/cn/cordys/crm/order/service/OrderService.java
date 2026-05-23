@@ -33,9 +33,6 @@ import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.domain.Contract;
-import cn.cordys.crm.contract.domain.ContractSnapshot;
-import cn.cordys.crm.contract.dto.response.ContractGetResponse;
-import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.order.domain.OrderSnapshot;
@@ -655,8 +652,7 @@ public class OrderService {
                 ApprovalFormTypeEnum.ORDER.getValue(),
                 originOrders,
                 PermissionConstants.ORDER_UPDATE,
-                userId,
-                orgId,
+				orgId,
                 Order::getId,
                 Order::getApprovalStatus
         );

@@ -533,8 +533,7 @@ public class ContractInvoiceService {
                 ApprovalFormTypeEnum.INVOICE.getValue(),
                 invoices,
                 PermissionConstants.CONTRACT_INVOICE_DELETE,
-                userId,
-                orgId,
+				orgId,
                 ContractInvoice::getId,
                 ContractInvoice::getApprovalStatus
         );

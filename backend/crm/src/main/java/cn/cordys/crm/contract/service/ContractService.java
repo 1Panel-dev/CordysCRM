@@ -799,8 +799,7 @@ public class ContractService {
                 ApprovalFormTypeEnum.CONTRACT.getValue(),
                 originContracts,
                 PermissionConstants.CONTRACT_UPDATE,
-                userId,
-                organizationId,
+				organizationId,
                 Contract::getId,
                 Contract::getApprovalStatus
         );
