@@ -1559,7 +1559,7 @@ public class ApprovalFlowService {
 		if (nodeApprover == null) {
 			return new ArrayList<>();
 		}
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
+		return resolveApproversAssignDisableUser(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
 	}
 
 	/**
@@ -1571,7 +1571,31 @@ public class ApprovalFlowService {
 	 * @return 审批人ID集合
 	 */
 	public List<User> getCurrentNodeApproverList(String approverType, List<String> approverList, String userId, String currentOrgId) {
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList);
+		return resolveApproversAssignDisableUser(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList);
+	}
+
+	/**
+	 * 替换禁用用户为指定上级
+	 * @param userId 当前用户ID
+	 * @param orgId 当前组织ID
+	 * @param approverType 审批类型
+	 * @param approverList 审批人集合
+	 * @return 审批人集合
+	 */
+	private List<User> resolveApproversAssignDisableUser(String userId, String orgId, ApproverTypeEnum approverType, List<String> approverList) {
+		List<User> users = resolveApprovers(userId, orgId, approverType, approverList);
+		List<String> userIds = users.stream().map(User::getId).toList();
+		List<OrganizationUser> organizationUsers = organizationUserMapper.selectListByLambda(new LambdaQueryWrapper<OrganizationUser>().in(OrganizationUser::getUserId, userIds));
+		List<User> resolveUsers = new ArrayList<>();
+		users.forEach(user -> {
+			Optional<OrganizationUser> disableUser = organizationUsers.stream().filter(u -> !u.getEnable() && Strings.CI.equals(u.getUserId(), user.getId())).findAny();
+			if (disableUser.isPresent() && StringUtils.isBlank(disableUser.get().getSupervisorId())) {
+				return;
+			}
+			disableUser.ifPresent(organizationUser -> user.setId(organizationUser.getSupervisorId()));
+			resolveUsers.add(user);
+		});
+		return resolveUsers;
 	}
 
 	/**
