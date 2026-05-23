@@ -36,6 +36,9 @@ public class NotificationConstants {
         //合同管理
         @Schema(description = "message.contract")
         String CONTRACT = "CONTRACT";
+        //订单管理
+        @Schema(description = "message.order")
+        String ORDER = "ORDER";
         //系统
         @Schema(description = "message.system")
         String SYSTEM = "SYSTEM";
@@ -145,9 +148,14 @@ public class NotificationConstants {
         @Schema(description = "message.sync_organization_structure")
         String SYNC_ORGANIZATION_STRUCTURE = "SYNC_ORGANIZATION_STRUCTURE";
 
-        @Schema(description = "message.approval_result")
-        String APPROVAL_RESULT = "APPROVAL_RESULT";
+        @Schema(description = "message.contract_approval")
+        String CONTRACT_APPROVAL = "CONTRACT_APPROVAL";
 
+        @Schema(description = "message.order_approval")
+        String ORDER_APPROVAL = "ORDER_APPROVAL";
+
+        @Schema(description = "message.invoice_approval")
+        String INVOICE_APPROVAL = "INVOICE_APPROVAL";
 
     }
 
@@ -288,8 +296,15 @@ public class NotificationConstants {
         @Schema(description = "message.sync_organization_structure_text")
         String SYNC_ORGANIZATION_STRUCTURE_TEXT = "SYNC_ORGANIZATION_STRUCTURE_TEXT";
 
-        @Schema(description = "message.approval_result_text")
-        String APPROVAL_RESULT_TEXT = "APPROVAL_RESULT_TEXT";
+        @Schema(description = "message.contract_approval_text")
+        String CONTRACT_APPROVAL_TEXT = "CONTRACT_APPROVAL_TEXT";
+
+        @Schema(description = "message.order_approval_text")
+        String ORDER_APPROVAL_TEXT = "ORDER_APPROVAL_TEXT";
+
+        @Schema(description = "message.invoice_approval_text")
+        String INVOICE_APPROVAL_TEXT = "INVOICE_APPROVAL_TEXT";
+
     }
 
 
