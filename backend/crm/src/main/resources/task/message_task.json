@@ -204,11 +204,11 @@
   },
   {
     "organizationId": "",
-    "module": "APPROVAL",
+    "module": "ORDER",
     "moduleName": "",
     "messageTaskDetailDTOList": [
       {
-        "event": "APPROVAL_RESULT",
+        "event": "ORDER_APPROVAL",
         "eventName": "",
         "emailEnable": false,
         "sysEnable": false,
@@ -258,6 +258,20 @@
       },
       {
         "event": "CONTRACT_PAYMENT_EXPIRING",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "CONTRACT_APPROVAL",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "INVOICE_APPROVAL",
         "eventName": "",
         "emailEnable": false,
         "sysEnable": false,
