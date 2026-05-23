@@ -30,7 +30,6 @@ import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.*;
-import cn.cordys.crm.approval.log.ApprovalFlowLogDTO;
 import cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.system.domain.Department;
@@ -107,7 +106,14 @@ public class ApprovalFlowService {
     @Resource
 	private ApprovalInstanceService approvalInstanceService;
 
+	/**
+	 * 加签节点后缀分隔符
+	 */
 	public static final String SIGN_SPILT = "-SN";
+	/**
+	 * 范围大小
+	 */
+	public static final int RANGE_SIZE = 2;
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -149,60 +155,20 @@ public class ApprovalFlowService {
     }
 
     /**
-     * 检查用户是否有某个审批状态的某个操作权限
-     *
-     * @param formType        表单类型
-     * @param approvalStatus  审批状态
-     * @param permission      权限标识
-     * @param userId          用户ID
-     * @param organizationId  组织ID
-     * @return 如果没有配置权限限制或用户有权限返回true，否则返回false
-     */
-    public boolean hasStatusPermission(String formType, String approvalStatus, String permission,
-                                        String userId, String organizationId) {
-        if (StringUtils.isBlank(approvalStatus) || StringUtils.isBlank(permission)) {
-            return true;
-        }
-
-        StatusPermissionSettingResponse setting = getStatusPermissionsByFormType(formType, organizationId);
-        List<StatusPermissionDTO> statusPermissions = setting.getStatusPermissions();
-
-        if (CollectionUtils.isEmpty(statusPermissions)) {
-            // 没有配置状态权限限制，允许操作
-            return true;
-        }
-
-        // 查找当前审批状态下该权限的配置
-        Optional<StatusPermissionDTO> permissionConfig = statusPermissions.stream()
-                .filter(sp -> approvalStatus.equals(sp.getApprovalStatus())
-                        && permission.equals(sp.getPermission()))
-                .findFirst();
-
-        if (permissionConfig.isEmpty() || !Boolean.TRUE.equals(permissionConfig.get().getEnabled())) {
-            // 没有配置或未启用，允许操作
-            return true;
-        }
-
-        // 检查用户是否有该权限
-        return PermissionUtils.hasPermission(permission);
-    }
-
-    /**
      * 批量检查资源的操作权限
      *
      * @param formType           表单类型
      * @param resources          资源列表
      * @param permission         权限标识
-     * @param userId             用户ID
      * @param organizationId     组织ID
      * @param idGetter           获取资源ID的函数
      * @param statusGetter       获取审批状态的函数
      * @return 有权限的资源ID列表
      */
     public <T> List<String> filterResourcesWithPermission(
-            String formType, List<T> resources, String permission, String userId, String organizationId,
-            java.util.function.Function<T, String> idGetter,
-            java.util.function.Function<T, String> statusGetter) {
+			String formType, List<T> resources, String permission, String organizationId,
+			java.util.function.Function<T, String> idGetter,
+			java.util.function.Function<T, String> statusGetter) {
         if (CollectionUtils.isEmpty(resources)) {
             return List.of();
         }
@@ -227,7 +193,7 @@ public class ApprovalFlowService {
         }
 
         // 构建需要权限的状态集合：(审批状态, 权限) -> 是否需要权限
-        Map<String, Boolean> permissionRequiredMap = new HashMap<>();
+        Map<String, Boolean> permissionRequiredMap = new HashMap<>(statusPermissions.size());
         for (StatusPermissionDTO sp : statusPermissions) {
             if (permission.equals(sp.getPermission())) {
                 permissionRequiredMap.put(sp.getApprovalStatus(), sp.getEnabled());
@@ -361,7 +327,7 @@ public class ApprovalFlowService {
         approvalFlowMapper.insert(flow);
 
         // 保存节点配置
-        saveNodesAndLinks(request.getNodes(), request.getLinks(), version.getId(), flow.getId(), userId);
+        saveNodesAndLinks(request.getNodes(), request.getLinks(), version.getId(), flow.getId());
 
         ApprovalFlowDetailResponse detail = getDetail(flow.getId(), organizationId);
 
@@ -427,7 +393,7 @@ public class ApprovalFlowService {
             flow.setCurrentVersionId(newVersion.getId());
 
             // 保存新节点配置
-            saveNodesAndLinks(request.getNodes(), request.getLinks(), newVersion.getId(), originDetail.getId(), userId);
+            saveNodesAndLinks(request.getNodes(), request.getLinks(), newVersion.getId(), originDetail.getId());
         }
 
         approvalFlowMapper.updateById(flow);
@@ -504,9 +470,9 @@ public class ApprovalFlowService {
         approvalFlowMapper.updateById(update);
 
         // 设置日志上下文
-        Map<String, Object> originalVal = new HashMap<>();
+        Map<String, Object> originalVal = new HashMap<>(2);
         originalVal.put("enable", oldEnable);
-        Map<String, Object> modifiedVal = new HashMap<>();
+        Map<String, Object> modifiedVal = new HashMap<>(2);
         modifiedVal.put("enable", enable);
         OperationLogContext.setContext(
                 LogContextInfo.builder()
@@ -788,7 +754,7 @@ public class ApprovalFlowService {
      * 批量保存节点配置和连接关系
      */
     private void saveNodesAndLinks(List<ApprovalNodeRequest> nodes, List<ApprovalNodeLinkRequest> links,
-                                    String flowVersionId, String flowId, String userId) {
+                                    String flowVersionId, String flowId) {
         if (CollectionUtils.isEmpty(nodes)) {
             return;
         }
@@ -799,7 +765,7 @@ public class ApprovalFlowService {
         List<ApprovalNodeCondition> allConditionNodes = new ArrayList<>();
 
         // 构建前端ID到数据库ID的映射
-        Map<String, String> nodeIdMap = new HashMap<>();
+        Map<String, String> nodeIdMap = new HashMap<>(nodes.size());
 
         // 收集所有节点信息，按数组顺序设置 sort
         // 所有节点都生成新的数据库ID，前端传的ID仅用于关联关系映射
@@ -885,24 +851,6 @@ public class ApprovalFlowService {
         }
     }
 
-    private void deleteNodesByFlowVersionId(String flowVersionId) {
-        // 删除节点连接
-        approvalNodeLinkMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNodeLink>()
-                .eq(ApprovalNodeLink::getFlowVersionId, flowVersionId));
-
-        // 删除审批人节点配置
-        approvalNodeApproverMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNodeApprover>()
-                .eq(ApprovalNodeApprover::getFlowVersionId, flowVersionId));
-
-        // 删除条件节点配置
-        approvalNodeConditionMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNodeCondition>()
-                .eq(ApprovalNodeCondition::getFlowVersionId, flowVersionId));
-
-        // 删除节点
-        approvalNodeMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNode>()
-                .eq(ApprovalNode::getFlowVersionId, flowVersionId));
-    }
-
     /**
      * 批量删除版本相关的节点配置
      */
@@ -925,16 +873,6 @@ public class ApprovalFlowService {
         // 删除节点
         approvalNodeMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNode>()
                 .in(ApprovalNode::getFlowVersionId, flowVersionIds));
-    }
-
-    private ApprovalFlowLogDTO buildAddLogDTO(ApprovalFlowAddRequest request, ApprovalFlow flow) {
-        ApprovalFlowLogDTO logDTO = new ApprovalFlowLogDTO();
-        logDTO.setId(flow.getId());
-        logDTO.setNumber(flow.getNumber());
-        logDTO.setName(flow.getName());
-        logDTO.setFormType(flow.getFormType());
-        logDTO.setDescription(request.getDescription());
-        return logDTO;
     }
 
     /**
@@ -1175,7 +1113,7 @@ public class ApprovalFlowService {
      * BETWEEN 匹配（实际值在范围内）
      */
     private boolean matchBetween(Object actualValue, Object expectedValue) {
-        if (expectedValue instanceof List<?> rangeList && rangeList.size() == 2) {
+        if (expectedValue instanceof List<?> rangeList && rangeList.size() == RANGE_SIZE) {
             Object min = rangeList.get(0);
             Object max = rangeList.get(1);
             return matchCompare(actualValue, min) >= 0 && matchCompare(actualValue, max) <= 0;
@@ -1345,14 +1283,36 @@ public class ApprovalFlowService {
      * 解析指定成员审批人
      */
     private List<User> resolveMemberApprovers(String orgId, List<String> approverList) {
-        List<User> users = extUserMapper.getOrgUserByUserIds(orgId, approverList);
-        // 按照 approverList 顺序返回
-        Map<String, User> userMap = users.stream()
-                .collect(Collectors.toMap(User::getId, u -> u));
-        return approverList.stream()
-                .map(userMap::get)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+		List<OrganizationUser> organizationUsers = organizationUserMapper.selectListByLambda(new LambdaQueryWrapper<OrganizationUser>().in(OrganizationUser::getUserId, approverList));
+		List<User> users = extUserMapper.getOrgUserByUserIds(orgId, approverList);
+        Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, u -> u));
+		// 按照 approverList 顺序返回
+		List<User> resolveUsers = new ArrayList<>();
+		approverList.forEach(approver -> {
+			Optional<OrganizationUser> findUser = organizationUsers.stream().filter(u -> Strings.CI.equals(u.getUserId(), approver)).findAny();
+			if (!userMap.containsKey(approver) && findUser.isPresent()) {
+				// 审批人被删除, 替换为直属上级
+				if (StringUtils.isNotBlank(findUser.get().getSupervisorId())) {
+					User superUser = new User();
+					superUser.setId(findUser.get().getSupervisorId());
+					resolveUsers.add(superUser);
+				}
+				return;
+			}
+			if (findUser.isPresent() && !findUser.get().getEnable()) {
+				// 审批人被禁用, 替换为直属上级
+				if (StringUtils.isNotBlank(findUser.get().getSupervisorId())) {
+					User superUser = new User();
+					superUser.setId(findUser.get().getSupervisorId());
+					resolveUsers.add(superUser);
+				}
+				return;
+			}
+			if (userMap.containsKey(approver)) {
+				resolveUsers.add(userMap.get(approver));
+			}
+		});
+		return resolveUsers;
     }
 
     /**
@@ -1559,7 +1519,7 @@ public class ApprovalFlowService {
 		if (nodeApprover == null) {
 			return new ArrayList<>();
 		}
-		return resolveApproversAssignDisableUser(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
+		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
 	}
 
 	/**
@@ -1571,31 +1531,7 @@ public class ApprovalFlowService {
 	 * @return 审批人ID集合
 	 */
 	public List<User> getCurrentNodeApproverList(String approverType, List<String> approverList, String userId, String currentOrgId) {
-		return resolveApproversAssignDisableUser(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList);
-	}
-
-	/**
-	 * 替换禁用用户为指定上级
-	 * @param userId 当前用户ID
-	 * @param orgId 当前组织ID
-	 * @param approverType 审批类型
-	 * @param approverList 审批人集合
-	 * @return 审批人集合
-	 */
-	private List<User> resolveApproversAssignDisableUser(String userId, String orgId, ApproverTypeEnum approverType, List<String> approverList) {
-		List<User> users = resolveApprovers(userId, orgId, approverType, approverList);
-		List<String> userIds = users.stream().map(User::getId).toList();
-		List<OrganizationUser> organizationUsers = organizationUserMapper.selectListByLambda(new LambdaQueryWrapper<OrganizationUser>().in(OrganizationUser::getUserId, userIds));
-		List<User> resolveUsers = new ArrayList<>();
-		users.forEach(user -> {
-			Optional<OrganizationUser> disableUser = organizationUsers.stream().filter(u -> !u.getEnable() && Strings.CI.equals(u.getUserId(), user.getId())).findAny();
-			if (disableUser.isPresent() && StringUtils.isBlank(disableUser.get().getSupervisorId())) {
-				return;
-			}
-			disableUser.ifPresent(organizationUser -> user.setId(organizationUser.getSupervisorId()));
-			resolveUsers.add(user);
-		});
-		return resolveUsers;
+		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList);
 	}
 
 	/**
@@ -1733,14 +1669,12 @@ public class ApprovalFlowService {
 			exNode.setNodeType(ApprovalNodeTypeEnum.EXCEPTION.name());
 			return exNode;
 		}
+
 		// 人工审批, 异常处理
-		List<User> nextApprovers = getCurrentNodeApproverList(nextApproverNode.getApproverType(), nextApproverNode.getApproverList(), instance.getSubmitterId(), currentOrgId);
-		List<User> nextCcList = getCurrentNodeCcList(nextApproverNode.getCcType(), nextApproverNode.getCcList(), instance.getSubmitterId(), currentOrgId);
-		nextApproverNode.setApproverList(nextApprovers.stream().map(User::getId).distinct().collect(Collectors.toList()));
-		nextApproverNode.setCcList(nextCcList.stream().map(User::getId).distinct().collect(Collectors.toList()));
+		setNodeApproverAndCcList(nextApproverNode, instance.getSubmitterId(), currentOrgId);
 
 		// 审批人为空时
-		if (CollectionUtils.isEmpty(nextApprovers)) {
+		if (CollectionUtils.isEmpty(nextApproverNode.getApproverList())) {
 			if (EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction()) == EmptyApproverActionEnum.AUTO_PASS) {
 				// 自动通过, 插入审批记录, 获取下一个节点
 				saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人为空，自动通过", null, nextApproverNode.getCcList(), true, null);
@@ -1799,6 +1733,18 @@ public class ApprovalFlowService {
 			}
 		}
 
+		return handleNextNodeDuplicateApprover(instance, nextApproverNode, fieldValues, currentOrgId);
+	}
+
+	/**
+	 * 处理下一个节点 (审批人重复跳过)
+	 * @param instance 审批实例
+	 * @param nextApproverNode 下一个审批节点
+	 * @param fieldValues 资源字段值
+	 * @param currentOrgId 当前组织ID
+	 * @return 下一个节点
+	 */
+	private ApprovalNodeResponse handleNextNodeDuplicateApprover(ApprovalInstance instance, ApprovalNodeApproverResponse nextApproverNode, List<BaseModuleFieldValue> fieldValues, String currentOrgId) {
 		// 重复审批人处理
 		DuplicateApproverRuleEnum duplicateApproverRuleEnum = getFlowDuplicateApproverRule(instance.getFlowVersionId());
 		if (Objects.requireNonNull(duplicateApproverRuleEnum) == DuplicateApproverRuleEnum.FIRST_ONLY) {
@@ -1815,7 +1761,6 @@ public class ApprovalFlowService {
 				}
 			}
 		}
-
 		return nextApproverNode;
 	}
 
@@ -1843,14 +1788,12 @@ public class ApprovalFlowService {
 			// 自动节点, 直接返回
 			return nextApproverNode;
 		}
+
 		// 人工审批, 异常处理
-		List<User> nextApprovers = getCurrentNodeApproverList(nextApproverNode.getApproverType(), nextApproverNode.getApproverList(), instance.getSubmitterId(), currentOrgId);
-		List<User> nextCcList = getCurrentNodeCcList(nextApproverNode.getCcType(), nextApproverNode.getCcList(), instance.getSubmitterId(), currentOrgId);
-		nextApproverNode.setApproverList(nextApprovers.stream().map(User::getId).distinct().collect(Collectors.toList()));
-		nextApproverNode.setCcList(nextCcList.stream().map(User::getId).distinct().collect(Collectors.toList()));
+		setNodeApproverAndCcList(nextApproverNode, instance.getSubmitterId(), currentOrgId);
 
 		// 审批人为空时
-		if (CollectionUtils.isEmpty(nextApprovers) && EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction()) != EmptyApproverActionEnum.AUTO_PASS) {
+		if (CollectionUtils.isEmpty(nextApproverNode.getApproverList()) && EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction()) != EmptyApproverActionEnum.AUTO_PASS) {
 			// 指定人员, 审批管理员处理, 返回兜底审批人
 			nextApproverNode.setApproverType(ApproverTypeEnum.MEMBER.name());
 			nextApproverNode.setApproverList(List.of(nextApproverNode.getFallbackApprover()));
@@ -1966,5 +1909,18 @@ public class ApprovalFlowService {
 			autoSkipUserIds.add(preApprover);
 		}
 		return autoSkipUserIds;
+	}
+
+	/**
+	 * 设置节点的审批人集合和抄送人集合
+	 * @param approverNode 审批节点
+	 * @param submitter 提交人
+	 * @param currentOrgId 当前组织ID
+	 */
+	private void setNodeApproverAndCcList(ApprovalNodeApproverResponse approverNode, String submitter, String currentOrgId) {
+		List<User> nextApprovers = getCurrentNodeApproverList(approverNode.getApproverType(), approverNode.getApproverList(), submitter, currentOrgId);
+		approverNode.setApproverList(nextApprovers.stream().map(User::getId).distinct().collect(Collectors.toList()));
+		List<User> nextCcList = getCurrentNodeCcList(approverNode.getCcType(), approverNode.getCcList(), submitter, currentOrgId);
+		approverNode.setCcList(nextCcList.stream().map(User::getId).distinct().collect(Collectors.toList()));
 	}
 }

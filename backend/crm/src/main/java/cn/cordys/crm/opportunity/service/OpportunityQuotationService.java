@@ -26,10 +26,8 @@ import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
-import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.contract.domain.ContractFieldBlob;
-import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationApproval;
@@ -814,8 +812,7 @@ public class OpportunityQuotationService {
                 ApprovalFormTypeEnum.QUOTATION.getValue(),
                 list,
                 PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL,
-                userId,
-                orgId,
+				orgId,
                 OpportunityQuotation::getId,
                 OpportunityQuotation::getApprovalStatus
         );
@@ -899,8 +896,7 @@ public class OpportunityQuotationService {
                 ApprovalFormTypeEnum.QUOTATION.getValue(),
                 originQuotations,
                 PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE,
-                userId,
-                organizationId,
+				organizationId,
                 OpportunityQuotation::getId,
                 OpportunityQuotation::getApprovalStatus
         );
@@ -998,8 +994,7 @@ public class OpportunityQuotationService {
                 ApprovalFormTypeEnum.QUOTATION.getValue(),
                 list,
                 PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED,
-                userId,
-                organizationId,
+				organizationId,
                 OpportunityQuotation::getId,
                 OpportunityQuotation::getApprovalStatus
         );
