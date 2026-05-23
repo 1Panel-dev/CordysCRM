@@ -95,6 +95,7 @@ public class ApprovalActionService {
 		// 之后加签(多人或签), 需要刷新实例当前审批节点
 		if (ApprovalAddSignType.valueOf(request.getType()) == ApprovalAddSignType.AFTER && isMultiAnyMode(appendActionTask.getNodeId(), userId, orgId)) {
 			handlePreCcTasks(currentTask.getNodeId(), instance, userId, orgId);
+			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE);
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(appendActionTask, instance, orgId);
 			handleNextApprovalNode(nextNode, instance, currentTask.getApproverId(), userId);
 		}
@@ -282,9 +283,9 @@ public class ApprovalActionService {
 	 */
 	private void appendBackTasks(ApprovalReturnBackRequest backRequest, String userId, String currentOrgId) {
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(backRequest.getInstanceId());
-		List<User> approvers = approvalFlowService.getCurrentNodeApproverList(backRequest.getReturnToNodeId(), instance.getSubmitterId(), currentOrgId);
+		List<String> approvers = approvalFlowService.getCurrentNodeApproverList(instance, backRequest.getReturnToNodeId(), currentOrgId);
 		ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(backRequest.getReturnToNodeId());
-		List<ApprovalTask> approvalTasks = getNodeApproverTasks(backRequest.getReturnToNodeId(), approvers.stream().map(User::getId).toList(), null,
+		List<ApprovalTask> approvalTasks = getNodeApproverTasks(backRequest.getReturnToNodeId(), approvers, null,
 				SameSubmitterActionEnum.valueOf(approvalNodeApprover.getSameSubmitterAction()), MultiApproverModeEnum.valueOf(approvalNodeApprover.getMultiApproverMode()),
 				instance, userId, ApprovalTaskType.NL.name());
 		if (CollectionUtils.isNotEmpty(approvalTasks)) {
@@ -389,21 +390,21 @@ public class ApprovalActionService {
 				SameSubmitterActionEnum sameAction = SameSubmitterActionEnum.valueOf(nodeApprover.getSameSubmitterAction());
 				// 如果依次审批的节点存在跳过的情况, 一直往后取
 				int seq = 0;
-				User nextSeqUser = getMultiSeqAfterOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, seq);
-				while (nextSeqUser != null) {
-					ApprovalTask nextTask = buildTask(currentTask.getNodeId(), currentTask.getInstanceId(), nextSeqUser.getId(), ApprovalTaskType.NL.name(), currentUserId, currentTask.getNodeRound());
-					boolean autoSkip = autoSkipUserIds.contains(nextSeqUser.getId());
-					boolean sameSubmitterSkip = sameAction == SameSubmitterActionEnum.SKIP && Strings.CI.equals(nextSeqUser.getId(), instance.getSubmitterId());
+				String nextSeqUserId = getMultiSeqAfterOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, seq);
+				while (StringUtils.isNotBlank(nextSeqUserId)) {
+					ApprovalTask nextTask = buildTask(currentTask.getNodeId(), currentTask.getInstanceId(), nextSeqUserId, ApprovalTaskType.NL.name(), currentUserId, currentTask.getNodeRound());
+					boolean autoSkip = autoSkipUserIds.contains(nextSeqUserId);
+					boolean sameSubmitterSkip = sameAction == SameSubmitterActionEnum.SKIP && Strings.CI.equals(nextSeqUserId, instance.getSubmitterId());
 					if (autoSkip || sameSubmitterSkip) {
 						// 自动同意 (重复审批跳过, 提审人相同跳过)
 						nextTask.setAction(ApprovalAction.APPROVE.name());
 						nextTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
 						approvalFlowService.saveAutoRecord(currentTask.getInstanceId(), currentTask.getNodeId(), ApprovalStatus.AUTO_APPROVED,
-								autoSkipUserIds.contains(nextSeqUser.getId()) ? "审批人重复出现, 后续节点自动通过" : "审批人与提交人为同一人时, 自动同意跳过", nextTask.getId(), null, false, nextTask.getNodeRound());
+								autoSkipUserIds.contains(nextSeqUserId) ? "审批人重复出现, 后续节点自动通过" : "审批人与提交人为同一人时, 自动同意跳过", nextTask.getId(), null, false, nextTask.getNodeRound());
 						seq++;
-						nextSeqUser = getMultiSeqAfterOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, seq);
+						nextSeqUserId = getMultiSeqAfterOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, seq);
 					} else {
-						nextSeqUser = null;
+						nextSeqUserId = null;
 					}
 					multiSeqApprovalTasks.add(nextTask);
 				}
@@ -418,6 +419,7 @@ public class ApprovalActionService {
 		if (isCurrentSingleNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId(), instance.getSubmitterId(), currentOrgId) || isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())) {
 			// 流转之前需要发送当前节点的抄送
 			handlePreCcTasks(currentTask.getNodeId(), instance, currentUserId, currentOrgId);
+			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE);
 			// 单人审批或者多人审批但节点流转通过
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(currentTask, instance, currentOrgId);
 			handleNextApprovalNode(nextNode, instance, currentTask.getApproverId(), currentUserId);
@@ -450,6 +452,7 @@ public class ApprovalActionService {
 			if (resourceService != null) {
 				resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus());
 			}
+			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.REJECT);
 		}
 	}
 
@@ -667,9 +670,9 @@ public class ApprovalActionService {
 	 * @param next 后续位次 (从0开始, 0为下一个)
 	 * @return 后续审批人
 	 */
-	public User getMultiSeqAfterOne(String nodeId, String instanceId, String currentOrgId, Integer next) {
+	public String getMultiSeqAfterOne(String nodeId, String instanceId, String currentOrgId, Integer next) {
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(instanceId);
-		List<User> approvers = approvalFlowService.getCurrentNodeApproverList(nodeId, instance.getSubmitterId(), currentOrgId);
+		List<String> approvers = approvalFlowService.getCurrentNodeApproverList(instance, nodeId, currentOrgId);
 		LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(ApprovalTask::getNodeId, nodeId)
 				.eq(ApprovalTask::getInstanceId, instanceId)
@@ -691,11 +694,11 @@ public class ApprovalActionService {
 	 * @param currentApprover 当前审批人
 	 * @return 下一个审批人
 	 */
-	private User getMultiSeqCurrentNextOne(String nodeId, String instanceId, String currentOrgId, String currentApprover) {
+	private String getMultiSeqCurrentNextOne(String nodeId, String instanceId, String currentOrgId, String currentApprover) {
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(instanceId);
-		List<User> approvers = approvalFlowService.getCurrentNodeApproverList(nodeId, instance.getSubmitterId(), currentOrgId);
+		List<String> approvers = approvalFlowService.getCurrentNodeApproverList(instance, nodeId, currentOrgId);
 		for (int i = 0; i < approvers.size(); i++) {
-			if (Strings.CI.equals(approvers.get(i).getId(), currentApprover)) {
+			if (Strings.CI.equals(approvers.get(i), currentApprover)) {
 				return approvers.get(i + 1);
 			}
 		}
@@ -892,12 +895,12 @@ public class ApprovalActionService {
 				if (!nodeApproving) {
 					throw new GenericException(Translator.get("no.revoke.approval"));
 				}
-				User nextUser = getMultiSeqCurrentNextOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, currentTask.getApproverId());
-				if (nextUser == null) {
+				String nextUserId = getMultiSeqCurrentNextOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, currentTask.getApproverId());
+				if (StringUtils.isBlank(nextUserId)) {
 					throw new GenericException(Translator.get("no.revoke.approval"));
 				}
 				ApprovalTask taskCriteria = new ApprovalTask();
-				taskCriteria.setApproverId(nextUser.getId());
+				taskCriteria.setApproverId(nextUserId);
 				taskCriteria.setInstanceId(instance.getId());
 				taskCriteria.setNodeId(currentTask.getNodeId());
 				taskCriteria.setStatus(ApprovalStatus.APPROVING.name());

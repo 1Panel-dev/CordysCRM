@@ -10,7 +10,6 @@ import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.system.domain.Attachment;
-import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.UserSimple;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.UserExtendService;
@@ -311,7 +310,7 @@ public class ApprovalInstanceService {
 			 * 获取节点下最后一轮正常待办任务 (排除正常加签操作)
 			 * 加签场景下, 同一节点可能存在多条rootTask, 只展示最新创建的那个待办
 			 */
-			List<User> nodeMultiApprover = approvalFlowService.getCurrentNodeApproverList(hisNode, instance.getSubmitterId(), currentOrgId);
+			List<String> nodeMultiApprover = approvalFlowService.getCurrentNodeApproverList(instance, hisNode, currentOrgId);
 			List<ApprovalTask> nlTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL && Strings.CI.equals(task.getNodeId(), hisNode)
 					&& task.getNodeRound().equals(maxRound)).sorted(Comparator.comparing(ApprovalTask::getCreateTime)).toList();
 			nlTasks = filterNodeLatestTasks(nlTasks);
@@ -362,13 +361,13 @@ public class ApprovalInstanceService {
 	 * @param allTask 所有执行任务
 	 * @return 依次审批的待审批任务
 	 */
-	private List<ApprovalTask> appendSeqTasks(List<User> nodeMultiApprover, List<ApprovalTask> allTask) {
+	private List<ApprovalTask> appendSeqTasks(List<String> nodeMultiApprover, List<ApprovalTask> allTask) {
 		List<String> processApproverIds = allTask.stream().map(ApprovalTask::getApproverId).toList();
 		ApprovalTask copyTask = allTask.getFirst();
-		return nodeMultiApprover.stream().filter(approver -> !processApproverIds.contains(approver.getId())).map(user -> {
+		return nodeMultiApprover.stream().filter(approver -> !processApproverIds.contains(approver)).map(user -> {
 			ApprovalTask seqTask = BeanUtils.copyBean(new ApprovalTask(), copyTask);
 			seqTask.setId(IDGenerator.nextStr());
-			seqTask.setApproverId(user.getId());
+			seqTask.setApproverId(user);
 			seqTask.setStatus(ApprovalStatus.PENDING.name());
 			seqTask.setType(ApprovalTaskType.NL.name());
 			seqTask.setAction(null);

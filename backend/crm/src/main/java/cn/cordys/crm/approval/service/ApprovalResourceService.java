@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.service;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
@@ -11,6 +12,8 @@ import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
+import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
@@ -24,6 +27,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,12 +65,18 @@ public class ApprovalResourceService {
      * 开启的审批流表单表格映射
      */
     public static final Map<String, String> FORM_APPROVAL_TABLE = new HashMap<>(4);
+    public static final Map<FormKey, String> FORM_SERVICE = new HashMap<>(4);
 
     static {
         FORM_APPROVAL_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
         FORM_APPROVAL_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
         FORM_APPROVAL_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
         FORM_APPROVAL_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
+
+		FORM_SERVICE.put(FormKey.QUOTATION, "opportunityQuotationService");
+		FORM_SERVICE.put(FormKey.CONTRACT, "contractService");
+		FORM_SERVICE.put(FormKey.INVOICE, "contractInvoiceService");
+		FORM_SERVICE.put(FormKey.ORDER, "orderService");
     }
 
     public ResourceApprovalResponse resourceDetail(String resourceId) {
@@ -219,19 +229,10 @@ public class ApprovalResourceService {
 	 * @param approvalStatus 审批状态
 	 */
 	private void updateSnapshotApprovalStatus(FormKey formKey, String resourceId, String approvalStatus) {
-		// FormKey 与 Service Bean 名称的映射
-		Map<FormKey, String> snapshotServiceMap = Map.of(
-			FormKey.INVOICE, "contractInvoiceService",
-			FormKey.QUOTATION, "opportunityQuotationService",
-			FormKey.CONTRACT, "contractService",
-			FormKey.ORDER, "orderService"
-		);
-
-		String serviceBeanName = snapshotServiceMap.get(formKey);
-		if (StringUtils.isBlank(serviceBeanName)) {
+		if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
 			return;
 		}
-
+		String serviceBeanName = FORM_SERVICE.get(formKey);
 		Object service = applicationContext.getBean(serviceBeanName);
 		try {
 			Method method = service.getClass().getMethod("updateSnapshotApprovalStatus", ResourceSnapshotApprovalParam.class);
@@ -242,6 +243,39 @@ public class ApprovalResourceService {
 		}
     }
 
+	/**
+	 * 审批后置字段更新
+	 * @param formKey 表单Key
+	 * @param resourceId 资源ID
+	 * @param postConfig 后置配置
+	 */
+	public void updateApprovalPostField(FormKey formKey, String resourceId, String postConfig) {
+		if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+			return;
+		}
+		List<ResourceApprovalFieldUpdateParam> fields = getUpdateFieldOfPostConfig(postConfig);
+		fields = fields.stream().filter(ResourceApprovalFieldUpdateParam::isEnable).toList();
+		if (CollectionUtils.isEmpty(fields)) {
+			return;
+		}
+		String serviceBeanName = FORM_SERVICE.get(formKey);
+		Object service = applicationContext.getBean(serviceBeanName);
+		try {
+			Method method = service.getClass().getMethod("updateApprovalPostField", ResourceApprovalPostUpdateParam.class);
+			ResourceApprovalPostUpdateParam postUpdateParam = ResourceApprovalPostUpdateParam.builder().fields(fields).resourceId(resourceId).build();
+			method.invoke(service, postUpdateParam);
+		} catch (Exception e) {
+			log.error("更新业务数据失败", e);
+		}
+	}
+
+	private List<ResourceApprovalFieldUpdateParam> getUpdateFieldOfPostConfig(String postConfig) {
+		if (StringUtils.isBlank(postConfig) || Strings.CI.equals("null", postConfig)) {
+			return new ArrayList<>();
+		}
+		Map<String, Object> postConfigMap = JSON.parseToMap(postConfig);
+		return JSON.parseArray(JSON.toJSONString(postConfigMap.get("fieldUpdateConfigs")), ResourceApprovalFieldUpdateParam.class);
+	}
 
     /**
      * 手动提审

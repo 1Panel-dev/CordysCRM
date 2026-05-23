@@ -30,13 +30,13 @@ import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
-import cn.cordys.crm.contract.domain.Contract;
-import cn.cordys.crm.contract.domain.ContractPaymentRecord;
-import cn.cordys.crm.contract.domain.ContractSnapshot;
+import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.ContractAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractStageRequest;
@@ -66,18 +66,22 @@ import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class ContractService {
 
     @Resource
@@ -707,6 +711,88 @@ public class ContractService {
 			snapshotBaseMapper.update(snapshot);
 		}
 	}
+
+	/**
+	 * ⚠️反射调用: 由审批执行后置操作统一调用, 勿修改
+	 * @param postFieldParam 参数
+	 */
+	public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
+		ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
+		List<BaseField> fields = formConfig.getFields();
+		Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f));
+		Contract contract = contractMapper.selectByPrimaryKey(postFieldParam.getResourceId());
+		List<ContractField> contractFields = new ArrayList<>();
+		List<ContractFieldBlob> contractFieldBlobs = new ArrayList<>();
+		ContractSnapshot snapshotCriteria = new ContractSnapshot();
+		snapshotCriteria.setContractId(postFieldParam.getResourceId());
+		ContractSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+		ContractGetResponse response = new ContractGetResponse();
+		if (snapshot != null) {
+			response = JSON.parseObject(snapshot.getContractValue(), ContractGetResponse.class);
+		}
+		for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
+			if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())) {
+				return;
+			}
+			BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
+			if (fieldConfig.hasBusinessKey()) {
+				// 业务主表字段
+				contractFieldService.setResourceFieldValue(contract, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+				// 业务快照表字段
+				Field field = ReflectionUtils.findField(response.getClass(), f -> Strings.CS.equals(f.getName(), fieldConfig.getBusinessKey()));
+				if (field == null) {
+					log.error("Cannot find field `{}`", fieldConfig.getBusinessKey());
+					return;
+				}
+				ReflectionUtils.setField(field, response, fieldUpdateParam.getFieldValue());
+			} else {
+				// 自定义字段
+				Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream().filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId())).findAny();
+				if (findField.isPresent()) {
+					findField.get().setFieldValue(fieldUpdateParam.getFieldValue());
+				} else {
+					BaseModuleFieldValue fv = new BaseModuleFieldValue();
+					fv.setFieldId(fieldUpdateParam.getFieldId());
+					fv.setFieldValue(fieldUpdateParam.getFieldValue());
+					response.getModuleFields().add(fv);
+				}
+				if (fieldConfig.isBlob()) {
+					// 自定义大表
+					contractFieldService.getResourceFieldBlobMapper().deleteByLambda(new LambdaQueryWrapper<ContractFieldBlob>()
+							.eq(ContractFieldBlob::getFieldId, fieldUpdateParam.getFieldId()).eq(ContractFieldBlob::getResourceId, postFieldParam.getResourceId()));
+					ContractFieldBlob field = new ContractFieldBlob();
+					field.setId(IDGenerator.nextStr());
+					field.setResourceId(postFieldParam.getResourceId());
+					field.setFieldId(fieldUpdateParam.getFieldId());
+					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					contractFieldBlobs.add(field);
+				} else {
+					// 自定义表
+					contractFieldService.getResourceFieldMapper().deleteByLambda(new LambdaQueryWrapper<ContractField>()
+							.eq(ContractField::getFieldId, fieldUpdateParam.getFieldId()).eq(ContractField::getResourceId, postFieldParam.getResourceId()));
+					ContractField field = new ContractField();
+					field.setId(IDGenerator.nextStr());
+					field.setResourceId(postFieldParam.getResourceId());
+					field.setFieldId(fieldUpdateParam.getFieldId());
+					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					contractFields.add(field);
+				}
+			}
+		}
+		contractMapper.updateById(contract);
+		if (CollectionUtils.isNotEmpty(contractFields)) {
+			contractFieldService.getResourceFieldMapper().batchInsert(contractFields);
+		}
+		if (CollectionUtils.isNotEmpty(contractFieldBlobs)) {
+			contractFieldService.getResourceFieldBlobMapper().batchInsert(contractFieldBlobs);
+		}
+		// 更新快照
+		if (snapshot != null) {
+			snapshot.setContractValue(JSON.toJSONString(response));
+			snapshotBaseMapper.update(snapshot);
+		}
+	}
+
 
     public CustomerContractStatisticResponse calculateContractStatisticByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         return extContractMapper.calculateContractStatisticByCustomerId(customerId, userId, orgId, deptDataPermission);

@@ -62,7 +62,7 @@ public abstract class BaseResourceService {
      * @param value     值
      * @param <K>       资源类型
      */
-    protected <K> void setResourceFieldValue(K resource, String fieldName, Object value) {
+    public <K> void setResourceFieldValue(K resource, String fieldName, Object value) {
         Class<?> clazz = resource.getClass();
         // 设置字段值
         try {
