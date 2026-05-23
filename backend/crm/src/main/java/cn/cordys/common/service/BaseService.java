@@ -670,6 +670,9 @@ public class BaseService {
 		}
 		Map<String, Boolean> firstNodeApproved = new HashMap<>(resourceIds.size());
 		List<ApprovalInstance> latestInstances = approvalInstanceService.getLatestInstances(resourceIds);
+		if (CollectionUtils.isEmpty(latestInstances)) {
+			return Map.of();
+		}
 		List<String> flowVersionIds = latestInstances.stream().map(ApprovalInstance::getFlowVersionId).distinct().toList();
 		List<ApprovalNodeLink> nodeLinks = nodeLinkMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalNodeLink>().in(ApprovalNodeLink::getFlowVersionId, flowVersionIds));
 		List<ApprovalNode> allNodes = approvalNodeMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalNode>().in(ApprovalNode::getFlowVersionId, flowVersionIds));

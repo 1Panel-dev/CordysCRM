@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class ApprovalRevokeRequest {
 
-    @NotBlank(message = "当前task任务ID不能为空")
+    @NotBlank(message = "撤回的节点任务不能为空")
     @Schema(description = "撤回的节点任务ID")
     private String id;
 }
