@@ -345,7 +345,7 @@ public class ApprovalInstanceService {
 				// 依次审批的后续节点审批人需要作为待审批追加
 				ApprovalNodeApprover approvalNodeApprover = hisApproverNodeMap.get(hisNode);
 				if (MultiApproverModeEnum.valueOf(approvalNodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.SEQUENTIAL) {
-					allTask.addAll(appendSeqTasks(nodeMultiApprover, allTask));
+					appendSeqTasks(nodeMultiApprover, allTask);
 				}
 				List<ApprovalTaskNode> taskNodes = allTask.stream().map(nTask -> buildTaskNode(nTask, taskRecordMap, addSignTaskMapOfTask, attachmentsMap, simpleUserMap)).toList();
 				ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).taskNodes(taskNodes).ccNodes(ccNodes).build();
@@ -359,20 +359,19 @@ public class ApprovalInstanceService {
 	 * 追加依次审批的待审批任务
 	 * @param nodeMultiApprover 节点审批人
 	 * @param allTask 所有执行任务
-	 * @return 依次审批的待审批任务
 	 */
-	private List<ApprovalTask> appendSeqTasks(List<String> nodeMultiApprover, List<ApprovalTask> allTask) {
+	private void appendSeqTasks(List<String> nodeMultiApprover, List<ApprovalTask> allTask) {
 		List<String> processApproverIds = allTask.stream().map(ApprovalTask::getApproverId).toList();
 		ApprovalTask copyTask = allTask.getFirst();
-		return nodeMultiApprover.stream().filter(approver -> !processApproverIds.contains(approver)).map(user -> {
+		nodeMultiApprover.stream().filter(approver -> !processApproverIds.contains(approver)).forEach(user -> {
 			ApprovalTask seqTask = BeanUtils.copyBean(new ApprovalTask(), copyTask);
 			seqTask.setId(IDGenerator.nextStr());
 			seqTask.setApproverId(user);
 			seqTask.setStatus(ApprovalStatus.PENDING.name());
 			seqTask.setType(ApprovalTaskType.NL.name());
 			seqTask.setAction(null);
-			return seqTask;
-		}).toList();
+			allTask.addLast(seqTask);
+		});
 	}
 
 	/**
