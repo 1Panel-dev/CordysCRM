@@ -66,6 +66,7 @@ public class ApprovalResourceService {
      */
     public static final Map<String, String> FORM_APPROVAL_TABLE = new HashMap<>(4);
     public static final Map<FormKey, String> FORM_SERVICE = new HashMap<>(4);
+	public static final String NULL_POST_CONFIG = "null";
 
     static {
         FORM_APPROVAL_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
@@ -109,7 +110,13 @@ public class ApprovalResourceService {
         taskWrapper.eq(ApprovalTask::getInstanceId, latestInstance.getId())
                 .eq(ApprovalTask::getNodeId, latestInstance.getCurrentNodeId());
         List<ApprovalTask> tasks = approvalTaskMapper.selectListByLambda(taskWrapper);
-        if (tasks.isEmpty()) {
+		LambdaQueryWrapper<ApprovalRecord> autoRecordWrapper = new LambdaQueryWrapper<>();
+		autoRecordWrapper.eq(ApprovalRecord::getInstanceId, latestInstance.getId())
+				.eq(ApprovalRecord::getNodeId, latestInstance.getCurrentNodeId());
+		List<ApprovalRecord> allRecords = approvalRecordMapper.selectListByLambda(autoRecordWrapper);
+		List<ApprovalRecord> autoRecords = allRecords.stream().filter(record -> StringUtils.isBlank(record.getTaskId())
+				&& Strings.CI.equalsAny(record.getResult(), ApprovalStatus.AUTO_APPROVED.name(), ApprovalStatus.AUTO_UNAPPROVED.name())).toList();
+		if (tasks.isEmpty() && autoRecords.isEmpty()) {
             return response;
         }
 
@@ -162,6 +169,15 @@ public class ApprovalResourceService {
             }
             approveUserMap.put(approverId, userApprove);
         }
+
+		// 追加自动审批的节点
+		for (ApprovalRecord autoRecord : autoRecords) {
+			UserApprovalDTO userApprove = new UserApprovalDTO();
+			userApprove.setId("Cbot");
+			userApprove.setName("Cbot");
+			userApprove.setApproveResult(autoRecord.getResult());
+			approveUserMap.put("auto", userApprove);
+		}
 
         // 回填最终审核人列表。
         response.setApproveUserList(new ArrayList<>(approveUserMap.values()));
@@ -270,7 +286,7 @@ public class ApprovalResourceService {
 	}
 
 	private List<ResourceApprovalFieldUpdateParam> getUpdateFieldOfPostConfig(String postConfig) {
-		if (StringUtils.isBlank(postConfig) || Strings.CI.equals("null", postConfig)) {
+		if (StringUtils.isBlank(postConfig) || Strings.CI.equals(NULL_POST_CONFIG, postConfig)) {
 			return new ArrayList<>();
 		}
 		Map<String, Object> postConfigMap = JSON.parseToMap(postConfig);
