@@ -392,7 +392,7 @@ public class ApprovalActionService {
 				int seq = 0;
 				String nextSeqUserId = getMultiSeqAfterOne(currentTask.getNodeId(), currentTask.getInstanceId(), currentOrgId, seq);
 				while (StringUtils.isNotBlank(nextSeqUserId)) {
-					ApprovalTask nextTask = buildTask(currentTask.getNodeId(), currentTask.getInstanceId(), nextSeqUserId, ApprovalTaskType.NL.name(), currentUserId, currentTask.getNodeRound());
+					ApprovalTask nextTask = buildTask(currentTask.getNodeId(), currentTask.getInstanceId(), nextSeqUserId, ApprovalTaskType.NL.name(), currentUserId, currentTask.getNodeRound(), seq);
 					boolean autoSkip = autoSkipUserIds.contains(nextSeqUserId);
 					boolean sameSubmitterSkip = sameAction == SameSubmitterActionEnum.SKIP && Strings.CI.equals(nextSeqUserId, instance.getSubmitterId());
 					if (autoSkip || sameSubmitterSkip) {
@@ -1028,8 +1028,9 @@ public class ApprovalActionService {
 			switch (multiMode) {
 				case SEQUENTIAL -> {
 					// 依次审批需要循环发送待办, 直到该待办审批人没有跳过
-					for (String seqUser : approvers) {
-						ApprovalTask firstTask = buildTask(nodeId, instance.getId(), seqUser, taskType, userId, nextRound);
+					for (int i = 0; i < approvers.size(); i++) {
+						String seqUser = approvers.get(i);
+						ApprovalTask firstTask = buildTask(nodeId, instance.getId(), seqUser, taskType, userId, nextRound, i);
 						if (Strings.CI.equals(seqUser, instance.getSubmitterId()) || autoSkipUser.contains(seqUser)) {
 							// 触发了自动同意, 跳过
 							firstTask.setAction(ApprovalAction.APPROVE.name());
@@ -1046,10 +1047,10 @@ public class ApprovalActionService {
 				}
 				case ALL -> {
 					// 如果是会签, 需要发送所有审批人的待办
-					final List<String> skipUser = autoSkipUser;
-					approvers.forEach(approver -> {
-						ApprovalTask approvalTask = buildTask(nodeId, instance.getId(), approver, taskType, userId, nextRound);
-						if (Strings.CI.equals(approver, instance.getSubmitterId()) || skipUser.contains(approver)) {
+					for (int i = 0; i < approvers.size(); i++) {
+						String approver = approvers.get(i);
+						ApprovalTask approvalTask = buildTask(nodeId, instance.getId(), approver, taskType, userId, nextRound, i);
+						if (Strings.CI.equals(approver, instance.getSubmitterId()) || autoSkipUser.contains(approver)) {
 							// 触发了自动同意
 							approvalTask.setAction(ApprovalAction.APPROVE.name());
 							approvalTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
@@ -1057,7 +1058,7 @@ public class ApprovalActionService {
 									Strings.CI.equals(approver, instance.getSubmitterId()) ? "审批人与提交人为同一人时, 自动同意跳过" : "审批人重复出现, 后续节点自动通过", approvalTask.getId(), null, false, approvalTask.getNodeRound());
 						}
 						approvalTasks.add(approvalTask);
-					});
+					}
 				}
 				default -> {
 
@@ -1067,8 +1068,9 @@ public class ApprovalActionService {
 			// 并未配置自动跳过的逻辑, 正常逻辑
 			if (multiMode == MultiApproverModeEnum.SEQUENTIAL) {
 				// 依次审批需要循环发送待办, 直到该待办审批人没有跳过
-				for (String seqUser : approvers) {
-					ApprovalTask firstTask = buildTask(nodeId, instance.getId(), seqUser, taskType, userId, nextRound);
+				for (int i = 0; i < approvers.size(); i++) {
+					String seqUser = approvers.get(i);
+					ApprovalTask firstTask = buildTask(nodeId, instance.getId(), seqUser, taskType, userId, nextRound, i);
 					if (autoSkipUser.contains(seqUser)) {
 						// 触发了自动同意, 跳过
 						firstTask.setAction(ApprovalAction.APPROVE.name());
@@ -1083,17 +1085,17 @@ public class ApprovalActionService {
 				}
 			} else {
 				// 会签, 或签需要发送所有待办
-				final List<String> skipUser = autoSkipUser;
-				approvers.forEach(approver -> {
-					ApprovalTask approvalTask = buildTask(nodeId, instance.getId(), approver, taskType, userId, nextRound);
-					if (skipUser.contains(approver)) {
+				for (int i = 0; i < approvers.size(); i++) {
+					String approver = approvers.get(i);
+					ApprovalTask approvalTask = buildTask(nodeId, instance.getId(), approver, taskType, userId, nextRound, i);
+					if (autoSkipUser.contains(approver)) {
 						// 触发了自动同意
 						approvalTask.setAction(ApprovalAction.APPROVE.name());
 						approvalTask.setStatus(ApprovalStatus.AUTO_APPROVED.name());
 						approvalFlowService.saveAutoRecord(instance.getId(), nodeId, ApprovalStatus.AUTO_APPROVED, "审批人重复出现, 后续节点自动通过", approvalTask.getId(), null, false, approvalTask.getNodeRound());
 					}
 					approvalTasks.add(approvalTask);
-				});
+				}
 			}
 		}
 		return approvalTasks;
@@ -1111,10 +1113,11 @@ public class ApprovalActionService {
 		List<ApprovalTask> approvalTasks = new ArrayList<>();
 		if (CollectionUtils.isNotEmpty(ccList)) {
 			Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, nodeId);
-			ccList.forEach(cc -> {
-				ApprovalTask approvalTask = buildTask(nodeId, instanceId, cc, ApprovalTaskType.CC.name(), userId, nextRound - 1);
+			for (int i = 0; i < ccList.size(); i++) {
+				String cc = ccList.get(i);
+				ApprovalTask approvalTask = buildTask(nodeId, instanceId, cc, ApprovalTaskType.CC.name(), userId, nextRound - 1, i);
 				approvalTasks.add(approvalTask);
-			});
+			}
 		}
 		return approvalTasks;
 	}
@@ -1129,7 +1132,7 @@ public class ApprovalActionService {
 	 * @param round 任务轮次
 	 * @return 待办任务
 	 */
-	public ApprovalTask buildTask(String nodeId, String instanceId, String approverId, String taskType, String currentUserId, Integer round) {
+	public ApprovalTask buildTask(String nodeId, String instanceId, String approverId, String taskType, String currentUserId, Integer round, Integer approverPos) {
 		ApprovalTask approvalTask = new ApprovalTask();
 		approvalTask.setId(IDGenerator.nextStr());
 		approvalTask.setNodeId(nodeId);
@@ -1138,8 +1141,8 @@ public class ApprovalActionService {
 		approvalTask.setApproverId(approverId);
 		approvalTask.setStatus(ApprovalStatus.APPROVING.name());
 		approvalTask.setType(StringUtils.isBlank(taskType) ? ApprovalTaskType.NL.name() : taskType);
-		approvalTask.setCreateTime(System.currentTimeMillis());
-		approvalTask.setUpdateTime(System.currentTimeMillis());
+		approvalTask.setCreateTime(System.currentTimeMillis() + approverPos);
+		approvalTask.setUpdateTime(System.currentTimeMillis() + approverPos);
 		approvalTask.setCreateUser(currentUserId);
 		approvalTask.setUpdateUser(currentUserId);
 		return approvalTask;
