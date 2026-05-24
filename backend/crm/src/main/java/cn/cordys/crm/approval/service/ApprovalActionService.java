@@ -452,6 +452,7 @@ public class ApprovalActionService {
 			if (resourceService != null) {
 				resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus());
 			}
+			revokeCurrentNode(instance.getId(), currentTask.getNodeId());
 			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.REJECT);
 		}
 	}

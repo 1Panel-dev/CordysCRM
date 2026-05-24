@@ -63,6 +63,7 @@
         LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
         WHERE at.approver_id = #{approverId}
         AND at.status != #{pendingStatus}
+        AND at.status != 'REVOKED'
         <if test="resourceType != null and resourceType != ''">
             AND ai.type = #{resourceType}
         </if>
