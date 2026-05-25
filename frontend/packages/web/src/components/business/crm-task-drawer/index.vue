@@ -84,21 +84,25 @@
     v-model:visible="contractDetailVisible"
     :source-id="activeResourceId"
     :approvalFlowId="approvalFlowId"
+    @refresh="handleApproveSuccess"
   />
   <QuotationDetailDrawer
     v-model:visible="quotationDetailVisible"
     :source-id="activeResourceId"
     :approvalFlowId="approvalFlowId"
+    @refresh="handleApproveSuccess"
   />
   <OrderDetailDrawer
     v-model:visible="orderDetailVisible"
     :source-id="activeResourceId"
     :approvalFlowId="approvalFlowId"
+    @refresh="handleApproveSuccess"
   />
   <InvoiceDetailDrawer
     v-model:visible="invoiceDetailVisible"
     :source-id="activeResourceId"
     :approvalFlowId="approvalFlowId"
+    @refresh="handleApproveSuccess"
   />
 </template>
 

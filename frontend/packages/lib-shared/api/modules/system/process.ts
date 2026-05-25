@@ -38,6 +38,7 @@ import {
   type ApprovalOperationParams,
   type ApprovalTodoItem,
   type ApprovalTodoTableParams,
+  type BatchApprovalParams,
   type BatchRejectApprovalParams,
   type TodoStatistic,
 } from '@lib/shared/models/system/process';
@@ -133,7 +134,7 @@ export default function useProcessApi(CDR: CordysAxios) {
   }
 
   // 批量同意
-  function batchAgreeApproval(data: BatchRejectApprovalParams) {
+  function batchAgreeApproval(data: BatchApprovalParams) {
     return CDR.post({ url: BatchApprovalApprovalUrl, data });
   }
 

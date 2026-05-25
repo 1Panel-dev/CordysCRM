@@ -258,6 +258,13 @@ export interface BatchRejectApprovalParams {
   module: string;
 }
 
+export interface BatchApprovalParams {
+  ids: string[];
+  comment?: string;
+  attachmentIds: string[];
+  module: string;
+}
+
 export interface TodoStatistic {
   total: number;
   quotation: number;

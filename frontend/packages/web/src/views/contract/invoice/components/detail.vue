@@ -45,6 +45,9 @@
                 :column="2"
                 :refresh-key="refreshKey"
                 :fieldPermissions="fieldPermissions"
+                :otherSaveParams="{
+                  updateType: 'approval',
+                }"
                 label-width="auto"
                 value-align="start"
                 tooltip-position="top-start"
@@ -220,10 +223,11 @@
   }
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
-  function handleSaveApproval() {
+  function handleSaveApproval(callback: () => void) {
     formDescriptionRef.value?.handleFormChange(() => {
       refreshKey.value += 1;
       emit('refresh');
+      callback();
     });
   }
 

@@ -207,7 +207,6 @@
     revokeApproval,
     revokeResource,
   } from '@/api/modules';
-  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
 
@@ -227,7 +226,7 @@
       detail?: Record<string, any>,
       config?: FormConfig
     ): void;
-    (e: 'saveApproval'): void;
+    (e: 'saveApproval', callback: () => void): void;
     (e: 'refresh'): void;
   }>();
 
@@ -235,9 +234,6 @@
   const { openModal } = useModal();
   const message = useMessage();
   const userStore = useUserStore();
-  const { revokeByResourceId } = useApprovalResourceAction({
-    formKey: props.formKey,
-  });
 
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
   async function initApprovalConfig() {
@@ -396,7 +392,7 @@
   }
 
   const approvalLoading = ref(false);
-  async function handleApprove() {
+  async function approvalAgree() {
     if (!CrmFileInputRef.value?.validate() || !currentTaskNode.value || !currentApprovalNode.value) {
       return;
     }
@@ -415,7 +411,6 @@
       initApprovalDetail();
       approvalOpinion.value = '';
       fileList.value = [];
-      emit('saveApproval');
       emit('refresh');
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -423,6 +418,12 @@
     } finally {
       approvalLoading.value = false;
     }
+  }
+  async function handleApprove() {
+    if (!CrmFileInputRef.value?.validate() || !currentTaskNode.value || !currentApprovalNode.value) {
+      return;
+    }
+    emit('saveApproval', approvalAgree);
   }
 
   function handleReject() {
@@ -440,26 +441,30 @@
         if (!currentApprovalNode.value || !currentTaskNode.value) {
           return;
         }
-        try {
-          await rejectApproval({
-            id: currentTaskNode.value.taskId,
-            nodeId: currentApprovalNode.value.nodeId,
-            instanceId: approvalConfig.value?.id || '',
-            attachmentIds: fileList.value.map((e) => e.id),
-            approverId: currentTaskNode.value.approverId,
-            comment: approvalOpinion.value,
-            module: moduleKeyMap[props.formKey]!,
-          });
-          message.success(t('common.rejected'));
-          initApprovalDetail();
-          approvalOpinion.value = '';
-          fileList.value = [];
-          emit('saveApproval');
-          emit('refresh');
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-        }
+        emit('saveApproval', async () => {
+          if (!currentApprovalNode.value || !currentTaskNode.value) {
+            return;
+          }
+          try {
+            await rejectApproval({
+              id: currentTaskNode.value.taskId,
+              nodeId: currentApprovalNode.value.nodeId,
+              instanceId: approvalConfig.value?.id || '',
+              attachmentIds: fileList.value.map((e) => e.id),
+              approverId: currentTaskNode.value.approverId,
+              comment: approvalOpinion.value,
+              module: moduleKeyMap[props.formKey]!,
+            });
+            message.success(t('common.rejected'));
+            initApprovalDetail();
+            approvalOpinion.value = '';
+            fileList.value = [];
+            emit('refresh');
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+          }
+        });
       },
     });
   }
@@ -477,36 +482,39 @@
   function handleAddSign() {
     addSignFormRef.value?.validate(async (errors) => {
       if (!errors && currentApprovalNode.value && currentTaskNode.value) {
-        try {
-          addSignLoading.value = true;
-          await addSignApproval({
-            id: currentTaskNode.value.taskId,
-            nodeId: currentApprovalNode.value.nodeId,
-            instanceId: approvalInfo.value?.id || '',
-            approverId: currentTaskNode.value?.approverId || '',
-            comment: addSignForm.value.reason,
-            attachmentIds: addSignForm.value.fileList.map((e) => e.id),
-            type: addSignForm.value.type,
-            module: moduleKeyMap[props.formKey]!,
-            signApprover: addSignForm.value.reviewer?.[0] || '',
-          });
-          addSignModalVisible.value = false;
-          message.success(t('crm.approval.addSignSuccess'));
-          addSignForm.value = {
-            type: 'BEFORE',
-            reviewer: undefined,
-            reason: '',
-            fileList: [],
-          };
-          initApprovalDetail();
-          emit('saveApproval');
-          emit('refresh');
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-        } finally {
-          addSignLoading.value = false;
-        }
+        emit('saveApproval', async () => {
+          if (!errors && currentApprovalNode.value && currentTaskNode.value) {
+            try {
+              addSignLoading.value = true;
+              await addSignApproval({
+                id: currentTaskNode.value.taskId,
+                nodeId: currentApprovalNode.value.nodeId,
+                instanceId: approvalInfo.value?.id || '',
+                approverId: currentTaskNode.value?.approverId || '',
+                comment: addSignForm.value.reason,
+                attachmentIds: addSignForm.value.fileList.map((e) => e.id),
+                type: addSignForm.value.type,
+                module: moduleKeyMap[props.formKey]!,
+                signApprover: addSignForm.value.reviewer?.[0] || '',
+              });
+              addSignModalVisible.value = false;
+              message.success(t('crm.approval.addSignSuccess'));
+              addSignForm.value = {
+                type: 'BEFORE',
+                reviewer: undefined,
+                reason: '',
+                fileList: [],
+              };
+              initApprovalDetail();
+              emit('refresh');
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.log(error);
+            } finally {
+              addSignLoading.value = false;
+            }
+          }
+        });
       }
     });
   }
@@ -533,34 +541,37 @@
   function handleFallback() {
     fallbackFormRef.value?.validate(async (errors) => {
       if (!errors && currentApprovalNode.value && currentTaskNode.value) {
-        try {
-          fallbackLoading.value = true;
-          await backApproval({
-            id: currentTaskNode.value.taskId,
-            nodeId: currentApprovalNode.value.nodeId,
-            instanceId: approvalInfo.value?.id || '',
-            approverId: currentTaskNode.value?.approverId || '',
-            comment: fallbackForm.value.reason,
-            attachmentIds: fallbackForm.value.fileList.map((e) => e.id),
-            module: moduleKeyMap[props.formKey]!,
-            returnToNodeId: fallbackForm.value.node || '',
-          });
-          fallbackModalVisible.value = false;
-          message.success(t('crm.approval.fallbackSuccess'));
-          initApprovalDetail();
-          fallbackForm.value = {
-            node: undefined,
-            reason: '',
-            fileList: [],
-          };
-          emit('saveApproval');
-          emit('refresh');
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-        } finally {
-          fallbackLoading.value = false;
-        }
+        emit('saveApproval', async () => {
+          if (!errors && currentApprovalNode.value && currentTaskNode.value) {
+            try {
+              fallbackLoading.value = true;
+              await backApproval({
+                id: currentTaskNode.value.taskId,
+                nodeId: currentApprovalNode.value.nodeId,
+                instanceId: approvalInfo.value?.id || '',
+                approverId: currentTaskNode.value?.approverId || '',
+                comment: fallbackForm.value.reason,
+                attachmentIds: fallbackForm.value.fileList.map((e) => e.id),
+                module: moduleKeyMap[props.formKey]!,
+                returnToNodeId: fallbackForm.value.node || '',
+              });
+              fallbackModalVisible.value = false;
+              message.success(t('crm.approval.fallbackSuccess'));
+              initApprovalDetail();
+              fallbackForm.value = {
+                node: undefined,
+                reason: '',
+                fileList: [],
+              };
+              emit('refresh');
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.log(error);
+            } finally {
+              fallbackLoading.value = false;
+            }
+          }
+        });
       }
     });
   }
@@ -601,14 +612,15 @@
         positiveText: t('crm.approval.confirmCancelApprovalApply'),
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
-          await revokeResource({
-            resourceId: props.sourceId,
-            formKey: props.formKey,
+          emit('saveApproval', async () => {
+            await revokeResource({
+              resourceId: props.sourceId,
+              formKey: props.formKey,
+            });
+            message.success(t('common.revokeSuccess'));
+            initApprovalDetail();
+            emit('refresh');
           });
-          message.success(t('common.revokeSuccess'));
-          initApprovalDetail();
-          emit('saveApproval');
-          emit('refresh');
         },
       });
     } else {
@@ -619,13 +631,14 @@
         positiveText: t('crm.approval.confirmCancelApproval'),
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
-          await revokeApproval({
-            id: prevMineApprovalNode.value?.taskId || '',
+          emit('saveApproval', async () => {
+            await revokeApproval({
+              id: prevMineApprovalNode.value?.taskId || '',
+            });
+            message.success(t('crm.approval.cancelApprovalSuccess'));
+            initApprovalDetail();
+            emit('refresh');
           });
-          message.success(t('crm.approval.cancelApprovalSuccess'));
-          initApprovalDetail();
-          emit('saveApproval');
-          emit('refresh');
         },
       });
     }
