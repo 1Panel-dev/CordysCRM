@@ -103,7 +103,7 @@ public class ApprovalActionService {
 		if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
 			saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), addSignTask.getId(), userId, orgId);
 		}
-		saveLogAndNotice(instance, userId, orgId, ApprovalAction.SIGN, false);
+		saveLogAndNotice(instance, userId, orgId, ApprovalAction.SIGN);
 	}
 
 	/**
@@ -126,7 +126,7 @@ public class ApprovalActionService {
 		if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
 			saveInstanceAttachment(request.getAttachmentIds(), request.getInstanceId(), backRecord.getId(), userId, orgId);
 		}
-		saveLogAndNotice(instance, userId, orgId, ApprovalAction.BACK, false);
+		saveLogAndNotice(instance, userId, orgId, ApprovalAction.BACK);
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class ApprovalActionService {
 		}
 		revokeProcess(currentTask, instance, orgId);
 		refreshRevokeTask(currentTask, instance, currentUserId);
-		saveLogAndNotice(instance, currentUserId, orgId, ApprovalAction.REVOKE, false);
+		saveLogAndNotice(instance, currentUserId, orgId, ApprovalAction.REVOKE);
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class ApprovalActionService {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.APPROVE, currentUserId, currentOrgId, null);
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		approvedProcess(instance, currentTask, currentUserId, currentOrgId);
-		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.APPROVE, request.isFromToDo());
+		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.APPROVE);
 	}
 
 	/**
@@ -174,7 +174,7 @@ public class ApprovalActionService {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.REJECT, currentUserId, currentOrgId, null);
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		rejectProcess(instance, currentTask, currentUserId, currentOrgId);
-		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.REJECT, request.isFromToDo());
+		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.REJECT);
 	}
 
 	/**
@@ -1154,13 +1154,13 @@ public class ApprovalActionService {
 	 * @param userId 当前用户ID
 	 * @param orgId 当前组织ID
 	 */
-	private void saveLogAndNotice(ApprovalInstance instance, String userId, String orgId, ApprovalAction action, boolean fromToDO) {
+	private void saveLogAndNotice(ApprovalInstance instance, String userId, String orgId, ApprovalAction action) {
 		// 日志
 		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
 		if (resourceService != null) {
-			LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, fromToDO ? LogModule.WORKBENCH : getLogModuleOfFormKey(FormKey.ofKey(instance.getType())),
+			LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, getLogModuleOfFormKey(FormKey.ofKey(instance.getType())),
 					resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId()));
-			logDTO.setModifiedValue(Translator.get(StringUtils.lowerCase(action.name())));
+			logDTO.setDetail(Translator.get(StringUtils.lowerCase(action.name())));
 			logService.add(logDTO);
 		}
 		// 结束状态的数据发送消息通知
