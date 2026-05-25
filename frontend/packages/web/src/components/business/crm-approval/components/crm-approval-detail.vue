@@ -123,7 +123,18 @@
           </n-radio>
         </n-radio-group>
       </n-form-item>
-      <n-form-item path="reviewer" :label="t('crm.approval.addSignApprover')" required>
+      <n-form-item
+        path="reviewer"
+        :label="t('crm.approval.addSignApprover')"
+        :rule="[
+          {
+            required: true,
+            message: t('common.notNull', {
+              value: t('crm.approval.addSignApprover'),
+            }),
+          },
+        ]"
+      >
         <CrmMemberSelect
           v-model:value="addSignForm.reviewer"
           :multiple="false"
