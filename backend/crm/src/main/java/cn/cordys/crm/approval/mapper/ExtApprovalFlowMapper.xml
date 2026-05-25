@@ -21,6 +21,7 @@
             af.update_time
         FROM approval_flow af
         WHERE af.organization_id = #{organizationId}
+        AND af.deleted = 0
         <if test="request.name != null and request.name != ''">
             AND af.name LIKE CONCAT('%', #{request.name}, '%')
         </if>

@@ -460,29 +460,24 @@ class ApprovalFlowControllerTests extends BaseTest {
         // 删除第一个创建的审批流
         this.requestGetWithOk(DEFAULT_DELETE, addApprovalFlow.getId());
 
-        // 校验请求成功数据
-        Assertions.assertNull(approvalFlowMapper.selectByPrimaryKey(addApprovalFlow.getId()));
-
-        // 校验版本配置也被删除
-        ApprovalFlowVersion versionCriteria = new ApprovalFlowVersion();
-        versionCriteria.setFlowId(addApprovalFlow.getId());
-        Assertions.assertTrue(approvalFlowVersionMapper.select(versionCriteria).isEmpty());
-
-        // 校验节点配置也被删除（通过查询所有版本对应的节点）
-        Assertions.assertTrue(CollectionUtils.isEmpty(getNodesByFlowVersionId(addApprovalFlow.getCurrentVersionId())));
-
-        // 校验节点连接配置也被删除
-        Assertions.assertTrue(CollectionUtils.isEmpty(getLinksByFlowVersionId(addApprovalFlow.getCurrentVersionId())));
+        // 校验软删除：记录仍存在但 deleted = true
+        ApprovalFlow deletedFlow = approvalFlowMapper.selectByPrimaryKey(addApprovalFlow.getId());
+        Assertions.assertNotNull(deletedFlow);
+        Assertions.assertTrue(deletedFlow.getDeleted());
 
         // 删除另一条创建的审批流
         this.requestGetWithOk(DEFAULT_DELETE, anotherApprovalFlow.getId());
-        Assertions.assertNull(approvalFlowMapper.selectByPrimaryKey(anotherApprovalFlow.getId()));
+        ApprovalFlow deletedAnother = approvalFlowMapper.selectByPrimaryKey(anotherApprovalFlow.getId());
+        Assertions.assertNotNull(deletedAnother);
+        Assertions.assertTrue(deletedAnother.getDeleted());
 
         // 删除禁用的审批流
         ApprovalFlow disabledFlow = getDisabledFlow();
         if (disabledFlow != null) {
             this.requestGetWithOk(DEFAULT_DELETE, disabledFlow.getId());
-            Assertions.assertNull(approvalFlowMapper.selectByPrimaryKey(disabledFlow.getId()));
+            ApprovalFlow deletedDisabled = approvalFlowMapper.selectByPrimaryKey(disabledFlow.getId());
+            Assertions.assertNotNull(deletedDisabled);
+            Assertions.assertTrue(deletedDisabled.getDeleted());
         }
 
         // 校验权限
