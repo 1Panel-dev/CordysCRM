@@ -1061,7 +1061,11 @@ public class ApprovalActionService {
 					}
 				}
 				default -> {
-
+					// 或签流程执行的时候, 已经处理了提审人相同, 和自动跳过的逻辑
+					for (int i = 0; i < approvers.size(); i++) {
+						String approver = approvers.get(i);
+						approvalTasks.add(buildTask(nodeId, instance.getId(), approver, taskType, userId, nextRound, i));
+					}
 				}
 			}
 		} else {
