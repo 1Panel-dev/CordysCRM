@@ -157,6 +157,9 @@ public class NotificationConstants {
         @Schema(description = "message.invoice_approval")
         String INVOICE_APPROVAL = "INVOICE_APPROVAL";
 
+		@Schema(description = "message.approval_todo")
+		String APPROVAL_TODO = "APPROVAL_TODO";
+
     }
 
     public interface RelatedUser {
@@ -305,6 +308,8 @@ public class NotificationConstants {
         @Schema(description = "message.invoice_approval_text")
         String INVOICE_APPROVAL_TEXT = "INVOICE_APPROVAL_TEXT";
 
+		@Schema(description = "message.approval_todo_text")
+		String APPROVAL_TODO_TEXT = "APPROVAL_TODO_TEXT";
     }
 
 

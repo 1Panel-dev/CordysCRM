@@ -332,10 +332,7 @@ public class ApprovalResourceService {
 		updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name());
 		approvalInstanceMapper.insert(instance);
 		ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
-		List<ApprovalTask> approvalTasks = approvalActionService.getNextNodeApproverTasks(approverNode, instance, null, currentUserId, null);
-		if (CollectionUtils.isNotEmpty(approvalTasks)) {
-			approvalTaskMapper.batchInsert(approvalTasks);
-		}
+		approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, null, currentUserId, null, currentOrgId);
 	}
 
 	public void revoke(ApprovalResourceBaseParam param, String currentUserId) {
