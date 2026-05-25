@@ -2,6 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper">
+    <select id="selectLatestInstanceByResourceId" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
+        SELECT *
+        FROM approval_instance
+        WHERE resource_id = #{resourceId}
+        ORDER BY submit_time DESC, id DESC
+        LIMIT 1
+    </select>
 
     <select id="selectPendingTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
         SELECT
@@ -155,9 +162,12 @@
                         INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
                     WHERE at.approver_id = #{approverId}
                       AND at.status = #{pendingStatus}
+                      AND ai.approval_status not in ('APPROVED'
+                        , 'UNAPPROVED')
                       AND ai.current_node_id = at.node_id) pending
                        INNER JOIN approval_instance ai ON ai.id = pending.instance_id
               GROUP BY ai.type) t
+        
     </select>
 
     <update id="updateTaskById">
