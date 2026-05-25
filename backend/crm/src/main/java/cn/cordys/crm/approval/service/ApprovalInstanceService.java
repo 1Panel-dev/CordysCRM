@@ -669,6 +669,9 @@ public class ApprovalInstanceService {
 		approvalInstanceMapper.deleteByLambda(instanceLambdaQueryWrapper);
 		// 删除审批实例相关数据: 待办任务、加签任务、退回记录、执行记录、实例附件等
 		List<String> instanceIds = instances.stream().map(ApprovalInstance::getId).toList();
+		if (CollectionUtils.isEmpty(instanceIds)) {
+			return;
+		}
 		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().in(ApprovalTask::getInstanceId, instanceIds));
 		List<String> taskIds = approvalTasks.stream().map(ApprovalTask::getId).toList();
 		if (CollectionUtils.isNotEmpty(taskIds)) {
