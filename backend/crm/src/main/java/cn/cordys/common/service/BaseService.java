@@ -677,8 +677,9 @@ public class BaseService {
 		List<ApprovalNodeLink> nodeLinks = nodeLinkMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalNodeLink>().in(ApprovalNodeLink::getFlowVersionId, flowVersionIds));
 		List<ApprovalNode> allNodes = approvalNodeMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalNode>().in(ApprovalNode::getFlowVersionId, flowVersionIds));
 		List<ApprovalTask> allTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().in(ApprovalTask::getInstanceId, latestInstances.stream().map(ApprovalInstance::getId).toList()));
-		Map<String, String> nodeLinkMap = nodeLinks.stream().collect(Collectors.toMap(ApprovalNodeLink::getToNodeId, ApprovalNodeLink::getFromNodeId));
 		Map<String, String> nodeTypeMap = allNodes.stream().collect(Collectors.toMap(ApprovalNode::getId, ApprovalNode::getNodeType));
+		Map<String, String> nodeLinkMap = nodeLinks.stream().filter(nodeLink -> nodeTypeMap.containsKey(nodeLink.getToNodeId()) && ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(nodeLink.getToNodeId())) != ApprovalNodeTypeEnum.END)
+				.collect(Collectors.toMap(ApprovalNodeLink::getToNodeId, ApprovalNodeLink::getFromNodeId));
 		latestInstances.forEach(latestInstance -> {
 			if (isFirstApproverNode(nodeLinkMap, nodeTypeMap, latestInstance.getCurrentNodeId())) {
 				// 当前审批实例处于第一个审批节点, 所以第一个节点为审批中
@@ -712,6 +713,9 @@ public class BaseService {
 	 */
 	private boolean isFirstApproverNode(Map<String, String> nodeLinkMap, Map<String, String> nodeTypeMap, String currentNodeId) {
 		String preNodeId = currentNodeId;
+		if (ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(preNodeId)) == ApprovalNodeTypeEnum.END) {
+			return false;
+		}
 		do {
 			preNodeId = nodeLinkMap.get(preNodeId);
 			if (StringUtils.isBlank(preNodeId) || ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(preNodeId)) == ApprovalNodeTypeEnum.START) {
