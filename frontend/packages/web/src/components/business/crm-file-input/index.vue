@@ -20,7 +20,7 @@
             <CrmIcon type="iconicon_link1" :size="16" class="text-[var(--text-n4)]" />
           </n-upload>
         </template>
-        {{ t('crmFormDesign.file') }}
+        {{ fileList.length === 10 ? t('crm.approval.fileLimitTip') : t('crmFormDesign.file') }}
       </n-tooltip>
     </div>
     <n-input
