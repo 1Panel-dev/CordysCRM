@@ -36,6 +36,9 @@
       clearable
       show-count
     />
+    <span v-if="valueStatus === 'error'" class="text-[var(--error-red)]">
+      {{ t('common.notNull', { value: props.name }) }}
+    </span>
     <n-scrollbar :content-style="{ maxHeight: '400px' }" class="mt-[8px]">
       <CrmFileList
         v-if="fileList.length > 0"
@@ -78,6 +81,7 @@
       accept?: string; // 接受的文件类型
       fileTypeTip?: string; // 文件类型不合法提示
       required?: boolean;
+      name?: string;
     }>(),
     {
       multiple: true,

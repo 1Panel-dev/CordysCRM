@@ -44,12 +44,16 @@
             class="border-t border-[var(--text-n8)] p-[16px]"
           >
             <template v-if="isApprover">
-              <div class="mb-[8px] font-semibold">{{ t('crm.approval.opinion') }}</div>
+              <div class="flex items-center gap-[4px]">
+                <div class="mb-[8px] font-semibold">{{ t('crm.approval.opinion') }}</div>
+                <span v-if="approvalConfig?.requireComment" class="text-[var(--error-red)]">*</span>
+              </div>
               <CrmFileInput
                 ref="CrmFileInputRef"
                 v-model:value="approvalOpinion"
                 v-model:file-list="fileList"
                 :required="approvalConfig?.requireComment"
+                :name="t('crm.approval.opinion')"
               />
               <div class="mt-[12px] flex gap-[12px]">
                 <n-button type="primary" class="flex-1" :loading="approvalLoading" @click="handleApprove">
