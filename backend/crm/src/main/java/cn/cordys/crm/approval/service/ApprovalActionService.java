@@ -925,6 +925,7 @@ public class ApprovalActionService {
 		}
 		// 清理后续审批节点的待办任务, 后续执行重新生成
 		clearCurrentNode(instance.getId(), nextNode.getId());
+		revokeCurrentNode(instance.getId(), nextNode.getId());
 	}
 
 	/**

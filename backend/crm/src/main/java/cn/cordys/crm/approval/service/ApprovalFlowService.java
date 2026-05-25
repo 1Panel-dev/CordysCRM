@@ -1929,6 +1929,9 @@ public class ApprovalFlowService {
 	 * @param currentOrgId 当前组织ID
 	 */
 	private void setNodeApproverAndCcList(ApprovalNodeApproverResponse approverNode, String submitter, String currentOrgId) {
+		if (approverNode == null) {
+			return;
+		}
 		List<User> nextApprovers = getCurrentNodeApproverList(approverNode.getApproverType(), approverNode.getApproverList(), submitter, currentOrgId);
 		approverNode.setApproverList(nextApprovers.stream().map(User::getId).distinct().collect(Collectors.toList()));
 		List<User> nextCcList = getCurrentNodeCcList(approverNode.getCcType(), approverNode.getCcList(), submitter, currentOrgId);

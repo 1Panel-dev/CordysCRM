@@ -678,8 +678,8 @@ public class BaseService {
 		List<ApprovalNode> allNodes = approvalNodeMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalNode>().in(ApprovalNode::getFlowVersionId, flowVersionIds));
 		List<ApprovalTask> allTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().in(ApprovalTask::getInstanceId, latestInstances.stream().map(ApprovalInstance::getId).toList()));
 		Map<String, String> nodeTypeMap = allNodes.stream().collect(Collectors.toMap(ApprovalNode::getId, ApprovalNode::getNodeType));
-		Map<String, String> nodeLinkMap = nodeLinks.stream().filter(nodeLink -> nodeTypeMap.containsKey(nodeLink.getToNodeId()) && ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(nodeLink.getToNodeId())) != ApprovalNodeTypeEnum.END)
-				.collect(Collectors.toMap(ApprovalNodeLink::getToNodeId, ApprovalNodeLink::getFromNodeId));
+		Map<String, List<String>> nodeLinkMap = nodeLinks.stream().filter(nodeLink -> nodeTypeMap.containsKey(nodeLink.getToNodeId()) && ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(nodeLink.getToNodeId())) != ApprovalNodeTypeEnum.END)
+				.collect(Collectors.groupingBy(ApprovalNodeLink::getToNodeId, Collectors.mapping(ApprovalNodeLink::getFromNodeId, Collectors.toList())));
 		latestInstances.forEach(latestInstance -> {
 			if (isFirstApproverNode(nodeLinkMap, nodeTypeMap, latestInstance.getCurrentNodeId())) {
 				// 当前审批实例处于第一个审批节点, 所以第一个节点为审批中
@@ -706,22 +706,59 @@ public class BaseService {
 
 	/**
 	 * 当前节点是否第一个审批节点
-	 * @param nodeLinkMap 节点链接信息
+	 * @param nodeLinkMap 节点链接信息(toNodeId -> fromNodeId列表)
 	 * @param nodeTypeMap 节点类型集合
 	 * @param currentNodeId 当前节点ID
 	 * @return 是否第一个审批节点
 	 */
-	private boolean isFirstApproverNode(Map<String, String> nodeLinkMap, Map<String, String> nodeTypeMap, String currentNodeId) {
-		String preNodeId = currentNodeId;
-		if (ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(preNodeId)) == ApprovalNodeTypeEnum.END) {
+	private boolean isFirstApproverNode(Map<String, List<String>> nodeLinkMap, Map<String, String> nodeTypeMap, String currentNodeId) {
+		return isFirstApproverNodeRecursive(nodeLinkMap, nodeTypeMap, currentNodeId, new HashSet<>());
+	}
+
+	/**
+	 * 递归判断当前节点是否第一个审批节点
+	 * @param nodeLinkMap 节点链接信息
+	 * @param nodeTypeMap 节点类型集合
+	 * @param nodeId 当前节点ID
+	 * @param visited 已访问的节点集合(防止循环)
+	 * @return 是否第一个审批节点
+	 */
+	private boolean isFirstApproverNodeRecursive(Map<String, List<String>> nodeLinkMap, Map<String, String> nodeTypeMap, String nodeId, Set<String> visited) {
+		// 防止循环引用
+		if (visited.contains(nodeId)) {
 			return false;
 		}
-		do {
-			preNodeId = nodeLinkMap.get(preNodeId);
-			if (StringUtils.isBlank(preNodeId) || ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(preNodeId)) == ApprovalNodeTypeEnum.START) {
-				return true;
+		visited.add(nodeId);
+
+		// 获取当前节点的前驱节点列表
+		List<String> preNodeIds = nodeLinkMap.get(nodeId);
+		if (CollectionUtils.isEmpty(preNodeIds)) {
+			// 没有前驱节点，说明是第一个审批节点
+			return true;
+		}
+
+		// 遍历所有前驱节点
+		for (String preNodeId : preNodeIds) {
+			if (StringUtils.isBlank(preNodeId)) {
+				continue;
 			}
-		} while (ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(preNodeId)) == ApprovalNodeTypeEnum.CONDITION || ApprovalNodeTypeEnum.valueOf(nodeTypeMap.get(preNodeId)) == ApprovalNodeTypeEnum.DEFAULT);
+			String nodeType = nodeTypeMap.get(preNodeId);
+			if (StringUtils.isBlank(nodeType)) {
+				continue;
+			}
+			ApprovalNodeTypeEnum nodeTypeEnum = ApprovalNodeTypeEnum.valueOf(nodeType);
+			if (nodeTypeEnum == ApprovalNodeTypeEnum.START) {
+				// 找到 START 节点，说明当前节点不是第一个审批节点
+				return false;
+			}
+			if (nodeTypeEnum == ApprovalNodeTypeEnum.CONDITION || nodeTypeEnum == ApprovalNodeTypeEnum.DEFAULT) {
+				// 继续往前找
+				boolean isFirst = isFirstApproverNodeRecursive(nodeLinkMap, nodeTypeMap, preNodeId, visited);
+				if (isFirst) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 }
