@@ -736,20 +736,16 @@
   function handleReview() {
     formRef.value?.validate((errors) => {
       if (!errors) {
-        if (props.isEdit) {
-          emit('review', detail.value);
-        } else {
-          const result = buildSavePayload();
-          saveForm(
-            result,
-            false,
-            (_isContinue, res) => {
-              emit('review', res);
-            },
-            false,
-            true
-          );
-        }
+        const result = buildSavePayload();
+        saveForm(
+          result,
+          false,
+          (_isContinue, res) => {
+            emit('review', res);
+          },
+          false,
+          true
+        );
       } else {
         scrollToFirstError(errors);
       }

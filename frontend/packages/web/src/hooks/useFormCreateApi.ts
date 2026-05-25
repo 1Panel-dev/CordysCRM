@@ -1469,7 +1469,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       let res;
       if (props.sourceId?.value && props.needInitDetail?.value) {
         res = await updateFormApi[props.formKey.value](params);
-        Message.success(t('common.updateSuccess'));
+        if (!isReview) {
+          Message.success(t('common.updateSuccess'));
+        }
       } else {
         res = await createFormApi[props.formKey.value](params);
         if (!isReview) {
