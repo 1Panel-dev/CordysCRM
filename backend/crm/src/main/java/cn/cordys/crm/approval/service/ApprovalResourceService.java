@@ -19,6 +19,7 @@ import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
+import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -52,6 +53,8 @@ public class ApprovalResourceService {
     private BaseMapper<User> userMapper;
 	@Resource
 	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+	@Resource
+	private ExtApprovalTaskMapper extApprovalTaskMapper;
 	@Resource
 	private ApplicationContext applicationContext;
 	@Resource
@@ -89,17 +92,13 @@ public class ApprovalResourceService {
             return response;
         }
 
-        // 查询资源最近一次审批实例。
-        LambdaQueryWrapper<ApprovalInstance> instanceWrapper = new LambdaQueryWrapper<>();
-        instanceWrapper.eq(ApprovalInstance::getResourceId, resourceId)
-                .orderByDesc(ApprovalInstance::getSubmitTime);
-        List<ApprovalInstance> instances = approvalInstanceMapper.selectListByLambda(instanceWrapper);
-        if (instances.isEmpty()) {
+        // 查询资源最近一次审批实例（由SQL保证倒序并限制1条）。
+        ApprovalInstance latestInstance = extApprovalTaskMapper.selectLatestInstanceByResourceId(resourceId);
+        if (latestInstance == null) {
             return response;
         }
 
         // 设置审批状态并校验当前审批节点。
-        ApprovalInstance latestInstance = instances.getFirst();
         response.setApproveStatus(latestInstance.getApprovalStatus());
         if (StringUtils.isBlank(latestInstance.getCurrentNodeId())) {
             return response;
