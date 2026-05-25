@@ -264,6 +264,11 @@
         count: messageCount.value[SystemResourceMessageTypeEnum.CONTRACT] || 0,
       },
       {
+        value: SystemResourceMessageTypeEnum.ORDER,
+        label: t('module.order'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.ORDER] || 0,
+      },
+      {
         value: SystemResourceMessageTypeEnum.SYSTEM,
         label: t('system.message.system'),
         count: messageCount.value[SystemResourceMessageTypeEnum.SYSTEM] || 0,
