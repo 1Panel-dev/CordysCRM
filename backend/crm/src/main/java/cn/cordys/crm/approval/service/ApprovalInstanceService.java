@@ -345,7 +345,7 @@ public class ApprovalInstanceService {
 				});
 				// 依次审批的后续节点审批人需要作为待审批追加
 				ApprovalNodeApprover approvalNodeApprover = hisApproverNodeMap.get(hisNode);
-				if (MultiApproverModeEnum.valueOf(approvalNodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.SEQUENTIAL) {
+				if (approvalNodeApprover != null && MultiApproverModeEnum.valueOf(approvalNodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.SEQUENTIAL) {
 					appendSeqTasks(nodeMultiApprover, allTask);
 				}
 				List<ApprovalTaskNode> taskNodes = allTask.stream().map(nTask -> buildTaskNode(nTask, taskRecordMap, addSignTaskMapOfTask, attachmentsMap, simpleUserMap)).toList();
