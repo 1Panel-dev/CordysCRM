@@ -64,6 +64,9 @@
                 readonly
                 :isContractTableDetail="props.isContractTableDetail"
                 :fieldPermissions="fieldPermissions"
+                :otherSaveParams="{
+                  updateType: 'approval',
+                }"
                 @openCustomerDetail="emit('showCustomerDrawer', $event)"
                 @openOpportunityDetail="openOpportunityDetail"
                 @openQuotationDetail="openQuotationDetail"
@@ -474,10 +477,11 @@
   }
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
-  function handleSaveApproval() {
+  function handleSaveApproval(callback: () => void) {
     formDescriptionRef.value?.handleFormChange(() => {
       refreshKey.value += 1;
       emit('refresh');
+      callback();
     });
   }
 

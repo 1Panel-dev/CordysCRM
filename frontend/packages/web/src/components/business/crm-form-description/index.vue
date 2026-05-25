@@ -288,6 +288,7 @@
       oneLineLabel?: boolean; // label 是否单行显示
       isContractTableDetail?: boolean; // 只支持合同列表打开的合同详情抽屉高亮跳转
       fieldPermissions?: ApprovalFieldPermission[]; // 字段权限控制
+      otherSaveParams?: Record<string, any>;
     }>(),
     {
       oneLineLabel: true,
@@ -325,6 +326,7 @@
         ?.filter((e) => e.permissionType === ApprovalFieldPermissionModeEnum.EDIT)
         .map((e) => e.fieldId) || []
   );
+  const { formKey, sourceId, otherSaveParams } = toRefs(props);
   const {
     fieldList,
     descriptions,
@@ -340,10 +342,11 @@
     initFormDescription,
     saveForm,
   } = useFormCreateApi({
-    formKey: toRefs(props).formKey,
-    sourceId: toRefs(props).sourceId,
+    formKey,
+    sourceId,
     needInitDetail,
     isContractTableDetail: props.isContractTableDetail,
+    otherSaveParams,
   });
 
   const realDescriptions = computed(() => {

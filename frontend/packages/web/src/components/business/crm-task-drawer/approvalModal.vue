@@ -157,7 +157,7 @@
       } else {
         await batchAgreeApproval({
           ids: props.approvalItemKeys,
-          rejectReason: approvalForm.value.reason,
+          comment: approvalForm.value.reason,
           attachmentIds: fileList.value.map((e) => e.id),
           module: props.module,
         });
