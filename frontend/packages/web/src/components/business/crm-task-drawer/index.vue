@@ -281,6 +281,7 @@
 
   function refresh() {
     searchData();
+    initStatistic();
   }
 
   const approvalVisible = ref(false);

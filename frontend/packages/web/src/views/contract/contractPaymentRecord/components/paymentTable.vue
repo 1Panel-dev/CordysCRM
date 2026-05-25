@@ -492,7 +492,11 @@
   }
 
   function searchData(val?: string, refreshId?: string) {
-    setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value, contractId: props.sourceId });
+    setLoadListParams({
+      keyword: val ?? keyword.value,
+      viewId: props.isContractTab ? 'ALL' : activeTab.value,
+      contractId: props.sourceId,
+    });
     loadList(false, refreshId);
     getStatistic();
     if (!refreshId) {
