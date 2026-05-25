@@ -130,6 +130,7 @@ public class ApprovalFlowService {
         ApprovalFlow criteria = new ApprovalFlow();
         criteria.setFormType(formType);
         criteria.setEnable(true);
+        criteria.setDeleted(false);
         criteria.setOrganizationId(organizationId);
         List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
 
@@ -270,6 +271,7 @@ public class ApprovalFlowService {
         ApprovalFlow criteria = new ApprovalFlow();
         criteria.setFormType(formType);
         criteria.setEnable(true);
+        criteria.setDeleted(false);
         criteria.setOrganizationId(organizationId);
         List<ApprovalFlow> flows = approvalFlowMapper.select(criteria);
 
@@ -313,6 +315,7 @@ public class ApprovalFlowService {
         flow.setUpdateUser(userId);
         flow.setUpdateTime(System.currentTimeMillis());
         flow.setOrganizationId(organizationId);
+        flow.setDeleted(false);
 
         // 保存状态权限配置到主表
         if (request.getStatusPermissions() != null) {
@@ -346,6 +349,7 @@ public class ApprovalFlowService {
     public ApprovalFlow selectApprovalFlowByFormType(String formType, String organizationId) {
         ApprovalFlow existCriteria = new ApprovalFlow();
         existCriteria.setFormType(formType);
+        existCriteria.setDeleted(false);
         existCriteria.setOrganizationId(organizationId);
         List<ApprovalFlow> existFlows = approvalFlowMapper.select(existCriteria);
         if (CollectionUtils.isEmpty(existFlows)) {
@@ -423,29 +427,12 @@ public class ApprovalFlowService {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
-        // 查询所有版本ID
-        ApprovalFlowVersion versionCriteria = new ApprovalFlowVersion();
-        versionCriteria.setFlowId(id);
-        List<ApprovalFlowVersion> versions = approvalFlowVersionMapper.select(versionCriteria);
-
-        if (CollectionUtils.isNotEmpty(versions)) {
-            List<String> versionIds = versions.stream()
-                    .map(ApprovalFlowVersion::getId)
-                    .collect(Collectors.toList());
-
-            // 批量删除节点配置
-            deleteNodesByFlowVersionIds(versionIds);
-        }
-
-        // 删除所有版本
-        approvalFlowVersionMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalFlowVersion>()
-                .eq(ApprovalFlowVersion::getFlowId, id));
-
-        // 删除主表
-        approvalFlowMapper.deleteByPrimaryKey(id);
-
-        // 清除审批中的资源和待办
-        approvalInstanceService.clearApprovingInstanceOfFlow(id);
+        // 软删除：设置 deleted = true
+        ApprovalFlow update = new ApprovalFlow();
+        update.setId(id);
+        update.setDeleted(true);
+        update.setUpdateTime(System.currentTimeMillis());
+        approvalFlowMapper.updateById(update);
 
         // 设置日志上下文
         OperationLogContext.setResourceName(flow.getName());
@@ -457,7 +444,7 @@ public class ApprovalFlowService {
     @OperationLog(module = LogModule.APPROVAL_FLOW, type = LogType.UPDATE, resourceId = "{#id}")
     public void updateEnable(String id, Boolean enable, String userId, String organizationId) {
         ApprovalFlow flow = approvalFlowMapper.selectByPrimaryKey(id);
-        if (flow == null || !flow.getOrganizationId().equals(organizationId)) {
+        if (flow == null || !flow.getOrganizationId().equals(organizationId) || Boolean.TRUE.equals(flow.getDeleted())) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
@@ -1240,7 +1227,8 @@ public class ApprovalFlowService {
         LambdaQueryWrapper<ApprovalFlow> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ApprovalFlow::getFormType, formKey)
                 .eq(ApprovalFlow::getOrganizationId, organizationId)
-                .eq(ApprovalFlow::getEnable, true);
+                .eq(ApprovalFlow::getEnable, true)
+                .eq(ApprovalFlow::getDeleted, false);
         List<ApprovalFlow> approvalFlows = approvalFlowMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isEmpty(approvalFlows)) {
             return null;

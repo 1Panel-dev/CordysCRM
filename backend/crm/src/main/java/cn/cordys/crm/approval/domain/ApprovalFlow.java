@@ -50,6 +50,9 @@ public class ApprovalFlow extends BaseModel {
     @Schema(description = "启用状态")
     private Boolean enable;
 
+    @Schema(description = "是否删除")
+    private Boolean deleted;
+
     @Schema(description = "流程描述")
     private String description;
 
