@@ -59,6 +59,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.ibatis.session.ExecutorType;
@@ -139,6 +140,7 @@ public class OpportunityQuotationService {
         opportunityQuotation.setId(IDGenerator.nextStr());
         opportunityQuotation.setOrganizationId(orgId);
         opportunityQuotation.setName(request.getName());
+		opportunityQuotation.setInvalid(false);
         opportunityQuotation.setApprovalStatus(ApprovalStatus.NONE.name());
         opportunityQuotation.setOpportunityId(request.getOpportunityId());
         opportunityQuotation.setUntilTime(request.getUntilTime());
@@ -751,6 +753,7 @@ public class OpportunityQuotationService {
         OpportunityQuotation opportunityQuotation = BeanUtils.copyBean(new OpportunityQuotation(), request);
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateUser(userId);
+		opportunityQuotation.setInvalid(oldOpportunityQuotation.getInvalid());
         opportunityQuotation.setCreateTime(oldOpportunityQuotation.getCreateTime());
         opportunityQuotation.setCreateUser(oldOpportunityQuotation.getCreateUser());
 		opportunityQuotation.setApprovalStatus(oldOpportunityQuotation.getApprovalStatus());
@@ -1110,7 +1113,7 @@ public class OpportunityQuotationService {
         AtomicInteger skipCount = new AtomicInteger();
         validateList.stream().filter(
                 item -> {
-                    if (item.getInvalid()) {
+                    if (BooleanUtils.isTrue(item.getInvalid())) {
                         skipCount.getAndIncrement();
                         return false;
                     }
