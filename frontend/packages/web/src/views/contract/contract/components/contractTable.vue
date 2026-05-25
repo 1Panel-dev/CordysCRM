@@ -616,7 +616,7 @@
           },
         }),
     },
-    permission: ['CONTRACT:EXPORT'],
+    permission: ['CONTRACT:EXPORT', 'CONTRACT:UPDATE'],
     containerClass: '.crm-contract-table',
     contractStage: stageConfig.value?.stageConfigList || [],
     enableApproval,

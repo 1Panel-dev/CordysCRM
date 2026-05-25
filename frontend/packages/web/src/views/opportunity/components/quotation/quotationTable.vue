@@ -529,7 +529,7 @@
         });
       },
     },
-    permission: ['OPPORTUNITY_QUOTATION:VOIDED'],
+    permission: ['OPPORTUNITY_QUOTATION:VOIDED', 'OPPORTUNITY_QUOTATION:UPDATE'],
     readonly: props.readonly,
     enableApproval,
   });
