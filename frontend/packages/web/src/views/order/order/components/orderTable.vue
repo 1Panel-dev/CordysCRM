@@ -527,6 +527,7 @@
     },
     containerClass: `.crm-order-table-${props.formKey}`,
     orderStage: stageConfig.value?.stageConfigList || [],
+    permission: ['ORDER:UPDATE'],
     enableApproval,
   });
   const { propsRes, propsEvent, advanceFilter, filterItem, loadList, setLoadListParams, setAdvanceFilter } =

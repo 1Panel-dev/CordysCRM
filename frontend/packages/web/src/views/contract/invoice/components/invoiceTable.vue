@@ -462,7 +462,7 @@
               }
             ),
     },
-    permission: ['CONTRACT_INVOICE:EXPORT'],
+    permission: ['CONTRACT_INVOICE:EXPORT', 'CONTRACT_INVOICE:DELETE'],
     containerClass: `.crm-contract-payment-table-${FormDesignKeyEnum.INVOICE}`,
     enableApproval,
   });

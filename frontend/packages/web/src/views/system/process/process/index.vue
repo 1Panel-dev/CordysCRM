@@ -188,9 +188,6 @@
       key: 'name',
       sortOrder: false,
       sorter: true,
-      ellipsis: {
-        tooltip: true,
-      },
       width: 200,
       render: (row: ApprovalProcessItem) => {
         return h(

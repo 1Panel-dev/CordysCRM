@@ -13,17 +13,22 @@
           :activeApproverId="activeApproverId"
           @toggleActive="toggleActive(approver)"
         />
-        <div
-          class="one-line-text crm-approver-avatar-list__name cursor-pointer"
-          :class="{
-            'crm-approver-avatar-list__name--active-approval': isActiveApproval(approver),
-            'crm-approver-avatar-list__name--active-rejected': isActiveRejected(approver),
-            'crm-approver-avatar-list__name--active': approver.id === activeApproverId,
-          }"
-          @click="toggleActive(approver)"
-        >
+        <n-tooltip :delay="300" trigger="hover">
+          <template #trigger>
+            <div
+              class="one-line-text crm-approver-avatar-list__name cursor-pointer"
+              :class="{
+                'crm-approver-avatar-list__name--active-approval': isActiveApproval(approver),
+                'crm-approver-avatar-list__name--active-rejected': isActiveRejected(approver),
+                'crm-approver-avatar-list__name--active': approver.id === activeApproverId,
+              }"
+              @click="toggleActive(approver)"
+            >
+              {{ approver.name }}
+            </div>
+          </template>
           {{ approver.name }}
-        </div>
+        </n-tooltip>
       </div>
     </div>
     <div v-if="currentApproverReason" class="crm-approval-approver-content__reasons">
@@ -35,6 +40,8 @@
 </template>
 
 <script setup lang="ts">
+  import { NTooltip } from 'naive-ui';
+
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { ApproverItem } from '@lib/shared/models/system/process';
