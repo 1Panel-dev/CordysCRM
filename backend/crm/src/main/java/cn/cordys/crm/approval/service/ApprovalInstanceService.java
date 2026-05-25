@@ -678,10 +678,14 @@ public class ApprovalInstanceService {
 		if (CollectionUtils.isNotEmpty(taskIds)) {
 			approvalRecordMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalRecord>().in(ApprovalRecord::getInstanceId, instanceIds));
 			List<ApprovalInstanceAttachment> instanceAttachments = approvalInstanceAttachmentMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalInstanceAttachment>().in(ApprovalInstanceAttachment::getInstanceId, instanceIds));
-			approvalInstanceAttachmentMapper.deleteByIds(instanceAttachments.stream().map(ApprovalInstanceAttachment::getId).toList());
-			List<String> attachmentIds = instanceAttachments.stream().map(ApprovalInstanceAttachment::getAttachmentId).toList();
-			attachmentIds.forEach(id -> attachmentService.delete(id));
-			attachmentMapper.deleteByIds(attachmentIds);
+			if (CollectionUtils.isNotEmpty(instanceAttachments)) {
+				approvalInstanceAttachmentMapper.deleteByIds(instanceAttachments.stream().map(ApprovalInstanceAttachment::getId).toList());
+				List<String> attachmentIds = instanceAttachments.stream().map(ApprovalInstanceAttachment::getAttachmentId).toList();
+				attachmentIds.forEach(id -> attachmentService.delete(id));
+				if (CollectionUtils.isNotEmpty(attachmentIds)) {
+					attachmentMapper.deleteByIds(attachmentIds);
+				}
+			}
 		}
 	}
 
