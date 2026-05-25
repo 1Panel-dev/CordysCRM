@@ -40,6 +40,7 @@
     >
       <template #left="{ fieldPermissions }">
         <CrmFormDescription
+          ref="formDescriptionRef"
           :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
           :source-id="props.sourceId"
           :column="2"

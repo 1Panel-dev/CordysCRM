@@ -55,6 +55,7 @@
           >
             <template #left="{ fieldPermissions }">
               <CrmFormDescription
+                ref="formDescriptionRef"
                 :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
                 :source-id="props.sourceId"
                 :column="2"

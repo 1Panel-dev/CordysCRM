@@ -33,4 +33,5 @@ export default {
   'crm.approval.preNode': '前{index}节点',
   'crm.approval.fallbackSuccess': '已退回',
   'crm.approval.autoReject': 'Cbot 自动拒绝',
+  'crm.approval.fileLimitTip': '附件最多可添加 10 个',
 };

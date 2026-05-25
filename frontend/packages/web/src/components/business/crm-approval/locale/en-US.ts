@@ -36,4 +36,5 @@ export default {
   'crm.approval.preNode': 'Previous {index} Node',
   'crm.approval.fallbackSuccess': 'Fallback Successful',
   'crm.approval.autoReject': 'Cbot Auto Reject',
+  'crm.approval.fileLimitTip': 'You can add up to 10 attachments',
 };
