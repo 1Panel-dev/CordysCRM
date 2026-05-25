@@ -57,6 +57,12 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 handleModuleMainNav(differ);
             }
 
+			if (Strings.CS.equals("viewSize", differ.getColumn())) {
+				differ.setColumnName(Translator.get("form.view.size"));
+				differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+				differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+			}
+
 
             if (Strings.CI.equalsAny(differ.getColumn(),
                     "rate", "stage", "afootRollBack", "endRollBack","name")) {
