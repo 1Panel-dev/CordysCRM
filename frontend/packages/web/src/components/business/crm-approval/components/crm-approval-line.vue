@@ -139,7 +139,17 @@
                         {{ task.approvalTime ? dayjs(task.approvalTime).format('YYYY-MM-DD HH:mm') : '-' }}
                       </div>
                     </template>
-                    <div class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
+                    <div
+                      v-if="
+                        [
+                          ProcessStatusEnum.APPROVED,
+                          ProcessStatusEnum.AUTO_APPROVED,
+                          ProcessStatusEnum.UNAPPROVED,
+                          ProcessStatusEnum.AUTO_UNAPPROVED,
+                        ].includes(task.approvalStatus)
+                      "
+                      class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]"
+                    >
                       <div class="text-[var(--text-n4)]">{{ task.comment }}</div>
                     </div>
                     <CrmFileList
