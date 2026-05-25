@@ -67,6 +67,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.data.util.ReflectionUtils;
@@ -344,7 +345,7 @@ public class ContractService {
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
-	@HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.EDIT, resourceId = "{#request.id}")
+	@HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.EDIT, resourceId = "{#request.id}", updateType = "{#request.updateType}")
     public Contract update(ContractUpdateRequest request, String userId, String orgId) {
         Contract oldContract = contractMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();

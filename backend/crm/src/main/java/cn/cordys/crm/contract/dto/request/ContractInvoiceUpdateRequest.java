@@ -50,4 +50,7 @@ public class ContractInvoiceUpdateRequest {
 
     @Schema(description = "表单配置")
     private ModuleFormConfigDTO moduleFormConfigDTO;
+
+    @Schema(description = "是否提审更新  normal-正常更新  approval-评审更新")
+    private String updateType;
 }

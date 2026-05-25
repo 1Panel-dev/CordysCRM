@@ -12,6 +12,7 @@ import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -61,7 +62,12 @@ public class HitApprovalAspect {
 
 		try {
 			String resourceId = resolveResourceId(method, joinPoint.getArgs(), annotation.resourceId(), retValue, annotation.executeType());
+			String updateType = resolveResourceId(method, joinPoint.getArgs(), annotation.updateType(), retValue, annotation.executeType());
 			if (StringUtils.isBlank(resourceId)) {
+				return;
+			}
+
+			if (Strings.CI.equals(updateType, "approval")) {
 				return;
 			}
 
