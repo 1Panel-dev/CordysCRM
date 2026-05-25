@@ -35,7 +35,9 @@
         :rule="[
           {
             required: approvalConfig?.requireComment,
-            message: t('common.notNull', { value: t('taskDrawer.rejectReason') }),
+            message: t('common.notNull', {
+              value: props.approvalType === 'approve' ? t('taskDrawer.approveReason') : t('taskDrawer.rejectReason'),
+            }),
           },
         ]"
       >
