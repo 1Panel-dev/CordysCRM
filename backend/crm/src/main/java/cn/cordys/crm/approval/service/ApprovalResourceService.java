@@ -270,7 +270,7 @@ public class ApprovalResourceService {
 			return;
 		}
 		List<ResourceApprovalFieldUpdateParam> fields = getUpdateFieldOfPostConfig(postConfig);
-		fields = fields.stream().filter(ResourceApprovalFieldUpdateParam::isEnable).toList();
+		fields = fields.stream().filter(ResourceApprovalFieldUpdateParam::isEnable).filter(f -> f.getFieldValue() != null).toList();
 		if (CollectionUtils.isEmpty(fields)) {
 			return;
 		}
