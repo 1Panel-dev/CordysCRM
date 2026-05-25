@@ -326,7 +326,8 @@ public class ApprovalInstanceService {
 				for (int i = 0; i < flatSignTasks.size(); i++) {
 					ApprovalTask signTask = flatSignTasks.get(i);
 					ApprovalTaskNode taskNode = buildTaskNode(signTask, taskRecordMap, addSignTaskMapOfTask, attachmentsMap, simpleUserMap);
-					ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(taskNode.isSign() ? hisNode + SIGN_SPILT + i : hisNode).nodeRound(maxRound).approvalStatus(taskNode.getApprovalStatus()).taskNodes(List.of(taskNode)).build();
+					ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(taskNode.isSign() ? hisNode + SIGN_SPILT + i : hisNode).nodeRound(maxRound)
+							.approvalStatus(Strings.CI.equals(taskNode.getApprovalStatus(), ApprovalStatus.REVOKED.name()) ? ApprovalStatus.NONE.name() : taskNode.getApprovalStatus()).taskNodes(List.of(taskNode)).build();
 					if (ApprovalTaskType.valueOf(signTask.getType()) == ApprovalTaskType.NL) {
 						recordNode.setCcNodes(ccNodes);
 					}
