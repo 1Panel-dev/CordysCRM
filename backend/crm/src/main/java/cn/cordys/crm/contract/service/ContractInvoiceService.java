@@ -704,4 +704,16 @@ public class ContractInvoiceService {
 			snapshotBaseMapper.update(snapshot);
 		}
 	}
+
+	/**
+	 * 处理旧版本审批状态 (APPROVING => NONE)
+	 */
+	public void handleOldApprovalData() {
+		List<ContractInvoice> invoices = contractInvoiceMapper.selectListByLambda(new LambdaQueryWrapper<ContractInvoice>().eq(ContractInvoice::getApprovalStatus, ApprovalStatus.APPROVING.name()));
+		invoices.forEach(invoice -> {
+			ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam.builder().resourceId(invoice.getId()).approvalStatus(ApprovalStatus.NONE.name()).build();
+			updateSnapshotApprovalStatus(param);
+		});
+		extContractInvoiceMapper.updateOldApprovalStatusNone();
+	}
 }

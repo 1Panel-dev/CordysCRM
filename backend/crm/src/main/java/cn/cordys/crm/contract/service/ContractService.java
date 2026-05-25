@@ -1005,4 +1005,16 @@ public class ContractService {
         updateStatusSnapshot(request.getDragNodeId(), request.getStage(), null);
 
     }
+
+	/**
+	 * 处理旧版本审批状态 (APPROVING => NONE)
+	 */
+	public void handleOldApprovalData() {
+		List<Contract> contracts = contractMapper.selectListByLambda(new LambdaQueryWrapper<Contract>().eq(Contract::getApprovalStatus, ApprovalStatus.APPROVING.name()));
+		contracts.forEach(contract -> {
+			ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam.builder().resourceId(contract.getId()).approvalStatus(ApprovalStatus.NONE.name()).build();
+			updateSnapshotApprovalStatus(param);
+		});
+		extContractMapper.updateOldApprovalStatusNone();
+	}
 }

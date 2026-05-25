@@ -544,4 +544,8 @@
     <update id="moveDownStageOrder">
         update sales_order set pos = pos + #{pos} where pos &gt;= #{end} and stage = #{stage}
     </update>
+
+    <update id="updateOldApprovalStatusNone">
+        update sales_order set approval_status = 'NONE';
+    </update>
 </mapper>

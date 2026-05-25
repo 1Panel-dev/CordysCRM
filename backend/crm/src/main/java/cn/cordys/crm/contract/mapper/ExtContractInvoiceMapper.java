@@ -34,4 +34,6 @@ public interface ExtContractInvoiceMapper {
                                               @Param("orgId") String orgId, @Param("excludeId") String excludeId);
 
     Boolean hasContractInvoice(@Param("contractId") String contractId);
+
+	void updateOldApprovalStatusNone();
 }
