@@ -12,4 +12,7 @@ public class ContractUpdateRequest extends ContractAddRequest {
     @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
     @Size(max = 32)
     private String id;
+
+    @Schema(description = "是否提审更新  normal-正常更新  approval-评审更新")
+    private String updateType;
 }

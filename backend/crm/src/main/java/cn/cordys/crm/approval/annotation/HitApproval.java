@@ -34,4 +34,9 @@ public @interface HitApproval {
 	 * TODO: 是否触发自动提审
 	 */
 	boolean autoSubmit() default false;
+
+	/**
+	 * 更新类型 (支持SpEL表达式，从返回值或者方法参数中获取资源ID) normal-正常更新  approval-评审更新
+	 */
+	String updateType() default "normal";
 }
