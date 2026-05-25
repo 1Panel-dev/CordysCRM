@@ -11,7 +11,6 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.condition.BaseCondition;
-import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
@@ -817,35 +816,6 @@ public class ContractService {
         LambdaQueryWrapper<Contract> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.in(Contract::getName, names);
         return contractMapper.selectListByLambda(lambdaQueryWrapper);
-    }
-
-    /**
-     * 设置默认的数据源搜索条件
-     *
-     * @return 搜索条件
-     */
-    public List<FilterCondition> getDefaultSourceFilters() {
-        // 只展示状态为通过且非作废/归档阶段的合同
-        List<FilterCondition> conditions = new ArrayList<>();
-
-        if (dictService.isDictConfigEnable(DictModule.CONTRACT_APPROVAL.name(), OrganizationContext.getOrganizationId())) {
-            FilterCondition statusCondition = new FilterCondition();
-            statusCondition.setMultipleValue(false);
-            statusCondition.setName("approvalStatus");
-            statusCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
-            statusCondition.setValue(List.of(ContractApprovalStatus.APPROVED.name()));
-            conditions.add(statusCondition);
-        }
-
-        FilterCondition stageCondition = new FilterCondition();
-        stageCondition.setMultipleValue(false);
-        stageCondition.setName("stage");
-        stageCondition.setOperator(FilterCondition.CombineConditionOperator.IN.name());
-        stageCondition.setValue(List.of(ContractStage.PENDING_SIGNING.name(), ContractStage.SIGNED.name(),
-                ContractStage.IN_PROGRESS.name(), ContractStage.COMPLETED_PERFORMANCE.name(), ContractStage.CHANGE.name()));
-        conditions.add(stageCondition);
-
-        return conditions;
     }
 
     /**
