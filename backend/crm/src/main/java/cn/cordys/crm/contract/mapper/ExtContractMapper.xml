@@ -632,4 +632,8 @@
     <update id="moveDownStageContract">
         update contract set pos = pos + #{pos} where pos &gt;= #{end} and stage = #{stage}
     </update>
+
+    <update id="updateOldApprovalStatusNone">
+        update contract set approval_status = 'NONE' where approval_status = 'APPROVING';
+    </update>
 </mapper>

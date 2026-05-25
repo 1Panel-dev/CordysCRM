@@ -1281,4 +1281,32 @@ public class OpportunityQuotationService {
         }
         saveSateChangeLog(organizationId, null, userId, LogType.DOWNLOAD, opportunityQuotation);
     }
+
+	/**
+	 * 处理旧版本审批状态 (APPROVING, VOIDED => NONE), 作废字段单独处理
+	 */
+	public void handleOldApprovalData() {
+		List<OpportunityQuotation> quotations = opportunityQuotationMapper.selectAll(null);
+		quotations.forEach(quotation -> {
+			if (Strings.CI.equals(quotation.getApprovalStatus(), "VOIDED")) {
+				quotation.setInvalid(true);
+			} else {
+				quotation.setInvalid(false);
+			}
+			if (Strings.CI.equalsAny(quotation.getApprovalStatus(), "VOIDED", "APPROVING")) {
+				quotation.setApprovalStatus(ApprovalStatus.NONE.name());
+			}
+			opportunityQuotationMapper.updateById(quotation);
+			OpportunityQuotationSnapshot snapshotCriteria = new OpportunityQuotationSnapshot();
+			snapshotCriteria.setQuotationId(quotation.getId());
+			OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+			if (snapshot != null) {
+				OpportunityQuotationGetResponse response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
+				response.setApprovalStatus(quotation.getApprovalStatus());
+				response.setInvalid(quotation.getInvalid());
+				snapshot.setQuotationValue(JSON.toJSONString(response));
+				snapshotBaseMapper.update(snapshot);
+			}
+		});
+	}
 }

@@ -492,4 +492,8 @@
             update_time = #{updateTime}
         where id = #{id}
     </update>
+
+    <update id="updateOldApprovalStatusNone">
+        update contract_invoice set approval_status = 'NONE' where approval_status = 'APPROVING';
+    </update>
 </mapper>

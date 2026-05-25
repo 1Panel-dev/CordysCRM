@@ -904,4 +904,16 @@ public class OrderService {
         updateStageSnapshot(request.getDragNodeId(), request.getStage());
 
     }
+
+	/**
+	 * 处理旧版本审批状态 (APPROVING => NONE)
+	 */
+	public void handleOldApprovalData() {
+		List<Order> orders = orderMapper.selectAll(null);
+		orders.forEach(order -> {
+			ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam.builder().resourceId(order.getId()).approvalStatus(ApprovalStatus.NONE.name()).build();
+			updateSnapshotApprovalStatus(param);
+		});
+		extOrderMapper.updateOldApprovalStatusNone();
+	}
 }
