@@ -249,9 +249,6 @@
 
   const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
-  const filedPermission = computed(
-    () => JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]
-  );
 
   async function initApprovalConfig() {
     try {
@@ -296,6 +293,14 @@
       (e) => e.approvalStatus === ProcessStatusEnum.APPROVING && e.approverId === userStore.userInfo.id
     );
   });
+  // 只有当前审批中的人才展示编辑权限，其他节点展示只读权限
+  const filedPermission = computed(() => {
+    if (currentTaskNode.value && approvalInfo.value?.currentNodeFieldPermissions) {
+      return JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[];
+    }
+    return [];
+  });
+
   // 是否是审批人
   const isApprover = computed(() => {
     if (currentApprovalNode.value?.multiApproverMode === MultiApproverModeEnum.SEQUENTIAL) {
