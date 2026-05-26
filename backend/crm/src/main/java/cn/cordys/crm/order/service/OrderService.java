@@ -711,8 +711,8 @@ public class OrderService {
         Map<String, String> stageMap = stageConfigList.stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
-        Map<String, String> oldMap = new HashMap<>();
-        oldMap.put("orderStage", Translator.get("order.stage." + order.getStage().toLowerCase()));
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("orderStage", stageMap.get(order.getStage()));
 
         order.setStage(request.getStage());
 
@@ -722,8 +722,6 @@ public class OrderService {
 
         updateStageSnapshot(request.getId(), request.getStage());
 
-        final Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("orderStage", stageMap.get(order.getStage()));
         final Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("orderStage", stageMap.get(request.getStage()));
         OperationLogContext.setContext(

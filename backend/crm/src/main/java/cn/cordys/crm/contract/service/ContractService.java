@@ -615,6 +615,9 @@ public class ContractService {
         Map<String, String> stageMap = stageConfigList.stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("contractStage", stageMap.get(contract.getStage()));
+
         contract.setStage(request.getStage());
         if (StringUtils.isNotBlank(request.getVoidReason())) {
             contract.setVoidReason(request.getVoidReason());
@@ -633,8 +636,7 @@ public class ContractService {
             sendNotice(contract, userId, orgId, event, customer.getName());
         }
 
-        final Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("contractStage", stageMap.get(contract.getStage()));
+
         final Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("contractStage", stageMap.get(request.getStage()));
         OperationLogContext.setContext(
