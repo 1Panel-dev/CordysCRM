@@ -50,12 +50,7 @@
     (e: 'toggleActive'): void;
   }>();
 
-  const isAutoRejectedBot = computed(
-    () =>
-      props.approver?.approveResult === ProcessStatusEnum.AUTO_UNAPPROVED &&
-      !props.approver?.avatar &&
-      !props.approver?.name
-  );
+  const isAutoRejectedBot = computed(() => props.approver?.approveResult === ProcessStatusEnum.AUTO_UNAPPROVED);
 
   function getStatusIcon(status: ProcessStatusEnum) {
     if (props.signNode) {
