@@ -49,6 +49,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -176,11 +177,11 @@ public class ApprovalFlowService {
         }
 
         // 检查是否所有资源都没有审批状态，如果是则直接返回所有资源ID，无需权限校验
-        boolean anyHaveStatus = resources.stream()
-                .anyMatch(resource -> StringUtils.isNotBlank(statusGetter.apply(resource))
+        boolean allStatus = resources.stream()
+                .allMatch(resource -> StringUtils.isNotBlank(statusGetter.apply(resource))
                         && Strings.CS.equals(statusGetter.apply(resource), ApprovalStatus.NONE.name()));
 
-        if (!anyHaveStatus) {
+        if (allStatus) {
             // 所有资源都没有审批状态，则无需校验权限，直接返回所有资源ID
             return resources.stream().map(idGetter).collect(Collectors.toList());
         }
@@ -214,12 +215,8 @@ public class ApprovalFlowService {
                         return true;
                     }
                     Boolean required = permissionRequiredMap.get(status);
-                    if (required == null || !required) {
-                        // 该状态没有配置权限限制或未启用，允许操作
-                        return true;
-                    }
                     // 需要权限，检查用户是否有权限
-                    return hasPermission;
+                    return BooleanUtils.isTrue(required) && hasPermission;
                 })
                 .map(idGetter)
                 .collect(Collectors.toList());
