@@ -110,7 +110,7 @@ public class ApprovalInstanceService {
 				instanceDetail.setCurrentNodeFieldPermissions(JSON.toJSONString(viewPermissionsOfSign));
 			}
 		} else {
-			instanceDetail.setCurrentNodeFieldPermissions(currentNode.getFieldPermissions());
+			instanceDetail.setCurrentNodeFieldPermissions(Strings.CI.equals(currentNode.getFieldPermissions(), NULL_FIELD_PERMISSION_STR) ? null : currentNode.getFieldPermissions());
 		}
 		return instanceDetail;
 	}
