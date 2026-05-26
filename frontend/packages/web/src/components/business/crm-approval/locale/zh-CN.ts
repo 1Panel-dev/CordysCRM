@@ -23,7 +23,7 @@ export default {
   'crm.approval.cancelApprovalApplySuccess': '已撤销',
   'crm.approval.cancelApproval': '撤回审批',
   'crm.approval.cancelApprovalConfirm': '确认撤回审批吗？',
-  'crm.approval.cancelApprovalTip': '撤回后，审批流将重新审批，请谨慎操作！',
+  'crm.approval.cancelApprovalTip': '撤回后，审批流将终止审批，请谨慎操作！',
   'crm.approval.confirmCancelApproval': '确认撤回',
   'crm.approval.cancelApprovalSuccess': '已撤回',
   'crm.approval.submit': '提交申请',
