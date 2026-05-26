@@ -32,6 +32,18 @@ public abstract class BaseModuleLogService {
     @Resource
     private BaseMapper<Product> productMapper;
 
+    protected String oldValue;
+
+    protected String newValue;
+
+    public void setOldValue(String oldValue) {
+        this.oldValue = oldValue;
+    }
+
+    public void setNewValue(String newValue) {
+        this.newValue = newValue;
+    }
+
     /**
      * 翻译字段名称
      * 赋值旧值名称和新值名称

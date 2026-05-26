@@ -1,17 +1,24 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.dto.EnableFieldValue;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.JsonDifferenceUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApproverTypeEnum;
+import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
+import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.mapper.ExtRoleMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.BaseModuleLogService;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -29,17 +36,22 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     private static final String NODE_COLUMN_PREFIX = "流程设置";
     private static final String NULL_STRING = "null";
 
+    private ApprovalFlowDetailResponse oldApprovalFlowDetail;
+    private List<BaseField> fields;
+
     @Resource
     private ExtUserMapper extUserMapper;
     @Resource
     private ExtRoleMapper extRoleMapper;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
 
-        JsonDifferenceDTO nodesDiff = getNodesJsonDifferenceDTO(differences);
+        JsonDifferenceDTO nodesDiff = getNodesJsonDifferenceDTO(differences, NODES_COLUMN);
 
-        differences.removeIf(differ -> Strings.CS.equalsAny(differ.getColumn(), "currentVersionId", "links", "nodes", "createUserName", "updateUserName"));
+        differences.removeIf(differ -> Strings.CS.equalsAny(differ.getColumn(), "currentVersionId", "links", "nodes", "optionMap", "createUserName", "updateUserName"));
 
         Map<String, Consumer<JsonDifferenceDTO>> handlers = Map.ofEntries(
                 Map.entry("formType", this::handleFormType),
@@ -65,8 +77,12 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             }
         });
 
+        if (isValidValue(oldValue)) {
+            oldApprovalFlowDetail = JSON.parseObject(oldValue, ApprovalFlowDetailResponse.class);
+        }
+
         // 处理 nodes 字段的差异
-        handleNodesDifference(differences, nodesDiff);
+        handleNodesDifference(differences, nodesDiff, orgId);
 
         return differences;
     }
@@ -75,7 +91,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
      * 处理 nodes 字段的差异
      * 按 number 分组比较节点属性，生成格式为 "流程设置-{number}-{属性名}" 的差异记录
      */
-    private void handleNodesDifference(List<JsonDifferenceDTO> differences, JsonDifferenceDTO nodesDiff) {
+    private void handleNodesDifference(List<JsonDifferenceDTO> differences, JsonDifferenceDTO nodesDiff, String orgId) {
         if (nodesDiff == null) return;
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -85,6 +101,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             JsonNode newNodes = nodesDiff.getNewValue() != null
                     ? mapper.valueToTree(nodesDiff.getNewValue())
                     : mapper.createArrayNode();
+
+            fields = moduleFormCacheService.getBusinessFormConfig(oldApprovalFlowDetail.getFormType(), orgId).getFields();
 
             // 按 number 分组
             Map<String, JsonNode> oldNodeMap = buildNodeMapByNumber(oldNodes);
@@ -119,9 +137,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         }
     }
 
-    private JsonDifferenceDTO getNodesJsonDifferenceDTO(List<JsonDifferenceDTO> differences) {
+    private JsonDifferenceDTO getNodesJsonDifferenceDTO(List<JsonDifferenceDTO> differences, String nodeName) {
         Optional<JsonDifferenceDTO> nodesDiffOpt = differences.stream()
-                .filter(differ -> Strings.CS.equals(differ.getColumn(), NODES_COLUMN))
+                .filter(differ -> Strings.CS.equals(differ.getColumn(), nodeName))
                 .findFirst();
 
         return nodesDiffOpt.orElse(null);
@@ -365,8 +383,29 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 }
                 break;
             case "passPostConfig":
+                if (hasOldValue && isValidValue(diff.getOldValue())) {
+                    diff.setOldValueName(translatePostConfig(diff.getOldValue()));
+                }
+                if (hasNewValue && isValidValue(diff.getNewValue())) {
+                    diff.setNewValueName(translatePostConfig(diff.getNewValue()));
+                }
+                break;
             case "rejectPostConfig":
+                if (hasOldValue && isValidValue(diff.getOldValue())) {
+                    diff.setOldValueName(translatePostConfig(diff.getOldValue()));
+                }
+                if (hasNewValue && isValidValue(diff.getNewValue())) {
+                    diff.setNewValueName(translatePostConfig(diff.getNewValue()));
+                }
+                break;
             case "fieldPermissions":
+                if (hasOldValue && isValidValue(diff.getOldValue())) {
+                    diff.setOldValueName(translateFieldPermissions(diff.getOldValue()));
+                }
+                if (hasNewValue && isValidValue(diff.getNewValue())) {
+                    diff.setNewValueName(translateFieldPermissions(diff.getNewValue()));
+                }
+                break;
             case "conditionConfig":
                 if (hasOldValue && isValidValue(diff.getOldValue())) {
                     diff.setOldValueName(JSON.toJSONString(diff.getOldValue()));
@@ -684,5 +723,86 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         differ.setColumnName(Translator.get("approval_flow.log.description"));
         differ.setOldValueName(differ.getOldValue());
         differ.setNewValueName(differ.getNewValue());
+    }
+
+    /**
+     * 翻译审批通过/驳回后配置
+     * 将 fieldUpdateConfigs 翻译为 "字段名: 值 (启用/禁用)" 格式
+     */
+    private String translatePostConfig(Object value) {
+        if (value == null) return "";
+        try {
+            String jsonStr = value instanceof String ? (String) value : JSON.toJSONString(value);
+            ApprovalPostConfigDTO postConfig = JSON.parseObject(jsonStr, ApprovalPostConfigDTO.class);
+
+            if (postConfig == null || CollectionUtils.isEmpty(postConfig.getFieldUpdateConfigs())) {
+                return "";
+            }
+
+            Map<String, BaseField> fieldMap = fields != null
+                    ? fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (a, b) -> a))
+                    : Map.of();
+
+            List<String> parts = new ArrayList<>();
+            for (EnableFieldValue config : postConfig.getFieldUpdateConfigs()) {
+                if (config.getFieldId() == null) continue;
+
+                BaseField field = fieldMap.get(config.getFieldId());
+                String fieldName = field != null ? field.getName() : config.getFieldId();
+
+                Object translatedValue = config.getFieldValue();
+                if (field != null && config.getFieldValue() != null) {
+                    translatedValue = transformFieldValue(field, config.getFieldValue());
+                }
+
+                String enableStr = BooleanUtils.isTrue(config.getEnable())
+                        ? Translator.get("log.enable.true")
+                        : Translator.get("log.enable.false");
+                parts.add(fieldName + ": " + translatedValue + " (" + enableStr + ")");
+            }
+
+            return String.join("\n", parts);
+        } catch (Exception e) {
+            return value.toString();
+        }
+    }
+
+    /**
+     * 翻译字段权限配置
+     * 将 FieldPermissionDTO 列表翻译为 "字段名: 权限类型" 格式
+     */
+    private String translateFieldPermissions(Object value) {
+        if (value == null) return "";
+        try {
+            List<?> list;
+            if (value instanceof List<?> l) {
+                list = l;
+            } else {
+                String strValue = value.toString();
+                list = JSON.parseArray(strValue, Object.class);
+            }
+
+            Map<String, BaseField> fieldMap = fields != null
+                    ? fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (a, b) -> a))
+                    : Map.of();
+
+            List<String> parts = new ArrayList<>();
+            for (Object item : list) {
+                if (item instanceof Map<?, ?> map) {
+                    String fieldId = map.get("fieldId") != null ? map.get("fieldId").toString() : "";
+                    String permissionType = map.get("permissionType") != null ? map.get("permissionType").toString() : "";
+
+                    BaseField field = fieldMap.get(fieldId);
+                    String fieldName = field != null ? field.getName() : fieldId;
+                    String translatedPermission = Translator.get("approval_flow.field_permission." + permissionType.toLowerCase(), permissionType);
+
+                    parts.add(fieldName + ": " + translatedPermission);
+                }
+            }
+
+            return String.join("\n", parts);
+        } catch (Exception e) {
+            return value.toString();
+        }
     }
 }

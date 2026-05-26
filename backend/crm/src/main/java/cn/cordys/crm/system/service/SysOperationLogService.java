@@ -134,6 +134,8 @@ public class SysOperationLogService {
                 BaseModuleLogService moduleLogService = ModuleLogServiceFactory.getModuleLogService(operationLog.getModule());
 
                 if (moduleLogService != null) {
+                    moduleLogService.setOldValue(oldString);
+                    moduleLogService.setNewValue(newString);
                     differences = moduleLogService.handleLogField(differences, orgId);
                 } else {
                     handleDefaultDifferences(operationLog, differences);
