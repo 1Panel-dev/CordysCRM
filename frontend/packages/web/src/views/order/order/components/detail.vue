@@ -380,6 +380,7 @@
     } else {
       refreshKey.value += 1;
       emit('refresh');
+      callback();
     }
   }
 
