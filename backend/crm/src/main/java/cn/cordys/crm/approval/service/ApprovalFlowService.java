@@ -58,7 +58,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -205,7 +204,8 @@ public class ApprovalFlowService {
                 permissionRequiredMap.put(sp.getApprovalStatus(), sp.getEnabled());
             }
         }
-
+        // 没有开启审核时创建的数据，状态为NONE，也应该能被修改
+        permissionRequiredMap.put(ApprovalStatus.NONE.name(), true);
         // 检查用户是否有该权限
         boolean hasPermission = PermissionUtils.hasPermission(permission);
 
