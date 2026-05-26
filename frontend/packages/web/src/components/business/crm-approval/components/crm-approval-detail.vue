@@ -17,8 +17,8 @@
         </div>
       </template>
       <template #2>
-        <div class="flex h-full w-full flex-col overflow-hidden border-l border-[var(--text-n8)]">
-          <div class="flex-1 overflow-hidden px-[16px] py-[24px]">
+        <div class="flex h-full w-full flex-col border-l border-[var(--text-n8)]">
+          <div class="flex-1 px-[16px] py-[24px]">
             <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
             <CrmApprovalLine
               :nodes="approvalInfo?.nodes || []"

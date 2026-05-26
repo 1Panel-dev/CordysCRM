@@ -18,7 +18,7 @@ export default {
   'crm.approval.confirmFallback': '确认退回',
   'crm.approval.cancelApprovalApply': '撤销审批',
   'crm.approval.cancelApprovalApplyConfirm': '确认撤销审批吗？',
-  'crm.approval.cancelApprovalApplyTip': '撤销后，审批流将重新审批，请谨慎操作！',
+  'crm.approval.cancelApprovalApplyTip': '撤销后，审批流将终止，请谨慎操作！',
   'crm.approval.confirmCancelApprovalApply': '确认撤销',
   'crm.approval.cancelApprovalApplySuccess': '已撤销',
   'crm.approval.cancelApproval': '撤回审批',
