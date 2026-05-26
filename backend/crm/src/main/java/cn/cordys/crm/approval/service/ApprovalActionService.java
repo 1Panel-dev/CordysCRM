@@ -426,6 +426,8 @@ public class ApprovalActionService {
 			// 单人审批或者多人审批但节点流转通过
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(currentTask, instance, currentOrgId);
 			handleNextApprovalNode(nextNode, instance, currentTask.getApproverId(), currentUserId, currentOrgId);
+			// 多人或签, 移除审批中的任务
+			loseCurrentNode(instance.getId(), currentTask.getNodeId());
 		}
 	}
 
@@ -450,7 +452,7 @@ public class ApprovalActionService {
 			if (resourceService != null) {
 				resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus());
 			}
-			revokeCurrentNode(instance.getId(), currentTask.getNodeId());
+			loseCurrentNode(instance.getId(), currentTask.getNodeId());
 			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.REJECT);
 		}
 	}
@@ -495,13 +497,13 @@ public class ApprovalActionService {
 				break;
 			}
 			case BACK: {
-				currentTask.setStatus(ApprovalStatus.PENDING.name());
+				currentTask.setStatus(ApprovalStatus.INTERRUPTED.name());
 				currentTask.setAction(ApprovalAction.BACK.name());
 				break;
 			}
 			case SIGN: {
 				if (signType == ApprovalAddSignType.BEFORE) {
-					currentTask.setStatus(ApprovalStatus.PENDING.name());
+					currentTask.setStatus(ApprovalStatus.INTERRUPTED.name());
 					currentTask.setAction(ApprovalAction.SIGN.name());
 				} else {
 					currentTask.setAction(ApprovalAction.APPROVE.name());
@@ -846,8 +848,12 @@ public class ApprovalActionService {
 			/*
 			 * 当前节点执行过, 假删除, 保留历史待办
 			 */
-			extApprovalInstanceMapper.batchClearTask(instanceId, nodeId, maxRound);
+			extApprovalInstanceMapper.batchClearNotApprovingTask(instanceId, nodeId, maxRound);
 			extApprovalInstanceMapper.batchClearRecord(instanceId, nodeId, maxRound);
+			/*
+			 * 未执行过的待办直接中止
+			 */
+			extApprovalInstanceMapper.loseApprovingTask(instanceId, nodeId, maxRound);
 		}
 	}
 
@@ -856,16 +862,16 @@ public class ApprovalActionService {
 	 * @param instanceId 审批实例ID
 	 * @param nodeId 节点ID
 	 */
-	public void revokeCurrentNode(String instanceId, String nodeId) {
+	public void loseCurrentNode(String instanceId, String nodeId) {
 		Integer maxRound = extApprovalInstanceMapper.getNodeRound(instanceId, nodeId);
 		if (maxRound > 0) {
 			/*
 			 * 当前节点执行过
-			 * 审批中 => 已撤销
+			 * 审批中 => 空
 			 * 待审批 => 待审批
 			 * 已完成 => 已完成 (同意, 驳回)
 			 */
-			extApprovalInstanceMapper.revokeApprovingTask(instanceId, nodeId, maxRound);
+			extApprovalInstanceMapper.loseApprovingTask(instanceId, nodeId, maxRound);
 		}
 	}
 
@@ -925,7 +931,6 @@ public class ApprovalActionService {
 		}
 		// 清理后续审批节点的待办任务, 后续执行重新生成
 		clearCurrentNode(instance.getId(), nextNode.getId());
-		revokeCurrentNode(instance.getId(), nextNode.getId());
 	}
 
 	/**

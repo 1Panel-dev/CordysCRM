@@ -288,7 +288,8 @@ public class ApprovalInstanceService {
 				.collect(Collectors.toMap(ApprovalRecord::getNodeId, r -> r, (existing, newOne) -> newOne.getNodeRound() >= existing.getNodeRound() ? newOne : existing
 				));
 		Map<String, ApprovalRecord> taskRecordMap = records.stream().filter(record -> StringUtils.isNotBlank(record.getTaskId())).collect(Collectors.toMap(ApprovalRecord::getTaskId, r -> r));
-		List<ApprovalTask> nTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL).toList();
+		List<ApprovalTask> nTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL
+				&& ApprovalStatus.valueOf(task.getStatus()) != ApprovalStatus.INTERRUPTED && ApprovalStatus.valueOf(task.getStatus()) != ApprovalStatus.NONE).toList();
 		Map<String, Integer> nodeMaxRoundMap = mergeNodeMaxRound(nTasks, records);
 		List<String> hisNodes = sortNodeRoundMap(nodeMaxRoundMap, nTasks, records);
 		Map<String, ApprovalNodeApprover> hisApproverNodeMap = getApproverNodeMapByIds(hisNodes);
