@@ -71,6 +71,7 @@
       case ProcessStatusEnum.AUTO_UNAPPROVED:
         return 'text-[var(--error-red)]';
       case ProcessStatusEnum.APPROVED:
+      case ProcessStatusEnum.AUTO_APPROVED:
         return 'text-[var(--success-green)]';
       default:
         return 'text-[var(--text-n4)]';
