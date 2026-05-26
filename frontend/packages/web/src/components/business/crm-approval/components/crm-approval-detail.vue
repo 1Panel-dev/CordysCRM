@@ -391,12 +391,12 @@
         currentApprovalNode.value?.taskNodes?.every((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
       );
     }
-    // 上一个节点是多人审批且是会签，且是自己审批通过的，且当前节点下所有人都未审批
+    // 上一个节点是多人审批且是或签，且是自己审批通过的，且当前节点下所有人都未审批
     if (
       approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1]?.multiApproverMode === MultiApproverModeEnum.ANY
     ) {
       return (
-        approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].taskNodes.every(
+        approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].taskNodes.some(
           (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
         ) && currentApprovalNode.value?.taskNodes?.every((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
       );
