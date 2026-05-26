@@ -1,5 +1,5 @@
 <template>
-  <n-scrollbar :content-style="{ width: '100%', overflowX: 'hidden' }" x-scrollable>
+  <n-scrollbar x-scrollable>
     <n-timeline :icon-size="20" class="w-full min-w-[300px] gap-[4px]">
       <n-timeline-item>
         <template #icon>
