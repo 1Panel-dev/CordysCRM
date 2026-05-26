@@ -1,8 +1,8 @@
 package cn.cordys.common.dto.condition;
 
 import cn.cordys.common.constants.EnumValue;
-import cn.cordys.common.dto.SortRequest;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.utils.SqlInjectionChecker;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -49,7 +49,7 @@ public class FilterCondition {
     private List<String> containChildIds;
 
     public String getName() {
-        if (SortRequest.checkSqlInjection(name)) {
+        if (SqlInjectionChecker.containsSqlInjectionRisk(name)) {
             throw new GenericException("condition name illegal");
         }
         return name;
@@ -61,7 +61,7 @@ public class FilterCondition {
      * @return 如果条件合法则返回 true，否则返回 false
      */
     public boolean valid() {
-        if (StringUtils.isBlank(name) || StringUtils.isBlank(operator) || SortRequest.checkSqlInjection(name)) {
+        if (StringUtils.isBlank(name) || StringUtils.isBlank(operator) || SqlInjectionChecker.containsSqlInjectionRisk(name)) {
             return false;
         }
 
