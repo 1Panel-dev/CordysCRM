@@ -36,20 +36,13 @@ public class JsonDifferenceUtils {
                 removed.setType("removed");
                 JsonDifferenceDTOList.add(removed);
             } else if (!isNodeEquals(oldValue, newValue)) {
-                if (oldValue.isObject() && newValue.isObject()) {
-                    //递归比较子节点
-                    List<JsonDifferenceDTO> children = new ArrayList<>();
-                    compareJsonNodes(oldValue, newValue, children);
-                    JsonDifferenceDTOList.addAll(children);
-                } else {
-                    //更新的属性
-                    JsonDifferenceDTO diff = new JsonDifferenceDTO();
-                    diff.setColumn(fieldName);
-                    diff.setOldValue(getValue(oldValue));
-                    diff.setNewValue(getValue(newValue));
-                    diff.setType("modified");
-                    JsonDifferenceDTOList.add(diff);
-                }
+                //更新的属性
+                JsonDifferenceDTO diff = new JsonDifferenceDTO();
+                diff.setColumn(fieldName);
+                diff.setOldValue(getValue(oldValue));
+                diff.setNewValue(getValue(newValue));
+                diff.setType("modified");
+                JsonDifferenceDTOList.add(diff);
             }
         }
 
@@ -115,7 +108,7 @@ public class JsonDifferenceUtils {
     }
 
     public static Object getValue(JsonNode jsonNode) {
-        if (jsonNode.isArray()) {
+        if (jsonNode.isArray() || jsonNode.isObject()) {
             return JSON.parseObject(jsonNode.toString());
         } else {
             return jsonNode.asText();
