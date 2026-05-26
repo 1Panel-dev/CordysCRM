@@ -9,6 +9,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
@@ -18,6 +19,7 @@ import cn.cordys.registry.ExportThreadRegistry;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,8 @@ public class ContractInvoiceExportService extends BaseExportService {
     private ContractInvoiceService contractInvoiceService;
     @Resource
     private ExtContractInvoiceMapper extContractInvoiceMapper;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     /**
      * 构建导出的数据
@@ -49,6 +53,11 @@ public class ContractInvoiceExportService extends BaseExportService {
         PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize());
         //获取数据
         List<ContractInvoiceListResponse> allList = extContractInvoiceMapper.list(pageRequest, orgId, exportDTO.getUserId(), exportDTO.getDeptDataPermission());
+        // 根据审批状态导出权限过滤
+        allList = filterExportPermission(allList, orgId);
+        if (CollectionUtils.isEmpty(allList)) {
+            return new ArrayList<>();
+        }
         List<ContractInvoiceListResponse> dataList = contractInvoiceService.buildList(allList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.INVOICE.getKey(), orgId);
 
@@ -119,6 +128,11 @@ public class ContractInvoiceExportService extends BaseExportService {
         String userId = exportDTO.getUserId();
         //获取数据
         List<ContractInvoiceListResponse> allList = extContractInvoiceMapper.getListByIds(ids, userId, orgId, exportDTO.getDeptDataPermission());
+        // 根据审批状态导出权限过滤
+        allList = filterExportPermission(allList, orgId);
+        if (CollectionUtils.isEmpty(allList)) {
+            return new ArrayList<>();
+        }
         List<ContractInvoiceListResponse> dataList = contractInvoiceService.buildList(allList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.INVOICE.getKey(), orgId);
         //构建导出数据
@@ -131,5 +145,18 @@ public class ContractInvoiceExportService extends BaseExportService {
             data.add(value);
         }
         return data;
+    }
+
+    /**
+     * 根据审批流状态权限过滤可导出的数据
+     *
+     * @param exportList 原始导出数据列表
+     * @param orgId    组织ID
+     * @return 过滤后可导出的数据列表
+     */
+    private List<ContractInvoiceListResponse> filterExportPermission(List<ContractInvoiceListResponse> exportList, String orgId) {
+        return filterApprovalExportPermission(exportList, orgId, FormKey.INVOICE.getKey(),
+                ContractInvoiceListResponse::getId, ContractInvoiceListResponse::getApprovalStatus,
+                approvalFlowService);
     }
 }

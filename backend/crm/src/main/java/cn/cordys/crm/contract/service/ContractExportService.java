@@ -1,5 +1,6 @@
 package cn.cordys.crm.contract.service;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportFieldParam;
 import cn.cordys.common.dto.FieldExportMeta;
@@ -8,6 +9,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
@@ -39,6 +41,8 @@ public class ContractExportService extends BaseExportService {
     private ExtContractMapper extContractMapper;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
@@ -59,11 +63,28 @@ public class ContractExportService extends BaseExportService {
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            return extContractMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
+            // 勾选导出：先查询勾选的数据，然后过滤导出权限
+            List<ContractListResponse> exportList = extContractMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
+            return filterExportPermission(exportList, orgId);
         }
+        // 全量导出：先查询分页数据，然后过滤导出权限
         var request = (ContractPageRequest) exportParam.getPageRequest();
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return extContractMapper.list(request, orgId, userId, deptDataPermission, false);
+        List<ContractListResponse> exportList = extContractMapper.list(request, orgId, userId, deptDataPermission, false);
+        return filterExportPermission(exportList, orgId);
+    }
+
+    /**
+     * 根据审批流状态权限过滤可导出的数据
+     *
+     * @param exportList 原始导出数据列表
+     * @param orgId    组织ID
+     * @return 过滤后可导出的数据列表
+     */
+    private List<ContractListResponse> filterExportPermission(List<ContractListResponse> exportList, String orgId) {
+        return filterApprovalExportPermission(exportList, orgId, FormKey.CONTRACT.getKey(),
+                ContractListResponse::getId, ContractListResponse::getApprovalStatus,
+                approvalFlowService);
     }
 
     /**

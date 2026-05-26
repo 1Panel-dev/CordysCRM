@@ -58,6 +58,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -105,8 +106,6 @@ public class ApprovalFlowService {
 	private UserViewService userViewService;
 	@Resource
 	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
-    @Resource
-	private ApprovalInstanceService approvalInstanceService;
 
 	/**
 	 * 加签节点后缀分隔符
@@ -116,6 +115,10 @@ public class ApprovalFlowService {
 	 * 范围大小
 	 */
 	public static final int RANGE_SIZE = 2;
+	/**
+	 * 审批流导出权限
+	 */
+	public static final String EXPORT_SUFFIX = "EXPORT";
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -218,6 +221,66 @@ public class ApprovalFlowService {
                     // 需要权限，检查用户是否有权限
                     return BooleanUtils.isTrue(required) && hasPermission;
                 })
+                .map(idGetter)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 批量检查资源的导出权限
+     * 根据审批流配置的状态权限，过滤出当前用户可以导出的资源
+     *
+     * @param formKey            表单Key(如: quotation, contract, invoice, order)
+     * @param resources          资源列表
+     * @param organizationId     组织ID
+     * @param idGetter           获取资源ID的函数
+     * @param statusGetter       获取审批状态的函数
+     * @return 可以导出的资源ID列表
+     */
+    public <T> List<String> filterResourcesWithExportPermission(
+            String formKey, List<T> resources, String organizationId,
+            java.util.function.Function<T, String> idGetter,
+            java.util.function.Function<T, String> statusGetter) {
+        if (CollectionUtils.isEmpty(resources)) {
+            return List.of();
+        }
+		// 审批状态缺失走数据权限, 无需再过滤
+        boolean allNoApprovalStatus = resources.stream()
+                .allMatch(resource -> {
+                    String status = statusGetter.apply(resource);
+                    return StringUtils.isBlank(status) || Strings.CS.equals(status, ApprovalStatus.NONE.name());
+                });
+        if (allNoApprovalStatus) {
+            return resources.stream().map(idGetter).collect(Collectors.toList());
+        }
+
+        // 获取审批流状态权限配置
+        StatusPermissionSettingResponse setting = getStatusPermissionsByFormType(formKey, organizationId);
+        if (setting == null || CollectionUtils.isEmpty(setting.getStatusPermissions())) {
+            // 没有开启审批流或者没有配置状态权限限制，全部允许导出
+            return resources.stream().map(idGetter).collect(Collectors.toList());
+        }
+
+        // 过滤出导出权限开启的状态集合
+		List<StatusPermissionDTO> statusPermissions = setting.getStatusPermissions();
+		List<String> exportApprovalStatus = statusPermissions.stream().filter(sp -> sp.getPermission().contains(EXPORT_SUFFIX) && sp.getEnabled()).map(StatusPermissionDTO::getApprovalStatus).toList();
+
+        // 如果没有配置任何导出权限，无需过滤
+        if (CollectionUtils.isEmpty(exportApprovalStatus)) {
+            return new ArrayList<>();
+        }
+
+
+        // 过滤出有导出权限的资源
+        return resources.stream()
+                .filter(resource -> {
+                    String status = statusGetter.apply(resource);
+                    if (StringUtils.isBlank(status) || Strings.CS.equals(status, ApprovalStatus.NONE.name())) {
+                        // 没有审批状态，不受限制，允许导出
+                        return true;
+                    }
+					// 审批状态开启了导出权限, 可导出
+					return exportApprovalStatus.contains(status);
+				})
                 .map(idGetter)
                 .collect(Collectors.toList());
     }
@@ -834,30 +897,6 @@ public class ApprovalFlowService {
         if (CollectionUtils.isNotEmpty(allConditionNodes)) {
             approvalNodeConditionMapper.batchInsert(allConditionNodes);
         }
-    }
-
-    /**
-     * 批量删除版本相关的节点配置
-     */
-    private void deleteNodesByFlowVersionIds(List<String> flowVersionIds) {
-        if (CollectionUtils.isEmpty(flowVersionIds)) {
-            return;
-        }
-        // 删除节点连接
-        approvalNodeLinkMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNodeLink>()
-                .in(ApprovalNodeLink::getFlowVersionId, flowVersionIds));
-
-        // 删除审批人节点配置
-        approvalNodeApproverMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNodeApprover>()
-                .in(ApprovalNodeApprover::getFlowVersionId, flowVersionIds));
-
-        // 删除条件节点配置
-        approvalNodeConditionMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNodeCondition>()
-                .in(ApprovalNodeCondition::getFlowVersionId, flowVersionIds));
-
-        // 删除节点
-        approvalNodeMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalNode>()
-                .in(ApprovalNode::getFlowVersionId, flowVersionIds));
     }
 
     /**
