@@ -174,11 +174,11 @@ public abstract class BaseModuleLogService {
             String originDifferColumn = differ.getColumn();
             String differColumn = differ.getColumn();
             String prefix = differ.getColumn();
-            // 子表字段处理
-            if (StringUtils.isNotBlank(differ.getColumn()) && differ.getColumn().contains("-")) {
-                differColumn = originDifferColumn.substring(differ.getColumn().lastIndexOf("-") + 1);
-                prefix = originDifferColumn.substring(0, originDifferColumn.lastIndexOf("-"));
-            }
+			// 子表字段处理
+			if (StringUtils.isNotBlank(differ.getColumn()) && differ.getColumn().contains("-")) {
+				differColumn = originDifferColumn.substring(differ.getColumn().lastIndexOf("-") + 1);
+				prefix = originDifferColumn.substring(0, originDifferColumn.lastIndexOf("-"));
+			}
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
             if (moduleField != null) {
                 differ.setColumnName(moduleField.getName());
