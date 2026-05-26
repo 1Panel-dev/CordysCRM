@@ -24,7 +24,12 @@
               :size="24"
             />
           </div>
-          <div class="one-line-text">{{ props.submitter.submitter }}</div>
+          <n-tooltip trigger="hover">
+            <template #trigger>
+              <div class="one-line-text">{{ props.submitter.submitter }}</div>
+            </template>
+            {{ props.submitter.submitter }}
+          </n-tooltip>
         </div>
       </n-timeline-item>
       <n-timeline-item v-for="(node, index) in props.nodes" :key="node.nodeId">
@@ -45,9 +50,14 @@
               <template #header>
                 <div class="mb-[8px] flex w-full items-center justify-between gap-[8px]">
                   <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
-                    <div class="one-line-text font-semibold !leading-[22px] text-[var(--text-n1)]">
+                    <n-tooltip trigger="hover">
+                      <template #trigger>
+                        <div class="one-line-text font-semibold !leading-[22px] text-[var(--text-n1)]">
+                          {{ node.nodeName }}
+                        </div>
+                      </template>
                       {{ node.nodeName }}
-                    </div>
+                    </n-tooltip>
                     <CrmTag v-if="!node.endNode && node.taskNodes?.length > 1" type="info" theme="outline">
                       {{ MultiApproverModeMap[node.multiApproverMode] }}
                     </CrmTag>
@@ -170,7 +180,7 @@
                 <template #arrow>
                   <div></div>
                 </template>
-                <n-collapse-item :title="t('common.copyTo')" name="copyTo">
+                <n-collapse-item :title="t('common.copyTo')" name="copyTo" class="!ml-0">
                   <template #header>
                     <div class="flex items-center gap-[8px]">
                       <CrmIcon type="iconicon_send" color="var(--text-n4)" />
@@ -181,11 +191,16 @@
                     <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
                   </template>
                   <div class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
-                    <div v-for="cc in node.ccNodes" :key="cc.ccUserId" class="flex w-[23%] items-center gap-[8px]">
+                    <div v-for="cc in node.ccNodes" :key="cc.ccUserId" class="flex items-center gap-[8px]">
                       <div class="h-[24px] w-[24px]">
                         <CrmAvatar :avatar="cc.ccUserAvatar" :word="cc.ccUserName" :is-user="false" :size="24" />
                       </div>
-                      <div class="one-line-text max-w-[60px]">{{ cc.ccUserName }}</div>
+                      <n-tooltip trigger="hover">
+                        <template #trigger>
+                          <div class="one-line-text">{{ cc.ccUserName }}</div>
+                        </template>
+                        {{ cc.ccUserName }}
+                      </n-tooltip>
                     </div>
                   </div>
                 </n-collapse-item>
@@ -199,7 +214,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NCollapse, NCollapseItem, NPopover, NScrollbar, NTimeline, NTimelineItem } from 'naive-ui';
+  import { NCollapse, NCollapseItem, NPopover, NScrollbar, NTimeline, NTimelineItem, NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
