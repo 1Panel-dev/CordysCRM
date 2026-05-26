@@ -108,8 +108,6 @@ public class OpportunityQuotationService {
     @Resource
     private BaseMapper<ContractFieldBlob> contractFieldBlobMapper;
     @Resource
-    private BaseMapper<OpportunityQuotationApproval> approvalBaseMapper;
-    @Resource
     private BaseMapper<Opportunity> opportunityBaseMapper;
     @Resource
     private DictService dictService;
@@ -169,23 +167,6 @@ public class OpportunityQuotationService {
 
     }
 
-    /**
-     * 新增报价单审批表
-     *
-     * @param userId      用户ID
-     * @param quotationId 报价单ID
-     */
-    private void addQuotationApproval(String userId, String quotationId) {
-        OpportunityQuotationApproval opportunityQuotationApproval = new OpportunityQuotationApproval();
-        opportunityQuotationApproval.setId(IDGenerator.nextStr());
-        opportunityQuotationApproval.setQuotationId(quotationId);
-        opportunityQuotationApproval.setApprovalStatus(ApprovalState.APPROVING.toString());
-        opportunityQuotationApproval.setCreateUser(userId);
-        opportunityQuotationApproval.setUpdateUser(userId);
-        opportunityQuotationApproval.setCreateTime(System.currentTimeMillis());
-        opportunityQuotationApproval.setUpdateTime(System.currentTimeMillis());
-        approvalBaseMapper.insert(opportunityQuotationApproval);
-    }
 
     /**
      * 保存商机报价单快照
@@ -363,8 +344,7 @@ public class OpportunityQuotationService {
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
         opportunityQuotationMapper.update(opportunityQuotation);
 
-        //更新报价单审批表
-        updateQuotationApproval(userId, id, ApprovalState.REVOKED.toString());
+
 
         //更新快照
         updateSnapshot(id, ApprovalState.REVOKED.toString(), null);
@@ -667,11 +647,6 @@ public class OpportunityQuotationService {
         wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
         snapshotBaseMapper.deleteByLambda(wrapper);
 
-        //删除审批记录
-        LambdaQueryWrapper<OpportunityQuotationApproval> approvalWrapper = new LambdaQueryWrapper<>();
-        approvalWrapper.eq(OpportunityQuotationApproval::getQuotationId, id);
-        approvalBaseMapper.deleteByLambda(approvalWrapper);
-
         //记录日志
         saveSateChangeLog(organizationId, null, userId, LogType.DELETE, opportunityQuotation);
 
@@ -763,8 +738,7 @@ public class OpportunityQuotationService {
         moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
         updateFields(moduleFields, opportunityQuotation, orgId, userId);
         opportunityQuotationMapper.update(opportunityQuotation);
-        //更新报价单审批表
-        updateQuotationApproval(userId, id, ApprovalState.APPROVING.toString());
+
         //删除快照
         LambdaQueryWrapper<OpportunityQuotationSnapshot> delWrapper = new LambdaQueryWrapper<>();
         delWrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
@@ -815,36 +789,7 @@ public class OpportunityQuotationService {
         }
     }
 
-    /**
-     * 更新报价单审批状态
-     *
-     * @param userId      更新用户ID
-     * @param quotationId 报价单ID
-     */
-    private void updateQuotationApproval(String userId, String quotationId, String approvalStatus) {
-        LambdaQueryWrapper<OpportunityQuotationApproval> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(OpportunityQuotationApproval::getQuotationId, quotationId);
-        List<OpportunityQuotationApproval> approvalList = approvalBaseMapper.selectListByLambda(wrapper);
-        if (CollectionUtils.isEmpty(approvalList)) {
-            addQuotationApproval(userId, quotationId);
-        } else {
-            updateQuotationApprovalState(userId, approvalList.getFirst(), approvalStatus);
-        }
-    }
 
-    /**
-     * 更新报价单审批状态
-     *
-     * @param userId            更新用户ID
-     * @param quotationApproval 报价单审批实体
-     * @param approvalStatus    审批状态
-     */
-    private void updateQuotationApprovalState(String userId, OpportunityQuotationApproval quotationApproval, String approvalStatus) {
-        quotationApproval.setApprovalStatus(approvalStatus);
-        quotationApproval.setUpdateTime(System.currentTimeMillis());
-        quotationApproval.setUpdateUser(userId);
-        approvalBaseMapper.update(quotationApproval);
-    }
 
     /**
      * 更新自定义字段
