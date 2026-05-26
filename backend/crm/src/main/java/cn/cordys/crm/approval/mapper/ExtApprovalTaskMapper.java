@@ -25,7 +25,6 @@ public interface ExtApprovalTaskMapper {
                                                                 @Param("resourceName") String resourceName);
 
     java.util.List<ApprovalTodoItemResponse> selectProcessedTasks(@Param("approverId") String approverId,
-                                                                  @Param("pendingStatus") String pendingStatus,
                                                                   @Param("resourceType") String resourceType,
                                                                   @Param("keyword") String keyword);
 

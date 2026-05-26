@@ -116,7 +116,6 @@ public class ApprovalTodoService {
         String keyword = StringUtils.trimToNull(request.getKeyword());
         List<ApprovalTodoItemResponse> items = extApprovalTaskMapper.selectProcessedTasks(
                 userId,
-                ApprovalState.APPROVING.getId(),
                 filterType == null ? null : filterType.name().toLowerCase(),
                 keyword
         );
