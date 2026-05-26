@@ -370,12 +370,17 @@
   });
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
-  function handleSaveApproval(callback: () => void) {
-    formDescriptionRef.value?.handleFormChange(() => {
+  function handleSaveApproval(callback: () => void, hasFieldPermission: boolean) {
+    if (hasFieldPermission) {
+      formDescriptionRef.value?.handleFormChange(() => {
+        refreshKey.value += 1;
+        emit('refresh');
+        callback();
+      });
+    } else {
       refreshKey.value += 1;
       emit('refresh');
-      callback();
-    });
+    }
   }
 
   onBeforeMount(() => {

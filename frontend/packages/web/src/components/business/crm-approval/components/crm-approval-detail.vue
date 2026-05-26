@@ -12,10 +12,7 @@
       <template #1>
         <div class="flex h-full w-full p-[24px_8px_24px_24px]">
           <n-scrollbar :content-style="{ paddingRight: '8px' }" x-scrollable>
-            <slot
-              name="left"
-              :fieldPermissions="JSON.parse(approvalInfo?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]"
-            ></slot>
+            <slot name="left" :fieldPermissions="filedPermission"></slot>
           </n-scrollbar>
         </div>
       </template>
@@ -241,7 +238,7 @@
       detail?: Record<string, any>,
       config?: FormConfig
     ): void;
-    (e: 'saveApproval', callback: () => void): void;
+    (e: 'saveApproval', callback: () => void, hasFieldPermission: boolean): void;
     (e: 'refresh'): void;
   }>();
 
@@ -250,7 +247,12 @@
   const message = useMessage();
   const userStore = useUserStore();
 
+  const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
+  const filedPermission = computed(
+    () => JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]
+  );
+
   async function initApprovalConfig() {
     try {
       if (props.formKey) {
@@ -265,7 +267,6 @@
   const approvalOpinion = ref('');
   const fileList = ref<UploadFileInfo[]>([]);
   const CrmFileInputRef = ref<InstanceType<typeof CrmFileInput>>();
-  const approvalInfo = ref<ApprovalDetail>();
   const currentApprovalNode = ref<ApprovalNode>();
   const currentApprovalNodeIndex = ref(0);
   const hasApprovalStatus = [ProcessStatusEnum.APPROVED, ProcessStatusEnum.UNAPPROVED, ProcessStatusEnum.NONE];
@@ -385,6 +386,14 @@
         currentApprovalNode.value?.taskNodes?.every((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
       );
     }
+    // 上一个节点是多人审批且是会签，且是自己审批通过的，且当前节点下所有人都未审批
+    if (approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].multiApproverMode === MultiApproverModeEnum.ANY) {
+      return (
+        approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].taskNodes.every(
+          (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
+        ) && currentApprovalNode.value?.taskNodes?.every((e) => e.approvalStatus === ProcessStatusEnum.APPROVING)
+      );
+    }
   });
   const moduleKeyMap: Partial<Record<FormDesignKeyEnum, string>> = {
     [FormDesignKeyEnum.CONTACT]: 'CONTRACT_INDEX',
@@ -438,7 +447,11 @@
     if (!CrmFileInputRef.value?.validate() || !currentTaskNode.value || !currentApprovalNode.value) {
       return;
     }
-    emit('saveApproval', approvalAgree);
+    emit(
+      'saveApproval',
+      approvalAgree,
+      filedPermission.value.some((e) => e.permissionType === 'EDIT')
+    );
   }
 
   function handleReject() {
@@ -456,30 +469,34 @@
         if (!currentApprovalNode.value || !currentTaskNode.value) {
           return;
         }
-        emit('saveApproval', async () => {
-          if (!currentApprovalNode.value || !currentTaskNode.value) {
-            return;
-          }
-          try {
-            await rejectApproval({
-              id: currentTaskNode.value.taskId,
-              nodeId: currentApprovalNode.value.nodeId,
-              instanceId: approvalConfig.value?.id || '',
-              attachmentIds: fileList.value.map((e) => e.id),
-              approverId: currentTaskNode.value.approverId,
-              comment: approvalOpinion.value,
-              module: moduleKeyMap[props.formKey]!,
-            });
-            message.success(t('common.rejected'));
-            initApprovalDetail();
-            approvalOpinion.value = '';
-            fileList.value = [];
-            emit('refresh');
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.log(error);
-          }
-        });
+        emit(
+          'saveApproval',
+          async () => {
+            if (!currentApprovalNode.value || !currentTaskNode.value) {
+              return;
+            }
+            try {
+              await rejectApproval({
+                id: currentTaskNode.value.taskId,
+                nodeId: currentApprovalNode.value.nodeId,
+                instanceId: approvalConfig.value?.id || '',
+                attachmentIds: fileList.value.map((e) => e.id),
+                approverId: currentTaskNode.value.approverId,
+                comment: approvalOpinion.value,
+                module: moduleKeyMap[props.formKey]!,
+              });
+              message.success(t('common.rejected'));
+              initApprovalDetail();
+              approvalOpinion.value = '';
+              fileList.value = [];
+              emit('refresh');
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.log(error);
+            }
+          },
+          filedPermission.value.some((e) => e.permissionType === 'EDIT')
+        );
       },
     });
   }
@@ -497,39 +514,43 @@
   function handleAddSign() {
     addSignFormRef.value?.validate(async (errors) => {
       if (!errors && currentApprovalNode.value && currentTaskNode.value) {
-        emit('saveApproval', async () => {
-          if (!errors && currentApprovalNode.value && currentTaskNode.value) {
-            try {
-              addSignLoading.value = true;
-              await addSignApproval({
-                id: currentTaskNode.value.taskId,
-                nodeId: currentApprovalNode.value.nodeId,
-                instanceId: approvalInfo.value?.id || '',
-                approverId: currentTaskNode.value?.approverId || '',
-                comment: addSignForm.value.reason,
-                attachmentIds: addSignForm.value.fileList.map((e) => e.id),
-                type: addSignForm.value.type,
-                module: moduleKeyMap[props.formKey]!,
-                signApprover: addSignForm.value.reviewer?.[0] || '',
-              });
-              addSignModalVisible.value = false;
-              message.success(t('crm.approval.addSignSuccess'));
-              addSignForm.value = {
-                type: 'BEFORE',
-                reviewer: undefined,
-                reason: '',
-                fileList: [],
-              };
-              initApprovalDetail();
-              emit('refresh');
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.log(error);
-            } finally {
-              addSignLoading.value = false;
+        emit(
+          'saveApproval',
+          async () => {
+            if (!errors && currentApprovalNode.value && currentTaskNode.value) {
+              try {
+                addSignLoading.value = true;
+                await addSignApproval({
+                  id: currentTaskNode.value.taskId,
+                  nodeId: currentApprovalNode.value.nodeId,
+                  instanceId: approvalInfo.value?.id || '',
+                  approverId: currentTaskNode.value?.approverId || '',
+                  comment: addSignForm.value.reason,
+                  attachmentIds: addSignForm.value.fileList.map((e) => e.id),
+                  type: addSignForm.value.type,
+                  module: moduleKeyMap[props.formKey]!,
+                  signApprover: addSignForm.value.reviewer?.[0] || '',
+                });
+                addSignModalVisible.value = false;
+                message.success(t('crm.approval.addSignSuccess'));
+                addSignForm.value = {
+                  type: 'BEFORE',
+                  reviewer: undefined,
+                  reason: '',
+                  fileList: [],
+                };
+                initApprovalDetail();
+                emit('refresh');
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.log(error);
+              } finally {
+                addSignLoading.value = false;
+              }
             }
-          }
-        });
+          },
+          filedPermission.value.some((e) => e.permissionType === 'EDIT')
+        );
       }
     });
   }
@@ -556,37 +577,41 @@
   function handleFallback() {
     fallbackFormRef.value?.validate(async (errors) => {
       if (!errors && currentApprovalNode.value && currentTaskNode.value) {
-        emit('saveApproval', async () => {
-          if (!errors && currentApprovalNode.value && currentTaskNode.value) {
-            try {
-              fallbackLoading.value = true;
-              await backApproval({
-                id: currentTaskNode.value.taskId,
-                nodeId: currentApprovalNode.value.nodeId,
-                instanceId: approvalInfo.value?.id || '',
-                approverId: currentTaskNode.value?.approverId || '',
-                comment: fallbackForm.value.reason,
-                attachmentIds: fallbackForm.value.fileList.map((e) => e.id),
-                module: moduleKeyMap[props.formKey]!,
-                returnToNodeId: fallbackForm.value.node || '',
-              });
-              fallbackModalVisible.value = false;
-              message.success(t('crm.approval.fallbackSuccess'));
-              initApprovalDetail();
-              fallbackForm.value = {
-                node: undefined,
-                reason: '',
-                fileList: [],
-              };
-              emit('refresh');
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.log(error);
-            } finally {
-              fallbackLoading.value = false;
+        emit(
+          'saveApproval',
+          async () => {
+            if (!errors && currentApprovalNode.value && currentTaskNode.value) {
+              try {
+                fallbackLoading.value = true;
+                await backApproval({
+                  id: currentTaskNode.value.taskId,
+                  nodeId: currentApprovalNode.value.nodeId,
+                  instanceId: approvalInfo.value?.id || '',
+                  approverId: currentTaskNode.value?.approverId || '',
+                  comment: fallbackForm.value.reason,
+                  attachmentIds: fallbackForm.value.fileList.map((e) => e.id),
+                  module: moduleKeyMap[props.formKey]!,
+                  returnToNodeId: fallbackForm.value.node || '',
+                });
+                fallbackModalVisible.value = false;
+                message.success(t('crm.approval.fallbackSuccess'));
+                initApprovalDetail();
+                fallbackForm.value = {
+                  node: undefined,
+                  reason: '',
+                  fileList: [],
+                };
+                emit('refresh');
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.log(error);
+              } finally {
+                fallbackLoading.value = false;
+              }
             }
-          }
-        });
+          },
+          filedPermission.value.some((e) => e.permissionType === 'EDIT')
+        );
       }
     });
   }
@@ -627,15 +652,19 @@
         positiveText: t('crm.approval.confirmCancelApprovalApply'),
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
-          emit('saveApproval', async () => {
-            await revokeResource({
-              resourceId: props.sourceId,
-              formKey: props.formKey,
-            });
-            message.success(t('common.revokeSuccess'));
-            initApprovalDetail();
-            emit('refresh');
-          });
+          emit(
+            'saveApproval',
+            async () => {
+              await revokeResource({
+                resourceId: props.sourceId,
+                formKey: props.formKey,
+              });
+              message.success(t('common.revokeSuccess'));
+              initApprovalDetail();
+              emit('refresh');
+            },
+            filedPermission.value.some((e) => e.permissionType === 'EDIT')
+          );
         },
       });
     } else {
@@ -646,14 +675,18 @@
         positiveText: t('crm.approval.confirmCancelApproval'),
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {
-          emit('saveApproval', async () => {
-            await revokeApproval({
-              id: prevMineApprovalNode.value?.taskId || '',
-            });
-            message.success(t('crm.approval.cancelApprovalSuccess'));
-            initApprovalDetail();
-            emit('refresh');
-          });
+          emit(
+            'saveApproval',
+            async () => {
+              await revokeApproval({
+                id: prevMineApprovalNode.value?.taskId || '',
+              });
+              message.success(t('crm.approval.cancelApprovalSuccess'));
+              initApprovalDetail();
+              emit('refresh');
+            },
+            filedPermission.value.some((e) => e.permissionType === 'EDIT')
+          );
         },
       });
     }
