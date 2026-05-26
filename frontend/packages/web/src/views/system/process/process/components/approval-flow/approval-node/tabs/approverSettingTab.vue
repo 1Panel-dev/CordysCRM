@@ -266,9 +266,7 @@
               nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.member')
             "
             :api-type-key="
-              nodeConfig.approverType === ApproverTypeEnum.ROLE
-                ? MemberApiTypeEnum.MODULE_ROLE
-                : MemberApiTypeEnum.FORM_FIELD
+              nodeConfig.ccType === ApproverTypeEnum.ROLE ? MemberApiTypeEnum.MODULE_ROLE : MemberApiTypeEnum.FORM_FIELD
             "
             :member-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? roleMemberTypes : userMemberTypes"
             :disabled-node-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? undefined : disabledMemberNodeTypes"
@@ -378,8 +376,13 @@
   const activeExceptionTab = ref<'emptyApprover' | 'sameSubmitter'>('emptyApprover'); // 异常处理的tab
 
   const approverMaxCount = 15;
-  const ccMaxCount = 100;
+  const ccMemberMaxCount = 100;
+  const ccRoleMaxCount = 15;
   const fallbackApproverMaxCount = 1;
+
+  const ccMaxCount = computed(() =>
+    nodeConfig.value.ccType === ApproverTypeEnum.ROLE ? ccRoleMaxCount : ccMemberMaxCount
+  );
 
   const supervisorLevelApproverTypes = [ApproverTypeEnum.DIRECT_SUPERVISOR, ApproverTypeEnum.CONTINUOUS_SUPERVISOR];
 
@@ -585,14 +588,14 @@
             return true;
           }
 
-          if (hasSelectedItems(value) && value.length <= ccMaxCount) {
+          if (hasSelectedItems(value) && value.length <= ccMaxCount.value) {
             return true;
           }
 
           const target =
             nodeConfig.value.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.ccMember');
 
-          return new Error(t('process.process.flow.addMemberLimitTip', { count: ccMaxCount, target }));
+          return new Error(t('process.process.flow.addMemberLimitTip', { count: ccMaxCount.value, target }));
         },
       },
     ],
