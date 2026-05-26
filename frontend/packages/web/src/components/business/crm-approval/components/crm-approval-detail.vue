@@ -392,7 +392,9 @@
       );
     }
     // 上一个节点是多人审批且是会签，且是自己审批通过的，且当前节点下所有人都未审批
-    if (approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].multiApproverMode === MultiApproverModeEnum.ANY) {
+    if (
+      approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1]?.multiApproverMode === MultiApproverModeEnum.ANY
+    ) {
       return (
         approvalInfo.value?.nodes[currentApprovalNodeIndex.value - 1].taskNodes.every(
           (e) => hasApprovalStatus.includes(e.approvalStatus) && e.approverId === userStore.userInfo.id
