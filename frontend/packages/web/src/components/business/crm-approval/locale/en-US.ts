@@ -26,7 +26,7 @@ export default {
   'crm.approval.cancelApproval': 'Withdraw Approval',
   'crm.approval.cancelApprovalConfirm': 'Confirm Withdraw Approval?',
   'crm.approval.cancelApprovalTip':
-    'After withdrawal, the approval process will be restarted. Please proceed with caution!',
+    'After the withdrawal, the approval process will be terminated. Please proceed with caution!',
   'crm.approval.confirmCancelApproval': 'Confirm Withdraw',
   'crm.approval.cancelApprovalSuccess': 'Approval Withdrawn',
   'crm.approval.submit': 'Submit Application',
