@@ -296,7 +296,7 @@
   // 只有当前审批中的人才展示编辑权限，其他节点展示只读权限
   const filedPermission = computed(() => {
     if (currentTaskNode.value && approvalInfo.value?.currentNodeFieldPermissions) {
-      return JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[];
+      return (JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]) || [];
     }
     return [];
   });
