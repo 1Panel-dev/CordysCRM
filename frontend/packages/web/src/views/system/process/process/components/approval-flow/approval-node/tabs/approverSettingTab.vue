@@ -207,6 +207,7 @@
               v-if="nodeConfig.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_ADMIN"
               path="fallbackApprover"
               :label="t('process.process.flow.selectAdmin')"
+              required
             >
               <n-select
                 v-model:value="nodeConfig.fallbackApprover"
@@ -599,19 +600,28 @@
       {
         trigger: ['change', 'blur'],
         validator: (_rule, value: string | null) => {
-          if (
-            activeExceptionTab.value !== 'emptyApprover' ||
-            nodeConfig.value.emptyApproverAction !== EmptyApproverActionEnum.ASSIGN_SPECIFIC
-          ) {
+          if (activeExceptionTab.value !== 'emptyApprover') {
             return true;
           }
 
-          return !!value;
+          if (nodeConfig.value.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_SPECIFIC) {
+            return (
+              !!value ||
+              new Error(
+                t('process.process.flow.addMemberLimitTip', {
+                  count: fallbackApproverMaxCount,
+                  target: t('process.process.flow.member'),
+                })
+              )
+            );
+          }
+
+          if (nodeConfig.value.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_ADMIN) {
+            return !!value || new Error(t('common.notNull', { value: t('process.process.flow.selectAdmin') }));
+          }
+
+          return true;
         },
-        message: t('process.process.flow.addMemberLimitTip', {
-          count: fallbackApproverMaxCount,
-          target: t('process.process.flow.member'),
-        }),
       },
     ],
   };

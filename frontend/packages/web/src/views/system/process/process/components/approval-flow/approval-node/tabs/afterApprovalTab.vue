@@ -39,12 +39,13 @@
             <component
               :is="getFieldValueComponent(line)"
               v-if="getFieldValueComponent(line) && getFieldValueConfig(line)"
-              v-model:value="line.fieldValue"
+              :value="getFieldValueModel(line)"
               :disabled="props.readonly"
               :path="`fieldUpdateConfigs.${index}.fieldValue`"
               :field-config="getFieldValueConfig(line)!"
               :form-detail="line"
               :need-init-detail="true"
+              @update:value="(value: unknown) => handleFieldValueUpdate(line, value)"
             />
             <n-form-item
               v-else
@@ -243,14 +244,22 @@
       return Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
     }
 
+    if (field.type === FieldTypeEnum.DATA_SOURCE) {
+      return defaultValue || null;
+    }
+
     if (getRuleType(field) === 'array') {
-      return [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(field.type) &&
+      return [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.MEMBER].includes(field.type) &&
         typeof field.defaultValue === 'string'
         ? [defaultValue]
         : defaultValue || [];
     }
 
     return defaultValue;
+  }
+
+  function getFieldValueRuleType(field: FormCreateField) {
+    return field.type === FieldTypeEnum.DATA_SOURCE ? 'string' : getRuleType(field);
   }
 
   function buildFieldValueConfig(field: FormCreateField) {
@@ -272,7 +281,7 @@
       }
 
       staticRule.message = t(staticRule.message as string, { value: t(field.name) });
-      staticRule.type = getRuleType(field);
+      staticRule.type = getFieldValueRuleType(field);
       staticRule.regex = rule.regex;
 
       if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
@@ -289,7 +298,7 @@
         required: true,
         message: t('common.required'),
         trigger: ['blur', 'change'],
-        type: getRuleType(field),
+        type: getFieldValueRuleType(field),
       });
     }
 
@@ -346,6 +355,25 @@
   function getFieldValueComponent(line: ApprovalFieldUpdateConfig) {
     const fieldType = getFieldValueConfig(line)?.type;
     return fieldType && isSupportedFieldValueType(fieldType) ? fieldValueComponentMap[fieldType] : null;
+  }
+
+  function getFieldValueModel(line: ApprovalFieldUpdateConfig) {
+    const fieldType = getFieldValueConfig(line)?.type;
+    if (fieldType === FieldTypeEnum.DATA_SOURCE) {
+      return line.fieldValue ? [line.fieldValue] : [];
+    }
+
+    return line.fieldValue;
+  }
+
+  function handleFieldValueUpdate(line: ApprovalFieldUpdateConfig, value: unknown) {
+    const fieldType = getFieldValueConfig(line)?.type;
+    if (fieldType === FieldTypeEnum.DATA_SOURCE) {
+      line.fieldValue = Array.isArray(value) ? value[0] ?? null : value;
+      return;
+    }
+
+    line.fieldValue = value;
   }
 
   function isEmptyFieldValue(value: unknown) {

@@ -108,7 +108,10 @@ function validateApprovalActionNode(node: ApprovalActionNode, result: FlowValida
     (isManualApproval &&
       (isEmptyValue(node.approverType) ||
         (isMemberOrRole(node.approverType) && !hasSelectedItems(approverList)) ||
-        (node.emptyApproverAction === EmptyApproverActionEnum.ASSIGN_SPECIFIC && isEmptyValue(node.fallbackApprover)) ||
+        ([EmptyApproverActionEnum.ASSIGN_SPECIFIC, EmptyApproverActionEnum.ASSIGN_ADMIN].includes(
+          node.emptyApproverAction
+        ) &&
+          isEmptyValue(node.fallbackApprover)) ||
         (isMemberOrRole(node.ccType) && !hasSelectedItems(ccList))));
 
   if (isInvalid) {
