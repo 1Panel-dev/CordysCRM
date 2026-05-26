@@ -30,13 +30,13 @@
         ), 0)
     </select>
 
-    <update id="batchClearTask">
-        update approval_task set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound}
+    <update id="batchClearNotApprovingTask">
+        update approval_task set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status != 'APPROVING'
     </update>
 
-    <delete id="revokeApprovingTask">
-        update approval_task set status = 'REVOKED' where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status = 'APPROVING'
-    </delete>
+    <update id="loseApprovingTask">
+        update approval_task set status = 'NONE' where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status = 'APPROVING'
+    </update>
 
     <update id="batchClearRecord">
         update approval_record set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound}
