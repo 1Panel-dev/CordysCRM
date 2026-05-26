@@ -321,6 +321,11 @@ public class ApprovalResourceService {
 			instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
 			instance.setApprovalTime(System.currentTimeMillis());
 			approvalInstanceMapper.insert(instance);
+			String resourceName = getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
+			if (StringUtils.isBlank(resourceName)) {
+				return;
+			}
+			approvalActionService.sendFinishNotice(instance, resourceName, currentUserId, currentOrgId);
 			return;
 		}
 		/*

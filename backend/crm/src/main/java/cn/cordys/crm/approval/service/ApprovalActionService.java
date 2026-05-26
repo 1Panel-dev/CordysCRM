@@ -1163,13 +1163,28 @@ public class ApprovalActionService {
 		// 日志
 		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
 		if (resourceService != null) {
+			String resourceName = resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
+			if (StringUtils.isBlank(resourceName)) {
+				return;
+			}
 			LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, getLogModuleOfFormKey(FormKey.ofKey(instance.getType())),
 					resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId()));
 			logDTO.setDetail(Translator.get(StringUtils.lowerCase(action.name())));
 			logService.add(logDTO);
+			sendFinishNotice(instance, resourceName, userId, orgId);
 		}
+	}
+
+	/**
+	 * 发送执行完成的通知
+	 * @param instance 审批实例
+	 * @param resourceName 资源名称
+	 * @param userId 用户ID
+	 * @param orgId 组织ID
+	 */
+	public void sendFinishNotice(ApprovalInstance instance, String resourceName, String userId, String orgId) {
 		// 结束状态的数据发送消息通知
-		if (StringUtils.isBlank(instance.getApprovalStatus()) || StringUtils.isBlank(instance.getSubmitterId())) {
+		if (StringUtils.isBlank(instance.getApprovalStatus()) || StringUtils.isBlank(instance.getSubmitterId()) || StringUtils.isBlank(resourceName)) {
 			return;
 		}
 		FormKey formKey = FormKey.ofKey(instance.getType());
@@ -1180,8 +1195,6 @@ public class ApprovalActionService {
 		if (approvalStatus != ApprovalStatus.APPROVED && approvalStatus != ApprovalStatus.UNAPPROVED) {
 			return;
 		}
-		String resourceName = resourceService == null ? null :
-				resourceService.getInstanceResourceName(formKey, instance.getResourceId());
 		String state = approvalStatus == ApprovalStatus.APPROVED
 				? Translator.get("contract.approval_status.approved")
 				: Translator.get("contract.approval_status.unapproved");
