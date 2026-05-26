@@ -10,6 +10,7 @@ import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.UserSimple;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.UserExtendService;
@@ -203,6 +204,15 @@ public class ApprovalInstanceService {
 
 		List<String> attachmentIds = attachments.stream().map(ApprovalInstanceAttachment::getAttachmentId).distinct().toList();
 		List<Attachment> attachmentList = attachmentMapper.selectByIds(attachmentIds);
+		List<String> createUserIds = attachmentList.stream().map(Attachment::getCreateUser).toList();
+		List<String> updateUserIds = attachmentList.stream().map(Attachment::getUpdateUser).toList();
+		List<User> users = userExtendService.getUserOptionByIds(ListUtils.union(createUserIds, updateUserIds));
+		Map<String, String> userMap = users.stream().collect(Collectors.toMap(User::getId, User::getName));
+		attachmentList.forEach(attachment -> {
+			attachment.setCreateUser(userMap.get(attachment.getCreateUser()));
+			attachment.setUpdateUser(userMap.get(attachment.getUpdateUser()));
+		});
+
 		Map<String, Attachment> attachmentMap = attachmentList.stream().collect(Collectors.toMap(Attachment::getId, a -> a, (v1, v2) -> v1));
 
 		return attachments.stream().filter(a -> attachmentMap.containsKey(a.getAttachmentId()))
