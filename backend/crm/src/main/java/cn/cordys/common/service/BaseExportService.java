@@ -14,6 +14,7 @@ import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.field.DatasourceField;
@@ -877,6 +878,36 @@ public abstract class BaseExportService {
             String headName = mergeHead.getFirst();
             return headName != null && headName.startsWith(Translator.get("sum"));
         }).toList();
+    }
+
+    /**
+     * 根据审批流状态权限过滤可导出的数据
+     *
+     * @param resources    原始数据列表
+     * @param orgId     组织ID
+     * @param formKey   表单类型
+     * @param idGetter 获取资源ID的函数
+     * @param statusGetter 获取审批状态的函数
+     * @param approvalFlowService 审批流服务
+     * @param <T>     资源类型
+     * @return 过滤后可导出的数据列表
+     */
+    protected <T> List<T> filterApprovalExportPermission(List<T> resources, String orgId, String formKey,
+                                  Function<T, String> idGetter,
+                                  Function<T, String> statusGetter,
+                                  ApprovalFlowService approvalFlowService) {
+        if (CollectionUtils.isEmpty(resources)) {
+            return resources;
+        }
+        List<String> filteredIds = approvalFlowService.filterResourcesWithExportPermission(formKey, resources, orgId, idGetter, statusGetter);
+		if (CollectionUtils.isEmpty(filteredIds)) {
+			return new ArrayList<>();
+		}
+		Map<String, T> resourceMap = resources.stream().collect(Collectors.toMap(idGetter, Function.identity(), (a, b) -> a));
+		return filteredIds.stream()
+				.map(resourceMap::get)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
     }
 
     /**

@@ -284,6 +284,11 @@ public class ApprovalResourceService {
 		}
 	}
 
+	/**
+	 * 获取审批流字段更新配置
+	 * @param postConfig 配置
+	 * @return 更新配置
+	 */
 	private List<ResourceApprovalFieldUpdateParam> getUpdateFieldOfPostConfig(String postConfig) {
 		if (StringUtils.isBlank(postConfig) || Strings.CI.equals(NULL_POST_CONFIG, postConfig)) {
 			return new ArrayList<>();
@@ -339,6 +344,11 @@ public class ApprovalResourceService {
 		approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, null, currentUserId, null, currentOrgId);
 	}
 
+	/**
+	 * 撤回审批
+	 * @param param 参数
+	 * @param currentUserId 当前用户ID
+	 */
 	public void revoke(ApprovalResourceBaseParam param, String currentUserId) {
 		// 更新业务资源审批状态
 		updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.REVOKED.name());
@@ -355,6 +365,13 @@ public class ApprovalResourceService {
 		approvalActionService.loseCurrentNode(instance.getId(), instance.getCurrentNodeId());
 	}
 
+	/**
+	 * 初始化审批实例
+	 * @param flow 审批流
+	 * @param param 参数
+	 * @param currentUserId 当前用户ID
+	 * @return 审批实例
+	 */
 	private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalResourceBaseParam param, String currentUserId) {
 		ApprovalInstance instance = new ApprovalInstance();
 		instance.setId(IDGenerator.nextStr());
