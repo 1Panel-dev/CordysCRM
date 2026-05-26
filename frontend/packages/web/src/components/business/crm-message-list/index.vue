@@ -13,7 +13,7 @@
         <div class="crm-message-item py-[8px]">
           <div class="crm-message-item-content h-full w-full gap-[24px] p-[16px]">
             <div class="mb-[8px] flex w-full items-center justify-between gap-[24px]">
-              <div class="flex items-center gap-[8px] overflow-hidden">
+              <div class="flex min-w-0 items-center gap-[8px]">
                 <CrmTag theme="light" :type="item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? 'info' : 'warning'">
                   {{
                     item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
@@ -21,11 +21,11 @@
                       : t('system.message.announcement')
                   }}
                 </CrmTag>
-                <n-badge class="overflow-hidden" dot :show="item.status === SystemMessageStatusEnum.UNREAD">
+                <n-badge class="crm-message-item__badge" dot :show="item.status === SystemMessageStatusEnum.UNREAD">
                   <n-tooltip :delay="300">
                     <template #trigger>
                       <div
-                        :class="`one-line-text  message-title--${
+                        :class="`one-line-text message-title--${
                           item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'
                         } font-medium`"
                       >
@@ -309,5 +309,10 @@
         }
       }
     }
+  }
+  :deep(.crm-message-item__badge) {
+    display: inline-flex;
+    flex: 1;
+    min-width: 0;
   }
 </style>
