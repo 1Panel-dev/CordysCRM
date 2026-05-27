@@ -152,16 +152,14 @@
       if (props.approvalType === 'reject') {
         await batchRejectApproval({
           ids: props.approvalItemKeys,
-          rejectReason: approvalForm.value.reason,
+          comment: approvalForm.value.reason,
           attachmentIds: fileList.value.map((e) => e.id),
-          module: props.module,
         });
       } else {
         await batchAgreeApproval({
           ids: props.approvalItemKeys,
           comment: approvalForm.value.reason,
           attachmentIds: fileList.value.map((e) => e.id),
-          module: props.module,
         });
       }
       message.success(props.approvalType === 'approve' ? t('taskDrawer.approved') : t('taskDrawer.rejected'));
