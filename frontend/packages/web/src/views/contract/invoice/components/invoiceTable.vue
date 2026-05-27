@@ -389,7 +389,7 @@
   await initApprovalPermission();
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
-    formKey: FormDesignKeyEnum.INVOICE,
+    formKey: props.isContractTab ? FormDesignKeyEnum.CONTRACT_INVOICE : FormDesignKeyEnum.INVOICE,
     operationColumn: {
       key: 'operation',
       width: computed(() => getOperationWidth(enableApproval.value)) as unknown as number,
