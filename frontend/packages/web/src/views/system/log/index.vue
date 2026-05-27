@@ -290,11 +290,7 @@
           {
             onClick: async () => {
               activeLogDetail.value = row;
-              if (
-                [OperationTypeEnum.UPDATE, OperationTypeEnum.MERGE, OperationTypeEnum.APPROVAL].includes(
-                  row.type as OperationTypeEnum
-                )
-              ) {
+              if ([OperationTypeEnum.UPDATE, OperationTypeEnum.MERGE].includes(row.type as OperationTypeEnum)) {
                 await getLogDetail(row.id);
               }
               if (!showDetailDrawer.value) {
