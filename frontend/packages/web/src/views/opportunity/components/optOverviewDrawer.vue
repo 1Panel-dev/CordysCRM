@@ -24,6 +24,7 @@
           :column="layout === 'vertical' ? 3 : undefined"
           :label-width="layout === 'vertical' ? 'auto' : undefined"
           :value-align="layout === 'vertical' ? 'start' : undefined"
+          :readonly="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
           @init="handleDescriptionInit"
           @open-customer-detail="emit('openCustomerDrawer', $event)"
         />

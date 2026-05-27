@@ -36,6 +36,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
+            :readonly="!hasAnyPermission(['CONTRACT_PAYMENT_PLAN:UPDATE'])"
             @init="handleInit"
             @open-contract-detail="emit('openContractDrawer', $event)"
           />
@@ -71,6 +72,7 @@
 
   import { deletePaymentPlan } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission.js';
 
   const props = defineProps<{
     sourceId: string;

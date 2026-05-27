@@ -31,6 +31,7 @@
           :column="layout === 'vertical' ? 3 : undefined"
           :label-width="layout === 'vertical' ? 'auto' : undefined"
           :value-align="layout === 'vertical' ? 'start' : undefined"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
           @init="handleDescriptionInit"
         />
       </div>

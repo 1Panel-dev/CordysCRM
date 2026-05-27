@@ -19,6 +19,7 @@
       label-width="auto"
       value-align="start"
       tooltip-position="top-start"
+      :readonly="!hasAnyPermission(['PRICE:UPDATE'])"
       class="p-[8px]"
       @init="handleDescriptionInit"
     />
@@ -35,6 +36,8 @@
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     id: string;

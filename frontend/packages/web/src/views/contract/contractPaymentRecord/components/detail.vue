@@ -39,6 +39,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
+            :readonly="!hasAnyPermission(['CONTRACT_PAYMENT_RECORD:UPDATE'])"
             @init="handleInit"
             @open-contract-detail="emit('openContractDrawer', $event)"
           />
@@ -73,6 +74,7 @@
 
   import { deletePaymentRecord } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;
