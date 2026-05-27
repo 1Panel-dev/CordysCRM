@@ -32,10 +32,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -76,6 +81,8 @@ public class ApprovalActionService {
 	private BaseMapper<OrganizationUser> organizationUserMapper;
 
 	public static final Long DEFAULT_SIGN_SORT_STEP = 100L;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
 
 	/**
 	 * 加签
@@ -1289,33 +1296,43 @@ public class ApprovalActionService {
 	 * <p>
 	 * 当用户被禁用或删除时，将该用户作为审批人的待办任务转移给上级，如果上级不存在则转移给admin
 	 *
-	 * @param userId         被禁用/删除的用户ID
+	 * @param userIds         被禁用/删除的用户ID  集合
 	 * @param organizationId 组织ID
 	 */
-	public void refreshApprovingTasksForDisabledUser(String userId, String organizationId) {
-		if (StringUtils.isBlank(userId) || StringUtils.isBlank(organizationId)) {
+	public void refreshApprovingTasksForDisabledUser(List<String> userIds, String organizationId) {
+		if (CollectionUtils.isNotEmpty(userIds) || StringUtils.isBlank(organizationId)) {
 			return;
 		}
 
 		try {
 			// 查询该用户作为审批人且状态为待处理的待办任务
 			LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
-			taskWrapper.eq(ApprovalTask::getApproverId, userId)
+			taskWrapper.in(ApprovalTask::getApproverId, userIds)
 					.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING.name());
 			List<ApprovalTask> approvingTasks = approvalTaskMapper.selectListByLambda(taskWrapper);
 			if (CollectionUtils.isEmpty(approvingTasks)) {
 				return;
 			}
 
-			// 批量更新待办任务的审批人
-			String targetApprover = getTargetApproverId(userId, organizationId);
-			for (ApprovalTask task : approvingTasks) {
-				task.setApproverId(targetApprover);
-				task.setUpdateTime(System.currentTimeMillis());
-				approvalTaskMapper.updateById(task);
-			}
+            Map<String, List<ApprovalTask>> userTaskMaps = approvingTasks.stream().collect(Collectors.groupingBy(ApprovalTask::getApproverId));
+            SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+            ExtApprovalTaskMapper mapper = sqlSession.getMapper(ExtApprovalTaskMapper.class);
 
-			log.info("用户 {} 被禁用/删除，转移待办任务给 {}", userId, targetApprover);
+
+            // 批量更新待办任务的审批人
+			userIds.stream().forEach(userId ->{
+                if (userTaskMaps.containsKey(userId)) {
+                    String targetApprover = getTargetApproverId(userId, organizationId);
+                    List<ApprovalTask> userTasks = userTaskMaps.get(userId);
+                    for (ApprovalTask userTask : userTasks) {
+                        userTask.setApproverId(targetApprover);
+                        userTask.setUpdateTime(System.currentTimeMillis());
+						mapper.updateTaskById(userTask);
+                    }
+                }
+			});
+			sqlSession.flushStatements();
+			SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
 		} catch (Exception e) {
 			log.error("转移待办任务失败, error:{}", e.getMessage(), e);
 		}

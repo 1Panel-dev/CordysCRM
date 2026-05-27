@@ -1,10 +1,13 @@
 package cn.cordys.crm.integration.common.utils;
 
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.ThirdConfigTypeConstants;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.NodeSortUtils;
+import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.approval.service.ApprovalActionService;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import cn.cordys.crm.system.domain.*;
@@ -26,6 +29,8 @@ public class DataHandleUtils {
     private final OrganizationUserService organizationUserService;
     private final OrganizationConfigService organizationConfigService;
     private final MessageNotificationService messageNotificationService;
+    private final ExtApprovalTaskMapper extApprovalTaskMapper;
+    private final ApprovalActionService approvalActionService;
     private final List<Department> addDepartments = new ArrayList<>();
     private final List<Department> updateDepartments = new ArrayList<>();
     private final List<User> addUsers = new ArrayList<>();
@@ -46,6 +51,8 @@ public class DataHandleUtils {
         this.organizationUserService = CommonBeanFactory.getBean(OrganizationUserService.class);
         this.organizationConfigService = CommonBeanFactory.getBean(OrganizationConfigService.class);
         this.messageNotificationService = CommonBeanFactory.getBean(MessageNotificationService.class);
+        this.extApprovalTaskMapper = CommonBeanFactory.getBean(ExtApprovalTaskMapper.class);
+        this.approvalActionService = CommonBeanFactory.getBean(ApprovalActionService.class);
         this.orgId = orgId;
         this.departmentUserMap = departmentUserMap;
 
@@ -63,6 +70,8 @@ public class DataHandleUtils {
      */
     public void handleAddData(List<ThirdDepartment> thirdDepartments, String operatorId, String orgId, String type) {
         this.thirdDepartmentTree = ThirdDepartment.buildDepartmentTree(internalDepartment.getId(), thirdDepartments);
+        //更新待办任务的审批人
+        extApprovalTaskMapper.updateApprover(InternalUser.ADMIN.getValue());
         organizationUserService.deleteUser(orgId);
         departmentService.deleteByOrgId(orgId);
 
@@ -206,6 +215,8 @@ public class DataHandleUtils {
                         .noneMatch(thirdUser -> Strings.CI.equalsAny(thirdUser.getUserId(), user.getResourceUserId())))
                 .collect(Collectors.toList());
 
+        List<String> userIds = disableUserList.stream().map(OrganizationUser::getUserId).toList();
+        approvalActionService.refreshApprovingTasksForDisabledUser(userIds, orgId);
         organizationUserService.disableUsers(disableUserList);
 
         // 当前系统数据
