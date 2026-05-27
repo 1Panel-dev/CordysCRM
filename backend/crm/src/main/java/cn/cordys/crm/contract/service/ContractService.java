@@ -18,6 +18,8 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -58,7 +60,6 @@ import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.DictService;
-import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
@@ -70,11 +71,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -102,8 +101,6 @@ public class ContractService {
     private PermissionCache permissionCache;
     @Resource
     private BaseMapper<Customer> customerBaseMapper;
-    @Resource
-    private LogService logService;
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
     @Resource
@@ -720,6 +717,7 @@ public class ContractService {
 	 * ⚠️反射调用: 由审批执行后置操作统一调用, 勿修改
 	 * @param postFieldParam 参数
 	 */
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
 		ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
 		List<BaseField> fields = formConfig.getFields();
@@ -735,22 +733,16 @@ public class ContractService {
 			response = JSON.parseObject(snapshot.getContractValue(), ContractGetResponse.class);
 		}
 		for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
-			if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())) {
+			if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
 				return;
 			}
 			BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
+			AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
 			if (fieldConfig.hasBusinessKey()) {
 				// 业务主表字段
 				contractFieldService.setResourceFieldValue(contract, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
-				// 业务快照表字段
-				Field field = ReflectionUtils.findField(response.getClass(), f -> Strings.CS.equals(f.getName(), fieldConfig.getBusinessKey()));
-				if (field == null) {
-					log.error("Cannot find field `{}`", fieldConfig.getBusinessKey());
-					return;
-				}
-				ReflectionUtils.setField(field, response, fieldUpdateParam.getFieldValue());
 			} else {
-				// 自定义字段
+				// 快照自定义字段
 				Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream().filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId())).findAny();
 				if (findField.isPresent()) {
 					findField.get().setFieldValue(fieldUpdateParam.getFieldValue());
@@ -768,7 +760,7 @@ public class ContractService {
 					field.setId(IDGenerator.nextStr());
 					field.setResourceId(postFieldParam.getResourceId());
 					field.setFieldId(fieldUpdateParam.getFieldId());
-					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
 					contractFieldBlobs.add(field);
 				} else {
 					// 自定义表
@@ -778,7 +770,7 @@ public class ContractService {
 					field.setId(IDGenerator.nextStr());
 					field.setResourceId(postFieldParam.getResourceId());
 					field.setFieldId(fieldUpdateParam.getFieldId());
-					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
 					contractFields.add(field);
 				}
 			}
@@ -792,7 +784,8 @@ public class ContractService {
 		}
 		// 更新快照
 		if (snapshot != null) {
-			snapshot.setContractValue(JSON.toJSONString(response));
+			ContractGetResponse snapshotRes = get(contract, response.getModuleFields(), formConfig);
+			snapshot.setContractValue(JSON.toJSONString(snapshotRes));
 			snapshotBaseMapper.update(snapshot);
 		}
 	}

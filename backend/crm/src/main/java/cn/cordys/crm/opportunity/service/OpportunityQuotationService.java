@@ -14,6 +14,8 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -67,11 +69,9 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -134,7 +134,7 @@ public class OpportunityQuotationService {
     public OpportunityQuotation add(OpportunityQuotationAddRequest request, String orgId, String userId) {
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
-        checkQuotationInfo(moduleFields, moduleFormConfigDTO, request.getProducts());
+        checkQuotationInfo(moduleFields, moduleFormConfigDTO);
 
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         OpportunityQuotation opportunityQuotation = new OpportunityQuotation();
@@ -473,6 +473,7 @@ public class OpportunityQuotationService {
 	 * ⚠️反射调用: 由审批执行后置操作统一调用, 勿修改
 	 * @param postFieldParam 参数
 	 */
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
 		ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), OrganizationContext.getOrganizationId());
 		List<BaseField> fields = formConfig.getFields();
@@ -488,22 +489,16 @@ public class OpportunityQuotationService {
 			response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
 		}
 		for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
-			if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())) {
+			if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
 				return;
 			}
 			BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
+			AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
 			if (fieldConfig.hasBusinessKey()) {
 				// 业务主表字段
 				opportunityQuotationFieldService.setResourceFieldValue(quotation, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
-				// 业务快照表字段
-				Field field = ReflectionUtils.findField(response.getClass(), f -> Strings.CS.equals(f.getName(), fieldConfig.getBusinessKey()));
-				if (field == null) {
-					log.error("Cannot find field `{}`", fieldConfig.getBusinessKey());
-					return;
-				}
-				ReflectionUtils.setField(field, response, fieldUpdateParam.getFieldValue());
 			} else {
-				// 自定义字段
+				// 快照自定义字段
 				Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream().filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId())).findAny();
 				if (findField.isPresent()) {
 					findField.get().setFieldValue(fieldUpdateParam.getFieldValue());
@@ -521,7 +516,7 @@ public class OpportunityQuotationService {
 					field.setId(IDGenerator.nextStr());
 					field.setResourceId(postFieldParam.getResourceId());
 					field.setFieldId(fieldUpdateParam.getFieldId());
-					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
 					quotationFieldBlobs.add(field);
 				} else {
 					// 自定义表
@@ -531,7 +526,7 @@ public class OpportunityQuotationService {
 					field.setId(IDGenerator.nextStr());
 					field.setResourceId(postFieldParam.getResourceId());
 					field.setFieldId(fieldUpdateParam.getFieldId());
-					field.setFieldValue(fieldUpdateParam.getFieldValue());
+					field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
 					quotationFields.add(field);
 				}
 			}
@@ -545,7 +540,8 @@ public class OpportunityQuotationService {
 		}
 		// 更新快照
 		if (snapshot != null) {
-			snapshot.setQuotationValue(JSON.toJSONString(response));
+			OpportunityQuotationGetResponse snapshotRes = getOpportunityQuotationGetResponse(quotation, response.getModuleFields(), formConfig);
+			snapshot.setQuotationValue(JSON.toJSONString(snapshotRes));
 			snapshotBaseMapper.update(snapshot);
 		}
 	}
@@ -720,7 +716,7 @@ public class OpportunityQuotationService {
         String id = request.getId();
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
-        checkQuotationInfo(moduleFields, moduleFormConfigDTO, request.getProducts());
+        checkQuotationInfo(moduleFields, moduleFormConfigDTO);
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
 
         OpportunityQuotation oldOpportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
@@ -781,9 +777,8 @@ public class OpportunityQuotationService {
      *
      * @param moduleFields        报价单字段值
      * @param moduleFormConfigDTO 报价单表单配置
-     * @param request             报价单产品列表
      */
-    private void checkQuotationInfo(List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO, List<Map<String, Object>> request) {
+    private void checkQuotationInfo(List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
         if (CollectionUtils.isEmpty(moduleFields)) {
             throw new GenericException(Translator.get("opportunity.quotation.field.required"));
         }
@@ -1238,11 +1233,7 @@ public class OpportunityQuotationService {
 	public void handleOldApprovalData() {
 		List<OpportunityQuotation> quotations = opportunityQuotationMapper.selectAll(null);
 		quotations.forEach(quotation -> {
-			if (Strings.CI.equals(quotation.getApprovalStatus(), "VOIDED")) {
-				quotation.setInvalid(true);
-			} else {
-				quotation.setInvalid(false);
-			}
+			quotation.setInvalid(Strings.CI.equals(quotation.getApprovalStatus(), "VOIDED"));
 			if (Strings.CI.equalsAny(quotation.getApprovalStatus(), "VOIDED", "APPROVING")) {
 				quotation.setApprovalStatus(ApprovalStatus.NONE.name());
 			}

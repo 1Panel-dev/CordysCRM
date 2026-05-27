@@ -19,6 +19,8 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
@@ -66,11 +68,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -498,6 +498,7 @@ public class OrderService {
      *
      * @param postFieldParam 参数
      */
+	@SuppressWarnings({"unchecked", "rawtypes"})
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         List<BaseField> fields = formConfig.getFields();
@@ -513,20 +514,14 @@ public class OrderService {
             response = JSON.parseObject(snapshot.getOrderValue(), OrderGetResponse.class);
         }
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
-            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId())) {
+            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
                 return;
             }
             BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
-            if (fieldConfig.hasBusinessKey()) {
+			AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+			if (fieldConfig.hasBusinessKey()) {
                 // 业务主表字段
                 orderFieldService.setResourceFieldValue(order, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
-                // 业务快照表字段
-                Field field = ReflectionUtils.findField(response.getClass(), f -> Strings.CS.equals(f.getName(), fieldConfig.getBusinessKey()));
-                if (field == null) {
-                    log.error("Cannot find field `{}`", fieldConfig.getBusinessKey());
-                    return;
-                }
-                ReflectionUtils.setField(field, response, fieldUpdateParam.getFieldValue());
             } else {
                 // 自定义字段
                 Optional<BaseModuleFieldValue> findField = response.getModuleFields().stream().filter(fieldValue -> Strings.CI.equals(fieldValue.getFieldId(), fieldUpdateParam.getFieldId())).findAny();
@@ -546,7 +541,7 @@ public class OrderService {
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(fieldUpdateParam.getFieldValue());
+					field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     orderFieldBlobs.add(field);
                 } else {
                     // 自定义表
@@ -556,7 +551,7 @@ public class OrderService {
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-                    field.setFieldValue(fieldUpdateParam.getFieldValue());
+					field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     orderFields.add(field);
                 }
             }
@@ -570,7 +565,8 @@ public class OrderService {
         }
         // 更新快照
         if (snapshot != null) {
-            snapshot.setOrderValue(JSON.toJSONString(response));
+			OrderGetResponse snapshotRes = get(order, response.getModuleFields(), formConfig);
+            snapshot.setOrderValue(JSON.toJSONString(snapshotRes));
             snapshotBaseMapper.update(snapshot);
         }
     }
