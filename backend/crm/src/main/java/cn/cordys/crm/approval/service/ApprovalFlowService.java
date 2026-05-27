@@ -1804,6 +1804,7 @@ public class ApprovalFlowService {
 					// 如果为单人审批, 或签, 直接同意, 且流转到下一个节点
 					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), alreadyApproved.get().getApproverId());
 					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人重复出现, 后续节点自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
+					updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
 					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
 				}
 			}
