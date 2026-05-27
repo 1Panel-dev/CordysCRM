@@ -1,9 +1,6 @@
 package cn.cordys.crm.approval.dto;
 
-import cn.cordys.common.util.JSON;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 public class ResourceApprovalFieldUpdateParam {
@@ -19,14 +16,4 @@ public class ResourceApprovalFieldUpdateParam {
 	 * 是否开启
 	 */
 	private boolean enable;
-
-	public Object getFieldValue() {
-		if (fieldValue == null) {
-			return null;
-		}
-		if (fieldValue instanceof List<?>) {
-			return JSON.toJSONString(fieldValue);
-		}
-		return fieldValue;
-	}
 }
