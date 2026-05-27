@@ -212,7 +212,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
   // 获取对应数据权限是否允许操作
   function hasApprovalScopedPermission(row: Row, permissions: string[]) {
-    if (!permissions.length) {
+    if (!permissions.length || !row) {
       return false;
     }
 

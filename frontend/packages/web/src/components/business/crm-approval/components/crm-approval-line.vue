@@ -99,7 +99,10 @@
                 <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
               </template>
               <div class="mb-[16px] mt-[2px] py-[8px] pl-0">
-                <n-collapse v-if="node.taskNodes?.length" :default-expanded-names="[node.taskNodes[0].taskId]">
+                <n-collapse
+                  v-if="node.taskNodes?.length"
+                  :default-expanded-names="node.taskNodes.filter((e) => e.comment).map((e) => e.taskId)"
+                >
                   <template #arrow>
                     <div></div>
                   </template>

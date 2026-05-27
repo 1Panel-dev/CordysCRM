@@ -21,7 +21,7 @@
               class="mt-[4px]"
             />
             <div class="task-item-content">
-              <div class="flex w-full items-center justify-between">
+              <div class="flex w-full items-center gap-[16px]">
                 <div class="flex items-center gap-[8px]">
                   <CrmTag
                     v-if="props.activeTaskType?.includes('approved')"
