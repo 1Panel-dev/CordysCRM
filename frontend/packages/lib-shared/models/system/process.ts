@@ -253,16 +253,14 @@ export interface ApprovalAddSignParams extends ApprovalOperationParams {
 
 export interface BatchRejectApprovalParams {
   ids: string[];
-  rejectReason: string;
+  comment: string;
   attachmentIds: string[];
-  module: string;
 }
 
 export interface BatchApprovalParams {
   ids: string[];
   comment?: string;
   attachmentIds: string[];
-  module: string;
 }
 
 export interface TodoStatistic {
