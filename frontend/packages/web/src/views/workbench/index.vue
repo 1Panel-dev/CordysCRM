@@ -15,8 +15,8 @@
       @after-leave="showAlert = false"
     >
       <span>{{ t('system.personal.changePasswordTip') }}</span>
-      <n-button class="ml-[8px]" text type="primary" @click="changePassword">
-        {{ t('system.personal.changePassword') }}
+      <n-button class="ml-[8px]" text type="primary" size="small" @click="changePassword">
+        <div class="text-[14px]"> {{ t('system.personal.changePassword') }}</div>
       </n-button>
     </n-alert>
     <n-scrollbar x-scrollable content-style="min-width: 1000px;height: 100%;width: 100%">

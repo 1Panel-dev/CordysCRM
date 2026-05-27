@@ -118,6 +118,7 @@
     :params="exportParams"
     :export-columns="exportColumns"
     :is-export-all="isExportAll"
+    :show-approval-tip="exportApprovalTip"
     type="contract"
     @create-success="handleExportCreateSuccess"
   />
@@ -391,14 +392,19 @@
     };
   }
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
-    useApprovalOperation<ContractItem>({
-      formType: FormDesignKeyEnum.CONTRACT,
-      dataActionMap: createContractDataActionMap,
-      specialActionFilter: (row, actionKeys) => {
-        return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
-      },
-    });
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    hasApprovalScopedPermission,
+    getExportApprovalTip,
+  } = useApprovalOperation<ContractItem>({
+    formType: FormDesignKeyEnum.CONTRACT,
+    dataActionMap: createContractDataActionMap,
+    specialActionFilter: (row, actionKeys) => {
+      return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
+    },
+  });
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CONTRACT,
@@ -684,6 +690,8 @@
     };
   });
 
+  const exportApprovalTip = computed(() => getExportApprovalTip(['CONTRACT:EXPORT']));
+
   const actionConfig = computed(() => {
     return {
       baseAction: [
@@ -909,6 +917,15 @@
   // onBeforeUnmount(() => {
   //   sessionStorage.removeItem(STORAGE_VIEW_CHART_KEY);
   // });
+
+  watch(
+    () => showExportModal.value,
+    (val) => {
+      if (val) {
+        initApprovalPermission();
+      }
+    }
+  );
 </script>
 
 <style lang="less" scoped>
