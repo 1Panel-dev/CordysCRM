@@ -35,4 +35,5 @@ export default {
   'crm.approval.autoReject': 'Cbot 自动拒绝',
   'crm.approval.fileLimitTip': '附件最多可添加 10 个',
   'crm.approval.reviewDisabledTip': '未匹配到生效审批流，请联系管理员',
+  'crm.approval.copyToTip': '抄送 {count} 人',
 };
