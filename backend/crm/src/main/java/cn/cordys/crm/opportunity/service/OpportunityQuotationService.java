@@ -29,6 +29,7 @@ import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.contract.domain.ContractField;
 import cn.cordys.crm.contract.domain.ContractFieldBlob;
 import cn.cordys.crm.opportunity.domain.*;
@@ -113,6 +114,8 @@ public class OpportunityQuotationService {
     private DictService dictService;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalResourceService approvalResourceService;
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -937,6 +940,8 @@ public class OpportunityQuotationService {
         if (CollectionUtils.isEmpty(permittedIds)) {
             return;
         }
+
+            approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.QUOTATION, organizationId);
 
         // 只对有权限的报价单进行操作
         List<OpportunityQuotation> permittedQuotations = originQuotations.stream()
