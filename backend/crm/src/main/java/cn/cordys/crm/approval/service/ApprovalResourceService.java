@@ -387,4 +387,51 @@ public class ApprovalResourceService {
 		instance.setUpdateTime(System.currentTimeMillis());
 		return instance;
 	}
+
+	/**
+	 * 批量编辑触发审批流
+	 * 用于批量编辑多个业务资源时，判断是否开启了编辑触发审批流，
+	 * 如果开启，则将所有资源的状态改为PENDING
+	 *
+	 * @param resourceIds    资源ID集合
+	 * @param formKey        业务模块（表单类型）
+	 * @param organizationId 组织ID
+	 */
+	public void batchEditTriggerApproval(List<String> resourceIds, FormKey formKey, String organizationId) {
+		if (CollectionUtils.isEmpty(resourceIds) || formKey == null || StringUtils.isBlank(organizationId)) {
+			return;
+		}
+
+		// 检查是否命中审批流
+		if (!checkHitApprovalFlowEditTrigger(formKey, organizationId)) {
+			return;
+		}
+
+		// 批量更新资源审批状态为待提审
+		for (String resourceId : resourceIds) {
+			clearResourceApprovalDetail(resourceId);
+			updateResourceApprovalStatus(formKey, resourceId, ApprovalStatus.PENDING.name());
+		}
+	}
+
+	/**
+	 * 检查是否命中审批流触发时机
+	 *
+	 * @param formKey       表单类型
+	 * @param organizationId 组织ID
+	 * @return 是否命中审批流
+	 */
+	private boolean checkHitApprovalFlowEditTrigger(FormKey formKey, String organizationId) {
+		try {
+			// 查询当前组织表单审批流配置
+			ApprovalFlow flow = approvalFlowService.getEnabledFlow(formKey.getKey(), organizationId);
+			if (flow == null) {
+				return false;
+			}
+			return flow.getUpdateExecute();
+		} catch (Exception e) {
+			log.error("检查是否命中审批流失败, formKey:{}, error:{}", formKey, e.getMessage(), e);
+			return false;
+		}
+	}
 }
