@@ -2,8 +2,8 @@ package cn.cordys.crm.approval.domain;
 
 import cn.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
 import jakarta.persistence.Table;
+import lombok.Data;
 
 /**
  * 审批记录

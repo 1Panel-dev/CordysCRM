@@ -7,7 +7,6 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
-
 import cn.cordys.crm.system.domain.RolePermission;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;

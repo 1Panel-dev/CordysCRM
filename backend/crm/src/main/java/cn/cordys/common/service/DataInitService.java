@@ -6,7 +6,6 @@ import cn.cordys.common.util.OnceInterfaceAction;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.contract.service.ContractInvoiceService;
 import cn.cordys.crm.contract.service.ContractService;
-import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.domain.Parameter;

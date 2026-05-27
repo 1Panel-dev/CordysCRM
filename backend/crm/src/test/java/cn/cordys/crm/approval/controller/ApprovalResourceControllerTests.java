@@ -1,6 +1,5 @@
 package cn.cordys.crm.approval.controller;
 
-import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;

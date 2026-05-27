@@ -2,11 +2,7 @@ package cn.cordys.crm.approval;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.crm.approval.constants.*;
-import cn.cordys.crm.approval.domain.ApprovalFlow;
-import cn.cordys.crm.approval.domain.ApprovalFlowVersion;
-import cn.cordys.crm.approval.domain.ApprovalNode;
-import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
-import cn.cordys.crm.approval.domain.ApprovalNodeLink;
+import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowByFormTypeResponse;
