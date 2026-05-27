@@ -26,6 +26,7 @@
             :column="3"
             label-width="auto"
             value-align="start"
+            readonly
           />
         </div>
       </CrmCard>

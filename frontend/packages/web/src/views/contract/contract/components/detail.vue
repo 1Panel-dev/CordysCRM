@@ -61,7 +61,7 @@
                 label-width="auto"
                 value-align="start"
                 tooltip-position="top-start"
-                readonly
+                :readonly="!hasAnyPermission(['CONTRACT:UPDATE'])"
                 :isContractTableDetail="props.isContractTableDetail"
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{

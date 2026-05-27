@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="title">
     <template #titleRight>
       <n-button
-        v-permission="['PRICE:UPDATE']"
+        v-permission="['PRODUCT:UPDATE']"
         type="primary"
         ghost
         class="n-btn-outline-primary"
@@ -22,6 +22,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
+            :readonly="!hasAnyPermission(['PRODUCT:UPDATE'])"
             @init="handleInit"
           />
         </div>
@@ -40,6 +41,8 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;

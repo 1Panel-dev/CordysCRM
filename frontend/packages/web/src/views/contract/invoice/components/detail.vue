@@ -52,7 +52,7 @@
                 label-width="auto"
                 value-align="start"
                 tooltip-position="top-start"
-                readonly
+                :readonly="!hasAnyPermission(['CONTRACT_INVOICE:UPDATE'])"
                 @init="handleInit"
                 @open-contract-detail="emit('openContractDrawer', $event)"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
@@ -99,6 +99,7 @@
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;

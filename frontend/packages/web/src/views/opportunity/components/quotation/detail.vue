@@ -53,7 +53,7 @@
           value-align="start"
           tooltip-position="top-start"
           class="p-[16px]"
-          readonly
+          :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_QUOTATION:UPDATE'])"
           @init="handleInit"
         />
       </template>
@@ -215,7 +215,9 @@
         break;
     }
   }
-  const { initApprovalPermission, resolveRowOperation } = useApprovalOperation<Record<string, any>>({
+  const { initApprovalPermission, resolveRowOperation, hasApprovalScopedPermission } = useApprovalOperation<
+    Record<string, any>
+  >({
     formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
     dataActionMap: quotationDataActionMap,
     isDetail: true,

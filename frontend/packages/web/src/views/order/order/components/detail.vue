@@ -67,7 +67,7 @@
                 label-width="auto"
                 value-align="start"
                 tooltip-position="top-start"
-                readonly
+                :readonly="!hasAnyPermission(['ORDER:UPDATE'])"
                 @init="handleInit"
                 @open-contract-detail="handleOpenContractDrawer"
                 @open-customer-detail="handleOpenCustomerDrawer"
