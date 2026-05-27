@@ -135,6 +135,7 @@
         <CrmMemberSelect
           v-model:value="addSignForm.reviewer"
           :multiple="false"
+          :apiTypeKey="MemberApiTypeEnum.FORM_FIELD"
           :member-types="[
             {
               label: t('menu.settings.org'),
@@ -187,7 +188,7 @@
   } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CollaborationType } from '@lib/shared/models/customer';
