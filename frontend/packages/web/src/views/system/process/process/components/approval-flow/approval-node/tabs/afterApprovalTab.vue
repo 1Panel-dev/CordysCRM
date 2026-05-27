@@ -116,8 +116,6 @@
   import { getFormConfigApiMap, rules } from '@/components/business/crm-form-create/config';
   import type { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
 
-  import { useUserStore } from '@/store';
-
   defineOptions({
     name: 'AfterApprovalTab',
   });
@@ -133,7 +131,6 @@
   });
 
   const { t } = useI18n();
-  const userStore = useUserStore();
   const activePostTab = ref<'pass' | 'reject'>('pass');
   const formFields = ref<FormCreateField[]>([]);
   const formRef = ref<FormInst | null>(null);
@@ -237,25 +234,15 @@
   }
 
   function getInitialFieldValue(field: FormCreateField) {
-    // 右侧值组件沿用批量编辑的默认值初始化规则，避免切字段后值类型不匹配
-    const defaultValue = field.defaultValue || '';
-
-    if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(field.type)) {
-      return Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
-    }
-
-    if (field.type === FieldTypeEnum.DATA_SOURCE) {
-      return defaultValue || null;
+    if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.DATA_SOURCE].includes(field.type)) {
+      return null;
     }
 
     if (getRuleType(field) === 'array') {
-      return [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.MEMBER].includes(field.type) &&
-        typeof field.defaultValue === 'string'
-        ? [defaultValue]
-        : defaultValue || [];
+      return [];
     }
 
-    return defaultValue;
+    return '';
   }
 
   function getFieldValueRuleType(field: FormCreateField) {
@@ -307,30 +294,6 @@
     const initialOptions = props.optionMap?.[field.id] ?? [];
     if (initialOptions.length) {
       currentField.initialOptions = [...initialOptions];
-    }
-
-    // 成员/部门字段补默认值和回显选项
-    if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(field.type) && field.hasCurrentUser) {
-      currentField.defaultValue = userStore.userInfo.id;
-      currentField.initialOptions = [
-        ...(currentField.initialOptions || []),
-        {
-          id: userStore.userInfo.id,
-          name: userStore.userInfo.name,
-        },
-      ].filter((option, index, self) => self.findIndex((item) => item.id === option.id) === index);
-    } else if (
-      [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(field.type) &&
-      field.hasCurrentUserDept
-    ) {
-      currentField.defaultValue = userStore.userInfo.departmentId;
-      currentField.initialOptions = [
-        ...(currentField.initialOptions || []),
-        {
-          id: userStore.userInfo.departmentId,
-          name: userStore.userInfo.departmentName,
-        },
-      ].filter((option, index, self) => self.findIndex((item) => item.id === option.id) === index);
     }
 
     return currentField;
@@ -388,7 +351,6 @@
     return props.readonly || !line.fieldId || isEmptyFieldValue(line.fieldValue);
   }
 
-  // 切换左侧字段时，右侧值按批量编辑逻辑重置成该字段自己的默认值
   function handleFieldUpdate(line: ApprovalFieldUpdateConfig, fieldId: string) {
     if (props.readonly) {
       return;
