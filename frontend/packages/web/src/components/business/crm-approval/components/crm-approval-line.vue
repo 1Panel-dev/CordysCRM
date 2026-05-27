@@ -191,7 +191,12 @@
                     </div>
                   </template>
                   <template #header-extra="{ collapsed }">
-                    <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
+                    <div class="flex items-center gap-[16px]">
+                      <div class="text-[var(--text-n4)]">
+                        {{ t('crm.approval.copyToTip', { count: node.ccNodes.length }) }}
+                      </div>
+                      <CrmIcon :type="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'" :size="16" />
+                    </div>
                   </template>
                   <div class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
                     <div v-for="cc in node.ccNodes" :key="cc.ccUserId" class="flex items-center gap-[8px]">
@@ -200,7 +205,7 @@
                       </div>
                       <n-tooltip trigger="hover">
                         <template #trigger>
-                          <div class="one-line-text">{{ cc.ccUserName }}</div>
+                          <div class="one-line-text font-normal">{{ cc.ccUserName }}</div>
                         </template>
                         {{ cc.ccUserName }}
                       </n-tooltip>
