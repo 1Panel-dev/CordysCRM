@@ -37,6 +37,17 @@ interface ApprovalReviewConfig {
 const approvalReviewConfigCache = new Map<FormDesignKeyEnum, ApprovalReviewConfig>();
 const approvalReviewConfigPendingMap = new Map<FormDesignKeyEnum, Promise<ApprovalReviewConfig>>();
 
+export function clearApprovalReviewConfigCache(formKey?: FormDesignKeyEnum | string) {
+  if (formKey) {
+    approvalReviewConfigCache.delete(formKey as FormDesignKeyEnum);
+    approvalReviewConfigPendingMap.delete(formKey as FormDesignKeyEnum);
+    return;
+  }
+
+  approvalReviewConfigCache.clear();
+  approvalReviewConfigPendingMap.clear();
+}
+
 export default function useFormReviewAction(options: UseFormReviewActionOptions) {
   const { t } = useI18n();
   const userStore = useUserStore();

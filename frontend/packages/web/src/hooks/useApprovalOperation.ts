@@ -100,30 +100,38 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return !row.firstApproved;
   }
 
+  function getReviewActionState() {
+    const disabled = !enableApproval.value || !approvalPermissionsDetail.value;
+
+    return {
+      disabled,
+      tooltipContent: disabled ? t('crm.approval.reviewDisabledTip') : undefined,
+    };
+  }
+
   function createApprovalActions(row: Row): ActionsItem[] {
     const approvalStatus = getApprovalStatus(row);
+    const reviewActionState = getReviewActionState();
 
     switch (approvalStatus) {
       case ProcessStatusEnum.PENDING:
         // 返回提审
-        return isApplicant(row)
-          ? [
-              {
-                label: t('common.review'),
-                key: 'review',
-              },
-            ]
-          : [];
+        return [
+          {
+            label: t('common.review'),
+            key: 'review',
+            ...reviewActionState,
+          },
+        ];
       case ProcessStatusEnum.UNAPPROVED:
       case ProcessStatusEnum.REVOKED:
-        return isApplicant(row)
-          ? [
-              {
-                label: t('common.resubmit'),
-                key: 'review',
-              },
-            ]
-          : [];
+        return [
+          {
+            label: t('common.resubmit'),
+            key: 'review',
+            ...reviewActionState,
+          },
+        ];
       case ProcessStatusEnum.APPROVING:
         return [
           ...(canRevokeWhileApproving(row)
@@ -258,10 +266,11 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   }
 
   function resolveRowActions(row: Row) {
-    const actions =
+    const dataActions =
       !enableApproval.value || shouldUseRolePermissionOnly(row)
         ? createNormalActions(row)
-        : [...createApprovalActions(row), ...createDataPermissionActions(row)];
+        : createDataPermissionActions(row);
+    const actions = [...createApprovalActions(row), ...dataActions];
 
     return applySpecialActionFilter(row, actions);
   }

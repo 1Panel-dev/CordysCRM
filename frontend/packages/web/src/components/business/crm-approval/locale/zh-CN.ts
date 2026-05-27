@@ -34,4 +34,5 @@ export default {
   'crm.approval.fallbackSuccess': '已退回',
   'crm.approval.autoReject': 'Cbot 自动拒绝',
   'crm.approval.fileLimitTip': '附件最多可添加 10 个',
+  'crm.approval.reviewDisabledTip': '未匹配到生效审批流，请联系管理员',
 };
