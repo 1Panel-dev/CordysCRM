@@ -17,8 +17,8 @@
         </div>
       </template>
       <template #2>
-        <div class="flex h-full w-full flex-col border-l border-[var(--text-n8)]">
-          <div class="flex-1 px-[16px] py-[24px]">
+        <div class="flex h-full w-full flex-col overflow-hidden border-l border-[var(--text-n8)]">
+          <div class="flex-1 overflow-hidden px-[16px] py-[24px] pb-[32px]">
             <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
             <CrmApprovalLine
               :nodes="approvalInfo?.nodes || []"
@@ -30,7 +30,7 @@
               }"
               :currentApprovalNode="currentApprovalNode"
               :currentApprovalNodeIndex="currentApprovalNodeIndex"
-              class="h-[calc(100%-26px)] pr-[8px]"
+              class="pr-[8px]"
             />
           </div>
           <div
@@ -38,7 +38,7 @@
               approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
               (isApprover || canCancelApply || canCancelApproval)
             "
-            class="border-t border-[var(--text-n8)] p-[16px]"
+            class="sticky bottom-0 border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[16px]"
           >
             <template v-if="isApprover">
               <div class="flex items-center gap-[4px]">
