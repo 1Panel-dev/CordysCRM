@@ -22,7 +22,6 @@ import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
-import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.LogService;
@@ -75,10 +74,6 @@ public class ApprovalActionService {
 	private CommonNoticeSendService commonNoticeSendService;
 	@Resource
 	private BaseMapper<OrganizationUser> organizationUserMapper;
-	@Resource
-	private ExtOrganizationUserMapper extOrganizationUserMapper;
-	@Resource
-	private BaseMapper<User> userMapper;
 
 	public static final Long DEFAULT_SIGN_SORT_STEP = 100L;
 
@@ -508,13 +503,13 @@ public class ApprovalActionService {
 				break;
 			}
 			case BACK: {
-				currentTask.setStatus(ApprovalStatus.INTERRUPTED.name());
+				currentTask.setStatus(ApprovalStatus.PENDING.name());
 				currentTask.setAction(ApprovalAction.BACK.name());
 				break;
 			}
 			case SIGN: {
 				if (signType == ApprovalAddSignType.BEFORE) {
-					currentTask.setStatus(ApprovalStatus.INTERRUPTED.name());
+					currentTask.setStatus(ApprovalStatus.PENDING.name());
 					currentTask.setAction(ApprovalAction.SIGN.name());
 				} else {
 					currentTask.setAction(ApprovalAction.APPROVE.name());
