@@ -19,8 +19,6 @@ public enum ApprovalStatus {
 	REVOKED,
 
 	// 扩展项
-	/** 已中止 */
-	INTERRUPTED,
 	/** 自动通过 */
 	AUTO_APPROVED,
 	/** 自动拒绝 */
