@@ -215,7 +215,7 @@
       if (lastTab && sortData.value.find((item) => item.id === lastTab)) {
         activeTab.value = lastTab;
       } else {
-        activeTab.value = tags.value[0].id;
+        activeTab.value = tags.value[0]?.id;
       }
     });
   });

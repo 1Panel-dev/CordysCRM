@@ -358,4 +358,5 @@ export default {
   'common.AND_APPROVAL': 'AND approval',
   'common.SEQUENTIAL_APPROVAL': 'Sequential Approval',
   'common.copyTo': 'Copy to',
+  'common.exportApprovalTip': 'Only data with approval statuses {statuses} can be exported',
 };

@@ -11,6 +11,12 @@
     @confirm="confirmHandler"
     @cancel="closeHandler"
   >
+    <n-alert v-if="props.showApprovalTip" type="warning" class="mb-[16px]">
+      <template #icon>
+        <CrmIcon type="iconicon_info_circle_filled" :size="20" />
+      </template>
+      {{ props.showApprovalTip }}
+    </n-alert>
     <n-form
       ref="formRef"
       :model="form"
@@ -39,7 +45,7 @@
       </n-form-item>
     </n-form>
 
-    <div class="flex h-[calc(100%-78px)] overflow-hidden">
+    <div class="flex overflow-hidden" :class="props.showApprovalTip ? 'h-[calc(100%-148px)]' : 'h-[calc(100%-78px)]'">
       <div class="flex flex-[1.5] flex-col overflow-hidden border border-[var(--text-n8)]">
         <div class="flex items-center bg-[var(--text-n9)] px-[16px] py-[8px]">
           <n-checkbox :checked="isCheckedAll" :indeterminate="indeterminate" @update:checked="handleChangeAll">
@@ -125,6 +131,7 @@
   import {
     FormInst,
     FormItemRule,
+    NAlert,
     NButton,
     NCheckbox,
     NForm,
@@ -144,6 +151,7 @@
   import { ExportTableColumnItem } from '@lib/shared/models/common';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import FieldSection from './components/fieldSection.vue';
 
   import {
@@ -190,6 +198,7 @@
       | 'invoice';
     exportColumns: ExportTableColumnItem[];
     isExportAll?: boolean;
+    showApprovalTip?: string;
   }>();
   const emit = defineEmits<{
     (e: 'createSuccess'): void;

@@ -370,4 +370,5 @@ export default {
   'common.AND_APPROVAL': '会签',
   'common.SEQUENTIAL_APPROVAL': '依次审批',
   'common.copyTo': '抄送人',
+  'common.exportApprovalTip': '仅支持导出审批状态为 {statuses} 的数据',
 };

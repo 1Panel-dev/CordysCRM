@@ -78,6 +78,7 @@
     :params="exportParams"
     :export-columns="exportColumns"
     :is-export-all="isExportAll"
+    :show-approval-tip="exportApprovalTip"
     type="invoice"
     @create-success="handleExportCreateSuccess"
   />
@@ -293,14 +294,19 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
-    useApprovalOperation<ContractInvoiceItem>({
-      formType: FormDesignKeyEnum.INVOICE,
-      dataActionMap: invoiceDataActionMap,
-      specialActionFilter: (_row, actionKeys) => {
-        return props.readonly ? [] : actionKeys;
-      },
-    });
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    hasApprovalScopedPermission,
+    getExportApprovalTip,
+  } = useApprovalOperation<ContractInvoiceItem>({
+    formType: FormDesignKeyEnum.INVOICE,
+    dataActionMap: invoiceDataActionMap,
+    specialActionFilter: (_row, actionKeys) => {
+      return props.readonly ? [] : actionKeys;
+    },
+  });
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.INVOICE,
@@ -480,6 +486,8 @@
     };
   });
 
+  const exportApprovalTip = computed(() => getExportApprovalTip(['CONTRACT_INVOICE:EXPORT']));
+
   // 表格
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {
@@ -596,6 +604,15 @@
         checkedRowKeys.value = [];
         setLoadListParams({ keyword: keyword.value, viewId: activeTab.value, contractId: props.sourceId });
         crmTableRef.value?.setColumnSort(val);
+      }
+    }
+  );
+
+  watch(
+    () => showExportModal.value,
+    (val) => {
+      if (val) {
+        initApprovalPermission();
       }
     }
   );

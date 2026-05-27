@@ -8,6 +8,7 @@ import { ApprovalProcessDetail, StatusPermissions } from '@lib/shared/models/sys
 import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 
 import { getApprovalConfigDetail } from '@/api/modules';
+import { processStatusOptions } from '@/config/process';
 import { useUserStore } from '@/store';
 import { hasAnyPermission } from '@/utils/permission';
 
@@ -62,6 +63,9 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   const enableApproval = ref(false);
 
   function getApprovalStatus(row: Row) {
+    if (!row) {
+      return ProcessStatusEnum.NONE;
+    }
     return options.getApprovalStatus?.(row) ?? (row.approvalStatus as ProcessStatusEnum);
   }
 
@@ -82,8 +86,11 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return isCreator || isOwner;
   }
 
-  function shouldUseRolePermissionOnly(row: Row) {
-    return options.shouldUseRolePermissionOnly?.(row) ?? false;
+  function shouldUseRolePermissionOnly(row?: Row) {
+    if (!row) {
+      return false;
+    }
+    return options?.shouldUseRolePermissionOnly?.(row) ?? false;
   }
 
   function canRevokeWhileApproving(row: Row) {
@@ -210,6 +217,44 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return permissions.some((permission) => currentStatusPermissions.has(permission));
   }
 
+  function getAllowedStatuses(permissions: string[]) {
+    if (!enableApproval.value || !permissions.length) {
+      return [] as ProcessStatusEnum[];
+    }
+
+    return processStatusOptions
+      .map((item) => item.value as ProcessStatusEnum)
+      .filter((status) => {
+        const currentStatusPermissions = statusPermissionMap.value.get(status);
+
+        if (!currentStatusPermissions) {
+          return false;
+        }
+
+        return permissions.some((permission) => currentStatusPermissions.has(permission));
+      });
+  }
+
+  function getApprovalStatusLabel(status: ProcessStatusEnum) {
+    return processStatusOptions.find((item) => item.value === status)?.label || '-';
+  }
+
+  function getExportApprovalTip(permissions: string[]) {
+    if (!enableApproval.value || !approvalPermissionsDetail.value || !hasAnyPermission(permissions)) {
+      return '';
+    }
+
+    const allowedStatuses = Array.from(new Set([...getAllowedStatuses(permissions), ProcessStatusEnum.NONE]));
+
+    if (!allowedStatuses.length) {
+      return '';
+    }
+
+    const statusLabels = allowedStatuses.map(getApprovalStatusLabel).join('、');
+
+    return statusLabels ? t('common.exportApprovalTip', { statuses: statusLabels }) : '';
+  }
+
   // 获取对应数据权限是否允许操作
   function hasApprovalScopedPermission(row: Row, permissions: string[]) {
     if (!permissions.length || !row) {
@@ -218,7 +263,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
     const hasRolePermission = hasAnyPermission(permissions);
 
-    if (!enableApproval.value || shouldUseRolePermissionOnly(row)) {
+    if (!enableApproval.value || shouldUseRolePermissionOnly?.(row)) {
       return hasRolePermission;
     }
 
@@ -302,6 +347,8 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     resolveRowActions,
     resolveRowOperation,
     hasApprovalScopedPermission,
+    getAllowedStatuses,
+    getExportApprovalTip,
     approvalPermissionsDetail,
     statusPermissionMap,
     getApprovalStatus,
