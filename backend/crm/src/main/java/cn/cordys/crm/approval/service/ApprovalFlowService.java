@@ -1740,44 +1740,43 @@ public class ApprovalFlowService {
 
 		// 审批人与提交人同一人时
 		Optional<String> findSame = nextApproverNode.getApproverList().stream().filter(approver -> Strings.CS.equals(approver, instance.getSubmitterId())).findAny();
-		if (findSame.isEmpty()) {
-			return nextApproverNode;
-		}
-		SameSubmitterActionEnum sameAction = SameSubmitterActionEnum.valueOf(nextApproverNode.getSameSubmitterAction());
-		switch (sameAction) {
-			case ASSIGN_SUPERIOR -> {
-				// 转交给直属上级审批
-				OrganizationUser criteria = new OrganizationUser();
-				criteria.setUserId(findSame.get());
-				criteria.setOrganizationId(currentOrgId);
-				OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
-				if (currentUser != null && StringUtils.isNotEmpty(currentUser.getSupervisorId())) {
-					// 替换审批人列表中与提审人相同审批人 => 直属上级
-					String supervisorId = currentUser.getSupervisorId();
-					List<String> newApproverList = nextApproverNode.getApproverList().stream()
-							.map(approver -> Strings.CS.equals(approver, instance.getSubmitterId()) ? supervisorId : approver)
-							.collect(Collectors.toList());
-					nextApproverNode.setApproverList(newApproverList);
-				} else {
-					// 不存在直属上级, 自动跳过
-					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
-					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 直属上级为空, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
-					updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
-					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
+		if (findSame.isPresent()) {
+			SameSubmitterActionEnum sameAction = SameSubmitterActionEnum.valueOf(nextApproverNode.getSameSubmitterAction());
+			switch (sameAction) {
+				case ASSIGN_SUPERIOR -> {
+					// 转交给直属上级审批
+					OrganizationUser criteria = new OrganizationUser();
+					criteria.setUserId(findSame.get());
+					criteria.setOrganizationId(currentOrgId);
+					OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
+					if (currentUser != null && StringUtils.isNotEmpty(currentUser.getSupervisorId())) {
+						// 替换审批人列表中与提审人相同审批人 => 直属上级
+						String supervisorId = currentUser.getSupervisorId();
+						List<String> newApproverList = nextApproverNode.getApproverList().stream()
+								.map(approver -> Strings.CS.equals(approver, instance.getSubmitterId()) ? supervisorId : approver)
+								.collect(Collectors.toList());
+						nextApproverNode.setApproverList(newApproverList);
+					} else {
+						// 不存在直属上级, 自动跳过
+						ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
+						saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 直属上级为空, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
+						updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
+						return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
+					}
 				}
-			}
-			case SKIP -> {
-				// 自动跳过
-				if (nextApproverNode.getApproverList().size() == 1 || MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
-					// 如果刚好为单人审批, 多人或签, 直接插入待办任务和记录, 流转到下一个节点
-					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
-					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
-					updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
-					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
+				case SKIP -> {
+					// 自动跳过
+					if (nextApproverNode.getApproverList().size() == 1 || MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
+						// 如果刚好为单人审批, 多人或签, 直接插入待办任务和记录, 流转到下一个节点
+						ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
+						saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
+						updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
+						return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
+					}
 				}
-			}
-			default -> {
+				default -> {
 
+				}
 			}
 		}
 
