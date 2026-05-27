@@ -31,22 +31,32 @@
       </div>
       <div class="task-content p-[24px]">
         <div class="mb-[16px] flex w-full items-center justify-between">
-          <div class="flex flex-1 items-center gap-[8px]">
-            <div class="font-semibold">
+          <div class="flex flex-1 items-center gap-[8px] font-semibold">
+            <div
+              v-if="activeTaskType.includes('pending') && approvalConfigDetail?.allowBatchProcess"
+              class="flex items-center"
+            >
               <n-checkbox
-                v-if="activeTaskType.includes('pending') && approvalConfigDetail?.allowBatchProcess"
                 v-model:checked="allSelect"
                 :label="activeModuleTitle"
                 :indeterminate="indeterminate"
                 @update-checked="handleSelectAll"
               />
-              <div v-else>{{ activeModuleTitle }}</div>
-              <template v-if="activeTaskType.includes('pending') && selectedKeys.length > 0">
-                <n-button type="primary" ghost class="mr-[8px]" @click="handleReject">
-                  {{ t('common.reject') }}
+              <div v-if="selectedKeys.length > 0" class="flex items-center gap-[4px] font-normal leading-[24px]">
+                <div>{{ t('crmPagination.checked') }}</div>
+                <div class="text-[var(--primary-8)]">{{ selectedKeys.length }}</div>
+                <div>{{ t('crmPagination.item') }}</div>
+                <n-button text type="primary" size="small" @click="() => (selectedKeys = [])">
+                  <div class="text-[14px] leading-[24px]">{{ t('common.clear') }}</div>
                 </n-button>
-                <n-button type="primary" ghost @click="handleApprove">{{ t('common.approve') }}</n-button>
-              </template>
+              </div>
+            </div>
+            <div v-else>{{ activeModuleTitle }}</div>
+            <div v-if="activeTaskType.includes('pending') && selectedKeys.length > 0">
+              <n-button type="primary" ghost class="mr-[8px]" @click="handleReject">
+                {{ t('common.reject') }}
+              </n-button>
+              <n-button type="primary" ghost @click="handleApprove">{{ t('common.approve') }}</n-button>
             </div>
           </div>
           <div class="ml-auto flex items-center gap-[12px]">
