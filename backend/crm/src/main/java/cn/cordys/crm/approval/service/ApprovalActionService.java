@@ -472,7 +472,7 @@ public class ApprovalActionService {
 			// 加签任务执行, 需要获取同一加签链路的下一个待办任务
 			ApprovalTask nextTask = getNextAddSignTask(currentTask.getId());
 			if (nextTask != null) {
-				nextTask.setCreateTime(System.currentTimeMillis());
+				nextTask.setCreateTime(nextTask.getCreateTime() + 1);
 				nextTask.setUpdateTime(System.currentTimeMillis());
 				approvalTaskMapper.insert(nextTask);
 				sendApprovalTaskNotice(List.of(nextTask), instance, currentOrgId);
