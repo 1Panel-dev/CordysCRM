@@ -37,4 +37,5 @@ export default {
   'crm.approval.fallbackSuccess': 'Fallback Successful',
   'crm.approval.autoReject': 'Cbot Auto Reject',
   'crm.approval.fileLimitTip': 'You can add up to 10 attachments',
+  'crm.approval.reviewDisabledTip': 'No active approval workflow was matched. Please contact the administrator.',
 };

@@ -56,6 +56,7 @@
     updateApprovalProcess,
   } from '@/api/modules';
   import { businessTypeOptions } from '@/config/process';
+  import { clearApprovalReviewConfigCache } from '@/hooks/useFormReviewAction';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -97,6 +98,7 @@
         try {
           if (!row.enable) {
             await deleteApprovalProcess(row.id);
+            clearApprovalReviewConfigCache(row.formType);
             tableRefreshId.value += 1;
             Message.success(t('common.deleteSuccess'));
           }
@@ -126,6 +128,7 @@
   async function handleToggleStatus(row: ApprovalProcessItem) {
     try {
       await toggleApprovalProcess(row.id, !row.enable);
+      clearApprovalReviewConfigCache(row.formType);
       Message.success(t(!row.enable ? 'common.enableSuccess' : 'common.closeSuccess'));
       tableRefreshId.value += 1;
     } catch (error) {
