@@ -1315,13 +1315,11 @@ public class ApprovalFlowService {
 		List<User> resolveUsers = new ArrayList<>();
 		approverList.forEach(approver -> {
 			Optional<OrganizationUser> findUser = organizationUsers.stream().filter(u -> Strings.CI.equals(u.getUserId(), approver)).findAny();
-			if (!userMap.containsKey(approver) && findUser.isPresent()) {
-				// 审批人被删除, 替换为直属上级
-				if (StringUtils.isNotBlank(findUser.get().getSupervisorId())) {
-					User superUser = new User();
-					superUser.setId(findUser.get().getSupervisorId());
-					resolveUsers.add(superUser);
-				}
+			if (!userMap.containsKey(approver)) {
+				// 审批人被删除, 替换成ADMIN
+				User admin = new User();
+				admin.setId(InternalUser.ADMIN.getValue());
+				resolveUsers.add(admin);
 				return;
 			}
 			if (findUser.isPresent() && !findUser.get().getEnable()) {
@@ -1330,12 +1328,15 @@ public class ApprovalFlowService {
 					User superUser = new User();
 					superUser.setId(findUser.get().getSupervisorId());
 					resolveUsers.add(superUser);
+				} else {
+					// 直属上级为空, 替换成ADMIN
+					User admin = new User();
+					admin.setId(InternalUser.ADMIN.getValue());
+					resolveUsers.add(admin);
 				}
 				return;
 			}
-			if (userMap.containsKey(approver)) {
-				resolveUsers.add(userMap.get(approver));
-			}
+			resolveUsers.add(userMap.get(approver));
 		});
 		return resolveUsers;
     }

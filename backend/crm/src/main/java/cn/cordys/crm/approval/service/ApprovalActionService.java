@@ -4,6 +4,7 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -18,14 +19,17 @@ import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
+import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.request.UploadTransferRequest;
+import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.AttachmentService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -36,6 +40,7 @@ import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class ApprovalActionService {
 
 	@Resource
@@ -68,6 +73,12 @@ public class ApprovalActionService {
 	private ExtApprovalTaskMapper extApprovalTaskMapper;
 	@Resource
 	private CommonNoticeSendService commonNoticeSendService;
+	@Resource
+	private BaseMapper<OrganizationUser> organizationUserMapper;
+	@Resource
+	private ExtOrganizationUserMapper extOrganizationUserMapper;
+	@Resource
+	private BaseMapper<User> userMapper;
 
 	public static final Long DEFAULT_SIGN_SORT_STEP = 100L;
 
@@ -1029,7 +1040,7 @@ public class ApprovalActionService {
 		}
 		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instance.getId(), nodeId);
 		List<String> autoSkipUser = approvalFlowService.getFlowAutoSkipUser(instance, nodeId, preApproverId);
-		if (sameAction == cn.cordys.crm.approval.constants.SameSubmitterActionEnum.SKIP) {
+		if (sameAction == SameSubmitterActionEnum.SKIP) {
 			// 如果配置了审批人和提审人相同, 自动跳过 (会签, 依次审批 生成的提审人待办需直接同意, 或签和单人审批已在流程执行的时候处理过)
 			switch (multiMode) {
 				case SEQUENTIAL -> {
@@ -1276,5 +1287,63 @@ public class ApprovalActionService {
 			paramMap.put("name", resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId()));
 			commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL, NotificationConstants.Event.APPROVAL_TODO, paramMap, instance.getSubmitterId(), currentOrgId, approvers, true);
 		}
+	}
+
+	/**
+	 * 刷新用户禁用/删除时的审批待办任务
+	 * <p>
+	 * 当用户被禁用或删除时，将该用户作为审批人的待办任务转移给上级，如果上级不存在则转移给admin
+	 *
+	 * @param userId         被禁用/删除的用户ID
+	 * @param organizationId 组织ID
+	 */
+	public void refreshApprovingTasksForDisabledUser(String userId, String organizationId) {
+		if (StringUtils.isBlank(userId) || StringUtils.isBlank(organizationId)) {
+			return;
+		}
+
+		try {
+			// 查询该用户作为审批人且状态为待处理的待办任务
+			LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
+			taskWrapper.eq(ApprovalTask::getApproverId, userId)
+					.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING.name());
+			List<ApprovalTask> approvingTasks = approvalTaskMapper.selectListByLambda(taskWrapper);
+			if (CollectionUtils.isEmpty(approvingTasks)) {
+				return;
+			}
+
+			// 批量更新待办任务的审批人
+			String targetApprover = getTargetApproverId(userId, organizationId);
+			for (ApprovalTask task : approvingTasks) {
+				task.setApproverId(targetApprover);
+				task.setUpdateTime(System.currentTimeMillis());
+				approvalTaskMapper.updateById(task);
+			}
+
+			log.info("用户 {} 被禁用/删除，转移待办任务给 {}", userId, targetApprover);
+		} catch (Exception e) {
+			log.error("转移待办任务失败, error:{}", e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * 获取目标审批人ID
+	 * 优先使用用户的上级，如果上级不存在或不可用，则使用admin用户
+	 *
+	 * @param userId         用户ID
+	 * @param organizationId 组织ID
+	 * @return 目标审批人ID
+	 */
+	private String getTargetApproverId(String userId, String organizationId) {
+		// 尝试获取用户的上级
+		OrganizationUser criteria = new OrganizationUser();
+		criteria.setUserId(userId);
+		criteria.setOrganizationId(organizationId);
+		OrganizationUser orgUser = organizationUserMapper.selectOne(criteria);
+
+		if (orgUser != null && StringUtils.isNotBlank(orgUser.getSupervisorId())) {
+			return orgUser.getSupervisorId();
+		}
+		return InternalUser.ADMIN.getValue();
 	}
 }
