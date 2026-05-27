@@ -4,6 +4,7 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportFieldParam;
 import cn.cordys.common.dto.FieldExportMeta;
+import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseExportService;
@@ -13,6 +14,7 @@ import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
+import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
 import cn.cordys.crm.system.excel.domain.MergeResult;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.registry.ExportThreadRegistry;
@@ -45,6 +47,8 @@ public class ContractExportService extends BaseExportService {
     private ApprovalFlowService approvalFlowService;
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    @Resource
+    private ExtContractStageConfigMapper extContractStageConfigMapper;
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
@@ -55,7 +59,14 @@ public class ContractExportService extends BaseExportService {
         var dataList = contractService.buildList(exportList, exportParam.getOrgId());
         moduleFormService.getBaseModuleFieldValues(dataList, ContractListResponse::getModuleFields);
         var exportFieldParam = exportParam.getExportFieldParam();
-        return parallelBuildMergeResult(taskId, exportParam, dataList, exportFieldParam);
+        Map<String, String> stageConfigMap =
+                extContractStageConfigMapper.getStageConfigList(exportParam.getOrgId())
+                        .stream()
+                        .collect(Collectors.toMap(
+                                StageConfigResponse::getId,
+                                StageConfigResponse::getName
+                        ));
+        return parallelBuildMergeResult(taskId, exportParam, dataList, exportFieldParam, stageConfigMap);
     }
 
     private List<ContractListResponse> collectExportList(ExportDTO exportParam) {
@@ -78,7 +89,7 @@ public class ContractExportService extends BaseExportService {
      * 根据审批流状态权限过滤可导出的数据
      *
      * @param exportList 原始导出数据列表
-     * @param orgId    组织ID
+     * @param orgId      组织ID
      * @return 过滤后可导出的数据列表
      */
     private List<ContractListResponse> filterExportPermission(List<ContractListResponse> exportList, String orgId) {
@@ -94,12 +105,11 @@ public class ContractExportService extends BaseExportService {
      * @param exportParam      导出参数
      * @param dataList         数据列表
      * @param exportFieldParam 导出字段参数
-     *
      * @return 合并结果
      */
     private MergeResult parallelBuildMergeResult(String taskId, ExportDTO exportParam,
                                                  List<ContractListResponse> dataList,
-                                                 ExportFieldParam exportFieldParam) {
+                                                 ExportFieldParam exportFieldParam, Map<String, String> stageConfigMap) {
         int size = dataList.size();
         var cacheMap = new ConcurrentHashMap<>();
         List<List<Object>> mergeRowData = new ArrayList<>(size);
@@ -118,7 +128,7 @@ public class ContractExportService extends BaseExportService {
                 // 获取数据库访问许可
                 dbSemaphore.acquire();
                 try {
-                    List<List<Object>> buildData = buildData(detail, exportFieldParam, exportParam.getExportMetas(), cacheMap);
+                    List<List<Object>> buildData = buildData(detail, exportFieldParam, exportParam.getExportMetas(), cacheMap, stageConfigMap);
                     return Pair.of(idx, buildData);
                 } finally {
                     dbSemaphore.release();  // 确保释放
@@ -157,11 +167,11 @@ public class ContractExportService extends BaseExportService {
                 .build();
     }
 
-    private List<List<Object>> buildData(ContractListResponse detail, ExportFieldParam exportFieldParam, List<FieldExportMeta> exportMetas, Map<Object, Object> cacheMap) {
-        return buildDataWithSub(detail.getModuleFields(), exportFieldParam, exportMetas, getSystemFieldMap(detail, exportMetas), cacheMap);
+    private List<List<Object>> buildData(ContractListResponse detail, ExportFieldParam exportFieldParam, List<FieldExportMeta> exportMetas, Map<Object, Object> cacheMap, Map<String, String> stageConfigMap) {
+        return buildDataWithSub(detail.getModuleFields(), exportFieldParam, exportMetas, getSystemFieldMap(detail, exportMetas, stageConfigMap), cacheMap);
     }
 
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractListResponse data, List<FieldExportMeta> exportMetas) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractListResponse data, List<FieldExportMeta> exportMetas, Map<String, String> stageConfigMap) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("owner", data.getOwnerName());
@@ -175,7 +185,7 @@ public class ContractExportService extends BaseExportService {
             systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), Locale.SIMPLIFIED_CHINESE));
         }
         if (StringUtils.isNotBlank(data.getStage())) {
-            systemFieldMap.put("stage", Translator.get("contract.stage." + data.getStage().toLowerCase(), Locale.SIMPLIFIED_CHINESE));
+            systemFieldMap.put("stage", stageConfigMap.get(data.getStage()));
         }
 
         systemFieldMap.put("createUser", data.getCreateUserName());
