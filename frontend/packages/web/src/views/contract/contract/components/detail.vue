@@ -75,42 +75,40 @@
             </template>
           </CrmApprovalDetail>
         </div>
-        <template v-if="activeTab === 'payment'">
+        <div v-if="activeTab === 'payment'" class="h-full p-[24px]">
           <PaymentTable
             :form-key="FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT"
             :sourceId="props.sourceId"
             :sourceName="title"
             isContractTab
-            :readonly="getReadonlyPayment"
           />
-        </template>
-        <template v-if="activeTab === 'paymentRecord'">
+        </div>
+        <div v-if="activeTab === 'paymentRecord'" class="h-full p-[24px]">
           <PaymentRecordTable
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
             :sourceId="props.sourceId"
             :sourceName="title"
             isContractTab
-            :readonly="getReadonlyPayment"
             @refresh="handleSaved()"
           />
-        </template>
-        <InvoiceTable
-          v-if="activeTab === 'invoice'"
-          :sourceId="props.sourceId"
-          :sourceName="title"
-          is-contract-tab
-          :readonly="getReadonlyInvoice"
-          @open-business-title-drawer="showBusinessTitleDetail"
-        />
-        <OrderTable
-          v-if="activeTab === 'order'"
-          :formKey="FormDesignKeyEnum.CONTRACT_ORDER"
-          :sourceId="props.sourceId"
-          :sourceName="title"
-          is-contract-tab
-          :readonly="getReadonlyInvoice"
-          @open-customer-drawer="emit('showCustomerDrawer', $event)"
-        />
+        </div>
+        <div v-if="activeTab === 'invoice'" class="h-full p-[24px]">
+          <InvoiceTable
+            :sourceId="props.sourceId"
+            :sourceName="title"
+            is-contract-tab
+            @open-business-title-drawer="showBusinessTitleDetail"
+          />
+        </div>
+        <div v-if="activeTab === 'order'" class="h-full p-[24px]">
+          <OrderTable
+            :formKey="FormDesignKeyEnum.CONTRACT_ORDER"
+            :sourceId="props.sourceId"
+            :sourceName="title"
+            is-contract-tab
+            @open-customer-drawer="emit('showCustomerDrawer', $event)"
+          />
+        </div>
       </CrmCard>
     </div>
     <CrmFormCreateDrawer
@@ -434,25 +432,6 @@
       id: params.id,
     };
   }
-
-  const getReadonlyInvoice = computed(() => {
-    const contractIsVoidOrArchived =
-      detailInfo.value?.stage === ContractStatusEnum.VOID || detailInfo.value?.stage === ContractStatusEnum.ARCHIVED;
-    if (enableApproval.value) {
-      return contractIsVoidOrArchived || detailInfo.value?.approvalStatus !== ProcessStatusEnum.APPROVED;
-    }
-    return contractIsVoidOrArchived;
-  });
-
-  const getReadonlyPayment = computed(() => {
-    if (enableApproval.value) {
-      return (
-        detailInfo.value?.stage === ContractStatusEnum.VOID ||
-        detailInfo.value?.approvalStatus === ProcessStatusEnum.APPROVING
-      );
-    }
-    return detailInfo.value?.stage === ContractStatusEnum.VOID;
-  });
 
   async function handleButtonClick(actionKey: string) {
     switch (actionKey) {

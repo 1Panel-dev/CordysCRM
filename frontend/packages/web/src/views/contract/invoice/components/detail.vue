@@ -30,7 +30,7 @@
       </CrmOperationButton>
     </template>
     <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
-      <CrmCard hide-footer>
+      <CrmCard no-content-padding auto-height hide-footer>
         <div class="flex-1">
           <CrmApprovalDetail
             :form-key="FormDesignKeyEnum.INVOICE"

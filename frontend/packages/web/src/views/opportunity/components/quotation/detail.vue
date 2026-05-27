@@ -52,7 +52,6 @@
           label-width="auto"
           value-align="start"
           tooltip-position="top-start"
-          class="p-[16px]"
           :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_QUOTATION:UPDATE'])"
           @init="handleInit"
         />
