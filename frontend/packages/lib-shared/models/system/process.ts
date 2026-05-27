@@ -225,7 +225,7 @@ export interface ApprovalTodoItem {
   approvalFlowVersionId: string;
   resourceId: string;
   resourceName: string;
-  resourceType: string;
+  resourceType: ApprovalResourceTypeEnum;
   applicant: string;
   submitTime: number;
   approvalOperation: ApprovalOperationEnum;
