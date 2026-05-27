@@ -220,4 +220,9 @@
         set sign_task_id = #{newRootId}
         where sign_task_id = #{oldRootId}
     </update>
+
+    <update id="updateApprover" parameterType="java.lang.String">
+        update approval_task
+        set approver_id = #{approverId}, update_time = UNIX_TIMESTAMP() * 1000
+    </update>
 </mapper>

@@ -57,4 +57,6 @@ public interface ExtApprovalTaskMapper {
 	 * @param newRootId 新的根节点ID
 	 */
 	void updateRootNext(@Param("oldRootId") String oldRootId, @Param("newRootId") String newRootId);
+
+    void updateApprover(@Param("approverId")String approverId);
 }
