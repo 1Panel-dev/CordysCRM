@@ -35,6 +35,7 @@ import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.order.domain.Order;
@@ -103,6 +104,8 @@ public class OrderService {
     private LogService logService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private ApprovalResourceService approvalResourceService;
     @Resource
     private ExtOrderStageConfigMapper extOrderStageConfigMapper;
     @Resource
@@ -758,6 +761,8 @@ public class OrderService {
         if (CollectionUtils.isEmpty(permittedIds)) {
             return;
         }
+
+            approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.ORDER, orgId);
 
         List<Order> permittedOrders = originOrders.stream()
                 .filter(o -> permittedIds.contains(o.getId()))

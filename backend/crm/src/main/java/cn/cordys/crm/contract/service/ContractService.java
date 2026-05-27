@@ -33,6 +33,7 @@ import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.*;
@@ -67,7 +68,6 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.data.util.ReflectionUtils;
@@ -120,6 +120,8 @@ public class ContractService {
     private ExtContractStageConfigMapper extContractStageConfigMapper;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private ApprovalResourceService approvalResourceService;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
@@ -866,7 +868,7 @@ public class ContractService {
         if (CollectionUtils.isEmpty(permittedIds)) {
             return;
         }
-
+            approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.CONTRACT, organizationId);
         List<Contract> permittedContracts = originContracts.stream()
                 .filter(c -> permittedIds.contains(c.getId()))
                 .collect(Collectors.toList());
