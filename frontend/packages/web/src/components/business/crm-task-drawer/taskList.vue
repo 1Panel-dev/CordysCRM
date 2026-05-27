@@ -33,6 +33,7 @@
                   <CrmApprovalStatus :status="item.dataResult" isTag scene="approvalRecord" />
                 </div>
                 <CrmTableButton
+                  v-if="!props.activeTaskType.includes('copied')"
                   type="primary"
                   text
                   size="small"
@@ -42,6 +43,23 @@
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
                 </CrmTableButton>
+                <CrmTableButton
+                  v-else-if="getResourcePermission(item)"
+                  type="primary"
+                  text
+                  size="small"
+                  class="text-[14px]"
+                  @click="emit('openDetail', item.resourceId, item.approvalFlowId)"
+                >
+                  {{ item.resourceName }}
+                  <template #trigger> {{ item.resourceName }} </template>
+                </CrmTableButton>
+                <n-tooltip v-else trigger="hover">
+                  <template #trigger>
+                    {{ item.resourceName }}
+                  </template>
+                  {{ item.resourceName }}
+                </n-tooltip>
               </div>
               <div class="flex w-full items-center justify-between">
                 <div class="flex gap-[24px]">
@@ -85,7 +103,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NCheckbox, NCheckboxGroup, NSpin } from 'naive-ui';
+  import { NButton, NCheckbox, NCheckboxGroup, NSpin, NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { ApprovalListTypeEnum, ApprovalOperationEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
@@ -104,6 +122,7 @@
     getPendingApprovalList,
     getProcessedApprovalList,
   } from '@/api/modules/index';
+  import { hasAnyPermission } from '@/utils/permission.js';
 
   const { t } = useI18n();
 
@@ -252,6 +271,21 @@
           textColor: 'var(--text-n1)',
           borderColor: 'var(--text-n7)',
         };
+    }
+  }
+
+  function getResourcePermission(item: ApprovalTodoItem) {
+    switch (item.resourceType) {
+      case ApprovalResourceTypeEnum.CONTRACT:
+        return hasAnyPermission(['CONTRACT:READ']);
+      case ApprovalResourceTypeEnum.INVOICE:
+        return hasAnyPermission(['CONTRACT_INVOICE:READ']);
+      case ApprovalResourceTypeEnum.ORDER:
+        return hasAnyPermission(['ORDER:READ']);
+      case ApprovalResourceTypeEnum.QUOTATION:
+        return hasAnyPermission(['OPPORTUNITY_QUOTATION:READ']);
+      default:
+        return false;
     }
   }
 
