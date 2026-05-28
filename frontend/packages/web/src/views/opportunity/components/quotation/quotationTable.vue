@@ -74,6 +74,7 @@
     v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
+    :show-approval-tip="batchEditApprovalTip"
     @refresh="handleRefresh"
   />
 
@@ -204,13 +205,15 @@
     handleRefresh();
   }
 
+  const batchVoidApprovalContentTip = ref('');
   // 批量作废
   function handleBatchVoid() {
     batchOperationName.value = t('common.batchVoid');
+    const content = `${batchVoidApprovalContentTip.value} ${t('opportunity.quotation.invalidContentTip')}`;
     openModal({
       type: 'error',
       title: t('opportunity.quotation.batchInvalidTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('opportunity.quotation.invalidContentTip'),
+      content,
       positiveText: t('common.confirmVoid'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
@@ -332,18 +335,38 @@
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id });
   }
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
-    useApprovalOperation<QuotationItem>({
-      formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
-      dataActionMap: quotationDataActionMap,
-      shouldUseRolePermissionOnly: (row) => row.invalid,
-      specialActionFilter: (row, actionKeys) => {
-        if (row.invalid) {
-          return actionKeys.filter((key) => key === 'delete');
-        }
-        return actionKeys;
-      },
-    });
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+  } = useApprovalOperation<QuotationItem>({
+    formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+    dataActionMap: quotationDataActionMap,
+    shouldUseRolePermissionOnly: (row) => row.invalid,
+    specialActionFilter: (row, actionKeys) => {
+      if (row.invalid) {
+        return actionKeys.filter((key) => key === 'delete');
+      }
+      return actionKeys;
+    },
+  });
+
+  const batchEditApprovalTip = computed(() =>
+    getApprovalActionTip(['OPPORTUNITY_QUOTATION:UPDATE'], 'common.batchEditApprovalTip')
+  );
+
+  const batchVoidApprovalTip = computed(() =>
+    getApprovalActionTip(['OPPORTUNITY_QUOTATION:VOIDED'], 'common.batchVoidApprovalTip')
+  );
+
+  watch(
+    () => batchVoidApprovalTip.value,
+    (val) => {
+      batchVoidApprovalContentTip.value = val ? `${val}，` : val;
+    }
+  );
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,

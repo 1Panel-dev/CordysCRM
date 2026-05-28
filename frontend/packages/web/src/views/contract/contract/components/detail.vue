@@ -269,7 +269,21 @@
         isApplicant: (row, currentUserId) => row.createUser === currentUserId,
       },
       specialActionFilter: (row, actionKeys) => {
-        return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
+        if (row.stage !== ContractStatusEnum.VOID) {
+          return actionKeys;
+        }
+
+        return actionKeys.filter((key) => {
+          if (key === 'paymentRecord') {
+            return false;
+          }
+
+          if (!enableApproval.value && key === 'edit') {
+            return false;
+          }
+
+          return true;
+        });
       },
     });
 

@@ -9,6 +9,12 @@
     @confirm="handleSave"
     @cancel="handleCancel"
   >
+    <n-alert v-if="props.showApprovalTip" type="warning" class="mb-[16px] mr-[8px]">
+      <template #icon>
+        <CrmIcon type="iconicon_info_circle_filled" :size="20" />
+      </template>
+      {{ props.showApprovalTip }}
+    </n-alert>
     <n-scrollbar class="max-h-[60vh] pr-[8px]">
       <n-form
         ref="formRef"
@@ -157,7 +163,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, NForm, NFormItem, NInput, NScrollbar, NSelect, useMessage } from 'naive-ui';
+  import { FormInst, NAlert, NForm, NFormItem, NInput, NScrollbar, NSelect, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -165,6 +171,7 @@
   import { getNormalFieldValue, getRuleType } from '@lib/shared/method/formCreate';
   import { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   // 高级组件
   import dataSource from '@/components/business/crm-form-create/components/advanced/dataSource.vue';
@@ -219,6 +226,7 @@
       | FormDesignKeyEnum.CONTRACT
       | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
       | FormDesignKeyEnum.ORDER;
+    showApprovalTip?: string;
   }>();
 
   const emit = defineEmits<{

@@ -239,7 +239,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return processStatusOptions.find((item) => item.value === status)?.label || '-';
   }
 
-  function getExportApprovalTip(permissions: string[]) {
+  function getApprovalActionTip(permissions: string[], tipKey: string) {
     if (!enableApproval.value || !approvalPermissionsDetail.value || !hasAnyPermission(permissions)) {
       return '';
     }
@@ -252,7 +252,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
     const statusLabels = allowedStatuses.map(getApprovalStatusLabel).join('、');
 
-    return statusLabels ? t('common.exportApprovalTip', { statuses: statusLabels }) : '';
+    return statusLabels ? t(tipKey, { statuses: statusLabels }) : '';
   }
 
   // 获取对应数据权限是否允许操作
@@ -348,7 +348,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     resolveRowOperation,
     hasApprovalScopedPermission,
     getAllowedStatuses,
-    getExportApprovalTip,
+    getApprovalActionTip,
     approvalPermissionsDetail,
     statusPermissionMap,
     getApprovalStatus,

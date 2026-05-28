@@ -127,6 +127,7 @@
     v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.ORDER"
+    :show-approval-tip="batchEditApprovalTip"
     @refresh="handleRefresh"
   />
 </template>
@@ -315,18 +316,24 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
-    useApprovalOperation<OrderItem>({
-      formType: FormDesignKeyEnum.ORDER,
-      dataActionMap: orderDataActionMap,
-      specialActionFilter: (row, actionKeys) => {
-        return props.readonly ? [] : actionKeys;
-      },
-    });
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+  } = useApprovalOperation<OrderItem>({
+    formType: FormDesignKeyEnum.ORDER,
+    dataActionMap: orderDataActionMap,
+    specialActionFilter: (row, actionKeys) => {
+      return props.readonly ? [] : actionKeys;
+    },
+  });
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.ORDER,
   });
+  const batchEditApprovalTip = computed(() => getApprovalActionTip(['ORDER:UPDATE'], 'common.batchEditApprovalTip'));
 
   function showDetail(row: OrderItem) {
     if (row && !hasApprovalScopedPermission(row, ['ORDER:READ'])) {

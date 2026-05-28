@@ -371,4 +371,6 @@ export default {
   'common.SEQUENTIAL_APPROVAL': '依次审批',
   'common.copyTo': '抄送人',
   'common.exportApprovalTip': '仅支持导出审批状态为 {statuses} 的数据',
+  'common.batchEditApprovalTip': '仅支持批量编辑审批状态为 {statuses} 的数据',
+  'common.batchVoidApprovalTip': '仅支持批量作废审批状态为 {statuses} 的数据',
 };
