@@ -118,13 +118,13 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import batchOperationResultModal from '@/components/business/crm-batch-edit-modal/components/batchOperationResultModal.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import OptOverviewDrawer from '../optOverviewDrawer.vue';
   import approvalModal from './approvalModal.vue';
-  import batchOperationResultModal from './batchOperationResultModal.vue';
   import detailDrawer from './detail.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
