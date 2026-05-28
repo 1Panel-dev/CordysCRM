@@ -46,35 +46,33 @@
         @load-detail="handleSaved()"
       />
       <CrmCard contentHeight="100%" hide-footer :special-height="122" no-content-padding>
-        <div class="flex-1">
-          <CrmApprovalDetail
-            :form-key="FormDesignKeyEnum.ORDER"
-            :source-id="props.sourceId"
-            :approval-status="detailInfo?.approvalStatus"
-            @saveApproval="handleSaveApproval"
-          >
-            <template #left="{ fieldPermissions }">
-              <CrmFormDescription
-                ref="formDescriptionRef"
-                :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
-                :source-id="props.sourceId"
-                :column="2"
-                :refresh-key="refreshKey"
-                :fieldPermissions="fieldPermissions"
-                :otherSaveParams="{
-                  updateType: 'approval',
-                }"
-                label-width="auto"
-                value-align="start"
-                tooltip-position="top-start"
-                :readonly="!hasAnyPermission(['ORDER:UPDATE'])"
-                @init="handleInit"
-                @open-contract-detail="handleOpenContractDrawer"
-                @open-customer-detail="handleOpenCustomerDrawer"
-              />
-            </template>
-          </CrmApprovalDetail>
-        </div>
+        <CrmApprovalDetail
+          :form-key="FormDesignKeyEnum.ORDER"
+          :source-id="props.sourceId"
+          :approval-status="detailInfo?.approvalStatus"
+          @saveApproval="handleSaveApproval"
+        >
+          <template #left="{ fieldPermissions }">
+            <CrmFormDescription
+              ref="formDescriptionRef"
+              :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
+              :source-id="props.sourceId"
+              :column="2"
+              :refresh-key="refreshKey"
+              :fieldPermissions="fieldPermissions"
+              :otherSaveParams="{
+                updateType: 'approval',
+              }"
+              label-width="auto"
+              value-align="start"
+              tooltip-position="top-start"
+              :readonly="!hasAnyPermission(['ORDER:UPDATE'])"
+              @init="handleInit"
+              @open-contract-detail="handleOpenContractDrawer"
+              @open-customer-detail="handleOpenCustomerDrawer"
+            />
+          </template>
+        </CrmApprovalDetail>
       </CrmCard>
     </div>
 
