@@ -34,7 +34,7 @@ export interface DataSourceFilterItem {
   rightFieldId: string | undefined; // 右侧字段id
   rightFieldCustom?: boolean; // 右侧是否为自定义值
   rightFieldCustomValue: any; // 右侧自定义值
-  rightFieldType: FieldTypeEnum; // 右侧字段类型
+  rightFieldType: FieldTypeEnum; // 右侧字段类型，审批状态是系统内置特殊字段
   selectedRows?: InternalRowData[];
   selectedUserList?: SelectedUsersItem[];
 }

@@ -723,7 +723,7 @@ export const rules: FormCreateFieldRule[] = [
   },
 ];
 
-export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
+export const showRulesMap: Partial<Record<FieldTypeEnum, FieldRuleEnum[]>> = {
   [FieldTypeEnum.INPUT]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
   [FieldTypeEnum.TEXTAREA]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.INPUT_NUMBER]: [FieldRuleEnum.REQUIRED],
