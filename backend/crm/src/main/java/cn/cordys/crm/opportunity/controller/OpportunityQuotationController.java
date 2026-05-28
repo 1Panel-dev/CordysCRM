@@ -140,8 +140,8 @@ public class OpportunityQuotationController {
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE)
     @Operation(summary = "批量更新报价单")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        opportunityQuotationService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        return opportunityQuotationService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     //删除报价单
