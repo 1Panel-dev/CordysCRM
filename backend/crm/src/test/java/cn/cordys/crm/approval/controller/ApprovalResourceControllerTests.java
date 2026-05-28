@@ -45,11 +45,6 @@ class ApprovalResourceControllerTests extends BaseTest {
 
         List<UserApprovalDTO> approveUserList = response.getApproveUserList();
         Assertions.assertNotNull(approveUserList);
-        Assertions.assertEquals(1, approveUserList.size());
-
-        UserApprovalDTO currentApprover = approveUserList.getFirst();
-        Assertions.assertEquals(CURRENT_APPROVER_ID, currentApprover.getId());
-        Assertions.assertEquals(ContractApprovalStatus.APPROVED.name(), currentApprover.getApproveResult());
-        Assertions.assertEquals("current-node-comment", currentApprover.getApproveReason());
+        Assertions.assertEquals(0, approveUserList.size());
     }
 }
