@@ -6,6 +6,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
+import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
@@ -52,7 +53,9 @@ public class ClueFollowPlanController {
     @Operation(summary = "线索跟进计划列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
-        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CLUE", "CLUE", null);
+        CustomerDataDTO customerData = followUpPlanService.getCustomerPermission(SessionUtils.getUserId(),
+                request.getSourceId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CLUE", "CLUE", customerData);
     }
 
 
