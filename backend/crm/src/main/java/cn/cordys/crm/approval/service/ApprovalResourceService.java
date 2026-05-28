@@ -107,6 +107,7 @@ public class ApprovalResourceService {
         // 只查询当前实例当前节点对应的审批任务。
         LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
         taskWrapper.eq(ApprovalTask::getInstanceId, latestInstance.getId())
+				.eq(ApprovalTask::getStatus, ApprovalStatus.UNAPPROVED.name())
                 .eq(ApprovalTask::getNodeId, latestInstance.getCurrentNodeId());
         List<ApprovalTask> tasks = approvalTaskMapper.selectListByLambda(taskWrapper);
 		LambdaQueryWrapper<ApprovalRecord> autoRecordWrapper = new LambdaQueryWrapper<>();
