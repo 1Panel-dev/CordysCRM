@@ -1300,7 +1300,7 @@ public class ApprovalActionService {
 	 * @param organizationId 组织ID
 	 */
 	public void refreshApprovingTasksForDisabledUser(List<String> userIds, String organizationId) {
-		if (CollectionUtils.isNotEmpty(userIds) || StringUtils.isBlank(organizationId)) {
+		if (CollectionUtils.isEmpty(userIds) || StringUtils.isBlank(organizationId)) {
 			return;
 		}
 
