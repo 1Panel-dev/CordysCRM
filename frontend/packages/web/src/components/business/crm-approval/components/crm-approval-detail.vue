@@ -239,7 +239,7 @@
       detail?: Record<string, any>,
       config?: FormConfig
     ): void;
-    (e: 'saveApproval', callback: () => void, hasFieldPermission: boolean): void;
+    (e: 'saveApproval', callback: () => Promise<any>, hasFieldPermission: boolean): void;
     (e: 'refresh'): void;
   }>();
 

@@ -470,17 +470,17 @@
   }
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
-  function handleSaveApproval(callback: () => void, hasFieldPermission: boolean) {
+  async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
     if (hasFieldPermission) {
-      formDescriptionRef.value?.handleFormChange(() => {
+      formDescriptionRef.value?.handleFormChange(async () => {
+        await callback();
         refreshKey.value += 1;
         emit('refresh');
-        callback();
       });
     } else {
+      await callback();
       refreshKey.value += 1;
       emit('refresh');
-      callback();
     }
   }
 
