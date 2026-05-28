@@ -359,4 +359,6 @@ export default {
   'common.SEQUENTIAL_APPROVAL': 'Sequential Approval',
   'common.copyTo': 'Copy to',
   'common.exportApprovalTip': 'Only data with approval statuses {statuses} can be exported',
+  'common.batchEditApprovalTip': 'Only data with approval statuses {statuses} can be batch edited',
+  'common.batchVoidApprovalTip': 'Only data with approval statuses {statuses} can be batch voided',
 };

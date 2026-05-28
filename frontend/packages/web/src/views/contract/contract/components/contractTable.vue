@@ -155,6 +155,7 @@
     v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.CONTRACT"
+    :show-approval-tip="batchEditApprovalTip"
     @refresh="handleRefresh"
   />
 </template>
@@ -397,12 +398,26 @@
     resolveRowOperation,
     enableApproval,
     hasApprovalScopedPermission,
-    getExportApprovalTip,
+    getApprovalActionTip,
   } = useApprovalOperation<ContractItem>({
     formType: FormDesignKeyEnum.CONTRACT,
     dataActionMap: createContractDataActionMap,
     specialActionFilter: (row, actionKeys) => {
-      return row.stage === ContractStatusEnum.VOID ? actionKeys.filter((key) => key !== 'paymentRecord') : actionKeys;
+      if (row.stage !== ContractStatusEnum.VOID) {
+        return actionKeys;
+      }
+
+      return actionKeys.filter((key) => {
+        if (key === 'paymentRecord') {
+          return false;
+        }
+
+        if (!enableApproval.value && key === 'edit') {
+          return false;
+        }
+
+        return true;
+      });
     },
   });
 
@@ -690,7 +705,8 @@
     };
   });
 
-  const exportApprovalTip = computed(() => getExportApprovalTip(['CONTRACT:EXPORT']));
+  const exportApprovalTip = computed(() => getApprovalActionTip(['CONTRACT:EXPORT'], 'common.exportApprovalTip'));
+  const batchEditApprovalTip = computed(() => getApprovalActionTip(['CONTRACT:UPDATE'], 'common.batchEditApprovalTip'));
 
   const actionConfig = computed(() => {
     return {

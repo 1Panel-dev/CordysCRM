@@ -299,7 +299,7 @@
     resolveRowOperation,
     enableApproval,
     hasApprovalScopedPermission,
-    getExportApprovalTip,
+    getApprovalActionTip,
   } = useApprovalOperation<ContractInvoiceItem>({
     formType: FormDesignKeyEnum.INVOICE,
     dataActionMap: invoiceDataActionMap,
@@ -486,7 +486,9 @@
     };
   });
 
-  const exportApprovalTip = computed(() => getExportApprovalTip(['CONTRACT_INVOICE:EXPORT']));
+  const exportApprovalTip = computed(() =>
+    getApprovalActionTip(['CONTRACT_INVOICE:EXPORT'], 'common.exportApprovalTip')
+  );
 
   // 表格
   const filterConfigList = computed<FilterFormItem[]>(() => [
