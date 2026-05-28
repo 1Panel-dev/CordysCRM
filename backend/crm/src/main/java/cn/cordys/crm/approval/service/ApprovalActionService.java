@@ -401,7 +401,7 @@ public class ApprovalActionService {
 					.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVING.name()).nq(ApprovalTask::getType, ApprovalTaskType.CC);
 			List<ApprovalTask> approvingTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
 			if (approvingTasks.isEmpty()) {
-				List<String> autoSkipUserIds = approvalFlowService.getFlowAutoSkipUser(instance, currentTask.getNodeId(), currentTask.getApproverId());
+				List<String> autoSkipUserIds = approvalFlowService.getFlowAutoSkipUser(instance, currentTask.getNodeId(), List.of(currentTask.getApproverId()));
 				SameSubmitterActionEnum sameAction = SameSubmitterActionEnum.valueOf(nodeApprover.getSameSubmitterAction());
 				// 如果依次审批的节点存在跳过的情况, 一直往后取
 				int seq = 0;
@@ -1041,7 +1041,7 @@ public class ApprovalActionService {
 			return approvalTasks;
 		}
 		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instance.getId(), nodeId);
-		List<String> autoSkipUser = approvalFlowService.getFlowAutoSkipUser(instance, nodeId, preApproverId);
+		List<String> autoSkipUser = preApproverId == null ? new ArrayList<>() : approvalFlowService.getFlowAutoSkipUser(instance, nodeId, List.of(preApproverId));
 		if (sameAction == SameSubmitterActionEnum.SKIP) {
 			// 如果配置了审批人和提审人相同, 自动跳过 (会签, 依次审批 生成的提审人待办需直接同意, 或签和单人审批已在流程执行的时候处理过)
 			switch (multiMode) {
@@ -1320,7 +1320,7 @@ public class ApprovalActionService {
 
 
             // 批量更新待办任务的审批人
-			userIds.stream().forEach(userId ->{
+			userIds.forEach(userId ->{
                 if (userTaskMaps.containsKey(userId)) {
                     String targetApprover = getTargetApproverId(userId, organizationId);
                     List<ApprovalTask> userTasks = userTaskMaps.get(userId);

@@ -1695,7 +1695,11 @@ public class ApprovalFlowService {
 			if (preview) {
 				return previewNextApproverNodeWithExceptionHandler(instance, nextNode, currentOrgId);
 			} else {
-				return handleNextApproverNodeWithExceptionHandler(instance, nextNode, fieldValues, currentOrgId);
+				Integer round = extApprovalInstanceMapper.getNodeRound(instance.getId(), nodeId);
+				List<ApprovalTask> approvedTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().eq(ApprovalTask::getInstanceId, instance.getId())
+						.eq(ApprovalTask::getNodeId, nodeId).eq(ApprovalTask::getNodeRound, round).eq(ApprovalTask::getStatus, ApprovalStatus.APPROVED));
+				List<String> preApprovers = approvedTasks.stream().map(ApprovalTask::getApproverId).toList();
+				return handleNextApproverNodeWithExceptionHandler(instance, nextNode, fieldValues, currentOrgId, preApprovers);
 			}
 		}
 		// 条件类型节点, 继续往下获取
@@ -1710,7 +1714,8 @@ public class ApprovalFlowService {
 	 * @param currentOrgId 当前组织ID
 	 * @return 下一个节点 (审批节点)
 	 */
-	private ApprovalNodeResponse handleNextApproverNodeWithExceptionHandler(ApprovalInstance instance, ApprovalNodeResponse nextNode, List<BaseModuleFieldValue> fieldValues, String currentOrgId) {
+	private ApprovalNodeResponse handleNextApproverNodeWithExceptionHandler(ApprovalInstance instance, ApprovalNodeResponse nextNode,
+																			List<BaseModuleFieldValue> fieldValues, String currentOrgId, List<String> preApprovers) {
 		ApprovalNodeApproverResponse nextApproverNode = (ApprovalNodeApproverResponse) nextNode;
 		if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_PASS) {
 			// 自动通过, 插入审批记录, 获取下一个节点
@@ -1784,7 +1789,7 @@ public class ApprovalFlowService {
 			}
 		}
 
-		return handleNextNodeDuplicateApprover(instance, nextApproverNode, fieldValues, currentOrgId);
+		return handleNextNodeDuplicateApprover(instance, nextApproverNode, fieldValues, currentOrgId, preApprovers);
 	}
 
 	/**
@@ -1795,18 +1800,17 @@ public class ApprovalFlowService {
 	 * @param currentOrgId 当前组织ID
 	 * @return 下一个节点
 	 */
-	private ApprovalNodeResponse handleNextNodeDuplicateApprover(ApprovalInstance instance, ApprovalNodeApproverResponse nextApproverNode, List<BaseModuleFieldValue> fieldValues, String currentOrgId) {
+	private ApprovalNodeResponse handleNextNodeDuplicateApprover(ApprovalInstance instance, ApprovalNodeApproverResponse nextApproverNode, List<BaseModuleFieldValue> fieldValues, String currentOrgId, List<String> preApprovers) {
 		// 重复审批人处理
 		DuplicateApproverRuleEnum duplicateApproverRuleEnum = getFlowDuplicateApproverRule(instance.getFlowVersionId());
-		if (Objects.requireNonNull(duplicateApproverRuleEnum) == DuplicateApproverRuleEnum.FIRST_ONLY) {
+		List<String> autoSkipUser = getFlowAutoSkipUser(instance, nextApproverNode.getId(), preApprovers);
+		if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.FIRST_ONLY || duplicateApproverRuleEnum == DuplicateApproverRuleEnum.SEQUENTIAL_ALL) {
 			// 仅首个节点需要审批, 后续节点自动同意 (当前节点审批人在之前在有不同的节点审批过待办任务)
-			List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>()
-					.eq(ApprovalTask::getInstanceId, instance.getId()).eq(ApprovalTask::getStatus, ApprovalStatus.APPROVED.name()).in(ApprovalTask::getApproverId, nextApproverNode.getApproverList()));
-			Optional<ApprovalTask> alreadyApproved = approvalTasks.stream().filter(task -> !Strings.CI.equals(task.getNodeId(), nextApproverNode.getId()) && task.getNodeRound() != -1).findAny();
-			if (alreadyApproved.isPresent()) {
+			Optional<String> anySkip = nextApproverNode.getApproverList().stream().filter(autoSkipUser::contains).findAny();
+			if (anySkip.isPresent()) {
 				if (nextApproverNode.getApproverList().size() == 1 || MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
 					// 如果为单人审批, 或签, 直接同意, 且流转到下一个节点
-					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), alreadyApproved.get().getApproverId());
+					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), anySkip.get());
 					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人重复出现, 后续节点自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
 					updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
 					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
@@ -1945,10 +1949,10 @@ public class ApprovalFlowService {
 	 * 获取审批流自动跳过的审批人ID集合
 	 * @param instance 审批实例
 	 * @param currentNodeId 当前节点ID
-	 * @param preApprover 上一个审批人
+	 * @param preApprovers 上一个节点的审批人集合
 	 * @return 审批人ID集合
 	 */
-	public List<String> getFlowAutoSkipUser(ApprovalInstance instance, String currentNodeId, String preApprover) {
+	public List<String> getFlowAutoSkipUser(ApprovalInstance instance, String currentNodeId, List<String> preApprovers) {
 		List<String> autoSkipUserIds = new ArrayList<>();
 		DuplicateApproverRuleEnum duplicateApproverRuleEnum = getFlowDuplicateApproverRule(instance.getFlowVersionId());
 		if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.FIRST_ONLY) {
@@ -1958,7 +1962,7 @@ public class ApprovalFlowService {
 			autoSkipUserIds = alreadyApprovedTasks.stream().filter(task -> !Strings.CI.equals(task.getNodeId(), currentNodeId) && task.getNodeRound() != -1).map(ApprovalTask::getApproverId).toList();
 		} else if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.SEQUENTIAL_ALL){
 			// 连续审批人跳过 (上一个连续审批人)
-			autoSkipUserIds.add(preApprover);
+			autoSkipUserIds.addAll(preApprovers);
 		}
 		return autoSkipUserIds;
 	}
