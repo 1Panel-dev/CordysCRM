@@ -1332,6 +1332,7 @@
     v-model:visible="showDataSourceFilterModal"
     :field-config="fieldConfig"
     :form-fields="list.filter((field) => !field.resourceFieldId)"
+    :form-key="props.formKey"
     @save="handleDataSourceFilterSave"
   />
   <DataSourceDisplayFieldModal
@@ -1467,9 +1468,11 @@
         ].includes(fieldConfig.value.type)
       ) {
         // 多选时不显示唯一性校验
-        return rule.key && showRulesMap[fieldConfig.value.type].includes(rule.key) && rule.key !== FieldRuleEnum.UNIQUE;
+        return (
+          rule.key && showRulesMap[fieldConfig.value.type]?.includes(rule.key) && rule.key !== FieldRuleEnum.UNIQUE
+        );
       }
-      return rule.key && showRulesMap[fieldConfig.value.type].includes(rule.key);
+      return rule.key && showRulesMap[fieldConfig.value.type]?.includes(rule.key);
     });
   });
 

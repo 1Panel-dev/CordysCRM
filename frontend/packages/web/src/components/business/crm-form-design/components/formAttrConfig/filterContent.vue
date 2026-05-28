@@ -211,6 +211,15 @@
                   : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
               "
             />
+            <n-select
+              v-else-if="item.leftFieldType === FieldTypeEnum.APPROVAL_STATUS"
+              v-model:value="item.rightFieldCustomValue"
+              clearable
+              :disabled="isValueDisabled(item)"
+              :placeholder="t('common.pleaseSelect')"
+              v-bind="getSelectedProps(item.leftFieldId).selectProps"
+              @update:value="valueChange"
+            />
             <n-input
               v-else
               v-model:value="item.rightFieldCustomValue"
@@ -449,9 +458,13 @@
       const currentSelectedType = field.fieldType as FieldTypeEnum;
       const currentFieldProps: Record<string, any> = {};
       if (
-        [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX].includes(
-          currentSelectedType
-        )
+        [
+          FieldTypeEnum.SELECT,
+          FieldTypeEnum.SELECT_MULTIPLE,
+          FieldTypeEnum.RADIO,
+          FieldTypeEnum.CHECKBOX,
+          FieldTypeEnum.APPROVAL_STATUS,
+        ].includes(currentSelectedType)
       ) {
         currentFieldProps.selectProps = {
           options: field.options,
