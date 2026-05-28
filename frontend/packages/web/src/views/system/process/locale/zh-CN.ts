@@ -19,7 +19,7 @@ export default {
   'process.process.autoApproval.allNode': '每个节点都需要审批',
   'process.process.approvalOpinion': '审批意见',
   'process.process.approvalRejectOpinion': '审批人同意或驳回流程时，需要填写审批意见',
-  'process.process.approvalAuthority': '审批权限',
+  'process.process.approvalAuthority': '审批状态权限',
   'process.process.approvalAuthority.batchAction': '允许审批人批量处理',
   'process.process.approvalAuthority.batchActionTip': '勾选后，审批人在处理此流程任务时，可批量处理多个任务',
   'process.process.approvalAuthority.revokable': '允许审批人撤回',
