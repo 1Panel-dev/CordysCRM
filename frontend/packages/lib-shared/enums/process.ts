@@ -48,6 +48,12 @@ export enum ApproverTypeEnum {
   ROLE = 'ROLE', // 角色
 }
 
+// 连续多级审批方向
+export enum ApprovalLevelDirectionEnum {
+  BOTTOM_UP = 'BOTTOM_UP', // 从下至上
+  TOP_DOWN = 'TOP_DOWN', // 从上至下
+}
+
 // 多人审批方式
 export enum MultiApproverModeEnum {
   ALL = 'ALL', // 会签

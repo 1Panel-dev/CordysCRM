@@ -60,6 +60,8 @@ export default {
   'process.process.flow.approverType.continuousDepartmentLeader': 'Continuous multi-level department heads',
   'process.process.flow.specifiedLevel': 'Specified level',
   'process.process.flow.specifiedEndpoint': 'Specified endpoint',
+  'process.process.flow.levelDirection.bottomUp': 'Bottom to top',
+  'process.process.flow.levelDirection.topDown': 'Top to bottom',
   'process.process.flow.approverLevel.second': 'Second-level supervisor',
   'process.process.flow.approverLevel.third': 'Third-level supervisor',
   'process.process.flow.approverLevel.fourth': 'Fourth-level supervisor',

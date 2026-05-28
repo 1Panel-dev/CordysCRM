@@ -55,6 +55,8 @@ export default {
   'process.process.flow.approverType.continuousDepartmentLeader': '连续多级部门负责人',
   'process.process.flow.specifiedLevel': '指定层级',
   'process.process.flow.specifiedEndpoint': '指定终点',
+  'process.process.flow.levelDirection.bottomUp': '从下至上',
+  'process.process.flow.levelDirection.topDown': '从上至下',
   'process.process.flow.approverLevel.second': '第二级上级',
   'process.process.flow.approverLevel.third': '第三级上级',
   'process.process.flow.approverLevel.fourth': '第四级上级',

@@ -1,4 +1,5 @@
 import {
+  ApprovalLevelDirectionEnum,
   ApprovalTypeEnum,
   EmptyApproverActionEnum,
   MultiApproverModeEnum,
@@ -37,6 +38,7 @@ export function createApprovalActionNode(approvalType: ApprovalTypeEnum = Approv
     actionType: 'approval',
     approvalType,
     approverType: null,
+    approverDirection: ApprovalLevelDirectionEnum.TOP_DOWN,
     approverList: [],
     approverSelectedList: [],
     multiApproverMode: MultiApproverModeEnum.ALL,
@@ -44,6 +46,7 @@ export function createApprovalActionNode(approvalType: ApprovalTypeEnum = Approv
     fallbackApprover: null,
     sameSubmitterAction: SameSubmitterActionEnum.SKIP,
     ccType: null,
+    ccDirection: ApprovalLevelDirectionEnum.TOP_DOWN,
     ccList: [],
     ccSelectedList: [],
   });

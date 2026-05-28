@@ -1,4 +1,4 @@
-import { ApprovalNodeTypeEnum } from '@lib/shared/enums/process';
+import { ApprovalLevelDirectionEnum, ApprovalNodeTypeEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type {
   ApprovalActionNode,
@@ -55,6 +55,7 @@ function createProcessActionNode(node: ApprovalActionNode): ApprovalProcessNode 
     nodeType: ApprovalNodeTypeEnum.APPROVER,
     approvalType: node.approvalType,
     approverType: node.approverType,
+    approverDirection: node.approverDirection,
     approverList: node.approverList ?? [],
     multiApproverMode: node.multiApproverMode,
     emptyApproverAction: node.emptyApproverAction,
@@ -62,6 +63,7 @@ function createProcessActionNode(node: ApprovalActionNode): ApprovalProcessNode 
     fallbackApproverName: node.fallbackApproverName,
     sameSubmitterAction: node.sameSubmitterAction,
     ccType: node.ccType,
+    ccDirection: node.ccDirection,
     ccList: node.ccList ?? [],
     passPostConfig: node.passPostConfig,
     rejectPostConfig: node.rejectPostConfig,
@@ -245,6 +247,7 @@ function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalAct
     description: resolveApprovalActionNodeDescription(node.approvalType, node.approverType ?? null),
     approvalType: node.approvalType,
     approverType: node.approverType ?? null,
+    approverDirection: node.approverDirection ?? ApprovalLevelDirectionEnum.TOP_DOWN,
     approverList,
     approverSelectedList: mapSelectedOptions(node.approverSelectOptions),
     multiApproverMode: node.multiApproverMode,
@@ -254,6 +257,7 @@ function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalAct
     emptyApproverSelectedList:
       fallbackApprover && node.fallbackApproverName ? [{ id: fallbackApprover, name: node.fallbackApproverName }] : [],
     ccType: node.ccType ?? null,
+    ccDirection: node.ccDirection ?? ApprovalLevelDirectionEnum.TOP_DOWN,
     ccList,
     ccSelectedList: mapSelectedOptions(node.ccSelectOptions),
     passPostConfig: node.passPostConfig,
