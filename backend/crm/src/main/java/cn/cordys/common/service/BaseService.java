@@ -749,7 +749,7 @@ public class BaseService {
 			ApprovalNodeTypeEnum nodeTypeEnum = ApprovalNodeTypeEnum.valueOf(nodeType);
 			if (nodeTypeEnum == ApprovalNodeTypeEnum.START) {
 				// 找到 START 节点，说明当前节点不是第一个审批节点
-				return false;
+				return true;
 			}
 			if (nodeTypeEnum == ApprovalNodeTypeEnum.CONDITION || nodeTypeEnum == ApprovalNodeTypeEnum.DEFAULT) {
 				// 继续往前找
