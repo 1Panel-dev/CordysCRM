@@ -76,7 +76,7 @@
                       <template #trigger>
                         <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                       </template>
-                      <div class="flex w-[400px] flex-col items-center gap-[8px]">
+                      <div class="flex max-w-[400px] flex-col items-center gap-[8px]">
                         <div class="mr-auto flex items-center gap-[8px]">
                           <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                           <div>{{ t('crm.approval.fallbackReason') }}</div>
@@ -133,8 +133,8 @@
                               {{ t('common.COUNTERSIGNATURE') }}
                             </CrmTag>
                           </template>
-                          <div class="flex w-[400px] flex-col items-center gap-[8px]">
-                            <div class="flex items-center gap-[8px]">
+                          <div class="max-w-[400px] flex-col items-center gap-[8px]">
+                            <div class="mr-auto flex items-center gap-[8px]">
                               <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                               <div>{{ t('crm.approval.addSign') }}</div>
                             </div>
