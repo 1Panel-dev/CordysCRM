@@ -1284,7 +1284,7 @@ public class ApprovalFlowService {
      * @param approverList 审批人值列表
      * @return 具体的用户列表，按照 approverList 顺序返回
      */
-    public List<User> resolveApprovers(String userId, String orgId, ApproverTypeEnum approverType, List<String> approverList) {
+    public List<User> resolveApprovers(String userId, String orgId, ApproverTypeEnum approverType, List<String> approverList, ApproverDirectionEnum direction) {
         if (StringUtils.isBlank(userId) || approverType == null || CollectionUtils.isEmpty(approverList)) {
             return List.of();
         }
@@ -1295,10 +1295,21 @@ public class ApprovalFlowService {
             case MEMBER -> resolveMemberApprovers(orgId, approverList);
             case ROLE -> resolveRoleApprovers(orgId, approverList);
             case SUPERIOR -> resolveSuperiorApprovers(orgId, currentUser, approverList);
-            case MULTIPLE_SUPERIOR -> resolveMultipleSuperiorApprovers(orgId, currentUser, approverList);
+            case MULTIPLE_SUPERIOR -> resolveMultipleSuperiorApprovers(orgId, currentUser, approverList, direction);
             case DEPT_HEAD -> resolveDeptHeadApprovers(orgId, currentUser, approverList);
-            case MULTIPLE_DEPT_HEAD -> resolveMultipleDeptHeadApprovers(orgId, currentUser, approverList);
+            case MULTIPLE_DEPT_HEAD -> resolveMultipleDeptHeadApprovers(orgId, currentUser, approverList, direction);
         };
+    }
+
+    private ApproverDirectionEnum getApproverDirection(String direction) {
+        if (StringUtils.isBlank(direction)) {
+            return ApproverDirectionEnum.BOTTOM_UP;
+        }
+        try {
+            return ApproverDirectionEnum.valueOf(direction);
+        } catch (IllegalArgumentException e) {
+            return ApproverDirectionEnum.BOTTOM_UP;
+        }
     }
 
     private OrganizationUser getOrganizationUser(String userId, String orgId) {
@@ -1391,18 +1402,21 @@ public class ApprovalFlowService {
     /**
      * 解析多级上级审批人
      */
-    private List<User> resolveMultipleSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+    private List<User> resolveMultipleSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList, ApproverDirectionEnum direction) {
 		if (currentUser == null) {
 			return List.of();
 		}
-        // 值是单选
         int approvalLevel = getValidLevel(approverList);
+        if (approvalLevel <= 0) {
+            return List.of();
+        }
 
-        List<String> userIds = new ArrayList<>();
+        // 从下往上收集所有上级
+        List<String> allSuperiorIds = new ArrayList<>();
         String currentSupervisorId = currentUser.getSupervisorId();
 
-        for (int level = 1; level <= approvalLevel && StringUtils.isNotBlank(currentSupervisorId); level++) {
-            userIds.add(currentSupervisorId);
+        while (StringUtils.isNotBlank(currentSupervisorId)) {
+            allSuperiorIds.add(currentSupervisorId);
             OrganizationUser supervisorOrgUser = getOrganizationUser(currentSupervisorId, orgId);
             if (supervisorOrgUser == null) {
                 break;
@@ -1410,11 +1424,21 @@ public class ApprovalFlowService {
             currentSupervisorId = supervisorOrgUser.getSupervisorId();
         }
 
-        if (userIds.isEmpty()) {
+        if (allSuperiorIds.isEmpty()) {
             return List.of();
         }
 
-        return resolveMemberApprovers(orgId, userIds);
+        // 根据方向截取：BOTTOM_UP 取前 approvalLevel 个；TOP_DOWN 取到从顶往下第 approvalLevel 层
+        List<String> resultIds;
+        if (direction == ApproverDirectionEnum.TOP_DOWN) {
+            int total = allSuperiorIds.size();
+            int endExclusive = Math.min(total, Math.max(1, total - approvalLevel + 1));
+            resultIds = allSuperiorIds.subList(0, endExclusive);
+        } else {
+            resultIds = allSuperiorIds.subList(0, Math.min(allSuperiorIds.size(), approvalLevel));
+        }
+
+        return resolveMemberApprovers(orgId, resultIds);
     }
 
     private Integer getValidLevel(List<String> approverList) {
@@ -1482,7 +1506,7 @@ public class ApprovalFlowService {
     /**
      * 解析多级部门的负责人审批人
      */
-    private List<User> resolveMultipleDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+    private List<User> resolveMultipleDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList, ApproverDirectionEnum direction) {
 		if (currentUser == null) {
 			return List.of();
 		}
@@ -1491,26 +1515,38 @@ public class ApprovalFlowService {
             return List.of();
         }
 
-        // 值是单选
         int approvalLevel = getValidLevel(approverList);
-
-        List<String> userIds = new ArrayList<>();
-        String currentDepartmentId = departmentId;
-
-        for (int level = 1; level <= approvalLevel && StringUtils.isNotBlank(currentDepartmentId); level++) {
-            String commanderId = getDeptCommander(orgId, currentDepartmentId);
-            if (StringUtils.isNotBlank(commanderId)) {
-                userIds.add(commanderId);
-            }
-            // 获取父部门，继续向上查找
-            currentDepartmentId = getParentDepartmentId(currentDepartmentId);
-        }
-
-        if (userIds.isEmpty()) {
+        if (approvalLevel <= 0) {
             return List.of();
         }
 
-        return resolveMemberApprovers(orgId, userIds);
+        // 从下往上收集所有部门负责人
+        List<String> allCommanderIds = new ArrayList<>();
+        String currentDepartmentId = departmentId;
+
+        while (StringUtils.isNotBlank(currentDepartmentId)) {
+            String commanderId = getDeptCommander(orgId, currentDepartmentId);
+            if (StringUtils.isNotBlank(commanderId)) {
+                allCommanderIds.add(commanderId);
+            }
+            currentDepartmentId = getParentDepartmentId(currentDepartmentId);
+        }
+
+        if (allCommanderIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 根据方向截取：BOTTOM_UP 取前 approvalLevel 个；TOP_DOWN 取到从顶往下第 approvalLevel 层
+        List<String> resultIds;
+        if (direction == ApproverDirectionEnum.TOP_DOWN) {
+            int total = allCommanderIds.size();
+            int endExclusive = Math.min(total, Math.max(1, total - approvalLevel + 1));
+            resultIds = allCommanderIds.subList(0, endExclusive);
+        } else {
+            resultIds = allCommanderIds.subList(0, Math.min(allCommanderIds.size(), approvalLevel));
+        }
+
+        return resolveMemberApprovers(orgId, resultIds);
     }
 
     /**
@@ -1533,7 +1569,7 @@ public class ApprovalFlowService {
 	 */
 	public boolean isCurrentNodeMultiApprover(String currentNodeId, String submitterId, String currentOrgId) {
 		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
-		List<User> approvers = resolveApprovers(submitterId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
+		List<User> approvers = resolveApprovers(submitterId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class), getApproverDirection(nodeApprover.getApproverDirection()));
 		return approvers.size() > 1;
 	}
 
@@ -1549,7 +1585,7 @@ public class ApprovalFlowService {
 		if (nodeApprover == null) {
 			return new ArrayList<>();
 		}
-		List<User> approvers = resolveApprovers(instance.getSubmitterId(), currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class));
+		List<User> approvers = resolveApprovers(instance.getSubmitterId(), currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class), getApproverDirection(nodeApprover.getApproverDirection()));
 		// 审批人为空时
 		if (CollectionUtils.isEmpty(approvers)) {
 			if (EmptyApproverActionEnum.valueOf(nodeApprover.getEmptyApproverAction()) != EmptyApproverActionEnum.AUTO_PASS) {
@@ -1585,8 +1621,8 @@ public class ApprovalFlowService {
 	 * @param currentOrgId 当前组织ID
 	 * @return 审批人ID集合
 	 */
-	public List<User> getCurrentNodeApproverList(String approverType, List<String> approverList, String userId, String currentOrgId) {
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList);
+	public List<User> getCurrentNodeApproverList(String approverType, List<String> approverList, String userId, String currentOrgId, String approverDirection) {
+		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList, getApproverDirection(approverDirection));
 	}
 
 	/**
@@ -1601,7 +1637,7 @@ public class ApprovalFlowService {
 		if (StringUtils.isBlank(nodeApprover.getCcType())) {
 			return new ArrayList<>();
 		}
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getCcType()), JSON.parseArray(nodeApprover.getCcList(), String.class));
+		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getCcType()), JSON.parseArray(nodeApprover.getCcList(), String.class), getApproverDirection(nodeApprover.getCcDirection()));
 	}
 
 	/**
@@ -1612,11 +1648,11 @@ public class ApprovalFlowService {
 	 * @param currentOrgId 当前组织ID
 	 * @return 抄送人ID集合
 	 */
-	public List<User> getCurrentNodeCcList(String ccType, List<String> ccList, String userId, String currentOrgId) {
+	public List<User> getCurrentNodeCcList(String ccType, List<String> ccList, String userId, String currentOrgId, String approverDirection) {
 		if (StringUtils.isBlank(ccType)) {
 			return List.of();
 		}
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(ccType), ccList);
+		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(ccType), ccList, getApproverDirection(approverDirection));
 	}
 
 	/**
@@ -1977,9 +2013,9 @@ public class ApprovalFlowService {
 		if (approverNode == null) {
 			return;
 		}
-		List<User> nextApprovers = getCurrentNodeApproverList(approverNode.getApproverType(), approverNode.getApproverList(), submitter, currentOrgId);
+		List<User> nextApprovers = getCurrentNodeApproverList(approverNode.getApproverType(), approverNode.getApproverList(), submitter, currentOrgId, approverNode.getApproverDirection());
 		approverNode.setApproverList(nextApprovers.stream().map(User::getId).distinct().collect(Collectors.toList()));
-		List<User> nextCcList = getCurrentNodeCcList(approverNode.getCcType(), approverNode.getCcList(), submitter, currentOrgId);
+		List<User> nextCcList = getCurrentNodeCcList(approverNode.getCcType(), approverNode.getCcList(), submitter, currentOrgId, approverNode.getCcDirection());
 		approverNode.setCcList(nextCcList.stream().map(User::getId).distinct().collect(Collectors.toList()));
 	}
 
