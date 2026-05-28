@@ -33,7 +33,6 @@
         </if>
         <if test="resourceType == 'CLUE'">
             AND fup.clue_id = #{request.sourceId}
-            AND fup.create_user = #{userId}
         </if>
         <if test="resourceType == 'OPPORTUNITY'">
             AND fup.opportunity_id = #{request.sourceId}
