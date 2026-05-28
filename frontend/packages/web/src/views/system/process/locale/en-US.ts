@@ -21,7 +21,7 @@ export default {
   'process.process.autoApproval.allNode': 'Each node requires approval',
   'process.process.approvalOpinion': 'Approval comments',
   'process.process.approvalRejectOpinion': 'Approver must provide comments when approving or rejecting',
-  'process.process.approvalAuthority': 'Approval permissions',
+  'process.process.approvalAuthority': 'Approval status permissions',
   'process.process.approvalAuthority.batchAction': 'Allow approver to batch process',
   'process.process.approvalAuthority.batchActionTip':
     'After checked, the approver in handling this process, can be batch processing tasks',
