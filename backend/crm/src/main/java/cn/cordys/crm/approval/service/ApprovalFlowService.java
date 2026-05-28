@@ -266,7 +266,11 @@ public class ApprovalFlowService {
 
         // 如果没有配置任何导出权限，无需过滤
         if (CollectionUtils.isEmpty(exportApprovalStatus)) {
-            return new ArrayList<>();
+            return resources.stream().filter(resource -> {
+				String status = statusGetter.apply(resource);
+						return StringUtils.isBlank(status) || Strings.CS.equals(status, ApprovalStatus.NONE.name());
+			}).map(idGetter)
+			.collect(Collectors.toList());
         }
 
 

@@ -764,7 +764,7 @@ public class ApprovalActionService {
 	private boolean isCurrentMultiNodeRejected(String currentNodeId, String instanceId) {
 		LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(ApprovalTask::getNodeId, currentNodeId)
-				.eq(ApprovalTask::getInstanceId, instanceId);
+				.eq(ApprovalTask::getInstanceId, instanceId).nq(ApprovalTask::getStatus, ApprovalStatus.PENDING);
 		List<ApprovalTask> approvalTasks = approvalTaskMapper.selectListByLambda(queryWrapper);
 		ApprovalNodeApprover nodeApprover = getNodeApprover(currentNodeId);
 		if (MultiApproverModeEnum.valueOf(nodeApprover.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
