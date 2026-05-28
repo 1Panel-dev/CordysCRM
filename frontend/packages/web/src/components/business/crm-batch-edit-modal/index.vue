@@ -159,6 +159,7 @@
       </n-form>
     </n-scrollbar>
   </CrmModal>
+  <batchOperationResultModal v-model:visible="resultVisible" :result="batchResult" :name="batchOperationName" />
 </template>
 
 <script setup lang="ts">
@@ -170,9 +171,11 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getNormalFieldValue, getRuleType } from '@lib/shared/method/formCreate';
   import { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
+  import { BatchOperationResult } from '@lib/shared/models/opportunity';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import batchOperationResultModal from '@/components/business/crm-batch-edit-modal/components/batchOperationResultModal.vue';
   // 高级组件
   import dataSource from '@/components/business/crm-form-create/components/advanced/dataSource.vue';
   import Industry from '@/components/business/crm-form-create/components/advanced/industry.vue';
@@ -239,6 +242,18 @@
   const list = defineModel<FormCreateField[]>('fieldList', {
     required: true,
   });
+
+  const resultVisible = ref(false);
+  const initBatchResult = {
+    success: 0,
+    fail: 0,
+    errorMessages: '',
+  };
+
+  const batchResult = ref<BatchOperationResult>({
+    ...initBatchResult,
+  });
+  const batchOperationName = ref(t('common.batchEdit'));
 
   const saveApiMap: Record<string, (params: BatchUpdatePoolAccountParams) => Promise<any>> = {
     [FormDesignKeyEnum.CLUE_POOL]: batchUpdateCluePool,
@@ -388,14 +403,20 @@
             // 去空格
             result.fieldValue = result.fieldValue.replace(/[\s\uFEFF\xA0]+/g, '');
           }
-          await saveApiMap[props.formKey]({
+          const res = await saveApiMap[props.formKey]({
             ids: props.ids,
             ...result,
             fieldValue: !currentForm.value.businessKey
               ? getNormalFieldValue(currentForm.value, result.fieldValue)
               : result.fieldValue ?? '',
           });
-          Message.success(t('common.updateSuccess'));
+          batchResult.value = { ...initBatchResult };
+          if (props.showApprovalTip) {
+            batchResult.value = res;
+            resultVisible.value = true;
+          } else {
+            Message.success(t('common.updateSuccess'));
+          }
           handleCancel();
           emit('refresh');
         } catch (error) {

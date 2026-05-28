@@ -183,6 +183,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import batchOperationResultModal from '@/components/business/crm-batch-edit-modal/components/batchOperationResultModal.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
@@ -195,7 +196,6 @@
   import DetailDrawer from './detail.vue';
   import VoidReasonModal from './voidReasonModal.vue';
   import ApprovalModal from '@/views/opportunity/components/quotation/approvalModal.vue';
-  import batchOperationResultModal from '@/views/opportunity/components/quotation/batchOperationResultModal.vue';
 
   import {
     batchApproveContract,

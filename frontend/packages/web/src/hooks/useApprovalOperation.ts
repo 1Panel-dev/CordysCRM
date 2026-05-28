@@ -119,26 +119,31 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   function createApprovalActions(row: Row): ActionsItem[] {
     const approvalStatus = getApprovalStatus(row);
     const reviewActionState = getReviewActionState();
+    const canReview = isApplicant(row);
 
     switch (approvalStatus) {
       case ProcessStatusEnum.PENDING:
         // 返回提审
-        return [
-          {
-            label: t('common.review'),
-            key: 'review',
-            ...reviewActionState,
-          },
-        ];
+        return canReview
+          ? [
+              {
+                label: t('common.review'),
+                key: 'review',
+                ...reviewActionState,
+              },
+            ]
+          : [];
       case ProcessStatusEnum.UNAPPROVED:
       case ProcessStatusEnum.REVOKED:
-        return [
-          {
-            label: t('common.resubmit'),
-            key: 'review',
-            ...reviewActionState,
-          },
-        ];
+        return canReview
+          ? [
+              {
+                label: t('common.resubmit'),
+                key: 'review',
+                ...reviewActionState,
+              },
+            ]
+          : [];
       case ProcessStatusEnum.APPROVING:
         return [
           ...(canRevokeWhileApproving(row)
