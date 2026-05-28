@@ -25,6 +25,7 @@ import cn.cordys.crm.order.dto.response.OrderListResponse;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
@@ -134,8 +135,8 @@ public class ContractController {
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.CONTRACT_UPDATE)
     @Operation(summary = "批量更新合同")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        contractService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        return contractService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/contract-payment-plan/page")
