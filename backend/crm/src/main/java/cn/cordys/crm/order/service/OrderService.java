@@ -55,6 +55,7 @@ import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -739,10 +740,13 @@ public class OrderService {
      * @param userId  当前用户ID
      * @param orgId   当前组织ID
      */
-    public void batchUpdate(ResourceBatchEditRequest request, String userId, String orgId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String orgId) {
         BaseField field = orderFieldService.getAndCheckField(request.getFieldId(), orgId);
         moduleFormService.setFieldBusinessParam(field);
         List<Order> originOrders = orderMapper.selectByIds(request.getIds());
+        if (CollectionUtils.isEmpty(originOrders)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0).errorMessages(Translator.get("order_not_exist")).build();
+        }
 
         // 校验状态权限，过滤出有权限操作的订单
         List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
@@ -755,7 +759,7 @@ public class OrderService {
         );
 
         if (CollectionUtils.isEmpty(permittedIds)) {
-            return;
+            return BatchAffectReasonResponse.builder().success(0).fail(originOrders.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
 
             approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.ORDER, orgId);
@@ -808,6 +812,8 @@ public class OrderService {
         if (CollectionUtils.isNotEmpty(snapshots)) {
             snapshotBaseMapper.batchInsert(snapshots);
         }
+
+        return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(originOrders.size() - permittedIds.size()).skip(0).errorMessages(Translator.get("batch.update.reason")).build();
     }
 
     public void download(String id, String userId, String organizationId) {

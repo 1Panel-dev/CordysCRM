@@ -923,7 +923,7 @@ public class ContractService {
             snapshotBaseMapper.batchInsert(snapshots);
         }
 
-        return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(originContracts.size() - permittedIds.size()).skip(0).errorMessages(Translator.get("contract.update.reason")).build();
+        return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(originContracts.size() - permittedIds.size()).skip(0).errorMessages(Translator.get("batch.update.reason")).build();
     }
 
     /**

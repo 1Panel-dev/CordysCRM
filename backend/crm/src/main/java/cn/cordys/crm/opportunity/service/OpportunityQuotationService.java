@@ -917,10 +917,13 @@ public class OpportunityQuotationService {
      * @param userId         当前用户ID
      * @param organizationId 当前组织ID
      */
-    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = opportunityQuotationFieldService.getAndCheckField(request.getFieldId(), organizationId);
         moduleFormService.setFieldBusinessParam(field);
         List<OpportunityQuotation> originQuotations = opportunityQuotationMapper.selectByIds(request.getIds());
+        if (CollectionUtils.isEmpty(originQuotations)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0).errorMessages(Translator.get("opportunity.quotation.not.exist")).build();
+        }
 
         // 校验状态权限，过滤出有权限操作的报价单
         List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
@@ -933,7 +936,7 @@ public class OpportunityQuotationService {
         );
 
         if (CollectionUtils.isEmpty(permittedIds)) {
-            return;
+            return BatchAffectReasonResponse.builder().success(0).fail(originQuotations.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
 
             approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.QUOTATION, organizationId);
@@ -1002,6 +1005,8 @@ public class OpportunityQuotationService {
         if (CollectionUtils.isNotEmpty(snapshots)) {
             snapshotBaseMapper.batchInsert(snapshots);
         }
+
+        return BatchAffectReasonResponse.builder().success(permittedIds.size()).fail(originQuotations.size() - permittedIds.size()).skip(0).errorMessages(Translator.get("batch.update.reason")).build();
     }
 
 
