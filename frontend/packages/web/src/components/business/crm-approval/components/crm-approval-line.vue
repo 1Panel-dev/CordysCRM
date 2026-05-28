@@ -101,7 +101,9 @@
               <div class="mb-[16px] mt-[2px] py-[8px] pl-0">
                 <n-collapse
                   v-if="node.taskNodes?.length"
-                  :default-expanded-names="node.taskNodes.filter((e) => e.comment).map((e) => e.taskId)"
+                  :default-expanded-names="
+                    node.taskNodes.filter((e) => e.comment || e.attachments?.length).map((e) => e.taskId)
+                  "
                 >
                   <template #arrow>
                     <div></div>
@@ -163,7 +165,7 @@
                           ProcessStatusEnum.AUTO_APPROVED,
                           ProcessStatusEnum.UNAPPROVED,
                           ProcessStatusEnum.AUTO_UNAPPROVED,
-                        ].includes(task.approvalStatus)
+                        ].includes(task.approvalStatus) && task.comment
                       "
                       class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]"
                     >
