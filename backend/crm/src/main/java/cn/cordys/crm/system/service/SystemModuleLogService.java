@@ -7,6 +7,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.ScopeNameDTO;
+import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -61,6 +62,11 @@ public class SystemModuleLogService extends BaseModuleLogService {
 				differ.setColumnName(Translator.get("form.view.size"));
 				differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
 				differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+			}
+
+			if (Strings.CS.equals("formProp", differ.getColumn())) {
+				differ.setColumnName(Translator.get("log.form.prop"));
+				handleFormPropLogDetail(differ);
 			}
 
 
@@ -194,9 +200,8 @@ public class SystemModuleLogService extends BaseModuleLogService {
 
 
     /**
-     * 待定: 目前就只粗略展示字段的变更
-     *
-     * @param differ json-difference dto
+     * TODO: 目前就只粗略展示字段的变更
+     * @param differ 差异
      */
     private void handleFieldsLogDetail(JsonDifferenceDTO differ) {
         differ.setOldValueName(parseFieldList(differ.getOldValue()).stream()
@@ -206,6 +211,17 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 .map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
                 .toList());
     }
+
+	/**
+	 * TODO: 表单配置的日志详情对比
+	 * @param differ 差异
+	 */
+	private void handleFormPropLogDetail(JsonDifferenceDTO differ) {
+		if (differ.getOldValue() != null && differ.getNewValue() != null) {
+			differ.setOldValueName(Translator.get(JSON.parseObject(JSON.toJSONString(differ.getOldValue()), FormProp.class).getViewSize()));
+			differ.setNewValueName(Translator.get(JSON.parseObject(JSON.toJSONString(differ.getNewValue()), FormProp.class).getViewSize()));
+		}
+	}
 
 
     private void handleLinkFieldsLogDetail(JsonDifferenceDTO differ) {
