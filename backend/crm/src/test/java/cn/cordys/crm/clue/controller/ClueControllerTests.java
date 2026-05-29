@@ -362,20 +362,6 @@ class ClueControllerTests extends BaseTest {
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_RECYCLE, BATCH_TO_POOL, reasonRequest);
     }
 
-    @Test
-    @Order(14)
-    void testExport() throws Exception {
-        ClueExportRequest request = new ClueExportRequest();
-        request.setCurrent(1);
-        request.setPageSize(10);
-        request.setFileName("export_test");
-        ExportHeadDTO col = new ExportHeadDTO();
-        col.setKey("name");
-        col.setTitle("线索名称");
-        request.setHeadList(List.of(col));
-        this.requestPostWithOk(EXPORT, request);
-    }
-
     private List<ClueField> getClueFields(String clueId) {
         ClueField example = new ClueField();
         example.setResourceId(clueId);

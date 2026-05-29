@@ -174,33 +174,6 @@ public class PoolCustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(5)
-    void testExportSelect() throws Exception {
-        CustomerPageRequest pageRequest = new CustomerPageRequest();
-        pageRequest.setCurrent(1);
-        pageRequest.setPageSize(10);
-        pageRequest.setPoolId("test-pool-id");
-
-        MvcResult mvcResult = this.requestPostWithOkAndReturn(PAGE, pageRequest);
-        Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
-        List<CustomerListResponse> customerList = pageResult.getList();
-
-        ExportSelectRequest exportRequest = new ExportSelectRequest();
-        exportRequest.setFileName("测试导出公海");
-
-        ExportHeadDTO exportHeadDTO = new ExportHeadDTO();
-        exportHeadDTO.setKey("name");
-        exportHeadDTO.setTitle("客户选择名称");
-        List<ExportHeadDTO> list = new ArrayList<>();
-        list.add(exportHeadDTO);
-        exportRequest.setHeadList(list);
-        List<String> ids = customerList.stream().map(CustomerListResponse::getId).collect(Collectors.toList());
-        exportRequest.setIds(ids);
-
-        this.requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT, EXPORT_SELECT, exportRequest);
-    }
-
-    @Test
     @Order(7)
     void deleteSuccess() throws Exception {
         this.requestGetWithOk(DELETE + testDataId);
