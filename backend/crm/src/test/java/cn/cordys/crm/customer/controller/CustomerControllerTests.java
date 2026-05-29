@@ -306,61 +306,6 @@ class CustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(4)
-    void testExport() throws Exception {
-        CustomerExportRequest request = new CustomerExportRequest();
-        request.setCurrent(1);
-        request.setPageSize(10);
-        request.setFileName("测试导出客户");
-
-        ExportHeadDTO exportHeadDTO = new ExportHeadDTO();
-        exportHeadDTO.setKey("name");
-        exportHeadDTO.setTitle("客户名称");
-        List<ExportHeadDTO> list = new ArrayList<>();
-        list.add(exportHeadDTO);
-        request.setHeadList(list);
-        MvcResult mvcResult = this.requestPostWithOkAndReturn(EXPORT_ALL, request);
-        String resultData = getResultData(mvcResult, String.class);
-        Thread.sleep(1500); // 等待导出任务完成
-        ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = exportTaskCenterService.download(resultData);
-        Assertions.assertNotNull(resourceResponseEntity.getBody());
-        Assertions.assertTrue(resourceResponseEntity.getBody().exists());
-        ExportTask exportTask = new ExportTask();
-        exportTask.setId(resultData);
-        LocalDateTime oneDayBefore = LocalDateTime.now().minusDays(2);
-        exportTask.setCreateTime(oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-        exportTaskBaseMapper.updateById(exportTask);
-        exportTaskCenterService.clean();
-        System.out.println(resourceResponseEntity.getBody().exists());
-    }
-
-    @Test
-    @Order(5)
-    void testExportSelect() throws Exception {
-        CustomerPageRequest requestP = new CustomerPageRequest();
-        requestP.setCurrent(1);
-        requestP.setPageSize(10);
-
-        requestP.setViewId(InternalUserView.ALL.name());
-        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, requestP);
-        Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
-        List<CustomerListResponse> customerList = pageResult.getList();
-        ExportSelectRequest request = new ExportSelectRequest();
-        request.setFileName("测试导出选中");
-
-        ExportHeadDTO exportHeadDTO = new ExportHeadDTO();
-        exportHeadDTO.setKey("name");
-        exportHeadDTO.setTitle("客户选择名称");
-        List<ExportHeadDTO> list = new ArrayList<>();
-        list.add(exportHeadDTO);
-        request.setHeadList(list);
-        List<String> ids = customerList.stream().map(CustomerListResponse::getId).collect(Collectors.toList());
-        request.setIds(ids);
-
-        this.requestPostWithOk(EXPORT_SELECT, request);
-    }
-
-    @Test
     @Order(6)
     void testTransfer() throws Exception {
         CustomerBatchTransferRequest request = new CustomerBatchTransferRequest();

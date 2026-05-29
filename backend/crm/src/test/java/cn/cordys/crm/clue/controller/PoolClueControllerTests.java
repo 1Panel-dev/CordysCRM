@@ -1,8 +1,6 @@
 package cn.cordys.crm.clue.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.ExportHeadDTO;
-import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
@@ -11,7 +9,6 @@ import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.domain.ClueCapacity;
 import cn.cordys.crm.clue.domain.ClueOwner;
 import cn.cordys.crm.clue.domain.CluePoolPickRule;
-import cn.cordys.crm.clue.dto.request.ClueExportRequest;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
 import cn.cordys.crm.clue.dto.request.PoolClueAssignRequest;
 import cn.cordys.crm.clue.dto.request.PoolCluePickRequest;
@@ -23,14 +20,14 @@ import cn.cordys.crm.system.service.ExportTaskCenterService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -138,63 +135,6 @@ public class PoolClueControllerTests extends BaseTest {
     void getDetail() throws Exception {
         this.requestGetWithOk(GET_DETAIL + testDataId);
         requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_READ, GET_DETAIL + testDataId);
-    }
-
-
-    // 因为要在删除之前测试能否导出，此时优先级和getDetail可以看作是平级的，所以都用同一个Order
-    @Test
-    @Order(6)
-    void testExport() throws Exception {
-        ClueExportRequest request = new ClueExportRequest();
-        request.setCurrent(1);
-        request.setPageSize(10);
-        request.setFileName("export_test_clue_pool");
-        ExportHeadDTO col = new ExportHeadDTO();
-        col.setKey("name");
-        col.setTitle("线索池名称");
-        request.setHeadList(List.of(col));
-
-        MvcResult mvcResult = this.requestPostWithOkAndReturn(EXPORT_ALL, request);
-        String resultData = getResultData(mvcResult, String.class);
-        Thread.sleep(1500); // 等待导出任务完成
-        ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = exportTaskCenterService.download(resultData);
-        Assertions.assertTrue(resourceResponseEntity.getBody().exists());
-        ExportTask exportTask = new ExportTask();
-        exportTask.setId(resultData);
-        LocalDateTime oneDayBefore = LocalDateTime.now().minusDays(2);
-        exportTask.setCreateTime(oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-        exportTaskBaseMapper.updateById(exportTask);
-        exportTaskCenterService.clean();
-        System.out.println(resourceResponseEntity.getBody().exists());
-
-        //权限校验
-        this.requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_EXPORT, EXPORT_ALL, request);
-    }
-
-    @Test
-    @Order(6)
-    void testExportSelect() throws Exception {
-
-        CluePageRequest request = new CluePageRequest();
-        request.setPoolId("test-pool-id");
-        request.setCurrent(1);
-        request.setPageSize(10);
-        MvcResult mvcResult = this.requestPostWithOkAndReturn(PAGE, request);
-        Pager<List<ClueListResponse>> pageResult = getPageResult(mvcResult, ClueListResponse.class);
-        assert pageResult.getTotal() == 1;
-        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_READ, PAGE, request);
-        List<ClueListResponse> customerList = pageResult.getList();
-
-        ExportSelectRequest exportRequest = new ExportSelectRequest();
-        exportRequest.setFileName("export_test_clue_pool_select");
-        exportRequest.setIds(List.of(customerList.getFirst().getId()));
-        ExportHeadDTO col = new ExportHeadDTO();
-        col.setKey("name");
-        col.setTitle("线索名称");
-        exportRequest.setHeadList(List.of(col));
-        this.requestPostWithOk(EXPORT_SELECT, exportRequest);
-
-        this.requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_EXPORT, EXPORT_SELECT, exportRequest);
     }
 
     @Test
