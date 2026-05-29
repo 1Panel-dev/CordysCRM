@@ -194,9 +194,9 @@ public class ContractStageService {
         extContractStageConfigMapper.updateStageConfig(request, userId);
 
         Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("stage", oldStageConfig.getName());
+        originalVal.put("contractStage", oldStageConfig.getName());
         Map<String, String> modifiedVal = new HashMap<>(1);
-        modifiedVal.put("stage", request.getName());
+        modifiedVal.put("contractStage", request.getName());
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(request.getId())

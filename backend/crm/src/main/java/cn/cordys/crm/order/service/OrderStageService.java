@@ -197,9 +197,9 @@ public class OrderStageService {
         extOrderStageConfigMapper.updateStageConfig(request, userId);
 
         Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("stage", oldStageConfig.getName());
+        originalVal.put("orderStage", oldStageConfig.getName());
         Map<String, String> modifiedVal = new HashMap<>(1);
-        modifiedVal.put("stage", request.getName());
+        modifiedVal.put("orderStage", request.getName());
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(request.getId())

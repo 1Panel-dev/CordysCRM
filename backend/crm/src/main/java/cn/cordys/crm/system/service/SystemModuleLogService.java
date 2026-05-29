@@ -71,7 +71,7 @@ public class SystemModuleLogService extends BaseModuleLogService {
 
 
             if (Strings.CI.equalsAny(differ.getColumn(),
-                    "rate", "stage", "afootRollBack", "endRollBack","name")) {
+                    "rate", "stage", "contractStage", "orderStage","afootRollBack", "endRollBack","name")) {
                 differ.setColumnName(Translator.get("log.".concat(differ.getColumn())));
                 differ.setNewValueName(differ.getNewValue());
                 differ.setOldValueName(differ.getOldValue());
