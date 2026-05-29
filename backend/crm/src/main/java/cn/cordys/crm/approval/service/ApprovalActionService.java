@@ -846,16 +846,16 @@ public class ApprovalActionService {
 			return;
 		}
 		ApprovalNodeResponse next = approvalFlowService.getCurrentNextNode(currentNodeId, instance, orgId);
-		clearCurrentNode(instance.getId(), next.getId());
+		clearExpiredNode(instance.getId(), next.getId());
 		clearBackToCurrentNode(next.getId(), endNodeId, instance, orgId);
 	}
 
 	/**
-	 * 清理当前节点
+	 * 清理过期节点
 	 * @param instanceId 审批实例ID
 	 * @param nodeId 当前节点ID
 	 */
-	public void clearCurrentNode(String instanceId, String nodeId) {
+	public void clearExpiredNode(String instanceId, String nodeId) {
 		Integer maxRound = extApprovalInstanceMapper.getNodeRound(instanceId, nodeId);
 		if (maxRound > 0) {
 			/*
@@ -863,10 +863,7 @@ public class ApprovalActionService {
 			 */
 			extApprovalInstanceMapper.batchClearNotApprovingTask(instanceId, nodeId, maxRound);
 			extApprovalInstanceMapper.batchClearRecord(instanceId, nodeId, maxRound);
-			/*
-			 * 未执行过的待办直接中止
-			 */
-			extApprovalInstanceMapper.loseApprovingTask(instanceId, nodeId, maxRound);
+			extApprovalInstanceMapper.batchClearApprovingTask(instanceId, nodeId, maxRound);
 		}
 	}
 
@@ -943,7 +940,7 @@ public class ApprovalActionService {
 			}
 		}
 		// 清理后续审批节点的待办任务, 后续执行重新生成
-		clearCurrentNode(instance.getId(), nextNode.getId());
+		clearExpiredNode(instance.getId(), nextNode.getId());
 	}
 
 	/**
