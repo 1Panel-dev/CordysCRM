@@ -105,6 +105,8 @@ public class ApprovalFlowService {
 	private UserViewService userViewService;
 	@Resource
 	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+    @Resource
+	private ApprovalInstanceService approvalInstanceService;
 
 	/**
 	 * 加签节点后缀分隔符
@@ -497,6 +499,9 @@ public class ApprovalFlowService {
         update.setDeleted(true);
         update.setUpdateTime(System.currentTimeMillis());
         approvalFlowMapper.updateById(update);
+
+        // 清除审批中的资源和待办
+        approvalInstanceService.clearApprovingInstanceOfFlow(id);
 
         // 设置日志上下文
         OperationLogContext.setResourceName(flow.getName());
