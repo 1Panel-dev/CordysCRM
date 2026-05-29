@@ -66,6 +66,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number | (string | number)[]): void;
+    (e: 'changeOptions', value: SelectedUsersItem[]): void;
   }>();
 
   const { t } = useI18n();
@@ -133,9 +134,11 @@
           ? ids
           : ids[0]
       );
+      emit('changeOptions', selectedUsers.value);
     } else {
       value.value = [];
       emit('change', []);
+      emit('changeOptions', []);
     }
   }
 

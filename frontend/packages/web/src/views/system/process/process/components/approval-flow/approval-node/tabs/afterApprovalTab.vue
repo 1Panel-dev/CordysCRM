@@ -46,6 +46,7 @@
               :form-detail="line"
               :need-init-detail="true"
               @update:value="(value: unknown) => handleFieldValueUpdate(line, value)"
+              @change-options="(options: SelectedUsersItem[]) => handleFieldValueOptionsUpdate(line, options)"
             />
             <n-form-item
               v-else
@@ -84,13 +85,14 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue';
+  import { computed, ref, shallowRef, watch } from 'vue';
   import { type FormInst, NButton, NEmpty, NForm, NFormItem, NInput, NScrollbar, NSelect, NSwitch } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getRuleType } from '@lib/shared/method/formCreate';
+  import type { SelectedUsersItem } from '@lib/shared/models/system/module';
   import type {
     ApprovalActionNode,
     ApprovalFieldUpdateConfig,
@@ -134,6 +136,9 @@
   const activePostTab = ref<'pass' | 'reject'>('pass');
   const formFields = ref<FormCreateField[]>([]);
   const formRef = ref<FormInst | null>(null);
+
+  // 用户修改成员/部门后还没保存，后端 optionMap 仍是旧回显；这里临时缓存当前行的新回显，避免切换 tab 后显示回旧值
+  const fieldValueOptionMap = shallowRef(new Map<ApprovalFieldUpdateConfig, SelectedUsersItem[]>());
 
   const postTabList = [
     {
@@ -291,11 +296,6 @@
 
     currentField.rules = fullRules;
 
-    const initialOptions = props.optionMap?.[field.id] ?? [];
-    if (initialOptions.length) {
-      currentField.initialOptions = [...initialOptions];
-    }
-
     return currentField;
   }
 
@@ -303,12 +303,51 @@
     () => new Map(editableFields.value.map((field) => [field.id, buildFieldValueConfig(field)]))
   );
 
+  function isEmptyFieldValue(value: unknown) {
+    if (Array.isArray(value)) {
+      return !value.length;
+    }
+
+    return value === null || value === undefined || value === '';
+  }
+
+  function getFieldValueOptions(line: ApprovalFieldUpdateConfig) {
+    // 用户在页面上改过成员/部门后，优先用当前未保存的选择；否则再用后端 optionMap 回显
+    const cachedOptions = fieldValueOptionMap.value.get(line);
+    if (cachedOptions) {
+      return cachedOptions;
+    }
+
+    if (!line.fieldId) {
+      return [];
+    }
+
+    const selectedIds = new Set(
+      Array.isArray(line.fieldValue) ? line.fieldValue.map(String) : [String(line.fieldValue)]
+    );
+    // optionMap 是“字段 -> 全部回显项”的集合，同一字段可能同时包含通过/驳回 tab 的值，需要按当前行 fieldValue 过滤
+    return (props.optionMap?.[line.fieldId] ?? []).filter((item) => selectedIds.has(String(item.id)));
+  }
+
   function getFieldValueConfig(line: ApprovalFieldUpdateConfig) {
     if (!line.fieldId) {
       return null;
     }
 
-    return fieldValueConfigMap.value.get(line.fieldId) ?? null;
+    const fieldConfig = fieldValueConfigMap.value.get(line.fieldId);
+    if (!fieldConfig) {
+      return null;
+    }
+
+    const initialOptions = getFieldValueOptions(line);
+    if (initialOptions.length) {
+      return {
+        ...fieldConfig,
+        initialOptions: [...initialOptions],
+      };
+    }
+
+    return fieldConfig;
   }
 
   function isSupportedFieldValueType(fieldType: FieldTypeEnum): fieldType is SupportedFieldValueType {
@@ -339,12 +378,15 @@
     line.fieldValue = value;
   }
 
-  function isEmptyFieldValue(value: unknown) {
-    if (Array.isArray(value)) {
-      return !value.length;
-    }
+  function handleFieldValueOptionsUpdate(line: ApprovalFieldUpdateConfig, options: SelectedUsersItem[]) {
+    fieldValueOptionMap.value = new Map(fieldValueOptionMap.value).set(line, [...options]);
+  }
 
-    return value === null || value === undefined || value === '';
+  // 当前行切换字段时，旧字段的成员/部门回显不能继续沿用
+  function clearFieldValueOptions(line: ApprovalFieldUpdateConfig) {
+    const nextMap = new Map(fieldValueOptionMap.value);
+    nextMap.delete(line);
+    fieldValueOptionMap.value = nextMap;
   }
 
   function isFieldUpdateSwitchDisabled(line: ApprovalFieldUpdateConfig) {
@@ -357,6 +399,7 @@
     }
 
     line.fieldId = fieldId;
+    clearFieldValueOptions(line);
     const currentField = fieldId ? getCurrentField(fieldId) : null;
     line.fieldValue = currentField ? getInitialFieldValue(currentField) : '';
   }
