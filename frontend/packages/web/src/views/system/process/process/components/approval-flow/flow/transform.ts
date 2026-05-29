@@ -247,7 +247,7 @@ function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalAct
     description: resolveApprovalActionNodeDescription(node.approvalType, node.approverType ?? null),
     approvalType: node.approvalType,
     approverType: node.approverType ?? null,
-    approverDirection: node.approverDirection ?? ApprovalLevelDirectionEnum.TOP_DOWN,
+    approverDirection: node.approverDirection ?? ApprovalLevelDirectionEnum.BOTTOM_UP,
     approverList,
     approverSelectedList: mapSelectedOptions(node.approverSelectOptions),
     multiApproverMode: node.multiApproverMode,
@@ -257,7 +257,7 @@ function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalAct
     emptyApproverSelectedList:
       fallbackApprover && node.fallbackApproverName ? [{ id: fallbackApprover, name: node.fallbackApproverName }] : [],
     ccType: node.ccType ?? null,
-    ccDirection: node.ccDirection ?? ApprovalLevelDirectionEnum.TOP_DOWN,
+    ccDirection: node.ccDirection ?? ApprovalLevelDirectionEnum.BOTTOM_UP,
     ccList,
     ccSelectedList: mapSelectedOptions(node.ccSelectOptions),
     passPostConfig: node.passPostConfig,

@@ -358,6 +358,14 @@ export const approverLevelOptions = [
   },
 ];
 
+export const continuousApproverLevelOptions = [
+  {
+    ...approverLevelOptions[0],
+    label: t('process.process.flow.approverLevel.first'),
+  },
+  ...approverLevelOptions.slice(1),
+];
+
 export const departmentLevelOptions = [
   {
     label: t('process.process.flow.departmentLevel.direct'),
@@ -399,4 +407,12 @@ export const departmentLevelOptions = [
     label: t('process.process.flow.departmentLevel.tenth'),
     value: '10',
   },
+];
+
+export const continuousDepartmentLevelOptions = [
+  {
+    ...departmentLevelOptions[0],
+    label: t('process.process.flow.departmentLevel.first'),
+  },
+  ...departmentLevelOptions.slice(1),
 ];
