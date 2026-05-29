@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="title">
     <template #titleRight>
       <n-button
-        v-permission="['PRODUCT:UPDATE']"
+        v-permission="['PRODUCT_MANAGEMENT:UPDATE']"
         type="primary"
         ghost
         class="n-btn-outline-primary"
@@ -22,7 +22,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
-            :readonly="!hasAnyPermission(['PRODUCT:UPDATE'])"
+            :readonly="!hasAnyPermission(['PRODUCT_MANAGEMENT:UPDATE'])"
             @init="handleInit"
           />
         </div>
