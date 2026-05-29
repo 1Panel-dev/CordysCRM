@@ -383,7 +383,7 @@
     if (approvalEnable) {
       return currentLocale.value === 'en-US' ? 180 : 180;
     }
-    return 120;
+    return 170;
   }
 
   await initApprovalPermission();
