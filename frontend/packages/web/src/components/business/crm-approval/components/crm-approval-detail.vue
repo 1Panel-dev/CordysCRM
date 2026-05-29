@@ -1,7 +1,11 @@
 <template>
   <CrmCard hide-footer no-content-padding>
     <CrmSplitPanel
-      v-if="props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)"
+      v-if="
+        props.approvalStatus &&
+        ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus) &&
+        !noApproval
+      "
       :size="0.7"
       :max="1"
       :min="0.7"
@@ -410,9 +414,13 @@
     [FormDesignKeyEnum.ORDER]: 'ORDER_INDEX',
   };
 
+  const noApproval = ref(false);
   async function initApprovalDetail() {
     try {
       approvalInfo.value = await getApprovalResourceDetail(props.sourceId);
+      if (!approvalInfo.value) {
+        noApproval.value = true;
+      }
       currentApprovalNodeIndex.value = approvalInfo.value?.nodes.findIndex(
         (node) => node.nodeId === approvalInfo.value?.currentNodeId
       );
