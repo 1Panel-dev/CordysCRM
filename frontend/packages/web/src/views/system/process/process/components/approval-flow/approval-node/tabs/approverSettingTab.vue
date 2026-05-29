@@ -372,6 +372,8 @@
     approvalTypeOptions,
     approverLevelOptions,
     approverTypeOptions,
+    continuousApproverLevelOptions,
+    continuousDepartmentLevelOptions,
     departmentLevelOptions,
     resolveApprovalActionNodeDescription,
   } from '@/config/process';
@@ -416,7 +418,7 @@
 
   const endpointApproverTypes = [ApproverTypeEnum.CONTINUOUS_SUPERVISOR, ApproverTypeEnum.CONTINUOUS_DEPARTMENT_LEADER];
 
-  const defaultLevelDirection = ApprovalLevelDirectionEnum.TOP_DOWN;
+  const defaultLevelDirection = ApprovalLevelDirectionEnum.BOTTOM_UP;
   const levelDirectionOptions = [
     {
       label: t('process.process.flow.levelDirection.bottomUp'),
@@ -696,18 +698,22 @@
   function createLevelConfig(type: ApproverTypeEnum) {
     const isSupervisorLevel = supervisorLevelApproverTypes.includes(type);
     const isDepartmentLevel = departmentLevelApproverTypes.includes(type);
+    const isEndpoint = endpointApproverTypes.includes(type);
 
     if (!isSupervisorLevel && !isDepartmentLevel) {
       return null;
     }
 
+    let options = isDepartmentLevel ? departmentLevelOptions : approverLevelOptions;
+    if (isEndpoint) {
+      options = isDepartmentLevel ? continuousDepartmentLevelOptions : continuousApproverLevelOptions;
+    }
+
     return {
-      label: endpointApproverTypes.includes(type)
-        ? t('process.process.flow.specifiedEndpoint')
-        : t('process.process.flow.specifiedLevel'),
+      label: isEndpoint ? t('process.process.flow.specifiedEndpoint') : t('process.process.flow.specifiedLevel'),
       tooltip: getApproverLevelTooltip(type),
-      options: isDepartmentLevel ? departmentLevelOptions : approverLevelOptions,
-      showDirection: endpointApproverTypes.includes(type),
+      options,
+      showDirection: isEndpoint,
       exampleItems: isDepartmentLevel ? departmentLeaderExampleItems : directSupervisorExampleItems,
       exampleTip: isDepartmentLevel ? t('process.process.flow.levelExample.departmentTip') : undefined,
     };
