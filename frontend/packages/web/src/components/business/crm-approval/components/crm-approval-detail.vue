@@ -33,6 +33,7 @@
               }"
               :currentApprovalNode="currentApprovalNode"
               :currentApprovalNodeIndex="currentApprovalNodeIndex"
+              :finally-result="approvalInfo?.approvalStatus"
               class="pr-[8px]"
             />
           </div>

@@ -248,6 +248,7 @@
     };
     currentApprovalNode?: ApprovalNode;
     currentApprovalNodeIndex: number;
+    finallyResult?: ProcessStatusEnum;
   }>();
 
   const { t } = useI18n();
@@ -261,7 +262,10 @@
   function getIconClass(node: ApprovalNode) {
     const { approvalStatus, endNode, nodeId } = node;
     if (endNode) {
-      if (props.currentApprovalNode?.nodeId === nodeId) {
+      if (
+        props.currentApprovalNode?.nodeId === nodeId ||
+        (props.finallyResult && [ProcessStatusEnum.REVOKED, ProcessStatusEnum.UNAPPROVED].includes(props.finallyResult))
+      ) {
         return 'bg-[var(--success-green)]';
       }
       return 'bg-[var(--text-n4)]';
