@@ -1,11 +1,7 @@
 <template>
   <CrmCard hide-footer no-content-padding>
     <CrmSplitPanel
-      v-if="
-        props.approvalStatus &&
-        ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus) &&
-        !noApproval
-      "
+      v-if="props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)"
       :size="0.7"
       :max="1"
       :min="0.7"
@@ -21,7 +17,10 @@
         </div>
       </template>
       <template #2>
-        <div class="flex h-full w-full flex-col overflow-hidden border-l border-[var(--text-n8)]">
+        <div v-if="noApproval" class="flex h-full w-full items-center justify-center border-l border-[var(--text-n8)]">
+          {{ t('crm.approval.historyTip') }}
+        </div>
+        <div v-else class="flex h-full w-full flex-col overflow-hidden border-l border-[var(--text-n8)]">
           <div class="flex-1 overflow-hidden px-[16px] py-[24px] pb-[32px]">
             <div class="mb-[8px] text-[16px] font-semibold">{{ t('crm.approval.record') }}</div>
             <CrmApprovalLine
