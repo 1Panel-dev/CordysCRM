@@ -676,13 +676,14 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             List<String> results = new ArrayList<>();
             for (Object item : list) {
                 if (item instanceof Map<?, ?> map) {
-                    String status = map.get("approvalStatus") != null ? map.get("approvalStatus").toString() : "";
-                    String permission = map.get("permission") != null ? map.get("permission").toString() : "";
-
-                    String translatedStatus = translateApprovalStatus(status);
-                    String translatedPermission = translatePermission(permission);
-
-                    results.add(translatedStatus + "-" + translatedPermission);
+                     String enabled = map.get("enabled") != null ? map.get("enabled").toString() : "";
+                    if (Strings.CI.equals(enabled, "true")) {
+                        String status = map.get("approvalStatus") != null ? map.get("approvalStatus").toString() : "";
+                        String permission = map.get("permission") != null ? map.get("permission").toString() : "";
+                        String translatedStatus = translateApprovalStatus(status);
+                        String translatedPermission = translatePermission(permission);
+                        results.add(translatedStatus + "-" + translatedPermission);
+                    }
                 }
             }
 
