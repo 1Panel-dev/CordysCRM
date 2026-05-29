@@ -286,10 +286,26 @@
                         </include>
                     </when>
                     <when test="condition.name == 'invalid'">
-                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
-                            <property name="condition" value="condition"/>
-                            <property name="column" value="oq.invalid"/>
-                        </include>
+                        <if test="condition.operator == 'IN'">
+                            oq.invalid in
+                            <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
+                                #{v}
+                            </foreach>
+                        </if>
+                        <if test="condition.operator == 'NOT_IN'">
+                            !( oq.invalid
+                            in
+                            <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
+                                #{v}
+                            </foreach>
+                            )
+                        </if>
+                        <if test="${condition}.operator == 'EMPTY'">
+                            oq.invalid is null
+                        </if>
+                        <if test="${condition}.operator == 'NOT_EMPTY'">
+                            oq.invalid is not null
+                        </if>
                     </when>
                     <when test="condition.name == 'amount'">
                         <include refid="cn.cordys.common.mapper.CommonMapper.condition">
