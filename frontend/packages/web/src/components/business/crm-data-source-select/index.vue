@@ -1,0 +1,245 @@
+<template>
+  <n-select
+    v-model:value="value"
+    filterable
+    multiple
+    tag
+    :placeholder="t('common.pleaseSelect')"
+    :render-tag="renderTag"
+    :show-arrow="false"
+    :show="false"
+    :disabled="props.disabled"
+    :max-tag-count="props.maxTagCount"
+    :status="props.status"
+    @click="showDataSourcesModal"
+  />
+  <CrmModal
+    v-model:show="dataSourcesModalVisible"
+    :title="
+      t('crmFormDesign.selectDataSource', { type: props.dataSourceType ? t(typeLocaleMap[props.dataSourceType]) : '' })
+    "
+    :positive-text="t('common.confirm')"
+    :class="`crm-data-source-select-modal ${fullScreenModal ? 'crm-full-modal' : ''}`"
+    @confirm="handleDataSourceConfirm"
+    @cancel="handleDataSourceCancel"
+  >
+    <dataSourceTable
+      v-model:selected-keys="selectedKeys"
+      v-model:selected-rows="selectedRows"
+      :multiple="props.multiple"
+      :source-type="props.dataSourceType"
+      :disabled-selection="props.disabledSelection ? props.disabledSelection : undefined"
+      :filter-params="filterParams"
+      :fullscreen-target-ref="fullscreenTargetRef"
+      :fieldConfig="props.fieldConfig"
+      :isSubTableRender="props.hideChildTag"
+      @init-form="handleFormInit"
+      @toggle-full-screen="(val) => (fullScreenModal = val)"
+    />
+  </CrmModal>
+</template>
+
+<script setup lang="ts">
+  import { DataTableRowKey, NSelect, SelectOption } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
+
+  import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
+  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import dataSourceTable from './dataSourceTable.vue';
+
+  import type { FormCreateField } from '../crm-form-create/types';
+  import { InternalRowData, RowData, RowKey } from 'naive-ui/es/data-table/src/interface';
+
+  interface DataSourceTableProps {
+    dataSourceType: FieldDataSourceTypeEnum;
+    multiple?: boolean;
+    disabled?: boolean;
+    disabledSelection?: (row: RowData) => boolean;
+    maxTagCount?: number | 'responsive';
+    filterParams?: FilterResult;
+    fieldConfig?: FormCreateField;
+    hideChildTag?: boolean;
+    status?: 'error' | 'success' | 'warning';
+  }
+
+  const props = withDefaults(defineProps<DataSourceTableProps>(), {
+    multiple: true,
+  });
+  const emit = defineEmits<{
+    (
+      e: 'change',
+      value: (string | number)[],
+      source: Record<string, any>[],
+      dataSourceFormFields: FormCreateField[]
+    ): void;
+    (e: 'delete', id?: string | number): void;
+  }>();
+
+  const { t } = useI18n();
+
+  const typeLocaleMap = {
+    [FieldDataSourceTypeEnum.CUSTOMER]: 'crmFormDesign.customer',
+    [FieldDataSourceTypeEnum.CONTACT]: 'crmFormDesign.contact',
+    [FieldDataSourceTypeEnum.BUSINESS]: 'crmFormDesign.opportunity',
+    [FieldDataSourceTypeEnum.PRODUCT]: 'crmFormDesign.product',
+    [FieldDataSourceTypeEnum.CLUE]: 'crmFormDesign.clue',
+    [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: 'crmFormDesign.customer',
+    [FieldDataSourceTypeEnum.USER_OPTIONS]: '',
+    [FieldDataSourceTypeEnum.PRICE]: 'crmFormCreate.drawer.price',
+    [FieldDataSourceTypeEnum.CONTRACT]: 'crmFormCreate.drawer.contract',
+    [FieldDataSourceTypeEnum.QUOTATION]: 'crmFormCreate.drawer.quotation',
+    [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: 'crmFormCreate.drawer.contractPaymentPlan',
+    [FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD]: 'crmFormCreate.drawer.contractPaymentRecord',
+    [FieldDataSourceTypeEnum.BUSINESS_TITLE]: 'crmFormCreate.drawer.businessTitle',
+    [FieldDataSourceTypeEnum.ORDER]: 'crmFormCreate.drawer.order',
+  };
+
+  const value = defineModel<DataTableRowKey[]>('value', {
+    required: true,
+    default: [],
+  });
+  const rows = defineModel<InternalRowData[]>('rows', {
+    default: [],
+  });
+
+  const selectedRows = ref<InternalRowData[]>(cloneDeep(rows.value));
+  const selectedKeys = ref<DataTableRowKey[]>(value.value.map((e) => e));
+
+  const dataSourcesModalVisible = ref(false);
+  const dataSourceFormFields = ref<FormCreateField[]>([]);
+  const initialRows = ref<InternalRowData[]>([]);
+
+  function handleFormInit(fields: FormCreateField[]) {
+    dataSourceFormFields.value = fields;
+  }
+
+  function handleDataSourceConfirm() {
+    const newRows = selectedRows.value;
+    if (rows.value.length !== newRows.length || rows.value.some((item, index) => item.id !== newRows[index].id)) {
+      rows.value = cloneDeep(newRows);
+      value.value = newRows.map((e) => e.id) as RowKey[];
+      nextTick(() => {
+        emit('change', value.value, newRows, dataSourceFormFields.value);
+      });
+    }
+    dataSourcesModalVisible.value = false;
+  }
+
+  function handleDataSourceCancel() {
+    selectedKeys.value = [];
+    dataSourcesModalVisible.value = false;
+  }
+
+  const renderTag = ({ option, handleClose }: { option: SelectOption; handleClose: () => void }) => {
+    const _row = (rows.value || []).find((item) => item?.id === option.value);
+    return props.hideChildTag && _row?.parentId
+      ? null
+      : h(
+          CrmTag,
+          {
+            type: 'default',
+            theme: 'light',
+            closable: !props.disabled,
+            onClose: () => {
+              handleClose();
+              if (props.hideChildTag) {
+                // 价格表关闭标签需要清理子项和父项
+                rows.value = [];
+                value.value = [];
+              } else {
+                rows.value = rows.value.filter((item) => item.id !== option.value);
+                value.value = value.value.filter((key) => key !== option.value);
+              }
+              emit('delete', option.value);
+              nextTick(() => {
+                emit('change', value.value, rows.value, dataSourceFormFields.value);
+              });
+            },
+          },
+          {
+            default: () => {
+              return _row?.name || t('common.optionNotExist');
+            },
+          }
+        );
+  };
+
+  function showDataSourcesModal() {
+    if (!props.disabled) {
+      selectedKeys.value = value.value;
+      dataSourcesModalVisible.value = true;
+    }
+  }
+
+  watch(
+    () => value.value,
+    () => {
+      selectedKeys.value = value.value;
+      selectedRows.value = initialRows.value
+        .concat(rows.value)
+        .filter((item) => value.value.includes(item.id as DataTableRowKey));
+      rows.value = cloneDeep(selectedRows.value);
+    }
+  );
+
+  const fullscreenTargetRef = ref();
+  const fullScreenModal = ref(false);
+
+  function setFullWrapperFullScreenRef() {
+    nextTick(() => {
+      const wrapper = document.querySelector('.n-modal-body-wrapper .crm-data-source-select-modal');
+      fullscreenTargetRef.value = wrapper;
+    });
+  }
+
+  watch(
+    () => dataSourcesModalVisible.value,
+    (v) => {
+      if (v) {
+        setFullWrapperFullScreenRef();
+      } else {
+        fullScreenModal.value = false;
+      }
+    }
+  );
+
+  watch(
+    () => fullScreenModal.value,
+    () => {
+      setFullWrapperFullScreenRef();
+    }
+  );
+
+  onBeforeMount(() => {
+    if (value.value.length === 0) {
+      initialRows.value = cloneDeep(rows.value);
+    }
+    rows.value = rows.value.filter((item) => value.value.includes(item.id as DataTableRowKey));
+  });
+</script>
+
+<style lang="less">
+  .crm-data-source-select-modal {
+    .n-dialog__title {
+      @apply justify-between;
+    }
+  }
+  .crm-full-modal {
+    width: 100% !important;
+    max-width: 100vw !important;
+    .n-dialog__content {
+      height: calc(100vh - 136px);
+      .n-scrollbar {
+        height: 100% !important;
+        max-height: none !important;
+        .n-scrollbar-content {
+          height: 100%;
+        }
+      }
+    }
+  }
+</style>

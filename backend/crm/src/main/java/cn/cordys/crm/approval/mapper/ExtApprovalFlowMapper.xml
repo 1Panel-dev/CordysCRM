@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper">
+
+    <select id="list" resultType="cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse">
+        SELECT
+            af.id,
+            af.current_version_id,
+            af.number,
+            af.name,
+            af.form_type,
+            af.enable,
+            af.create_execute,
+            af.update_execute,
+            af.description,
+            af.organization_id,
+            af.create_user,
+            af.create_time,
+            af.update_user,
+            af.update_time
+        FROM approval_flow af
+        WHERE af.organization_id = #{organizationId}
+        AND af.deleted = 0
+        <if test="request.name != null and request.name != ''">
+            AND af.name LIKE CONCAT('%', #{request.name}, '%')
+        </if>
+        <if test="request.formType != null and request.formType != ''">
+            AND af.form_type = #{request.formType}
+        </if>
+        <if test="request.enable != null">
+            AND af.enable = #{request.enable}
+        </if>
+        <if test="request.keyword != null and request.keyword != ''">
+            AND (
+                af.name LIKE CONCAT('%', #{request.keyword}, '%')
+                OR af.number LIKE CONCAT('%', #{request.keyword}, '%')
+            )
+        </if>
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="sorts">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+    <sql id="sorts">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid() > 0">
+                <bind name="sortName" value="${sort}.name"/>
+                <bind name="sortType" value="${sort}.type"/>
+                ORDER BY af.${sortName} ${sortType},
+                af.create_time DESC
+            </when>
+            <otherwise>
+                ORDER BY af.create_time DESC
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="combine_${i}.field_value"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.name == 'name'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.name"/>
+                </include>
+            </when>
+            <when test="condition.name == 'number'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.number"/>
+                </include>
+            </when>
+            <when test="condition.name == 'formType'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.form_type"/>
+                </include>
+            </when>
+            <when test="condition.name == 'enable'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.enable"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.create_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.update_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="af.update_time"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${fieldTable}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

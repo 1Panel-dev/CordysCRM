@@ -1,0 +1,534 @@
+import type { CommonList, ModuleField } from '../models/common';
+import { FieldTypeEnum } from '../enums/formDesignEnum';
+import type { FormCreateField, FormDetail } from '@cordys/web/src/components/business/crm-form-create/types';
+import { formatTimeValue, getCityPath, getIndustryPath } from './index';
+import { useI18n } from '../hooks/useI18n';
+
+export const linkAllAcceptTypes = [FieldTypeEnum.INPUT, FieldTypeEnum.TEXTAREA];
+export const dataSourceTypes = [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE];
+export const hiddenTypes = [
+  FieldTypeEnum.DIVIDER,
+  FieldTypeEnum.PICTURE,
+  FieldTypeEnum.ATTACHMENT,
+  FieldTypeEnum.LINK,
+  FieldTypeEnum.SUB_PRICE,
+  FieldTypeEnum.SUB_PRODUCT,
+];
+export const needSameTypes = [
+  FieldTypeEnum.PHONE,
+  FieldTypeEnum.LOCATION,
+  FieldTypeEnum.DATE_TIME,
+  FieldTypeEnum.INPUT_NUMBER,
+  FieldTypeEnum.INDUSTRY,
+  FieldTypeEnum.SUB_PRICE,
+  FieldTypeEnum.SUB_PRODUCT,
+];
+export const multipleTypes = [FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.INPUT_MULTIPLE];
+export const memberTypes = [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE];
+export const departmentTypes = [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE];
+export const singleTypes = [FieldTypeEnum.RADIO, FieldTypeEnum.SELECT];
+export const specialBusinessKeyMap: Record<string, string> = {
+  customerId: 'customerName',
+  contactId: 'contactName',
+  clueId: 'clueName',
+  businessId: 'businessName',
+  contractId: 'contractName',
+  owner: 'ownerName',
+  opportunityId: 'opportunityName',
+  paymentPlanId: 'paymentPlanName',
+  businessTitleId: 'businessTitleName',
+};
+
+export function getRuleType(item: FormCreateField) {
+  if (
+    item.type === FieldTypeEnum.SELECT_MULTIPLE ||
+    item.type === FieldTypeEnum.CHECKBOX ||
+    item.type === FieldTypeEnum.INPUT_MULTIPLE ||
+    item.type === FieldTypeEnum.MEMBER_MULTIPLE ||
+    item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
+    item.type === FieldTypeEnum.DATA_SOURCE ||
+    item.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE ||
+    item.type === FieldTypeEnum.PICTURE ||
+    item.type === FieldTypeEnum.ATTACHMENT
+  ) {
+    return 'array';
+  }
+  if (item.type === FieldTypeEnum.DATE_TIME) {
+    return 'date';
+  }
+  if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.type)) {
+    return 'number';
+  }
+  return 'string';
+}
+
+export function getNormalFieldValue(item: FormCreateField, value: any) {
+  if (item.type === FieldTypeEnum.DATA_SOURCE && !value) {
+    return '';
+  }
+  if (
+    [
+      FieldTypeEnum.SELECT_MULTIPLE,
+      FieldTypeEnum.MEMBER_MULTIPLE,
+      FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+      FieldTypeEnum.INPUT_MULTIPLE,
+    ].includes(item.type) &&
+    !value
+  ) {
+    return [];
+  }
+  if (item.type === FieldTypeEnum.INPUT_MULTIPLE && !value) {
+    return [];
+  }
+  if (item.multiple && !value) {
+    return [];
+  }
+  return value;
+}
+
+/**
+ * 格式化数字
+ * @param value 数字
+ * @param item
+ */
+export function formatNumberValue(value: string | number, item: FormCreateField) {
+  if (value !== undefined && value !== null && value !== '') {
+    if (item.numberFormat === 'percent') {
+      return item.precision ? `${Number(value).toFixed(item.precision)}%` : `${value}%`;
+    }
+    if (item.showThousandsSeparator) {
+      return (item.precision ? Number(Number(value).toFixed(item.precision)) : Number(value)).toLocaleString('en-US');
+    }
+    return item.precision ? Number(value).toFixed(item.precision) : value.toString();
+  }
+  return '-';
+}
+
+/**
+ * 格式化数字显示为字符串
+ * @param value 数字
+ * @param item
+ */
+export function formatNumberValueToString(value: number, item: FormCreateField) {
+  if (value !== undefined && value !== null) {
+    if (item.numberFormat === 'percent') {
+      return item.precision ? `${Number(value).toFixed(item.precision)}%` : `${value}%`;
+    }
+    if (item.showThousandsSeparator) {
+      if (typeof value === 'string') {
+        return value;
+      }
+      return item.precision
+        ? `${value.toLocaleString('en-US').split('.')[0]}.${value.toFixed?.(item.precision).split('.')[1]}`
+        : value.toLocaleString('en-US');
+    }
+    return item.precision ? Number(value).toFixed(item.precision) : value.toString();
+  }
+  return '-';
+}
+
+export function initFieldValue(field: FormCreateField, value: string | number | (string | number)[]) {
+  if (
+    [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) &&
+    typeof value === 'string'
+  ) {
+    return value ? [value] : [];
+  }
+  return value;
+}
+
+export function getFieldItemId(field: FormCreateField) {
+  if (field.resourceFieldId) {
+    return field.id.split('_ref_')[1]; // 处理数据源显示字段
+  }
+  return field.id;
+}
+
+export function parseModuleFieldValue(item: FormCreateField, fieldValue: string | string[], options?: any[]) {
+  if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+    return '-';
+  }
+  const { t } = useI18n();
+  let value: string | string[] = fieldValue;
+  if (options) {
+    // 若字段值是选项值，则取选项值的name
+    if (Array.isArray(fieldValue)) {
+      value = fieldValue.map((e) => {
+        const option = options.find((opt) => opt.id === e);
+        if (option) {
+          return option.name || t('common.optionNotExist');
+        }
+        return t('common.optionNotExist');
+      });
+    } else {
+      value = options.find((e) => e.id === fieldValue)?.name || t('common.optionNotExist');
+    }
+  } else if (
+    [
+      FieldTypeEnum.DATA_SOURCE,
+      FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+      FieldTypeEnum.MEMBER,
+      FieldTypeEnum.MEMBER_MULTIPLE,
+      FieldTypeEnum.DEPARTMENT,
+      FieldTypeEnum.DEPARTMENT_MULTIPLE,
+    ].includes(item.type)
+  ) {
+    // 数据源/成员/部门类型字段，且没有匹配到 options，则显示不存在
+    if (Array.isArray(fieldValue)) {
+      value = fieldValue.map(() => t('common.optionNotExist'));
+    } else {
+      value = t('common.optionNotExist');
+    }
+  } else if (item.type === FieldTypeEnum.LOCATION) {
+    const addressArr: string[] = (fieldValue as string)?.split('-')?.filter(Boolean) || [];
+    if (!addressArr.length) {
+      value = '-';
+    } else {
+      const country = addressArr[0];
+      const rest = addressArr.filter((e, i) => i > 0).join('-');
+      value = rest ? `${getCityPath(country, item.scope)}-${rest}` : getCityPath(country, item.scope);
+    }
+  } else if (item.type === FieldTypeEnum.INDUSTRY) {
+    value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
+  } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+    value = formatNumberValueToString(fieldValue as unknown as number, item);
+    if (value.includes('NaN') || value.includes('%%')) {
+      value = fieldValue.toString();
+    }
+  } else if (item.type === FieldTypeEnum.DATE_TIME) {
+    value = formatTimeValue(fieldValue as string, item.dateType);
+  }
+  if (Array.isArray(value) && item.resourceFieldId) {
+    value = value.join(',');
+  }
+  return value;
+}
+
+export function parseFormDetailValue(item: FormCreateField, form: FormDetail, sourceName?: Ref<string>) {
+  const { t } = useI18n();
+  if (item.businessKey && !item.resourceFieldId) {
+    // 引用数据源字段使用 id 读取数据，而不是 businessKey
+    const options = form.optionMap?.[item.businessKey];
+    // 业务标准字段读取最外层，读取form[item.businessKey]取到 id 值，然后去 options 里取 name
+    let name: string | string[] = '';
+    const value = form[item.businessKey];
+    // 若字段值是选项值，则取选项值的name
+    if (options) {
+      if (Array.isArray(value)) {
+        name = value.map((e) => {
+          const option = options.find((opt) => opt.id === e);
+          if (option) {
+            return option.name || t('common.optionNotExist');
+          }
+          return t('common.optionNotExist');
+        });
+      } else {
+        name = options.find((e) => e.id === value)?.name || t('common.optionNotExist');
+      }
+    }
+    if (item.type === FieldTypeEnum.DATE_TIME) {
+      return formatTimeValue(name || form[item.businessKey], item.dateType);
+    }
+    if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+      return formatNumberValueToString(name || form[item.businessKey], item);
+    }
+    if (item.type === FieldTypeEnum.ATTACHMENT) {
+      return form.attachmentMap?.[item.businessKey] || [];
+    }
+    if (item.businessKey === 'name' && sourceName) {
+      sourceName.value = name || form[item.businessKey];
+    }
+    return name || form[item.businessKey];
+  }
+  const options = form.optionMap?.[item.id];
+  // 其他的字段读取moduleFields
+  const field = form.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+  if (item.type === FieldTypeEnum.ATTACHMENT) {
+    return form.attachmentMap?.[item.id] || [];
+  }
+  if (field) {
+    return parseModuleFieldValue(item, field.fieldValue, options);
+  }
+}
+
+/**
+ * 表单配置表格回显数据
+ */
+export function transformData({
+  item,
+  fields,
+  originalData,
+  excludeFieldIds,
+  needParseSubTable = false,
+}: {
+  fields: FormCreateField[];
+  item: any;
+  originalData?: CommonList<any>;
+  excludeFieldIds?: string[];
+  needParseSubTable?: boolean;
+}) {
+  const { t } = useI18n();
+  const businessFieldAttr: Record<string, any> = {};
+  const customFieldAttr: Record<string, any> = {};
+  const addressFieldIds: string[] = [];
+  const industryFieldIds: string[] = [];
+  const dataSourceFieldIds: string[] = [];
+  const memberFieldIds: string[] = [];
+  const departmentFieldIds: string[] = [];
+  const timeFieldIds: string[] = [];
+  const fieldOptionMap: Record<string, any[]> = {};
+
+  fields.forEach((field) => {
+    const fieldId = field.resourceFieldId ? field.id : field.businessKey || field.id;
+    if (field.type === FieldTypeEnum.LOCATION) {
+      addressFieldIds.push(fieldId);
+    } else if (field.type === FieldTypeEnum.INDUSTRY) {
+      industryFieldIds.push(fieldId);
+    } else if (field.type === FieldTypeEnum.DATA_SOURCE || field.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE) {
+      dataSourceFieldIds.push(fieldId);
+    } else if (field.type === FieldTypeEnum.MEMBER || field.type === FieldTypeEnum.MEMBER_MULTIPLE) {
+      memberFieldIds.push(fieldId);
+    } else if (field.type === FieldTypeEnum.DEPARTMENT || field.type === FieldTypeEnum.DEPARTMENT_MULTIPLE) {
+      departmentFieldIds.push(fieldId);
+    } else if (field.type === FieldTypeEnum.DATE_TIME) {
+      timeFieldIds.push(fieldId);
+    } else if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && needParseSubTable) {
+      field.subFields?.forEach((subField) => {
+        const subFieldData = (
+          item[fieldId] || item.moduleFields?.find((mf: any) => mf.fieldId === fieldId)?.fieldValue
+        )?.map((subItem: Record<string, any>) => {
+          if (subField.resourceFieldId) {
+            subItem[`${subField.id}_original`] = subItem[field.id]; // 备份原始值以供编辑时填充数据源
+            subItem[subField.id] = parseModuleFieldValue(
+              subField,
+              subItem[subField.id],
+              // 数据源显示字段不使用业务 key，直接使用字段 id 去取值
+              originalData?.optionMap?.[subField.id]
+            );
+            fieldOptionMap[subField.id] = originalData?.optionMap?.[subField.id] || [];
+          } else {
+            subItem[`${subField.id}_original`] = subItem[subField.businessKey || subField.id]; // 备份原始值以供编辑时填充数据源
+            subItem[subField.id] = parseModuleFieldValue(
+              subField,
+              subItem[subField.businessKey || subField.id],
+              originalData?.optionMap?.[subField.businessKey || subField.id]
+            );
+            fieldOptionMap[subField.businessKey || subField.id] =
+              originalData?.optionMap?.[subField.businessKey || subField.id] || [];
+          }
+          return subItem;
+        });
+        item[fieldId] = subFieldData;
+        if (fieldId === field.businessKey) {
+          // 子表格字段可能会被设置为数据源的显示字段，而数据源显示字段都通过 id 读取，所以这里需要用 id 备份一份数据以供数据源显示字段场景读取
+          item[field.id] = subFieldData;
+        }
+      });
+    }
+    if (field.businessKey && !field.resourceFieldId) {
+      const fieldId = field.businessKey;
+      const options = originalData?.optionMap?.[fieldId]?.map((e: any) => ({
+        ...e,
+        name: e.name || t('common.optionNotExist'),
+      }));
+      fieldOptionMap[fieldId] = options || [];
+      if (addressFieldIds.includes(fieldId)) {
+        // 地址类型字段，解析代码替换成省市区
+        const addressArr: string[] = item[fieldId]?.split('-')?.filter(Boolean) || [];
+        let value = '';
+        if (!addressArr.length) {
+          value = '-';
+        } else {
+          const country = addressArr[0];
+          const rest = addressArr.filter((e, i) => i > 0).join('-');
+          value = rest ? `${getCityPath(country)}-${rest}` : getCityPath(country);
+        }
+        businessFieldAttr[fieldId] = value;
+      } else if (industryFieldIds.includes(fieldId)) {
+        // 行业类型字段，解析代码替换成行业名称
+        businessFieldAttr[fieldId] = item[fieldId] ? getIndustryPath(item[fieldId] as string) : '-';
+      } else if (timeFieldIds.includes(fieldId)) {
+        // 时间类型字段，格式化时间显示
+        businessFieldAttr[fieldId] = formatTimeValue(item[fieldId], field.dateType);
+      } else if (options && options.length > 0) {
+        let name: string | string[] = '';
+        if (item[fieldId] === '' || item[fieldId] === null) {
+          name = '-';
+        } else if (dataSourceFieldIds.includes(fieldId)) {
+          // 处理数据源字段，需要赋值为数组
+          if (typeof item[fieldId] === 'string' || typeof item[fieldId] === 'number') {
+            // 单选
+            name = options?.find((e) => e.id === item[fieldId])?.name || t('common.optionNotExist');
+          } else {
+            // 多选
+            name = options?.filter((e) => item[fieldId]?.includes(e.id)).map((e) => e.name) || [
+              t('common.optionNotExist'),
+            ];
+          }
+        } else if (typeof item[fieldId] === 'string' || typeof item[fieldId] === 'number') {
+          // 若值是单个字符串/数字
+          name = options?.find((e) => e.id === item[fieldId])?.name || t('common.optionNotExist');
+        } else {
+          // 若值是数组
+          name = options?.filter((e) => item[fieldId]?.includes(e.id)).map((e) => e.name) || [
+            t('common.optionNotExist'),
+          ];
+          if (Array.isArray(name) && name.length === 0) {
+            name = [t('common.optionNotExist')];
+          }
+        }
+        if (!excludeFieldIds?.includes(field.businessKey)) {
+          if (specialBusinessKeyMap[fieldId]) {
+            // 处理特殊业务 key 映射关系
+            businessFieldAttr[specialBusinessKeyMap[fieldId]] = name || t('common.optionNotExist');
+          } else {
+            businessFieldAttr[fieldId] = name || t('common.optionNotExist');
+          }
+        }
+        if (fieldId === 'owner') {
+          businessFieldAttr.ownerId = item.owner;
+        }
+      } else if (specialBusinessKeyMap[fieldId]) {
+        // 处理特殊业务 key 映射关系
+        businessFieldAttr[specialBusinessKeyMap[fieldId]] = item[specialBusinessKeyMap[fieldId]];
+      }
+      businessFieldAttr[field.id] = businessFieldAttr[fieldId] || item[fieldId];
+    }
+  });
+
+  item.moduleFields?.forEach((field: ModuleField) => {
+    const options = originalData?.optionMap?.[field.fieldId]?.map((e) => ({
+      ...e,
+      name: e.name || t('common.optionNotExist'),
+    }));
+    fieldOptionMap[field.fieldId] = options || [];
+    if (addressFieldIds.includes(field.fieldId)) {
+      // 地址类型字段，解析代码替换成省市区
+      const addressArr: string[] = (field?.fieldValue as string)?.split('-')?.filter(Boolean) || [];
+      let value = '';
+      if (!addressArr.length) {
+        value = '-';
+      } else {
+        const country = addressArr[0];
+        const scope = fields.find((f) => f.id === field.fieldId)?.scope;
+        const rest = addressArr.filter((e, i) => i > 0).join('-');
+        value = rest ? `${getCityPath(country, scope)}-${rest}` : getCityPath(country, scope);
+      }
+      customFieldAttr[field.fieldId] = value;
+    } else if (industryFieldIds.includes(field.fieldId)) {
+      // 行业类型字段，解析代码替换成行业名称
+      customFieldAttr[field.fieldId] = field.fieldValue ? getIndustryPath(field.fieldValue as string) : '-';
+    } else if (timeFieldIds.includes(field.fieldId)) {
+      // 时间类型字段，格式化时间显示
+      customFieldAttr[field.fieldId] = formatTimeValue(
+        field.fieldValue as string,
+        fields.find((f) => f.id === field.fieldId)?.dateType
+      );
+    } else if (options && options.length > 0) {
+      let name: string | string[] = '';
+      if (dataSourceFieldIds.includes(field.fieldId)) {
+        // 处理数据源字段，需要赋值为数组
+        if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
+          // 单选
+          name = [options.find((e) => e.id === field.fieldValue)?.name || t('common.optionNotExist')];
+        } else {
+          // 多选
+          name = field.fieldValue?.map((e) => options.find((o) => o.id === e)?.name || t('common.optionNotExist'));
+        }
+      } else if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
+        // 若值是单个字符串/数字
+        name = options.find((e) => e.id === field.fieldValue)?.name || t('common.optionNotExist');
+      } else {
+        // 若值是数组
+        name = field.fieldValue?.map((fv) => options.find((e) => e.id === fv)?.name || t('common.optionNotExist'));
+        if (Array.isArray(name) && name.length === 0) {
+          name = [t('common.optionNotExist')];
+        }
+      }
+      customFieldAttr[field.fieldId] = name || [t('common.optionNotExist')];
+    } else if (
+      [...dataSourceFieldIds, ...memberFieldIds, ...departmentFieldIds].includes(field.fieldId) &&
+      (!options || options.length === 0)
+    ) {
+      // 处理匹配不到 optionsMap 的数据源/成员/部门字段
+      if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
+        // 单选
+        customFieldAttr[field.fieldId] = field.fieldValue !== '' ? [t('common.optionNotExist')] : ['-'];
+      } else {
+        // 多选
+        customFieldAttr[field.fieldId] = field.fieldValue?.map((e) => (e !== '' ? [t('common.optionNotExist')] : '-'));
+      }
+    } else {
+      // 其他类型字段，直接赋值
+      customFieldAttr[field.fieldId] = field.fieldValue;
+    }
+  });
+  // 根据 moduleFields 集合判断 fields 完整字段集合中是否有自定义字段无值，因为无值后台不会在 moduleFields 里返回该字段，需要手动置空
+  fields.forEach((field) => {
+    if (!field.resourceFieldId && !field.businessKey) {
+      const fieldId = field.id;
+      if (!customFieldAttr[fieldId]) {
+        customFieldAttr[fieldId] = undefined;
+      }
+    }
+  });
+
+  return {
+    ...item,
+    ...customFieldAttr,
+    ...businessFieldAttr,
+    optionMap: fieldOptionMap,
+  };
+}
+
+/**
+ * 表单子表单计算汇总数值转换
+ */
+export function normalizeNumber(val: unknown): number {
+  if (val === null || val === undefined || val === '') return 0;
+  if (typeof val === 'number') {
+    return Number.isFinite(val) ? val : 0;
+  }
+  if (typeof val === 'string') {
+    let str = val.trim();
+    if (!str) return 0;
+    // 是否是百分比
+    const isPercent = str.endsWith('%');
+    // 去掉百分号
+    if (isPercent) {
+      str = str.slice(0, -1);
+    }
+    // 去掉千分位
+    str = str.replace(/,/g, '');
+    const num = Number(str);
+    return Number.isNaN(num) ? 0 : num;
+  }
+
+  return 0;
+}
+
+/**
+ * 合并初始选项和追加选项，去重后返回新的初始选项数组
+ * @param sumInitialOptions
+ * @param appendOptions
+ * @returns
+ */
+export function mergeUniqueOptions(sumInitialOptions: Record<string, any>[], appendOptions: Record<string, any>[]) {
+  const optionMap = new Map<any, Record<string, any>>();
+  [...sumInitialOptions, ...appendOptions].forEach((option) => {
+    if (!option) {
+      return;
+    }
+    const optionKey = option.id ?? option.value;
+    if (optionKey !== undefined) {
+      if (optionMap.has(optionKey)) {
+        Object.assign(optionMap.get(optionKey) || {}, option);
+      } else {
+        optionMap.set(optionKey, option);
+      }
+    }
+  });
+  sumInitialOptions = Array.from(optionMap.values());
+  return sumInitialOptions;
+}

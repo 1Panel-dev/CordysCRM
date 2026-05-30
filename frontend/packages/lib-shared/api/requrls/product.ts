@@ -1,0 +1,29 @@
+export const GetProductFormConfigUrl = '/product/module/form'; // 获取产品表单配置
+export const UpdateProductUrl = '/product/update'; // 更新产品
+export const GetProductListUrl = '/product/page'; // 产品列表
+export const AddProductUrl = '/product/add'; // 添加产品
+export const GetProductUrl = '/product/get'; // 获取产品详情
+export const DeleteProductUrl = '/product/delete'; // 删除产品
+export const BatchDeleteProductUrl = '/product/batch/delete'; // 批量删除产品
+export const BatchUpdateProductUrl = '/product/batch/update'; // 批量更新产品
+export const DragSortProductUrl = '/product/edit/pos'; // 排序拖拽产品
+export const GetProductOptionsUrl = '/product/list/option'; // 获取当前组织下所有的产品
+// 导入
+export const PreCheckProductImportUrl = '/product/import/pre-check';
+export const DownloadProductTemplateUrl = '/product/template/download';
+export const ImportProductUrl = '/product/import';
+
+export const UpdateProductPriceUrl = '/price/update'; // 更新价格表
+export const BatchUpdateProductPriceUrl = '/price/batch/update'; // 批量更新价格表
+export const GetProductPriceListUrl = '/price/page'; // 价格表列表
+export const AddProductPriceUrl = '/price/add'; // 添加价格表
+export const GetProductPriceFormConfigUrl = '/price/module/form'; // 获取价格表单配置
+export const GetProductPriceUrl = '/price/get'; // 获取价格表详情
+export const DeleteProductPriceUrl = '/price/delete'; // 删除价格表
+export const DragSortProductPriceUrl = '/price/edit/pos'; // 排序拖拽价格表
+export const DownloadProductPriceTemplateUrl = '/price/template/download'; // 下载价格表模板
+export const ExportProductPriceUrl = '/price/export-select'; // 导出选择的价格表
+export const ExportAllProductPriceUrl = '/price/export'; // 导出所有的价格表
+export const ImportProductPriceUrl = '/price/import'; // 导入价格表
+export const PreCheckImportProductPriceUrl = '/price/import/pre-check'; // 导入价格表预检查
+export const CopyProductPriceUrl = '/price/copy'; // 复制价格表

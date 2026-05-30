@@ -1,0 +1,109 @@
+name: Sync GitHub Issues to TAPD
+
+on:
+  issues:
+    types:
+      - assigned
+      - reopened
+
+permissions:
+  issues: write
+
+jobs:
+  sync-to-tapd:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: sync-issue-${{ github.event.issue.number }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Check if sync is needed (assignee + live labels)
+        id: check
+        run: |
+          ASSIGNEE="${{ github.event.issue.assignee.login }}"
+
+          # Fetch live labels from GitHub API (not the snapshot in the event)
+          LABELS=$(gh issue view ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --json labels \
+            --jq '.labels[].name')
+
+          if [ -z "$ASSIGNEE" ] || [ "$ASSIGNEE" != "luty2018" ]; then
+            echo "Issue is not assigned to luty2018 or has no assignee, skipping sync"
+            echo "should_sync=false" >> $GITHUB_OUTPUT
+          elif echo "$LABELS" | grep -qx "tapd-synced"; then
+            echo "Issue already has the tapd-synced label, already synced, skipping"
+            echo "should_sync=false" >> $GITHUB_OUTPUT
+          else
+            echo "Issue is assigned to luty2018 and not yet synced, proceeding to sync"
+            echo "should_sync=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Sync to TAPD
+        if: steps.check.outputs.should_sync == 'true'
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          TAPD_WORKSPACE_ID: ${{ secrets.TAPD_WORKSPACE_ID }}
+          TAPD_PROJECT_ID: ${{ secrets.TAPD_PROJECT_ID }}
+          TAPD_ITERATION_ID: ${{ secrets.TAPD_ITERATION_ID }}
+          TAPD_API_USERNAME: ${{ secrets.TAPD_API_USERNAME }}
+          TAPD_API_PASSWORD: ${{ secrets.TAPD_API_PASSWORD }}
+          TAPD_API_OWNER: ${{ secrets.TAPD_API_OWNER }}
+        run: |
+          # Fallback for empty body
+          BODY="${ISSUE_BODY:-No description}"
+          TITLE="[GitHub Issue #${ISSUE_NUMBER}] ${ISSUE_TITLE}"
+
+          BODY_HTML="${BODY//$'\n'/<br>}"
+          DESCRIPTION="GitHub link: ${ISSUE_URL}<br><br>Description: ${BODY_HTML}"
+
+          JSON=$(jq -n \
+            --arg name "$TITLE" \
+            --arg desc "$DESCRIPTION" \
+            --arg proj "$TAPD_PROJECT_ID" \
+            --arg ws "$TAPD_WORKSPACE_ID" \
+            --arg iteration "$TAPD_ITERATION_ID" \
+            --arg user "$TAPD_API_USERNAME" \
+            --arg owner "$TAPD_API_OWNER" \
+            '{
+              name: $name,
+              description: $desc,
+              project_id: $proj,
+              workspace_id: $ws,
+              owner: $owner,
+              creator: $owner
+            } + if $iteration != "" then {iteration_id: $iteration} else {} end')
+
+          echo "Creating TAPD story..."
+          echo "Title: $TITLE"
+          echo "Description: $DESCRIPTION"
+
+          HTTP_CODE=$(curl -s -o /dev/stderr -w "%{http_code}" -X POST \
+            "https://api.tapd.cn/stories?workspace_id=${TAPD_WORKSPACE_ID}" \
+            -H "Content-Type: application/json" \
+            -u "${TAPD_API_USERNAME}:${TAPD_API_PASSWORD}" \
+            -d "$JSON")
+
+          if [ "$HTTP_CODE" -ne 200 ] && [ "$HTTP_CODE" -ne 201 ]; then
+            echo "::error::TAPD API returned HTTP ${HTTP_CODE}, check the response details above"
+            exit 1
+          fi
+
+          echo "::notice::Sync completed, TAPD story created"
+
+      - name: Add synced label
+        if: steps.check.outputs.should_sync == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['tapd-synced']
+            })

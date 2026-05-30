@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.product.mapper.ExtProductPriceMapper">
+
+    <select id="list" resultType="cn.cordys.crm.product.dto.response.ProductPriceResponse">
+        select pp.id, pp.name, pp.status, pp.pos, pp.organization_id, pp.create_time, pp.update_time, pp.create_user,
+        pp.update_user
+        from product_price pp
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        where pp.organization_id = #{currentOrg}
+        <if test="request.keyword != null and request.keyword != ''">
+            and pp.name like concat('%', #{request.keyword},'%')
+        </if>
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
+        </include>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+    <!-- common sql start -->
+    <sql id="fieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <choose>
+                    <when test="condition.refFiled">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
+                            <property name="condition" value="condition"/>
+                            <property name="mainTable" value="product_price"/>
+                            <property name="mainTableAlias" value="pp"/>
+                            <property name="fieldTable" value="${tablePrefix}_${i}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <if test="condition.name != 'name' and condition.name != 'status' and condition.name != 'updateUser'
+                            and condition.name != 'createTime' and condition.name != 'updateTime' and condition.name != 'createUser'
+                            and condition.name != 'update_user' and condition.name != 'create_time' and condition.name != 'update_time'
+                            and condition.name != 'create_user'">
+                            <if test="condition.blob">
+                                left join product_price_field_blob ${tablePrefix}_${i}
+                                on pp.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                            <if test="!condition.blob">
+                                left join product_price_field ${tablePrefix}_${i}
+                                on pp.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                        </if>
+                    </otherwise>
+                </choose>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fieldSortJoin">
+        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'status'
+                and ${sort}.name != 'create_user' and ${sort}.name != 'create_time'
+                and ${sort}.name != 'update_time' and ${sort}.name != 'update_user'">
+            <bind name="sortName" value="${sort}.name"/>
+            left join product_price_field sort_table
+            on pp.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+            left join sys_module_field module_table on sort_table.field_id = module_table.id
+        </if>
+    </sql>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type"/>
+                order by
+                <choose>
+                    <when test="${sort}.name == 'name'">
+                        pp.`name` ${sortType}, pp.id ASC
+                    </when>
+                    <when test="${sort}.name == 'status'">
+                        pp.`status` ${sortType}, pp.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_time'">
+                        pp.`create_time` ${sortType}, pp.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_time'">
+                        pp.`update_time` ${sortType}, pp.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_user'">
+                        pp.`create_user` ${sortType}, pp.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_user'">
+                        pp.`update_user` ${sortType}, pp.id ASC
+                    </when>
+                    <otherwise>
+                        CASE
+                        WHEN module_table.type = 'INPUT_NUMBER'
+                        THEN sort_table.field_value+0
+                        END ${sortType},
+                        sort_table.field_value ${sortType},
+                        pp.id ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by pp.pos
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                        <property name="fieldTable" value="filter_${i}.field_value"/>
+                        <property name="table" value="filter_${i}"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.refFiled">
+                <choose>
+                    <when test="!condition.customField">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${table}.${condition.name}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="condition.name == 'name'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="pp.name"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'status'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="pp.status"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'createUser'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="pp.create_user"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'updateUser'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="pp.update_user"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'createTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="pp.create_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'updateTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="pp.update_time"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="combine_${i}.field_value"/>
+                            <property name="table" value="combine_${i}"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="viewCombine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="viewCombine_${i}.field_value"/>
+                            <property name="table" value="viewCombine_${i}"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+    <!-- common sql end -->
+
+    <select id="getPos" resultType="java.lang.Long">
+        select `pos` from product_price where organization_id = #{orgId} order by pos desc limit 1;
+    </select>
+
+    <select id="getPrePos" resultType="java.lang.Long">
+        select `pos` from product_price where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &lt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
+    </select>
+
+    <select id="getLastPos" resultType="java.lang.Long">
+        select `pos` from product_price where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &gt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
+    </select>
+
+    <update id="batchUpdate">
+        update product_price
+        <set>
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'status'">
+                `status` = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'pos'">
+                pos = #{request.fieldvalue},
+            </if>
+            update_time = #{request.updateTime},
+            update_user = #{request.updateUser},
+        </set>
+        where id in
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="selectByIds" resultType="cn.cordys.crm.product.dto.response.ProductPriceResponse">
+        select pp.id, pp.name, pp.status, pp.pos, pp.organization_id, pp.create_time, pp.update_time, pp.create_user,
+               pp.update_user
+        from product_price pp
+        where pp.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+</mapper>

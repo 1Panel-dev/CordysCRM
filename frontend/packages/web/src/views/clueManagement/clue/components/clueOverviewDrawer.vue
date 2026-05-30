@@ -1,0 +1,331 @@
+<template>
+  <CrmOverviewDrawer
+    ref="crmOverviewDrawerRef"
+    v-model:show="show"
+    v-model:active-tab="activeTab"
+    :tab-list="tabList"
+    :button-list="buttonList"
+    :button-more-list="buttonMoreList"
+    :source-id="sourceId"
+    :title="sourceName"
+    :form-key="FormDesignKeyEnum.CLUE"
+    :show-tab-setting="false"
+    :formViewSize="formViewSize"
+    @button-select="handleSelect"
+    @saved="
+      (res) => {
+        refreshKey += 1;
+        emit('saved', res);
+      }
+    "
+  >
+    <template #left>
+      <div class="h-full overflow-hidden">
+        <CrmFormDescription
+          :refresh-key="refreshKey"
+          :form-key="FormDesignKeyEnum.CLUE"
+          :source-id="sourceId"
+          class="p-[16px_24px]"
+          :column="layout === 'vertical' ? 3 : undefined"
+          :label-width="layout === 'vertical' ? 'auto' : undefined"
+          :value-align="layout === 'vertical' ? 'start' : undefined"
+          :readonly="!hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])"
+          @init="handleDescriptionInit"
+          @open-customer-detail="emit('openCustomerDrawer', $event)"
+        />
+      </div>
+    </template>
+    <template #transferPopContent>
+      <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
+    </template>
+    <!-- TODO 先不要了 -->
+    <!-- <template #rightTop>
+      <CrmWorkflowCard
+        v-model:stage="currentStatus"
+        v-model:last-stage="lastStage"
+        class="mb-[16px]"
+        show-error-btn
+        :readonly="isConverted"
+        :base-steps="workflowList"
+        :source-id="sourceId"
+        :update-api="updateClueStatus"
+        :operation-permission="['CLUE_MANAGEMENT:UPDATE']"
+        @load-detail="loadDetail"
+      />
+    </template> -->
+    <template #right>
+      <div class="h-full pt-[16px]">
+        <FollowDetail
+          v-if="['followRecord', 'followPlan'].includes(activeTab)"
+          :active-type="(activeTab as 'followRecord'| 'followPlan')"
+          wrapper-class="h-[calc(100vh-162px)]"
+          virtual-scroll-height="calc(100vh - 254px)"
+          :follow-api-key="FormDesignKeyEnum.CLUE"
+          :initial-source-name="sourceName"
+          :show-add="hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])"
+          :source-id="sourceId"
+          :show-action="showAction"
+          :parentFormKey="FormDesignKeyEnum.CLUE"
+        />
+
+        <CrmHeaderTable
+          v-if="activeTab === 'headRecord'"
+          :form-key="FormDesignKeyEnum.CLUE_POOL"
+          :source-id="sourceId"
+          :load-list-api="getClueHeaderList"
+        />
+      </div>
+    </template>
+  </CrmOverviewDrawer>
+  <CrmMoveModal
+    v-model:show="showMoveModal"
+    :reason-key="ReasonTypeEnum.CLUE_POOL_RS"
+    :source-id="sourceId"
+    :name="sourceName"
+    @refresh="handleMovedSuccess"
+  />
+  <convertClueModal v-model:show="showConvertClueModal" :clue-id="sourceId" @success="emit('remove')" />
+</template>
+
+<script setup lang="ts">
+  import { useMessage } from 'naive-ui';
+
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
+  import type { ClueListItem } from '@lib/shared/models/clue';
+  import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
+  import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
+
+  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
+  import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
+  import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
+  import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
+  import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
+  import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
+  import convertClueModal from './convertClueModal.vue';
+
+  import { batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
+  import { defaultTransferForm } from '@/config/opportunity';
+  import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
+
+  const props = defineProps<{
+    detail?: Partial<ClueListItem>;
+  }>();
+
+  const show = defineModel<boolean>('show', {
+    required: true,
+  });
+
+  const emit = defineEmits<{
+    (e: 'refresh'): void;
+    (e: 'saved', res: any): void;
+    (e: 'remove'): void;
+    (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
+  }>();
+
+  const { openModal } = useModal();
+  const { t } = useI18n();
+  const Message = useMessage();
+
+  const crmOverviewDrawerRef = ref<InstanceType<typeof CrmOverviewDrawer>>();
+  const layout = computed(() => crmOverviewDrawerRef.value?.layout);
+
+  const sourceId = computed(() => props.detail?.id ?? '');
+  const sourceName = ref('');
+  const refreshKey = ref(0);
+
+  const transferForm = ref<TransferParams>({
+    ...defaultTransferForm,
+  });
+  const transferLoading = ref(false);
+
+  function closeAndRefresh() {
+    show.value = false;
+    emit('refresh');
+  }
+
+  // 转移
+  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
+  function handleTransfer() {
+    transferFormRef.value?.formRef?.validate(async (error) => {
+      if (!error) {
+        try {
+          transferLoading.value = true;
+          await batchTransferClue({
+            ...transferForm.value,
+            ids: [sourceId.value],
+          });
+          Message.success(t('common.transferSuccess'));
+          transferForm.value = { ...defaultTransferForm };
+          closeAndRefresh();
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e);
+        } finally {
+          transferLoading.value = false;
+        }
+      }
+    });
+  }
+
+  // 删除
+  function handleDelete() {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(sourceName.value) }),
+      content: t('clue.batchDeleteContentTip'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteClue(sourceId.value);
+          Message.success(t('common.deleteSuccess'));
+          emit('remove');
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      },
+    });
+  }
+
+  // 移入线索池
+  const showMoveModal = ref(false);
+  function handleMoveToLeadPool() {
+    showMoveModal.value = true;
+  }
+
+  // 转换
+  const showConvertClueModal = ref(false);
+  function handleConvert() {
+    showConvertClueModal.value = true;
+  }
+
+  function handleSelect(key: string) {
+    switch (key) {
+      case 'pop-transfer':
+        handleTransfer();
+        break;
+      case 'delete':
+        handleDelete();
+        break;
+      case 'convert':
+        handleConvert();
+        break;
+      case 'moveIntoCluePool':
+        handleMoveToLeadPool();
+        break;
+      default:
+        break;
+    }
+  }
+
+  const showAction = computed(() => hasAnyPermission(['CLUE_MANAGEMENT:UPDATE']));
+
+  const isConverted = computed(
+    () => props.detail?.transitionType && ['CUSTOMER'].includes(props.detail.transitionType)
+  );
+
+  const buttonList = computed<ActionsItem[]>(() => {
+    if (isConverted.value) {
+      return [];
+    }
+    return [
+      {
+        label: t('common.edit'),
+        key: 'edit',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
+      },
+      {
+        label: t('clue.convert'),
+        key: 'convert',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
+      },
+      {
+        label: t('clue.moveIntoCluePool'),
+        key: 'moveIntoCluePool',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CLUE_MANAGEMENT:RECYCLE'],
+      },
+      {
+        label: t('common.transfer'),
+        key: 'transfer',
+        permission: ['CLUE_MANAGEMENT:TRANSFER'],
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        popConfirmProps: {
+          loading: transferLoading.value,
+          title: t('common.transfer'),
+          positiveText: t('common.confirm'),
+          iconType: 'primary',
+        },
+        popSlotName: 'transferPopTitle',
+        popSlotContent: 'transferPopContent',
+      },
+    ];
+  });
+
+  const buttonMoreList = computed<ActionsItem[]>(() => {
+    if (isConverted.value) {
+      return [];
+    }
+    return [
+      {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['CLUE_MANAGEMENT:DELETE'],
+        danger: true,
+      },
+    ];
+  });
+
+  // tab
+  const activeTab = ref('followRecord');
+  const tabList: TabContentItem[] = [
+    {
+      name: 'followRecord',
+      tab: t('crmFollowRecord.followRecord'),
+      enable: true,
+    },
+    {
+      name: 'followPlan',
+      tab: t('common.plan'),
+      enable: true,
+    },
+    {
+      name: 'headRecord',
+      tab: t('common.headRecord'),
+      enable: true,
+    },
+  ];
+
+  function handleMovedSuccess() {
+    show.value = false;
+    emit('remove');
+  }
+
+  const formViewSize = ref<FormViewSize>('large');
+  function handleDescriptionInit(
+    _collaborationType?: CollaborationType,
+    _sourceName?: string,
+    detail?: Record<string, any>,
+    config?: FormConfig
+  ) {
+    sourceName.value = _sourceName || '';
+    formViewSize.value = config?.viewSize || 'large';
+  }
+</script>

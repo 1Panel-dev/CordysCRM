@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.system.mapper.ExtNavigationMapper">
+
+
+    <select id="selectList" resultType="cn.cordys.crm.system.domain.Navigation">
+        select id, navigation_key, enable, organization_id, pos
+        from sys_navigation
+        where organization_id = #{orgId}
+        order by pos
+    </select>
+
+
+    <update id="moveUpNavigation" parameterType="java.lang.Long">
+        update sys_navigation set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end}
+    </update>
+
+
+    <update id="moveDownNavigation" parameterType="java.lang.Long">
+        update sys_navigation set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end}
+    </update>
+</mapper>

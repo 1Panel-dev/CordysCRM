@@ -1,0 +1,88 @@
+<template>
+  <n-tabs v-model:value="configTab" :bar-width="140" justify-content="space-around" type="line" animated>
+    <n-tab-pane name="field" :tab="t('crmFormDesign.fieldConfig')">
+      <n-scrollbar>
+        <fieldAttr v-model:field-list="list" :field="fieldConfig" :form-key="props.formKey" />
+      </n-scrollbar>
+    </n-tab-pane>
+    <n-tab-pane name="form" :tab="t('crmFormDesign.formConfig')">
+      <n-scrollbar>
+        <formAttr v-model:field-list="list" :form-config="formConfig" :form-key="props.formKey" />
+      </n-scrollbar>
+    </n-tab-pane>
+  </n-tabs>
+</template>
+
+<script setup lang="ts">
+  import { NScrollbar, NTabPane, NTabs } from 'naive-ui';
+
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FormConfig } from '@lib/shared/models/system/module';
+
+  import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import fieldAttr from './fieldAttr.vue';
+  import formAttr from './formAttr.vue';
+
+  const props = defineProps<{
+    formKey: FormDesignKeyEnum;
+  }>();
+
+  const { t } = useI18n();
+
+  const list = defineModel<FormCreateField[]>('fieldList', {
+    required: true,
+  });
+
+  const formConfig = defineModel<FormConfig>('formConfig', {
+    required: true,
+  });
+
+  const fieldConfig = defineModel<FormCreateField>('field', {
+    default: null,
+  });
+
+  const configTab = ref('field');
+</script>
+
+<style lang="less">
+  .crm-form-design-config-item {
+    @apply flex flex-col;
+
+    gap: 8px;
+    &:not(:first-child) {
+      margin-top: 24px;
+    }
+    .crm-form-design-config-item-title {
+      @apply flex items-center justify-between font-semibold;
+
+      gap: 4px;
+    }
+    .crm-form-design-config-item-input {
+      @apply flex items-center;
+
+      gap: 8px;
+    }
+  }
+</style>
+
+<style lang="less" scoped>
+  .n-tabs {
+    @apply h-full overflow-hidden;
+  }
+  :deep(.n-tabs-tab-wrapper) {
+    @apply h-full justify-center;
+
+    width: 50%;
+    .n-tabs-tab {
+      @apply h-full w-full justify-center;
+
+      padding: 8px 0;
+    }
+  }
+  .n-tab-pane {
+    @apply h-full;
+
+    --n-pane-padding-top: 0;
+  }
+</style>

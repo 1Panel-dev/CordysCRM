@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.follow.mapper.ExtFollowUpRecordMapper">
+
+    <select id="selectPoolList" resultType="cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse">
+        SELECT
+            id,
+            customer_id,
+            opportunity_id,
+            type,
+            clue_id,
+            content,
+            follow_time,
+            owner,
+            contact_id,
+            create_time,
+            update_time,
+            create_user,
+            update_user
+        FROM
+            follow_up_record
+        WHERE
+            organization_id =#{orgId}
+          and type = #{type}
+        <if test="resourceType == 'CUSTOMER'">
+            AND customer_id = #{request.sourceId}
+        </if>
+        <if test="resourceType == 'CLUE'">
+            AND clue_id = #{request.sourceId}
+        </if>
+        <if test="resourceType == 'OPPORTUNITY'">
+            AND opportunity_id = #{request.sourceId}
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND organization_id = #{orgId}
+        </if>
+        <if test="request.keyword != null and request.keyword != ''">
+            AND content like concat('%', #{request.keyword},'%')
+        </if>
+        ORDER BY follow_time DESC, create_time DESC
+    </select>
+
+
+
+    <select id="selectList" resultType="cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse">
+        SELECT
+        id,
+        customer_id,
+        opportunity_id,
+        type,
+        clue_id,
+        content,
+        follow_time,
+        owner,
+        contact_id,
+        create_time,
+        update_time,
+        create_user,
+        update_user,
+        follow_method
+        FROM
+        follow_up_record
+        <where>
+            <if test="resourceType == 'CUSTOMER'">
+                AND customer_id = #{request.sourceId}
+            </if>
+            <if test="resourceType == 'CLUE'">
+                AND clue_id = #{request.sourceId}
+            </if>
+            <if test="resourceType == 'OPPORTUNITY'">
+                AND opportunity_id = #{request.sourceId}
+            </if>
+            <if test="orgId != null and orgId != ''">
+                AND organization_id = #{orgId}
+            </if>
+            <if test="request.keyword != null and request.keyword != ''">
+                AND content like concat('%', #{request.keyword},'%')
+            </if>
+
+            <if test="customerData != null and !customerData.all and customerData.owner">
+                <if test="customerData.userIds != null and customerData.userIds.size() > 0">
+                    AND owner not in
+                    <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
+                        #{userId}
+                    </foreach>
+                </if>
+            </if>
+
+            <if test="customerData != null and !customerData.all and !customerData.owner and !customerData.self">
+                <if test="customerData.userIds != null and customerData.userIds.size() > 0">
+                    AND owner not in
+                    <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
+                        #{userId}
+                    </foreach>
+                </if>
+            </if>
+
+            <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
+                AND owner = #{userId}
+            </if>
+        </where>
+        ORDER BY follow_time DESC, create_time DESC
+    </select>
+
+    <select id="selectTotalList" resultType="cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse">
+        SELECT
+        fur.id,
+        fur.customer_id,
+        fur.opportunity_id,
+        fur.type,
+        fur.clue_id,
+        fur.content,
+        fur.follow_time,
+        fur.owner,
+        fur.contact_id,
+        fur.create_time,
+        fur.update_time,
+        fur.create_user,
+        fur.update_user,
+        fur.follow_method,
+        fur.organization_id,
+        if (fur.type = 'CLUE', c.pool_id, cu.pool_id) as poolId
+        FROM follow_up_record fur
+        LEFT JOIN clue c ON c.id = fur.clue_id
+        LEFT JOIN customer cu ON cu.id = fur.customer_id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="viewFieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+        <if test=" (clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0) or
+                    (customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0) ">
+            join sys_organization_user souu on fur.owner = souu.user_id
+        </if>
+
+        WHERE fur.organization_id = #{orgId} and (c.transition_type is null or c.transition_type != 'CUSTOMER')
+        <!-- 业务数据权限条件 -->
+
+        AND (
+        <!-- 线索数据 -->
+            (
+                fur.type = 'CLUE'
+                <if test="request.keyword != null and request.keyword != ''">
+                    AND c.name like concat('%', #{request.keyword},'%')
+                </if>
+                <if test="clueDataPermission != null and clueDataPermission.self">
+                    AND fur.owner = #{userId}
+                </if>
+                <if test="clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0">
+                    AND (
+                        souu.department_id IN
+                        <foreach collection="clueDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                            #{deptId}
+                        </foreach>
+                        <if test="clueDataPermission.viewId == 'ALL'">
+                            OR fur.owner = #{userId}
+                        </if>
+                    )
+                </if>
+            )
+            OR
+            <!-- 客户数据 -->
+            (
+                fur.type = 'CUSTOMER'
+                <if test="request.keyword != null and request.keyword != ''">
+                    AND cu.name like concat('%', #{request.keyword},'%')
+                </if>
+                <if test="customerDataPermission != null and customerDataPermission.self">
+                    AND fur.owner = #{userId}
+                </if>
+                <if test="customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0">
+                    AND (
+                        souu.department_id IN
+                        <foreach collection="customerDataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                            #{deptId}
+                        </foreach>
+                        <if test="customerDataPermission.viewId == 'ALL'">
+                            OR fur.owner = #{userId}
+                        </if>
+                    )
+                </if>
+            )
+        )
+
+        <!-- 高级搜索/过滤, 排序条件 -->
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
+        </include>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+
+    <select id="selectRecord" resultType="cn.cordys.crm.follow.domain.FollowUpRecord">
+        select
+        customer_id,
+        opportunity_id,
+        clue_id,
+        follow_time,
+        owner
+        from follow_up_record
+        where organization_id = #{orgId}
+        and type = #{type}
+        <if test="customerId != null and customerId != ''">
+            AND customer_id = #{customerId}
+        </if>
+        <if test="clueId != null and clueId != ''">
+            AND clue_id = #{clueId}
+        </if>
+        <if test="opportunityId != null and opportunityId != ''">
+            AND opportunity_id = #{opportunityId}
+        </if>
+        order by follow_time desc
+        limit 1
+    </select>
+    <select id="getNewContactCount" resultType="java.lang.Long">
+        select count(*) from follow_up_record c
+
+        <if test="request.dataPermission != null and request.dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on c.owner = sou.user_id
+            and (
+            sou.department_id in
+            <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="request.dataPermission.viewId == 'ALL'">
+                or sou.user_id = #{request.userId}
+            </if>
+            )
+        </if>
+
+        where c.organization_id = #{request.orgId}
+        <if test="request.startTime != null and request.endTime != null">
+            and c.create_time &gt;= #{request.startTime} and c.create_time &lt;= #{request.endTime}
+        </if>
+
+        <if test="request.dataPermission != null and request.dataPermission.self">
+            and c.owner = #{request.userId}
+        </if>
+    </select>
+
+    <sql id="fieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <choose>
+                    <when test="condition.refFiled">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
+                            <property name="condition" value="condition"/>
+                            <property name="mainTable" value="follow_up_record"/>
+                            <property name="mainTableAlias" value="fur"/>
+                            <property name="fieldTable" value="${tablePrefix}_${i}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <if test="condition.name != 'content'
+                            and condition.name != 'owner' and condition.name != 'type'
+                            and condition.name != 'customerId' and condition.name != 'opportunityId'
+                            and condition.name != 'clueId' and condition.name != 'contactId'
+                            and condition.name != 'followTime' and condition.name != 'followMethod'
+                            and condition.name != 'createTime' and condition.name != 'createUser'
+                            and condition.name != 'updateUser' and condition.name != 'updateTime'">
+                            <if test="condition.blob">
+                                LEFT JOIN follow_up_record_field_blob ${tablePrefix}_${i}
+                                ON fur.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                            <if test="!condition.blob">
+                                LEFT JOIN follow_up_record_field ${tablePrefix}_${i}
+                                ON fur.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                            <if test="condition.name == 'departmentId'">
+                                LEFT JOIN sys_organization_user sou ON fur.owner = sou.user_id
+                            </if>
+                            <if test="condition.name == 'phone'">
+                                LEFT JOIN customer_contact cc ON fur.contact_id = cc.id
+                            </if>
+                        </if>
+                    </otherwise>
+                </choose>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="viewFieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <if test="condition.name != 'content'
+                    and condition.name != 'owner' and condition.name != 'type'
+                    and condition.name != 'customerId' and condition.name != 'opportunityId'
+                    and condition.name != 'clueId' and condition.name != 'contactId'
+                    and condition.name != 'followTime' and condition.name != 'followMethod'
+                    and condition.name != 'createTime' and condition.name != 'createUser'
+                    and condition.name != 'updateUser' and condition.name != 'updateTime'">
+                    <if test="condition.blob">
+                        LEFT JOIN follow_up_record_field_blob ${tablePrefix}_${i}
+                        ON fur.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="!condition.blob">
+                        LEFT JOIN follow_up_record_field ${tablePrefix}_${i}
+                        ON fur.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="condition.name == 'departmentId'">
+                        LEFT JOIN sys_organization_user sou ON fur.owner = sou.user_id
+                    </if>
+                    <if test="condition.name == 'phone'">
+                        LEFT JOIN customer_contact cc ON fur.contact_id = cc.id
+                    </if>
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fieldSortJoin">
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
+                {'content', 'owner', 'type', 'customerId', 'opportunityId', 'clueId', 'contactId', 'followTime', 'followMethod',
+                'create_user', 'update_user', 'create_time', 'update_time'}">
+            <bind name="sortName" value="${sort}.name"/>
+            LEFT JOIN follow_up_record_field sort_table ON fur.id = sort_table.resource_id AND sort_table.field_id = #{sortName}
+            LEFT JOIN sys_module_field module_table ON sort_table.field_id = module_table.id
+            <if test="${sort} != null and ${sort}.valid() and ${sort}.name == 'department_id'">
+                LEFT JOIN sys_organization_user sou on sou.user_id = fur.owner
+            </if>
+        </if>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                        <property name="fieldTable" value="filter_${i}.field_value"/>
+                        <property name="table" value="filter_${i}"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="combine_${i}.field_value"/>
+                            <property name="table" value="combine_${i}"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="viewCombine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="viewCombine_${i}.field_value"/>
+                            <property name="table" value="viewCombine_${i}"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.refFiled">
+                <choose>
+                    <when test="!condition.customField">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${table}.${condition.name}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="condition.name == 'content'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.content"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'type'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.type"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'owner'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.owner"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'customerId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.customer_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'opportunityId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.opportunity_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'clueId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.clue_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'contactId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.contact_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'followMethod'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.follow_method"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'followTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.follow_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'createUser'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.create_user"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'createTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.create_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'updateUser'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.update_user"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'updateTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="fur.update_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'departmentId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="sou.department_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'phone'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="cc.phone"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type" />
+                order by
+                <choose>
+                    <when test="${sort}.name == 'customer_id'">
+                        fur.`customer_id` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'opportunity_id'">
+                        fur.`opportunity_id` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'clue_id'">
+                        fur.`clue_id` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'contact_id'">
+                        fur.`contact_id` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'type'">
+                        fur.`type` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'owner'">
+                        fur.`owner` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'follow_method'">
+                        fur.`follow_method` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'follow_time'">
+                        fur.`follow_time` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_time'">
+                        fur.`create_time` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_time'">
+                        fur.`update_time` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_user'">
+                        fur.`create_user` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_user'">
+                        fur.`update_user` ${sortType}, fur.id ASC
+                    </when>
+                    <when test="${sort}.name == 'department_id'">
+                        sou.`id` ${sortType}, c.id ASC
+                    </when>
+                    <otherwise>
+                        CASE
+                        WHEN module_table.type = 'INPUT_NUMBER'
+                        THEN sort_table.field_value+0
+                        END ${sortType},
+                        sort_table.field_value ${sortType},
+                        fur.id ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by fur.follow_time desc, fur.create_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <update id="batchMerge" parameterType="cn.cordys.crm.customer.dto.request.CustomerMergeRequest">
+        update follow_up_record set customer_id = #{request.toMergeId}, update_user = #{userId}, update_time = unix_timestamp() * 1000
+        where customer_id in
+        <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId}
+    </update>
+
+    <select id="getMergeRecordList" resultType="cn.cordys.crm.follow.domain.FollowUpRecord">
+        select customer_id from follow_up_record
+        where customer_id in
+        <foreach collection="request.mergeIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and organization_id = #{orgId};
+    </select>
+</mapper>

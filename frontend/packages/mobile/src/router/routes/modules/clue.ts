@@ -1,0 +1,68 @@
+import { ClueRouteEnum } from '@/enums/routeEnum';
+
+import { DEFAULT_LAYOUT } from '../base';
+import type { AppRouteRecordRaw } from '../types';
+
+const lead: AppRouteRecordRaw = {
+  path: '/lead',
+  name: ClueRouteEnum.CLUE,
+  redirect: '/lead/index',
+  component: DEFAULT_LAYOUT,
+  meta: {
+    permissions: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],
+  },
+  children: [
+    {
+      path: 'index',
+      name: ClueRouteEnum.CLUE_INDEX,
+      component: () => import('@/views/clue/index.vue'),
+      meta: {
+        locale: 'menu.clue',
+        permissions: ['CLUE_MANAGEMENT:READ'],
+        depth: 1,
+        isCache: true,
+      },
+    },
+    {
+      path: 'detail',
+      name: ClueRouteEnum.CLUE_DETAIL,
+      component: () => import('@/views/clue/clue/detail.vue'),
+      meta: {
+        permissions: ['CLUE_MANAGEMENT:READ'],
+        depth: 2,
+        isCache: true,
+      },
+    },
+    {
+      path: 'moveToPool',
+      name: ClueRouteEnum.MOVE_TO_POOL,
+      component: () => import('@/views/clue/clue/moveToPool.vue'),
+      meta: {
+        permissions: ['CLUE_MANAGEMENT:READ'],
+        depth: 2,
+      },
+    },
+    {
+      path: 'convert',
+      name: ClueRouteEnum.CONVERT,
+      component: () => import('@/views/clue/clue/convert.vue'),
+      meta: {
+        permissions: ['CLUE_MANAGEMENT:READ'],
+        isCache: true,
+        depth: 2,
+      },
+    },
+    {
+      path: 'poolDetail',
+      name: ClueRouteEnum.CLUE_POOL_DETAIL,
+      component: () => import('@/views/clue/pool/detail.vue'),
+      meta: {
+        permissions: ['CLUE_MANAGEMENT_POOL:READ'],
+        isCache: true,
+        depth: 2,
+      },
+    },
+  ],
+};
+
+export default lead;

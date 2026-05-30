@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.crm.system.mapper.ExtModuleFieldMapper">
+
+    <delete id="deleteByIds" parameterType="java.lang.String">
+        delete from sys_module_field where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deletePropByIds" parameterType="java.lang.String">
+        delete from sys_module_field_blob where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="batchUpdateMobile" parameterType="java.lang.String">
+        update sys_module_field set mobile = #{mobile} where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getMaxFieldPosByFormId" resultType="java.lang.Long">
+        select pos from sys_module_field where form_id = #{formId} order by pos desc limit 1
+    </select>
+
+    <select id="getFormSubFields" resultType="cn.cordys.crm.system.domain.ModuleFieldBlob">
+        select * from sys_module_field_blob where id in (
+            select id from sys_module_field where form_id = (select id from sys_module_form where form_key = #{formKey}) and type like '%SUB_%'
+        )
+    </select>
+
+    <select id="getSourceOptionsByIds" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, name from ${tableName} where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+          #{id}
+        </foreach>
+    </select>
+
+    <select id="getSourceOptionsByKeywords" resultType="cn.cordys.common.dto.OptionDTO">
+        select id,name from ${tableName} where id in
+        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
+            #{keyword}
+        </foreach>
+        or name in
+        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
+            #{keyword}
+        </foreach>
+        <if test="tableName == 'clue'">
+            and (transition_id IS NULL OR  transition_id = '') and in_shared_pool is false
+        </if>
+        <if test="tableName == 'customer'">
+            and in_shared_pool is false
+        </if>
+    </select>
+
+    <select id="getSourceOptionsByName" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, name from ${tableName} where organization_id = #{orgId}
+        <if test="keyword != null and keyword != ''">
+            and name like concat('%', #{keyword},'%')
+        </if>
+    </select>
+
+
+    <select id="getModuleField" resultType="cn.cordys.crm.system.domain.ModuleField">
+        SELECT
+        field.id,
+        field.form_id,
+        field.internal_key,
+        field.`name`,
+        field.type
+        FROM
+        sys_module_field field
+        INNER JOIN sys_module_form form on field.form_id = form.id
+        where form.organization_id = #{orgId}
+        and form.form_key in
+        <foreach collection="formKeys" item="formKey" open="(" separator="," close=")">
+            #{formKey}
+        </foreach>
+    </select>
+</mapper>

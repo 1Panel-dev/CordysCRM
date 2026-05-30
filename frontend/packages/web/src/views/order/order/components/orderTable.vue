@@ -1,0 +1,780 @@
+<template>
+  <CrmTable
+    ref="crmTableRef"
+    v-model:checked-row-keys="checkedRowKeys"
+    v-bind="propsRes"
+    :class="`crm-order-table-${props.formKey}`"
+    :not-show-table="activeShowType === 'billboard'"
+    :not-show-table-filter="isAdvancedSearchMode"
+    :fullscreen-target-ref="props.fullscreenTargetRef"
+    :action-config="actionConfig"
+    :hiddenBackToTop="activeShowType === 'billboard'"
+    :customTotal="activeShowType === 'billboard'"
+    @page-change="propsEvent.pageChange"
+    @page-size-change="propsEvent.pageSizeChange"
+    @sorter-change="propsEvent.sorterChange"
+    @filter-change="filterChange"
+    @batch-action="handleBatchAction"
+    @refresh="searchData"
+  >
+    <template #actionLeft>
+      <n-button
+        v-if="!props.readonly && !props.isCustomerTab"
+        v-permission="['ORDER:ADD']"
+        type="primary"
+        @click="handleNewClick"
+      >
+        {{ t('order.new') }}
+      </n-button>
+    </template>
+    <template #actionRight>
+      <CrmAdvanceFilter
+        v-if="!props.hiddenAdvanceFilter"
+        ref="tableAdvanceFilterRef"
+        v-model:keyword="keyword"
+        :search-placeholder="t('order.searchPlaceholder')"
+        :custom-fields-config-list="customFieldsFilterConfig"
+        :filter-config-list="filterConfigList"
+        @adv-search="handleAdvSearch"
+        @keyword-search="searchData"
+      />
+      <n-tabs
+        v-if="!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter"
+        v-model:value="activeShowType"
+        type="segment"
+        size="large"
+        class="show-type-tabs"
+      >
+        <n-tab-pane name="table" class="hidden">
+          <template #tab><CrmIcon type="iconicon_list" /></template>
+        </n-tab-pane>
+        <n-tab-pane name="billboard" class="hidden">
+          <template #tab><CrmIcon type="iconicon_waterfalls" /></template>
+        </n-tab-pane>
+      </n-tabs>
+    </template>
+    <template #view>
+      <CrmViewSelect
+        v-if="!props.isContractTab && !props.isCustomerTab"
+        v-model:active-tab="activeTab"
+        :type="FormDesignKeyEnum.ORDER"
+        :custom-fields-config-list="customFieldsFilterConfig"
+        :filter-config-list="filterConfigList"
+        @refresh-table-data="searchData"
+      />
+    </template>
+    <template v-if="activeShowType === 'billboard'" #other>
+      <billboard
+        ref="billboardRef"
+        :keyword="keyword"
+        :view-id="activeTab"
+        :advance-filter="advanceFilter"
+        :readonly="props.readonly"
+        :enable-approval="enableApproval"
+        :has-stage-permission="hasOrderStagePermission"
+        @change="getStatistic()"
+        @open-detail="handleOpenDetail"
+        @init="handleBillboardInit"
+      />
+    </template>
+    <template v-if="showStatisticInfo" #totalRight>
+      <div v-if="activeShowType === 'billboard'">
+        {{ t('crmPagination.total', { count: billboardTotalCount }) }}
+      </div>
+      <div class="ml-[24px]">
+        {{ t('opportunity.averageAmount') }}
+        <span class="ml-[4px]">
+          {{ abbreviateNumber(totalAmountInfo?.averageAmount, '').value }}
+          <span class="unit">
+            {{ abbreviateNumber(totalAmountInfo?.averageAmount, '').unit }}
+          </span>
+        </span>
+      </div>
+      <div class="ml-[24px]">
+        {{ t('opportunity.totalAmount') }}
+        <span class="ml-[4px]">
+          {{ abbreviateNumber(totalAmountInfo?.amount, '').value }}
+          <span class="unit">
+            {{ abbreviateNumber(totalAmountInfo?.amount, '').unit }}
+          </span>
+        </span>
+      </div>
+    </template>
+  </CrmTable>
+
+  <DetailDrawer
+    v-model:visible="showDetailDrawer"
+    :sourceId="activeSourceId"
+    :readonly="props.readonly"
+    @refresh="searchData(undefined, activeSourceId)"
+    @delete="removeItemFromList(activeSourceId)"
+    @open-contract-drawer="showContractDrawer"
+  />
+  <CrmFormCreateDrawer
+    v-model:visible="formCreateDrawerVisible"
+    :form-key="activeFormKey"
+    :source-id="activeSourceId"
+    :need-init-detail="needInitDetail"
+    :initial-source-name="initialSourceName"
+    :link-form-key="FormDesignKeyEnum.CONTRACT"
+    :link-form-info="linkFormInfo"
+    :link-scenario="FormLinkScenarioEnum.CONTRACT_TO_ORDER"
+    @saved="handleFormCreateSaved"
+    @review="handleFormReview"
+  />
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="editFieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.ORDER"
+    :show-approval-tip="batchEditApprovalTip"
+    @refresh="handleRefresh"
+  />
+</template>
+
+<script setup lang="ts">
+  import { useRoute } from 'vue-router';
+  import { DataTableRowKey, NButton, NTabPane, NTabs, useMessage } from 'naive-ui';
+
+  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import useLocale from '@lib/shared/locale/useLocale';
+  import { abbreviateNumber, characterLimit } from '@lib/shared/method';
+  import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
+  import { OrderItem } from '@lib/shared/models/order';
+
+  import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
+  import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
+  import CrmTable from '@/components/pure/crm-table/index.vue';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import { OpenDetailType } from '@/components/business/crm-stage-board/types';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
+  import billboard from './billboard/index.vue';
+  import DetailDrawer from './detail.vue';
+
+  import { deleteOrder, getOrderStatistic, getOrderStatusConfig } from '@/api/modules';
+  import { baseFilterConfigList } from '@/config/clue';
+  import { processStatusOptions } from '@/config/process';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useLocalForage from '@/hooks/useLocalForage';
+  import useModal from '@/hooks/useModal';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import { hasAnyPermission } from '@/utils/permission';
+
+  import { FullPageEnum } from '@/enums/routeEnum';
+
+  const route = useRoute();
+
+  const { t } = useI18n();
+  const Message = useMessage();
+  const { currentLocale } = useLocale(Message.loading);
+  const { openModal } = useModal();
+  const { openNewPage } = useOpenNewPage();
+  const { getItem, setItem } = useLocalForage();
+
+  const props = defineProps<{
+    fullscreenTargetRef?: HTMLElement | null;
+    hiddenAdvanceFilter?: boolean;
+    isContractTab?: boolean;
+    isCustomerTab?: boolean;
+    sourceId?: string; // 合同详情下
+    sourceName?: string;
+    readonly?: boolean;
+    formKey: FormDesignKeyEnum.ORDER | FormDesignKeyEnum.CONTRACT_ORDER | FormDesignKeyEnum.CUSTOMER_ORDER;
+  }>();
+  const emit = defineEmits<{
+    (e: 'openContractDrawer', params: { id: string }): void;
+    (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
+  }>();
+
+  const activeShowType = ref<'table' | 'billboard'>();
+  const activeTab = ref();
+  const keyword = ref('');
+  const tableRefreshId = ref(0);
+  const billboardTotalCount = ref(0);
+  const tableItemRefreshId = ref('');
+
+  const stageConfig = ref<OpportunityStageConfig>();
+  async function initStageConfig() {
+    try {
+      stageConfig.value = await getOrderStatusConfig();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+  await initStageConfig();
+
+  // 操作
+  const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const showEditModal = ref(false);
+  const actionConfig = computed(() => ({
+    baseAction: props.readonly
+      ? []
+      : [
+          {
+            label: t('common.batchEdit'),
+            key: 'batchEdit',
+            permission: ['ORDER:UPDATE'],
+          },
+        ],
+  }));
+
+  const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.ORDER),
+  });
+  function handleBatchEdit() {
+    initEditFormConfig();
+    showEditModal.value = true;
+  }
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    tableRefreshId.value += 1;
+  }
+
+  function handleBatchAction(item: ActionsItem) {
+    switch (item.key) {
+      case 'batchEdit':
+        handleBatchEdit();
+        break;
+      default:
+        break;
+    }
+  }
+
+  const formCreateDrawerVisible = ref(false);
+  const activeSourceId = ref(props.sourceId || '');
+  const initialSourceName = ref('');
+  const needInitDetail = ref(false);
+  const activeFormKey = ref(FormDesignKeyEnum.ORDER);
+
+  const createLoading = ref(false);
+  const linkFormKey = ref(FormDesignKeyEnum.CONTRACT);
+  const linkFormInfo = ref();
+  const { initFormDetail, initFormConfig, linkFormFieldMap } = useFormCreateApi({
+    formKey: linkFormKey,
+    sourceId: activeSourceId,
+  });
+
+  async function handleNewClick() {
+    try {
+      createLoading.value = true;
+      activeSourceId.value = props.isContractTab ? props.sourceId || '' : '';
+      initialSourceName.value = props.isContractTab ? props.sourceName || '' : '';
+      needInitDetail.value = false;
+      activeFormKey.value = FormDesignKeyEnum.ORDER;
+      if (props.isContractTab) {
+        linkFormKey.value = FormDesignKeyEnum.CONTRACT;
+        await initFormConfig();
+        await initFormDetail(false, true);
+      }
+      linkFormInfo.value = linkFormFieldMap.value;
+      formCreateDrawerVisible.value = true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      createLoading.value = false;
+    }
+  }
+
+  const showDetailDrawer = ref(false);
+
+  function handleEdit(id: string) {
+    activeFormKey.value = FormDesignKeyEnum.ORDER;
+    activeSourceId.value = id;
+    needInitDetail.value = true;
+    formCreateDrawerVisible.value = true;
+  }
+
+  const orderDataActionMap = {
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: ['ORDER:UPDATE'],
+    },
+    download: {
+      label: t('common.download'),
+      key: 'download',
+      permission: ['ORDER:DOWNLOAD'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: ['ORDER:DELETE'],
+    },
+  };
+
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+  } = useApprovalOperation<OrderItem>({
+    formType: FormDesignKeyEnum.ORDER,
+    dataActionMap: orderDataActionMap,
+    specialActionFilter: (row, actionKeys) => {
+      return props.readonly ? [] : actionKeys;
+    },
+  });
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.ORDER,
+  });
+  const batchEditApprovalTip = computed(() => getApprovalActionTip(['ORDER:UPDATE'], 'common.batchEditApprovalTip'));
+
+  function showDetail(row: OrderItem) {
+    if (row && !hasApprovalScopedPermission(row, ['ORDER:READ'])) {
+      return;
+    }
+    activeSourceId.value = row.id;
+    showDetailDrawer.value = true;
+  }
+
+  function handleDownload(id: string) {
+    openNewPage(FullPageEnum.FULL_PAGE_EXPORT_ORDER, { id });
+  }
+
+  const tableRemoveRefreshId = ref('');
+  async function handleDelete(row: OrderItem) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteOrder(row.id);
+          Message.success(t('common.deleteSuccess'));
+          tableRemoveRefreshId.value = row.id;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  function handleReview(row: OrderItem) {
+    reviewByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableItemRefreshId.value = resourceId;
+      },
+    });
+  }
+
+  function handleRevoke(row: OrderItem) {
+    revokeByResourceId(row.id, {
+      onSuccess: (resourceId) => {
+        tableItemRefreshId.value = resourceId;
+      },
+    });
+  }
+
+  async function handleActionSelect(row: OrderItem, actionKey: string) {
+    switch (actionKey) {
+      case 'review':
+        handleReview(row);
+        break;
+      case 'revoke':
+        handleRevoke(row);
+        break;
+      case 'edit':
+        handleEdit(row.id);
+        break;
+      case 'download':
+        handleDownload(row.id);
+        break;
+      case 'delete':
+        handleDelete(row);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function showContractDrawer(params: { id: string }) {
+    if (props.isContractTab) {
+      showDetailDrawer.value = false;
+    } else {
+      emit('openContractDrawer', {
+        id: params.id,
+      });
+    }
+  }
+
+  function showCustomerDrawer(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    emit('openCustomerDrawer', {
+      customerId: params.customerId,
+      inCustomerPool: params.inCustomerPool,
+      poolId: params.poolId || '',
+    });
+  }
+
+  function handleOpenDetail(type: OpenDetailType, item: OrderItem) {
+    if (type === 'contract') {
+      showContractDrawer({ id: item.contractId });
+      return;
+    }
+    if (type === 'customer') {
+      showCustomerDrawer(item);
+      return;
+    }
+    showDetail(item);
+  }
+
+  function hasOrderStagePermission(row: OrderItem) {
+    return hasApprovalScopedPermission(row, ['ORDER:UPDATE']);
+  }
+
+  await initApprovalPermission();
+
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+    formKey: props.formKey,
+    excludeFieldIds: ['contractId'],
+    operationColumn: {
+      key: 'operation',
+      width: currentLocale.value === 'en-US' ? 180 : 170,
+      fixed: 'right',
+      render: (row: OrderItem) => {
+        const operation = resolveRowOperation(row);
+        return operation.groupList.length
+          ? h(CrmOperationButton, {
+              groupList: operation.groupList,
+              moreList: operation.moreList,
+              onSelect: (key: string) => handleActionSelect(row, key),
+            })
+          : '-';
+      },
+    },
+    specialRender: {
+      name: (row: OrderItem) => {
+        return hasApprovalScopedPermission(row, ['ORDER:READ'])
+          ? h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showDetail(row);
+                },
+              },
+              { default: () => row.name, trigger: () => row.name }
+            )
+          : h(CrmNameTooltip, { text: row.name });
+      },
+      contractId: (row: OrderItem) => {
+        return props.isContractTab || !hasAnyPermission(['CONTRACT:READ']) || !row.contractName
+          ? h(
+              CrmNameTooltip,
+              { text: row.contractName },
+              {
+                default: () => row.contractName,
+              }
+            )
+          : h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showContractDrawer({ id: row.contractId });
+                },
+              },
+              { default: () => row.contractName, trigger: () => row.contractName }
+            );
+      },
+      customerId: (row: OrderItem) => {
+        return props.isCustomerTab ||
+          !row.customerName ||
+          (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
+          (row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
+          ? h(
+              CrmNameTooltip,
+              { text: row.customerName },
+              {
+                default: () => row.customerName,
+              }
+            )
+          : h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  showCustomerDrawer(row);
+                },
+              },
+              { default: () => row.customerName, trigger: () => row.customerName }
+            );
+      },
+      stage: (row: OrderItem) => {
+        return row.stageName || '-';
+      },
+      approvalStatus: (row: OrderItem) =>
+        row.approvalStatus
+          ? h(CrmApprovalPopover, {
+              status: row.approvalStatus,
+              formKey: FormDesignKeyEnum.ORDER,
+              sourceId: row.id,
+              showMore: hasApprovalScopedPermission(row, ['ORDER:READ']),
+              disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+              onMore: () => {
+                showDetail(row);
+              },
+            })
+          : '-',
+    },
+    containerClass: `.crm-order-table-${props.formKey}`,
+    orderStage: stageConfig.value?.stageConfigList || [],
+    permission: ['ORDER:UPDATE'],
+    enableApproval,
+  });
+  const { propsRes, propsEvent, advanceFilter, filterItem, loadList, setLoadListParams, setAdvanceFilter } =
+    useTableRes;
+
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const billboardRef = ref<InstanceType<typeof billboard>>();
+
+  // 表格
+  const filterConfigList = computed<FilterFormItem[]>(() => [
+    {
+      title: t('opportunity.department'),
+      dataIndex: 'departmentId',
+      type: FieldTypeEnum.TREE_SELECT,
+      treeSelectProps: {
+        labelField: 'name',
+        keyField: 'id',
+        multiple: true,
+        clearFilterAfterSelect: false,
+        type: 'department',
+        checkable: true,
+        showContainChildModule: true,
+        containChildIds: [],
+      },
+    },
+    {
+      title: t('order.status'),
+      dataIndex: 'stage',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options:
+          stageConfig.value?.stageConfigList.map((e: any) => ({
+            label: e.name,
+            value: e.id,
+          })) || [],
+      },
+    },
+    {
+      title: t('common.approvalStatus'),
+      dataIndex: 'approvalStatus',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options: processStatusOptions,
+      },
+    },
+    ...baseFilterConfigList,
+  ]);
+
+  const showStatisticInfo = computed(
+    () => propsRes.value.columns.find((item) => item.key === 'amount') || activeShowType.value === 'billboard'
+  );
+  const statisticInfo = ref({ amount: 0, averageAmount: 0 });
+  async function getStatistic(_keyword?: string) {
+    try {
+      const res = await getOrderStatistic({
+        keyword: _keyword ?? keyword.value,
+        viewId: activeTab.value,
+        customerId: props.sourceId,
+        combineSearch: advanceFilter,
+        filters: filterItem.value,
+      });
+      statisticInfo.value = res;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+  const totalAmountInfo = computed(() => {
+    if (checkedRowKeys.value.length > 0) {
+      const amount = propsRes.value.data
+        .filter((item: OrderItem) => checkedRowKeys.value.includes(item.id))
+        .reduce((total: number, item: OrderItem) => total + (item.amount || 0), 0);
+      return {
+        averageAmount: amount / checkedRowKeys.value.length,
+        amount,
+      };
+    }
+    return {
+      averageAmount: statisticInfo.value?.averageAmount ?? 0,
+      amount: statisticInfo.value?.amount ?? 0,
+    };
+  });
+
+  function filterChange(val: any) {
+    propsEvent.value.filterChange(val);
+    getStatistic();
+  }
+
+  const isAdvancedSearchMode = ref(false);
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, _originalForm?: FilterForm) {
+    keyword.value = '';
+    isAdvancedSearchMode.value = isAdvancedMode;
+    setAdvanceFilter(filter);
+    if (activeShowType.value === 'billboard') {
+      billboardRef.value?.refresh();
+      getStatistic();
+    } else {
+      loadList();
+      getStatistic();
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
+  }
+
+  function searchData(val?: string, refreshId?: string) {
+    if (!activeTab.value && !props.isContractTab && !props.isCustomerTab) return;
+    setLoadListParams({
+      keyword: val ?? keyword.value,
+      viewId: activeTab.value,
+      ...(props.formKey === FormDesignKeyEnum.CONTRACT_ORDER ? { contractId: props.sourceId } : {}),
+      ...(props.formKey === FormDesignKeyEnum.CUSTOMER_ORDER ? { customerId: props.sourceId } : {}),
+    });
+    if (activeShowType.value === 'billboard') {
+      billboardRef.value?.refresh();
+      getStatistic(val);
+    } else {
+      loadList(false, refreshId);
+      getStatistic(val);
+      if (!refreshId) {
+        crmTableRef.value?.scrollTo({ top: 0 });
+      }
+    }
+  }
+
+  watch(
+    () => activeShowType.value,
+    async (val) => {
+      if (val) {
+        if (!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter) {
+          await setItem('order-active-show-type', activeShowType.value as 'table' | 'billboard');
+        }
+        searchData();
+      }
+    }
+  );
+
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      checkedRowKeys.value = [];
+      searchData();
+    }
+  );
+
+  onBeforeMount(async () => {
+    await initApprovalPermission();
+    if (props.isContractTab || props.isCustomerTab) {
+      searchData();
+    }
+  });
+
+  function handleFormCreateSaved(res: any) {
+    if (needInitDetail.value) {
+      searchData(undefined, res.id);
+    } else {
+      searchData();
+    }
+  }
+
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        handleFormCreateSaved(res);
+      },
+    });
+  }
+
+  function removeItemFromList(id: string) {
+    if (activeShowType.value === 'billboard') {
+      billboardRef.value?.refresh();
+      getStatistic();
+      return;
+    }
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+    getStatistic();
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+        getStatistic();
+      }
+    }
+  );
+
+  watch(
+    () => tableItemRefreshId.value,
+    (val) => {
+      if (val) {
+        searchData(undefined, val);
+        tableItemRefreshId.value = '';
+      }
+    }
+  );
+
+  watch(
+    () => activeTab.value,
+    (val) => {
+      if (val) {
+        checkedRowKeys.value = [];
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: activeTab.value,
+          ...(props.formKey === FormDesignKeyEnum.CONTRACT_ORDER ? { contractId: props.sourceId } : {}),
+          ...(props.formKey === FormDesignKeyEnum.CUSTOMER_ORDER ? { customerId: props.sourceId } : {}),
+        });
+        crmTableRef.value?.setColumnSort(val);
+        getStatistic();
+      }
+    },
+    { immediate: true }
+  );
+
+  onMounted(async () => {
+    if (!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter) {
+      activeShowType.value = (await getItem<'billboard' | 'table'>('order-active-show-type')) ?? 'table';
+    } else {
+      activeShowType.value = 'table';
+    }
+
+    if (route.query.id && !(props.isContractTab || props.isCustomerTab)) {
+      activeSourceId.value = route.query.id as string;
+      showDetailDrawer.value = true;
+    }
+  });
+
+  function handleBillboardInit(total: number) {
+    billboardTotalCount.value = total;
+  }
+</script>
+
+<style lang="less" scoped>
+  .show-type-tabs {
+    :deep(.n-tabs-tab) {
+      padding: 6px;
+    }
+  }
+</style>

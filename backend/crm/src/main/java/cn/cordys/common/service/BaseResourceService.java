@@ -1,0 +1,240 @@
+package cn.cordys.common.service;
+
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
+import cn.cordys.common.util.CaseFormatUtils;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.service.LogService;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.springframework.data.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+/**
+ * 资源服务通用类
+ *
+ * @author song-cc-rock
+ */
+@Slf4j
+public abstract class BaseResourceService {
+
+    @Resource
+    private LogService logService;
+
+    /**
+     * 获取资源字段值
+     *
+     * @param resource  资源对象
+     * @param fieldName 字段名称
+     * @param <K>       资源类型
+     *
+     * @return 值
+     */
+    protected <K> Object getResourceFieldValue(K resource, String fieldName) {
+        Class<?> clazz = resource.getClass();
+        // 获取字段值
+        Object fieldValue = null;
+        try {
+            fieldValue = clazz.getMethod("get" + CaseFormatUtils.capitalizeFirstLetter(fieldName))
+                    .invoke(resource);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return fieldValue;
+    }
+
+    /**
+     * 设置资源字段值
+     *
+     * @param resource  资源对象
+     * @param fieldName 字段名称
+     * @param value     值
+     * @param <K>       资源类型
+     */
+    public <K> void setResourceFieldValue(K resource, String fieldName, Object value) {
+        try {
+            if (value != null) {
+                Class<?> clazz = resource.getClass();
+                // 使用 ReflectionUtils 递归查找父类字段
+                Field field = ReflectionUtils.findField(clazz, f -> Strings.CS.equals(f.getName(), fieldName));
+                if (field != null) {
+                    field.setAccessible(true);
+                    // 数值类型转换
+                    if (value instanceof String strValue) {
+                        Class<?> type = field.getType();
+                        if (type.equals(BigDecimal.class)) {
+                            value = new BigDecimal(strValue);
+                        } else if (type.equals(Long.class)) {
+                            value = Long.valueOf(strValue);
+                        } else if (type.equals(Integer.class)) {
+                            value = Integer.valueOf(strValue);
+                        }
+                    } else if (value instanceof Integer i) {
+                        if (field.getType().equals(BigDecimal.class)) {
+                            value = BigDecimal.valueOf(i);
+                        } else if (field.getType().equals(Long.class)) {
+                            value = Long.valueOf(i);
+                        }
+                    }
+                    // 通过 Field 直接设置值，支持父类字段
+                    field.set(resource, value);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 创建资源实例
+     *
+     * @param clazz 资源类对象
+     * @param <K>   资源类型
+     *
+     * @return 资源实例
+     */
+    protected <K> K newInstance(Class<K> clazz) {
+        K resource;
+        try {
+            resource = clazz.getConstructor().newInstance();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+        return resource;
+    }
+
+    /**
+     * 判断值非空
+     *
+     * @param value 值
+     *
+     * @return 是否非空
+     */
+    @SuppressWarnings("rawtypes")
+    protected boolean isNotBlank(Object value) {
+        switch (value) {
+            case null -> {
+                return false;
+            }
+            case String str -> {
+                return StringUtils.isNotBlank(str);
+            }
+            case List list -> {
+                return CollectionUtils.isNotEmpty(list);
+            }
+            default -> {
+                return true;
+            }
+        }
+    }
+
+    /**
+     * 记录自定义字段批量更新日志
+     *
+     * @param originResourceList 资源集合
+     * @param originFields       旧的字段值
+     * @param field              字段信息
+     * @param request            请求参数
+     * @param userId             用户ID
+     * @param orgId              组织ID
+     * @param <K>                资源类型
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected <K> void addCustomFieldBatchUpdateLog(List<K> originResourceList,
+                                                    List<? extends BaseResourceField> originFields,
+                                                    ResourceBatchEditRequest request,
+                                                    BaseField field,
+                                                    String logModule,
+                                                    String userId,
+                                                    String orgId) {
+        Map<String, ? extends BaseResourceField> fieldMap = originFields.stream()
+                .collect(Collectors.toMap(BaseResourceField::getResourceId, Function.identity()));
+        // 记录日志
+        List<LogDTO> logs = originResourceList.stream()
+                .map(resource -> {
+                    Object id = getResourceFieldValue(resource, "id");
+                    Object name = getResourceFieldValue(resource, "name");
+
+                    BaseResourceField baseResourceField = fieldMap.get(id.toString());
+                    Map originResource = new HashMap();
+                    if (baseResourceField != null && isNotBlank(baseResourceField.getFieldValue())) {
+                        // 获取字段解析器
+                        AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+                        // 将数据库中的字符串值,转换为对应的对象值
+                        Object objectValue = customFieldResolver.convertToValue(field, baseResourceField.getFieldValue().toString());
+                        baseResourceField.setFieldValue(objectValue);
+                        originResource.put(request.getFieldId(), baseResourceField.getFieldValue());
+                    }
+
+                    Map modifiedResource = new HashMap();
+                    if (isNotBlank(request.getFieldValue())) {
+                        modifiedResource.put(request.getFieldId(), request.getFieldValue());
+                    }
+
+                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
+                    logDTO.setOriginalValue(originResource);
+                    logDTO.setModifiedValue(modifiedResource);
+                    return logDTO;
+                }).toList();
+
+        logService.batchAdd(logs);
+    }
+
+    /**
+     * 记录业务字段批量更新日志
+     *
+     * @param originResourceList 资源集合
+     * @param field              字段信息
+     * @param request            请求参数
+     * @param userId             用户ID
+     * @param orgId              组织ID
+     * @param <K>                资源类型
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected <K> void addBusinessFieldBatchUpdateLog(List<K> originResourceList,
+                                                      BaseField field,
+                                                      ResourceBatchEditRequest request,
+                                                      String logModule,
+                                                      String userId,
+                                                      String orgId) {
+        // 记录日志
+        List<LogDTO> logs = originResourceList.stream()
+                .map(resource -> {
+                    Map originResource = new HashMap();
+                    if (isNotBlank(getResourceFieldValue(resource, field.getBusinessKey()))) {
+                        originResource.put(field.getBusinessKey(), getResourceFieldValue(resource, field.getBusinessKey()));
+                    }
+
+                    Map modifiedResource = new HashMap();
+                    if (isNotBlank(request.getFieldValue())) {
+                        modifiedResource.put(field.getBusinessKey(), request.getFieldValue());
+                    }
+
+                    Object id = getResourceFieldValue(resource, "id");
+                    Object name = getResourceFieldValue(resource, "name");
+
+                    LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
+                    logDTO.setOriginalValue(originResource);
+                    logDTO.setModifiedValue(modifiedResource);
+                    return logDTO;
+                }).toList();
+
+        logService.batchAdd(logs);
+    }
+
+}

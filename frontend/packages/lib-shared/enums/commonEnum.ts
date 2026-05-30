@@ -1,0 +1,48 @@
+export enum CompanyTypeEnum {
+  WECOM = 'WECOM', // 企业微信
+  DINGTALK = 'DINGTALK', // 钉钉
+  LARK = 'LARK', // 飞书
+  INTERNAL = 'INTERNAL', // 国际飞书
+  DATA_EASE = 'DE', // DE
+  SQLBot = 'SQLBOT', // SQLBot
+  WE_COM_OAUTH2 = 'WECOM_OAUTH2', // OAUTH2认证
+  DINGTALK_OAUTH2 = 'DINGTALK_OAUTH2', // 钉钉OAUTH2认证
+  LARK_OAUTH2 = 'LARK_OAUTH2', // 飞书OAUTH2认证
+  MAXKB = 'MAXKB',
+  TENDER = 'TENDER', // 招标信息
+  QCC = 'QCC', // 企查查
+}
+
+// 操作符号
+export enum OperatorEnum {
+  GE = 'GE', // 大于等于
+  LE = 'LE', // 小于等于
+
+  LT = 'LT', // 小于
+  GT = 'GT', // 大于
+  IN = 'IN', // 在范围内
+  NOT_IN = 'NOT_IN', // 不在范围内
+  BETWEEN = 'BETWEEN', // 在两个值之间
+  COUNT_GT = 'COUNT_GT', // 大于
+  COUNT_LT = 'COUNT_LT', // 小于
+  EQUALS = 'EQUALS', // 等于
+  NOT_EQUALS = 'NOT_EQUALS', // 不等于
+  CONTAINS = 'CONTAINS', // 包含
+  NOT_CONTAINS = 'NOT_CONTAINS', // 不包含
+  EMPTY = 'EMPTY', // 为空
+  NOT_EMPTY = 'NOT_EMPTY', // 不为空
+
+  DYNAMICS = 'DYNAMICS',
+  FIXED = 'FIXED',
+}
+
+export enum ColumnTypeEnum {
+  SYSTEM = 'system',
+  CUSTOM = 'custom',
+  SUB_TABLE = 'subTable',
+  SHOW_FIELD = 'showField', // 显示字段，部分表单支持导出显示字段
+}
+
+export enum ImportTypeExcludeFormDesignEnum {
+  CONTRACT_BUSINESS_TITLE_IMPORT = 'contractBusinessTitleImport',
+}

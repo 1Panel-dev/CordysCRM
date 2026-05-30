@@ -1,0 +1,175 @@
+import useAppStore from '@/store/modules/app';
+import type { PageConfig, Style, Theme } from '@/store/modules/app/types';
+
+import Color from 'color';
+
+/**
+ * 获取颜色对象的 rgb 色值
+ * @param color Color对象
+ * @returns 颜色值
+ */
+export function getRGBinnerVal(color: Color) {
+  return color
+    .rgb()
+    .toString()
+    .replace(/rgba?\(|\)/g, '');
+}
+
+/**
+ * 设置自定义颜色的主题色
+ * @param primaryColor 主题色
+ */
+export function setCustomTheme(primaryColor: string) {
+  const appStore = useAppStore();
+  const styleTag = document.createElement('style');
+  styleTag.id = 'CRM-CUSTOM-THEME';
+  const primary = new Color(primaryColor);
+  const white = Color('#fff');
+  const P = primary.toString().replace(/rgba?\(|\)/g, '');
+  const P0 = getRGBinnerVal(primary.mix(Color('#000'), 0.15));
+  const P1 = getRGBinnerVal(primary.mix(white, 0.15));
+  const P2 = getRGBinnerVal(primary.mix(white, 0.3));
+  const P3 = getRGBinnerVal(primary.mix(white, 0.4));
+  const P4 = getRGBinnerVal(primary.mix(white, 0.7));
+  const P5 = getRGBinnerVal(primary.mix(white, 0.8));
+  const P6 = getRGBinnerVal(primary.mix(white, 0.9));
+  const P7 = getRGBinnerVal(primary.mix(white, 0.95));
+
+  const transferColor = (primaryColorString: string) => {
+    const temPrimary = primaryColorString.toString().replace(/rgba?\(|\)/g, ''); // "r, g, b" 或 "r, g, b, a"
+    const isRgba = temPrimary.split(',').length === 4;
+    return `${isRgba ? `rgba(${primaryColorString})` : `rgb(${primaryColorString})`};`;
+  };
+
+  styleTag.innerHTML = `
+    :root {
+      --primary-0: ${transferColor(P0)};
+      --primary-1: ${transferColor(P1)};
+      --primary-2: ${transferColor(P2)};
+      --primary-3: ${transferColor(P3)};
+      --primary-4: ${transferColor(P4)};
+      --primary-5: ${transferColor(P5)};
+      --primary-6: ${transferColor(P6)};
+      --primary-7: ${transferColor(P7)};
+      --primary-8: ${transferColor(P)};
+    }
+  `;
+  // 移除之前的 style 标签（如果有）
+  const prevStyleTag = document.getElementById('CRM-CUSTOM-THEME');
+  if (prevStyleTag) {
+    prevStyleTag.remove();
+  }
+  document.body.appendChild(styleTag);
+  appStore.resetThemeOverridesConfig();
+}
+
+/**
+ * 主题重置为默认主题
+ */
+export function resetTheme() {
+  const appStore = useAppStore();
+  const prevStyleTag = document.getElementById('CRM-CUSTOM-THEME');
+  if (prevStyleTag) {
+    prevStyleTag.remove();
+  }
+  appStore.resetThemeOverridesConfig();
+}
+
+/**
+ * 设置平台色
+ * @param color 平台色
+ */
+export function setPlatformColor(color: string, isFollow = false) {
+  const styleTag = document.createElement('style');
+  const appStore = useAppStore();
+  styleTag.id = 'CRM-CUSTOM-STYLE';
+  const white = Color('#fff');
+  // 跟随主题色，设置为P1
+  const platformColor = isFollow ? new Color(color).mix(white, 0.95) : new Color(color);
+  styleTag.innerHTML = `
+    :root {
+      --text-n9: ${platformColor};
+    }
+  `;
+  // 移除之前的 style 标签（如果有）
+  const prevStyleTag = document.getElementById('CRM-CUSTOM-STYLE');
+  if (prevStyleTag) {
+    prevStyleTag.remove();
+  }
+  document.body.appendChild(styleTag);
+  appStore.resetThemeOverridesConfig();
+}
+
+/**
+ * 平台风格重置为默认平台风格
+ */
+export function resetStyle() {
+  const appStore = useAppStore();
+  const prevStyleTag = document.getElementById('CRM-CUSTOM-STYLE');
+  if (prevStyleTag) {
+    prevStyleTag.remove();
+  }
+  appStore.resetThemeOverridesConfig();
+}
+
+/**
+ * 检测风格变化
+ * @param val 风格
+ * @param pageConfig 页面配置对象
+ */
+export function watchStyle(val: Style, pageConfig: PageConfig) {
+  if (val === 'default') {
+    // 默认就是系统自带的颜色
+    resetStyle();
+  } else if (val === 'custom') {
+    // 自定义风格颜色
+    setPlatformColor(pageConfig.customStyle);
+  } else {
+    // 跟随主题色
+    setPlatformColor(pageConfig.customTheme, true);
+  }
+}
+
+/**
+ * 检测主题色变化
+ * @param val 主题色
+ * @param pageConfig 页面配置对象
+ */
+export function watchTheme(val: Theme, pageConfig: PageConfig) {
+  if (val === 'default') {
+    resetTheme();
+    if (pageConfig.style === 'follow') {
+      // 若平台风格跟随主题色
+      resetStyle();
+    }
+  } else {
+    setCustomTheme(pageConfig.customTheme);
+    if (pageConfig.style === 'follow') {
+      // 若平台风格跟随主题色
+      setPlatformColor(pageConfig.customTheme, true);
+    }
+  }
+}
+
+/**
+ * 动态设置 favicon
+ * @param url favicon 地址
+ */
+export function setFavicon(url: string) {
+  const head = document.querySelector('head');
+  const link = document.createElement('link');
+  link.rel = 'shortcut icon';
+  link.href = `${url}&v=${Date.now()}`;
+  link.type = 'image/x-icon';
+
+  // 移除之前的 favicon
+  const oldFavicon = document.querySelector('link[rel="shortcut icon"]');
+  if (oldFavicon) {
+    head?.removeChild(oldFavicon);
+  }
+
+  // 添加新的 favicon
+  head?.appendChild(link);
+}
+
+export default {};

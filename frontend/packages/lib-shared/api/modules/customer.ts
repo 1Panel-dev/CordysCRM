@@ -1,0 +1,932 @@
+import type { CordysAxios } from '@lib/shared/api/http/Axios';
+import {
+  AddAccountPoolViewUrl,
+  AddContactViewUrl,
+  AddCustomerCollaborationUrl,
+  AddCustomerContactUrl,
+  AddCustomerFollowPlanUrl,
+  AddCustomerFollowRecordUrl,
+  AddCustomerOpenSeaUrl,
+  AddCustomerRelationItemUrl,
+  AddCustomerUrl,
+  AddCustomerViewUrl,
+  AssignOpenSeaCustomerUrl,
+  BatchAssignOpenSeaCustomerUrl,
+  BatchDeleteCustomerCollaborationUrl,
+  BatchDeleteCustomerUrl,
+  BatchDeleteOpenSeaCustomerUrl,
+  BatchMoveCustomerUrl,
+  BatchPickOpenSeaCustomerUrl,
+  BatchTransferCustomerUrl,
+  BatchUpdateAccountUrl,
+  BatchUpdateContactUrl,
+  CancelCustomerFollowPlanUrl,
+  CheckOpportunityContactUrl,
+  ContactListUnderCustomerUrl,
+  DeleteAccountPoolViewUrl,
+  DeleteContactViewUrl,
+  DeleteCustomerCollaborationUrl,
+  DeleteCustomerContactUrl,
+  DeleteCustomerFollowPlanUrl,
+  DeleteCustomerFollowRecordUrl,
+  DeleteCustomerOpenSeaUrl,
+  DeleteCustomerRelationItemUrl,
+  DeleteCustomerUrl,
+  DeleteCustomerViewUrl,
+  DeleteOpenSeaCustomerUrl,
+  DisableCustomerContactUrl,
+  DownloadAccountTemplateUrl,
+  DownloadContactTemplateUrl,
+  DragAccountPoolViewUrl,
+  DragContactViewUrl,
+  DragCustomerViewUrl,
+  EnableAccountPoolViewUrl,
+  EnableContactViewUrl,
+  EnableCustomerContactUrl,
+  EnableCustomerViewUrl,
+  ExportContactAllUrl,
+  ExportContactSelectedUrl,
+  ExportCustomerAllUrl,
+  ExportCustomerSelectedUrl,
+  ExportOpenSeaCustomerAllUrl,
+  ExportOpenSeaCustomerSelectedUrl,
+  FixedAccountPoolViewUrl,
+  FixedContactViewUrl,
+  FixedCustomerViewUrl,
+  GenerateCustomerChartUrl,
+  generateCustomerContactChartUrl,
+  generateCustomerPoolChartUrl,
+  GetAccountPoolViewDetailUrl,
+  GetAccountPoolViewListUrl,
+  GetAdvancedCustomerContactListUrl,
+  GetAdvancedCustomerListUrl,
+  GetAdvancedOpenSeaCustomerListUrl,
+  GetContactViewDetailUrl,
+  GetContactViewListUrl,
+  GetCustomerCollaborationListUrl,
+  GetCustomerContactFormConfigUrl,
+  GetCustomerContactListUrl,
+  GetCustomerContactTabUrl,
+  GetCustomerContactUrl,
+  GetCustomerFollowPlanFormConfigUrl,
+  GetCustomerFollowPlanListUrl,
+  GetCustomerFollowPlanUrl,
+  GetCustomerFollowRecordFormConfigUrl,
+  GetCustomerFollowRecordListUrl,
+  GetCustomerFollowRecordUrl,
+  GetCustomerFormConfigUrl,
+  GetCustomerHeaderListUrl,
+  GetCustomerListUrl,
+  GetCustomerOpenSeaFollowRecordListUrl,
+  GetCustomerOpenSeaListUrl,
+  GetCustomerOpportunityListUrl,
+  GetCustomerOptionsUrl,
+  GetCustomerRelationListUrl,
+  GetCustomerTabUrl,
+  GetCustomerUrl,
+  GetCustomerViewDetailUrl,
+  GetCustomerViewListUrl,
+  GetGlobalCustomerContactListUrl,
+  GetGlobalCustomerListUrl,
+  GetGlobalModuleCountUrl,
+  GetGlobalOpenSeaCustomerListUrl,
+  GetOpenSeaCustomerListUrl,
+  GetOpenSeaCustomerUrl,
+  GetOpenSeaOptionsUrl,
+  ImportAccountUrl,
+  ImportContactUrl,
+  IsCustomerOpenSeaNoPickUrl,
+  MergeAccountPageUrl,
+  MergeAccountUrl,
+  MoveToCustomerUrl,
+  PickOpenSeaCustomerUrl,
+  PoolAccountBatchUpdateUrl,
+  PreCheckAccountImportUrl,
+  PreCheckContactImportUrl,
+  SaveCustomerRelationUrl,
+  SwitchCustomerOpenSeaUrl,
+  UpdateAccountPoolViewUrl,
+  UpdateContactViewUrl,
+  UpdateCustomerCollaborationUrl,
+  UpdateCustomerContactUrl,
+  UpdateCustomerFollowPlanStatusUrl,
+  UpdateCustomerFollowPlanUrl,
+  UpdateCustomerFollowRecordUrl,
+  UpdateCustomerOpenSeaUrl,
+  UpdateCustomerRelationItemUrl,
+  UpdateCustomerUrl,
+  UpdateCustomerViewUrl,
+  GetAccountContractListUrl,
+  GetAccountContractStatisticUrl,
+  GetAccountPaymentListUrl,
+  GetAccountPaymentStatisticUrl,
+  GetAccountPaymentRecordStatisticUrl,
+  GetAccountPaymentRecordListUrl,
+  GetAccountInvoiceListUrl,
+  GetAccountInvoiceStatisticUrl,
+  GetAccountOrderListUrl,
+} from '@lib/shared/api/requrls/customer';
+import type {
+  ChartResponseDataItem,
+  CommonList,
+  GenerateChartParams,
+  TableDraggedParams,
+  TableExportParams,
+  TableExportSelectedParams,
+  TableQueryParams,
+} from '@lib/shared/models/common';
+import type {
+  AddCustomerCollaborationParams,
+  AddCustomerRelationItemParams,
+  AssignOpenSeaCustomerParams,
+  BatchAssignOpenSeaCustomerParams,
+  BatchMoveToPublicPoolParams,
+  BatchOperationOpenSeaCustomerParams,
+  BatchUpdatePoolAccountParams,
+  CollaborationItem,
+  CustomerContractListItem,
+  CustomerContractTableParams,
+  CustomerDetail,
+  CustomerFollowPlanListItem,
+  CustomerFollowPlanTableParams,
+  CustomerFollowRecordListItem,
+  CustomerFollowRecordTableParams,
+  CustomerInvoiceItem,
+  CustomerInvoicePageQueryParams,
+  CustomerInvoiceStatistic,
+  CustomerListItem,
+  CustomerOpenSeaListItem,
+  CustomerOpportunityTableParams,
+  CustomerOptionsItem,
+  CustomerTabHidden,
+  CustomerTableParams,
+  FollowDetailItem,
+  MergeAccountParams,
+  MoveToPublicPoolParams,
+  OpenSeaCustomerTableParams,
+  PickOpenSeaCustomerParams,
+  PoolTableExportParams,
+  RelationItem,
+  RelationListItem,
+  SaveCustomerContractParams,
+  SaveCustomerFollowPlanParams,
+  SaveCustomerFollowRecordParams,
+  SaveCustomerOpenSeaParams,
+  SaveCustomerParams,
+  TransferParams,
+  UpdateCustomerCollaborationParams,
+  UpdateCustomerContractParams,
+  UpdateCustomerFollowPlanParams,
+  UpdateCustomerFollowRecordParams,
+  UpdateCustomerOpenSeaParams,
+  UpdateCustomerParams,
+  UpdateCustomerRelationItemParams,
+  UpdateFollowPlanStatusParams,
+} from '@lib/shared/models/customer';
+import type { OrderItem } from '@lib/shared/models/order';
+import type { CluePoolItem, FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
+import { ValidateInfo } from '@lib/shared/models/system/org';
+import type { ViewItem, ViewParams } from '@lib/shared/models/view';
+import type { ContractItem, PaymentPlanItem, PaymentRecordItem } from '@lib/shared/models/contract';
+export default function useProductApi(CDR: CordysAxios) {
+  // 添加客户
+  function addCustomer(data: SaveCustomerParams) {
+    return CDR.post({ url: AddCustomerUrl, data });
+  }
+
+  // 更新客户
+  function updateCustomer(data: UpdateCustomerParams) {
+    return CDR.post({ url: UpdateCustomerUrl, data });
+  }
+
+  // 获取客户列表
+  function getCustomerList(data: CustomerTableParams) {
+    return CDR.post<CommonList<CustomerListItem>>({ url: GetCustomerListUrl, data });
+  }
+
+  // 获取客户表单配置
+  function getCustomerFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetCustomerFormConfigUrl });
+  }
+
+  // 获取客户详情
+  function getCustomer(id: string) {
+    return CDR.get<CustomerDetail>({ url: `${GetCustomerUrl}/${id}` });
+  }
+
+  // 删除客户
+  function deleteCustomer(id: string) {
+    return CDR.get({ url: `${DeleteCustomerUrl}/${id}` });
+  }
+
+  // 批量删除客户
+  function batchDeleteCustomer(batchIds: (string | number)[]) {
+    return CDR.post({ url: BatchDeleteCustomerUrl, data: batchIds });
+  }
+
+  // 批量转移客户
+  function batchTransferCustomer(data: TransferParams) {
+    return CDR.post({ url: BatchTransferCustomerUrl, data });
+  }
+
+  // 批量移入公海
+  function batchMoveCustomer(data: BatchMoveToPublicPoolParams) {
+    return CDR.post({ url: BatchMoveCustomerUrl, data });
+  }
+
+  // 批量移入公海
+  function moveCustomerToPool(data: MoveToPublicPoolParams) {
+    return CDR.post({ url: MoveToCustomerUrl, data });
+  }
+
+  // 批量更新公海客户
+  function batchUpdateOpenSeaCustomer(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: PoolAccountBatchUpdateUrl, data });
+  }
+  // 批量更新客户
+  function batchUpdateAccount(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateAccountUrl, data });
+  }
+
+  // 批量更新联系人
+  function batchUpdateContact(data: BatchUpdatePoolAccountParams) {
+    return CDR.post({ url: BatchUpdateContactUrl, data });
+  }
+
+  // 生成客户图表
+  function generateCustomerChart(data: GenerateChartParams) {
+    return CDR.post<ChartResponseDataItem[]>({ url: GenerateCustomerChartUrl, data });
+  }
+
+  // 添加客户跟进记录
+  function addCustomerFollowRecord(data: SaveCustomerFollowRecordParams) {
+    return CDR.post({ url: AddCustomerFollowRecordUrl, data });
+  }
+
+  // 更新客户跟进记录
+  function updateCustomerFollowRecord(data: UpdateCustomerFollowRecordParams) {
+    return CDR.post({ url: UpdateCustomerFollowRecordUrl, data });
+  }
+
+  // 删除客户跟进记录
+  function deleteCustomerFollowRecord(id: string) {
+    return CDR.get({ url: `${DeleteCustomerFollowRecordUrl}/${id}` });
+  }
+
+  // 获取客户跟进记录列表
+  function getCustomerFollowRecordList(data: CustomerFollowRecordTableParams) {
+    return CDR.post<CommonList<CustomerFollowRecordListItem>>({ url: GetCustomerFollowRecordListUrl, data });
+  }
+
+  // 获取客户跟进记录表单配置
+  function getCustomerFollowRecordFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetCustomerFollowRecordFormConfigUrl });
+  }
+
+  // 获取客户跟进记录详情
+  function getCustomerFollowRecord(id: string) {
+    return CDR.get<CustomerFollowRecordListItem>({ url: `${GetCustomerFollowRecordUrl}/${id}` });
+  }
+
+  // 添加客户跟进计划
+  function addCustomerFollowPlan(data: SaveCustomerFollowPlanParams) {
+    return CDR.post({ url: AddCustomerFollowPlanUrl, data });
+  }
+
+  // 更新客户跟进计划
+  function updateCustomerFollowPlan(data: UpdateCustomerFollowPlanParams) {
+    return CDR.post({ url: UpdateCustomerFollowPlanUrl, data });
+  }
+
+  // 删除客户跟进计划
+  function deleteCustomerFollowPlan(id: string) {
+    return CDR.get({ url: `${DeleteCustomerFollowPlanUrl}/${id}` });
+  }
+
+  // 获取客户跟进计划列表
+  function getCustomerFollowPlanList(data: CustomerFollowPlanTableParams) {
+    return CDR.post<CommonList<CustomerFollowPlanListItem>>({ url: GetCustomerFollowPlanListUrl, data });
+  }
+
+  // 取消客户跟进计划
+  function cancelCustomerFollowPlan(id: string) {
+    return CDR.get({ url: `${CancelCustomerFollowPlanUrl}/${id}` });
+  }
+
+  // 获取客户跟进计划表单配置
+  function getCustomerFollowPlanFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetCustomerFollowPlanFormConfigUrl });
+  }
+
+  // 获取客户跟进计划详情
+  function getCustomerFollowPlan(id: string) {
+    return CDR.get<FollowDetailItem>({ url: `${GetCustomerFollowPlanUrl}/${id}` });
+  }
+
+  // 添加客户联系人
+  function addCustomerContact(data: SaveCustomerContractParams) {
+    return CDR.post({ url: AddCustomerContactUrl, data });
+  }
+
+  // 获取客户联系人列表
+  function getCustomerContactList(data: CustomerContractTableParams) {
+    return CDR.post<CommonList<CustomerContractListItem>>({ url: GetCustomerContactListUrl, data });
+  }
+
+  // 更新客户联系人
+  function updateCustomerContact(data: UpdateCustomerContractParams) {
+    return CDR.post({ url: UpdateCustomerContactUrl, data });
+  }
+
+  // 禁用客户联系人
+  function disableCustomerContact(id: string, reason: string) {
+    return CDR.post({ url: `${DisableCustomerContactUrl}/${id}`, data: { reason } });
+  }
+
+  // 获取客户联系人表单配置
+  function getCustomerContactFormConfig() {
+    return CDR.get<FormDesignConfigDetailParams>({ url: GetCustomerContactFormConfigUrl });
+  }
+
+  // 获取客户联系人详情
+  function getCustomerContact(id: string) {
+    return CDR.get<CustomerContractListItem>({ url: `${GetCustomerContactUrl}/${id}` });
+  }
+
+  // 获取客户的发票记录
+  function getCustomerInvoiceList(data: CustomerInvoicePageQueryParams) {
+    return CDR.post<CommonList<CustomerInvoiceItem>>({ url: GetAccountInvoiceListUrl, data });
+  }
+
+  // 获取客户发票统计
+  function getCustomerInvoiceStatistic(id: string) {
+    return CDR.get<CustomerInvoiceStatistic[]>({ url: `${GetAccountInvoiceStatisticUrl}/${id}` });
+  }
+
+  // 获取客户的订单
+  function getCustomerOrderList(data: TableQueryParams) {
+    return CDR.post<CommonList<OrderItem>>({ url: GetAccountOrderListUrl, data });
+  }
+
+  // 启用客户联系人
+  function enableCustomerContact(id: string) {
+    return CDR.get({ url: `${EnableCustomerContactUrl}/${id}` });
+  }
+
+  // 删除客户联系人
+  function deleteCustomerContact(id: string) {
+    return CDR.get({ url: `${DeleteCustomerContactUrl}/${id}` });
+  }
+
+  // 生成客户联系人图表
+  function generateCustomerContactChart(data: GenerateChartParams) {
+    return CDR.post<ChartResponseDataItem[]>({ url: generateCustomerContactChartUrl, data });
+  }
+
+  // 是否绑定商机
+  function checkOpportunity(id: string) {
+    return CDR.get({ url: `${CheckOpportunityContactUrl}/${id}` });
+  }
+
+  //  客户下的联系人列表
+  function getContactListUnderCustomer(data: { id: string }) {
+    return CDR.get({ url: `${ContactListUnderCustomerUrl}/${data.id}` });
+  }
+
+  // 添加公海
+  function addCustomerOpenSea(data: SaveCustomerOpenSeaParams) {
+    return CDR.post({ url: AddCustomerOpenSeaUrl, data });
+  }
+
+  // 更新公海
+  function updateCustomerOpenSea(data: UpdateCustomerOpenSeaParams) {
+    return CDR.post({ url: UpdateCustomerOpenSeaUrl, data });
+  }
+
+  // 获取公海列表
+  function getCustomerOpenSeaList(data: TableQueryParams) {
+    return CDR.post<CommonList<CustomerOpenSeaListItem>>({ url: GetCustomerOpenSeaListUrl, data });
+  }
+
+  // 启用/禁用公海
+  function switchCustomerOpenSea(id: string) {
+    return CDR.get({ url: `${SwitchCustomerOpenSeaUrl}/${id}` });
+  }
+
+  // 删除公海
+  function deleteCustomerOpenSea(id: string) {
+    return CDR.get({ url: `${DeleteCustomerOpenSeaUrl}/${id}` });
+  }
+
+  // 公海是否存在未领取线索
+  function isCustomerOpenSeaNoPick(id: string) {
+    return CDR.get<boolean>({ url: `${IsCustomerOpenSeaNoPickUrl}/${id}` });
+  }
+
+  // 获取公海客户列表
+  function getOpenSeaCustomerList(data: OpenSeaCustomerTableParams) {
+    return CDR.post<CommonList<CustomerOpenSeaListItem>>({ url: GetOpenSeaCustomerListUrl, data });
+  }
+
+  // 领取公海客户
+  function pickOpenSeaCustomer(data: PickOpenSeaCustomerParams) {
+    return CDR.post({ url: PickOpenSeaCustomerUrl, data });
+  }
+
+  // 批量领取公海客户
+  function batchPickOpenSeaCustomer(data: BatchOperationOpenSeaCustomerParams) {
+    return CDR.post({ url: BatchPickOpenSeaCustomerUrl, data });
+  }
+
+  // 批量删除公海客户
+  function batchDeleteOpenSeaCustomer(data: BatchOperationOpenSeaCustomerParams) {
+    return CDR.post({ url: BatchDeleteOpenSeaCustomerUrl, data });
+  }
+
+  // 批量分配公海客户
+  function batchAssignOpenSeaCustomer(data: BatchAssignOpenSeaCustomerParams) {
+    return CDR.post({ url: BatchAssignOpenSeaCustomerUrl, data });
+  }
+
+  // 分配公海客户
+  function assignOpenSeaCustomer(data: AssignOpenSeaCustomerParams) {
+    return CDR.post({ url: AssignOpenSeaCustomerUrl, data });
+  }
+
+  // 获取公海选项
+  function getOpenSeaOptions() {
+    return CDR.get<CluePoolItem[]>({ url: GetOpenSeaOptionsUrl });
+  }
+
+  // 获取公海客户详情
+  function getOpenSeaCustomer(id: string) {
+    return CDR.get<CustomerDetail>({ url: `${GetOpenSeaCustomerUrl}/${id}` });
+  }
+
+  // 删除公海客户
+  function deleteOpenSeaCustomer(id: string) {
+    return CDR.get({ url: `${DeleteOpenSeaCustomerUrl}/${id}` });
+  }
+
+  // 导出全量客户列表
+  function exportCustomerOpenSeaAll(data: PoolTableExportParams) {
+    return CDR.post({ url: ExportOpenSeaCustomerAllUrl, data });
+  }
+
+  // 导出选中客户列表
+  function exportCustomerOpenSeaSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportOpenSeaCustomerSelectedUrl, data });
+  }
+
+  // 获取客户负责人列表
+  function getCustomerHeaderList(data: CustomerContractTableParams) {
+    return CDR.get({ url: `${GetCustomerHeaderListUrl}/${data.sourceId}` });
+  }
+
+  // 保存客户关系
+  function saveCustomerRelation(customerId: string, data: RelationItem[]) {
+    return CDR.post({ url: `${SaveCustomerRelationUrl}/${customerId}`, data });
+  }
+
+  // 获取客户关系列表
+  function getCustomerRelationList(customerId: string) {
+    return CDR.get<RelationListItem[]>({ url: `${GetCustomerRelationListUrl}/${customerId}` });
+  }
+
+  // 获取客户协作成员列表
+  function getCustomerCollaborationList({ customerId }: { customerId: string }) {
+    return CDR.get<CollaborationItem[]>({ url: `${GetCustomerCollaborationListUrl}/${customerId}` });
+  }
+
+  // 更新单条客户关系
+  function updateCustomerRelationItem(customerId: string, data: UpdateCustomerRelationItemParams) {
+    return CDR.post({ url: `${UpdateCustomerRelationItemUrl}/${customerId}`, data });
+  }
+
+  // 添加单条客户关系
+  function addCustomerRelationItem(customerId: string, data: AddCustomerRelationItemParams) {
+    return CDR.post({ url: `${AddCustomerRelationItemUrl}/${customerId}`, data });
+  }
+
+  // 删除单条客户关系
+  function deleteCustomerRelationItem(id: string) {
+    return CDR.get({ url: `${DeleteCustomerRelationItemUrl}/${id}` });
+  }
+
+  // 批量删除客户协作成员
+  function batchDeleteCustomerCollaboration(data: string[]) {
+    return CDR.post({ url: BatchDeleteCustomerCollaborationUrl, data });
+  }
+
+  // 更新客户协作成员
+  function updateCustomerCollaboration(data: UpdateCustomerCollaborationParams) {
+    return CDR.post({ url: UpdateCustomerCollaborationUrl, data });
+  }
+
+  // 添加客户协作成员
+  function addCustomerCollaboration(data: AddCustomerCollaborationParams) {
+    return CDR.post({ url: AddCustomerCollaborationUrl, data });
+  }
+
+  // 删除客户协作成员
+  function deleteCustomerCollaboration(id: string) {
+    return CDR.get({ url: `${DeleteCustomerCollaborationUrl}/${id}` });
+  }
+
+  // 获取客户选项列表
+  function getCustomerOptions(data: TableQueryParams) {
+    return CDR.post<CommonList<CustomerOptionsItem>>({ url: GetCustomerOptionsUrl, data });
+  }
+
+  // 获取客户公海跟进记录列表
+  function getCustomerOpenSeaFollowRecordList(data: CustomerFollowRecordTableParams) {
+    return CDR.post<CommonList<CustomerFollowRecordListItem>>({ url: GetCustomerOpenSeaFollowRecordListUrl, data });
+  }
+
+  // 生成客户公海图表
+  function generateCustomerPoolChart(data: GenerateChartParams) {
+    return CDR.post<ChartResponseDataItem[]>({ url: generateCustomerPoolChartUrl, data });
+  }
+
+  // 获取客户tab显隐藏
+  function getCustomerTab() {
+    return CDR.get<CustomerTabHidden>({ url: GetCustomerTabUrl });
+  }
+
+  // 获取客户联系人tab显隐藏
+  function getCustomerContactTab() {
+    return CDR.get<CustomerTabHidden>({ url: GetCustomerContactTabUrl });
+  }
+
+  // 更新客户跟进计划状态
+  function updateCustomerFollowPlanStatus(data: UpdateFollowPlanStatusParams) {
+    return CDR.post({ url: UpdateCustomerFollowPlanStatusUrl, data });
+  }
+
+  // 获取客户商机列表
+  function getCustomerOpportunityPage(data: CustomerOpportunityTableParams) {
+    return CDR.post<CommonList<OpportunityItem>>({ url: GetCustomerOpportunityListUrl, data });
+  }
+
+  // 导出全量客户列表
+  function exportCustomerAll(data: TableExportParams) {
+    return CDR.post({ url: ExportCustomerAllUrl, data });
+  }
+
+  // 导出选中客户列表
+  function exportCustomerSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportCustomerSelectedUrl, data });
+  }
+
+  // 导出全量联系人列表
+  function exportContactAll(data: TableExportParams) {
+    return CDR.post({ url: ExportContactAllUrl, data });
+  }
+
+  // 导出选中联系人列表
+  function exportContactSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportContactSelectedUrl, data });
+  }
+
+  // 视图
+  function addCustomerView(data: ViewParams) {
+    return CDR.post({ url: AddCustomerViewUrl, data });
+  }
+
+  function updateCustomerView(data: ViewParams) {
+    return CDR.post({ url: UpdateCustomerViewUrl, data });
+  }
+
+  function getCustomerViewList() {
+    return CDR.get<ViewItem[]>({ url: GetCustomerViewListUrl });
+  }
+
+  function getCustomerViewDetail(id: string) {
+    return CDR.get({ url: `${GetCustomerViewDetailUrl}/${id}` });
+  }
+
+  function fixedCustomerView(id: string) {
+    return CDR.get({ url: `${FixedCustomerViewUrl}/${id}` });
+  }
+
+  function enableCustomerView(id: string) {
+    return CDR.get({ url: `${EnableCustomerViewUrl}/${id}` });
+  }
+
+  function deleteCustomerView(id: string) {
+    return CDR.get({ url: `${DeleteCustomerViewUrl}/${id}` });
+  }
+
+  function dragCustomerView(data: TableDraggedParams) {
+    return CDR.post({ url: DragCustomerViewUrl, data });
+  }
+
+  function addContactView(data: ViewParams) {
+    return CDR.post({ url: AddContactViewUrl, data });
+  }
+
+  function updateContactView(data: ViewParams) {
+    return CDR.post({ url: UpdateContactViewUrl, data });
+  }
+
+  function getContactViewList() {
+    return CDR.get<ViewItem[]>({ url: GetContactViewListUrl });
+  }
+
+  function getContactViewDetail(id: string) {
+    return CDR.get({ url: `${GetContactViewDetailUrl}/${id}` });
+  }
+
+  function fixedContactView(id: string) {
+    return CDR.get({ url: `${FixedContactViewUrl}/${id}` });
+  }
+
+  function enableContactView(id: string) {
+    return CDR.get({ url: `${EnableContactViewUrl}/${id}` });
+  }
+
+  function deleteContactView(id: string) {
+    return CDR.get({ url: `${DeleteContactViewUrl}/${id}` });
+  }
+
+  function dragContactView(data: TableDraggedParams) {
+    return CDR.post({ url: DragContactViewUrl, data });
+  }
+
+  function geAdvancedCustomerList(data: CustomerTableParams) {
+    return CDR.post<CommonList<CustomerListItem>>(
+      { url: GetAdvancedCustomerListUrl, data },
+      { ignoreCancelToken: true }
+    );
+  }
+
+  function getAdvancedOpenSeaCustomerList(data: OpenSeaCustomerTableParams) {
+    return CDR.post<CommonList<CustomerOpenSeaListItem>>(
+      { url: GetAdvancedOpenSeaCustomerListUrl, data },
+      { ignoreCancelToken: true }
+    );
+  }
+
+  function getAdvancedCustomerContactList(data: CustomerContractTableParams) {
+    return CDR.post<CommonList<CustomerContractListItem>>(
+      { url: GetAdvancedCustomerContactListUrl, data },
+      { ignoreCancelToken: true }
+    );
+  }
+
+  function getGlobalCustomerList(data: TableQueryParams) {
+    return CDR.post<CommonList<CustomerListItem>>({ url: GetGlobalCustomerListUrl, data }, { ignoreCancelToken: true });
+  }
+
+  function getGlobalOpenSeaCustomerList(data: TableQueryParams) {
+    return CDR.post<CommonList<CustomerOpenSeaListItem>>(
+      { url: GetGlobalOpenSeaCustomerListUrl, data },
+      { ignoreCancelToken: true }
+    );
+  }
+
+  function getGlobalCustomerContactList(data: TableQueryParams) {
+    return CDR.post<CommonList<CustomerContractListItem>>(
+      { url: GetGlobalCustomerContactListUrl, data },
+      { ignoreCancelToken: true }
+    );
+  }
+
+  function getGlobalModuleCount(keyword: string) {
+    return CDR.post<{ key: string; count: number }[]>(
+      { url: `${GetGlobalModuleCountUrl}?keyword=${keyword}` },
+      { ignoreCancelToken: true }
+    );
+  }
+
+  // 客户导入
+  function preCheckImportAccount(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckAccountImportUrl }, { fileList: [file] }, 'file');
+  }
+
+  function downloadAccountTemplate() {
+    return CDR.get(
+      {
+        url: DownloadAccountTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importAccount(file: File) {
+    return CDR.uploadFile({ url: ImportAccountUrl }, { fileList: [file] }, 'file');
+  }
+
+  // 联系人导入
+  function preCheckImportContact(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckContactImportUrl }, { fileList: [file] }, 'file');
+  }
+
+  function downloadContactTemplate() {
+    return CDR.get(
+      {
+        url: DownloadContactTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importContact(file: File) {
+    return CDR.uploadFile({ url: ImportContactUrl }, { fileList: [file] }, 'file');
+  }
+
+  // 公海视图
+  function addAccountPoolView(data: ViewParams) {
+    return CDR.post({ url: AddAccountPoolViewUrl, data });
+  }
+
+  function updateAccountPoolView(data: ViewParams) {
+    return CDR.post({ url: UpdateAccountPoolViewUrl, data });
+  }
+
+  function getAccountPoolViewList() {
+    return CDR.get<ViewItem[]>({ url: GetAccountPoolViewListUrl });
+  }
+
+  function getAccountPoolViewDetail(id: string) {
+    return CDR.get({ url: `${GetAccountPoolViewDetailUrl}/${id}` });
+  }
+
+  function fixedAccountPoolView(id: string) {
+    return CDR.get({ url: `${FixedAccountPoolViewUrl}/${id}` });
+  }
+
+  function enableAccountPoolView(id: string) {
+    return CDR.get({ url: `${EnableAccountPoolViewUrl}/${id}` });
+  }
+
+  function deleteAccountPoolView(id: string) {
+    return CDR.get({ url: `${DeleteAccountPoolViewUrl}/${id}` });
+  }
+
+  function dragAccountPoolView(data: TableDraggedParams) {
+    return CDR.post({ url: DragAccountPoolViewUrl, data });
+  }
+
+  function mergeAccount(data: MergeAccountParams) {
+    return CDR.post({ url: MergeAccountUrl, data });
+  }
+
+  function mergeAccountPage(data: TableQueryParams) {
+    return CDR.post({ url: MergeAccountPageUrl, data });
+  }
+
+  function getAccountContract(data: TableQueryParams) {
+    return CDR.post<CommonList<ContractItem>>({ url: GetAccountContractListUrl, data });
+  }
+
+  function getAccountContractStatistic(id: string) {
+    return CDR.get({ url: `${GetAccountContractStatisticUrl}/${id}` });
+  }
+
+  function getAccountPayment(data: TableQueryParams) {
+    return CDR.post<CommonList<PaymentPlanItem>>({ url: GetAccountPaymentListUrl, data });
+  }
+
+  function getAccountPaymentStatistic(id: string) {
+    return CDR.get({ url: `${GetAccountPaymentStatisticUrl}/${id}` });
+  }
+
+  function getAccountPaymentRecord(data: TableQueryParams) {
+    return CDR.post<CommonList<PaymentRecordItem>>({ url: GetAccountPaymentRecordListUrl, data });
+  }
+
+  function getAccountPaymentRecordStatistic(id: string) {
+    return CDR.get({ url: `${GetAccountPaymentRecordStatisticUrl}/${id}` });
+  }
+
+  return {
+    addCustomer,
+    updateCustomer,
+    getCustomerList,
+    getCustomerContactTab,
+    getCustomerFormConfig,
+    getCustomer,
+    deleteCustomer,
+    getGlobalCustomerList,
+    getGlobalOpenSeaCustomerList,
+    getGlobalCustomerContactList,
+    getGlobalModuleCount,
+    batchDeleteCustomer,
+    batchTransferCustomer,
+    batchMoveCustomer,
+    addCustomerFollowRecord,
+    updateCustomerFollowRecord,
+    deleteCustomerFollowRecord,
+    getCustomerFollowRecordList,
+    getCustomerFollowRecordFormConfig,
+    getCustomerFollowRecord,
+    addCustomerFollowPlan,
+    updateCustomerFollowPlan,
+    deleteCustomerFollowPlan,
+    getCustomerFollowPlanList,
+    cancelCustomerFollowPlan,
+    getCustomerFollowPlanFormConfig,
+    getCustomerFollowPlan,
+    addCustomerContact,
+    getCustomerContactList,
+    updateCustomerContact,
+    disableCustomerContact,
+    getCustomerContactFormConfig,
+    getCustomerContact,
+    enableCustomerContact,
+    deleteCustomerContact,
+    checkOpportunity,
+    getContactListUnderCustomer,
+    addCustomerOpenSea,
+    updateCustomerOpenSea,
+    getCustomerOpenSeaList,
+    switchCustomerOpenSea,
+    deleteCustomerOpenSea,
+    isCustomerOpenSeaNoPick,
+    getOpenSeaCustomerList,
+    getCustomerOpportunityPage,
+    pickOpenSeaCustomer,
+    batchPickOpenSeaCustomer,
+    batchDeleteOpenSeaCustomer,
+    batchAssignOpenSeaCustomer,
+    assignOpenSeaCustomer,
+    getOpenSeaOptions,
+    getOpenSeaCustomer,
+    deleteOpenSeaCustomer,
+    getCustomerHeaderList,
+    saveCustomerRelation,
+    getCustomerRelationList,
+    getCustomerCollaborationList,
+    batchDeleteCustomerCollaboration,
+    updateCustomerCollaboration,
+    addCustomerCollaboration,
+    deleteCustomerCollaboration,
+    getCustomerOptions,
+    getCustomerOpenSeaFollowRecordList,
+    updateCustomerRelationItem,
+    addCustomerRelationItem,
+    deleteCustomerRelationItem,
+    getCustomerTab,
+    updateCustomerFollowPlanStatus,
+    exportCustomerAll,
+    exportContactAll,
+    exportContactSelected,
+    exportCustomerSelected,
+    moveCustomerToPool,
+    addCustomerView,
+    deleteCustomerView,
+    fixedCustomerView,
+    getCustomerViewDetail,
+    getCustomerViewList,
+    updateCustomerView,
+    enableCustomerView,
+    dragCustomerView,
+    addContactView,
+    deleteContactView,
+    fixedContactView,
+    getContactViewDetail,
+    getContactViewList,
+    updateContactView,
+    enableContactView,
+    dragContactView,
+    geAdvancedCustomerList,
+    getAdvancedOpenSeaCustomerList,
+    getAdvancedCustomerContactList,
+    exportCustomerOpenSeaAll,
+    exportCustomerOpenSeaSelected,
+    preCheckImportAccount,
+    downloadAccountTemplate,
+    importAccount,
+    preCheckImportContact,
+    downloadContactTemplate,
+    importContact,
+    batchUpdateOpenSeaCustomer,
+    addAccountPoolView,
+    deleteAccountPoolView,
+    fixedAccountPoolView,
+    getAccountPoolViewDetail,
+    getAccountPoolViewList,
+    updateAccountPoolView,
+    enableAccountPoolView,
+    dragAccountPoolView,
+    batchUpdateAccount,
+    batchUpdateContact,
+    mergeAccount,
+    mergeAccountPage,
+    generateCustomerChart,
+    generateCustomerPoolChart,
+    generateCustomerContactChart,
+    getAccountContract,
+    getAccountContractStatistic,
+    getAccountPayment,
+    getAccountPaymentStatistic,
+    getAccountPaymentRecord,
+    getAccountPaymentRecordStatistic,
+    getCustomerInvoiceList,
+    getCustomerOrderList,
+    getCustomerInvoiceStatistic,
+  };
+}

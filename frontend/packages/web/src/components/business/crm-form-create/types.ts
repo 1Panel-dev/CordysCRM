@@ -1,0 +1,182 @@
+import type { OperatorEnum } from '@lib/shared/enums/commonEnum';
+import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import type { ModuleField } from '@lib/shared/models/common';
+import type { CollaborationType } from '@lib/shared/models/customer';
+import { SelectedUsersItem } from '@lib/shared/models/system/module';
+
+import type { FormItemRule } from 'naive-ui';
+import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
+import type { Option } from 'naive-ui/es/transfer/src/interface';
+
+export interface FormCreateFieldOption extends Option {
+  [key: string]: any;
+}
+
+export interface FormCreateFieldRule extends FormItemRule {
+  key: FieldRuleEnum;
+  label?: string;
+  regex?: string;
+}
+
+export interface FormCreateFieldShowControlRule {
+  value?: string | number; // 当前 option 的 value
+  fieldIds: string[]; // 控制的字段id集合
+}
+
+export type FormCreateFieldDateType = 'month' | 'date' | 'datetime';
+export type DataSourceMatchType = 'MATCH_FIELD' | 'MATCH_VALUE';
+
+export interface DataSourceFilterItem {
+  leftFieldId: string | undefined; // 左侧字段id
+  leftFieldType: FieldTypeEnum; // 左侧字段类型
+  operator: OperatorEnum | undefined; // 操作符
+  matchType: DataSourceMatchType; // 匹配类型
+  rightFieldId: string | undefined; // 右侧字段id
+  rightFieldCustom?: boolean; // 右侧是否为自定义值
+  rightFieldCustomValue: any; // 右侧自定义值
+  rightFieldType: FieldTypeEnum; // 右侧字段类型，审批状态是系统内置特殊字段
+  selectedRows?: InternalRowData[];
+  selectedUserList?: SelectedUsersItem[];
+}
+
+export interface DataSourceFilterCombine {
+  searchMode: 'AND' | 'OR'; // 匹配模式
+  conditions: DataSourceFilterItem[]; // 条件集合
+}
+
+export interface FieldLinkOption {
+  current: string[]; // 当前选项 value 集合
+  method: 'AUTO' | 'HIDDEN'; // 联动方式
+  target: string | string[]; // 目标选项 value 集合
+}
+
+export interface FieldLinkProp {
+  targetField: string; // 目标字段id
+  linkOptions: FieldLinkOption[]; // 联动选项
+}
+
+export interface DataSourceLinkField {
+  current: string; // 字段id
+  link: string; // 联动字段id
+  method: 'fill'; // 联动方式
+  enable: boolean; // 是否启用
+}
+
+export interface DataSourceSubFieldLinkField extends DataSourceLinkField {
+  childLinks: DataSourceSubFieldLinkField[]; // 子表格联动配置
+}
+
+export interface FormCreateField {
+  // 基础属性
+  id: string;
+  name: string;
+  type: FieldTypeEnum;
+  businessKey?: string; // 业务标准字段，不能删除
+  disabledProps?: string[]; // 禁用的属性集合
+  internalKey?: string;
+  key?: string;
+  showLabel: boolean;
+  placeholder?: string;
+  description: string;
+  readable: boolean;
+  editable: boolean;
+  fieldWidth: number;
+  defaultValue?: any;
+  defaultValueType?: 'custom' | 'formula';
+  prefixType?: 'custom' | 'formula';
+  rules: FormCreateFieldRule[];
+  mobile?: boolean; // 是否在移动端显示
+  // 数字输入属性
+  max?: number;
+  min?: number;
+  numberFormat?: 'number' | 'percent'; // 数字格式, number: 数字, percent: 百分比
+  decimalPlaces?: boolean; // 保留小数点位
+  precision?: number; // 精度
+  showThousandsSeparator?: boolean; // 是否显示千分位
+  // 日期输入属性
+  dateType?: FormCreateFieldDateType;
+  dateDefaultType?: 'custom' | 'current'; // 日期默认类型, custom: 自定义, current: 填写当时
+  // radio属性
+  direction?: 'horizontal' | 'vertical';
+  // divider属性
+  dividerClass?: string;
+  dividerColor?: string;
+  titleColor?: string;
+  // 图片上传属性
+  pictureShowType?: 'card' | 'list';
+  uploadLimit?: number | null;
+  uploadLimitEnable?: boolean;
+  uploadSizeLimit?: number | null;
+  uploadSizeLimitEnable?: boolean;
+  // 地址属性
+  scope?: 'ALL' | 'CN';
+  locationType?: 'PCD' | 'PC' | 'detail' | 'C' | 'P'; // C:国家, P:国家-省,PC: 省市, PCD: 省市区, detail: 省市区+详细地址
+  // 选择器属性
+  optionSource?: 'ref' | 'custom'; // 选项来源,自定义还是引用
+  refId?: string | null; // 引用的字段id
+  refFormKey?: string; // 引用字段第一层
+  customOptions?: FormCreateFieldOption[]; // 自定义字段的选项数据
+  multiple?: boolean;
+  options?: FormCreateFieldOption[];
+  initialOptions?: any[]; // 用于回显(成员、部门、数据源选择)
+  // dataSource属性
+  dataSourceType?: FieldDataSourceTypeEnum;
+  combineSearch?: DataSourceFilterCombine; // 数据源过滤条件
+  showFields?: string[]; // 数据源显示字段
+  linkFields?: DataSourceLinkField[]; // 数据源联动字段
+  childLinkFields?: DataSourceSubFieldLinkField[]; // 数据源子表格联动配置
+  // 成员属性
+  hasCurrentUser?: boolean;
+  // 部门属性
+  hasCurrentUserDept?: boolean;
+  // 显隐控制属性(该属性是或运算，满足一个值即显示)
+  showControlRules?: FormCreateFieldShowControlRule[];
+  // 流水号属性
+  serialNumberRules?: (string | number)[]; // 流水号规则
+  // 字段联动属性
+  linkProp?: FieldLinkProp;
+  // 附件属性
+  onlyOne?: boolean; // 是否只允许上传一个文件
+  accept?: string; // 附件类型
+  limitSize?: string; // 附件大小限制
+  // 前端渲染属性
+  icon: string;
+  show?: boolean; // 是否显示，受控于别的字段的showControlRules
+  linkRange?: (string | number)[]; // 联动限制可选范围
+  fieldValue?: any; // 字段值
+  isNew?: boolean;
+  // 链接
+  linkSource?: string;
+  openMode?: string;
+  // 手机号
+  format?: string;
+  formula?: string; // 计算公式
+  // 子表格
+  subFields?: FormCreateField[];
+  fixedColumn?: number; // 固定列数
+  sumColumns?: string[]; // 需要汇总的字段id集合
+  resourceFieldId?: string; // 关联来源字段id
+  subTableFieldId?: string; // 关联来源的子表格字段id
+  price_sub?: string; // 价格表子表格行号标识
+  listDisplayFields?: string[]; // 数据源列表展示字段
+}
+
+export interface AttachmentInfo {
+  id: string;
+  name: string;
+  organizationId: string;
+  resourceId: string;
+  size: number;
+  storage: string;
+  type: string;
+  createUser: string;
+  createTime: number;
+}
+
+export interface FormDetail {
+  moduleFields: ModuleField[];
+  optionMap?: Record<string, any[]>;
+  collaborationType?: CollaborationType; // 协作类型
+  attachmentMap?: Record<string, AttachmentInfo[]>; // 附件信息映射
+  [key: string]: any;
+}

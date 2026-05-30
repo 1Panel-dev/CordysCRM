@@ -1,0 +1,80 @@
+import { showFailToast } from 'vant';
+
+import { useI18n } from '@lib/shared/hooks/useI18n';
+
+import useUser from '@/hooks/useUser';
+
+export default function checkStatus(
+  status: number,
+  msg: string,
+  msgDetail: string | Record<string, any>,
+  code?: number,
+  noErrorTip?: boolean
+): void {
+  const { t } = useI18n();
+  const { logout, isLoginPage, isWhiteListPage } = useUser();
+
+  let errMessage = '';
+  switch (status) {
+    case 400:
+      errMessage = `${msg}`;
+      break;
+    case 401: {
+      errMessage = msg || t('api.errMsg401');
+      if (!isLoginPage() && !isWhiteListPage()) {
+        logout();
+      }
+      break;
+    }
+    case 403:
+      errMessage = msg || t('api.errMsg403');
+      break;
+    // 404请求不存在
+    case 404:
+      errMessage = msg || t('api.errMsg404');
+      break;
+    case 405:
+      errMessage = msg || t('api.errMsg405');
+      break;
+    case 408:
+      errMessage = msg || t('api.errMsg408');
+      break;
+    case 500:
+      errMessage = msg || t('api.errMsg500');
+      break;
+    case 501:
+      errMessage = msg || t('api.errMsg501');
+      break;
+    case 502:
+      errMessage = msg || t('api.errMsg502');
+      break;
+    case 503:
+      errMessage = msg || t('api.errMsg503');
+      break;
+    case 504:
+      errMessage = msg || t('api.errMsg504');
+      break;
+    case 505:
+      errMessage = msg || t('api.errMsg505');
+      break;
+    default:
+  }
+  if (msgDetail && !noErrorTip) {
+    if (typeof msgDetail === 'object') {
+      errMessage = Object.values(msgDetail)
+        .map((e) => e)
+        .join('\n');
+    } else {
+      errMessage = msgDetail;
+    }
+    showFailToast({
+      message: errMessage,
+      duration: 5000,
+    });
+  } else if (errMessage && !noErrorTip) {
+    showFailToast({
+      message: errMessage,
+      duration: 5000,
+    });
+  }
+}

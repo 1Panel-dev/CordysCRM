@@ -1,0 +1,2553 @@
+{
+  "customer": [
+    {
+      "name": "基本信息",
+      "internalKey": "customerBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "客户名称",
+      "internalKey": "customerName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "客户行业",
+      "internalKey": "customerIndustry",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "互联网",
+          "value": "1"
+        },
+        {
+          "label": "金融",
+          "value": "2"
+        },
+        {
+          "label": "制造业",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "客户等级",
+      "internalKey": "customerLevel",
+      "type": "SELECT",
+      "showLabel": true,
+      "defaultValue": "1",
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "重要客户",
+          "value": "1"
+        },
+        {
+          "label": "一般客户",
+          "value": "2"
+        },
+        {
+          "label": "战略客户",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "客户类型",
+      "internalKey": "customerType",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "无",
+          "value": "1"
+        },
+        {
+          "label": "最终客户",
+          "value": "2"
+        },
+        {
+          "label": "代理商",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "客户来源",
+      "internalKey": "customerSource",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "线上",
+          "value": "1"
+        },
+        {
+          "label": "线下",
+          "value": "2"
+        },
+        {
+          "label": "维保",
+          "value": "3"
+        },
+        {
+          "label": "续约",
+          "value": "4"
+        },
+        {
+          "label": "扩容",
+          "value": "5"
+        },
+        {
+          "label": "增购",
+          "value": "6"
+        }
+      ],
+      "showControlRules": [
+        {
+          "value": "1",
+          "fieldIds": [
+            "customerOnlineSource"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "线上来源详情",
+      "internalKey": "customerOnlineSource",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "400电话",
+          "value": "1"
+        },
+        {
+          "label": "官网咨询",
+          "value": "2"
+        },
+        {
+          "label": "社区用户",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "客户标签",
+      "internalKey": "customerTag",
+      "type": "INPUT_MULTIPLE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "地址信息",
+      "internalKey": "customerAddressInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "地区",
+      "internalKey": "customerArea",
+      "type": "LOCATION",
+      "locationType": "detail",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "负责人信息",
+      "internalKey": "customerOwnerInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "负责人",
+      "internalKey": "customerOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    }
+  ],
+  "clue": [
+    {
+      "name": "基本信息",
+      "internalKey": "clueBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "公司名称",
+      "internalKey": "clueName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "线索进度",
+      "internalKey": "clueProgress",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "初步意向",
+          "value": "1"
+        },
+        {
+          "label": "强烈意愿",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "name": "线索来源",
+      "internalKey": "clueSource",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "线上",
+          "value": "1"
+        },
+        {
+          "label": "电话影响",
+          "value": "2"
+        },
+        {
+          "label": "客户介绍",
+          "value": "3"
+        },
+        {
+          "label": "线下活动",
+          "value": "4"
+        },
+        {
+          "label": "社区用户",
+          "value": "5"
+        },
+        {
+          "label": "GitHub",
+          "value": "6"
+        },
+        {
+          "label": "维保，续约，增购",
+          "value": "7"
+        },
+        {
+          "label": "其他",
+          "value": "8"
+        }
+      ],
+      "showControlRules": [
+        {
+          "value": "1",
+          "fieldIds": [
+            "clueOnlineSource"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "线上来源详情",
+      "internalKey": "clueOnlineSource",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "400电话",
+          "value": "1"
+        },
+        {
+          "label": "官网咨询",
+          "value": "2"
+        },
+        {
+          "label": "社区用户",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "客户需求",
+      "internalKey": "clueDemand",
+      "type": "TEXTAREA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "联系人名称",
+      "internalKey": "clueContactName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "联系人电话",
+      "internalKey": "clueContactPhone",
+      "type": "PHONE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "format": "255",
+      "rules": [
+        {
+          "key": "unique"
+        }
+      ]
+    },
+    {
+      "name": "意向产品",
+      "internalKey": "clueProduct",
+      "type": "DATA_SOURCE_MULTIPLE",
+      "dataSourceType": "PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "地址信息",
+      "internalKey": "clueAddressInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "地区",
+      "internalKey": "clueArea",
+      "type": "LOCATION",
+      "locationType": "detail",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "负责人信息",
+      "internalKey": "clueOwnerInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "负责人",
+      "internalKey": "clueOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    }
+  ],
+  "opportunity": [
+    {
+      "name": "基本信息",
+      "internalKey": "opportunityBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "商机名称",
+      "internalKey": "opportunityName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "客户名称",
+      "internalKey": "opportunityCustomer",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "业务编码",
+      "internalKey": "opportunityNo",
+      "type": "SERIAL_NUMBER",
+      "placeholder": "无需录入, 自动生成",
+      "showLabel": true,
+      "serialNumberRules": [
+        "Opp",
+        "-",
+        "yyyyMM",
+        "-",
+        "6"
+      ],
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "disableProps": [
+        "serialNumberRules"
+      ]
+    },
+    {
+      "name": "商机来源",
+      "internalKey": "opportunitySource",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "电话营销",
+          "value": "1"
+        },
+        {
+          "label": "客户介绍",
+          "value": "2"
+        },
+        {
+          "label": "线下活动",
+          "value": "3"
+        },
+        {
+          "label": "社区用户",
+          "value": "4"
+        },
+        {
+          "label": "Github",
+          "value": "5"
+        },
+        {
+          "label": "维保，续约，增购",
+          "value": "6"
+        },
+        {
+          "label": "其他",
+          "value": "7"
+        }
+      ]
+    },
+    {
+      "name": "金额",
+      "internalKey": "opportunityPrice",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "numberFormat": "number",
+      "showThousandsSeparator": true,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "意向产品",
+      "internalKey": "opportunityProduct",
+      "type": "DATA_SOURCE_MULTIPLE",
+      "dataSourceType": "PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "结束时间",
+      "internalKey": "opportunityEndTime",
+      "type": "DATE_TIME",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "dateType": "date",
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "可能性",
+      "internalKey": "opportunityWinRate",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "numberFormat": "percent",
+      "showThousandsSeparator": true
+    },
+    {
+      "name": "联系人",
+      "internalKey": "opportunityContact",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "客户标签",
+      "internalKey": "opportunityCustomerTag",
+      "type": "INPUT_MULTIPLE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "备注信息",
+      "internalKey": "opportunityRemark",
+      "type": "TEXTAREA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "地址信息",
+      "internalKey": "opportunityAddressInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "地区",
+      "internalKey": "opportunityArea",
+      "type": "LOCATION",
+      "locationType": "detail",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "负责人信息",
+      "internalKey": "opportunityOwnerInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "负责人",
+      "internalKey": "opportunityOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    }
+  ],
+  "product": [
+    {
+      "name": "基本信息",
+      "internalKey": "productBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "产品名称",
+      "internalKey": "productName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ]
+    },
+    {
+      "name": "产品价格",
+      "internalKey": "productPrice",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "numberFormat": "number",
+      "showThousandsSeparator": true
+    },
+    {
+      "name": "状态",
+      "internalKey": "productStatus",
+      "type": "RADIO",
+      "direction": "horizontal",
+      "defaultValue": "1",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "上架",
+          "value": "1"
+        },
+        {
+          "label": "下架",
+          "value": "2"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "描述",
+      "internalKey": "productDescription",
+      "type": "TEXTAREA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "图片信息",
+      "internalKey": "productPicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "产品图片",
+      "internalKey": "productPic",
+      "type": "PICTURE",
+      "pictureShowType": "card",
+      "uploadSizeLimitEnable": true,
+      "uploadSizeLimit": 20,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    }
+  ],
+  "contact": [
+    {
+      "name": "客户名称",
+      "internalKey": "contactCustomer",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "姓名",
+      "internalKey": "contactName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "邮箱",
+      "internalKey": "contactEmail",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "手机号",
+      "internalKey": "contactPhone",
+      "type": "PHONE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "format": "255",
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "contactOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    }
+  ],
+  "record": [
+    {
+      "name": "跟进类型",
+      "internalKey": "recordType",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "客户",
+          "value": "CUSTOMER"
+        },
+        {
+          "label": "线索",
+          "value": "CLUE"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "showControlRules": [
+        {
+          "value": "CUSTOMER",
+          "fieldIds": [
+            "recordCustomer",
+            "recordOpportunity",
+            "recordContact"
+          ]
+        },
+        {
+          "value": "CLUE",
+          "fieldIds": [
+            "recordClue"
+          ]
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "客户名称",
+      "internalKey": "recordCustomer",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "公司名称",
+      "internalKey": "recordClue",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CLUE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "商机",
+      "internalKey": "recordOpportunity",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "OPPORTUNITY",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "联系人",
+      "internalKey": "recordContact",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "跟进方式",
+      "internalKey": "recordMethod",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "到访",
+          "value": "1"
+        },
+        {
+          "label": "电话",
+          "value": "2"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "跟进时间",
+      "internalKey": "recordTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "recordOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "意向产品",
+      "internalKey": "recordProduct",
+      "type": "DATA_SOURCE_MULTIPLE",
+      "dataSourceType": "PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "跟进内容",
+      "internalKey": "recordDescription",
+      "type": "TEXTAREA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    }
+  ],
+  "plan": [
+    {
+      "name": "跟进类型",
+      "internalKey": "planType",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "客户",
+          "value": "CUSTOMER"
+        },
+        {
+          "label": "线索",
+          "value": "CLUE"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "showControlRules": [
+        {
+          "value": "CUSTOMER",
+          "fieldIds": [
+            "planCustomer",
+            "planOpportunity",
+            "planContact"
+          ]
+        },
+        {
+          "value": "CLUE",
+          "fieldIds": [
+            "planClue"
+          ]
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "客户名称",
+      "internalKey": "planCustomer",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "公司名称",
+      "internalKey": "planClue",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CLUE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "商机",
+      "internalKey": "planOpportunity",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "OPPORTUNITY",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "联系人",
+      "internalKey": "planContact",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "预计开始时间",
+      "internalKey": "planStartTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "跟进方式",
+      "internalKey": "planMethod",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "到访",
+          "value": "1"
+        },
+        {
+          "label": "电话",
+          "value": "2"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "planOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "意向产品",
+      "internalKey": "planProduct",
+      "type": "DATA_SOURCE_MULTIPLE",
+      "dataSourceType": "PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "预计沟通内容",
+      "internalKey": "planContent",
+      "type": "TEXTAREA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    }
+  ],
+  "price": [
+    {
+      "name": "基本信息",
+      "internalKey": "priceBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "价格表名称",
+      "internalKey": "priceName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "状态",
+      "internalKey": "priceStatus",
+      "type": "RADIO",
+      "direction": "horizontal",
+      "defaultValue": "1",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "启用",
+          "value": "1"
+        },
+        {
+          "label": "禁用",
+          "value": "2"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "产品信息",
+      "internalKey": "priceProducts",
+      "type": "SUB_PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "fixedColumn": 1,
+      "subFields": [
+        {
+          "name": "产品",
+          "internalKey": "priceProduct",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRODUCT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "rules": [
+            {
+              "key": "required"
+            }
+          ],
+          "mobile": true
+        },
+        {
+          "name": "产品SKU",
+          "internalKey": "priceProductSku",
+          "type": "INPUT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1
+        },
+        {
+          "name": "产品定价",
+          "internalKey": "priceProductAmount",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "number",
+          "decimalPlaces": true,
+          "precision": 2,
+          "showThousandsSeparator": true,
+          "mobile": true,
+          "rules": [
+            {
+              "key": "required"
+            }
+          ]
+        },
+        {
+          "name": "税点",
+          "internalKey": "priceProductTax",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "percent",
+          "decimalPlaces": true,
+          "precision": 2
+        },
+        {
+          "name": "重要说明",
+          "internalKey": "priceProductSku",
+          "type": "INPUT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1
+        }
+      ]
+    },
+    {
+      "name": "备注",
+      "internalKey": "priceRemark",
+      "type": "TEXTAREA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    }
+  ],
+  "quotation": [
+    {
+      "name": "基本信息",
+      "internalKey": "quotationBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "报价",
+      "internalKey": "quotationName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "商机",
+      "internalKey": "quotationOpportunity",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "OPPORTUNITY",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "联系人",
+      "internalKey": "quotationContact",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "报价日期",
+      "internalKey": "quotationTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "有效期至",
+      "internalKey": "quotationUntilTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "报价产品",
+      "internalKey": "quotationProducts",
+      "type": "SUB_PRICE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "sumColumns": [
+        "amount"
+      ],
+      "fixedColumn": 1,
+      "mobile": true,
+      "subFields": [
+        {
+          "name": "产品",
+          "internalKey": "quotationProduct",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRODUCT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "mobile": true,
+          "rules": [
+            {
+              "key": "required"
+            }
+          ],
+          "disabledProps": [
+            "dataSourceType",
+            "rules.required"
+          ]
+        },
+        {
+          "name": "价格表",
+          "internalKey": "quotationPrice",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRICE",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "mobile": true,
+          "disabledProps": [
+            "dataSourceType"
+          ]
+        },
+        {
+          "name": "产品定价",
+          "internalKey": "quotationProductAmount",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "number",
+          "decimalPlaces": true,
+          "precision": 2,
+          "showThousandsSeparator": true
+        },
+        {
+          "name": "折扣",
+          "internalKey": "quotationDiscount",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "number",
+          "decimalPlaces": true,
+          "precision": 2
+        },
+        {
+          "name": "税点",
+          "internalKey": "quotationTax",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "percent",
+          "decimalPlaces": true,
+          "precision": 2
+        },
+        {
+          "name": "金额",
+          "internalKey": "quotationAmount",
+          "type": "FORMULA",
+          "showLabel": true,
+          "readable": true,
+          "editable": false,
+          "fieldWidth": 1,
+          "mobile": true,
+          "showThousandsSeparator": true
+        }
+      ]
+    },
+    {
+      "name": "累计金额",
+      "internalKey": "quotationTotalAmount",
+      "type": "FORMULA",
+      "showLabel": true,
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ],
+      "mobile": true,
+      "showThousandsSeparator": true,
+      "ext_ver": "1.5.1"
+    }
+  ],
+  "contractPaymentPlan": [
+    {
+      "name": "回款计划名称",
+      "internalKey": "contractPaymentPlanName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true,
+      "ext_ver": "1.5.0"
+    },
+    {
+      "name": "合同",
+      "internalKey": "contractPaymentPlanContract",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTRACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "contractPaymentPlanOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "计划回款金额",
+      "internalKey": "contractPaymentPlanPlanAmount",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "numberFormat": "number",
+      "showThousandsSeparator": true,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "计划回款时间",
+      "internalKey": "contractPaymentPlanPlanEndTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    }
+  ],
+  "contract": [
+    {
+      "name": "基本信息",
+      "internalKey": "contractBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "合同",
+      "internalKey": "contractName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ]
+    },
+    {
+      "name": "客户名称",
+      "internalKey": "contractCustomer",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "合同编号",
+      "internalKey": "contractNo",
+      "type": "SERIAL_NUMBER",
+      "placeholder": "无需录入, 自动生成",
+      "showLabel": true,
+      "serialNumberRules": [
+        "Con",
+        "-",
+        "yyyyMM",
+        "-",
+        "6"
+      ],
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "mobile": true,
+      "disableProps": [
+        "serialNumberRules"
+      ]
+    },
+    {
+      "name": "合同报价信息",
+      "internalKey": "contractProducts",
+      "type": "SUB_PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "fixedColumn": 1,
+      "sumColumns": [
+        "amount"
+      ],
+      "subFields": [
+        {
+          "name": "产品",
+          "internalKey": "contractProduct",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRODUCT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "rules": [
+            {
+              "key": "required"
+            }
+          ],
+          "mobile": true
+        },
+        {
+          "name": "产品单价",
+          "internalKey": "contractProductAmount",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "number",
+          "decimalPlaces": true,
+          "precision": 2,
+          "showThousandsSeparator": true,
+          "mobile": true,
+          "rules": [
+            {
+              "key": "required"
+            }
+          ]
+        },
+        {
+          "name": "数量",
+          "internalKey": "contractProductNumber",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "mobile": true,
+          "numberFormat": "number"
+        },
+        {
+          "name": "金额",
+          "internalKey": "contractProductSumAmount",
+          "type": "FORMULA",
+          "showLabel": true,
+          "readable": true,
+          "mobile": true,
+          "editable": false,
+          "fieldWidth": 1,
+          "showThousandsSeparator": true
+        }
+      ]
+    },
+    {
+      "name": "负责人",
+      "internalKey": "contractOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "合同开始时间",
+      "internalKey": "contractStartTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true,
+      "ext_ver": "1.5.0"
+    },
+    {
+      "name": "合同结束时间",
+      "internalKey": "contractEndTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true,
+      "ext_ver": "1.5.0"
+    },
+    {
+      "name": "累计金额",
+      "internalKey": "contractTotalAmount",
+      "type": "FORMULA",
+      "showLabel": true,
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ],
+      "mobile": true,
+      "showThousandsSeparator": true,
+      "ext_ver": "1.5.1"
+    }
+  ],
+  "invoice": [
+    {
+      "name": "基本信息",
+      "internalKey": "invoiceBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "发票名称",
+      "internalKey": "invoiceName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "合同信息",
+      "internalKey": "invoiceContractBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "合同名称",
+      "internalKey": "invoiceContract",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTRACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true,
+      "showFields": [
+        "contractCustomer",
+        "contractNo",
+        "contractTotalAmount"
+      ]
+    },
+    {
+      "name": "发票信息",
+      "internalKey": "invoiceBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "开票类型",
+      "internalKey": "invoiceType",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "专票",
+          "value": "1"
+        },
+        {
+          "label": "普票",
+          "value": "2"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "开票项目名称",
+      "internalKey": "invoiceProjectName",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "产品1",
+          "value": "1"
+        },
+        {
+          "label": "产品2",
+          "value": "2"
+        },
+        {
+          "label": "产品3",
+          "value": "3"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "规格型号",
+      "internalKey": "invoiceSpecification",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "sku1",
+          "value": "1"
+        },
+        {
+          "label": "sku2",
+          "value": "2"
+        },
+        {
+          "label": "sku3",
+          "value": "3"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "单位",
+      "internalKey": "invoiceUnit",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "个",
+          "value": "1"
+        },
+        {
+          "label": "套",
+          "value": "2"
+        },
+        {
+          "label": "年",
+          "value": "3"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "数量",
+      "internalKey": "invoiceQuantity",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "numberFormat": "number",
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "税率",
+      "internalKey": "invoiceTaxRate",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "numberFormat": "percent",
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "工商抬头",
+      "internalKey": "invoiceBusinessTitle",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "BUSINESS_TITLE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "showFields": [
+        "identificationNumber"
+      ]
+    },
+    {
+      "name": "发票金额",
+      "internalKey": "invoiceAmount",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "numberFormat": "number",
+      "showThousandsSeparator": true,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "invoiceOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    }
+  ],
+  "contractPaymentRecord": [
+    {
+      "name": "基本信息",
+      "internalKey": "contractPaymentRecordBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "回款记录名称",
+      "internalKey": "contractPaymentRecordName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "回款编码",
+      "internalKey": "contractPaymentRecordNo",
+      "type": "SERIAL_NUMBER",
+      "placeholder": "无需录入, 自动生成",
+      "showLabel": true,
+      "serialNumberRules": [
+        "PAY",
+        "-",
+        "yyyyMM",
+        "-",
+        "6"
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "合同名称",
+      "internalKey": "contractPaymentRecordContract",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTRACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "回款计划",
+      "internalKey": "contractPaymentRecordPlan",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "PAYMENT_PLAN",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "负责人",
+      "internalKey": "contractPaymentRecordOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "回款信息",
+      "internalKey": "contractPaymentRecordInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "回款时间",
+      "internalKey": "contractPaymentRecordEndTime",
+      "type": "DATE_TIME",
+      "dateType": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "回款金额",
+      "internalKey": "contractPaymentRecordAmount",
+      "type": "INPUT_NUMBER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "numberFormat": "number",
+      "decimalPlaces": true,
+      "precision": 2,
+      "showThousandsSeparator": true,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "收款银行",
+      "internalKey": "contractPaymentRecordBank",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "中国银行",
+          "value": "1"
+        },
+        {
+          "label": "中国农业银行",
+          "value": "2"
+        },
+        {
+          "label": "中国工商银行",
+          "value": "3"
+        },
+        {
+          "label": "中国建设银行",
+          "value": "4"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "收款银行账号",
+      "internalKey": "contractPaymentRecordBankNo",
+      "type": "SELECT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "options": [
+        {
+          "label": "银行账号1",
+          "value": "1"
+        },
+        {
+          "label": "银行账号2",
+          "value": "2"
+        },
+        {
+          "label": "银行账号3",
+          "value": "3"
+        }
+      ],
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    }
+  ],
+  "order": [
+    {
+      "name": "基本信息",
+      "internalKey": "orderBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "订单编号",
+      "internalKey": "orderNo",
+      "type": "SERIAL_NUMBER",
+      "placeholder": "无需录入, 自动生成",
+      "showLabel": true,
+      "serialNumberRules": [
+        "XSDD",
+        "-",
+        "yyyyMM",
+        "-",
+        "6"
+      ],
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "mobile": true,
+      "disableProps": [
+        "serialNumberRules"
+      ]
+    },
+    {
+      "name": "关联客户",
+      "internalKey": "orderCustomer",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true
+    },
+    {
+      "name": "关联合同",
+      "internalKey": "orderContract",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTRACT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "订单名称",
+      "internalKey": "orderName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "rules": [
+        {
+          "key": "required"
+        },
+        {
+          "key": "unique"
+        }
+      ]
+    },
+    {
+      "name": "负责人",
+      "internalKey": "orderOwner",
+      "type": "MEMBER",
+      "hasCurrentUser": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "mobile": true,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ]
+    },
+    {
+      "name": "销售产品信息",
+      "internalKey": "orderProductInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "产品明细",
+      "internalKey": "orderProducts",
+      "type": "SUB_PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "fixedColumn": 1,
+      "sumColumns": [],
+      "subFields": [
+        {
+          "name": "产品名称",
+          "internalKey": "orderProduct",
+          "type": "DATA_SOURCE",
+          "dataSourceType": "PRODUCT",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "mobile": true
+        },
+        {
+          "name": "产品单价",
+          "internalKey": "orderProductPrice",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "numberFormat": "number",
+          "decimalPlaces": true,
+          "precision": 2,
+          "showThousandsSeparator": true,
+          "mobile": true
+        },
+        {
+          "name": "数量",
+          "internalKey": "orderProductNumber",
+          "type": "INPUT_NUMBER",
+          "showLabel": true,
+          "readable": true,
+          "editable": true,
+          "fieldWidth": 1,
+          "mobile": true,
+          "numberFormat": "number"
+        },
+        {
+          "name": "金额",
+          "internalKey": "orderProductAmount",
+          "type": "FORMULA",
+          "showLabel": true,
+          "readable": true,
+          "mobile": true,
+          "editable": false,
+          "fieldWidth": 1,
+          "showThousandsSeparator": true
+        }
+      ]
+    },
+    {
+      "name": "订单金额",
+      "internalKey": "orderAmount",
+      "type": "FORMULA",
+      "showLabel": true,
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "rules": [
+        {
+          "key": "required"
+        }
+      ],
+      "mobile": true,
+      "showThousandsSeparator": true
+    },
+    {
+      "name": "订单收货信息",
+      "internalKey": "orderReceivedInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": 1,
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "收货地址",
+      "internalKey": "orderDeliveryAddress",
+      "type": "LOCATION",
+      "locationType": "PCD",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1
+    },
+    {
+      "name": "收货人",
+      "internalKey": "orderConsignee",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true
+    },
+    {
+      "name": "收货人联系方式",
+      "internalKey": "orderPhone",
+      "type": "PHONE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 1,
+      "mobile": true,
+      "format": "11"
+    }
+  ]
+}

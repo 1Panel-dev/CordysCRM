@@ -1,0 +1,68 @@
+@import url('./var.less');
+html,
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+  /* stylelint-disable-next-line function-no-unknown */
+  padding-bottom: constant(safe-area-inset-bottom);
+  height: 100vh;
+  #app {
+    height: 100%;
+  }
+}
+
+/* 修改进度条的背景颜色 */
+#nprogress {
+  .bar {
+    background: var(--primary-8) !important;
+  }
+}
+
+/* 单行文本缩略 */
+.one-line-text {
+  @apply overflow-hidden overflow-ellipsis whitespace-nowrap;
+}
+.top-bar {
+  @apply flex items-center;
+
+  gap: 12px;
+  padding: 8px 16px;
+  background-color: var(--text-n10);
+  .half-px-border-bottom();
+}
+.crm-form {
+  .van-cell-group {
+    margin: 0;
+    .van-cell {
+      position: relative;
+      &:last-child::before {
+        position: absolute;
+        box-sizing: border-box;
+        content: ' ';
+        pointer-events: none;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        border-bottom: 1px solid var(--van-cell-border-color);
+        transform: scaleY(0.5);
+      }
+    }
+  }
+}
+// 设置列表下label溢出省略
+.van-list {
+  .van-radio {
+    .van-radio__label {
+      .one-line-text();
+    }
+  }
+  .van-checkbox {
+    .van-checkbox__label {
+      .one-line-text();
+    }
+  }
+}
+
+// search (在search组件上写class，会影响到van-search__field的padding-right，导致清除按钮样式异常)
+.crm-search.van-search {
+  @apply flex-1 !p-0;
+}

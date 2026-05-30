@@ -1,0 +1,616 @@
+<template>
+  <n-spin :show="loading" class="h-full" :description="props.loadingDescription">
+    <CrmDescription
+      :descriptions="realDescriptions"
+      :value-align="props.valueAlign ?? 'end'"
+      :class="[`value-align-${props.valueAlign ?? 'end'}`, props.class]"
+      :column="props.column"
+      :label-width="props.labelWidth"
+      :one-line-label="props.oneLineLabel"
+      :one-line-value="props.oneLineValue"
+      :tooltip-position="props.tooltipPosition"
+    >
+      <template #divider="{ item }">
+        <CrmFormCreateDivider :field-config="item.fieldInfo" class="!m-0 w-full" />
+      </template>
+      <template #image="{ item }">
+        <n-image-group>
+          <n-space :class="`${props.valueAlign ?? '!justify-end'}`">
+            <n-image v-for="img in item.value" :key="img" :src="`${PreviewPictureUrl}/${img}`" width="40" height="40" />
+          </n-space>
+        </n-image-group>
+      </template>
+      <template #[FieldTypeEnum.INPUT]="{ item }">
+        <div class="field-line flex w-full items-center">
+          <div
+            class="mr-[16px] whitespace-nowrap text-[var(--text-n2)]"
+            :style="{ width: props.labelWidth || '120px' }"
+          >
+            {{ item.label }}
+          </div>
+          <CrmSingleText
+            v-if="editableByPermission.includes(item.fieldInfo.id)"
+            v-model:value="formDetail[item.fieldInfo.id]"
+            :field-config="{
+              ...item.fieldInfo,
+              showLabel: false,
+            }"
+            :path="item.fieldInfo.id"
+            :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+            isDescriptionRender
+            :feedback="feedbackMap[item.fieldInfo.id]"
+            class="flex-1"
+          />
+          <div v-else>{{ item.value }}</div>
+        </div>
+      </template>
+      <template #[FieldTypeEnum.TEXTAREA]="{ item }">
+        <div class="field-line flex w-full items-start">
+          <div
+            class="mr-[16px] whitespace-nowrap text-[var(--text-n2)]"
+            :style="{ width: props.labelWidth || '120px' }"
+          >
+            {{ item.label }}
+          </div>
+          <CrmTextarea
+            v-if="editableByPermission.includes(item.fieldInfo.id)"
+            v-model:value="formDetail[item.fieldInfo.id]"
+            :field-config="{
+              ...item.fieldInfo,
+              showLabel: false,
+            }"
+            :path="item.fieldInfo.id"
+            :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+            isDescriptionRender
+            :feedback="feedbackMap[item.fieldInfo.id]"
+            class="flex-1"
+          />
+          <div v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
+        </div>
+      </template>
+      <!-- 链接字段 -->
+      <template #[FieldTypeEnum.LINK]="{ item }">
+        <div class="field-line flex w-full items-center">
+          <div
+            class="mr-[16px] whitespace-nowrap text-[var(--text-n2)]"
+            :style="{ width: props.labelWidth || '120px' }"
+          >
+            {{ item.label }}
+          </div>
+          <n-tooltip :delay="300">
+            <template #trigger>
+              <div class="one-line-text cursor-pointer text-[var(--primary-8)]" @click="openLink(item)">
+                {{ item.value }}
+              </div>
+            </template>
+            {{ item.value }}
+          </n-tooltip>
+        </div>
+      </template>
+
+      <!-- 单选 DataSource -->
+      <template #dataSource="{ item }">
+        <div class="field-line flex w-full items-center overflow-hidden">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
+          <CrmTableButton
+            v-if="canOpenDataSource(item) && item.value"
+            class="crm-form-description-link-button flex-1 overflow-hidden"
+            :class="`justify-${props.valueAlign ?? 'end'}`"
+            @click="openDataSource(item)"
+          >
+            <template #trigger>
+              {{ item.value }}
+            </template>
+            {{ item.value }}
+          </CrmTableButton>
+          <n-tooltip
+            v-else
+            :delay="300"
+            :placement="(props.tooltipPosition || item.tooltipPosition) ?? 'top-start'"
+            :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"
+          >
+            <template #trigger>
+              <div class="one-line-text">
+                {{
+                  item.value === undefined || item.value === null || item.value?.toString() === '' ? '-' : item.value
+                }}
+              </div>
+            </template>
+            {{ item.value }}
+          </n-tooltip>
+        </div>
+      </template>
+
+      <!-- 多选 DataSource -->
+      <template #dataSourceMultiple="{ item }">
+        <div class="field-line flex w-full overflow-hidden">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
+          <div v-if="canOpenDataSource(item)" class="flex flex-1 flex-col items-start gap-[12px] overflow-hidden">
+            <CrmTableButton
+              v-for="v in item.value"
+              :key="v.id || v"
+              class="crm-form-description-link-button"
+              @click="openDataSource(item, v)"
+            >
+              <template #trigger>
+                {{ v }}
+              </template>
+              {{ v }}
+            </CrmTableButton>
+          </div>
+          <CrmTagGroup
+            v-else-if="Array.isArray(item.value) && item.value.length"
+            :tags="item.value"
+            :label-key="item.tagProps?.labelKey"
+            :class="`justify-${props.valueAlign ?? 'end'}`"
+          />
+        </div>
+      </template>
+
+      <template #[FieldTypeEnum.DATE_TIME]="{ item }">
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
+          <CrmDateTime
+            v-model:value="formDetail[item.fieldInfo.id]"
+            :field-config="{
+              ...item.fieldInfo,
+              showLabel: false,
+            }"
+            :path="item.fieldInfo.id"
+            :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+            isDescriptionRender
+            :feedback="feedbackMap[item.fieldInfo.id]"
+            @change="() => handleFormChange()"
+          />
+        </div>
+      </template>
+      <template #[FieldTypeEnum.ATTACHMENT]="{ item }">
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
+          <n-button v-if="item.value.length > 0" type="primary" text @click="openFileListModal(item)">
+            {{ t('crm.formDescription.attachmentTip', { count: item.value.length }) }}
+          </n-button>
+          <div v-else>-</div>
+        </div>
+      </template>
+      <template #[FieldTypeEnum.SUB_PRICE]="{ item }">
+        <div class="field-line flex w-full flex-wrap items-center">
+          <div class="w-full text-[var(--text-n2)]">
+            {{ item.label }}
+          </div>
+          <CrmSubTable
+            :parent-id="item.key || ''"
+            :value="item.value as Record<string, any>[] || []"
+            :sub-fields="item.fieldInfo.subFields"
+            :fixed-column="item.fieldInfo.fixedColumn"
+            :sum-columns="item.fieldInfo.sumColumns"
+            :optionMap="item.optionMap"
+            readonly
+          />
+        </div>
+      </template>
+      <template #[FieldTypeEnum.SUB_PRODUCT]="{ item }">
+        <div class="field-line flex w-full flex-wrap items-center">
+          <div class="w-full text-[var(--text-n2)]">
+            {{ item.label }}
+          </div>
+          <CrmSubTable
+            :parent-id="item.key || ''"
+            :value="item.value as Record<string, any>[] || []"
+            :sub-fields="item.fieldInfo.subFields"
+            :fixed-column="item.fieldInfo.fixedColumn"
+            :sum-columns="item.fieldInfo.sumColumns"
+            :optionMap="item.optionMap"
+            readonly
+          />
+        </div>
+      </template>
+    </CrmDescription>
+  </n-spin>
+  <CrmFileListModal
+    v-model:show="showFileListModal"
+    :readonly="props.readonly"
+    :files="activeFileList"
+    @delete-file="handleDeleteFile"
+  />
+  <businessTitleDrawer
+    v-if="isInitBusinessTitleDetail"
+    v-model:visible="showBusinessTitleDetail"
+    :source-id="activeBusinessTitleId"
+  />
+</template>
+
+<script setup lang="ts">
+  import { NButton, NImage, NImageGroup, NSpace, NSpin, NTooltip, useMessage } from 'naive-ui';
+
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ApprovalFieldPermissionModeEnum } from '@lib/shared/enums/process';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { CollaborationType } from '@lib/shared/models/customer';
+  import type { FormConfig } from '@lib/shared/models/system/module';
+  import type { ApprovalFieldPermission } from '@lib/shared/models/system/process';
+
+  import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
+  import CrmFileListModal from '@/components/business/crm-file-list-modal/index.vue';
+  import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
+  import CrmSubTable from '@/components/business/crm-sub-table/index.vue';
+  import CrmDateTime from '../crm-form-create/components/basic/dateTime.vue';
+  import CrmSingleText from '../crm-form-create/components/basic/singleText.vue';
+  import CrmTextarea from '../crm-form-create/components/basic/textarea.vue';
+
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import { hasAnyPermission } from '@/utils/permission';
+
+  import { AttachmentInfo, type FormCreateField } from '../crm-form-create/types';
+
+  const businessTitleDrawer = defineAsyncComponent(
+    () => import('@/views/contract/businessTitle/components/detail.vue')
+  );
+
+  const props = withDefaults(
+    defineProps<{
+      sourceId: string;
+      formKey: FormDesignKeyEnum;
+      refreshKey?: number;
+      class?: string;
+      hiddenFields?: string[];
+      column?: number;
+      valueAlign?: 'center' | 'start' | 'end';
+      labelWidth?: string;
+      tooltipPosition?:
+        | 'top-start'
+        | 'top'
+        | 'top-end'
+        | 'right-start'
+        | 'right'
+        | 'right-end'
+        | 'bottom-start'
+        | 'bottom'
+        | 'bottom-end'
+        | 'left-start'
+        | 'left'
+        | 'left-end'
+        | undefined;
+      readonly?: boolean;
+      loadingDescription?: string;
+      oneLineValue?: boolean; // value 是否单行显示
+      oneLineLabel?: boolean; // label 是否单行显示
+      isContractTableDetail?: boolean; // 只支持合同列表打开的合同详情抽屉高亮跳转
+      fieldPermissions?: ApprovalFieldPermission[]; // 字段权限控制
+      otherSaveParams?: Record<string, any>;
+    }>(),
+    {
+      oneLineLabel: true,
+      oneLineValue: true,
+    }
+  );
+  const emit = defineEmits<{
+    (
+      e: 'init',
+      collaborationType?: CollaborationType,
+      sourceName?: string,
+      detail?: Record<string, any>,
+      config?: FormConfig
+    ): void;
+    (e: 'openCustomerDetail', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
+    (e: 'openContractDetail', params: { id: string }): void;
+    (e: 'openContractPaymentPlanDetail', params: { id: string }): void;
+    (e: 'openOpportunityDetail', params: { id: string }): void;
+    (e: 'openQuotationDetail', params: { id: string }): void;
+  }>();
+
+  const { t } = useI18n();
+  const Message = useMessage();
+
+  const needInitDetail = computed(() => true);
+  const hiddenFieldByPermission = computed(
+    () =>
+      props.fieldPermissions
+        ?.filter((e) => e.permissionType === ApprovalFieldPermissionModeEnum.HIDDEN)
+        .map((e) => e.fieldId) || []
+  );
+  const editableByPermission = computed(
+    () =>
+      props.fieldPermissions
+        ?.filter((e) => e.permissionType === ApprovalFieldPermissionModeEnum.EDIT)
+        .map((e) => e.fieldId) || []
+  );
+  const { formKey, sourceId, otherSaveParams } = toRefs(props);
+  const {
+    fieldList,
+    descriptions,
+    loading,
+    collaborationType,
+    sourceName,
+    detail,
+    formDetail,
+    moduleFormConfig,
+    formConfig,
+    initFormDetail,
+    initFormConfig,
+    initFormDescription,
+    saveForm,
+  } = useFormCreateApi({
+    formKey,
+    sourceId,
+    needInitDetail,
+    isContractTableDetail: props.isContractTableDetail,
+    otherSaveParams,
+  });
+
+  const realDescriptions = computed(() => {
+    return descriptions.value
+      .filter(
+        (item) =>
+          !props.hiddenFields?.includes(item.fieldInfo.id) &&
+          !hiddenFieldByPermission.value?.includes(item.fieldInfo.id)
+      )
+      .map((item) => {
+        // 独占一行
+        if (
+          [FieldTypeEnum.TEXTAREA, FieldTypeEnum.DIVIDER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
+            item.fieldInfo.type
+          )
+        ) {
+          const extraClass = props.column && props.column > 1 ? '!w-full' : '';
+          return {
+            ...item,
+            class: [item.class, extraClass].filter(Boolean).join(' '), // 合并 class
+          };
+        }
+        return item;
+      });
+  });
+  const isInit = ref(false);
+
+  const feedbackMap = ref<Record<string, string>>({});
+
+  function validateField(field: FormCreateField) {
+    if (
+      editableByPermission.value.includes(field.id) ||
+      (field.businessKey === 'expectedEndTime' && !field.resourceFieldId)
+    ) {
+      // 只校验可编辑字段（商机结束日期字段特殊处理）
+      if (field.rules.some((rule) => rule.key === 'required')) {
+        const currentValue = formDetail.value[field.id];
+        if (
+          currentValue === null ||
+          currentValue === undefined ||
+          (Array.isArray(currentValue) && currentValue.length === 0) ||
+          (typeof currentValue === 'string' && currentValue.trim() === '')
+        ) {
+          Message.warning(t('common.notNull', { value: field.name }));
+          feedbackMap.value[field.id] = t('common.notNull', { value: field.name });
+          return false;
+        }
+        feedbackMap.value[field.id] = '';
+        return true;
+      }
+    }
+    feedbackMap.value[field.id] = '';
+    return true;
+  }
+
+  function handleFormChange(callback?: () => void) {
+    nextTick(async () => {
+      try {
+        if (!isInit.value) return;
+        let hasErrorField = false;
+        for (let i = 0; i < fieldList.value.length; i++) {
+          const item = fieldList.value[i];
+          if (
+            [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(item.type) &&
+            Array.isArray(formDetail.value[item.id])
+          ) {
+            // 处理数据源字段，单选传单个值
+            formDetail.value[item.id] = formDetail.value[item.id]?.[0];
+          }
+          if (!validateField(item)) {
+            hasErrorField = true;
+            break;
+          }
+        }
+        if (!hasErrorField) {
+          await saveForm(formDetail.value, false, callback, true);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    });
+  }
+
+  function openCustomerDetail(customerId: string | string[]) {
+    emit('openCustomerDetail', {
+      customerId: Array.isArray(customerId) ? customerId[0] : customerId,
+      inCustomerPool: detail.value.inCustomerPool,
+      poolId: detail.value.poolId,
+    });
+  }
+
+  function openContractDetail(id: string | string[]) {
+    emit('openContractDetail', {
+      id: Array.isArray(id) ? id[0] : id,
+    });
+  }
+
+  function openContractPaymentPlanDetail(id: string | string[]) {
+    emit('openContractPaymentPlanDetail', {
+      id: Array.isArray(id) ? id[0] : id,
+    });
+  }
+
+  const isInitBusinessTitleDetail = ref(false);
+  const showBusinessTitleDetail = ref(false);
+  const activeBusinessTitleId = ref<string>('');
+  function openContractBusinessTitleDetail(id: string | string[]) {
+    activeBusinessTitleId.value = Array.isArray(id) ? id[0] : id;
+    isInitBusinessTitleDetail.value = true;
+    showBusinessTitleDetail.value = true;
+  }
+
+  function openOpportunityDetail(id: string | string[]) {
+    emit('openOpportunityDetail', {
+      id: Array.isArray(id) ? id[0] : id,
+    });
+  }
+
+  function openQuotationDetail(id: string | string[]) {
+    emit('openQuotationDetail', {
+      id: Array.isArray(id) ? id[0] : id,
+    });
+  }
+
+  type DataSourceConfig = {
+    canOpen: (item: Description) => boolean;
+    open: (id: string | string[]) => void;
+  };
+  const dataSourceConfig: Partial<Record<FieldDataSourceTypeEnum, DataSourceConfig>> = {
+    [FieldDataSourceTypeEnum.CUSTOMER]: {
+      canOpen: (item: Description) => {
+        const { value } = item;
+
+        const valid = value !== t('common.optionNotExist') && value !== '-';
+
+        if (!valid) return false;
+
+        if (detail.value.inCustomerPool) {
+          return hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']);
+        }
+
+        return hasAnyPermission(['CUSTOMER_MANAGEMENT:READ']);
+      },
+      open: openCustomerDetail,
+    },
+
+    [FieldDataSourceTypeEnum.CONTRACT]: {
+      canOpen: () => hasAnyPermission(['CONTRACT:READ']),
+      open: openContractDetail,
+    },
+
+    [FieldDataSourceTypeEnum.CONTRACT_PAYMENT]: {
+      canOpen: () => hasAnyPermission(['CONTRACT_PAYMENT_PLAN:READ']),
+      open: openContractPaymentPlanDetail,
+    },
+
+    [FieldDataSourceTypeEnum.BUSINESS_TITLE]: {
+      canOpen: () => hasAnyPermission(['CONTRACT_BUSINESS_TITLE:READ']),
+      open: openContractBusinessTitleDetail,
+    },
+
+    [FieldDataSourceTypeEnum.QUOTATION]: {
+      canOpen: () => hasAnyPermission(['OPPORTUNITY_QUOTATION:READ']),
+      open: openQuotationDetail,
+    },
+
+    [FieldDataSourceTypeEnum.BUSINESS]: {
+      canOpen: () => hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']),
+      open: openOpportunityDetail,
+    },
+  };
+
+  function canOpenDataSource(item: Description) {
+    const config = dataSourceConfig[item.fieldInfo.dataSourceType as FieldDataSourceTypeEnum];
+
+    if (!config) return false;
+
+    return config.canOpen?.(item);
+  }
+
+  function openDataSource(item: Description, value?: string) {
+    const config = dataSourceConfig[item.fieldInfo.dataSourceType as FieldDataSourceTypeEnum];
+
+    if (!config) return;
+    const option = item.fieldInfo.initialOptions?.find((i: { id: string; name: string }) => i.name === value);
+
+    const id = option?.id ?? formDetail.value[item.fieldInfo.id];
+    config.open(id);
+  }
+
+  // 打开链接
+  function openLink(item: any) {
+    if (item.fieldInfo.openMode === 'openInCurrent') {
+      window.location.href = item.value;
+    } else {
+      window.open(item.value, '_blank');
+    }
+  }
+
+  const showFileListModal = ref(false);
+  const activeFileList = ref<AttachmentInfo[]>([]);
+  const activeDescItem = ref<Description>();
+  function openFileListModal(item: Description) {
+    showFileListModal.value = true;
+    activeFileList.value = (item.value as AttachmentInfo[]) || [];
+    activeDescItem.value = item;
+  }
+
+  function handleDeleteFile(id: string) {
+    activeFileList.value = activeFileList.value.filter((file) => file.id !== id);
+    if (activeDescItem.value) {
+      activeDescItem.value.value = (activeDescItem.value?.value as AttachmentInfo[])?.filter(
+        (file: AttachmentInfo) => file.id !== id
+      );
+    }
+    formDetail.value[activeDescItem.value?.fieldInfo.id] = formDetail.value[activeDescItem.value?.fieldInfo.id].filter(
+      (e: string) => e !== id
+    );
+    handleFormChange();
+  }
+
+  watch(
+    () => props.refreshKey,
+    async () => {
+      await initFormDetail(true);
+      emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
+    }
+  );
+
+  onBeforeMount(async () => {
+    await initFormConfig();
+    await initFormDetail(true);
+    emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
+    isInit.value = true;
+  });
+
+  defineExpose({
+    initFormDescription,
+    handleFormChange,
+    moduleFormConfig,
+  });
+</script>
+
+<style lang="less">
+  .crm-description {
+    .crm-form-description-link-button {
+      height: 20px !important;
+      font-size: 14px !important;
+    }
+  }
+</style>
+
+<style lang="less" scoped>
+  :deep(.n-form-item-feedback-wrapper) {
+    display: none;
+  }
+  .value-align-start .field-line {
+    justify-content: flex-start;
+  }
+  .value-align-center .field-line {
+    justify-content: center;
+  }
+  .value-align-end .field-line {
+    justify-content: space-between;
+  }
+</style>

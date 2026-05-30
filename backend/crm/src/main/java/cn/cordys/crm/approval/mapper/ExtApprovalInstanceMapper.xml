@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper">
+    <select id="updateApprovalStatus" resultType="java.lang.String">
+        update ${sourceTable} set approval_status = #{approvalStatus} where id = #{id}
+    </select>
+
+
+    <select id="selectBusinessName" resultType="java.lang.String">
+        select name from ${sourceTable} where id = #{id}
+    </select>
+
+
+    <select id="getResourceOwner" resultType="java.lang.String">
+        select owner from ${sourceTable} where id = #{id}
+    </select>
+
+    <select id="getNextNodeRound" resultType="java.lang.Integer">
+        SELECT IFNULL(GREATEST(
+              COALESCE((SELECT MAX(node_round) FROM approval_task WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0),
+              COALESCE((SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0)
+        ), 0) + 1
+    </select>
+
+    <select id="getNodeRound" resultType="java.lang.Integer">
+        SELECT IFNULL(GREATEST(
+            COALESCE((SELECT MAX(node_round) FROM approval_task WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0),
+            COALESCE((SELECT MAX(node_round) FROM approval_record WHERE instance_id = #{instanceId} AND node_id = #{nodeId}), 0)
+        ), 0)
+    </select>
+
+    <update id="batchClearNotApprovingTask">
+        update approval_task set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status != 'APPROVING'
+    </update>
+
+    <update id="loseApprovingTask">
+        update approval_task set status = 'NONE' where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status = 'APPROVING'
+    </update>
+
+    <update id="batchClearApprovingTask">
+        update approval_task set status = 'NONE', node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound} and status = 'APPROVING'
+    </update>
+
+    <update id="batchClearRecord">
+        update approval_record set node_round = -1 where instance_id = #{instanceId} AND node_id = #{nodeId} and node_round = #{nodeRound}
+    </update>
+</mapper>

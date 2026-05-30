@@ -1,0 +1,96 @@
+package cn.cordys.common.constants;
+
+import lombok.Getter;
+import org.apache.commons.lang3.Strings;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * @author song-cc-rock
+ */
+
+@Getter
+public enum FormKey {
+
+    /**
+     * 线索
+     */
+    CLUE("clue"),
+    /**
+     * 客户
+     */
+    CUSTOMER("customer"),
+    /**
+     * 联系人
+     */
+    CONTACT("contact"),
+    /**
+     * 跟进记录
+     */
+    FOLLOW_RECORD("record"),
+    /**
+     * 跟进计划
+     */
+    FOLLOW_PLAN("plan"),
+    /**
+     * 商机
+     */
+    OPPORTUNITY("opportunity"),
+    /**
+     * 产品
+     */
+    PRODUCT("product"),
+	/**
+	 * 价格
+	 */
+	PRICE("price"),
+	/**
+	 * 报价单
+	 */
+	QUOTATION("quotation"),
+    /**
+     * 合同
+     */
+    CONTRACT("contract"),
+    /**
+     * 发票
+     */
+    INVOICE("invoice"),
+	/**
+	 * 合同回款计划
+	 */
+	CONTRACT_PAYMENT_PLAN("contractPaymentPlan"),
+	/**
+	 * 回款记录
+	 */
+	CONTRACT_PAYMENT_RECORD("contractPaymentRecord"),
+    /**
+     * 订单
+     */
+    ORDER("order");
+
+    private final String key;
+
+    FormKey(String key) {
+        this.key = key;
+    }
+
+	public static List<String> allKeys() {
+		return Arrays.stream(FormKey.values()).map(FormKey::getKey).collect(Collectors.toList());
+	}
+
+	public static FormKey ofKey(String key) {
+		for (FormKey formKey : FormKey.values()) {
+			if (Strings.CI.equals(formKey.getKey(), key)) {
+				return formKey;
+			}
+		}
+		return null;
+	}
+
+	public boolean hasSnapshot() {
+		return Strings.CI.equalsAny(this.key, CONTRACT.getKey(), INVOICE.getKey(), QUOTATION.getKey(), ORDER.getKey());
+	}
+}

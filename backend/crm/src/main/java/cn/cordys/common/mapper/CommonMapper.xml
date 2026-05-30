@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.common.mapper.CommonMapper">
+
+    <sql id="moduleFieldCondition">
+        <choose>
+            <when test="condition.multipleValue != null and condition.multipleValue">
+                <include refid="cn.cordys.common.mapper.CommonMapper.arrayValueCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${column}"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${column}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="arrayValueCondition">
+        <trim prefix="(" suffix=")">
+            <choose>
+                <!-- JSON_OVERLAPS 处理数组匹配 -->
+                <when test="${condition}.operator == 'CONTAINS'">
+                    <if test="${condition}.type == 'LINK'">
+                        ${column} like CONCAT('%', #{condition.value},'%')
+                    </if>
+                    <if test="${condition}.type != 'LINK'">
+                        JSON_OVERLAPS(${column}, JSON_ARRAY(
+                        <foreach collection="${condition}.value" item="valueItem" separator=",">
+                            #{valueItem}
+                        </foreach>))
+                    </if>
+                </when>
+
+                <when test="${condition}.operator == 'NOT_CONTAINS'">
+                    <if test="${condition}.type == 'LINK'">
+                        ${column} not like CONCAT('%', #{condition.value},'%')
+                        or ${column} is null
+                    </if>
+                    <if test="${condition}.type != 'LINK'">
+                        ${column} is null or ${column} = '[]' or
+                        NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
+                        <foreach collection="${condition}.value" item="valueItem" separator=",">
+                            #{valueItem}
+                        </foreach>))
+                    </if>
+                </when>
+
+                <when test="${condition}.operator == 'IN'">
+                    JSON_OVERLAPS(${column}, JSON_ARRAY(
+                    <foreach collection="${condition}.value" item="tag" separator=",">
+                        #{tag}
+                    </foreach>))
+                </when>
+
+                <when test="${condition}.operator == 'NOT_IN'">
+                    ${column} is null or ${column} = '[]' or
+                    NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
+                    <foreach collection="${condition}.value" item="tag" separator=",">
+                        #{tag}
+                    </foreach>))
+                </when>
+
+                <!-- COUNT_GT 和 COUNT_LT -->
+                <when test="${condition}.operator == 'COUNT_GT'">
+                    JSON_LENGTH(${column}) &gt; #{condition.value}
+                </when>
+
+                <when test="${condition}.operator == 'COUNT_LT'">
+                    <choose>
+                        <when test="${condition}.value == 0">
+                            false
+                        </when>
+                        <otherwise>
+                            (JSON_LENGTH(${column}) &lt; #{condition.value} OR ${column} is null OR ${column} = '[]')
+                        </otherwise>
+                    </choose>
+                </when>
+
+                <!-- EMPTY / NOT_EMPTY -->
+                <when test="${condition}.operator == 'EMPTY'">
+                    (${column} IS NULL OR ${column} = '[]')
+                </when>
+
+                <when test="${condition}.operator == 'NOT_EMPTY'">
+                    (${column} IS NOT NULL AND ${column} != '[]')
+                </when>
+
+                <when test="${condition}.operator == 'EQUALS'">
+                    ${column} = #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'NOT_EQUALS'">
+                    ${column} != #{condition.value}
+                    or ${column} is null
+                </when>
+
+            </choose>
+        </trim>
+    </sql>
+
+    <sql id="condition">
+        <trim prefix="(" suffix=")">
+            <choose>
+                <when test="${condition}.operator == 'CONTAINS'">
+                    <foreach collection="${condition}.value.split(' ')" item="item" separator="and">
+                        ${column} like CONCAT('%', #{item},'%')
+                    </foreach>
+                </when>
+                <when test="${condition}.operator == 'NOT_CONTAINS'">
+                    <foreach collection="${condition}.value.split(' ')" item="item" separator="and">
+                        ${column} not like CONCAT('%', #{item},'%')
+                        or ${column} is null
+                    </foreach>
+                </when>
+                <when test="${condition}.operator == 'IN'">
+                    <choose>
+                        <when test="${condition}.type != null and ${condition}.type == 'LOCATION'">
+                            <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
+                                <if test="v == 'CHN'">
+                                    ${column} REGEXP '^[0-9]{6}(-.*)?$' or ${column} = 'CHN-'
+                                 </if>
+                                <if test="v != 'CHN'">
+                                    <if test="'${column}' == 'value'">
+                                        `value`
+                                    </if>
+                                    <if test="'${column}' != 'value'">
+                                        ${column}
+                                    </if>
+                                    LIKE CONCAT(#{v}, '%')
+                                </if>
+                            </foreach>
+                        </when>
+                        <otherwise>
+                            <if test="'${column}' == 'value'">
+                                `value`
+                            </if>
+                            <if test="'${column}' != 'value'">
+                                ${column}
+                            </if>
+                            in
+                            <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
+                                #{v}
+                            </foreach>
+                        </otherwise>
+                    </choose>
+                </when>
+                <when test="${condition}.operator == 'NOT_IN'">
+                    <choose>
+                        <when test="${condition}.type != null and ${condition}.type == 'LOCATION'">
+                            (!(
+                            <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
+                                <if test="v == 'CHN'">
+                                    ${column} REGEXP '^[0-9]{6}(-.*)?$'
+                                </if>
+                                <if test="v != 'CHN'">
+                                    <if test="'${column}' == 'value'">
+                                        `value`
+                                    </if>
+                                    <if test="'${column}' != 'value'">
+                                        ${column}
+                                    </if>
+                                    LIKE CONCAT(#{v}, '%')
+                                </if>
+                            </foreach>
+                            )
+                            <foreach collection="${condition}.value" item="v">
+                                <if test="v == 'CHN'">
+                                AND ${column} != 'CHN-'
+                                </if>
+                            </foreach>
+                            )
+                            or ${column} is null
+                        </when>
+                        <otherwise>
+                            !(
+                            <if test="'${column}' == 'value'">
+                                `value`
+                            </if>
+                            <if test="'${column}' != 'value'">
+                                ${column}
+                            </if>
+                            in
+                            <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
+                                #{v}
+                            </foreach>
+                            )
+                            or ${column} is null
+                        </otherwise>
+                    </choose>
+                </when>
+                <when test="${condition}.operator == 'BETWEEN' || ${condition}.operator == 'DYNAMICS'">
+                    ${column} between #{condition.value[0]} and #{condition.value[1]}
+                </when>
+                <when test="${condition}.operator == 'GT'">
+                    ${column} is not null and ${column} &gt; #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'LT'">
+                    ${column} is not null and ${column} &lt; #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'GE'">
+                    ${column} is not null and ${column} &gt;= #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'LE'">
+                    ${column} is not null and ${column} &lt;= #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'EMPTY'">
+                    ${column} is null or ${column} = ''
+                </when>
+                <when test="${condition}.operator == 'NOT_EMPTY'">
+                    ${column} is not null and ${column} != ''
+                </when>
+                <when test="${condition}.operator == 'EQUALS'">
+                    ${column} = #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'NOT_EQUALS'">
+                    ${column} != #{condition.value}
+                    or ${column} is null
+                </when>
+            </choose>
+        </trim>
+    </sql>
+
+
+
+    <sql id="dataSourceCondition">
+        <trim prefix="(" suffix=")">
+            <choose>
+                <when test="${condition}.operator == 'IN'">
+                    ${column} in (
+                    <foreach collection="${condition}.value" item="valueItem" separator=",">
+                        #{valueItem}
+                    </foreach>)
+                </when>
+
+                <when test="${condition}.operator == 'NOT_IN'">
+                    ${column} NOT IN (
+                    <foreach collection="${condition}.value" item="valueItem" separator=",">
+                        #{valueItem}
+                    </foreach>)
+                    OR ${column} IS NULL
+                </when>
+
+                <!-- EMPTY / NOT_EMPTY -->
+                <when test="${condition}.operator == 'EMPTY'">
+                    (${column} IS NULL OR ${column} = '')
+                </when>
+
+                <when test="${condition}.operator == 'NOT_EMPTY'">
+                    (${column} IS NOT NULL AND ${column} != '')
+                </when>
+
+            </choose>
+        </trim>
+    </sql>
+
+    <sql id="searchMode">
+        <choose>
+            <when test="${searchMode} == 'AND'">
+                AND
+            </when>
+            <when test="${searchMode} == 'OR'">
+                OR
+            </when>
+        </choose>
+    </sql>
+
+    <sql id="filterInWrapper">
+        <foreach collection="values" item="value" separator="," open="(" close=")">
+            #{value}
+        </foreach>
+    </sql>
+
+    <sql id="filterMultipleWrapper">
+        JSON_OVERLAPS(${column},
+        <choose>
+            <when test="values != null and values.size() > 1">
+                JSON_ARRAY(
+                <foreach collection="values" item="value" separator=",">
+                    CAST(#{value} AS SIGNED)
+                </foreach>)
+            </when>
+            <otherwise>
+                JSON_ARRAY(CAST(#{values[0]} AS SIGNED))
+            </otherwise>
+        </choose>)
+    </sql>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortName" value="${sort}.name"/>
+                <bind name="sortType" value="${sort}.type"/>
+                order by
+                <choose>
+                    <when test="'${prefix}' != null and '${prefix}' != ''">
+                        ${prefix}.${sortName} ${sortType}
+                    </when>
+                    <otherwise>
+                        ${sortName} ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                <if test="'${defaultSort}' != null and '${defaultSort}' != ''">
+                    order by
+                    <choose>
+                        <when test="'${prefix}' != null and '${prefix}' != ''">
+                            ${prefix}.${defaultSort}
+                        </when>
+                        <otherwise>
+                            ${defaultSort}
+                        </otherwise>
+                    </choose>
+                </if>
+            </otherwise>
+        </choose>
+    </sql>
+    <select id="checkAddExist" resultType="java.lang.Boolean">
+        select count(1)
+        from `${tableName}`
+        where `${fieldName}` = #{fieldValue} and organization_id = #{orgId}
+        <if test="tableName == 'clue'">
+            and (transition_type != 'CUSTOMER' or transition_type is null)
+        </if>
+        limit 1
+    </select>
+    <select id="checkUpdateExist" resultType="java.lang.Boolean">
+        select count(1)
+        from `${tableName}`
+        where `${fieldName}` = #{fieldValue} and organization_id = #{orgId} and id not in
+        <foreach collection="excludeIds" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        <if test="tableName == 'clue'">
+            and (transition_type != 'CUSTOMER' or transition_type is null)
+        </if>
+        limit 1
+    </select>
+
+    <select id="getCheckValList" resultType="java.lang.String">
+        select `${fieldName}`
+        from `${tableName}` t
+        where organization_id = #{orgId}
+        <if test="tableName == 'clue'">
+            and (t.transition_type != 'CUSTOMER' or t.transition_type is null) and t.in_shared_pool = false
+        </if>
+    </select>
+
+    <select id="checkFieldRepeatName" resultType="java.lang.String">
+        select d.name from `${fieldTable}` f join `${dataTable}` d on f.resource_id = d.id
+        where f.field_id = #{fieldId} and f.field_value = #{fieldValue} and d.organization_id = #{orgId}
+        <if test="dataTable == 'clue'">
+            and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
+        </if>
+        limit 1
+    </select>
+
+    <select id="getCheckFieldValList" resultType="java.lang.String">
+        select f.field_value from `${fieldTable}` f join `${dataTable}` d on f.resource_id = d.id
+        where f.field_id = #{fieldId} and d.organization_id = #{orgId}
+        <if test="dataTable == 'clue'">
+            and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
+        </if>
+    </select>
+
+    <select id="checkInternalRepeatName" resultType="java.lang.String">
+        select d.name from `${dataTable}` d
+        where d.`${businessName}` = #{value} and d.organization_id = #{orgId}
+        <if test="dataTable == 'clue'">
+            and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
+        </if>
+        limit 1
+    </select>
+
+    <sql id="chartSelect">
+        <if test="request.categoryAxisParam.businessField">
+            <if test="request.categoryAxisParam.blob">
+                categoryAxis_multiple.id
+            </if>
+            <if test="!request.categoryAxisParam.blob">
+                <if test="request.categoryAxisParam.businessFieldName == 'department_id'">
+                    categoryAxis.department_id
+                </if>
+                <if test="request.categoryAxisParam.businessFieldName != 'department_id'">
+                    ${mainTable}.${request.categoryAxisParam.businessFieldName}
+                </if>
+            </if>
+        </if>
+        <if test="!request.categoryAxisParam.businessField">
+            <if test="request.categoryAxisParam.blob">
+                categoryAxis_multiple.id
+            </if>
+            <if test="!request.categoryAxisParam.blob">
+                categoryAxis.field_value
+            </if>
+        </if>
+        as categoryAxis,
+
+        <if test="request.subCategoryAxisParam != null">
+            <if test="request.subCategoryAxisParam.businessField">
+                <if test="request.subCategoryAxisParam.blob">
+                    subCategoryAxis_multiple.id
+                </if>
+                <if test="!request.subCategoryAxisParam.blob">
+                    <if test="request.subCategoryAxisParam.businessFieldName == 'department_id'">
+                        subCategoryAxis.department_id
+                    </if>
+                    <if test="request.subCategoryAxisParam.businessFieldName != 'department_id'">
+                        ${mainTable}.${request.subCategoryAxisParam.businessFieldName}
+                    </if>
+                </if>
+            </if>
+            <if test="!request.subCategoryAxisParam.businessField">
+                <if test="request.subCategoryAxisParam.blob">
+                    subCategoryAxis_multiple.id
+                </if>
+                <if test="!request.subCategoryAxisParam.blob">
+                    subCategoryAxis.field_value
+                </if>
+            </if>
+            as subCategoryAxis,
+        </if>
+
+        ${request.valueAxisParam.aggregateMethod}(
+            <if test="request.valueAxisParam.aggregateMethod == 'COUNT'">
+             1
+            </if>
+            <if test="request.valueAxisParam.aggregateMethod != 'COUNT'">
+                <if test="request.valueAxisParam.businessField">
+                    ${mainTable}.${request.valueAxisParam.businessFieldName}
+                </if>
+                <if test="!request.valueAxisParam.businessField">
+                    valueAxis.field_value
+                </if>
+            </if>
+        ) as valueAxis
+    </sql>
+
+    <sql id="chartGroupBy">
+        group by
+        <if test="request.categoryAxisParam.businessField">
+            <if test="request.categoryAxisParam.blob">
+                categoryAxis_multiple.id
+            </if>
+            <if test="!request.categoryAxisParam.blob">
+                <if test="request.categoryAxisParam.businessFieldName == 'department_id'">
+                    categoryAxis.department_id
+                </if>
+                <if test="request.categoryAxisParam.businessFieldName != 'department_id'">
+                    ${mainTable}.${request.categoryAxisParam.businessFieldName}
+                </if>
+            </if>
+        </if>
+        <if test="!request.categoryAxisParam.businessField">
+            <if test="request.categoryAxisParam.blob">
+                categoryAxis_multiple.id
+            </if>
+            <if test="!request.categoryAxisParam.blob">
+                categoryAxis.field_value
+            </if>
+        </if>
+        <if test="request.subCategoryAxisParam != null">
+            ,
+            <if test="request.subCategoryAxisParam.businessField">
+                <if test="request.categoryAxisParam.blob">
+                    subCategoryAxis_multiple.id
+                </if>
+                <if test="!request.categoryAxisParam.blob">
+                    <if test="request.subCategoryAxisParam.businessFieldName == 'department_id'">
+                        subCategoryAxis.department_id
+                    </if>
+                    <if test="request.subCategoryAxisParam.businessFieldName != 'department_id'">
+                        ${mainTable}.${request.subCategoryAxisParam.businessFieldName}
+                    </if>
+                </if>
+
+            </if>
+            <if test="!request.subCategoryAxisParam.businessField">
+                <if test="request.categoryAxisParam.blob">
+                    subCategoryAxis_multiple.id
+                </if>
+                <if test="!request.categoryAxisParam.blob">
+                    subCategoryAxis.field_value
+                </if>
+            </if>
+        </if>
+        limit 500
+    </sql>
+
+    <sql id="chartAxisJoin">
+        <if test="${axisParam}.businessField and ${axisParam}.businessFieldName == 'products'">
+            left join JSON_TABLE(
+                ${mainTablePrefix}.products,
+                    '$[*]' COLUMNS (
+                    id VARCHAR(50) PATH '$'
+                )
+            ) AS ${tablePrefix}_multiple on true
+        </if>
+        <if test="!${axisParam}.businessField and ${axisParam}.fieldId != null and ${axisParam}.fieldId != ''">
+            <if test="${axisParam}.blob">
+                left join ${mainTable}_field_blob ${tablePrefix}
+                on ${mainTablePrefix}.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{${axisParam}.fieldId}
+                left join JSON_TABLE(
+                    ${tablePrefix}.field_value,
+                    '$[*]' COLUMNS (
+                        id VARCHAR(50) PATH '$'
+                    )
+                ) AS ${tablePrefix}_multiple on true
+            </if>
+            <if test="!${axisParam}.blob">
+                left join ${mainTable}_field ${tablePrefix}
+                on ${mainTablePrefix}.id = ${tablePrefix}.resource_id and ${tablePrefix}.field_id = #{${axisParam}.fieldId}
+            </if>
+        </if>
+        <if test="${axisParam}.businessFieldName == 'department_id'">
+            left join sys_organization_user ${tablePrefix}
+            on ${tablePrefix}.user_id = ${mainTablePrefix}.owner
+        </if>
+    </sql>
+    
+    <sql id="refFieldConditionJoin">
+        <if test="!condition.refMainCustomField">
+            <if test="!condition.customField">
+                left join ${condition.refMainTableName} ${fieldTable}
+                on ${mainTableAlias}.${condition.refMainFieldName} = ${fieldTable}.id
+            </if>
+            <if test="condition.customField">
+                left join ${condition.refMainTableName} ${fieldTable}_main
+                on ${mainTableAlias}.${condition.refMainFieldName} = ${fieldTable}_main.id
+                left join
+                <if test="condition.blob">
+                    ${condition.refMainTableName}_field_blob
+                </if>
+                <if test="!condition.blob">
+                    ${condition.refMainTableName}_field
+                </if>
+                ${fieldTable}
+                on ${fieldTable}_main.id = ${fieldTable}.resource_id and ${fieldTable}.field_id = #{condition.name}
+            </if>
+        </if>
+        <if test="condition.refMainCustomField">
+            left join ${mainTable}_field ${fieldTable}_custom
+            on ${mainTableAlias}.id = ${fieldTable}_custom.resource_id and ${fieldTable}_custom.field_id = #{condition.refMainFieldName}
+            <if test="!condition.customField">
+                left join ${condition.refMainTableName} ${fieldTable}
+                on ${fieldTable}_custom.field_value = ${fieldTable}.id
+            </if>
+            <if test="condition.customField">
+                left join ${condition.refMainTableName} ${fieldTable}_main
+                on ${fieldTable}_custom.field_value = ${fieldTable}_main.id
+                left join
+                <if test="condition.blob">
+                    ${condition.refMainTableName}_field_blob
+                </if>
+                <if test="!condition.blob">
+                    ${condition.refMainTableName}_field
+                </if>
+                ${fieldTable}
+                on ${fieldTable}_main.id = ${fieldTable}.resource_id and ${fieldTable}.field_id = #{condition.name}
+            </if>
+        </if>
+    </sql>
+</mapper>

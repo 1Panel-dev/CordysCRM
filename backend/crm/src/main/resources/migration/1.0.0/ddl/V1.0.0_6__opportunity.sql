@@ -1,0 +1,213 @@
+-- set innodb lock wait timeout
+SET SESSION innodb_lock_wait_timeout = 7200;
+
+CREATE TABLE opportunity_rule
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '规则名称',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织ID',
+    `owner_id`        TEXT         NOT NULL COMMENT '管理员ID',
+    `scope_id`        TEXT         NOT NULL COMMENT '范围ID',
+    `enable`          BIT(1)       NOT NULL DEFAULT 1 COMMENT '启用/禁用',
+    `auto`            BIT(1)       NOT NULL DEFAULT 0 COMMENT '自动回收',
+    `operator`        VARCHAR(10) COMMENT '操作符',
+    `condition`       TEXT COMMENT '回收条件',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '商机关闭规则'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_organization_id ON opportunity_rule (organization_id ASC);
+
+
+CREATE TABLE opportunity
+(
+    `id`              VARCHAR(32)     NOT NULL COMMENT 'id',
+    `customer_id`     VARCHAR(32)     NOT NULL COMMENT '客户id',
+    `name`            VARCHAR(255)    NOT NULL COMMENT '商机名称',
+    `amount`          DECIMAL(20, 10) COMMENT '金额',
+    `possible`        DECIMAL(20, 10) COMMENT '可能性',
+    `products`        VARCHAR(1000)   NOT NULL COMMENT '意向产品',
+    `organization_id` VARCHAR(32)     NOT NULL COMMENT '组织id',
+    `last_stage`      VARCHAR(32) COMMENT '上次修改前的商机阶段',
+    `stage`           VARCHAR(32)     NOT NULL COMMENT '商机阶段',
+    `status`          BIT(1)          NOT NULL DEFAULT 1 COMMENT '状态',
+    `contact_id`      VARCHAR(32)     NOT NULL COMMENT '联系人id',
+    `owner`           VARCHAR(32)     NOT NULL COMMENT '负责人',
+    `update_user`     VARCHAR(32)     NOT NULL COMMENT '更新人',
+    `create_time`     BIGINT          NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT          NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)     NOT NULL COMMENT '创建人',
+    `follower`        VARCHAR(32) COMMENT '最新跟进人',
+    `follow_time`     BIGINT COMMENT '最新跟进时间',
+    PRIMARY KEY (id)
+) COMMENT = '商机'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_customer_id ON opportunity (customer_id ASC);
+CREATE INDEX idx_organization_id ON opportunity (organization_id ASC);
+CREATE INDEX idx_status ON opportunity (status ASC);
+CREATE INDEX idx_follower ON opportunity (follower ASC);
+CREATE INDEX idx_follow_time ON opportunity (follow_time ASC);
+
+
+CREATE TABLE opportunity_field
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '商机id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '商机自定义属性'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id_field_id_field_value ON opportunity_field (resource_id, field_id, field_value);
+
+CREATE TABLE opportunity_field_blob
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '商机id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` TEXT        NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '商机自定义属性大文本'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON opportunity_field_blob (resource_id);
+
+CREATE TABLE follow_up_record
+(
+    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
+    `customer_id`     VARCHAR(32) COMMENT '客户id',
+    `opportunity_id`  VARCHAR(32) COMMENT '商机id',
+    `type`            VARCHAR(32)   NOT NULL COMMENT '类型',
+    `clue_id`         VARCHAR(32) COMMENT '线索id',
+    `content`         VARCHAR(2000) NOT NULL COMMENT '跟进内容',
+    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
+    `follow_time`     BIGINT NOT NULL COMMENT '跟进时间',
+    `follow_method`   VARCHAR(32)   NOT NULL COMMENT '跟进方式',
+    `owner`           VARCHAR(32)   NOT NULL COMMENT '负责人',
+    `contact_id`      VARCHAR(32)   COMMENT '联系人id',
+    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '跟进记录'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_customer_id ON follow_up_record (customer_id ASC);
+CREATE INDEX idx_organization_id ON follow_up_record (organization_id ASC);
+CREATE INDEX idx_opportunity_id ON follow_up_record (opportunity_id ASC);
+CREATE INDEX idx_clue_id ON follow_up_record (clue_id ASC);
+CREATE INDEX idx_owner ON follow_up_record (owner ASC);
+CREATE INDEX idx_contact_id ON follow_up_record (contact_id ASC);
+
+
+CREATE TABLE follow_up_record_field
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '跟进记录id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '跟进记录自定义属性'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id_field_id_field_value ON follow_up_record_field (resource_id, field_id, field_value);
+
+CREATE TABLE follow_up_record_field_blob
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '跟进记录id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` TEXT        NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '跟进记录自定义属性大文本'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON follow_up_record_field_blob (resource_id);
+
+
+
+CREATE TABLE follow_up_plan
+(
+    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
+    `customer_id`     VARCHAR(32) COMMENT '客户id',
+    `opportunity_id`  VARCHAR(32) COMMENT '商机id',
+    `type`            VARCHAR(32)   NOT NULL COMMENT '类型',
+    `clue_id`         VARCHAR(32) COMMENT '线索id',
+    `content`         VARCHAR(1000) NOT NULL COMMENT '预计沟通内容',
+    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
+    `owner`           VARCHAR(32)   NOT NULL COMMENT '负责人',
+    `contact_id`      VARCHAR(32)   COMMENT '联系人',
+    `estimated_time`  BIGINT(255) NOT NULL COMMENT '预计开始时间',
+    `method`          VARCHAR(32)   NOT NULL COMMENT '跟进方式',
+    `status`          VARCHAR(64) COMMENT '状态',
+    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '跟进计划'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_customer_id ON follow_up_plan (customer_id ASC);
+CREATE INDEX idx_organization_id ON follow_up_plan (organization_id ASC);
+CREATE INDEX idx_opportunity_id ON follow_up_plan (opportunity_id ASC);
+CREATE INDEX idx_clue_id ON follow_up_plan (clue_id ASC);
+CREATE INDEX idx_owner ON follow_up_plan (owner ASC);
+CREATE INDEX idx_contact_id ON follow_up_plan (contact_id ASC);
+
+
+CREATE TABLE follow_up_plan_field
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '跟进计划id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '跟进计划自定义属性'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id_field_id_field_value ON follow_up_plan_field (resource_id, field_id, field_value);
+
+
+CREATE TABLE follow_up_plan_field_blob
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '跟进计划id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` TEXT NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '跟进计划自定义属性大文本'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON follow_up_plan_field_blob (resource_id ASC);
+
+
+-- set innodb lock wait timeout to default
+SET SESSION innodb_lock_wait_timeout = DEFAULT;

@@ -1,0 +1,137 @@
+export const GetCustomerFormConfigUrl = '/account/module/form'; // 获取客户表单配置
+export const UpdateCustomerUrl = '/account/update'; // 更新客户
+export const GetCustomerListUrl = '/account/page'; // 分页查询客户
+export const AddCustomerUrl = '/account/add'; // 添加客户
+export const GetCustomerUrl = '/account/get'; // 获取客户详情
+export const DeleteCustomerUrl = '/account/delete'; // 删除客户
+export const BatchDeleteCustomerUrl = '/account/batch/delete'; // 批量删除客户
+export const BatchTransferCustomerUrl = '/account/batch/transfer'; // 批量转移客户
+export const BatchMoveCustomerUrl = '/account/batch/to-pool'; // 批量移入公海
+export const MoveToCustomerUrl = '/account/to-pool'; // 移入公海
+export const UpdateCustomerFollowRecordUrl = '/account/follow/record/update'; // 更新跟进记录
+export const GetCustomerFollowRecordListUrl = '/account/follow/record/page'; // 获取跟进记录列表
+export const AddCustomerFollowRecordUrl = '/account/follow/record/add'; // 添加跟进记录
+export const DeleteCustomerFollowRecordUrl = '/account/follow/record/delete'; // 删除跟进记录
+export const GetCustomerFollowRecordUrl = '/account/follow/record/get'; // 获取跟进记录详情
+export const GetCustomerFollowRecordFormConfigUrl = '/follow/record/module/form'; // 获取跟进记录表单配置
+export const UpdateCustomerFollowPlanUrl = '/account/follow/plan/update'; // 更新跟进计划
+export const GetCustomerFollowPlanListUrl = '/account/follow/plan/page'; // 获取跟进计划列表
+export const AddCustomerFollowPlanUrl = '/account/follow/plan/add'; // 添加跟进计划
+export const DeleteCustomerFollowPlanUrl = '/account/follow/plan/delete'; // 删除跟进计划
+export const GetCustomerFollowPlanFormConfigUrl = '/follow/plan/module/form'; // 获取跟进计划表单配置
+export const GetCustomerFollowPlanUrl = '/account/follow/plan/get'; // 获取跟进记录详情
+export const UpdateCustomerContactUrl = '/account/contact/update'; // 更新客户联系人
+export const GetCustomerContactListUrl = '/account/contact/page'; // 获取客户联系人列表
+export const DisableCustomerContactUrl = '/account/contact/disable'; // 禁用客户联系人
+export const AddCustomerContactUrl = '/account/contact/add'; // 添加客户联系人
+export const GetCustomerContactFormConfigUrl = '/account/contact/module/form'; // 获取客户联系人表单配置
+export const GetCustomerContactUrl = '/account/contact/get'; // 获取客户联系人详情
+export const EnableCustomerContactUrl = '/account/contact/enable'; // 启用客户联系人
+export const DeleteCustomerContactUrl = '/account/contact/delete'; // 删除客户联系人
+export const CheckOpportunityContactUrl = '/account/contact/opportunity/check'; // 是否绑定商机
+export const ContactListUnderCustomerUrl = '/account/contact/list'; // 客户下的联系人列表
+export const UpdateCustomerOpenSeaUrl = '/account-pool/update'; // 编辑公海
+export const GetCustomerOpenSeaListUrl = '/account-pool/page'; // 公海列表
+export const AddCustomerOpenSeaUrl = '/account-pool/add'; // 添加公海
+export const SwitchCustomerOpenSeaUrl = '/account-pool/switch'; // 启用/禁用公海
+export const IsCustomerOpenSeaNoPickUrl = '/account-pool/no-pick'; // 公海是否存在未领取线索
+export const DeleteCustomerOpenSeaUrl = '/account-pool/delete'; // 删除公海
+export const GetOpenSeaCustomerListUrl = '/pool/account/page'; // 公海客户列表
+export const PickOpenSeaCustomerUrl = '/pool/account/pick'; // 领取公海客户
+export const BatchPickOpenSeaCustomerUrl = '/pool/account/batch-pick'; // 批量领取公海客户
+export const BatchDeleteOpenSeaCustomerUrl = '/pool/account/batch-delete'; // 批量删除公海客户
+export const BatchAssignOpenSeaCustomerUrl = '/pool/account/batch-assign'; // 批量分配公海客户
+export const AssignOpenSeaCustomerUrl = '/pool/account/assign'; // 分配公海客户
+export const GetOpenSeaOptionsUrl = '/pool/account/options'; // 获取公海选项
+export const DeleteOpenSeaCustomerUrl = '/pool/account/delete'; // 删除公海客户
+export const GetOpenSeaCustomerUrl = '/pool/account/get'; // 获取公海客户详情
+export const ExportOpenSeaCustomerAllUrl = '/pool/account/export-all'; // 导出所有公海客户
+export const ExportOpenSeaCustomerSelectedUrl = '/pool/account/export-select'; // 导出选中公海客户
+export const PoolAccountBatchUpdateUrl = '/pool/account/batch-update'; // 批量编辑公海列表
+export const BatchUpdateAccountUrl = '/account/batch/update'; // 批量编辑客户列表
+export const BatchUpdateContactUrl = '/account/contact/batch/update'; // 批量编辑联系人
+export const MergeAccountUrl = '/account/merge'; // 合并客户
+export const MergeAccountPageUrl = '/account/merge/page'; // 获取数据范围权限客户列表
+export const GenerateCustomerChartUrl = '/account/chart'; // 生成客户图表
+export const generateCustomerContactChartUrl = '/account/contact/chart'; // 生成客户联系人图表
+
+export const CancelCustomerFollowPlanUrl = '/account/follow/plan/cancel'; // 取消客户跟进计划
+export const GetCustomerHeaderListUrl = '/account/owner/history/list'; // 客户负责人记录列表
+export const SaveCustomerRelationUrl = '/account/relation/save'; // 保存客户关系
+export const GetCustomerRelationListUrl = '/account/relation/list'; // 获取客户关系列表
+export const UpdateCustomerRelationItemUrl = '/account/relation/update'; // 更新单条客户关系
+export const AddCustomerRelationItemUrl = '/account/relation/add'; // 添加单条客户关系
+export const DeleteCustomerRelationItemUrl = '/account/relation/delete'; // 删除单条客户关系
+export const UpdateCustomerCollaborationUrl = '/account/collaboration/update'; // 更新协作成员
+export const BatchDeleteCustomerCollaborationUrl = '/account/collaboration/batch/delete'; // 批量删除协作成员
+export const AddCustomerCollaborationUrl = '/account/collaboration/add'; // 添加协作成员
+export const GetCustomerCollaborationListUrl = '/account/collaboration/list'; // 获取协作成员列表
+export const DeleteCustomerCollaborationUrl = '/account/collaboration/delete'; // 删除协作成员
+export const GetCustomerOptionsUrl = '/account/option'; // 获取客户选项列表
+export const GetCustomerOpenSeaFollowRecordListUrl = '/account/follow/record/pool/page'; // 获取客户公海池跟进记录列表
+export const GetCustomerTabUrl = '/account/tab'; // 客户tab显隐
+export const GetCustomerContactTabUrl = '/account/contact/tab'; // 客户联系人tab显隐
+export const UpdateCustomerFollowPlanStatusUrl = '/account/follow/plan/status/update'; // 更新客户跟进计划状态
+export const GetCustomerOpportunityListUrl = '/account/opportunity/page'; // 客户商机列表
+export const ExportCustomerAllUrl = '/account/export-all'; // 导出所有客户
+export const ExportCustomerSelectedUrl = '/account/export-select'; // 导出选中客户
+export const GetAdvancedCustomerListUrl = '/advanced/search/account'; // 全局搜索分页查询客户
+export const GetAdvancedOpenSeaCustomerListUrl = '/advanced/search/account-pool'; // 全局搜索公海客户列表
+export const GetAdvancedCustomerContactListUrl = '/advanced/search/contact'; // 全局搜索获取客户联系人列表
+export const GetGlobalCustomerListUrl = '/global/search/account';
+export const GetGlobalOpenSeaCustomerListUrl = '/global/search/customer_pool';
+export const GetGlobalCustomerContactListUrl = '/global/search/contact';
+export const GetGlobalModuleCountUrl = '/global/search/module/count'; // 数量统计
+
+export const ExportContactAllUrl = '/account/contact/export-all'; // 导出所有联系人
+export const ExportContactSelectedUrl = '/account/contact/export-select'; // 导出选中联系人
+
+export const GetAccountContractListUrl = '/account/contract/page'; // 客户详情-合同列表
+export const GetAccountContractStatisticUrl = '/account/contract/statistic'; // 客户详情-合同列表统计
+export const GetAccountPaymentListUrl = '/account/contract/payment-plan/page'; // 客户详情-回款列表
+export const GetAccountPaymentStatisticUrl = '/account/contract/payment-plan/statistic'; // 客户详情-回款列表统计
+export const GetAccountPaymentRecordListUrl = '/account/contract/payment-record/page'; // 客户详情-回款列表
+export const GetAccountPaymentRecordStatisticUrl = '/account/contract/payment-record/statistic'; // 客户详情-回款列表统计
+export const GetAccountInvoiceListUrl = '/account/invoice/page'; // 客户详情-发票列表
+export const GetAccountInvoiceStatisticUrl = '/account/invoice/statistic'; // 客户详情-发票列表统计
+export const GetAccountOrderListUrl = '/account/order/page'; // 客户详情-订单列表
+
+// 视图
+export const GetCustomerViewDetailUrl = '/account/view/detail';
+export const GetCustomerViewListUrl = '/account/view/list';
+export const AddCustomerViewUrl = '/account/view/add';
+export const UpdateCustomerViewUrl = '/account/view/update';
+export const DeleteCustomerViewUrl = '/account/view/delete';
+export const FixedCustomerViewUrl = '/account/view/fixed';
+export const EnableCustomerViewUrl = '/account/view/enable';
+export const DragCustomerViewUrl = '/account/view/edit/pos';
+
+export const GetContactViewDetailUrl = '/account/contact/view/detail';
+export const GetContactViewListUrl = '/account/contact/view/list';
+export const AddContactViewUrl = '/account/contact/view/add';
+export const UpdateContactViewUrl = '/account/contact/view/update';
+export const DeleteContactViewUrl = '/account/contact/view/delete';
+export const FixedContactViewUrl = '/account/contact/view/fixed';
+export const EnableContactViewUrl = '/account/contact/view/enable';
+export const DragContactViewUrl = '/account/contact/view/edit/pos';
+
+// 客户导入
+export const PreCheckAccountImportUrl = '/account/import/pre-check';
+export const DownloadAccountTemplateUrl = '/account/template/download';
+export const ImportAccountUrl = '/account/import';
+
+// 联系人导入
+export const PreCheckContactImportUrl = '/account/contact/import/pre-check';
+export const DownloadContactTemplateUrl = '/account/contact/template/download';
+export const ImportContactUrl = '/account/contact/import';
+
+// 公海视图
+export const GetAccountPoolViewDetailUrl = 'pool/account/view/detail';
+export const GetAccountPoolViewListUrl = 'pool/account/view/list';
+export const AddAccountPoolViewUrl = 'pool/account/view/add';
+export const UpdateAccountPoolViewUrl = 'pool/account/view/update';
+export const DeleteAccountPoolViewUrl = 'pool/account/view/delete';
+export const FixedAccountPoolViewUrl = 'pool/account/view/fixed';
+export const EnableAccountPoolViewUrl = 'pool/account/view/enable';
+export const DragAccountPoolViewUrl = 'pool/account/view/edit/pos';
+export const generateCustomerPoolChartUrl = '/pool/account/chart';

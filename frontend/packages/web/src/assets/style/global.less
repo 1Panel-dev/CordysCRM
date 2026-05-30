@@ -1,0 +1,149 @@
+/* stylelint-disable font-family-no-missing-generic-family-keyword */
+@import url('./var.less');
+* {
+  @apply box-border;
+}
+html,
+body {
+  @apply m-0 h-full w-full p-0;
+
+  font-size: 14px;
+  font-family: 'Helvetica Neue', Arial, 'PingFang SC', 'Source Han Serif' !important;
+  font-weight: 400;
+  color: var(--text-n1);
+  line-height: 22px;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+}
+
+// 小投影
+.base-box-shadow {
+  box-shadow: @box-base-shadow;
+}
+
+// 中层投影
+.middle-box-shadow {
+  box-shadow: @box-middle-shadow;
+}
+
+// 大投影
+.large-box-shadow {
+  box-shadow: @box-large-shadow;
+}
+
+/* 单行文本缩略 */
+.one-line-text {
+  @apply overflow-hidden overflow-ellipsis whitespace-nowrap;
+
+  line-height: normal;
+}
+
+/* 修改进度条的背景颜色 */
+#nprogress {
+  .bar {
+    background: var(--primary-8) !important;
+  }
+}
+
+/* 白色背景的tooltip */
+.crm-tooltip-white {
+  &.n-tooltip {
+    color: var(--text-n1);
+    background-color: var(--text-n10);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--text-n10) !important;
+  }
+}
+
+/* error 背景tooltip */
+.crm-tooltip-error {
+  &.n-tooltip {
+    color: var(--error-red);
+    background-color: var(--error-5);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--error-5) !important;
+  }
+}
+
+/* warning 背景tooltip */
+.crm-tooltip-warning {
+  &.n-tooltip {
+    color: var(--warning-red);
+    background-color: var(--warning-5);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--warning-5) !important;
+  }
+}
+
+/* success 背景tooltip */
+.crm-tooltip-success {
+  &.n-tooltip {
+    color: var(--success-red);
+    background-color: var(--success-5);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--success-5) !important;
+  }
+}
+
+/* primary 背景tooltip */
+.crm-tooltip-primary {
+  &.n-tooltip {
+    color: var(--primary-8);
+    background-color: var(--primary-7);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--primary-7) !important;
+  }
+}
+// modal 对话框 title
+.crm-modal-title {
+  .crm-modal-title();
+}
+
+/* 动态表单 */
+.crm-form-create-item-desc {
+  @apply w-full flex-1;
+
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--text-n4);
+}
+
+/* 抽屉 */
+.crm-drawer-content {
+  background-color: var(--text-n9) !important;
+}
+
+// model表单
+.crm-form-modal {
+  .n-dialog__content {
+    margin-bottom: 16px;
+  }
+  .n-form-item:last-of-type {
+    .n-form-item-feedback-wrapper {
+      overflow: hidden;
+      min-height: 0;
+      line-height: 1;
+    }
+  }
+}
+.n-popconfirm,
+.n-popover {
+  .n-popconfirm__action {
+    margin-top: 0 !important;
+  }
+}

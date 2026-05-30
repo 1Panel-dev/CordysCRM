@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.crm.system.mapper.ExtLoginLogMapper">
+
+    <select id="list" parameterType="cn.cordys.crm.system.dto.request.LoginLogRequest" resultType="cn.cordys.crm.system.dto.response.LoginLogListResponse">
+        SELECT
+        sll.id,
+        sll.create_time,
+        sll.operator,
+        sll.login_address,
+        sll.platform
+        FROM
+        sys_login_log sll
+        JOIN sys_organization_user sou ON sll.operator = sou.user_id AND sou.organization_id = #{orgId}
+        <if test="request.operator != null and request.operator != ''">
+            AND sll.operator = #{request.operator, jdbcType=VARCHAR}
+        </if>
+        <if test="request.startTime != null and request.endTime != null">
+            AND sll.create_time BETWEEN #{request.startTime} AND #{request.endTime}
+        </if>
+        <include refid="cn.cordys.common.mapper.CommonMapper.sort">
+            <property name="sort" value="request.sort"/>
+            <property name="prefix" value="sll"/>
+            <property name="defaultSort" value="create_time desc"/>
+        </include>
+    </select>
+</mapper> 

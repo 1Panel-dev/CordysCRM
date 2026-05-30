@@ -1,0 +1,122 @@
+package cn.cordys.common.uid;
+
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.quartz.anno.QuartzScheduled;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Strings;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+
+@Component
+@Slf4j
+public class SerialNumGenerator {
+
+    private static final int RULE_SIZE = 5;
+    private static final int DATE_KEY_IDX = 3;
+    private static final String PREFIX = "serial";
+
+    private final StringRedisTemplate redis;
+
+    public SerialNumGenerator(StringRedisTemplate redis) {
+        this.redis = redis;
+    }
+
+    /**
+     * 按规则生成流水号
+     */
+    public String generateByRules(List<String> rules, String orgId, String formKey) {
+        if (CollectionUtils.size(rules) < RULE_SIZE) {
+            throw new GenericException("流水号规则配置有误");
+        }
+
+        Rule r = Rule.from(rules);
+
+        // 强制使用年月作为流水号 key 的日期部分
+        String date = new SimpleDateFormat(r.datePattern()).format(new Date());
+        String key = "%s:%s:%s:%s:%s".formatted(PREFIX, orgId, formKey, date, r.p1);
+        try {
+            // Redis 自增序列
+            long seq = Objects.requireNonNull(redis.opsForValue().increment(key), "Redis increment 返回 null");
+            // 构造最终流水号
+            return ("%s%s%s%s%0" + r.width() + "d")
+                    .formatted(r.p1(), r.p2(), date, r.mid(), seq);
+
+        } catch (Exception e) {
+            log.error("生成流水号失败", e);
+            return null;
+        }
+    }
+
+    /**
+     * 内部规则封装
+     */
+    private record Rule(String p1, String p2, String datePattern, String mid, int width) {
+        static Rule from(List<String> rules) {
+            return new Rule(
+                    rules.get(0),
+                    rules.get(1),
+                    rules.get(2),
+                    rules.get(3),
+                    Integer.parseInt(rules.get(4))
+            );
+        }
+
+        private boolean equals(Rule other) {
+            return Strings.CS.equals(this.p1, other.p1)
+                    && Strings.CS.equals(this.p2, other.p2)
+                    && Strings.CS.equals(this.datePattern, other.datePattern)
+                    && Strings.CS.equals(this.mid, other.mid)
+                    && this.width == other.width;
+        }
+    }
+
+    @QuartzScheduled(cron = "0 0 1 1,16 * ?")
+    public void clean() {
+        log.info("开始清理过期流水号Key");
+
+        String currentMonth = new SimpleDateFormat("yyyyMM").format(new Date());
+        try (Cursor<String> cursor = redis.scan(ScanOptions.scanOptions().match("serial:*:*:*:*").count(1000).build())) {
+            cursor.forEachRemaining(key -> {
+				String[] ks = key.split(":");
+				if (ks.length != RULE_SIZE) {
+					log.warn("存在脏Key: {}", key);
+					return;
+				}
+				if (!currentMonth.equals(ks[DATE_KEY_IDX])) {
+					redis.delete(key);
+					log.info("删除过期Key: {}", key);
+				}
+            });
+        } catch (Exception e) {
+            log.error("流水号过期Key清理异常: ", e);
+        }
+
+        log.info("流水号过期Key清理完成");
+    }
+
+    public boolean sameRule(List<String> oRules, List<String> nRules) {
+        if (oRules.size() != nRules.size() && oRules.size() != RULE_SIZE) {
+            return false;
+        }
+        Rule or = Rule.from(oRules);
+        Rule nr = Rule.from(nRules);
+        return or.equals(nr);
+    }
+
+    /**
+     * 重置指定规则的流水号
+     */
+    public void resetKey(String datePattern, String formKey, String orgId) {
+        String date = new SimpleDateFormat(datePattern).format(new Date());
+        String key = "%s:%s:%s:%s".formatted(PREFIX, orgId, formKey, date);
+        redis.delete(key);
+    }
+}

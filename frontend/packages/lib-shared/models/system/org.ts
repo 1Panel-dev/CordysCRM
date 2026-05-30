@@ -1,0 +1,109 @@
+import type { TableQueryParams } from '../common';
+import { UserInfo } from '../user';
+import { SelectedUsersItem } from '@lib/shared/models/system/module';
+
+// 添加部门
+export interface DepartmentItemParams {
+  name: string;
+  parentId: string;
+}
+
+export interface UpdateDepartmentItemParams {
+  name: string;
+  id: string;
+}
+
+// 设置部门负责人
+export interface SetCommanderParams {
+  departmentId: string;
+  commanderId: string | null;
+}
+
+export interface SetCommanderForm extends SetCommanderParams {
+  ownerIds: SelectedUsersItem[];
+}
+
+export interface MemberRoleItem {
+  id: string;
+  name: string;
+  userId: string;
+}
+
+export interface UserTableQueryParams extends TableQueryParams {
+  departmentId?: string;
+}
+
+export interface BaseMemberInfo {
+  phone: string;
+  gender: boolean; // 性别(false-男/true-女)
+  email: string;
+  name: string;
+  departmentId: string | null;
+  position: string; // 职位
+  employeeId: string; // 工号
+  employeeType: string | null; // 员工类型
+  supervisorId: string | null; // 直属上级
+  workCity: string | null; // 工作城市
+  enable: boolean; // 是否启用
+  roleIds: string[]; // 角色
+  userGroupIds: string[]; // 用户组
+  onboardingDate: number | null; // 入职日期
+}
+
+export interface MemberItem extends BaseMemberInfo {
+  id: string;
+  userId: string; // 用户ID
+  userName: string;
+  organizationId: string;
+  roles: MemberRoleItem[];
+  userGroups: MemberRoleItem[];
+  createUser: string;
+  createUserName: string;
+  updateUser: string;
+  updateUserName: string;
+  createTime: number;
+  updateTime: number;
+  departmentName: string;
+  supervisorName: string; // 直属上级名称
+  commander: boolean; // 是否是负责人
+}
+
+export interface MemberParams extends BaseMemberInfo {
+  id?: string;
+  userName: string;
+  roles: {
+    id: string;
+    name: string;
+    userId: string;
+  }[];
+}
+
+export interface ErrorMessagesType {
+  rowNum: number;
+  errMsg: string;
+}
+
+// 导入校验信息
+export interface ValidateInfo {
+  failCount: number;
+  successCount: number;
+  errorMessages: ErrorMessagesType[];
+}
+
+export interface OrgUserInfo extends Omit<UserInfo, 'roles'> {
+  userId: string;
+  userName: string;
+  departmentName: string;
+  roles: MemberRoleItem[];
+}
+
+export interface DragNodeParams {
+  dragNodeId: string;
+  dropNodeId: string;
+  dropPosition: -1 | 0 | 1; // -1：dropNodeId节点之前。 1：dropNodeId节点后） 0：dropNodeId节点内）
+}
+
+export interface DEToken {
+  url: string;
+  token: string;
+}

@@ -1,0 +1,79 @@
+############################
+# Environment & Config
+############################
+
+# Local env files
+.env
+.env.local
+.env.*.local
+.venv
+
+# Maven
+.mvn
+!.mvn/maven-wrapper.properties
+.flattened-pom.xml
+
+############################
+# Logs
+############################
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-error.log*
+
+############################
+# IDE / Editor
+############################
+
+# macOS
+.DS_Store
+
+# IntelliJ IDEA
+.idea/*
+!.idea/icon.png
+**/*.iml
+
+# Eclipse
+.settings
+.project
+.classpath
+.factorypath
+
+# VS Code
+.vscode
+
+# Visual Studio
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Other
+*.sw?
+.history
+
+############################
+# Build Output
+############################
+
+target
+.jython_cache
+
+############################
+# Static Resources (ignored)
+############################
+
+src/main/resources/static
+src/main/resources/templates
+/backend/crm/src/main/resources/static/
+/backend/app/src/main/resources/static/
+
+############################
+# Custom Files
+############################
+
+qywx.json
+
+# Claude Code
+.claude

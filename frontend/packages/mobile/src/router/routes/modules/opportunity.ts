@@ -1,0 +1,39 @@
+import { OpportunityRouteEnum } from '@/enums/routeEnum';
+
+import { DEFAULT_LAYOUT } from '../base';
+import type { AppRouteRecordRaw } from '../types';
+
+const opportunity: AppRouteRecordRaw = {
+  path: '/opportunity',
+  name: OpportunityRouteEnum.OPPORTUNITY,
+  redirect: '/opportunity/index',
+  component: DEFAULT_LAYOUT,
+  meta: {
+    permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
+  },
+  children: [
+    {
+      path: 'index',
+      name: OpportunityRouteEnum.OPPORTUNITY_INDEX,
+      component: () => import('@/views/opportunity/index.vue'),
+      meta: {
+        locale: 'menu.opportunity',
+        permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
+        depth: 1,
+        isCache: true,
+      },
+    },
+    {
+      path: 'detail',
+      name: OpportunityRouteEnum.OPPORTUNITY_DETAIL,
+      component: () => import('@/views/opportunity/detail.vue'),
+      meta: {
+        permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
+        depth: 2,
+        isCache: true,
+      },
+    },
+  ],
+};
+
+export default opportunity;

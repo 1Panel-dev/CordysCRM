@@ -1,0 +1,41 @@
+name: LLM Code Review
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  llm-code-review:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ 拉代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2️⃣ LLM Code Review（发表评论）
+      - name: Run LLM Code Review
+        id: llm-code-review
+        uses: fit2cloud/LLM-CodeReview-Action@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.ALIYUN_LLM_API_KEY }}
+          OPENAI_API_ENDPOINT: https://dashscope.aliyuncs.com/compatible-mode/v1
+          MODEL: qwen3-coder-plus
+          LANGUAGE: Chinese
+          PROMPT: |
+            你是资深代码审查专家，严格检查以下代码差异。
+
+            ⚠️【必须遵守】
+            - 只在代码质量存在问题时发表评论。
+            - 不要解释、不添加多余文本。
+            - 审查应专注于以下内容：逻辑错误、代码规范、可读性、性能优化等。
+
+          temperature: 0.2
+          top_p: 1
+          MAX_PATCH_LENGTH: 50000
+          IGNORE_PATTERNS: "/node_modules,*.md,/dist,/.github"
+          FILE_PATTERNS: "*.java"

@@ -1,0 +1,687 @@
+[
+  {
+    "id": "SYSTEM",
+    "name": "permission.system.name",
+    "children": [
+      {
+        "id": "SYSTEM_ORGANIZATION",
+        "name": "permission.system.organization.name",
+        "permissions": [
+          {
+            "id": "SYS_ORGANIZATION:READ"
+          },
+          {
+            "id": "SYS_ORGANIZATION:ADD"
+          },
+          {
+            "id": "SYS_ORGANIZATION:UPDATE"
+          },
+          {
+            "id": "SYS_ORGANIZATION:DELETE"
+          },
+          {
+            "id": "SYS_ORGANIZATION:IMPORT"
+          },
+          {
+            "id": "SYS_ORGANIZATION:SYNC",
+            "name": "permission.organization.sync"
+          },
+          {
+            "id": "SYS_ORGANIZATION_USER:RESET_PASSWORD",
+            "name": "permission.organization.user.reset_password"
+          }
+        ]
+      },
+      {
+        "id": "SYSTEM_ROLE",
+        "name": "permission.system.role.name",
+        "permissions": [
+          {
+            "id": "SYSTEM_ROLE:READ"
+          },
+          {
+            "id": "SYSTEM_ROLE:ADD"
+          },
+          {
+            "id": "SYSTEM_ROLE:UPDATE"
+          },
+          {
+            "id": "SYSTEM_ROLE:DELETE"
+          },
+          {
+            "id": "SYSTEM_ROLE:ADD_USER",
+            "name": "permission.role.add_user"
+          },
+          {
+            "id": "SYSTEM_ROLE:REMOVE_USER",
+            "name": "permission.role.remove_user"
+          }
+        ]
+      },
+      {
+        "id": "SYSTEM_SETTING",
+        "name": "permission.system.module_setting.name",
+        "permissions": [
+          {
+            "id": "MODULE_SETTING:READ"
+          },
+          {
+            "id": "MODULE_SETTING:UPDATE"
+          }
+        ]
+      },
+      {
+        "id": "SYSTEM_NOTICE",
+        "name": "permission.system.notice.name",
+        "permissions": [
+          {
+            "id": "SYSTEM_NOTICE:READ"
+          },
+          {
+            "id": "SYSTEM_NOTICE:ADD"
+          },
+          {
+            "id": "SYSTEM_NOTICE:UPDATE"
+          },
+          {
+            "id": "SYSTEM_NOTICE:DELETE"
+          }
+        ]
+      },
+      {
+        "id": "SYSTEM_SETTING",
+        "name": "permission.system.setting.name",
+        "permissions": [
+          {
+            "id": "SYSTEM_SETTING:READ"
+          },
+          {
+            "id": "SYSTEM_SETTING:ADD"
+          },
+          {
+            "id": "SYSTEM_SETTING:UPDATE"
+          },
+          {
+            "id": "SYSTEM_SETTING:DELETE"
+          }
+        ]
+      },
+      {
+        "id": "SYSTEM_SETTING",
+        "name": "permission.operation.log",
+        "permissions": [
+          {
+            "id": "OPERATION_LOG:READ"
+          }
+        ]
+      },
+      {
+        "id": "SYSTEM_LICENSE",
+        "name": "permission.system.license",
+        "license": true,
+        "permissions": [
+          {
+            "id": "LICENSE:READ",
+            "license": true
+          },
+          {
+            "id": "LICENSE:EDIT",
+            "license": true
+          }
+        ]
+      },
+      {
+        "id": "PROCESS_SETTING",
+        "name": "permission.process_setting.name",
+        "permissions": [
+          {
+            "id": "PROCESS_SETTING:READ"
+          },
+          {
+            "id": "PROCESS_SETTING:ADD"
+          },
+          {
+            "id": "PROCESS_SETTING:UPDATE"
+          },
+          {
+            "id": "PROCESS_SETTING:DELETE"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CUSTOMER_MANAGEMENT",
+    "name": "permission.customer_management.name",
+    "children": [
+      {
+        "id": "CUSTOMER_MANAGEMENT_CUSTOMER",
+        "name": "permission.customer_management.customer.name",
+        "permissions": [
+          {
+            "id": "CUSTOMER_MANAGEMENT:READ"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:ADD"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:UPDATE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:TRANSFER"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:RECYCLE",
+            "name": "permission.customer_management.customer.recycle"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:IMPORT"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:EXPORT"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:MERGE"
+          }
+        ]
+      },
+      {
+        "id": "CUSTOMER_MANAGEMENT_POOL",
+        "name": "permission.customer_management.pool.name",
+        "permissions": [
+          {
+            "id": "CUSTOMER_MANAGEMENT_POOL:READ"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_POOL:UPDATE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_POOL:PICK",
+            "name": "permission.customer_management.pool.pick"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_POOL:ASSIGN",
+            "name": "permission.customer_management.pool.assign"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_POOL:DELETE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_POOL:EXPORT"
+          }
+        ]
+      },
+      {
+        "id": "CUSTOMER_MANAGEMENT_CONTACT",
+        "name": "permission.customer.customer_contact.name",
+        "permissions": [
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:READ"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:ADD"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:UPDATE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:DELETE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:IMPORT"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:EXPORT"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLUE_MANAGEMENT",
+    "name": "permission.clue_management.name",
+    "children": [
+      {
+        "id": "CLUE_MANAGEMENT_CLUE",
+        "name": "permission.clue_management.clue.name",
+        "permissions": [
+          {
+            "id": "CLUE_MANAGEMENT:READ"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:ADD"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:UPDATE"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:TRANSFER"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:RECYCLE",
+            "name": "permission.clue_management.clue.recycle"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:IMPORT"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:EXPORT"
+          }
+        ]
+      },
+      {
+        "id": "CLUE_MANAGEMENT_POOL",
+        "name": "permission.clue_management.pool.name",
+        "permissions": [
+          {
+            "id": "CLUE_MANAGEMENT_POOL:READ"
+          },
+          {
+            "id": "CLUE_MANAGEMENT_POOL:UPDATE"
+          },
+          {
+            "id": "CLUE_MANAGEMENT_POOL:PICK",
+            "name": "permission.customer_management.pool.pick"
+          },
+          {
+            "id": "CLUE_MANAGEMENT_POOL:ASSIGN",
+            "name": "permission.customer_management.pool.assign"
+          },
+          {
+            "id": "CLUE_MANAGEMENT_POOL:DELETE"
+          },
+          {
+            "id": "CLUE_MANAGEMENT_POOL:EXPORT"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "OPPORTUNITY_MANAGEMENT",
+    "name": "permission.opportunity_management.name",
+    "children": [
+      {
+        "id": "OPPORTUNITY_MANAGEMENT_OPPORTUNITY",
+        "name": "permission.opportunity_management.opportunity.name",
+        "permissions": [
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:READ"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:ADD"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:UPDATE"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:TRANSFER"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:IMPORT"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:EXPORT"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:RESIGN",
+            "name": "permission.clue_management.clue.resign"
+          }
+        ]
+      },
+      {
+        "id": "OPPORTUNITY_MANAGEMENT_QUOTATION",
+        "name": "permission.opportunity_management.opportunity_quotation.name",
+        "permissions": [
+          {
+            "id": "OPPORTUNITY_QUOTATION:READ"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:ADD"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:UPDATE"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:DELETE"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:DOWNLOAD",
+            "name": "permission.opportunity_management.opportunity_quotation.download"
+          },
+          {
+            "id": "OPPORTUNITY_QUOTATION:VOIDED"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PRODUCT_MANAGEMENT",
+    "name": "permission.product_management.name",
+    "children": [
+      {
+        "id": "PRODUCT_MANAGEMENT_PRODUCT",
+        "name": "permission.product_management.product.name",
+        "permissions": [
+          {
+            "id": "PRODUCT_MANAGEMENT:READ"
+          },
+          {
+            "id": "PRODUCT_MANAGEMENT:ADD"
+          },
+          {
+            "id": "PRODUCT_MANAGEMENT:UPDATE"
+          },
+          {
+            "id": "PRODUCT_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "PRODUCT_MANAGEMENT:IMPORT"
+          }
+        ]
+      },
+      {
+        "id": "PRODUCT_MANAGEMENT_PRICE",
+        "name": "permission.product_management.price.name",
+        "permissions": [
+          {
+            "id": "PRICE:READ"
+          },
+          {
+            "id": "PRICE:ADD"
+          },
+          {
+            "id": "PRICE:UPDATE"
+          },
+          {
+            "id": "PRICE:DELETE"
+          },
+          {
+            "id": "PRICE:IMPORT"
+          },
+          {
+            "id": "PRICE:EXPORT"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "DASHBOARD_MANAGEMENT",
+    "name": "permission.dashboard_management.name",
+    "license": false,
+    "children": [
+      {
+        "id": "DASHBOARD",
+        "name": "permission.dashboard.name",
+        "permissions": [
+          {
+            "id": "DASHBOARD:READ",
+            "license": false
+          },
+          {
+            "id": "DASHBOARD:ADD",
+            "license": false
+          },
+          {
+            "id": "DASHBOARD:UPDATE",
+            "license": false
+          },
+          {
+            "id": "DASHBOARD:DELETE",
+            "license": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PERSONAL_INFO",
+    "name": "permission.personal_info.name",
+    "license": false,
+    "children": [
+      {
+        "id": "API_KEY",
+        "name": "permission.api_key.name",
+        "permissions": [
+          {
+            "id": "PERSONAL_API_KEY:READ",
+            "license": false
+          },
+          {
+            "id": "PERSONAL_API_KEY:ADD",
+            "license": false
+          },
+          {
+            "id": "PERSONAL_API_KEY:UPDATE",
+            "license": false
+          },
+          {
+            "id": "PERSONAL_API_KEY:DELETE",
+            "license": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "AGENT_MANAGEMENT",
+    "name": "permission.agent_management.name",
+    "license": false,
+    "children": [
+      {
+        "id": "AGENT",
+        "name": "permission.agent.name",
+        "permissions": [
+          {
+            "id": "AGENT:READ",
+            "license": false
+          },
+          {
+            "id": "AGENT:ADD",
+            "license": false
+          },
+          {
+            "id": "AGENT:UPDATE",
+            "license": false
+          },
+          {
+            "id": "AGENT:DELETE",
+            "license": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "TENDER_MANAGEMENT",
+    "name": "permission.tender_management.name",
+    "license": false,
+    "children": [
+      {
+        "id": "TENDER",
+        "name": "permission.tender.name",
+        "permissions": [
+          {
+            "id": "TENDER:READ",
+            "license": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CONTRACT_MANAGEMENT",
+    "name": "permission.contract_management.name",
+    "license": false,
+    "children": [
+      {
+        "id": "CONTRACT",
+        "name": "permission.contract.name",
+        "permissions": [
+          {
+            "id": "CONTRACT:READ",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:ADD",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:UPDATE",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:DELETE",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:EXPORT",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:STAGE",
+            "license": false
+          },
+          {
+            "id": "CONTRACT:PAYMENT"
+          }
+        ]
+      },
+      {
+        "id": "CONTRACT_PAYMENT_PLAN",
+        "name": "permission.contract_payment_plan.name",
+        "permissions": [
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:READ"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:ADD"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:UPDATE"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:DELETE"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_PLAN:EXPORT"
+          }
+        ]
+      },
+      {
+        "id": "CONTRACT_PAYMENT_RECORD",
+        "name": "permission.contract_payment_record.name",
+        "permissions": [
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:READ"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:ADD"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:UPDATE"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:DELETE"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:IMPORT"
+          },
+          {
+            "id": "CONTRACT_PAYMENT_RECORD:EXPORT"
+          }
+        ]
+      },
+      {
+        "id": "BUSINESS_TITLE",
+        "name": "permission.business_title.name",
+        "permissions": [
+          {
+            "id": "CONTRACT_BUSINESS_TITLE:READ",
+            "license": false
+          },
+          {
+            "id": "CONTRACT_BUSINESS_TITLE:ADD",
+            "license": false
+          },
+          {
+            "id": "CONTRACT_BUSINESS_TITLE:UPDATE",
+            "license": false
+          },
+          {
+            "id": "CONTRACT_BUSINESS_TITLE:DELETE",
+            "license": false
+          },
+          {
+            "id": "CONTRACT_BUSINESS_TITLE:EXPORT",
+            "license": false
+          },
+          {
+            "id": "CONTRACT_BUSINESS_TITLE:IMPORT",
+            "license": false
+          }
+        ]
+      },
+      {
+        "id": "CONTRACT_INVOICE",
+        "name": "permission.contract.invoice.name",
+        "permissions": [
+          {
+            "id": "CONTRACT_INVOICE:READ"
+          },
+          {
+            "id": "CONTRACT_INVOICE:ADD"
+          },
+          {
+            "id": "CONTRACT_INVOICE:UPDATE"
+          },
+          {
+            "id": "CONTRACT_INVOICE:DELETE"
+          },
+          {
+            "id": "CONTRACT_INVOICE:EXPORT"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ORDER_MANAGEMENT",
+    "name": "permission.order_management.name",
+    "license": false,
+    "children": [
+      {
+        "id": "ORDER",
+        "name": "permission.order.name",
+        "permissions": [
+          {
+            "id": "ORDER:READ"
+          },
+          {
+            "id": "ORDER:ADD"
+          },
+          {
+            "id": "ORDER:UPDATE"
+          },
+          {
+            "id": "ORDER:DELETE"
+          },
+          {
+            "id": "ORDER:DOWNLOAD"
+          }
+        ]
+      }
+    ]
+  }
+]

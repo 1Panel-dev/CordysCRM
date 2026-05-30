@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.contract.mapper.ExtContractMapper">
+    <select id="list" resultType="cn.cordys.crm.contract.dto.response.ContractListResponse">
+        SELECT
+        ct.id,
+        ct.NAME,
+        ct.customer_id,
+        ct.number,
+        c.`name` AS customerName,
+        c.in_shared_pool AS inCustomerPool,
+        c.pool_id,
+        ct.amount,
+        ct.approval_status,
+        ct.stage,
+        ct.`owner`,
+        ct.start_time,
+        ct.end_time,
+        ct.void_reason,
+        ct.create_user,
+        ct.create_time,
+        ct.update_user,
+        ct.update_time,
+        ct.alreadyPayAmount
+        FROM (
+        SELECT ctt.*, IFNULL(SUM(cpr.record_amount), 0) AS alreadyPayAmount
+        FROM contract ctt
+        LEFT JOIN contract_payment_record cpr on cpr.contract_id = ctt.id
+        GROUP BY ctt.id
+        ) ct
+        LEFT JOIN customer c ON ct.customer_id = c.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on ct.owner = sys_organization_user.user_id
+            and (
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="dataPermission.viewId == 'ALL'">
+                or sys_organization_user.user_id = #{userId}
+            </if>
+            )
+        </if>
+        where ct.organization_id = #{orgId}
+
+        <if test="request.customerId != null and request.customerId != ''">
+            and ct.customer_id = #{request.customerId}
+        </if>
+
+        <if test="dataPermission != null and dataPermission.self">
+            and ct.owner = #{userId}
+        </if>
+
+        <if test="!source and request.keyword != null and request.keyword != ''">
+            and (
+            ct.name like concat('%', #{request.keyword},'%')
+            or c.name like concat('%', #{request.keyword},'%')
+            )
+        </if>
+        <if test="source and request.keyword != null and request.keyword != ''">
+            and ct.name like concat('%', #{request.keyword},'%')
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
+        </include>
+
+        <if test="request.board">
+            order by ct.pos desc
+        </if>
+        <if test="!request.board">
+            <include refid="sort">
+                <property name="sort" value="request.sort"/>
+            </include>
+        </if>
+    </select>
+
+    <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.ContractListResponse">
+        SELECT
+        ct.id,
+        ct.NAME,
+        ct.customer_id,
+        c.`name` AS customerName,
+        c.in_shared_pool AS inCustomerPool,
+        c.pool_id,
+        ct.amount,
+        ct.number,
+        ct.approval_status,
+        ct.stage,
+        ct.`owner`,
+        ct.void_reason,
+        ct.create_user,
+        ct.create_time,
+        ct.update_user,
+        ct.update_time,
+        ct.start_time,
+        ct.end_time,
+        ct.alreadyPayAmount
+        FROM (
+            SELECT ctt.*, IFNULL(SUM(cpr.record_amount), 0) AS alreadyPayAmount
+            FROM contract ctt
+            LEFT JOIN contract_payment_record cpr on cpr.contract_id = ctt.id
+            GROUP BY ctt.id
+        ) ct
+        LEFT JOIN customer c ON ct.customer_id = c.id
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on ct.owner = sys_organization_user.user_id
+            and (
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            )
+        </if>
+
+        where ct.organization_id = #{orgId}
+        and ct.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+
+        <if test="dataPermission != null and dataPermission.self">
+            and ct.owner = #{userId}
+        </if>
+    </select>
+
+    <!-- common sql start -->
+    <sql id="fieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <choose>
+                    <when test="condition.refFiled">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.refFieldConditionJoin">
+                            <property name="condition" value="condition"/>
+                            <property name="mainTable" value="contract"/>
+                            <property name="mainTableAlias" value="ct"/>
+                            <property name="fieldTable" value="${tablePrefix}_${i}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <if test="condition.name not in
+                            {'name', 'owner', 'createTime', 'updateTime', 'customerId', 'createUser', 'updateUser',
+                             'departmentId', 'number', 'stage', 'amount', 'approvalStatus', 'startTime', 'endTime', 'alread
+                             yPayAmount'}">
+                            <if test="condition.blob">
+                                left join contract_field_blob ${tablePrefix}_${i}
+                                on ct.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                            <if test="!condition.blob">
+                                left join contract_field ${tablePrefix}_${i}
+                                on ct.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                            </if>
+                        </if>
+                        <if test="condition.name == 'departmentId'">
+                            left join sys_organization_user ${tablePrefix}_${i}
+                            on ${tablePrefix}_${i}.user_id = ct.owner
+                        </if>
+                    </otherwise>
+                </choose>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fieldSortJoin">
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
+                {'name', 'owner', 'customer_id', 'amount', 'stage', 'update_user', 'create_time',
+                 'approval_status', 'update_time', 'create_user', 'department_id', 'startTime', 'endTime', 'already_pay_amount'}">
+            <bind name="sortName" value="${sort}.name"/>
+            left join contract_field sort_table
+            on ct.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+            left join sys_module_field module_table on sort_table.field_id = module_table.id
+        </if>
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name == 'department_id'">
+            left join sys_organization_user souc_sort on souc_sort.user_id = ct.owner
+        </if>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                        <property name="fieldTable" value="filter_${i}.field_value"/>
+                        <property name="table" value="filter_${i}"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.refFiled">
+                <choose>
+                    <when test="!condition.customField">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${table}.${condition.name}"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="condition.name == 'name'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.name"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'customerId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.dataSourceCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="c.id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'amount'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.amount"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'alreadyPayAmount'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.alreadyPayAmount"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'voidReason'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.void_reason"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'owner'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.owner"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'stage'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.stage"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'number'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.number"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'approvalStatus'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.approval_status"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'startTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.start_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'endTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.end_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'departmentId'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${table}.department_id"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'createTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.create_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'updateTime'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.update_time"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'updateUser'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.update_user"/>
+                        </include>
+                    </when>
+                    <when test="condition.name == 'createUser'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.create_user"/>
+                        </include>
+                    </when>
+                    <otherwise>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="${fieldTable}"/>
+                        </include>
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="combine_${i}.field_value"/>
+                            <property name="table" value="combine_${i}"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="viewCombine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="viewCombine_${i}.field_value"/>
+                            <property name="table" value="viewCombine_${i}"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type"/>
+                order by
+                <choose>
+                    <when test="${sort}.name == 'name'">
+                        ct.`name` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'customer_id'">
+                        c.`name` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'owner'">
+                        ct.`owner` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'amount'">
+                        ct.`amount` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'already_pay_amount'">
+                        ct.`alreadyPayAmount` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'stage'">
+                        ct.`stage` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_time'">
+                        ct.`create_time` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_time'">
+                        ct.`update_time` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'create_user'">
+                        ct.`create_user` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'update_user'">
+                        ct.`update_user` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'department_id'">
+                        souc_sort.`id` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'approval_status'">
+                        FIELD(ct.approval_status, 'NONE', 'PENDING', 'APPROVING', 'APPROVED', 'REVOKED', 'UNAPPROVED') ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'start_time'">
+                        ct.`start_time` ${sortType}, ct.id ASC
+                    </when>
+                    <when test="${sort}.name == 'end_time'">
+                        ct.`end_time` ${sortType}, ct.id ASC
+                    </when>
+
+
+                    <otherwise>
+                        CASE
+                        WHEN module_table.type = 'INPUT_NUMBER'
+                        THEN sort_table.field_value+0
+                        END ${sortType},
+                        sort_table.field_value ${sortType},
+                        ct.id ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by ct.create_time desc, ct.id asc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="getDetail" resultType="cn.cordys.crm.contract.dto.response.ContractGetResponse">
+        SELECT ct.id,
+               ct.NAME,
+               ct.customer_id,
+               c.`name`         AS customerName,
+               c.in_shared_pool AS inCustomerPool,
+               c.pool_id,
+               ct.amount,
+               ct.approval_status,
+               ct.stage,
+               ct.`owner`,
+               ct.void_reason,
+               ct.create_user,
+               ct.create_time,
+               ct.update_user,
+               ct.update_time
+        FROM contract ct
+                 LEFT JOIN customer c ON ct.customer_id = c.id
+        where ct.id = #{id}
+    </select>
+    <select id="calculateContractStatisticByCustomerId"
+            resultType="cn.cordys.crm.contract.dto.response.CustomerContractStatisticResponse">
+        SELECT
+        IFNULL(SUM(ct.amount), 0) as totalAmount
+        FROM
+        contract ct
+        LEFT JOIN customer c ON ct.customer_id = c.id
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on ct.owner = sys_organization_user.user_id
+            and (
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            )
+        </if>
+        where ct.organization_id = #{orgId} and ct.customer_id = #{customerId}
+        <if test="dataPermission != null and dataPermission.self">
+            and ct.owner = #{userId}
+        </if>
+    </select>
+
+    <select id="selectByStatusAndIds" resultType="java.lang.String">
+        select id from contract
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        and approval_status = #{approvalStatus}
+    </select>
+    <select id="selectByTimestamp" resultType="cn.cordys.crm.contract.domain.Contract">
+        select *
+        from contract
+        where organization_id = #{organizationId}
+          and end_time <![CDATA[>=]]> #{timestampOld}
+          and end_time <![CDATA[<]]> #{timestamp}
+          and stage!='VOID' and stage!='COMPLETED_PERFORMANCE'
+    </select>
+
+    <update id="updateStatus">
+        update contract
+        set approval_status = #{approvalStatus},
+            update_user     = #{userId},
+            update_time     = #{updateTime}
+        where id = #{id}
+    </update>
+
+    <update id="updateStage">
+        update contract
+        set stage       = #{stage},
+            update_user = #{userId},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
+    <update id="batchUpdate">
+        UPDATE contract
+        <set>
+            <if test="request.fieldName == 'owner'">
+                owner = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'name'">
+                name = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'customerId'">
+                customer_id = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'amount'">
+                amount = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'number'">
+                number = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'stage'">
+                stage = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'startTime'">
+                start_time = #{request.fieldValue},
+            </if>
+            <if test="request.fieldName == 'endTime'">
+                end_time = #{request.fieldValue},
+            </if>
+            update_time = #{request.updateTime},
+            update_user = #{request.updateUser}
+        </set>
+        WHERE id IN
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+
+    <select id="searchStatistic" resultType="cn.cordys.crm.contract.dto.response.ContractStatisticResponse">
+        SELECT
+        sum(ct.amount) as amount,
+        sum(ct.amount)  / count(*) as averageAmount
+        FROM
+        contract ct
+        LEFT JOIN customer c ON ct.customer_id = c.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on ct.owner = sys_organization_user.user_id
+            and (
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="dataPermission.viewId == 'ALL'">
+                or sys_organization_user.user_id = #{userId}
+            </if>
+            )
+        </if>
+
+        where ct.organization_id = #{orgId}
+
+        <if test="dataPermission != null and dataPermission.self">
+            and ct.owner = #{userId}
+        </if>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and (
+            ct.name like concat('%', #{request.keyword},'%')
+            or ct.name like concat('%', #{request.keyword},'%')
+            )
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
+        </include>
+
+    </select>
+
+
+    <select id="countByStage" resultType="java.lang.Integer">
+        select count(id) from contract
+        where stage = #{stage}
+    </select>
+
+    <select id="selectNextPos" resultType="java.lang.Long">
+        select pos from contract where stage = #{stage} and organization_id = #{orgId}
+        order by pos desc limit 1
+    </select>
+
+    <update id="moveUpStageContract">
+        update contract set pos = pos + #{pos} where pos &gt; #{end} and stage = #{stage}
+    </update>
+
+    <update id="moveDownStageContract">
+        update contract set pos = pos + #{pos} where pos &gt;= #{end} and stage = #{stage}
+    </update>
+
+    <update id="updateOldApprovalStatusNone">
+        update contract set approval_status = 'NONE' where approval_status = 'APPROVING';
+    </update>
+</mapper>

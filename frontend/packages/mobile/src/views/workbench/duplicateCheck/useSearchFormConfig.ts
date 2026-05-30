@@ -1,0 +1,362 @@
+import { closeToast, showLoadingToast } from 'vant';
+import { cloneDeep } from 'lodash-es';
+import dayjs from 'dayjs';
+
+import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
+import { CommonList } from '@lib/shared/models/common';
+import { DefaultSearchSetFormModel } from '@lib/shared/models/system/module';
+
+import {
+  getGlobalCluePoolList,
+  getGlobalCustomerContactList,
+  getGlobalCustomerList,
+  getGlobalModuleCount,
+  getGlobalOpenSeaCustomerList,
+  getGlobalSearchClueList,
+  getSearchConfig,
+  globalSearchOptPage,
+} from '@/api/modules';
+import { hasAnyPermission } from '@/utils/permission';
+
+import { defaultSearchSetFormModel, lastScopedOptions, ScopedOptions, scopedOptions, SearchTableKey } from './config';
+import { getFormConfigApiMap } from '@cordys/web/src/components/business/crm-form-create/config';
+
+export const getSearchListApiMap: Record<SearchTableKey, (data: any) => Promise<CommonList<any>>> = {
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: getGlobalSearchClueList,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: getGlobalCustomerList,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: getGlobalCustomerContactList,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: getGlobalOpenSeaCustomerList,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: getGlobalCluePoolList,
+  [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: globalSearchOptPage,
+};
+
+// 固定展示字段
+export const fixedFieldKeyListMap: Record<SearchTableKey, string[]> = {
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: ['name', 'owner', 'departmentId', 'products'], // 公司名称 、负责人、部门、意向产品
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: ['name', 'products', 'poolName'], // 公司名称 、意向产品、线索池名称
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: ['name', 'owner', 'departmentId'], // 客户名称、负责人、部门
+  [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: ['customerId', 'name', 'phone', 'owner', 'departmentId'], // 客户名称、姓名、手机号、负责人、部门
+  [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: ['name', 'poolName'], // 客户名称、公海名称
+  [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: ['name', 'customerId', 'owner', 'departmentId', 'products', 'stage'], // 商机名称、客户名称、负责人、部门、意向产品、商机阶段
+};
+
+export default function useSearchFormConfig() {
+  const { t } = useI18n();
+
+  // 客户公海共用表单
+  const customerConfig = [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER, FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC];
+  // 联系人表单
+  const customerContactConfig = [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT];
+  // 线索线索池共用表单
+  const clueConfig = [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL, FormDesignKeyEnum.SEARCH_ADVANCED_CLUE];
+  // 商机表单
+  const opportunityConfig = [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY];
+
+  const formScopedConfig = [
+    FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY,
+    FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER,
+    FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT,
+    FormDesignKeyEnum.SEARCH_ADVANCED_CLUE,
+  ];
+
+  const searchFieldConfigType = [
+    FieldTypeEnum.INPUT,
+    FieldTypeEnum.PHONE,
+    FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+    FieldTypeEnum.DATA_SOURCE,
+    FieldTypeEnum.SERIAL_NUMBER,
+  ];
+
+  // 表单类型配置映射表
+  const configMap: Partial<Record<FormDesignKeyEnum, FormDesignKeyEnum[]>> = {
+    [FormDesignKeyEnum.CUSTOMER]: customerConfig,
+    [FormDesignKeyEnum.CUSTOMER_CONTACT]: customerContactConfig,
+    [FormDesignKeyEnum.CLUE]: clueConfig,
+    [FormDesignKeyEnum.BUSINESS]: opportunityConfig,
+  };
+
+  const configPermissionMap: Partial<Record<FormDesignKeyEnum, string[]>> = {
+    [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: ['OPPORTUNITY_MANAGEMENT:READ'],
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: ['CUSTOMER_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT_POOL:READ'],
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],
+  };
+
+  // 最终自定义字段对应的类型Map
+  const searchFieldMap = ref<Record<string, any[]>>({});
+  const allFieldMap = ref<Record<string, any[]>>({});
+  const configList = ref<ScopedOptions[]>([]);
+  const formModel = ref<DefaultSearchSetFormModel>(cloneDeep(defaultSearchSetFormModel));
+  const searchResultMap = ref<Record<SearchTableKey, Record<string, any>>>({
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE]: {
+      describe: [],
+      list: [],
+    },
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CUSTOMER]: {
+      describe: [],
+      list: [],
+    },
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT]: {
+      describe: [],
+      list: [],
+    },
+    [FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC]: {
+      describe: [],
+      list: [],
+    },
+    [FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL]: {
+      describe: [],
+      list: [],
+    },
+    [FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY]: {
+      describe: [],
+      list: [],
+    },
+  });
+
+  async function initSearchFormConfig() {
+    try {
+      const uniqueConfigs = [...new Set(formScopedConfig)];
+
+      const promises = uniqueConfigs.map(async (value) => {
+        const configKey = Object.keys(configMap).find((key) =>
+          (configMap[key as FormDesignKeyEnum] as FormDesignKeyEnum[]).includes(value)
+        );
+
+        if (!configKey) return;
+        if (!hasAnyPermission(configPermissionMap[value as FormDesignKeyEnum])) return;
+
+        const res = await getFormConfigApiMap[configKey as FormDesignKeyEnum]();
+        const customFieldsFilterConfig = res.fields.filter((e) => searchFieldConfigType.includes(e.type));
+
+        configMap[configKey as FormDesignKeyEnum]?.forEach((configValue) => {
+          searchFieldMap.value[configValue] = customFieldsFilterConfig;
+          allFieldMap.value[configValue] = res.fields.map((field) => {
+            return {
+              id: field.id,
+              key: field.businessKey ?? field.id,
+              label: field.name,
+            };
+          });
+        });
+      });
+
+      await Promise.all(promises);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const loading = ref(false);
+  const moduleCount = ref<Record<string, number>>();
+  async function getCountList(val: string) {
+    if (!val) return;
+    try {
+      showLoadingToast(t('common.loading'));
+      loading.value = true;
+      const res = await getGlobalModuleCount(val);
+      moduleCount.value = res.reduce<Record<string, number>>((acc, item) => {
+        acc[item.key] = item.count;
+        return acc;
+      }, {});
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+      closeToast();
+    }
+  }
+
+  async function initSearchDetail() {
+    try {
+      const res = await getSearchConfig();
+      const { sortSetting } = res;
+
+      const optionsMap = new Map(scopedOptions.map((item) => [item.value, item]));
+
+      configList.value = sortSetting
+        .map((val: any) => optionsMap.get(val))
+        .filter((option) => option && lastScopedOptions.value.includes(option)) as ScopedOptions[];
+      formModel.value = cloneDeep(res);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const systemDesc = computed(() => {
+    return (searchTableKey: SearchTableKey) => {
+      return [
+        {
+          label: t('workbench.duplicateCheck.department'),
+          key: 'departmentId',
+          type: FieldTypeEnum.INPUT,
+        },
+        {
+          label: t('workbench.duplicateCheck.opportunityStage'),
+          key: 'stage',
+          type: FieldTypeEnum.INPUT,
+        },
+        {
+          label:
+            searchTableKey === FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC
+              ? t('workbench.duplicateCheck.openSeaName')
+              : t('workbench.duplicateCheck.leadPoolName'),
+          key: 'poolName',
+          type: FieldTypeEnum.INPUT,
+        },
+      ];
+    };
+  });
+
+  const displayedDescList = computed(() => {
+    return (searchTableKey: SearchTableKey): any[] => {
+      if (!searchTableKey) return [];
+      // 配置选择的id
+      const selectedFieldIdList = formModel.value.searchFields[searchTableKey];
+
+      // 全量fields列表
+      const fieldList = allFieldMap.value[searchTableKey];
+
+      // 转换成同属性后查重
+      const selectedFieldKeyList =
+        selectedFieldIdList?.map((id: string) => fieldList.find((i) => i.id === id)?.key) || [];
+
+      const displayedColumnKeyList = [...new Set([...fixedFieldKeyListMap[searchTableKey], ...selectedFieldKeyList])];
+      return displayedColumnKeyList
+        .map((item) => [...fieldList, ...systemDesc.value(searchTableKey)].find((i) => i.key === item))
+        .filter(Boolean);
+    };
+  });
+
+  function transformData(item: any, searchTableKey: SearchTableKey) {
+    const fieldMap = new Map(item.moduleFields?.map((field: any) => [field.fieldId, field.fieldValue]));
+    const fieldAttr: Record<string, any> = Object.fromEntries(
+      displayedDescList
+        .value(searchTableKey)
+        ?.filter((i: any) => i.id && fieldMap.has(i.id))
+        .map((i: any) => [i.key, fieldMap.get(i.id)!])
+    );
+    return {
+      ...item,
+      ...fieldAttr,
+    };
+  }
+
+  const createTimeDesc = {
+    label: t('common.createTime'),
+    key: 'createTime',
+    valueSlotName: 'render',
+    render: (row: any) => {
+      return dayjs(row.createTime).format('YYYY-MM-DD');
+    },
+  };
+
+  const lastFollowTimeDesc = {
+    label: t('workbench.duplicateCheck.lastFollowUpDate'),
+    key: 'followTime',
+    valueSlotName: 'render',
+    render: (row: any) => {
+      return row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-';
+    },
+  };
+
+  function initSearchListConfig() {
+    configList.value.forEach((e) => {
+      const resultDesc = displayedDescList.value(e.value as SearchTableKey).map((field) => {
+        if (field.key === 'name' && e.value !== FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT) {
+          return {
+            label: field.label,
+            key: field.key,
+            valueSlotName: 'name',
+          };
+        }
+
+        if (field.key === 'customerId') {
+          return {
+            label: field.label,
+            key: field.key,
+            valueSlotName: 'customerName',
+          };
+        }
+
+        // 部门
+        if (field.key === 'departmentId') {
+          return {
+            label: field.label,
+            key: 'departmentName',
+          };
+        }
+
+        // 负责人
+        if (field.key === 'owner') {
+          return {
+            label: field.label,
+            key: 'ownerName',
+          };
+        }
+
+        if (field.key === 'stage') {
+          return {
+            label: field.label,
+            key: field.key,
+            valueSlotName: 'render',
+            render: (row: any) => row.stageName ?? '-',
+          };
+        }
+
+        if (field.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE) {
+          return {
+            label: field.label,
+            key: field.key,
+            valueSlotName: 'render',
+            render: (row: any) => {
+              return row[field.key]?.join('；') ?? '-';
+            },
+          };
+        }
+
+        return {
+          label: field.label,
+          key: field.key,
+        };
+      });
+
+      const hasCreateTimeDesc = [
+        FormDesignKeyEnum.SEARCH_ADVANCED_CLUE_POOL,
+        FormDesignKeyEnum.SEARCH_ADVANCED_PUBLIC,
+      ].includes(e.value)
+        ? []
+        : [createTimeDesc];
+
+      const hasLastFollowDesc = [FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT].includes(e.value)
+        ? []
+        : [lastFollowTimeDesc];
+
+      searchResultMap.value[e.value as SearchTableKey].describe = [
+        ...resultDesc,
+        ...hasLastFollowDesc,
+        ...hasCreateTimeDesc,
+      ];
+    });
+  }
+
+  return {
+    initSearchFormConfig,
+    getCountList,
+    initSearchDetail,
+    moduleCount,
+    loading,
+    searchFieldMap,
+    allFieldMap,
+    configList,
+    formModel,
+    searchResultMap,
+    getSearchListApiMap,
+    transformData,
+    initSearchListConfig,
+  };
+}

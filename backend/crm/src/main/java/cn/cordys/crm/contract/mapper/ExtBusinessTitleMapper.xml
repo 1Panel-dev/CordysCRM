@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.contract.mapper.ExtBusinessTitleMapper">
+
+    <select id="list" resultType="cn.cordys.crm.contract.dto.response.BusinessTitleListResponse">
+        SELECT
+        bt.*
+        FROM
+        business_title bt
+        WHERE
+        bt.organization_id = #{orgId}
+        <if test="request.keyword != null and request.keyword != ''">
+            and bt.name like concat('%', #{request.keyword},'%')
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+    </select>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.name == 'name'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.name"/>
+                </include>
+            </when>
+            <when test="condition.name == 'type'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.type"/>
+                </include>
+            </when>
+            <when test="condition.name == 'identificationNumber'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.identification_number"/>
+                </include>
+            </when>
+            <when test="condition.name == 'openingBank'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.opening_bank"/>
+                </include>
+            </when>
+            <when test="condition.name == 'bankAccount'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.bank_account"/>
+                </include>
+            </when>
+            <when test="condition.name == 'registrationAddress'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.registration_address"/>
+                </include>
+            </when>
+            <when test="condition.name == 'phoneNumber'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.phone_number"/>
+                </include>
+            </when>
+            <when test="condition.name == 'registeredCapital'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.registered_capital"/>
+                </include>
+            </when>
+            <when test="condition.name == 'companySize'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.company_size"/>
+                </include>
+            </when>
+            <when test="condition.name == 'registrationNumber'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.registration_number"/>
+                </include>
+            </when>
+            <when test="condition.name == 'approvalStatus'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.approval_status"/>
+                </include>
+            </when>
+            <when test="condition.name == 'unapprovedReason'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.unapproved_reason"/>
+                </include>
+            </when>
+            <when test="condition.name == 'province'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.province"/>
+                </include>
+            </when>
+            <when test="condition.name == 'city'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.city"/>
+                </include>
+            </when>
+            <when test="condition.name == 'scale'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.scale"/>
+                </include>
+            </when>
+            <when test="condition.name == 'industry'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.industry"/>
+                </include>
+            </when>
+            <when test="condition.name == 'remark'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.remark"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.update_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.update_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="bt.create_user"/>
+                </include>
+            </when>
+        </choose>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                        </include>
+                        <include refid="cn.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type"/>
+                <bind name="sortName" value="${sort}.name"/>
+                order by
+                <choose>
+                    <when test="${sort}.name in
+                        {'name', 'type', 'create_time', 'update_time', 'identification_number', 'opening_bank', 'create_user', 'update_user', 'bank_account', 'registration_address',
+                         'phone_number', 'registered_capital', 'company_size', 'registration_number', 'approval_status', 'unapproved_reason', 'province', 'city', 'scale', 'industry', 'remark'
+                        }">
+                        bt.${sortName} ${sortType}, bt.id ASC
+                    </when>
+                    <otherwise>
+                        order by bt.create_time desc, bt.id asc
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by bt.create_time desc, bt.id asc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.BusinessTitleListResponse">
+        SELECT
+        bt.*
+        FROM
+        business_title bt
+        where bt.organization_id = #{orgId}
+        and bt.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+
+    <select id="countByName" resultType="java.lang.Integer">
+        select count(id) from business_title bt
+        where bt.organization_id = #{orgId}
+        and bt.name = #{businessName}
+        <if test="id != null and id != ''">
+            AND bt.id != #{id}
+        </if>
+    </select>
+
+
+    <select id="selectByNames" resultType="cn.cordys.crm.contract.domain.BusinessTitle">
+        select id, name, identification_number, opening_bank, bank_account, registration_address, phone_number,
+        registered_capital, company_size, registration_number, province, scale, industry, city, remark
+        from business_title
+        where name in
+        <foreach collection="names" item="name" open="(" close=")" separator=",">
+            #{name}
+        </foreach>
+    </select>
+
+
+    <update id="updateById">
+        update business_title
+        <set>
+            <if test="title.identificationNumber != null and title.identificationNumber != ''">
+                identification_number = #{title.identificationNumber},
+            </if>
+            <if test="title.openingBank != null and title.openingBank != ''">
+                opening_bank = #{title.openingBank},
+            </if>
+            <if test="title.bankAccount != null and title.bankAccount != ''">
+                bank_account = #{title.bankAccount},
+            </if>
+            <if test="title.registrationAddress != null and title.registrationAddress != ''">
+                registration_address = #{title.registrationAddress},
+            </if>
+            <if test="title.phoneNumber != null and title.phoneNumber != ''">
+                phone_number = #{title.phoneNumber},
+            </if>
+            <if test="title.registeredCapital != null and title.registeredCapital != ''">
+                registered_capital = #{title.registeredCapital},
+            </if>
+            <if test="title.companySize != null and title.companySize != ''">
+                company_size = #{title.companySize},
+            </if>
+            <if test="title.registrationNumber != null and title.registrationNumber != ''">
+                registration_number = #{title.registrationNumber},
+            </if>
+            <if test="title.province != null and title.province != ''">
+                province = #{title.province},
+            </if>
+            <if test="title.city != null and title.city != ''">
+                city = #{title.city},
+            </if>
+            <if test="title.scale != null and title.scale != ''">
+                scale = #{title.scale},
+            </if>
+            <if test="title.industry != null and title.industry != ''">
+                industry = #{title.industry},
+            </if>
+            <if test="title.remark != null and title.remark != ''">
+                remark = #{title.remark},
+            </if>
+            <if test="title.updateUser != null and title.updateUser != ''">
+                update_user = #{title.updateUser},
+            </if>
+            <if test="title.updateTime != null and title.updateTime != ''">
+                update_time = #{title.updateTime},
+            </if>
+        </set>
+        <where>
+            id = #{title.id}
+        </where>
+    </update>
+
+</mapper>

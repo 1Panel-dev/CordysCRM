@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper">
+    <select id="selectLatestInstanceByResourceId" resultType="cn.cordys.crm.approval.domain.ApprovalInstance">
+        SELECT *
+        FROM approval_instance
+        WHERE resource_id = #{resourceId}
+        ORDER BY submit_time DESC, id DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectPendingTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
+        SELECT
+        ai.resource_id AS resourceId,
+        COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
+        UPPER(ai.type) AS resourceType,
+        u.name AS applicant,
+        ai.submit_time AS submitTime,
+        CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
+        ai.approval_status AS dataResult,
+        at.id AS approvalTaskId,
+        at.node_id AS approvalNodeId,
+        at.instance_id AS approvalInstanceId,
+        at.approver_id AS approvalId,
+        afv.flow_id AS approvalFlowId,
+        afv.id AS approvalFlowVersionId
+        FROM approval_task at
+        INNER JOIN approval_instance ai ON ai.id = at.instance_id
+        INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+        LEFT JOIN sys_user u ON u.id = ai.submitter_id
+        LEFT JOIN opportunity_quotation oq ON ai.resource_id = oq.id AND ai.type IN ('quotation', 'quote')
+        LEFT JOIN contract c ON ai.resource_id = c.id AND ai.type = 'contract'
+        LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
+        LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
+        WHERE at.approver_id = #{approverId}
+        AND at.status = #{pendingStatus}
+        AND at.type != 'CC'
+        AND ai.approval_status not in ('APPROVED','UNAPPROVED')
+        <if test="resourceType != null and resourceType != ''">
+            AND ai.type = #{resourceType}
+        </if>
+        <if test="resourceName != null and resourceName != ''">
+            AND COALESCE(oq.name, c.name, so.name, ci.name) LIKE CONCAT('%', #{resourceName}, '%')
+        </if>
+        ORDER BY at.create_time DESC, at.id DESC
+    </select>
+
+    <select id="selectProcessedTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
+        SELECT
+        ai.resource_id AS resourceId,
+        COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
+        UPPER(ai.type) AS resourceType,
+        u.name AS applicant,
+        ai.submit_time AS submitTime,
+        CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
+        ai.approval_status AS dataResult,
+        at.id AS approvalTaskId,
+        at.node_id AS approvalNodeId,
+        at.instance_id AS approvalInstanceId,
+        at.approver_id AS approvalId,
+        afv.flow_id AS approvalFlowId,
+        afv.id AS approvalFlowVersionId
+        FROM approval_task at
+        INNER JOIN approval_instance ai ON ai.id = at.instance_id
+        INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+        LEFT JOIN sys_user u ON u.id = ai.submitter_id
+        LEFT JOIN opportunity_quotation oq ON ai.resource_id = oq.id AND ai.type IN ('quotation', 'quote')
+        LEFT JOIN contract c ON ai.resource_id = c.id AND ai.type = 'contract'
+        LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
+        LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
+        WHERE at.approver_id = #{approverId}
+        AND at.status NOT IN ('APPROVING','NONE','REVOKED')
+        AND at.action IS NOT NULL
+        <if test="resourceType != null and resourceType != ''">
+            AND ai.type = #{resourceType}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND COALESCE(oq.name, c.name, so.name, ci.name) LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY at.update_time DESC, at.id DESC
+    </select>
+
+    <select id="selectInitiatedTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
+        SELECT
+        ai.resource_id AS resourceId,
+        COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
+        UPPER(ai.type) AS resourceType,
+        u.name AS applicant,
+        ai.submit_time AS submitTime,
+        ai.approval_status AS approvalOperation,
+        ai.approval_status AS dataResult,
+        NULL AS approvalTaskId,
+        ai.current_node_id AS approvalNodeId,
+        ai.id AS approvalInstanceId,
+        ai.submitter_id AS approvalId,
+        afv.flow_id AS approvalFlowId,
+        afv.id AS approvalFlowVersionId
+        FROM approval_instance ai
+        INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+        LEFT JOIN sys_user u ON u.id = ai.submitter_id
+        LEFT JOIN opportunity_quotation oq ON ai.resource_id = oq.id AND ai.type IN ('quotation', 'quote')
+        LEFT JOIN contract c ON ai.resource_id = c.id AND ai.type = 'contract'
+        LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
+        LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
+        WHERE ai.submitter_id = #{submitterId}
+        <if test="resourceType != null and resourceType != ''">
+            AND ai.type = #{resourceType}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND COALESCE(oq.name, c.name, so.name, ci.name) LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY ai.update_time DESC, ai.id DESC
+    </select>
+
+    <select id="selectCcTasks" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse">
+        SELECT
+        ai.resource_id AS resourceId,
+        COALESCE(oq.name, c.name, so.name, ci.name, '') AS resourceName,
+        UPPER(ai.type) AS resourceType,
+        u.name AS applicant,
+        ai.submit_time AS submitTime,
+        CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
+        ai.approval_status AS dataResult,
+        at.id AS approvalTaskId,
+        at.node_id AS approvalNodeId,
+        at.instance_id AS approvalInstanceId,
+        at.approver_id AS approvalId,
+        afv.flow_id AS approvalFlowId,
+        afv.id AS approvalFlowVersionId
+        FROM approval_task at
+        INNER JOIN approval_instance ai ON ai.id = at.instance_id
+        INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+        LEFT JOIN sys_user u ON u.id = ai.submitter_id
+        LEFT JOIN opportunity_quotation oq ON ai.resource_id = oq.id AND ai.type IN ('quotation', 'quote')
+        LEFT JOIN contract c ON ai.resource_id = c.id AND ai.type = 'contract'
+        LEFT JOIN sales_order so ON ai.resource_id = so.id AND ai.type = 'order'
+        LEFT JOIN contract_invoice ci ON ai.resource_id = ci.id AND ai.type = 'invoice'
+        WHERE at.approver_id = #{approverId}
+        AND at.type IN ('cc', 'CC')
+        <if test="resourceType != null and resourceType != ''">
+            AND ai.type = #{resourceType}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND COALESCE(oq.name, c.name, so.name, ci.name) LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY at.update_time DESC, at.id DESC
+    </select>
+
+    <select id="countPendingByApprover" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse">
+        SELECT IFNULL(SUM(t.cnt), 0)                                                            AS total,
+               IFNULL(SUM(CASE WHEN t.type IN ('quotation', 'quote') THEN t.cnt ELSE 0 END), 0) AS quotation,
+               IFNULL(SUM(CASE WHEN t.type = 'contract' THEN t.cnt ELSE 0 END), 0)              AS contract,
+               IFNULL(SUM(CASE WHEN t.type = 'order' THEN t.cnt ELSE 0 END), 0)                 AS `order`,
+               IFNULL(SUM(CASE WHEN t.type = 'invoice' THEN t.cnt ELSE 0 END), 0)               AS invoice
+        FROM (SELECT ai.type  AS type,
+                     COUNT(*) AS cnt
+              FROM (SELECT DISTINCT at.instance_id
+                    FROM approval_task at
+                    INNER JOIN approval_instance ai
+                    ON ai.id = at.instance_id
+                        INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+                    WHERE at.approver_id = #{approverId}
+                      AND at.status = #{pendingStatus}
+                      AND ai.approval_status not in ('APPROVED'
+                        , 'UNAPPROVED')
+                      AND ai.current_node_id = at.node_id) pending
+                       INNER JOIN approval_instance ai ON ai.id = pending.instance_id
+              GROUP BY ai.type) t
+        
+    </select>
+
+    <update id="updateTaskById">
+        update approval_task
+        <set>
+            <if test="approvalTask.nodeId != null and approvalTask.nodeId != ''">
+                node_id = #{approvalTask.nodeId},
+            </if>
+            <if test="approvalTask.instanceId != null and approvalTask.instanceId != ''">
+                instance_id = #{approvalTask.instanceId},
+            </if>
+            <if test="approvalTask.approverId != null and approvalTask.approverId != ''">
+                approver_id = #{approvalTask.approverId},
+            </if>
+            <if test="approvalTask.status != null and approvalTask.status != ''">
+                status = #{approvalTask.status},
+            </if>
+            <if test="approvalTask.type != null and approvalTask.type != ''">
+                type = #{approvalTask.type},
+            </if>
+            <if test="approvalTask.action != null and approvalTask.action != ''">
+                action = #{approvalTask.action},
+            </if>
+            <if test="approvalTask.createTime != null and approvalTask.createTime != ''">
+                create_time = #{approvalTask.createTime},
+            </if>
+            <if test="approvalTask.updateTime != null and approvalTask.updateTime != ''">
+                update_time = #{approvalTask.updateTime},
+            </if>
+            <if test="approvalTask.createUser != null and approvalTask.createUser != ''">
+                create_user = #{approvalTask.createUser},
+            </if>
+            <if test="approvalTask.updateUser != null and approvalTask.updateUser != ''">
+                update_user = #{approvalTask.updateUser},
+            </if>
+        </set>
+        <where>
+            id = #{approvalTask.id}
+        </where>
+    </update>
+
+    <update id="moveAddSignRoot" parameterType="java.lang.String">
+        update approval_add_sign_task
+        set root_task_id = #{newRootId}
+        where root_task_id = #{oldRootId}
+    </update>
+
+    <update id="updateRootNext" parameterType="java.lang.String">
+        update approval_add_sign_task
+        set sign_task_id = #{newRootId}
+        where sign_task_id = #{oldRootId}
+    </update>
+
+    <update id="updateApprover" parameterType="java.lang.String">
+        update approval_task
+        set approver_id = #{approverId}, update_time = UNIX_TIMESTAMP() * 1000
+    </update>
+</mapper>

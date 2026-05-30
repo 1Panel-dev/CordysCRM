@@ -1,0 +1,48 @@
+package cn.cordys.crm.order.dto.response;
+
+import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.crm.order.domain.Order;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class OrderListResponse extends Order {
+
+    @Schema(description = "客户名称")
+    private String customerName;
+
+    @Schema(description = "合同名称")
+    private String  contractName;
+
+    @Schema(description = "负责人名称")
+    private String ownerName;
+
+    @Schema(description = "创建人名称")
+    private String createUserName;
+
+    @Schema(description = "更新人名称")
+    private String updateUserName;
+
+    @Schema(description = "部门id")
+    private String departmentId;
+
+    @Schema(description = "部门名称")
+    private String departmentName;
+
+    @Schema(description = "关联的客户是否在公海")
+    private Boolean inCustomerPool;
+
+    @Schema(description = "客户公海id")
+    private String poolId;
+
+    @Schema(description = "商机阶段")
+    private String stageName;
+
+    @Schema(description = "自定义字段")
+    private List<BaseModuleFieldValue> moduleFields;
+
+	@Schema(description = "审批第一个节点是否通过")
+	private Boolean firstApproved;
+}

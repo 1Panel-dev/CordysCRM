@@ -1,0 +1,8 @@
+{
+  "layout": 1,
+  "labelPos": "top",
+  "inputWidth": "custom",
+  "optBtnPos": "flex-row",
+  "viewSize": "small",
+  "optBtnContent": [{"text": "保存", "enable": true}, {"text": "保存并继续添加", "enable": false}, {"text": "取消", "enable": true}]
+}

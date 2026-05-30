@@ -1,0 +1,488 @@
+<template>
+  <CrmDrawer
+    v-model:show="visible"
+    :width="900"
+    :title="title"
+    :show-continue="!form.id"
+    :ok-text="form.id ? t('common.update') : undefined"
+    :loading="loading"
+    @confirm="confirmHandler(false)"
+    @continue="confirmHandler(true)"
+    @cancel="cancelHandler"
+  >
+    <n-scrollbar>
+      <n-alert v-if="form.id" class="mb-[16px]" type="warning">
+        {{ t('module.clue.updateConfirmContent') }}
+      </n-alert>
+      <n-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-placement="left"
+        :label-width="110"
+        require-mark-placement="left"
+      >
+        <div class="crm-module-form-title">{{ t('common.baseInfo') }}</div>
+        <div class="w-full">
+          <n-form-item
+            path="name"
+            :label="
+              props.type === ModuleConfigEnum.CLUE_MANAGEMENT ? t('module.clue.name') : t('module.customer.openSeaName')
+            "
+          >
+            <n-input v-model:value="form.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
+          </n-form-item>
+        </div>
+        <div class="flex">
+          <div class="flex-1">
+            <n-form-item path="adminIds" :label="t('opportunity.admin')">
+              <CrmUserTagSelector v-model:selected-list="form.adminIds" />
+            </n-form-item>
+          </div>
+          <div class="flex-1">
+            <n-form-item path="userIds" :label="t('role.member')">
+              <CrmUserTagSelector v-model:selected-list="form.userIds" />
+            </n-form-item>
+          </div>
+        </div>
+        <div class="crm-module-form-title">
+          {{
+            props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+              ? t('module.clue.clueCollectionRules')
+              : t('module.customer.customerCollectionRules')
+          }}
+        </div>
+        <n-form-item path="pickRule.limitOnNumber" :label="t('module.clue.dailyCollection')">
+          <n-radio-group v-model:value="form.pickRule.limitOnNumber" name="radiogroup">
+            <n-space>
+              <n-radio :value="false">
+                {{ t('module.clue.noLimit') }}
+              </n-radio>
+              <n-radio :value="true">
+                {{ t('module.clue.limit') }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item
+          v-if="form.pickRule.limitOnNumber"
+          path="pickRule.pickNumber"
+          :label="t('module.clue.limitQuantity')"
+        >
+          <CrmInputNumber
+            v-model:value="form.pickRule.pickNumber"
+            class="crm-reminder-advance-input"
+            :placeholder="t('common.pleaseInput')"
+            min="1"
+            max="10000"
+            :precision="0"
+          />
+        </n-form-item>
+        <n-form-item path="pickRule.limitPreOwner" :label="t('module.clue.ownerCollection')">
+          <n-radio-group v-model:value="form.pickRule.limitPreOwner" name="radiogroup">
+            <n-space>
+              <n-radio :value="false">
+                {{ t('module.clue.noLimit') }}
+              </n-radio>
+              <n-radio :value="true">
+                {{ t('module.clue.limit') }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item
+          v-if="form.pickRule.limitPreOwner"
+          path="pickRule.pickIntervalDays"
+          :label="t('module.clue.formerOwner')"
+        >
+          <CrmInputNumber
+            v-model:value="form.pickRule.pickIntervalDays"
+            class="crm-reminder-advance-input"
+            :placeholder="t('common.pleaseInput')"
+            min="1"
+            max="10000"
+            :precision="0"
+          />
+          <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
+        </n-form-item>
+        <n-form-item path="pickRule.limitNew">
+          <template #label>
+            <div class="flex items-center gap-[8px]">
+              {{ t('module.clue.newDataPick') }}
+              <n-tooltip trigger="hover" placement="right">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_help_circle"
+                    :size="16"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                  />
+                </template>
+                {{
+                  props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+                    ? t('module.clue.newPoolDataTip')
+                    : t('module.clue.newOpenSeaDataTip')
+                }}
+              </n-tooltip>
+            </div>
+          </template>
+          <n-radio-group v-model:value="form.pickRule.limitNew" name="radiogroup">
+            <n-space>
+              <n-radio :value="false">
+                {{ t('module.clue.noLimit') }}
+              </n-radio>
+              <n-radio :value="true">
+                {{ t('module.clue.limit') }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item v-if="form.pickRule.limitNew" path="pickRule.newPickInterval" :label="t('module.clue.newData')">
+          <CrmInputNumber
+            v-model:value="form.pickRule.newPickInterval"
+            class="crm-reminder-advance-input"
+            :placeholder="t('common.pleaseInput')"
+            min="1"
+            max="10000"
+            :precision="0"
+          />
+          <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
+        </n-form-item>
+        <div class="crm-module-form-title">
+          {{
+            props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+              ? t('module.clue.clueRecycleRule')
+              : t('module.customer.customerRecycleRule')
+          }}
+        </div>
+        <n-form-item path="auto" :label="t('module.clue.autoRecycle')">
+          <n-radio-group v-model:value="form.auto" name="radiogroup">
+            <n-space>
+              <n-radio :value="true">
+                {{ t('common.yes') }}
+              </n-radio>
+              <n-radio :value="false">
+                {{ t('common.no') }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <FilterContent
+          v-if="form.auto"
+          ref="filterContentRef"
+          v-model:form-model="recycleFormItemModel as FilterForm"
+          keep-one-line
+          :config-list="filterConfigList"
+        />
+        <div class="crm-module-form-title mt-[24px]">
+          {{ t('module.clue.columnsSetting') }}
+        </div>
+        <n-checkbox-group v-model:value="showFieldIds" class="grid grid-cols-5 gap-[12px]">
+          <n-checkbox
+            v-for="field in showInTableColumns"
+            :key="field.id"
+            :value="field.id"
+            :label="field.name"
+            :disabled="field.businessKey === 'name'"
+          />
+        </n-checkbox-group>
+      </n-form>
+    </n-scrollbar>
+  </CrmDrawer>
+</template>
+
+<script setup lang="ts">
+  import { ref } from 'vue';
+  import {
+    FormInst,
+    FormRules,
+    NAlert,
+    NCheckbox,
+    NCheckboxGroup,
+    NForm,
+    NFormItem,
+    NInput,
+    NRadio,
+    NRadioGroup,
+    NScrollbar,
+    NSpace,
+    NTooltip,
+    useMessage,
+  } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
+
+  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type {
+    CluePoolForm,
+    CluePoolItem,
+    CluePoolParams,
+    ModuleConditionsItem,
+  } from '@lib/shared/models/system/module';
+
+  import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
+  import { DYNAMICS, FIXED } from '@/components/pure/crm-advance-filter/index';
+  import { AccordBelowType, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
+  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
+  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
+
+  import { addCluePool, addCustomerPool, updateCluePool, updateCustomerPool } from '@/api/modules';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
+
+  const { t } = useI18n();
+  const Message = useMessage();
+
+  const props = defineProps<{
+    type: ModuleConfigEnum;
+    quick?: boolean;
+    row?: CluePoolItem;
+  }>();
+
+  const visible = defineModel<boolean>('visible', {
+    required: true,
+  });
+
+  const emit = defineEmits<{
+    (e: 'refresh'): void;
+    (e: 'saved'): void;
+  }>();
+
+  const tabName = ref('baseInfo');
+  const formKey = computed(() => {
+    return props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+      ? FormDesignKeyEnum.CLUE_POOL
+      : FormDesignKeyEnum.CUSTOMER_OPEN_SEA;
+  });
+  const { fieldList, initFormConfig } = useFormCreateApi({
+    formKey,
+  });
+  const showInTableColumns = computed(() => {
+    return fieldList.value.filter(
+      (item) => ![FieldTypeEnum.DIVIDER, FieldTypeEnum.TEXTAREA].includes(item.type) && item.businessKey !== 'owner'
+    );
+  });
+  const rules: FormRules = {
+    name: [
+      {
+        required: true,
+        message: t('common.notNull', {
+          value: `${
+            props.type === ModuleConfigEnum.CLUE_MANAGEMENT ? t('module.clue.name') : t('module.customer.openSeaName')
+          }`,
+        }),
+        trigger: ['input', 'blur'],
+      },
+    ],
+    adminIds: [{ required: true, message: t('common.pleaseSelect') }],
+    userIds: [{ required: true, message: t('common.pleaseSelect') }],
+    [`pickRule.pickIntervalDays`]: [
+      { required: true, type: 'number', message: t('common.pleaseInput'), trigger: ['input', 'blur'] },
+    ],
+    [`pickRule.pickNumber`]: [
+      { required: true, type: 'number', message: t('common.pleaseInput'), trigger: ['input', 'blur'] },
+    ],
+    [`pickRule.newPickInterval`]: [
+      { required: true, type: 'number', message: t('common.pleaseInput'), trigger: ['input', 'blur'] },
+    ],
+  };
+
+  const initForm: CluePoolForm = {
+    name: '',
+    adminIds: [],
+    userIds: [],
+    enable: true,
+    auto: false,
+    pickRule: {
+      limitOnNumber: false,
+      pickNumber: undefined,
+      limitPreOwner: false,
+      pickIntervalDays: undefined,
+      limitNew: false,
+      newPickInterval: undefined,
+    },
+    recycleRule: {
+      operator: 'all',
+      conditions: [],
+    },
+    hiddenFieldIds: [],
+  };
+  const showFieldIds = ref<string[]>([]);
+  const form = ref<CluePoolForm>(cloneDeep(initForm));
+
+  const defaultFormModel: FilterForm = {
+    searchMode: 'AND',
+    list: [
+      {
+        dataIndex: 'storageTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+        operator: OperatorEnum.DYNAMICS,
+        showScope: true,
+        scope: ['Created', 'Picked'],
+      },
+    ],
+  };
+  const recycleFormItemModel = ref<FilterForm>(cloneDeep(defaultFormModel));
+
+  const title = computed(() => {
+    if (props.type === ModuleConfigEnum.CLUE_MANAGEMENT) {
+      return !form.value.id ? t('module.clue.addCluePool') : t('module.clue.updateCluePool');
+    }
+    if (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT) {
+      return !form.value.id ? t('module.customer.addOpenSea') : t('module.customer.updateOpenSea');
+    }
+  });
+
+  const filterConfigList = computed<FilterFormItem[]>(() => {
+    return [
+      {
+        title: t('module.clue.storageTime'),
+        dataIndex: 'storageTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+        operatorOption: [DYNAMICS, FIXED],
+        showScope: true,
+        scope: ['Created', 'Picked'],
+      },
+      {
+        title: t('module.clue.followUpTime'),
+        dataIndex: 'followUpTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+        operatorOption: [DYNAMICS, FIXED],
+      },
+    ];
+  });
+
+  function cancelHandler() {
+    form.value = cloneDeep(initForm);
+    recycleFormItemModel.value = cloneDeep(defaultFormModel);
+    visible.value = false;
+  }
+
+  const formRef = ref<FormInst | null>(null);
+  const loading = ref<boolean>(false);
+
+  async function handleSave(isContinue: boolean) {
+    try {
+      loading.value = true;
+      const { userIds, auto, adminIds, ...otherParams } = form.value;
+
+      const params: CluePoolParams = {
+        ...otherParams,
+        ownerIds: adminIds.map((e) => e.id),
+        scopeIds: userIds.map((e) => e.id),
+        auto,
+        recycleRule: {
+          operator: recycleFormItemModel.value.searchMode as string,
+          conditions: [],
+        },
+        hiddenFieldIds: showInTableColumns.value
+          .filter((item) => !showFieldIds.value.includes(item.id))
+          .map((item) => item.id),
+      };
+      if (auto) {
+        const conditions: ModuleConditionsItem[] = [];
+        recycleFormItemModel.value.list?.forEach((item) => {
+          conditions.push({
+            column: item.dataIndex || '',
+            operator: item.operator || '',
+            value: item.value,
+            scope: item.scope,
+          });
+        });
+        params.recycleRule.conditions = form.value.auto ? conditions : [];
+      }
+      if (form.value.id) {
+        await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT
+          ? updateCustomerPool(params, props.quick)
+          : updateCluePool(params, props.quick));
+        Message.success(t('common.updateSuccess'));
+        emit('saved');
+      } else {
+        await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT ? addCustomerPool(params) : addCluePool(params));
+        Message.success(t('common.addSuccess'));
+        emit('refresh');
+      }
+      if (isContinue) {
+        form.value = cloneDeep(initForm);
+        recycleFormItemModel.value = cloneDeep(defaultFormModel);
+      } else {
+        cancelHandler();
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  const filterContentRef = ref<InstanceType<typeof FilterContent>>();
+  function confirmHandler(isContinue: boolean) {
+    formRef.value?.validate(async (error) => {
+      if (!error) {
+        if (filterContentRef.value) {
+          filterContentRef.value?.formRef?.validate((errors) => {
+            if (!errors) {
+              handleSave(isContinue);
+            }
+          });
+        } else {
+          handleSave(isContinue);
+        }
+      }
+    });
+  }
+
+  watch([() => props.row, () => visible.value], () => {
+    if (props.row && visible.value) {
+      const val = props.row;
+      form.value = {
+        id: val.id,
+        name: val.name,
+        enable: val.enable,
+        auto: val.auto,
+        pickRule: val.pickRule ?? cloneDeep(initForm).pickRule,
+        recycleRule: val.recycleRule ?? cloneDeep(initForm).recycleRule,
+        userIds: val.members,
+        adminIds: val.owners,
+        hiddenFieldIds: val.fieldConfigs?.filter((item) => !item.enable).map((item) => item.fieldId) || [],
+      };
+      if (val.auto) {
+        recycleFormItemModel.value = {
+          list: val.recycleRule.conditions?.map((item) => ({
+            dataIndex: item.column,
+            operator: item.operator,
+            showScope: !!item.scope?.length,
+            value: item.value,
+            scope: item.scope,
+            type: FieldTypeEnum.TIME_RANGE_PICKER,
+          })) as FilterFormItem[],
+          searchMode: val.recycleRule.operator as AccordBelowType,
+        };
+      } else {
+        recycleFormItemModel.value = cloneDeep(defaultFormModel);
+      }
+    }
+  });
+
+  watch(
+    () => visible.value,
+    async (val) => {
+      if (val) {
+        tabName.value = 'baseInfo';
+        await initFormConfig();
+        showFieldIds.value = showInTableColumns.value
+          .filter((item) => !form.value.hiddenFieldIds.includes(item.id))
+          .map((item) => item.id);
+      }
+    }
+  );
+</script>
+
+<style scoped lang="less">
+  :deep(.dataIndex-col) {
+    width: 100px;
+    flex: initial;
+  }
+</style>

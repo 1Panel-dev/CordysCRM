@@ -1,0 +1,236 @@
+package cn.cordys.crm.opportunity.controller;
+
+import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.ExportHeadDTO;
+import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.crm.base.BaseTest;
+import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
+import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.opportunity.dto.request.*;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.mybatis.BaseMapper;
+import jakarta.annotation.Resource;
+import org.apache.commons.lang3.Strings;
+import org.junit.jupiter.api.*;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
+import org.springframework.test.web.servlet.MvcResult;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+public class OpportunityControllerTests extends BaseTest {
+
+    protected static final String MODULE_FORM = "module/form";
+    protected static final String BATCH_TRANSFER = "batch/transfer";
+    protected static final String TAB = "tab";
+    protected static final String UPDATE_STAGE = "update/stage";
+    protected static final String CONTACT_LIST = "contact/list/{0}";
+    protected static final String EXPORT_ALL = "export-all";
+    protected static final String EXPORT_SELECT = "export-select";
+    protected static final String STATISTIC = "statistic";
+    protected static final String BATCH_UPDATE = "batch/update";
+    private static final String BASE_PATH = "/opportunity/";
+    private static Opportunity addOpportunity;
+    private static ModuleFormConfigDTO moduleFormConfig;
+    @Resource
+    private BaseMapper<Opportunity> opportunityMapper;
+
+
+    @Override
+    protected String getBasePath() {
+        return BASE_PATH;
+    }
+
+    @Test
+    @Order(0)
+    void testModuleField() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FORM);
+        moduleFormConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, MODULE_FORM);
+    }
+
+
+    @Test
+    @Order(2)
+    void testPage() throws Exception {
+        CustomerPageRequest request = new CustomerPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
+    }
+
+    @Test
+    @Order(2)
+    void testStatistic() throws Exception {
+        OpportunitySearchStatisticRequest request = new OpportunitySearchStatisticRequest();
+        this.requestPostWithOkAndReturn(STATISTIC, request);
+    }
+
+
+    @Sql(scripts = {"/dml/init_opportunity_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    @Order(1)
+    void testAdd() throws Exception {
+        OpportunityAddRequest request = new OpportunityAddRequest();
+        request.setName("商机1");
+        request.setCustomerId("123");
+        request.setAmount(BigDecimal.valueOf(1.1));
+        request.setProducts(List.of("11"));
+        request.setPossible(BigDecimal.valueOf(1.2));
+        request.setContactId("12345");
+        request.setOwner("admin");
+        request.setExpectedEndTime(System.currentTimeMillis());
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
+        Opportunity resultData = getResultData(mvcResult, Opportunity.class);
+        addOpportunity = opportunityMapper.selectByPrimaryKey(resultData.getId());
+
+        request.setProducts(List.of("11", "22"));
+        this.requestPost(DEFAULT_ADD, request);
+    }
+
+
+    @Test
+    @Order(3)
+    void testUpdate() throws Exception {
+        OpportunityUpdateRequest request = new OpportunityUpdateRequest();
+        request.setId("1234");
+        request.setName("商机2");
+        request.setCustomerId("123");
+        request.setContactId("1234567");
+        request.setOwner("admin");
+        request.setProducts(List.of("22"));
+        request.setExpectedEndTime(System.currentTimeMillis());
+        request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
+        this.requestPost(DEFAULT_UPDATE, request);
+
+        request.setId(addOpportunity.getId());
+        this.requestPostWithOk(DEFAULT_UPDATE, request);
+    }
+
+    @Test
+    @Order(4)
+    void testBatchTransfer() throws Exception {
+        OpportunityTransferRequest request = new OpportunityTransferRequest();
+        request.setIds(List.of("1234"));
+        request.setOwner("12345");
+        this.requestPostWithOk(BATCH_TRANSFER, request);
+    }
+
+    @Test
+    @Order(4)
+    void testBatchUpdate() throws Exception {
+        ResourceBatchEditRequest request = new ResourceBatchEditRequest();
+        for (BaseField field : moduleFormConfig.getFields()) {
+            request.setIds(List.of(addOpportunity.getId()));
+            request.setFieldId(field.getId());
+            if (Strings.CS.equals(field.getName(), BusinessModuleField.OPPORTUNITY_OWNER.name())) {
+                request.setFieldId(InternalUser.ADMIN.getValue());
+                this.requestPostWithOk(BATCH_UPDATE, request);
+            } else if (Strings.CS.equals(field.getName(), BusinessModuleField.OPPORTUNITY_NAME.name())) {
+                request.setFieldId(UUID.randomUUID().toString());
+                this.requestPostWithOk(BATCH_UPDATE, request);
+            }
+        }
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, BATCH_UPDATE, request);
+    }
+
+    @Test
+    @Order(4)
+    void testTab() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(TAB);
+        ResourceTabEnableDTO resultData = getResultData(mvcResult, ResourceTabEnableDTO.class);
+        // 校验请求成功数据
+        Assertions.assertTrue(resultData.getAll());
+        Assertions.assertTrue(resultData.getDept());
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, TAB);
+    }
+
+
+    @Test
+    @Order(5)
+    void testDelete() throws Exception {
+        this.requestGet(DEFAULT_DELETE, "123456");
+        this.requestGetWithOk(DEFAULT_DELETE, addOpportunity.getId());
+    }
+
+
+    @Test
+    @Order(6)
+    void testBatchDelete() throws Exception {
+        this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of("123"));
+    }
+
+
+    @Test
+    @Order(2)
+    void testGetDetail() throws Exception {
+        this.requestGet(DEFAULT_GET, addOpportunity.getId());
+    }
+
+    @Test
+    @Order(3)
+    void testUpdateStage() throws Exception {
+        OpportunityStageRequest request = new OpportunityStageRequest();
+        request.setId(addOpportunity.getId());
+        request.setStage("SUCCESS");
+        this.requestPostWithOk(UPDATE_STAGE, request);
+        request.setStage("FAIL");
+        request.setFailureReason("test_fail");
+        this.requestPostWithOk(UPDATE_STAGE, request);
+    }
+
+    @Test
+    @Order(7)
+    @Sql(scripts = {"/dml/init_opportunity_rule_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/dml/cleanup_opportunity_rule_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void testPageReservedDay() throws Exception {
+        OpportunityAddRequest request = new OpportunityAddRequest();
+        request.setName("商机1");
+        request.setCustomerId("123");
+        request.setAmount(BigDecimal.valueOf(1.1));
+        request.setProducts(List.of("11"));
+        request.setPossible(BigDecimal.valueOf(1.2));
+        request.setContactId("12345");
+        request.setOwner("admin");
+        request.setExpectedEndTime(System.currentTimeMillis());
+        this.requestPostWithOk(DEFAULT_ADD, request);
+        OpportunityPageRequest pageRequest = new OpportunityPageRequest();
+        pageRequest.setViewId("ALL");
+        pageRequest.setCurrent(1);
+        pageRequest.setPageSize(10);
+        this.requestPostWithOk(DEFAULT_PAGE, pageRequest);
+    }
+
+
+    @Test
+    @Order(2)
+    void testGetContactList() throws Exception {
+        this.requestGet(CONTACT_LIST, addOpportunity.getId());
+        this.requestGet(CONTACT_LIST, "1234567");
+    }
+
+}
