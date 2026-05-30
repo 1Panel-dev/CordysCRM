@@ -1,0 +1,29 @@
+mode: debug
+
+server:
+  port: "8080"
+  read_timeout: 30
+  write_timeout: 30
+  idle_timeout: 120
+
+database:
+  type: mysql
+  host: localhost
+  port: "3306"
+  username: root
+  password: ${DB_PASSWORD:root}
+  database: crm
+  charset: utf8mb4
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 3600
+  auto_migrate: true
+
+jwt:
+  secret: ${JWT_SECRET:your-secret-key-change-in-production}
+  expire_time: 24h
+
+log:
+  level: info
+  format: json
+  output_path: logs/server.log
