@@ -17,14 +17,14 @@
 
 Cordys CRM 能够帮助企业实现从线索到回款（L2C）的全流程精细化管理，覆盖线索获取、智能分配、客户与联系人管理、商机跟进、合同签约及回款执行，构建端到端的销售运营闭环。
 
-<img alt="Cordys CRM Overview" src="https://cordys.cn/images/cordyscrm-202603.png" />
+<img alt="Cordys CRM Overview" src="https://cordys.cn/images/cordyscrm-202606.png" />
 
 ## 核心优势
 
 - **灵活配置 · 高效协同**：现代化架构，操作简洁流畅；精细权限与模块化配置，无缝集成主流办公平台，赋能团队高效协同；
-- **安全自主 · 深度可控**：私有化部署，数据100%自主可控；开放API与标准接口，支持深度集成与定制开发，筑牢安全与发展基石；
+- **安全自主 · 深度可控**：为私有化部署而生，数据100%自主可控；开放API与标准接口，支持深度集成与定制开发，筑牢安全与发展基石；
 - **智能 BI · 决策赋能**：深度融合 DataEase 分析引擎，销售数据可视化呈现；支持自助探索与实时洞察，驱动精准决策与业绩增长；
-- **AI 赋能 · 智能提效**：开放 CRM Skills 接口，赋能 OpenClaw AI 销售助理 7×24 小时智能服务；提升销售全流程效率与决策质量。
+- **AI 赋能 · 智能提效**：开放 CRM Skills 接口，让 AI 深入销售每个环节！OpenClaw、WorkBuddy 等智能助手 7×24 小时在线，从线索筛选到成单分析，全流程提效。
 
 ## 快速开始
 
@@ -83,31 +83,31 @@ docker run -d \
 
 ## Roadmap
 
-- [x] 2024.09：写下第一行代码
-- [x] 2025.06：v1.0 开发完成
-- [x] 2025.07：吃自己的狗粮，成功替换飞致云使用 7 年的 Salesforce CRM
-- [x] 2025.08：完成与 SQLBot 和 DataEase 的对接
-- [x] 2025.08.27：[v1.1.5](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.5) 发布，开始公测
-- [x] 2025.08.27：[v1.1.6](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.6) 发布
-- [x] 2025.09.01：[v1.1.7](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.7) 发布
-- [x] 2025.09.05：[v1.1.8](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.8) 发布
-- [x] 2025.09.12：[v1.1.9](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.9) 发布
-- [x] 2025.09.19：[v1.2.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.0) 发布，开放 MCP Server，并完成和 MaxKB 的对接
-- [x] 2025.09.26：[v1.2.1](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.1) 发布
-- [x] 2025.10.11：[v1.2.2](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.2) 发布
-- [x] 2025.10.17：[v1.2.3](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.3) 发布
-- [x] 2025.11.03：[v1.3.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.0) 发布，代码正式开源
-- [x] 2025.11.05：[v1.3.1](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.1) 发布
-- [x] 2025.11.14：[v1.3.2](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.2) 发布
-- [x] 2025.11.21：[v1.3.3](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.3) 发布
-- [x] 2025.11.28：[v1.3.4](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.4) 发布
-- [x] 2025.12.04：[v1.3.5](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.5) 发布
-- [x] 2025.12.12：[v1.3.6](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.6) 发布
-- [x] 2025.12.18：[v1.4.0 新增标讯、报价和合同模块](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.4.0)
-- [x] 2026.01.29：[v1.5.0 新增工商抬头管理、发票管理、回款管理](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.5.0)
-- [x] 2026.03.11：[Cordys CRM Skills 正式发布](https://github.com/1Panel-dev/CordysCRM-skills)
-- [x] 2026.03.26：[v1.6.0 新增订单模块、计算组件函数功能增强](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.6.0) 发布
 - [x] 2026.05.29：[v1.7.0 新增审批流、审批记录功能](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.7.0) 发布
+- [x] 2026.03.26：[v1.6.0 新增订单模块、计算组件函数功能增强](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.6.0) 发布
+- [x] 2026.03.11：[Cordys CRM Skills 正式发布](https://github.com/1Panel-dev/CordysCRM-skills)
+- [x] 2026.01.29：[v1.5.0 新增工商抬头管理、发票管理、回款管理](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.5.0)
+- [x] 2025.12.18：[v1.4.0 新增标讯、报价和合同模块](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.4.0)
+- [x] 2025.12.12：[v1.3.6](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.6) 发布
+- [x] 2025.12.04：[v1.3.5](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.5) 发布
+- [x] 2025.11.28：[v1.3.4](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.4) 发布
+- [x] 2025.11.21：[v1.3.3](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.3) 发布
+- [x] 2025.11.14：[v1.3.2](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.2) 发布
+- [x] 2025.11.05：[v1.3.1](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.1) 发布
+- [x] 2025.11.03：[v1.3.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.3.0) 发布，代码正式开源
+- [x] 2025.10.17：[v1.2.3](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.3) 发布
+- [x] 2025.10.11：[v1.2.2](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.2) 发布
+- [x] 2025.09.26：[v1.2.1](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.1) 发布
+- [x] 2025.09.19：[v1.2.0](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.2.0) 发布，开放 MCP Server，并完成和 MaxKB 的对接
+- [x] 2025.09.12：[v1.1.9](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.9) 发布
+- [x] 2025.09.05：[v1.1.8](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.8) 发布
+- [x] 2025.09.01：[v1.1.7](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.7) 发布
+- [x] 2025.08.27：[v1.1.6](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.6) 发布
+- [x] 2025.08.27：[v1.1.5](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.1.5) 发布，开始公测
+- [x] 2025.08：完成与 SQLBot 和 DataEase 的对接
+- [x] 2025.07：吃自己的狗粮，成功替换飞致云使用 7 年的 Salesforce CRM
+- [x] 2025.06：v1.0 开发完成
+- [x] 2024.09：写下第一行代码
 
 ## 技术栈
 
