@@ -1,8 +1,11 @@
 package cn.cordys.crm.customer.controller;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ChartAnalysisRequest;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
@@ -62,7 +65,7 @@ public class CustomerContactController {
     }
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "联系人列表")
     public PagerWithOption<List<CustomerContactListResponse>> list(@Validated @RequestBody CustomerContactPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
@@ -72,7 +75,7 @@ public class CustomerContactController {
     }
 
     @PostMapping("/chart")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "联系人图表生成")
     public List<ChartResult> chart(@Validated @RequestBody ChartAnalysisRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
@@ -82,7 +85,7 @@ public class CustomerContactController {
 
     @GetMapping("/list/{customerId}")
     @Operation(summary = "客户下的联系人列表")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#customerId}", formType = FormKeyConstants.CUSTOMER)
     public CustomerContactListAllResponse list(@Validated @PathVariable String customerId) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
@@ -147,7 +150,7 @@ public class CustomerContactController {
     }
 
     @GetMapping("/tab")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "所有所有和部门联系人tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
         return customerContactService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -156,7 +159,7 @@ public class CustomerContactController {
 
     @PostMapping("/export-all")
     @Operation(summary = "联系人导出全部")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_EXPORT)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_EXPORT)
     public String customerContactExportAll(@Validated @RequestBody CustomerContactExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
@@ -167,13 +170,13 @@ public class CustomerContactController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中联系人")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_EXPORT)
+    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     public String customerContactExportSelect(@Validated @RequestBody ExportSelectRequest request) {
         return customerContactExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
     }
 
     @GetMapping("/template/download")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
     @Operation(summary = "下载导入模板")
     public void downloadImportTpl(HttpServletResponse response) {
         customerContactService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
@@ -181,20 +184,20 @@ public class CustomerContactController {
 
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
     public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
         return customerContactService.importPreCheck(file, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
     public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
         return customerContactService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping("/batch/update")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE)
+    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "批量更新客户联系人")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         customerContactService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

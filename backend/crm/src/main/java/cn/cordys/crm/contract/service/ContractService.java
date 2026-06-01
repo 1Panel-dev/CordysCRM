@@ -215,32 +215,6 @@ public class ContractService {
 
     }
 
-    public ContractGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
-        ContractGetResponse getResponse = get(id);
-        if (getResponse == null) {
-            throw new GenericException(Translator.get("resource.not.exist"));
-        }
-        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_READ);
-        if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
-            getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
-        }
-        return getResponse;
-    }
-
-    public ContractGetResponse getSnapshotWithDataPermissionCheck(String id, String userId, String orgId) {
-        ContractGetResponse getResponse = getSnapshot(id);
-        if (getResponse == null) {
-            throw new GenericException(Translator.get("resource.not.exist"));
-        }
-        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_READ);
-        if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
-            getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
-        }
-        return getResponse;
-    }
-
     private ContractGetResponse get(Contract contract, List<BaseModuleFieldValue> contractFields, ModuleFormConfigDTO contractFormConfig) {
         ContractGetResponse contractGetResponse = BeanUtils.copyBean(new ContractGetResponse(), contract);
         contractGetResponse = baseService.setCreateUpdateOwnerUserName(contractGetResponse);
@@ -288,12 +262,18 @@ public class ContractService {
      * @param id
      * @return
      */
-    public ContractGetResponse get(String id) {
+    public ContractGetResponse get(String id, String orgId) {
         Contract contract = contractMapper.selectByPrimaryKey(id);
         // 获取模块字段
         ModuleFormConfigDTO contractFormConfig = getFormConfig(contract.getOrganizationId());
         List<BaseModuleFieldValue> contractFields = contractFieldService.getModuleFieldValuesByResourceId(id);
-        return get(contract, contractFields, contractFormConfig);
+        ContractGetResponse getResponse = get(contract, contractFields, contractFormConfig);
+
+        if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+            getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+        }
+        return getResponse;
     }
 
     /**
@@ -467,7 +447,7 @@ public class ContractService {
      * @param id 合同ID
      * @return 合同详情
      */
-    public ContractGetResponse getSnapshot(String id) {
+    public ContractGetResponse getSnapshot(String id, String orgId) {
         ContractGetResponse response = new ContractGetResponse();
         Contract contract = contractMapper.selectByPrimaryKey(id);
         if (contract == null) {
@@ -484,6 +464,10 @@ public class ContractService {
                 response.setPoolId(customer.getPoolId());
             }
             response.setAlreadyPayAmount(sumContractRecordAmount(id));
+            if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+                Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
+                response.setFirstApproved(firstNodeApproved.get(response.getId()));
+            }
         }
         return response;
     }

@@ -246,7 +246,6 @@ public class ContractInvoiceService {
             throw new GenericException(Translator.get("invoice.amount.illegal"));
         }
 
-        dataScopeService.checkDataPermission(userId, orgId, originContractInvoice.getOwner(), PermissionConstants.CONTRACT_INVOICE_UPDATE);
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         Optional.of(originContractInvoice).ifPresentOrElse(item -> {
             List<BaseModuleFieldValue> originFields = invoiceFieldService.getModuleFieldValuesByResourceId(request.getId());
@@ -314,14 +313,11 @@ public class ContractInvoiceService {
      * @param id
      */
     @OperationLog(module = LogModule.CONTRACT_INVOICE, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id, String userId, String orgId) {
+    public void delete(String id) {
         ContractInvoice invoice = invoiceMapper.selectByPrimaryKey(id);
         if (invoice == null) {
             throw new GenericException(Translator.get("invoice.not.exist"));
         }
-
-        dataScopeService.checkDataPermission(userId, orgId, invoice.getOwner(), PermissionConstants.CONTRACT_INVOICE_DELETE);
-
 
         invoiceFieldService.deleteByResourceId(id);
         invoiceMapper.deleteByPrimaryKey(id);
@@ -333,32 +329,6 @@ public class ContractInvoiceService {
 
         // 添加日志上下文
         OperationLogContext.setResourceName(invoice.getName());
-    }
-
-    public ContractInvoiceGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
-        ContractInvoiceGetResponse getResponse = get(id);
-        if (getResponse == null) {
-            throw new GenericException(Translator.get("resource.not.exist"));
-        }
-        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_INVOICE_READ);
-		if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
-			getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
-		}
-        return getResponse;
-    }
-
-    public ContractInvoiceGetResponse getSnapshotWithDataPermissionCheck(String id, String userId, String orgId) {
-        ContractInvoiceGetResponse getResponse = getSnapshot(id);
-        if (getResponse == null) {
-            throw new GenericException(Translator.get("resource.not.exist"));
-        }
-        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_INVOICE_READ);
-		if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
-			getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
-		}
-        return getResponse;
     }
 
     private ContractInvoiceGetResponse get(ContractInvoice contractInvoice, List<BaseModuleFieldValue> contractInvoiceFields, ModuleFormConfigDTO contractInvoiceFormConfig) {
@@ -413,12 +383,18 @@ public class ContractInvoiceService {
      * @param id
      * @return
      */
-    public ContractInvoiceGetResponse get(String id) {
+    public ContractInvoiceGetResponse get(String id, String orgId) {
         ContractInvoice contractInvoice = contractInvoiceMapper.selectByPrimaryKey(id);
         // 获取模块字段
         ModuleFormConfigDTO contractInvoiceFormConfig = getFormConfig(contractInvoice.getOrganizationId());
         List<BaseModuleFieldValue> contractInvoiceFields = invoiceFieldService.getModuleFieldValuesByResourceId(id);
-        return get(contractInvoice, contractInvoiceFields, contractInvoiceFormConfig);
+        ContractInvoiceGetResponse getResponse = get(contractInvoice, contractInvoiceFields, contractInvoiceFormConfig);
+
+        if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+            getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+        }
+        return getResponse;
     }
 
     /**
@@ -427,12 +403,17 @@ public class ContractInvoiceService {
      * @param id 合同ID
      * @return 合同详情
      */
-    public ContractInvoiceGetResponse getSnapshot(String id) {
+    public ContractInvoiceGetResponse getSnapshot(String id, String orgId) {
         LambdaQueryWrapper<ContractInvoiceSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
         ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
         if (snapshot != null) {
-            return JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
+            ContractInvoiceGetResponse getResponse = JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
+            if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+                Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+                getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+            }
+            return getResponse;
         }
         return null;
     }
@@ -550,9 +531,6 @@ public class ContractInvoiceService {
                 .filter(i -> permittedIds.contains(i.getId()))
                 .collect(Collectors.toList());
 
-        List<String> owners = getOwners(permittedInvoices);
-        dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CONTRACT_INVOICE_DELETE);
-
         // 删除发票
         contractInvoiceMapper.deleteByIds(permittedIds);
 
@@ -569,12 +547,6 @@ public class ContractInvoiceService {
 //                        NotificationConstants.Event.CUSTOMER_DELETED, invoice.getName(), userId,
 //                        orgId, List.of(invoice.getOwner()), true)
 //        );
-    }
-
-    private List<String> getOwners(List<ContractInvoice> invoices) {
-        return invoices.stream().map(ContractInvoice::getOwner)
-                .distinct()
-                .toList();
     }
 
     public BigDecimal calculateCustomerInvoiceAmount(String customerId, String userId, String orgId) {

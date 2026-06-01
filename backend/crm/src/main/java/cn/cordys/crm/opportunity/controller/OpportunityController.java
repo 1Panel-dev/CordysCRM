@@ -1,7 +1,10 @@
 package cn.cordys.crm.opportunity.controller;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.dto.ChartAnalysisRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
@@ -55,7 +58,7 @@ public class OpportunityController {
 
 
     @GetMapping("/module/form")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId());
@@ -63,7 +66,7 @@ public class OpportunityController {
 
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机列表")
     public PagerWithOption<List<OpportunityListResponse>> list(@Validated @RequestBody OpportunityPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
@@ -73,7 +76,7 @@ public class OpportunityController {
     }
 
     @PostMapping("/statistic")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机统计")
     public OpportunitySearchStatisticResponse searchStatistic(@Validated @RequestBody OpportunitySearchStatisticRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
@@ -84,7 +87,7 @@ public class OpportunityController {
 
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
     @Operation(summary = "添加商机")
     public Opportunity add(@Validated @RequestBody OpportunityAddRequest request) {
         return opportunityService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -92,7 +95,7 @@ public class OpportunityController {
 
 
     @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.OPPORTUNITY)
     @Operation(summary = "更新商机")
     public Opportunity update(@Validated @RequestBody OpportunityUpdateRequest request) {
         return opportunityService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -101,14 +104,14 @@ public class OpportunityController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除商机")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE, resourceId = "{#id}", formType = FormKeyConstants.OPPORTUNITY)
     public void deleteOpportunity(@PathVariable String id) {
         opportunityService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
     @PostMapping("/batch/transfer")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER)
+    @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_TRANSFER, resourceId = "{#request.ids}", formType = FormKeyConstants.OPPORTUNITY)
     @Operation(summary = "批量转移商机")
     public void batchTransfer(@RequestBody OpportunityTransferRequest request) {
         opportunityService.transfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -116,14 +119,14 @@ public class OpportunityController {
 
 
     @PostMapping("/batch/delete")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
+    @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.OPPORTUNITY)
     @Operation(summary = "批量删除商机")
     public void delete(@RequestBody @NotEmpty List<String> ids) {
         opportunityService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, resourceId = "{#id}", formType = FormKeyConstants.OPPORTUNITY)
     @Operation(summary = "商机详情")
     public OpportunityDetailResponse get(@PathVariable String id) {
         return opportunityService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -137,14 +140,14 @@ public class OpportunityController {
     }
 
     @PostMapping("/batch/update")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
+    @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.OPPORTUNITY)
     @Operation(summary = "批量更新商机")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         opportunityService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "所有商机和部门商机tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
         return opportunityService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -152,7 +155,7 @@ public class OpportunityController {
 
     @GetMapping("/contact/list/{opportunityId}")
     @Operation(summary = "商机下的联系人列表")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, resourceId = "{#opportunityId}", formType = FormKeyConstants.OPPORTUNITY)
     public CustomerContactListAllResponse list(@Validated @PathVariable String opportunityId) {
         return opportunityService.getContactList(opportunityId, OrganizationContext.getOrganizationId());
     }
@@ -160,7 +163,7 @@ public class OpportunityController {
 
     @PostMapping("/export-all")
     @Operation(summary = "商机导出全部")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
     public String opportunityExportAll(@Validated @RequestBody OpportunityExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
@@ -171,13 +174,13 @@ public class OpportunityController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中商机")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
         return opportunityExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
     }
 
     @GetMapping("/template/download")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_IMPORT)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_IMPORT)
     @Operation(summary = "下载导入模板")
     public void downloadImportTpl(HttpServletResponse response) {
         opportunityService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
@@ -185,14 +188,14 @@ public class OpportunityController {
 
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_IMPORT)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_IMPORT)
     public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
         return opportunityService.importPreCheck(file, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_IMPORT)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_IMPORT)
     public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
         return opportunityService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
@@ -205,7 +208,7 @@ public class OpportunityController {
     }
 
     @PostMapping("/chart")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "客户图表生成")
     public List<ChartResult> chart(@Validated @RequestBody ChartAnalysisRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),

@@ -226,13 +226,6 @@ public class DataScopeService {
      * @param userId
      * @param orgId
      */
-    public void checkDataPermission(String userId, String orgId, String owner, String permission) {
-        if (StringUtils.isBlank(owner)) {
-            throw new GenericException(Translator.get("data.permission"));
-        }
-        checkDataPermission(userId, orgId, List.of(owner), permission);
-    }
-
     public void checkDataPermission(String userId, String orgId, List<String> owners, String permission) {
         if (CollectionUtils.isEmpty(owners)) {
             throw new GenericException(Translator.get("data.permission"));

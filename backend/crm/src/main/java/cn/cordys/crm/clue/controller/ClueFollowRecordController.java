@@ -1,8 +1,10 @@
 package cn.cordys.crm.clue.controller;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
@@ -32,7 +34,7 @@ public class ClueFollowRecordController {
     private FollowUpRecordService followUpRecordService;
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
+    @CsPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "添加线索跟进记录")
     public FollowUpRecord add(@Validated @RequestBody FollowUpRecordAddRequest request) {
         return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -40,7 +42,7 @@ public class ClueFollowRecordController {
 
 
     @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
+    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.FOLLOW_RECORD)
     @Operation(summary = "更新线索跟进记录")
     public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
         return followUpRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -73,7 +75,7 @@ public class ClueFollowRecordController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "线索删除跟进记录")
-    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
+    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_UPDATE, resourceId = "{#id}", formType = FormKeyConstants.FOLLOW_RECORD)
     public void deleteRecord(@PathVariable String id) {
         followUpRecordService.delete(id);
     }

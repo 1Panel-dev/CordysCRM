@@ -175,12 +175,6 @@ public class ContractPaymentRecordService {
         OperationLogContext.setResourceName(oldRecord.getName());
     }
 
-    public ContractPaymentRecordGetResponse getWithDataPermissionCheck(String id, String currentUser, String currentOrg) {
-        ContractPaymentRecordGetResponse response = get(id);
-        dataScopeService.checkDataPermission(currentUser, currentOrg, response.getOwner(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-        return response;
-    }
-
     public ContractPaymentRecordGetResponse get(String id) {
         ContractPaymentRecord paymentRecord = contractPaymentRecordMapper.selectByPrimaryKey(id);
         if (paymentRecord == null) {

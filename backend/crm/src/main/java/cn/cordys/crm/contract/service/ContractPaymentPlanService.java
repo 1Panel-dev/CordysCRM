@@ -159,12 +159,6 @@ public class ContractPaymentPlanService {
         return list;
     }
 
-    public ContractPaymentPlanGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
-        ContractPaymentPlanGetResponse getResponse = get(id);
-        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CONTRACT_PAYMENT_PLAN_READ);
-        return getResponse;
-    }
-
     public ContractPaymentPlanGetResponse get(String id) {
         ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
         ContractPaymentPlanGetResponse contractPaymentPlanGetResponse = BeanUtils.copyBean(new ContractPaymentPlanGetResponse(), contractPaymentPlan);
@@ -272,8 +266,6 @@ public class ContractPaymentPlanService {
     @OperationLog(module = LogModule.CONTRACT_PAYMENT, type = LogType.UPDATE, resourceId = "{#request.id}")
     public ContractPaymentPlan update(ContractPaymentPlanUpdateRequest request, String userId, String orgId) {
         ContractPaymentPlan originContractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(request.getId());
-        dataScopeService.checkDataPermission(userId, orgId, originContractPaymentPlan.getOwner(), PermissionConstants.CONTRACT_PAYMENT_PLAN_UPDATE);
-
         ContractPaymentPlan contractPaymentPlan = BeanUtils.copyBean(new ContractPaymentPlan(), request);
         contractPaymentPlan.setUpdateTime(System.currentTimeMillis());
         contractPaymentPlan.setUpdateUser(userId);
@@ -313,8 +305,6 @@ public class ContractPaymentPlanService {
     @OperationLog(module = LogModule.CONTRACT_PAYMENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         ContractPaymentPlan originContractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(id);
-        dataScopeService.checkDataPermission(userId, orgId, originContractPaymentPlan.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_DELETE);
-
         Contract contract = contractMapper.selectByPrimaryKey(originContractPaymentPlan.getContractId());
 
         String resourceName = contract == null ? originContractPaymentPlan.getContractId() : contract.getName();

@@ -2,6 +2,7 @@ package cn.cordys.crm.contract.controller;
 
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
@@ -11,6 +12,8 @@ import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -79,14 +82,14 @@ public class ContractController {
     }
 
     @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.CONTRACT_UPDATE)
+    @CsPermission(value = PermissionConstants.CONTRACT_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT)
     @Operation(summary = "更新")
     public Contract update(@Validated @RequestBody ContractUpdateRequest request) {
         return contractService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update/stage")
-    @RequiresPermissions(PermissionConstants.CONTRACT_STAGE)
+    @CsPermission(value = PermissionConstants.CONTRACT_STAGE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT)
     @Operation(summary = "更新合同阶段")
     public void updateStage(@Validated @RequestBody ContractStageRequest request) {
         contractService.updateStage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -94,28 +97,28 @@ public class ContractController {
 
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(PermissionConstants.CONTRACT_DELETE)
+    @CsPermission(value = PermissionConstants.CONTRACT_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT)
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
         contractService.delete(id);
     }
 
     @GetMapping("/get/snapshot/{id}")
-    @RequiresPermissions(PermissionConstants.CONTRACT_READ)
+    @CsPermission(value = PermissionConstants.CONTRACT_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT)
     @Operation(summary = "获取详情快照")
     public ContractGetResponse getSnapshot(@PathVariable("id") String id) {
-        return contractService.getSnapshotWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractService.getSnapshot(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.CONTRACT_READ)
+    @CsPermission(value = PermissionConstants.CONTRACT_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT)
     @Operation(summary = "详情")
     public ContractGetResponse get(@PathVariable("id") String id) {
-        return contractService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractService.get(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/module/form/snapshot/{id}")
-    @RequiresPermissions(PermissionConstants.CONTRACT_READ)
+    @CsPermission(value = PermissionConstants.CONTRACT_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT)
     @Operation(summary = "获取表单快照配置")
     public ModuleFormConfigDTO getFormSnapshot(@PathVariable("id") String id) {
         return contractService.getFormSnapshot(id, OrganizationContext.getOrganizationId());
@@ -123,7 +126,7 @@ public class ContractController {
 
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.CONTRACT_READ)
+    @CsPermission(PermissionConstants.CONTRACT_READ)
     @Operation(summary = "列表")
     public PagerWithOption<List<ContractListResponse>> list(@Validated @RequestBody ContractPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT.getKey());
@@ -133,7 +136,7 @@ public class ContractController {
     }
 
     @PostMapping("/batch/update")
-    @RequiresPermissions(PermissionConstants.CONTRACT_UPDATE)
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT)
     @Operation(summary = "批量更新合同")
     public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         return contractService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -170,7 +173,7 @@ public class ContractController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中合同")
-    @RequiresPermissions(PermissionConstants.CONTRACT_EXPORT)
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT)
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_READ);

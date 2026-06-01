@@ -1,9 +1,12 @@
 package cn.cordys.crm.customer.controller;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.*;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
@@ -91,7 +94,7 @@ public class CustomerController {
     }
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户列表")
     public PagerWithOption<List<CustomerListResponse>> list(@Validated @RequestBody CustomerPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
@@ -101,70 +104,70 @@ public class CustomerController {
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ) // 不校验数据权限，service 还需校验协作人权限
     @Operation(summary = "客户详情")
     public CustomerGetResponse get(@PathVariable String id) {
         return customerService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_ADD)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_ADD)
     @Operation(summary = "添加客户")
     public Customer add(@Validated @RequestBody CustomerAddRequest request) {
         return customerService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "更新客户")
     public Customer update(@Validated @RequestBody CustomerUpdateRequest request) {
         return customerService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "删除客户")
     public void delete(@PathVariable String id) {
         customerService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/transfer")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER)
+    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "批量转移客户")
     public void batchTransfer(@RequestBody CustomerBatchTransferRequest request) {
         customerService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "批量更新客户")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         customerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/delete")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
+    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "批量删除客户")
     public void batchDelete(@RequestBody @NotNull List<String> ids) {
         customerService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/to-pool")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE)
+    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "批量移入公海")
     public BatchAffectResponse batchToPool(@RequestBody BatchPoolReasonRequest request) {
         return customerService.batchToPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/to-pool")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE)
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE, resourceId = "{#request.id}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "移入公海")
     public BatchAffectResponse toPool(@Validated @RequestBody PoolReasonRequest request) {
         return customerService.toPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/option")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户选项")
     public Pager<List<OptionDTO>> getCustomerOptions(@Validated @RequestBody BasePageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -172,7 +175,7 @@ public class CustomerController {
     }
 
     @GetMapping("/tab")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "所有客户和部门客户tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
         return customerService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -191,7 +194,7 @@ public class CustomerController {
 
     @PostMapping("/export-all")
     @Operation(summary = "客户导出全部")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT)
     public String opportunityExportAll(@Validated @RequestBody CustomerExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
@@ -201,13 +204,13 @@ public class CustomerController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中客户")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT)
+    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
         return customerExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
     }
 
     @GetMapping("/template/download")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
     @Operation(summary = "下载导入模板")
     public void downloadImportTpl(HttpServletResponse response) {
         customerService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
@@ -215,21 +218,21 @@ public class CustomerController {
 
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
     public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
         return customerService.importPreCheck(file, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
     public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
         return customerService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping("/merge/page")
     @Operation(summary = "分页获取合并客户列表")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody CustomerPageRequest request) {
         request.setCombineSearch(request.getCombineSearch().convert());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
@@ -239,13 +242,13 @@ public class CustomerController {
 
     @PostMapping("/merge")
     @Operation(summary = "合并客户")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_MERGE)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_MERGE)
     public void merge(@Valid @RequestBody CustomerMergeRequest request) {
         customerService.merge(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/chart")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户图表生成")
     public List<ChartResult> chart(@Validated @RequestBody ChartAnalysisRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
