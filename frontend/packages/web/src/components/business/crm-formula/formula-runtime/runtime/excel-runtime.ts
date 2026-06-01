@@ -86,6 +86,14 @@ function compareEqual(a: any, b: any, warn?: RuntimeWarn): boolean {
   const left = normalizeScalar(a, warn);
   const right = normalizeScalar(b, warn);
 
+  const leftIsEmpty = left == null || left === '';
+  const rightIsEmpty = right == null || right === '';
+
+  // 在公式比较里把 null / undefined / '' 视为等价空值
+  if (leftIsEmpty && rightIsEmpty) {
+    return true;
+  }
+
   // number vs string
   if (typeof left === 'number' && typeof right === 'string') {
     const n = toNumber(right, warn);
