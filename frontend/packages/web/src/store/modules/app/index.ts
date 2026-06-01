@@ -102,6 +102,10 @@ const defaultModuleConfig = [
     moduleKey: ModuleConfigEnum.TENDER,
     enable: true,
   },
+  {
+    moduleKey: ModuleConfigEnum.CUSTOM_FORM,
+    enable: true,
+  },
 ];
 
 const useAppStore = defineStore('app', {
