@@ -124,4 +124,5 @@ export default {
   'module.contract.stage': 'Contract Stage',
   'module.contract.stageHasData': 'The current contract state has data, cannot delete!',
   'module.invoice': 'Invoice Records',
+  'module.customForm': 'Custom Form',
 };

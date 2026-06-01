@@ -40,6 +40,7 @@ export default {
     'menu.settings.processSetting': '流程设置',
     'menu.settings.approvalFlow': '审批流',
     'menu.settings.workflowSetting': '工作流',
+    'menu.customForm': '自定义表单',
     'menu.settings.log': '系统日志',
     'navbar.action.locale': '切换为中文',
     ...sys,

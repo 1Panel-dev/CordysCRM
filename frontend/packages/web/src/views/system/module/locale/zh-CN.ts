@@ -121,4 +121,5 @@ export default {
   'module.contract.stage': '合同阶段',
   'module.contract.stageHasData': '当前合同状态存在数据，禁止删除！',
   'module.invoice': '发票记录',
+  'module.customForm': '自定义表单',
 };

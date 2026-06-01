@@ -5,6 +5,7 @@ import {
   ClueRouteEnum,
   ContractRouteEnum,
   CustomerRouteEnum,
+  CustomFormRouteEnum,
   DashboardRouteEnum,
   OpportunityRouteEnum,
   OrderRouteEnum,
@@ -50,6 +51,7 @@ export const featureRouteMap: Record<string, any> = {
   [DashboardRouteEnum.DASHBOARD]: ModuleConfigEnum.DASHBOARD,
   [AgentRouteEnum.AGENT]: ModuleConfigEnum.AGENT,
   [TenderRouteEnum.TENDER]: ModuleConfigEnum.TENDER,
+  [CustomFormRouteEnum.CUSTOM_FORM]: ModuleConfigEnum.CUSTOM_FORM,
 };
 
 export const allMenuRouteMap: Record<string, any> = {

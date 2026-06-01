@@ -489,6 +489,13 @@
       groupList: [],
       enable: true,
     },
+    {
+      label: t('module.customForm'),
+      key: ModuleConfigEnum.CUSTOM_FORM,
+      icon: 'iconicon_form',
+      groupList: [],
+      enable: true,
+    },
   ];
 
   const moduleConfigList = computed<ModuleConfigItem[]>(() => {

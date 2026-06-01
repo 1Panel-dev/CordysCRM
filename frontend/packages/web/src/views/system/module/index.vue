@@ -174,6 +174,11 @@
       key: ModuleConfigEnum.TENDER,
       icon: 'iconicon_target',
     },
+    {
+      label: t('customForm'),
+      key: ModuleConfigEnum.CUSTOM_FORM,
+      icon: 'iconicon_form',
+    },
   ]);
 
   const moduleNavList = ref<ModuleNavItem[]>([]);
