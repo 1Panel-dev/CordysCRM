@@ -142,14 +142,17 @@ export function flatAllFields(
 
 export function normalizeFormulaNumber(n: number): number {
   if (!Number.isFinite(n)) return n;
-  // 去掉浮点尾巴
-  return Number(parseFloat(n.toFixed(12)));
+  return Number.parseFloat(n.toPrecision(15));
 }
 
 /**
- * 保留小数位，不进行四舍五入
+ * 先消除浮点尾差，再按指定位数截断，不做四舍五入
  */
 export function keepDecimal(value: number, digits = 2) {
-  const factor = 10 ** digits;
-  return Math.trunc(value * factor) / factor;
+  if (!Number.isFinite(value)) return value;
+  const normalized = normalizeFormulaNumber(value);
+  const str = normalized.toString();
+  const dotIdx = str.indexOf('.');
+  if (dotIdx === -1) return normalized;
+  return Number(str.substring(0, dotIdx + 1 + digits));
 }
