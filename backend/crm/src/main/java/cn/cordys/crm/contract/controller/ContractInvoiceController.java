@@ -2,12 +2,15 @@ package cn.cordys.crm.contract.controller;
 
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -27,7 +30,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -47,14 +49,14 @@ public class ContractInvoiceController {
     private DataScopeService dataScopeService;
 
     @GetMapping("/module/form")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
+    @CsPermission(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return contractInvoiceService.getBusinessFormConfig(OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
+    @CsPermission(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "列表")
     public PagerWithOption<List<ContractInvoiceListResponse>> list(@Validated @RequestBody ContractInvoicePageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
@@ -64,49 +66,49 @@ public class ContractInvoiceController {
     }
 
     @GetMapping("/get/snapshot/{id}")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_INVOICE)
     @Operation(summary = "获取详情快照")
     public ContractInvoiceGetResponse getSnapshot(@PathVariable("id") String id) {
-        return contractInvoiceService.getSnapshotWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractInvoiceService.getSnapshot(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_INVOICE)
     @Operation(summary = "详情")
     public ContractInvoiceGetResponse get(@PathVariable("id") String id) {
-        return contractInvoiceService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return contractInvoiceService.get(id, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_ADD)
+    @CsPermission(PermissionConstants.CONTRACT_INVOICE_ADD)
     @Operation(summary = "创建")
     public ContractInvoice add(@Validated @RequestBody ContractInvoiceAddRequest request) {
         return contractInvoiceService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_UPDATE)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT_INVOICE)
     @Operation(summary = "更新")
     public ContractInvoice update(@Validated @RequestBody ContractInvoiceUpdateRequest request) {
         return contractInvoiceService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_DELETE)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_INVOICE)
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
-        contractInvoiceService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        contractInvoiceService.delete(id);
     }
 
     @GetMapping("/module/form/snapshot/{id}")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_INVOICE)
     @Operation(summary = "获取表单快照配置")
     public ModuleFormConfigDTO getFormSnapshot(@PathVariable("id") String id) {
         return contractInvoiceService.getFormSnapshot(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_READ)
+    @CsPermission(PermissionConstants.CONTRACT_INVOICE_READ)
     @Operation(summary = "tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
         return contractInvoiceService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -114,7 +116,7 @@ public class ContractInvoiceController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中发票")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_EXPORT)
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_INVOICE_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT_INVOICE)
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_INVOICE_READ);
@@ -136,7 +138,7 @@ public class ContractInvoiceController {
 
     @PostMapping("/export-all")
     @Operation(summary = "导出全部合同")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_EXPORT)
+    @CsPermission(PermissionConstants.CONTRACT_INVOICE_EXPORT)
     public String exportAll(@Validated @RequestBody ContractInvoiceExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.INVOICE.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
@@ -157,7 +159,7 @@ public class ContractInvoiceController {
     }
 
     @PostMapping("/batch/delete")
-    @RequiresPermissions(PermissionConstants.CONTRACT_INVOICE_DELETE)
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_INVOICE_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CONTRACT_INVOICE)
     @Operation(summary = "批量删除客户")
     public void batchDelete(@RequestBody @NotNull List<String> ids) {
         contractInvoiceService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

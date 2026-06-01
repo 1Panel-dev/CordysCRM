@@ -1,8 +1,10 @@
 package cn.cordys.crm.customer.controller;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
@@ -33,7 +35,7 @@ public class CustomerFollowRecordController {
     private FollowUpRecordService followUpRecordService;
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "添加客户跟进记录")
     public FollowUpRecord add(@Validated @RequestBody FollowUpRecordAddRequest request) {
         return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -41,7 +43,7 @@ public class CustomerFollowRecordController {
 
 
     @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.FOLLOW_RECORD)
     @Operation(summary = "更新客户跟进记录")
     public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
         return followUpRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -49,14 +51,14 @@ public class CustomerFollowRecordController {
 
 
     @PostMapping("/pool/page")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
     @Operation(summary = "客户公海池跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> poolList(@Validated @RequestBody FollowUpRecordPageRequest request) {
         return followUpRecordService.poolList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER");
     }
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
@@ -76,7 +78,7 @@ public class CustomerFollowRecordController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "客户删除跟进记录")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#id}", formType = FormKeyConstants.FOLLOW_RECORD)
     public void deleteRecord(@PathVariable String id) {
         followUpRecordService.delete(id);
     }

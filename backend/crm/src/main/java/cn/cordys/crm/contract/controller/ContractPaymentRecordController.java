@@ -2,12 +2,15 @@ package cn.cordys.crm.contract.controller;
 
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -54,14 +57,14 @@ public class ContractPaymentRecordController {
 	private ContractPaymentRecordExportService contractPaymentRecordExportService;
 
 	@GetMapping("/module/form")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
 	@Operation(summary = "获取表单配置")
 	public ModuleFormConfigDTO getModuleFormConfig() {
 		return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/page")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
 	@Operation(summary = "回款记录列表")
 	public PagerWithOption<List<ContractPaymentRecordResponse>> list(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
 		ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
@@ -78,35 +81,35 @@ public class ContractPaymentRecordController {
 	}
 
 	@PostMapping("/update")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_UPDATE)
+	@CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
 	@Operation(summary = "修改回款记录")
 	public ContractPaymentRecord update(@Validated @RequestBody ContractPaymentRecordUpdateRequest request) {
 		return contractPaymentRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@GetMapping("/delete/{id}")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_DELETE)
+	@CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
 	@Operation(summary = "删除回款记录")
 	public void delete(@PathVariable String id) {
 		contractPaymentRecordService.delete(id);
 	}
 
 	@GetMapping("/get/{id}")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+	@CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
 	@Operation(summary = "回款记录详情")
 	public ContractPaymentRecordGetResponse get(@PathVariable String id) {
-		return contractPaymentRecordService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+		return contractPaymentRecordService.get(id);
 	}
 
 	@GetMapping("/tab")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
 	@Operation(summary = "视图TAB显示配置")
 	public ResourceTabEnableDTO getTabEnableConfig() {
 		return contractPaymentRecordService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@GetMapping("/template/download")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
 	@Operation(summary = "下载导入模板")
 	public void downloadImportTpl(HttpServletResponse response) {
 		contractPaymentRecordService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
@@ -114,21 +117,21 @@ public class ContractPaymentRecordController {
 
 	@PostMapping("/import/pre-check")
 	@Operation(summary = "导入检查")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
 	public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
 		return contractPaymentRecordService.importPreCheck(file, OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/import")
 	@Operation(summary = "导入")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
 	public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
 		return contractPaymentRecordService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 	}
 
 	@PostMapping("/export-select")
 	@Operation(summary = "导出选中回款记录")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+	@CsBatchPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
 	public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
 				OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
@@ -144,7 +147,7 @@ public class ContractPaymentRecordController {
 
 	@PostMapping("/export-all")
 	@Operation(summary = "导出全部回款记录")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
 	public String exportAll(@Validated @RequestBody ContractPaymentRecordExportRequest request) {
 		ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
@@ -160,7 +163,7 @@ public class ContractPaymentRecordController {
 
 
 	@PostMapping("/statistic")
-	@RequiresPermissions(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
 	@Operation(summary = "回款统计")
 	public ContractPaymentRecordStatisticResponse searchStatistic(@Validated @RequestBody ContractPaymentRecordStatisticRequest request) {
 		ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());

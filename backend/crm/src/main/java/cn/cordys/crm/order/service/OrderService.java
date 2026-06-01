@@ -196,32 +196,6 @@ public class OrderService {
         snapshotBaseMapper.insert(snapshot);
     }
 
-    public OrderGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
-        OrderGetResponse getResponse = get(id);
-        if (getResponse == null) {
-            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
-        }
-        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.ORDER_READ);
-        if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
-            getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
-        }
-        return getResponse;
-    }
-
-    public OrderGetResponse getSnapshotWithDataPermissionCheck(String id, String userId, String orgId) {
-        OrderGetResponse getResponse = getSnapshot(id);
-        if (getResponse == null) {
-            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
-        }
-        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.ORDER_READ);
-        if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
-            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
-            getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
-        }
-        return getResponse;
-    }
-
     private OrderGetResponse get(Order order, List<BaseModuleFieldValue> orderFields, ModuleFormConfigDTO orderFormConfig) {
         OrderGetResponse orderGetResponse = BeanUtils.copyBean(new OrderGetResponse(), order);
         orderGetResponse = baseService.setCreateUpdateOwnerUserName(orderGetResponse);
@@ -279,12 +253,17 @@ public class OrderService {
      *
      * @return
      */
-    public OrderGetResponse get(String id) {
+    public OrderGetResponse get(String id, String orgId) {
         Order order = orderMapper.selectByPrimaryKey(id);
         // 获取模块字段
         ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
         List<BaseModuleFieldValue> orderFields = orderFieldService.getModuleFieldValuesByResourceId(id);
-        return get(order, orderFields, orderFormConfig);
+        OrderGetResponse getResponse = get(order, orderFields, orderFormConfig);
+        if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
+            getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+        }
+        return getResponse;
     }
 
     /**
@@ -455,7 +434,7 @@ public class OrderService {
      *
      * @return 订单详情
      */
-    public OrderGetResponse getSnapshot(String id) {
+    public OrderGetResponse getSnapshot(String id, String orgId) {
         OrderGetResponse response = new OrderGetResponse();
         Order order = orderMapper.selectByPrimaryKey(id);
         if (order == null) {
@@ -472,6 +451,10 @@ public class OrderService {
                     response.setInCustomerPool(customer.getInSharedPool());
                     response.setPoolId(customer.getPoolId());
                 }
+            }
+            if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+                Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
+                response.setFirstApproved(firstNodeApproved.get(response.getId()));
             }
         }
         return response;
@@ -817,7 +800,7 @@ public class OrderService {
     }
 
     public void download(String id, String userId, String organizationId) {
-        OrderGetResponse getResponse = get(id);
+        OrderGetResponse getResponse = get(id, organizationId);
         if (getResponse == null) {
             throw new GenericException(Translator.get("order_not_exist"));
         }
