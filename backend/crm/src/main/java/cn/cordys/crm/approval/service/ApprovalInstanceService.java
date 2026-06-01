@@ -456,47 +456,27 @@ public class ApprovalInstanceService {
 		boolean anyRevoked = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.REVOKED);
 		boolean anyApproved = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.APPROVED);
 		boolean anyAutoApproved = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.AUTO_APPROVED);
-		if (approverMode == MultiApproverModeEnum.ALL || approverMode == MultiApproverModeEnum.SEQUENTIAL) {
-			// 会签, 依次审批  (状态优先级: 驳回 > 自动驳回 -> 审批中 -> 已通过 -> 自动通过)
-			if (anyReject) {
-				return ApprovalStatus.UNAPPROVED;
-			}
-			if (anyAutoReject) {
-				return ApprovalStatus.AUTO_UNAPPROVED;
-			}
-			if (anyApproving) {
-				return ApprovalStatus.APPROVING;
-			}
-			if (anyRevoked) {
-				return ApprovalStatus.NONE;
-			}
-			if (anyApproved) {
-				return ApprovalStatus.APPROVED;
-			}
-			if (anyAutoApproved) {
-				return ApprovalStatus.AUTO_APPROVED;
-			}
-		} else if (approverMode == MultiApproverModeEnum.ANY){
-			// 或签 (状态优先级: 已通过 > 自动通过 -> 审批中 -> 自动驳回 -> 驳回)
-			if (anyApproved) {
-				return ApprovalStatus.APPROVED;
-			}
-			if (anyAutoApproved) {
-				return ApprovalStatus.AUTO_APPROVED;
-			}
-			if (anyApproving) {
-				return ApprovalStatus.APPROVING;
-			}
-			if (anyRevoked) {
-				return ApprovalStatus.NONE;
-			}
-			if (anyAutoReject) {
-				return ApprovalStatus.AUTO_UNAPPROVED;
-			}
-			if (anyReject) {
-				return ApprovalStatus.UNAPPROVED;
-			}
+
+		// 所有多人审批模式统一: 任一驳回即驳回 (状态优先级: 驳回 > 自动驳回 -> 审批中 -> 已通过 -> 自动通过)
+		if (anyReject) {
+			return ApprovalStatus.UNAPPROVED;
 		}
+		if (anyAutoReject) {
+			return ApprovalStatus.AUTO_UNAPPROVED;
+		}
+		if (anyApproving) {
+			return ApprovalStatus.APPROVING;
+		}
+		if (anyRevoked) {
+			return ApprovalStatus.NONE;
+		}
+		if (anyApproved) {
+			return ApprovalStatus.APPROVED;
+		}
+		if (anyAutoApproved) {
+			return ApprovalStatus.AUTO_APPROVED;
+		}
+
 		return null;
 	}
 
