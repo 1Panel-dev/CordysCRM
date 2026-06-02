@@ -248,7 +248,7 @@ public class ApprovalInstanceService {
 			if (approverNode != null) {
 				node.setMultiApproverMode(MultiApproverModeEnum.valueOf(approverNode.getMultiApproverMode()));
 				if (CollectionUtils.isNotEmpty(node.getTaskNodes()) && node.getTaskNodes().size() > 1 && StringUtils.isBlank(node.getApprovalStatus())) {
-					ApprovalStatus approvalStatusOfMultiNode = getNodeApprovalStatusOfMultiTask(node.getTaskNodes(), node.getMultiApproverMode());
+					ApprovalStatus approvalStatusOfMultiNode = getNodeApprovalStatusOfMultiTask(node.getTaskNodes());
 					node.setApprovalStatus(approvalStatusOfMultiNode == null ? null : approvalStatusOfMultiNode.name());
 				} else if (node.getTaskNodes().size() == 1 && StringUtils.isBlank(node.getApprovalStatus())){
 					node.setApprovalStatus(node.getTaskNodes().getFirst().getApprovalStatus());
@@ -266,6 +266,10 @@ public class ApprovalInstanceService {
 				if (ApprovalNodeTypeEnum.valueOf(approvalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
 					node.setEndNode(true);
 				}
+			}
+			if (CollectionUtils.isEmpty(node.getTaskNodes())) {
+
+				node.setTaskNodes(List.of());
 			}
 		});
 		// 节点流程配置顺序
@@ -303,6 +307,11 @@ public class ApprovalInstanceService {
 			if (autoNodeRecordMap.containsKey(hisNode) && autoNodeRecordMap.get(hisNode).getNodeRound().equals(maxRound)) {
 				// 当前节点的最后一轮执行是自动执行
 				ApprovalRecordNode recordNode = ApprovalRecordNode.builder().nodeId(hisNode).nodeRound(maxRound).taskNodes(List.of()).approvalStatus(autoNodeRecordMap.get(hisNode).getResult()).build();
+				ApprovalTaskNode autoTask = buildAutoTaskNode();
+				autoTask.setApprovalTime(autoNodeRecordMap.get(hisNode).getCreateTime());
+				autoTask.setApprovalStatus(recordNode.getApprovalStatus());
+				autoTask.setRecordId(autoNodeRecordMap.get(hisNode).getId());
+				recordNode.setTaskNodes(List.of(autoTask));
 				nodes.addLast(recordNode);
 				return;
 			}
@@ -417,14 +426,19 @@ public class ApprovalInstanceService {
 		}
 		List<ApprovalNodeApproverResponse> nodes = approvalFlowService.getInstanceCurrentFollowNode(instance, currentOrgId);
 		return nodes.stream().map(node -> {
-			List<ApprovalTaskNode> taskNodes = node.getApproverList().stream().map(approver -> {
+			List<ApprovalTaskNode> taskNodes = new ArrayList<>(node.getApproverList().stream().map(approver -> {
 				ApprovalTaskNode taskNode = ApprovalTaskNode.builder().taskId(IDGenerator.nextStr()).approverId(approver).approvalStatus(ApprovalStatus.PENDING.name()).build();
 				if (simpleUserMap.containsKey(approver)) {
 					taskNode.setApprover(simpleUserMap.get(approver).getName());
 					taskNode.setApproverAvatar(simpleUserMap.get(approver).getAvatar());
 				}
 				return taskNode;
-			}).toList();
+			}).toList());
+			if (CollectionUtils.isEmpty(taskNodes)) {
+				ApprovalTaskNode taskNode = buildAutoTaskNode();
+				taskNode.setApprovalStatus(ApprovalStatus.PENDING.name());
+				taskNodes.add(taskNode);
+			}
 			return ApprovalRecordNode.builder().nodeId(node.getId()).nodeRound(1).approvalStatus(ApprovalStatus.PENDING.name()).taskNodes(taskNodes).build();
 		}).toList();
 	}
@@ -446,10 +460,9 @@ public class ApprovalInstanceService {
 	/**
 	 * 处理多人节点的审批状态
 	 * @param taskNodes 任务节点
-	 * @param approverMode 多人审批方式
 	 * @return 审批状态
 	 */
-	private ApprovalStatus getNodeApprovalStatusOfMultiTask(List<ApprovalTaskNode> taskNodes, MultiApproverModeEnum approverMode) {
+	private ApprovalStatus getNodeApprovalStatusOfMultiTask(List<ApprovalTaskNode> taskNodes) {
 		boolean anyReject = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.UNAPPROVED);
 		boolean anyAutoReject = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.AUTO_UNAPPROVED);
 		boolean anyApproving = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.APPROVING);
@@ -699,5 +712,9 @@ public class ApprovalInstanceService {
 			}
 		});
 		return taskMap.values().stream().sorted(Comparator.comparing(ApprovalTask::getCreateTime)).toList();
+	}
+
+	private ApprovalTaskNode buildAutoTaskNode() {
+		return ApprovalTaskNode.builder().taskId("auto").approverId("Cbot").approver("Cbot").build();
 	}
 }
