@@ -173,6 +173,7 @@ export interface BusinessTitleItem {
 
 export interface SaveBusinessTitleParams {
   id?: string;
+  companyNumber?: string; // 公司编码
   name: string; // 公司名称
   identificationNumber: string; // 纳税人识别号
   openingBank: string; // 开户银行

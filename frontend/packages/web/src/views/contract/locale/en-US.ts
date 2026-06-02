@@ -43,6 +43,7 @@ export default {
     'After deletion, the amount already received will be deducted. Please proceed with caution!',
   'contract.businessTitle.add': 'Create business name',
   'contract.businessTitle.update': 'Update business name',
+  'contract.businessTitle.companyCode': 'Company code',
   'contract.businessTitle.companyName': 'Name',
   'contract.businessTitle.addMethod': 'Add method',
   'contract.businessTitle.addMethodThird': 'Third-party',
