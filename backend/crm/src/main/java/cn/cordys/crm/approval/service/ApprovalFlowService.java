@@ -2034,6 +2034,7 @@ public class ApprovalFlowService {
 		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
 		if (resourceService != null) {
 			ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+            resourceService.sendWebHook(action == ApprovalAction.APPROVE ? approvalNodeApprover.getPassPostConfig() : approvalNodeApprover.getRejectPostConfig());
 			resourceService.updateApprovalPostField(FormKey.ofKey(instance.getType()), instance.getResourceId(),
 					action == ApprovalAction.APPROVE ? approvalNodeApprover.getPassPostConfig() : approvalNodeApprover.getRejectPostConfig());
 		}
