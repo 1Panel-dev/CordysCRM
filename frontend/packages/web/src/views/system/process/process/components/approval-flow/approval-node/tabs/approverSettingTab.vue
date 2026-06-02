@@ -98,7 +98,6 @@
 
           <div class="flex w-full gap-[8px]">
             <n-select
-              v-if="approverLevelConfig.showDirection"
               v-model:value="approverDirection"
               class="w-[120px]"
               :disabled="props.readonly"
@@ -313,7 +312,6 @@
 
           <div class="flex w-full gap-[8px]">
             <n-select
-              v-if="ccLevelConfig.showDirection"
               v-model:value="ccDirection"
               class="w-[120px]"
               :disabled="props.readonly"
@@ -372,8 +370,6 @@
     approvalTypeOptions,
     approverLevelOptions,
     approverTypeOptions,
-    continuousApproverLevelOptions,
-    continuousDepartmentLevelOptions,
     departmentLevelOptions,
     resolveApprovalActionNodeDescription,
   } from '@/config/process';
@@ -459,15 +455,15 @@
 
   const directSupervisorExampleItems = [
     {
-      level: t('process.process.flow.levelExample.thirdLevelSupervisor'),
+      level: t('process.process.flow.approverLevel.third'),
       name: t('process.process.flow.levelExample.supervisorD'),
     },
     {
-      level: t('process.process.flow.levelExample.secondLevelSupervisor'),
+      level: t('process.process.flow.approverLevel.second'),
       name: t('process.process.flow.levelExample.supervisorC'),
     },
     {
-      level: t('org.directSuperior'),
+      level: t('process.process.flow.approverLevel.first'),
       name: t('process.process.flow.levelExample.supervisorB'),
     },
     {
@@ -478,19 +474,19 @@
 
   const departmentLeaderExampleItems = [
     {
-      level: t('process.process.flow.levelExample.fourthLevelDepartment'),
+      level: t('process.process.flow.departmentLevel.fourth'),
       name: t('process.process.flow.levelExample.departmentD'),
     },
     {
-      level: t('process.process.flow.levelExample.thirdLevelDepartment'),
+      level: t('process.process.flow.departmentLevel.third'),
       name: t('process.process.flow.levelExample.departmentC'),
     },
     {
-      level: t('process.process.flow.levelExample.secondLevelDepartment'),
+      level: t('process.process.flow.departmentLevel.second'),
       name: t('process.process.flow.levelExample.departmentB'),
     },
     {
-      level: t('process.process.flow.levelExample.directDepartment'),
+      level: t('process.process.flow.departmentLevel.first'),
       name: t('process.process.flow.levelExample.departmentA'),
     },
     {
@@ -704,16 +700,10 @@
       return null;
     }
 
-    let options = isDepartmentLevel ? departmentLevelOptions : approverLevelOptions;
-    if (isEndpoint) {
-      options = isDepartmentLevel ? continuousDepartmentLevelOptions : continuousApproverLevelOptions;
-    }
-
     return {
       label: isEndpoint ? t('process.process.flow.specifiedEndpoint') : t('process.process.flow.specifiedLevel'),
       tooltip: getApproverLevelTooltip(type),
-      options,
-      showDirection: isEndpoint,
+      options: isDepartmentLevel ? departmentLevelOptions : approverLevelOptions,
       exampleItems: isDepartmentLevel ? departmentLeaderExampleItems : directSupervisorExampleItems,
       exampleTip: isDepartmentLevel ? t('process.process.flow.levelExample.departmentTip') : undefined,
     };

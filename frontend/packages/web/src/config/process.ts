@@ -327,7 +327,7 @@ export function resolveApprovalActionNodeDefaults(approvalType: ApprovalTypeEnum
 
 export const approverLevelOptions = [
   {
-    label: t('org.directSuperior'),
+    label: t('process.process.flow.approverLevel.first'),
     value: '1',
   },
   {
@@ -368,17 +368,9 @@ export const approverLevelOptions = [
   },
 ];
 
-export const continuousApproverLevelOptions = [
-  {
-    ...approverLevelOptions[0],
-    label: t('process.process.flow.approverLevel.first'),
-  },
-  ...approverLevelOptions.slice(1),
-];
-
 export const departmentLevelOptions = [
   {
-    label: t('process.process.flow.departmentLevel.direct'),
+    label: t('process.process.flow.departmentLevel.first'),
     value: '1',
   },
   {
@@ -417,12 +409,4 @@ export const departmentLevelOptions = [
     label: t('process.process.flow.departmentLevel.tenth'),
     value: '10',
   },
-];
-
-export const continuousDepartmentLevelOptions = [
-  {
-    ...departmentLevelOptions[0],
-    label: t('process.process.flow.departmentLevel.first'),
-  },
-  ...departmentLevelOptions.slice(1),
 ];
