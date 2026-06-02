@@ -24,12 +24,14 @@ import {
   RevokeApprovalUrl,
   BatchRejectApprovalUrl,
   BatchApprovalApprovalUrl,
+  TestApprovalWebHookUrl,
 } from '@lib/shared/api/requrls/system/process';
 import {
   AddApprovalProcessParams,
   ApprovalPermissionsDetail,
   ApprovalProcessDetail,
   ApprovalProcessItem,
+  ApprovalWebhookConfig,
   CommonApprovalActionParams,
   UpdateApprovalProcessParams,
   type ApprovalAddSignParams,
@@ -158,6 +160,11 @@ export default function useProcessApi(CDR: CordysAxios) {
     return CDR.post({ url: RevokeResourceUrl, data });
   }
 
+  // WebHook连接测试
+  function testApprovalWebHook(data: ApprovalWebhookConfig) {
+    return CDR.post({ url: TestApprovalWebHookUrl, data });
+  }
+
   return {
     getApprovalProcessList,
     getApprovalPermissions,
@@ -183,5 +190,6 @@ export default function useProcessApi(CDR: CordysAxios) {
     agreeApproval,
     batchRejectApproval,
     batchAgreeApproval,
+    testApprovalWebHook,
   };
 }

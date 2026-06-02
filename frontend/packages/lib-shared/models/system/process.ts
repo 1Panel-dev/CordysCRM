@@ -6,6 +6,7 @@ import {
   ProcessStatusEnum,
   type ApprovalResourceTypeEnum,
 } from '@lib/shared/enums/process';
+import { RequestEnum } from '@lib/shared/enums/httpEnum';
 import type { SelectedUsersItem } from './module';
 import type { OptionDTO } from './business';
 import type { FilterForm } from '@cordys/web/src/components/pure/crm-advance-filter/type';
@@ -72,8 +73,18 @@ export interface ApprovalFieldUpdateConfig {
   enable: boolean;
 }
 
+export interface ApprovalWebhookConfig {
+  webHookDescribe: string;
+  webHookEnable: boolean;
+  webHookUrl: string;
+  webHookMethod: RequestEnum;
+  webHookHeader: string;
+  webHookBody: string;
+}
+
 export interface ApprovalPostConfig {
   fieldUpdateConfigs: ApprovalFieldUpdateConfig[];
+  webHookConfig?: ApprovalWebhookConfig;
 }
 
 // 后端审批流节点的基础结构
