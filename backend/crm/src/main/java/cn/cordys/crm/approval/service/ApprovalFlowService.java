@@ -29,6 +29,7 @@ import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.FieldPermissionDTO;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
+import cn.cordys.crm.approval.dto.WebHookConfig;
 import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.*;
 import cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper;
@@ -2039,4 +2040,15 @@ public class ApprovalFlowService {
 					action == ApprovalAction.APPROVE ? approvalNodeApprover.getPassPostConfig() : approvalNodeApprover.getRejectPostConfig());
 		}
 	}
+
+
+    /**
+     * 测试连接
+     *
+     * @param webHookConfig
+     */
+    public void testConnection(WebHookConfig webHookConfig) {
+        //TODO 测试连接
+
+    }
 }

@@ -22,4 +22,6 @@ public class WebHookConfig {
     @Schema(description = "请求体")
     private String webHookBody;
 
+    @Schema(description = "说明")
+    private String webHookDescribe;
 }
