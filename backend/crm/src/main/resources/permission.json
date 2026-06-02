@@ -683,5 +683,23 @@
         ]
       }
     ]
+  },
+  {
+    "id": "CUSTOM_FORM",
+    "name": "permission.custom_form.name",
+    "children": [
+      {
+        "id": "CUSTOM_FORM",
+        "name": "permission.custom_form.name",
+        "permissions": [
+          {
+            "id": "CUSTOM_FORM:READ"
+          },
+          {
+            "id": "CUSTOM_FORM:ADD"
+          }
+        ]
+      }
+    ]
   }
 ]
