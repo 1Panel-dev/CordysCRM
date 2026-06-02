@@ -33,11 +33,9 @@ public class ContractAddRequest {
     private String amount;
 
     @Schema(description = "合同开始时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull
     private Long startTime;
 
     @Schema(description = "合同结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull
     private Long endTime;
 
     @Schema(description = "自定义字段")
