@@ -38,7 +38,7 @@
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.resourceId, item.approvalFlowId)"
+                  @click="emit('openDetail', item.resourceId, item.approvalFlowId, item.approvalTaskId)"
                 >
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
@@ -49,7 +49,7 @@
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.resourceId, item.approvalFlowId)"
+                  @click="emit('openDetail', item.resourceId, item.approvalFlowId, item.approvalTaskId)"
                 >
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
@@ -136,7 +136,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'openDetail', id: string, approvalFlowId: string): void;
+    (e: 'openDetail', id: string, approvalFlowId: string, approvalTaskId: string): void;
     (e: 'listInit', total: number, keys: string[]): void;
     (e: 'approvalSuccess'): void;
   }>();

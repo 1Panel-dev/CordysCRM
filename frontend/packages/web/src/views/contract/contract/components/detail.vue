@@ -66,6 +66,7 @@
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
                   updateType: 'approval',
+                  approvalTaskId: props.approvalTaskId,
                 }"
                 @openCustomerDetail="emit('showCustomerDrawer', $event)"
                 @openOpportunityDetail="openOpportunityDetail"
@@ -185,6 +186,7 @@
   const props = defineProps<{
     sourceId: string;
     isContractTableDetail?: boolean;
+    approvalTaskId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;

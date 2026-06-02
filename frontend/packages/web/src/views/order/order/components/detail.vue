@@ -62,6 +62,7 @@
               :fieldPermissions="fieldPermissions"
               :otherSaveParams="{
                 updateType: 'approval',
+                approvalTaskId: props.approvalTaskId,
               }"
               label-width="auto"
               value-align="start"
@@ -138,6 +139,7 @@
   const props = defineProps<{
     sourceId: string;
     readonly?: boolean;
+    approvalTaskId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;

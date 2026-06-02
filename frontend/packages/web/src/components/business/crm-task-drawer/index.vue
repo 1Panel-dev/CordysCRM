@@ -94,24 +94,28 @@
     v-model:visible="contractDetailVisible"
     :source-id="activeResourceId"
     :approvalFlowId="approvalFlowId"
+    :approvalTaskId="approvalTaskId"
     @refresh="handleApproveSuccess"
   />
   <QuotationDetailDrawer
     v-model:visible="quotationDetailVisible"
     :source-id="activeResourceId"
     :approvalFlowId="approvalFlowId"
+    :approvalTaskId="approvalTaskId"
     @refresh="handleApproveSuccess"
   />
   <OrderDetailDrawer
     v-model:visible="orderDetailVisible"
     :source-id="activeResourceId"
     :approvalFlowId="approvalFlowId"
+    :approvalTaskId="approvalTaskId"
     @refresh="handleApproveSuccess"
   />
   <InvoiceDetailDrawer
     v-model:visible="invoiceDetailVisible"
     :source-id="activeResourceId"
     :approvalFlowId="approvalFlowId"
+    :approvalTaskId="approvalTaskId"
     @refresh="handleApproveSuccess"
   />
 </template>
@@ -347,9 +351,11 @@
   const orderDetailVisible = ref(false);
   const invoiceDetailVisible = ref(false);
   const approvalFlowId = ref('');
-  function handleOpenDetail(resourceId: string, _approvalFlowId: string) {
+  const approvalTaskId = ref('');
+  function handleOpenDetail(resourceId: string, _approvalFlowId: string, _approvalTaskId: string) {
     activeResourceId.value = resourceId;
     approvalFlowId.value = _approvalFlowId;
+    approvalTaskId.value = _approvalTaskId;
     const [_, resourceType] = activeTaskType.value.split('-');
     switch (resourceType) {
       case ApprovalResourceTypeEnum.CONTRACT:

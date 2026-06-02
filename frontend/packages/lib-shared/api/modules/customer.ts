@@ -210,8 +210,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取客户详情
-  function getCustomer(id: string) {
-    return CDR.get<CustomerDetail>({ url: `${GetCustomerUrl}/${id}` });
+  function getCustomer(id: string, approvalTaskId?: string) {
+    return CDR.get<CustomerDetail>({ url: `${GetCustomerUrl}/${id}`, params: { approvalTaskId } });
   }
 
   // 删除客户
