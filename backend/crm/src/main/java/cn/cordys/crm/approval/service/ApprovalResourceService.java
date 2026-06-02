@@ -11,15 +11,13 @@ import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
-import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
-import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
-import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
-import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
+import cn.cordys.crm.approval.dto.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -27,9 +25,11 @@ import cn.cordys.security.UserApprovalDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -433,6 +433,49 @@ public class ApprovalResourceService {
 		} catch (Exception e) {
 			log.error("检查是否命中审批流失败, formKey:{}, error:{}", formKey, e.getMessage(), e);
 			return false;
+		}
+	}
+
+
+	/**
+	 * 异步发送webhook
+	 *
+	 * @param postConfig
+	 */
+	@Async
+	public void sendWebHook(String postConfig) {
+		WebHookConfig webHookConfig = JSON.MAPPER.convertValue(postConfig, WebHookConfig.class);
+		if (webHookConfig != null && webHookConfig.getWebHookEnable()) {
+			switch (webHookConfig.getWebHookMethod()) {
+				case "POST":
+					sendPost(webHookConfig);
+				case "GET":
+					sendGet(webHookConfig);
+				default:
+					break;
+			}
+		}
+	}
+
+
+	private void sendGet(WebHookConfig webHookConfig) {
+		Map<String, String> headers = JSON.parseMap(webHookConfig.getWebHookHeader());
+		try {
+			HttpRequestUtil.sendGetRequest(webHookConfig.getWebHookUrl(), headers);
+		} catch (Exception e) {
+			log.error("GET调用WebHook异常", e);
+			throw new GenericException(e.getMessage());
+		}
+	}
+
+
+	private void sendPost(WebHookConfig webHookConfig) {
+		Map<String, String> headers = JSON.parseMap(webHookConfig.getWebHookHeader());
+		try {
+			HttpRequestUtil.sendPostRequest(webHookConfig.getWebHookUrl(), webHookConfig.getWebHookBody(), headers);
+		} catch (Exception e) {
+			log.error("POST调用WebHook异常", e);
+			throw new GenericException(e.getMessage());
 		}
 	}
 }

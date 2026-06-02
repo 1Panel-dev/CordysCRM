@@ -14,4 +14,7 @@ public class ApprovalPostConfigDTO {
 
     @Schema(description = "字段更新配置列表")
     private List<EnableFieldValue> fieldUpdateConfigs;
+
+    @Schema(description = "webhook配置")
+    private WebHookConfig webHookConfig;
 }
