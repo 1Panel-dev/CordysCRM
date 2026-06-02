@@ -84,6 +84,12 @@ export const defaultNavList: ActionItem[] = [
     slotName: 'searchSlot',
   },
   {
+    label: t('system.message.todoList'),
+    key: 'task',
+    iconType: 'iconicon_contract',
+    slotName: 'taskSlot',
+  },
+  {
     label: t('menu.agent'),
     key: 'agent',
     iconType: 'iconicon_bot',

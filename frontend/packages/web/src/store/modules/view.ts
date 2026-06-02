@@ -166,6 +166,7 @@ const useViewStore = defineStore('view', {
       ];
       // admin 不显示部门视图
       if (userStore.userInfo.id === 'admin') {
+        // @ts-ignore-next-line
         this.internalViews = merged.filter((item) => item.id !== CustomerSearchTypeEnum.DEPARTMENT);
       } else {
         this.internalViews = merged;
