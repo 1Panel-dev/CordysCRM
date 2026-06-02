@@ -261,7 +261,7 @@ export default function useHiddenTab(type?: TabType) {
           if (e.name === 'ALL') return !!all;
           if (e.name === 'DEPARTMENT') return !!dept;
           return true;
-        });
+        }) as TabPaneProps[];
       } else {
         tabList.value = tabListMap[type];
       }
