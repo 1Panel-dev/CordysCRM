@@ -249,5 +249,10 @@ public class PermissionConstants {
     public static final String PROCESS_SETTING_UPDATE = "PROCESS_SETTING:UPDATE";
     public static final String PROCESS_SETTING_DELETE = "PROCESS_SETTING:DELETE";
     /*------ end: PROCESS_SETTING ------*/
+
+    /*------ start: CUSTOM_FORM ------*/
+    public static final String CUSTOM_FORM_READ = "CUSTOM_FORM:READ";
+    public static final String CUSTOM_FORM_ADD = "CUSTOM_FORM:ADD";
+    /*------ end: CUSTOM_FORM ------*/
 }
 

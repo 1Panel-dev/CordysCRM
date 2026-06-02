@@ -1,0 +1,78 @@
+package cn.cordys.crm.form.controller;
+
+import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.permission.CsPermission;
+import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
+import cn.cordys.crm.form.dto.request.CustomFormSaveRequest;
+import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
+import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
+import cn.cordys.crm.form.dto.response.CustomFormListResponse;
+import cn.cordys.crm.form.domain.CustomForm;
+import cn.cordys.crm.form.service.CustomFormService;
+import cn.cordys.security.SessionUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Tag(name = "自定义表单")
+@RestController
+@RequestMapping("/custom-form")
+public class CustomFormController {
+
+    @Resource
+    private CustomFormService customFormService;
+
+    @GetMapping("/list")
+    @Operation(summary = "自定义表单列表")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public List<CustomFormListResponse> list() {
+        return customFormService.list(SessionUtils.getUserId());
+    }
+
+    @GetMapping("/get/{id}")
+    @Operation(summary = "自定义表单详情")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public CustomFormGetResponse get(@PathVariable String id) {
+        return customFormService.get(id, SessionUtils.getUserId());
+    }
+
+    @PostMapping("/add")
+    @Operation(summary = "创建自定义表单")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_ADD)
+    public CustomForm create(@Validated @RequestBody CustomFormSaveRequest request) {
+        return customFormService.create(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/update")
+    @Operation(summary = "更新自定义表单")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public void update(@Validated @RequestBody CustomFormUpdateRequest request) {
+        customFormService.update(request, SessionUtils.getUserId());
+    }
+
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "删除自定义表单")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public void delete(@PathVariable String id) {
+        customFormService.delete(id, SessionUtils.getUserId());
+    }
+
+    @PostMapping("/admin/add")
+    @Operation(summary = "添加表单管理员")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public void addAdmins(@RequestBody CustomFormAdminBatchRequest request) {
+        customFormService.addAdmins(request, SessionUtils.getUserId());
+    }
+
+    @PostMapping("/admin/remove")
+    @Operation(summary = "移除表单管理员")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public void removeAdmins(@RequestBody CustomFormAdminBatchRequest request) {
+        customFormService.removeAdmins(request, SessionUtils.getUserId());
+    }
+}
