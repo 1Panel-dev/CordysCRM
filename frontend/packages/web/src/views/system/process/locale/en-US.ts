@@ -73,7 +73,6 @@ export default {
   'process.process.flow.approverLevel.ninth': 'Ninth-level supervisor',
   'process.process.flow.approverLevel.tenth': 'Tenth-level supervisor',
   'process.process.flow.departmentLevel.first': 'First-level department',
-  'process.process.flow.departmentLevel.direct': 'Direct department',
   'process.process.flow.departmentLevel.second': 'Second-level department',
   'process.process.flow.departmentLevel.third': 'Third-level department',
   'process.process.flow.departmentLevel.fourth': 'Fourth-level department',
@@ -91,8 +90,6 @@ export default {
     "Use the head of the submitter's department (department head in organization structure) as the approver",
   'process.process.flow.continuousDepartmentLeaderTip':
     "Use the multi-level heads of the submitter's department as approvers",
-  'process.process.flow.levelExample.thirdLevelSupervisor': 'Third-level supervisor',
-  'process.process.flow.levelExample.secondLevelSupervisor': 'Second-level supervisor',
   'process.process.flow.levelExample.applicant': 'Applicant',
   'process.process.flow.levelExample.employeeA': 'Employee A',
   'process.process.flow.levelExample.supervisorB': "A's supervisor: C",
@@ -100,10 +97,6 @@ export default {
   'process.process.flow.levelExample.supervisorD': "D's supervisor: E",
   'process.process.flow.levelExample.departmentTip':
     'Tip: when selecting second-level department head approval, the approver is Sales Area 1 owner',
-  'process.process.flow.levelExample.fourthLevelDepartment': 'Fourth-level department',
-  'process.process.flow.levelExample.thirdLevelDepartment': 'Third-level department',
-  'process.process.flow.levelExample.secondLevelDepartment': 'Second-level department',
-  'process.process.flow.levelExample.directDepartment': 'Direct department',
   'process.process.flow.levelExample.departmentA': 'Sales Dept 1',
   'process.process.flow.levelExample.departmentB': 'Sales Area 1',
   'process.process.flow.levelExample.departmentC': 'City A Sales',
