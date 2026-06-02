@@ -3,7 +3,7 @@
     class="crm-approver-avatar-list__avatar-wrap"
     :class="{ 'crm-approver-avatar-list__avatar-wrap--active': props.approver?.id === activeApproverId }"
   >
-    <n-avatar v-if="isAutoRejectedBot" round :size="props.size" class="cursor-pointer" @click="emit('toggleActive')">
+    <n-avatar v-if="isShowAutoBot" round :size="props.size" class="cursor-pointer" @click="emit('toggleActive')">
       <CrmIcon type="iconicon_bot" :size="18" class="text-[var(--text-n10)]" />
     </n-avatar>
     <CrmAvatar
@@ -50,7 +50,7 @@
     (e: 'toggleActive'): void;
   }>();
 
-  const isAutoRejectedBot = computed(() => props.approver?.approveResult === ProcessStatusEnum.AUTO_UNAPPROVED);
+  const isShowAutoBot = computed(() => props.approver?.id === 'Cbot');
 
   function getStatusIcon(status: ProcessStatusEnum) {
     if (props.signNode) {
