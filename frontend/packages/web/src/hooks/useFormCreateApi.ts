@@ -603,7 +603,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (!formData) {
         const asyncApi = getFormDetailApiMap[props.formKey.value];
         if (!asyncApi || !props.sourceId?.value) return;
-        form = await asyncApi(props.sourceId?.value);
+        form = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
       }
       descriptions.value = [];
       detail.value = form;
@@ -904,7 +904,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey.value];
       if (!asyncApi || !props.sourceId?.value) return;
-      const res = await asyncApi(props.sourceId?.value);
+      const res = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
       detail.value = res;
       formDetail.value = {};
       if (needInitFormDescription) {
@@ -1223,7 +1223,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       loading.value = true;
       const api = getFormConfigApiMap[props.formKey.value];
-      const res = await api(props.sourceId?.value ?? '');
+      const res = await api(props.sourceId?.value ?? '', props.otherSaveParams?.value?.approvalTaskId);
       moduleFormConfig.value = cloneDeep(res);
       initFormFieldConfig(res.fields);
       formConfig.value = res.formProp;

@@ -58,13 +58,13 @@ export default function useOrderApi(CDR: CordysAxios) {
   }
 
   // 订单详情
-  function getOrderDetail(id: string) {
-    return CDR.get<OrderItem>({ url: `${GetOrderDetailUrl}/${id}` });
+  function getOrderDetail(id: string, approvalTaskId?: string) {
+    return CDR.get<OrderItem>({ url: `${GetOrderDetailUrl}/${id}`, params: { approvalTaskId } });
   }
 
   // 详情快照
-  function getOrderDetailSnapshot(id: string) {
-    return CDR.get<OrderItem>({ url: `${OrderDetailSnapshotUrl}/${id}` });
+  function getOrderDetailSnapshot(id: string, approvalTaskId?: string) {
+    return CDR.get<OrderItem>({ url: `${OrderDetailSnapshotUrl}/${id}`, params: { approvalTaskId } });
   }
 
   // 新增订单
@@ -95,9 +95,10 @@ export default function useOrderApi(CDR: CordysAxios) {
   }
 
   // 获取表单配置快照
-  function getOrderFormSnapshotConfig(id?: string) {
+  function getOrderFormSnapshotConfig(id?: string, approvalTaskId?: string) {
     return CDR.get<FormDesignConfigDetailParams>({
       url: `${OrderFormConfigSnapshotUrl}/${id}`,
+      params: { approvalTaskId },
     });
   }
 
