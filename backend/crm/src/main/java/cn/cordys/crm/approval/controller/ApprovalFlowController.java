@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.controller;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.approval.dto.WebHookConfig;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowAddRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowPageRequest;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowUpdateRequest;
@@ -11,6 +12,7 @@ import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse;
 import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.system.dto.response.EmailDTO;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -84,5 +86,12 @@ public class ApprovalFlowController {
     @Operation(summary = "根据表单类型获取审批流信息")
     public ApprovalFlowByFormTypeResponse getByFormType(@PathVariable("formType") String formType) {
         return approvalFlowService.getByFormType(formType, OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping("/webhook/test")
+    @Operation(summary = "webhook-测试连接")
+    public void verifyEmailConnection(@Validated @RequestBody WebHookConfig webHookConfig) {
+        approvalFlowService.testConnection(webHookConfig);
     }
 }
