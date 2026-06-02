@@ -361,4 +361,5 @@ export default {
   'common.exportApprovalTip': 'Only data with approval statuses {statuses} can be exported',
   'common.batchEditApprovalTip': 'Only data with approval statuses {statuses} can be batch edited',
   'common.batchVoidApprovalTip': 'Only data with approval statuses {statuses} can be batch voided',
+  'common.testLink': 'Test link',
 };

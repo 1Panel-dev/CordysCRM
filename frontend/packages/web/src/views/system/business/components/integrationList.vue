@@ -82,7 +82,7 @@
                   class="outline--secondary px-[8px]"
                   @click="testLink(item)"
                 >
-                  {{ t('system.business.mailSettings.testLink') }}
+                  {{ t('common.testLink') }}
                 </n-button>
               </div>
             </div>
@@ -201,7 +201,7 @@
                   class="outline--secondary px-[8px]"
                   @click="testLink(item)"
                 >
-                  {{ t('system.business.mailSettings.testLink') }}
+                  {{ t('common.testLink') }}
                 </n-button>
               </div>
             </div>
@@ -322,7 +322,7 @@
                   class="outline--secondary px-[8px]"
                   @click="testLink(item)"
                 >
-                  {{ t('system.business.mailSettings.testLink') }}
+                  {{ t('common.testLink') }}
                 </n-button>
               </div>
             </div>
@@ -389,7 +389,7 @@
               </div>
               <div>
                 <n-button size="small" type="default" class="outline--secondary px-[8px]" @click="testLink(item)">
-                  {{ t('system.business.mailSettings.testLink') }}
+                  {{ t('common.testLink') }}
                 </n-button>
               </div>
             </div>
@@ -475,7 +475,7 @@
                   class="outline--secondary px-[8px]"
                   @click="testLink(item)"
                 >
-                  {{ t('system.business.mailSettings.testLink') }}
+                  {{ t('common.testLink') }}
                 </n-button>
               </div>
             </div>

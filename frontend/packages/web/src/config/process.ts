@@ -1,7 +1,8 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { RequestEnum } from '@lib/shared/enums/httpEnum';
 import { ApprovalTypeEnum, ApproverTypeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { BasicFormParams, MoreSettingsParams } from '@lib/shared/models/system/process';
+import { ApprovalWebhookConfig, BasicFormParams, MoreSettingsParams } from '@lib/shared/models/system/process';
 
 import { StatusInfo } from '@/components/business/crm-approval/components/crm-approval-status.vue';
 
@@ -168,6 +169,15 @@ export const defaultMoreConfig: MoreSettingsParams = {
   requireComment: false,
   permissions: [],
   statusPermissions: [],
+};
+
+export const defaultWebHookConfig: ApprovalWebhookConfig = {
+  webHookEnable: false,
+  webHookDescribe: '',
+  webHookUrl: '',
+  webHookMethod: RequestEnum.POST,
+  webHookHeader: '{"Content-Type":"application/json"}',
+  webHookBody: '',
 };
 
 export const businessTypeOptions = [

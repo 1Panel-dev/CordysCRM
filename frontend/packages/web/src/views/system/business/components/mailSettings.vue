@@ -35,7 +35,7 @@
     <n-divider class="!m-0" />
     <div class="my-[12px] mr-[24px] flex justify-end">
       <n-button type="primary" :loading="linkLoading" ghost @click="testLink(false)">
-        {{ t('system.business.mailSettings.testLink') }}
+        {{ t('common.testLink') }}
       </n-button>
       <n-button v-permission="['SYSTEM_SETTING:UPDATE']" type="primary" class="ml-[8px]" @click="showDrawer = true">
         {{ t('common.edit') }}
@@ -113,7 +113,7 @@
       </n-form-item>
       <n-form-item label=" ">
         <n-button type="primary" :loading="linkLoading" ghost @click="testLink(true)">
-          {{ t('system.business.mailSettings.testLink') }}
+          {{ t('common.testLink') }}
         </n-button>
       </n-form-item>
     </n-form>

@@ -8,6 +8,8 @@ export const passwordLengthRegex = /^.{8,32}$/;
 export const passwordWordRegex = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z!@#$%^&*()_+.]+$/;
 // Git地址校验
 export const gitRepositoryUrlRegex = /\.git$/;
+// Webhook 地址校验，允许 HTTP / HTTPS
+export const httpUrlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
 
 /**
  * 校验邮箱
@@ -52,6 +54,15 @@ export function validateWordPassword(password: string): boolean {
  */
 export function validatePassword(password: string): boolean {
   return validatePasswordLength(password) && validateWordPassword(password);
+}
+
+/**
+ * 校验 HTTP / HTTPS 地址
+ * @param url 地址
+ * @returns boolean
+ */
+export function validateHttpUrl(url: string): boolean {
+  return httpUrlRegex.test(url.trim());
 }
 
 export function getPatternByAreaCode(code: string): RegExp | null {

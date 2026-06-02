@@ -227,7 +227,7 @@
             class="n-btn-outline-primary mx-[12px]"
             @click="continueLink"
           >
-            {{ t('system.business.mailSettings.testLink') }}
+            {{ t('common.testLink') }}
           </n-button>
           <n-button :loading="loading" type="primary" @click="confirmHandler">
             {{ t('common.confirm') }}

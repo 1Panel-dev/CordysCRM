@@ -56,7 +56,7 @@
 
       <n-form-item v-if="form.type === 'LDAP'" label=" ">
         <div class="flex items-center gap-[12px]">
-          <n-button type="primary" ghost> {{ t('system.business.mailSettings.testLink') }} </n-button>
+          <n-button type="primary" ghost> {{ t('common.testLink') }} </n-button>
           <n-button type="primary" ghost> {{ t('system.business.authenticationSettings.testLogin') }} </n-button>
         </div>
       </n-form-item>
