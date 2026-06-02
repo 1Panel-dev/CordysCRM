@@ -68,6 +68,10 @@ export const businessTitleFormConfigList: {
   value: keyof SaveBusinessTitleParams;
 }[] = [
   {
+    label: t('contract.businessTitle.companyCode'),
+    value: 'companyNumber',
+  },
+  {
     label: t('contract.businessTitle.taxpayerNumber'),
     value: 'identificationNumber',
   },

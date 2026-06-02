@@ -61,7 +61,7 @@
             <n-input
               v-model:value="form[item.field]"
               allow-clear
-              :disabled="form.type === 'THIRD_PARTY'"
+              :disabled="form.type === 'THIRD_PARTY' || item.field === 'companyNumber'"
               :maxlength="255"
               :placeholder="t('common.pleaseInput')"
             />
