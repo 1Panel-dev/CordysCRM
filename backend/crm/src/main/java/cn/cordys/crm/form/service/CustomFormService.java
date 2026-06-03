@@ -118,10 +118,10 @@ public class CustomFormService {
         form.setEnable(BooleanUtils.isTrue(request.getEnable()));
         customFormMapper.insert(form);
 
-        // 保存 sys_module_form 使用相同的 ID
+        // 保存 sys_module_form 使用相同的 ID, formKey 也使用 formId
         ModuleForm moduleForm = new ModuleForm();
         moduleForm.setId(formId);
-        moduleForm.setFormKey(UUID.randomUUID().toString().substring(20));
+        moduleForm.setFormKey(formId);
         moduleForm.setOrganizationId(orgId);
         moduleForm.setCreateTime(System.currentTimeMillis());
         moduleForm.setUpdateTime(System.currentTimeMillis());
