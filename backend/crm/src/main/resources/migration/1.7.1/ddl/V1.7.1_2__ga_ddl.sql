@@ -107,7 +107,22 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_resource_id ON custom_form_data_field_blob(resource_id ASC);
 
 
-ALTER TABLE business_title ADD COLUMN company_number BIGINT NOT NULL AUTO_INCREMENT UNIQUE;
+SET @sql = (
+    SELECT IF(
+        EXISTS (
+            SELECT 1
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'business_title'
+              AND COLUMN_NAME = 'company_number'
+        ),
+        'SELECT 1',
+        'ALTER TABLE business_title ADD COLUMN company_number BIGINT NOT NULL AUTO_INCREMENT UNIQUE COMMENT ''公司编号'''
+    )
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
