@@ -26,6 +26,10 @@ public enum ModuleKey {
      */
     PRODUCT("product"),
     /**
+     * 自定义表单
+     */
+    CUSTOM_FORM("custom_form"),
+    /**
      * 系统设置
      */
     SETTING("setting");

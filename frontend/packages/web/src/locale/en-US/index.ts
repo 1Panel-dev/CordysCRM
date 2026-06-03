@@ -34,6 +34,7 @@ export default {
     'menu.contact': 'Contact',
     'menu.dashboard': 'Dashboard',
     'menu.agent': 'Agent',
+    'menu.custom_form': 'Custom Form',
     'menu.tender': 'Tender',
     'menu.customForm': 'Custom Form',
     'menu.settings.businessSetting': 'Enterprise',
