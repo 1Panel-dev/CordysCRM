@@ -1,5 +1,6 @@
 package cn.cordys.crm.form.service;
 
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
@@ -7,32 +8,36 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.form.domain.CustomForm;
-import cn.cordys.crm.form.domain.CustomFormAdmin;
-import cn.cordys.crm.form.domain.CustomFormRole;
-import cn.cordys.crm.form.domain.CustomFormRoleKey;
-import cn.cordys.crm.form.domain.CustomFormRoleUser;
+import cn.cordys.crm.form.domain.*;
 import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
-import cn.cordys.crm.form.dto.request.CustomFormSaveRequest;
+import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.ModuleFormBlob;
+import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class CustomFormService {
 
     @Resource
@@ -50,65 +55,70 @@ public class CustomFormService {
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
+    private ModuleFormService moduleFormService;
+    @Resource
     private BaseService baseService;
 
+    @Value("classpath:form/form.json")
+    private org.springframework.core.io.Resource formResource;
+
     public List<CustomFormListResponse> list(String userId) {
-        // single query: union of admin + role-member form ids
-        Set<String> accessibleFormIds = getAccessibleFormIds(userId);
-        if (accessibleFormIds.isEmpty()) {
+        Set<String> adminFormIds = getAdminFormIds(userId);
+        Set<String> memberFormIds = getMemberFormIds(userId);
+        if (adminFormIds.isEmpty() && memberFormIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        Set<String> adminFormIds = getAdminFormIds(userId);
+        Set<String> accessibleFormIds = new HashSet<>();
+        accessibleFormIds.addAll(adminFormIds);
+        accessibleFormIds.addAll(memberFormIds);
 
-        return accessibleFormIds.stream().map(formId -> {
-            CustomForm form = customFormMapper.selectByPrimaryKey(formId);
-            if (form == null) {
-                return null;
-            }
-            CustomFormListResponse resp = new CustomFormListResponse();
-            resp.setId(form.getId());
-            resp.setName(form.getName());
-            resp.setEnable(form.getEnable());
-            resp.setCreateTime(form.getCreateTime());
-            resp.setUpdateTime(form.getUpdateTime());
-            resp.setIsAdmin(adminFormIds.contains(formId));
-            return resp;
-        }).filter(Objects::nonNull).toList();
+        List<CustomForm> customForms = customFormMapper.selectByIds(accessibleFormIds.stream().toList());
+        return customForms.stream()
+                .map(form -> {
+                    CustomFormListResponse resp = new CustomFormListResponse();
+                    resp.setId(form.getId());
+                    resp.setName(form.getName());
+                    resp.setEnable(form.getEnable());
+                    // 标记是否是管理员
+                    resp.setIsAdmin(adminFormIds.contains(form.getId()));
+                    return resp;
+                }).toList();
     }
 
-    public CustomFormGetResponse get(String id, String userId) {
+    public CustomFormGetResponse get(String id, String userId, String orgId) {
         checkFormAccess(id, userId);
 
         CustomForm form = customFormMapper.selectByPrimaryKey(id);
+        ModuleForm moduleForm = moduleFormMapper.selectByPrimaryKey(id);
         if (form == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
         CustomFormGetResponse resp = BeanUtils.copyBean(new CustomFormGetResponse(), form);
-        baseService.setCreateUpdateOwnerUserName(resp);
+
+        if (moduleForm != null) {
+            ModuleFormConfigDTO businessFormConfig = moduleFormService.getBusinessFormConfig(moduleForm.getFormKey(), orgId);
+            resp.setFields(businessFormConfig.getFields());
+            resp.setFormProp(businessFormConfig.getFormProp());
+        }
 
         Set<String> adminFormIds = getAdminFormIds(userId);
         resp.setIsAdmin(adminFormIds.contains(id));
-
         return resp;
     }
 
-    public CustomForm create(CustomFormSaveRequest request, String userId, String orgId) {
+    public CustomForm create(CustomFormAddRequest request, String userId, String orgId) {
         String formId = IDGenerator.nextStr();
 
-        // 1. save custom_form
+        // 保存 custom_form
         CustomForm form = new CustomForm();
         form.setId(formId);
         form.setName(request.getName());
-        form.setEnable(request.getEnable() != null ? request.getEnable() : false);
-        form.setCreateTime(System.currentTimeMillis());
-        form.setUpdateTime(System.currentTimeMillis());
-        form.setCreateUser(userId);
-        form.setUpdateUser(userId);
+        form.setEnable(BooleanUtils.isTrue(request.getEnable()));
         customFormMapper.insert(form);
 
-        // 2. save sys_module_form with same ID
+        // 保存 sys_module_form 使用相同的 ID
         ModuleForm moduleForm = new ModuleForm();
         moduleForm.setId(formId);
         moduleForm.setFormKey(UUID.randomUUID().toString().substring(20));
@@ -119,38 +129,50 @@ public class CustomFormService {
         moduleForm.setUpdateUser(userId);
         moduleFormMapper.insert(moduleForm);
 
+        // 保存表单配置
         ModuleFormBlob formBlob = new ModuleFormBlob();
         formBlob.setId(formId);
-        formBlob.setProp(request.getFormProp() != null ? JSON.toJSONString(request.getFormProp()) : "{}");
+        FormProp formProp = getFormPropForCreate(request.getFormProp());
+        formBlob.setProp(JSON.toJSONString(formProp));
         moduleFormBlobMapper.insert(formBlob);
 
-        // 3. save form fields via ModuleFormSaveRequest
-        if (CollectionUtils.isNotEmpty(request.getFields())) {
-            ModuleFormSaveRequest formSaveRequest = new ModuleFormSaveRequest();
-            formSaveRequest.setFormKey(moduleForm.getFormKey());
-            formSaveRequest.setFields(request.getFields());
-            formSaveRequest.setFormProp(request.getFormProp());
-            moduleFormCacheService.save(formSaveRequest, userId, orgId);
-        }
+        // 保存字段
+        moduleFormService.saveFields(request.getFields(), form.getId(), userId);
 
-        // 4. create built-in roles (batch)
+        // 创建内置角色
         createBuiltinRoles(formId, userId);
 
-        // 5. add creator as admin
+        // 将当前用户设置为管理员
+        createFormAdmin(userId, formId);
+
+        return form;
+    }
+
+    private void createFormAdmin(String userId, String formId) {
         CustomFormAdmin admin = new CustomFormAdmin();
         admin.setId(IDGenerator.nextStr());
         admin.setCustomFormId(formId);
         admin.setUserId(userId);
         customFormAdminMapper.insert(admin);
-
-        return form;
     }
 
-    public void update(CustomFormUpdateRequest request, String userId) {
-        checkFormAdmin(request.getId(), userId);
+    private FormProp getFormPropForCreate(FormProp createFormProp) {
+        if (createFormProp == null) {
+            try {
+                return JSON.parseObject(formResource.getInputStream(), FormProp.class);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                return new FormProp();
+            }
+        }
+        return createFormProp;
+    }
 
-        CustomForm form = customFormMapper.selectByPrimaryKey(request.getId());
-        if (form == null) {
+    public void update(CustomFormUpdateRequest request, String userId, String orgId) {
+        checkFormAdmin(request.getId(), userId);
+        CustomForm originForm = customFormMapper.selectByPrimaryKey(request.getId());
+        ModuleForm originModuleForm = moduleFormMapper.selectByPrimaryKey(request.getId());
+        if (originForm == null || originModuleForm == null) {
             throw new GenericException(Translator.get("custom.form.not.exist"));
         }
 
@@ -158,9 +180,14 @@ public class CustomFormService {
         updateForm.setId(request.getId());
         updateForm.setName(request.getName());
         updateForm.setEnable(request.getEnable());
-        updateForm.setUpdateTime(System.currentTimeMillis());
-        updateForm.setUpdateUser(userId);
         customFormMapper.update(updateForm);
+
+        ModuleFormSaveRequest moduleFormRequest = new ModuleFormSaveRequest();
+        moduleFormRequest.setFormKey(originModuleForm.getFormKey());
+        moduleFormRequest.setFormProp(request.getFormProp());
+        moduleFormRequest.setFields(request.getFields());
+
+        moduleFormCacheService.save(moduleFormRequest, userId, orgId);
     }
 
     public void delete(String id, String userId) {
@@ -171,14 +198,21 @@ public class CustomFormService {
             throw new GenericException(Translator.get("custom.form.not.exist"));
         }
 
-        // delete custom_form_admin
-        LambdaQueryWrapper<CustomFormAdmin> adminWrapper = new LambdaQueryWrapper<>();
-        adminWrapper.eq(CustomFormAdmin::getCustomFormId, id);
-        customFormAdminMapper.deleteByLambda(adminWrapper);
+        // 删除表单管理员
+        deleteCustomFormAdminByFormId(id);
 
-        // delete custom_form_role_user and custom_form_role
+        // 删除表单角色和成员
+        deleteCustomFormRoleAndUser(id);
+
+        // 删除表单
+        customFormMapper.deleteByIds(List.of(id));
+
+        // todo 删除表单数据
+    }
+
+    private void deleteCustomFormRoleAndUser(String formId) {
         LambdaQueryWrapper<CustomFormRole> roleWrapper = new LambdaQueryWrapper<>();
-        roleWrapper.eq(CustomFormRole::getCustomFormId, id);
+        roleWrapper.eq(CustomFormRole::getCustomFormId, formId);
         List<CustomFormRole> roles = customFormRoleMapper.selectListByLambda(roleWrapper);
         if (CollectionUtils.isNotEmpty(roles)) {
             List<String> roleIds = roles.stream().map(CustomFormRole::getId).toList();
@@ -187,17 +221,20 @@ public class CustomFormService {
             customFormRoleUserMapper.deleteByLambda(roleUserWrapper);
             customFormRoleMapper.deleteByLambda(roleWrapper);
         }
+    }
 
-        // delete custom_form
-        customFormMapper.deleteByIds(List.of(id));
+    private void deleteCustomFormAdminByFormId(String formId) {
+        LambdaQueryWrapper<CustomFormAdmin> adminWrapper = new LambdaQueryWrapper<>();
+        adminWrapper.eq(CustomFormAdmin::getCustomFormId, formId);
+        customFormAdminMapper.deleteByLambda(adminWrapper);
     }
 
     public void addAdmins(CustomFormAdminBatchRequest request, String userId) {
+        // 校验是否是管理员
         checkFormAdmin(request.getCustomFormId(), userId);
 
         String formId = request.getCustomFormId();
 
-        // query existing admins for dedup
         LambdaQueryWrapper<CustomFormAdmin> existWrapper = new LambdaQueryWrapper<>();
         existWrapper.eq(CustomFormAdmin::getCustomFormId, formId)
                 .in(CustomFormAdmin::getUserId, request.getUserIds());
@@ -230,19 +267,44 @@ public class CustomFormService {
         }
     }
 
-    // --- Permission helpers ---
-
     private void checkFormAccess(String formId, String userId) {
-        Set<String> accessibleFormIds = getAccessibleFormIds(userId);
-        if (!accessibleFormIds.contains(formId)) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        if (InternalUser.ADMIN.equals(userId)) {
+            return;
         }
+
+        CustomFormAdmin example = new CustomFormAdmin();
+        example.setCustomFormId(formId);
+        example.setUserId(userId);
+        Long adminCount = customFormAdminMapper.countByExample(example);
+        if (adminCount > 0) {
+            return;
+        }
+
+        LambdaQueryWrapper<CustomFormRoleUser> ruWrapper = new LambdaQueryWrapper<>();
+        ruWrapper.eq(CustomFormRoleUser::getUserId, userId);
+        List<CustomFormRoleUser> roleUsers = customFormRoleUserMapper.selectListByLambda(ruWrapper);
+        if (CollectionUtils.isNotEmpty(roleUsers)) {
+            List<String> roleIds = roleUsers.stream().map(CustomFormRoleUser::getRoleId).distinct().toList();
+            LambdaQueryWrapper<CustomFormRole> roleWrapper = new LambdaQueryWrapper<>();
+            roleWrapper.eq(CustomFormRole::getCustomFormId, formId)
+                    .in(CustomFormRole::getId, roleIds);
+            List<CustomFormRole> roles = customFormRoleMapper.selectListByLambda(roleWrapper);
+            if (CollectionUtils.isNotEmpty(roles)) {
+                return;
+            }
+        }
+
+        throw new GenericException(CrmHttpResultCode.FORBIDDEN);
     }
 
     private void checkFormAdmin(String formId, String userId) {
-        LambdaQueryWrapper<CustomFormAdmin> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomFormAdmin::getCustomFormId, formId).eq(CustomFormAdmin::getUserId, userId);
-        if (customFormAdminMapper.selectListByLambda(wrapper).isEmpty()) {
+        if (InternalUser.ADMIN.equals(userId)) {
+            return;
+        }
+        CustomFormAdmin example = new CustomFormAdmin();
+        example.setCustomFormId(formId);
+        example.setUserId(userId);
+        if (customFormAdminMapper.countByExample(example) == 0) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
     }
@@ -254,18 +316,7 @@ public class CustomFormService {
         return admins.stream().map(CustomFormAdmin::getCustomFormId).collect(Collectors.toSet());
     }
 
-    /**
-     * Combined query: returns form IDs where user is either admin or role member.
-     * Replaces the separate getAdminFormIds + getMemberFormIds for access checks.
-     */
-    private Set<String> getAccessibleFormIds(String userId) {
-        // admin form ids
-        LambdaQueryWrapper<CustomFormAdmin> adminWrapper = new LambdaQueryWrapper<>();
-        adminWrapper.eq(CustomFormAdmin::getUserId, userId);
-        List<CustomFormAdmin> admins = customFormAdminMapper.selectListByLambda(adminWrapper);
-        Set<String> formIds = admins.stream().map(CustomFormAdmin::getCustomFormId).collect(Collectors.toSet());
-
-        // role-member form ids: role_user -> role -> formId
+    private Set<String> getMemberFormIds(String userId) {
         LambdaQueryWrapper<CustomFormRoleUser> ruWrapper = new LambdaQueryWrapper<>();
         ruWrapper.eq(CustomFormRoleUser::getUserId, userId);
         List<CustomFormRoleUser> roleUsers = customFormRoleUserMapper.selectListByLambda(ruWrapper);
@@ -274,10 +325,9 @@ public class CustomFormService {
             LambdaQueryWrapper<CustomFormRole> roleWrapper = new LambdaQueryWrapper<>();
             roleWrapper.in(CustomFormRole::getId, roleIds);
             List<CustomFormRole> roles = customFormRoleMapper.selectListByLambda(roleWrapper);
-            roles.forEach(r -> formIds.add(r.getCustomFormId()));
+            return roles.stream().map(CustomFormRole::getCustomFormId).collect(Collectors.toSet());
         }
-
-        return formIds;
+        return Set.of();
     }
 
     private void createBuiltinRoles(String formId, String userId) {

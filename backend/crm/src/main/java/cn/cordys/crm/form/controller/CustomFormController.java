@@ -4,7 +4,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
-import cn.cordys.crm.form.dto.request.CustomFormSaveRequest;
+import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
@@ -38,13 +38,13 @@ public class CustomFormController {
     @Operation(summary = "自定义表单详情")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public CustomFormGetResponse get(@PathVariable String id) {
-        return customFormService.get(id, SessionUtils.getUserId());
+        return customFormService.get(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
     @Operation(summary = "创建自定义表单")
     @CsPermission(PermissionConstants.CUSTOM_FORM_ADD)
-    public CustomForm create(@Validated @RequestBody CustomFormSaveRequest request) {
+    public CustomForm create(@Validated @RequestBody CustomFormAddRequest request) {
         return customFormService.create(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -52,7 +52,7 @@ public class CustomFormController {
     @Operation(summary = "更新自定义表单")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void update(@Validated @RequestBody CustomFormUpdateRequest request) {
-        customFormService.update(request, SessionUtils.getUserId());
+        customFormService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")

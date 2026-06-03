@@ -25,7 +25,7 @@ import java.util.Objects;
  */
 @Aspect
 @Component
-public class RequiresPermissionAspect {
+public class CsPermissionAspect {
 
     private final ExpressionParser parser = new SpelExpressionParser();
     private final StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();

@@ -10,7 +10,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class CustomFormSaveRequest {
+public class CustomFormAddRequest {
 
     @NotBlank
     @Size(max = 255)
