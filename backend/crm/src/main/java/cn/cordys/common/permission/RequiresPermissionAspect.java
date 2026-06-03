@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @CsPermission 注解切面
@@ -141,12 +142,12 @@ public class RequiresPermissionAspect {
                 // SpEL {expr} 包了一层 list，如果唯一元素也是 list，则展平
                 if (list.size() == 1 && list.getFirst() instanceof List<?> inner) {
                     return inner.stream()
-                            .filter(item -> item != null)
+                            .filter(Objects::nonNull)
                             .map(Object::toString)
                             .toList();
                 }
                 return list.stream()
-                        .filter(item -> item != null)
+                        .filter(Objects::nonNull)
                         .map(Object::toString)
                         .toList();
             }
