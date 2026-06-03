@@ -193,7 +193,7 @@
   }
 
   // 待办
-  const pendingApprovalCount = ref(0);
+  const pendingApprovalCount = computed(() => appStore.todoStatistic.total);
   const showTaskDrawer = ref(false);
   const activeTaskType = ref<ApprovalListTypeEnum>(ApprovalListTypeEnum.PENDING);
   function openTaskDrawer(type: ApprovalListTypeEnum) {
@@ -208,19 +208,9 @@
     return appStore.messageInfo.notificationDTOList;
   });
 
-  async function initApprovalPendingCount() {
-    try {
-      const res = await getTodoStatistic();
-      pendingApprovalCount.value = res.total;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   onBeforeMount(() => {
     appStore.initMessage();
-    initApprovalPendingCount();
+    appStore.initTodoStatistic();
   });
 </script>
 

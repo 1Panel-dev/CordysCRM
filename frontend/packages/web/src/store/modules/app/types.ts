@@ -3,6 +3,7 @@ import { UploadFileInfo } from 'naive-ui';
 import type { SystemVersion } from '@lib/shared/models/common';
 import { ThirdPartyResource } from '@lib/shared/models/system/business';
 import type { ModuleNavBaseInfoItem, ModuleNavTopItem } from '@lib/shared/models/system/module';
+import type { TodoStatistic } from '@lib/shared/models/system/process';
 import type { MessageInfo } from '@lib/shared/models/user';
 
 import { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -79,4 +80,5 @@ export interface AppState {
   navTopConfigList: ModuleNavTopItem[]; // 顶导配置
   activePlatformResource: ThirdPartyResource; // 当前激活的平台资源
   stageConfigList: Option[]; // 商机阶段配置
+  todoStatistic: TodoStatistic; // 待办统计
 }

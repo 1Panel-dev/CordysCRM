@@ -36,9 +36,9 @@
                 }
               "
             >
-              <template #icon>
+              <n-badge value="1" dot :show="appStore.todoStatistic.total > 0">
                 <CrmIcon type="iconicon_contract" :size="16" />
-              </template>
+              </n-badge>
             </n-button>
           </template>
           <template #eventSlot>
