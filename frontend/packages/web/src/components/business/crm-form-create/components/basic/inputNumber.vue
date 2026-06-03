@@ -23,7 +23,7 @@
     <CrmInputNumber
       v-model:value="value"
       :max="1000000000"
-      :min="props.fieldConfig.min"
+      :min="-1000000000"
       :placeholder="props.fieldConfig.placeholder"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :parse="parse"
@@ -97,7 +97,8 @@
 
   function parse(val: string) {
     const nums = val.toString().replace(/,/g, '').trim();
-    if ((!props.fieldConfig.showThousandsSeparator || /^\d+(\.(\d+)?)?$/.test(nums)) && nums !== '') {
+    const numericPattern = /^-?\d+(\.(\d+)?)?$/;
+    if ((!props.fieldConfig.showThousandsSeparator || numericPattern.test(nums)) && nums !== '') {
       return Number(nums);
     }
     return nums === '' ? null : Number.NaN;
