@@ -15,7 +15,8 @@ public enum BusinessTitleConstants {
     CITY("city", "市", "City"),
     SCALE("scale", "企业规模", "Scale"),
     INDUSTRY("industry", "国标行业", "Industry"),
-    REMARK("remark", "备注", "Remark");
+    REMARK("remark", "备注", "Remark"),
+    COMPANY_NUMBER("companyNumber", "公司编号", "Company number");
 
     private final String key;
     private final String ch;
