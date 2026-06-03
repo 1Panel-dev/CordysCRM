@@ -635,6 +635,15 @@
     });
   }
 
+  watch(
+    () => activePostTab.value,
+    (val) => {
+      if (val) {
+        webHookFormRef.value?.restoreValidation();
+      }
+    }
+  );
+
   function normalizeFieldUpdateConfigs(config?: ApprovalPostConfig) {
     if (props.readonly || !config) {
       return;
