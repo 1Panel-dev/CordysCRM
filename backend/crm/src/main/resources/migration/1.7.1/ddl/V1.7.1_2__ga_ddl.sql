@@ -107,5 +107,7 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_resource_id ON custom_form_data_field_blob(resource_id ASC);
 
 
+ALTER TABLE business_title ADD COLUMN company_number BIGINT NOT NULL AUTO_INCREMENT UNIQUE;
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

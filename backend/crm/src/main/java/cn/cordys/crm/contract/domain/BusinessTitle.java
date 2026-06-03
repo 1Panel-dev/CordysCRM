@@ -63,4 +63,7 @@ public class BusinessTitle extends BaseModel {
 
     @Schema(description = "备注")
     private String remark;
+
+    @Schema(description = "公司编号")
+    private String companyNumber;
 }
