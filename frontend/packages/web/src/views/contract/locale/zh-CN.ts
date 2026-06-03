@@ -42,7 +42,7 @@ export default {
   'contract.paymentRecord.deleteConfirmContent': '删除后，将扣除已回款金额，请谨慎操作！',
   'contract.businessTitle.add': '新建工商抬头',
   'contract.businessTitle.update': '更新工商抬头',
-  'contract.businessTitle.companyCode': '公司编码',
+  'contract.businessTitle.companyCode': '公司编号',
   'contract.businessTitle.companyName': '公司名称',
   'contract.businessTitle.addMethod': '添加方式',
   'contract.businessTitle.addMethodThird': '第三方',

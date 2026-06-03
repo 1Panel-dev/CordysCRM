@@ -5,7 +5,30 @@
 
     <select id="list" resultType="cn.cordys.crm.contract.dto.response.BusinessTitleListResponse">
         SELECT
-        bt.*
+        bt.id,
+        bt.name,
+        bt.type,
+        bt.identification_number,
+        bt.opening_bank,
+        bt.bank_account,
+        bt.registration_address,
+        bt.phone_number,
+        bt.registered_capital,
+        bt.company_size,
+        bt.registration_number,
+        bt.approval_status,
+        bt.unapproved_reason,
+        bt.organization_id,
+        bt.create_time,
+        bt.update_time,
+        bt.create_user,
+        bt.update_user,
+        bt.province,
+        bt.scale,
+        bt.industry,
+        bt.city,
+        bt.remark,
+        CONCAT('CO.NO.', LPAD(company_number, 8, '0')) AS companyNumber
         FROM
         business_title bt
         WHERE
@@ -143,6 +166,28 @@
                     <property name="column" value="bt.remark"/>
                 </include>
             </when>
+            <when test="condition.name == 'companyNumber'">
+                <if test="condition.operator == 'CONTAINS'">
+                    CONCAT('CO.NO.', LPAD(bt.company_number, 8, '0'))
+                    LIKE CONCAT('%', #{condition.value}, '%')
+                </if>
+                <if test="condition.operator == 'NOT_CONTAINS'">
+                    CONCAT('CO.NO.', LPAD(bt.company_number, 8, '0'))
+                    NOT LIKE CONCAT('%', #{condition.value}, '%')
+                </if>
+                <if test="condition.operator == 'EMPTY'">
+                    bt.company_number IS NULL OR bt.company_number = ''
+                </if>
+                <if test="condition.operator == 'NOT_EMPTY'">
+                    bt.company_number IS NOT NULL AND bt.company_number != ''
+                </if>
+                <if test="condition.operator == 'EQUALS'">
+                    CONCAT('CO.NO.', LPAD(bt.company_number, 8, '0')) = #{condition.value}
+                </if>
+                <if test="condition.operator == 'NOT_EQUALS'">
+                    CONCAT('CO.NO.', LPAD(bt.company_number, 8, '0')) != #{condition.value}
+                </if>
+            </when>
             <when test="condition.name == 'createTime'">
                 <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
@@ -196,7 +241,8 @@
                 <choose>
                     <when test="${sort}.name in
                         {'name', 'type', 'create_time', 'update_time', 'identification_number', 'opening_bank', 'create_user', 'update_user', 'bank_account', 'registration_address',
-                         'phone_number', 'registered_capital', 'company_size', 'registration_number', 'approval_status', 'unapproved_reason', 'province', 'city', 'scale', 'industry', 'remark'
+                         'phone_number', 'registered_capital', 'company_size', 'registration_number', 'approval_status', 'unapproved_reason', 'province', 'city', 'scale', 'industry'
+                         , 'remark', 'company_number'
                         }">
                         bt.${sortName} ${sortType}, bt.id ASC
                     </when>
@@ -213,7 +259,30 @@
 
     <select id="getListByIds" resultType="cn.cordys.crm.contract.dto.response.BusinessTitleListResponse">
         SELECT
-        bt.*
+        bt.id,
+        bt.name,
+        bt.type,
+        bt.identification_number,
+        bt.opening_bank,
+        bt.bank_account,
+        bt.registration_address,
+        bt.phone_number,
+        bt.registered_capital,
+        bt.company_size,
+        bt.registration_number,
+        bt.approval_status,
+        bt.unapproved_reason,
+        bt.organization_id,
+        bt.create_time,
+        bt.update_time,
+        bt.create_user,
+        bt.update_user,
+        bt.province,
+        bt.scale,
+        bt.industry,
+        bt.city,
+        bt.remark,
+        CONCAT('CO.NO.', LPAD(company_number, 8, '0')) AS companyNumber
         FROM
         business_title bt
         where bt.organization_id = #{orgId}
@@ -236,7 +305,7 @@
 
     <select id="selectByNames" resultType="cn.cordys.crm.contract.domain.BusinessTitle">
         select id, name, identification_number, opening_bank, bank_account, registration_address, phone_number,
-        registered_capital, company_size, registration_number, province, scale, industry, city, remark
+        registered_capital, company_size, registration_number, province, scale, industry, city, remark, company_number
         from business_title
         where name in
         <foreach collection="names" item="name" open="(" close=")" separator=",">
