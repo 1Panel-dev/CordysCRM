@@ -160,10 +160,6 @@ public class ContractInvoiceService {
             // 校验发票金额
             throw new GenericException(Translator.get("invoice.amount.exceed"));
         }
-        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            // 金额 > 0
-            throw new GenericException(Translator.get("invoice.amount.illegal"));
-        }
 
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         ContractInvoice invoice = BeanUtils.copyBean(new ContractInvoice(), request);
@@ -240,13 +236,8 @@ public class ContractInvoiceService {
             // 校验发票金额
             throw new GenericException(Translator.get("invoice.amount.exceed"));
         }
-
-        if (request.getAmount() != null && request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            // 金额 > 0
-            throw new GenericException(Translator.get("invoice.amount.illegal"));
-        }
-
         dataScopeService.checkDataPermission(userId, orgId, originContractInvoice.getOwner(), PermissionConstants.CONTRACT_INVOICE_UPDATE);
+
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         Optional.of(originContractInvoice).ifPresentOrElse(item -> {
             List<BaseModuleFieldValue> originFields = invoiceFieldService.getModuleFieldValuesByResourceId(request.getId());
