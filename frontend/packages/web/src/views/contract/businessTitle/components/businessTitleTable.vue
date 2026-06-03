@@ -595,6 +595,11 @@
       dataIndex: 'remark',
       type: FieldTypeEnum.INPUT,
     },
+    {
+      title: t('contract.businessTitle.companyCode'),
+      dataIndex: 'companyNumber',
+      type: FieldTypeEnum.INPUT,
+    },
     ...baseFilterConfigList,
   ]);
 

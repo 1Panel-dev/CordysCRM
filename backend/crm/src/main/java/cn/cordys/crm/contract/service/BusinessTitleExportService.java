@@ -88,6 +88,7 @@ public class BusinessTitleExportService extends BaseExportService {
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
         systemFieldMap.put("updateUser", data.getUpdateUserName());
         systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+        systemFieldMap.put("companyNumber", data.getCompanyNumber());
         return systemFieldMap;
     }
 

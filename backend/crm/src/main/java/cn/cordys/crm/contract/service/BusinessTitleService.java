@@ -242,6 +242,7 @@ public class BusinessTitleService {
      */
     public BusinessTitleListResponse get(String id) {
         BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
+        businessTitle.setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
         if (businessTitle == null) {
             throw new GenericException(Translator.get("business_title.not.exist"));
         }
@@ -258,6 +259,7 @@ public class BusinessTitleService {
      */
     public BusinessTitleListResponse getSimple(String id) {
         BusinessTitle businessTitle = businessTitleMapper.selectByPrimaryKey(id);
+        businessTitle.setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(businessTitle.getCompanyNumber())));
         if (businessTitle == null) {
             return null;
         }
@@ -277,6 +279,9 @@ public class BusinessTitleService {
 		if (CollectionUtils.isEmpty(titles)) {
 			return Collections.emptyList();
 		}
+        for (BusinessTitle title : titles) {
+            title.setCompanyNumber("CO.NO." + String.format("%08d", Long.parseLong(title.getCompanyNumber())));
+        }
 		return titles.stream().map(title -> BeanUtils.copyBean(new BusinessTitleListResponse(), title)).toList();
 	}
 
