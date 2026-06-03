@@ -15,7 +15,7 @@ import java.util.List;
 
 @Tag(name = "自定义表单角色")
 @RestController
-@RequestMapping("/cf/role")
+@RequestMapping("/custom-form/role")
 public class CustomFormRoleController {
 
     @Resource

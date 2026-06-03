@@ -288,6 +288,11 @@ public enum BusinessModuleField {
     /*------ end: ORDER ------*/
 
 
+    /*------ start: ORDER ------*/
+    CUSTOM_FORM_DATA_NAME("customFormDataName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
+    CUSTOM_FORM_DATA_OWNER("customFormDataNOwner", "owner", Set.of(), FormKey.ORDER.getKey()),
+    /*------ end: ORDER ------*/
+
     ;
 
     /**
@@ -334,7 +339,14 @@ public enum BusinessModuleField {
      * @return 是否被删除
      */
     public static boolean isBusinessDeleted(String formKey, List<BaseField> fields) {
-        List<BusinessModuleField> formBusinessFields = Arrays.stream(BusinessModuleField.values()).filter(field -> Strings.CS.equals(formKey, field.getFormKey())).toList();
+        List<BusinessModuleField> formBusinessFields;
+        if (FormKey.ofKey(formKey) == null) {
+            // 如果不是内置表单，则校验自定义表单字段必须要名字和负责人
+            formBusinessFields = List.of(BusinessModuleField.CUSTOM_FORM_DATA_NAME, BusinessModuleField.CUSTOM_FORM_DATA_OWNER);
+        } else {
+            formBusinessFields = Arrays.stream(BusinessModuleField.values()).filter(field -> Strings.CS.equals(formKey, field.getFormKey())).toList();
+        }
+
         if (CollectionUtils.isEmpty(formBusinessFields)) {
             return false;
         }
