@@ -14,7 +14,13 @@
           <div
             class="task-item"
             :class="selectedKeys.includes(item.approvalTaskId) ? '!border-[var(--primary-8)]' : ''"
-            @click.stop="emit('openDetail', item.resourceId, item.approvalFlowId, item.approvalTaskId)"
+            @click.stop="
+              () => {
+                if (!props.activeTaskType.includes('copied') || getResourcePermission(item)) {
+                  emit('openDetail', item.resourceId, item.approvalFlowId, item.approvalTaskId);
+                }
+              }
+            "
           >
             <n-checkbox
               v-if="props.activeTaskType?.includes('pending') && approvalConfigDetail?.allowBatchProcess"
