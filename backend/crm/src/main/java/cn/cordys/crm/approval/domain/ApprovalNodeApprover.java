@@ -37,7 +37,7 @@ public class ApprovalNodeApprover {
     @Schema(description = "审批人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
     private String approverType;
 
-    @Schema(description = "审批人方向：BOTTOM_UP(从下往上)/TOP_DOWN(从上往下)，仅MULTIPLE_SUPERIOR/MULTIPLE_DEPT_HEAD生效")
+    @Schema(description = "审批人方向：BOTTOM_UP(从下往上)/TOP_DOWN(从上往下)，适用于SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD")
     private String approverDirection;
 
     @Schema(description = "审批人列表（JSON数组）")
@@ -46,7 +46,7 @@ public class ApprovalNodeApprover {
     @Schema(description = "抄送人类型：MEMBER/SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD/ROLE")
     private String ccType;
 
-    @Schema(description = "抄送人方向：BOTTOM_UP(从下往上)/TOP_DOWN(从上往下)，仅MULTIPLE_SUPERIOR/MULTIPLE_DEPT_HEAD生效")
+    @Schema(description = "抄送人方向：BOTTOM_UP(从下往上)/TOP_DOWN(从上往下)，适用于SUPERIOR/MULTIPLE_SUPERIOR/DEPT_HEAD/MULTIPLE_DEPT_HEAD")
     private String ccDirection;
 
     @Schema(description = "抄送人列表（JSON数组）")
