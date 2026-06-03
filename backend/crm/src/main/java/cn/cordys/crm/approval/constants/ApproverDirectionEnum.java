@@ -1,7 +1,7 @@
 package cn.cordys.crm.approval.constants;
 
 /**
- * 审批人方向枚举（多级上级/多级部门负责人）
+ * 审批人方向枚举（上级/部门负责人）
  */
 public enum ApproverDirectionEnum {
 

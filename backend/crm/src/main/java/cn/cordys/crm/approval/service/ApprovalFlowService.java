@@ -1300,9 +1300,9 @@ public class ApprovalFlowService {
         return switch (approverType) {
             case MEMBER -> resolveMemberApprovers(orgId, approverList);
             case ROLE -> resolveRoleApprovers(orgId, approverList);
-            case SUPERIOR -> resolveSuperiorApprovers(orgId, currentUser, approverList);
+            case SUPERIOR -> resolveSuperiorApprovers(orgId, currentUser, approverList, direction);
             case MULTIPLE_SUPERIOR -> resolveMultipleSuperiorApprovers(orgId, currentUser, approverList, direction);
-            case DEPT_HEAD -> resolveDeptHeadApprovers(orgId, currentUser, approverList);
+            case DEPT_HEAD -> resolveDeptHeadApprovers(orgId, currentUser, approverList, direction);
             case MULTIPLE_DEPT_HEAD -> resolveMultipleDeptHeadApprovers(orgId, currentUser, approverList, direction);
         };
     }
@@ -1376,29 +1376,19 @@ public class ApprovalFlowService {
     /**
      * 解析指定上级审批人
      */
-    private List<User> resolveSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+    private List<User> resolveSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList, ApproverDirectionEnum direction) {
 		if (currentUser == null) {
 			return List.of();
 		}
         // 值是单选
-        Integer approvalLevel = getValidLevel(approverList);
-
-        String approver = null;
-        String currentSupervisorId = currentUser.getSupervisorId();
-
-        for (int level = 1; level <= approvalLevel && StringUtils.isNotBlank(currentSupervisorId); level++) {
-            if (approvalLevel.equals(level)) {
-                approver = currentSupervisorId;
-                break;
-            }
-            OrganizationUser supervisorOrgUser = getOrganizationUser(currentSupervisorId, orgId);
-            if (supervisorOrgUser == null) {
-                break;
-            }
-            currentSupervisorId = supervisorOrgUser.getSupervisorId();
+        int approvalLevel = getValidLevel(approverList);
+        if (approvalLevel <= 0) {
+            return List.of();
         }
 
-        if (approver == null) {
+        List<String> allSuperiorIds = getAllSuperiorIds(orgId, currentUser);
+        String approver = getLevelUserId(allSuperiorIds, approvalLevel, direction);
+        if (StringUtils.isBlank(approver)) {
             return List.of();
         }
 
@@ -1417,7 +1407,28 @@ public class ApprovalFlowService {
             return List.of();
         }
 
-        // 从下往上收集所有上级
+        List<String> allSuperiorIds = getAllSuperiorIds(orgId, currentUser);
+        if (allSuperiorIds.isEmpty()) {
+            return List.of();
+        }
+        if (approvalLevel > allSuperiorIds.size()) {
+            return List.of();
+        }
+
+        // 根据方向截取：BOTTOM_UP 取前 approvalLevel 个；TOP_DOWN 取到从顶往下第 approvalLevel 层
+        List<String> resultIds;
+        if (direction == ApproverDirectionEnum.TOP_DOWN) {
+            int total = allSuperiorIds.size();
+            int endExclusive = total - approvalLevel + 1;
+            resultIds = allSuperiorIds.subList(0, endExclusive);
+        } else {
+            resultIds = allSuperiorIds.subList(0, approvalLevel);
+        }
+
+        return resolveMemberApprovers(orgId, resultIds);
+    }
+
+    private List<String> getAllSuperiorIds(String orgId, OrganizationUser currentUser) {
         List<String> allSuperiorIds = new ArrayList<>();
         String currentSupervisorId = currentUser.getSupervisorId();
 
@@ -1429,22 +1440,7 @@ public class ApprovalFlowService {
             }
             currentSupervisorId = supervisorOrgUser.getSupervisorId();
         }
-
-        if (allSuperiorIds.isEmpty()) {
-            return List.of();
-        }
-
-        // 根据方向截取：BOTTOM_UP 取前 approvalLevel 个；TOP_DOWN 取到从顶往下第 approvalLevel 层
-        List<String> resultIds;
-        if (direction == ApproverDirectionEnum.TOP_DOWN) {
-            int total = allSuperiorIds.size();
-            int endExclusive = Math.min(total, Math.max(1, total - approvalLevel + 1));
-            resultIds = allSuperiorIds.subList(0, endExclusive);
-        } else {
-            resultIds = allSuperiorIds.subList(0, Math.min(allSuperiorIds.size(), approvalLevel));
-        }
-
-        return resolveMemberApprovers(orgId, resultIds);
+        return allSuperiorIds;
     }
 
     private Integer getValidLevel(List<String> approverList) {
@@ -1469,7 +1465,7 @@ public class ApprovalFlowService {
     /**
      * 解析部门的负责人审批人
      */
-    private List<User> resolveDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList) {
+    private List<User> resolveDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList, ApproverDirectionEnum direction) {
 		if (currentUser == null) {
 			return List.of();
 		}
@@ -1479,21 +1475,13 @@ public class ApprovalFlowService {
         }
 
         // 值是单选
-        Integer approvalLevel = getValidLevel(approverList);
-
-        String commanderId = null;
-        String currentDepartmentId = departmentId;
-
-        for (int level = 1; level <= approvalLevel && StringUtils.isNotBlank(currentDepartmentId); level++) {
-            String currentCommanderId = getDeptCommander(orgId, currentDepartmentId);
-            if (StringUtils.isNotBlank(currentCommanderId) && approvalLevel.equals(level)) {
-                commanderId = currentCommanderId;
-                break;
-            }
-            // 获取父部门，继续向上查找
-            currentDepartmentId = getParentDepartmentId(currentDepartmentId);
+        int approvalLevel = getValidLevel(approverList);
+        if (approvalLevel <= 0) {
+            return List.of();
         }
 
+        List<String> allCommanderIds = getAllDeptCommanderIds(orgId, departmentId);
+        String commanderId = getLevelUserId(allCommanderIds, approvalLevel, direction);
         if (StringUtils.isBlank(commanderId)) {
             return List.of();
         }
@@ -1526,7 +1514,28 @@ public class ApprovalFlowService {
             return List.of();
         }
 
-        // 从下往上收集所有部门负责人
+        List<String> allCommanderIds = getAllDeptCommanderIds(orgId, departmentId);
+        if (allCommanderIds.isEmpty()) {
+            return List.of();
+        }
+        if (approvalLevel > allCommanderIds.size()) {
+            return List.of();
+        }
+
+        // 根据方向截取：BOTTOM_UP 取前 approvalLevel 个；TOP_DOWN 取到从顶往下第 approvalLevel 层
+        List<String> resultIds;
+        if (direction == ApproverDirectionEnum.TOP_DOWN) {
+            int total = allCommanderIds.size();
+            int endExclusive = total - approvalLevel + 1;
+            resultIds = allCommanderIds.subList(0, endExclusive);
+        } else {
+            resultIds = allCommanderIds.subList(0, approvalLevel);
+        }
+
+        return resolveMemberApprovers(orgId, resultIds);
+    }
+
+    private List<String> getAllDeptCommanderIds(String orgId, String departmentId) {
         List<String> allCommanderIds = new ArrayList<>();
         String currentDepartmentId = departmentId;
 
@@ -1537,22 +1546,17 @@ public class ApprovalFlowService {
             }
             currentDepartmentId = getParentDepartmentId(currentDepartmentId);
         }
+        return allCommanderIds;
+    }
 
-        if (allCommanderIds.isEmpty()) {
-            return List.of();
+    private String getLevelUserId(List<String> bottomUpUserIds, int approvalLevel, ApproverDirectionEnum direction) {
+        if (CollectionUtils.isEmpty(bottomUpUserIds) || approvalLevel <= 0 || approvalLevel > bottomUpUserIds.size()) {
+            return null;
         }
-
-        // 根据方向截取：BOTTOM_UP 取前 approvalLevel 个；TOP_DOWN 取到从顶往下第 approvalLevel 层
-        List<String> resultIds;
         if (direction == ApproverDirectionEnum.TOP_DOWN) {
-            int total = allCommanderIds.size();
-            int endExclusive = Math.min(total, Math.max(1, total - approvalLevel + 1));
-            resultIds = allCommanderIds.subList(0, endExclusive);
-        } else {
-            resultIds = allCommanderIds.subList(0, Math.min(allCommanderIds.size(), approvalLevel));
+            return bottomUpUserIds.get(bottomUpUserIds.size() - approvalLevel);
         }
-
-        return resolveMemberApprovers(orgId, resultIds);
+        return bottomUpUserIds.get(approvalLevel - 1);
     }
 
     /**
