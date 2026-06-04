@@ -38,6 +38,7 @@
             no-content
             :tab-list="props.tabList"
             type="line"
+            :before-leave="props.beforeChangeTab"
           />
         </div>
         <div class="crm-process-drawer-header-item flex justify-end gap-[12px]">
@@ -87,6 +88,7 @@
       readonly?: boolean;
       width?: string | number;
       minWidth?: number;
+      beforeChangeTab?: (newVal: string | number, oldVal: string | number | null) => boolean | Promise<boolean>;
     }>(),
     {
       width: '75%',

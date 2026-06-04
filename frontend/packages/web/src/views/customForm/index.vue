@@ -39,7 +39,7 @@
       </template>
     </CrmSplitPanel>
   </CrmCard>
-  <CustomFormConfigDrawer v-model:visible="configDrawerVisible" :source-id="currentSourceId" />
+  <CustomFormConfigDrawer v-model:visible="configDrawerVisible" :source-id="currentSourceId" @saved="handleFormSaved" />
 </template>
 
 <script setup lang="ts">
@@ -113,15 +113,11 @@
   const configDrawerVisible = ref(false);
   const currentSourceId = ref();
 
-  function handleEdit() {
-    configDrawerVisible.value = true;
-  }
-
   function handleMoreActionSelect(event: ActionsItem, item: Record<string, any>) {
     switch (event.key) {
       case 'edit':
         currentSourceId.value = item.id;
-        handleEdit();
+        configDrawerVisible.value = true;
         break;
       default:
         break;
@@ -129,11 +125,20 @@
   }
 
   function addForm() {
+    currentSourceId.value = undefined;
     configDrawerVisible.value = true;
   }
 
   function handleFormClick(form: any) {
     activeForm.value = form.id;
+  }
+
+  async function handleFormSaved(id?: string) {
+    await loadFormList();
+    if (id) {
+      currentSourceId.value = id;
+      activeForm.value = id;
+    }
   }
 
   onBeforeMount(() => {

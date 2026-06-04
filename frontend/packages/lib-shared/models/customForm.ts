@@ -23,17 +23,17 @@ export interface CustomFormAdminParams {
 export enum CustomFormDataPermissionTypeEnum {
   MANAGE_ALL = 'MANAGE_ALL',
   VIEW_ALL = 'VIEW_ALL',
-  ADD_MANAGE_OWN = 'ADD_MANAGE_OWN',
+  ADD_MANAGE_OWN = 'MANAGE_OWN',
 }
 
 export interface CustomFormMemberTableQueryParams extends TableQueryParams {
-  sourceId: string;
-  permissionType: CustomFormDataPermissionTypeEnum;
+  customFormId: string;
+  customFormRole: CustomFormDataPermissionTypeEnum;
 }
 
 export interface RelateCustomFormMemberParams {
-  sourceId: string;
-  permissionType: CustomFormDataPermissionTypeEnum;
+  customFormId: string;
+  customFormRole: CustomFormDataPermissionTypeEnum;
   deptIds?: string[];
   roleIds?: string[];
   userIds?: string[];
