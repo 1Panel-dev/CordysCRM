@@ -69,17 +69,10 @@ public class CustomFormController {
         customFormService.delete(id, SessionUtils.getUserId());
     }
 
-    @PostMapping("/admin/add")
-    @Operation(summary = "添加表单管理员")
+    @PostMapping("/admin/set")
+    @Operation(summary = "设置表单管理员")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public void addAdmins(@RequestBody CustomFormAdminBatchRequest request) {
-        customFormService.addAdmins(request, SessionUtils.getUserId());
-    }
-
-    @PostMapping("/admin/remove")
-    @Operation(summary = "移除表单管理员")
-    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public void removeAdmins(@RequestBody CustomFormAdminBatchRequest request) {
-        customFormService.removeAdmins(request, SessionUtils.getUserId());
+    public void setAdmins(@Validated @RequestBody CustomFormAdminBatchRequest request) {
+        customFormService.setAdmins(request, SessionUtils.getUserId());
     }
 }

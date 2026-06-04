@@ -11,7 +11,7 @@ import java.util.List;
 public class CustomFormRoleUserBatchRequest {
 
     @NotBlank
-    @Schema(description = "角色ID")
+    @Schema(description = "角色ID，CustomFormRoleKey")
     private String roleId;
 
     @NotEmpty
