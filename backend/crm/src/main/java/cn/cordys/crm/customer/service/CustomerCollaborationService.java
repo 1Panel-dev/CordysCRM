@@ -107,7 +107,7 @@ public class CustomerCollaborationService {
         if (StringUtils.isNotBlank(customer.getOwner()) && !customer.getInSharedPool()) {
             // 公海客户添加协作人无需通知
             Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId, request.getUserId()));
-            Map<String, Object> paramMap = new HashMap<>(4);
+            var paramMap = new HashMap<String, Object>(4);
             paramMap.put("useTemplate", "true");
             paramMap.put("template", Translator.get("message.customer.collaboration.add.text"));
             paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
@@ -136,7 +136,7 @@ public class CustomerCollaborationService {
     }
 
     public void deleteByCustomerIds(List<String> customerIds) {
-        LambdaQueryWrapper<CustomerCollaboration> wrapper = new LambdaQueryWrapper<>();
+        var wrapper = new LambdaQueryWrapper<CustomerCollaboration>();
         wrapper.in(CustomerCollaboration::getCustomerId, customerIds);
         customerCollaborationMapper.deleteByLambda(wrapper);
     }

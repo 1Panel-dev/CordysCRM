@@ -44,7 +44,7 @@ public class CustomerOwnerHistoryService {
 
 
     public List<CustomerOwnerListResponse> list(String customerId, String orgId) {
-        LambdaQueryWrapper<CustomerOwner> wrapper = new LambdaQueryWrapper<>();
+        var wrapper = new LambdaQueryWrapper<CustomerOwner>();
         wrapper.eq(CustomerOwner::getCustomerId, customerId);
         wrapper.orderByDesc(CustomerOwner::getEndTime);
         List<CustomerOwner> owners = customerOwnerMapper.selectListByLambda(wrapper);
@@ -71,13 +71,13 @@ public class CustomerOwnerHistoryService {
         Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
 
         List<Dict> dictList = dictMapper.selectByIds(new ArrayList<>(reasonIds));
-        Map<String, String> dictNameMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+        var dictNameMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
-        LambdaQueryWrapper<DictConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        var configLambdaQueryWrapper = new LambdaQueryWrapper<DictConfig>();
         configLambdaQueryWrapper.eq(DictConfig::getModule, DictModule.CUSTOMER_POOL_RS.name()).eq(DictConfig::getOrganizationId, orgId);
         List<DictConfig> configs = dictConfigMapper.selectListByLambda(configLambdaQueryWrapper);
 
-        boolean showReason = CollectionUtils.isNotEmpty(configs) && configs.getFirst().getEnabled();
+        var showReason = CollectionUtils.isNotEmpty(configs) && configs.getFirst().getEnabled();
         return owners
                 .stream()
                 .map(item -> {
@@ -120,7 +120,7 @@ public class CustomerOwnerHistoryService {
     }
 
     public void deleteByCustomerIds(List<String> customerIds) {
-        LambdaQueryWrapper<CustomerOwner> wrapper = new LambdaQueryWrapper<>();
+        var wrapper = new LambdaQueryWrapper<CustomerOwner>();
         wrapper.in(CustomerOwner::getCustomerId, customerIds);
         customerOwnerMapper.deleteByLambda(wrapper);
     }

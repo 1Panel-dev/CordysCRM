@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +40,7 @@ public class CustomerRelationService {
         example.setTargetCustomerId(customerId);
         List<CustomerRelation> sourceRelations = customerRelationMapper.select(example);
 
-        List<String> customerIds = new ArrayList<>();
+        var customerIds = new ArrayList<String>();
 
         // 查询上级集团的客户关系
         List<CustomerRelationListResponse> result = sourceRelations
@@ -73,7 +72,7 @@ public class CustomerRelationService {
 
         if (CollectionUtils.isNotEmpty(customerIds)) {
             // 设置客户名称
-            Map<String, String> customerMap = extCustomerMapper.selectOptionByIds(customerIds)
+            var customerMap = extCustomerMapper.selectOptionByIds(customerIds)
                     .stream()
                     .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
             result.forEach(item -> item.setCustomerName(customerMap.get(item.getCustomerId())));
@@ -113,7 +112,7 @@ public class CustomerRelationService {
             return;
         }
 
-        LambdaQueryWrapper<CustomerRelation> customerRelation = new LambdaQueryWrapper<>();
+        var customerRelation = new LambdaQueryWrapper<CustomerRelation>();
         customerRelation.in(CustomerRelation::getSourceCustomerId, targetCustomerIds);
         List<CustomerRelation> customerRelations = customerRelationMapper.selectListByLambda(customerRelation)
                 .stream()
@@ -123,9 +122,9 @@ public class CustomerRelationService {
         if (!customerRelations.isEmpty()) {
             List<String> sourceIds = customerRelations.stream()
                     .map(CustomerRelation::getSourceCustomerId)
-                    .collect(Collectors.toList());
+                    .toList();
             List<OptionDTO> customers = extCustomerMapper.getCustomerOptionsByIds(sourceIds);
-            String userNames = customers.stream()
+            var userNames = customers.stream()
                     .map(OptionDTO::getName)
                     .distinct()
                     .collect(Collectors.joining(","));
@@ -141,7 +140,7 @@ public class CustomerRelationService {
         if (CollectionUtils.isEmpty(customerIds)) {
             return;
         }
-        LambdaQueryWrapper<CustomerRelation> wrapper = new LambdaQueryWrapper<>();
+        var wrapper = new LambdaQueryWrapper<CustomerRelation>();
         wrapper.in(CustomerRelation::getSourceCustomerId, customerIds);
         customerRelationMapper.deleteByLambda(wrapper);
 

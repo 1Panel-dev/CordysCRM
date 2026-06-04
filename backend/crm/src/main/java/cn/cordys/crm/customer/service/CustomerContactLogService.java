@@ -27,7 +27,7 @@ public class CustomerContactLogService extends BaseModuleLogService {
         );
 
         for (JsonDifferenceDTO differ : result) {
-            String column = differ.getColumn();
+            var column = differ.getColumn();
 
             // 负责人字段处理
             if (Strings.CS.equals(column, BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey())) {
@@ -53,7 +53,7 @@ public class CustomerContactLogService extends BaseModuleLogService {
             return null;
         }
 
-        Customer customer = customerMapper.selectByPrimaryKey(customerId.toString());
+        var customer = customerMapper.selectByPrimaryKey(customerId.toString());
         return customer != null ? customer.getName() : null;
     }
 }

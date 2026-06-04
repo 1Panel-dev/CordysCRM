@@ -157,11 +157,11 @@ public class CustomerContactService {
 
         List<String> customerContactIds = list.stream().map(CustomerContactListResponse::getId)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         List<String> customerIds = list.stream().map(CustomerContactListResponse::getCustomerId)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFieldMap(customerContactIds, true);
         Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.CONTACT.getKey(), orgId), caseCustomFiledMap);
@@ -267,11 +267,11 @@ public class CustomerContactService {
 	 */
 	public List<CustomerContactGetResponse> batchGetSimpleByIds(List<String> ids) {
 		if (CollectionUtils.isEmpty(ids)) {
-			return Collections.emptyList();
+			return List.of();
 		}
 		List<CustomerContact> contacts = customerContactMapper.selectByIds(ids);
 		if (CollectionUtils.isEmpty(contacts)) {
-			return Collections.emptyList();
+			return List.of();
 		}
 		Map<String, List<BaseModuleFieldValue>> fieldValueMap = customerContactFieldService.getResourceFieldMap(ids, true);
 
@@ -307,7 +307,7 @@ public class CustomerContactService {
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
         if (customer != null && StringUtils.isNotEmpty(customer.getOwner())) {
             Map<String, String> userNameMap = baseService.getUserNameMap(List.of(userId));
-            Map<String, Object> paramMap = new HashMap<>(4);
+            var paramMap = new HashMap<String, Object>(4);
             paramMap.put("useTemplate", "true");
             paramMap.put("template", Translator.get("message.customer.contact.add.text"));
             paramMap.put("operator", userNameMap.getOrDefault(userId, userId));
@@ -448,12 +448,12 @@ public class CustomerContactService {
                             // 部门数据权限，则过滤掉非本部门的协作人的联系人
                             return userDeptDTO != null && deptDataPermission.getDeptIds().contains(userDeptDTO.getDeptId());
                         })
-                        .collect(Collectors.toList());
+                        .toList();
             } else if (isCollaborationUser) {
                 // 没有权限，只是协作人，则只能看自己的
                 list = list.stream()
                         .filter(item -> Strings.CS.equals(item.getOwner(), userId))
-                        .collect(Collectors.toList());
+                        .toList();
             }
         }
 
@@ -463,12 +463,12 @@ public class CustomerContactService {
                 // 本人数据权限，则过滤协作人的联系人
                 list = list.stream()
                         .filter(item -> !collaborationUserIds.contains(item.getOwner()) || Strings.CS.equals(item.getOwner(), userId))
-                        .collect(Collectors.toList());
+                        .toList();
             } else if (isCollaborationUser) {
                 // 没有权限，只是协作人，则只能看自己的
                 list = list.stream()
                         .filter(item -> Strings.CS.equals(item.getOwner(), userId))
-                        .collect(Collectors.toList());
+                        .toList();
             }
         }
 
@@ -480,7 +480,7 @@ public class CustomerContactService {
     }
 
     public boolean checkOpportunity(String id) {
-        Opportunity example = new Opportunity();
+        var example = new Opportunity();
         example.setContactId(id);
         return opportunityMapper.countByExample(example) > 0;
     }
@@ -516,12 +516,12 @@ public class CustomerContactService {
      * @return 是否唯一
      */
     public boolean checkCustomerContactUnique(String contact, String phone, String customerId, String orgId) {
-        LambdaQueryWrapper<ModuleForm> formQueryWrapper = new LambdaQueryWrapper<>();
+        var formQueryWrapper = new LambdaQueryWrapper<ModuleForm>();
         formQueryWrapper.eq(ModuleForm::getOrganizationId, orgId).eq(ModuleForm::getFormKey, FormKey.CONTACT.getKey());
         List<ModuleForm> forms = moduleFormMapper.selectListByLambda(formQueryWrapper);
         List<String> formIds = forms.stream().map(ModuleForm::getId).toList();
 
-        LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
+        var queryWrapper = new LambdaQueryWrapper<ModuleField>();
         queryWrapper.in(ModuleField::getInternalKey, List.of(BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey(),
                 BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())).in(ModuleField::getFormId, formIds);
         List<String> fieldIds = moduleFieldMapper.selectListByLambda(queryWrapper).stream().map(ModuleField::getId).toList();
@@ -572,7 +572,7 @@ public class CustomerContactService {
     }
 
     public List<CustomerContact> getContactListByNames(List<String> names) {
-        LambdaQueryWrapper<CustomerContact> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        var lambdaQueryWrapper = new LambdaQueryWrapper<CustomerContact>();
         lambdaQueryWrapper.in(CustomerContact::getName, names);
         return customerContactMapper.selectListByLambda(lambdaQueryWrapper);
     }
@@ -617,7 +617,7 @@ public class CustomerContactService {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTACT.getKey(), currentOrg);
             CustomImportAfterDoConsumer<CustomerContact, BaseResourceSubField> afterDo = (contacts, contactFields, contactFieldBlobs) -> {
-                List<LogDTO> logs = new ArrayList<>();
+                var logs = new ArrayList<LogDTO>();
                 contacts.forEach(contact -> {
                     contact.setEnable(true);
                     logs.add(new LogDTO(currentOrg, contact.getId(), currentUser, LogType.ADD, LogModule.CUSTOMER_CONTACT, contact.getName()));
@@ -693,13 +693,13 @@ public class CustomerContactService {
      * @return 是否唯一
      */
     public Map<String, Boolean> getUniqueMap(String orgId) {
-        Map<String, Boolean> uniqueMap = new HashMap<>(2);
-        LambdaQueryWrapper<ModuleForm> formQueryWrapper = new LambdaQueryWrapper<>();
+        var uniqueMap = new HashMap<String, Boolean>(2);
+        var formQueryWrapper = new LambdaQueryWrapper<ModuleForm>();
         formQueryWrapper.eq(ModuleForm::getOrganizationId, orgId).eq(ModuleForm::getFormKey, FormKey.CONTACT.getKey());
         List<ModuleForm> forms = moduleFormMapper.selectListByLambda(formQueryWrapper);
         List<String> formIds = forms.stream().map(ModuleForm::getId).toList();
 
-        LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
+        var queryWrapper = new LambdaQueryWrapper<ModuleField>();
         queryWrapper.in(ModuleField::getInternalKey, List.of(BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey(),
                 BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())).in(ModuleField::getFormId, formIds);
         List<String> fieldIds = moduleFieldMapper.selectListByLambda(queryWrapper).stream().map(ModuleField::getId).toList();
