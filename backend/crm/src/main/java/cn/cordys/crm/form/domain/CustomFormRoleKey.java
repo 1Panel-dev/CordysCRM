@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 public enum CustomFormRoleKey {
 
-    MANAGE_ALL("manage_all", "custom.form.role.manage_all"),
-    VIEW_ALL("view_all", "custom.form.role.view_all"),
-    MANAGE_OWN("manage_own", "custom.form.role.manage_own");
+    MANAGE_ALL("MANAGE_ALL", "custom.form.role.manage_all"),
+    VIEW_ALL("VIEW_ALL", "custom.form.role.view_all"),
+    MANAGE_OWN("MANAGE_OWN", "custom.form.role.manage_own");
 
     private final String key;
     private final String i18nKey;

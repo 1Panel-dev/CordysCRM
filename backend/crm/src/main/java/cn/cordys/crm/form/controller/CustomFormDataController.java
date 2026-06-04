@@ -1,8 +1,9 @@
 package cn.cordys.crm.form.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.dto.request.CustomFormDataAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataBatchUpdateRequest;
@@ -12,6 +13,8 @@ import cn.cordys.crm.form.dto.response.CustomFormDataGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.service.CustomFormDataService;
+import cn.cordys.crm.system.domain.ModuleForm;
+import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,11 +31,14 @@ public class CustomFormDataController {
 
     @Resource
     private CustomFormDataService customFormDataService;
+    @Resource
+    private BaseMapper<ModuleForm> moduleFormMapper;
 
     @PostMapping("/page")
     @Operation(summary = "表单数据列表")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public Pager<List<CustomFormDataListResponse>> page(@Validated @RequestBody CustomFormDataPageRequest request) {
+    public PagerWithOption<List<CustomFormDataListResponse>> page(@Validated @RequestBody CustomFormDataPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
         return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -40,7 +46,7 @@ public class CustomFormDataController {
     @Operation(summary = "表单数据详情")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public CustomFormDataGetResponse get(@PathVariable String id) {
-        return customFormDataService.get(id, SessionUtils.getUserId());
+        return customFormDataService.get(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
@@ -75,6 +81,6 @@ public class CustomFormDataController {
     @Operation(summary = "批量删除表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void batchDelete(@RequestBody List<String> ids) {
-        customFormDataService.batchDelete(ids, SessionUtils.getUserId());
+        customFormDataService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
