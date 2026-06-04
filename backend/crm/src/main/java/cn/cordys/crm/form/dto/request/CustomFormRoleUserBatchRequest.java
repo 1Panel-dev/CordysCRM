@@ -2,7 +2,6 @@ package cn.cordys.crm.form.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 import java.util.List;
@@ -14,7 +13,12 @@ public class CustomFormRoleUserBatchRequest {
     @Schema(description = "角色ID，CustomFormRoleKey")
     private String roleId;
 
-    @NotEmpty
     @Schema(description = "用户ID列表")
     private List<String> userIds;
+
+    @Schema(description = "部门ID列表")
+    private List<String> deptIds;
+
+    @Schema(description = "系统角色ID列表")
+    private List<String> roleIds;
 }
