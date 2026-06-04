@@ -264,7 +264,7 @@ public class CustomFormService {
     }
 
     private void checkFormAccess(String formId, String userId) {
-        if (InternalUser.ADMIN.equals(userId)) {
+        if (InternalUser.ADMIN.getValue().equals(userId)) {
             return;
         }
 
