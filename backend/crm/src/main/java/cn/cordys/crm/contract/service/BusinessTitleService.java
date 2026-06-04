@@ -34,7 +34,7 @@ import cn.cordys.crm.contract.excel.listener.BusinessTitleImportEventListener;
 import cn.cordys.crm.contract.mapper.ExtBusinessTitleMapper;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.QccThirdConfigRequest;
-import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
+import cn.cordys.crm.integration.common.utils.HttpClientUtils;
 import cn.cordys.crm.integration.qcc.constant.QccApiPaths;
 import cn.cordys.crm.integration.qcc.dto.*;
 import cn.cordys.crm.system.constants.SheetKey;
@@ -506,8 +506,8 @@ public class BusinessTitleService {
     private BusinessTitle getTitleInfo(String keyword, QccThirdConfigRequest qccConfig) {
         Map<String, String> headers = buildHeaders(qccConfig);
         try {
-            String url = HttpRequestUtil.urlTransfer(qccConfig.getQccAddress().concat(QccApiPaths.ENTERPRISE_INFO_VERIFY_API), qccConfig.getQccAccessKey(), keyword);
-            String json = HttpRequestUtil.sendGetRequest(url, headers);
+            String url = HttpClientUtils.urlTransfer(qccConfig.getQccAddress().concat(QccApiPaths.ENTERPRISE_INFO_VERIFY_API), qccConfig.getQccAccessKey(), keyword);
+            String json = HttpClientUtils.sendGetRequest(url, headers);
             QccEnterpriseInfo qccEnterpriseInfo = JSON.parseObject(json, QccEnterpriseInfo.class);
             if (!Strings.CI.equals("200", qccEnterpriseInfo.getStatus())) {
                 throw new GenericException(qccEnterpriseInfo.getMessage());
@@ -574,8 +574,8 @@ public class BusinessTitleService {
     private void getNameList(String keyword, QccThirdConfigRequest qccConfig, String pageIndex, Pager<List<String>> page) {
         Map<String, String> headers = buildHeaders(qccConfig);
         try {
-            String url = HttpRequestUtil.urlTransfer(qccConfig.getQccAddress().concat(QccApiPaths.FUZZY_SEARCH_LIST_API), qccConfig.getQccAccessKey(), keyword, pageIndex);
-            String json = HttpRequestUtil.sendGetRequest(url, headers);
+            String url = HttpClientUtils.urlTransfer(qccConfig.getQccAddress().concat(QccApiPaths.FUZZY_SEARCH_LIST_API), qccConfig.getQccAccessKey(), keyword, pageIndex);
+            String json = HttpClientUtils.sendGetRequest(url, headers);
             QccFuzzyQueryInfo queryInfo = JSON.parseObject(json, QccFuzzyQueryInfo.class);
             if (!Strings.CI.equals("200", queryInfo.getStatus())) {
                 throw new GenericException(queryInfo.getMessage());

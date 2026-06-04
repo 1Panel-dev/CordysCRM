@@ -7,7 +7,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.agent.constant.MaxKBApiPaths;
 import cn.cordys.crm.integration.agent.response.MaxKBResponseEntity;
 import cn.cordys.crm.integration.common.client.QrCodeClient;
-import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
+import cn.cordys.crm.integration.common.utils.HttpClientUtils;
 import cn.cordys.crm.integration.dingtalk.constant.DingTalkApiPaths;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkBaseParamDTO;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkSendDTO;
@@ -64,10 +64,10 @@ public class TokenService {
      * @return String token
      */
     public String getAssessToken(String corpId, String corpSecret) {
-        String url = HttpRequestUtil.urlTransfer(WeComApiPaths.GET_TOKEN, corpId, corpSecret);
+        String url = HttpClientUtils.urlTransfer(WeComApiPaths.GET_TOKEN, corpId, corpSecret);
         WeComToken weComToken;
         try {
-            String response = HttpRequestUtil.sendGetRequest(url, null);
+            String response = HttpClientUtils.sendGetRequest(url, null);
             weComToken = JSON.parseObject(response, WeComToken.class);
         } catch (Exception e) {
             log.error(Translator.get("auth.get.token.error"), e);
@@ -264,13 +264,13 @@ public class TokenService {
 
     public void sendNoticeByToken(WeComSendDTO weComSendDTO, String corpId, String appSecret) {
         String assessToken = getAssessToken(corpId, appSecret);
-        String detailUrl = HttpRequestUtil.urlTransfer(WeComApiPaths.SEND_INFO, assessToken);
+        String detailUrl = HttpClientUtils.urlTransfer(WeComApiPaths.SEND_INFO, assessToken);
         qrCodeClient.postExchange(detailUrl, null, null, weComSendDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
     }
 
     public void sendDingNoticeByToken(DingTalkSendDTO dingTalkSendDTO, String agentId, String appSecret) {
         String assessToken = getDingTalkToken(agentId, appSecret);
-        String detailUrl = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_NOTICE_URL, assessToken);
+        String detailUrl = HttpClientUtils.urlTransfer(DingTalkApiPaths.DING_NOTICE_URL, assessToken);
         qrCodeClient.postExchange(detailUrl, null, null, dingTalkSendDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
     }
 
@@ -322,7 +322,7 @@ public class TokenService {
      */
     public Boolean getMaxKBToken(String mkAddress, String apiKey) {
         String body = qrCodeClient.exchange(
-                HttpRequestUtil.urlTransfer(mkAddress.concat(MaxKBApiPaths.APPLICATION), "default"),
+                HttpClientUtils.urlTransfer(mkAddress.concat(MaxKBApiPaths.APPLICATION), "default"),
                 "Bearer " + apiKey,
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,
@@ -358,10 +358,10 @@ public class TokenService {
         headers.put("Token", token);
         headers.put("Timespan", String.valueOf(time));
 
-        String url = HttpRequestUtil.urlTransfer(qccAddress.concat(QccApiPaths.FUZZY_SEARCH_API), qccAccessKey, qccSecretKey);
+        String url = HttpClientUtils.urlTransfer(qccAddress.concat(QccApiPaths.FUZZY_SEARCH_API), qccAccessKey, qccSecretKey);
         String body;
         try {
-            body = HttpRequestUtil.sendGetRequest(url, headers);
+            body = HttpClientUtils.sendGetRequest(url, headers);
         } catch (Exception e) {
             log.error("测试连接失败", e);
             return false;
@@ -374,12 +374,12 @@ public class TokenService {
     }
 
     public boolean checkWeComAgentAvailable(String accessToken, String agentId) {
-        String url = HttpRequestUtil.urlTransfer(
+        String url = HttpClientUtils.urlTransfer(
                 WeComApiPaths.GET_AGENT, accessToken, agentId
         );
 
         try {
-            String response = HttpRequestUtil.sendGetRequest(url, null);
+            String response = HttpClientUtils.sendGetRequest(url, null);
             WeComDetail weComDetail = JSON.parseObject(response, WeComDetail.class);
 
             log.info(

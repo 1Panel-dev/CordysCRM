@@ -4,7 +4,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.common.client.QrCodeClient;
-import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
+import cn.cordys.crm.integration.common.utils.HttpClientUtils;
 import cn.cordys.crm.integration.dingtalk.constant.DingTalkApiPaths;
 import cn.cordys.crm.integration.dingtalk.response.DingTalkUserResponse;
 import cn.cordys.crm.integration.lark.constant.LarkApiPaths;
@@ -60,7 +60,7 @@ public class OAuthUserService {
      */
     public WeComUserResponse getWeComUser(String assessToken, String code) {
         // 1. 根据 code 获取通用用户信息
-        String commonUrl = HttpRequestUtil.urlTransfer(WeComApiPaths.USER_ID_TICKET, assessToken, code);
+        String commonUrl = HttpClientUtils.urlTransfer(WeComApiPaths.USER_ID_TICKET, assessToken, code);
         WeComCommonUserResponse commonRes = getWithWrap(commonUrl, WeComCommonUserResponse.class);
         validateWeCom(commonRes.getErrCode(), commonRes.getErrMsg());
 
@@ -68,12 +68,12 @@ public class OAuthUserService {
         WeComUserResponse userRes;
         String userTicket = commonRes.getUserTicket();
         if (StringUtils.isNotBlank(userTicket)) {
-            String detailUrl = HttpRequestUtil.urlTransfer(WeComApiPaths.USER_DETAIL, assessToken);
+            String detailUrl = HttpClientUtils.urlTransfer(WeComApiPaths.USER_DETAIL, assessToken);
             WeComUserTicketDTO body = new WeComUserTicketDTO();
             body.setUser_ticket(userTicket);
             userRes = postWithWrap(detailUrl, body);
         } else {
-            String detailUrl = HttpRequestUtil.urlTransfer(WeComApiPaths.USER_INFO, assessToken, commonRes.getUserId());
+            String detailUrl = HttpClientUtils.urlTransfer(WeComApiPaths.USER_INFO, assessToken, commonRes.getUserId());
             userRes = getWithWrap(detailUrl, WeComUserResponse.class);
         }
 
@@ -104,7 +104,7 @@ public class OAuthUserService {
      * @return userId
      */
     public String getUserIdByUnionId(String accessToken, String unionid) {
-        String url = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_USERID_BY_UNIONID, accessToken);
+        String url = HttpClientUtils.urlTransfer(DingTalkApiPaths.DING_USERID_BY_UNIONID, accessToken);
         Map<String, String> body = new HashMap<>();
         body.put("unionid", unionid);
         String response = post(url, body);
@@ -122,7 +122,7 @@ public class OAuthUserService {
 
     private <T> T getWithWrap(String url, Class<T> clazz) {
         try {
-            String response = HttpRequestUtil.sendGetRequest(url, null);
+            String response = HttpClientUtils.sendGetRequest(url, null);
             return JSON.parseObject(response, clazz);
         } catch (Exception e) {
             throw new GenericException(Translator.get("auth.get.user.error"));
