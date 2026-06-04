@@ -69,6 +69,20 @@ public class CustomFormController {
         customFormService.delete(id, SessionUtils.getUserId());
     }
 
+    @GetMapping("/enable/{id}")
+    @Operation(summary = "启用自定义表单")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public void enable(@PathVariable String id) {
+        customFormService.updateEnable(id, SessionUtils.getUserId(), true);
+    }
+
+    @GetMapping("/disable/{id}")
+    @Operation(summary = "禁用自定义表单")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public void disable(@PathVariable String id) {
+        customFormService.updateEnable(id, SessionUtils.getUserId(), false);
+    }
+
     @PostMapping("/admin/set")
     @Operation(summary = "设置表单管理员")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
