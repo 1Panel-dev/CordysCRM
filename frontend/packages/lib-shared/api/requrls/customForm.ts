@@ -1,0 +1,9 @@
+export const AddCustomFormUrl = '/custom-form/add'; // 创建自定义表单
+export const UpdateCustomFormUrl = '/custom-form/update'; // 更新自定义表单
+export const GetCustomFormUrl = '/custom-form/get'; // 自定义表单详情
+export const GetCustomFormAdminUrl = '/custom-form/admin/get'; // 获取表单管理员
+export const SaveCustomFormAdminUrl = '/custom-form/admin/save'; // 表单管理员
+export const RelateCustomFormMemberUrl = '/custom-form/member/relate'; // 添加表单成员
+export const GetCustomFormMemberUrl = '/custom-form/member/page'; // 表单成员列表
+export const RemoveCustomFormMemberUrl = '/custom-form/member/delete'; // 移除表单成员
+export const BatchRemoveCustomFormMemberUrl = '/custom-form/member/batch/delete'; // 批量移除表单成员

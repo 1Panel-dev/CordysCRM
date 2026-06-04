@@ -1,8 +1,8 @@
 <template>
   <CrmDrawer
     v-model:show="visible"
-    width="75%"
-    :min-width="800"
+    :width="props.width"
+    :min-width="props.minWidth"
     :footer="false"
     :closable="false"
     :close-on-esc="false"
@@ -79,12 +79,20 @@
 
   const { t } = useI18n();
 
-  const props = defineProps<{
-    tabList: CrmTabListItem[];
-    loading: boolean;
-    title?: string;
-    readonly?: boolean;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      tabList: CrmTabListItem[];
+      loading: boolean;
+      title?: string;
+      readonly?: boolean;
+      width?: string | number;
+      minWidth?: number;
+    }>(),
+    {
+      width: '75%',
+      minWidth: 800,
+    }
+  );
 
   const emit = defineEmits<{
     (e: 'save'): void;

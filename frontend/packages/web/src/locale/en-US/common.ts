@@ -102,6 +102,7 @@ export default {
   'common.pleaseSelect': 'please choose',
   'common.pleaseInput': 'Please input',
   'common.quickAddMember': 'Quickly add members',
+  'common.maxAddMemberTip': 'Up to {count} members can be added',
   'common.filter': 'Filter',
   'common.export': 'Export',
   'common.exporting': 'Exporting',

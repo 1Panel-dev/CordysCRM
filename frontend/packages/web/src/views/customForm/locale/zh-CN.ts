@@ -1,1 +1,15 @@
-export default {};
+export default {
+  'customForm.name': '自定义表单名称',
+  'customForm.formDesign': '表单设计',
+  'customForm.formAdmin': '表单管理员',
+  'customForm.formMember': '表单成员',
+  'customForm.restoreDefault': '恢复默认',
+  'customForm.maxAddAdminTip': '最多可添加 {count} 人',
+  'customForm.permission.manageAll': '管理全部数据',
+  'customForm.permission.manageAllTip': '管理全部数据：拥有该表单全部数据的管理权限和添加权限；',
+  'customForm.permission.viewAll': '查看全部数据',
+  'customForm.permission.viewAllTip': '查看全部数据：仅能查看该表单的全部数据；',
+  'customForm.permission.addViewAll': '添加并查看全部数据',
+  'customForm.permission.addManageOwn': '管理本人数据',
+  'customForm.permission.addManageOwnTip': '管理本人数据：拥有添加权限，仅能查看和管理本人创建的数据。',
+};

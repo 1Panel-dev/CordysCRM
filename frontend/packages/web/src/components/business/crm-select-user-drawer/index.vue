@@ -58,6 +58,7 @@
     NTree,
     TransferOption,
     TransferRenderSourceList,
+    useMessage,
   } from 'naive-ui';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -77,6 +78,7 @@
   import { getDataFunc } from './utils';
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const props = withDefaults(
     defineProps<{
@@ -92,6 +94,7 @@
       multiple?: boolean;
       okText?: string;
       disabledNodeTypes?: DeptNodeTypeEnum[]; // 需要禁用掉的节点类型
+      maxCount?: number;
     }>(),
     {
       multiple: true,
@@ -124,6 +127,22 @@
 
   const addMembers = ref<string[]>([]);
   const selectedNodes = ref<SelectedUsersItem[]>([]);
+
+  const remainingCount = computed(() => {
+    if (!props.maxCount) {
+      return undefined;
+    }
+    return Math.max(props.maxCount - (props.disabledList?.length ?? 0), 0);
+  });
+  const isSelectedCountExceeded = computed(
+    () => remainingCount.value !== undefined && addMembers.value.length > remainingCount.value
+  );
+
+  function showMaxCountTip() {
+    if (props.maxCount) {
+      Message.warning(t('common.maxAddMemberTip', { count: props.maxCount }));
+    }
+  }
 
   function handleCancelAdd() {
     visible.value = false;
@@ -216,6 +235,11 @@
   });
 
   async function handleAddConfirm() {
+    if (isSelectedCountExceeded.value) {
+      showMaxCountTip();
+      return;
+    }
+
     const _selectedNodes: any[] = [];
     mapTree(options.value, (item) => {
       if (addMembers.value.includes(item.id)) {
@@ -379,6 +403,11 @@
           );
         },
         onUpdateSelectedKeys: (selectedKeys: Array<string | number>, nodes) => {
+          if (remainingCount.value !== undefined && selectedKeys.length > remainingCount.value) {
+            showMaxCountTip();
+            return;
+          }
+
           onCheck(selectedKeys);
           selectedNodes.value = [];
 
@@ -425,6 +454,12 @@
   };
 
   function handleUpdateValue(value: Array<string | number>) {
+    if (remainingCount.value !== undefined && value.length > remainingCount.value) {
+      addMembers.value = addMembers.value.slice(0, remainingCount.value);
+      showMaxCountTip();
+      return;
+    }
+
     selectedNodes.value = selectedNodes.value.filter((e) => value.includes(e.id));
   }
 
