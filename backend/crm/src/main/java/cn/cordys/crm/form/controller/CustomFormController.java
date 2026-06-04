@@ -1,5 +1,6 @@
 package cn.cordys.crm.form.controller;
 
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.context.OrganizationContext;
@@ -32,6 +33,12 @@ public class CustomFormController {
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public List<CustomFormListResponse> list() {
         return customFormService.list(SessionUtils.getUserId());
+    }
+
+    @GetMapping("/option")
+    @Operation(summary = "自定义表单选项(开启的)")
+    public List<OptionDTO> getOptions() {
+        return customFormService.getOptions();
     }
 
     @GetMapping("/get/{id}")
