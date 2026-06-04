@@ -234,6 +234,20 @@ public class CustomFormService {
         moduleFormCacheService.save(moduleFormRequest, userId, orgId);
     }
 
+    public void updateEnable(String id, String userId, boolean enable) {
+        checkFormAdmin(id, userId);
+
+        CustomForm form = customFormMapper.selectByPrimaryKey(id);
+        if (form == null) {
+            throw new GenericException(Translator.get("custom.form.not.exist"));
+        }
+
+        CustomForm updateForm = new CustomForm();
+        updateForm.setId(id);
+        updateForm.setEnable(enable);
+        customFormMapper.update(updateForm);
+    }
+
     public void delete(String id, String userId) {
         checkFormAdmin(id, userId);
 
