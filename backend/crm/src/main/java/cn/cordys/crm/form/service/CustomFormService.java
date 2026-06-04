@@ -238,20 +238,17 @@ public class CustomFormService {
         customFormAdminMapper.deleteByLambda(adminWrapper);
     }
 
-    public void addAdmins(CustomFormAdminBatchRequest request, String userId) {
-        // 校验是否是管理员
+    public void setAdmins(CustomFormAdminBatchRequest request, String userId) {
         checkFormAdmin(request.getCustomFormId(), userId);
 
         String formId = request.getCustomFormId();
+        deleteCustomFormAdminByFormId(formId);
+        insertAdmins(formId, request.getUserIds());
+    }
 
-        LambdaQueryWrapper<CustomFormAdmin> existWrapper = new LambdaQueryWrapper<>();
-        existWrapper.eq(CustomFormAdmin::getCustomFormId, formId)
-                .in(CustomFormAdmin::getUserId, request.getUserIds());
-        Set<String> existingUserIds = customFormAdminMapper.selectListByLambda(existWrapper)
-                .stream().map(CustomFormAdmin::getUserId).collect(Collectors.toSet());
-
-        List<CustomFormAdmin> toInsert = request.getUserIds().stream()
-                .filter(uid -> !existingUserIds.contains(uid))
+    private void insertAdmins(String formId, List<String> userIds) {
+        List<CustomFormAdmin> toInsert = userIds.stream()
+                .distinct()
                 .map(uid -> {
                     CustomFormAdmin admin = new CustomFormAdmin();
                     admin.setId(IDGenerator.nextStr());
@@ -265,19 +262,8 @@ public class CustomFormService {
         }
     }
 
-    public void removeAdmins(CustomFormAdminBatchRequest request, String userId) {
-        checkFormAdmin(request.getCustomFormId(), userId);
-
-        String formId = request.getCustomFormId();
-        for (String uid : request.getUserIds()) {
-            LambdaQueryWrapper<CustomFormAdmin> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(CustomFormAdmin::getCustomFormId, formId).eq(CustomFormAdmin::getUserId, uid);
-            customFormAdminMapper.deleteByLambda(wrapper);
-        }
-    }
-
     private void checkFormAccess(String formId, String userId) {
-        if (InternalUser.ADMIN.equals(userId)) {
+        if (Objects.equals(InternalUser.ADMIN.getValue(), userId)) {
             return;
         }
 
@@ -307,7 +293,7 @@ public class CustomFormService {
     }
 
     private void checkFormAdmin(String formId, String userId) {
-        if (InternalUser.ADMIN.equals(userId)) {
+        if (Objects.equals(InternalUser.ADMIN.getValue(), userId)) {
             return;
         }
         CustomFormAdmin example = new CustomFormAdmin();
