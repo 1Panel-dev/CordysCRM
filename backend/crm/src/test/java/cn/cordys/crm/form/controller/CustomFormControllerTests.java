@@ -1,5 +1,6 @@
 package cn.cordys.crm.form.controller;
 
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -27,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class CustomFormControllerTests extends BaseTest {
 
     private static final String BASE_PATH = "/custom-form/";
+    private static final String OPTION = "option";
     private static String createdFormId;
 
     @Override
@@ -60,6 +63,16 @@ public class CustomFormControllerTests extends BaseTest {
 
     @Test
     @Order(3)
+    void testEnabledOptions() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(OPTION);
+        List<OptionDTO> list = getResultDataArray(mvcResult, OptionDTO.class);
+        assertNotNull(list);
+        assertTrue(list.stream().anyMatch(o -> createdFormId.equals(o.getId())),
+                "已开启的表单应出现在选项列表中");
+    }
+
+    @Test
+    @Order(4)
     void testGet() throws Exception {
         assertNotNull(createdFormId, "表单应已创建");
 
@@ -71,7 +84,7 @@ public class CustomFormControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void testUpdate() throws Exception {
         assertNotNull(createdFormId, "表单应已创建");
 
@@ -90,7 +103,7 @@ public class CustomFormControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     void testAddAdmins() throws Exception {
         assertNotNull(createdFormId, "表单应已创建");
 
@@ -102,7 +115,7 @@ public class CustomFormControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     void testRemoveAdmins() throws Exception {
         assertNotNull(createdFormId, "表单应已创建");
 
@@ -114,7 +127,7 @@ public class CustomFormControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     void testDelete() throws Exception {
         assertNotNull(createdFormId, "表单应已创建");
 

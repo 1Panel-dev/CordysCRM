@@ -21,6 +21,7 @@ import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -61,6 +62,14 @@ public class CustomFormService {
 
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
+
+    public List<OptionDTO> getOptions() {
+        LambdaQueryWrapper<CustomForm> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CustomForm::getEnable, true);
+        return customFormMapper.selectListByLambda(wrapper).stream()
+                .map(form -> new OptionDTO(form.getId(), form.getName()))
+                .toList();
+    }
 
     public List<CustomFormListResponse> list(String userId) {
         Set<String> adminFormIds = getAdminFormIds(userId);
