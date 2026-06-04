@@ -44,6 +44,7 @@ export interface PlatformConfig {
 export type ActionItem = {
   key: string;
   label: string;
+  type?: 'divider'; // 是否分割线，true 的话只展示分割线，没有其他内容
   iconType?: string;
   slotName?: string;
   children?: Omit<ActionsItem, 'children'>[];

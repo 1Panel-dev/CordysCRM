@@ -31,6 +31,7 @@
       :link-form-info="props.linkFormInfo"
       :link-form-key="props.linkFormKey"
       :link-scenario="props.linkScenario"
+      :customFormId="props.customFormId"
       class="!pt-[16px]"
       @cancel="handleBack"
       @saved="handleSaved"
@@ -63,6 +64,7 @@
     linkFormInfo?: Record<string, any>; // 关联表单信息
     linkFormKey?: FormDesignKeyEnum;
     linkScenario?: FormLinkScenarioEnum; // 关联表单场景
+    customFormId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'saved', res: any): void;

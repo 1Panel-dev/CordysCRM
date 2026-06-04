@@ -54,6 +54,7 @@ export interface FormCreateApiProps {
   isContractTableDetail?: boolean;
   hiddenFieldIds?: string[]; // 需要隐藏的字段id列表
   editableFieldIds?: string[]; // 可编辑的字段id列表
+  customFormId?: Ref<string | undefined>; // 自定义表单id
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -603,7 +604,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (!formData) {
         const asyncApi = getFormDetailApiMap[props.formKey.value];
         if (!asyncApi || !props.sourceId?.value) return;
-        form = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
+        if (props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM && props.customFormId?.value) {
+          form = await asyncApi(props.customFormId.value);
+        } else {
+          form = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
+        }
       }
       descriptions.value = [];
       detail.value = form;
@@ -904,7 +909,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey.value];
       if (!asyncApi || !props.sourceId?.value) return;
-      const res = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
+      let res: FormDetail = { moduleFields: [] };
+      if (props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM && props.customFormId?.value) {
+        res = await asyncApi(props.customFormId.value);
+      } else {
+        res = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
+      }
       detail.value = res;
       formDetail.value = {};
       if (needInitFormDescription) {
@@ -1223,10 +1233,17 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       loading.value = true;
       const api = getFormConfigApiMap[props.formKey.value];
-      const res = await api(props.sourceId?.value ?? '', props.otherSaveParams?.value?.approvalTaskId);
-      moduleFormConfig.value = cloneDeep(res);
-      initFormFieldConfig(res.fields);
-      formConfig.value = res.formProp;
+      if (props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM) {
+        const res = await api(props.customFormId?.value ?? '');
+        moduleFormConfig.value = cloneDeep(res);
+        initFormFieldConfig(res.fields);
+        formConfig.value = res.formProp;
+      } else {
+        const res = await api(props.sourceId?.value ?? '', props.otherSaveParams?.value?.approvalTaskId);
+        moduleFormConfig.value = cloneDeep(res);
+        initFormFieldConfig(res.fields);
+        formConfig.value = res.formProp;
+      }
       nextTick(() => {
         unsaved.value = false;
       });

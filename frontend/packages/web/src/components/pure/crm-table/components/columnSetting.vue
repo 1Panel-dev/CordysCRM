@@ -166,7 +166,7 @@
   import useTableStore from '@/hooks/useTableStore';
 
   const props = defineProps<{
-    tableKey: TableKeyEnum;
+    tableKey: TableKeyEnum | string;
     noPagination?: boolean;
     disabled: boolean;
   }>();

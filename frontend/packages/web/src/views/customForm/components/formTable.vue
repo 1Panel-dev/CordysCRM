@@ -1,0 +1,313 @@
+<template>
+  <CrmTable
+    ref="crmTableRef"
+    v-model:checked-row-keys="checkedRowKeys"
+    v-bind="propsRes"
+    class="crm-customForm-table"
+    :not-show-table-filter="isAdvancedSearchMode"
+    :action-config="props.readonly ? undefined : actionConfig"
+    @row-key-change="handleRowKeyChange"
+    @page-change="propsEvent.pageChange"
+    @page-size-change="propsEvent.pageSizeChange"
+    @sorter-change="propsEvent.sorterChange"
+    @filter-change="propsEvent.filterChange"
+    @batch-action="handleBatchAction"
+    @refresh="searchData"
+  >
+    <template v-if="props.readonly" #tableTop>
+      <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
+    </template>
+    <template #actionLeft>
+      <div class="flex items-center gap-[12px]">
+        <n-button
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:ADD']) && !props.readonly"
+          type="primary"
+          @click="handleNewClick"
+        >
+          {{ t('customer.new') }}
+        </n-button>
+      </div>
+    </template>
+    <template #actionRight>
+      <CrmAdvanceFilter
+        ref="tableAdvanceFilterRef"
+        v-model:keyword="keyword"
+        :custom-fields-config-list="customFieldsFilterConfig"
+        :filter-config-list="baseFilterConfigList"
+        @adv-search="handleAdvSearch"
+        @keyword-search="searchData"
+      />
+    </template>
+  </CrmTable>
+
+  <CrmBatchEditModal
+    v-model:visible="showEditModal"
+    v-model:field-list="editFieldList"
+    :ids="checkedRowKeys"
+    :form-key="FormDesignKeyEnum.CUSTOM_FORM"
+    :otherSaveParams="{
+      customFormId: props.formKey,
+    }"
+    @refresh="() => (tableRefreshId += 1)"
+  />
+  <CrmFormCreateDrawer
+    v-model:visible="formCreateDrawerVisible"
+    :form-key="FormDesignKeyEnum.CUSTOM_FORM"
+    :source-id="activeSourceId"
+    :need-init-detail="needInitDetail"
+    :initial-source-name="initialSourceName"
+    :custom-form-id="props.formKey"
+    @saved="handleFormCreateSaved"
+  />
+</template>
+
+<script setup lang="ts">
+  import { type DataTableRowKey, NButton, useMessage } from 'naive-ui';
+
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
+
+  import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
+  import { type FilterForm, FilterFormItem, type FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTable from '@/components/pure/crm-table/index.vue';
+  import type { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+
+  import { batchDeleteCustomFormData } from '@/api/modules';
+  import { baseFilterConfigList } from '@/config/clue';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
+
+  import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
+
+  const props = defineProps<{
+    formKey: string;
+    readonly?: boolean;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'init', val: { filterConfigList: FilterFormItem[]; customFieldsFilterConfig: FilterFormItem[] }): void;
+    (e: 'showCountDetail', row: Record<string, any>, type: 'opportunity' | 'clue'): void;
+  }>();
+
+  const { t } = useI18n();
+  const Message = useMessage();
+  const { openModal } = useModal();
+
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const keyword = ref('');
+  const isAdvancedSearchMode = ref(false);
+  const advancedOriginalForm = ref<FilterForm | undefined>();
+  const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
+  const checkedRowKeys = ref<DataTableRowKey[]>([]);
+  const tableRefreshId = ref(0);
+  const tableRemoveRefreshId = ref('');
+  const formCreateDrawerVisible = ref(false);
+  const activeSourceId = ref('');
+  const initialSourceName = ref('');
+  const needInitDetail = ref(false);
+
+  function handleNewClick() {
+    needInitDetail.value = false;
+    activeSourceId.value = '';
+    formCreateDrawerVisible.value = true;
+  }
+
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
+    keyword.value = '';
+    advancedOriginalForm.value = originalForm;
+    isAdvancedSearchMode.value = isAdvancedMode;
+    // setAdvanceFilter(filter);
+    // loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  handleAdvanceFilter.value = handleAdvSearch;
+
+  const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
+  const operationGroupList = [
+    {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: [],
+    },
+    {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: [],
+    },
+  ];
+
+  // 删除
+  function handleDelete(row: any) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('customer.batchDeleteContentTip'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          // await deleteCustomer(row.id);
+          Message.success(t('common.deleteSuccess'));
+          tableRemoveRefreshId.value = row.id;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  async function handleActionSelect(row: any, actionKey: string) {
+    switch (actionKey) {
+      case 'edit':
+        activeSourceId.value = row.id;
+        needInitDetail.value = true;
+        formCreateDrawerVisible.value = true;
+        break;
+      case 'delete':
+        handleDelete(row);
+        break;
+      default:
+        break;
+    }
+  }
+
+  const showOverviewDrawer = ref(false);
+
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+    formKey: FormDesignKeyEnum.CUSTOM_FORM,
+    disabledSelection: (row: any) => {
+      return row.collaborationType === 'READ_ONLY';
+    },
+    operationColumn: props.readonly
+      ? undefined
+      : {
+          key: 'operation',
+          width: 200,
+          fixed: 'right',
+          render: (row: any) =>
+            h(CrmOperationButton, {
+              groupList: operationGroupList,
+              onSelect: (key: string) => handleActionSelect(row, key),
+            }),
+        },
+    specialRender: {
+      name: (row: any) => {
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => {
+              activeSourceId.value = row.id;
+              showOverviewDrawer.value = true;
+            },
+          },
+          { trigger: () => row.name, default: () => row.name }
+        );
+      },
+    },
+    permission: [],
+    containerClass: '.crm-customForm-table',
+    readonly: props.readonly,
+  });
+
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  function searchData(val?: string, refreshId?: string) {
+    setLoadListParams({ keyword: val ?? keyword.value });
+    loadList(false, refreshId);
+    if (!refreshId) {
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
+  }
+  handleSearchData.value = searchData;
+
+  const actionConfig: BatchActionConfig = {
+    baseAction: [
+      {
+        label: t('common.batchEdit'),
+        key: 'batchEdit',
+        permission: [],
+      },
+      {
+        label: t('common.batchDelete'),
+        key: 'batchDelete',
+        permission: [],
+      },
+    ],
+  };
+
+  const selectedRows = ref<InternalRowData[]>([]);
+  function handleRowKeyChange(keys: DataTableRowKey[], _rows: InternalRowData[]) {
+    selectedRows.value = _rows;
+  }
+
+  const showEditModal = ref(false);
+  const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
+    formKey: ref(FormDesignKeyEnum.CUSTOM_FORM),
+  });
+  function handleBatchEdit() {
+    initEditFormConfig();
+    showEditModal.value = true;
+  }
+
+  // 批量删除
+  function handleBatchDelete() {
+    openModal({
+      type: 'error',
+      title: t('customer.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
+      content: t('customer.batchDeleteContentTip'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          tableRefreshId.value += 1;
+          await batchDeleteCustomFormData(checkedRowKeys.value as string[]);
+          Message.success(t('common.deleteSuccess'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  function handleBatchAction(item: ActionsItem) {
+    switch (item.key) {
+      case 'batchEdit':
+        handleBatchEdit();
+        break;
+      case 'batchDelete':
+        handleBatchDelete();
+        break;
+      default:
+        break;
+    }
+  }
+
+  function handleFormCreateSaved(res: any) {
+    if (needInitDetail.value) {
+      searchData(undefined, res.id);
+    } else {
+      searchData();
+    }
+  }
+
+  watch(
+    () => props.formKey,
+    () => {
+      searchData();
+    }
+  );
+</script>
+
+<style lang="less" scoped></style>

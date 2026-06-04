@@ -170,7 +170,6 @@
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getNormalFieldValue, getRuleType } from '@lib/shared/method/formCreate';
-  import { BatchUpdatePoolAccountParams } from '@lib/shared/models/customer';
   import { BatchOperationResult } from '@lib/shared/models/opportunity';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -199,6 +198,7 @@
     batchUpdateCluePool,
     batchUpdateContact,
     batchUpdateContract,
+    batchUpdateCustomFormData,
     batchUpdateLead,
     batchUpdateOpenSeaCustomer,
     batchUpdateOpportunity,
@@ -228,8 +228,10 @@
       | FormDesignKeyEnum.PRICE
       | FormDesignKeyEnum.CONTRACT
       | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
-      | FormDesignKeyEnum.ORDER;
+      | FormDesignKeyEnum.ORDER
+      | FormDesignKeyEnum.CUSTOM_FORM;
     showApprovalTip?: string;
+    otherSaveParams?: Record<string, any>;
   }>();
 
   const emit = defineEmits<{
@@ -255,7 +257,7 @@
   });
   const batchOperationName = ref(t('common.batchEdit'));
 
-  const saveApiMap: Record<string, (params: BatchUpdatePoolAccountParams) => Promise<any>> = {
+  const saveApiMap: Record<string, (params: any) => Promise<any>> = {
     [FormDesignKeyEnum.CLUE_POOL]: batchUpdateCluePool,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: batchUpdateOpenSeaCustomer,
     [FormDesignKeyEnum.BUSINESS]: batchUpdateOpportunity,
@@ -267,6 +269,7 @@
     [FormDesignKeyEnum.CONTRACT]: batchUpdateContract,
     [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: batchUpdateQuotation,
     [FormDesignKeyEnum.ORDER]: batchUpdateOrder,
+    [FormDesignKeyEnum.CUSTOM_FORM]: batchUpdateCustomFormData,
   };
 
   const initForm = {
@@ -406,6 +409,7 @@
           const res = await saveApiMap[props.formKey]({
             ids: props.ids,
             ...result,
+            ...props.otherSaveParams,
             fieldValue: !currentForm.value.businessKey
               ? getNormalFieldValue(currentForm.value, result.fieldValue)
               : result.fieldValue ?? '',

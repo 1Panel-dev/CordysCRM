@@ -129,7 +129,7 @@ export default function useTable<T>(
   const sortItem = ref<SortParams>(); // 排序
   const paginationType = ref<PaginationType>(); // 分页类型
 
-  async function getPaginationType(tableKey: TableKeyEnum) {
+  async function getPaginationType(tableKey: TableKeyEnum | string) {
     paginationType.value = await tableStore.getTablePaginationType(tableKey);
   }
 
