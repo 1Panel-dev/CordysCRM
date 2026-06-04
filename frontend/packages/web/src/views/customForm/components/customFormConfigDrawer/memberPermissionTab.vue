@@ -288,8 +288,8 @@
 
   function searchData() {
     setLoadListParams({
-      sourceId: props.sourceId,
-      permissionType: activePermissionType.value,
+      customFormId: props.sourceId,
+      customFormRole: activePermissionType.value,
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
@@ -359,8 +359,8 @@
       );
       await relateCustomFormMember({
         ...categorizedIds,
-        sourceId: props.sourceId,
-        permissionType: activePermissionType.value,
+        customFormId: props.sourceId,
+        customFormRole: activePermissionType.value,
       });
       Message.success(t('common.addSuccess'));
       memberDrawerVisible.value = false;
