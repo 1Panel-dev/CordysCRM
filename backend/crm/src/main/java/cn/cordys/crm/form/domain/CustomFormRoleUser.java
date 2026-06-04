@@ -16,4 +16,5 @@ public class CustomFormRoleUser implements Serializable {
     private String id;
     private String roleId;
     private String userId;
+    private String customFormId;
 }
