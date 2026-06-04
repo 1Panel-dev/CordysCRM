@@ -6,6 +6,7 @@ import {
 } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { CommonList } from '@lib/shared/models/common';
+import type { CustomFormDetail } from '@lib/shared/models/customForm';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import {
@@ -17,6 +18,7 @@ import {
   addCustomerContact,
   addCustomerFollowPlan,
   addCustomerFollowRecord,
+  addCustomFormData,
   addFollowPlan,
   addFollowRecord,
   addInvoiced,
@@ -63,6 +65,9 @@ import {
   getCustomerList,
   getCustomerOpportunityPage,
   getCustomerOrderList,
+  getCustomFormDataDetail,
+  getCustomFormDataPage,
+  getCustomFormDetail,
   getFollowPlanDetail,
   getFollowPLanPage,
   getFollowRecordDetail,
@@ -113,6 +118,7 @@ import {
   updateCustomerContact,
   updateCustomerFollowPlan,
   updateCustomerFollowRecord,
+  updateCustomFormData,
   updateFollowPlan,
   updateFollowRecord,
   updateInvoiced,
@@ -759,7 +765,7 @@ export const showRulesMap: Partial<Record<FieldTypeEnum, FieldRuleEnum[]>> = {
 
 export const getFormConfigApiMap: Record<
   FormDesignKeyEnum,
-  (id?: string, approvalTaskId?: string) => Promise<FormDesignConfigDetailParams>
+  (id?: string, approvalTaskId?: string) => Promise<FormDesignConfigDetailParams | CustomFormDetail>
 > = {
   [FormDesignKeyEnum.CUSTOMER]: getCustomerFormConfig,
   [FormDesignKeyEnum.BUSINESS]: getOptFormConfig,
@@ -802,16 +808,7 @@ export const getFormConfigApiMap: Record<
   [FormDesignKeyEnum.CONTRACT_ORDER]: getOrderFormConfig,
   [FormDesignKeyEnum.CUSTOMER_ORDER]: getOrderFormConfig,
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: getOrderFormSnapshotConfig,
-  [FormDesignKeyEnum.CUSTOM_FORM]: async () => ({
-    fields: [],
-    formProp: {
-      layout: 1,
-      labelPos: 'top',
-      inputWidth: 'custom',
-      optBtnContent: [],
-      optBtnPos: 'flex-row',
-    },
-  }),
+  [FormDesignKeyEnum.CUSTOM_FORM]: getCustomFormDetail,
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -856,7 +853,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: addOrder,
   [FormDesignKeyEnum.CONTRACT_ORDER]: async () => ({}),
   [FormDesignKeyEnum.CUSTOMER_ORDER]: async () => ({}),
-  [FormDesignKeyEnum.CUSTOM_FORM]: async () => ({}),
+  [FormDesignKeyEnum.CUSTOM_FORM]: addCustomFormData,
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -901,7 +898,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: updateOrder,
   [FormDesignKeyEnum.CONTRACT_ORDER]: async () => ({}),
   [FormDesignKeyEnum.CUSTOMER_ORDER]: async () => ({}),
-  [FormDesignKeyEnum.CUSTOM_FORM]: async () => ({}),
+  [FormDesignKeyEnum.CUSTOM_FORM]: updateCustomFormData,
 };
 
 export const getFormDetailApiMap: Partial<
@@ -944,6 +941,7 @@ export const getFormDetailApiMap: Partial<
   [FormDesignKeyEnum.CONTRACT_ORDER]: getOrderDetailSnapshot,
   [FormDesignKeyEnum.CUSTOMER_ORDER]: getOrderDetailSnapshot,
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: getOrderDetailSnapshot,
+  [FormDesignKeyEnum.CUSTOM_FORM]: getCustomFormDataDetail,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
@@ -977,6 +975,7 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.ORDER]: getOrderList,
   [FormDesignKeyEnum.CONTRACT_ORDER]: getOrderInContractList,
   [FormDesignKeyEnum.CUSTOMER_ORDER]: getCustomerOrderList,
+  [FormDesignKeyEnum.CUSTOM_FORM]: getCustomFormDataPage,
 };
 
 export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {

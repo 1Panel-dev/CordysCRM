@@ -100,6 +100,7 @@
     linkFormInfo?: Record<string, any>; // 关联表单信息
     linkFormKey?: FormDesignKeyEnum;
     linkScenario?: FormLinkScenarioEnum; // 关联表单场景
+    customFormId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
@@ -128,6 +129,7 @@
     linkFormInfo,
     linkFormKey,
     linkScenario,
+    customFormId,
   } = toRefs(props);
 
   const {

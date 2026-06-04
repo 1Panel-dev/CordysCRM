@@ -29,6 +29,7 @@
               height: `${props.itemHeight}px`,
             }"
           >
+            <slot name="titleLeft" :item="item"></slot>
             <div class="flex-1 overflow-x-hidden" @click="emit('itemClick', item)">
               <slot name="title" :item="item"></slot>
             </div>

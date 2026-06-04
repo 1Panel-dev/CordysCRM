@@ -16,12 +16,12 @@ export default function useTableStore() {
   const { getItem, setItem } = useLocalForage();
   const appStore = useAppStore();
 
-  async function getTableColumnsMap(tableKey: TableKeyEnum): Promise<TableStorageConfigItem | null> {
+  async function getTableColumnsMap(tableKey: TableKeyEnum | string): Promise<TableStorageConfigItem | null> {
     const tableColumnsMap = await getItem<TableStorageConfigItem>(tableKey);
     return tableColumnsMap;
   }
 
-  async function setTableColumnsMap(tableKey: TableKeyEnum, tableColumnsMap: TableStorageConfigItem) {
+  async function setTableColumnsMap(tableKey: TableKeyEnum | string, tableColumnsMap: TableStorageConfigItem) {
     await setItem(tableKey, tableColumnsMap);
   }
 
@@ -80,7 +80,7 @@ export default function useTableStore() {
     return [dragColumn, ...sorted, ...extra, operationColumn].filter(Boolean) as CrmDataTableColumn[];
   }
 
-  async function initColumn(tableKey: TableKeyEnum, column: CrmDataTableColumn[]) {
+  async function initColumn(tableKey: TableKeyEnum | string, column: CrmDataTableColumn[]) {
     try {
       const tableColumnsMap = await getTableColumnsMap(tableKey);
       if (!tableColumnsMap) {
@@ -133,7 +133,7 @@ export default function useTableStore() {
   }
 
   // 表头显示设置的列
-  async function getCanSetColumns(tableKey: TableKeyEnum) {
+  async function getCanSetColumns(tableKey: TableKeyEnum | string) {
     const tableColumnsMap = await getTableColumnsMap(tableKey);
     if (tableColumnsMap) {
       return tableColumnsMap.column.filter(
@@ -147,7 +147,7 @@ export default function useTableStore() {
   }
 
   // 在表格上展示的列
-  async function getShowInTableColumns(tableKey: TableKeyEnum) {
+  async function getShowInTableColumns(tableKey: TableKeyEnum | string) {
     const tableColumnsMap = await getTableColumnsMap(tableKey);
     if (tableColumnsMap) {
       return tableColumnsMap.column.filter((i) => i.showInTable);
@@ -155,7 +155,7 @@ export default function useTableStore() {
     return [];
   }
 
-  async function setColumns(tableKey: TableKeyEnum, columns: CrmDataTableColumn[]) {
+  async function setColumns(tableKey: TableKeyEnum | string, columns: CrmDataTableColumn[]) {
     try {
       const tableColumnsMap = await getTableColumnsMap(tableKey);
       if (tableColumnsMap) {
@@ -184,12 +184,12 @@ export default function useTableStore() {
     }
   }
 
-  async function getPageSize(tableKey: TableKeyEnum) {
+  async function getPageSize(tableKey: TableKeyEnum | string) {
     const tableColumnsMap = await getTableColumnsMap(tableKey);
     return tableColumnsMap ? tableColumnsMap.pageSize : appStore.pageSize;
   }
 
-  async function setPageSize(tableKey: TableKeyEnum, pageSize: number): Promise<void> {
+  async function setPageSize(tableKey: TableKeyEnum | string, pageSize: number): Promise<void> {
     try {
       const tableColumnsMap = await getTableColumnsMap(tableKey);
       if (tableColumnsMap) {
@@ -202,7 +202,7 @@ export default function useTableStore() {
     }
   }
 
-  async function setTableLineHeight(tableKey: TableKeyEnum, layout: string): Promise<void> {
+  async function setTableLineHeight(tableKey: TableKeyEnum | string, layout: string): Promise<void> {
     try {
       const tableColumnsMap = await getTableColumnsMap(tableKey);
       if (tableColumnsMap) {
@@ -215,12 +215,15 @@ export default function useTableStore() {
     }
   }
 
-  async function getTableLineHeight(tableKey: TableKeyEnum) {
+  async function getTableLineHeight(tableKey: TableKeyEnum | string) {
     const tableColumnsMap = await getTableColumnsMap(tableKey);
     return tableColumnsMap?.layout || 'compact';
   }
 
-  async function setTablePaginationType(tableKey: TableKeyEnum, paginationType: PaginationType): Promise<void> {
+  async function setTablePaginationType(
+    tableKey: TableKeyEnum | string,
+    paginationType: PaginationType
+  ): Promise<void> {
     try {
       const tableColumnsMap = await getTableColumnsMap(tableKey);
       if (tableColumnsMap) {
@@ -233,7 +236,7 @@ export default function useTableStore() {
     }
   }
 
-  async function getTablePaginationType(tableKey: TableKeyEnum) {
+  async function getTablePaginationType(tableKey: TableKeyEnum | string) {
     const tableColumnsMap = await getTableColumnsMap(tableKey);
     return tableColumnsMap?.paginationType || 'scrollPagination';
   }

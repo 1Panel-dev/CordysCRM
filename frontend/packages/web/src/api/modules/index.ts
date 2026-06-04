@@ -62,6 +62,14 @@ export const {
   getCustomFormMember,
   removeCustomFormMember,
   batchRemoveCustomFormMember,
+  getCustomFormList,
+  getCustomFormDataDetail,
+  getCustomFormDataPage,
+  addCustomFormData,
+  batchUpdateCustomFormData,
+  batchDeleteCustomFormData,
+  updateCustomFormData,
+  deleteCustomFormData,
 } = customFormApi;
 
 export const {

@@ -5,6 +5,7 @@ import useAgentApi from '@lib/shared/api/modules/agent';
 import useClueApi from '@lib/shared/api/modules/clue';
 import useContractApi from '@lib/shared/api/modules/contract';
 import useCustomerApi from '@lib/shared/api/modules/customer';
+import useCustomFormApi from '@lib/shared/api/modules/customForm';
 import useFollowApi from '@lib/shared/api/modules/follow';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useOrderApi from '@lib/shared/api/modules/order';
@@ -418,3 +419,21 @@ export const { isLogin, signout, getKey, login, getThirdOauthCallback, getThirdC
 export const { getLicense, addLicense } = licenseApi;
 
 export const { getAgentOptions } = agentApi;
+
+export const {
+  getCustomFormAdmins,
+  getCustomFormDataDetail,
+  getCustomFormDataPage,
+  getCustomFormDetail,
+  getCustomFormList,
+  getCustomFormMember,
+  addCustomForm,
+  addCustomFormData,
+  saveCustomFormAdmins,
+  updateCustomForm,
+  updateCustomFormData,
+  batchUpdateCustomFormData,
+  batchDeleteCustomFormData,
+  batchRemoveCustomFormMember,
+  deleteCustomFormData,
+} = useCustomFormApi(CDR);

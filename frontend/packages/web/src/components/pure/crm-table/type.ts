@@ -60,7 +60,7 @@ export type CrmDataTableColumn<T = any> = (
 
 export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'columns': CrmDataTableColumn[];
-  'tableKey'?: TableKeyEnum; // 表格key, 用于存储表格列配置,pageSize等
+  'tableKey'?: TableKeyEnum | string; // 表格key, 用于存储表格列配置,pageSize等
   'tableRowKey'?: string; // 表格行的key
   'data': CrmTableDataItem<T>[];
   'showSetting'?: boolean; // 是否显示表格配置

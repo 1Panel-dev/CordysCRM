@@ -98,7 +98,7 @@
   const customFormEnable = ref(true);
 
   const formKey = ref(FormDesignKeyEnum.CUSTOM_FORM);
-  const { loading, fieldList, formConfig, formDesignRef, unsaved, checkRepeat, buildSavePayload, setFormConfigDetail } =
+  const { loading, fieldList, formConfig, unsaved, checkRepeat, buildSavePayload, setFormConfigDetail } =
     useFormDesignConfig({ formKey });
 
   function showUnsavedLeaveTip() {

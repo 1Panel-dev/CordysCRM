@@ -43,6 +43,8 @@ export enum TableKeyEnum {
   CONTRACT_BUSINESS_NAME = 'contractBusinessName', // 工商抬头
   // 审批流
   PROCESS = 'process',
+  // 自定义表单表格
+  CUSTOM_FORM = 'customForm',
 }
 
 // 具有特殊功能的列
