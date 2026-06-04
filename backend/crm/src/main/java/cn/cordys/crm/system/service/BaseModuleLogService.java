@@ -15,6 +15,8 @@ import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.product.domain.Product;
+import cn.cordys.crm.system.constants.FieldType;
+import cn.cordys.crm.system.dto.field.DateTimeField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -174,11 +176,11 @@ public abstract class BaseModuleLogService {
             String originDifferColumn = differ.getColumn();
             String differColumn = differ.getColumn();
             String prefix = differ.getColumn();
-			// 子表字段处理
-			if (StringUtils.isNotBlank(differ.getColumn()) && differ.getColumn().contains("-")) {
-				differColumn = originDifferColumn.substring(differ.getColumn().lastIndexOf("-") + 1);
-				prefix = originDifferColumn.substring(0, originDifferColumn.lastIndexOf("-"));
-			}
+            // 子表字段处理
+            if (StringUtils.isNotBlank(differ.getColumn()) && differ.getColumn().contains("-")) {
+                differColumn = originDifferColumn.substring(differ.getColumn().lastIndexOf("-") + 1);
+                prefix = originDifferColumn.substring(0, originDifferColumn.lastIndexOf("-"));
+            }
             BaseField moduleField = moduleFieldMap.get(differ.getColumn());
             if (moduleField != null) {
                 differ.setColumnName(moduleField.getName());
@@ -227,6 +229,17 @@ public abstract class BaseModuleLogService {
             if (businessModuleFieldMap.get(differ.getColumn()) != null) {
                 BaseField baseField = businessModuleFieldMap.get(differ.getColumn());
                 differ.setColumnName(baseField.getName());
+                if (Strings.CI.equals(baseField.getType(), FieldType.DATE_TIME.name())) {
+                    // 日期时间格式化
+                    DateTimeField dateTimeField = (DateTimeField) baseField;
+                    switch (dateTimeField.getDateType()) {
+                        case "date" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M-d"));
+                        case "datetime" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M-d HH:mm:ss"));
+                        case "month" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M"));
+                    }
+                }
+
+
             }
         });
 
