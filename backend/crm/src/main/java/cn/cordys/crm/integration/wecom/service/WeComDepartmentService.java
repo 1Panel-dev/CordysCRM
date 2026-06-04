@@ -2,7 +2,7 @@ package cn.cordys.crm.integration.wecom.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.JSON;
-import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
+import cn.cordys.crm.integration.common.utils.HttpClientUtils;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import cn.cordys.crm.integration.wecom.constant.WeComApiPaths;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static cn.cordys.crm.integration.common.utils.HttpRequestUtil.urlTransfer;
+import static cn.cordys.crm.integration.common.utils.HttpClientUtils.urlTransfer;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -54,7 +54,7 @@ public class WeComDepartmentService {
      */
     private WeComDepartmentListResponse fetchDepartmentList(String url) {
         try {
-            String responseStr = HttpRequestUtil.sendGetRequest(url, null);
+            String responseStr = HttpClientUtils.sendGetRequest(url, null);
             return JSON.parseObject(responseStr, WeComDepartmentListResponse.class);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -104,7 +104,7 @@ public class WeComDepartmentService {
      */
     private WeComUserListResponse fetchUserList(String url) {
         try {
-            String responseStr = HttpRequestUtil.sendGetRequest(url, null);
+            String responseStr = HttpClientUtils.sendGetRequest(url, null);
             return JSON.parseObject(responseStr, WeComUserListResponse.class);
         } catch (Exception e) {
             throw new GenericException("调用接口获取用户列表失败", e);

@@ -1,7 +1,7 @@
 package cn.cordys.crm.integration.dingtalk.service;
 
 import cn.cordys.common.util.JSON;
-import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
+import cn.cordys.crm.integration.common.utils.HttpClientUtils;
 import cn.cordys.crm.integration.dingtalk.constant.DingTalkApiPaths;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkDepartment;
 import cn.cordys.crm.integration.dingtalk.dto.DingTalkUser;
@@ -15,7 +15,6 @@ import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -95,6 +94,7 @@ public class DingTalkDepartmentService {
      * 获取所有钉钉组织架构和用户
      *
      * @param accessToken 访问令牌
+     *
      * @return 组织架构和用户数据响应
      */
     public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken) {
@@ -161,6 +161,7 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param rootDeptId  根部门ID
+     *
      * @return 部门ID列表
      */
     private List<Long> getAllSubDepartmentIds(String accessToken, Long rootDeptId) {
@@ -172,14 +173,14 @@ public class DingTalkDepartmentService {
             Long currentDeptId = deptQueue.poll();
             departmentIds.add(currentDeptId);
 
-            String url = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_DEPARTMENT_IDS, accessToken);
+            String url = HttpClientUtils.urlTransfer(DingTalkApiPaths.DING_DEPARTMENT_IDS, accessToken);
             String requestBody = JSON.toJSONString(Collections.singletonMap("dept_id", currentDeptId));
 
             try {
                 // 限流控制
                 applyRateLimit();
 
-                String responseBody = HttpRequestUtil.sendPostRequest(url, requestBody, null);
+                String responseBody = HttpClientUtils.sendPostRequest(url, requestBody, null);
                 SubDeptIdListResponse response = JSON.parseObject(responseBody, SubDeptIdListResponse.class);
 
                 if (response != null && response.getErrCode() == 0 && response.getResult() != null) {
@@ -198,7 +199,7 @@ public class DingTalkDepartmentService {
                         log.info("获取部门{}的子部门ID失败，响应为空", currentDeptId);
                     }
                 }
-            } catch (IOException | InterruptedException e) {
+            } catch (InterruptedException e) {
                 log.error("获取部门{}的子部门ID失败", currentDeptId, e);
                 Thread.currentThread().interrupt();
                 break;
@@ -220,6 +221,7 @@ public class DingTalkDepartmentService {
      * 根据请求进度动态计算延迟时间
      *
      * @param requestIndex 请求索引
+     *
      * @return 延迟时间（毫秒）
      */
     private long calculateDelay(int requestIndex) {
@@ -236,13 +238,14 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
+     *
      * @return 部门详情Optional
      */
     private Optional<DingTalkDepartment> getDepartmentDetail(String accessToken, Long deptId) {
-        String url = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_DEPARTMENT_DETAIL, accessToken);
+        String url = HttpClientUtils.urlTransfer(DingTalkApiPaths.DING_DEPARTMENT_DETAIL, accessToken);
         String requestBody = JSON.toJSONString(Map.of("dept_id", deptId, "language", "zh_CN"));
         try {
-            String responseBody = HttpRequestUtil.sendPostRequest(url, requestBody, null);
+            String responseBody = HttpClientUtils.sendPostRequest(url, requestBody, null);
             DepartmentDetailsResponse response = JSON.parseObject(responseBody, DepartmentDetailsResponse.class);
 
             if (response != null && response.getErrCode() == 0 && response.getResult() != null) {
@@ -255,7 +258,7 @@ public class DingTalkDepartmentService {
                 }
             }
 
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             log.error("获取部门详情失败", e);
             // 适当处理异常，例如记录日志
             Thread.currentThread().interrupt();
@@ -269,6 +272,7 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
+     *
      * @return 用户列表
      */
     private List<DingTalkUser> getUsersByDepartment(String accessToken, Long deptId) {
@@ -276,7 +280,7 @@ public class DingTalkDepartmentService {
         long cursor = 0L;
         boolean hasMore;
 
-        String url = HttpRequestUtil.urlTransfer(DingTalkApiPaths.DING_DEPARTMENT_USER_DETAIL_LIST, accessToken);
+        String url = HttpClientUtils.urlTransfer(DingTalkApiPaths.DING_DEPARTMENT_USER_DETAIL_LIST, accessToken);
 
         do {
             Map<String, Object> requestBodyMap = Map.of(
@@ -287,7 +291,7 @@ public class DingTalkDepartmentService {
             String requestBody = JSON.toJSONString(requestBodyMap);
 
             try {
-                String responseBody = HttpRequestUtil.sendPostRequest(url, requestBody, null);
+                String responseBody = HttpClientUtils.sendPostRequest(url, requestBody, null);
                 UserListResponse response = JSON.parseObject(responseBody, UserListResponse.class);
 
                 if (response != null && response.getErrcode() == 0 && response.getResult() != null) {
@@ -304,7 +308,7 @@ public class DingTalkDepartmentService {
                         log.error("获取部门用户失败，错误码：{}，错误信息：{}", response.getErrcode(), response.getErrmsg());
                     }
                 }
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
                 log.error("获取部门用户失败", e);
                 Thread.currentThread().interrupt();
                 hasMore = false;
@@ -313,6 +317,4 @@ public class DingTalkDepartmentService {
 
         return users;
     }
-
-
 }

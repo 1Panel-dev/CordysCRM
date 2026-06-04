@@ -17,7 +17,7 @@ import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
-import cn.cordys.crm.integration.common.utils.HttpRequestUtil;
+import cn.cordys.crm.integration.common.utils.HttpClientUtils;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -25,7 +25,6 @@ import cn.cordys.security.UserApprovalDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.context.ApplicationContext;
@@ -463,7 +462,7 @@ public class ApprovalResourceService {
 	private void sendGet(WebHookConfig webHookConfig) {
 		Map<String, String> headers = JSON.parseMap(webHookConfig.getWebHookHeader());
 		try {
-			HttpRequestUtil.sendGetRequest(webHookConfig.getWebHookUrl(), headers);
+			HttpClientUtils.sendGetRequest(webHookConfig.getWebHookUrl(), headers);
 		} catch (Exception e) {
 			log.error("GET调用WebHook异常", e);
 			throw new GenericException(e.getMessage());
@@ -474,7 +473,7 @@ public class ApprovalResourceService {
 	private void sendPost(WebHookConfig webHookConfig) {
 		Map<String, String> headers = JSON.parseMap(webHookConfig.getWebHookHeader());
 		try {
-			HttpRequestUtil.sendPostRequest(webHookConfig.getWebHookUrl(), webHookConfig.getWebHookBody(), headers);
+			HttpClientUtils.sendPostRequest(webHookConfig.getWebHookUrl(), webHookConfig.getWebHookBody(), headers);
 		} catch (Exception e) {
 			log.error("POST调用WebHook异常", e);
 			throw new GenericException(e.getMessage());
