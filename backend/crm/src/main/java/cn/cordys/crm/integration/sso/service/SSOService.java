@@ -117,7 +117,7 @@ public class SSOService {
         if (config == null) {
             throw new AuthenticationException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
         }
-        WecomThirdConfigRequest weComConfig = new WecomThirdConfigRequest();
+        WecomThirdConfigRequest weComConfig;
         if (config.getConfig() == null) {
             weComConfig = JSON.parseObject(content, WecomThirdConfigRequest.class);
         } else {
@@ -350,10 +350,9 @@ public class SSOService {
                 .filter(StringUtils::isNotBlank)
                 .map(phone -> {
                     try {
-                        if (phone.length() >= 6) {
-                            return CodingUtils.md5(phone.substring(phone.length() - 6));
-                        }
-                        return CodingUtils.md5(phone);
+                        return CodingUtils.md5(phone.length() >= 6
+                                ? phone.substring(phone.length() - 6)
+                                : phone);
                     } catch (Exception e) {
                         return CodingUtils.md5(phone);
                     }
@@ -398,15 +397,13 @@ public class SSOService {
         if (config == null) {
             throw new AuthenticationException(Translator.get(ERROR_AUTH_SETTING_NOT_EXISTS));
         }
-        DingTalkThirdConfigRequest dingTalkConfig = new DingTalkThirdConfigRequest();
+        DingTalkThirdConfigRequest dingTalkConfig;
         if (config.getConfig() == null) {
             dingTalkConfig = JSON.parseObject(content, DingTalkThirdConfigRequest.class);
         } else {
             dingTalkConfig = JSON.MAPPER.convertValue(config.getConfig(), DingTalkThirdConfigRequest.class);
         }
         return getDingTalkSessionUser(code, dingTalkConfig, UserSource.DINGTALK_OAUTH2.toString(), ip);
-
-
     }
 
     public SessionUser exchangeLarkCode(String code, String ip) {

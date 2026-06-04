@@ -65,13 +65,13 @@ public class TokenService {
      */
     public String getAssessToken(String corpId, String corpSecret) {
         String url = HttpRequestUtil.urlTransfer(WeComApiPaths.GET_TOKEN, corpId, corpSecret);
-        WeComToken weComToken = new WeComToken();
+        WeComToken weComToken;
         try {
             String response = HttpRequestUtil.sendGetRequest(url, null);
             weComToken = JSON.parseObject(response, WeComToken.class);
-
         } catch (Exception e) {
             log.error(Translator.get("auth.get.token.error"), e);
+            return null;
         }
 
         if (weComToken.getErrCode() == null) {
@@ -99,7 +99,7 @@ public class TokenService {
         DingTalkBaseParamDTO dingTalkTokenParamDTO = new DingTalkBaseParamDTO();
         dingTalkTokenParamDTO.setAppKey(appKey);
         dingTalkTokenParamDTO.setAppSecret(appSecret);
-        DingTalkToken dingTalkToken = new DingTalkToken();
+        DingTalkToken dingTalkToken = null;
         try {
             String response = qrCodeClient.postExchange(
                     DingTalkApiPaths.DING_TALK_GET_TOKEN, null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON
@@ -109,7 +109,7 @@ public class TokenService {
             log.error(Translator.get("auth.get.token.error"), e);
         }
 
-        return dingTalkToken.getAccessToken();
+        return dingTalkToken != null ? dingTalkToken.getAccessToken() : null;
     }
 
 
@@ -128,7 +128,7 @@ public class TokenService {
         dingTalkTokenParamDTO.setClientSecret(appSecret);
         dingTalkTokenParamDTO.setCode(code);
         dingTalkTokenParamDTO.setGrantType("authorization_code");
-        DingTalkToken dingTalkToken = new DingTalkToken();
+        DingTalkToken dingTalkToken = null;
         try {
             String response = qrCodeClient.postExchange(DING_USER_TOKEN_URL, null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
             dingTalkToken = JSON.parseObject(response, DingTalkToken.class);
@@ -136,7 +136,7 @@ public class TokenService {
             log.error(Translator.get("auth.get.token.error"), e);
         }
 
-        return dingTalkToken.getAccessToken();
+        return dingTalkToken != null ? dingTalkToken.getAccessToken() : null;
     }
 
 
@@ -153,23 +153,21 @@ public class TokenService {
         larkBaseParamDTO.setApp_id(agentId);
         larkBaseParamDTO.setApp_secret(appSecret);
 
-        LarkToken larkToken = new LarkToken();
-
+        LarkToken larkToken = null;
         try {
             String response = qrCodeClient.postExchange(
                     LarkApiPaths.LARK_APP_TOKEN_URL, null, null, larkBaseParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON
             );
             larkToken = JSON.parseObject(response, LarkToken.class);
-
         } catch (Exception e) {
             log.error(Translator.get("auth.get.token.error"), e);
         }
 
-        if (larkToken.getCode() != 0) {
+        if (larkToken != null && larkToken.getCode() != 0) {
             log.error("{}:{}", Translator.get("auth.get.token.res.error"), larkToken.getMsg());
         }
 
-        return larkToken.getTenantAccessToken();
+        return larkToken != null ? larkToken.getTenantAccessToken() : null;
     }
 
     /**
@@ -249,8 +247,7 @@ public class TokenService {
             resultObj = JSON.parseObject(content, new TypeReference<HashMap<String, String>>() {
             });
         } catch (Exception e) {
-            log.error(Translator.get("auth.token.error"));
-
+            log.error(Translator.get("auth.token.error"), e);
         }
         String accessToken = null;
         if (MapUtils.isEmpty(resultObj)) {
@@ -286,7 +283,7 @@ public class TokenService {
      */
     public void sendLarkNoticeByToken(LarkSendMessageDTO larkSendMessageDTO, String agentId, String appSecret) {
         String assessToken = getLarkToken(agentId, appSecret);
-        qrCodeClient.postExchange(LarkApiPaths.LARK_SEND_MESSAGE_URL + "?receive_id_type=" + "open_id", "Bearer " + assessToken,
+        qrCodeClient.postExchange(LarkApiPaths.LARK_SEND_MESSAGE_URL + "?receive_id_type=open_id", "Bearer " + assessToken,
                 "Authorization", larkSendMessageDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
     }
 
@@ -298,23 +295,21 @@ public class TokenService {
         larkTokenParamDTO.setCode(code);
         larkTokenParamDTO.setGrant_type("authorization_code");
         larkTokenParamDTO.setRedirect_uri(redirectUrl);
-        LarkToken larkToken = new LarkToken();
-
+        LarkToken larkToken = null;
         try {
             String response = qrCodeClient.postExchange(
                     LarkApiPaths.LARK_USER_TOKEN_URL, null, null, larkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON
             );
             larkToken = JSON.parseObject(response, LarkToken.class);
-
         } catch (Exception e) {
             log.error(Translator.get("auth.get.token.error"), e);
         }
 
-        if (larkToken.getCode() != 0) {
+        if (larkToken != null && larkToken.getCode() != 0) {
             log.error("{}:{}", Translator.get("auth.get.token.res.error"), larkToken.getMsg());
         }
 
-        return larkToken.getAccessToken();
+        return larkToken != null ? larkToken.getAccessToken() : null;
     }
 
 
@@ -364,7 +359,7 @@ public class TokenService {
         headers.put("Timespan", String.valueOf(time));
 
         String url = HttpRequestUtil.urlTransfer(qccAddress.concat(QccApiPaths.FUZZY_SEARCH_API), qccAccessKey, qccSecretKey);
-        String body = "";
+        String body;
         try {
             body = HttpRequestUtil.sendGetRequest(url, headers);
         } catch (Exception e) {
