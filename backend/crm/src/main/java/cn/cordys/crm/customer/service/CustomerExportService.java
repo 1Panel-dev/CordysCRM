@@ -52,7 +52,7 @@ public class CustomerExportService extends BaseExportService {
         //用户导出数量 限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER.name());
 
-        ExportTask exportTask = exportTaskService.saveTask(orgId, IDGenerator.nextStr(), userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
+        var exportTask = exportTaskService.saveTask(orgId, IDGenerator.nextStr(), userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
 
         // 启动虚拟线程执行导出任务
         runExport(orgId, userId, LogModule.CUSTOMER_INDEX, locale, exportTask, request.getFileName(),
@@ -63,8 +63,8 @@ public class CustomerExportService extends BaseExportService {
 
     public void exportCustomerData(ExportTask exportTask, String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) throws Exception {
         //表头信息
-        List<List<String>> headList = request.getHeadList().stream()
-                .map(head -> Collections.singletonList(head.getTitle()))
+        var headList = request.getHeadList().stream()
+                .map(head -> List.of(head.getTitle()))
                 .toList();
         //分批查询数据并写入文件
         batchHandleData(exportTask.getFileId(),
@@ -76,7 +76,7 @@ public class CustomerExportService extends BaseExportService {
     }
 
     private List<Object> buildData(List<ExportHeadDTO> headList, CustomerListResponse data, Map<String, BaseField> fieldConfigMap) {
-        List<Object> dataList = new ArrayList<>();
+        var dataList = new ArrayList<>();
         //固定字段map
         LinkedHashMap<String, Object> systemFieldMap = PoolCustomerFieldUtils.getSystemFieldMap(data);
         //自定义字段map
@@ -105,7 +105,7 @@ public class CustomerExportService extends BaseExportService {
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER.name());
 
         String fileId = IDGenerator.nextStr();
-        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
+        var exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
 
         runExport(orgId, userId, LogModule.CUSTOMER_INDEX, locale, exportTask, request.getFileName(),
                 () -> exportSelectData(exportTask, userId, request, orgId, locale));
@@ -117,16 +117,16 @@ public class CustomerExportService extends BaseExportService {
         LocaleContextHolder.setLocale(locale);
         ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
         //表头信息
-        List<List<String>> headList = request.getHeadList().stream()
-                .map(head -> Collections.singletonList(head.getTitle()))
+        var headList = request.getHeadList().stream()
+                .map(head -> List.of(head.getTitle()))
                 .toList();
         // 准备导出文件
-        File file = prepareExportFile(exportTask.getFileId(), request.getFileName(), exportTask.getOrganizationId());
+        var file = prepareExportFile(exportTask.getFileId(), request.getFileName(), exportTask.getOrganizationId());
         try (ExcelWriter writer = EasyExcel.write(file)
                 .head(headList)
                 .excelType(ExcelTypeEnum.XLSX)
                 .build()) {
-            WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+            var sheet = EasyExcel.writerSheet("导出数据").build();
 
             SubListUtils.dealForSubList(request.getIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
                 List<List<Object>> data = null;
@@ -180,7 +180,7 @@ public class CustomerExportService extends BaseExportService {
         List<CustomerListResponse> dataList = customerService.buildListData(rawList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CUSTOMER.getKey(), orgId);
 
-        List<List<Object>> result = new ArrayList<>(dataList.size());
+        var result = new ArrayList<List<Object>>(dataList.size());
         for (CustomerListResponse response : dataList) {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");

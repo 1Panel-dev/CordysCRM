@@ -77,7 +77,7 @@ public class CustomerContactExportService extends BaseExportService {
     private void exportData(String fileId, ExportTask exportTask, String userId, CustomerContactExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) throws InterruptedException {
         // 表头信息
         final var headList = request.getHeadList().stream()
-                .map(head -> Collections.singletonList(head.getTitle()))
+                .map(head -> List.of(head.getTitle()))
                 .toList();
 
         batchHandleData(
@@ -111,7 +111,7 @@ public class CustomerContactExportService extends BaseExportService {
         allList = customerContactService.buildListData(allList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CONTACT.getKey(), orgId);
         //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
+        var data = new ArrayList<List<Object>>();
         for (CustomerContactListResponse response : allList) {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
@@ -124,7 +124,7 @@ public class CustomerContactExportService extends BaseExportService {
     }
 
     private List<Object> buildData(List<ExportHeadDTO> headList, CustomerContactListResponse data, Map<String, BaseField> fieldConfigMap) {
-        List<Object> dataList = new ArrayList<>();
+        var dataList = new ArrayList<>();
         //固定字段map
         LinkedHashMap<String, Object> systemFieldMap = CustomerContactFieldUtils.getSystemFieldMap(data);
         //自定义字段map
@@ -152,8 +152,8 @@ public class CustomerContactExportService extends BaseExportService {
         // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER_CONTACT.name());
 
-        String fileId = IDGenerator.nextStr();
-        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER_CONTACT.toString(), request.getFileName());
+        var fileId = IDGenerator.nextStr();
+        var exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER_CONTACT.toString(), request.getFileName());
 
         runExport(orgId, userId, LogModule.CUSTOMER_CONTACT, locale, exportTask, request.getFileName(),
                 () -> exportData(fileId, exportTask, userId, request, orgId));
@@ -163,17 +163,17 @@ public class CustomerContactExportService extends BaseExportService {
 
     private void exportData(String fileId, ExportTask exportTask, String userId, ExportSelectRequest request, String orgId) {
         //表头信息
-        List<List<String>> headList = request.getHeadList().stream()
-                .map(head -> Collections.singletonList(head.getTitle()))
+        var headList = request.getHeadList().stream()
+                .map(head -> List.of(head.getTitle()))
                 .toList();
 
         // 准备导出文件
-        File file = prepareExportFile(fileId, request.getFileName(), exportTask.getOrganizationId());
+        var file = prepareExportFile(fileId, request.getFileName(), exportTask.getOrganizationId());
         try (ExcelWriter writer = EasyExcel.write(file)
                 .head(headList)
                 .excelType(ExcelTypeEnum.XLSX)
                 .build()) {
-            WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+            var sheet = EasyExcel.writerSheet("导出数据").build();
 
             SubListUtils.dealForSubList(request.getIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
                 List<List<Object>> data = null;
@@ -190,7 +190,7 @@ public class CustomerContactExportService extends BaseExportService {
     }
 
     private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
-        var allList = Optional.ofNullable(extCustomerContactMapper.getListByIds(ids)).orElseGet(Collections::emptyList);
+        var allList = Optional.ofNullable(extCustomerContactMapper.getListByIds(ids)).orElseGet(List::of);
         allList = customerContactService.buildListData(allList, orgId);
         var fieldConfigMap = getFieldConfigMap(FormKey.CONTACT.getKey(), orgId);
 

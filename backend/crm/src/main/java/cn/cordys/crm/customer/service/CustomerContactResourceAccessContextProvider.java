@@ -25,11 +25,11 @@ public class CustomerContactResourceAccessContextProvider implements ResourceAcc
 
     @Override
     public ResourceAccessContext getAccessContext(String resourceId, String orgId) {
-        CustomerContact customerContact = contactMapper.selectByPrimaryKey(resourceId);
+        var customerContact = contactMapper.selectByPrimaryKey(resourceId);
         if (customerContact == null) {
             return null;
         }
-        ResourceAccessContext context = new ResourceAccessContext();
+        var context = new ResourceAccessContext();
         context.setOwnerId(customerContact.getOwner());
         return context;
     }

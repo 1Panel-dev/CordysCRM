@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -45,10 +44,10 @@ public class CustomerCapacityService {
      * @return 客户库容设置集合
      */
     public List<CustomerCapacityDTO> list(String currentOrgId) {
-        List<CustomerCapacityDTO> capacityList = new ArrayList<>();
-        LambdaQueryWrapper<CustomerCapacity> wrapper = new LambdaQueryWrapper<>();
+        var capacityList = new ArrayList<CustomerCapacityDTO>();
+        var wrapper = new LambdaQueryWrapper<CustomerCapacity>();
         wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId).orderByDesc(CustomerCapacity::getCreateTime);
-        List<CustomerCapacity> capacities = customerCapacityMapper.selectListByLambda(wrapper);
+        var capacities = customerCapacityMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isEmpty(capacities)) {
             return new ArrayList<>();
         }
@@ -67,13 +66,13 @@ public class CustomerCapacityService {
     public void add(CapacityAddRequest request, String currentUserId, String currentOrgId) {
         List<CustomerCapacity> oldCapacities = customerCapacityMapper.selectAll(null);
         List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
-                .collect(Collectors.toList());
+                .toList();
         boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
         if (duplicate) {
             throw new GenericException(Translator.get("capacity.scope.duplicate"));
         }
 
-        CustomerCapacity capacity = new CustomerCapacity();
+        var capacity = new CustomerCapacity();
         capacity.setId(IDGenerator.nextStr());
         capacity.setOrganizationId(currentOrgId);
         capacity.setCapacity(request.getCapacity());
@@ -99,11 +98,11 @@ public class CustomerCapacityService {
         if (oldCapacity == null) {
             throw new GenericException(Translator.get("capacity.not.exist"));
         }
-        LambdaQueryWrapper<CustomerCapacity> wrapper = new LambdaQueryWrapper<>();
+        var wrapper = new LambdaQueryWrapper<CustomerCapacity>();
         wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId).nq(CustomerCapacity::getId, request.getId());
-        List<CustomerCapacity> oldCapacities = customerCapacityMapper.selectListByLambda(wrapper);
+        var oldCapacities = customerCapacityMapper.selectListByLambda(wrapper);
         List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
-                .collect(Collectors.toList());
+                .toList();
         boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
         if (duplicate) {
             throw new GenericException(Translator.get("capacity.scope.duplicate"));
