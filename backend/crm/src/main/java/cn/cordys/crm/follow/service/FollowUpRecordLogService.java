@@ -63,11 +63,6 @@ public class FollowUpRecordLogService extends BaseModuleLogService {
                 continue;
             }
 
-            if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_TIME.getBusinessKey())) {
-                setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
-                continue;
-            }
-
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_OPPORTUNITY.getBusinessKey())) {
                 setOpportunityName(differ);
             }
