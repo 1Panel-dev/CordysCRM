@@ -15,7 +15,7 @@ import java.util.List;
 public class RoleUserRelateRequest {
     @NotBlank
     @Schema(description = "角色ID")
-    private String roleId;
+    private String customFormRole;
 
     @Schema(description = "部门ID")
     private List<String> deptIds;

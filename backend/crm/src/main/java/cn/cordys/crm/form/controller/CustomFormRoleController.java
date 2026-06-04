@@ -9,6 +9,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public class CustomFormRoleController {
     @PostMapping("/user/add")
     @Operation(summary = "角色添加用户")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public void addUsers(@RequestBody CustomFormRoleUserBatchRequest request) {
+    public void addUsers(@Validated @RequestBody CustomFormRoleUserBatchRequest request) {
         customFormRoleService.addUsers(request, SessionUtils.getUserId());
     }
 

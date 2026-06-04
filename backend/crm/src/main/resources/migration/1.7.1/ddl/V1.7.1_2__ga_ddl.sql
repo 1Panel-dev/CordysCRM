@@ -53,6 +53,7 @@ CREATE TABLE custom_form_role_user(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `role_id` VARCHAR(32) NOT NULL   COMMENT '角色id' ,
     `user_id` VARCHAR(32) NOT NULL   COMMENT '用户id' ,
+    `custom_form_id` VARCHAR(32) NOT NULL   COMMENT '自定义表单id' ,
     PRIMARY KEY (id)
 )  COMMENT = '自定义表单角色关联用户'
 ENGINE = InnoDB

@@ -323,7 +323,7 @@ class RoleControllerTests extends BaseTest {
     void testUserRelate() throws Exception {
         // 请求成功
         RoleUserRelateRequest request = new RoleUserRelateRequest();
-        request.setRoleId(addRole.getId());
+        request.setCustomFormRole(addRole.getId());
         request.setUserIds(List.of(InternalUser.ADMIN.getValue()));
         this.requestPostWithOk(USER_RELATE, request);
 
@@ -444,7 +444,7 @@ class RoleControllerTests extends BaseTest {
     void testRoleUserBatchDelete() throws Exception {
         // 先关联，再删除
         RoleUserRelateRequest request = new RoleUserRelateRequest();
-        request.setRoleId(addRole.getId());
+        request.setCustomFormRole(addRole.getId());
         request.setUserIds(List.of(InternalUser.ADMIN.getValue()));
         this.requestPostWithOk(USER_RELATE, request);
 
