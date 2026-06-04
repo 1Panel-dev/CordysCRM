@@ -3,7 +3,6 @@ package cn.cordys.crm.form.service;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
-import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -14,6 +13,7 @@ import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
+import cn.cordys.crm.form.mapper.ExtCustomFormDataMapper;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.ModuleFormBlob;
 import cn.cordys.crm.system.dto.form.FormProp;
@@ -58,7 +58,7 @@ public class CustomFormService {
     @Resource
     private ModuleFormService moduleFormService;
     @Resource
-    private BaseService baseService;
+    private ExtCustomFormDataMapper extCustomFormDataMapper;
 
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
@@ -124,7 +124,7 @@ public class CustomFormService {
         CustomForm form = new CustomForm();
         form.setId(formId);
         form.setName(request.getName());
-        form.setEnable(BooleanUtils.isTrue(request.getEnable()));
+        form.setEnable(!BooleanUtils.isFalse(request.getEnable()));
         customFormMapper.insert(form);
 
         // 保存 sys_module_form 使用相同的 ID, formKey 也使用 formId
@@ -213,10 +213,11 @@ public class CustomFormService {
         // 删除表单角色和成员
         deleteCustomFormRoleAndUser(id);
 
+        // 删除表单数据（多表联删，一次扫描）
+        extCustomFormDataMapper.deleteFormDataByCustomFormId(id);
+
         // 删除表单
         customFormMapper.deleteByIds(List.of(id));
-
-        // todo 删除表单数据
     }
 
     private void deleteCustomFormRoleAndUser(String formId) {
@@ -307,15 +308,20 @@ public class CustomFormService {
     }
 
     private void checkFormAdmin(String formId, String userId) {
-        if (InternalUser.ADMIN.equals(userId)) {
-            return;
+        if (!isFormAdminUser(formId, userId)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
+    public Boolean isFormAdminUser(String formId, String userId) {
+        if (InternalUser.ADMIN.getValue().equals(userId)) {
+            return true;
         }
         CustomFormAdmin example = new CustomFormAdmin();
         example.setCustomFormId(formId);
         example.setUserId(userId);
-        if (customFormAdminMapper.countByExample(example) == 0) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
+        boolean isAdmin = customFormAdminMapper.countByExample(example) > 0;
+        return isAdmin;
     }
 
     Set<String> getAdminFormIds(String userId) {

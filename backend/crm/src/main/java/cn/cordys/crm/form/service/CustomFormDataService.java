@@ -1,25 +1,34 @@
 package cn.cordys.crm.form.service;
 
+import cn.cordys.aspectj.annotation.OperationLog;
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
-import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.Translator;
-import cn.cordys.crm.form.domain.CustomFormAdmin;
-import cn.cordys.crm.form.domain.CustomFormData;
-import cn.cordys.crm.form.domain.CustomFormRole;
-import cn.cordys.crm.form.domain.CustomFormRoleKey;
-import cn.cordys.crm.form.domain.CustomFormRoleUser;
+import cn.cordys.crm.form.domain.*;
 import cn.cordys.crm.form.dto.request.CustomFormDataAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataBatchUpdateRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormDataGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
+import cn.cordys.crm.form.mapper.ExtCustomFormDataMapper;
+import cn.cordys.crm.system.domain.ModuleForm;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.service.LogService;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -27,6 +36,7 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +50,7 @@ public class CustomFormDataService {
     @Resource
     private BaseMapper<CustomFormData> customFormDataMapper;
     @Resource
-    private BaseMapper<CustomFormAdmin> customFormAdminMapper;
+    private ExtCustomFormDataMapper extCustomFormDataMapper;
     @Resource
     private BaseMapper<CustomFormRole> customFormRoleMapper;
     @Resource
@@ -48,47 +58,74 @@ public class CustomFormDataService {
     @Resource
     private CustomFormDataFieldService customFormDataFieldService;
     @Resource
+    private CustomFormService customFormService;
+    @Resource
     private BaseService baseService;
+    @Resource
+    private ModuleFormService moduleFormService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private BaseMapper<ModuleForm> moduleFormMapper;
+    @Resource
+    private LogService logService;
 
-    public Pager<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId) {
+    public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId) {
         String formId = request.getCustomFormId();
         CustomFormRoleKey dataScope = getDataScope(formId, userId);
-
-        LambdaQueryWrapper<CustomFormData> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomFormData::getCustomFormId, formId);
-
-        if (dataScope == CustomFormRoleKey.MANAGE_OWN) {
-            wrapper.eq(CustomFormData::getCreateUser, userId);
-        }
+        boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
 
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomFormData> dataList = customFormDataMapper.selectListByLambda(wrapper);
-
-        if (CollectionUtils.isEmpty(dataList)) {
-            return PageUtils.setPageInfo(page, Collections.emptyList());
+        List<CustomFormDataListResponse> list = extCustomFormDataMapper.list(request, orgId, userId, manageOwn);
+        CustomFormDataFieldService.setFormKey(formId);
+        try {
+            list = buildList(list, formId, orgId);
+            Map<String, List<OptionDTO>> optionMap = buildOptionMap(formId, orgId, list);
+            return PageUtils.setPageInfoWithOption(page, list, optionMap);
+        } finally {
+            CustomFormDataFieldService.clearFormKey();
         }
-
-        List<String> dataIds = dataList.stream().map(CustomFormData::getId).toList();
-        Map<String, List<BaseModuleFieldValue>> fieldMap = customFormDataFieldService.getResourceFieldMap(dataIds, true);
-
-        Map<String, String> userNameMap = baseService.getUserNameMap(
-                dataList.stream().map(CustomFormData::getOwner).filter(Objects::nonNull).distinct().toList()
-        );
-
-        List<CustomFormDataListResponse> respList = dataList.stream().map(data -> {
-            CustomFormDataListResponse resp = BeanUtils.copyBean(new CustomFormDataListResponse(), data);
-            resp.setModuleFields(fieldMap.get(data.getId()));
-            resp.setOwnerName(userNameMap.get(data.getOwner()));
-            return resp;
-        }).toList();
-
-        return PageUtils.setPageInfo(page, respList);
     }
 
-    public CustomFormDataGetResponse get(String id, String userId) {
+    public List<CustomFormDataListResponse> buildList(List<CustomFormDataListResponse> list, String formId, String orgId) {
+        if (CollectionUtils.isEmpty(list)) {
+            return list;
+        }
+
+        List<String> dataIds = list.stream().map(CustomFormDataListResponse::getId).toList();
+
+        Map<String, List<BaseModuleFieldValue>> fieldMap = customFormDataFieldService.getResourceFieldMap(dataIds, true);
+        Map<String, List<BaseModuleFieldValue>> resolvefieldValueMap = customFormDataFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(formId, orgId), fieldMap);
+
+        list.forEach(resp -> {
+            resp.setModuleFields(resolvefieldValueMap.get(resp.getId()));
+        });
+
+        return baseService.setCreateUpdateOwnerUserName(list);
+    }
+
+
+    private Map<String, List<OptionDTO>> buildOptionMap(String formId, String orgId, List<CustomFormDataListResponse> list) {
+        ModuleForm moduleForm = moduleFormMapper.selectByPrimaryKey(formId);
+        if (moduleForm == null || CollectionUtils.isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+
+        ModuleFormConfigDTO formConfig = moduleFormService.getBusinessFormConfig(moduleForm.getFormKey(), orgId);
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomFormDataListResponse::getModuleFields);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFieldValues);
+
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(list,
+                CustomFormDataListResponse::getOwner, CustomFormDataListResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CUSTOM_FORM_DATA_OWNER.getBusinessKey(), ownerFieldOption);
+
+        return optionMap;
+    }
+
+    public CustomFormDataGetResponse get(String id, String userId, String orgId) {
         CustomFormData data = customFormDataMapper.selectByPrimaryKey(id);
         if (data == null) {
-            throw new GenericException(Translator.get("custom.form.data.not.exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
         CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId);
@@ -105,12 +142,23 @@ public class CustomFormDataService {
         resp.setCreateUserName(userNameMap.get(data.getCreateUser()));
         resp.setUpdateUserName(userNameMap.get(data.getUpdateUser()));
 
-        List<BaseModuleFieldValue> moduleFields = customFormDataFieldService.getModuleFieldValuesByResourceId(id);
-        resp.setModuleFields(moduleFields);
+        CustomFormDataFieldService.setFormKey(data.getCustomFormId());
+        try {
+            ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(data.getCustomFormId(), orgId);
+            List<BaseModuleFieldValue> moduleFields = customFormDataFieldService.getModuleFieldValuesByResourceId(id);
+            Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFields);
+            moduleFormService.processBusinessFieldValues(resp, moduleFields, formConfig);
+            resp.setAttachmentMap(moduleFormService.getAttachmentMap(formConfig, moduleFields));
+            resp.setOptionMap(optionMap);
+            resp.setModuleFields(moduleFields);
+        } finally {
+            CustomFormDataFieldService.clearFormKey();
+        }
 
         return resp;
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.ADD)
     public CustomFormData add(CustomFormDataAddRequest request, String userId, String orgId) {
         CustomFormData data = new CustomFormData();
         data.setId(IDGenerator.nextStr());
@@ -123,20 +171,28 @@ public class CustomFormDataService {
         data.setCreateUser(userId);
         data.setUpdateUser(userId);
 
-        customFormDataFieldService.saveModuleField(data, orgId, userId, request.getModuleFields(), false);
+        CustomFormDataFieldService.setFormKey(request.getCustomFormId());
+        try {
+            customFormDataFieldService.saveModuleField(data, orgId, userId, request.getModuleFields(), false);
+        } finally {
+            CustomFormDataFieldService.clearFormKey();
+        }
         customFormDataMapper.insert(data);
+
+        baseService.handleAddLogWithResourceName(data, request.getModuleFields());
 
         return data;
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void update(CustomFormDataUpdateRequest request, String userId, String orgId) {
-        CustomFormData data = customFormDataMapper.selectByPrimaryKey(request.getId());
-        if (data == null) {
-            throw new GenericException(Translator.get("custom.form.data.not.exist"));
+        CustomFormData originData = customFormDataMapper.selectByPrimaryKey(request.getId());
+        if (originData == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
-        CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId);
-        checkWritePermission(dataScope, data.getCreateUser(), userId);
+        CustomFormRoleKey dataScope = getDataScope(originData.getCustomFormId(), userId);
+        checkWritePermission(dataScope, originData.getCreateUser(), userId);
 
         CustomFormData updateData = new CustomFormData();
         updateData.setId(request.getId());
@@ -146,21 +202,37 @@ public class CustomFormDataService {
         updateData.setUpdateUser(userId);
         customFormDataMapper.update(updateData);
 
-        customFormDataFieldService.deleteByResourceId(request.getId());
-        customFormDataFieldService.saveModuleField(updateData, orgId, userId, request.getModuleFields(), true);
+
+        CustomFormDataFieldService.setFormKey(originData.getCustomFormId());
+        try {
+            if (request.getModuleFields() != null) {
+                List<BaseModuleFieldValue> originFields = customFormDataFieldService.getModuleFieldValuesByResourceId(request.getId());
+                customFormDataFieldService.deleteByResourceId(request.getId());
+                customFormDataFieldService.saveModuleField(updateData, orgId, userId, request.getModuleFields(), true);
+                baseService.handleUpdateLog(originData, updateData, originFields, request.getModuleFields(), originData.getId(), originData.getName());
+            } else {
+                baseService.handleUpdateLog(originData, updateData, null, null, originData.getId(), originData.getName());
+            }
+        } finally {
+            CustomFormDataFieldService.clearFormKey();
+        }
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId) {
         CustomFormData data = customFormDataMapper.selectByPrimaryKey(id);
         if (data == null) {
-            throw new GenericException(Translator.get("custom.form.data.not.exist"));
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
         CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId);
         checkWritePermission(dataScope, data.getCreateUser(), userId);
 
         customFormDataFieldService.deleteByResourceId(id);
-        customFormDataMapper.deleteByIds(List.of(id));
+        customFormDataMapper.deleteByPrimaryKey(id);
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(data.getName());
     }
 
     public void batchUpdate(CustomFormDataBatchUpdateRequest request, String userId, String orgId) {
@@ -168,60 +240,56 @@ public class CustomFormDataService {
         if (CollectionUtils.isEmpty(dataList)) {
             return;
         }
+        checkBatchPermission(userId, dataList, request.getCustomFormId());
+        CustomFormDataFieldService.setFormKey(request.getCustomFormId());
+        try {
+            BaseField field = customFormDataFieldService.getAndCheckField(request.getFieldId(), orgId);
+            customFormDataFieldService.batchUpdate(request, field, dataList, CustomFormData.class, LogModule.CUSTOM_FORM_DATA, extCustomFormDataMapper::batchUpdate, userId, orgId);
+        } finally {
+            CustomFormDataFieldService.clearFormKey();
+        }
+    }
 
-        String formId = request.getCustomFormId();
+    private void checkBatchPermission(String userId, List<CustomFormData> dataList, String formId) {
         CustomFormRoleKey dataScope = getDataScope(formId, userId);
         if (dataScope == CustomFormRoleKey.VIEW_ALL) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
-
-        for (CustomFormData data : dataList) {
-            if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(data.getCreateUser(), userId)) {
-                continue;
+        for (CustomFormData customFormData : dataList) {
+            if (!Strings.CI.equals(customFormData.getCustomFormId(), formId)) {
+                // 数据所属表单不一致，禁止批量操作
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
-
-            CustomFormData updateData = new CustomFormData();
-            updateData.setId(data.getId());
-            updateData.setName(request.getName());
-            updateData.setOwner(request.getOwner());
-            updateData.setUpdateTime(System.currentTimeMillis());
-            updateData.setUpdateUser(userId);
-            customFormDataMapper.update(updateData);
-
-            customFormDataFieldService.deleteByResourceId(data.getId());
-            customFormDataFieldService.saveModuleField(updateData, orgId, userId, request.getModuleFields(), true);
+            if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(customFormData.getOwner(), userId)) {
+                // 仅能操作自己负责的数据，且数据负责人不为当前用户，禁止操作
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
         }
     }
 
-    public void batchDelete(List<String> ids, String userId) {
+    public void batchDelete(List<String> ids, String userId, String orgId) {
         List<CustomFormData> dataList = customFormDataMapper.selectByIds(ids);
         if (CollectionUtils.isEmpty(dataList)) {
             return;
         }
 
         String formId = dataList.getFirst().getCustomFormId();
-        CustomFormRoleKey dataScope = getDataScope(formId, userId);
-        if (dataScope == CustomFormRoleKey.VIEW_ALL) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
+        checkBatchPermission(userId, dataList, formId);
 
         List<String> deletableIds = dataList.stream()
-                .filter(data -> {
-                    if (dataScope == CustomFormRoleKey.MANAGE_ALL) {
-                        return true;
-                    }
-                    return dataScope == CustomFormRoleKey.MANAGE_OWN && StringUtils.equals(data.getCreateUser(), userId);
-                })
                 .map(CustomFormData::getId)
                 .toList();
 
-        if (CollectionUtils.isNotEmpty(deletableIds)) {
-            deletableIds.forEach(id -> customFormDataFieldService.deleteByResourceId(id));
-            customFormDataMapper.deleteByIds(deletableIds);
-        }
-    }
+        customFormDataFieldService.deleteByResourceIds(deletableIds);
+        customFormDataMapper.deleteByIds(deletableIds);
 
-    // --- Permission helpers ---
+        List<LogDTO> logs = dataList.stream()
+                .map(data ->
+                        new LogDTO(orgId, data.getId(), userId, LogType.DELETE, LogModule.CUSTOM_FORM_DATA, data.getName())
+                )
+                .toList();
+        logService.batchAdd(logs);
+    }
 
     private void checkWritePermission(CustomFormRoleKey dataScope, String dataCreateUser, String currentUserId) {
         if (dataScope == CustomFormRoleKey.VIEW_ALL) {
@@ -233,10 +301,8 @@ public class CustomFormDataService {
     }
 
     CustomFormRoleKey getDataScope(String formId, String userId) {
-        // check if admin
-        LambdaQueryWrapper<CustomFormAdmin> adminWrapper = new LambdaQueryWrapper<>();
-        adminWrapper.eq(CustomFormAdmin::getCustomFormId, formId).eq(CustomFormAdmin::getUserId, userId);
-        if (!customFormAdminMapper.selectListByLambda(adminWrapper).isEmpty()) {
+        if (customFormService.isFormAdminUser(formId, userId)) {
+            // 管理员管理所有数据
             return CustomFormRoleKey.MANAGE_ALL;
         }
 
