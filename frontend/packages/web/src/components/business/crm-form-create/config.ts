@@ -802,6 +802,16 @@ export const getFormConfigApiMap: Record<
   [FormDesignKeyEnum.CONTRACT_ORDER]: getOrderFormConfig,
   [FormDesignKeyEnum.CUSTOMER_ORDER]: getOrderFormConfig,
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: getOrderFormSnapshotConfig,
+  [FormDesignKeyEnum.CUSTOM_FORM]: async () => ({
+    fields: [],
+    formProp: {
+      layout: 1,
+      labelPos: 'top',
+      inputWidth: 'custom',
+      optBtnContent: [],
+      optBtnPos: 'flex-row',
+    },
+  }),
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -846,6 +856,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: addOrder,
   [FormDesignKeyEnum.CONTRACT_ORDER]: async () => ({}),
   [FormDesignKeyEnum.CUSTOMER_ORDER]: async () => ({}),
+  [FormDesignKeyEnum.CUSTOM_FORM]: async () => ({}),
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -890,6 +901,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: updateOrder,
   [FormDesignKeyEnum.CONTRACT_ORDER]: async () => ({}),
   [FormDesignKeyEnum.CUSTOMER_ORDER]: async () => ({}),
+  [FormDesignKeyEnum.CUSTOM_FORM]: async () => ({}),
 };
 
 export const getFormDetailApiMap: Partial<

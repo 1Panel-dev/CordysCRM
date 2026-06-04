@@ -103,6 +103,7 @@ export default {
   'common.pleaseInput': '请输入',
   'common.pleaseSelect': '请选择',
   'common.quickAddMember': '快速添加成员',
+  'common.maxAddMemberTip': '最多可添加 {count} 人',
   'common.export': '导出',
   'common.exporting': '正在导出',
   'common.exportSuccessful': '导出成功',

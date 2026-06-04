@@ -29,6 +29,7 @@
       :fetch-org-params="props.fetchOrgParams"
       :fetch-role-params="props.fetchRoleParams"
       :fetch-member-params="props.fetchMemberParams"
+      :max-count="props.maxCount"
       @confirm="handleSelectConfirm"
     />
   </div>
@@ -63,6 +64,7 @@
     baseParams?: Record<string, any>; // 基础公共入参
     status?: 'error' | 'success' | 'warning';
     maxTagCount?: 'responsive' | number | false;
+    maxCount?: number;
   };
   const props = withDefaults(defineProps<UserTagSelectorProps>(), {
     multiple: true,

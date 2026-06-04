@@ -47,17 +47,15 @@
   import { NButton, NIcon, useMessage } from 'naive-ui';
   import { ChevronBackOutline } from '@vicons/ionicons5';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getGenerateId, safeFractionConvert } from '@lib/shared/method';
-  import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
-  import { getFormDesignConfig, saveFormDesignConfig } from '@/api/modules';
+  import { saveFormDesignConfig } from '@/api/modules';
   import useModal from '@/hooks/useModal';
 
-  import { FormCreateField } from '../crm-form-create/types';
+  import { useFormDesignConfig } from './useFormDesignConfig';
 
   const CrmFormDesign = defineAsyncComponent(() => import('@/components/business/crm-form-design/index.vue'));
 
@@ -74,39 +72,9 @@
     required: true,
   });
 
-  const loading = ref(false);
-  const fieldList = ref<FormCreateField[]>([]);
-  const formConfig = ref<FormConfig>({
-    layout: 1,
-    labelPos: 'top',
-    inputWidth: 'custom',
-    optBtnContent: [
-      {
-        text: t('common.save'),
-        enable: true,
-      },
-      {
-        text: t('common.saveAndContinue'),
-        enable: false,
-      },
-      {
-        text: t('common.cancel'),
-        enable: true,
-      },
-    ],
-    optBtnPos: 'flex-row',
-  });
-  const unsaved = ref(false);
-
-  watch(
-    () => [fieldList.value, formConfig.value],
-    () => {
-      unsaved.value = true;
-    },
-    {
-      deep: true,
-    }
-  );
+  const formKey = computed(() => props.formKey);
+  const { loading, fieldList, formConfig, formDesignRef, unsaved, checkRepeat, buildSavePayload, initFormConfig } =
+    useFormDesignConfig({ formKey });
 
   function showUnsavedLeaveTip() {
     openModal({
@@ -131,143 +99,15 @@
     }
   }
 
-  const formDesignRef = ref<InstanceType<typeof CrmFormDesign>>();
-
-  function checkRepeat() {
-    const fieldNameSet = new Set<string>();
-    for (let i = 0; i < fieldList.value.length; i++) {
-      const field = fieldList.value[i];
-      if (fieldNameSet.has(field.name)) {
-        Message.error(t('crmFormDesign.repeatFieldName'));
-        formDesignRef.value?.setActiveField(field);
-        return false;
-      }
-      if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && field.subFields) {
-        const subFieldNameSet = new Set<string>();
-        for (let j = 0; j < field.subFields.length; j++) {
-          const subField = field.subFields[j];
-          if (subFieldNameSet.has(subField.name)) {
-            Message.error(t('crmFormDesign.repeatFieldName'));
-            formDesignRef.value?.setActiveField(field);
-            return false;
-          }
-          subFieldNameSet.add(subField.name);
-        }
-      }
-      fieldNameSet.add(field.name);
-    }
-    const optionsFields = fieldList.value.filter((e) =>
-      [FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT_MULTIPLE].includes(
-        e.type
-      )
-    );
-    for (let i = 0; i < optionsFields.length; i++) {
-      const field = optionsFields[i];
-      if (field.options) {
-        const optionLabelSet = new Set<string>();
-        for (let j = 0; j < field.options.length; j++) {
-          const option = field.options[j];
-          if (optionLabelSet.has(option.label)) {
-            Message.error(t('crmFormDesign.repeatOptionName'));
-            formDesignRef.value?.setActiveField(field);
-            return false;
-          }
-          optionLabelSet.add(option.label);
-        }
-      }
-    }
-    return true;
-  }
-
   async function handleSave() {
     if (!checkRepeat()) {
       return;
     }
     try {
       loading.value = true;
-      await saveFormDesignConfig({
-        formKey: props.formKey,
-        formProp: formConfig.value,
-        fields: fieldList.value.map((e) => {
-          if (e.type === FieldTypeEnum.SUB_PRICE || e.type === FieldTypeEnum.SUB_PRODUCT) {
-            e.subFields = e.subFields?.map(
-              (subField) =>
-                ({
-                  ...subField,
-                  id: subField.id,
-                } as FormCreateField)
-            );
-          }
-          return {
-            ...e,
-            id: e.id,
-            defaultValue:
-              [
-                FieldTypeEnum.SELECT,
-                FieldTypeEnum.DEPARTMENT,
-                FieldTypeEnum.DATA_SOURCE,
-                FieldTypeEnum.MEMBER,
-              ].includes(e.type) && Array.isArray(e.defaultValue)
-                ? e.defaultValue[0] || ''
-                : e.defaultValue,
-          };
-        }),
-      });
+      await saveFormDesignConfig(buildSavePayload());
       Message.success(t('common.saveSuccess'));
       visible.value = false;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      loading.value = false;
-    }
-  }
-
-  async function initFormConfig() {
-    try {
-      loading.value = true;
-      let key = props.formKey;
-      // 跟进记录和计划 key 特殊处理，因为各模块 key 不一致但是表单配置一致
-      if (key.includes('record')) {
-        key = 'record' as FormDesignKeyEnum;
-      } else if (key.includes('plan')) {
-        key = 'plan' as FormDesignKeyEnum;
-      }
-      const res = await getFormDesignConfig(key);
-      fieldList.value = res.fields.map((item) => {
-        const newSubFields = item.subFields?.map((e) => ({
-          ...e,
-          description: '',
-          id: e.id,
-        }));
-        return {
-          ...item,
-          id: item.id,
-          internalKey: item.internalKey,
-          type: item.type,
-          name: t(item.name),
-          placeholder: t(item.placeholder || ''),
-          fieldWidth: safeFractionConvert(item.fieldWidth),
-          subFields: newSubFields,
-          defaultValue:
-            [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
-            typeof item.defaultValue === 'string'
-              ? [item.defaultValue]
-              : item.defaultValue,
-          sumColumns:
-            item.sumColumns?.map((s) => {
-              const newSubField = newSubFields?.find((f) => f.id.includes(s));
-              if (newSubField) {
-                return newSubField.id;
-              }
-              return s;
-            }) || [], // 处理数据源显示字段 id
-        };
-      });
-      formConfig.value = res.formProp;
-      nextTick(() => {
-        unsaved.value = false;
-      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
