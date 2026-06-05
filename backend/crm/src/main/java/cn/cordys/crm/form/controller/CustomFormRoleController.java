@@ -4,6 +4,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.CsPermission;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
 import cn.cordys.crm.form.dto.response.CustomFormRoleListResponse;
 import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
@@ -37,7 +38,8 @@ public class CustomFormRoleController {
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(@PathVariable String roleId,
                                                                        @Validated BasePageRequest request) {
-        return customFormRoleService.listUsersByRole(roleId, request, SessionUtils.getUserId());
+        return customFormRoleService.listUsersByRole(roleId, request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/user/add")

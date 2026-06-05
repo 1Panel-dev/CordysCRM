@@ -9,5 +9,6 @@ import java.util.List;
 public interface ExtCustomFormRoleUserMapper {
 
     List<CustomFormRoleUserListResponse> listByRoleId(@Param("roleId") String roleId,
+                                                       @Param("orgId") String orgId,
                                                        @Param("request") BasePageRequest request);
 }
