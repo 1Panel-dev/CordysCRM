@@ -24,12 +24,13 @@ public interface ExtModuleFieldMapper {
     void deletePropByIds(@Param("ids") List<String> ids);
 
     List<OptionDTO> getSourceOptionsByIds(@Param("tableName") String table, @Param("ids") List<String> ids);
-
+    List<OptionDTO> getCustomFormOptionsByIds(@Param("ids") List<String> ids);
     List<OptionDTO> getSourceOptionsByKeywords(@Param("tableName") String table, @Param("keywords") List<String> keywords);
+	List<OptionDTO> getCustomFormOptionsByKeywords(@Param("keywords") List<String> keywords);
+	List<OptionDTO> getSourceOptionsByName(@Param("tableName") String table, @Param("keyword") String keyword, @Param("orgId") String orgId);
+	List<OptionDTO> getCustomFormOptionsByName(@Param("keyword") String keyword, @Param("orgId") String orgId);
 
-    List<OptionDTO> getSourceOptionsByName(@Param("tableName") String table, @Param("keyword") String keyword, @Param("orgId") String orgId);
-
-    List<ModuleField> getModuleField(@Param("orgId") String orgId, @Param("formKeys") List<String> formKeys);
+	List<ModuleField> getModuleField(@Param("orgId") String orgId, @Param("formKeys") List<String> formKeys);
 
     /**
      * 批量更新移动端显示

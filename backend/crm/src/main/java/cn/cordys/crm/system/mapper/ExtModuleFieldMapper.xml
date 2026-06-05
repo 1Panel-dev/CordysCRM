@@ -40,6 +40,13 @@
         </foreach>
     </select>
 
+    <select id="getCustomFormOptionsByIds" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, name from custom_form_data where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+          #{id}
+        </foreach>
+    </select>
+
     <select id="getSourceOptionsByKeywords" resultType="cn.cordys.common.dto.OptionDTO">
         select id,name from ${tableName} where id in
         <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
@@ -57,6 +64,17 @@
         </if>
     </select>
 
+    <select id="getCustomFormOptionsByKeywords" resultType="cn.cordys.common.dto.OptionDTO">
+        select id,name from custom_form_data where id in
+        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
+            #{keyword}
+        </foreach>
+        or name in
+        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
+            #{keyword}
+        </foreach>
+    </select>
+
     <select id="getSourceOptionsByName" resultType="cn.cordys.common.dto.OptionDTO">
         select id, name from ${tableName} where organization_id = #{orgId}
         <if test="keyword != null and keyword != ''">
@@ -64,6 +82,12 @@
         </if>
     </select>
 
+    <select id="getCustomFormOptionsByName" resultType="cn.cordys.common.dto.OptionDTO">
+        select id, name from custom_form_data where organization_id = #{orgId}
+        <if test="keyword != null and keyword != ''">
+            and name like concat('%', #{keyword},'%')
+        </if>
+    </select>
 
     <select id="getModuleField" resultType="cn.cordys.crm.system.domain.ModuleField">
         SELECT
