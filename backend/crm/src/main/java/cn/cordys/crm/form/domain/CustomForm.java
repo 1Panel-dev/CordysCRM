@@ -17,4 +17,7 @@ public class CustomForm {
 
     @Schema(description = "是否启用")
     private Boolean enable;
+
+    @Schema(description = "组织id")
+    private String organizationId;
 }
