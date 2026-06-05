@@ -2,6 +2,7 @@ package cn.cordys.crm.form.controller;
 
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.domain.BaseModel;
+import cn.cordys.common.pager.Pager;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormAdmin;
@@ -13,7 +14,9 @@ import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
 import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
+import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
 import cn.cordys.crm.system.domain.OrganizationUser;
+import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.domain.UserRole;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.mybatis.BaseMapper;
@@ -43,6 +46,7 @@ public class CustomFormControllerTests extends BaseTest {
     private static final String BASE_PATH = "/custom-form/";
     private static final String OPTION = "option";
     private static final String ADMIN_GET = "admin/get/{0}";
+    private static final String ROLE_USERS = "role/users/{0}?current={1}&pageSize={2}";
     private static String createdFormId;
 
     @Resource
@@ -55,6 +59,8 @@ public class CustomFormControllerTests extends BaseTest {
     private BaseMapper<OrganizationUser> organizationUserMapper;
     @Resource
     private BaseMapper<UserRole> userRoleMapper;
+    @Resource
+    private BaseMapper<User> userMapper;
 
     @Override
     protected String getBasePath() {
@@ -165,6 +171,7 @@ public class CustomFormControllerTests extends BaseTest {
         this.requestPostWithOk("role/user/add", request);
 
         assertRoleUsers(roleId, "cf-role-direct-user", "cf-role-dept-user", "cf-role-system-role-user");
+        assertRoleUsersPage(roleId, 1, 2, 3);
     }
 
     @Test
@@ -195,6 +202,10 @@ public class CustomFormControllerTests extends BaseTest {
     }
 
     private void prepareUserDeptAndRoleData() {
+        insertUser("cf-role-direct-user", "直接用户");
+        insertUser("cf-role-dept-user", "部门用户");
+        insertUser("cf-role-system-role-user", "角色用户");
+
         OrganizationUser organizationUser = new OrganizationUser();
         organizationUser.setId("cf-role-test-org-user");
         organizationUser.setOrganizationId(DEFAULT_ORGANIZATION_ID);
@@ -210,6 +221,16 @@ public class CustomFormControllerTests extends BaseTest {
         userRole.setUserId("cf-role-system-role-user");
         setAuditFields(userRole);
         userRoleMapper.insert(userRole);
+    }
+
+    private void insertUser(String id, String name) {
+        User user = new User();
+        user.setId(id);
+        user.setName(name);
+        user.setPassword("123456");
+        user.setGender(false);
+        setAuditFields(user);
+        userMapper.insert(user);
     }
 
     private void setAuditFields(BaseModel model) {
@@ -229,5 +250,19 @@ public class CustomFormControllerTests extends BaseTest {
                 .map(CustomFormRoleUser::getUserId)
                 .toList());
         assertEquals(Set.of(expectedUserIds), actualUserIds);
+    }
+
+    private void assertRoleUsersPage(String roleId, int current, int pageSize, int total) throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(ROLE_USERS, roleId, current, pageSize);
+        Pager<List<CustomFormRoleUserListResponse>> pager = getPageResult(mvcResult, CustomFormRoleUserListResponse.class);
+        assertEquals(current, pager.getCurrent());
+        assertEquals(pageSize, pager.getPageSize());
+        assertEquals(total, pager.getTotal());
+        assertEquals(pageSize, pager.getList().size());
+        CustomFormRoleUserListResponse first = pager.getList().getFirst();
+        assertNotNull(first.getCustomFormRoleUserId());
+        assertNotNull(first.getUserId());
+        assertNotNull(first.getUsername());
+        assertNotNull(first.getCreateTime());
     }
 }

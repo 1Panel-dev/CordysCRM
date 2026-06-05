@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.form.mapper.ExtCustomFormRoleUserMapper">
+
+    <select id="listByRoleId" resultType="cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse">
+        select cfru.id as customFormRoleUserId,
+               cfru.user_id as userId,
+               su.name as username,
+               cfru.create_time as createTime
+        from custom_form_role_user cfru
+        join sys_user su on cfru.user_id = su.id
+        <where>
+            cfru.role_id = #{roleId}
+            <if test="request.keyword != null and request.keyword != ''">
+                and su.name like concat('%', #{request.keyword}, '%')
+            </if>
+        </where>
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type"/>
+                order by
+                <choose>
+                    <when test="${sort}.name == 'custom_form_role_user_id'">
+                        cfru.id ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'user_id'">
+                        cfru.user_id ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'username'">
+                        su.name ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'create_time'">
+                        cfru.create_time ${sortType}
+                    </when>
+                    <otherwise>
+                        cfru.create_time ${sortType}
+                    </otherwise>
+                </choose>
+                , cfru.id asc
+            </when>
+            <otherwise>
+                order by cfru.create_time desc, cfru.id asc
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

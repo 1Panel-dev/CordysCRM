@@ -53,6 +53,10 @@ CREATE TABLE custom_form_role_user(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `role_id` VARCHAR(32) NOT NULL   COMMENT '角色id' ,
     `user_id` VARCHAR(32) NOT NULL   COMMENT '用户id' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
     PRIMARY KEY (id)
 )  COMMENT = '自定义表单角色关联用户'
 ENGINE = InnoDB
@@ -60,6 +64,7 @@ DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_role_id ON custom_form_role_user(role_id ASC);
+CREATE INDEX idx_create_time ON custom_form_role_user(create_time DESC);
 
 
 CREATE TABLE custom_form_data(
