@@ -27,6 +27,7 @@ import {
 } from '@lib/shared/method/formCreate';
 import type { ModuleField } from '@lib/shared/models/common';
 import type { CollaborationType } from '@lib/shared/models/customer';
+import type { CustomFormDetail } from '@lib/shared/models/customForm';
 import type { FormConfig, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import type { Description } from '@/components/pure/crm-description/index.vue';
@@ -94,6 +95,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const formDetail = ref<Record<string, any>>({});
   const originFormDetail = ref<Record<string, any>>({});
   const moduleFormConfig = ref<FormDesignConfigDetailParams>();
+  const customFormConfig = ref<CustomFormDetail>();
 
   // 详情
   const detail = ref<Record<string, any>>({});
@@ -604,11 +606,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (!formData) {
         const asyncApi = getFormDetailApiMap[props.formKey.value];
         if (!asyncApi || !props.sourceId?.value) return;
-        if (props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM && props.customFormId?.value) {
-          form = await asyncApi(props.customFormId.value);
-        } else {
-          form = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
-        }
+        form = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
       }
       descriptions.value = [];
       detail.value = form;
@@ -909,12 +907,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey.value];
       if (!asyncApi || !props.sourceId?.value) return;
-      let res: FormDetail = { moduleFields: [] };
-      if (props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM && props.customFormId?.value) {
-        res = await asyncApi(props.customFormId.value);
-      } else {
-        res = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
-      }
+      const res = await asyncApi(props.sourceId?.value, props.otherSaveParams?.value?.approvalTaskId);
       detail.value = res;
       formDetail.value = {};
       if (needInitFormDescription) {
@@ -1238,11 +1231,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         moduleFormConfig.value = cloneDeep(res);
         initFormFieldConfig(res.fields);
         formConfig.value = res.formProp;
+        customFormConfig.value = res as CustomFormDetail;
       } else {
         const res = await api(props.sourceId?.value ?? '', props.otherSaveParams?.value?.approvalTaskId);
         moduleFormConfig.value = cloneDeep(res);
         initFormFieldConfig(res.fields);
         formConfig.value = res.formProp;
+        customFormConfig.value = undefined;
       }
       nextTick(() => {
         unsaved.value = false;
@@ -1447,6 +1442,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       const params: Record<string, any> = {
         ...props.otherSaveParams?.value,
         moduleFields: [],
+        customFormId: customFormConfig.value?.id,
         id: props.sourceId?.value,
       };
       fieldList.value.forEach((item) => {
@@ -1518,6 +1514,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       return t('clue.convertToCustomer');
     }
     const prefix = props.sourceId?.value && props.needInitDetail?.value ? t('common.edit') : t('common.newCreate');
+    if (props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM) {
+      return `${prefix}${customFormConfig.value?.name}`;
+    }
     return `${prefix}${t(`crmFormCreate.drawer.${props.formKey.value}`)}`;
   });
 

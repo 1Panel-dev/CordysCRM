@@ -6,6 +6,7 @@
     class="crm-customForm-table"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="props.readonly ? undefined : actionConfig"
+    :columns="formColumns"
     @row-key-change="handleRowKeyChange"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
@@ -19,12 +20,8 @@
     </template>
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
-        <n-button
-          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:ADD']) && !props.readonly"
-          type="primary"
-          @click="handleNewClick"
-        >
-          {{ t('customer.new') }}
+        <n-button v-if="!props.readonly" type="primary" @click="handleNewClick">
+          {{ t('common.add') }}
         </n-button>
       </div>
     </template>
@@ -59,6 +56,12 @@
     :custom-form-id="props.formKey"
     @saved="handleFormCreateSaved"
   />
+  <detail
+    v-model:visible="showOverviewDrawer"
+    :source-id="activeSourceId"
+    :customFormId="props.formKey"
+    @edit="handleEdit"
+  />
 </template>
 
 <script setup lang="ts">
@@ -77,8 +80,9 @@
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import detail from './detail.vue';
 
-  import { batchDeleteCustomFormData } from '@/api/modules';
+  import { batchDeleteCustomFormData, deleteCustomFormData } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -121,17 +125,6 @@
     formCreateDrawerVisible.value = true;
   }
 
-  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
-    keyword.value = '';
-    advancedOriginalForm.value = originalForm;
-    isAdvancedSearchMode.value = isAdvancedMode;
-    // setAdvanceFilter(filter);
-    // loadList();
-    crmTableRef.value?.scrollTo({ top: 0 });
-  }
-
-  handleAdvanceFilter.value = handleAdvSearch;
-
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const operationGroupList = [
     {
@@ -151,12 +144,12 @@
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
-      content: t('customer.batchDeleteContentTip'),
+      content: t('common.deleteConfirmContent'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // await deleteCustomer(row.id);
+          await deleteCustomFormData(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
@@ -167,12 +160,16 @@
     });
   }
 
+  function handleEdit(id: string) {
+    activeSourceId.value = id;
+    needInitDetail.value = true;
+    formCreateDrawerVisible.value = true;
+  }
+
   async function handleActionSelect(row: any, actionKey: string) {
     switch (actionKey) {
       case 'edit':
-        activeSourceId.value = row.id;
-        needInitDetail.value = true;
-        formCreateDrawerVisible.value = true;
+        handleEdit(row.id);
         break;
       case 'delete':
         handleDelete(row);
@@ -183,9 +180,11 @@
   }
 
   const showOverviewDrawer = ref(false);
+  const customFormId = computed(() => props.formKey);
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, initFormConfig, columns } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOM_FORM,
+    customFormId,
     disabledSelection: (row: any) => {
       return row.collaborationType === 'READ_ONLY';
     },
@@ -193,7 +192,7 @@
       ? undefined
       : {
           key: 'operation',
-          width: 200,
+          width: 120,
           fixed: 'right',
           render: (row: any) =>
             h(CrmOperationButton, {
@@ -222,14 +221,26 @@
 
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
+  const formColumns = computed(() => columns.value);
   function searchData(val?: string, refreshId?: string) {
-    setLoadListParams({ keyword: val ?? keyword.value });
+    setLoadListParams({ keyword: val ?? keyword.value, customFormId: customFormId.value });
     loadList(false, refreshId);
     if (!refreshId) {
       crmTableRef.value?.scrollTo({ top: 0 });
     }
   }
   handleSearchData.value = searchData;
+
+  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
+    keyword.value = '';
+    advancedOriginalForm.value = originalForm;
+    isAdvancedSearchMode.value = isAdvancedMode;
+    setAdvanceFilter(filter);
+    loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  handleAdvanceFilter.value = handleAdvSearch;
 
   const actionConfig: BatchActionConfig = {
     baseAction: [
@@ -254,6 +265,7 @@
   const showEditModal = ref(false);
   const { initFormConfig: initEditFormConfig, fieldList: editFieldList } = useFormCreateApi({
     formKey: ref(FormDesignKeyEnum.CUSTOM_FORM),
+    customFormId,
   });
   function handleBatchEdit() {
     initEditFormConfig();
@@ -264,8 +276,8 @@
   function handleBatchDelete() {
     openModal({
       type: 'error',
-      title: t('customer.batchDeleteTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('customer.batchDeleteContentTip'),
+      title: t('common.batchDeleteTitle', { count: checkedRowKeys.value.length }),
+      content: t('common.deleteConfirmContent'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
@@ -296,15 +308,44 @@
 
   function handleFormCreateSaved(res: any) {
     if (needInitDetail.value) {
-      searchData(undefined, res.id);
+      searchData(undefined, res.id || activeSourceId.value);
     } else {
       searchData();
     }
   }
 
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
+    }
+  );
+
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      checkedRowKeys.value = [];
+      searchData();
+    }
+  );
+
   watch(
     () => props.formKey,
-    () => {
+    async () => {
+      keyword.value = '';
+      await initFormConfig();
+      tableAdvanceFilterRef.value?.clearFilter();
+      setLoadListParams({ customFormId: customFormId.value });
       searchData();
     }
   );

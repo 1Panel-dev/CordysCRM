@@ -22,4 +22,8 @@ export default {
   'customForm.permission.addManageOwn': 'Manage own data',
   'customForm.permission.addManageOwnTip':
     'Manage own data: has add permission and can only view and manage data created by oneself.',
+  'customForm.deleteFormTip':
+    'Once deleted, the form data and configuration information cannot be recovered. Please proceed with caution!',
+  'customForm.closeFormTip':
+    'Once closed, the form forces online users to log out. Unfilled information will not be saved. Please proceed with caution!',
 };

@@ -88,6 +88,7 @@
 
   const props = defineProps<{
     sourceId?: string;
+    defaultTab?: 'design' | 'memberPermission';
   }>();
 
   const emit = defineEmits<{
@@ -332,7 +333,7 @@
         return;
       }
 
-      activeTab.value = 'design';
+      activeTab.value = props.defaultTab || 'design';
       initCustomFormConfig();
     },
     {

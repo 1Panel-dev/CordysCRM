@@ -17,6 +17,9 @@ import {
   BatchDeleteCustomFormDataUrl,
   BatchUpdateCustomFormDataUrl,
   GetCustomFormListUrl,
+  DeleteCustomFormUrl,
+  EnableCustomFormUrl,
+  DisableCustomFormUrl,
 } from '@lib/shared/api/requrls/customForm';
 import type { CommonList } from '@lib/shared/models/common';
 import type {
@@ -74,6 +77,18 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.post({ url: BatchRemoveCustomFormMemberUrl, data });
   }
 
+  function deleteCustomForm(id: string) {
+    return CDR.get({ url: `${DeleteCustomFormUrl}/${id}` });
+  }
+
+  function enableCustomForm(id: string) {
+    return CDR.get({ url: `${EnableCustomFormUrl}/${id}` });
+  }
+
+  function disableCustomForm(id: string) {
+    return CDR.get({ url: `${DisableCustomFormUrl}/${id}` });
+  }
+
   function getCustomFormList() {
     return CDR.get<CustomFormItem[]>({ url: GetCustomFormListUrl });
   }
@@ -83,7 +98,7 @@ export default function useCustomFormApi(CDR: CordysAxios) {
   }
 
   function getCustomFormDataPage(data: GetCustomFormDataPageParams) {
-    return CDR.get<CommonList<CustomFormPageItem>>({ url: GetCustomFormDataPageUrl, data });
+    return CDR.post<CommonList<CustomFormPageItem>>({ url: GetCustomFormDataPageUrl, data });
   }
 
   function addCustomFormData(data: AddCustomFormDataParams) {
@@ -124,5 +139,8 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     deleteCustomFormData,
     batchDeleteCustomFormData,
     batchUpdateCustomFormData,
+    deleteCustomForm,
+    enableCustomForm,
+    disableCustomForm,
   };
 }

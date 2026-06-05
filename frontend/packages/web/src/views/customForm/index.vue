@@ -5,7 +5,7 @@
         <div class="h-full p-[24px]">
           <div class="mb-[8px] flex w-full items-center gap-[8px]">
             <CrmSearchInput v-model:value="keyword" class="flex-1" />
-            <n-button type="primary" class="p-[8px]" ghost @click="addForm">
+            <n-button v-permission="['CUSTOM_FORM_ADD']" type="primary" class="p-[8px]" ghost @click="addForm">
               <CrmIcon type="iconicon_add" />
             </n-button>
           </div>
@@ -20,14 +20,23 @@
             v-model:active-item-key="activeForm"
             virtual-scroll-height="calc(100% - 40px)"
             key-field="id"
-            :item-height="100"
             :item-more-actions="formAction"
+            item-class="gap-[8px]"
+            activeItemClass="bg-[var(--text-n9)]"
             mode="static"
             @item-click="handleFormClick"
             @more-action-select="handleMoreActionSelect"
           >
             <template #titleLeft="{ item }">
-              <n-switch v-model:value="item.open" />
+              <n-switch
+                v-if="item.isAdmin"
+                :value="item.enable"
+                class="ml-[4px]"
+                @click="handleBeforeEnableChange(item)"
+              />
+            </template>
+            <template #title="{ item }">
+              {{ item.name }}
             </template>
           </CrmList>
         </div>
@@ -39,13 +48,19 @@
       </template>
     </CrmSplitPanel>
   </CrmCard>
-  <CustomFormConfigDrawer v-model:visible="configDrawerVisible" :source-id="currentSourceId" @saved="handleFormSaved" />
+  <CustomFormConfigDrawer
+    v-model:visible="configDrawerVisible"
+    :source-id="currentSourceId"
+    :defaultTab="defaultTab"
+    @saved="handleFormSaved"
+  />
 </template>
 
 <script setup lang="ts">
-  import { NButton, NEmpty, NSwitch } from 'naive-ui';
+  import { NButton, NEmpty, NSwitch, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n.js';
+  import { characterLimit } from '@lib/shared/method/index.js';
   import type { CustomFormItem } from '@lib/shared/models/customForm.js';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -57,10 +72,12 @@
   import CustomFormConfigDrawer from './components/customFormConfigDrawer/index.vue';
   import formTable from './components/formTable.vue';
 
-  import { getCustomFormList } from '@/api/modules/index.js';
-  import type { ActionItem } from '@/store/modules/app/types';
+  import { deleteCustomForm, disableCustomForm, enableCustomForm, getCustomFormList } from '@/api/modules/index.js';
+  import useModal from '@/hooks/useModal.js';
 
   const { t } = useI18n();
+  const Message = useMessage();
+  const { openModal } = useModal();
 
   const formList = ref<CustomFormItem[]>([]);
   const loading = ref(false);
@@ -77,6 +94,9 @@
     try {
       loading.value = true;
       formList.value = await getCustomFormList();
+      if (activeForm.value === '') {
+        activeForm.value = formList.value[0]?.id || '';
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -86,11 +106,7 @@
     }
   }
 
-  const formAction: ActionItem[] = [
-    {
-      label: t('common.rename'),
-      key: 'rename',
-    },
+  const formAction: ActionsItem[] = [
     {
       label: t('common.edit'),
       key: 'edit',
@@ -107,11 +123,34 @@
     {
       label: t('common.delete'),
       key: 'delete',
+      danger: true,
     },
   ];
 
   const configDrawerVisible = ref(false);
   const currentSourceId = ref();
+  const defaultTab = ref<'design' | 'memberPermission'>('design');
+
+  // 删除
+  function handleDelete(row: any) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('customForm.deleteFormTip'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteCustomForm(row.id);
+          Message.success(t('common.deleteSuccess'));
+          loadFormList();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
 
   function handleMoreActionSelect(event: ActionsItem, item: Record<string, any>) {
     switch (event.key) {
@@ -119,8 +158,47 @@
         currentSourceId.value = item.id;
         configDrawerVisible.value = true;
         break;
+      case 'addMember':
+        currentSourceId.value = item.id;
+        defaultTab.value = 'memberPermission';
+        configDrawerVisible.value = true;
+        break;
+      case 'delete':
+        handleDelete(item);
+        break;
       default:
         break;
+    }
+  }
+
+  async function handleBeforeEnableChange(item: CustomFormItem) {
+    if (item.enable) {
+      openModal({
+        type: 'error',
+        title: t('common.confirmClose'),
+        content: t('customForm.closeFormTip'),
+        positiveText: t('common.confirmClose'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          try {
+            await disableCustomForm(item.id);
+            Message.success(t('common.closeSuccess'));
+            item.enable = false;
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+          }
+        },
+      });
+    } else {
+      try {
+        await enableCustomForm(item.id);
+        Message.success(t('common.enableSuccess'));
+        item.enable = true;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
     }
   }
 
