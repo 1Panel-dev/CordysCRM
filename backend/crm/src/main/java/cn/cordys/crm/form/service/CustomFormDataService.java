@@ -15,7 +15,10 @@ import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
-import cn.cordys.crm.form.domain.*;
+import cn.cordys.crm.form.domain.CustomFormData;
+import cn.cordys.crm.form.domain.CustomFormRole;
+import cn.cordys.crm.form.domain.CustomFormRoleKey;
+import cn.cordys.crm.form.domain.CustomFormRoleUser;
 import cn.cordys.crm.form.dto.request.CustomFormDataAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataBatchUpdateRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
@@ -156,6 +159,50 @@ public class CustomFormDataService {
         }
 
         return resp;
+    }
+
+    /**
+     * 获取详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
+     *
+     * @param id 订单ID
+     *
+     * @return 详情
+     */
+    public CustomFormDataGetResponse getSimple(String id) {
+        CustomFormData customFormData = customFormDataMapper.selectByPrimaryKey(id);
+        if (customFormData == null) {
+            return null;
+        }
+        CustomFormDataGetResponse customFormDataGetResponse = BeanUtils.copyBean(new CustomFormDataGetResponse(), customFormData);
+        // 获取模块字段
+        List<BaseModuleFieldValue> customFormDataFields = customFormDataFieldService.getModuleFieldValuesByResourceId(id);
+        customFormDataGetResponse.setModuleFields(customFormDataFields);
+        return customFormDataGetResponse;
+    }
+
+    /**
+     * 批量获取线索详情 (用于数据源批量查询优化)
+     * @param ids ID集合
+     * @return 详情列表
+     */
+    public List<CustomFormDataGetResponse> batchGetSimpleByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        // 批量查询资源基本信息
+        List<CustomFormData> customFormData = customFormDataMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(customFormData)) {
+            return Collections.emptyList();
+        }
+        // 批量查询自定义字段值
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = customFormDataFieldService.getResourceFieldMap(ids, true);
+
+        // 组装结果
+        return customFormData.stream().map(clue -> {
+            CustomFormDataGetResponse response = BeanUtils.copyBean(new CustomFormDataGetResponse(), clue);
+            response.setModuleFields(fieldValueMap.get(clue.getId()));
+            return response;
+        }).toList();
     }
 
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.ADD)

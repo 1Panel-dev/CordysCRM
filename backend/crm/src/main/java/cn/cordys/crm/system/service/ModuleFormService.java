@@ -469,7 +469,7 @@ public class ModuleFormService {
 
         typeIdsMap.forEach((fieldId, ids) -> {
             var sourceType = optionMeta.idTypeMap().get(fieldId);
-            if (CollectionUtils.isEmpty(ids) || !TYPE_SOURCE_MAP.containsKey(sourceType)) {
+            if (CollectionUtils.isEmpty(ids)) {
                 return;
             }
             fieldIdSourceTypeMap.put(fieldId, sourceType);
@@ -480,7 +480,13 @@ public class ModuleFormService {
         // 按照类型, 整体查询
         Map<String, List<OptionDTO>> sourceTypeOptionsMap = new HashMap<>();
         sourceTypeIdsMap.forEach((sourceType, ids) -> {
-            var options = extModuleFieldMapper.getSourceOptionsByIds(TYPE_SOURCE_MAP.get(sourceType), new ArrayList<>(ids));
+            List<OptionDTO> options;
+            String tableName = TYPE_SOURCE_MAP.get(sourceType);
+            if (StringUtils.isBlank(tableName)) {
+                options = extModuleFieldMapper.getCustomFormOptionsByIds(new ArrayList<>(ids));
+            } else {
+                options = extModuleFieldMapper.getSourceOptionsByIds(tableName, new ArrayList<>(ids));
+            }
             if (CollectionUtils.isNotEmpty(options)) {
                 sourceTypeOptionsMap.put(sourceType, options);
             }
@@ -722,11 +728,11 @@ public class ModuleFormService {
         if (CollectionUtils.isEmpty(nameList)) {
             return new ArrayList<>();
         }
-        if (!TYPE_SOURCE_MAP.containsKey(type)) {
-            log.error("未知的数据源类型：{}", type);
-            return new ArrayList<>();
+        String tableName = TYPE_SOURCE_MAP.get(type);
+        if (StringUtils.isBlank(tableName)) {
+            extModuleFieldMapper.getCustomFormOptionsByKeywords(nameList);
         }
-        return extModuleFieldMapper.getSourceOptionsByKeywords(TYPE_SOURCE_MAP.get(type), nameList);
+        return extModuleFieldMapper.getSourceOptionsByKeywords(tableName, nameList);
     }
 
     /**

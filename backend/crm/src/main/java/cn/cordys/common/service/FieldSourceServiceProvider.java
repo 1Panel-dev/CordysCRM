@@ -2,10 +2,12 @@ package cn.cordys.common.service;
 
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.contract.service.*;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
+import cn.cordys.crm.form.service.CustomFormDataService;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.order.service.OrderService;
@@ -93,7 +95,11 @@ public class FieldSourceServiceProvider {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getService(FieldSourceType type) {
-        return (T) SERVICE_MAP.get(type);
+		Object service = SERVICE_MAP.get(type);
+		if (service != null) {
+			return (T) service;
+		}
+		return (T) CommonBeanFactory.getBean(CustomFormDataService.class);
     }
 
 	/**

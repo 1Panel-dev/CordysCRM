@@ -226,9 +226,10 @@ public abstract class BaseSearchService<T extends BasePageRequest, R> {
             Map<String, String> sourceMap = moduleFormService.initTypeSourceMap();
             String tableName = sourceMap.get(userSearchConfig.getDataSourceType());
             if (StringUtils.isBlank(tableName)) {
-                return; // 如果数据源类型不在已知范围内，直接返回
+                extModuleFieldMapper.getCustomFormOptionsByName(keyword, orgId).forEach(option -> ids.add(option.getId()));
+            } else {
+                extModuleFieldMapper.getSourceOptionsByName(tableName, keyword, orgId).forEach(option -> ids.add(option.getId()));
             }
-            extModuleFieldMapper.getSourceOptionsByName(tableName, keyword, orgId).forEach(option -> ids.add(option.getId()));
             if (CollectionUtils.isEmpty(ids)) {
                 return; // 如果没有匹配的数据，直接返回
             }
