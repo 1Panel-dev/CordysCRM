@@ -12,6 +12,7 @@ import cn.cordys.crm.form.domain.CustomFormRoleUser;
 import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
 import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
+import cn.cordys.crm.form.dto.request.CustomFormRoleUserPageRequest;
 import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
@@ -49,7 +50,7 @@ public class CustomFormControllerTests extends BaseTest {
     private static final String BASE_PATH = "/custom-form/";
     private static final String OPTION = "option";
     private static final String ADMIN_GET = "admin/get/{0}";
-    private static final String ROLE_USERS = "role/users/{0}?current={1}&pageSize={2}";
+    private static final String ROLE_USERS = "role/users";
     private static String createdFormId;
 
     @Resource
@@ -297,7 +298,11 @@ public class CustomFormControllerTests extends BaseTest {
     }
 
     private void assertRoleUsersPage(String roleId, int current, int pageSize, int total) throws Exception {
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(ROLE_USERS, roleId, current, pageSize);
+        CustomFormRoleUserPageRequest request = new CustomFormRoleUserPageRequest();
+        request.setRoleId(roleId);
+        request.setCurrent(current);
+        request.setPageSize(pageSize);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(ROLE_USERS, request);
         Pager<List<CustomFormRoleUserListResponse>> pager = getPageResult(mvcResult, CustomFormRoleUserListResponse.class);
         assertEquals(current, pager.getCurrent());
         assertEquals(pageSize, pager.getPageSize());

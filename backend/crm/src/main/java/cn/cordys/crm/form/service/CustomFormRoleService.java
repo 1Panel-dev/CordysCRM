@@ -1,7 +1,6 @@
 package cn.cordys.crm.form.service;
 
 import cn.cordys.common.constants.InternalUser;
-import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
@@ -15,6 +14,7 @@ import cn.cordys.crm.form.domain.CustomFormAdmin;
 import cn.cordys.crm.form.domain.CustomFormRole;
 import cn.cordys.crm.form.domain.CustomFormRoleUser;
 import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
+import cn.cordys.crm.form.dto.request.CustomFormRoleUserPageRequest;
 import cn.cordys.crm.form.dto.response.CustomFormRoleListResponse;
 import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
 import cn.cordys.crm.form.mapper.ExtCustomFormRoleUserMapper;
@@ -77,16 +77,16 @@ public class CustomFormRoleService {
         }).toList();
     }
 
-    public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(String roleId, BasePageRequest request,
+    public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(CustomFormRoleUserPageRequest request,
                                                                        String userId, String orgId) {
-        CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(roleId);
+        CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getRoleId());
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
         }
         checkFormAdmin(role.getCustomFormId(), userId);
 
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomFormRoleUserListResponse> roleUsers = extCustomFormRoleUserMapper.listByRoleId(roleId, orgId, request);
+        List<CustomFormRoleUserListResponse> roleUsers = extCustomFormRoleUserMapper.listByRoleId(orgId, request);
         fillRoles(roleUsers, orgId);
         return PageUtils.setPageInfo(page, roleUsers);
     }
