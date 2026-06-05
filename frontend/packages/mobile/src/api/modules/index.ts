@@ -426,7 +426,8 @@ export const {
   getCustomFormDataPage,
   getCustomFormDetail,
   getCustomFormList,
-  getCustomFormMember,
+  getCustomFormRoles,
+  getCustomFormRoleUsers,
   addCustomForm,
   addCustomFormData,
   saveCustomFormAdmins,
@@ -434,6 +435,5 @@ export const {
   updateCustomFormData,
   batchUpdateCustomFormData,
   batchDeleteCustomFormData,
-  batchRemoveCustomFormMember,
   deleteCustomFormData,
 } = useCustomFormApi(CDR);

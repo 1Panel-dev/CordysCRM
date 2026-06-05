@@ -35,8 +35,8 @@
             <div>{{ t('customForm.permission.addManageOwnTip') }}</div>
           </n-tooltip>
         </div>
-        <n-radio-group v-model:value="activePermissionType" name="customFormPermissionType">
-          <n-radio-button v-for="item in permissionTabList" :key="item.name" :value="item.name" :label="item.tab" />
+        <n-radio-group v-model:value="activeRoleId" name="customFormPermissionType">
+          <n-radio-button v-for="item in permissionTabList" :key="item.id" :value="item.id" :label="item.name" />
         </n-radio-group>
       </div>
 
@@ -54,7 +54,7 @@
         @refresh="searchData"
       >
         <template #actionLeft>
-          <n-button type="primary" @click="handleCreate">
+          <n-button type="primary" :disabled="!activeRoleId" @click="handleCreate">
             {{ t('org.addMember') }}
           </n-button>
         </template>
@@ -72,22 +72,20 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, h, onMounted, ref, watch } from 'vue';
+  import { computed, h, nextTick, onMounted, ref, watch } from 'vue';
   import { NButton, NRadioButton, NRadioGroup, NTooltip, useMessage } from 'naive-ui';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
-  import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
-  import { CustomFormDataPermissionTypeEnum, type CustomFormMemberItem } from '@lib/shared/models/customForm';
+  import type { CustomFormMemberItem, CustomFormRoleItem } from '@lib/shared/models/customForm';
   import type { SelectedUsersItem } from '@lib/shared/models/system/module';
   import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
-  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import type { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
@@ -95,9 +93,9 @@
   import CrmSelectUserDrawer from '@/components/business/crm-select-user-drawer/index.vue';
 
   import {
-    batchRemoveCustomFormMember,
     getCustomFormAdmins,
-    getCustomFormMember,
+    getCustomFormRoles,
+    getCustomFormRoleUsers,
     relateCustomFormMember,
     removeCustomFormMember,
     saveCustomFormAdmins,
@@ -106,6 +104,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    creator: SelectedUsersItem;
   }>();
 
   const { t } = useI18n();
@@ -122,14 +121,20 @@
   const adminMaxCount = 15;
   const adminIds = ref<string[]>([]);
   const adminList = ref<SelectedUsersItem[]>([]);
-  const defaultAdminList = ref<SelectedUsersItem[]>([]);
   const isAdminLimitExceeded = computed(() => adminList.value.length > adminMaxCount);
+
+  function updateAdminDeleteDisabled() {
+    adminList.value = adminList.value.map((item) => ({
+      ...item,
+      disabled: adminList.value.length <= 1,
+    }));
+  }
 
   async function loadAdmins() {
     try {
       adminList.value = await getCustomFormAdmins(props.sourceId);
+      updateAdminDeleteDisabled();
       adminIds.value = adminList.value.map((item) => item.id);
-      defaultAdminList.value = adminList.value.map((item) => ({ ...item }));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -137,6 +142,8 @@
   }
 
   async function handleSaveAdmins() {
+    await nextTick();
+    updateAdminDeleteDisabled();
     if (isAdminLimitExceeded.value) {
       Message.warning(t('customForm.maxAddAdminTip', { count: adminMaxCount }));
       return;
@@ -155,27 +162,13 @@
   }
 
   function handleRestoreDefaultAdmins() {
-    adminList.value = defaultAdminList.value.map((item) => ({ ...item }));
+    adminList.value = props.creator.id ? [{ ...props.creator }] : [];
     adminIds.value = adminList.value.map((item) => item.id);
     handleSaveAdmins();
   }
 
-  const permissionTabList = [
-    {
-      name: CustomFormDataPermissionTypeEnum.MANAGE_ALL,
-      tab: t('customForm.permission.manageAll'),
-    },
-    {
-      name: CustomFormDataPermissionTypeEnum.VIEW_ALL,
-      tab: t('customForm.permission.viewAll'),
-    },
-    {
-      name: CustomFormDataPermissionTypeEnum.ADD_MANAGE_OWN,
-      tab: t('customForm.permission.addManageOwn'),
-    },
-  ];
-
-  const activePermissionType = ref(CustomFormDataPermissionTypeEnum.MANAGE_ALL);
+  const permissionTabList = ref<CustomFormRoleItem[]>([]);
+  const activeRoleId = ref('');
 
   const tableRefreshId = ref(0);
   const removeLoading = ref(false);
@@ -183,7 +176,10 @@
   async function removeMember(row: CustomFormMemberItem, close: () => void) {
     try {
       removeLoading.value = true;
-      await removeCustomFormMember(row.id);
+      await removeCustomFormMember({
+        customFormRoleId: activeRoleId.value,
+        userIds: [row.id],
+      });
       Message.success(t('common.removeSuccess'));
       close();
       tableRefreshId.value += 1;
@@ -202,7 +198,7 @@
     },
     {
       title: t('role.memberName'),
-      key: 'userName',
+      key: 'username',
       width: 200,
       fixed: 'left',
       ellipsis: {
@@ -254,7 +250,7 @@
       render: (row) =>
         h(CrmRemoveButton, {
           loading: removeLoading.value,
-          title: t('common.removeConfirmTitle', { name: characterLimit(row.userName) }),
+          title: t('common.removeConfirmTitle', { name: characterLimit(row.username) }),
           content: t('role.removeMemberTip'),
           onConfirm: (cancel) => removeMember(row, cancel),
         }),
@@ -262,7 +258,7 @@
   ];
 
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
-    getCustomFormMember,
+    getCustomFormRoleUsers,
     {
       columns,
       showSetting: false,
@@ -288,11 +284,22 @@
 
   function searchData() {
     setLoadListParams({
-      customFormId: props.sourceId,
-      customFormRole: activePermissionType.value,
+      customFormRoleId: activeRoleId.value,
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  async function loadPermissionTabList() {
+    try {
+      permissionTabList.value = await getCustomFormRoles(props.sourceId);
+      const firstRoleId = permissionTabList.value[0]?.id ?? '';
+      activeRoleId.value = firstRoleId;
+      searchData();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   const checkedRowKeys = ref<(string | number)[]>([]);
@@ -305,7 +312,10 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await batchRemoveCustomFormMember(checkedRowKeys.value);
+          await removeCustomFormMember({
+            customFormRoleId: activeRoleId.value,
+            userIds: checkedRowKeys.value as string[],
+          });
           checkedRowKeys.value = [];
           crmTableRef.value?.clearCheckedRowKeys();
           searchData();
@@ -359,8 +369,7 @@
       );
       await relateCustomFormMember({
         ...categorizedIds,
-        customFormId: props.sourceId,
-        customFormRole: activePermissionType.value,
+        customFormRoleId: activeRoleId.value,
       });
       Message.success(t('common.addSuccess'));
       memberDrawerVisible.value = false;
@@ -373,7 +382,7 @@
     }
   }
 
-  watch(activePermissionType, () => {
+  watch(activeRoleId, () => {
     checkedRowKeys.value = [];
     crmTableRef.value?.clearCheckedRowKeys();
     searchData();
@@ -388,13 +397,13 @@
     () => props.sourceId,
     () => {
       loadAdmins();
-      searchData();
+      loadPermissionTabList();
     }
   );
 
   onMounted(() => {
     loadAdmins();
-    searchData();
+    loadPermissionTabList();
   });
 </script>
 
