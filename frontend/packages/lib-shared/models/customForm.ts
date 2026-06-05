@@ -2,7 +2,7 @@ import type { FormCreateField } from '@cordys/web/src/components/business/crm-fo
 import type { FormConfig } from '@lib/shared/models/system/module';
 import type { RoleMemberRoleItem } from '@lib/shared/models/system/role';
 import type { ModuleField, TableQueryParams } from '@lib/shared/models/common';
-
+import type { SelectedUsersItem } from '@lib/shared/models/system/module';
 export interface CustomFormSaveRequest {
   id?: string;
   name: string;
@@ -13,6 +13,7 @@ export interface CustomFormSaveRequest {
 
 export interface CustomFormDetail extends CustomFormSaveRequest {
   id: string;
+  creator: SelectedUsersItem;
 }
 
 export interface CustomFormAdminParams {
@@ -20,20 +21,19 @@ export interface CustomFormAdminParams {
   userIds: string[];
 }
 
-export enum CustomFormDataPermissionTypeEnum {
-  MANAGE_ALL = 'MANAGE_ALL',
-  VIEW_ALL = 'VIEW_ALL',
-  ADD_MANAGE_OWN = 'MANAGE_OWN',
+export interface CustomFormRoleItem {
+  id: string;
+  name: string;
+  customFormId: string;
+  internalKey: string;
 }
 
-export interface CustomFormMemberTableQueryParams extends TableQueryParams {
-  customFormId: string;
-  customFormRole: CustomFormDataPermissionTypeEnum;
+export interface CustomFormRoleUserQueryParams extends TableQueryParams {
+  customFormRoleId: string;
 }
 
 export interface RelateCustomFormMemberParams {
-  customFormId: string;
-  customFormRole: CustomFormDataPermissionTypeEnum;
+  customFormRoleId: string;
   deptIds?: string[];
   roleIds?: string[];
   userIds?: string[];
@@ -42,7 +42,7 @@ export interface RelateCustomFormMemberParams {
 export interface CustomFormMemberItem {
   id: string;
   userId: string;
-  userName: string;
+  username: string;
   departmentId: string;
   departmentName: string;
   position: string;

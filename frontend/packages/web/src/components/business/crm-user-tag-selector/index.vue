@@ -97,6 +97,7 @@
     } else {
       selectedList.value = params;
     }
+    modelValue.value = selectedList.value.map((item) => item.id);
     showSelectDrawer.value = false;
     emit('confirm');
   }
@@ -111,7 +112,8 @@
         closable: !tagDisabled,
         onClose: () => {
           handleClose();
-          selectedList.value = selectedList.value?.filter((item) => item.id !== option.value);
+          selectedList.value = selectedList.value?.filter((item) => item.id !== option.value) ?? [];
+          modelValue.value = selectedList.value.map((item) => item.id);
           emit('deleteTag');
         },
       },

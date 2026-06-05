@@ -54,7 +54,11 @@
         :form-key="formKey"
       />
     </div>
-    <MemberPermissionTab v-if="visible && activeTab === 'memberPermission'" :source-id="currentSourceId" />
+    <MemberPermissionTab
+      v-if="visible && activeTab === 'memberPermission'"
+      :source-id="currentSourceId"
+      :creator="customFormCreator"
+    />
   </CrmProcessDrawer>
 </template>
 
@@ -121,6 +125,10 @@
   const customFormName = ref('');
   const customFormEnable = ref(true);
   provide('customFormSourceId', readonly(currentSourceId));
+  const customFormCreator = ref({
+    id: '',
+    name: '',
+  });
 
   const formKey = ref(FormDesignKeyEnum.CUSTOM_FORM);
   const { loading, fieldList, formConfig, unsaved, formDesignRef, checkRepeat, buildSavePayload, setFormConfigDetail } =
@@ -305,6 +313,10 @@
     if (!currentSourceId.value) {
       customFormName.value = t('customForm.unnamedForm');
       customFormEnable.value = true;
+      customFormCreator.value = {
+        id: userStore.userInfo.id || '',
+        name: userStore.userInfo.name || '',
+      };
       setFormConfigDetail({
         fields: createDefaultCustomFormFields(),
         formProp: createDefaultFormConfig(t),
@@ -317,6 +329,7 @@
       const detail = await getCustomFormDetail(currentSourceId.value);
       customFormName.value = detail.name;
       customFormEnable.value = detail.enable;
+      customFormCreator.value = detail.creator;
       setFormConfigDetail(detail);
     } catch (error) {
       // eslint-disable-next-line no-console

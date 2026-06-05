@@ -1,9 +1,9 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddCustomFormUrl,
-  BatchRemoveCustomFormMemberUrl,
   GetCustomFormAdminUrl,
-  GetCustomFormMemberUrl,
+  GetCustomFormRoleListUrl,
+  GetCustomFormRoleUsersUrl,
   GetCustomFormUrl,
   RelateCustomFormMemberUrl,
   RemoveCustomFormMemberUrl,
@@ -31,7 +31,8 @@ import type {
   CustomFormDetail,
   CustomFormItem,
   CustomFormMemberItem,
-  CustomFormMemberTableQueryParams,
+  CustomFormRoleItem,
+  CustomFormRoleUserQueryParams,
   CustomFormPageItem,
   CustomFormSaveRequest,
   GetCustomFormDataPageParams,
@@ -66,16 +67,16 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.post({ url: RelateCustomFormMemberUrl, data });
   }
 
-  function getCustomFormMember(data: CustomFormMemberTableQueryParams) {
-    return CDR.post<CommonList<CustomFormMemberItem>>({ url: GetCustomFormMemberUrl, data });
+  function getCustomFormRoles(customFormId: string) {
+    return CDR.get<CustomFormRoleItem[]>({ url: `${GetCustomFormRoleListUrl}/${customFormId}` });
   }
 
-  function removeCustomFormMember(id: string) {
-    return CDR.get({ url: `${RemoveCustomFormMemberUrl}/${id}` });
+  function getCustomFormRoleUsers(data: CustomFormRoleUserQueryParams) {
+    return CDR.post<CommonList<CustomFormMemberItem>>({ url: GetCustomFormRoleUsersUrl, data });
   }
 
-  function batchRemoveCustomFormMember(data: (string | number)[]) {
-    return CDR.post({ url: BatchRemoveCustomFormMemberUrl, data });
+  function removeCustomFormMember(data: RelateCustomFormMemberParams) {
+    return CDR.post({ url: RemoveCustomFormMemberUrl, data });
   }
 
   function deleteCustomForm(id: string) {
@@ -133,9 +134,9 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     saveCustomFormAdmins,
     getCustomFormAdmins,
     relateCustomFormMember,
-    getCustomFormMember,
+    getCustomFormRoles,
+    getCustomFormRoleUsers,
     removeCustomFormMember,
-    batchRemoveCustomFormMember,
     getCustomFormList,
     getCustomFormDataDetail,
     getCustomFormDataPage,
