@@ -1,11 +1,11 @@
 package cn.cordys.crm.form.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
+import cn.cordys.crm.form.dto.request.CustomFormRoleUserPageRequest;
 import cn.cordys.crm.form.dto.response.CustomFormRoleListResponse;
 import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
 import cn.cordys.crm.form.service.CustomFormRoleService;
@@ -33,12 +33,11 @@ public class CustomFormRoleController {
         return customFormRoleService.listByFormId(customFormId, SessionUtils.getUserId());
     }
 
-    @GetMapping("/users/{roleId}")
+    @PostMapping("/users")
     @Operation(summary = "获取角色用户列表")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(@PathVariable String roleId,
-                                                                       @Validated BasePageRequest request) {
-        return customFormRoleService.listUsersByRole(roleId, request, SessionUtils.getUserId(),
+    public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(@Validated @RequestBody CustomFormRoleUserPageRequest request) {
+        return customFormRoleService.listUsersByRole(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
     }
 
