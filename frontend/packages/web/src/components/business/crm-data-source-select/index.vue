@@ -15,9 +15,7 @@
   />
   <CrmModal
     v-model:show="dataSourcesModalVisible"
-    :title="
-      t('crmFormDesign.selectDataSource', { type: props.dataSourceType ? t(typeLocaleMap[props.dataSourceType]) : '' })
-    "
+    :title="t('crmFormDesign.selectDataSource', { type: dataSourceTitle })"
     :positive-text="t('common.confirm')"
     :class="`crm-data-source-select-modal ${fullScreenModal ? 'crm-full-modal' : ''}`"
     @confirm="handleDataSourceConfirm"
@@ -45,20 +43,24 @@
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { CustomFormItem } from '@lib/shared/models/customForm';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import dataSourceTable from './dataSourceTable.vue';
 
-  import type { FormCreateField } from '../crm-form-create/types';
-  import { InternalRowData, RowData, RowKey } from 'naive-ui/es/data-table/src/interface';
+  import { getCustomFormOptions } from '@/api/modules';
+
+  import type { DataSourceType, FormCreateField } from '../crm-form-create/types';
+  import { getCustomDataSourceName, isCustomDataSourceType } from './utils';
+  import type { InternalRowData, RowKey } from 'naive-ui/es/data-table/src/interface';
 
   interface DataSourceTableProps {
-    dataSourceType: FieldDataSourceTypeEnum;
+    dataSourceType: DataSourceType;
     multiple?: boolean;
     disabled?: boolean;
-    disabledSelection?: (row: RowData) => boolean;
+    disabledSelection?: (row: any) => boolean;
     maxTagCount?: number | 'responsive';
     filterParams?: FilterResult;
     fieldConfig?: FormCreateField;
@@ -97,6 +99,35 @@
     [FieldDataSourceTypeEnum.BUSINESS_TITLE]: 'crmFormCreate.drawer.businessTitle',
     [FieldDataSourceTypeEnum.ORDER]: 'crmFormCreate.drawer.order',
   };
+
+  const customDataSourceForms = ref<CustomFormItem[]>([]);
+  async function initCustomDataSourceForms() {
+    try {
+      const res = await getCustomFormOptions();
+      customDataSourceForms.value = res || [];
+    } catch (error) {
+      customDataSourceForms.value = [];
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const dataSourceTitle = computed(() => {
+    if (isCustomDataSourceType(props.fieldConfig?.dataSourceType)) {
+      return (
+        getCustomDataSourceName(props.fieldConfig?.dataSourceType as string | undefined, customDataSourceForms.value) ||
+        t('module.customForm') // todo name 等待替换
+      );
+    }
+    const localeKey = typeLocaleMap[props.dataSourceType as FieldDataSourceTypeEnum];
+    if (localeKey) {
+      return t(localeKey);
+    }
+    return (
+      getCustomDataSourceName(props.dataSourceType as string | undefined, customDataSourceForms.value) ||
+      t('module.customForm')
+    );
+  });
 
   const value = defineModel<DataTableRowKey[]>('value', {
     required: true,
@@ -199,6 +230,7 @@
   watch(
     () => dataSourcesModalVisible.value,
     (v) => {
+      initCustomDataSourceForms();
       if (v) {
         setFullWrapperFullScreenRef();
       } else {

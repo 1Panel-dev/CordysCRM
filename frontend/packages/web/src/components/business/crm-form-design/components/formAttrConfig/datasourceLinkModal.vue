@@ -333,6 +333,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import { getDataSourceFormKey, isCustomDataSourceType } from '@/components/business/crm-data-source-select/utils';
   import {
     dataSourceFilterFormKeyMap,
     getFieldIcon,
@@ -368,15 +369,22 @@
   const formModel = ref<DataSourceLinkField[]>(cloneDeep(props.fieldConfig.linkFields || []));
 
   const formRef = ref<FormInst>();
-  const formKey = computed<FormDesignKeyEnum>(() => {
-    return dataSourceFilterFormKeyMap[
-      props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER
-    ] as FormDesignKeyEnum;
-  });
   const linkFieldOptions = ref<any[]>([]);
+  const dataSourceType = computed(() => props.fieldConfig.dataSourceType);
+  const isCustomForm = computed(() => isCustomDataSourceType(props.fieldConfig.dataSourceType));
+
+  const formKey = computed<FormDesignKeyEnum | undefined>(() =>
+    getDataSourceFormKey(dataSourceType.value, dataSourceFilterFormKeyMap)
+  );
+
   async function getDisplayList() {
     try {
-      const res = await getFieldDisplayList(formKey.value);
+      if (!dataSourceType.value) return;
+
+      const formFieldKey = isCustomForm.value ? props.fieldConfig?.dataSourceType : formKey.value;
+      if (!formFieldKey) return;
+      const res = await getFieldDisplayList(formFieldKey);
+
       linkFieldOptions.value = res.fields
         .filter((e) =>
           [
@@ -539,9 +547,11 @@
   });
   async function initSubTableFields() {
     try {
-      const api = getFormConfigApiMap[formKey.value];
-      const res = await api();
-      linkSubFieldParents.value = res.fields.filter((e) =>
+      const apiFormKey = formKey.value;
+      if (!apiFormKey) return;
+      const api = getFormConfigApiMap[apiFormKey];
+      const res = await api(isCustomForm.value ? (props.fieldConfig.dataSourceType as string | undefined) : undefined);
+      linkSubFieldParents.value = res.fields.filter((e: FormCreateField) =>
         [FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(e.type)
       );
     } catch (error) {

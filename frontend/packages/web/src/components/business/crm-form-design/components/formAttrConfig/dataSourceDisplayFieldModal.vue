@@ -38,6 +38,7 @@
   import { ExportTableColumnItem } from '@lib/shared/models/common';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import { getDataSourceFormKey, isCustomDataSourceType } from '@/components/business/crm-data-source-select/utils';
   import { dataSourceFilterFormKeyMap } from '@/components/business/crm-form-create/config';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import FieldSection from '@/components/business/crm-table-export-modal/components/fieldSection.vue';
@@ -61,17 +62,24 @@
   }>();
 
   const allColumns = ref<ExportTableColumnItem[]>([]);
-
-  const formKey = computed<FormDesignKeyEnum>(() => {
-    return dataSourceFilterFormKeyMap[
-      props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER
-    ] as FormDesignKeyEnum;
-  });
+  const dataSourceType = computed(() => props.fieldConfig.dataSourceType);
+  const isCustomForm = computed(() => isCustomDataSourceType(dataSourceType.value));
+  const formKey = computed<FormDesignKeyEnum | undefined>(() =>
+    getDataSourceFormKey(dataSourceType.value, dataSourceFilterFormKeyMap)
+  );
+  const isBusinessTitleSource = computed(() => formKey.value === FormDesignKeyEnum.BUSINESS_TITLE);
 
   async function getDisplayList() {
     try {
-      if (props.fieldConfig.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE) {
-        const res = await getBusinessTitleModuleForm();
+      let res;
+      if (isCustomForm.value) {
+        res = await getFieldDisplayList(dataSourceType.value as string);
+      } else if (isBusinessTitleSource.value) {
+        res = await getBusinessTitleModuleForm();
+      } else {
+        res = await getFieldDisplayList(formKey.value as FormDesignKeyEnum);
+      }
+      if (isBusinessTitleSource.value) {
         allColumns.value = res.fields.map((item) => {
           return {
             ...item,
@@ -85,7 +93,6 @@
           };
         });
       } else {
-        const res = await getFieldDisplayList(formKey.value);
         allColumns.value = res.fields.map((item) => {
           return {
             key: item.id,

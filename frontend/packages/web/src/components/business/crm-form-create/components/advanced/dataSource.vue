@@ -24,7 +24,7 @@
       v-model:value="value"
       :rows="props.fieldConfig.initialOptions"
       :multiple="fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
-      :data-source-type="props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
+      :data-source-type="(props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER) as DataSourceType"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
       :filter-params="getParams()"
       :fieldConfig="props.fieldConfig"
@@ -41,7 +41,7 @@
   import { NDivider, NFormItem } from 'naive-ui';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-  import { FieldDataSourceTypeEnum, FieldTypeEnum, type FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { transformData } from '@lib/shared/method/formCreate';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
@@ -49,11 +49,13 @@
   import useTable from '@/components/pure/crm-table/useTable';
   import { formKeyMap, sourceApi } from '@/components/business/crm-data-source-select/config';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
+  import { getDataSourceFormKey, isCustomDataSourceType } from '@/components/business/crm-data-source-select/utils';
 
+  import { getFieldCustomFormList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import { multipleValueTypeList } from '../../config';
-  import { FormCreateField } from '../../types';
+  import { DataSourceType, FormCreateField } from '../../types';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
@@ -106,14 +108,23 @@
     };
   }
 
+  const dataSourceType = computed(() => props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER);
+  const isCustomForm = computed(() => isCustomDataSourceType(dataSourceType.value));
+  const formKey = computed<FormDesignKeyEnum>(
+    () => getDataSourceFormKey(dataSourceType.value, formKeyMap) as FormDesignKeyEnum
+  );
+
   const { fieldList, initFormConfig } = useFormCreateApi({
-    formKey: computed(
-      () => formKeyMap[props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER] as FormDesignKeyEnum
-    ),
+    formKey,
+    customFormId: computed(() => (isCustomForm.value ? dataSourceType.value : undefined)),
   });
 
+  const listApi = isCustomForm.value
+    ? getFieldCustomFormList
+    : sourceApi[dataSourceType.value as FieldDataSourceTypeEnum];
+
   const { propsRes, loadList, setLoadListParams, setAdvanceFilter } = useTable(
-    sourceApi[props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER],
+    listApi,
     {
       columns: [],
       showSetting: false,
@@ -138,6 +149,7 @@
         setAdvanceFilter(getParams());
         setLoadListParams({
           keyword: val?.[0]?.name || '',
+          customFormId: isCustomForm.value ? (dataSourceType.value as string | undefined) : undefined,
         });
         await loadList();
         const selectedIds = normalizeSelectedIds(props.fieldConfig.defaultValue);

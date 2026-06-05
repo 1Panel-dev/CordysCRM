@@ -10,7 +10,7 @@ const customForm: AppRouteRecordRaw = {
   component: DEFAULT_LAYOUT,
   meta: {
     locale: 'menu.customForm',
-    permissions: [], // todo xinxinwu 权限
+    permissions: ['CUSTOM_FORM:READ'],
     icon: 'iconicon_form',
     hideChildrenInMenu: true,
     collapsedLocale: 'menu.customForm',
@@ -22,7 +22,7 @@ const customForm: AppRouteRecordRaw = {
       component: () => import('@/views/customForm/index.vue'),
       meta: {
         locale: 'menu.customForm',
-        permissions: [], // todo xinxinwu 权限
+        permissions: ['CUSTOM_FORM:READ'],
       },
     },
   ],

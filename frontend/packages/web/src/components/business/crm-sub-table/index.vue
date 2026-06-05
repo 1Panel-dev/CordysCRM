@@ -512,8 +512,7 @@
           };
         }
         if (field.type === FieldTypeEnum.DATA_SOURCE) {
-          const isPriceSubTableShowSubField =
-            field.dataSourceType && formKeyMap[field.dataSourceType] === FormDesignKeyEnum.PRICE;
+          const isPriceSubTableShowSubField = field.dataSourceType === FieldDataSourceTypeEnum.PRICE;
           return {
             title,
             width: 250,
