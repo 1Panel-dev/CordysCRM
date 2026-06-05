@@ -1,7 +1,10 @@
 package cn.cordys.crm.form.service;
 
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.pager.PageUtils;
+import cn.cordys.common.pager.Pager;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -13,8 +16,12 @@ import cn.cordys.crm.form.domain.CustomFormRole;
 import cn.cordys.crm.form.domain.CustomFormRoleUser;
 import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
 import cn.cordys.crm.form.dto.response.CustomFormRoleListResponse;
+import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
+import cn.cordys.crm.form.mapper.ExtCustomFormRoleUserMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -41,6 +48,8 @@ public class CustomFormRoleService {
     private ExtDepartmentMapper extDepartmentMapper;
     @Resource
     private ExtUserRoleMapper extUserRoleMapper;
+    @Resource
+    private ExtCustomFormRoleUserMapper extCustomFormRoleUserMapper;
 
     public List<CustomFormRoleListResponse> listByFormId(String customFormId, String userId) {
         checkFormAdmin(customFormId, userId);
@@ -59,18 +68,16 @@ public class CustomFormRoleService {
         }).toList();
     }
 
-    public List<String> listUsersByRole(String roleId, String userId) {
+    public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(String roleId, BasePageRequest request, String userId) {
         CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(roleId);
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
         }
         checkFormAdmin(role.getCustomFormId(), userId);
 
-        LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomFormRoleUser::getRoleId, roleId);
-        List<CustomFormRoleUser> roleUsers = customFormRoleUserMapper.selectListByLambda(wrapper);
-
-        return roleUsers.stream().map(CustomFormRoleUser::getUserId).toList();
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<CustomFormRoleUserListResponse> roleUsers = extCustomFormRoleUserMapper.listByRoleId(roleId, request);
+        return PageUtils.setPageInfo(page, roleUsers);
     }
 
     public void addUsers(CustomFormRoleUserBatchRequest request, String userId) {
@@ -92,6 +99,7 @@ public class CustomFormRoleService {
                 .map(CustomFormRoleUser::getUserId)
                 .toList();
 
+        long now = System.currentTimeMillis();
         List<CustomFormRoleUser> toInsert = ListUtils.subtract(userIds, currentRoleUserIds)
                 .stream()
                 .map(uid -> {
@@ -99,6 +107,10 @@ public class CustomFormRoleService {
                     roleUser.setId(IDGenerator.nextStr());
                     roleUser.setRoleId(request.getCustomFormRoleId());
                     roleUser.setUserId(uid);
+                    roleUser.setCreateTime(now);
+                    roleUser.setUpdateTime(now);
+                    roleUser.setCreateUser(userId);
+                    roleUser.setUpdateUser(userId);
                     return roleUser;
                 }).toList();
 
