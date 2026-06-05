@@ -70,7 +70,7 @@ public class OpportunityQuotationController {
 
     //编辑
     @PostMapping("/update")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "更新报价单")
     public OpportunityQuotation update(@Validated @RequestBody OpportunityQuotationEditRequest request) {
         return opportunityQuotationService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -78,7 +78,7 @@ public class OpportunityQuotationController {
 
     //查询详情
     @GetMapping("/get/snapshot/{id}")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_READ, resourceId = "{#id}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_READ, resourceId = "{#id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "获取报价单快照详情")
     public OpportunityQuotationGetResponse getSnapshot(@PathVariable("id") String id) {
         return opportunityQuotationService.getSnapshot(id, OrganizationContext.getOrganizationId());
@@ -86,14 +86,14 @@ public class OpportunityQuotationController {
 
     //查询详情
     @GetMapping("/get/{id}")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_READ, resourceId = "{#id}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_READ, resourceId = "{#id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "获取报价单详情")
     public OpportunityQuotationGetResponse get(@PathVariable("id") String id) {
         return opportunityQuotationService.get(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/module/form/snapshot/{id}")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_READ, resourceId = "{#id}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_READ, resourceId = "{#id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "获取表单快照配置")
     public ModuleFormConfigDTO getFormSnapshot(@PathVariable("id") String id) {
         return opportunityQuotationService.getFormSnapshot(id, OrganizationContext.getOrganizationId());
@@ -108,7 +108,7 @@ public class OpportunityQuotationController {
 
     //作废
     @GetMapping("/voided/{id}")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED, resourceId = "{#id}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED, resourceId = "{#id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "作废报价单")
     public void voidQuotation(@PathVariable("id") String id) {
         opportunityQuotationService.voidQuotation(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -116,7 +116,7 @@ public class OpportunityQuotationController {
 
     //批量作废报价单
     @PostMapping("/batch/voided")
-    @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED, resourceId = "{#request.ids}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_VOIDED, resourceId = "{#request.ids}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "批量作废报价单")
     public BatchAffectReasonResponse batchVoidQuotation(@Validated @RequestBody OpportunityQuotationBatchVoidedRequest request) {
         return opportunityQuotationService.batchVoidQuotation(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -125,7 +125,7 @@ public class OpportunityQuotationController {
 
     //审批
     @PostMapping("/approve")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL, resourceId = "{#request.id}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL, resourceId = "{#request.id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "审批报价单")
     public String approve(@RequestBody OpportunityQuotationEditRequest request) {
         return opportunityQuotationService.approve(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -133,14 +133,14 @@ public class OpportunityQuotationController {
 
     //批量审批
     @PostMapping("/batch/approve")
-    @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL, resourceId = "{#request.ids}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_APPROVAL, resourceId = "{#request.ids}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "批量审批报价单")
     public BatchAffectSkipResponse batchApprove(@Validated @RequestBody OpportunityQuotationBatchRequest request) {
         return opportunityQuotationService.batchApprove(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
-    @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsBatchPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "批量更新报价单")
     public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         return opportunityQuotationService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -148,7 +148,7 @@ public class OpportunityQuotationController {
 
     //删除报价单
     @GetMapping("/delete/{id}")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_DELETE, resourceId = "{#id}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_DELETE, resourceId = "{#id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "删除报价单")
     public void delete(@PathVariable("id") String id) {
         opportunityQuotationService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -162,7 +162,7 @@ public class OpportunityQuotationController {
     }
 
     @GetMapping("/download/{id}")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_DOWNLOAD, resourceId = "{#id}", formType = FormKeyConstants.OPPORTUNITY)
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_DOWNLOAD, resourceId = "{#id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "下载报价单日志记录")
     public void download(@PathVariable("id") String id) {
         opportunityQuotationService.download(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
