@@ -28,6 +28,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,17 +73,24 @@ public class CustomFormService {
     }
 
     public List<CustomFormListResponse> list(String userId) {
-        Set<String> adminFormIds = getAdminFormIds(userId);
-        Set<String> memberFormIds = getMemberFormIds(userId);
-        if (adminFormIds.isEmpty() && memberFormIds.isEmpty()) {
-            return Collections.emptyList();
+        List<CustomForm> customForms;
+        Set<String> adminFormIds;
+        if (Strings.CS.equals(InternalUser.ADMIN.getValue(), userId)) {
+            customForms = customFormMapper.selectAll(null);
+            adminFormIds = customForms.stream().map(CustomForm::getId).collect(Collectors.toSet());
+        } else {
+            adminFormIds = getAdminFormIds(userId);
+            Set<String> memberFormIds = getMemberFormIds(userId);
+            if (adminFormIds.isEmpty() && memberFormIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            Set<String> accessibleFormIds = new HashSet<>();
+            accessibleFormIds.addAll(adminFormIds);
+            accessibleFormIds.addAll(memberFormIds);
+
+            customForms = customFormMapper.selectByIds(accessibleFormIds.stream().toList());
         }
-
-        Set<String> accessibleFormIds = new HashSet<>();
-        accessibleFormIds.addAll(adminFormIds);
-        accessibleFormIds.addAll(memberFormIds);
-
-        List<CustomForm> customForms = customFormMapper.selectByIds(accessibleFormIds.stream().toList());
         return customForms.stream()
                 .map(form -> {
                     CustomFormListResponse resp = new CustomFormListResponse();
@@ -112,8 +120,7 @@ public class CustomFormService {
             resp.setFormProp(businessFormConfig.getFormProp());
         }
 
-        Set<String> adminFormIds = getAdminFormIds(userId);
-        resp.setIsAdmin(adminFormIds.contains(id));
+        resp.setIsAdmin(isFormAdminUser(form.getId(), userId));
         return resp;
     }
 
