@@ -119,6 +119,9 @@ public class CustomFormControllerTests extends BaseTest {
         assertNotNull(response);
         assertEquals(createdFormId, response.getId());
         assertEquals("测试自定义表单", response.getName());
+        assertNotNull(response.getCreator());
+        assertEquals("admin", response.getCreator().getId());
+        assertEquals("Administrator", response.getCreator().getName());
     }
 
     @Test
@@ -309,7 +312,7 @@ public class CustomFormControllerTests extends BaseTest {
         assertEquals(total, pager.getTotal());
         assertEquals(pageSize, pager.getList().size());
         CustomFormRoleUserListResponse first = pager.getList().getFirst();
-        assertNotNull(first.getCustomFormRoleUserId());
+        assertNotNull(first.getId());
         assertNotNull(first.getUserId());
         assertNotNull(first.getUsername());
         assertNotNull(first.getCreateTime());

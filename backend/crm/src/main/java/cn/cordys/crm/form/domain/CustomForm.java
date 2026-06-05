@@ -1,16 +1,16 @@
 package cn.cordys.crm.form.domain;
 
 
+import cn.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(name = "custom_form")
-public class CustomForm {
-
-    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String id;
+public class CustomForm extends BaseModel {
 
     @Schema(description = "名称")
     private String name;

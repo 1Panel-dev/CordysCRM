@@ -4,7 +4,7 @@
 <mapper namespace="cn.cordys.crm.form.mapper.ExtCustomFormRoleUserMapper">
 
     <select id="listByRoleId" resultType="cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse">
-        select cfru.id as customFormRoleUserId,
+        select cfru.id as id,
                cfru.user_id as userId,
                su.name as username,
                cfru.create_time as createTime,
@@ -32,7 +32,7 @@
                 <bind name="sortType" value="${sort}.type"/>
                 order by
                 <choose>
-                    <when test="${sort}.name == 'custom_form_role_user_id'">
+                    <when test="${sort}.name == 'id'">
                         cfru.id ${sortType}
                     </when>
                     <when test="${sort}.name == 'user_id'">

@@ -10,6 +10,10 @@ CREATE TABLE custom_form(
     `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
     `enable` BIT(1) NOT NULL  DEFAULT 0 COMMENT '是否启用' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
     PRIMARY KEY (id)
 )  COMMENT = '自定义表单'
 ENGINE = InnoDB
