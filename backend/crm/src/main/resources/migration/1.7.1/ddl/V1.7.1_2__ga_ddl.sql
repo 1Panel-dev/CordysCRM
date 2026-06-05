@@ -6,7 +6,7 @@ ALTER TABLE contract MODIFY COLUMN start_time bigint NULL;
 ALTER TABLE contract MODIFY COLUMN end_time bigint NULL;
 
 INSERT INTO sys_module (id, organization_id, module_key, enable, pos, create_user, create_time, update_user, update_time)
-VALUES (UUID_SHORT(), '100001', 'custom_form', 1, 9, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000);
+VALUES (UUID_SHORT(), '100001', 'customForm', 1, 9, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000);
 
 
 CREATE TABLE custom_form(

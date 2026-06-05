@@ -28,7 +28,7 @@ public enum ModuleKey {
     /**
      * 自定义表单
      */
-    CUSTOM_FORM("custom_form"),
+    CUSTOM_FORM("customForm"),
     /**
      * 系统设置
      */
