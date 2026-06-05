@@ -155,6 +155,7 @@
     linkFormInfo,
     linkFormKey,
     linkScenario,
+    customFormId,
   });
 
   const { reviewAction, initApprovalReviewConfig } = useFormReviewAction({

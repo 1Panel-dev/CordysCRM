@@ -363,4 +363,5 @@ export default {
   'common.batchEditApprovalTip': 'Only data with approval statuses {statuses} can be batch edited',
   'common.batchVoidApprovalTip': 'Only data with approval statuses {statuses} can be batch voided',
   'common.testLink': 'Test link',
+  'common.batchDeleteTitle': 'Confirm delete {count} data?',
 };

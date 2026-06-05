@@ -9,6 +9,9 @@ export const GetCustomFormMemberUrl = '/custom-form/member/page'; // 表单成�
 export const RemoveCustomFormMemberUrl = '/custom-form/member/delete'; // 移除表单成员
 export const BatchRemoveCustomFormMemberUrl = '/custom-form/member/batch/delete'; // 批量移除表单成员
 export const GetCustomFormListUrl = '/custom-form/list'; // 获取表单模板列表
+export const DeleteCustomFormUrl = '/custom-form/delete'; // 删除表单模板
+export const EnableCustomFormUrl = '/custom-form/enable'; // 开启表单模板
+export const DisableCustomFormUrl = '/custom-form/disable'; // 关闭表单模板
 
 // 表单数据
 export const AddCustomFormDataUrl = '/custom-form/data/add'; // 添加自定义表单数据

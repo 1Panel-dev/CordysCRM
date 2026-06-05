@@ -70,6 +70,9 @@ export const {
   batchDeleteCustomFormData,
   updateCustomFormData,
   deleteCustomFormData,
+  deleteCustomForm,
+  enableCustomForm,
+  disableCustomForm,
 } = customFormApi;
 
 export const {
