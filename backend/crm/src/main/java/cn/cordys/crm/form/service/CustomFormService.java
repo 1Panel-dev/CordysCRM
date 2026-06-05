@@ -121,6 +121,7 @@ public class CustomFormService {
         }
 
         CustomFormGetResponse resp = BeanUtils.copyBean(new CustomFormGetResponse(), form);
+        resp.setCreator(getUserOption(form.getCreateUser()));
 
         if (moduleForm != null) {
             ModuleFormConfigDTO businessFormConfig = moduleFormService.getBusinessFormConfig(moduleForm.getFormKey(), orgId);
@@ -130,6 +131,15 @@ public class CustomFormService {
 
         resp.setIsAdmin(isFormAdminUser(form.getId(), userId));
         return resp;
+    }
+
+    private OptionDTO getUserOption(String userId) {
+        if (StringUtils.isBlank(userId)) {
+            return null;
+        }
+        return extUserMapper.selectUserOptionByIds(List.of(userId)).stream()
+                .findFirst()
+                .orElseGet(() -> new OptionDTO(userId, null));
     }
 
     public List<OptionDTO> getAdmins(String formId, String userId) {
@@ -167,6 +177,10 @@ public class CustomFormService {
         form.setName(request.getName());
         form.setEnable(!BooleanUtils.isFalse(request.getEnable()));
         form.setOrganizationId(orgId);
+        form.setCreateTime(System.currentTimeMillis());
+        form.setUpdateTime(System.currentTimeMillis());
+        form.setCreateUser(userId);
+        form.setUpdateUser(userId);
 
         checkAddExist(form);
         customFormMapper.insert(form);

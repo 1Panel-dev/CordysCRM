@@ -10,7 +10,7 @@ import java.util.List;
 public class CustomFormRoleUserListResponse {
 
     @Schema(description = "自定义表单角色用户关联ID")
-    private String customFormRoleUserId;
+    private String id;
 
     @Schema(description = "用户ID")
     private String userId;

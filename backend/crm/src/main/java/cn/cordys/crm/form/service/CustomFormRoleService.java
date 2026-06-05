@@ -153,9 +153,9 @@ public class CustomFormRoleService {
             return;
         }
 
-        for (String uid : request.getUserIds()) {
+        for (String id : request.getUserIds()) {
             LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId()).eq(CustomFormRoleUser::getUserId, uid);
+            wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId()).eq(CustomFormRoleUser::getId, id);
             customFormRoleUserMapper.deleteByLambda(wrapper);
         }
     }
