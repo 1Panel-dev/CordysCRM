@@ -3,6 +3,7 @@ package cn.cordys.crm.form.controller;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.domain.BaseModel;
 import cn.cordys.common.pager.Pager;
+import cn.cordys.common.constants.RoleDataScope;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormAdmin;
@@ -15,7 +16,9 @@ import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
 import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
+import cn.cordys.crm.system.domain.Department;
 import cn.cordys.crm.system.domain.OrganizationUser;
+import cn.cordys.crm.system.domain.Role;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.domain.UserRole;
 import cn.cordys.crm.system.dto.form.FormProp;
@@ -61,6 +64,10 @@ public class CustomFormControllerTests extends BaseTest {
     private BaseMapper<UserRole> userRoleMapper;
     @Resource
     private BaseMapper<User> userMapper;
+    @Resource
+    private BaseMapper<Department> departmentMapper;
+    @Resource
+    private BaseMapper<Role> roleMapper;
 
     @Override
     protected String getBasePath() {
@@ -171,7 +178,7 @@ public class CustomFormControllerTests extends BaseTest {
         this.requestPostWithOk("role/user/add", request);
 
         assertRoleUsers(roleId, "cf-role-direct-user", "cf-role-dept-user", "cf-role-system-role-user");
-        assertRoleUsersPage(roleId, 1, 2, 3);
+        assertRoleUsersPage(roleId, 1, 3, 3);
     }
 
     @Test
@@ -202,23 +209,60 @@ public class CustomFormControllerTests extends BaseTest {
     }
 
     private void prepareUserDeptAndRoleData() {
+        insertDepartment();
+        insertRole();
         insertUser("cf-role-direct-user", "直接用户");
         insertUser("cf-role-dept-user", "部门用户");
         insertUser("cf-role-system-role-user", "角色用户");
+        insertOrganizationUser("cf-role-direct-org-user", "cf-role-direct-user", "销售顾问");
+        insertOrganizationUser("cf-role-dept-org-user", "cf-role-dept-user", "部门专员");
+        insertOrganizationUser("cf-role-system-role-org-user", "cf-role-system-role-user", "角色专员");
+        insertUserRole("cf-role-direct-user-role", "cf-role-direct-user");
+        insertUserRole("cf-role-dept-user-role", "cf-role-dept-user");
+        insertUserRole("cf-role-test-user-role", "cf-role-system-role-user");
+    }
 
+    private void insertDepartment() {
+        Department department = new Department();
+        department.setId("cf-role-test-dept");
+        department.setName("测试部门");
+        department.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        department.setParentId("0");
+        department.setPos(1L);
+        department.setResource("TEST");
+        department.setResourceId("cf-role-test-dept-resource");
+        setAuditFields(department);
+        departmentMapper.insert(department);
+    }
+
+    private void insertRole() {
+        Role role = new Role();
+        role.setId("cf-role-test-system-role");
+        role.setName("测试系统角色");
+        role.setInternal(false);
+        role.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        role.setDataScope(RoleDataScope.ALL.name());
+        setAuditFields(role);
+        roleMapper.insert(role);
+    }
+
+    private void insertOrganizationUser(String id, String userId, String position) {
         OrganizationUser organizationUser = new OrganizationUser();
-        organizationUser.setId("cf-role-test-org-user");
+        organizationUser.setId(id);
         organizationUser.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         organizationUser.setDepartmentId("cf-role-test-dept");
-        organizationUser.setUserId("cf-role-dept-user");
+        organizationUser.setUserId(userId);
+        organizationUser.setPosition(position);
         organizationUser.setEnable(true);
         setAuditFields(organizationUser);
         organizationUserMapper.insert(organizationUser);
+    }
 
+    private void insertUserRole(String id, String userId) {
         UserRole userRole = new UserRole();
-        userRole.setId("cf-role-test-user-role");
+        userRole.setId(id);
         userRole.setRoleId("cf-role-test-system-role");
-        userRole.setUserId("cf-role-system-role-user");
+        userRole.setUserId(userId);
         setAuditFields(userRole);
         userRoleMapper.insert(userRole);
     }
@@ -264,5 +308,10 @@ public class CustomFormControllerTests extends BaseTest {
         assertNotNull(first.getUserId());
         assertNotNull(first.getUsername());
         assertNotNull(first.getCreateTime());
+        assertTrue(pager.getList().stream().allMatch(user -> "cf-role-test-dept".equals(user.getDepartmentId())));
+        assertTrue(pager.getList().stream().allMatch(user -> "测试部门".equals(user.getDepartmentName())));
+        assertTrue(pager.getList().stream().allMatch(user -> user.getPosition() != null));
+        assertTrue(pager.getList().stream().allMatch(user -> user.getRoles() != null
+                && user.getRoles().stream().anyMatch(role -> "cf-role-test-system-role".equals(role.getId()))));
     }
 }
