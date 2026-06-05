@@ -70,6 +70,7 @@ public class CustomFormDataControllerTests extends BaseTest {
         form.setId(formId);
         form.setName("测试自定义表单");
         form.setEnable(true);
+        form.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         customFormMapper.insert(form);
 
         ModuleForm moduleForm = new ModuleForm();

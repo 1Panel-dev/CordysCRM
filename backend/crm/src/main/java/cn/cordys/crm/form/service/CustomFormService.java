@@ -14,6 +14,7 @@ import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
 import cn.cordys.crm.form.mapper.ExtCustomFormDataMapper;
+import cn.cordys.crm.form.mapper.ExtCustomFormMapper;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.domain.ModuleFormBlob;
 import cn.cordys.crm.system.dto.form.FormProp;
@@ -29,6 +30,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,8 @@ public class CustomFormService {
 
     @Resource
     private BaseMapper<CustomForm> customFormMapper;
+    @Resource
+    private ExtCustomFormMapper extCustomFormMapper;
     @Resource
     private BaseMapper<CustomFormAdmin> customFormAdminMapper;
     @Resource
@@ -100,6 +104,7 @@ public class CustomFormService {
                     resp.setId(form.getId());
                     resp.setName(form.getName());
                     resp.setEnable(form.getEnable());
+                    resp.setOrganizationId(form.getOrganizationId());
                     // 标记是否是管理员
                     resp.setIsAdmin(adminFormIds.contains(form.getId()));
                     return resp;
@@ -153,6 +158,7 @@ public class CustomFormService {
     }
 
     public CustomForm create(CustomFormAddRequest request, String userId, String orgId) {
+        checkNameUnique(request.getName(), null);
         String formId = IDGenerator.nextStr();
 
         // 保存 custom_form
@@ -160,6 +166,9 @@ public class CustomFormService {
         form.setId(formId);
         form.setName(request.getName());
         form.setEnable(!BooleanUtils.isFalse(request.getEnable()));
+        form.setOrganizationId(orgId);
+
+        checkAddExist(form);
         customFormMapper.insert(form);
 
         // 保存 sys_module_form 使用相同的 ID, formKey 也使用 formId
@@ -224,6 +233,8 @@ public class CustomFormService {
         updateForm.setId(request.getId());
         updateForm.setName(request.getName());
         updateForm.setEnable(request.getEnable());
+
+        checkUpdateExist(updateForm);
         customFormMapper.update(updateForm);
 
         ModuleFormSaveRequest moduleFormRequest = new ModuleFormSaveRequest();
@@ -378,6 +389,31 @@ public class CustomFormService {
             return roles.stream().map(CustomFormRole::getCustomFormId).collect(Collectors.toSet());
         }
         return Set.of();
+    }
+
+    private void checkNameUnique(String name, String excludeFormId) {
+        LambdaQueryWrapper<CustomForm> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CustomForm::getName, name);
+        List<CustomForm> existForms = customFormMapper.selectListByLambda(wrapper);
+        if (CollectionUtils.isNotEmpty(existForms)) {
+            boolean conflict = existForms.stream()
+                    .anyMatch(f -> excludeFormId == null || !excludeFormId.equals(f.getId()));
+            if (conflict) {
+                throw new GenericException(Translator.get("custom.form.name.duplicate"));
+            }
+        }
+    }
+
+    private void checkAddExist(CustomForm customForm) {
+        if (extCustomFormMapper.checkAddExist(customForm)) {
+            throw new GenericException(Translator.get("custom.form.name.duplicate"));
+        }
+    }
+
+    private void checkUpdateExist(CustomForm customForm) {
+        if (StringUtils.isNotBlank(customForm.getName()) && extCustomFormMapper.checkUpdateExist(customForm)) {
+            throw new GenericException(Translator.get("custom.form.name.duplicate"));
+        }
     }
 
     private void createBuiltinRoles(String formId, String userId) {

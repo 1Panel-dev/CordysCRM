@@ -5,14 +5,11 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 ALTER TABLE contract MODIFY COLUMN start_time bigint NULL;
 ALTER TABLE contract MODIFY COLUMN end_time bigint NULL;
 
-INSERT INTO sys_module (id, organization_id, module_key, enable, pos, create_user, create_time, update_user, update_time)
-VALUES (UUID_SHORT(), '100001', 'customForm', 1, 9, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000);
-
-
 CREATE TABLE custom_form(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
     `enable` BIT(1) NOT NULL  DEFAULT 0 COMMENT '是否启用' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
     PRIMARY KEY (id)
 )  COMMENT = '自定义表单'
 ENGINE = InnoDB

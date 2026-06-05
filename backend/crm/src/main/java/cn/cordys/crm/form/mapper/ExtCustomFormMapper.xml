@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.form.mapper.ExtCustomFormMapper">
+    <select id="checkAddExist" resultType="java.lang.Boolean">
+        SELECT COUNT(1)
+        FROM custom_form
+        WHERE name = #{customForm.name}
+          and organization_id = #{customForm.organizationId} limit 1
+    </select>
+    <select id="checkUpdateExist" resultType="java.lang.Boolean">
+        SELECT COUNT(1)
+        FROM custom_form
+        WHERE name = #{customForm.name}
+          and organization_id = (select organization_id
+                                 from custom_form
+                                 where id = #{customForm.id})
+          and id != #{customForm.id} limit 1
+    </select>
+</mapper>
