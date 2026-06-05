@@ -3,7 +3,7 @@
     :id="props.fieldConfig.id"
     v-model:value="value"
     v-model:selected-rows="selectedRows"
-    :data-source-type="props.fieldConfig.dataSourceType"
+    :data-source-type="props.fieldConfig.dataSourceType as FieldDataSourceTypeEnum"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :rules="props.fieldConfig.rules as FieldRule[]"
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
@@ -19,7 +19,7 @@
   import { FieldRule } from 'vant';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDataSource from '@/components/business/crm-datasource/index.vue';

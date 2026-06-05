@@ -27,8 +27,14 @@
 
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { CustomFormItem } from '@lib/shared/models/customForm';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import {
+    getCustomDataSourceName,
+    getDataSourceFormKey,
+    isCustomDataSourceType,
+  } from '@/components/business/crm-data-source-select/utils';
   import { dataSourceFilterFormKeyMap } from '@/components/business/crm-form-create/config';
   import { DataSourceFilterCombine, FormCreateField } from '@/components/business/crm-form-create/types';
   import FilterContent from './filterContent.vue';
@@ -45,6 +51,7 @@
     fieldConfig: FormCreateField;
     formFields: FormCreateField[];
     formKey: FormDesignKeyEnum;
+    customDataSourceForms: CustomFormItem[];
   }>();
 
   const emit = defineEmits<{
@@ -59,14 +66,15 @@
   const formModel = ref<DataSourceFilterCombine>(
     cloneDeep(props.fieldConfig.combineSearch) || cloneDeep(defaultFormModel)
   );
-  const formKey = computed<FormDesignKeyEnum>(() => {
-    return dataSourceFilterFormKeyMap[
-      props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER
-    ] as FormDesignKeyEnum;
-  });
+  const dataSourceType = computed(() => props.fieldConfig.dataSourceType);
+  const isCustomForm = computed(() => isCustomDataSourceType(dataSourceType.value));
+  const formKey = computed<FormDesignKeyEnum>(
+    () => getDataSourceFormKey(dataSourceType.value, dataSourceFilterFormKeyMap, FormDesignKeyEnum.CUSTOMER)!
+  );
 
   const { fieldList, initFormConfig } = useFormCreateApi({
     formKey,
+    customFormId: computed(() => (isCustomForm.value ? dataSourceType.value : undefined)),
   });
   const systemSpecialFieldList = [
     {
@@ -127,11 +135,9 @@
 
   const dataIndexPlaceholder = computed(() => {
     return t('crmFormDesign.dataSourceFilterDataIndexPlaceholder', {
-      type: t(
-        `crmFormCreate.drawer.${
-          dataSourceFilterFormKeyMap[props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER]
-        }`
-      ),
+      type: isCustomForm.value
+        ? getCustomDataSourceName(dataSourceType.value, props.customDataSourceForms) || t('module.customForm')
+        : t(`crmFormCreate.drawer.${formKey.value}`),
     });
   });
 

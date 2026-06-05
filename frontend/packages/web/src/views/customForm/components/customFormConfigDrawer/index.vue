@@ -120,6 +120,7 @@
   const currentSourceId = ref('');
   const customFormName = ref('');
   const customFormEnable = ref(true);
+  provide('customFormSourceId', readonly(currentSourceId));
 
   const formKey = ref(FormDesignKeyEnum.CUSTOM_FORM);
   const { loading, fieldList, formConfig, unsaved, formDesignRef, checkRepeat, buildSavePayload, setFormConfigDetail } =

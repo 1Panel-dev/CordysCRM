@@ -73,6 +73,7 @@ export const {
   deleteCustomForm,
   enableCustomForm,
   disableCustomForm,
+  getCustomFormOptions,
 } = customFormApi;
 
 export const {
@@ -690,6 +691,7 @@ export const {
   getFieldDisplayList,
   getFieldBusinessTitleList,
   getDatasourceRefDetailList,
+  getFieldCustomFormList,
 } = moduleApi;
 
 export const {

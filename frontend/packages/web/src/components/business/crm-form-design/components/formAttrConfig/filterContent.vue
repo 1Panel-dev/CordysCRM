@@ -282,6 +282,7 @@
     DataSourceFilterCombine,
     DataSourceFilterItem,
     DataSourceMatchType,
+    DataSourceType,
     FormCreateField,
   } from '@/components/business/crm-form-create/types';
   import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
@@ -474,7 +475,7 @@
 
       if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(currentSelectedType)) {
         currentFieldProps.dataSourceProps = {
-          dataSourceType: field.dataSourceType as FieldDataSourceTypeEnum,
+          dataSourceType: field.dataSourceType as DataSourceType,
           maxTagCount: 'responsive',
         } as Partial<DataSourceProps>;
       }

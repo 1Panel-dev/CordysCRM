@@ -175,7 +175,7 @@
       icon: 'iconicon_target',
     },
     {
-      label: t('customForm'),
+      label: t('module.customForm'),
       key: ModuleConfigEnum.CUSTOM_FORM,
       icon: 'iconicon_form',
     },
