@@ -26,13 +26,17 @@ public enum ModuleKey {
      */
     PRODUCT("product"),
     /**
-     * 自定义表单
-     */
-    CUSTOM_FORM("customForm"),
-    /**
      * 系统设置
      */
     SETTING("setting");
+
+
+    /**
+     * *******************************************
+     * 注意：
+     *      新增菜单不要在moduleKey中添加了
+     * *******************************************
+     */
 
     private final String key;
 
