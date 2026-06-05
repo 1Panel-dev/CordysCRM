@@ -75,4 +75,11 @@ public class CustomFormController {
     public void setAdmins(@Validated @RequestBody CustomFormAdminBatchRequest request) {
         customFormService.setAdmins(request, SessionUtils.getUserId());
     }
+
+    @GetMapping("/admin/get/{customFormId}")
+    @Operation(summary = "查询表单管理员")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public List<OptionDTO> getAdmins(@PathVariable String customFormId) {
+        return customFormService.getAdmins(customFormId, SessionUtils.getUserId());
+    }
 }

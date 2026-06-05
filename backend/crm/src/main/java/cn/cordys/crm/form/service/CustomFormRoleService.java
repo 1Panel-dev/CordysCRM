@@ -74,14 +74,11 @@ public class CustomFormRoleService {
     }
 
     public void addUsers(CustomFormRoleUserBatchRequest request, String userId) {
-        CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getRoleId());
+        CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getCustomFormRoleId());
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
         }
-        if (!Objects.equals(role.getCustomFormId(), request.getCustomFormId())) {
-            throw new GenericException(Translator.get("custom.form.role.not.exist"));
-        }
-        checkFormAdmin(request.getCustomFormId(), userId);
+        checkFormAdmin(role.getCustomFormId(), userId);
 
         List<String> userIds = resolveUserIds(request);
         if (CollectionUtils.isEmpty(userIds)) {
@@ -89,8 +86,7 @@ public class CustomFormRoleService {
         }
 
         LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomFormRoleUser::getCustomFormId, request.getCustomFormId())
-                .eq(CustomFormRoleUser::getRoleId, request.getRoleId());
+        wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId());
         List<String> currentRoleUserIds = customFormRoleUserMapper.selectListByLambda(wrapper)
                 .stream()
                 .map(CustomFormRoleUser::getUserId)
@@ -101,8 +97,7 @@ public class CustomFormRoleService {
                 .map(uid -> {
                     CustomFormRoleUser roleUser = new CustomFormRoleUser();
                     roleUser.setId(IDGenerator.nextStr());
-                    roleUser.setCustomFormId(request.getCustomFormId());
-                    roleUser.setRoleId(request.getRoleId());
+                    roleUser.setRoleId(request.getCustomFormRoleId());
                     roleUser.setUserId(uid);
                     return roleUser;
                 }).toList();
@@ -113,7 +108,7 @@ public class CustomFormRoleService {
     }
 
     public void removeUsers(CustomFormRoleUserBatchRequest request, String userId) {
-        CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getRoleId());
+        CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getCustomFormRoleId());
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
         }
@@ -125,7 +120,7 @@ public class CustomFormRoleService {
 
         for (String uid : request.getUserIds()) {
             LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(CustomFormRoleUser::getRoleId, request.getRoleId()).eq(CustomFormRoleUser::getUserId, uid);
+            wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId()).eq(CustomFormRoleUser::getUserId, uid);
             customFormRoleUserMapper.deleteByLambda(wrapper);
         }
     }

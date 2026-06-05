@@ -10,12 +10,8 @@ import java.util.List;
 public class CustomFormRoleUserBatchRequest {
 
     @NotBlank
-    @Schema(description = "自定义表单ID")
-    private String customFormId;
-
-    @NotBlank
-    @Schema(description = "角色ID，CustomFormRoleKey")
-    private String roleId;
+    @Schema(description = "表单角色ID")
+    private String customFormRoleId;
 
     @Schema(description = "用户ID列表")
     private List<String> userIds;

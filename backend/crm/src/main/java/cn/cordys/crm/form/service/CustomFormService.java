@@ -19,6 +19,7 @@ import cn.cordys.crm.system.domain.ModuleFormBlob;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.common.dto.OptionDTO;
@@ -60,6 +61,8 @@ public class CustomFormService {
     private ModuleFormService moduleFormService;
     @Resource
     private ExtCustomFormDataMapper extCustomFormDataMapper;
+    @Resource
+    private ExtUserMapper extUserMapper;
 
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
@@ -122,6 +125,31 @@ public class CustomFormService {
 
         resp.setIsAdmin(isFormAdminUser(form.getId(), userId));
         return resp;
+    }
+
+    public List<OptionDTO> getAdmins(String formId, String userId) {
+        checkFormAccess(formId, userId);
+        return getAdminOptions(formId);
+    }
+
+    private List<OptionDTO> getAdminOptions(String formId) {
+        LambdaQueryWrapper<CustomFormAdmin> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CustomFormAdmin::getCustomFormId, formId);
+        List<CustomFormAdmin> admins = customFormAdminMapper.selectListByLambda(wrapper);
+        if (CollectionUtils.isEmpty(admins)) {
+            return Collections.emptyList();
+        }
+
+        List<String> userIds = admins.stream()
+                .map(CustomFormAdmin::getUserId)
+                .distinct()
+                .toList();
+        Map<String, String> userNameMap = new HashMap<>();
+        extUserMapper.selectUserOptionByIds(userIds)
+                .forEach(option -> userNameMap.putIfAbsent(option.getId(), option.getName()));
+        return userIds.stream()
+                .map(uid -> new OptionDTO(uid, userNameMap.get(uid)))
+                .toList();
     }
 
     public CustomForm create(CustomFormAddRequest request, String userId, String orgId) {
