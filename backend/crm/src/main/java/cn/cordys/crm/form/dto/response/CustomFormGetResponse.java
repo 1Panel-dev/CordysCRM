@@ -1,5 +1,6 @@
 package cn.cordys.crm.form.dto.response;
 
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.form.FormProp;
@@ -19,4 +20,7 @@ public class CustomFormGetResponse extends CustomForm {
 
     @Schema(description = "表单属性")
     private FormProp formProp;
+
+    @Schema(description = "管理员列表")
+    private List<OptionDTO> admins;
 }

@@ -104,6 +104,8 @@ public class CustomFormControllerTests extends BaseTest {
         assertNotNull(response);
         assertEquals(createdFormId, response.getId());
         assertEquals("测试自定义表单", response.getName());
+        assertNotNull(response.getAdmins());
+        assertTrue(response.getAdmins().stream().anyMatch(admin -> "admin".equals(admin.getId())));
     }
 
     @Test
@@ -151,8 +153,7 @@ public class CustomFormControllerTests extends BaseTest {
         prepareUserDeptAndRoleData();
 
         CustomFormRoleUserBatchRequest request = new CustomFormRoleUserBatchRequest();
-        request.setCustomFormId(createdFormId);
-        request.setRoleId(roleId);
+        request.setCustomFormRoleId(roleId);
         request.setUserIds(List.of("cf-role-direct-user"));
         request.setDeptIds(List.of("cf-role-test-dept"));
         request.setRoleIds(List.of("cf-role-test-system-role"));
@@ -217,14 +218,12 @@ public class CustomFormControllerTests extends BaseTest {
 
     private void assertRoleUsers(String roleId, String... expectedUserIds) {
         LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomFormRoleUser::getCustomFormId, createdFormId)
-                .eq(CustomFormRoleUser::getRoleId, roleId);
+        wrapper.eq(CustomFormRoleUser::getRoleId, roleId);
         List<CustomFormRoleUser> roleUsers = customFormRoleUserMapper.selectListByLambda(wrapper);
         Set<String> actualUserIds = new HashSet<>(roleUsers
                 .stream()
                 .map(CustomFormRoleUser::getUserId)
                 .toList());
         assertEquals(Set.of(expectedUserIds), actualUserIds);
-        assertTrue(roleUsers.stream().allMatch(roleUser -> createdFormId.equals(roleUser.getCustomFormId())));
     }
 }
