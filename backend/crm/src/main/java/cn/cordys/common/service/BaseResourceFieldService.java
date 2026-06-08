@@ -17,6 +17,7 @@ import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.form.service.CustomFormDataFieldService;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.dto.field.DatasourceField;
@@ -527,7 +528,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         Map<String, BaseField> fieldConfigMap = fields.stream()
                 .collect(Collectors.toMap(BaseField::getId, f -> f, (prev, next) -> next));
 
-        Map<FieldSourceType, List<String>> idsToFetch = new HashMap<>();
+        // 按照数据源类型来分组
+        Map<String, List<String>> idsToFetch = new HashMap<>(FieldSourceType.values().length);
         for (Object detail : details) {
             Map<String, Object> detailMap = JSON.MAPPER.convertValue(detail, Map.class);
             for (BaseField bsf : sourceBusinessFields) {
@@ -537,16 +539,28 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         SourceDetailResolveContext.getSourceMap().containsKey(val.toString())) {
                     continue;
                 }
-                FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-                idsToFetch.computeIfAbsent(sourceType, k -> new ArrayList<>()).add(val.toString());
+                String dataSourceType = sourceField.getDataSourceType();
+                idsToFetch.computeIfAbsent(dataSourceType, k -> new ArrayList<>()).add(val.toString());
             }
         }
 
         SourceDetailResolveContext.start();
 
-        idsToFetch.forEach((sourceType, ids) -> {
+        idsToFetch.forEach((dataSourceType, ids) -> {
             List<String> uniqueIds = ids.stream().distinct().collect(Collectors.toList());
-            List<Object> sourceObjList = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, uniqueIds);
+            List<Object> sourceObjList;
+            FieldSourceType sourceType = FieldSourceType.safeValueOf(dataSourceType);
+            if (sourceType == FieldSourceType.CUSTOM_FORM) {
+                // 自定义表单：设置 formId 到 ThreadLocal
+                try {
+                    CustomFormDataFieldService.setFormKey(dataSourceType);
+                    sourceObjList = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, uniqueIds);
+                } finally {
+                    CustomFormDataFieldService.clearFormKey();
+                }
+            } else {
+                sourceObjList = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, uniqueIds);
+            }
             if (CollectionUtils.isNotEmpty(sourceObjList)) {
                 sourceObjList.stream()
                         .filter(Objects::nonNull)
@@ -1011,8 +1025,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         (prev, next) -> next
                 ));
 
-        // 按数据源类型分组
-        Map<FieldSourceType, List<String>> groupedIds = new HashMap<>(FieldSourceType.values().length);
+        // 按照数据源类型分组
+        Map<String, List<String>> groupedIds = new HashMap<>(FieldSourceType.values().length);
         resourceFields.stream()
                 .filter(rf -> sourceIdType.containsKey(rf.getFieldId()) && rf.getFieldValue() != null)
                 .forEach(rf -> {
@@ -1020,16 +1034,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     if (SourceDetailResolveContext.contains(value)) {
                         return;
                     }
-                    try {
-                        FieldSourceType sourceType = FieldSourceType.valueOf(sourceIdType.get(rf.getFieldId()));
-                        groupedIds.computeIfAbsent(sourceType, k -> new ArrayList<>()).add(value);
-                    } catch (Exception e) {
-                        log.error("获取数据源类型异常: {}", e.getMessage());
-                    }
+                    groupedIds.computeIfAbsent(sourceIdType.get(rf.getFieldId()), k -> new ArrayList<>()).add(value);
                 });
 
-        // 批量查询每个类型的数据源详情 (最多N次, N为数据源类型数量)
-        groupedIds.forEach((sourceType, ids) -> {
+        // 批量查询每个类型的数据源详情
+        groupedIds.forEach((dataSourceType, ids) -> {
             if (CollectionUtils.isEmpty(ids)) {
                 return;
             }
@@ -1039,7 +1048,19 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             distinctIds.forEach(SourceDetailResolveContext::putPlaceholder);
 
             // 批量查询
-            List<Object> details = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, distinctIds);
+            FieldSourceType sourceType = FieldSourceType.safeValueOf(dataSourceType);
+            List<Object> details;
+            if (sourceType == FieldSourceType.CUSTOM_FORM) {
+                // 自定义表单：设置form_key作为上下文
+                try {
+                    CustomFormDataFieldService.setFormKey(dataSourceType);
+                    details = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, distinctIds);
+                } finally {
+                    CustomFormDataFieldService.clearFormKey();
+                }
+            } else {
+                details = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, distinctIds);
+            }
             if (CollectionUtils.isEmpty(details)) {
                 return;
             }

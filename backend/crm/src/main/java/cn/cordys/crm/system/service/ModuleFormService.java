@@ -26,6 +26,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.BusinessTitleConstants;
+import cn.cordys.crm.form.service.CustomFormDataFieldService;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.*;
@@ -514,11 +515,6 @@ public class ModuleFormService {
 
     private OptionMetadata collectOptionMetadata(ModuleFormConfigDTO formConfig) {
         var allFields = flattenFormAllFields(formConfig);
-        var showFields = allFields.stream()
-                .filter(f -> f instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
-                .flatMap(f -> ((DatasourceField) f).getShowFields().stream().map(sf -> f.getId() + REF_UNDERLINE + sf))
-                .distinct()
-                .toList();
         var staticOptions = new HashMap<String, List<OptionDTO>>(4);
         var idTypeMap = new HashMap<String, String>(8);
         for (var field : allFields) {
@@ -2062,20 +2058,6 @@ public class ModuleFormService {
     }
 
     /**
-     * 获取选项Key
-     *
-     * @param showFields 显示字段
-     * @param baseField  字段配置
-     * @return 字段唯一Key
-     */
-    private String getOptionKey(List<String> showFields, BaseField baseField) {
-        if (showFields.contains(baseField.getId())) {
-            return baseField.getId();
-        }
-        return baseField.idOrBusinessKey();
-    }
-
-    /**
      * 业务Key => 字段ID (子字段)
      *
      * @param fieldValues 自定义字段值
@@ -2140,8 +2122,19 @@ public class ModuleFormService {
             // 数据源字段（普通字段）
             if (sourceConfigMap.containsKey(fieldId)) {
                 final DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(fieldId);
-                final FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-                final Object detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, fv.getFieldValue().toString());
+                final FieldSourceType sourceType = FieldSourceType.safeValueOf(sourceField.getDataSourceType());
+				final Object detail;
+				if (sourceType == FieldSourceType.CUSTOM_FORM) {
+					// 自定义表单：设置 formId 到 ThreadLocal
+					try {
+						CustomFormDataFieldService.setFormKey(sourceField.getDataSourceType());
+						detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, fv.getFieldValue().toString());
+					} finally {
+						CustomFormDataFieldService.clearFormKey();
+					}
+				} else {
+					detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, fv.getFieldValue().toString());
+				}
                 if (detail == null) {
                     return;
                 }
@@ -2168,11 +2161,19 @@ public class ModuleFormService {
                         }
 
                         final DatasourceField sourceField = (DatasourceField) sourceConfigMap.get(k);
-                        final FieldSourceType sourceType = FieldSourceType.valueOf(sourceField.getDataSourceType());
-                        final Object detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, v.toString());
-                        if (detail == null) {
-                            return;
-                        }
+                        final FieldSourceType sourceType = FieldSourceType.safeValueOf(sourceField.getDataSourceType());
+						final Object detail;
+						if (sourceType == FieldSourceType.CUSTOM_FORM) {
+							// 自定义表单：设置 formId 到 ThreadLocal
+							try {
+								CustomFormDataFieldService.setFormKey(sourceField.getDataSourceType());
+								detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, fv.getFieldValue().toString());
+							} finally {
+								CustomFormDataFieldService.clearFormKey();
+							}
+						} else {
+							detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, fv.getFieldValue().toString());
+						}
 
                         final Map<String, Object> detailMap = JSON.MAPPER.convertValue(detail, Map.class);
                         if (MapUtils.isEmpty(detailMap)) {
