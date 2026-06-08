@@ -1415,15 +1415,7 @@ public class ApprovalFlowService {
             return List.of();
         }
 
-        // 根据方向截取：BOTTOM_UP 取前 approvalLevel 个；TOP_DOWN 取到从顶往下第 approvalLevel 层
-        List<String> resultIds;
-        if (direction == ApproverDirectionEnum.TOP_DOWN) {
-            int total = allSuperiorIds.size();
-            int endExclusive = total - approvalLevel + 1;
-            resultIds = allSuperiorIds.subList(0, endExclusive);
-        } else {
-            resultIds = allSuperiorIds.subList(0, approvalLevel);
-        }
+        List<String> resultIds = getLevelUserIds(allSuperiorIds, approvalLevel, direction);
 
         return resolveMemberApprovers(orgId, resultIds);
     }
@@ -1522,17 +1514,24 @@ public class ApprovalFlowService {
             return List.of();
         }
 
-        // 根据方向截取：BOTTOM_UP 取前 approvalLevel 个；TOP_DOWN 取到从顶往下第 approvalLevel 层
-        List<String> resultIds;
-        if (direction == ApproverDirectionEnum.TOP_DOWN) {
-            int total = allCommanderIds.size();
-            int endExclusive = total - approvalLevel + 1;
-            resultIds = allCommanderIds.subList(0, endExclusive);
-        } else {
-            resultIds = allCommanderIds.subList(0, approvalLevel);
-        }
+        List<String> resultIds = getLevelUserIds(allCommanderIds, approvalLevel, direction);
 
         return resolveMemberApprovers(orgId, resultIds);
+    }
+
+    private List<String> getLevelUserIds(List<String> bottomUpUserIds, int approvalLevel, ApproverDirectionEnum direction) {
+        if (CollectionUtils.isEmpty(bottomUpUserIds) || approvalLevel <= 0 || approvalLevel > bottomUpUserIds.size()) {
+            return List.of();
+        }
+        List<String> levelUserIds;
+        if (direction == ApproverDirectionEnum.TOP_DOWN) {
+            List<String> topDownUserIds = new ArrayList<>(bottomUpUserIds);
+            Collections.reverse(topDownUserIds);
+            levelUserIds = topDownUserIds.subList(0, approvalLevel);
+        } else {
+            levelUserIds = bottomUpUserIds.subList(0, approvalLevel);
+        }
+        return levelUserIds.stream().filter(StringUtils::isNotBlank).toList();
     }
 
     private List<String> getAllDeptCommanderIds(String orgId, String departmentId) {
@@ -1540,11 +1539,13 @@ public class ApprovalFlowService {
         String currentDepartmentId = departmentId;
 
         while (StringUtils.isNotBlank(currentDepartmentId)) {
-            String commanderId = getDeptCommander(orgId, currentDepartmentId);
-            if (StringUtils.isNotBlank(commanderId)) {
-                allCommanderIds.add(commanderId);
+            Department department = departmentBaseMapper.selectByPrimaryKey(currentDepartmentId);
+            if (department == null) {
+                break;
             }
-            currentDepartmentId = getParentDepartmentId(currentDepartmentId);
+            String commanderId = getDeptCommander(orgId, currentDepartmentId);
+            allCommanderIds.add(commanderId);
+            currentDepartmentId = department.getParentId();
         }
         return allCommanderIds;
     }
