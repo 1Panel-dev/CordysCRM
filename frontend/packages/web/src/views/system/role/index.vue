@@ -11,12 +11,10 @@
                   v-permission="['SYSTEM_ROLE:ADD']"
                   type="primary"
                   ghost
-                  class="n-btn-outline-primary px-[7px]"
+                  class="n-btn-outline-primary p-[8px]"
                   @click="addRole"
                 >
-                  <template #icon>
-                    <n-icon><Add /></n-icon>
-                  </template>
+                  <CrmIcon type="iconicon_add" :size="16" />
                 </n-button>
               </template>
               {{ t('role.addRole') }}

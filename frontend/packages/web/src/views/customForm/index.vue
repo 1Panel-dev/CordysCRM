@@ -5,8 +5,14 @@
         <div class="h-full p-[24px]">
           <div class="mb-[8px] flex w-full items-center gap-[8px]">
             <CrmSearchInput v-model:value="keyword" class="flex-1" />
-            <n-button v-permission="['CUSTOM_FORM:ADD']" type="primary" class="p-[8px]" ghost @click="addForm">
-              <CrmIcon type="iconicon_add" />
+            <n-button
+              v-permission="['CUSTOM_FORM:ADD']"
+              type="primary"
+              class="n-btn-outline-primary p-[8px]"
+              ghost
+              @click="addForm"
+            >
+              <CrmIcon type="iconicon_add" :size="16" />
             </n-button>
           </div>
           <n-empty
@@ -64,7 +70,6 @@
   import type { CustomFormItem } from '@lib/shared/models/customForm.js';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
-  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type.js';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
