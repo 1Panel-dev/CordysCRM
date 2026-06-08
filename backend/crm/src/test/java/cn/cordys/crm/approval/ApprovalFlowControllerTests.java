@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval;
 
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.domain.BaseModel;
 import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
@@ -9,7 +10,12 @@ import cn.cordys.crm.approval.dto.response.ApprovalFlowByFormTypeResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse;
 import cn.cordys.crm.approval.dto.response.StatusPermissionSettingResponse;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.base.BaseTest;
+import cn.cordys.crm.system.domain.Department;
+import cn.cordys.crm.system.domain.DepartmentCommander;
+import cn.cordys.crm.system.domain.OrganizationUser;
+import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -46,6 +52,16 @@ class ApprovalFlowControllerTests extends BaseTest {
     private BaseMapper<ApprovalNodeApprover> approvalNodeApproverMapper;
     @Resource
     private BaseMapper<ApprovalNodeLink> approvalNodeLinkMapper;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
+    @Resource
+    private BaseMapper<Department> departmentMapper;
+    @Resource
+    private BaseMapper<DepartmentCommander> departmentCommanderMapper;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserMapper;
+    @Resource
+    private BaseMapper<User> userMapper;
 
     @Override
     protected String getBasePath() {
@@ -582,5 +598,135 @@ class ApprovalFlowControllerTests extends BaseTest {
         ApprovalFlowByFormTypeResponse response2 = getResultData(mvcResult, ApprovalFlowByFormTypeResponse.class);
 
         Assertions.assertNull(response2);
+    }
+
+    @Test
+    @Order(11)
+    void testResolveMultipleDeptHeadApproversWithDirection() {
+        prepareMultipleDeptHeadData();
+
+        List<User> bottomUpApprovers = approvalFlowService.resolveApprovers(
+                "amd_submit_user",
+                DEFAULT_ORGANIZATION_ID,
+                ApproverTypeEnum.MULTIPLE_DEPT_HEAD,
+                List.of("2"),
+                ApproverDirectionEnum.BOTTOM_UP
+        );
+        Assertions.assertEquals(List.of("amd_child_head", "amd_parent_head"),
+                bottomUpApprovers.stream().map(User::getId).toList());
+
+        List<User> topDownApprovers = approvalFlowService.resolveApprovers(
+                "amd_submit_user",
+                DEFAULT_ORGANIZATION_ID,
+                ApproverTypeEnum.MULTIPLE_DEPT_HEAD,
+                List.of("2"),
+                ApproverDirectionEnum.TOP_DOWN
+        );
+        Assertions.assertEquals(List.of("amd_root_head", "amd_parent_head"),
+                topDownApprovers.stream().map(User::getId).toList());
+    }
+
+    @Test
+    @Order(12)
+    void testResolveMultipleDeptHeadApproversShouldKeepEmptyDepartmentLevel() {
+        prepareMultipleDeptHeadDataWithoutChildCommander();
+
+        List<User> approvers = approvalFlowService.resolveApprovers(
+                "amd2_submit_user",
+                DEFAULT_ORGANIZATION_ID,
+                ApproverTypeEnum.MULTIPLE_DEPT_HEAD,
+                List.of("2"),
+                ApproverDirectionEnum.BOTTOM_UP
+        );
+
+        Assertions.assertEquals(List.of("amd2_parent_head"), approvers.stream().map(User::getId).toList());
+    }
+
+    private void prepareMultipleDeptHeadData() {
+        insertDepartment("amd_root", "审批测试根部门", "0");
+        insertDepartment("amd_parent", "审批测试父部门", "amd_root");
+        insertDepartment("amd_child", "审批测试子部门", "amd_parent");
+
+        insertUser("amd_child_head", "子部门负责人");
+        insertUser("amd_parent_head", "父部门负责人");
+        insertUser("amd_root_head", "根部门负责人");
+        insertUser("amd_submit_user", "部门负责人提交人");
+
+        insertOrganizationUser("amd_child_head-org", "amd_child_head", "amd_child");
+        insertOrganizationUser("amd_parent_head-org", "amd_parent_head", "amd_parent");
+        insertOrganizationUser("amd_root_head-org", "amd_root_head", "amd_root");
+        insertOrganizationUser("amd_submit_org", "amd_submit_user", "amd_child");
+
+        insertDepartmentCommander("amd_child-commander", "amd_child", "amd_child_head");
+        insertDepartmentCommander("amd_parent-commander", "amd_parent", "amd_parent_head");
+        insertDepartmentCommander("amd_root-commander", "amd_root", "amd_root_head");
+    }
+
+    private void prepareMultipleDeptHeadDataWithoutChildCommander() {
+        insertDepartment("amd2_root", "审批测试根部门2", "0");
+        insertDepartment("amd2_parent", "审批测试父部门2", "amd2_root");
+        insertDepartment("amd2_child", "审批测试子部门2", "amd2_parent");
+
+        insertUser("amd2_parent_head", "父部门负责人2");
+        insertUser("amd2_root_head", "根部门负责人2");
+        insertUser("amd2_submit_user", "部门负责人提交人2");
+
+        insertOrganizationUser("amd2_parent_head-org", "amd2_parent_head", "amd2_parent");
+        insertOrganizationUser("amd2_root_head-org", "amd2_root_head", "amd2_root");
+        insertOrganizationUser("amd2_submit_org", "amd2_submit_user", "amd2_child");
+
+        insertDepartmentCommander("amd2_parent-cmd", "amd2_parent", "amd2_parent_head");
+        insertDepartmentCommander("amd2_root-cmd", "amd2_root", "amd2_root_head");
+    }
+
+    private void insertDepartment(String id, String name, String parentId) {
+        Department department = new Department();
+        department.setId(id);
+        department.setName(name);
+        department.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        department.setParentId(parentId);
+        department.setPos(1L);
+        department.setResource("TEST");
+        department.setResourceId(id + "-resource");
+        setAuditFields(department);
+        departmentMapper.insert(department);
+    }
+
+    private void insertDepartmentCommander(String id, String departmentId, String userId) {
+        DepartmentCommander commander = new DepartmentCommander();
+        commander.setId(id);
+        commander.setDepartmentId(departmentId);
+        commander.setUserId(userId);
+        setAuditFields(commander);
+        departmentCommanderMapper.insert(commander);
+    }
+
+    private void insertOrganizationUser(String id, String userId, String departmentId) {
+        OrganizationUser organizationUser = new OrganizationUser();
+        organizationUser.setId(id);
+        organizationUser.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        organizationUser.setDepartmentId(departmentId);
+        organizationUser.setUserId(userId);
+        organizationUser.setEnable(true);
+        setAuditFields(organizationUser);
+        organizationUserMapper.insert(organizationUser);
+    }
+
+    private void insertUser(String id, String name) {
+        User user = new User();
+        user.setId(id);
+        user.setName(name);
+        user.setPassword("123456");
+        user.setGender(false);
+        setAuditFields(user);
+        userMapper.insert(user);
+    }
+
+    private void setAuditFields(BaseModel model) {
+        long now = System.currentTimeMillis();
+        model.setCreateUser("admin");
+        model.setUpdateUser("admin");
+        model.setCreateTime(now);
+        model.setUpdateTime(now);
     }
 }
