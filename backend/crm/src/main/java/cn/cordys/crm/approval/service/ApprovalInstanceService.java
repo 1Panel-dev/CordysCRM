@@ -426,6 +426,10 @@ public class ApprovalInstanceService {
 		}
 		List<ApprovalNodeApproverResponse> nodes = approvalFlowService.getInstanceCurrentFollowNode(instance, currentOrgId);
 		return nodes.stream().map(node -> {
+			if (ApprovalTypeEnum.valueOf(node.getApprovalType()) == ApprovalTypeEnum.AUTO_PASS || ApprovalTypeEnum.valueOf(node.getApprovalType()) == ApprovalTypeEnum.AUTO_REJECT) {
+				// 自动节点没有审批人
+				node.setApproverList(new ArrayList<>());
+			}
 			List<ApprovalTaskNode> taskNodes = new ArrayList<>(node.getApproverList().stream().map(approver -> {
 				ApprovalTaskNode taskNode = ApprovalTaskNode.builder().taskId(IDGenerator.nextStr()).approverId(approver).approvalStatus(ApprovalStatus.PENDING.name()).build();
 				if (simpleUserMap.containsKey(approver)) {
