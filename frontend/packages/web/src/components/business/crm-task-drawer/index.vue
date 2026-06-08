@@ -14,7 +14,12 @@
                 v-for="child in item.children"
                 class="task-item"
                 :class="{ 'task-item--active': activeTaskType === child.name }"
-                @click="activeTaskType = child.name"
+                @click="
+                  () => {
+                    activeTaskType = child.name;
+                    selectedKeys = [];
+                  }
+                "
               >
                 {{ child.title }}
                 <div v-if="item.name === 'pending'" class="task-count">{{ child.count }}</div>
