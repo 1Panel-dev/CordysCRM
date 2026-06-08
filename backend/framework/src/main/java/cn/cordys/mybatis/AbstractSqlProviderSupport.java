@@ -34,7 +34,8 @@ public abstract class AbstractSqlProviderSupport {
 
     /**
      * 动态生成更新 SQL 的方法。
-     * * @return 更新 SQL 脚本
+     *
+     * @return 更新 SQL 脚本
      */
     public String updateSQL() {
         StringBuilder sql = new StringBuilder();

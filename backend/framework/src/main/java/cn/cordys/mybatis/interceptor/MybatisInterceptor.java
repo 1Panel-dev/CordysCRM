@@ -59,28 +59,22 @@ public class MybatisInterceptor implements Interceptor {
 
         // 执行目标方法
         Object returnValue = invocation.proceed();
-        Object result = returnValue;
 
         // 对查询结果进行解密处理
-        if (returnValue instanceof ArrayList<?>) {
-            List<Object> list = new ArrayList<>();
-            boolean isDecrypted = false;
-            for (Object val : (ArrayList<?>) returnValue) {
-                Object a = undo(val);
-                if (a != val) {
-                    isDecrypted = true;
-                    list.add(a);
-                } else {
-                    break;
+        if (returnValue instanceof ArrayList<?> list) {
+            List<Object> decryptedList = new ArrayList<>(list.size());
+            boolean anyDecrypted = false;
+            for (Object val : list) {
+                Object decrypted = undo(val);
+                if (decrypted != val) {
+                    anyDecrypted = true;
                 }
+                decryptedList.add(decrypted);
             }
-            if (isDecrypted) {
-                result = list;
-            }
+            return anyDecrypted ? decryptedList : returnValue;
         } else {
-            result = undo(returnValue);
+            return undo(returnValue);
         }
-        return result;
     }
 
     /**
@@ -91,42 +85,44 @@ public class MybatisInterceptor implements Interceptor {
      * @return 对象的配置信息
      */
     private Map<String, Map<String, MybatisInterceptorConfig>> getConfig(Object p) {
-        Map<String, Map<String, MybatisInterceptorConfig>> result = new HashMap<>();
         if (p == null) {
             return null;
         }
 
         String pClassName = p.getClass().getName();
-        if (interceptorConfigMap.get(pClassName) != null) {
-            return interceptorConfigMap.get(pClassName);
+        Map<String, Map<String, MybatisInterceptorConfig>> cached = interceptorConfigMap.get(pClassName);
+        if (cached != null) {
+            return cached;
         }
 
-        for (MybatisInterceptorConfig interceptorConfig : interceptorConfigList) {
-            String className = interceptorConfig.getModelName();
-            String attrName = interceptorConfig.getAttrName();
-            if (StringUtils.isNotBlank(className)) {
-                Class<?> c = classMap.get(className);
-                if (c == null) {
-                    try {
-                        c = Class.forName(className);
-                        classMap.put(className, c);
-                    } catch (ClassNotFoundException e) {
-                        continue;
-                    }
-                }
-                if (c.isInstance(p)) {
-                    result.computeIfAbsent(attrName, k -> new HashMap<>());
-                    if (StringUtils.isNotBlank(interceptorConfig.getInterceptorMethod())) {
-                        result.get(attrName).put(Methods.encrypt.name(), interceptorConfig);
-                    }
-                    if (StringUtils.isNotBlank(interceptorConfig.getInterceptorMethod())) {
-                        result.get(attrName).put(Methods.decrypt.name(), interceptorConfig);
+        return interceptorConfigMap.computeIfAbsent(pClassName, k -> {
+            Map<String, Map<String, MybatisInterceptorConfig>> result = new HashMap<>();
+            for (MybatisInterceptorConfig interceptorConfig : interceptorConfigList) {
+                String className = interceptorConfig.getModelName();
+                String attrName = interceptorConfig.getAttrName();
+                if (StringUtils.isNotBlank(className)) {
+                    Class<?> c = classMap.computeIfAbsent(className, cn -> {
+                        try {
+                            return Class.forName(cn);
+                        } catch (ClassNotFoundException e) {
+                            return null;
+                        }
+                    });
+                    if (c != null && c.isInstance(p)) {
+                        Map<String, MybatisInterceptorConfig> methods = result.computeIfAbsent(attrName, a -> new HashMap<>());
+                        if (StringUtils.isNotBlank(interceptorConfig.getInterceptorMethod())
+                                && StringUtils.isNotBlank(interceptorConfig.getInterceptorClass())) {
+                            methods.put(Methods.encrypt.name(), interceptorConfig);
+                        }
+                        if (StringUtils.isNotBlank(interceptorConfig.getUndoMethod())
+                                && StringUtils.isNotBlank(interceptorConfig.getUndoClass())) {
+                            methods.put(Methods.decrypt.name(), interceptorConfig);
+                        }
                     }
                 }
             }
-        }
-        interceptorConfigMap.put(pClassName, result);
-        return result;
+            return result;
+        });
     }
 
     /**

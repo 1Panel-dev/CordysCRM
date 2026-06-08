@@ -177,6 +177,9 @@ public interface BaseMapper<E> {
      * @return 查询到的实体列表
      */
     default List<E> selectByIds(@Param("array") Serializable[] ids) {
+        if (ids == null || ids.length == 0) {
+            return List.of();
+        }
         return selectByColumn("id", ids);
     }
 
