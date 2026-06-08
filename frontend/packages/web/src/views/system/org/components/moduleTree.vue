@@ -12,12 +12,10 @@
       v-permission="['SYS_ORGANIZATION:ADD']"
       type="primary"
       ghost
-      class="n-btn-outline-primary px-[7px]"
+      class="n-btn-outline-primary p-[8px]"
       @click="addDepart"
     >
-      <template #icon>
-        <n-icon><Add /></n-icon>
-      </template>
+      <CrmIcon type="iconicon_add" :size="16" />
     </n-button>
   </div>
   <CrmTree
@@ -59,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NIcon, NInput, NTooltip, useMessage } from 'naive-ui';
+  import { NButton, NIcon, NInput, useMessage } from 'naive-ui';
   import { Add, Search } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -275,17 +273,13 @@
         NButton,
         {
           type: 'primary',
-          size: 'small',
-          bordered: false,
-          class: `crm-suffix-btn !p-[4px] ml-[4px] h-[24px] h-[24px]  mr-[4px] rounded`,
+          size: 'tiny',
+          ghost: true,
+          class: 'n-btn-outline-primary h-[20px] px-[3px]',
           onClick: () => handleAdd(option),
         },
-        () => {
-          return h(CrmIcon, {
-            size: 18,
-            type: 'iconicon_add',
-            class: `text-[var(--primary-8)] hover:text-[var(--primary-8)]`,
-          });
+        {
+          icon: () => h(NIcon, {}, { default: () => h(Add) }),
         }
       );
     }

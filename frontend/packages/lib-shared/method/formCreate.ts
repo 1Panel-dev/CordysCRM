@@ -456,8 +456,10 @@ export function transformData({
         // 单选
         customFieldAttr[field.fieldId] = field.fieldValue !== '' ? [t('common.optionNotExist')] : ['-'];
       } else {
-        // 多选
-        customFieldAttr[field.fieldId] = field.fieldValue?.map((e) => (e !== '' ? [t('common.optionNotExist')] : '-'));
+        // 避免这里返回 [['选项不存在']] 这样的嵌套数组
+        customFieldAttr[field.fieldId] = field.fieldValue?.map((e) =>
+          e !== '' ? t('common.optionNotExist') : '-'
+        );
       }
     } else {
       // 其他类型字段，直接赋值

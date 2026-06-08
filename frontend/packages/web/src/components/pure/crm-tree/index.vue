@@ -81,7 +81,7 @@
       selectable?: boolean; // 是否可选中
       nodeMoreActions?: ActionsItem[]; // 节点展示在省略号按钮内的更多操作
       multiple?: boolean; // 是否允许多选
-      nodeMoreActionSize?: 'medium' | 'mini' | 'small' | 'large'; // 更多操作按钮大小
+      nodeMoreActionSize?: 'tiny' | 'small' | 'medium' | 'large'; // 更多操作按钮大小
       emptyText?: string; // 空数据时的文案
       checkable?: boolean; // 是否可选中
       checkStrategy?: 'all' | 'parent' | 'child'; // 选中节点时的策略
@@ -129,6 +129,7 @@
         disabledField: 'disabled',
       }),
       multiple: false,
+      nodeMoreActionSize: 'tiny',
       disabledTitleTooltip: false,
       blockLine: true,
       cancelable: false,
@@ -301,7 +302,7 @@
 
   function renderSuffixDom(info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     const { option, checked, selected } = info;
-    if (option.hideMoreAction || editingKey.value === option[props.fieldNames.keyField]) {
+    if (option.hideMoreAction || editingKey.value) {
       return null;
     }
 
@@ -319,7 +320,7 @@
       filteredActions.length > 0
         ? h(CrmMoreAction, {
             options: filteredActions,
-            size: 'tiny',
+            size: props.nodeMoreActionSize,
             onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
             onUpdateShow: (show: boolean) => {
               focusNodeKeys.value.clear();
@@ -601,8 +602,6 @@
                 gap: 4px;
                 @apply invisible flex w-0 items-center;
                 .crm-suffix-btn {
-                  width: 24px;
-                  height: 24px;
                   background-color: var(--primary-7);
                   @apply flex items-center justify-center;
                   &:hover {
