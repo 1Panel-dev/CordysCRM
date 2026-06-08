@@ -12,5 +12,5 @@ public class CustomFormRoleUserPageRequest extends BasePageRequest {
 
     @NotBlank
     @Schema(description = "自定义表单角色ID")
-    private String roleId;
+    private String customFormRoleId;
 }

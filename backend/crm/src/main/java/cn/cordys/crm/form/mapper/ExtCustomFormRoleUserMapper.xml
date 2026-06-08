@@ -16,7 +16,7 @@
         left join sys_organization_user sou on su.id = sou.user_id and sou.organization_id = #{orgId}
         left join sys_department sd on sou.department_id = sd.id
         <where>
-            cfru.role_id = #{request.roleId}
+            cfru.role_id = #{request.customFormRoleId}
             <if test="request.keyword != null and request.keyword != ''">
                 and su.name like concat('%', #{request.keyword}, '%')
             </if>
