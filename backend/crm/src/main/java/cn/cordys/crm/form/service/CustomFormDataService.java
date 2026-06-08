@@ -157,6 +157,9 @@ public class CustomFormDataService {
             ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(data.getCustomFormId(), orgId);
             List<BaseModuleFieldValue> moduleFields = customFormDataFieldService.getModuleFieldValuesByResourceId(id);
             Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(formConfig, moduleFields);
+            optionMap.put(BusinessModuleField.CUSTOM_FORM_DATA_OWNER.getBusinessKey(),
+                    moduleFormService.getBusinessFieldOption(List.of(resp),
+                            CustomFormDataGetResponse::getOwner, CustomFormDataGetResponse::getOwnerName));
             moduleFormService.processBusinessFieldValues(resp, moduleFields, formConfig);
             resp.setAttachmentMap(moduleFormService.getAttachmentMap(formConfig, moduleFields));
             resp.setOptionMap(optionMap);

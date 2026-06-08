@@ -1,5 +1,10 @@
 package cn.cordys.crm.form.service;
 
+import cn.cordys.aspectj.annotation.OperationLog;
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
@@ -167,6 +172,7 @@ public class CustomFormService {
                 .toList();
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.ADD, resourceName = "{#request.name}")
     public CustomForm create(CustomFormAddRequest request, String userId, String orgId) {
         checkNameUnique(request.getName(), null);
         String formId = IDGenerator.nextStr();
@@ -185,6 +191,13 @@ public class CustomFormService {
         checkAddExist(form);
         customFormMapper.insert(form);
 
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(formId)
+                        .modifiedValue(form)
+                        .build()
+        );
+
         // 保存 sys_module_form 使用相同的 ID, formKey 也使用 formId
         ModuleForm moduleForm = new ModuleForm();
         moduleForm.setId(formId);
@@ -202,6 +215,9 @@ public class CustomFormService {
         FormProp formProp = getFormPropForCreate(request.getFormProp());
         formBlob.setProp(JSON.toJSONString(formProp));
         moduleFormBlobMapper.insert(formBlob);
+
+        // 校验字段
+        moduleFormService.preCheckForFieldSave(formId, request.getFields());
 
         // 保存字段
         moduleFormService.saveFields(request.getFields(), form.getId(), userId);
@@ -235,6 +251,7 @@ public class CustomFormService {
         return createFormProp;
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void update(CustomFormUpdateRequest request, String userId, String orgId) {
         checkFormAdmin(request.getId(), userId);
         CustomForm originForm = customFormMapper.selectByPrimaryKey(request.getId());
@@ -251,14 +268,25 @@ public class CustomFormService {
         checkUpdateExist(updateForm);
         customFormMapper.update(updateForm);
 
+        CustomForm modifiedForm = customFormMapper.selectByPrimaryKey(request.getId());
+
         ModuleFormSaveRequest moduleFormRequest = new ModuleFormSaveRequest();
         moduleFormRequest.setFormKey(originModuleForm.getFormKey());
         moduleFormRequest.setFormProp(request.getFormProp());
         moduleFormRequest.setFields(request.getFields());
 
         moduleFormCacheService.save(moduleFormRequest, userId, orgId);
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(originForm.getName())
+                        .originalValue(originForm)
+                        .modifiedValue(modifiedForm)
+                        .build()
+        );
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE, resourceId = "{#id}")
     public void updateEnable(String id, String userId, boolean enable) {
         checkFormAdmin(id, userId);
 
@@ -271,8 +299,20 @@ public class CustomFormService {
         updateForm.setId(id);
         updateForm.setEnable(enable);
         customFormMapper.update(updateForm);
+
+        CustomForm originForm = new CustomForm();
+        updateForm.setId(id);
+        updateForm.setEnable(form.getEnable());
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(originForm.getName())
+                        .originalValue(originForm)
+                        .modifiedValue(updateForm)
+                        .build()
+        );
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId) {
         checkFormAdmin(id, userId);
 
@@ -280,6 +320,9 @@ public class CustomFormService {
         if (form == null) {
             throw new GenericException(Translator.get("custom.form.not.exist"));
         }
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(form.getName());
 
         // 删除表单管理员
         deleteCustomFormAdminByFormId(id);
@@ -313,12 +356,24 @@ public class CustomFormService {
         customFormAdminMapper.deleteByLambda(adminWrapper);
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE, resourceId = "{#request.customFormId}")
     public void setAdmins(CustomFormAdminBatchRequest request, String userId) {
         checkFormAdmin(request.getCustomFormId(), userId);
+
+        List<String> originUserIds = getAdminOptions(request.getCustomFormId()).stream().map(OptionDTO::getId).toList();
 
         String formId = request.getCustomFormId();
         deleteCustomFormAdminByFormId(formId);
         insertAdmins(formId, request.getUserIds());
+
+        CustomForm customForm = customFormMapper.selectByPrimaryKey(formId);
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(customForm.getName())
+                        .originalValue(Map.of("adminUserIds", originUserIds))
+                        .modifiedValue(Map.of("adminUserIds", request.getUserIds()))
+                        .build()
+        );
     }
 
     private void insertAdmins(String formId, List<String> userIds) {

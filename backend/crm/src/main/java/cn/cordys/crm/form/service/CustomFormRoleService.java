@@ -1,5 +1,10 @@
 package cn.cordys.crm.form.service;
 
+import cn.cordys.aspectj.annotation.OperationLog;
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
@@ -7,6 +12,7 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormAdmin;
 import cn.cordys.crm.form.domain.CustomFormRole;
 import cn.cordys.crm.form.domain.CustomFormRoleUser;
@@ -53,6 +59,8 @@ public class CustomFormRoleService {
     private ExtUserMapper extUserMapper;
     @Resource
     private RoleService roleService;
+    @Resource
+    private BaseMapper<CustomForm> customFormMapper;
 
     public List<CustomFormRoleListResponse> listByFormId(String customFormId, String userId) {
         checkFormAdmin(customFormId, userId);
@@ -97,6 +105,7 @@ public class CustomFormRoleService {
         roleUsers.forEach(roleUser -> roleUser.setRoles(userRoleMap.getOrDefault(roleUser.getUserId(), List.of())));
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE)
     public void addUsers(CustomFormRoleUserBatchRequest request, String userId) {
         CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getCustomFormRoleId());
         if (role == null) {
@@ -117,7 +126,8 @@ public class CustomFormRoleService {
                 .toList();
 
         long now = System.currentTimeMillis();
-        List<CustomFormRoleUser> toInsert = ListUtils.subtract(userIds, currentRoleUserIds)
+        List<String> insertUserIds = ListUtils.subtract(userIds, currentRoleUserIds);
+        List<CustomFormRoleUser> toInsert = insertUserIds
                 .stream()
                 .map(uid -> {
                     CustomFormRoleUser roleUser = new CustomFormRoleUser();
@@ -134,8 +144,19 @@ public class CustomFormRoleService {
         if (CollectionUtils.isNotEmpty(toInsert)) {
             customFormRoleUserMapper.batchInsert(toInsert);
         }
+
+        CustomForm customForm = customFormMapper.selectByPrimaryKey(role.getCustomFormId());
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(customForm.getId())
+                        .resourceName(customForm.getName())
+                        .originalValue(Map.of("roleUsers", Map.of(role.getId(), List.of())))
+                        .modifiedValue(Map.of("roleUsers", Map.of(role.getId(), insertUserIds)))
+                        .build()
+        );
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE)
     public void removeUsers(CustomFormRoleUserBatchRequest request, String userId) {
         CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getCustomFormRoleId());
         if (role == null) {
@@ -147,11 +168,22 @@ public class CustomFormRoleService {
             return;
         }
 
-        for (String id : request.getUserIds()) {
-            LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId()).eq(CustomFormRoleUser::getId, id);
-            customFormRoleUserMapper.deleteByLambda(wrapper);
-        }
+        LambdaQueryWrapper<CustomFormRoleUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CustomFormRoleUser::getRoleId, request.getCustomFormRoleId()).in(CustomFormRoleUser::getId, request.getUserIds());
+        List<String> roleUserIds = customFormRoleUserMapper.selectByIds(request.getUserIds())
+                .stream()
+                .map(CustomFormRoleUser::getUserId).toList();
+        customFormRoleUserMapper.deleteByLambda(wrapper);
+
+        CustomForm customForm = customFormMapper.selectByPrimaryKey(role.getCustomFormId());
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(customForm.getId())
+                        .resourceName(customForm.getName())
+                        .originalValue(Map.of("roleUsers", Map.of(role.getId(), roleUserIds)))
+                        .modifiedValue(Map.of("roleUsers", Map.of(role.getId(), List.of())))
+                        .build()
+        );
     }
 
     private List<String> resolveUserIds(CustomFormRoleUserBatchRequest request) {

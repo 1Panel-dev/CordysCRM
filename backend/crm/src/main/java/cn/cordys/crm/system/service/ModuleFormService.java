@@ -1520,7 +1520,7 @@ public class ModuleFormService {
     /**
      * 字段保存预检查
      */
-    private void preCheckForFieldSave(String formKey, List<BaseField> fields) {
+    public void preCheckForFieldSave(String formKey, List<BaseField> fields) {
         boolean businessDeleted = BusinessModuleField.isBusinessDeleted(formKey, fields);
         if (businessDeleted) {
             throw new GenericException(Translator.get("module.form.business_field.deleted"));

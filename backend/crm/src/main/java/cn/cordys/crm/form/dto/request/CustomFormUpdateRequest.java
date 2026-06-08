@@ -4,7 +4,6 @@ import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.form.FormProp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -28,7 +27,6 @@ public class CustomFormUpdateRequest {
     @Schema(description = "保存字段集合")
     private List<BaseField> fields;
 
-    @NotNull
     @Schema(description = "表单属性")
     private FormProp formProp;
 }
