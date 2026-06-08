@@ -188,7 +188,7 @@ public class CustomFormDataService {
     }
 
     /**
-     * 批量获取线索详情 (用于数据源批量查询优化)
+     * 批量获取自定义数据详情 (用于数据源批量查询优化)
      * @param ids ID集合
      * @return 详情列表
      */

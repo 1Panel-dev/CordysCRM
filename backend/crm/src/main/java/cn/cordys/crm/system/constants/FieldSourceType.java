@@ -1,5 +1,12 @@
 package cn.cordys.crm.system.constants;
 
+import lombok.Getter;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Getter
 public enum FieldSourceType {
 
     /**
@@ -49,15 +56,32 @@ public enum FieldSourceType {
 	/**
 	 * 订单
 	 */
-	ORDER("sales_order");
+	ORDER("sales_order"),
+	/**
+	 * 自定义表单
+	 */
+	CUSTOM_FORM("custom_form_data");
 
-	private String tableName;
+	private final String tableName;
+
+	private static final Set<String> SOURCE_TYPE_NAMES = Arrays.stream(values())
+			.map(Enum::name)
+			.collect(Collectors.toSet());
 
 	FieldSourceType(String tableName) {
 		this.tableName = tableName;
 	}
 
-	public String getTableName() {
-		return tableName;
+	/**
+	 * 如果是系统数据源类型，返回对应的枚举值, 否则返回自定义表单类型.
+	 * @param type 数据源类型字符串
+	 * @return 数据源类型枚举值
+	 */
+	public static FieldSourceType safeValueOf(String type) {
+		if (type != null && SOURCE_TYPE_NAMES.contains(type)) {
+			return valueOf(type);
+		}
+		return CUSTOM_FORM;
 	}
+
 }
