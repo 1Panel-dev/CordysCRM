@@ -853,7 +853,7 @@ public class ContractService {
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder().success(0).fail(originContracts.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
-        approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.CONTRACT, organizationId);
+        approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.CONTRACT, organizationId, userId);
         List<Contract> permittedContracts = originContracts.stream()
                 .filter(c -> permittedIds.contains(c.getId()))
                 .collect(Collectors.toList());

@@ -190,7 +190,7 @@ public class ApprovalActionService {
 		approvalInstanceService.rejectApprovalInstance(instance, currentUserId);
 		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
 		if (resourceService != null) {
-			resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus());
+			resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus(), currentUserId, currentOrgId);
 		}
 		loseCurrentNode(instance.getId(), currentTask.getNodeId());
 		approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.REJECT);
@@ -959,7 +959,7 @@ public class ApprovalActionService {
 		approvalInstanceMapper.updateById(instance);
 		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
 		if (resourceService != null) {
-			resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus());
+			resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus(), currentUserId, currentOrgId);
 		}
 		if (ApprovalNodeTypeEnum.valueOf(node.getNodeType()) == ApprovalNodeTypeEnum.APPROVER) {
 			handlerNextNodeApproverTasks((ApprovalNodeApproverResponse) node, instance, preApproverId, currentUserId, ApprovalTaskType.NL.name(), currentOrgId);

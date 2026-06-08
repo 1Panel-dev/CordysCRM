@@ -36,7 +36,7 @@ public class ContractLogService extends BaseModuleLogService {
                 resolveCustomerName(differ);
                 continue;
             }
-            if (Strings.CI.equals(column, "approvalStatus") && isContractApprovalStatus(differ.getOldValue())) {
+            if (Strings.CI.equals(column, "approvalStatus")) {
                 setApprovalName(differ);
             }
             if (column != null && column.contains("-")) {
@@ -60,14 +60,5 @@ public class ContractLogService extends BaseModuleLogService {
         if (customer != null) {
             nameConsumer.accept(customer.getName());
         }
-    }
-
-    private boolean isContractApprovalStatus(Object value) {
-        if (value == null) {
-            return false;
-        }
-        var text = value.toString();
-        return Arrays.stream(ContractApprovalStatus.values())
-                     .anyMatch(status -> status.name().equals(text));
     }
 }

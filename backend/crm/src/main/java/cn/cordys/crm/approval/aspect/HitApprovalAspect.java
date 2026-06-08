@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval.aspect;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
@@ -83,7 +84,7 @@ public class HitApprovalAspect {
 			if (hit) {
 				// 命中审批流, 修改业务资源审批状态为待提审
 				approvalResourceService.clearResourceApprovalDetail(resourceId);
-				approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name());
+				approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), InternalUser.ADMIN.getValue(), OrganizationContext.getOrganizationId());
 			}
 		} catch (Exception e) {
 			log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);

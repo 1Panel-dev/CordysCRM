@@ -745,7 +745,7 @@ public class OrderService {
             return BatchAffectReasonResponse.builder().success(0).fail(originOrders.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
 
-            approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.ORDER, orgId);
+            approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.ORDER, orgId, userId);
 
         List<Order> permittedOrders = originOrders.stream()
                 .filter(o -> permittedIds.contains(o.getId()))

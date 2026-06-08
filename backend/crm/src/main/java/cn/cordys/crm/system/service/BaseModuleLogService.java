@@ -417,11 +417,12 @@ public abstract class BaseModuleLogService {
     }
 
     protected void setApprovalName(JsonDifferenceDTO differ) {
+		differ.setColumnName(Translator.get("log.approvalStatus"));
         if (differ.getOldValue() != null) {
-            differ.setOldValueName(Translator.get("contract.approval_status." + differ.getOldValue().toString().toLowerCase()));
+			differ.setOldValueName(Translator.get("log.approvalStatus." + differ.getOldValueName().toString()));
         }
         if (differ.getNewValue() != null) {
-            differ.setNewValueName(Translator.get("contract.approval_status." + differ.getNewValue().toString().toLowerCase()));
+			differ.setNewValueName(Translator.get("log.approvalStatus." + differ.getNewValueName().toString()));
         }
     }
 

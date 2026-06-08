@@ -1,5 +1,8 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.JsonDifferenceDTO;
@@ -21,6 +24,7 @@ import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.integration.common.utils.HttpClientUtils;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -65,6 +69,8 @@ public class ApprovalResourceService {
 	private ApprovalInstanceService instanceService;
 	@Resource
 	private ApprovalActionService approvalActionService;
+	@Resource
+	private LogService logService;
 
     /**
      * 开启的审批流表单表格映射
@@ -192,8 +198,10 @@ public class ApprovalResourceService {
      * @param formKey        表单类型
      * @param resourceId     资源ID
      * @param approvalStatus 审批状态
+     * @param userId         操作人ID
+     * @param orgId          组织ID
      */
-    public void updateResourceApprovalStatus(FormKey formKey, String resourceId, String approvalStatus) {
+    public void updateResourceApprovalStatus(FormKey formKey, String resourceId, String approvalStatus, String userId, String orgId) {
 		if (formKey == null) {
 			throw new GenericException(Translator.get("module.form.illegal"));
 		}
@@ -201,12 +209,66 @@ public class ApprovalResourceService {
         if (StringUtils.isBlank(tableName)) {
             throw new GenericException(Translator.get("module.form.illegal"));
         }
+		// 查询旧的审批状态用于日志记录
+		String oldApprovalStatus = extApprovalInstanceMapper.selectApprovalStatus(tableName, resourceId);
         extApprovalInstanceMapper.updateApprovalStatus(tableName, resourceId, approvalStatus);
 		// 存在快照表, 需要同步刷新审批状态
 		if (formKey.hasSnapshot()) {
 			updateSnapshotApprovalStatus(formKey, resourceId, approvalStatus);
 		}
+		// 记录审批状态变更日志
+		saveApprovalStatusLog(formKey, resourceId, oldApprovalStatus, approvalStatus, userId, orgId);
     }
+
+	/**
+	 * 保存审批状态变更日志
+	 *
+	 * @param formKey         表单类型
+	 * @param resourceId      资源ID
+	 * @param oldApprovalStatus 旧审批状态
+	 * @param newApprovalStatus 新审批状态
+	 * @param userId          操作人ID
+	 * @param orgId           组织ID
+	 */
+	private void saveApprovalStatusLog(FormKey formKey, String resourceId, String oldApprovalStatus, String newApprovalStatus, String userId, String orgId) {
+		if (StringUtils.isBlank(userId) || StringUtils.isBlank(orgId)) {
+			return;
+		}
+		String resourceName = getInstanceResourceName(formKey, resourceId);
+		if (StringUtils.isBlank(resourceName)) {
+			return;
+		}
+		String logModule = getLogModuleOfFormKey(formKey);
+		if (StringUtils.isBlank(logModule)) {
+			return;
+		}
+		LogDTO logDTO = new LogDTO(orgId, resourceId, userId, LogType.UPDATE, logModule, resourceName);
+		Map<String, String> oldMap = new HashMap<>(1);
+		oldMap.put("approvalStatus", StringUtils.defaultString(oldApprovalStatus));
+		logDTO.setOriginalValue(oldMap);
+		Map<String, String> newMap = new HashMap<>(1);
+		newMap.put("approvalStatus", StringUtils.defaultString(newApprovalStatus));
+		logDTO.setModifiedValue(newMap);
+		logService.add(logDTO);
+	}
+
+	/**
+	 * 表单类型 => 日志模块
+	 * @param formKey 表单Key
+	 * @return 日志模块
+	 */
+	private String getLogModuleOfFormKey(FormKey formKey) {
+		if (formKey == null) {
+			return null;
+		}
+		return switch (formKey) {
+			case QUOTATION -> LogModule.OPPORTUNITY_QUOTATION;
+			case CONTRACT -> LogModule.CONTRACT_INDEX;
+			case INVOICE -> LogModule.CONTRACT_INVOICE;
+			case ORDER -> LogModule.ORDER_INDEX;
+			default -> null;
+		};
+	}
 
 	/**
 	 * 清除资源审批记录
@@ -317,7 +379,7 @@ public class ApprovalResourceService {
 		instance.setCurrentNodeId(firstApprovalNode.getId());
 		if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.EXCEPTION) {
 			// 异常节点, 目前只有自动拒绝的场景, 直接驳回
-			updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.UNAPPROVED.name());
+			updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.UNAPPROVED.name(), currentUserId, currentOrgId);
 			instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
 			instance.setApprovalTime(System.currentTimeMillis());
 			approvalInstanceMapper.insert(instance);
@@ -325,7 +387,7 @@ public class ApprovalResourceService {
 		}
 		if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
 			// 直接结束
-			updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVED.name());
+			updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVED.name(), currentUserId, currentOrgId);
 			instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
 			instance.setApprovalTime(System.currentTimeMillis());
 			approvalInstanceMapper.insert(instance);
@@ -341,7 +403,7 @@ public class ApprovalResourceService {
 		 * 1. 更新业务表审批状态为审批中
 		 * 2. 插入审批实例, 审批待办任务
 		 */
-		updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name());
+		updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name(), currentUserId, currentOrgId);
 		approvalInstanceMapper.insert(instance);
 		ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
 		approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, null, currentUserId, null, currentOrgId);
@@ -351,10 +413,11 @@ public class ApprovalResourceService {
 	 * 撤回审批
 	 * @param param 参数
 	 * @param currentUserId 当前用户ID
+	 * @param currentOrgId 当前组织ID
 	 */
-	public void revoke(ApprovalResourceBaseParam param, String currentUserId) {
+	public void revoke(ApprovalResourceBaseParam param, String currentUserId, String currentOrgId) {
 		// 更新业务资源审批状态
-		updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.REVOKED.name());
+		updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.REVOKED.name(), currentUserId, currentOrgId);
 		// 更新审批实例状态
 		ApprovalInstance instance = instanceService.getLatestInstance(param.getResourceId());
 		if (instance == null) {
@@ -399,8 +462,9 @@ public class ApprovalResourceService {
 	 * @param resourceIds    资源ID集合
 	 * @param formKey        业务模块（表单类型）
 	 * @param organizationId 组织ID
+	 * @param userId         操作人ID
 	 */
-	public void batchEditTriggerApproval(List<String> resourceIds, FormKey formKey, String organizationId) {
+	public void batchEditTriggerApproval(List<String> resourceIds, FormKey formKey, String organizationId, String userId) {
 		if (CollectionUtils.isEmpty(resourceIds) || formKey == null || StringUtils.isBlank(organizationId)) {
 			return;
 		}
@@ -413,7 +477,7 @@ public class ApprovalResourceService {
 		// 批量更新资源审批状态为待提审
 		for (String resourceId : resourceIds) {
 			clearResourceApprovalDetail(resourceId);
-			updateResourceApprovalStatus(formKey, resourceId, ApprovalStatus.PENDING.name());
+			updateResourceApprovalStatus(formKey, resourceId, ApprovalStatus.PENDING.name(), userId, organizationId);
 		}
 	}
 
