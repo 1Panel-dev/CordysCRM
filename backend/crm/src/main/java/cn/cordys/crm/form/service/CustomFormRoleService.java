@@ -6,10 +6,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
-import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
-import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
 import cn.cordys.crm.form.domain.CustomFormAdmin;
 import cn.cordys.crm.form.domain.CustomFormRole;
 import cn.cordys.crm.form.domain.CustomFormRoleUser;
@@ -19,10 +16,12 @@ import cn.cordys.crm.form.dto.response.CustomFormRoleListResponse;
 import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
 import cn.cordys.crm.form.mapper.ExtCustomFormRoleUserMapper;
 import cn.cordys.crm.system.dto.convert.UserRoleConvert;
+import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
+import cn.cordys.crm.system.mapper.ExtUserMapper;
+import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
+import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
-import cn.cordys.crm.system.mapper.ExtUserMapper;
-import cn.cordys.crm.system.service.RoleService;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -31,12 +30,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,7 +73,7 @@ public class CustomFormRoleService {
 
     public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(CustomFormRoleUserPageRequest request,
                                                                        String userId, String orgId) {
-        CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getRoleId());
+        CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getCustomFormRoleId());
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
         }

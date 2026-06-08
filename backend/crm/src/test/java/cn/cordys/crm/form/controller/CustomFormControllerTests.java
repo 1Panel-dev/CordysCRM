@@ -1,27 +1,19 @@
 package cn.cordys.crm.form.controller;
 
-import cn.cordys.common.dto.OptionDTO;
-import cn.cordys.common.domain.BaseModel;
-import cn.cordys.common.pager.Pager;
 import cn.cordys.common.constants.RoleDataScope;
+import cn.cordys.common.domain.BaseModel;
+import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.pager.Pager;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormAdmin;
 import cn.cordys.crm.form.domain.CustomFormRole;
 import cn.cordys.crm.form.domain.CustomFormRoleUser;
-import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
-import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
-import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
-import cn.cordys.crm.form.dto.request.CustomFormRoleUserPageRequest;
-import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
+import cn.cordys.crm.form.dto.request.*;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
 import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
-import cn.cordys.crm.system.domain.Department;
-import cn.cordys.crm.system.domain.OrganizationUser;
-import cn.cordys.crm.system.domain.Role;
-import cn.cordys.crm.system.domain.User;
-import cn.cordys.crm.system.domain.UserRole;
+import cn.cordys.crm.system.domain.*;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -38,9 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -302,7 +292,7 @@ public class CustomFormControllerTests extends BaseTest {
 
     private void assertRoleUsersPage(String roleId, int current, int pageSize, int total) throws Exception {
         CustomFormRoleUserPageRequest request = new CustomFormRoleUserPageRequest();
-        request.setRoleId(roleId);
+        request.setCustomFormRoleId(roleId);
         request.setCurrent(current);
         request.setPageSize(pageSize);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(ROLE_USERS, request);
