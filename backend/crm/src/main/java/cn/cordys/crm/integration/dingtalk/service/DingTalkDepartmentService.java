@@ -98,7 +98,7 @@ public class DingTalkDepartmentService {
      * @return 组织架构和用户数据响应
      */
     public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken) {
-        List<Long> allDepartmentIds = getAllSubDepartmentIds(accessToken, 1L); // 从根部门(ID=1)开始
+        List<Long> allDepartmentIds = getAllSubDepartmentIds(accessToken); // 从根部门(ID=1)开始
         DingTalkOrgDataResponse response = new DingTalkOrgDataResponse();
 
         try {
@@ -160,14 +160,13 @@ public class DingTalkDepartmentService {
      * 使用队列方式获取所有子部门ID（避免递归，更好的限流控制）
      *
      * @param accessToken 访问令牌
-     * @param rootDeptId  根部门ID
      *
      * @return 部门ID列表
      */
-    private List<Long> getAllSubDepartmentIds(String accessToken, Long rootDeptId) {
+    private List<Long> getAllSubDepartmentIds(String accessToken) {
         List<Long> departmentIds = new ArrayList<>();
         Queue<Long> deptQueue = new LinkedList<>();
-        deptQueue.offer(rootDeptId);
+        deptQueue.offer(1L);
 
         while (!deptQueue.isEmpty()) {
             Long currentDeptId = deptQueue.poll();
