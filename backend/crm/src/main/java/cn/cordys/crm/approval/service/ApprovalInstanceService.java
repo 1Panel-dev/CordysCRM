@@ -673,7 +673,8 @@ public class ApprovalInstanceService {
 		instances.forEach(instance -> {
 			ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
 			if (resourceService != null) {
-				resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), ApprovalStatus.NONE.name());
+				// 系统操作，不记录日志
+				resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), ApprovalStatus.NONE.name(), null, null);
 			}
 		});
 		approvalInstanceMapper.deleteByLambda(instanceLambdaQueryWrapper);

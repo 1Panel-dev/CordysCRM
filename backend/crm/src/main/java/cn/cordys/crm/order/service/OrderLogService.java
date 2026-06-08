@@ -49,6 +49,9 @@ public class OrderLogService extends BaseModuleLogService {
             if (column != null && column.contains("-")) {
                 differ.setColumnName(column);
             }
+			if (Strings.CI.equals(column, "approvalStatus")) {
+				setApprovalName(differ);
+			}
         }
         return differences;
     }

@@ -34,7 +34,7 @@ public class ApprovalResourceController {
 	@PostMapping("/revoke")
 	@Operation(summary = "撤销")
 	public void revoke(@RequestBody ApprovalResourceBaseParam param) {
-		approvalResourceService.revoke(param, SessionUtils.getUserId());
+		approvalResourceService.revoke(param, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
     @GetMapping("/simple-detail/{resourceId}")

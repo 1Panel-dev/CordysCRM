@@ -939,7 +939,7 @@ public class OpportunityQuotationService {
             return BatchAffectReasonResponse.builder().success(0).fail(originQuotations.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
 
-            approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.QUOTATION, organizationId);
+            approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.QUOTATION, organizationId, userId);
 
         // 只对有权限的报价单进行操作
         List<OpportunityQuotation> permittedQuotations = originQuotations.stream()

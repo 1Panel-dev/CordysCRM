@@ -27,7 +27,7 @@ public class ContractInvoiceLogService extends BaseModuleLogService {
                 setContractFieldName(differ);
             } else if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.INVOICE_BUSINESS_TITLE_ID.getBusinessKey())) {
                 setBusinessTitleName(differ);
-            } else if (Strings.CI.equals(differ.getColumn(), "approvalStatus") && Arrays.stream(ContractApprovalStatus.values()).anyMatch(status -> status.name().equals(differ.getOldValue()))) {
+            } else if (Strings.CI.equals(differ.getColumn(), "approvalStatus")) {
                 setApprovalName(differ);
             }
         }
