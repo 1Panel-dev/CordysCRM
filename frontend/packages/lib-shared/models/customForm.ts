@@ -85,6 +85,7 @@ export interface CustomFormPageItem {
   createUserName: string;
   updateUserName: string;
   moduleFields: ModuleField[];
+  isAdmin: boolean;
 }
 
 export interface BatchUpdateCustomFormDataParams {

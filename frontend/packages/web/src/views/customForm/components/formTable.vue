@@ -70,6 +70,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
+  import type { CustomFormPageItem } from '@lib/shared/models/customForm.js';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { type FilterForm, FilterFormItem, type FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -140,7 +141,7 @@
   ];
 
   // 删除
-  function handleDelete(row: any) {
+  function handleDelete(row: CustomFormPageItem) {
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
@@ -185,8 +186,8 @@
   const { useTableRes, customFieldsFilterConfig, initFormConfig, columns } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOM_FORM,
     customFormId,
-    disabledSelection: (row: any) => {
-      return row.collaborationType === 'READ_ONLY';
+    disabledSelection: (row: CustomFormPageItem) => {
+      return !row.isAdmin;
     },
     operationColumn: props.readonly
       ? undefined
@@ -194,14 +195,14 @@
           key: 'operation',
           width: 120,
           fixed: 'right',
-          render: (row: any) =>
+          render: (row: CustomFormPageItem) =>
             h(CrmOperationButton, {
-              groupList: operationGroupList,
+              groupList: row.isAdmin ? operationGroupList : [],
               onSelect: (key: string) => handleActionSelect(row, key),
             }),
         },
     specialRender: {
-      name: (row: any) => {
+      name: (row: CustomFormPageItem) => {
         return h(
           CrmTableButton,
           {
@@ -219,7 +220,7 @@
     readonly: props.readonly,
   });
 
-  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
   const formColumns = computed(() => columns.value);
   function searchData(val?: string, refreshId?: string) {
