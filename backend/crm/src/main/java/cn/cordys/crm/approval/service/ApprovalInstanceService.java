@@ -293,7 +293,8 @@ public class ApprovalInstanceService {
 		Map<String, ApprovalRecord> autoNodeRecordMap = records.stream().filter(record -> StringUtils.isBlank(record.getTaskId()))
 				.collect(Collectors.toMap(ApprovalRecord::getNodeId, r -> r, (existing, newOne) -> newOne.getNodeRound() >= existing.getNodeRound() ? newOne : existing
 				));
-		Map<String, ApprovalRecord> taskRecordMap = records.stream().filter(record -> StringUtils.isNotBlank(record.getTaskId())).collect(Collectors.toMap(ApprovalRecord::getTaskId, r -> r));
+		Map<String, ApprovalRecord> taskRecordMap = records.stream().filter(record -> StringUtils.isNotBlank(record.getTaskId()))
+				.collect(Collectors.toMap(ApprovalRecord::getTaskId, r -> r, (existing, newOne) -> newOne.getCreateTime() >= existing.getCreateTime() ? newOne : existing));
 		List<ApprovalTask> nTasks = tasks.stream().filter(task -> ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.NL).toList();
 		Map<String, Integer> nodeMaxRoundMap = mergeNodeMaxRound(nTasks, records);
 		List<String> hisNodes = sortNodeRoundMap(nodeMaxRoundMap, nTasks, records);

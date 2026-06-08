@@ -1,6 +1,8 @@
 package cn.cordys.crm.approval.service;
 
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
@@ -19,6 +21,7 @@ import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.integration.common.utils.HttpClientUtils;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.UserApprovalDTO;
