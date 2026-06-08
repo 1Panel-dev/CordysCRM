@@ -53,4 +53,7 @@ public class CustomFormDataGetResponse {
 
     @Schema(description = "附件集合")
     private Map<String, List<Attachment>> attachmentMap;
+
+    @Schema(description = "当前用户是否是管理员")
+    private Boolean isAdmin;
 }

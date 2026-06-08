@@ -44,4 +44,7 @@ public class CustomFormDataListResponse {
 
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
+
+    @Schema(description = "当前用户是否是管理员")
+    private Boolean isAdmin;
 }

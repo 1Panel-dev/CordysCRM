@@ -84,10 +84,16 @@ public class CustomFormDataService {
         try {
             list = buildList(list, formId, orgId);
             Map<String, List<OptionDTO>> optionMap = buildOptionMap(formId, orgId, list);
+            list.forEach(item -> item.setIsAdmin(isAdminUser(dataScope, userId, item.getOwner())));
             return PageUtils.setPageInfoWithOption(page, list, optionMap);
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }
+    }
+
+    private boolean isAdminUser(CustomFormRoleKey dataScope, String userId, String owner) {
+        return dataScope == CustomFormRoleKey.MANAGE_ALL ||
+                (dataScope == CustomFormRoleKey.MANAGE_OWN && StringUtils.equals(owner, userId));
     }
 
     public List<CustomFormDataListResponse> buildList(List<CustomFormDataListResponse> list, String formId, String orgId) {
@@ -137,6 +143,7 @@ public class CustomFormDataService {
         }
 
         CustomFormDataGetResponse resp = BeanUtils.copyBean(new CustomFormDataGetResponse(), data);
+        resp.setIsAdmin(isAdminUser(dataScope, userId, data.getOwner()));
 
         Map<String, String> userNameMap = baseService.getUserNameMap(
                 List.of(data.getOwner(), data.getCreateUser(), data.getUpdateUser())
