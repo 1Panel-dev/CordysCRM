@@ -42,7 +42,14 @@
               />
             </template>
             <template #title="{ item }">
-              {{ item.name }}
+              <n-tooltip trigger="hover">
+                <template #trigger>
+                  <div class="one-line-text" :class="activeForm === item.id ? 'text-[var(--primary-8)]' : ''">
+                    {{ item.name }}
+                  </div>
+                </template>
+                {{ item.name }}
+              </n-tooltip>
             </template>
           </CrmList>
         </div>
@@ -63,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NEmpty, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NEmpty, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n.js';
   import { characterLimit } from '@lib/shared/method/index.js';
