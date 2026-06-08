@@ -5,7 +5,7 @@
         <div class="h-full p-[24px]">
           <div class="mb-[8px] flex w-full items-center gap-[8px]">
             <CrmSearchInput v-model:value="keyword" class="flex-1" />
-            <n-button v-permission="['CUSTOM_FORM_ADD']" type="primary" class="p-[8px]" ghost @click="addForm">
+            <n-button v-permission="['CUSTOM_FORM:ADD']" type="primary" class="p-[8px]" ghost @click="addForm">
               <CrmIcon type="iconicon_add" />
             </n-button>
           </div>
@@ -20,8 +20,8 @@
             v-model:active-item-key="activeForm"
             virtual-scroll-height="calc(100% - 40px)"
             key-field="id"
-            :item-more-actions="formAction"
-            item-class="gap-[8px]"
+            :item-more-actions="getFormAction"
+            item-class="gap-[8px] px-[4px]"
             activeItemClass="bg-[var(--text-n9)]"
             mode="static"
             @item-click="handleFormClick"
@@ -81,11 +81,6 @@
 
   const formList = ref<CustomFormItem[]>([]);
   const loading = ref(false);
-  const pageNation = ref({
-    total: 0,
-    pageSize: 10,
-    current: 1,
-  });
   const finished = ref(false);
   const keyword = ref('');
   const activeForm = ref('');
@@ -126,6 +121,13 @@
       danger: true,
     },
   ];
+
+  function getFormAction(item: any) {
+    if (item.isAdmin) {
+      return formAction;
+    }
+    return [];
+  }
 
   const configDrawerVisible = ref(false);
   const currentSourceId = ref();
