@@ -2,7 +2,10 @@ package cn.cordys.crm.form.controller;
 
 import cn.cordys.common.constants.RoleDataScope;
 import cn.cordys.common.domain.BaseModel;
+import cn.cordys.common.dto.BaseTreeNode;
+import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.RoleUserTreeNode;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.base.BaseTest;
@@ -42,6 +45,8 @@ public class CustomFormControllerTests extends BaseTest {
     private static final String OPTION = "option";
     private static final String ADMIN_GET = "admin/get/{0}";
     private static final String ROLE_USERS = "role/users";
+    private static final String ROLE_DEPT_TREE = "role/user/dept/tree";
+    private static final String ROLE_ROLE_TREE = "role/user/role/tree";
     private static String createdFormId;
 
     @Resource
@@ -177,6 +182,20 @@ public class CustomFormControllerTests extends BaseTest {
 
     @Test
     @Order(8)
+    void testRoleUserTrees() throws Exception {
+        MvcResult deptTreeResult = this.requestGetWithOkAndReturn(ROLE_DEPT_TREE);
+        List<DeptUserTreeNode> deptTree = getResultDataArray(deptTreeResult, DeptUserTreeNode.class);
+        assertTrue(containsTreeNode(deptTree, "cf-role-test-dept"));
+        assertTrue(containsTreeNode(deptTree, "cf-role-dept-user"));
+
+        MvcResult roleTreeResult = this.requestGetWithOkAndReturn(ROLE_ROLE_TREE);
+        List<RoleUserTreeNode> roleTree = getResultDataArray(roleTreeResult, RoleUserTreeNode.class);
+        assertTrue(containsTreeNode(roleTree, "cf-role-test-system-role"));
+        assertTrue(containsTreeNode(roleTree, "cf-role-system-role-user"));
+    }
+
+    @Test
+    @Order(9)
     void testDelete() throws Exception {
         assertNotNull(createdFormId, "表单应已创建");
 
@@ -192,6 +211,17 @@ public class CustomFormControllerTests extends BaseTest {
                 .map(CustomFormAdmin::getUserId)
                 .toList());
         assertEquals(Set.of(expectedUserIds), actualUserIds);
+    }
+
+    private boolean containsTreeNode(List<? extends BaseTreeNode> treeNodes, String id) {
+        return treeNodes.stream().anyMatch(node -> containsTreeNode(node, id));
+    }
+
+    private boolean containsTreeNode(BaseTreeNode node, String id) {
+        if (id.equals(node.getId())) {
+            return true;
+        }
+        return node.getChildren().stream().anyMatch(child -> containsTreeNode(child, id));
     }
 
     private String getFirstCustomFormRoleId() {
@@ -219,9 +249,9 @@ public class CustomFormControllerTests extends BaseTest {
     private void insertDepartment() {
         Department department = new Department();
         department.setId("cf-role-test-dept");
-        department.setName("测试部门");
+        department.setName("自定义表单测试部门");
         department.setOrganizationId(DEFAULT_ORGANIZATION_ID);
-        department.setParentId("0");
+        department.setParentId("NONE");
         department.setPos(1L);
         department.setResource("TEST");
         department.setResourceId("cf-role-test-dept-resource");
@@ -307,7 +337,7 @@ public class CustomFormControllerTests extends BaseTest {
         assertNotNull(first.getUsername());
         assertNotNull(first.getCreateTime());
         assertTrue(pager.getList().stream().allMatch(user -> "cf-role-test-dept".equals(user.getDepartmentId())));
-        assertTrue(pager.getList().stream().allMatch(user -> "测试部门".equals(user.getDepartmentName())));
+        assertTrue(pager.getList().stream().allMatch(user -> "自定义表单测试部门".equals(user.getDepartmentName())));
         assertTrue(pager.getList().stream().allMatch(user -> user.getPosition() != null));
         assertTrue(pager.getList().stream().allMatch(user -> user.getRoles() != null
                 && user.getRoles().stream().anyMatch(role -> "cf-role-test-system-role".equals(role.getId()))));

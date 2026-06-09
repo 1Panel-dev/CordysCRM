@@ -6,6 +6,9 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.dto.BaseTreeNode;
+import cn.cordys.common.dto.DeptUserTreeNode;
+import cn.cordys.common.dto.RoleUserTreeNode;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
@@ -22,15 +25,18 @@ import cn.cordys.crm.form.dto.response.CustomFormRoleListResponse;
 import cn.cordys.crm.form.dto.response.CustomFormRoleUserListResponse;
 import cn.cordys.crm.form.mapper.ExtCustomFormRoleUserMapper;
 import cn.cordys.crm.system.dto.convert.UserRoleConvert;
+import cn.cordys.crm.system.dto.response.RoleListResponse;
 import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
+import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
@@ -59,6 +65,8 @@ public class CustomFormRoleService {
     private ExtUserMapper extUserMapper;
     @Resource
     private RoleService roleService;
+    @Resource
+    private DepartmentService departmentService;
     @Resource
     private BaseMapper<CustomForm> customFormMapper;
 
@@ -91,6 +99,30 @@ public class CustomFormRoleService {
         List<CustomFormRoleUserListResponse> roleUsers = extCustomFormRoleUserMapper.listByRoleId(orgId, request);
         fillRoles(roleUsers, orgId);
         return PageUtils.setPageInfo(page, roleUsers);
+    }
+
+    public List<DeptUserTreeNode> getDeptUserTree(String orgId) {
+        List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
+        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId);
+        userNodes = departmentService.sortByCommander(orgId, userNodes);
+        userNodes.addAll(treeNodes);
+        return BaseTreeNode.buildTree(userNodes);
+    }
+
+    public List<RoleUserTreeNode> getRoleUserTree(String orgId) {
+        List<RoleListResponse> roles = roleService.list(orgId);
+        List<RoleUserTreeNode> treeNodes = roles.stream().map(role -> {
+            RoleUserTreeNode roleNode = new RoleUserTreeNode();
+            roleNode.setNodeType("ROLE");
+            roleNode.setInternal(BooleanUtils.isTrue(role.getInternal()));
+            roleNode.setId(role.getId());
+            roleNode.setName(role.getName());
+            return roleNode;
+        }).collect(Collectors.toList());
+
+        List<RoleUserTreeNode> userNodes = extUserRoleMapper.selectUserRoleForOrg(orgId);
+        treeNodes.addAll(userNodes);
+        return BaseTreeNode.buildTree(treeNodes);
     }
 
     private void fillRoles(List<CustomFormRoleUserListResponse> roleUsers, String orgId) {

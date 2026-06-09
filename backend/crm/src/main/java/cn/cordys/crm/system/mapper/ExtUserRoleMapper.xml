@@ -130,7 +130,7 @@
                  join sys_user su
                       on sou.organization_id = #{orgId} and sou.user_id = su.id
                  join sys_user_role sur
-                      on su.id = sur.user_id and sur.role_id != #{roleId}
+                      on su.id = sur.user_id
     </select>
 
     <select id="getUserIdsByRoleIds" resultType="java.lang.String">

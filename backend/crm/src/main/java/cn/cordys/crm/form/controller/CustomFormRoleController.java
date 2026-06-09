@@ -1,6 +1,8 @@
 package cn.cordys.crm.form.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.DeptUserTreeNode;
+import cn.cordys.common.dto.RoleUserTreeNode;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.context.OrganizationContext;
@@ -39,6 +41,20 @@ public class CustomFormRoleController {
     public Pager<List<CustomFormRoleUserListResponse>> listUsersByRole(@Validated @RequestBody CustomFormRoleUserPageRequest request) {
         return customFormRoleService.listUsersByRole(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/user/dept/tree")
+    @Operation(summary = "获取部门用户树")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public List<DeptUserTreeNode> getDeptUserTree() {
+        return customFormRoleService.getDeptUserTree(OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/user/role/tree")
+    @Operation(summary = "获取角色用户树")
+    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
+    public List<RoleUserTreeNode> getRoleUserTree() {
+        return customFormRoleService.getRoleUserTree(OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/user/add")
