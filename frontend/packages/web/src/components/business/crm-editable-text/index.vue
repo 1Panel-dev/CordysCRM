@@ -90,6 +90,9 @@
         // eslint-disable-next-line no-console
         console.warn(message);
       }
+      nextTick(() => {
+        inputRef.value?.focus();
+      });
       return;
     }
     emit('handleEdit', inputValue.value, () => {

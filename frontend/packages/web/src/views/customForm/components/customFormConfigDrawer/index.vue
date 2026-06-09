@@ -17,6 +17,7 @@
           :permission="[]"
           click-to-edit
           :emptyTextTip="t('common.notNull', { value: t('customForm.name') })"
+          @input="customFormNameDraft = $event"
           @handle-edit="handleEditTitle"
         >
           <n-tooltip trigger="hover" :delay="300" :disabled="!customFormName">
@@ -171,7 +172,13 @@
     };
   }
 
+  const customFormNameDraft = ref('');
+
   async function handleSaveFormDesign() {
+    if (!customFormNameDraft.value.trim().length) {
+      return false;
+    }
+
     if (!checkRepeat()) {
       activeTab.value = 'design';
       return false;
@@ -245,6 +252,7 @@
       titleSaving.value = true;
       if (!currentSourceId.value) {
         customFormName.value = name;
+        customFormNameDraft.value = name;
         unsaved.value = true;
         done?.();
         return;
@@ -252,6 +260,7 @@
 
       await updateCustomForm(buildCustomFormSaveRequest(name));
       customFormName.value = name;
+      customFormNameDraft.value = name;
       emit('saved', currentSourceId.value);
       Message.success(t('common.saveSuccess'));
       done?.();
@@ -313,6 +322,7 @@
     currentSourceId.value = props.sourceId || '';
     if (!currentSourceId.value) {
       customFormName.value = t('customForm.unnamedForm');
+      customFormNameDraft.value = customFormName.value;
       customFormEnable.value = true;
       customFormCreator.value = {
         id: userStore.userInfo.id || '',
@@ -329,6 +339,7 @@
       loading.value = true;
       const detail = await getCustomFormDetail(currentSourceId.value);
       customFormName.value = detail.name;
+      customFormNameDraft.value = detail.name;
       customFormEnable.value = detail.enable;
       customFormCreator.value = detail.creator;
       setFormConfigDetail(detail);
