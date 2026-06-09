@@ -470,7 +470,8 @@ export function transformData({
   fields.forEach((field) => {
     if (!field.resourceFieldId && !field.businessKey) {
       const fieldId = field.id;
-      if (!customFieldAttr[fieldId]) {
+      // 避免将 0 有效计算结果误判为空
+      if (customFieldAttr[fieldId] === undefined || customFieldAttr[fieldId] === null) {
         customFieldAttr[fieldId] = undefined;
       }
     }
