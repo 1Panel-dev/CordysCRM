@@ -15,10 +15,7 @@ import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
-import cn.cordys.crm.form.domain.CustomFormData;
-import cn.cordys.crm.form.domain.CustomFormRole;
-import cn.cordys.crm.form.domain.CustomFormRoleKey;
-import cn.cordys.crm.form.domain.CustomFormRoleUser;
+import cn.cordys.crm.form.domain.*;
 import cn.cordys.crm.form.dto.request.CustomFormDataAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataBatchUpdateRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
@@ -38,6 +35,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -72,6 +70,8 @@ public class CustomFormDataService {
     private BaseMapper<ModuleForm> moduleFormMapper;
     @Resource
     private LogService logService;
+    @Resource
+    private BaseMapper<CustomForm> customFormMapper;
 
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId) {
         String formId = request.getCustomFormId();
@@ -136,7 +136,6 @@ public class CustomFormDataService {
         if (data == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
-
         CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId);
         if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(data.getCreateUser(), userId)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -358,9 +357,15 @@ public class CustomFormDataService {
     }
 
     CustomFormRoleKey getDataScope(String formId, String userId) {
+        CustomForm customForm = customFormMapper.selectByPrimaryKey(formId);
         if (customFormService.isFormAdminUser(formId, userId)) {
             // 管理员管理所有数据
             return CustomFormRoleKey.MANAGE_ALL;
+        }
+
+        if (BooleanUtils.isFalse(customForm.getEnable())) {
+            // 表单未启用，非管理员没有权限查看
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
 
         // check role membership
