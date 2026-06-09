@@ -22,4 +22,5 @@ export default {
   'customForm.permission.addManageOwnTip': '管理本人数据：拥有添加权限，仅能查看和管理本人创建的数据。',
   'customForm.deleteFormTip': '删除后，表单数据、配置信息将无法恢复，请谨慎操作！',
   'customForm.closeFormTip': '关闭后，表单强制在线用户退出，未填内容不保存，请谨慎操作！',
+  'customForm.enableDisabledTip': '仅管理员可操作',
 };

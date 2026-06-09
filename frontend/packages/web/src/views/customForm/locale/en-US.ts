@@ -26,4 +26,5 @@ export default {
     'Once deleted, the form data and configuration information cannot be recovered. Please proceed with caution!',
   'customForm.closeFormTip':
     'Once closed, the form forces online users to log out. Unfilled information will not be saved. Please proceed with caution!',
+  'customForm.enableDisabledTip': 'Only administrators can operate this.',
 };

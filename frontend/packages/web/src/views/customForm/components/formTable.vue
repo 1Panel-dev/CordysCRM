@@ -348,6 +348,9 @@
       tableAdvanceFilterRef.value?.clearFilter();
       setLoadListParams({ customFormId: customFormId.value });
       searchData();
+    },
+    {
+      immediate: true,
     }
   );
 </script>
