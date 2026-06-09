@@ -4,7 +4,7 @@
       <template #1>
         <div class="h-full p-[24px]">
           <div class="mb-[8px] flex w-full items-center gap-[8px]">
-            <CrmSearchInput v-model:value="keyword" class="flex-1" />
+            <CrmSearchInput v-model:value="keyword" class="flex-1" @search="searchList" />
             <n-button
               v-permission="['CUSTOM_FORM:ADD']"
               type="primary"
@@ -77,6 +77,7 @@
 
 <script setup lang="ts">
   import { NButton, NEmpty, NSwitch, NTooltip, useMessage } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n.js';
   import { characterLimit } from '@lib/shared/method/index.js';
@@ -98,16 +99,18 @@
   const { openModal } = useModal();
 
   const formList = ref<CustomFormItem[]>([]);
+  const formListBackup = ref<CustomFormItem[]>([]);
   const loading = ref(false);
   const finished = ref(false);
   const keyword = ref('');
   const activeForm = ref('');
   const activeFormIsAdmin = computed(() => formList.value.find((e) => e.id === activeForm.value)?.isAdmin);
 
-  async function loadFormList(_keyword?: string) {
+  async function loadFormList() {
     try {
       loading.value = true;
       formList.value = await getCustomFormList();
+      formListBackup.value = cloneDeep(formList.value);
       if (activeForm.value === '') {
         activeForm.value = formList.value[0]?.id || '';
       }
@@ -118,6 +121,12 @@
       loading.value = false;
       finished.value = true;
     }
+  }
+
+  function searchList(_keyword: string) {
+    formList.value = formListBackup.value.filter((e) =>
+      e.name.toLocaleLowerCase().includes(_keyword?.toLocaleLowerCase())
+    );
   }
 
   const formAction: ActionsItem[] = [
