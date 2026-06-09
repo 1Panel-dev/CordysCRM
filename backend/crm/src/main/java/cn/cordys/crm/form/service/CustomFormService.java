@@ -102,6 +102,11 @@ public class CustomFormService {
             accessibleFormIds.addAll(memberFormIds);
 
             customForms = customFormMapper.selectByIds(accessibleFormIds.stream().toList());
+
+            // 非管理员只能看到启用的表单
+            customForms = customForms.stream()
+                    .filter(form -> adminFormIds.contains(form.getId()) || BooleanUtils.isTrue(form.getEnable()))
+                    .toList();
         }
         return customForms.stream()
                 .map(form -> {
@@ -435,8 +440,7 @@ public class CustomFormService {
         CustomFormAdmin example = new CustomFormAdmin();
         example.setCustomFormId(formId);
         example.setUserId(userId);
-        boolean isAdmin = customFormAdminMapper.countByExample(example) > 0;
-        return isAdmin;
+        return customFormAdminMapper.countByExample(example) > 0;
     }
 
     Set<String> getAdminFormIds(String userId) {
