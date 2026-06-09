@@ -74,6 +74,7 @@ src/main/resources/templates
 ############################
 
 qywx.json
+.gitattributes
 
 # Claude Code
 .claude
