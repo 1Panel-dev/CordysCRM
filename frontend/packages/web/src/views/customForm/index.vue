@@ -34,12 +34,18 @@
             @more-action-select="handleMoreActionSelect"
           >
             <template #titleLeft="{ item }">
-              <n-switch
-                v-if="item.isAdmin"
-                :value="item.enable"
-                class="ml-[4px]"
-                @click="handleBeforeEnableChange(item)"
-              />
+              <n-tooltip trigger="hover" :disabled="item.isAdmin">
+                <template #trigger>
+                  <n-switch
+                    :value="item.enable"
+                    :disabled="!item.isAdmin"
+                    class="ml-[4px]"
+                    size="small"
+                    @click="handleBeforeEnableChange(item)"
+                  />
+                </template>
+                {{ t('customForm.enableDisabledTip') }}
+              </n-tooltip>
             </template>
             <template #title="{ item }">
               <n-tooltip trigger="hover">
@@ -186,6 +192,9 @@
   }
 
   async function handleBeforeEnableChange(item: CustomFormItem) {
+    if (!item.isAdmin) {
+      return;
+    }
     if (item.enable) {
       openModal({
         type: 'error',
