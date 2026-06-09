@@ -136,7 +136,7 @@ public class ModuleFieldService {
         }
         String tableName = FORM_TABLE.get(request.getFormKey());
         if (StringUtils.isBlank(tableName)) {
-            throw new GenericException(Translator.get("module.form.illegal.unique.check"));
+            tableName = "custom_form_data";
         }
         String value = request.getValue();
         if (Strings.CI.equals(field.getType(), FieldType.PHONE.toString())) {
