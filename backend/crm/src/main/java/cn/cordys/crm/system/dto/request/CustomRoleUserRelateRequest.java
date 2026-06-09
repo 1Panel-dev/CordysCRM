@@ -12,10 +12,10 @@ import java.util.List;
  * @date 2025-01-13 17:33:23
  */
 @Data
-public class RoleUserRelateRequest {
+public class CustomRoleUserRelateRequest {
     @NotBlank
     @Schema(description = "角色ID")
-    private String roleId;
+    private String customFormRole;
 
     @Schema(description = "部门ID")
     private List<String> deptIds;
