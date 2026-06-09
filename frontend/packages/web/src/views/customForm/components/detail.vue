@@ -1,5 +1,13 @@
 <template>
-  <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="title">
+  <CrmDrawer
+    v-model:show="visible"
+    resizable
+    no-padding
+    :width="800"
+    :footer="false"
+    :title="title"
+    :view-size="formViewSize"
+  >
     <template #titleRight>
       <n-button v-if="isAdmin" type="primary" ghost class="n-btn-outline-primary" @click="emit('edit', props.sourceId)">
         {{ t('common.edit') }}
@@ -32,6 +40,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
+  import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -53,9 +62,11 @@
   const { t } = useI18n();
   const title = ref('');
   const isAdmin = ref(false);
+  const formViewSize = ref<FormViewSize>('large');
 
-  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
+  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     title.value = name || '';
     isAdmin.value = !!detail?.isAdmin;
+    formViewSize.value = config?.viewSize || 'large';
   }
 </script>
