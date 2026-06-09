@@ -293,7 +293,9 @@
         id: getGenerateId(),
         name: t('common.head'),
         businessKey: 'owner',
-        defaultValue: userStore.userInfo.id ? [userStore.userInfo.id] : [],
+        hasCurrentUser: true,
+        disabledProps: ['readable', 'mobile', 'rules.required'],
+        rules: [{ key: FieldRuleEnum.REQUIRED }],
         initialOptions: userStore.userInfo.id
           ? [
               {
@@ -302,7 +304,6 @@
               },
             ]
           : [],
-        disabledProps: [],
         internalKey: 'customFormDataNOwner',
       },
     ];

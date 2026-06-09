@@ -54,6 +54,23 @@ export const pathMap: PathMapItem[] = [
     route: AppRouteEnum.AGENT_INDEX,
   },
   {
+    key: 'CUSTOM_FORM',
+    locale: 'module.customForm',
+    route: AppRouteEnum.CUSTOM_FORM,
+    children: [
+      {
+        key: 'CUSTOM_FORM_INDEX',
+        route: AppRouteEnum.CUSTOM_FORM_INDEX,
+        locale: 'module.customForm',
+      },
+      {
+        key: 'CUSTOM_FORM_DATA',
+        route: AppRouteEnum.CUSTOM_FORM_INDEX,
+        locale: 'module.customFormData',
+      },
+    ],
+  },
+  {
     key: 'CUSTOMER',
     route: AppRouteEnum.CUSTOMER,
     locale: 'module.customerManagement',
