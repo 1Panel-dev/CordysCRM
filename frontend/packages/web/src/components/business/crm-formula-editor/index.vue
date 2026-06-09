@@ -134,7 +134,7 @@
                 <div class="flex items-center">
                   <div :style="{ color: FUN_COLOR }">TEXT</div>(<div :class="`text-[${TEXT_COLOR}]`">
                     {{ t('formulaEditor.function.formatDateOrNumber') }} </div
-                  >, <div :class="`text-[${TEXT_COLOR}]`"> {{ t('formulaEditor.function.formatCodeText') }} </div>, )
+                  >, <div :class="`text-[${TEXT_COLOR}]`"> {{ t('formulaEditor.function.formatCodeText') }} </div> )
                 </div>
               </div>
               <div v-if="activeFun?.name === 'IFS'">
