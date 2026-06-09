@@ -97,7 +97,7 @@
     } else {
       selectedList.value = params;
     }
-    modelValue.value = selectedList.value.map((item) => item.id);
+    modelValue.value = selectedList.value?.map((item) => item.id);
     showSelectDrawer.value = false;
     emit('confirm');
   }
@@ -113,7 +113,7 @@
         onClose: () => {
           handleClose();
           selectedList.value = selectedList.value?.filter((item) => item.id !== option.value) ?? [];
-          modelValue.value = selectedList.value.map((item) => item.id);
+          modelValue.value = selectedList.value?.map((item) => item.id);
           emit('deleteTag');
         },
       },
