@@ -289,8 +289,8 @@ public enum BusinessModuleField {
 
 
     /*------ start: ORDER ------*/
-    CUSTOM_FORM_DATA_NAME("customFormDataName", "name", Set.of("rules.required", "mobile", "readable"), FormKey.ORDER.getKey()),
-    CUSTOM_FORM_DATA_OWNER("customFormDataNOwner", "owner", Set.of(), FormKey.ORDER.getKey()),
+    CUSTOM_FORM_DATA_NAME("customFormDataName", "name", Set.of("rules.required", "mobile", "readable"), null),
+    CUSTOM_FORM_DATA_OWNER("customFormDataNOwner", "owner", Set.of(), null),
     /*------ end: ORDER ------*/
 
     ;
