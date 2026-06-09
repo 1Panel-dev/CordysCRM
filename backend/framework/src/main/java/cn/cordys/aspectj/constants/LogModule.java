@@ -158,7 +158,7 @@ public class LogModule {
     /**
      * 自定义表单
      */
-    public static final String CUSTOM_FORM = "CUSTOM_FORM";
+    public static final String CUSTOM_FORM = "CUSTOM_FORM_INDEX";
     /**
      * 自定义表单数据
      */
