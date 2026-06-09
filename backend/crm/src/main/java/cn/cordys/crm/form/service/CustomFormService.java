@@ -299,14 +299,12 @@ public class CustomFormService {
         updateForm.setId(id);
         updateForm.setEnable(enable);
         customFormMapper.update(updateForm);
+		updateForm.setName(form.getName());
 
-        CustomForm originForm = new CustomForm();
-        updateForm.setId(id);
-        updateForm.setEnable(form.getEnable());
         OperationLogContext.setContext(
                 LogContextInfo.builder()
-                        .resourceName(originForm.getName())
-                        .originalValue(originForm)
+                        .resourceName(form.getName())
+                        .originalValue(form)
                         .modifiedValue(updateForm)
                         .build()
         );
