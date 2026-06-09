@@ -53,28 +53,36 @@
       <div class="flex-1">
         <slot name="tableTop"></slot>
       </div>
-      <ColumnSetting
-        v-if="attrs.showSetting && !props.actionConfig"
-        :table-key="attrs.tableKey as TableKeyEnum"
-        :no-pagination="props.noPagination"
-        :disabled="!!notShowTable"
-        @change-columns-setting="changeColumnsSetting"
-      />
-      <n-button
-        v-if="!attrs.hiddenAllScreen && !props.actionConfig"
-        type="default"
-        class="outline--secondary px-[8px]"
-        @click="toggleFullScreen"
-      >
-        <CrmIcon
-          class="text-[var(--text-n1)]"
-          :type="isFullScreen ? 'iconicon_off_screen' : 'iconicon_full_screen_one'"
-          :size="16"
+      <div class="flex items-center gap-[8px]">
+        <slot name="actionRight"></slot>
+        <ColumnSetting
+          v-if="attrs.showSetting && !props.actionConfig"
+          :table-key="attrs.tableKey as TableKeyEnum"
+          :no-pagination="props.noPagination"
+          :disabled="!!notShowTable"
+          @change-columns-setting="changeColumnsSetting"
         />
-      </n-button>
-      <n-button v-if="!attrs.hiddenRefresh" type="default" class="outline--secondary px-[8px]" @click="emit('refresh')">
-        <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
-      </n-button>
+        <n-button
+          v-if="!attrs.hiddenAllScreen && !props.actionConfig"
+          type="default"
+          class="outline--secondary px-[8px]"
+          @click="toggleFullScreen"
+        >
+          <CrmIcon
+            class="text-[var(--text-n1)]"
+            :type="isFullScreen ? 'iconicon_off_screen' : 'iconicon_full_screen_one'"
+            :size="16"
+          />
+        </n-button>
+        <n-button
+          v-if="!attrs.hiddenRefresh"
+          type="default"
+          class="outline--secondary px-[8px]"
+          @click="emit('refresh')"
+        >
+          <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
+        </n-button>
+      </div>
     </div>
     <slot name="view"></slot>
     <slot name="other"></slot>

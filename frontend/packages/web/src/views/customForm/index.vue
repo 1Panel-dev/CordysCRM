@@ -62,7 +62,7 @@
       </template>
       <template #2>
         <div class="h-full p-[24px]">
-          <formTable v-if="activeForm" :form-key="activeForm" />
+          <formTable v-if="activeForm" :form-key="activeForm" :readonly="!activeFormIsAdmin" />
         </div>
       </template>
     </CrmSplitPanel>
@@ -102,6 +102,7 @@
   const finished = ref(false);
   const keyword = ref('');
   const activeForm = ref('');
+  const activeFormIsAdmin = computed(() => formList.value.find((e) => e.id === activeForm.value)?.isAdmin);
 
   async function loadFormList(_keyword?: string) {
     try {
