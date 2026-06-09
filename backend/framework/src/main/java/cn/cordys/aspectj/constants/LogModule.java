@@ -150,11 +150,6 @@ public class LogModule {
 
     public static final String APPROVAL_FLOW = "SYSTEM_PROCESS_APPROVAL";
 
-	/**
-	 * 首页
-	 */
-	public static final String WORKBENCH = "WORKBENCH";
-
     /**
      * 自定义表单
      */
