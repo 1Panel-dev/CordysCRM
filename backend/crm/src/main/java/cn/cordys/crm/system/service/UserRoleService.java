@@ -194,13 +194,13 @@ public class UserRoleService {
                     .filter(userId -> userNameMap.get(userId) != null)
                     .toList();
 
-            List<String> currentRoleUserIds = extUserRoleMapper.getUserIdsByRoleIds(List.of(request.getCustomFormRole()));
+            List<String> currentRoleUserIds = extUserRoleMapper.getUserIdsByRoleIds(List.of(request.getRoleId()));
             // 去除已关联的用户，添加未关联的用户
             List<UserRole> userRoles = ListUtils.subtract(subUserIds, currentRoleUserIds).stream()
                     .map(userId -> {
                         UserRole userRole = new UserRole();
                         userRole.setUserId(userId);
-                        userRole.setRoleId(request.getCustomFormRole());
+                        userRole.setRoleId(request.getRoleId());
                         userRole.setId(IDGenerator.nextStr());
                         userRole.setCreateUser(operator);
                         userRole.setUpdateUser(operator);
@@ -211,7 +211,7 @@ public class UserRoleService {
                     .collect(Collectors.toList());
             userRoleMapper.batchInsert(userRoles);
 
-            Role role = roleMapper.selectByPrimaryKey(request.getCustomFormRole());
+            Role role = roleMapper.selectByPrimaryKey(request.getRoleId());
             role.setName(roleService.translateInternalRole(role.getName()));
             List<LogDTO> logs = new ArrayList<>();
             userRoles.forEach(u -> {
