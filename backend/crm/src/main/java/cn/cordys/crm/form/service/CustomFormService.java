@@ -87,12 +87,19 @@ public class CustomFormService {
     public List<CustomFormListResponse> list(String userId) {
         List<CustomForm> customForms;
         Set<String> adminFormIds;
+        Set<String> hasCreatePermissionFormIds;
         if (Strings.CS.equals(InternalUser.ADMIN.getValue(), userId)) {
             customForms = customFormMapper.selectAll(null);
             adminFormIds = customForms.stream().map(CustomForm::getId).collect(Collectors.toSet());
+            hasCreatePermissionFormIds = adminFormIds;
         } else {
             adminFormIds = getAdminFormIds(userId);
-            Set<String> memberFormIds = getMemberFormIds(userId);
+            List<CustomFormRole> formRoles = getFormRoles(userId);
+            // formRoles 按 customFormId 分组，后续可以展示角色信息
+            Map<String, List<CustomFormRole>> roleMap = formRoles.stream()
+                    .collect(Collectors.groupingBy(CustomFormRole::getCustomFormId));
+            Set<String> memberFormIds = roleMap.keySet();
+
             if (adminFormIds.isEmpty() && memberFormIds.isEmpty()) {
                 return Collections.emptyList();
             }
@@ -103,11 +110,14 @@ public class CustomFormService {
 
             customForms = customFormMapper.selectByIds(accessibleFormIds.stream().toList());
 
+            hasCreatePermissionFormIds = getCreatePermissionFormIds(customForms, roleMap);
+
             // 非管理员只能看到启用的表单
             customForms = customForms.stream()
                     .filter(form -> adminFormIds.contains(form.getId()) || BooleanUtils.isTrue(form.getEnable()))
                     .toList();
         }
+        Set<String> finalHasCreatePermissionFormIds = hasCreatePermissionFormIds;
         return customForms.stream()
                 .map(form -> {
                     CustomFormListResponse resp = new CustomFormListResponse();
@@ -117,8 +127,24 @@ public class CustomFormService {
                     resp.setOrganizationId(form.getOrganizationId());
                     // 标记是否是管理员
                     resp.setIsAdmin(adminFormIds.contains(form.getId()));
+                    resp.setHasCreateDataPermission(finalHasCreatePermissionFormIds.contains(form.getId()));
                     return resp;
                 }).toList();
+    }
+
+    private Set<String> getCreatePermissionFormIds(List<CustomForm> customForms, Map<String, List<CustomFormRole>> roleMap) {
+        Set<String> hasCreatePermissionFormIds = new HashSet<>();
+        for (CustomForm form : customForms) {
+            // 如果角色中有 CustomFormRoleKey 中的 MANAGE_ALL 或者 MANAGE_OWN，则有创建权限
+            List<CustomFormRole> roles = roleMap.get(form.getId());
+            boolean hasCreatePermission = roles != null && roles.stream()
+                    .anyMatch(role -> CustomFormRoleKey.MANAGE_ALL.getKey().equals(role.getInternalKey())
+                            || CustomFormRoleKey.MANAGE_OWN.getKey().equals(role.getInternalKey()));
+            if (hasCreatePermission) {
+                hasCreatePermissionFormIds.add(form.getId());
+            }
+        }
+        return hasCreatePermissionFormIds;
     }
 
     public CustomFormGetResponse get(String id, String userId, String orgId) {
@@ -448,7 +474,7 @@ public class CustomFormService {
         return admins.stream().map(CustomFormAdmin::getCustomFormId).collect(Collectors.toSet());
     }
 
-    private Set<String> getMemberFormIds(String userId) {
+    private List<CustomFormRole> getFormRoles(String userId) {
         LambdaQueryWrapper<CustomFormRoleUser> ruWrapper = new LambdaQueryWrapper<>();
         ruWrapper.eq(CustomFormRoleUser::getUserId, userId);
         List<CustomFormRoleUser> roleUsers = customFormRoleUserMapper.selectListByLambda(ruWrapper);
@@ -457,9 +483,9 @@ public class CustomFormService {
             LambdaQueryWrapper<CustomFormRole> roleWrapper = new LambdaQueryWrapper<>();
             roleWrapper.in(CustomFormRole::getId, roleIds);
             List<CustomFormRole> roles = customFormRoleMapper.selectListByLambda(roleWrapper);
-            return roles.stream().map(CustomFormRole::getCustomFormId).collect(Collectors.toSet());
+            return roles;
         }
-        return Set.of();
+        return List.of();
     }
 
     private void checkNameUnique(String name, String excludeFormId) {
