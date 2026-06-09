@@ -38,6 +38,7 @@ export function createDefaultFormConfig(t: ReturnType<typeof useI18n>['t']): For
       },
     ],
     optBtnPos: 'flex-row',
+    viewSize: 'small',
   };
 }
 
