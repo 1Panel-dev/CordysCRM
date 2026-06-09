@@ -96,6 +96,7 @@ public class SystemModuleLogService extends BaseModuleLogService {
             }
         });
 
+		differences.removeIf(differ -> differ.getOldValueName() == null && differ.getNewValueName() == null);
         return differences;
     }
 
@@ -195,20 +196,6 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 .stream()
                 .map(String::valueOf)
                 .map(Translator::get)
-                .toList());
-    }
-
-
-    /**
-     * TODO: 目前就只粗略展示字段的变更
-     * @param differ 差异
-     */
-    private void handleFieldsLogDetail(JsonDifferenceDTO differ) {
-        differ.setOldValueName(parseFieldList(differ.getOldValue()).stream()
-                .map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
-                .toList());
-        differ.setNewValueName(parseFieldList(differ.getNewValue()).stream()
-                .map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
                 .toList());
     }
 

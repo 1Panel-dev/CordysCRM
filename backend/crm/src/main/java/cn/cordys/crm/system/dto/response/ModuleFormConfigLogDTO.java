@@ -9,6 +9,9 @@ import java.util.List;
 @Data
 public class ModuleFormConfigLogDTO {
 
+    @Schema(description = "表单名称")
+    private String name;
+
     @Schema(description = "字段集合及其属性")
     private List<BaseField> fields;
 

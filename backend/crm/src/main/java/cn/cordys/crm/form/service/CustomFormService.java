@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
@@ -13,8 +14,8 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.*;
-import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
 import cn.cordys.crm.form.dto.request.CustomFormAddRequest;
+import cn.cordys.crm.form.dto.request.CustomFormAdminBatchRequest;
 import cn.cordys.crm.form.dto.request.CustomFormUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormListResponse;
@@ -25,10 +26,9 @@ import cn.cordys.crm.system.domain.ModuleFormBlob;
 import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.dto.response.ModuleFormConfigLogDTO;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
-import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -64,8 +64,6 @@ public class CustomFormService {
     private BaseMapper<ModuleForm> moduleFormMapper;
     @Resource
     private BaseMapper<ModuleFormBlob> moduleFormBlobMapper;
-    @Resource
-    private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
     @Resource
@@ -195,7 +193,7 @@ public class CustomFormService {
                 .map(CustomFormAdmin::getUserId)
                 .distinct()
                 .toList();
-        Map<String, String> userNameMap = new HashMap<>();
+        Map<String, String> userNameMap = new HashMap<>(userIds.size());
         extUserMapper.selectUserOptionByIds(userIds)
                 .forEach(option -> userNameMap.putIfAbsent(option.getId(), option.getName()));
         return userIds.stream()
@@ -299,22 +297,27 @@ public class CustomFormService {
         checkUpdateExist(updateForm);
         customFormMapper.update(updateForm);
 
-        CustomForm modifiedForm = customFormMapper.selectByPrimaryKey(request.getId());
-
         ModuleFormSaveRequest moduleFormRequest = new ModuleFormSaveRequest();
         moduleFormRequest.setFormKey(originModuleForm.getFormKey());
         moduleFormRequest.setFormProp(request.getFormProp());
         moduleFormRequest.setFields(request.getFields());
 
-        moduleFormCacheService.save(moduleFormRequest, userId, orgId);
+        // 获取表单日志信息
+        LogContextInfo formChangeLogContext = moduleFormService.getModuleFormChangeLogContext(originModuleForm.getFormKey(), orgId, moduleFormRequest);
+		formChangeLogContext.setResourceName(request.getName());
+        // 追加自定义表单名称
+        if (formChangeLogContext.getOriginalValue() instanceof ModuleFormConfigLogDTO originalLog) {
+            originalLog.setName(originForm.getName());
+        }
+        if (formChangeLogContext.getModifiedValue() instanceof ModuleFormConfigLogDTO modifiedLog) {
+            modifiedLog.setName(request.getName());
+        }
 
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceName(originForm.getName())
-                        .originalValue(originForm)
-                        .modifiedValue(modifiedForm)
-                        .build()
-        );
+        // 保存表单配置
+        moduleFormService.saveWithoutLog(moduleFormRequest, userId, orgId);
+
+		// 设置日志上下文
+        OperationLogContext.setContext(formChangeLogContext);
     }
 
     @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE, resourceId = "{#id}")

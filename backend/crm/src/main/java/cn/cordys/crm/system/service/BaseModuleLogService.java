@@ -59,6 +59,36 @@ public abstract class BaseModuleLogService {
         differ.setNewValueName(differ.getNewValue());
     }
 
+	/**
+	 * 处理字段变更日志详情，如果字段没有实际变化则不产生日志
+	 * @param differ 差异
+	 */
+	public void handleFieldsLogDetail(JsonDifferenceDTO differ) {
+		List<String> oldFieldNames = parseFieldList(differ.getOldValue()).stream()
+				.map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
+				.toList();
+		List<String> newFieldNames = parseFieldList(differ.getNewValue()).stream()
+				.map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
+				.toList();
+
+		// 如果字段名称列表相同，说明没有实际变化，不需要产生日志详情
+		if (Objects.equals(oldFieldNames, newFieldNames)) {
+			differ.setOldValueName(null);
+			differ.setNewValueName(null);
+			return;
+		}
+
+		differ.setOldValueName(oldFieldNames);
+		differ.setNewValueName(newFieldNames);
+	}
+
+	private List<?> parseFieldList(Object value) {
+		if (value instanceof List<?> list) {
+			return list;
+		}
+		return Collections.emptyList();
+	}
+
     abstract public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId);
 
     /**
