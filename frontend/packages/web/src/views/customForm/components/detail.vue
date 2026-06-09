@@ -16,7 +16,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
-            :readonly="!hasAnyPermission([])"
+            :readonly="!isAdmin"
             :customFormId="props.customFormId"
             @init="handleInit"
           />
@@ -36,8 +36,6 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
-
-  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;

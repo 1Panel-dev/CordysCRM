@@ -171,7 +171,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     return [];
   }
 
-  async function initFormConfig() {
+  async function initFormConfig(_readOnly?: boolean, operationColumn?: CrmDataTableColumn) {
     try {
       const sorter = noPaginationKey.includes(props.formKey) ? 'default' : true;
       loading.value = true;
@@ -516,7 +516,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         columns.value = disableFilterAndSorter(columns.value);
       }
       if (
-        !props.readonly &&
+        (!_readOnly || !props.readonly) &&
         ![FormDesignKeyEnum.FOLLOW_PLAN, FormDesignKeyEnum.FOLLOW_RECORD].includes(props.formKey)
       ) {
         columns.value.unshift({
@@ -548,7 +548,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         columnSelectorDisabled: true,
         render: (row: any, rowIndex: number) => rowIndex + 1,
       });
-      if (props.operationColumn) {
+      if (operationColumn) {
+        columns.value.push(operationColumn);
+      } else if (props.operationColumn) {
         columns.value.push(props.operationColumn);
       }
       customFieldsFilterConfig.value = getFilterListConfig(res);
