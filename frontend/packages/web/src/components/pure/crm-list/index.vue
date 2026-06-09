@@ -28,9 +28,10 @@
             :style="{
               height: `${props.itemHeight}px`,
             }"
+            @click="emit('itemClick', item)"
           >
             <slot name="titleLeft" :item="item"></slot>
-            <div class="flex-1 overflow-x-hidden" @click="emit('itemClick', item)">
+            <div class="flex-1 overflow-x-hidden">
               <slot name="title" :item="item"></slot>
             </div>
             <div class="flex items-center gap-[4px]">
@@ -49,7 +50,7 @@
                   trigger="click"
                   @select="handleMoreActionSelect($event, item)"
                   @close="handleMoreActionClose"
-                  @click="handleClickMore(item)"
+                  @click.stop="handleClickMore(item)"
                 >
                 </CrmMoreAction>
               </div>

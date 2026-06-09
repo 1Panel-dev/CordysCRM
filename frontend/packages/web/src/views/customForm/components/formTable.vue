@@ -7,6 +7,7 @@
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="props.readonly ? undefined : actionConfig"
     :columns="formColumns"
+    :table-key="customFormId"
     @row-key-change="handleRowKeyChange"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
@@ -73,7 +74,7 @@
   import { type FilterForm, FilterFormItem, type FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import type { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import type { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
@@ -178,25 +179,31 @@
 
   const showOverviewDrawer = ref(false);
   const customFormId = computed(() => props.formKey);
+  const operationColumn = computed<CrmDataTableColumn | undefined>(() => {
+    if (props.readonly) {
+      return undefined;
+    }
+    return {
+      key: 'operation',
+      width: 120,
+      fixed: 'right',
+      render: (row: CustomFormPageItem) =>
+        row.isAdmin
+          ? h(CrmOperationButton, {
+              groupList: row.isAdmin ? operationGroupList : [],
+              onSelect: (key: string) => handleActionSelect(row, key),
+            })
+          : '-',
+    };
+  });
 
   const { useTableRes, customFieldsFilterConfig, initFormConfig, columns } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOM_FORM,
     customFormId,
     disabledSelection: (row: CustomFormPageItem) => {
-      return !row.isAdmin;
+      return !row.isAdmin || props.readonly;
     },
-    operationColumn: props.readonly
-      ? undefined
-      : {
-          key: 'operation',
-          width: 120,
-          fixed: 'right',
-          render: (row: CustomFormPageItem) =>
-            h(CrmOperationButton, {
-              groupList: row.isAdmin ? operationGroupList : [],
-              onSelect: (key: string) => handleActionSelect(row, key),
-            }),
-        },
+    operationColumn: operationColumn.value,
     specialRender: {
       name: (row: CustomFormPageItem) => {
         return h(
@@ -340,7 +347,7 @@
     () => props.formKey,
     async () => {
       keyword.value = '';
-      await initFormConfig();
+      await initFormConfig(props.readonly, operationColumn.value);
       tableAdvanceFilterRef.value?.clearFilter();
       setLoadListParams({ customFormId: customFormId.value });
       searchData();

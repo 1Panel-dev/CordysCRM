@@ -105,7 +105,9 @@
   const keyword = ref('');
   const activeForm = ref('');
   const hasCreateDataPermission = computed(
-    () => formList.value.find((e) => e.id === activeForm.value)?.hasCreateDataPermission
+    () =>
+      formList.value.find((e) => e.id === activeForm.value)?.isAdmin ||
+      formList.value.find((e) => e.id === activeForm.value)?.hasCreateDataPermission
   );
 
   async function loadFormList() {
