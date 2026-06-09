@@ -20,7 +20,7 @@
           <slot name="actionRight"></slot>
           <ColumnSetting
             v-if="attrs.showSetting && props.actionConfig"
-            :table-key="attrs.tableKey as TableKeyEnum"
+            :table-key="realTableKey"
             :disabled="!!notShowTable"
             :no-pagination="props.noPagination"
             @change-columns-setting="changeColumnsSetting"
@@ -57,7 +57,7 @@
         <slot name="actionRight"></slot>
         <ColumnSetting
           v-if="attrs.showSetting && !props.actionConfig"
-          :table-key="attrs.tableKey as TableKeyEnum"
+          :table-key="realTableKey"
           :no-pagination="props.noPagination"
           :disabled="!!notShowTable"
           @change-columns-setting="changeColumnsSetting"
@@ -213,6 +213,7 @@
     class?: string; // 自定义样式类
     childrenKey?: string; // 子节点字段名
     noPagination?: boolean; // 不使用分页功能
+    tableKey?: TableKeyEnum | string;
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
@@ -241,6 +242,8 @@
   function scrollTo(options: { top?: number; left?: number }) {
     tableRef.value?.scrollTo(options);
   }
+
+  const realTableKey = computed(() => props.tableKey || (attrs.tableKey as TableKeyEnum));
 
   function handleFiltersChange(filters: DataTableFilterState, initiatorColumn: DataTableBaseColumn) {
     if (!attrs.showPagination) return;
@@ -403,12 +406,12 @@
       });
       return _col;
     });
-    if (attrs.tableKey && props.columns.length) {
+    if (realTableKey.value && props.columns.length) {
       // 判断 props.columns.length 避免接口报错导致 columns 是空的写入本地存储数据
-      await tableStore.initColumn(attrs.tableKey as TableKeyEnum, columns);
+      await tableStore.initColumn(realTableKey.value, columns);
     }
     if (attrs.showSetting) {
-      columns = await tableStore.getShowInTableColumns(attrs.tableKey as TableKeyEnum);
+      columns = await tableStore.getShowInTableColumns(realTableKey.value);
     }
 
     currentColumns.value = columns.map((column) => {
@@ -548,7 +551,7 @@
   const layOut = ref<string>('');
   async function initLayoutType() {
     if (attrs.showSetting) {
-      const layout = await tableStore.getTableLineHeight(attrs.tableKey as TableKeyEnum);
+      const layout = await tableStore.getTableLineHeight(realTableKey.value);
       layOut.value = layout;
       crmTableLayoutClass.value = layout === 'compact' ? 'crm-data-table-compact' : 'crm-data-table-loose';
     }
@@ -557,7 +560,7 @@
   const paginationType = ref<PaginationType>();
   async function initPaginationType(load: boolean = false) {
     if (attrs.showSetting) {
-      paginationType.value = await tableStore.getTablePaginationType(attrs.tableKey as TableKeyEnum);
+      paginationType.value = await tableStore.getTablePaginationType(realTableKey.value);
       if (load) {
         // 切换分页类型时，重置页码到1
         scrollTo({
@@ -594,7 +597,7 @@
   }
 
   function patchColKeys() {
-    if (!attrs.tableKey) return;
+    if (!realTableKey.value) return;
     const colElements = tableFullRef.value?.querySelectorAll('table col');
     if (!colElements || !currentColumns.value) return;
 
@@ -615,8 +618,8 @@
     // 监听表格 col 元素的宽度变化
     const colElements = tableFullRef.value?.querySelectorAll('table col');
     const handleResize = debounce(async () => {
-      const tableColumnsMap = await getItem<TableStorageConfigItem>(attrs.tableKey as TableKeyEnum);
-      if (attrs.tableKey && tableColumnsMap) {
+      const tableColumnsMap = await getItem<TableStorageConfigItem>(realTableKey.value);
+      if (realTableKey.value && tableColumnsMap) {
         if (isFirstResize) {
           isFirstResize = false; // 第一次触发，跳过
           return;
@@ -629,7 +632,7 @@
             col.width = (e.computedStyleMap()?.get('width') as any)?.value || col.width;
           }
         });
-        setItem(attrs.tableKey as TableKeyEnum, tableColumnsMap);
+        setItem(realTableKey.value, tableColumnsMap);
         currentColumns.value = currentColumns.value.map((col) => {
           const cachedColumn = tableColumnsMap.column.find((c) => c.key === col.key);
           return {
@@ -700,7 +703,7 @@
   async function setColumnSort(viewId: string) {
     // 切换视图column有变化（如切到协作视图）的时候，会执行initColumn，initColumn后再设置排序
     setTimeout(async () => {
-      const sortObj = await viewStore.getViewSort(attrs.tableKey as TableKeyEnum, viewId);
+      const sortObj = await viewStore.getViewSort(realTableKey.value, viewId);
       if (sortObj && Object.keys(sortObj).length) {
         handleSorterChange({
           columnKey: sortObj.name as string,

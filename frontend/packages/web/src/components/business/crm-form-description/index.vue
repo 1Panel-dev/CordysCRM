@@ -14,11 +14,12 @@
         <CrmFormCreateDivider :field-config="item.fieldInfo" class="!m-0 w-full" />
       </template>
       <template #image="{ item }">
-        <n-image-group>
+        <n-image-group v-if="item.value.length">
           <n-space :class="`${props.valueAlign ?? '!justify-end'}`">
             <n-image v-for="img in item.value" :key="img" :src="`${PreviewPictureUrl}/${img}`" width="40" height="40" />
           </n-space>
         </n-image-group>
+        <data v-else>-</data>
       </template>
       <template #[FieldTypeEnum.INPUT]="{ item }">
         <div class="field-line flex w-full items-center">
@@ -41,7 +42,7 @@
             :feedback="feedbackMap[item.fieldInfo.id]"
             class="flex-1"
           />
-          <div v-else>{{ item.value }}</div>
+          <div v-else>{{ item.value || '-' }}</div>
         </div>
       </template>
       <template #[FieldTypeEnum.TEXTAREA]="{ item }">
@@ -65,7 +66,8 @@
             :feedback="feedbackMap[item.fieldInfo.id]"
             class="flex-1"
           />
-          <div v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
+          <div v-if="item.value" v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
+          <div v-else>-</div>
         </div>
       </template>
       <!-- 链接字段 -->
@@ -80,10 +82,10 @@
           <n-tooltip :delay="300">
             <template #trigger>
               <div class="one-line-text cursor-pointer text-[var(--primary-8)]" @click="openLink(item)">
-                {{ item.value }}
+                {{ item.value || '-' }}
               </div>
             </template>
-            {{ item.value }}
+            {{ item.value || '-' }}
           </n-tooltip>
         </div>
       </template>
