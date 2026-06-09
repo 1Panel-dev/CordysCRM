@@ -207,12 +207,23 @@ public class ModuleFormService {
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#saveParam.formKey}")
     public ModuleFormConfigDTO save(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
+		// 设置表单日志上下文
+		OperationLogContext.setContext(getModuleFormChangeLogContext(saveParam.getFormKey(), currentOrgId, saveParam));
+        // 返回表单配置
+        return saveWithoutLog(saveParam, currentUserId, currentOrgId);
+    }
+
+    /**
+     * 保存表单配置（不记录日志）
+     *
+     * @param saveParam     保存参数
+     * @param currentUserId 当前用户ID
+     * @param currentOrgId  当前组织ID
+     * @return 表单配置
+     */
+    public ModuleFormConfigDTO saveWithoutLog(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
         // 处理表单
         ModuleForm form = getModuleFormByKey(saveParam.getFormKey(), currentOrgId);
-
-        // 获取旧表单配置
-        ModuleFormConfigDTO oldConfig = getModuleFormConfigDTO(saveParam.getFormKey(), form.getId(), currentOrgId);
-
         form.setUpdateUser(currentUserId);
         form.setUpdateTime(System.currentTimeMillis());
         moduleFormMapper.updateById(form);
@@ -244,20 +255,31 @@ public class ModuleFormService {
             }
         }
 
-        // 记录日志上下文
+        // 返回表单配置
+        return getConfig(form.getFormKey(), currentOrgId);
+    }
+
+    /**
+     * 获取字段变更日志信息（供外部调用方合并日志使用）
+     *
+     * @param formKey      表单Key
+     * @param currentOrgId 当前组织ID
+     * @param saveParam    保存参数
+     * @return 字段变更日志信息
+     */
+    public LogContextInfo getModuleFormChangeLogContext(String formKey, String currentOrgId, ModuleFormSaveRequest saveParam) {
+        ModuleForm form = getModuleFormByKey(formKey, currentOrgId);
+        ModuleFormConfigDTO oldConfig = getModuleFormConfigDTO(formKey, form.getId(), currentOrgId);
+
         ModuleFormConfigDTO newConfig = new ModuleFormConfigDTO();
         newConfig.setFields(saveParam.getFields());
         newConfig.setFormProp(saveParam.getFormProp());
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceName(Translator.get(saveParam.getFormKey()) + Translator.get("module.form.setting"))
-                        .originalValue(buildModuleFormLogDTO(oldConfig))
-                        .modifiedValue(buildModuleFormLogDTO(newConfig))
-                        .build()
-        );
 
-        // 返回表单配置
-        return getConfig(form.getFormKey(), currentOrgId);
+        return LogContextInfo.builder()
+                .resourceName(Translator.get(formKey) + Translator.get("module.form.setting"))
+                .originalValue(buildModuleFormLogDTO(oldConfig))
+                .modifiedValue(buildModuleFormLogDTO(newConfig))
+                .build();
     }
 
     private ModuleFormConfigDTO getModuleFormConfigDTO(String formKey, String formId, String orgId) {

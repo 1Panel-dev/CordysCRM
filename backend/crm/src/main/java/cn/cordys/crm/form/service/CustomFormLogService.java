@@ -39,10 +39,18 @@ public class CustomFormLogService extends BaseModuleLogService {
                 handleAdminUserIdsLogDetail(differ);
             } else if (Strings.CS.equals(differ.getColumn(), "roleUsers")) {
                 handleRoleUsersLogDetail(differ);
-            } else {
+            } else if (Strings.CS.equals(differ.getColumn(), "name")) {
+				differ.setColumnName(Translator.get("log.form." + differ.getColumn()));
+				differ.setOldValueName(differ.getOldValue());
+				differ.setNewValueName(differ.getNewValue());
+			} else if (Strings.CS.equals(differ.getColumn(), "fields")) {
+				differ.setColumnName(Translator.get("log." + differ.getColumn()));
+				handleFieldsLogDetail(differ);
+			} else {
                 translatorDifferInfo(differ);
             }
         });
+        differences.removeIf(differ -> differ.getOldValueName() == null && differ.getNewValueName() == null);
         return differences;
     }
 
