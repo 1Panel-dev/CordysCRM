@@ -55,6 +55,7 @@ export interface CustomFormItem {
   name: string;
   enable: boolean;
   isAdmin: boolean;
+  hasCreateDataPermission: boolean;
 }
 
 export interface AddCustomFormDataParams {

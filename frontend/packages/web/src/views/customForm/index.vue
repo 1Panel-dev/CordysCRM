@@ -62,7 +62,7 @@
       </template>
       <template #2>
         <div class="h-full p-[24px]">
-          <formTable v-if="activeForm" :form-key="activeForm" :readonly="!activeFormIsAdmin" />
+          <formTable v-if="activeForm" :form-key="activeForm" :readonly="!hasCreateDataPermission" />
         </div>
       </template>
     </CrmSplitPanel>
@@ -104,7 +104,9 @@
   const finished = ref(false);
   const keyword = ref('');
   const activeForm = ref('');
-  const activeFormIsAdmin = computed(() => formList.value.find((e) => e.id === activeForm.value)?.isAdmin);
+  const hasCreateDataPermission = computed(
+    () => formList.value.find((e) => e.id === activeForm.value)?.hasCreateDataPermission
+  );
 
   async function loadFormList() {
     try {
