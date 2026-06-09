@@ -1,7 +1,7 @@
 <template>
   <CrmDrawer v-model:show="visible" resizable no-padding :width="800" :footer="false" :title="title">
     <template #titleRight>
-      <n-button type="primary" ghost class="n-btn-outline-primary" @click="emit('edit', props.sourceId)">
+      <n-button v-if="isAdmin" type="primary" ghost class="n-btn-outline-primary" @click="emit('edit', props.sourceId)">
         {{ t('common.edit') }}
       </n-button>
     </template>
@@ -54,8 +54,10 @@
 
   const { t } = useI18n();
   const title = ref('');
+  const isAdmin = ref(false);
 
-  function handleInit(type?: CollaborationType, name?: string) {
+  function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>) {
     title.value = name || '';
+    isAdmin.value = !!detail?.isAdmin;
   }
 </script>

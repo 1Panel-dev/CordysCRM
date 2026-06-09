@@ -15,9 +15,6 @@
     @batch-action="handleBatchAction"
     @refresh="searchData"
   >
-    <template v-if="props.readonly" #tableTop>
-      <slot name="searchTableTotal" :total="propsRes.crmPagination?.itemCount || 0"></slot>
-    </template>
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button v-if="!props.readonly" type="primary" @click="handleNewClick">
@@ -88,7 +85,6 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
-  import { hasAnyPermission } from '@/utils/permission';
 
   import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
@@ -307,9 +303,9 @@
     }
   }
 
-  function handleFormCreateSaved(res: any) {
+  function handleFormCreateSaved(res?: any) {
     if (needInitDetail.value) {
-      searchData(undefined, res.id || activeSourceId.value);
+      searchData(undefined, res?.id || activeSourceId.value);
     } else {
       searchData();
     }
