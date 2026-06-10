@@ -84,7 +84,12 @@
 
     <div class="mt-[16px]">
       <div class="mb-[16px] flex items-center gap-[8px]">
-        <n-switch v-model:value="activeWebhookConfig.webHookEnable" :rubber-band="false" :disabled="props.readonly" />
+        <n-switch
+          v-model:value="activeWebhookConfig.webHookEnable"
+          :rubber-band="false"
+          :disabled="props.readonly"
+          @update:value="handleWebhookEnableChange"
+        />
         <div class="font-semibold text-[var(--text-n1)]">{{ t('process.process.flow.webhook') }}</div>
         <n-tooltip :delay="300" placement="top-start" :show-arrow="false">
           <template #trigger>
@@ -668,6 +673,12 @@
       ...defaultWebHookConfig,
       ...config.webHookConfig,
     };
+  }
+
+  function handleWebhookEnableChange(val: boolean) {
+    if (!val) {
+      ensureActivePostConfig().webHookConfig = { ...defaultWebHookConfig };
+    }
   }
 
   async function loadFormFields() {
