@@ -550,7 +550,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by fup.estimated_time desc, fup.create_time desc
+                order by fup.estimated_time desc, fup.create_time desc, fup.id ASC
             </otherwise>
         </choose>
     </sql>
