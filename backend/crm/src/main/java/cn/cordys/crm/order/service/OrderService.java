@@ -286,6 +286,33 @@ public class OrderService {
     }
 
     /**
+     * 获取字段详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+     * @param id 订单ID
+     * @return 订单详情
+     */
+    public OrderGetResponse getFieldValues(String id) {
+        OrderGetResponse response = new OrderGetResponse();
+        Order order = orderMapper.selectByPrimaryKey(id);
+        if (order == null) {
+            return null;
+        }
+        LambdaQueryWrapper<OrderSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OrderSnapshot::getOrderId, id);
+        OrderSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        if (snapshot != null) {
+            response = JSON.parseObject(snapshot.getOrderValue(), OrderGetResponse.class);
+            if (StringUtils.isNotBlank(order.getCustomerId())) {
+                Customer customer = customerBaseMapper.selectByPrimaryKey(order.getCustomerId());
+                if (customer != null) {
+                    response.setInCustomerPool(customer.getInSharedPool());
+                    response.setPoolId(customer.getPoolId());
+                }
+            }
+        }
+        return response;
+    }
+
+    /**
      * 批量获取订单详情 (用于数据源批量查询优化)
      *
      * @param ids 订单ID集合

@@ -294,6 +294,33 @@ public class ContractService {
         return response;
     }
 
+
+    /**
+     * 获取字段详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+     * @param id 合同ID
+     * @return 合同详情
+     */
+    public ContractGetResponse getFieldValues(String id) {
+        ContractGetResponse response = new ContractGetResponse();
+        Contract contract = contractMapper.selectByPrimaryKey(id);
+        if (contract == null) {
+            return null;
+        }
+        LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ContractSnapshot::getContractId, id);
+        ContractSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        if (snapshot != null) {
+            response = JSON.parseObject(snapshot.getContractValue(), ContractGetResponse.class);
+            Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
+            if (customer != null) {
+                response.setInCustomerPool(customer.getInSharedPool());
+                response.setPoolId(customer.getPoolId());
+            }
+            response.setAlreadyPayAmount(sumContractRecordAmount(id));
+        }
+        return response;
+    }
+
     /**
      * 批量获取合同详情 (用于数据源批量查询优化)
      *

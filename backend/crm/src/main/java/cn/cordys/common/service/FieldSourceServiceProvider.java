@@ -210,4 +210,9 @@ public class FieldSourceServiceProvider {
 	public List<Object> batchGetSimpleByIds(FieldSourceType type, List<String> ids) {
 		return (List<Object>) executeServiceMethod(type, ids, "batchGetSimpleByIds");
 	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public Object safeGetFieldsById(String formKey, String id) {
+		return executeServiceMethod(formKey, id, "getFieldValues");
+	}
 }
