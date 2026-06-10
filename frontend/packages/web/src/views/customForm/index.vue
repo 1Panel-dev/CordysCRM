@@ -192,6 +192,7 @@
     switch (event.key) {
       case 'edit':
         currentSourceId.value = item.id;
+        defaultTab.value = 'design';
         configDrawerVisible.value = true;
         focusItemKey.value = '';
         break;

@@ -10,6 +10,7 @@
         :max-count="adminMaxCount"
         :tip-text="t('customForm.maxAddAdminTip', { count: adminMaxCount })"
         :clear-text="t('customForm.restoreDefault')"
+        :clear-disabled="isDefaultAdmin"
         :preserve-value-on-clear="true"
         :api-type-key="MemberApiTypeEnum.FORM_FIELD"
         :member-types="userMemberTypes"
@@ -58,6 +59,14 @@
             {{ t('org.addMember') }}
           </n-button>
         </template>
+        <template #actionRight>
+          <CrmSearchInput
+            v-model:value="keyword"
+            class="!w-[240px]"
+            :placeholder="t('common.searchName')"
+            @search="searchData"
+          />
+        </template>
       </CrmTable>
     </div>
   </div>
@@ -77,6 +86,7 @@
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CustomFormMemberItem, CustomFormRoleItem } from '@lib/shared/models/customForm';
@@ -86,6 +96,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
+  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import type { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
@@ -122,6 +133,7 @@
   const adminIds = ref<string[]>([]);
   const adminList = ref<SelectedUsersItem[]>([]);
   const isAdminLimitExceeded = computed(() => adminList.value.length > adminMaxCount);
+  const isDefaultAdmin = computed(() => adminIds.value.length === 1 && adminIds.value[0] === props.creator.id);
 
   function updateAdminDeleteDisabled() {
     adminList.value = adminList.value.map((item) => ({
@@ -260,8 +272,9 @@
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
     getCustomFormRoleUsers,
     {
+      tableKey: TableKeyEnum.CUSTOM_FORM_USER,
       columns,
-      showSetting: false,
+      showSetting: true,
       containerClass: '.custom-form-member-table',
     },
     (item) => ({
@@ -282,9 +295,11 @@
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 
-  function searchData() {
+  const keyword = ref('');
+  function searchData(val?: string) {
     setLoadListParams({
       customFormRoleId: activeRoleId.value,
+      keyword: val ?? keyword.value,
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });

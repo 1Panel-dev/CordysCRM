@@ -45,6 +45,7 @@ export enum TableKeyEnum {
   PROCESS = 'process',
   // 自定义表单表格
   CUSTOM_FORM = 'customForm',
+  CUSTOM_FORM_USER = 'customFormUser',
 }
 
 // 具有特殊功能的列
