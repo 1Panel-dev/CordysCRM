@@ -567,7 +567,10 @@ public class ApprovalResourceService {
      * @return
      */
     private HashMap<String, Object> sendGet(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, Boolean isTest) {
-        Map<String, String> headers = JSON.parseMap(webHookConfig.getWebHookHeader());
+        Map<String, String> headers = new HashMap<>();
+        if (StringUtils.isNotBlank(webHookConfig.getWebHookHeader())) {
+            headers = JSON.parseMap(webHookConfig.getWebHookHeader());
+        }
         String url = "";
         try {
             if (!isTest) {
@@ -626,7 +629,10 @@ public class ApprovalResourceService {
      * @return
      */
     private HashMap<String, Object> sendPost(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, Boolean isTest) {
-        Map<String, String> headers = JSON.parseMap(webHookConfig.getWebHookHeader());
+        Map<String, String> headers = new HashMap<>();
+        if (StringUtils.isNotBlank(webHookConfig.getWebHookHeader())) {
+            headers = JSON.parseMap(webHookConfig.getWebHookHeader());
+        }
         String queryBody = "";
         try {
             if (!isTest) {
