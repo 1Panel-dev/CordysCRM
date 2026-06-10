@@ -21,7 +21,7 @@ export default {
   'customForm.permission.addViewAll': 'Add and view all data',
   'customForm.permission.addManageOwn': 'Manage own data',
   'customForm.permission.addManageOwnTip':
-    'Manage own data: has add permission and can only view and manage data created by oneself.',
+    'Manage my own data: I have add permission and can only view and manage the data that I am responsible for.',
   'customForm.deleteFormTip':
     'Once deleted, the form data and configuration information cannot be recovered. Please proceed with caution!',
   'customForm.closeFormTip':

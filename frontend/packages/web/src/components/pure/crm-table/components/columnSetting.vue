@@ -70,15 +70,7 @@
         <VueDraggable v-model="allowSortCachedColumns" handle=".sort-handle" @change="handleChange">
           <div v-for="element in allowSortCachedColumns" :key="element.key" class="crm-table-column-setting-item">
             <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
-              <CrmIcon
-                type="iconicon_move"
-                :class="` ${
-                  element.key !== SpecialColumnEnum.OPERATION
-                    ? 'sort-handle cursor-move text-[var(--text-n4)]'
-                    : 'cursor-not-allowed text-[var(--text-n6)]'
-                }`"
-                :size="12"
-              />
+              <CrmIcon type="iconicon_move" class="sort-handle cursor-move text-[var(--text-n4)]" :size="12" />
               <CrmIcon
                 :type="element.fixed ? 'iconicon_pin_filled' : 'iconicon_pin'"
                 :class="`cursor-pointer ${element.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'}`"
@@ -96,13 +88,40 @@
             </div>
             <n-switch
               v-model:value="element.showInTable"
-              :disabled="element.key === SpecialColumnEnum.OPERATION"
               size="small"
               :rubber-band="false"
               @update:value="handleChange"
             />
           </div>
         </VueDraggable>
+        <div v-if="operationCachedColumn" class="crm-table-column-setting-item">
+          <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
+            <CrmIcon type="iconicon_move" class="cursor-not-allowed text-[var(--text-n6)]" :size="12" />
+            <CrmIcon
+              :type="operationCachedColumn.fixed ? 'iconicon_pin_filled' : 'iconicon_pin'"
+              :class="`cursor-pointer ${
+                operationCachedColumn.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'
+              }`"
+              :size="12"
+              @click="toggleFixedColumn(operationCachedColumn)"
+            />
+            <n-tooltip trigger="hover" placement="top">
+              <template #trigger>
+                <span class="one-line-text ml-[8px] text-[12px]">
+                  {{ t(operationCachedColumn.title as string) }}
+                </span>
+              </template>
+              {{ t(operationCachedColumn.title as string) }}
+            </n-tooltip>
+          </div>
+          <n-switch
+            v-model:value="operationCachedColumn.showInTable"
+            disabled
+            size="small"
+            :rubber-band="false"
+            @update:value="handleChange"
+          />
+        </div>
       </div>
       <div v-else-if="layoutType === 'lineHeightSet'" class="px-[8px]">
         <div class="h-[24px] font-medium text-[var(--text-n1)]">
@@ -183,13 +202,17 @@
 
   const notAllowSortCachedColumns = ref<CrmDataTableColumn[]>([]);
   const allowSortCachedColumns = ref<CrmDataTableColumn[]>([]);
+  const operationCachedColumn = ref<CrmDataTableColumn>();
   const activeLayoutType = ref<string>('compact');
   const paginationType = ref<PaginationType>('scrollPagination');
 
   async function getCachedColumns() {
     const columns = await tableStore.getCanSetColumns(props.tableKey);
     notAllowSortCachedColumns.value = columns.filter((e) => e.columnSelectorDisabled);
-    allowSortCachedColumns.value = columns.filter((e) => !e.columnSelectorDisabled);
+    allowSortCachedColumns.value = columns.filter(
+      (e) => !e.columnSelectorDisabled && e.key !== SpecialColumnEnum.OPERATION
+    );
+    operationCachedColumn.value = columns.find((e) => e.key === SpecialColumnEnum.OPERATION);
     activeLayoutType.value = (await tableStore.getTableLineHeight(props.tableKey)) as string;
     paginationType.value = await tableStore.getTablePaginationType(props.tableKey);
   }
@@ -229,6 +252,7 @@
         await tableStore.setColumns(props.tableKey, [
           ...notAllowSortCachedColumns.value,
           ...allowSortCachedColumns.value,
+          ...(operationCachedColumn.value ? [operationCachedColumn.value] : []),
         ]);
         await tableStore.setTableLineHeight(props.tableKey, activeLayoutType.value);
         await tableStore.setTablePaginationType(props.tableKey, paginationType.value);
@@ -239,6 +263,11 @@
   }
 
   function toggleFixedColumn(ele: CrmDataTableColumn) {
+    if (ele.key === SpecialColumnEnum.OPERATION && operationCachedColumn.value) {
+      operationCachedColumn.value.fixed = operationCachedColumn.value.fixed ? undefined : 'right';
+      hasChange.value = true;
+      return;
+    }
     allowSortCachedColumns.value = allowSortCachedColumns.value.map((item) => {
       if (item.key === ele.key) {
         if (item.fixed) {
