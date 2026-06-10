@@ -1,10 +1,8 @@
 package cn.cordys.crm.form.service;
 
-import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
-import cn.cordys.aspectj.context.OperationLogContext;
-import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptUserTreeNode;
@@ -30,15 +28,16 @@ import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserRoleMapper;
 import cn.cordys.crm.system.service.DepartmentService;
+import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +68,8 @@ public class CustomFormRoleService {
     private DepartmentService departmentService;
     @Resource
     private BaseMapper<CustomForm> customFormMapper;
+    @Resource
+    private LogService logService;
 
     public List<CustomFormRoleListResponse> listByFormId(String customFormId, String userId) {
         checkFormAdmin(customFormId, userId);
@@ -137,8 +138,7 @@ public class CustomFormRoleService {
         roleUsers.forEach(roleUser -> roleUser.setRoles(userRoleMap.getOrDefault(roleUser.getUserId(), List.of())));
     }
 
-    @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE)
-    public void addUsers(CustomFormRoleUserBatchRequest request, String userId) {
+    public void addUsers(CustomFormRoleUserBatchRequest request, String userId, String orgId) {
         CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getCustomFormRoleId());
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
@@ -178,18 +178,14 @@ public class CustomFormRoleService {
         }
 
         CustomForm customForm = customFormMapper.selectByPrimaryKey(role.getCustomFormId());
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceId(customForm.getId())
-                        .resourceName(customForm.getName())
-                        .originalValue(Map.of("roleUsers", Map.of(role.getId(), List.of())))
-                        .modifiedValue(Map.of("roleUsers", Map.of(role.getId(), insertUserIds)))
-                        .build()
-        );
+        List<String> userNames = extUserMapper.selectUserNameByIds(insertUserIds);
+        LogDTO logDTO = new LogDTO(orgId, role.getCustomFormId(), userId, LogType.ADD_USER, LogModule.CUSTOM_FORM, customForm.getName());
+        String detail = "[" + role.getName() + "]: " + userNames.stream().collect(Collectors.joining(", "));
+        logDTO.setDetail(detail);
+        logService.add(logDTO);
     }
 
-    @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE)
-    public void removeUsers(CustomFormRoleUserBatchRequest request, String userId) {
+    public void removeUsers(CustomFormRoleUserBatchRequest request, String userId, String orgId) {
         CustomFormRole role = customFormRoleMapper.selectByPrimaryKey(request.getCustomFormRoleId());
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
@@ -208,14 +204,12 @@ public class CustomFormRoleService {
         customFormRoleUserMapper.deleteByLambda(wrapper);
 
         CustomForm customForm = customFormMapper.selectByPrimaryKey(role.getCustomFormId());
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceId(customForm.getId())
-                        .resourceName(customForm.getName())
-                        .originalValue(Map.of("roleUsers", Map.of(role.getId(), roleUserIds)))
-                        .modifiedValue(Map.of("roleUsers", Map.of(role.getId(), List.of())))
-                        .build()
-        );
+
+        List<String> userNames = extUserMapper.selectUserNameByIds(roleUserIds);
+        LogDTO logDTO = new LogDTO(orgId, role.getCustomFormId(), userId, LogType.REMOVE_USER, LogModule.CUSTOM_FORM, customForm.getName());
+        String detail = "[" + role.getName() + "]: " + userNames.stream().collect(Collectors.joining(", "));
+        logDTO.setDetail(detail);
+        logService.add(logDTO);
     }
 
     private List<String> resolveUserIds(CustomFormRoleUserBatchRequest request) {
