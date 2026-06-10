@@ -95,7 +95,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'init', val: { filterConfigList: FilterFormItem[]; customFieldsFilterConfig: FilterFormItem[] }): void;
+    (e: 'init'): void;
     (e: 'showCountDetail', row: Record<string, any>, type: 'opportunity' | 'clue'): void;
   }>();
 
@@ -345,12 +345,12 @@
 
   watch(
     () => props.formKey,
-    async () => {
+    async (val) => {
       checkedRowKeys.value = [];
       keyword.value = '';
       await initFormConfig(props.readonly, operationColumn.value);
       tableAdvanceFilterRef.value?.clearFilter();
-      setLoadListParams({ customFormId: customFormId.value });
+      setLoadListParams({ customFormId: val });
       searchData();
     },
     {
