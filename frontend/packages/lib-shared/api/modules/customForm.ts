@@ -2,6 +2,8 @@ import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddCustomFormUrl,
   GetCustomFormAdminUrl,
+  GetCustomFormRoleUserDeptTreeUrl,
+  GetCustomFormRoleUserRoleTreeUrl,
   GetCustomFormRoleListUrl,
   GetCustomFormRoleUsersUrl,
   GetCustomFormUrl,
@@ -40,6 +42,7 @@ import type {
   UpdateCustomFormDataParams,
 } from '@lib/shared/models/customForm';
 import type { SelectedUsersItem } from '@lib/shared/models/system/module';
+import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
 export default function useCustomFormApi(CDR: CordysAxios) {
   function addCustomForm(data: CustomFormSaveRequest) {
@@ -73,6 +76,14 @@ export default function useCustomFormApi(CDR: CordysAxios) {
 
   function getCustomFormRoleUsers(data: CustomFormRoleUserQueryParams) {
     return CDR.post<CommonList<CustomFormMemberItem>>({ url: GetCustomFormRoleUsersUrl, data });
+  }
+
+  function getCustomFormRoleUserDeptTree() {
+    return CDR.get<DeptUserTreeNode[]>({ url: GetCustomFormRoleUserDeptTreeUrl });
+  }
+
+  function getCustomFormRoleUserRoleTree() {
+    return CDR.get<DeptUserTreeNode[]>({ url: GetCustomFormRoleUserRoleTreeUrl });
   }
 
   function removeCustomFormMember(data: RelateCustomFormMemberParams) {
@@ -136,6 +147,8 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     relateCustomFormMember,
     getCustomFormRoles,
     getCustomFormRoleUsers,
+    getCustomFormRoleUserDeptTree,
+    getCustomFormRoleUserRoleTree,
     removeCustomFormMember,
     getCustomFormList,
     getCustomFormDataDetail,

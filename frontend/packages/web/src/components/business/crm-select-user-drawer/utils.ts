@@ -1,6 +1,8 @@
 import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
 
 import {
+  getCustomFormRoleUserDeptTree,
+  getCustomFormRoleUserRoleTree,
   getFieldDeptTree,
   getFieldDeptUerTree,
   getModuleRoleTree,
@@ -30,6 +32,10 @@ export const getDataApiMap: Record<
   },
   [MemberApiTypeEnum.SYSTEM_ORG_USER]: {
     [MemberSelectTypeEnum.ORG]: getOrgDepartmentUser,
+  },
+  [MemberApiTypeEnum.CUSTOM_FORM]: {
+    [MemberSelectTypeEnum.ORG]: getCustomFormRoleUserDeptTree,
+    [MemberSelectTypeEnum.ROLE]: getCustomFormRoleUserRoleTree,
   },
 };
 
