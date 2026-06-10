@@ -66,7 +66,7 @@
     v-model:visible="memberDrawerVisible"
     :title="t('org.addMember')"
     :loading="addMemberLoading"
-    :api-type-key="MemberApiTypeEnum.FORM_FIELD"
+    :api-type-key="MemberApiTypeEnum.CUSTOM_FORM"
     @confirm="handleAddMembers"
   />
 </template>

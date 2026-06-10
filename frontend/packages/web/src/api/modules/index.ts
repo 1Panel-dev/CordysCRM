@@ -61,6 +61,8 @@ export const {
   relateCustomFormMember,
   getCustomFormRoles,
   getCustomFormRoleUsers,
+  getCustomFormRoleUserDeptTree,
+  getCustomFormRoleUserRoleTree,
   removeCustomFormMember,
   getCustomFormList,
   getCustomFormDataDetail,
