@@ -304,6 +304,25 @@ public class OpportunityQuotationService {
 		return response;
 	}
 
+
+    /**
+     * 获取字段详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+     * @param id 报价单ID
+     * @return 报价单详情
+     */
+    public OpportunityQuotationGetResponse getFieldValues(String id) {
+        OpportunityQuotationGetResponse response = new OpportunityQuotationGetResponse();
+        LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OpportunityQuotationSnapshot::getQuotationId, id);
+        OpportunityQuotationSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        if (snapshot != null) {
+            response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
+        }
+        return response;
+    }
+
+
+
 	/**
 	 * 批量获取报价单详情 (用于数据源批量查询优化)
 	 * @param ids 报价单ID集合

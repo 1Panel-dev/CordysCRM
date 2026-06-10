@@ -2362,4 +2362,37 @@ public class ModuleFormService {
 
 		return fvs;
 	}
+
+    public List<BaseModuleFieldValue> compressResourceRefDetail(String formKey, String resourceId) {
+        List<BaseModuleFieldValue> fvs = new ArrayList<>();
+        Object resourceDetail = fieldSourceServiceProvider.safeGetFieldsById(formKey, resourceId);
+        if (resourceDetail == null) {
+            return fvs;
+        }
+        Map<String, Object> detailMap = JSON.MAPPER.convertValue(resourceDetail, Map.class);
+        if (org.apache.commons.collections.MapUtils.isEmpty(detailMap)) {
+            return fvs;
+        }
+
+        detailMap.forEach((k, v) -> {
+            if (Strings.CI.equals(BaseResourceFieldService.DETAIL_FIELD_PARAM_NAME, k)) {
+                List<Map> moduleFieldValues = (List<Map>) v;
+                if (org.apache.commons.collections.CollectionUtils.isNotEmpty(moduleFieldValues)) {
+                    for (Map mfv : moduleFieldValues) {
+                        BaseModuleFieldValue bfv = new BaseModuleFieldValue();
+                        bfv.setFieldId(mfv.get("fieldId").toString());
+                        bfv.setFieldValue(mfv.get("fieldValue"));
+                        fvs.add(bfv);
+                    }
+                }
+            } else {
+                BaseModuleFieldValue bfv = new BaseModuleFieldValue();
+                bfv.setFieldId(k);
+                bfv.setFieldValue(v);
+                fvs.add(bfv);
+            }
+        });
+
+        return fvs;
+    }
 }

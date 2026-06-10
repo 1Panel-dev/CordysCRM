@@ -98,29 +98,29 @@ public class ApprovalFlowService {
     private ExtRoleMapper extRoleMapper;
     @Resource
     private BaseMapper<ApprovalRecord> approvalRecordMapper;
-	@Resource
+    @Resource
     private BaseMapper<ApprovalTask> approvalTaskMapper;
-	@Resource
-	private ModuleFormService formService;
     @Resource
-	private UserViewService userViewService;
-	@Resource
-	private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+    private ModuleFormService formService;
     @Resource
-	private ApprovalInstanceService approvalInstanceService;
+    private UserViewService userViewService;
+    @Resource
+    private ExtApprovalInstanceMapper extApprovalInstanceMapper;
+    @Resource
+    private ApprovalInstanceService approvalInstanceService;
 
-	/**
-	 * 加签节点后缀分隔符
-	 */
-	public static final String SIGN_SPILT = "-SN";
-	/**
-	 * 范围大小
-	 */
-	public static final int RANGE_SIZE = 2;
-	/**
-	 * 审批流导出权限
-	 */
-	public static final String EXPORT_SUFFIX = "EXPORT";
+    /**
+     * 加签节点后缀分隔符
+     */
+    public static final String SIGN_SPILT = "-SN";
+    /**
+     * 范围大小
+     */
+    public static final int RANGE_SIZE = 2;
+    /**
+     * 审批流导出权限
+     */
+    public static final String EXPORT_SUFFIX = "EXPORT";
 
     /**
      * 根据表单类型获取审批流状态权限配置
@@ -165,18 +165,18 @@ public class ApprovalFlowService {
     /**
      * 批量检查资源的操作权限
      *
-     * @param formType           表单类型
-     * @param resources          资源列表
-     * @param permission         权限标识
-     * @param organizationId     组织ID
-     * @param idGetter           获取资源ID的函数
-     * @param statusGetter       获取审批状态的函数
+     * @param formType       表单类型
+     * @param resources      资源列表
+     * @param permission     权限标识
+     * @param organizationId 组织ID
+     * @param idGetter       获取资源ID的函数
+     * @param statusGetter   获取审批状态的函数
      * @return 有权限的资源ID列表
      */
     public <T> List<String> filterResourcesWithPermission(
-			String formType, List<T> resources, String permission, String organizationId,
-			java.util.function.Function<T, String> idGetter,
-			java.util.function.Function<T, String> statusGetter) {
+            String formType, List<T> resources, String permission, String organizationId,
+            java.util.function.Function<T, String> idGetter,
+            java.util.function.Function<T, String> statusGetter) {
         if (CollectionUtils.isEmpty(resources)) {
             return List.of();
         }
@@ -232,11 +232,11 @@ public class ApprovalFlowService {
      * 批量检查资源的导出权限
      * 根据审批流配置的状态权限，过滤出当前用户可以导出的资源
      *
-     * @param formKey            表单Key(如: quotation, contract, invoice, order)
-     * @param resources          资源列表
-     * @param organizationId     组织ID
-     * @param idGetter           获取资源ID的函数
-     * @param statusGetter       获取审批状态的函数
+     * @param formKey        表单Key(如: quotation, contract, invoice, order)
+     * @param resources      资源列表
+     * @param organizationId 组织ID
+     * @param idGetter       获取资源ID的函数
+     * @param statusGetter   获取审批状态的函数
      * @return 可以导出的资源ID列表
      */
     public <T> List<String> filterResourcesWithExportPermission(
@@ -246,7 +246,7 @@ public class ApprovalFlowService {
         if (CollectionUtils.isEmpty(resources)) {
             return List.of();
         }
-		// 审批状态缺失走数据权限, 无需再过滤
+        // 审批状态缺失走数据权限, 无需再过滤
         boolean allNoApprovalStatus = resources.stream()
                 .allMatch(resource -> {
                     String status = statusGetter.apply(resource);
@@ -264,16 +264,16 @@ public class ApprovalFlowService {
         }
 
         // 过滤出导出权限开启的状态集合
-		List<StatusPermissionDTO> statusPermissions = setting.getStatusPermissions();
-		List<String> exportApprovalStatus = statusPermissions.stream().filter(sp -> sp.getPermission().contains(EXPORT_SUFFIX) && sp.getEnabled()).map(StatusPermissionDTO::getApprovalStatus).toList();
+        List<StatusPermissionDTO> statusPermissions = setting.getStatusPermissions();
+        List<String> exportApprovalStatus = statusPermissions.stream().filter(sp -> sp.getPermission().contains(EXPORT_SUFFIX) && sp.getEnabled()).map(StatusPermissionDTO::getApprovalStatus).toList();
 
         // 如果没有配置任何导出权限，无需过滤
         if (CollectionUtils.isEmpty(exportApprovalStatus)) {
             return resources.stream().filter(resource -> {
-				String status = statusGetter.apply(resource);
-						return StringUtils.isBlank(status) || Strings.CS.equals(status, ApprovalStatus.NONE.name());
-			}).map(idGetter)
-			.collect(Collectors.toList());
+                        String status = statusGetter.apply(resource);
+                        return StringUtils.isBlank(status) || Strings.CS.equals(status, ApprovalStatus.NONE.name());
+                    }).map(idGetter)
+                    .collect(Collectors.toList());
         }
 
 
@@ -285,9 +285,9 @@ public class ApprovalFlowService {
                         // 没有审批状态，不受限制，允许导出
                         return true;
                     }
-					// 审批状态开启了导出权限, 可导出
-					return exportApprovalStatus.contains(status);
-				})
+                    // 审批状态开启了导出权限, 可导出
+                    return exportApprovalStatus.contains(status);
+                })
                 .map(idGetter)
                 .collect(Collectors.toList());
     }
@@ -557,7 +557,8 @@ public class ApprovalFlowService {
     private String generateNodeNumber(String flowId) {
         String key = "approval_node_num:" + ":" + flowId;
         long seq = stringRedisTemplate.opsForValue().increment(key);
-        return String.format("P" + "N%03d", seq);    }
+        return String.format("P" + "N%03d", seq);
+    }
 
     private String getNumberPrefix(String formType) {
         try {
@@ -790,29 +791,29 @@ public class ApprovalFlowService {
 
     private List<BaseModuleFieldValue> getNodePostConfigFieldValues(List<ApprovalNodeResponse> nodes) {
         // 收集审批人节点中的 passPostConfig 和 rejectPostConfig 中的字段值
-		return nodes.stream()
-				.filter(node -> node instanceof ApprovalNodeApproverResponse)
-				.map(node -> (ApprovalNodeApproverResponse) node)
-				.flatMap(approverNode -> {
-					List<BaseModuleFieldValue> fieldValues = new ArrayList<>();
-					if (approverNode.getPassPostConfig() != null
-							&& CollectionUtils.isNotEmpty(approverNode.getPassPostConfig().getFieldUpdateConfigs())) {
-						fieldValues.addAll(approverNode.getPassPostConfig().getFieldUpdateConfigs());
-					}
-					if (approverNode.getRejectPostConfig() != null
-							&& CollectionUtils.isNotEmpty(approverNode.getRejectPostConfig().getFieldUpdateConfigs())) {
-						fieldValues.addAll(approverNode.getRejectPostConfig().getFieldUpdateConfigs());
-					}
-					return fieldValues.stream();
-				})
-				.collect(Collectors.toList());
+        return nodes.stream()
+                .filter(node -> node instanceof ApprovalNodeApproverResponse)
+                .map(node -> (ApprovalNodeApproverResponse) node)
+                .flatMap(approverNode -> {
+                    List<BaseModuleFieldValue> fieldValues = new ArrayList<>();
+                    if (approverNode.getPassPostConfig() != null
+                            && CollectionUtils.isNotEmpty(approverNode.getPassPostConfig().getFieldUpdateConfigs())) {
+                        fieldValues.addAll(approverNode.getPassPostConfig().getFieldUpdateConfigs());
+                    }
+                    if (approverNode.getRejectPostConfig() != null
+                            && CollectionUtils.isNotEmpty(approverNode.getRejectPostConfig().getFieldUpdateConfigs())) {
+                        fieldValues.addAll(approverNode.getRejectPostConfig().getFieldUpdateConfigs());
+                    }
+                    return fieldValues.stream();
+                })
+                .collect(Collectors.toList());
     }
 
     /**
      * 批量保存节点配置和连接关系
      */
     private void saveNodesAndLinks(List<ApprovalNodeRequest> nodes, List<ApprovalNodeLinkRequest> links,
-                                    String flowVersionId, String flowId) {
+                                   String flowVersionId, String flowId) {
         if (CollectionUtils.isEmpty(nodes)) {
             return;
         }
@@ -1322,44 +1323,44 @@ public class ApprovalFlowService {
         OrganizationUser criteria = new OrganizationUser();
         criteria.setUserId(userId);
         criteria.setOrganizationId(orgId);
-		return organizationUserMapper.selectOne(criteria);
+        return organizationUserMapper.selectOne(criteria);
     }
 
     /**
      * 解析指定成员审批人
      */
     private List<User> resolveMemberApprovers(String orgId, List<String> approverList) {
-		List<OrganizationUser> organizationUsers = organizationUserMapper.selectListByLambda(new LambdaQueryWrapper<OrganizationUser>().in(OrganizationUser::getUserId, approverList));
-		List<User> users = extUserMapper.getOrgUserByUserIds(orgId, approverList);
+        List<OrganizationUser> organizationUsers = organizationUserMapper.selectListByLambda(new LambdaQueryWrapper<OrganizationUser>().in(OrganizationUser::getUserId, approverList));
+        List<User> users = extUserMapper.getOrgUserByUserIds(orgId, approverList);
         Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, u -> u));
-		// 按照 approverList 顺序返回
-		List<User> resolveUsers = new ArrayList<>();
-		approverList.forEach(approver -> {
-			Optional<OrganizationUser> findUser = organizationUsers.stream().filter(u -> Strings.CI.equals(u.getUserId(), approver)).findAny();
-			if (!userMap.containsKey(approver)) {
-				// 审批人被删除, 替换成ADMIN
-				User admin = new User();
-				admin.setId(InternalUser.ADMIN.getValue());
-				resolveUsers.add(admin);
-				return;
-			}
-			if (findUser.isPresent() && !findUser.get().getEnable()) {
-				// 审批人被禁用, 替换为直属上级
-				if (StringUtils.isNotBlank(findUser.get().getSupervisorId())) {
-					User superUser = new User();
-					superUser.setId(findUser.get().getSupervisorId());
-					resolveUsers.add(superUser);
-				} else {
-					// 直属上级为空, 替换成ADMIN
-					User admin = new User();
-					admin.setId(InternalUser.ADMIN.getValue());
-					resolveUsers.add(admin);
-				}
-				return;
-			}
-			resolveUsers.add(userMap.get(approver));
-		});
-		return resolveUsers;
+        // 按照 approverList 顺序返回
+        List<User> resolveUsers = new ArrayList<>();
+        approverList.forEach(approver -> {
+            Optional<OrganizationUser> findUser = organizationUsers.stream().filter(u -> Strings.CI.equals(u.getUserId(), approver)).findAny();
+            if (!userMap.containsKey(approver)) {
+                // 审批人被删除, 替换成ADMIN
+                User admin = new User();
+                admin.setId(InternalUser.ADMIN.getValue());
+                resolveUsers.add(admin);
+                return;
+            }
+            if (findUser.isPresent() && !findUser.get().getEnable()) {
+                // 审批人被禁用, 替换为直属上级
+                if (StringUtils.isNotBlank(findUser.get().getSupervisorId())) {
+                    User superUser = new User();
+                    superUser.setId(findUser.get().getSupervisorId());
+                    resolveUsers.add(superUser);
+                } else {
+                    // 直属上级为空, 替换成ADMIN
+                    User admin = new User();
+                    admin.setId(InternalUser.ADMIN.getValue());
+                    resolveUsers.add(admin);
+                }
+                return;
+            }
+            resolveUsers.add(userMap.get(approver));
+        });
+        return resolveUsers;
     }
 
     /**
@@ -1377,9 +1378,9 @@ public class ApprovalFlowService {
      * 解析指定上级审批人
      */
     private List<User> resolveSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList, ApproverDirectionEnum direction) {
-		if (currentUser == null) {
-			return List.of();
-		}
+        if (currentUser == null) {
+            return List.of();
+        }
         // 值是单选
         int approvalLevel = getValidLevel(approverList);
         if (approvalLevel <= 0) {
@@ -1399,9 +1400,9 @@ public class ApprovalFlowService {
      * 解析多级上级审批人
      */
     private List<User> resolveMultipleSuperiorApprovers(String orgId, OrganizationUser currentUser, List<String> approverList, ApproverDirectionEnum direction) {
-		if (currentUser == null) {
-			return List.of();
-		}
+        if (currentUser == null) {
+            return List.of();
+        }
         int approvalLevel = getValidLevel(approverList);
         if (approvalLevel <= 0) {
             return List.of();
@@ -1458,10 +1459,10 @@ public class ApprovalFlowService {
      * 解析部门的负责人审批人
      */
     private List<User> resolveDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList, ApproverDirectionEnum direction) {
-		if (currentUser == null) {
-			return List.of();
-		}
-		String departmentId = currentUser.getDepartmentId();
+        if (currentUser == null) {
+            return List.of();
+        }
+        String departmentId = currentUser.getDepartmentId();
         if (StringUtils.isBlank(departmentId)) {
             return List.of();
         }
@@ -1493,9 +1494,9 @@ public class ApprovalFlowService {
      * 解析多级部门的负责人审批人
      */
     private List<User> resolveMultipleDeptHeadApprovers(String orgId, OrganizationUser currentUser, List<String> approverList, ApproverDirectionEnum direction) {
-		if (currentUser == null) {
-			return List.of();
-		}
+        if (currentUser == null) {
+            return List.of();
+        }
         String departmentId = currentUser.getDepartmentId();
         if (StringUtils.isBlank(departmentId)) {
             return List.of();
@@ -1571,480 +1572,498 @@ public class ApprovalFlowService {
         return null;
     }
 
-	/**
-	 * 判断当前实例节点是否支持多人审批
-	 * @param currentNodeId 当前节点ID
-	 * @param submitterId 提审人
-	 * @param currentOrgId 当前组织ID
-	 * @return 是否支持多人审批
-	 */
-	public boolean isCurrentNodeMultiApprover(String currentNodeId, String submitterId, String currentOrgId) {
-		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
-		List<User> approvers = resolveApprovers(submitterId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class), getApproverDirection(nodeApprover.getApproverDirection()));
-		return approvers.size() > 1;
-	}
+    /**
+     * 判断当前实例节点是否支持多人审批
+     *
+     * @param currentNodeId 当前节点ID
+     * @param submitterId   提审人
+     * @param currentOrgId  当前组织ID
+     * @return 是否支持多人审批
+     */
+    public boolean isCurrentNodeMultiApprover(String currentNodeId, String submitterId, String currentOrgId) {
+        ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+        List<User> approvers = resolveApprovers(submitterId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class), getApproverDirection(nodeApprover.getApproverDirection()));
+        return approvers.size() > 1;
+    }
 
-	/**
-	 * 获取当前实例节点审批人
-	 * @param instance 审批实例
-	 * @param currentNodeId 当前节点ID
-	 * @param currentOrgId 当前组织ID
-	 * @return 审批人ID集合
-	 */
-	public List<String> getCurrentNodeApproverList(ApprovalInstance instance, String currentNodeId, String currentOrgId) {
-		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
-		if (nodeApprover == null) {
-			return new ArrayList<>();
-		}
-		List<User> approvers = resolveApprovers(instance.getSubmitterId(), currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class), getApproverDirection(nodeApprover.getApproverDirection()));
-		// 审批人为空时
-		if (CollectionUtils.isEmpty(approvers)) {
-			if (EmptyApproverActionEnum.valueOf(nodeApprover.getEmptyApproverAction()) != EmptyApproverActionEnum.AUTO_PASS) {
-				// 指定人员, 审批管理员处理, 返回兜底审批人
-				return List.of(nodeApprover.getFallbackApprover());
-			}
-		}
+    /**
+     * 获取当前实例节点审批人
+     *
+     * @param instance      审批实例
+     * @param currentNodeId 当前节点ID
+     * @param currentOrgId  当前组织ID
+     * @return 审批人ID集合
+     */
+    public List<String> getCurrentNodeApproverList(ApprovalInstance instance, String currentNodeId, String currentOrgId) {
+        ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+        if (nodeApprover == null) {
+            return new ArrayList<>();
+        }
+        List<User> approvers = resolveApprovers(instance.getSubmitterId(), currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getApproverType()), JSON.parseArray(nodeApprover.getApproverList(), String.class), getApproverDirection(nodeApprover.getApproverDirection()));
+        // 审批人为空时
+        if (CollectionUtils.isEmpty(approvers)) {
+            if (EmptyApproverActionEnum.valueOf(nodeApprover.getEmptyApproverAction()) != EmptyApproverActionEnum.AUTO_PASS) {
+                // 指定人员, 审批管理员处理, 返回兜底审批人
+                return List.of(nodeApprover.getFallbackApprover());
+            }
+        }
 
-		// 审批人与提交人同一人时
-		Optional<User> findSame = approvers.stream().filter(approver -> Strings.CS.equals(approver.getId(), instance.getSubmitterId())).findAny();
-		if (SameSubmitterActionEnum.valueOf(nodeApprover.getSameSubmitterAction()) == SameSubmitterActionEnum.ASSIGN_SUPERIOR && findSame.isPresent()) {
-			// 转交给直属上级审批
-			OrganizationUser criteria = new OrganizationUser();
-			criteria.setUserId(findSame.get().getId());
-			criteria.setOrganizationId(currentOrgId);
-			OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
-			if (currentUser != null && StringUtils.isNotEmpty(currentUser.getSupervisorId())) {
-				// 替换审批人列表中与提审人相同审批人 => 直属上级
-				String supervisorId = currentUser.getSupervisorId();
-				return approvers.stream()
-						.map(approver -> Strings.CS.equals(approver.getId(), instance.getSubmitterId()) ? supervisorId : approver.getId())
-						.collect(Collectors.toList());
-			}
-		}
-		return approvers.stream().map(User::getId).toList();
-	}
+        // 审批人与提交人同一人时
+        Optional<User> findSame = approvers.stream().filter(approver -> Strings.CS.equals(approver.getId(), instance.getSubmitterId())).findAny();
+        if (SameSubmitterActionEnum.valueOf(nodeApprover.getSameSubmitterAction()) == SameSubmitterActionEnum.ASSIGN_SUPERIOR && findSame.isPresent()) {
+            // 转交给直属上级审批
+            OrganizationUser criteria = new OrganizationUser();
+            criteria.setUserId(findSame.get().getId());
+            criteria.setOrganizationId(currentOrgId);
+            OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
+            if (currentUser != null && StringUtils.isNotEmpty(currentUser.getSupervisorId())) {
+                // 替换审批人列表中与提审人相同审批人 => 直属上级
+                String supervisorId = currentUser.getSupervisorId();
+                return approvers.stream()
+                        .map(approver -> Strings.CS.equals(approver.getId(), instance.getSubmitterId()) ? supervisorId : approver.getId())
+                        .collect(Collectors.toList());
+            }
+        }
+        return approvers.stream().map(User::getId).toList();
+    }
 
-	/**
-	 * 获取当前实例节点审批人
-	 * @param approverType 审批类型
-	 * @param approverList 审批人集合
-	 * @param userId 用户ID
-	 * @param currentOrgId 当前组织ID
-	 * @return 审批人ID集合
-	 */
-	public List<User> getCurrentNodeApproverList(String approverType, List<String> approverList, String userId, String currentOrgId, String approverDirection) {
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList, getApproverDirection(approverDirection));
-	}
+    /**
+     * 获取当前实例节点审批人
+     *
+     * @param approverType 审批类型
+     * @param approverList 审批人集合
+     * @param userId       用户ID
+     * @param currentOrgId 当前组织ID
+     * @return 审批人ID集合
+     */
+    public List<User> getCurrentNodeApproverList(String approverType, List<String> approverList, String userId, String currentOrgId, String approverDirection) {
+        return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(approverType), approverList, getApproverDirection(approverDirection));
+    }
 
-	/**
-	 * 获取当前实例节点抄送人
-	 * @param currentNodeId 当前节点ID
-	 * @param userId 用户ID
-	 * @param currentOrgId 当前组织ID
-	 * @return 审批人ID集合
-	 */
-	public List<User> getCurrentNodeCcList(String currentNodeId, String userId, String currentOrgId) {
-		ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
-		if (StringUtils.isBlank(nodeApprover.getCcType())) {
-			return new ArrayList<>();
-		}
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getCcType()), JSON.parseArray(nodeApprover.getCcList(), String.class), getApproverDirection(nodeApprover.getCcDirection()));
-	}
+    /**
+     * 获取当前实例节点抄送人
+     *
+     * @param currentNodeId 当前节点ID
+     * @param userId        用户ID
+     * @param currentOrgId  当前组织ID
+     * @return 审批人ID集合
+     */
+    public List<User> getCurrentNodeCcList(String currentNodeId, String userId, String currentOrgId) {
+        ApprovalNodeApprover nodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+        if (StringUtils.isBlank(nodeApprover.getCcType())) {
+            return new ArrayList<>();
+        }
+        return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(nodeApprover.getCcType()), JSON.parseArray(nodeApprover.getCcList(), String.class), getApproverDirection(nodeApprover.getCcDirection()));
+    }
 
-	/**
-	 * 获取当前实例节点抄送人
-	 * @param ccType 抄送类型
-	 * @param ccList 抄送人集合
-	 * @param userId 用户ID
-	 * @param currentOrgId 当前组织ID
-	 * @return 抄送人ID集合
-	 */
-	public List<User> getCurrentNodeCcList(String ccType, List<String> ccList, String userId, String currentOrgId, String approverDirection) {
-		if (StringUtils.isBlank(ccType)) {
-			return List.of();
-		}
-		return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(ccType), ccList, getApproverDirection(approverDirection));
-	}
+    /**
+     * 获取当前实例节点抄送人
+     *
+     * @param ccType       抄送类型
+     * @param ccList       抄送人集合
+     * @param userId       用户ID
+     * @param currentOrgId 当前组织ID
+     * @return 抄送人ID集合
+     */
+    public List<User> getCurrentNodeCcList(String ccType, List<String> ccList, String userId, String currentOrgId, String approverDirection) {
+        if (StringUtils.isBlank(ccType)) {
+            return List.of();
+        }
+        return resolveApprovers(userId, currentOrgId, ApproverTypeEnum.valueOf(ccType), ccList, getApproverDirection(approverDirection));
+    }
 
-	/**
-	 * 获取当前资源审批实例第一个节点
-	 * @param instance 审批实例
-	 * @param currentOrgId 组织ID
-	 * @return 第一个节点
-	 */
+    /**
+     * 获取当前资源审批实例第一个节点
+     *
+     * @param instance     审批实例
+     * @param currentOrgId 组织ID
+     * @return 第一个节点
+     */
     public ApprovalNodeResponse getResourceApprovalInstanceFirstNode(ApprovalInstance instance, String currentOrgId) {
         ApprovalNode nodeCriteria = new ApprovalNode();
-		nodeCriteria.setFlowVersionId(instance.getFlowVersionId());
-		nodeCriteria.setNodeType(ApprovalNodeTypeEnum.START.name());
-		ApprovalNode start = approvalNodeMapper.selectOne(nodeCriteria);
-		List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
-		return getNextNodeWithExceptionHandler(instance, start.getId(), resourceFvs, currentOrgId, false);
-	}
+        nodeCriteria.setFlowVersionId(instance.getFlowVersionId());
+        nodeCriteria.setNodeType(ApprovalNodeTypeEnum.START.name());
+        ApprovalNode start = approvalNodeMapper.selectOne(nodeCriteria);
+        List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
+        return getNextNodeWithExceptionHandler(instance, start.getId(), resourceFvs, currentOrgId, false);
+    }
 
-	/**
-	 * 获取当前待办任务下一个节点
-	 * @param currentTask 待办任务
-	 * @return 下一个节点
-	 */
-	public ApprovalNodeResponse getTaskNextNode(ApprovalTask currentTask, ApprovalInstance instance, String currentOrgId) {
-		List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
-		return getNextNodeWithExceptionHandler(instance, currentTask.getNodeId(), resourceFvs, currentOrgId, false);
-	}
+    /**
+     * 获取当前待办任务下一个节点
+     *
+     * @param currentTask 待办任务
+     * @return 下一个节点
+     */
+    public ApprovalNodeResponse getTaskNextNode(ApprovalTask currentTask, ApprovalInstance instance, String currentOrgId) {
+        List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
+        return getNextNodeWithExceptionHandler(instance, currentTask.getNodeId(), resourceFvs, currentOrgId, false);
+    }
 
-	/**
-	 * 获取当前节点下一个节点
-	 * @param currentNodeId 当前节点ID
-	 * @return 下一个节点
-	 */
-	public ApprovalNodeResponse getCurrentNextNode(String currentNodeId, ApprovalInstance instance, String currentOrgId) {
-		List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
-		return getNextNodeWithExceptionHandler(instance, currentNodeId, resourceFvs, currentOrgId, false);
-	}
+    /**
+     * 获取当前节点下一个节点
+     *
+     * @param currentNodeId 当前节点ID
+     * @return 下一个节点
+     */
+    public ApprovalNodeResponse getCurrentNextNode(String currentNodeId, ApprovalInstance instance, String currentOrgId) {
+        List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
+        return getNextNodeWithExceptionHandler(instance, currentNodeId, resourceFvs, currentOrgId, false);
+    }
 
-	/**
-	 * 获取实例当前节点后续所有审批节点
-	 * @param instance 当前节点ID
-	 * @return 后续所有审批节点
-	 */
-	public List<ApprovalNodeApproverResponse> getInstanceCurrentFollowNode(ApprovalInstance instance, String currentOrgId) {
-		List<ApprovalNodeApproverResponse> nodes = new ArrayList<>();
-		List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
-		String currentNodeId = instance.getCurrentNodeId();
-		if (currentNodeId.contains(SIGN_SPILT)) {
-			currentNodeId = currentNodeId.split(SIGN_SPILT)[0];
-		}
-		ApprovalNodeResponse next = getNextNodeWithExceptionHandler(instance, currentNodeId, resourceFvs, currentOrgId, true);
-		while (ApprovalNodeTypeEnum.valueOf(next.getNodeType()) == ApprovalNodeTypeEnum.APPROVER) {
-			nodes.add((ApprovalNodeApproverResponse) next);
-			next = getNextNodeWithExceptionHandler(instance, next.getId(), resourceFvs, currentOrgId, true);
-		}
-		return nodes;
-	}
+    /**
+     * 获取实例当前节点后续所有审批节点
+     *
+     * @param instance 当前节点ID
+     * @return 后续所有审批节点
+     */
+    public List<ApprovalNodeApproverResponse> getInstanceCurrentFollowNode(ApprovalInstance instance, String currentOrgId) {
+        List<ApprovalNodeApproverResponse> nodes = new ArrayList<>();
+        List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
+        String currentNodeId = instance.getCurrentNodeId();
+        if (currentNodeId.contains(SIGN_SPILT)) {
+            currentNodeId = currentNodeId.split(SIGN_SPILT)[0];
+        }
+        ApprovalNodeResponse next = getNextNodeWithExceptionHandler(instance, currentNodeId, resourceFvs, currentOrgId, true);
+        while (ApprovalNodeTypeEnum.valueOf(next.getNodeType()) == ApprovalNodeTypeEnum.APPROVER) {
+            nodes.add((ApprovalNodeApproverResponse) next);
+            next = getNextNodeWithExceptionHandler(instance, next.getId(), resourceFvs, currentOrgId, true);
+        }
+        return nodes;
+    }
 
-	/**
-	 * 获取实例下一个节点，包含异常处理和自动审批, 跳过条件节点
-	 * @param instance 审批实例
-	 * @param nodeId 节点ID
-	 * @param fieldValues 资源业务字段值
-	 * @param currentOrgId 当前组织ID
-	 * @return 下一个节点 (结束节点或者审批节点)
-	 */
-	private ApprovalNodeResponse getNextNodeWithExceptionHandler(ApprovalInstance instance, String nodeId, List<BaseModuleFieldValue> fieldValues, String currentOrgId, boolean preview) {
-		ApprovalNodeResponse nextNode = getNextNode(nodeId, fieldValues);
-		if (nextNode == null) {
-			throw new GenericException(Translator.get("no.approval.next.node"));
-		}
-		if (ApprovalNodeTypeEnum.valueOf(nextNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
-			return nextNode;
-		}
+    /**
+     * 获取实例下一个节点，包含异常处理和自动审批, 跳过条件节点
+     *
+     * @param instance     审批实例
+     * @param nodeId       节点ID
+     * @param fieldValues  资源业务字段值
+     * @param currentOrgId 当前组织ID
+     * @return 下一个节点 (结束节点或者审批节点)
+     */
+    private ApprovalNodeResponse getNextNodeWithExceptionHandler(ApprovalInstance instance, String nodeId, List<BaseModuleFieldValue> fieldValues, String currentOrgId, boolean preview) {
+        ApprovalNodeResponse nextNode = getNextNode(nodeId, fieldValues);
+        if (nextNode == null) {
+            throw new GenericException(Translator.get("no.approval.next.node"));
+        }
+        if (ApprovalNodeTypeEnum.valueOf(nextNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
+            return nextNode;
+        }
 
-		if (ApprovalNodeTypeEnum.valueOf(nextNode.getNodeType()) == ApprovalNodeTypeEnum.APPROVER) {
-			if (preview) {
-				return previewNextApproverNodeWithExceptionHandler(instance, nextNode, currentOrgId);
-			} else {
-				Integer round = extApprovalInstanceMapper.getNodeRound(instance.getId(), nodeId);
-				List<ApprovalTask> approvedTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().eq(ApprovalTask::getInstanceId, instance.getId())
-						.eq(ApprovalTask::getNodeId, nodeId).eq(ApprovalTask::getNodeRound, round).eq(ApprovalTask::getStatus, ApprovalStatus.APPROVED));
-				List<String> preApprovers = approvedTasks.stream().map(ApprovalTask::getApproverId).toList();
-				return handleNextApproverNodeWithExceptionHandler(instance, nextNode, fieldValues, currentOrgId, preApprovers);
-			}
-		}
-		// 条件类型节点, 继续往下获取
-		return getNextNodeWithExceptionHandler(instance, nextNode.getId(), fieldValues, currentOrgId, preview);
-	}
+        if (ApprovalNodeTypeEnum.valueOf(nextNode.getNodeType()) == ApprovalNodeTypeEnum.APPROVER) {
+            if (preview) {
+                return previewNextApproverNodeWithExceptionHandler(instance, nextNode, currentOrgId);
+            } else {
+                Integer round = extApprovalInstanceMapper.getNodeRound(instance.getId(), nodeId);
+                List<ApprovalTask> approvedTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>().eq(ApprovalTask::getInstanceId, instance.getId())
+                        .eq(ApprovalTask::getNodeId, nodeId).eq(ApprovalTask::getNodeRound, round).eq(ApprovalTask::getStatus, ApprovalStatus.APPROVED));
+                List<String> preApprovers = approvedTasks.stream().map(ApprovalTask::getApproverId).toList();
+                return handleNextApproverNodeWithExceptionHandler(instance, nextNode, fieldValues, currentOrgId, preApprovers);
+            }
+        }
+        // 条件类型节点, 继续往下获取
+        return getNextNodeWithExceptionHandler(instance, nextNode.getId(), fieldValues, currentOrgId, preview);
+    }
 
-	/**
-	 * 处理实例下一个审批节点，包含异常处理
-	 * @param instance 审批实例
-	 * @param nextNode 下一个审批节点
-	 * @param fieldValues 资源业务字段值
-	 * @param currentOrgId 当前组织ID
-	 * @return 下一个节点 (审批节点)
-	 */
-	private ApprovalNodeResponse handleNextApproverNodeWithExceptionHandler(ApprovalInstance instance, ApprovalNodeResponse nextNode,
-																			List<BaseModuleFieldValue> fieldValues, String currentOrgId, List<String> preApprovers) {
-		ApprovalNodeApproverResponse nextApproverNode = (ApprovalNodeApproverResponse) nextNode;
-		if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_PASS) {
-			// 自动通过, 插入审批记录, 获取下一个节点
-			saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, null, null, null, false, null);
-			return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
-		}
-		if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_REJECT) {
-			// 自动驳回, 插入审批记录
-			saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_UNAPPROVED, null, null, null, false, null);
-			ApprovalNodeExceptionResponse exNode = BeanUtils.copyBean(new ApprovalNodeExceptionResponse(), nextApproverNode);
-			exNode.setNodeType(ApprovalNodeTypeEnum.EXCEPTION.name());
-			return exNode;
-		}
+    /**
+     * 处理实例下一个审批节点，包含异常处理
+     *
+     * @param instance     审批实例
+     * @param nextNode     下一个审批节点
+     * @param fieldValues  资源业务字段值
+     * @param currentOrgId 当前组织ID
+     * @return 下一个节点 (审批节点)
+     */
+    private ApprovalNodeResponse handleNextApproverNodeWithExceptionHandler(ApprovalInstance instance, ApprovalNodeResponse nextNode,
+                                                                            List<BaseModuleFieldValue> fieldValues, String currentOrgId, List<String> preApprovers) {
+        ApprovalNodeApproverResponse nextApproverNode = (ApprovalNodeApproverResponse) nextNode;
+        if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_PASS) {
+            // 自动通过, 插入审批记录, 获取下一个节点
+            saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, null, null, null, false, null);
+            return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
+        }
+        if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_REJECT) {
+            // 自动驳回, 插入审批记录
+            saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_UNAPPROVED, null, null, null, false, null);
+            ApprovalNodeExceptionResponse exNode = BeanUtils.copyBean(new ApprovalNodeExceptionResponse(), nextApproverNode);
+            exNode.setNodeType(ApprovalNodeTypeEnum.EXCEPTION.name());
+            return exNode;
+        }
 
-		// 人工审批, 异常处理
-		setNodeApproverAndCcList(nextApproverNode, instance.getSubmitterId(), currentOrgId);
+        // 人工审批, 异常处理
+        setNodeApproverAndCcList(nextApproverNode, instance.getSubmitterId(), currentOrgId);
 
-		// 审批人为空时
-		if (CollectionUtils.isEmpty(nextApproverNode.getApproverList())) {
-			if (EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction()) == EmptyApproverActionEnum.AUTO_PASS) {
-				// 自动通过, 插入审批记录, 获取下一个节点
-				saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人为空，自动通过", null, nextApproverNode.getCcList(), true, null);
-				updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
-				return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
-			} else {
-				// 指定人员, 审批管理员处理, 返回兜底审批人
-				nextApproverNode.setApproverType(ApproverTypeEnum.MEMBER.name());
-				nextApproverNode.setApproverList(List.of(nextApproverNode.getFallbackApprover()));
-			}
-		}
+        // 审批人为空时
+        if (CollectionUtils.isEmpty(nextApproverNode.getApproverList())) {
+            if (EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction()) == EmptyApproverActionEnum.AUTO_PASS) {
+                // 自动通过, 插入审批记录, 获取下一个节点
+                saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人为空，自动通过", null, nextApproverNode.getCcList(), true, null);
+                updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
+                return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
+            } else {
+                // 指定人员, 审批管理员处理, 返回兜底审批人
+                nextApproverNode.setApproverType(ApproverTypeEnum.MEMBER.name());
+                nextApproverNode.setApproverList(List.of(nextApproverNode.getFallbackApprover()));
+            }
+        }
 
-		// 审批人与提交人同一人时
-		Optional<String> findSame = nextApproverNode.getApproverList().stream().filter(approver -> Strings.CS.equals(approver, instance.getSubmitterId())).findAny();
-		if (findSame.isPresent()) {
-			SameSubmitterActionEnum sameAction = SameSubmitterActionEnum.valueOf(nextApproverNode.getSameSubmitterAction());
-			switch (sameAction) {
-				case ASSIGN_SUPERIOR -> {
-					// 转交给直属上级审批
-					OrganizationUser criteria = new OrganizationUser();
-					criteria.setUserId(findSame.get());
-					criteria.setOrganizationId(currentOrgId);
-					OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
-					if (currentUser != null && StringUtils.isNotEmpty(currentUser.getSupervisorId())) {
-						// 替换审批人列表中与提审人相同审批人 => 直属上级
-						String supervisorId = currentUser.getSupervisorId();
-						List<String> newApproverList = nextApproverNode.getApproverList().stream()
-								.map(approver -> Strings.CS.equals(approver, instance.getSubmitterId()) ? supervisorId : approver)
-								.collect(Collectors.toList());
-						nextApproverNode.setApproverList(newApproverList);
-					} else {
-						// 不存在直属上级, 自动跳过
-						ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
-						saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 直属上级为空, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
-						updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
-						return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
-					}
-				}
-				case SKIP -> {
-					// 自动跳过
-					if (nextApproverNode.getApproverList().size() == 1 || MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
-						// 如果刚好为单人审批, 多人或签, 直接插入待办任务和记录, 流转到下一个节点
-						ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
-						saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
-						updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
-						return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
-					}
-				}
-				default -> {
+        // 审批人与提交人同一人时
+        Optional<String> findSame = nextApproverNode.getApproverList().stream().filter(approver -> Strings.CS.equals(approver, instance.getSubmitterId())).findAny();
+        if (findSame.isPresent()) {
+            SameSubmitterActionEnum sameAction = SameSubmitterActionEnum.valueOf(nextApproverNode.getSameSubmitterAction());
+            switch (sameAction) {
+                case ASSIGN_SUPERIOR -> {
+                    // 转交给直属上级审批
+                    OrganizationUser criteria = new OrganizationUser();
+                    criteria.setUserId(findSame.get());
+                    criteria.setOrganizationId(currentOrgId);
+                    OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
+                    if (currentUser != null && StringUtils.isNotEmpty(currentUser.getSupervisorId())) {
+                        // 替换审批人列表中与提审人相同审批人 => 直属上级
+                        String supervisorId = currentUser.getSupervisorId();
+                        List<String> newApproverList = nextApproverNode.getApproverList().stream()
+                                .map(approver -> Strings.CS.equals(approver, instance.getSubmitterId()) ? supervisorId : approver)
+                                .collect(Collectors.toList());
+                        nextApproverNode.setApproverList(newApproverList);
+                    } else {
+                        // 不存在直属上级, 自动跳过
+                        ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
+                        saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 直属上级为空, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
+                        updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
+                        return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
+                    }
+                }
+                case SKIP -> {
+                    // 自动跳过
+                    if (nextApproverNode.getApproverList().size() == 1 || MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
+                        // 如果刚好为单人审批, 多人或签, 直接插入待办任务和记录, 流转到下一个节点
+                        ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), findSame.get());
+                        saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人与提交人为同一人时, 自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
+                        updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
+                        return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
+                    }
+                }
+                default -> {
 
-				}
-			}
-		}
+                }
+            }
+        }
 
-		return handleNextNodeDuplicateApprover(instance, nextApproverNode, fieldValues, currentOrgId, preApprovers);
-	}
+        return handleNextNodeDuplicateApprover(instance, nextApproverNode, fieldValues, currentOrgId, preApprovers);
+    }
 
-	/**
-	 * 处理下一个节点 (审批人重复跳过)
-	 * @param instance 审批实例
-	 * @param nextApproverNode 下一个审批节点
-	 * @param fieldValues 资源字段值
-	 * @param currentOrgId 当前组织ID
-	 * @return 下一个节点
-	 */
-	private ApprovalNodeResponse handleNextNodeDuplicateApprover(ApprovalInstance instance, ApprovalNodeApproverResponse nextApproverNode, List<BaseModuleFieldValue> fieldValues, String currentOrgId, List<String> preApprovers) {
-		// 重复审批人处理
-		DuplicateApproverRuleEnum duplicateApproverRuleEnum = getFlowDuplicateApproverRule(instance.getFlowVersionId());
-		List<String> autoSkipUser = getFlowAutoSkipUser(instance, nextApproverNode.getId(), preApprovers);
-		if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.FIRST_ONLY || duplicateApproverRuleEnum == DuplicateApproverRuleEnum.SEQUENTIAL_ALL) {
-			// 仅首个节点需要审批, 后续节点自动同意 (当前节点审批人在之前在有不同的节点审批过待办任务)
-			Optional<String> anySkip = nextApproverNode.getApproverList().stream().filter(autoSkipUser::contains).findAny();
-			if (anySkip.isPresent()) {
-				if (nextApproverNode.getApproverList().size() == 1 || MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
-					// 如果为单人审批, 或签, 直接同意, 且流转到下一个节点
-					ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), anySkip.get());
-					saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人重复出现, 后续节点自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
-					updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
-					return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
-				}
-			}
-		}
-		return nextApproverNode;
-	}
+    /**
+     * 处理下一个节点 (审批人重复跳过)
+     *
+     * @param instance         审批实例
+     * @param nextApproverNode 下一个审批节点
+     * @param fieldValues      资源字段值
+     * @param currentOrgId     当前组织ID
+     * @return 下一个节点
+     */
+    private ApprovalNodeResponse handleNextNodeDuplicateApprover(ApprovalInstance instance, ApprovalNodeApproverResponse nextApproverNode, List<BaseModuleFieldValue> fieldValues, String currentOrgId, List<String> preApprovers) {
+        // 重复审批人处理
+        DuplicateApproverRuleEnum duplicateApproverRuleEnum = getFlowDuplicateApproverRule(instance.getFlowVersionId());
+        List<String> autoSkipUser = getFlowAutoSkipUser(instance, nextApproverNode.getId(), preApprovers);
+        if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.FIRST_ONLY || duplicateApproverRuleEnum == DuplicateApproverRuleEnum.SEQUENTIAL_ALL) {
+            // 仅首个节点需要审批, 后续节点自动同意 (当前节点审批人在之前在有不同的节点审批过待办任务)
+            Optional<String> anySkip = nextApproverNode.getApproverList().stream().filter(autoSkipUser::contains).findAny();
+            if (anySkip.isPresent()) {
+                if (nextApproverNode.getApproverList().size() == 1 || MultiApproverModeEnum.valueOf(nextApproverNode.getMultiApproverMode()) == MultiApproverModeEnum.ANY) {
+                    // 如果为单人审批, 或签, 直接同意, 且流转到下一个节点
+                    ApprovalTask autoTask = saveAutoSkipTask(instance.getId(), nextApproverNode.getId(), anySkip.get());
+                    saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, "审批人重复出现, 后续节点自动通过", autoTask.getId(), nextApproverNode.getCcList(), true, autoTask.getNodeRound());
+                    updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE);
+                    return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
+                }
+            }
+        }
+        return nextApproverNode;
+    }
 
-	/**
-	 * 获取当前审批流重复审批人配置
-	 * @param flowVersionId 审批流版本
-	 * @return 重复审批人配置
-	 */
-	public DuplicateApproverRuleEnum getFlowDuplicateApproverRule(String flowVersionId) {
-		ApprovalFlowVersion flowVersion = approvalFlowVersionMapper.selectByPrimaryKey(flowVersionId);
-		ApprovalFlow approvalFlow = approvalFlowMapper.selectByPrimaryKey(flowVersion.getFlowId());
-		return DuplicateApproverRuleEnum.valueOf(approvalFlow.getDuplicateApproverRule());
-	}
+    /**
+     * 获取当前审批流重复审批人配置
+     *
+     * @param flowVersionId 审批流版本
+     * @return 重复审批人配置
+     */
+    public DuplicateApproverRuleEnum getFlowDuplicateApproverRule(String flowVersionId) {
+        ApprovalFlowVersion flowVersion = approvalFlowVersionMapper.selectByPrimaryKey(flowVersionId);
+        ApprovalFlow approvalFlow = approvalFlowMapper.selectByPrimaryKey(flowVersion.getFlowId());
+        return DuplicateApproverRuleEnum.valueOf(approvalFlow.getDuplicateApproverRule());
+    }
 
-	/**
-	 * 预览实例下一个审批节点，包含异常处理
-	 * @param instance 审批实例
-	 * @param nextNode 下一个审批节点
-	 * @param currentOrgId 当前组织ID
-	 * @return 下一个节点 (审批节点)
-	 */
-	private ApprovalNodeResponse previewNextApproverNodeWithExceptionHandler(ApprovalInstance instance, ApprovalNodeResponse nextNode, String currentOrgId) {
-		ApprovalNodeApproverResponse nextApproverNode = (ApprovalNodeApproverResponse) nextNode;
-		if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_PASS || ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_REJECT) {
-			// 自动节点, 直接返回
-			return nextApproverNode;
-		}
+    /**
+     * 预览实例下一个审批节点，包含异常处理
+     *
+     * @param instance     审批实例
+     * @param nextNode     下一个审批节点
+     * @param currentOrgId 当前组织ID
+     * @return 下一个节点 (审批节点)
+     */
+    private ApprovalNodeResponse previewNextApproverNodeWithExceptionHandler(ApprovalInstance instance, ApprovalNodeResponse nextNode, String currentOrgId) {
+        ApprovalNodeApproverResponse nextApproverNode = (ApprovalNodeApproverResponse) nextNode;
+        if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_PASS || ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_REJECT) {
+            // 自动节点, 直接返回
+            return nextApproverNode;
+        }
 
-		// 人工审批, 异常处理
-		setNodeApproverAndCcList(nextApproverNode, instance.getSubmitterId(), currentOrgId);
+        // 人工审批, 异常处理
+        setNodeApproverAndCcList(nextApproverNode, instance.getSubmitterId(), currentOrgId);
 
-		// 审批人为空时
-		if (CollectionUtils.isEmpty(nextApproverNode.getApproverList()) && EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction()) != EmptyApproverActionEnum.AUTO_PASS) {
-			// 指定人员, 审批管理员处理, 返回兜底审批人
-			nextApproverNode.setApproverType(ApproverTypeEnum.MEMBER.name());
-			nextApproverNode.setApproverList(List.of(nextApproverNode.getFallbackApprover()));
-		}
+        // 审批人为空时
+        if (CollectionUtils.isEmpty(nextApproverNode.getApproverList()) && EmptyApproverActionEnum.valueOf(nextApproverNode.getEmptyApproverAction()) != EmptyApproverActionEnum.AUTO_PASS) {
+            // 指定人员, 审批管理员处理, 返回兜底审批人
+            nextApproverNode.setApproverType(ApproverTypeEnum.MEMBER.name());
+            nextApproverNode.setApproverList(List.of(nextApproverNode.getFallbackApprover()));
+        }
 
-		// 审批人与提交人同一人时
-		Optional<String> findSame = nextApproverNode.getApproverList().stream().filter(approver -> Strings.CS.equals(approver, instance.getSubmitterId())).findAny();
-		if (findSame.isEmpty()) {
-			return nextApproverNode;
-		}
-		if (SameSubmitterActionEnum.valueOf(nextApproverNode.getSameSubmitterAction()) == SameSubmitterActionEnum.ASSIGN_SUPERIOR) {
-			// 转交给直属上级审批
-			OrganizationUser criteria = new OrganizationUser();
-			criteria.setUserId(findSame.get());
-			criteria.setOrganizationId(currentOrgId);
-			OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
-			if (currentUser != null && StringUtils.isNotEmpty(currentUser.getSupervisorId())) {
-				// 替换审批人列表中与提审人相同审批人 => 直属上级
-				String supervisorId = currentUser.getSupervisorId();
-				List<String> newApproverList = nextApproverNode.getApproverList().stream()
-						.map(approver -> Strings.CS.equals(approver, instance.getSubmitterId()) ? supervisorId : approver)
-						.collect(Collectors.toList());
-				nextApproverNode.setApproverList(newApproverList);
-			}
-		}
+        // 审批人与提交人同一人时
+        Optional<String> findSame = nextApproverNode.getApproverList().stream().filter(approver -> Strings.CS.equals(approver, instance.getSubmitterId())).findAny();
+        if (findSame.isEmpty()) {
+            return nextApproverNode;
+        }
+        if (SameSubmitterActionEnum.valueOf(nextApproverNode.getSameSubmitterAction()) == SameSubmitterActionEnum.ASSIGN_SUPERIOR) {
+            // 转交给直属上级审批
+            OrganizationUser criteria = new OrganizationUser();
+            criteria.setUserId(findSame.get());
+            criteria.setOrganizationId(currentOrgId);
+            OrganizationUser currentUser = organizationUserMapper.selectOne(criteria);
+            if (currentUser != null && StringUtils.isNotEmpty(currentUser.getSupervisorId())) {
+                // 替换审批人列表中与提审人相同审批人 => 直属上级
+                String supervisorId = currentUser.getSupervisorId();
+                List<String> newApproverList = nextApproverNode.getApproverList().stream()
+                        .map(approver -> Strings.CS.equals(approver, instance.getSubmitterId()) ? supervisorId : approver)
+                        .collect(Collectors.toList());
+                nextApproverNode.setApproverList(newApproverList);
+            }
+        }
 
-		return nextApproverNode;
-	}
+        return nextApproverNode;
+    }
 
-	/**
-	 * 自动跳过的待办任务
-	 *
-	 * @param instanceId 实例ID
-	 * @param nodeId 节点ID
-	 */
-	private ApprovalTask saveAutoSkipTask(String instanceId, String nodeId, String approver) {
-		Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, nodeId);
-		ApprovalTask task = new ApprovalTask();
-		task.setId(IDGenerator.nextStr());
-		task.setInstanceId(instanceId);
-		task.setNodeId(nodeId);
-		task.setNodeRound(nextRound);
-		task.setApproverId(approver);
-		task.setType(ApprovalTaskType.NL.name());
-		task.setStatus(ApprovalStatus.AUTO_APPROVED.name());
-		task.setAction(ApprovalAction.APPROVE.name());
-		task.setCreateTime(System.currentTimeMillis());
-		task.setCreateUser(InternalUser.ADMIN.getValue());
-		task.setUpdateTime(System.currentTimeMillis());
-		task.setUpdateUser(InternalUser.ADMIN.getValue());
-		approvalTaskMapper.insert(task);
-		return task;
-	}
+    /**
+     * 自动跳过的待办任务
+     *
+     * @param instanceId 实例ID
+     * @param nodeId     节点ID
+     */
+    private ApprovalTask saveAutoSkipTask(String instanceId, String nodeId, String approver) {
+        Integer nextRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, nodeId);
+        ApprovalTask task = new ApprovalTask();
+        task.setId(IDGenerator.nextStr());
+        task.setInstanceId(instanceId);
+        task.setNodeId(nodeId);
+        task.setNodeRound(nextRound);
+        task.setApproverId(approver);
+        task.setType(ApprovalTaskType.NL.name());
+        task.setStatus(ApprovalStatus.AUTO_APPROVED.name());
+        task.setAction(ApprovalAction.APPROVE.name());
+        task.setCreateTime(System.currentTimeMillis());
+        task.setCreateUser(InternalUser.ADMIN.getValue());
+        task.setUpdateTime(System.currentTimeMillis());
+        task.setUpdateUser(InternalUser.ADMIN.getValue());
+        approvalTaskMapper.insert(task);
+        return task;
+    }
 
-	/**
-	 * 自动审批的记录
-	 *
-	 * @param instanceId 实例ID
-	 * @param nodeId 自动审批的节点ID
-	 * @param approvalStatus 审批状态
-	 */
-	public void saveAutoRecord(String instanceId, String nodeId, ApprovalStatus approvalStatus, String comment, String taskId, List<String> ccList, boolean sendCc, Integer nodeRound) {
-		if (nodeRound == null) {
-			nodeRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, nodeId);
-		}
+    /**
+     * 自动审批的记录
+     *
+     * @param instanceId     实例ID
+     * @param nodeId         自动审批的节点ID
+     * @param approvalStatus 审批状态
+     */
+    public void saveAutoRecord(String instanceId, String nodeId, ApprovalStatus approvalStatus, String comment, String taskId, List<String> ccList, boolean sendCc, Integer nodeRound) {
+        if (nodeRound == null) {
+            nodeRound = extApprovalInstanceMapper.getNextNodeRound(instanceId, nodeId);
+        }
 
-		ApprovalRecord record = new ApprovalRecord();
-		record.setId(IDGenerator.nextStr());
-		if (StringUtils.isNotBlank(taskId)) {
-			record.setTaskId(taskId);
-		}
-		record.setInstanceId(instanceId);
-		record.setNodeId(nodeId);
-		record.setNodeRound(nodeRound);
-		record.setResult(approvalStatus.name());
-		if (StringUtils.isBlank(comment)) {
-			record.setComment(approvalStatus == ApprovalStatus.AUTO_APPROVED ? Translator.get("auto.approval.passed") : Translator.get("auto.approval.rejected"));
-		} else {
-			record.setComment(comment);
-		}
-		record.setCreateTime(System.currentTimeMillis());
-		record.setCreateUser(InternalUser.ADMIN.getValue());
-		record.setUpdateTime(System.currentTimeMillis());
-		record.setUpdateUser(InternalUser.ADMIN.getValue());
-		approvalRecordMapper.insert(record);
-		if (sendCc && CollectionUtils.isNotEmpty(ccList)) {
-			// 节点执行完成, 发送抄送
-			ApprovalActionService approvalActionService = CommonBeanFactory.getBean(ApprovalActionService.class);
-			if (approvalActionService != null) {
-				List<ApprovalTask> ccTasks = approvalActionService.getNodeCcTasks(nodeId, ccList, instanceId, InternalUser.ADMIN.getValue());
-				approvalTaskMapper.batchInsert(ccTasks);
-			}
-		}
-	}
+        ApprovalRecord record = new ApprovalRecord();
+        record.setId(IDGenerator.nextStr());
+        if (StringUtils.isNotBlank(taskId)) {
+            record.setTaskId(taskId);
+        }
+        record.setInstanceId(instanceId);
+        record.setNodeId(nodeId);
+        record.setNodeRound(nodeRound);
+        record.setResult(approvalStatus.name());
+        if (StringUtils.isBlank(comment)) {
+            record.setComment(approvalStatus == ApprovalStatus.AUTO_APPROVED ? Translator.get("auto.approval.passed") : Translator.get("auto.approval.rejected"));
+        } else {
+            record.setComment(comment);
+        }
+        record.setCreateTime(System.currentTimeMillis());
+        record.setCreateUser(InternalUser.ADMIN.getValue());
+        record.setUpdateTime(System.currentTimeMillis());
+        record.setUpdateUser(InternalUser.ADMIN.getValue());
+        approvalRecordMapper.insert(record);
+        if (sendCc && CollectionUtils.isNotEmpty(ccList)) {
+            // 节点执行完成, 发送抄送
+            ApprovalActionService approvalActionService = CommonBeanFactory.getBean(ApprovalActionService.class);
+            if (approvalActionService != null) {
+                List<ApprovalTask> ccTasks = approvalActionService.getNodeCcTasks(nodeId, ccList, instanceId, InternalUser.ADMIN.getValue());
+                approvalTaskMapper.batchInsert(ccTasks);
+            }
+        }
+    }
 
-	/**
-	 * 获取审批流自动跳过的审批人ID集合
-	 * @param instance 审批实例
-	 * @param currentNodeId 当前节点ID
-	 * @param preApprovers 上一个节点的审批人集合
-	 * @return 审批人ID集合
-	 */
-	public List<String> getFlowAutoSkipUser(ApprovalInstance instance, String currentNodeId, List<String> preApprovers) {
-		List<String> autoSkipUserIds = new ArrayList<>();
-		DuplicateApproverRuleEnum duplicateApproverRuleEnum = getFlowDuplicateApproverRule(instance.getFlowVersionId());
-		if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.FIRST_ONLY) {
-			// 仅首个节点需审批(之前审批过的), 后续审批节点跳过
-			List<ApprovalTask> alreadyApprovedTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>()
-					.eq(ApprovalTask::getInstanceId, instance.getId()).eq(ApprovalTask::getStatus, ApprovalStatus.APPROVED.name()));
-			autoSkipUserIds = alreadyApprovedTasks.stream().filter(task -> !Strings.CI.equals(task.getNodeId(), currentNodeId) && task.getNodeRound() != -1).map(ApprovalTask::getApproverId).toList();
-		} else if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.SEQUENTIAL_ALL){
-			// 连续审批人跳过 (上一个连续审批人)
-			autoSkipUserIds.addAll(preApprovers);
-		}
-		return autoSkipUserIds;
-	}
+    /**
+     * 获取审批流自动跳过的审批人ID集合
+     *
+     * @param instance      审批实例
+     * @param currentNodeId 当前节点ID
+     * @param preApprovers  上一个节点的审批人集合
+     * @return 审批人ID集合
+     */
+    public List<String> getFlowAutoSkipUser(ApprovalInstance instance, String currentNodeId, List<String> preApprovers) {
+        List<String> autoSkipUserIds = new ArrayList<>();
+        DuplicateApproverRuleEnum duplicateApproverRuleEnum = getFlowDuplicateApproverRule(instance.getFlowVersionId());
+        if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.FIRST_ONLY) {
+            // 仅首个节点需审批(之前审批过的), 后续审批节点跳过
+            List<ApprovalTask> alreadyApprovedTasks = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>()
+                    .eq(ApprovalTask::getInstanceId, instance.getId()).eq(ApprovalTask::getStatus, ApprovalStatus.APPROVED.name()));
+            autoSkipUserIds = alreadyApprovedTasks.stream().filter(task -> !Strings.CI.equals(task.getNodeId(), currentNodeId) && task.getNodeRound() != -1).map(ApprovalTask::getApproverId).toList();
+        } else if (duplicateApproverRuleEnum == DuplicateApproverRuleEnum.SEQUENTIAL_ALL) {
+            // 连续审批人跳过 (上一个连续审批人)
+            autoSkipUserIds.addAll(preApprovers);
+        }
+        return autoSkipUserIds;
+    }
 
-	/**
-	 * 设置节点的审批人集合和抄送人集合
-	 * @param approverNode 审批节点
-	 * @param submitter 提交人
-	 * @param currentOrgId 当前组织ID
-	 */
-	private void setNodeApproverAndCcList(ApprovalNodeApproverResponse approverNode, String submitter, String currentOrgId) {
-		if (approverNode == null) {
-			return;
-		}
-		List<User> nextApprovers = getCurrentNodeApproverList(approverNode.getApproverType(), approverNode.getApproverList(), submitter, currentOrgId, approverNode.getApproverDirection());
-		approverNode.setApproverList(nextApprovers.stream().map(User::getId).distinct().collect(Collectors.toList()));
-		List<User> nextCcList = getCurrentNodeCcList(approverNode.getCcType(), approverNode.getCcList(), submitter, currentOrgId, approverNode.getCcDirection());
-		approverNode.setCcList(nextCcList.stream().map(User::getId).distinct().collect(Collectors.toList()));
-	}
+    /**
+     * 设置节点的审批人集合和抄送人集合
+     *
+     * @param approverNode 审批节点
+     * @param submitter    提交人
+     * @param currentOrgId 当前组织ID
+     */
+    private void setNodeApproverAndCcList(ApprovalNodeApproverResponse approverNode, String submitter, String currentOrgId) {
+        if (approverNode == null) {
+            return;
+        }
+        List<User> nextApprovers = getCurrentNodeApproverList(approverNode.getApproverType(), approverNode.getApproverList(), submitter, currentOrgId, approverNode.getApproverDirection());
+        approverNode.setApproverList(nextApprovers.stream().map(User::getId).distinct().collect(Collectors.toList()));
+        List<User> nextCcList = getCurrentNodeCcList(approverNode.getCcType(), approverNode.getCcList(), submitter, currentOrgId, approverNode.getCcDirection());
+        approverNode.setCcList(nextCcList.stream().map(User::getId).distinct().collect(Collectors.toList()));
+    }
 
-	/**
-	 * 审批后操作 (字段更新)
-	 * @param instance 审批实例
-	 * @param currentNodeId 当前字段ID
-	 * @param action 审批动作
-	 */
-	public void updateApprovalPostField(ApprovalInstance instance, String currentNodeId, ApprovalAction action) {
-		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
-		if (resourceService != null) {
-			ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
-            resourceService.sendWebHook(action == ApprovalAction.APPROVE ? approvalNodeApprover.getPassPostConfig() : approvalNodeApprover.getRejectPostConfig());
-			resourceService.updateApprovalPostField(FormKey.ofKey(instance.getType()), instance.getResourceId(),
-					action == ApprovalAction.APPROVE ? approvalNodeApprover.getPassPostConfig() : approvalNodeApprover.getRejectPostConfig());
-		}
-	}
+    /**
+     * 审批后操作 (字段更新)
+     *
+     * @param instance      审批实例
+     * @param currentNodeId 当前字段ID
+     * @param action        审批动作
+     */
+    public void updateApprovalPostField(ApprovalInstance instance, String currentNodeId, ApprovalAction action) {
+        ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        if (resourceService != null) {
+            ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(currentNodeId);
+            List<BaseModuleFieldValue> resourceFvs = formService.compressResourceRefDetail(instance.getType(), instance.getResourceId());
+            resourceService.sendWebHook(action == ApprovalAction.APPROVE ? approvalNodeApprover.getPassPostConfig() : approvalNodeApprover.getRejectPostConfig(), resourceFvs, instance);
+            resourceService.updateApprovalPostField(FormKey.ofKey(instance.getType()), instance.getResourceId(),
+                    action == ApprovalAction.APPROVE ? approvalNodeApprover.getPassPostConfig() : approvalNodeApprover.getRejectPostConfig());
+        }
+    }
 
 
     /**
@@ -2053,7 +2072,7 @@ public class ApprovalFlowService {
      * @param webHookConfig
      */
     public void testConnection(WebHookConfig webHookConfig) {
-        //TODO 测试连接
-
+        ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        resourceService.testConnect(webHookConfig);
     }
 }

@@ -496,6 +496,22 @@ public class ContractInvoiceService {
 		return response;
 	}
 
+    /**
+     * 获取字段详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+     * @param id 发票ID
+     * @return 发票详情
+     */
+    public ContractInvoiceGetResponse getFieldValues(String id) {
+        LambdaQueryWrapper<ContractInvoiceSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
+        ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
+        if (snapshot != null) {
+            ContractInvoiceGetResponse getResponse = JSON.parseObject(snapshot.getInvoiceValue(), ContractInvoiceGetResponse.class);
+            return getResponse;
+        }
+        return null;
+    }
+
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CONTRACT_INVOICE_READ, rolePermissions);
