@@ -39,7 +39,7 @@ public class CustomFormDataController {
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public PagerWithOption<List<CustomFormDataListResponse>> page(@Validated @RequestBody CustomFormDataPageRequest request) {
         ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
-        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), true);
     }
 
     @GetMapping("/get/{id}")

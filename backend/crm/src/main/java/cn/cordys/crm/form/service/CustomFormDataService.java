@@ -73,10 +73,16 @@ public class CustomFormDataService {
     @Resource
     private BaseMapper<CustomForm> customFormMapper;
 
-    public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId) {
+    public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId, boolean checkDataPermission) {
         String formId = request.getCustomFormId();
-        CustomFormRoleKey dataScope = getDataScope(formId, userId);
-        boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
+        boolean manageOwn = false;
+        CustomFormRoleKey dataScope;
+        if (checkDataPermission) {
+            dataScope = getDataScope(formId, userId);
+            manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
+        } else {
+            dataScope = CustomFormRoleKey.VIEW_ALL;
+        }
 
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomFormDataListResponse> list = extCustomFormDataMapper.list(request, orgId, userId, manageOwn);
