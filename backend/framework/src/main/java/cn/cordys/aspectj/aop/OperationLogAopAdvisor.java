@@ -4,6 +4,7 @@ import lombok.Setter;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractBeanFactoryPointcutAdvisor;
 import org.springframework.aop.support.StaticMethodMatcherPointcut;
+import org.springframework.core.Ordered;
 import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
@@ -19,12 +20,21 @@ import java.util.regex.Pattern;
  * </p>
  */
 @Setter
-public class OperationLogAopAdvisor extends AbstractBeanFactoryPointcutAdvisor implements Serializable {
+public class OperationLogAopAdvisor extends AbstractBeanFactoryPointcutAdvisor implements Serializable, Ordered {
 
     /**
      * 日志记录操作源，用于获取方法的日志记录操作配置。
      */
     private OperationLogSource operationLogSource;
+
+    /**
+     * 获取切面优先级，值越小优先级越高
+     * 设置较高优先级，确保 @OperationLog 切面在其他切面之前执行
+     */
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE + 10;
+    }
 
     /**
      * 获取日志记录的切点，用于定义拦截哪些方法。

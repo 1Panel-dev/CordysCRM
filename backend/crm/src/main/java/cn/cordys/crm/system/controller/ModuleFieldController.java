@@ -58,6 +58,7 @@ import cn.cordys.crm.system.dto.request.FieldResolveRequest;
 import cn.cordys.crm.system.dto.response.FieldRepeatCheckResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFieldService;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.ModuleService;
 import cn.cordys.security.SessionUtils;
@@ -84,6 +85,8 @@ public class ModuleFieldController {
     private ModuleFieldService moduleFieldService;
     @Resource
     private ModuleFormService moduleFormService;
+	@Resource
+	private ModuleFormCacheService formCacheService;
     @Resource
     private CustomerService customerService;
     @Resource
@@ -258,6 +261,12 @@ public class ModuleFieldController {
     public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
         return moduleFormService.getSourceDisplayFields(formKey, OrganizationContext.getOrganizationId());
     }
+
+	@GetMapping("/source/config/{formKey}")
+	@Operation(summary = "获取数据源表单配置")
+	public ModuleFormConfigDTO getSourceFormConfig(@PathVariable String formKey) {
+		return formCacheService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
+	}
 
     @PostMapping("/source/business-title")
     @Operation(summary = "分页获取工商抬头信息")

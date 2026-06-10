@@ -3,6 +3,8 @@ package cn.cordys.crm.opportunity.service;
 import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.CommonResultCode;
 import cn.cordys.common.constants.FormKey;
@@ -498,6 +500,9 @@ public class OpportunityQuotationService {
 		List<BaseField> fields = formConfig.getFields();
 		Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f));
 		OpportunityQuotation quotation = opportunityQuotationMapper.selectByPrimaryKey(postFieldParam.getResourceId());
+		// 保存原始数据用于日志记录
+		OpportunityQuotation originQuotation = BeanUtils.copyBean(new OpportunityQuotation(), quotation);
+		List<BaseModuleFieldValue> originFields = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
 		List<OpportunityQuotationField> quotationFields = new ArrayList<>();
 		List<OpportunityQuotationFieldBlob> quotationFieldBlobs = new ArrayList<>();
 		OpportunityQuotationSnapshot snapshotCriteria = new OpportunityQuotationSnapshot();
@@ -562,6 +567,19 @@ public class OpportunityQuotationService {
 			OpportunityQuotationGetResponse snapshotRes = getOpportunityQuotationGetResponse(quotation, response.getModuleFields(), formConfig);
 			snapshot.setQuotationValue(JSON.toJSONString(snapshotRes));
 			snapshotBaseMapper.update(snapshot);
+		}
+		// 记录审批后置字段更新日志
+		baseService.handleUpdateLogWithSubTable(originQuotation, quotation, originFields, opportunityQuotationFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
+				postFieldParam.getResourceId(), quotation.getName(), Translator.get("products_info"), formConfig);
+		// 从 OperationLogContext 中获取日志信息并手动记录
+		LogContextInfo contextInfo = OperationLogContext.getContext();
+		if (contextInfo != null) {
+			String orgId = OrganizationContext.getOrganizationId();
+			LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.OPPORTUNITY_QUOTATION, quotation.getName());
+			logDTO.setOriginalValue(contextInfo.getOriginalValue());
+			logDTO.setModifiedValue(contextInfo.getModifiedValue());
+			logService.add(logDTO);
+			OperationLogContext.clear();
 		}
 	}
 

@@ -4,6 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
@@ -18,7 +19,6 @@ import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseService;
-import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -88,8 +88,6 @@ public class ContractInvoiceService {
     private PermissionCache permissionCache;
     @Resource
     private BaseMapper<Contract> contractMapper;
-    @Resource
-    private DataScopeService dataScopeService;
     @Resource
     private LogService logService;
     @Resource
@@ -613,6 +611,9 @@ public class ContractInvoiceService {
 		List<BaseField> fields = formConfig.getFields();
 		Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f));
 		ContractInvoice contractInvoice = contractInvoiceMapper.selectByPrimaryKey(postFieldParam.getResourceId());
+		// 保存原始数据用于日志记录
+		ContractInvoice originInvoice = BeanUtils.copyBean(new ContractInvoice(), contractInvoice);
+		List<BaseModuleFieldValue> originFields = invoiceFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
 		List<ContractInvoiceField> contractInvoiceFields = new ArrayList<>();
 		List<ContractInvoiceFieldBlob> contractInvoiceFieldBlobs = new ArrayList<>();
 		ContractInvoiceSnapshot snapshotCriteria = new ContractInvoiceSnapshot();
@@ -677,6 +678,19 @@ public class ContractInvoiceService {
 			ContractInvoiceGetResponse snapshotRes = get(contractInvoice, response.getModuleFields(), formConfig);
 			snapshot.setInvoiceValue(JSON.toJSONString(snapshotRes));
 			snapshotBaseMapper.update(snapshot);
+		}
+		// 记录审批后置字段更新日志
+		baseService.handleUpdateLogWithSubTable(originInvoice, contractInvoice, originFields, invoiceFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
+				postFieldParam.getResourceId(), contractInvoice.getName(), Translator.get("products_info"), formConfig);
+		// 从 OperationLogContext 中获取日志信息并手动记录
+		LogContextInfo contextInfo = OperationLogContext.getContext();
+		if (contextInfo != null) {
+			String orgId = OrganizationContext.getOrganizationId();
+			LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.CONTRACT_INVOICE, contractInvoice.getName());
+			logDTO.setOriginalValue(contextInfo.getOriginalValue());
+			logDTO.setModifiedValue(contextInfo.getModifiedValue());
+			logService.add(logDTO);
+			OperationLogContext.clear();
 		}
 	}
 
