@@ -59,6 +59,7 @@
     :source-id="activeSourceId"
     :customFormId="props.formKey"
     @edit="handleEdit"
+    @refresh="removeItemFromList(activeSourceId)"
   />
 </template>
 
@@ -71,7 +72,7 @@
   import type { CustomFormPageItem } from '@lib/shared/models/customForm.js';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
-  import { type FilterForm, FilterFormItem, type FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { type FilterForm, type FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import type { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
