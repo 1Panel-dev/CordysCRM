@@ -8,6 +8,7 @@ import cn.cordys.common.util.JsonDifferenceUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApproverTypeEnum;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
+import cn.cordys.crm.approval.dto.WebHookConfig;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.mapper.ExtRoleMapper;
@@ -17,7 +18,6 @@ import cn.cordys.crm.system.service.ModuleFormCacheService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -676,7 +676,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             List<String> results = new ArrayList<>();
             for (Object item : list) {
                 if (item instanceof Map<?, ?> map) {
-                     String enabled = map.get("enabled") != null ? map.get("enabled").toString() : "";
+                    String enabled = map.get("enabled") != null ? map.get("enabled").toString() : "";
                     if (Strings.CI.equals(enabled, "true")) {
                         String status = map.get("approvalStatus") != null ? map.get("approvalStatus").toString() : "";
                         String permission = map.get("permission") != null ? map.get("permission").toString() : "";
@@ -736,7 +736,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             String jsonStr = value instanceof String ? (String) value : JSON.toJSONString(value);
             ApprovalPostConfigDTO postConfig = JSON.parseObject(jsonStr, ApprovalPostConfigDTO.class);
 
-            if (postConfig == null || CollectionUtils.isEmpty(postConfig.getFieldUpdateConfigs())) {
+            if (postConfig == null) {
                 return "";
             }
 
@@ -760,6 +760,15 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                         ? Translator.get("log.enable.true")
                         : Translator.get("log.enable.false");
                 parts.add(fieldName + ": " + translatedValue + " (" + enableStr + ")");
+            }
+            if (postConfig.getWebHookConfig() != null) {
+                WebHookConfig webHookConfig = postConfig.getWebHookConfig();
+                parts.add(Translator.get("webhook.enable") + ": " + (BooleanUtils.isTrue(webHookConfig.getWebHookEnable()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false")));
+                parts.add(Translator.get("webhook.describe") + ": " + webHookConfig.getWebHookDescribe());
+                parts.add(Translator.get("webhook.url") + ": " + webHookConfig.getWebHookUrl());
+                parts.add(Translator.get("webhook.method") + ": " + webHookConfig.getWebHookMethod());
+                parts.add(Translator.get("webhook.header") + ": " + webHookConfig.getWebHookHeader());
+                parts.add(Translator.get("webhook.body") + ": " + webHookConfig.getWebHookBody());
             }
 
             return String.join("\n", parts);
