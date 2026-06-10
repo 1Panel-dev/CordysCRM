@@ -120,6 +120,7 @@
               v-model:value="activeWebhookConfig.webHookDescribe"
               :disabled="props.readonly"
               type="textarea"
+              :maxlength="1000"
               :autosize="{ minRows: 3, maxRows: 5 }"
               :placeholder="t('process.process.flow.webhookDescriptionPlaceholder')"
             />
@@ -144,6 +145,7 @@
             <n-input
               v-model:value="activeWebhookConfig.webHookUrl"
               :disabled="props.readonly"
+              :maxlength="1000"
               :placeholder="t('process.process.flow.webhookUrlPlaceholder')"
             />
           </n-form-item>
@@ -170,6 +172,7 @@
               v-model:value="activeWebhookConfig.webHookHeader"
               :disabled="props.readonly"
               type="textarea"
+              :maxlength="1000"
               :autosize="{ minRows: 3, maxRows: 6 }"
               :placeholder="webhookHeadersPlaceholder"
             />
@@ -191,6 +194,7 @@
               v-model:value="activeWebhookConfig.webHookBody"
               :disabled="props.readonly"
               type="textarea"
+              :maxlength="1000"
               :autosize="{ minRows: 6, maxRows: 10 }"
               :placeholder="webhookBodyPlaceholder"
             />
