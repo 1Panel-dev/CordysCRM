@@ -14,12 +14,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.core.Ordered;
 import org.springframework.core.StandardReflectionParameterNameDiscoverer;
+import org.springframework.core.annotation.Order;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -37,6 +39,7 @@ import java.util.List;
 @Component
 @Slf4j
 @RequiredArgsConstructor
+@Order(Ordered.HIGHEST_PRECEDENCE + 5)
 public class HitApprovalAspect {
 
 	private final ExpressionParser parser = new SpelExpressionParser();
@@ -51,31 +54,34 @@ public class HitApprovalAspect {
 	public void pointcut() {
 	}
 
-	@AfterReturning(value = "pointcut()", returning = "retValue")
-	public void handleHitApproval(JoinPoint joinPoint, Object retValue) {
+	@Around(value = "pointcut()")
+	public Object handleHitApproval(ProceedingJoinPoint joinPoint) throws Throwable {
+		// 先执行方法
+		Object retValue = joinPoint.proceed();
+
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 		Method method = signature.getMethod();
 		HitApproval annotation = method.getAnnotation(HitApproval.class);
 
 		if (annotation == null) {
-			return;
+			return retValue;
 		}
 
 		try {
 			String resourceId = resolveResourceId(method, joinPoint.getArgs(), annotation.resourceId(), retValue, annotation.executeType());
 			String updateType = resolveResourceId(method, joinPoint.getArgs(), annotation.updateType(), retValue, annotation.executeType());
 			if (StringUtils.isBlank(resourceId)) {
-				return;
+				return retValue;
 			}
 
 			if (Strings.CI.equals(updateType, "approval")) {
-				return;
+				return retValue;
 			}
 
 			// 获取组织ID
 			String organizationId = OrganizationContext.getOrganizationId();
 			if (StringUtils.isBlank(organizationId)) {
-				return;
+				return retValue;
 			}
 
 			// 检查是否命中审批流
@@ -89,6 +95,8 @@ public class HitApprovalAspect {
 		} catch (Exception e) {
 			log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);
 		}
+
+		return retValue;
 	}
 
 	/**

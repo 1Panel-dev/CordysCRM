@@ -342,32 +342,31 @@ public class ApprovalResourceService {
         }
     }
 
-    /**
-     * 审批后置字段更新
-     *
-     * @param formKey    表单Key
-     * @param resourceId 资源ID
-     * @param postConfig 后置配置
-     */
-    public void updateApprovalPostField(FormKey formKey, String resourceId, String postConfig) {
-        if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
-            return;
-        }
-        List<ResourceApprovalFieldUpdateParam> fields = getUpdateFieldOfPostConfig(postConfig);
-        fields = fields.stream().filter(ResourceApprovalFieldUpdateParam::isEnable).filter(f -> f.getFieldValue() != null).toList();
-        if (CollectionUtils.isEmpty(fields)) {
-            return;
-        }
-        String serviceBeanName = FORM_SERVICE.get(formKey);
-        Object service = applicationContext.getBean(serviceBeanName);
-        try {
-            Method method = service.getClass().getMethod("updateApprovalPostField", ResourceApprovalPostUpdateParam.class);
-            ResourceApprovalPostUpdateParam postUpdateParam = ResourceApprovalPostUpdateParam.builder().fields(fields).resourceId(resourceId).build();
-            method.invoke(service, postUpdateParam);
-        } catch (Exception e) {
-            log.error("更新业务数据失败", e);
-        }
-    }
+	/**
+	 * 审批后置字段更新
+	 * @param formKey 表单Key
+	 * @param resourceId 资源ID
+	 * @param postConfig 后置配置
+	 */
+	public void updateApprovalPostField(FormKey formKey, String resourceId, String postConfig, String currentUserId) {
+		if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+			return;
+		}
+		List<ResourceApprovalFieldUpdateParam> fields = getUpdateFieldOfPostConfig(postConfig);
+		fields = fields.stream().filter(ResourceApprovalFieldUpdateParam::isEnable).filter(f -> f.getFieldValue() != null).toList();
+		if (CollectionUtils.isEmpty(fields)) {
+			return;
+		}
+		String serviceBeanName = FORM_SERVICE.get(formKey);
+		Object service = applicationContext.getBean(serviceBeanName);
+		try {
+			Method method = service.getClass().getMethod("updateApprovalPostField", ResourceApprovalPostUpdateParam.class);
+			ResourceApprovalPostUpdateParam postUpdateParam = ResourceApprovalPostUpdateParam.builder().fields(fields).resourceId(resourceId).operator(currentUserId).build();
+			method.invoke(service, postUpdateParam);
+		} catch (Exception e) {
+			log.error("更新业务数据失败", e);
+		}
+	}
 
     /**
      * 获取审批流字段更新配置

@@ -23,7 +23,6 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
-import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -103,8 +102,6 @@ public class OrderService {
     private BaseMapper<Contract> contractMapper;
     @Resource
     private LogService logService;
-    @Resource
-    private DataScopeService dataScopeService;
     @Resource
     private ApprovalResourceService approvalResourceService;
     @Resource
@@ -515,6 +512,9 @@ public class OrderService {
         List<BaseField> fields = formConfig.getFields();
         Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f));
         Order order = orderMapper.selectByPrimaryKey(postFieldParam.getResourceId());
+        // 保存原始数据用于日志记录
+        Order originOrder = BeanUtils.copyBean(new Order(), order);
+        List<BaseModuleFieldValue> originFields = orderFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
         List<OrderField> orderFields = new ArrayList<>();
         List<OrderFieldBlob> orderFieldBlobs = new ArrayList<>();
         OrderSnapshot snapshotCriteria = new OrderSnapshot();
@@ -579,6 +579,19 @@ public class OrderService {
 			OrderGetResponse snapshotRes = get(order, response.getModuleFields(), formConfig);
             snapshot.setOrderValue(JSON.toJSONString(snapshotRes));
             snapshotBaseMapper.update(snapshot);
+        }
+        // 记录审批后置字段更新日志
+        baseService.handleUpdateLogWithSubTable(originOrder, order, originFields, orderFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
+                postFieldParam.getResourceId(), order.getName(), Translator.get("products_info"), formConfig);
+        // 从 OperationLogContext 中获取日志信息并手动记录
+        LogContextInfo contextInfo = OperationLogContext.getContext();
+        if (contextInfo != null) {
+            String orgId = OrganizationContext.getOrganizationId();
+            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.ORDER_INDEX, order.getName());
+            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+            logService.add(logDTO);
+            OperationLogContext.clear();
         }
     }
 

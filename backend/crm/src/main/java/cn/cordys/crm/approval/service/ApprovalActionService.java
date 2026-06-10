@@ -108,7 +108,7 @@ public class ApprovalActionService {
 		// 之后加签(多人或签), 需要刷新实例当前审批节点
 		if (ApprovalAddSignType.valueOf(request.getType()) == ApprovalAddSignType.AFTER && isMultiAnyMode(appendActionTask.getNodeId(), userId, orgId)) {
 			handlePreCcTasks(currentTask.getNodeId(), instance, userId, orgId);
-			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE);
+			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE, userId);
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(appendActionTask, instance, orgId);
 			handleNextApprovalNode(nextNode, instance, currentTask.getApproverId(), userId, orgId);
 		}
@@ -193,7 +193,7 @@ public class ApprovalActionService {
 			resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus(), currentUserId, currentOrgId);
 		}
 		loseCurrentNode(instance.getId(), currentTask.getNodeId());
-		approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.REJECT);
+		approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.REJECT, currentUserId);
 		// 日志 && 通知
 		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.REJECT);
 	}
@@ -443,7 +443,7 @@ public class ApprovalActionService {
 		if (isCurrentSingleNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId(), instance.getSubmitterId(), currentOrgId) || isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())) {
 			// 流转之前需要发送当前节点的抄送
 			handlePreCcTasks(currentTask.getNodeId(), instance, currentUserId, currentOrgId);
-			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE);
+			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE, currentUserId);
 			// 单人审批或者多人审批但节点流转通过
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(currentTask, instance, currentOrgId);
 			handleNextApprovalNode(nextNode, instance, currentTask.getApproverId(), currentUserId, currentOrgId);

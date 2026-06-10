@@ -25,4 +25,9 @@ public class ResourceApprovalPostUpdateParam {
 	 * 资源ID
 	 */
 	private String resourceId;
+
+	/**
+	 * 操作人
+	 */
+	private String operator;
 }
