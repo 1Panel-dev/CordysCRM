@@ -86,6 +86,7 @@
   import useFormReviewAction from '@/hooks/useFormReviewAction';
 
   import { formKeyMap } from '../crm-data-source-select/config';
+  import { isCustomDataSourceType } from '../crm-data-source-select/utils';
   import { FormulaDataSourceMap } from '../crm-formula/formula-runtime/types';
   import { safeParseFormula } from '../crm-formula-editor/utils';
   import { getFormConfigApiMap, multipleValueTypeList } from './config';
@@ -379,9 +380,14 @@
       }));
       const resList = await Promise.all(paramsList.map((params) => getDatasourceRefDetailList(params)));
       const datasourceFormConfigGroup = await Promise.all(
-        paramsList.map((params) =>
-          getFormConfigApiMap[formKeyMap[params.dataSourceType as FieldDataSourceTypeEnum] as FormDesignKeyEnum]()
-        )
+        paramsList.map((params) => {
+          if (isCustomDataSourceType(params.dataSourceType)) {
+            return getFormConfigApiMap[FormDesignKeyEnum.CUSTOM_FORM](params.dataSourceType);
+          }
+          return getFormConfigApiMap[
+            formKeyMap[params.dataSourceType as FieldDataSourceTypeEnum] as FormDesignKeyEnum
+          ]();
+        })
       );
       beFilledSubFields.forEach((field) => {
         const currentRes = resList[paramsList.findIndex((params) => params.dataSourceType === field.dataSourceType)];
