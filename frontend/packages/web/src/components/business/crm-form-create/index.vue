@@ -251,6 +251,9 @@
           linkField.linkRange = undefined;
         }
       }
+      nextTick(() => {
+        formRef.value?.validate();
+      });
     }
   }
 
@@ -365,6 +368,9 @@
           }
         }
       }
+    });
+    nextTick(() => {
+      formRef.value?.validate();
     });
   }
 

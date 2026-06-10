@@ -14,7 +14,7 @@
         <CrmFormCreateDivider :field-config="item.fieldInfo" class="!m-0 w-full" />
       </template>
       <template #image="{ item }">
-        <n-image-group v-if="item.value.length">
+        <n-image-group v-if="item.value?.length">
           <n-space :class="`${props.valueAlign ?? '!justify-end'}`">
             <n-image v-for="img in item.value" :key="img" :src="`${PreviewPictureUrl}/${img}`" width="40" height="40" />
           </n-space>

@@ -24,6 +24,7 @@
             v-show="finished && formList.length > 0"
             v-model:data="formList"
             v-model:active-item-key="activeForm"
+            v-model:focus-item-key="focusItemKey"
             virtual-scroll-height="calc(100% - 40px)"
             key-field="id"
             :item-more-actions="getFormAction"
@@ -104,6 +105,7 @@
   const finished = ref(false);
   const keyword = ref('');
   const activeForm = ref('');
+  const focusItemKey = ref('');
   const hasCreateDataPermission = computed(
     () =>
       formList.value.find((e) => e.id === activeForm.value)?.isAdmin ||
@@ -191,11 +193,13 @@
       case 'edit':
         currentSourceId.value = item.id;
         configDrawerVisible.value = true;
+        focusItemKey.value = '';
         break;
       case 'addMember':
         currentSourceId.value = item.id;
         defaultTab.value = 'memberPermission';
         configDrawerVisible.value = true;
+        focusItemKey.value = '';
         break;
       case 'delete':
         handleDelete(item);
