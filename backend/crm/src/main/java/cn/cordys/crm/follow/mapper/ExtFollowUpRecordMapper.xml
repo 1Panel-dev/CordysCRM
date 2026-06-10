@@ -572,7 +572,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by fur.follow_time desc, fur.create_time desc
+                order by fur.follow_time desc, fur.create_time desc , fur.id ASC
             </otherwise>
         </choose>
     </sql>
