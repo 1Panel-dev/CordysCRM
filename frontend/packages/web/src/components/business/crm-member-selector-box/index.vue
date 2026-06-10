@@ -5,7 +5,12 @@
         {{ label }}
         <span v-if="required" class="text-[var(--error-red)]">*</span>
       </div>
-      <n-button :disabled="props.disabled || !selectedList?.length" text type="primary" @click="handleClear">
+      <n-button
+        :disabled="props.disabled || props.clearDisabled || !selectedList?.length"
+        text
+        type="primary"
+        @click="handleClear"
+      >
         {{ clearText || t('common.clear') }}
       </n-button>
     </div>
@@ -60,6 +65,7 @@
       addText?: string;
       required?: boolean;
       clearText?: string;
+      clearDisabled?: boolean;
       preserveValueOnClear?: boolean;
       maxCount?: number;
       tipText?: string;
@@ -103,7 +109,7 @@
   }
 
   function handleClear() {
-    if (props.disabled) {
+    if (props.disabled || props.clearDisabled) {
       return;
     }
     if (!props.preserveValueOnClear) {
