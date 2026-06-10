@@ -244,8 +244,15 @@
     configDrawerVisible.value = true;
   }
 
+  const isTableInit = ref(true);
   function handleFormClick(form: any) {
-    activeForm.value = form.id;
+    if (isTableInit.value) {
+      activeForm.value = form.id;
+      isTableInit.value = false;
+      setTimeout(() => {
+        isTableInit.value = true;
+      }, 1000);
+    }
   }
 
   async function handleFormSaved(id?: string) {
