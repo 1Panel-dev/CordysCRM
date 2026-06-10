@@ -130,5 +130,10 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+
+ALTER TABLE approval_node_approver MODIFY COLUMN field_permissions text COMMENT '字段权限配置（JSON格式）';
+ALTER TABLE approval_node_approver MODIFY COLUMN pass_post_config text COMMENT '审批通过后配置（JSON格式）';
+ALTER TABLE approval_node_approver MODIFY COLUMN reject_post_config text COMMENT '审批驳回后配置（JSON格式）';
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
