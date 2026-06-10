@@ -15,6 +15,8 @@ import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.customer.service.CustomerService;
+import cn.cordys.crm.form.domain.CustomFormData;
+import cn.cordys.crm.form.service.CustomFormDataService;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.opportunity.service.OpportunityQuotationService;
@@ -48,6 +50,7 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 	private static final ContractPaymentRecordService contractPaymentRecordService;
 	private static final BusinessTitleService businessTitleService;
     private static final OrderService orderService;
+    private static final CustomFormDataService customFormDataService;
 
     static {
         customerService = CommonBeanFactory.getBean(CustomerService.class);
@@ -62,6 +65,7 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 		contractPaymentPlanService = CommonBeanFactory.getBean(ContractPaymentPlanService.class);
 		businessTitleService = CommonBeanFactory.getBean(BusinessTitleService.class);
         orderService = CommonBeanFactory.getBean(OrderService.class);
+        customFormDataService = CommonBeanFactory.getBean(CustomFormDataService.class);
     }
 
     @Override
@@ -122,7 +126,7 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 			return Objects.requireNonNull(contractService).getContractName(value);
 		}
 
-        return StringUtils.EMPTY;
+        return Objects.requireNonNull(customFormDataService).getNameById(value);
     }
 
     @Override
@@ -182,6 +186,8 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
 			List<Contract> contracts = Objects.requireNonNull(contractService).getContractListByNames(List.of(text));
 			return CollectionUtils.isEmpty(contracts) ? StringUtils.EMPTY : contracts.getFirst().getId();
 		}
-        return text;
+
+        List<CustomFormData> customFormDataList = Objects.requireNonNull(customFormDataService).selectByNames(List.of(text));
+        return CollectionUtils.isEmpty(customFormDataList) ? StringUtils.EMPTY : customFormDataList.getFirst().getId();
     }
 }

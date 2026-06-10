@@ -418,4 +418,27 @@ public class CustomFormDataService {
 
         throw new GenericException(CrmHttpResultCode.FORBIDDEN);
     }
+
+    public String getNameStrByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return StringUtils.EMPTY;
+        }
+        List<CustomFormData> customFormDataList = customFormDataMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(customFormDataList)) {
+            List<String> names = customFormDataList.stream().map(CustomFormData::getName).toList();
+            return String.join(",", names);
+        }
+        return StringUtils.EMPTY;
+    }
+
+    public List<CustomFormData> selectByNames(List<String> names) {
+        LambdaQueryWrapper<CustomFormData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(CustomFormData::getName, names);
+        return customFormDataMapper.selectListByLambda(lambdaQueryWrapper);
+    }
+
+    public String getNameById(String id) {
+        CustomFormData customFormData = customFormDataMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(customFormData).map(CustomFormData::getName).orElse(null);
+    }
 }
