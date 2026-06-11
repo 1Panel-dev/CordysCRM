@@ -134,6 +134,8 @@ public class LogService implements OperationLogHandler {
         OperationLog operationLog = BeanUtils.copyBean(new OperationLog(), log);
         operationLog.setResourceName(subStrResourceName(log.getResourceName()));
         operationLog.setDetail(log.getDetail());
+        // 请求来源 API，WEB，SKILL，MCP 等
+        operationLog.setRequestSource(OrganizationContext.getRequestSource());
         operationLogMapper.insert(operationLog);
 
         OperationLogBlob blob = getBlob(log);
@@ -156,6 +158,9 @@ public class LogService implements OperationLogHandler {
 
         var currentTimeMillis = System.currentTimeMillis();
         List<OperationLog> items = new ArrayList<>();
+        // 请求来源 API，WEB，SKILL，MCP 等
+        String requestSource =OrganizationContext.getRequestSource();
+
         // 使用流处理，构建操作日志和Blob列表
         var blobs = logs.stream()
                 .peek(log -> {
@@ -166,6 +171,7 @@ public class LogService implements OperationLogHandler {
                     OperationLog item = new OperationLog();
                     BeanUtils.copyBean(item, log);
                     item.setMethod(StringUtils.defaultIfBlank(log.getMethod(), "GET"));
+                    item.setRequestSource(requestSource);
                     items.add(item);
                 })
                 .map(this::getBlob)

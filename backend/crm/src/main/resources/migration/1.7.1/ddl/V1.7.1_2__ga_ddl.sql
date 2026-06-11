@@ -135,5 +135,7 @@ ALTER TABLE approval_node_approver MODIFY COLUMN field_permissions text COMMENT 
 ALTER TABLE approval_node_approver MODIFY COLUMN pass_post_config text COMMENT '审批通过后配置（JSON格式）';
 ALTER TABLE approval_node_approver MODIFY COLUMN reject_post_config text COMMENT '审批驳回后配置（JSON格式）';
 
+ALTER TABLE sys_operation_log ADD COLUMN request_source VARCHAR(32) DEFAULT 'WEB' COMMENT '请求来源';
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
