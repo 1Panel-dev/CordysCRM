@@ -1330,6 +1330,9 @@ public class ApprovalFlowService {
      * 解析指定成员审批人
      */
     private List<User> resolveMemberApprovers(String orgId, List<String> approverList) {
+        if (CollectionUtils.isEmpty(approverList)) {
+            return List.of();
+        }
         List<OrganizationUser> organizationUsers = organizationUserMapper.selectListByLambda(new LambdaQueryWrapper<OrganizationUser>().in(OrganizationUser::getUserId, approverList));
         List<User> users = extUserMapper.getOrgUserByUserIds(orgId, approverList);
         Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, u -> u));
@@ -1368,9 +1371,6 @@ public class ApprovalFlowService {
      */
     private List<User> resolveRoleApprovers(String orgId, List<String> roleIds) {
         List<String> userIds = extUserRoleMapper.getUserIdsByRoleIds(roleIds);
-        if (CollectionUtils.isEmpty(userIds)) {
-            return List.of();
-        }
         return resolveMemberApprovers(orgId, userIds);
     }
 
