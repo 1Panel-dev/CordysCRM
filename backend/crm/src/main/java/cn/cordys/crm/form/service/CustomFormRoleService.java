@@ -12,6 +12,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormAdmin;
@@ -145,7 +146,13 @@ public class CustomFormRoleService {
         }
         checkFormAdmin(role.getCustomFormId(), userId);
 
-        List<String> userIds = resolveUserIds(request);
+        List<String> resolvedUserIds = resolveUserIds(request);
+        if (CollectionUtils.isEmpty(resolvedUserIds)) {
+            return;
+        }
+        List<String> userIds = new ArrayList<>();
+        SubListUtils.dealForSubList(resolvedUserIds, SubListUtils.DEFAULT_QUERY_BATCH_SIZE,
+                subUserIds -> userIds.addAll(extUserMapper.filterEnabledUserIds(subUserIds, orgId)));
         if (CollectionUtils.isEmpty(userIds)) {
             return;
         }
