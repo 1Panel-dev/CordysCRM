@@ -179,6 +179,7 @@
         try {
           await deleteCustomForm(row.id);
           Message.success(t('common.deleteSuccess'));
+          activeForm.value = '';
           loadFormList();
         } catch (error) {
           // eslint-disable-next-line no-console
