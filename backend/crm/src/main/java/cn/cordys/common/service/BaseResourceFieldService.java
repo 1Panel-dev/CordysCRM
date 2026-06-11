@@ -464,7 +464,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                             if (showFieldConfig == null) {
                                 return;
                             }
-                            resourceMap.get(resourceId).add(new BaseModuleFieldValue(showFieldConfig.getId(), getFieldValueOfDetailMap(showFieldConfig, detailMap, sourceField)));
+                            Object value = getFieldValueOfDetailMap(showFieldConfig, detailMap, sourceField);
+                            if (value == null) {
+                                return;
+                            }
+                            resourceMap.get(resourceId).add(new BaseModuleFieldValue(showFieldConfig.getId(), value));
                         });
                     }
                 }
