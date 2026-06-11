@@ -2166,7 +2166,9 @@ public class ModuleFormService {
                     final BaseField showFieldConf = fieldMap.get(sourceField.getId() + REF_UNDERLINE + refId);
                     if (showFieldConf != null) {
                         final Object val = baseResourceFieldService.getFieldValueOfDetailMap(showFieldConf, detailMap, sourceField);
-                        reFvs.add(new BaseModuleFieldValue(showFieldConf.getId(), val));
+                        if (val != null) {
+                            reFvs.add(new BaseModuleFieldValue(showFieldConf.getId(), val));
+                        }
                     }
                 });
                 return;
