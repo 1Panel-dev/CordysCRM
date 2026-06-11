@@ -67,7 +67,7 @@
   import { ref } from 'vue';
   import { NButton, NTooltip, useMessage } from 'naive-ui';
 
-  import { FieldRuleEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getGenerateId } from '@lib/shared/method';
 
@@ -172,6 +172,21 @@
     };
   }
 
+  function disableSavedDataSourceType() {
+    const addDisabledProp = (field: FormCreateField) => {
+      if (![FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
+        return;
+      }
+
+      field.disabledProps = Array.from(new Set([...(field.disabledProps || []), 'dataSourceType']));
+    };
+
+    fieldList.value.forEach((field) => {
+      addDisabledProp(field);
+      field.subFields?.forEach(addDisabledProp);
+    });
+  }
+
   const customFormNameDraft = ref('');
 
   async function handleSaveFormDesign() {
@@ -191,6 +206,7 @@
       if (result?.id) {
         currentSourceId.value = result.id;
       }
+      disableSavedDataSourceType();
       unsaved.value = false;
       emit('saved', currentSourceId.value);
       Message.success(t('common.saveSuccess'));
