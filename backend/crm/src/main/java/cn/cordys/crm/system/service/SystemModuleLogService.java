@@ -199,18 +199,6 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 .toList());
     }
 
-	/**
-	 * TODO: 表单配置的日志详情对比
-	 * @param differ 差异
-	 */
-	private void handleFormPropLogDetail(JsonDifferenceDTO differ) {
-		if (differ.getOldValue() != null && differ.getNewValue() != null) {
-			differ.setOldValueName(Translator.get(JSON.parseObject(JSON.toJSONString(differ.getOldValue()), FormProp.class).getViewSize()));
-			differ.setNewValueName(Translator.get(JSON.parseObject(JSON.toJSONString(differ.getNewValue()), FormProp.class).getViewSize()));
-		}
-	}
-
-
     private void handleLinkFieldsLogDetail(JsonDifferenceDTO differ) {
         Map<String, String> oldPairs = parseLinkFieldMap(differ.getOldValue());
         Map<String, String> newPairs = parseLinkFieldMap(differ.getNewValue());

@@ -19,6 +19,7 @@ import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.dto.field.DateTimeField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.SubField;
+import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -60,7 +61,7 @@ public abstract class BaseModuleLogService {
     }
 
 	/**
-	 * 处理字段变更日志详情，如果字段没有实际变化则不产生日志
+	 * TODO: 处理字段变更日志详情
 	 * @param differ 差异
 	 */
 	public void handleFieldsLogDetail(JsonDifferenceDTO differ) {
@@ -71,7 +72,7 @@ public abstract class BaseModuleLogService {
 				.map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
 				.toList();
 
-		// 如果字段名称列表相同，说明没有实际变化，不需要产生日志详情
+		// 如果字段没有实际变化则不产生日志
 		if (Objects.equals(oldFieldNames, newFieldNames)) {
 			differ.setOldValueName(null);
 			differ.setNewValueName(null);
@@ -87,6 +88,36 @@ public abstract class BaseModuleLogService {
 			return list;
 		}
 		return Collections.emptyList();
+	}
+
+	/**
+	 * 表单配置的日志详情对比
+	 * @param differ 差异
+	 */
+	public void handleFormPropLogDetail(JsonDifferenceDTO differ) {
+		if (differ.getOldValue() != null && differ.getNewValue() != null) {
+			FormProp oldFormProp = JSON.parseObject(JSON.toJSONString(differ.getOldValue()), FormProp.class);
+			differ.setOldValueName(buildFormPropDisplayText(oldFormProp));
+
+			FormProp newFormProp = JSON.parseObject(JSON.toJSONString(differ.getNewValue()), FormProp.class);
+			differ.setNewValueName(buildFormPropDisplayText(newFormProp));
+		}
+	}
+
+	/**
+	 * 构建表单属性展示文本
+	 * 格式: viewSize, layout, labelPos, inputWidth, optBtnPos
+	 *
+	 * @param formProp 表单属性
+	 * @return 展示文本
+	 */
+	private String buildFormPropDisplayText(FormProp formProp) {
+		String viewSize = Translator.get(formProp.getViewSize());
+		String layout = Translator.get("formProp.layout." + formProp.getLayout());
+		String labelPos = Translator.get("formProp.labelPos." + formProp.getLabelPos());
+		String inputWidth = Translator.get("formProp.inputWidth." + formProp.getInputWidth());
+		String optBtnPos = Translator.get("formProp.optBtnPos." + formProp.getOptBtnPos());
+		return String.join(", ", viewSize, layout, labelPos, inputWidth, optBtnPos);
 	}
 
     abstract public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId);

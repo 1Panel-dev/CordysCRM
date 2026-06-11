@@ -46,6 +46,9 @@ public class CustomFormLogService extends BaseModuleLogService {
 			} else if (Strings.CS.equals(differ.getColumn(), "fields")) {
 				differ.setColumnName(Translator.get("log." + differ.getColumn()));
 				handleFieldsLogDetail(differ);
+			} else if (Strings.CS.equals("formProp", differ.getColumn())) {
+				differ.setColumnName(Translator.get("log.form.prop"));
+				handleFormPropLogDetail(differ);
 			} else {
                 translatorDifferInfo(differ);
             }
