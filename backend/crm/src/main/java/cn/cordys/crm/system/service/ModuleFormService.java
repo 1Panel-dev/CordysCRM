@@ -891,7 +891,9 @@ public class ModuleFormService {
 					String oldRefFieldId = refIdSplitter.apply(oldField.getId());
 					BaseField refField = reloadFieldMap.get(oldRefFieldId);
 					if (refField == null) {
+						// 引用的字段已删
 						it.remove();
+						((DatasourceField) sf).getShowFields().remove(oldRefFieldId);
 						continue;
 					}
 					BaseField combineField = combineFieldsProps(oldField, refField);
@@ -961,6 +963,8 @@ public class ModuleFormService {
 					String oldRefFieldId = splitRefId(oldRefField.getResourceFieldId()).apply(oldRefField.getId());
 					BaseField refField = reloadFieldMap.get(oldRefFieldId);
 					if (refField == null) {
+						// 引用的字段过期或已被删除
+						sourceField.getShowFields().remove(oldRefFieldId);
 						return;
 					}
 					BaseField combineField = combineFieldsProps(oldRefField, refField);
@@ -2365,6 +2369,7 @@ public class ModuleFormService {
 		return fvs;
 	}
 
+	@SuppressWarnings({"unchecked", "rawtypes"})
     public List<BaseModuleFieldValue> compressResourceRefDetail(String formKey, String resourceId) {
         List<BaseModuleFieldValue> fvs = new ArrayList<>();
         Object resourceDetail = fieldSourceServiceProvider.safeGetFieldsById(formKey, resourceId);
