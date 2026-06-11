@@ -39,4 +39,9 @@ public @interface HitApproval {
 	 * 更新类型 (支持SpEL表达式，从返回值或者方法参数中获取资源ID) normal-正常更新  approval-评审更新
 	 */
 	String updateType() default "normal";
+
+	/**
+	 * 操作人 (审批流触发的用户ID)
+	 */
+	String operatorId() default "admin";
 }
