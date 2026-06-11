@@ -228,6 +228,9 @@ public class ApprovalResourceService {
         }
         // 查询旧的审批状态用于日志记录
         String oldApprovalStatus = extApprovalInstanceMapper.selectApprovalStatus(tableName, resourceId);
+        if (Strings.CS.equals(approvalStatus, oldApprovalStatus)) {
+            return;
+        }
         extApprovalInstanceMapper.updateApprovalStatus(tableName, resourceId, approvalStatus);
         // 存在快照表, 需要同步刷新审批状态
         if (formKey.hasSnapshot()) {
