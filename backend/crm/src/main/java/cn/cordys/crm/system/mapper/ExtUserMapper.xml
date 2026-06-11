@@ -238,6 +238,20 @@
         </foreach>
     </select>
 
+    <select id="filterEnabledUserIds" resultType="java.lang.String">
+        SELECT distinct su.id
+        FROM sys_user su
+        JOIN sys_organization_user sou
+            ON su.id = sou.user_id
+            AND sou.organization_id = #{orgId}
+            AND sou.enable = true
+        WHERE su.id IN
+        <foreach collection="userIds" item="userId" index="index"
+                 open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+
     <update id="updateUser" parameterType="cn.cordys.crm.system.domain.User">
         update sys_user
         <set>

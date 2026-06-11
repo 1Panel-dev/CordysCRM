@@ -22,6 +22,8 @@ public interface ExtUserMapper {
 
     List<String> selectUserIdsByRoleIds(@Param("roleIds") List<String> roleIds);
 
+    List<String> filterEnabledUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
+
 
     List<String> selectUserIdsByNames(@Param("names") List<String> names);
 

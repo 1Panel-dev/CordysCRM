@@ -171,7 +171,7 @@ public class CustomFormControllerTests extends BaseTest {
 
         CustomFormRoleUserBatchRequest request = new CustomFormRoleUserBatchRequest();
         request.setCustomFormRoleId(roleId);
-        request.setUserIds(List.of("cf-role-direct-user"));
+        request.setUserIds(List.of("cf-role-direct-user", "cf-role-disabled-direct-user"));
         request.setDeptIds(List.of("cf-role-test-dept"));
         request.setRoleIds(List.of("cf-role-test-system-role"));
 
@@ -239,12 +239,19 @@ public class CustomFormControllerTests extends BaseTest {
         insertUser("cf-role-direct-user", "直接用户");
         insertUser("cf-role-dept-user", "部门用户");
         insertUser("cf-role-system-role-user", "角色用户");
+        insertUser("cf-role-disabled-direct-user", "禁用直接用户");
+        insertUser("cf-role-disabled-dept-user", "禁用部门用户");
+        insertUser("cf-role-disabled-role-user", "禁用角色用户");
         insertOrganizationUser("cf-role-direct-org-user", "cf-role-direct-user", "销售顾问");
         insertOrganizationUser("cf-role-dept-org-user", "cf-role-dept-user", "部门专员");
         insertOrganizationUser("cf-role-system-role-org-user", "cf-role-system-role-user", "角色专员");
+        insertOrganizationUser("cf-role-disabled-direct-org-user", "cf-role-disabled-direct-user", "禁用直接用户", false);
+        insertOrganizationUser("cf-role-disabled-dept-org-user", "cf-role-disabled-dept-user", "禁用部门用户", false);
+        insertOrganizationUser("cf-role-disabled-role-org-user", "cf-role-disabled-role-user", "禁用角色用户", false);
         insertUserRole("cf-role-direct-user-role", "cf-role-direct-user");
         insertUserRole("cf-role-dept-user-role", "cf-role-dept-user");
         insertUserRole("cf-role-test-user-role", "cf-role-system-role-user");
+        insertUserRole("cf-role-disabled-role-user-role", "cf-role-disabled-role-user");
     }
 
     private void insertDepartment() {
@@ -272,13 +279,17 @@ public class CustomFormControllerTests extends BaseTest {
     }
 
     private void insertOrganizationUser(String id, String userId, String position) {
+        insertOrganizationUser(id, userId, position, true);
+    }
+
+    private void insertOrganizationUser(String id, String userId, String position, boolean enable) {
         OrganizationUser organizationUser = new OrganizationUser();
         organizationUser.setId(id);
         organizationUser.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         organizationUser.setDepartmentId("cf-role-test-dept");
         organizationUser.setUserId(userId);
         organizationUser.setPosition(position);
-        organizationUser.setEnable(true);
+        organizationUser.setEnable(enable);
         setAuditFields(organizationUser);
         organizationUserMapper.insert(organizationUser);
     }
