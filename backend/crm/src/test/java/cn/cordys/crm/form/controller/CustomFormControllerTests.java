@@ -83,13 +83,13 @@ public class CustomFormControllerTests extends BaseTest {
     @Order(2)
     void testCreate() throws Exception {
         CustomFormAddRequest request = JSON.parseObject("{\"name\":\"未命名表单sdfsdf\",\"enable\":true,\"fields\":[{\"id\":\"178090868410300000\",\"type\":\"DIVIDER\",\"icon\":\"iconicon_dividing_line\",\"name\":\"基本信息\",\"fieldWidth\":1,\"showLabel\":true,\"description\":\"\",\"readable\":true,\"editable\":true,\"mobile\":true,\"rules\":[],\"dividerClass\":\"divider--normal\",\"dividerColor\":\"#edf0f1\",\"titleColor\":\"#323535\",\"placeholder\":\"\",\"sumColumns\":[]},{\"id\":\"178090868410300001\",\"type\":\"INPUT\",\"name\":\"名称\",\"icon\":\"iconicon_single_line_text\",\"fieldWidth\":1,\"showLabel\":true,\"defaultValue\":\"\",\"defaultValueType\":\"custom\",\"description\":\"\",\"readable\":true,\"editable\":true,\"mobile\":true,\"rules\":[{\"key\":\"required\",\"required\":true,\"message\":\"common.notNull\",\"label\":\"common.required\",\"trigger\":[\"change\",\"blur\"]}],\"formula\":\"\",\"businessKey\":\"name\",\"disabledProps\":[\"readable\",\"mobile\",\"rules.required\"],\"internalKey\":\"customFormDataName\",\"placeholder\":\"\",\"sumColumns\":[]},{\"id\":\"178090868410300002\",\"type\":\"INPUT\",\"name\":\"自定义字段1\",\"icon\":\"iconicon_single_line_text\",\"fieldWidth\":1,\"showLabel\":true,\"defaultValue\":\"\",\"defaultValueType\":\"custom\",\"description\":\"\",\"readable\":true,\"editable\":true,\"mobile\":true,\"rules\":[],\"formula\":\"\",\"placeholder\":\"\",\"sumColumns\":[]},{\"id\":\"178090868410300003\",\"type\":\"INPUT\",\"name\":\"自定义字段2\",\"icon\":\"iconicon_single_line_text\",\"fieldWidth\":1,\"showLabel\":true,\"defaultValue\":\"\",\"defaultValueType\":\"custom\",\"description\":\"\",\"readable\":true,\"editable\":true,\"mobile\":true,\"rules\":[],\"formula\":\"\",\"placeholder\":\"\",\"sumColumns\":[]},{\"id\":\"178090868410300004\",\"type\":\"DIVIDER\",\"icon\":\"iconicon_dividing_line\",\"name\":\"负责人信息\",\"fieldWidth\":1,\"showLabel\":true,\"description\":\"\",\"readable\":true,\"editable\":true,\"mobile\":true,\"rules\":[],\"dividerClass\":\"divider--normal\",\"dividerColor\":\"#edf0f1\",\"titleColor\":\"#323535\",\"placeholder\":\"\",\"sumColumns\":[]},{\"id\":\"178090868410300005\",\"type\":\"MEMBER\",\"icon\":\"iconicon_member_single_choice\",\"name\":\"负责人\",\"fieldWidth\":1,\"showLabel\":true,\"description\":\"\",\"readable\":true,\"editable\":true,\"mobile\":true,\"rules\":[],\"defaultValue\":\"admin\",\"initialOptions\":[{\"id\":\"admin\",\"name\":\"Administrator\"}],\"hasCurrentUser\":false,\"multiple\":false,\"businessKey\":\"owner\",\"disabledProps\":[],\"internalKey\":\"customFormDataNOwner\",\"placeholder\":\"\",\"sumColumns\":[]}],\"formProp\":{\"layout\":1,\"labelPos\":\"top\",\"inputWidth\":\"custom\",\"optBtnContent\":[{\"text\":\"保存\",\"enable\":true},{\"text\":\"保存并继续添加\",\"enable\":false},{\"text\":\"取消\",\"enable\":true}],\"optBtnPos\":\"flex-row\"}}", CustomFormAddRequest.class);
-        request.setName("测试自定义表单");
+        request.setName("测试自定义表单-X");
         request.setEnable(true);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         CustomForm form = getResultData(mvcResult, CustomForm.class);
         assertNotNull(form);
         assertNotNull(form.getId());
-        assertEquals("测试自定义表单", form.getName());
+        assertEquals("测试自定义表单-X", form.getName());
 
         createdFormId = form.getId();
     }
@@ -113,7 +113,7 @@ public class CustomFormControllerTests extends BaseTest {
         CustomFormGetResponse response = getResultData(mvcResult, CustomFormGetResponse.class);
         assertNotNull(response);
         assertEquals(createdFormId, response.getId());
-        assertEquals("测试自定义表单", response.getName());
+        assertEquals("测试自定义表单-X", response.getName());
         assertNotNull(response.getCreator());
         assertEquals("admin", response.getCreator().getId());
         assertEquals("Administrator", response.getCreator().getName());
