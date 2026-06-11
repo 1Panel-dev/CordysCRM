@@ -28,6 +28,7 @@ import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigLogDTO;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -64,8 +65,10 @@ public class CustomFormService {
     private BaseMapper<ModuleForm> moduleFormMapper;
     @Resource
     private BaseMapper<ModuleFormBlob> moduleFormBlobMapper;
+	@Resource
+	private ModuleFormService moduleFormService;
     @Resource
-    private ModuleFormService moduleFormService;
+    private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ExtCustomFormDataMapper extCustomFormDataMapper;
     @Resource
@@ -314,7 +317,7 @@ public class CustomFormService {
         }
 
         // 保存表单配置
-        moduleFormService.saveWithoutLog(moduleFormRequest, userId, orgId);
+        moduleFormCacheService.saveWithoutLog(moduleFormRequest, userId, orgId);
 
 		// 设置日志上下文
         OperationLogContext.setContext(formChangeLogContext);
