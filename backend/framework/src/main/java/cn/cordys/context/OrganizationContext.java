@@ -38,7 +38,6 @@ public final class OrganizationContext {
     public static final String DEFAULT_ORGANIZATION_ID = "100001";
 
     private static final ThreadLocal<String> ORGANIZATION_ID = new InheritableThreadLocal<>();
-    private static final ThreadLocal<String> REQUEST_SOURCE = new InheritableThreadLocal<>();
 
     private OrganizationContext() {
         // 工具类禁止实例化
@@ -107,30 +106,9 @@ public final class OrganizationContext {
     }
 
     /**
-     * 获取当前请求来源（API, WEB, SKILL, MCP 等）。
-     *
-     * @return 请求来源字符串，可能为 {@code null}
-     */
-    public static String getRequestSource() {
-        return REQUEST_SOURCE.get();
-    }
-
-    /**
-     * 设置请求来源。
-     *
-     * @param requestSource 请求来源标识
-     */
-    public static void setRequestSource(String requestSource) {
-        if (StringUtils.isNotBlank(requestSource)) {
-            REQUEST_SOURCE.set(requestSource);
-        }
-    }
-
-    /**
      * 清理 ThreadLocal 上下文，必须放在 finally 块中执行。
      */
     public static void clear() {
         ORGANIZATION_ID.remove();
-        REQUEST_SOURCE.remove();
     }
 }

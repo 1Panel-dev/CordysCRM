@@ -67,6 +67,9 @@ public class LogDTO {
     @Schema(description = "平台")
     private String platform;
 
+    @Schema(description = "请求来源")
+    private String requestSource;
+
     /**
      * 原始值
      */
