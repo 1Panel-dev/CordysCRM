@@ -23,4 +23,6 @@ export default {
   'customForm.deleteFormTip': '删除后，表单数据、配置信息将无法恢复，请谨慎操作！',
   'customForm.closeFormTip': '关闭表单将导致用户录入内容无法保存，确定关闭？',
   'customForm.enableDisabledTip': '仅管理员可操作',
+  'customForm.noDataTip': '暂无数据，请点击上方 “+” 创建',
+  'customForm.tableNoDataTip': '暂无数据，请点击左上方 “+” 创建',
 };

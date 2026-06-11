@@ -17,8 +17,9 @@
           </div>
           <n-empty
             v-if="finished && formList.length === 0"
-            :description="t('common.noData')"
-            class="flex h-[400px] flex-col items-center justify-center"
+            :description="t('customForm.noDataTip')"
+            :show-icon="false"
+            class="flex h-[38px] flex-col items-center justify-center bg-[var(--text-n9)]"
           />
           <CrmList
             v-show="finished && formList.length > 0"
@@ -64,6 +65,13 @@
       <template #2>
         <div class="h-full p-[24px]">
           <formTable v-if="activeForm" :form-key="activeForm" :readonly="!hasCreateDataPermission" />
+          <div v-else class="flex h-[400px] w-full items-center justify-center">
+            <n-empty
+              :description="t('customForm.tableNoDataTip')"
+              :show-icon="false"
+              class="flex h-[38px] w-[300px] flex-col items-center justify-center bg-[var(--text-n9)]"
+            />
+          </div>
         </div>
       </template>
     </CrmSplitPanel>

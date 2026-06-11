@@ -27,4 +27,6 @@ export default {
   'customForm.closeFormTip':
     'Closing the form will prevent user-entered content from being saved. Are you sure you want to close it?',
   'customForm.enableDisabledTip': 'Only administrators can operate this.',
+  'customForm.noDataTip': 'No data available. Please click the "+" above to create a new one.',
+  'customForm.tableNoDataTip': 'No data available. Please click the "+" above to create a new one.',
 };

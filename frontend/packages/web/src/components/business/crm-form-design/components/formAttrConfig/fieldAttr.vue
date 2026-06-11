@@ -1523,10 +1523,13 @@
   });
 
   const customDataSourceForms = ref<CustomFormItem[]>([]);
+  const customFormInit = ref(false);
   async function initCustomDataSourceForms() {
     try {
+      customFormInit.value = false;
       const res = await getCustomFormOptions();
       customDataSourceForms.value = res || [];
+      customFormInit.value = true;
     } catch (error) {
       customDataSourceForms.value = [];
       // eslint-disable-next-line no-console
@@ -1729,7 +1732,11 @@
   watch(
     () => dataSourceOptions.value,
     (options) => {
-      if (fieldConfig.value && !options.some((item) => item.value === fieldConfig.value.dataSourceType)) {
+      if (
+        customFormInit.value &&
+        fieldConfig.value &&
+        !options.some((item) => item.value === fieldConfig.value.dataSourceType)
+      ) {
         fieldConfig.value.dataSourceType = options[0]?.value as FieldDataSourceTypeEnum;
       }
     },
