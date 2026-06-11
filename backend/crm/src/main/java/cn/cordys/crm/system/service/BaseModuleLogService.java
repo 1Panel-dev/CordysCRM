@@ -325,10 +325,28 @@ public abstract class BaseModuleLogService {
     private void parseValue(BaseField moduleField, JsonDifferenceDTO differ) {
         if (moduleField != null) {
             if (differ.getOldValue() != null) {
-                differ.setOldValueName(transformFieldValue(moduleField, differ.getOldValue()));
+				Object ov = transformFieldValue(moduleField, differ.getOldValue());
+				if (ov == null || StringUtils.isBlank(ov.toString())) {
+					if (differ.getOldValue() instanceof List) {
+						differ.setOldValueName(String.join(",", (List) differ.getOldValue()));
+					} else {
+						differ.setOldValueName(differ.getOldValue());
+					}
+				} else {
+					differ.setOldValueName(ov);
+				}
             }
             if (differ.getNewValue() != null) {
-                differ.setNewValueName(transformFieldValue(moduleField, differ.getNewValue()));
+				Object nv = transformFieldValue(moduleField, differ.getNewValue());
+				if (nv == null || StringUtils.isBlank(nv.toString())) {
+					if (differ.getNewValue() instanceof List) {
+						differ.setNewValueName(String.join(",", (List) differ.getNewValue()));
+					} else {
+						differ.setNewValueName(differ.getNewValue());
+					}
+				} else {
+					differ.setNewValueName(nv);
+				}
             }
         } else {
             differ.setOldValueName(differ.getOldValue());
