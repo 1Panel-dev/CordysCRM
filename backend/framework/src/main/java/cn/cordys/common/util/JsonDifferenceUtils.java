@@ -65,7 +65,34 @@ public class JsonDifferenceUtils {
             // 避免小数点，科学计数法等格式导致的比较不一致
             return oldValue.asDouble() == newValue.asDouble();
         }
+        // 数字与字符串的跨类型比较（如计算字段: 99 vs "99"）
+        if (oldValue.isNumber() && newValue.isTextual()) {
+            return isNumericTextEqual(oldValue, newValue);
+        }
+        if (oldValue.isTextual() && newValue.isNumber()) {
+            return isNumericTextEqual(newValue, oldValue);
+        }
         return oldValue.equals(newValue);
+    }
+
+    /**
+     * 比较数值节点与文本节点是否相等
+     * 解决计算字段等场景中，同一值因类型不同（数字 vs 字符串）导致的误判
+     *
+     * @param numberNode 数值节点
+     * @param textNode   文本节点
+     * @return 是否相等
+     */
+    private static boolean isNumericTextEqual(JsonNode numberNode, JsonNode textNode) {
+        try {
+            String text = textNode.asText();
+            if (text.contains(".") || text.contains("e") || text.contains("E")) {
+                return numberNode.asDouble() == Double.parseDouble(text);
+            }
+            return numberNode.asLong() == Long.parseLong(text);
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     /**
