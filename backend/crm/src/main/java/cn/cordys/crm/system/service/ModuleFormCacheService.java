@@ -42,6 +42,20 @@ public class ModuleFormCacheService {
         return moduleFormService.save(saveParam, currentUserId, currentOrgId);
     }
 
+	/**
+	 * 保存表单配置并更新缓存
+	 *
+	 * @param saveParam     保存参数
+	 * @param currentUserId 当前用户ID
+	 *
+	 * @return 表单配置
+	 */
+	@CachePut(value = "form_cache", key = "#currentOrgId + ':' + #saveParam.formKey", unless = "#result == null")
+	@CacheEvict(value = "field_cache", key = "#currentOrgId + ':' + #saveParam.formKey")
+	public ModuleFormConfigDTO saveWithoutLog(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
+		return moduleFormService.saveWithoutLog(saveParam, currentUserId, currentOrgId);
+	}
+
     /**
      * 获取表单配置(缓存)
      *
