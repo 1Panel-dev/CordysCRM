@@ -169,8 +169,9 @@ public abstract class BaseResourceService {
                 .map(resource -> {
                     Object id = getResourceFieldValue(resource, "id");
                     Object name = getResourceFieldValue(resource, "name");
+					Object customFormId = getResourceFieldValue(resource, "customFormId");
 
-                    BaseResourceField baseResourceField = fieldMap.get(id.toString());
+					BaseResourceField baseResourceField = fieldMap.get(id.toString());
                     Map originResource = new HashMap();
                     if (baseResourceField != null && isNotBlank(baseResourceField.getFieldValue())) {
                         // 获取字段解析器
@@ -185,6 +186,11 @@ public abstract class BaseResourceService {
                     if (isNotBlank(request.getFieldValue())) {
                         modifiedResource.put(request.getFieldId(), request.getFieldValue());
                     }
+
+					if (customFormId != null) {
+						originResource.put("customFormId", customFormId);
+						modifiedResource.put("customFormId", customFormId);
+					}
 
                     LogDTO logDTO = new LogDTO(orgId, id.toString(), userId, LogType.UPDATE, logModule, name.toString());
                     logDTO.setOriginalValue(originResource);
