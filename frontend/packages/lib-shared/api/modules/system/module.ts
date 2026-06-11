@@ -75,6 +75,7 @@ import {
   GetFieldRefDetailListUrl,
   GetFieldOrderListUrl,
   GetFieldCustomFormListUrl,
+  GetFieldConfigUrl,
 } from '@lib/shared/api/requrls/system/module';
 import { QuotationItem } from '@lib/shared/models/opportunity';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -111,7 +112,7 @@ import type { Result } from '@lib/shared/types/axios';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import type { BusinessTitleItem, ContractItem, PaymentPlanItem, PaymentRecordItem } from '@lib/shared/models/contract';
 import type { OrderItem } from '@lib/shared/models/order';
-import { CustomFormPageItem } from '@lib/shared/models/customForm';
+import { CustomFormPageItem, type CustomFormDetail } from '@lib/shared/models/customForm';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 模块首页-导航模块列表
@@ -421,6 +422,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: GetAdvancedSwitchUrl });
   }
 
+  function getDatasourceFieldConfig(type: FormDesignKeyEnum | string, approvalTaskId?: string) {
+    return CDR.get<FormDesignConfigDetailParams | CustomFormDetail>({ url: `${GetFieldConfigUrl}/${type}` });
+  }
+
   return {
     getFieldDisplayList,
     getModuleNavConfigList,
@@ -491,5 +496,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getFieldBusinessTitleList,
     getDatasourceRefDetailList,
     getFieldCustomFormList,
+    getDatasourceFieldConfig,
   };
 }

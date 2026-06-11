@@ -399,6 +399,7 @@ export const {
   getFieldContractPaymentPlanList,
   getFieldContractPaymentRecordList,
   getFieldBusinessTitleList,
+  getDatasourceFieldConfig,
 } = moduleApi;
 
 export const {

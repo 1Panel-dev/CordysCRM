@@ -36,7 +36,7 @@
   import { DataTableRowKey, NImage, NImageGroup, NSwitch } from 'naive-ui';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
-  import { ContractPaymentPlanEnum, ContractStatusEnum } from '@lib/shared/enums/contractEnum';
+  import { ContractPaymentPlanEnum } from '@lib/shared/enums/contractEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -117,6 +117,7 @@
   const { fieldList, initFormConfig } = useFormCreateApi({
     formKey,
     customFormId: computed(() => (isCustomForm.value ? (props.sourceType as string | undefined) : undefined)),
+    isDatasource: true,
   });
   const subField = computed(() =>
     fieldList.value.find((field) => [FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type))
