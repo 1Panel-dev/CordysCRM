@@ -52,4 +52,8 @@ public class OperationLog {
 
     @Schema(description = "操作方法")
     private String method;
+
+    @Schema(description = "请求来源")
+    private String requestSource;
+
 }
