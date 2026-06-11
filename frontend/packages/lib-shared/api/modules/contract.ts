@@ -182,8 +182,8 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 更新合同
-  function updateContract(data: UpdateContractParams) {
-    return CDR.post({ url: ContractUpdateUrl, data });
+  function updateContract(data: UpdateContractParams, approvalTaskId?: string) {
+    return CDR.post({ url: ContractUpdateUrl, data, params: { approvalTaskId } });
   }
 
   // 删除合同
@@ -608,8 +608,8 @@ export default function useContractApi(CDR: CordysAxios) {
   }
 
   // 更新发票
-  function updateInvoiced(data: UpdateContractInvoiceParams) {
-    return CDR.post({ url: ContractInvoicedUpdateUrl, data });
+  function updateInvoiced(data: UpdateContractInvoiceParams, approvalTaskId?: string) {
+    return CDR.post({ url: ContractInvoicedUpdateUrl, data, params: { approvalTaskId } });
   }
 
   // 发票详情

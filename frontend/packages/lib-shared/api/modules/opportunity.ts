@@ -410,8 +410,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 更新报价
-  function updateQuotation(data: UpdateQuotationParams) {
-    return CDR.post({ url: UpdateQuotationUrl, data });
+  function updateQuotation(data: UpdateQuotationParams, approvalTaskId?: string) {
+    return CDR.post({ url: UpdateQuotationUrl, data, params: { approvalTaskId } });
   }
 
   // 报价详情

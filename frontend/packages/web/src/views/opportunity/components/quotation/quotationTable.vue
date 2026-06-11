@@ -248,7 +248,7 @@
     }
   }
 
-  const otherSaveParams = ref({
+  const otherSaveParams = ref<Record<string, any>>({
     id: '',
   });
 
@@ -290,6 +290,7 @@
     linkFormInfo.value = undefined;
     formCreateDrawerVisible.value = true;
   }
+
   function handleVoid(row: QuotationItem) {
     openModal({
       type: 'error',
