@@ -40,7 +40,7 @@ import {
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from '@/components/business/crm-form-create/types';
 
-import { checkRepeat } from '@/api/modules';
+import { checkRepeat, getDatasourceFieldConfig } from '@/api/modules';
 import useUserStore from '@/store/modules/user';
 
 export interface FormCreateApiProps {
@@ -56,6 +56,7 @@ export interface FormCreateApiProps {
   hiddenFieldIds?: string[]; // 需要隐藏的字段id列表
   editableFieldIds?: string[]; // 可编辑的字段id列表
   customFormId?: Ref<string | undefined>; // 自定义表单id
+  isDatasource?: boolean; // 是否数据源表单配置
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -1225,7 +1226,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function initFormConfig() {
     try {
       loading.value = true;
-      const api = getFormConfigApiMap[props.formKey.value];
+      const api = props.isDatasource ? getDatasourceFieldConfig : getFormConfigApiMap[props.formKey.value];
       if (props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM) {
         const res = await api(props.customFormId?.value ?? '');
         moduleFormConfig.value = cloneDeep(res);
@@ -1233,7 +1234,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         formConfig.value = res.formProp;
         customFormConfig.value = res as CustomFormDetail;
       } else {
-        const res = await api(props.sourceId?.value ?? '', props.otherSaveParams?.value?.approvalTaskId);
+        const res = await api(
+          props.isDatasource ? props.formKey.value : props.sourceId?.value ?? '',
+          props.otherSaveParams?.value?.approvalTaskId
+        );
         moduleFormConfig.value = cloneDeep(res);
         initFormFieldConfig(res.fields);
         formConfig.value = res.formProp;

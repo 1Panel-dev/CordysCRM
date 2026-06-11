@@ -694,6 +694,7 @@ export const {
   getFieldBusinessTitleList,
   getDatasourceRefDetailList,
   getFieldCustomFormList,
+  getDatasourceFieldConfig,
 } = moduleApi;
 
 export const {
