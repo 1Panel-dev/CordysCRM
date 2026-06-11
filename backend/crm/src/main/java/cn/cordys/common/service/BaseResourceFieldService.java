@@ -1055,12 +1055,17 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             FieldSourceType sourceType = FieldSourceType.safeValueOf(dataSourceType);
             List<Object> details;
             if (sourceType == FieldSourceType.CUSTOM_FORM) {
+                String formKey = getFormKey();
                 // 自定义表单：设置form_key作为上下文
                 try {
                     CustomFormDataFieldService.setFormKey(dataSourceType);
                     details = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, distinctIds);
                 } finally {
                     CustomFormDataFieldService.clearFormKey();
+                    if (StringUtils.isNotBlank(formKey)) {
+                        // 设置父 formKey
+                        CustomFormDataFieldService.setFormKey(formKey);
+                    }
                 }
             } else {
                 details = fieldSourceServiceProvider.batchGetSimpleByIds(sourceType, distinctIds);
