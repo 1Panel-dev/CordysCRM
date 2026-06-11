@@ -36,5 +36,5 @@ export default {
   'crm.approval.fileLimitTip': '附件最多可添加 10 个',
   'crm.approval.reviewDisabledTip': '未匹配到生效审批流，请联系管理员',
   'crm.approval.copyToTip': '抄送 {count} 人',
-  'crm.approval.historyTip': '该合同为历史数据，仅保留最终审批状态',
+  'crm.approval.historyTip': '该资源为历史数据，仅保留最终审批状态',
 };
