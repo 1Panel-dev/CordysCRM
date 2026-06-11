@@ -25,7 +25,7 @@
       </div>
       <n-transfer
         v-model:value="addMembers"
-        :options="flattenTree(options as unknown as Option[])"
+        :options="flatOptions"
         :render-source-list="renderSourceList"
         :render-target-label="renderTargetLabel"
         source-filterable
@@ -234,6 +234,21 @@
     });
   });
 
+  function isTransferOptionDisabled(item: Record<string, any>) {
+    return (
+      item.disabled ||
+      props.disabledList?.includes(item.id || item.value) ||
+      props.disabledNodeTypes?.includes(item.nodeType)
+    );
+  }
+
+  const flatOptions = computed(() =>
+    flattenTree(options.value as unknown as Option[]).map((item) => ({
+      ...item,
+      disabled: isTransferOptionDisabled(item),
+    }))
+  );
+
   async function handleAddConfirm() {
     if (isSelectedCountExceeded.value) {
       showMaxCountTip();
@@ -242,7 +257,7 @@
 
     const _selectedNodes: any[] = [];
     mapTree(options.value, (item) => {
-      if (addMembers.value.includes(item.id)) {
+      if (addMembers.value.includes(item.id) && !isTransferOptionDisabled(item)) {
         _selectedNodes.push(item);
       }
       delete item.parent;
@@ -454,13 +469,21 @@
   };
 
   function handleUpdateValue(value: Array<string | number>) {
-    if (remainingCount.value !== undefined && value.length > remainingCount.value) {
+    const enabledValue = value.filter((item) => {
+      const option = flatOptions.value.find((e) => e.value === item) as Record<string, any> | undefined;
+      return option && !isTransferOptionDisabled(option);
+    });
+    if (enabledValue.length !== value.length) {
+      addMembers.value = enabledValue as string[];
+    }
+
+    if (remainingCount.value !== undefined && enabledValue.length > remainingCount.value) {
       addMembers.value = addMembers.value.slice(0, remainingCount.value);
       showMaxCountTip();
       return;
     }
 
-    selectedNodes.value = selectedNodes.value.filter((e) => value.includes(e.id));
+    selectedNodes.value = selectedNodes.value.filter((e) => enabledValue.includes(e.id));
   }
 
   watch(
