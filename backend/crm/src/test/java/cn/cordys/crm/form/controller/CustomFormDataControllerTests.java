@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,7 +69,7 @@ public class CustomFormDataControllerTests extends BaseTest {
 
         CustomForm form = new CustomForm();
         form.setId(formId);
-        form.setName("测试自定义表单");
+        form.setName(UUID.randomUUID().toString());
         form.setEnable(true);
         form.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         form.setCreateTime(now);
