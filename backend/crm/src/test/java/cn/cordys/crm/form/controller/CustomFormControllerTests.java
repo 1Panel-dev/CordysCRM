@@ -45,6 +45,7 @@ public class CustomFormControllerTests extends BaseTest {
     private static final String OPTION = "option";
     private static final String ADMIN_GET = "admin/get/{0}";
     private static final String ROLE_USERS = "role/users";
+
     private static final String ROLE_DEPT_TREE = "role/user/dept/tree";
     private static final String ROLE_ROLE_TREE = "role/user/role/tree";
     private static String createdFormId;
