@@ -420,6 +420,19 @@
             // 处理数据源字段，单选传单个值
             formDetail.value[item.id] = formDetail.value[item.id]?.[0];
           }
+          if (item.subFields?.length) {
+            const parentFieldDetail = formDetail.value[item.id];
+            if (parentFieldDetail) {
+              parentFieldDetail.forEach((subItem: Record<string, any>) => {
+                item.subFields?.forEach((subField) => {
+                  if ([FieldTypeEnum.DATA_SOURCE].includes(subField.type) && Array.isArray(subItem[subField.id])) {
+                    // 处理数据源字段，单选传单个值
+                    subItem[subField.id] = subItem[subField.id]?.[0];
+                  }
+                });
+              });
+            }
+          }
           if (!validateField(item)) {
             hasErrorField = true;
             break;

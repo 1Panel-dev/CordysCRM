@@ -19,12 +19,7 @@
   import { isEqual } from 'lodash-es';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
-  import {
-    FieldDataSourceTypeEnum,
-    FieldRuleEnum,
-    FieldTypeEnum,
-    FormDesignKeyEnum,
-  } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatTimeValue, getCityPath, getGenerateId, getIndustryPath } from '@lib/shared/method';
@@ -46,7 +41,6 @@
   import select from '@/components/business/crm-form-create/components/basic/select.vue';
   import singleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
 
-  import { formKeyMap } from '../crm-data-source-select/config';
   import { FormCreateField } from '../crm-form-create/types';
   import { RowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
 
