@@ -70,6 +70,7 @@ public class HitApprovalAspect {
 		try {
 			String resourceId = resolveResourceId(method, joinPoint.getArgs(), annotation.resourceId(), retValue, annotation.executeType());
 			String updateType = resolveResourceId(method, joinPoint.getArgs(), annotation.updateType(), retValue, annotation.executeType());
+			String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
 			if (StringUtils.isBlank(resourceId)) {
 				return retValue;
 			}
@@ -90,7 +91,7 @@ public class HitApprovalAspect {
 			if (hit) {
 				// 命中审批流, 修改业务资源审批状态为待提审
 				approvalResourceService.clearResourceApprovalDetail(resourceId);
-				approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), InternalUser.ADMIN.getValue(), OrganizationContext.getOrganizationId());
+				approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), operator, OrganizationContext.getOrganizationId());
 			}
 		} catch (Exception e) {
 			log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);
@@ -118,7 +119,7 @@ public class HitApprovalAspect {
 		}
 
 		// 编辑从参数中解析
-		return resolveResourceIdFromArgs(method, args, expression);
+		return resolveParamFromArgs(method, args, expression);
 	}
 
 	/**
@@ -144,7 +145,7 @@ public class HitApprovalAspect {
 	/**
 	 * 从方法参数中解析资源ID（支持SpEL表达式）
 	 */
-	private String resolveResourceIdFromArgs(Method method, Object[] args, String expression) {
+	private String resolveParamFromArgs(Method method, Object[] args, String expression) {
 		String[] params = discoverer.getParameterNames(method);
 		if (params == null || args == null) {
 			return null;

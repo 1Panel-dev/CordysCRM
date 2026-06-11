@@ -124,7 +124,7 @@ public class OrderService {
      * @return
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.ADD)
-    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.CREATE)
+    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.CREATE, operatorId = "{#operatorId}")
     public Order add(OrderAddRequest request, String operatorId, String orgId) {
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
@@ -343,7 +343,7 @@ public class OrderService {
      * @return
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
-    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.EDIT, resourceId = "{#request.id}", updateType = "{#request.updateType}")
+    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.EDIT, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
     public Order update(OrderUpdateRequest request, String userId, String orgId) {
         Order oldOrder = orderMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
