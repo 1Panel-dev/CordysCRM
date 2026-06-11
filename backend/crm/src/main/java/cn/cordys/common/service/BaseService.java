@@ -22,11 +22,14 @@ import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import cn.cordys.crm.system.constants.FieldType;
+import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
+import cn.cordys.crm.system.mapper.ExtAttachmentMapper;
 import cn.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
@@ -70,6 +73,10 @@ public class BaseService {
     private ExtClueMapper extClueMapper;
     @Resource
     private ExtModuleFieldMapper extModuleFieldMapper;
+    @Resource
+    private BaseMapper<ModuleField> moduleFieldMapper;
+    @Resource
+    private ExtAttachmentMapper extAttachmentMapper;
 	@Resource
 	private ApprovalInstanceService approvalInstanceService;
 	@Resource
@@ -393,22 +400,44 @@ public class BaseService {
         Map<String, Object> originResourceLog = JSON.parseToMap(JSON.toJSONString(originResource));
         Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
 
-        // 添加原始字段值
+        // 收集所有字段ID，检测附件类型字段
+        Set<String> allFieldIds = new HashSet<>();
         if (originResourceFields != null) {
             originResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
-                    .forEach(field ->
-                            originResourceLog.put(field.getFieldId(), field.getFieldValue())
-                    );
+                    .forEach(field -> allFieldIds.add(field.getFieldId()));
         }
-
-        // 添加修改后的字段值（过滤无效字段）
         if (modifiedResourceFields != null) {
             modifiedResourceFields.stream()
                     .filter(BaseModuleFieldValue::valid)
-                    .forEach(field ->
-                            modifiedResourceLog.put(field.getFieldId(), field.getFieldValue())
-                    );
+                    .forEach(field -> allFieldIds.add(field.getFieldId()));
+        }
+        Set<String> attachmentFieldIds = filterAttachmentFieldIds(allFieldIds);
+
+        // 添加原始字段值（附件类型字段将ID替换为名称）
+        if (originResourceFields != null) {
+            originResourceFields.stream()
+                    .filter(BaseModuleFieldValue::valid)
+                    .forEach(field -> {
+                        Object value = field.getFieldValue();
+                        if (attachmentFieldIds.contains(field.getFieldId())) {
+                            value = replaceAttachmentIdsWithNames(value);
+                        }
+                        originResourceLog.put(field.getFieldId(), value);
+                    });
+        }
+
+        // 添加修改后的字段值（过滤无效字段，附件类型字段将ID替换为名称）
+        if (modifiedResourceFields != null) {
+            modifiedResourceFields.stream()
+                    .filter(BaseModuleFieldValue::valid)
+                    .forEach(field -> {
+                        Object value = field.getFieldValue();
+                        if (attachmentFieldIds.contains(field.getFieldId())) {
+                            value = replaceAttachmentIdsWithNames(value);
+                        }
+                        modifiedResourceLog.put(field.getFieldId(), value);
+                    });
         }
 
         try {
@@ -439,6 +468,10 @@ public class BaseService {
         Map<String, Object> originResourceLog = JSON.parseToMap(JSON.toJSONString(originResource));
         Map<String, Object> modifiedResourceLog = JSON.parseToMap(JSON.toJSONString(modifiedResource));
         Set<String> subRefKey = getSubTableRefIds(moduleFormConfigDTO);
+
+        // 从表单配置中获取附件类型字段ID集合
+        Set<String> attachmentFieldIds = getAttachmentFieldIdsFromFormConfig(moduleFormConfigDTO);
+
         if (CollectionUtils.isNotEmpty(originResourceFields)) {
             Map<String, String> oldFieldNameMap = getFieldNameMap(originResourceFields, moduleFormConfigDTO);
             List<BaseModuleFieldValue> validFields = originResourceFields.stream()
@@ -456,6 +489,10 @@ public class BaseService {
             Map<String, String> subTableIdKeyMap = getSubTableIdKeyMap(moduleFormConfigDTO);
             fillResourceLog(modifiedResourceLog, validFields, newFieldNameMap, subTableIdKeyMap, subTableKeyName, subRefKey, moduleFormConfigDTO);
         }
+
+        // 将附件字段中的附件ID替换为附件名称
+        replaceAttachmentValuesInLog(originResourceLog, attachmentFieldIds);
+        replaceAttachmentValuesInLog(modifiedResourceLog, attachmentFieldIds);
 
         try {
             OperationLogContext.setContext(
@@ -760,5 +797,82 @@ public class BaseService {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * 从字段ID集合中筛选出附件类型的字段ID
+	 *
+	 * @param fieldIds 字段ID集合
+	 * @return 附件类型字段ID集合
+	 */
+	private Set<String> filterAttachmentFieldIds(Set<String> fieldIds) {
+		if (fieldIds.isEmpty()) {
+			return Collections.emptySet();
+		}
+		LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.in(ModuleField::getId, new ArrayList<>(fieldIds))
+				.eq(ModuleField::getType, FieldType.ATTACHMENT.name());
+		List<ModuleField> attachmentFields = moduleFieldMapper.selectListByLambda(queryWrapper);
+		return attachmentFields.stream().map(ModuleField::getId).collect(Collectors.toSet());
+	}
+
+	/**
+	 * 将附件字段值中的附件ID替换为附件名称
+	 * 在记录操作日志时调用，确保即使附件被删除，日志中仍保留附件名称
+	 *
+	 * @param fieldValue 附件字段值（附件ID列表）
+	 * @return 替换为附件名称后的值
+	 */
+	private Object replaceAttachmentIdsWithNames(Object fieldValue) {
+		if (fieldValue == null) {
+			return null;
+		}
+		List<String> ids;
+		if (fieldValue instanceof List) {
+			ids = ((List<?>) fieldValue).stream().map(String::valueOf).toList();
+		} else {
+			ids = JSON.parseArray(fieldValue.toString(), String.class);
+		}
+		if (CollectionUtils.isEmpty(ids)) {
+			return fieldValue;
+		}
+		List<String> names = extAttachmentMapper.selectNameByIds(ids);
+		if (CollectionUtils.isNotEmpty(names)) {
+			return names;
+		}
+		return fieldValue;
+	}
+
+	/**
+	 * 从表单配置中获取附件类型字段ID集合
+	 *
+	 * @param formConfig 表单配置
+	 * @return 附件类型字段ID集合
+	 */
+	private Set<String> getAttachmentFieldIdsFromFormConfig(ModuleFormConfigDTO formConfig) {
+		if (formConfig == null || CollectionUtils.isEmpty(formConfig.getFields())) {
+			return Collections.emptySet();
+		}
+		return formConfig.getFields().stream()
+				.filter(field -> Strings.CS.equals(field.getType(), FieldType.ATTACHMENT.name()))
+				.map(BaseField::getId)
+				.collect(Collectors.toSet());
+	}
+
+	/**
+	 * 替换日志中附件字段的值（将附件ID替换为附件名称）
+	 *
+	 * @param resourceLog      日志数据
+	 * @param attachmentFieldIds 附件类型字段ID集合
+	 */
+	private void replaceAttachmentValuesInLog(Map<String, Object> resourceLog, Set<String> attachmentFieldIds) {
+		if (CollectionUtils.isEmpty(attachmentFieldIds) || resourceLog == null) {
+			return;
+		}
+		for (String fieldId : attachmentFieldIds) {
+			if (resourceLog.containsKey(fieldId)) {
+				resourceLog.put(fieldId, replaceAttachmentIdsWithNames(resourceLog.get(fieldId)));
+			}
+		}
 	}
 }

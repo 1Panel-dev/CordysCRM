@@ -269,9 +269,9 @@ public class CustomFormDataService {
         try {
             if (request.getModuleFields() != null) {
                 List<BaseModuleFieldValue> originFields = customFormDataFieldService.getModuleFieldValuesByResourceId(request.getId());
+				baseService.handleUpdateLog(originData, updateData, originFields, request.getModuleFields(), originData.getId(), originData.getName());
                 customFormDataFieldService.deleteByResourceId(request.getId());
                 customFormDataFieldService.saveModuleField(updateData, orgId, userId, request.getModuleFields(), true);
-                baseService.handleUpdateLog(originData, updateData, originFields, request.getModuleFields(), originData.getId(), originData.getName());
             } else {
                 baseService.handleUpdateLog(originData, updateData, null, null, originData.getId(), originData.getName());
             }
