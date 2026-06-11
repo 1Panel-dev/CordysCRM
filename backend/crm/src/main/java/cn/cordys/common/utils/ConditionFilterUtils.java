@@ -210,9 +210,12 @@ public class ConditionFilterUtils {
                         }
                         dbCondition.setRefMainCustomField(!refResourceField.hasBusinessKey());
 
-                        FieldSourceType fieldSourceType = EnumUtils.valueOf(FieldSourceType.class, datasourceField.getDataSourceType());
-                        String tableName = fieldSourceType.getTableName();
-                        dbCondition.setRefMainTableName(tableName);
+                        FieldSourceType fieldSourceType = FieldSourceType.safeValueOf(datasourceField.getDataSourceType());
+                        if (fieldSourceType != null) {
+                            dbCondition.setRefMainTableName(fieldSourceType.getTableName());
+                        } else {
+                            dbCondition.setRefMainTableName(FieldSourceType.CUSTOM_FORM.getTableName());
+                        }
                     }
                 }
             }
