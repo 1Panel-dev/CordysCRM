@@ -73,8 +73,8 @@ export default function useOrderApi(CDR: CordysAxios) {
   }
 
   // 更新订单
-  function updateOrder(data: UpdateOrderParams) {
-    return CDR.post({ url: UpdateOrderUrl, data });
+  function updateOrder(data: UpdateOrderParams, approvalTaskId?: string) {
+    return CDR.post({ url: UpdateOrderUrl, data, params: { approvalTaskId } });
   }
 
   // 批量更新订单

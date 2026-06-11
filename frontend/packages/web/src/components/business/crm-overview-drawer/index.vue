@@ -116,6 +116,7 @@
     :form-key="realFormKey"
     :source-id="sourceId"
     :need-init-detail="needInitDetail"
+    :otherSaveParams="props.otherSaveParams"
     @saved="emit('saved', $event)"
   />
 </template>
@@ -150,6 +151,7 @@
     sourceId?: string;
     showTabSetting?: boolean;
     formViewSize?: FormViewSize;
+    otherSaveParams?: Record<string, any>;
   }>();
 
   const emit = defineEmits<{
