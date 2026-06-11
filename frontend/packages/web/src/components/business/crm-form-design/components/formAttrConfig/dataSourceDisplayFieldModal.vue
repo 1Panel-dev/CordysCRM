@@ -67,7 +67,9 @@
   const formKey = computed<FormDesignKeyEnum | undefined>(() =>
     getDataSourceFormKey(dataSourceType.value, dataSourceFilterFormKeyMap)
   );
-  const isBusinessTitleSource = computed(() => formKey.value === FormDesignKeyEnum.BUSINESS_TITLE);
+  const isBusinessTitleSource = computed(
+    () => props.fieldConfig.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE
+  );
 
   async function getDisplayList() {
     try {
