@@ -114,10 +114,12 @@
       : t('common.searchByName');
   });
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+
+  const isDatasourceFormConfig = computed(() => props.sourceType !== FieldDataSourceTypeEnum.BUSINESS_TITLE);
   const { fieldList, initFormConfig } = useFormCreateApi({
     formKey,
     customFormId: computed(() => (isCustomForm.value ? (props.sourceType as string | undefined) : undefined)),
-    isDatasource: true,
+    isDatasource: isDatasourceFormConfig.value,
   });
   const subField = computed(() =>
     fieldList.value.find((field) => [FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type))
@@ -313,7 +315,9 @@
 
   const selectedDisplayFields = computed<string[]>(() => {
     const defaultFormColumn =
-      formKey.value === FormDesignKeyEnum.BUSINESS_TITLE ? [] : internalColumnMap[formKey.value] || [];
+      props.fieldConfig?.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE
+        ? []
+        : internalColumnMap[formKey.value] || [];
     const fixedFieldIds = [...defaultFormColumn, ...staticColumns].map((column) => String(column.key));
     const allFields = [...fieldList.value.map((e) => e.id), ...fixedFieldIds];
     const savedFieldIds = props.fieldConfig?.listDisplayFields || [];

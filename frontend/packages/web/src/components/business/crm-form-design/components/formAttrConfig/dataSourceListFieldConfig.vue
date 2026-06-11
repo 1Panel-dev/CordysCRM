@@ -101,7 +101,7 @@
   import { NButton, NCheckbox, NCheckboxGroup, NEmpty, NIcon, NPopover, NScrollbar, NTooltip } from 'naive-ui';
   import { ChevronDownOutline } from '@vicons/ionicons5';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -109,7 +109,7 @@
   import { dataSourceFilterFormKeyMap } from '@/components/business/crm-form-create/config';
   import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
-  import { getFormDesignConfig } from '@/api/modules';
+  import { getBusinessTitleModuleForm, getFormDesignConfig } from '@/api/modules';
   import useFormCreateSystemColumns from '@/hooks/useFormCreateSystemColumns';
   import { FormKey } from '@/hooks/useFormCreateTable';
 
@@ -332,10 +332,9 @@
       if (!formKey) {
         normalizedOptions.value = [];
         innerValue.value = [];
-        return;
       }
 
-      const defaultInternalNameKey = defaultInternalNameKeyMap[formKey];
+      const defaultInternalNameKey = defaultInternalNameKeyMap[formKey as FormKey];
       const { internalColumnMap, staticColumns } = await useFormCreateSystemColumns({
         formKey: formKey as FormKey,
         containerClass: '',
@@ -344,8 +343,10 @@
       let res;
       if (isCustomForm) {
         res = await getFormDesignConfig(dataSourceType as string);
+      } else if (props.fieldConfig.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE) {
+        res = await getBusinessTitleModuleForm();
       } else {
-        res = await getFormDesignConfig(formKey);
+        res = await getFormDesignConfig(formKey as FormKey);
       }
       nextOptions = res.fields.reduce((acc: FieldOption[], field) => {
         if (
@@ -358,7 +359,7 @@
           ].includes(field.type)
         ) {
           const isBusinessTitleDefaultField =
-            formKey === FormDesignKeyEnum.BUSINESS_TITLE &&
+            props.fieldConfig.dataSourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE &&
             field.businessKey === defaultInternalNameKeyMap[FormDesignKeyEnum.BUSINESS_TITLE];
           acc.push({
             label: field.name,
