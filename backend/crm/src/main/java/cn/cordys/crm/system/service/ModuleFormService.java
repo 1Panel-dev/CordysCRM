@@ -2191,12 +2191,12 @@ public class ModuleFormService {
 							// 自定义表单：设置 formId 到 ThreadLocal
 							try {
 								CustomFormDataFieldService.setFormKey(sourceField.getDataSourceType());
-								detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, fv.getFieldValue().toString());
+								detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, v.toString());
 							} finally {
 								CustomFormDataFieldService.clearFormKey();
 							}
 						} else {
-							detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, fv.getFieldValue().toString());
+							detail = fieldSourceServiceProvider.safeGetSimpleById(sourceType, v.toString());
 						}
 
                         final Map<String, Object> detailMap = JSON.MAPPER.convertValue(detail, Map.class);
