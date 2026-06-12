@@ -313,7 +313,7 @@
 
   function handleFormCreateSaved(res?: any) {
     if (needInitDetail.value) {
-      searchData(undefined, res?.id || activeSourceId.value);
+      searchData(undefined);
     } else {
       searchData();
     }
@@ -344,20 +344,28 @@
     }
   );
 
+  async function init(val: string) {
+    checkedRowKeys.value = [];
+    keyword.value = '';
+    await initFormConfig(props.readonly, operationColumn.value);
+    tableAdvanceFilterRef.value?.clearFilter();
+    setLoadListParams({ customFormId: val });
+    searchData();
+  }
+
   watch(
     () => props.formKey,
-    async (val) => {
-      checkedRowKeys.value = [];
-      keyword.value = '';
-      await initFormConfig(props.readonly, operationColumn.value);
-      tableAdvanceFilterRef.value?.clearFilter();
-      setLoadListParams({ customFormId: val });
-      searchData();
+    (val) => {
+      init(val);
     },
     {
       immediate: true,
     }
   );
+
+  defineExpose({
+    init,
+  });
 </script>
 
 <style lang="less" scoped></style>

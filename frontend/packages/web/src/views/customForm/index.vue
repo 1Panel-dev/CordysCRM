@@ -64,7 +64,7 @@
       </template>
       <template #2>
         <div class="h-full p-[24px]">
-          <formTable v-if="activeForm" :form-key="activeForm" :readonly="!hasCreateDataPermission" />
+          <formTable v-if="activeForm" ref="formTableRef" :form-key="activeForm" :readonly="!hasCreateDataPermission" />
           <div v-else class="flex h-[400px] w-full items-center justify-center">
             <n-empty
               :description="t('customForm.tableNoDataTip')"
@@ -269,9 +269,13 @@
     }
   }
 
+  const formTableRef = ref<InstanceType<typeof formTable>>();
   async function handleFormSaved(id?: string) {
     await loadFormList();
     if (id) {
+      if (activeForm.value === id) {
+        formTableRef.value?.init(id);
+      }
       currentSourceId.value = id;
       activeForm.value = id;
     }
