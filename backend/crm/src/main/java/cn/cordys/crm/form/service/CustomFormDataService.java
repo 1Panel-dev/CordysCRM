@@ -7,6 +7,7 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
@@ -15,6 +16,7 @@ import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.*;
 import cn.cordys.crm.form.dto.request.CustomFormDataAddRequest;
 import cn.cordys.crm.form.dto.request.CustomFormDataBatchUpdateRequest;
@@ -25,27 +27,39 @@ import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
 import cn.cordys.crm.form.mapper.ExtCustomFormDataMapper;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
+import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
+import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
+import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.idev.excel.FastExcelFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class CustomFormDataService {
 
     @Resource
@@ -72,6 +86,10 @@ public class CustomFormDataService {
     private LogService logService;
     @Resource
     private BaseMapper<CustomForm> customFormMapper;
+    @Resource
+    private BaseMapper<CustomFormDataField> customFormDataFieldMapper;
+    @Resource
+    private BaseMapper<CustomFormDataFieldBlob> customFormDataFieldBlobMapper;
 
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId, boolean checkDataPermission) {
         String formId = request.getCustomFormId();
@@ -440,5 +458,109 @@ public class CustomFormDataService {
     public String getNameById(String id) {
         CustomFormData customFormData = customFormDataMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(customFormData).map(CustomFormData::getName).orElse(null);
+    }
+
+    /**
+     * 下载导入模板
+     *
+     * @param response   响应
+     * @param customFormId 自定义表单ID
+     * @param orgId      组织ID
+     */
+    public void downloadImportTpl(HttpServletResponse response, String customFormId, String orgId) {
+        CustomForm customForm = customFormMapper.selectByPrimaryKey(customFormId);
+        String formName = customForm != null ? customForm.getName() : StringUtils.EMPTY;
+        new EasyExcelExporter()
+                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(customFormId, orgId),
+                        Translator.getWithArgs("custom_form_data.import_tpl.name", formName), Translator.get("sheet.data"), Translator.get("sheet.comment"),
+                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(customFormId, orgId)),
+                        new CustomHeadColWidthStyleStrategy());
+    }
+
+    /**
+     * 导入预检查
+     *
+     * @param file         导入文件
+     * @param customFormId 自定义表单ID
+     * @param orgId        组织ID
+     *
+     * @return 导入检查信息
+     */
+    public ImportResponse importPreCheck(MultipartFile file, String customFormId, String orgId) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        return checkImportExcel(file, customFormId, orgId);
+    }
+
+    /**
+     * 自定义表单数据导入
+     *
+     * @param file         导入文件
+     * @param customFormId 自定义表单ID
+     * @param orgId        组织ID
+     * @param userId       用户ID
+     *
+     * @return 导入结果
+     */
+    public ImportResponse realImport(MultipartFile file, String customFormId, String orgId, String userId) {
+        try {
+            CustomFormDataFieldService.setFormKey(customFormId);
+            List<BaseField> fields = moduleFormService.getAllFields(customFormId, orgId);
+            CustomImportAfterDoConsumer<CustomFormData, BaseResourceSubField> afterDo = (dataList, fieldList, fieldBlobList) -> {
+                var logs = new ArrayList<LogDTO>();
+                dataList.forEach(data -> {
+                    data.setCustomFormId(customFormId);
+                    data.setOrganizationId(orgId);
+                    if (StringUtils.isBlank(data.getOwner())) {
+                        data.setOwner(userId);
+                    }
+                    logs.add(new LogDTO(orgId, data.getId(), userId, LogType.ADD, LogModule.CUSTOM_FORM_DATA, data.getName()));
+                });
+                customFormDataMapper.batchInsert(dataList);
+                customFormDataFieldMapper.batchInsert(fieldList.stream()
+                        .map(field -> BeanUtils.copyBean(new CustomFormDataField(), field)).toList());
+                customFormDataFieldBlobMapper.batchInsert(fieldBlobList.stream()
+                        .map(field -> BeanUtils.copyBean(new CustomFormDataFieldBlob(), field)).toList());
+                logService.batchAdd(logs);
+            };
+            CustomFieldImportEventListener<CustomFormData> eventListener = new CustomFieldImportEventListener<>(
+                    fields, CustomFormData.class, orgId, userId, "custom_form_data_field", afterDo, 2000, null, null);
+            FastExcelFactory.read(file.getInputStream(), eventListener)
+                    .headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            log.error("custom form data import error: {}", e.getMessage());
+            throw new GenericException(e.getMessage());
+        } finally {
+            CustomFormDataFieldService.clearFormKey();
+        }
+    }
+
+    /**
+     * 检查导入文件
+     *
+     * @param file         文件
+     * @param customFormId 自定义表单ID
+     * @param orgId        组织ID
+     *
+     * @return 检查结果
+     */
+    private ImportResponse checkImportExcel(MultipartFile file, String customFormId, String orgId) {
+        try {
+            CustomFormDataFieldService.setFormKey(customFormId);
+            List<BaseField> fields = moduleFormService.getAllCustomImportFields(customFormId, orgId);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "custom_form_data", "custom_form_data_field", orgId);
+            FastExcelFactory.read(file.getInputStream(), eventListener)
+                    .headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            log.error("custom form data import pre-check error: {}", e.getMessage());
+            throw new GenericException(e.getMessage());
+        } finally {
+            CustomFormDataFieldService.clearFormKey();
+        }
     }
 }
