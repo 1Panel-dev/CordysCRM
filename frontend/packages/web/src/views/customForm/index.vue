@@ -35,20 +35,6 @@
             @item-click="handleFormClick"
             @more-action-select="handleMoreActionSelect"
           >
-            <template #titleLeft="{ item }">
-              <n-tooltip trigger="hover" :disabled="item.isAdmin">
-                <template #trigger>
-                  <n-switch
-                    :value="item.enable"
-                    :disabled="!item.isAdmin"
-                    class="ml-[4px]"
-                    size="small"
-                    @click="handleBeforeEnableChange(item)"
-                  />
-                </template>
-                {{ t('customForm.enableDisabledTip') }}
-              </n-tooltip>
-            </template>
             <template #title="{ item }">
               <n-tooltip trigger="hover">
                 <template #trigger>
@@ -145,6 +131,14 @@
 
   const formAction: ActionsItem[] = [
     {
+      label: t('common.enable'),
+      key: 'enable',
+    },
+    {
+      label: t('common.close'),
+      key: 'disable',
+    },
+    {
       label: t('common.edit'),
       key: 'edit',
     },
@@ -166,7 +160,10 @@
 
   function getFormAction(item: any) {
     if (item.isAdmin) {
-      return formAction;
+      if (item.enable) {
+        return formAction.filter((e) => e.key !== 'enable');
+      }
+      return formAction.filter((e) => e.key !== 'disable');
     }
     return [];
   }
@@ -195,28 +192,6 @@
         }
       },
     });
-  }
-
-  function handleMoreActionSelect(event: ActionsItem, item: Record<string, any>) {
-    switch (event.key) {
-      case 'edit':
-        currentSourceId.value = item.id;
-        defaultTab.value = 'design';
-        configDrawerVisible.value = true;
-        focusItemKey.value = '';
-        break;
-      case 'addMember':
-        currentSourceId.value = item.id;
-        defaultTab.value = 'memberPermission';
-        configDrawerVisible.value = true;
-        focusItemKey.value = '';
-        break;
-      case 'delete':
-        handleDelete(item);
-        break;
-      default:
-        break;
-    }
   }
 
   async function handleBeforeEnableChange(item: CustomFormItem) {
@@ -250,6 +225,32 @@
         // eslint-disable-next-line no-console
         console.log(error);
       }
+    }
+  }
+
+  function handleMoreActionSelect(event: ActionsItem, item: Record<string, any>) {
+    switch (event.key) {
+      case 'edit':
+        currentSourceId.value = item.id;
+        defaultTab.value = 'design';
+        configDrawerVisible.value = true;
+        focusItemKey.value = '';
+        break;
+      case 'addMember':
+        currentSourceId.value = item.id;
+        defaultTab.value = 'memberPermission';
+        configDrawerVisible.value = true;
+        focusItemKey.value = '';
+        break;
+      case 'delete':
+        handleDelete(item);
+        break;
+      case 'enable':
+      case 'disable':
+        handleBeforeEnableChange(item as CustomFormItem);
+        break;
+      default:
+        break;
     }
   }
 
