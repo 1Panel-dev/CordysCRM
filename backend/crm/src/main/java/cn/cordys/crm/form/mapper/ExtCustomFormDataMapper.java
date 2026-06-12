@@ -17,4 +17,6 @@ public interface ExtCustomFormDataMapper {
     void batchUpdate(@Param("request") BatchUpdateDbParam batchUpdateDbParam);
 
     void deleteFormDataByCustomFormId(@Param("formId") String formId);
+
+    List<CustomFormDataListResponse> getListByIds(@Param("ids") List<String> ids);
 }

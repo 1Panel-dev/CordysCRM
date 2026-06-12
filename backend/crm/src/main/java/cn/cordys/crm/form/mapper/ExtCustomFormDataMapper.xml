@@ -262,4 +262,14 @@
         WHERE d.custom_form_id = #{formId}
     </delete>
 
+    <select id="getListByIds" resultType="cn.cordys.crm.form.dto.response.CustomFormDataListResponse">
+        select d.id, d.custom_form_id as customFormId, d.name, d.owner, d.create_user as createUser, d.update_user as updateUser,
+               d.create_time as createTime, d.update_time as updateTime
+        from custom_form_data d
+        where d.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>
