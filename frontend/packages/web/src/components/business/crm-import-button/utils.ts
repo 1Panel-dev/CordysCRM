@@ -7,6 +7,7 @@ import {
   downloadBusinessTitleTemplate,
   downloadContactTemplate,
   downloadContractPaymentRecordTemplate,
+  downloadCustomFormTemplate,
   downloadLeadTemplate,
   downloadOptTemplate,
   downloadProductPriceTemplate,
@@ -15,6 +16,7 @@ import {
   importBusinessTitle,
   importContact,
   importContractPaymentRecord,
+  importCustomForm,
   importLead,
   importOpportunity,
   importProduct,
@@ -23,6 +25,7 @@ import {
   preCheckImportBusinessTitle,
   preCheckImportContact,
   preCheckImportContractPaymentRecord,
+  preCheckImportCustomForm,
   preCheckImportLead,
   preCheckImportOpt,
   preCheckImportProduct,
@@ -37,12 +40,13 @@ export type ImportApiType =
   | FormDesignKeyEnum.PRODUCT
   | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
   | FormDesignKeyEnum.PRICE
-  | ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT;
+  | ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT
+  | FormDesignKeyEnum.CUSTOM_FORM;
 
 export interface importRequestType {
-  preCheck: (file: File, importType?: string) => Promise<{ data: ValidateInfo }>;
-  save: (file: File, importType?: string) => Promise<any>;
-  download?: () => Promise<File>;
+  preCheck: (file: File, importType?: string, customFormId?: string) => Promise<{ data: ValidateInfo }>;
+  save: (file: File, importType?: string, customFormId?: string) => Promise<any>;
+  download?: (customFormId?: string) => Promise<File>;
 }
 
 export const importApiMap: Record<ImportApiType, importRequestType> = {
@@ -85,5 +89,10 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     preCheck: preCheckImportBusinessTitle,
     save: importBusinessTitle,
     download: downloadBusinessTitleTemplate,
+  },
+  [FormDesignKeyEnum.CUSTOM_FORM]: {
+    preCheck: (file: File, _importType?: string, customFormId?: string) => preCheckImportCustomForm(file, customFormId),
+    save: (file: File, _importType?: string, customFormId?: string) => importCustomForm(file, customFormId),
+    download: downloadCustomFormTemplate,
   },
 };

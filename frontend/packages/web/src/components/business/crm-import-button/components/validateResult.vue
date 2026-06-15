@@ -61,7 +61,7 @@
     <template #footer>
       <div class="flex justify-end">
         <n-button v-if="!validateResultInfo.successCount || !validateResultInfo.failCount" quaternary @click="backList">
-          {{ t('crmImportButton.backList', { title: props.title }) }}
+          {{ t('crmImportButton.backList', { title: props.title ?? '' }) }}
         </n-button>
 
         <n-button
