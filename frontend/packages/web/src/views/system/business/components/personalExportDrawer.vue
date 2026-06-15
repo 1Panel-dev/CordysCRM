@@ -138,6 +138,7 @@
     { name: SystemResourceMessageTypeEnum.PRODUCT_PRICE, tab: t('module.productManagementPrice') },
     { name: SystemResourceMessageTypeEnum.BUSINESS_TITLE, tab: t('module.businessTitle') },
     { name: SystemResourceMessageTypeEnum.CONTRACT_INVOICE, tab: t('module.invoice') },
+    { name: SystemResourceMessageTypeEnum.CUSTOM_FORM, tab: t('module.customForm') },
   ]);
 
   const exportStatus = ref('');
@@ -208,6 +209,8 @@
         return t('module.businessTitle');
       case SystemResourceMessageTypeEnum.CONTRACT_INVOICE:
         return t('module.invoice');
+      case SystemResourceMessageTypeEnum.CUSTOM_FORM:
+        return t('module.customForm');
       default:
         return t('menu.opportunity');
     }

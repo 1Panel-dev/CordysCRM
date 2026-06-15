@@ -2,7 +2,7 @@
   <CrmModal
     v-model:show="showModal"
     size="medium"
-    :title="`${t('common.import')}${props.title}` || t('crmImportButton.formExcelImport')"
+    :title="`${t('common.import')}${props.title ?? ''}` || t('crmImportButton.formExcelImport')"
     :ok-loading="props.confirmLoading"
     :positive-text="t('crmImportButton.validateTemplate')"
     :ok-button-props="{ disabled: fileList.length < 1 }"
