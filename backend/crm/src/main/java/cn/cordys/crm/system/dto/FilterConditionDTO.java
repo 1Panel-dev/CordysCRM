@@ -19,4 +19,7 @@ public class FilterConditionDTO {
     private List<String> value;
     @Schema(description = "类型")
     private String type;
+
+    @Schema(description = "显示字段的主表名")
+    private String refMainTableName;
 }
