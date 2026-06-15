@@ -12,6 +12,7 @@ import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
+import cn.cordys.common.service.SSRFValidationService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -43,12 +44,9 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,11 +74,8 @@ public class DashboardService extends DashboardSortService {
     private ExtOrganizationUserMapper extOrganizationUserMapper;
     @Resource
     private DepartmentService departmentService;
-
-    @Value("${dashboard.whitelist.enabled}")
-    private Boolean whitelistEnable;
-    @Value("#{'${dashboard.whitelist.allowed}'.split(',')}")
-    private List<String> allowedList;
+    @Resource
+    private SSRFValidationService ssrfValidationService;
 
     /**
      * 添加仪表板
@@ -93,7 +88,7 @@ public class DashboardService extends DashboardSortService {
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.ADD)
     public Dashboard addDashboard(DashboardAddRequest request, String orgId, String userId) {
-        checkAllowedList(request.getResourceUrl());
+        ssrfValidationService.validateAgainstWhitelist(request.getResourceUrl());
 
         checkDashboardName(request.getName(), request.getDashboardModuleId(), orgId, null);
         dashboardModuleService.checkDashboardModule(request.getDashboardModuleId());
@@ -121,44 +116,6 @@ public class DashboardService extends DashboardSortService {
                 .resourceName(dashboard.getName())
                 .build());
         return dashboard;
-    }
-
-    private void checkAllowedList(String resourceUrl) {
-        if (!Boolean.TRUE.equals(whitelistEnable) || StringUtils.isBlank(resourceUrl)) {
-            return;
-        }
-
-        final String host;
-        try {
-            URI uri = new URI(resourceUrl);
-            host = Optional.ofNullable(uri.getHost())
-                    .filter(h -> !h.isBlank())
-                    .map(h -> h.toLowerCase(Locale.ROOT).trim())
-                    .orElseThrow(() -> new GenericException(Translator.get("dashboard_url_invalid")));
-        } catch (URISyntaxException e) {
-            throw new GenericException(Translator.get("dashboard_url_invalid"));
-        }
-
-        List<String> allowed = allowedList == null ? Collections.emptyList() : allowedList;
-
-        boolean matched = allowed.stream()
-                .filter(Objects::nonNull)
-                .map(s -> s.trim().toLowerCase(Locale.ROOT))
-                .anyMatch(pattern -> {
-                    if ("*".equals(pattern)) {
-                        return true;
-                    }
-                    if (pattern.startsWith("*.")) {
-                        // 支持 \*.example.com 匹配 foo.example.com
-                        String suffix = pattern.substring(1); // ".example.com"
-                        return host.endsWith(suffix);
-                    }
-                    return host.equals(pattern);
-                });
-
-        if (!matched) {
-            throw new GenericException(Translator.get("dashboard_url_not_allowed"));
-        }
     }
 
     private Long getNextPos(String orgId) {
