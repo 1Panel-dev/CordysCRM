@@ -24,3 +24,12 @@ export const BatchDeleteCustomFormDataUrl = '/custom-form/data/batch/delete'; //
 export const UpdateCustomFormDataUrl = '/custom-form/data/update'; // 更新自定义表单数据
 export const GetCustomFormDataDetailUrl = '/custom-form/data/get'; // 获取自定义表单数据详情
 export const DeleteCustomFormDataUrl = '/custom-form/data/delete'; // 删除自定义表单数据
+
+// 导入
+export const PreCheckCustomFormImportUrl = '/custom-form/data/import/pre-check'; // 自定义表单预检查导入
+export const DownloadCustomFormTemplateUrl = '/custom-form/data/template/download'; // 下载自定义表单模板
+export const ImportCustomFormUrl = '/custom-form/data/import'; // 导入自定义表单
+
+// 导出
+export const CustomFormExportAllUrl = '/custom-form/data/export-all'; // 自定义表单导出全量
+export const CustomFormExportSelectedUrl = '/custom-form/data/export-select'; // 自定义表单导出选中

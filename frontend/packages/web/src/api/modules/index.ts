@@ -76,6 +76,11 @@ export const {
   enableCustomForm,
   disableCustomForm,
   getCustomFormOptions,
+  preCheckImportCustomForm,
+  downloadCustomFormTemplate,
+  importCustomForm,
+  exportCustomFormAll,
+  exportCustomFormSelected,
 } = customFormApi;
 
 export const {

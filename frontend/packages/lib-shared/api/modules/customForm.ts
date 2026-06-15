@@ -23,8 +23,13 @@ import {
   DeleteCustomFormUrl,
   EnableCustomFormUrl,
   DisableCustomFormUrl,
+  PreCheckCustomFormImportUrl,
+  DownloadCustomFormTemplateUrl,
+  ImportCustomFormUrl,
+  CustomFormExportAllUrl,
+  CustomFormExportSelectedUrl,
 } from '@lib/shared/api/requrls/customForm';
-import type { CommonList } from '@lib/shared/models/common';
+import type { CommonList, TableExportParams, TableExportSelectedParams } from '@lib/shared/models/common';
 import type {
   AddCustomFormDataParams,
   BatchUpdateCustomFormDataParams,
@@ -43,6 +48,7 @@ import type {
 } from '@lib/shared/models/customForm';
 import type { SelectedUsersItem } from '@lib/shared/models/system/module';
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
+import { ValidateInfo } from '@lib/shared/models/system/org';
 
 export default function useCustomFormApi(CDR: CordysAxios) {
   function addCustomForm(data: CustomFormSaveRequest) {
@@ -138,6 +144,33 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.get<CustomFormItem[]>({ url:GetCustomFormOptionsUrl });
   }
 
+  function preCheckImportCustomForm(file: File, customFormId?: string) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckCustomFormImportUrl, params:{ customFormId } }, { fileList: [file] }, 'file');
+  }
+
+  function downloadCustomFormTemplate(customFormId?: string) {
+    return CDR.get(
+      {
+        url: DownloadCustomFormTemplateUrl,
+        responseType: 'blob',
+        params:{ customFormId },
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importCustomForm(file: File, customFormId?: string) {
+    return CDR.uploadFile({ url: ImportCustomFormUrl, params:{ customFormId } }, { fileList: [file] }, 'file');
+  }
+
+  function exportCustomFormAll(data: TableExportParams) {
+    return CDR.post({ url: CustomFormExportAllUrl, data });
+  }
+
+  function exportCustomFormSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: CustomFormExportSelectedUrl, data });
+  }
+
   return {
     addCustomForm,
     updateCustomForm,
@@ -162,5 +195,10 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     deleteCustomForm,
     enableCustomForm,
     disableCustomForm,
+    preCheckImportCustomForm,
+    downloadCustomFormTemplate,
+    importCustomForm,
+    exportCustomFormAll,
+    exportCustomFormSelected,
   };
 }
