@@ -1,6 +1,7 @@
 package cn.cordys.crm.integration.sso.service;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.service.SSRFValidationService;
 import cn.cordys.common.util.EncryptUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -55,7 +56,8 @@ public class TokenService {
 
     @Resource
     private QrCodeClient qrCodeClient;
-
+    @Resource
+    private SSRFValidationService ssrfValidationService;
     /**
      * 获取assess_Token
      *
@@ -213,6 +215,8 @@ public class TokenService {
             return false;
         }
         try {
+            // SSRF 校验
+            ssrfValidationService.validate(jsUrl);
             URL url = URI.create(jsUrl).toURL();
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD"); // 更轻量，只请求头部
@@ -321,8 +325,11 @@ public class TokenService {
      * @return
      */
     public Boolean getMaxKBToken(String mkAddress, String apiKey) {
+        String urlTransfer = HttpClientUtils.urlTransfer(mkAddress.concat(MaxKBApiPaths.APPLICATION), "default");
+        ssrfValidationService.validate(urlTransfer);
+
         String body = qrCodeClient.exchange(
-                HttpClientUtils.urlTransfer(mkAddress.concat(MaxKBApiPaths.APPLICATION), "default"),
+                urlTransfer,
                 "Bearer " + apiKey,
                 HttpHeaders.AUTHORIZATION,
                 MediaType.APPLICATION_JSON,

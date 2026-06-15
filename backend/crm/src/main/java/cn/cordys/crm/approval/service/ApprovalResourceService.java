@@ -6,6 +6,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.service.SSRFValidationService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -87,6 +88,8 @@ public class ApprovalResourceService {
     private LogService logService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private SSRFValidationService ssrfValidationService;
 
     /**
      * 开启的审批流表单表格映射
@@ -790,8 +793,7 @@ public class ApprovalResourceService {
             for (Object item : list) {
                 if (item instanceof Map<?, ?> map) {
                     if (map.containsKey(field.getId())) {
-                        Object result = map.get(field.getId());
-                        return result;
+                        return map.get(field.getId());
                     }
                 }
             }
@@ -807,6 +809,8 @@ public class ApprovalResourceService {
     public void testConnect(WebHookConfig webHookConfig) {
         if (webHookConfig != null && webHookConfig.getWebHookEnable()) {
             HashMap<String, Object> resultObj = new HashMap<>();
+            // SSRF安全校验
+            ssrfValidationService.validate(webHookConfig.getWebHookUrl());
             switch (webHookConfig.getWebHookMethod()) {
                 case "POST":
                     resultObj = sendPost(webHookConfig, null, null, true);
