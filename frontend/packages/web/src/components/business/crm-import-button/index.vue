@@ -1,6 +1,6 @@
 <template>
   <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleImport">
-    {{ `${t('common.import')}${props.title}` }}
+    {{ `${t('common.import')}${props.title ?? ''}` }}
   </n-button>
 
   <ImportModal
@@ -8,7 +8,7 @@
     :title="props.title"
     :description-tip="props.descriptionTip"
     :confirm-loading="validateLoading"
-    :download-template-api="importApiMap[props.apiType]?.download"
+    :download-template-api="downloadTemplateApi"
     :show-import-radio="props.showImportRadio"
     @validate="validateTemplate"
   />
@@ -56,6 +56,7 @@
     buttonText?: string;
     descriptionTip?: string; // 描述提示
     showImportRadio?: boolean; // 导入新建和导入更新
+    customFormId?: string;
   }>();
 
   const emit = defineEmits<{
@@ -98,10 +99,15 @@
   const importLoading = ref<boolean>(false);
   const importType = ref('');
 
+  const downloadTemplateApi = computed(() => {
+    const download = importApiMap[props.apiType]?.download;
+    return download ? () => download(props.customFormId) : undefined;
+  });
+
   async function importHandler() {
     try {
       importLoading.value = true;
-      await importApiMap[props.apiType].save(fileList.value[0].file as File, importType.value);
+      await importApiMap[props.apiType].save(fileList.value[0].file as File, importType.value, props.customFormId);
       Message.success(t('common.importSuccess'));
 
       emit('importSuccess');
@@ -140,7 +146,7 @@
       validateModal.value = true;
       start();
 
-      const result = await importApiMap[props.apiType].preCheck(file, type);
+      const result = await importApiMap[props.apiType].preCheck(file, type, props.customFormId);
       validateInfo.value = result.data;
       finish();
     } catch (error) {

@@ -64,7 +64,13 @@
       </template>
       <template #2>
         <div class="h-full p-[24px]">
-          <formTable v-if="activeForm" ref="formTableRef" :form-key="activeForm" :readonly="!hasCreateDataPermission" />
+          <formTable
+            v-if="activeForm"
+            ref="formTableRef"
+            :form-key="activeForm"
+            :form-key-name="activeFormName"
+            :readonly="!hasCreateDataPermission"
+          />
           <div v-else class="flex h-[400px] w-full items-center justify-center">
             <n-empty
               :description="t('customForm.tableNoDataTip')"
@@ -113,6 +119,7 @@
   const finished = ref(false);
   const keyword = ref('');
   const activeForm = ref('');
+  const activeFormName = ref('');
   const focusItemKey = ref('');
   const hasCreateDataPermission = computed(
     () =>
@@ -127,6 +134,7 @@
       formListBackup.value = cloneDeep(formList.value);
       if (activeForm.value === '') {
         activeForm.value = formList.value[0]?.id || '';
+        activeFormName.value = formList.value[0]?.name || '';
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -188,6 +196,7 @@
           await deleteCustomForm(row.id);
           Message.success(t('common.deleteSuccess'));
           activeForm.value = '';
+          activeFormName.value = '';
           loadFormList();
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -262,6 +271,7 @@
   function handleFormClick(form: any) {
     if (isTableInit.value) {
       activeForm.value = form.id;
+      activeFormName.value = form.name;
       isTableInit.value = false;
       setTimeout(() => {
         isTableInit.value = true;

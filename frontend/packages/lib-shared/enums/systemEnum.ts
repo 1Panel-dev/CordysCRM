@@ -31,6 +31,7 @@ export enum SystemResourceMessageTypeEnum {
   PRODUCT_PRICE = 'PRODUCT_PRICE',
   BUSINESS_TITLE = 'BUSINESS_TITLE',
   CONTRACT_INVOICE = 'CONTRACT_INVOICE',
+  CUSTOM_FORM = 'CUSTOM_FORM_DATA',
 }
 
 export enum SystemMessageStatusEnum {
