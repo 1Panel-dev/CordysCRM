@@ -343,7 +343,7 @@ public class OrderService {
      * @return
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
-    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.EDIT, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
+    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
     public Order update(OrderUpdateRequest request, String userId, String orgId) {
         Order oldOrder = orderMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
@@ -433,7 +433,8 @@ public class OrderService {
      * @param id 订单ID
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id) {
+    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void delete(String id, String userId) {
         Order order = orderMapper.selectByPrimaryKey(id);
         if (order == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);

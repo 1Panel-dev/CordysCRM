@@ -31,6 +31,9 @@ public class ApprovalFlowByFormTypeResponse {
     @Schema(description = "编辑时执行")
     private Boolean updateExecute;
 
+    @Schema(description = "删除时执行")
+    private Boolean deleteExecute;
+
     @Schema(description = "启用状态")
     private Boolean enable;
 

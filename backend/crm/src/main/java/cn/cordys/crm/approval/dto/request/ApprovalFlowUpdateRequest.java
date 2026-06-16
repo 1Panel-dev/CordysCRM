@@ -26,6 +26,9 @@ public class ApprovalFlowUpdateRequest {
     @Schema(description = "编辑时执行")
     private Boolean updateExecute;
 
+    @Schema(description = "删除时执行")
+    private Boolean deleteExecute;
+
     @Schema(description = "启用状态")
     private Boolean enable;
 
@@ -54,11 +57,15 @@ public class ApprovalFlowUpdateRequest {
     @Schema(description = "状态权限配置")
     private List<StatusPermissionDTO> statusPermissions;
 
-    @Schema(description = "节点配置列表")
+    @Schema(description = "新建时节点配置")
     @Valid
-    private List<ApprovalNodeRequest> nodes;
+    private ApprovalFlowNodeConfigRequest createNodeConfig;
 
-    @Schema(description = "节点连接配置列表")
+    @Schema(description = "编辑时节点配置")
     @Valid
-    private List<ApprovalNodeLinkRequest> links;
+    private ApprovalFlowNodeConfigRequest updateNodeConfig;
+
+    @Schema(description = "删除时节点配置")
+    @Valid
+    private ApprovalFlowNodeConfigRequest deleteNodeConfig;
 }

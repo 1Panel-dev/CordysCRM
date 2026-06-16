@@ -32,6 +32,9 @@ public class ApprovalFlowDetailResponse {
     @Schema(description = "编辑时执行")
     private Boolean updateExecute;
 
+    @Schema(description = "删除时执行")
+    private Boolean deleteExecute;
+
     @Schema(description = "启用状态")
     private Boolean enable;
 
@@ -80,11 +83,14 @@ public class ApprovalFlowDetailResponse {
     @Schema(description = "状态权限配置")
     private List<StatusPermissionDTO> statusPermissions;
 
-    @Schema(description = "节点配置列表")
-    private List<ApprovalNodeResponse> nodes;
+    @Schema(description = "新建时节点配置")
+    private ApprovalFlowNodeConfigResponse createNodeConfig;
 
-    @Schema(description = "节点连接配置列表")
-    private List<ApprovalNodeLinkResponse> links;
+    @Schema(description = "编辑时节点配置")
+    private ApprovalFlowNodeConfigResponse updateNodeConfig;
+
+    @Schema(description = "删除时节点配置")
+    private ApprovalFlowNodeConfigResponse deleteNodeConfig;
 
     @Schema(description = "条件节点字段选项映射")
     private Map<String, List<OptionDTO>> optionMap;

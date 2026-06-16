@@ -8,5 +8,7 @@ public enum ExecuteTimingEnum {
     /** 创建 */
     CREATE,
     /** 编辑 */
-    EDIT
+    UPDATE,
+    /** 删除 */
+    DELETE
 }

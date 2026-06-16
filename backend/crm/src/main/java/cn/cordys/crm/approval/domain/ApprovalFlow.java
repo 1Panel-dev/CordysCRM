@@ -29,6 +29,9 @@ public class ApprovalFlow extends BaseModel {
     @Schema(description = "编辑时执行")
     private Boolean updateExecute;
 
+    @Schema(description = "删除时执行")
+    private Boolean deleteExecute;
+
     @Schema(description = "允许提交人撤销")
     private Boolean submitterCanRevoke;
 

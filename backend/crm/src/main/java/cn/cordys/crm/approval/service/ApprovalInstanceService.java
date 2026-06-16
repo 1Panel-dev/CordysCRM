@@ -457,6 +457,7 @@ public class ApprovalInstanceService {
 		ApprovalNode approvalNode = new ApprovalNode();
 		approvalNode.setFlowVersionId(instance.getFlowVersionId());
 		approvalNode.setNodeType(ApprovalNodeTypeEnum.END.name());
+		approvalNode.setExecuteTime(instance.getExecuteTime());
 		ApprovalNode endNode = approvalNodeMapper.selectOne(approvalNode);
 		return ApprovalRecordNode.builder().nodeId(endNode.getId()).build();
 	}

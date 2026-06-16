@@ -1,7 +1,6 @@
 package cn.cordys.crm.approval.aspect;
 
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.constants.InternalUser;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
@@ -188,7 +187,8 @@ public class HitApprovalAspect {
 			// 判断是否匹配执行时机
 			return switch (executeTiming) {
 				case CREATE -> Boolean.TRUE.equals(flow.getCreateExecute());
-				case EDIT -> Boolean.TRUE.equals(flow.getUpdateExecute());
+				case UPDATE -> Boolean.TRUE.equals(flow.getUpdateExecute());
+				case DELETE -> Boolean.TRUE.equals(flow.getDeleteExecute());
 			};
 		} catch (Exception e) {
 			return false;
