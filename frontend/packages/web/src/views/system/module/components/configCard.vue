@@ -73,7 +73,7 @@
   />
   <stateFlowDrawer v-model:visible="stateFlowVisible" :type="stageFormKey" />
   <ContractFormFormDrawer v-model:visible="contractFormVisible" />
-  <OrderFormFormDrawer v-model:visible="orderFormVisible" />
+  <OrderFormDrawer v-model:visible="orderFormVisible" />
   <ContractPaymentPlanFormDrawer v-model:visible="contractPaymentPlanFormVisible" />
   <ContractPaymentRecordFormDrawer v-model:visible="contractPaymentRecordFormVisible" />
   <contractInvoiceFormDrawer v-model:visible="contractInvoiceFormVisible" />
@@ -112,7 +112,7 @@
   import OpportunityFormDrawer from './opportunity/formDrawer.vue';
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
   import optQuotationFormDrawer from './opportunity/optQuotationFormDrawer.vue';
-  import OrderFormFormDrawer from './order/orderFormFormDrawer.vue';
+  import OrderFormDrawer from './order/orderFormDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
   import priceTableFormDrawer from './productManagement/priceTableFormDrawer.vue';
 
