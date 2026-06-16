@@ -143,12 +143,13 @@ export const defaultBasicForm: BasicFormParams = {
   name: '',
   createExecute: true,
   updateExecute: false,
+  deleteExecute: false,
   description: '',
 };
 
 export const executionTimingList: {
   label: string;
-  value: 'createExecute' | 'updateExecute';
+  value: 'createExecute' | 'updateExecute' | 'deleteExecute';
 }[] = [
   {
     value: 'createExecute',
@@ -157,6 +158,10 @@ export const executionTimingList: {
   {
     value: 'updateExecute',
     label: t('common.edit'),
+  },
+  {
+    value: 'deleteExecute',
+    label: t('common.delete'),
   },
 ];
 

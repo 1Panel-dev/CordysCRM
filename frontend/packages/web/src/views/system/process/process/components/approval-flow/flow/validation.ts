@@ -1,12 +1,9 @@
-import { watch } from 'vue';
-
 import { ApprovalTypeEnum, ApproverTypeEnum, EmptyApproverActionEnum } from '@lib/shared/enums/process';
-import type { ApprovalActionNode, ApprovalConditionBranch, BasicFormParams } from '@lib/shared/models/system/process';
+import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/models/system/process';
 
 import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
 
 import { hasConfiguredCondition } from './index';
-import type { Ref } from 'vue';
 
 interface FlowValidationResult {
   invalidNodeIds: string[];
@@ -32,21 +29,8 @@ function walkFlowNodes(
   });
 }
 
-function findStartNode(nodes: FlowNode[]) {
-  return nodes.find((node) => node.type === 'start');
-}
-
 function isEmptyValue(value: unknown) {
   return value === null || value === undefined || (typeof value === 'string' && !value.trim());
-}
-
-// 只挑“开始节点校验相关”的字段做监听，避免无关字段变化时也触发清错。
-function createBasicConfigValidationSnapshot(basicConfig: BasicFormParams) {
-  return {
-    name: basicConfig.name,
-    createExecute: basicConfig.createExecute,
-    updateExecute: basicConfig.updateExecute,
-  };
 }
 
 // 清除红框
@@ -66,7 +50,7 @@ function clearFlowInvalidMarks(flowSchema: FlowSchema) {
   });
 }
 
-// 根据本次校验结果回写红框：开始/审批节点写 node.invalid，if 分支写 branch.invalid。
+// 根据本次校验结果回写红框：审批节点写 node.invalid，if 分支写 branch.invalid。
 function applyFlowInvalidMarks(flowSchema: FlowSchema, result: FlowValidationResult) {
   const invalidNodeIds = new Set(result.invalidNodeIds);
   const invalidBranchIds = new Set(result.invalidBranchIds);
@@ -80,14 +64,6 @@ function applyFlowInvalidMarks(flowSchema: FlowSchema, result: FlowValidationRes
       branch.invalid = true;
     }
   });
-}
-
-// 开始节点校验
-function validateBasicConfig(flowSchema: FlowSchema, basicConfig: BasicFormParams, result: FlowValidationResult) {
-  const startNode = findStartNode(flowSchema.nodes);
-  if (startNode && (isEmptyValue(basicConfig.name) || (!basicConfig.createExecute && !basicConfig.updateExecute))) {
-    result.invalidNodeIds.push(startNode.id);
-  }
 }
 
 function isMemberOrRole(type?: ApproverTypeEnum | null) {
@@ -131,13 +107,12 @@ function validateConditionBranch(branch: ApprovalConditionBranch, result: FlowVa
 }
 
 // 保存前的总入口：只做纯数据校验，收集需要标红的节点和分支
-function validateFlow(flowSchema: FlowSchema, basicConfig: BasicFormParams): FlowValidationResult {
+function validateFlow(flowSchema: FlowSchema): FlowValidationResult {
   const result: FlowValidationResult = {
     invalidNodeIds: [],
     invalidBranchIds: [],
   };
 
-  validateBasicConfig(flowSchema, basicConfig, result);
   walkFlowNodes(flowSchema.nodes, ({ node, branch }) => {
     if (node?.type === 'action' && node.actionType === 'approval') {
       validateApprovalActionNode(node as ApprovalActionNode, result);
@@ -163,35 +138,17 @@ export function unlockInvalidClearState() {
   invalidClearLocked = false;
 }
 
-export default function useFlowValidation(params: { flowSchema: Ref<FlowSchema>; basicConfig: Ref<BasicFormParams> }) {
-  // 给保存按钮调用：一次完成“清旧状态 -> 全量校验 -> 回写红框”。
-  function validateFlowNodes() {
-    invalidClearLocked = true;
-    clearFlowInvalidMarks(params.flowSchema.value);
-    const result = validateFlow(params.flowSchema.value, params.basicConfig.value);
-    applyFlowInvalidMarks(params.flowSchema.value, result);
+// 给保存按钮调用：一次完成“清旧状态 -> 全量校验 -> 回写红框”。
+export function validateFlowNodes(flowSchema: FlowSchema) {
+  invalidClearLocked = true;
+  clearFlowInvalidMarks(flowSchema);
+  const result = validateFlow(flowSchema);
+  applyFlowInvalidMarks(flowSchema, result);
 
-    if (result.invalidNodeIds.length || result.invalidBranchIds.length) {
-      return false;
-    }
-
+  const valid = !result.invalidNodeIds.length && !result.invalidBranchIds.length;
+  if (valid) {
     invalidClearLocked = false;
-
-    return true;
   }
 
-  // 开始节点基础配置一旦被修改，就先把开始节点红框去掉，体验上比一直红着更自然。
-  watch(
-    () => createBasicConfigValidationSnapshot(params.basicConfig.value),
-    () => {
-      clearInvalidState(findStartNode(params.flowSchema.value.nodes));
-    },
-    {
-      deep: true,
-    }
-  );
-
-  return {
-    validateFlowNodes,
-  };
+  return valid;
 }

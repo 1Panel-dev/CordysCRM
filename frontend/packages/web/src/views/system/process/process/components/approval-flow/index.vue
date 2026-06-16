@@ -1,6 +1,16 @@
 <template>
   <div class="h-full w-full">
+    <CrmTab
+      v-if="flowTimingTabs.length"
+      v-model:active-tab="activeFlowTiming"
+      class="flow-timing-tabs absolute left-[16px] top-[16px] z-[10] w-fit"
+      type="segment"
+      no-content
+      :tab-list="flowTimingTabs"
+      @change="handleFlowTimingChange"
+    />
     <CrmFlow
+      v-if="flowTimingTabs.length"
       ref="crmFlowRef"
       v-model:model="flowSchema"
       :readonly="props.readonly"
@@ -32,12 +42,6 @@
         </div>
       </template>
       <template #rightContent="{ selection }">
-        <basicForm
-          v-if="selection.type === 'node' && selection?.node.type === 'start'"
-          v-model:basicConfig="basicConfig"
-          :need-detail="props.needDetail"
-          :readonly="props.readonly"
-        />
         <approvalActionNodeForm
           v-if="selection.type === 'node' && isApprovalActionNode(selection.node)"
           v-model:node="selection.node"
@@ -61,38 +65,32 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, nextTick, onMounted, ref, watch } from 'vue';
+  import { computed, ref, watch } from 'vue';
 
   import { ApprovalTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type {
     ApprovalActionNode,
     ApprovalConditionBranch,
-    ApprovalNodeLinkResponse,
-    ApprovalProcessNode,
+    ApprovalFlowNodeConfig,
   } from '@lib/shared/models/system/process';
   import { BasicFormParams } from '@lib/shared/models/system/process';
 
   import type { FilterForm } from '@/components/pure/crm-advance-filter/type';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import { findBranchLocation } from '@/components/business/crm-flow/dsl/queries';
   import type { BranchClickPayload } from '@/components/business/crm-flow/graph/types';
   import CrmFlow from '@/components/business/crm-flow/index.vue';
   import type { FlowNode, FlowSchema, NodeSelectionState } from '@/components/business/crm-flow/types';
   import approvalActionNodeForm from './approval-node/index.vue';
-  import basicForm from './basicForm.vue';
   import setConditionDrawer from './setConditionDrawer.vue';
 
-  import {
-    approvalFlowAddNodeGroups,
-    businessTypeOptions,
-    defaultBasicForm,
-    executionTimingList,
-  } from '@/config/process';
+  import { approvalFlowAddNodeGroups, businessTypeOptions, defaultBasicForm } from '@/config/process';
 
   import { addApprovalConditionBranch, createDefaultFlow, insertFromAnchor, resolveConditionDescription } from './flow';
   import { deserializeProcessNodes, serializeFlowNodes } from './flow/transform';
-  import useFlowValidation from './flow/validation';
+  import { validateFlowNodes as validateFlowSchemaNodes } from './flow/validation';
 
   defineOptions({
     name: 'ApprovalFlowView',
@@ -117,10 +115,47 @@
     }),
   });
 
-  // 右侧面板仅展示开始节点与审批节点配置
+  type ApprovalFlowTiming = 'create' | 'update' | 'delete';
+
+  const flowTimingConfig: Array<{
+    value: ApprovalFlowTiming;
+    executeKey: 'createExecute' | 'updateExecute' | 'deleteExecute';
+    configKey: 'createNodeConfig' | 'updateNodeConfig' | 'deleteNodeConfig';
+    label: string;
+  }> = [
+    {
+      value: 'create',
+      executeKey: 'createExecute',
+      configKey: 'createNodeConfig',
+      label: t('common.create'),
+    },
+    {
+      value: 'update',
+      executeKey: 'updateExecute',
+      configKey: 'updateNodeConfig',
+      label: t('common.edit'),
+    },
+    {
+      value: 'delete',
+      executeKey: 'deleteExecute',
+      configKey: 'deleteNodeConfig',
+      label: t('common.delete'),
+    },
+  ];
+
+  const activeFlowTiming = ref<ApprovalFlowTiming>('create');
+  const flowTimingTabs = computed(() =>
+    flowTimingConfig
+      .filter((item) => basicConfig.value[item.executeKey])
+      .map((item) => ({
+        name: item.value,
+        tab: item.label,
+      }))
+  );
+
   function isRightContentVisible(selection: NodeSelectionState) {
     if (selection.type !== 'node') return false;
-    return ['start', 'action'].includes(selection.node.type);
+    return selection.node.type === 'action';
   }
 
   function isApprovalActionNode(node: FlowNode): node is ApprovalActionNode {
@@ -131,58 +166,63 @@
     return options.find((item) => item.value === value)?.label ?? '';
   }
 
-  const startNodeDescription = computed(() => {
+  function resolveStartNodeDescription(timing: ApprovalFlowTiming) {
     const businessTypeLabel = resolveOptionLabel(basicConfig.value.formType, businessTypeOptions);
-    const executionTimingLabel = executionTimingList
-      .filter((item) => basicConfig.value[item.value])
-      .map((item) => item.label)
-      .filter(Boolean)
-      .join('/');
+    const executionTimingLabel = flowTimingConfig.find((item) => item.value === timing)?.label ?? '';
 
     return executionTimingLabel ? `${businessTypeLabel}(${executionTimingLabel})` : businessTypeLabel;
-  });
+  }
 
   // 流程图
-  const flowSchema = ref<FlowSchema>(createDefaultFlow(startNodeDescription.value));
+  const flowSchemas = ref<Record<ApprovalFlowTiming, FlowSchema>>({
+    create: createDefaultFlow(resolveStartNodeDescription('create')),
+    update: createDefaultFlow(resolveStartNodeDescription('update')),
+    delete: createDefaultFlow(resolveStartNodeDescription('delete')),
+  });
+  const flowSchema = ref<FlowSchema>(flowSchemas.value.create);
 
-  // 初始化时自动选中开始节点
+  function getTimingProcessData() {
+    return flowTimingConfig.reduce((data, config) => {
+      const flowData = serializeFlowNodes(flowSchemas.value[config.value].nodes);
+      data[config.configKey] = flowData;
+      return data;
+    }, {} as Record<string, ApprovalFlowNodeConfig>);
+  }
+
   const crmFlowRef = ref<InstanceType<typeof CrmFlow>>();
-  function selectStartNodeOnInit() {
-    const startNode = flowSchema.value.nodes.find((node) => node.type === 'start');
-    if (!startNode) {
-      return;
-    }
-
-    crmFlowRef.value?.selectNode(startNode.id);
-    nextTick(() => {
-      crmFlowRef.value?.refreshCanvas(true);
-    });
-  }
-
-  function getProcessNodes(): ApprovalProcessNode[] {
-    return serializeFlowNodes(flowSchema.value.nodes).nodes;
-  }
-
-  function getProcessLinks(): ApprovalNodeLinkResponse[] {
-    return serializeFlowNodes(flowSchema.value.nodes).links;
-  }
-
-  function setProcessData(nodes: ApprovalProcessNode[], links: ApprovalNodeLinkResponse[]) {
-    flowSchema.value = deserializeProcessNodes(nodes, links, startNodeDescription.value);
-    nextTick(() => {
-      selectStartNodeOnInit();
-    });
-  }
-
   function refreshCanvas(fitToContent = false) {
     crmFlowRef.value?.refreshCanvas(fitToContent);
   }
 
-  onMounted(() => {
-    nextTick(() => {
-      selectStartNodeOnInit();
+  function setProcessData(data: {
+    createNodeConfig?: ApprovalFlowNodeConfig;
+    updateNodeConfig?: ApprovalFlowNodeConfig;
+    deleteNodeConfig?: ApprovalFlowNodeConfig;
+  }) {
+    flowTimingConfig.forEach((config) => {
+      const nodeConfig = data[config.configKey];
+      const nodes = nodeConfig?.nodes ?? [];
+      const links = nodeConfig?.links ?? [];
+      flowSchemas.value[config.value] = nodes.length
+        ? deserializeProcessNodes(nodes, links, resolveStartNodeDescription(config.value))
+        : createDefaultFlow(resolveStartNodeDescription(config.value));
     });
-  });
+    flowSchema.value = flowSchemas.value[activeFlowTiming.value];
+    nextTick(() => {
+      refreshCanvas(true);
+    });
+  }
+
+  // 触发条件抽屉
+  const setConditionDrawerVisible = ref(false);
+  const activeConditionBranch = ref<ApprovalConditionBranch | null>(null);
+
+  function handleFlowTimingChange(value: string | number) {
+    setConditionDrawerVisible.value = false;
+    activeConditionBranch.value = null;
+    activeFlowTiming.value = value as ApprovalFlowTiming;
+    flowSchema.value = flowSchemas.value[activeFlowTiming.value];
+  }
 
   function insertFromPopover(
     type: 'action' | 'condition-group',
@@ -210,10 +250,6 @@
     }
     addApprovalConditionBranch(flowSchema.value, groupId);
   }
-
-  // 触发条件抽屉
-  const setConditionDrawerVisible = ref(false);
-  const activeConditionBranch = ref<ApprovalConditionBranch | null>(null);
 
   const conditionPriorityOptions = computed(() => {
     if (!activeConditionBranch.value) {
@@ -290,22 +326,45 @@
     updateConditionBranchSort(activeConditionBranch.value, payload.sort);
   }
 
-  const { validateFlowNodes } = useFlowValidation({
-    flowSchema,
-    basicConfig,
-  });
+  function validateFlowNodes() {
+    const enabledTimings = flowTimingConfig.filter((item) => basicConfig.value[item.executeKey]);
+    return enabledTimings.every((timing) => {
+      const valid = validateFlowSchemaNodes(flowSchemas.value[timing.value]);
+      if (!valid) {
+        handleFlowTimingChange(timing.value);
+      }
+      return valid;
+    });
+  }
 
   // 更新开始节点描述
   watch(
-    startNodeDescription,
-    (description) => {
-      const firstNode = flowSchema.value.nodes[0];
-      const startNode =
-        firstNode?.type === 'start' ? firstNode : flowSchema.value.nodes.find((node) => node.type === 'start');
-      if (!startNode) {
+    () => [basicConfig.value.formType],
+    () => {
+      flowTimingConfig.forEach((timing) => {
+        const firstNode = flowSchemas.value[timing.value].nodes[0];
+        const startNode =
+          firstNode?.type === 'start'
+            ? firstNode
+            : flowSchemas.value[timing.value].nodes.find((node) => node.type === 'start');
+        if (startNode) {
+          startNode.description = resolveStartNodeDescription(timing.value);
+        }
+      });
+    },
+    {
+      immediate: true,
+    }
+  );
+
+  watch(
+    flowTimingTabs,
+    (tabs) => {
+      if (!tabs.length || tabs.some((item) => item.name === activeFlowTiming.value)) {
         return;
       }
-      startNode.description = description;
+
+      handleFlowTimingChange(tabs[0].name as ApprovalFlowTiming);
     },
     {
       immediate: true,
@@ -315,11 +374,10 @@
   function resetToDefaultFlow() {
     setConditionDrawerVisible.value = false;
     activeConditionBranch.value = null;
-    flowSchema.value = createDefaultFlow(startNodeDescription.value);
-
-    nextTick(() => {
-      selectStartNodeOnInit();
+    flowTimingConfig.forEach((timing) => {
+      flowSchemas.value[timing.value] = createDefaultFlow(resolveStartNodeDescription(timing.value));
     });
+    flowSchema.value = flowSchemas.value[activeFlowTiming.value];
   }
 
   watch(
@@ -347,18 +405,16 @@
 
   defineExpose({
     validateFlowNodes,
-    getProcessNodes,
-    getProcessLinks,
+    getTimingProcessData,
     setProcessData,
     refreshCanvas,
   });
 </script>
 
-<style scoped lang="less">
-  :deep(.process-setting-form) {
-    .n-form-item-label {
-      font-weight: 600;
-      color: var(--text-n1);
+<style lang="less" scoped>
+  .flow-timing-tabs {
+    :deep(.n-tabs-tab.n-tabs-tab--active) {
+      color: var(--primary-8) !important;
     }
   }
 </style>
