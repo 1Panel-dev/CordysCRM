@@ -1,12 +1,11 @@
 package cn.cordys.crm.order.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.stage.StageAddRequest;
-import cn.cordys.common.dto.stage.StageRollBackRequest;
-import cn.cordys.common.dto.stage.StageUpdateRequest;
+import cn.cordys.common.dto.stage.*;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.order.dto.response.OrderStageConfigListResponse;
 import cn.cordys.crm.order.service.OrderStageService;
+import cn.cordys.crm.system.service.StageAdvancedConfigService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,10 +23,12 @@ public class OrderStageController {
 
     @Resource
     private OrderStageService orderStageService;
+    @Resource
+    private StageAdvancedConfigService stageAdvancedConfigService;
 
     @GetMapping("/get")
     @Operation(summary = "订单状态配置列表")
-    public OrderStageConfigListResponse getStageConfigList() {
+    public StageConfigsResponse getStageConfigList() {
         return orderStageService.getStageConfigList(OrganizationContext.getOrganizationId());
     }
 
@@ -70,4 +71,22 @@ public class OrderStageController {
     public void sort(@RequestBody List<String> ids) {
         orderStageService.sort(ids, OrganizationContext.getOrganizationId());
     }
+
+
+    @GetMapping("/circulation-type/{type}")
+    @Operation(summary = "基础/高级流转切换")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void circulationType(@PathVariable String type) {
+        stageAdvancedConfigService.switchType(type, FormKey.ORDER.getKey(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping("/advanced/config")
+    @Operation(summary = "订单流转配置保存")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void advancedConfigAdd(@RequestBody StageAdvancedConfigRequest request) {
+        stageAdvancedConfigService.saveAdvancedConfig(request, FormKey.ORDER.getKey(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+
 }

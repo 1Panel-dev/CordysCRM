@@ -6,24 +6,26 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
-import cn.cordys.common.dto.stage.StageAddRequest;
-import cn.cordys.common.dto.stage.StageConfigResponse;
-import cn.cordys.common.dto.stage.StageRollBackRequest;
-import cn.cordys.common.dto.stage.StageUpdateRequest;
+import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.dto.stage.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.order.domain.OrderStageConfig;
-import cn.cordys.crm.order.dto.response.OrderStageConfigListResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
+import cn.cordys.crm.system.domain.StageAdvancedConfig;
+import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,8 @@ public class OrderStageService {
     private ExtOrderMapper extOrderMapper;
     @Resource
     private BaseMapper<OrderStageConfig> orderStageConfigMapper;
+    @Resource
+    private ExtStageAdvancedConfigMapper extStageAdvancedConfigMapper;
 
 
     /**
@@ -47,21 +51,40 @@ public class OrderStageService {
      * @param orgId
      * @return
      */
-    public OrderStageConfigListResponse getStageConfigList(String orgId) {
-        OrderStageConfigListResponse stageConfigListResponse = new OrderStageConfigListResponse();
+    public StageConfigsResponse getStageConfigList(String orgId) {
+        StageConfigsResponse stageConfigListResponse = new StageConfigsResponse();
         List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
-        buildList(stageConfigList, stageConfigListResponse);
+        List<StageAdvancedConfig> advancedConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, FormKey.ORDER.getKey());
+        buildList(stageConfigList, stageConfigListResponse, advancedConfigs);
         return stageConfigListResponse;
     }
 
-    private void buildList(List<StageConfigResponse> stageConfigList, OrderStageConfigListResponse response) {
+    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigsResponse response, List<StageAdvancedConfig> advancedConfigs) {
         response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
             var first = stageConfigList.getFirst();
             response.setEndRollBack(first.getEndRollBack());
             response.setAfootRollBack(first.getAfootRollBack());
             stageConfigList.forEach(sc -> sc.setStageHasData(extOrderMapper.countByStage(sc.getId()) > 0));
+            response.setCirculationType(first.getCirculationType());
         }
+        if (CollectionUtils.isNotEmpty(advancedConfigs)) {
+            List<StageAdvancedConfigResponse> configs = new ArrayList<>();
+            advancedConfigs.forEach(config -> {
+                StageAdvancedConfigResponse configResponse = new StageAdvancedConfigResponse();
+                configResponse.setId(config.getId());
+                configResponse.setOriginId(config.getOriginId());
+                configResponse.setTargetId(config.getTargetId());
+                configResponse.setEnable(config.getEnable());
+                List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
+                });
+                configResponse.setCirculationFieldValues(circulationFieldValues);
+                configResponse.setModuleType(config.getModuleType());
+                configs.add(configResponse);
+            });
+            response.setAdvancedConfigs(configs);
+        }
+
     }
 
 
@@ -102,6 +125,7 @@ public class OrderStageService {
         stageConfig.setEndRollBack(endRollBack);
         stageConfig.setPos(pos);
         stageConfig.setOrganizationId(orgId);
+        stageConfig.setCirculationType(target.getCirculationType());
         stageConfig.setCreateUser(userId);
         stageConfig.setUpdateUser(userId);
         stageConfig.setCreateTime(System.currentTimeMillis());

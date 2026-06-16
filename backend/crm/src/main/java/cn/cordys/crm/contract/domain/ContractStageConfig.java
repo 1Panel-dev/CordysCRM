@@ -26,4 +26,7 @@ public class ContractStageConfig extends BaseModel {
 
     @Schema(description = "组织id")
     private String organizationId;
+
+    @Schema(description = "流转类型(NORMAL-普通，ADVANCED-高级)")
+    private String circulationType;
 }

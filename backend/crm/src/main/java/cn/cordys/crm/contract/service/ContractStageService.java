@@ -5,24 +5,26 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
-import cn.cordys.common.dto.stage.StageAddRequest;
-import cn.cordys.common.dto.stage.StageConfigResponse;
-import cn.cordys.common.dto.stage.StageRollBackRequest;
-import cn.cordys.common.dto.stage.StageUpdateRequest;
+import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.dto.stage.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.domain.ContractStageConfig;
-import cn.cordys.crm.contract.dto.response.ContractStageConfigListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
+import cn.cordys.crm.system.domain.StageAdvancedConfig;
+import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +39,8 @@ public class ContractStageService {
     private ExtContractMapper extContractMapper;
     @Resource
     private BaseMapper<ContractStageConfig> contractStageConfigMapper;
-
+    @Resource
+    private ExtStageAdvancedConfigMapper extStageAdvancedConfigMapper;
 
     /**
      * 列表
@@ -45,20 +48,38 @@ public class ContractStageService {
      * @param orgId
      * @return
      */
-    public ContractStageConfigListResponse getStageConfigList(String orgId) {
-        ContractStageConfigListResponse stageConfigListResponse = new ContractStageConfigListResponse();
+    public StageConfigsResponse getStageConfigList(String orgId) {
+        StageConfigsResponse stageConfigListResponse = new StageConfigsResponse();
         List<StageConfigResponse> stageConfigList = extContractStageConfigMapper.getStageConfigList(orgId);
-        buildList(stageConfigList, stageConfigListResponse);
+        List<StageAdvancedConfig> advancedConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, FormKey.CONTRACT.getKey());
+        buildList(stageConfigList, stageConfigListResponse, advancedConfigs);
         return stageConfigListResponse;
     }
 
-    private void buildList(List<StageConfigResponse> stageConfigList, ContractStageConfigListResponse response) {
+    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigsResponse response,List<StageAdvancedConfig> advancedConfigs) {
         response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
             var first = stageConfigList.getFirst();
             response.setEndRollBack(first.getEndRollBack());
             response.setAfootRollBack(first.getAfootRollBack());
             stageConfigList.forEach(sc -> sc.setStageHasData(extContractMapper.countByStage(sc.getId()) > 0));
+            response.setCirculationType(first.getCirculationType());
+        }
+        if (CollectionUtils.isNotEmpty(advancedConfigs)) {
+            List<StageAdvancedConfigResponse> configs = new ArrayList<>();
+            advancedConfigs.forEach(config -> {
+                StageAdvancedConfigResponse configResponse = new StageAdvancedConfigResponse();
+                configResponse.setId(config.getId());
+                configResponse.setOriginId(config.getOriginId());
+                configResponse.setTargetId(config.getTargetId());
+                configResponse.setEnable(config.getEnable());
+                List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
+                });
+                configResponse.setCirculationFieldValues(circulationFieldValues);
+                configResponse.setModuleType(config.getModuleType());
+                configs.add(configResponse);
+            });
+            response.setAdvancedConfigs(configs);
         }
     }
 

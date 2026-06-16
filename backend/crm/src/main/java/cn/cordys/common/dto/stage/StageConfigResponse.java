@@ -26,4 +26,7 @@ public class StageConfigResponse {
 
     @Schema(description = "当前阶段是否存在数据")
     private Boolean stageHasData = false;
+
+    @Schema(description = "流转类型")
+    private String circulationType;
 }

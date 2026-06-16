@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper">
+
+    <update id="update">
+        update ${sourceTable}
+        <set>
+            <if test="circulationType != null and circulationType != ''">
+                circulation_type = #{circulationType},
+            </if>
+            <if test="userId != null">
+                update_user = #{userId},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where organization_id = #{orgId}
+    </update>
+
+
+    <select id="selectConfigByType" resultType="cn.cordys.crm.system.domain.StageAdvancedConfig">
+        select id, origin_id, target_id, enable, field_config, module_type
+        from stage_advanced_config
+        where organization_id = #{orgId}
+          and module_type = #{moduleType}
+    </select>
+</mapper>
