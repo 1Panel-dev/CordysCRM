@@ -34,6 +34,7 @@ export default {
   'process.process.processName': 'Process Name',
   'process.process.basic.businessType': 'Business Type',
   'process.process.basic.executionTiming': 'Execution timing',
+  'process.process.basic.updateExecuteTip': 'Edit approval only applies to approved records.',
   'process.process.basic.description': 'Description',
   'process.process.flow.approver': 'Approver',
   'process.process.flow.member': 'member',

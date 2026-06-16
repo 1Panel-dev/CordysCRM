@@ -1,5 +1,5 @@
 <template>
-  <div class="process-basic-setting p-[16px]">
+  <div class="process-basic-setting flex w-full justify-center pt-[40px]">
     <n-form ref="formRef" class="process-setting-form" :model="form" label-placement="top">
       <n-form-item require-mark-placement="left" path="formType" :label="t('process.process.basic.businessType')">
         <n-select
@@ -37,7 +37,7 @@
         :rule="[
           {
             validator: () => {
-              if (form.createExecute || form.updateExecute) {
+              if (form.createExecute || form.updateExecute || form.deleteExecute) {
                 return true;
               }
 
@@ -56,6 +56,16 @@
           >
             <div class="flex items-center gap-[8px]">
               {{ item.label }}
+              <n-tooltip v-if="item.value === 'updateExecute'" trigger="hover" :delay="300">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_help_circle"
+                    :size="16"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                  />
+                </template>
+                {{ t('process.process.basic.updateExecuteTip') }}
+              </n-tooltip>
             </div>
           </n-checkbox>
         </div>
@@ -75,10 +85,12 @@
 </template>
 
 <script setup lang="ts">
-  import { NCheckbox, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
+  import { NCheckbox, NForm, NFormItem, NInput, NSelect, NTooltip } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { BasicFormParams } from '@lib/shared/models/system/process';
+
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import { businessTypeOptions, defaultBasicForm, executionTimingList } from '@/config/process';
 
@@ -98,15 +110,26 @@
 
   const formRef = ref<FormInst | null>(null);
 
-  function validate(cb?: () => void) {
-    formRef.value?.validate((error) => {
-      if (!error) {
-        cb?.();
-      }
-    });
+  async function validate(cb?: () => void) {
+    try {
+      await formRef.value?.validate();
+      cb?.();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   defineExpose({
     validate,
   });
 </script>
+
+<style scoped lang="less">
+  .process-setting-form {
+    width: 540px;
+    :deep(.n-form-item-label) {
+      font-weight: 600;
+    }
+  }
+</style>

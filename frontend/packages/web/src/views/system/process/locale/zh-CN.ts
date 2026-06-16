@@ -29,6 +29,7 @@ export default {
   'process.process.processName': '流程名称',
   'process.process.basic.businessType': '业务类型',
   'process.process.basic.executionTiming': '执行时机',
+  'process.process.basic.updateExecuteTip': '编辑专项审批仅作用于已通过单据',
   'process.process.basic.description': '描述信息',
   'process.process.flow.approver': '审批人',
   'process.process.flow.member': '成员',

@@ -5,6 +5,7 @@
     :tabList="tabList"
     :loading="loading"
     :readonly="isDetail"
+    :before-change-tab="handleBeforeChangeTab"
     @pointerdown.capture="handleUserInteraction"
     @keydown.capture="handleUserInteraction"
     @save="handleSave"
@@ -36,6 +37,13 @@
       </div>
     </template>
     <template v-if="visible">
+      <BasicForm
+        v-show="activeTab === 'basic'"
+        ref="basicFormRef"
+        v-model:basicConfig="form.basicConfig"
+        :need-detail="!!props.sourceId"
+        :readonly="isDetail"
+      />
       <ApprovalFlowDesign
         v-show="activeTab === 'process'"
         ref="approvalFlowDesignRef"
@@ -67,6 +75,7 @@
 
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
   import CrmProcessDrawer from '@/components/business/crm-process-drawer/index.vue';
+  import BasicForm from './approval-flow/basicForm.vue';
   import ApprovalFlowDesign from './approval-flow/index.vue';
   import moreSetting from './moreSetting.vue';
 
@@ -94,13 +103,11 @@
   const Message = useMessage();
   const { openModal } = useModal();
 
-  const activeTab = ref('process');
+  const activeTab = ref('basic');
 
   const initForm: ApprovalProcessForm = {
     id: '',
     enable: false,
-    nodes: [],
-    links: [],
     basicConfig: {
       ...cloneDeep(defaultBasicForm),
     },
@@ -112,9 +119,14 @@
   const form = ref(cloneDeep(initForm));
 
   const editingName = ref('');
+  const basicFormRef = ref<InstanceType<typeof BasicForm> | null>(null);
   const approvalFlowDesignRef = ref<InstanceType<typeof ApprovalFlowDesign> | null>(null);
   const detailOptionMap = ref<Record<string, any[]>>({});
   const tabList = [
+    {
+      name: 'basic',
+      tab: t('common.baseInfo'),
+    },
     {
       name: 'process',
       tab: t('process.processDesign'),
@@ -173,24 +185,37 @@
     }
   }
 
+  function handleBeforeChangeTab(tab: string | number) {
+    const { createExecute, updateExecute, deleteExecute } = form.value.basicConfig;
+    if (tab !== 'process' || createExecute || updateExecute || deleteExecute) {
+      return true;
+    }
+
+    Message.warning(t('common.notNull', { value: t('process.process.basic.executionTiming') }));
+    return false;
+  }
+
   function handleNextStep() {
     const index = tabList.findIndex((item) => item.name === activeTab.value);
     if (index === tabList.length - 1) {
       return;
     }
-    activeTab.value = tabList[index + 1].name;
+    const nextTab = tabList[index + 1].name;
+    if (handleBeforeChangeTab(nextTab)) {
+      activeTab.value = nextTab;
+    }
   }
 
   async function handleSubmit() {
     try {
       loading.value = true;
+      const timingProcessData = approvalFlowDesignRef.value?.getTimingProcessData() ?? {};
 
       const params = {
         ...form.value,
         ...form.value.basicConfig,
         ...form.value.moreConfig,
-        nodes: approvalFlowDesignRef.value?.getProcessNodes() ?? [],
-        links: approvalFlowDesignRef.value?.getProcessLinks() ?? [],
+        ...timingProcessData,
       };
       if (props.sourceId) {
         await updateApprovalProcess(params);
@@ -210,7 +235,13 @@
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
+    const basicValid = (await basicFormRef.value?.validate()) ?? false;
+    if (!basicValid) {
+      activeTab.value = 'basic';
+      return;
+    }
+
     if (approvalFlowDesignRef.value && !approvalFlowDesignRef.value.validateFlowNodes()) {
       openModal({
         type: 'warning',
@@ -235,7 +266,9 @@
     const result = { ...defaultConfig };
 
     Object.keys(defaultConfig).forEach((key) => {
-      result[key as keyof T] = source[key];
+      if (source[key] !== undefined) {
+        result[key as keyof T] = source[key];
+      }
     });
 
     return result;
@@ -255,7 +288,7 @@
       };
       editingName.value = result.name;
       nextTick(() => {
-        approvalFlowDesignRef.value?.setProcessData(result.nodes ?? [], result.links ?? []);
+        approvalFlowDesignRef.value?.setProcessData(result);
         nextTick(() => {
           unsaved.value = false;
           userInteracted.value = false;
@@ -273,12 +306,12 @@
     if (props.isDetail) {
       try {
         loading.value = true;
+        const timingProcessData = approvalFlowDesignRef.value?.getTimingProcessData() ?? {};
         const params = {
           ...form.value,
           ...form.value.basicConfig,
           ...form.value.moreConfig,
-          nodes: approvalFlowDesignRef.value?.getProcessNodes() ?? [],
-          links: approvalFlowDesignRef.value?.getProcessLinks() ?? [],
+          ...timingProcessData,
           name: newName,
         };
         await updateApprovalProcess(params);
@@ -319,7 +352,7 @@
     () => visible.value,
     (val) => {
       if (!val) {
-        activeTab.value = 'process';
+        activeTab.value = 'basic';
         userInteracted.value = false;
         return;
       }
@@ -327,6 +360,23 @@
       if (!props.sourceId) {
         unsaved.value = false;
         userInteracted.value = false;
+      }
+    }
+  );
+
+  function refreshApprovalFlowCanvas() {
+    nextTick(() => {
+      requestAnimationFrame(() => {
+        approvalFlowDesignRef.value?.refreshCanvas(true);
+      });
+    });
+  }
+
+  watch(
+    () => activeTab.value,
+    (tab) => {
+      if (tab === 'process') {
+        refreshApprovalFlowCanvas();
       }
     }
   );

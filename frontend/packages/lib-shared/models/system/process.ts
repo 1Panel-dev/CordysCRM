@@ -40,6 +40,7 @@ export interface ApprovalProcessItem extends BaseItem {
   formType: string;
   createExecute: boolean;
   updateExecute: boolean;
+  deleteExecute: boolean;
   enable: boolean;
   submitterCanRevoke: boolean;
   allowBatchProcess: boolean;
@@ -163,6 +164,7 @@ export interface BasicFormParams {
   description: string;
   createExecute: boolean; // 创建执行
   updateExecute: boolean; // 更新执行
+  deleteExecute: boolean; // 删除执行
 }
 
 // 更多设置参数
@@ -183,10 +185,16 @@ export interface ApprovalNodeLinkResponse {
   toNodeId: string;
 }
 
-export interface AddApprovalProcessParams extends BasicFormParams, MoreSettingsParams {
-  enable: boolean;
+export interface ApprovalFlowNodeConfig {
   nodes: ApprovalProcessNode[];
   links: ApprovalNodeLinkResponse[];
+}
+
+export interface AddApprovalProcessParams extends BasicFormParams, MoreSettingsParams {
+  enable: boolean;
+  createNodeConfig?: ApprovalFlowNodeConfig;
+  updateNodeConfig?: ApprovalFlowNodeConfig;
+  deleteNodeConfig?: ApprovalFlowNodeConfig;
 }
 
 export interface UpdateApprovalProcessParams extends AddApprovalProcessParams {
@@ -203,8 +211,9 @@ export interface ApprovalProcessDetail extends UpdateApprovalProcessParams {
 export interface ApprovalProcessForm {
   id: string;
   enable: boolean;
-  nodes: ApprovalProcessNode[];
-  links: ApprovalNodeLinkResponse[];
+  createNodeConfig?: ApprovalFlowNodeConfig;
+  updateNodeConfig?: ApprovalFlowNodeConfig;
+  deleteNodeConfig?: ApprovalFlowNodeConfig;
   basicConfig: BasicFormParams;
   moreConfig: MoreSettingsParams;
 }
