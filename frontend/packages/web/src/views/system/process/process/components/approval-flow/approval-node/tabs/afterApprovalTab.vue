@@ -25,6 +25,7 @@
             <n-select
               v-model:value="line.fieldId"
               :disabled="props.readonly"
+              filterable
               :options="getFieldOptions(line.fieldId)"
               :placeholder="t('common.pleaseSelect')"
               @update:value="(value) => handleFieldUpdate(line, value)"
@@ -263,9 +264,14 @@
   import TagInput from '@/components/business/crm-form-create/components/basic/tagInput.vue';
   import Textarea from '@/components/business/crm-form-create/components/basic/textarea.vue';
   import { getFormConfigApiMap, rules } from '@/components/business/crm-form-create/config';
-  import type { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
+  import type {
+    FormCreateField,
+    FormCreateFieldOption,
+    FormCreateFieldRule,
+  } from '@/components/business/crm-form-create/types';
 
-  import { testApprovalWebHook } from '@/api/modules';
+  import { getContractStatusConfig, getOrderStatusConfig, testApprovalWebHook } from '@/api/modules';
+  import { quotationStatus } from '@/config/opportunity';
   import { defaultWebHookConfig } from '@/config/process';
 
   defineOptions({
@@ -286,6 +292,8 @@
   const Message = useMessage();
   const activePostTab = ref<'pass' | 'reject'>('pass');
   const formFields = ref<FormCreateField[]>([]);
+  const contractStageOptions = ref<{ label: string; value: string }[]>([]);
+  const orderStageOptions = ref<{ label: string; value: string }[]>([]);
   const formRef = ref<FormInst | null>(null);
   const webHookFormRef = ref<FormInst | null>(null);
 
@@ -357,7 +365,7 @@
       props.formType as FormDesignKeyEnum
     );
 
-    return formFields.value.filter((field) => {
+    const customFields = formFields.value.filter((field) => {
       const baseCondition =
         ![
           FieldTypeEnum.DIVIDER,
@@ -373,6 +381,39 @@
 
       return isPoolForm ? baseCondition && field.businessKey !== 'owner' : baseCondition;
     });
+
+    const systemFields: FormCreateField[] = [];
+    if (props.formType === FormDesignKeyEnum.OPPORTUNITY_QUOTATION) {
+      systemFields.push({
+        id: 'invalid',
+        businessKey: 'invalid',
+        name: t('common.status'),
+        type: FieldTypeEnum.SELECT,
+        options: quotationStatus as unknown as FormCreateFieldOption[],
+      } as FormCreateField);
+    }
+
+    if (props.formType === FormDesignKeyEnum.CONTRACT) {
+      systemFields.push({
+        id: 'stage',
+        businessKey: 'stage',
+        name: t('contract.status'),
+        type: FieldTypeEnum.SELECT,
+        options: contractStageOptions.value,
+      } as FormCreateField);
+    }
+
+    if (props.formType === FormDesignKeyEnum.ORDER) {
+      systemFields.push({
+        id: 'stage',
+        businessKey: 'stage',
+        name: t('order.status'),
+        type: FieldTypeEnum.SELECT,
+        options: orderStageOptions.value,
+      } as FormCreateField);
+    }
+
+    return [...customFields, ...systemFields];
   });
 
   const editableFieldMap = computed(() => new Map(editableFields.value.map((field) => [field.id, field])));
@@ -431,6 +472,12 @@
   }
 
   function getFieldValueRuleType(field: FormCreateField) {
+    if (
+      [FieldTypeEnum.SELECT, FieldTypeEnum.RADIO].includes(field.type) &&
+      field.options?.some((item) => typeof item.value === 'boolean')
+    ) {
+      return 'boolean';
+    }
     return field.type === FieldTypeEnum.DATA_SOURCE ? 'string' : getRuleType(field);
   }
 
@@ -685,6 +732,31 @@
     }
   }
 
+  async function initStage() {
+    contractStageOptions.value = [];
+    orderStageOptions.value = [];
+    try {
+      if (props.formType === FormDesignKeyEnum.CONTRACT) {
+        const contractStageConfig = await getContractStatusConfig();
+        contractStageOptions.value = contractStageConfig.stageConfigList.map((item) => ({
+          label: item.name,
+          value: item.id,
+        }));
+      }
+
+      if (props.formType === FormDesignKeyEnum.ORDER) {
+        const orderStageConfig = await getOrderStatusConfig();
+        orderStageOptions.value = orderStageConfig.stageConfigList.map((item) => ({
+          label: item.name,
+          value: item.id,
+        }));
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   async function loadFormFields() {
     try {
       const api =
@@ -692,6 +764,7 @@
         getFormConfigApiMap[FormDesignKeyEnum.OPPORTUNITY_QUOTATION];
       const res = await api();
       formFields.value = res.fields;
+      initStage();
       if (!props.readonly) {
         normalizeFieldUpdateConfigs(nodeConfig.value.passPostConfig);
         normalizeFieldUpdateConfigs(nodeConfig.value.rejectPostConfig);
