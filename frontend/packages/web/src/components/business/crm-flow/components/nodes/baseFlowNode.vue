@@ -12,6 +12,9 @@
         >
           <CrmIcon :type="props.icon.type" :size="16" class="text-[var(--text-n10)]" />
         </div>
+        <CrmTag v-if="priorityLabel" customClass="h-[24px] px-[4px]" type="primary" theme="light">
+          {{ priorityLabel }}
+        </CrmTag>
         <CrmEditableText
           v-if="props.titleEditable"
           size="small"
@@ -67,6 +70,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
 
   defineOptions({
@@ -78,6 +82,7 @@
       name: string;
       number?: string;
       description?: string;
+      priorityLabel?: string;
       nodeType?: string;
       selected?: boolean;
       invalid?: boolean;
@@ -93,6 +98,7 @@
     {
       number: '',
       description: '',
+      priorityLabel: '',
       nodeType: 'action',
       selected: false,
       invalid: false,

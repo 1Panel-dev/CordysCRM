@@ -1,254 +1,263 @@
 <template>
-  <div class="flex w-full rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
-    <div class="and-or">
-      <CrmTag
-        type="primary"
-        theme="light"
-        :color="{ color: 'var(--primary-6)' }"
-        class="z-[1] w-[38px] cursor-pointer"
-        @click="changeAllOr"
-      >
-        {{ formModel.searchMode === 'AND' ? 'and' : 'or' }}
-      </CrmTag>
-    </div>
-    <div class="min-w-0 flex-1">
-      <n-form ref="formRef" :model="formModel">
-        <div
-          v-for="(item, listIndex) in formModel.list"
-          :key="item.dataIndex || `filter_item_${listIndex}`"
-          class="flex items-start gap-[8px]"
+  <div class="w-full rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+    <slot name="header"></slot>
+    <div class="flex w-full">
+      <div class="and-or">
+        <CrmTag
+          type="primary"
+          theme="light"
+          :color="{ color: 'var(--primary-6)' }"
+          class="z-[1] w-[38px] cursor-pointer"
+          @click="changeAllOr"
         >
-          <n-form-item
-            :path="`list[${listIndex}].dataIndex`"
-            :rule="[{ required: true, message: t('common.value.nameNotNull') }]"
-            class="dataIndex-col block flex-1 overflow-hidden"
+          {{ formModel.searchMode === 'AND' ? 'and' : 'or' }}
+        </CrmTag>
+      </div>
+      <div class="min-w-0 flex-1">
+        <n-form ref="formRef" :model="formModel">
+          <div
+            v-for="(item, listIndex) in formModel.list"
+            :key="item.dataIndex || `filter_item_${listIndex}`"
+            class="flex items-start gap-[8px]"
           >
-            <n-select
-              v-model:value="item.dataIndex"
-              value-field="dataIndex"
-              :disabled="props.readonly"
-              filterable
-              :placeholder="t('common.pleaseSelect')"
-              :options="currentOptions(item.dataIndex as string)"
-              @update:value="(val) => dataIndexChange(val, listIndex)"
-            />
-          </n-form-item>
-          <n-form-item :path="`list[${listIndex}].operator`" class="block w-[120px]">
-            <n-select
-              v-model:value="item.operator"
-              :disabled="!item.dataIndex || props.readonly"
-              :options="getOperatorOptions(item.type, item.dataIndex as string)"
-              @update:value="operatorChange(item, listIndex)"
-            />
-          </n-form-item>
-          <n-form-item
-            :path="`list[${listIndex}].value`"
-            class="block flex-[1.5] overflow-hidden"
-            :rule="getRules(item)"
-          >
-            <CrmTimeRangePicker
-              v-if="
+            <n-form-item
+              :path="`list[${listIndex}].dataIndex`"
+              :rule="[{ required: true, message: t('common.value.nameNotNull') }]"
+              class="dataIndex-col block flex-1 overflow-hidden"
+            >
+              <n-select
+                v-model:value="item.dataIndex"
+                value-field="dataIndex"
+                :disabled="props.readonly"
+                filterable
+                :placeholder="t('common.pleaseSelect')"
+                :options="currentOptions(item.dataIndex as string)"
+                @update:value="(val) => dataIndexChange(val, listIndex)"
+              />
+            </n-form-item>
+            <n-form-item :path="`list[${listIndex}].operator`" class="list-operator block w-[120px]">
+              <n-select
+                v-model:value="item.operator"
+                :disabled="!item.dataIndex || props.readonly"
+                :options="getOperatorOptions(item.type, item.dataIndex as string)"
+                @update:value="operatorChange(item, listIndex)"
+              />
+            </n-form-item>
+            <n-form-item
+              :path="`list[${listIndex}].value`"
+              class="block flex-[1.5] overflow-hidden"
+              :rule="getRules(item)"
+            >
+              <n-input
+                v-if="item.operator === OperatorEnum.NEW_NOT_EQUALS_OLD"
+                :value="t('advanceFilter.value.fieldChanged')"
+                disabled
+                class="w-full"
+              />
+              <CrmTimeRangePicker
+                v-else-if="
                 [FieldTypeEnum.TIME_RANGE_PICKER,FieldTypeEnum.DATE_TIME].includes(item.type)  &&
                 [OperatorEnum.DYNAMICS, OperatorEnum.FIXED].includes(item.operator as OperatorEnum)
               "
-              v-model:value="item.value"
-              :time-range-type="item.operator"
-              :disabled="isValueDisabled(item)"
-              @update:value="valueChange"
-            />
-            <n-date-picker
-              v-else-if=" ([FieldTypeEnum.TIME_RANGE_PICKER,FieldTypeEnum.DATE_TIME].includes(item.type) &&
+                v-model:value="item.value"
+                :time-range-type="item.operator"
+                :disabled="isValueDisabled(item)"
+                @update:value="valueChange"
+              />
+              <n-date-picker
+                v-else-if=" ([FieldTypeEnum.TIME_RANGE_PICKER,FieldTypeEnum.DATE_TIME].includes(item.type) &&
                 ![OperatorEnum.DYNAMICS, OperatorEnum.FIXED].includes(item.operator as OperatorEnum))"
-              v-model:value="item.value"
-              :type="item.operator === OperatorEnum.BETWEEN ? 'datetimerange' : 'datetime'"
-              clearable
-              :disabled="isValueDisabled(item)"
-              class="w-full"
-              :default-time="item.operator === OperatorEnum.BETWEEN ? [undefined, '23:59:59'] : undefined"
-              @update:value="valueChange"
-            />
-            <CrmInputNumber
-              v-else-if="
+                v-model:value="item.value"
+                :type="item.operator === OperatorEnum.BETWEEN ? 'datetimerange' : 'datetime'"
+                clearable
+                :disabled="isValueDisabled(item)"
+                class="w-full"
+                :default-time="item.operator === OperatorEnum.BETWEEN ? [undefined, '23:59:59'] : undefined"
+                @update:value="valueChange"
+              />
+              <CrmInputNumber
+                v-else-if="
                 [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.type) ||
                 (item.type === FieldTypeEnum.INPUT_MULTIPLE &&
                   [OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(item.operator as OperatorEnum))
               "
-              v-model:value="item.value"
-              clearable
-              :disabled="isValueDisabled(item)"
-              :placeholder="item.numberProps?.placeholder ?? t('common.pleaseInput')"
-              v-bind="{
-                min: item.numberProps?.min,
-              }"
-              class="w-full"
-              @update:value="valueChange"
-            />
-            <CrmTagInput
-              v-else-if="
+                v-model:value="item.value"
+                clearable
+                :disabled="isValueDisabled(item)"
+                :placeholder="item.numberProps?.placeholder ?? t('common.pleaseInput')"
+                v-bind="{
+                  min: item.numberProps?.min,
+                }"
+                class="w-full"
+                @update:value="valueChange"
+              />
+              <CrmTagInput
+                v-else-if="
                 item.type === FieldTypeEnum.INPUT_MULTIPLE &&
                 ![OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(item.operator as OperatorEnum)
               "
-              v-model:value="item.value"
-              clearable
-              :disabled="isValueDisabled(item)"
-              class="w-full"
-              @update:value="valueChange"
-            />
+                v-model:value="item.value"
+                clearable
+                :disabled="isValueDisabled(item)"
+                class="w-full"
+                @update:value="valueChange"
+              />
 
-            <CrmDataSource
-              v-else-if="[FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)"
-              v-model:value="item.value"
-              v-model:rows="item.selectedRows"
-              v-bind="{
+              <CrmDataSource
+                v-else-if="[FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)"
+                v-model:value="item.value"
+                v-model:rows="item.selectedRows"
+                v-bind="{
                 ...item.dataSourceProps,
                 dataSourceType:item?.dataSourceProps?.dataSourceType as FieldDataSourceTypeEnum,
               }"
-              :disabled="isValueDisabled(item)"
-              @change="valueChange"
-            />
-            <n-select
-              v-else-if="
-                [
-                  FieldTypeEnum.SELECT,
-                  FieldTypeEnum.SELECT_MULTIPLE,
-                  FieldTypeEnum.RADIO,
-                  FieldTypeEnum.CHECKBOX,
-                ].includes(item.type)
-              "
-              v-model:value="item.value"
-              clearable
-              max-tag-count="responsive"
-              :disabled="isValueDisabled(item)"
-              :placeholder="t('common.pleaseSelect')"
-              v-bind="item.selectProps"
-              :multiple="item.type === FieldTypeEnum.SELECT_MULTIPLE || item.selectProps?.multiple"
-              @update:value="valueChange"
-            />
-            <CrmCitySelect
-              v-else-if="item.type === FieldTypeEnum.LOCATION"
-              v-model:value="item.value"
-              :placeholder="t('common.pleaseInput')"
-              :disabled="isValueDisabled(item)"
-              clearable
-              multiple
-              check-strategy="parent"
-              @update:value="valueChange"
-            />
-            <CrmIndustrySelect
-              v-else-if="item.type === FieldTypeEnum.INDUSTRY"
-              v-model:value="item.value"
-              :placeholder="t('common.pleaseInput')"
-              :disabled="isValueDisabled(item)"
-              clearable
-              multiple
-              check-strategy="parent"
-              @update:value="valueChange"
-            />
-            <CrmUserTagSelector
-              v-else-if="
-                [
-                  FieldTypeEnum.DEPARTMENT,
-                  FieldTypeEnum.DEPARTMENT_MULTIPLE,
-                  FieldTypeEnum.MEMBER,
-                  FieldTypeEnum.MEMBER_MULTIPLE,
-                ].includes(item.type)
-              "
-              v-model:value="item.value"
-              v-model:selected-list="item.selectedUserList"
-              multiple
-              :disabled="isValueDisabled(item)"
-              :drawer-title="t('crmFormDesign.selectDataSource')"
-              :api-type-key="MemberApiTypeEnum.FORM_FIELD"
-              :member-types="
-                [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type)
-                  ? [
-                      {
-                        label: t('menu.settings.org'),
-                        value: MemberSelectTypeEnum.ORG,
-                      },
-                    ]
-                  : [
-                      {
-                        label: t('menu.settings.org'),
-                        value: MemberSelectTypeEnum.ONLY_ORG,
-                      },
-                    ]
-              "
-              :disabled-node-types="
-                [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type)
-                  ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
-                  : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
-              "
-            />
-            <CrmTreeSelect
-              v-else-if="item.type === FieldTypeEnum.TREE_SELECT"
-              v-model:value="item.value"
-              v-model:contain-child-ids="item.containChildIds"
-              :disabled="isValueDisabled(item)"
-              :placeholder="t('common.pleaseSelect')"
-              :type="item.treeSelectProps?.options ? 'custom' : 'department'"
-              v-bind="item.treeSelectProps"
-              @update:value="valueChange"
-            />
-            <CrmUserSelect
-              v-else-if="item.type === FieldTypeEnum.USER_SELECT"
-              v-model:value="item.value"
-              value-field="id"
-              label-field="name"
-              :disabled="isValueDisabled(item)"
-              multiple
-              :options="userOptionsList"
-              max-tag-count="responsive"
-              @update:value="valueChange"
-            />
+                :disabled="isValueDisabled(item)"
+                @change="valueChange"
+              />
+              <n-select
+                v-else-if="
+                  [
+                    FieldTypeEnum.SELECT,
+                    FieldTypeEnum.SELECT_MULTIPLE,
+                    FieldTypeEnum.RADIO,
+                    FieldTypeEnum.CHECKBOX,
+                  ].includes(item.type)
+                "
+                v-model:value="item.value"
+                clearable
+                max-tag-count="responsive"
+                :disabled="isValueDisabled(item)"
+                :placeholder="t('common.pleaseSelect')"
+                v-bind="item.selectProps"
+                :multiple="item.type === FieldTypeEnum.SELECT_MULTIPLE || item.selectProps?.multiple"
+                @update:value="valueChange"
+              />
+              <CrmCitySelect
+                v-else-if="item.type === FieldTypeEnum.LOCATION"
+                v-model:value="item.value"
+                :placeholder="t('common.pleaseInput')"
+                :disabled="isValueDisabled(item)"
+                clearable
+                multiple
+                check-strategy="parent"
+                @update:value="valueChange"
+              />
+              <CrmIndustrySelect
+                v-else-if="item.type === FieldTypeEnum.INDUSTRY"
+                v-model:value="item.value"
+                :placeholder="t('common.pleaseInput')"
+                :disabled="isValueDisabled(item)"
+                clearable
+                multiple
+                check-strategy="parent"
+                @update:value="valueChange"
+              />
+              <CrmUserTagSelector
+                v-else-if="
+                  [
+                    FieldTypeEnum.DEPARTMENT,
+                    FieldTypeEnum.DEPARTMENT_MULTIPLE,
+                    FieldTypeEnum.MEMBER,
+                    FieldTypeEnum.MEMBER_MULTIPLE,
+                  ].includes(item.type)
+                "
+                v-model:value="item.value"
+                v-model:selected-list="item.selectedUserList"
+                multiple
+                :disabled="isValueDisabled(item)"
+                :drawer-title="t('crmFormDesign.selectDataSource')"
+                :api-type-key="MemberApiTypeEnum.FORM_FIELD"
+                :member-types="
+                  [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type)
+                    ? [
+                        {
+                          label: t('menu.settings.org'),
+                          value: MemberSelectTypeEnum.ORG,
+                        },
+                      ]
+                    : [
+                        {
+                          label: t('menu.settings.org'),
+                          value: MemberSelectTypeEnum.ONLY_ORG,
+                        },
+                      ]
+                "
+                :disabled-node-types="
+                  [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type)
+                    ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
+                    : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
+                "
+              />
+              <CrmTreeSelect
+                v-else-if="item.type === FieldTypeEnum.TREE_SELECT"
+                v-model:value="item.value"
+                v-model:contain-child-ids="item.containChildIds"
+                :disabled="isValueDisabled(item)"
+                :placeholder="t('common.pleaseSelect')"
+                :type="item.treeSelectProps?.options ? 'custom' : 'department'"
+                v-bind="item.treeSelectProps"
+                @update:value="valueChange"
+              />
+              <CrmUserSelect
+                v-else-if="item.type === FieldTypeEnum.USER_SELECT"
+                v-model:value="item.value"
+                value-field="id"
+                label-field="name"
+                :disabled="isValueDisabled(item)"
+                multiple
+                :options="userOptionsList"
+                max-tag-count="responsive"
+                @update:value="valueChange"
+              />
 
-            <n-input
-              v-else
-              v-model:value="item.value"
-              allow-clear
-              :disabled="isValueDisabled(item)"
-              :maxlength="255"
-              :placeholder="t('advanceFilter.inputPlaceholder')"
-              v-bind="item.inputProps"
-              @update:value="valueChange"
-            />
-          </n-form-item>
-          <n-form-item
-            v-if="item.showScope"
-            :path="`list[${listIndex}].scope`"
-            class="block w-[150px] flex-initial overflow-hidden"
-          >
-            <n-select
-              v-model:value="item.scope"
-              :disabled="item.scopeProps?.disabled"
-              :options="scopeOptions"
-              multiple
-            />
-          </n-form-item>
-          <n-button
-            :disabled="(props.keepOneLine && formModel.list.length === 1) || props.readonly"
-            class="outline--secondary px-[7px]"
-            @click="handleDeleteItem(listIndex)"
-          >
-            <template #icon>
-              <CrmIcon type="iconicon_minus_circle1" :size="16" />
-            </template>
-          </n-button>
-        </div>
-      </n-form>
-      <div class="flex items-center justify-between">
-        <n-tooltip v-if="!props.readonly" :delay="300" :disabled="!props.maxFilterFieldAddTooltip || !isDisabledAdd">
-          <template #trigger>
-            <n-button type="primary" :disabled="isDisabledAdd" text class="w-[fit-content]" @click="handleAddItem">
+              <n-input
+                v-else
+                v-model:value="item.value"
+                allow-clear
+                :disabled="isValueDisabled(item)"
+                :maxlength="255"
+                :placeholder="t('advanceFilter.inputPlaceholder')"
+                v-bind="item.inputProps"
+                @update:value="valueChange"
+              />
+            </n-form-item>
+            <n-form-item
+              v-if="item.showScope"
+              :path="`list[${listIndex}].scope`"
+              class="block w-[150px] flex-initial overflow-hidden"
+            >
+              <n-select
+                v-model:value="item.scope"
+                :disabled="item.scopeProps?.disabled"
+                :options="scopeOptions"
+                multiple
+              />
+            </n-form-item>
+            <n-button
+              :disabled="(props.keepOneLine && formModel.list.length === 1) || props.readonly"
+              class="outline--secondary px-[7px]"
+              @click="handleDeleteItem(listIndex)"
+            >
               <template #icon>
-                <n-icon><Add /></n-icon>
+                <CrmIcon type="iconicon_minus_circle1" :size="16" />
               </template>
-              {{ t('advanceFilter.addCondition') }}
             </n-button>
-          </template>
-          {{ props.maxFilterFieldAddTooltip }}
-        </n-tooltip>
-        <slot name="addButtonRight"></slot>
+          </div>
+        </n-form>
+        <div class="flex items-center justify-between">
+          <n-tooltip v-if="!props.readonly" :delay="300" :disabled="!props.maxFilterFieldAddTooltip || !isDisabledAdd">
+            <template #trigger>
+              <n-button type="primary" :disabled="isDisabledAdd" text class="w-[fit-content]" @click="handleAddItem">
+                <template #icon>
+                  <n-icon><Add /></n-icon>
+                </template>
+                {{ t('advanceFilter.addCondition') }}
+              </n-button>
+            </template>
+            {{ props.maxFilterFieldAddTooltip }}
+          </n-tooltip>
+          <slot name="addButtonRight"></slot>
+        </div>
       </div>
     </div>
   </div>
@@ -324,7 +333,11 @@
   }
 
   function isValueDisabled(item: FilterFormItem) {
-    return props.readonly || !item.dataIndex || ['EMPTY', 'NOT_EMPTY'].includes(item.operator as string);
+    return (
+      props.readonly ||
+      !item.dataIndex ||
+      ['EMPTY', 'NOT_EMPTY', OperatorEnum.NEW_NOT_EQUALS_OLD].includes(item.operator as string)
+    );
   }
 
   // 第一列下拉数据

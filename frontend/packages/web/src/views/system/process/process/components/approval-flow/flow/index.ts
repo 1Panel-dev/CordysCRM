@@ -22,7 +22,11 @@ import {
   createEndNode,
   createStartNode,
 } from '@/components/business/crm-flow/dsl/factory';
-import { findBranchLocation, findNodeLocation } from '@/components/business/crm-flow/dsl/queries';
+import {
+  findBranchLocation,
+  findConditionGroupById,
+  findNodeLocation,
+} from '@/components/business/crm-flow/dsl/queries';
 import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
 
 import { resolveApprovalActionNodeDefaults } from '@/config/process';
@@ -63,6 +67,7 @@ export function createDefaultFlow(startDescription: string): FlowSchema {
 export function createApprovalConditionBranch(partial: Partial<ApprovalConditionBranch> = {}): ApprovalConditionBranch {
   return createConditionBranch<ApprovalConditionBranch>({
     ...partial,
+    sort: partial.sort ?? 1,
     description: partial.description ?? t('process.process.flow.conditionUnset'),
     children: partial.children ?? [createApprovalActionNode()],
   });
@@ -190,7 +195,9 @@ export function insertFromAnchor(payload: {
 
 // 条件组新增 if 分支时，默认仍然补一个审批节点，保持分支规则一致
 export function addApprovalConditionBranch(flowSchema: FlowSchema, groupId: string) {
-  addConditionBranch(flowSchema, groupId, createApprovalConditionBranch());
+  const groupNode = findConditionGroupById(flowSchema.nodes, groupId);
+  const nextSort = (groupNode?.branches.filter((branch) => !branch.isElse).length ?? 0) + 1;
+  addConditionBranch(flowSchema, groupId, createApprovalConditionBranch({ sort: nextSort }));
 }
 
 // 是否已设置条件
