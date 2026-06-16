@@ -6,19 +6,13 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
-import cn.cordys.crm.form.dto.request.CustomFormDataAddRequest;
-import cn.cordys.crm.form.dto.request.CustomFormDataBatchUpdateRequest;
-import cn.cordys.crm.form.dto.request.CustomFormDataExportRequest;
-import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
-import cn.cordys.crm.form.dto.request.CustomFormDataUpdateRequest;
+import cn.cordys.crm.form.domain.CustomFormData;
+import cn.cordys.crm.form.dto.request.*;
 import cn.cordys.crm.form.dto.response.CustomFormDataGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
-import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.service.CustomFormDataExportService;
 import cn.cordys.crm.form.service.CustomFormDataService;
-import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.dto.response.ImportResponse;
-import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,8 +34,6 @@ public class CustomFormDataController {
     private CustomFormDataService customFormDataService;
     @Resource
     private CustomFormDataExportService customFormDataExportService;
-    @Resource
-    private BaseMapper<ModuleForm> moduleFormMapper;
 
     @PostMapping("/page")
     @Operation(summary = "表单数据列表")
@@ -112,14 +104,12 @@ public class CustomFormDataController {
 
     @GetMapping("/template/download")
     @Operation(summary = "下载导入模板")
-    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void downloadImportTpl(@RequestParam String customFormId, HttpServletResponse response) {
         customFormDataService.downloadImportTpl(response, customFormId, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入预检查")
-    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public ImportResponse importPreCheck(@RequestParam String customFormId,
                                          @RequestPart(value = "file") MultipartFile file) {
         return customFormDataService.importPreCheck(file, customFormId, OrganizationContext.getOrganizationId());
@@ -127,7 +117,6 @@ public class CustomFormDataController {
 
     @PostMapping("/import")
     @Operation(summary = "导入表单数据")
-    @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public ImportResponse realImport(@RequestParam String customFormId,
                                      @RequestPart(value = "file") MultipartFile file) {
         return customFormDataService.realImport(file, customFormId,
