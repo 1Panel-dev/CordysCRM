@@ -157,7 +157,7 @@ class ApprovalFlowControllerTests extends BaseTest {
         request.setAllowAddSign(false);
         request.setDuplicateApproverRule(DuplicateApproverRuleEnum.EACH.name());
         request.setRequireComment(false);
-        request.setCreateExecute(true);
+        request.setCreateExecute(false);
         request.setUpdateExecute(true);
         request.setStatusPermissions(buildStatusPermissions());
 
@@ -170,13 +170,14 @@ class ApprovalFlowControllerTests extends BaseTest {
         nodes.add(buildStartNodeRequest(startNodeId));
         nodes.add(buildApproverNodeRequest(approverNodeId, "主管审批"));
         nodes.add(buildEndNodeRequest(endNodeId));
-        request.setNodes(nodes);
+        request.setUpdateNodeConfig(new ApprovalFlowNodeConfigRequest());
+        request.getUpdateNodeConfig().setNodes(nodes);
 
         // 构建连接配置: 开始 -> 审批人 -> 结束
         List<ApprovalNodeLinkRequest> links = new ArrayList<>();
         links.add(buildLinkRequest(startNodeId, approverNodeId));
         links.add(buildLinkRequest(approverNodeId, endNodeId));
-        request.setLinks(links);
+        request.getUpdateNodeConfig().setLinks(links);
 
         return request;
     }
@@ -298,13 +299,14 @@ class ApprovalFlowControllerTests extends BaseTest {
         approverNode.setApprovalType(ApprovalTypeEnum.AUTO_PASS.name());
         nodes.add(approverNode);
         nodes.add(buildEndNodeRequest(endNodeId));
-        request.setNodes(nodes);
+        request.setCreateNodeConfig(new ApprovalFlowNodeConfigRequest());
+        request.getCreateNodeConfig().setNodes(nodes);
 
         // 构建连接配置
         List<ApprovalNodeLinkRequest> links = new ArrayList<>();
         links.add(buildLinkRequest(startNodeId, approverNodeId));
         links.add(buildLinkRequest(approverNodeId, endNodeId));
-        request.setLinks(links);
+        request.getCreateNodeConfig().setLinks(links);
 
         this.requestPostWithOk(DEFAULT_UPDATE, request);
 
@@ -405,10 +407,10 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(approvalFlow.getRequireComment(), response.getRequireComment());
 
         // 校验节点配置
-        Assertions.assertFalse(CollectionUtils.isEmpty(response.getNodes()));
+        Assertions.assertFalse(CollectionUtils.isEmpty(response.getCreateNodeConfig().getNodes()));
 
         // 校验连接配置
-        Assertions.assertFalse(CollectionUtils.isEmpty(response.getLinks()));
+        Assertions.assertFalse(CollectionUtils.isEmpty(response.getCreateNodeConfig().getLinks()));
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.PROCESS_SETTING_READ, DEFAULT_GET, addApprovalFlow.getId());

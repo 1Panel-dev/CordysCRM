@@ -355,7 +355,7 @@ public class ContractService {
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
-    @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.EDIT, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
+    @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
     public Contract update(ContractUpdateRequest request, String userId, String orgId) {
         Contract oldContract = contractMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
@@ -450,7 +450,8 @@ public class ContractService {
      * @param id 合同ID
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id) {
+    @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void delete(String id, String userId) {
         Contract contract = contractMapper.selectByPrimaryKey(id);
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));

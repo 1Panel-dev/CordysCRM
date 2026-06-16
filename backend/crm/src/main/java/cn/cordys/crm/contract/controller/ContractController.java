@@ -100,7 +100,7 @@ public class ContractController {
     @CsPermission(value = PermissionConstants.CONTRACT_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT)
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
-        contractService.delete(id);
+        contractService.delete(id, SessionUtils.getUserId());
     }
 
     @GetMapping("/get/snapshot/{id}")

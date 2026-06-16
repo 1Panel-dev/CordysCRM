@@ -29,6 +29,9 @@ public class ApprovalInstanceDetail {
 	@Schema(description = "当前节点ID")
 	private String currentNodeId;
 
+	@Schema(description = "执行时机：CREATE/UPDATE/DELETE")
+	private String executeTime;
+
 	@Schema(description = "审批节点")
 	private List<ApprovalRecordNode> nodes;
 

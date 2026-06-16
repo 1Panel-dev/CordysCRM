@@ -479,6 +479,7 @@ public class ApprovalResourceService {
         instance.setCreateTime(System.currentTimeMillis());
         instance.setUpdateUser(currentUserId);
         instance.setUpdateTime(System.currentTimeMillis());
+        instance.setExecuteTime(param.getExecuteTime());
         return instance;
     }
 

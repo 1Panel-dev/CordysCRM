@@ -14,4 +14,7 @@ public class ApprovalResourceBaseParam {
 	@NotBlank
 	@Schema(description = "资源表单")
 	private String formKey;
+
+	@Schema(description = "执行时机：CREATE/UPDATE/DELETE")
+	private String executeTime;
 }

@@ -215,7 +215,7 @@ public class ContractInvoiceService {
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INVOICE, type = LogType.UPDATE, resourceId = "{#request.id}")
-	@HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.EDIT, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
+	@HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
     public ContractInvoice update(ContractInvoiceUpdateRequest request, String userId, String orgId) {
         ContractInvoice originContractInvoice = invoiceMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
@@ -302,7 +302,8 @@ public class ContractInvoiceService {
      * @param id
      */
     @OperationLog(module = LogModule.CONTRACT_INVOICE, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id) {
+    @HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void delete(String id, String userId) {
         ContractInvoice invoice = invoiceMapper.selectByPrimaryKey(id);
         if (invoice == null) {
             throw new GenericException(Translator.get("invoice.not.exist"));

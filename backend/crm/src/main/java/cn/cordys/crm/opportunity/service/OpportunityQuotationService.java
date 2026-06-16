@@ -669,6 +669,7 @@ public class OpportunityQuotationService {
      * @param userId         用户ID
      * @param organizationId 组织ID
      */
+    @HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
     public void delete(String id, String userId, String organizationId) {
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {
@@ -748,7 +749,7 @@ public class OpportunityQuotationService {
      * @return 更新后的报价单实体
      */
     @OperationLog(module = LogModule.OPPORTUNITY_QUOTATION, type = LogType.UPDATE, resourceName = "{#request.name}", operator = "{#userId}")
-	@HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.EDIT, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
+	@HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
     public OpportunityQuotation update(OpportunityQuotationEditRequest request, String userId, String orgId) {
         String id = request.getId();
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();

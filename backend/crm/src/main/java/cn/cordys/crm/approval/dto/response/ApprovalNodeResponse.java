@@ -31,4 +31,7 @@ public class ApprovalNodeResponse {
 
     @Schema(description = "排序序号")
     private Integer sort;
+
+    @Schema(description = "执行时机：CREATE/UPDATE/DELETE")
+    private String executeTime;
 }
