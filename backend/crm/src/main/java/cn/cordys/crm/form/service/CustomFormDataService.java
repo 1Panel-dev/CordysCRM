@@ -381,13 +381,17 @@ public class CustomFormDataService {
     }
 
     CustomFormRoleKey getDataScope(String formId, String userId) {
+        return getDataScope(formId, userId, true);
+    }
+
+    CustomFormRoleKey getDataScope(String formId, String userId, boolean checkEnable) {
         CustomForm customForm = customFormMapper.selectByPrimaryKey(formId);
         if (customFormService.isFormAdminUser(formId, userId)) {
             // 管理员管理所有数据
             return CustomFormRoleKey.MANAGE_ALL;
         }
 
-        if (BooleanUtils.isFalse(customForm.getEnable())) {
+        if (checkEnable && BooleanUtils.isFalse(customForm.getEnable())) {
             // 表单未启用，非管理员没有权限查看
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }

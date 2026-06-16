@@ -49,8 +49,8 @@ public class CustomFormDataExportService extends BaseExportService {
         checkFileName(request.getFileName());
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOM_FORM_DATA.name());
 
-        // 权限检查：获取数据权限范围
-        CustomFormRoleKey dataScope = customFormDataService.getDataScope(request.getCustomFormId(), userId);
+        // 权限检查：获取数据权限范围（导出时跳过表单启用状态检查）
+        CustomFormRoleKey dataScope = customFormDataService.getDataScope(request.getCustomFormId(), userId, false);
         boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
 
         String fileId = IDGenerator.nextStr();
@@ -132,8 +132,8 @@ public class CustomFormDataExportService extends BaseExportService {
         }
         String formId = rawList.getFirst().getCustomFormId();
 
-        // 权限过滤：根据数据权限过滤选中数据
-        CustomFormRoleKey dataScope = customFormDataService.getDataScope(formId, userId);
+        // 权限过滤：根据数据权限过滤选中数据（导出时跳过表单启用状态检查）
+        CustomFormRoleKey dataScope = customFormDataService.getDataScope(formId, userId, false);
         if (dataScope == CustomFormRoleKey.MANAGE_OWN) {
             rawList = rawList.stream()
                     .filter(item -> StringUtils.equals(item.getOwner(), userId))
