@@ -409,6 +409,7 @@
   async function init(val: string) {
     checkedRowKeys.value = [];
     keyword.value = '';
+    propsRes.value.tableKey = val;
     await initFormConfig(props.readonly, operationColumn.value);
     tableAdvanceFilterRef.value?.clearFilter();
     setLoadListParams({ customFormId: val });
