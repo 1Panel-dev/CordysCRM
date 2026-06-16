@@ -210,6 +210,7 @@ function createConditionBranchNodeLayout(
       branchId: branch.id,
       name: branch.name,
       number: branch.number,
+      sort: branch.sort,
       description: branch.description,
       showContent: options.showNodeDescription,
       isElse: branch.isElse,

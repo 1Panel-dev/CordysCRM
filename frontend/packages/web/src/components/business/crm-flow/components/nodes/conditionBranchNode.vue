@@ -3,6 +3,7 @@
     :name="nodeData.name ?? ''"
     :number="nodeData.number"
     :description="nodeData.description"
+    :priority-label="priorityLabel"
     :show-content="nodeData.showContent ?? true"
     :selected="Boolean(nodeData.selected)"
     :invalid="Boolean(nodeData.invalid)"
@@ -45,6 +46,7 @@
     branchId?: string;
     name?: string;
     number?: string;
+    sort?: number;
     description?: string;
     showContent?: boolean;
     isElse?: boolean;
@@ -55,6 +57,7 @@
   }>(toRef(props, 'node'));
 
   const displayIsElse = computed(() => nodeData.value.isElse ?? false);
+  const priorityLabel = computed(() => (!displayIsElse.value ? `P${nodeData.value.sort ?? 1}` : ''));
 
   function handleDelete() {
     emit('delete');

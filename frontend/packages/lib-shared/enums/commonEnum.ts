@@ -31,6 +31,7 @@ export enum OperatorEnum {
   NOT_CONTAINS = 'NOT_CONTAINS', // 不包含
   EMPTY = 'EMPTY', // 为空
   NOT_EMPTY = 'NOT_EMPTY', // 不为空
+  NEW_NOT_EQUALS_OLD = 'NOT_EQUAL_ORIGINAL', // 新值不等于旧值
 
   DYNAMICS = 'DYNAMICS',
   FIXED = 'FIXED',

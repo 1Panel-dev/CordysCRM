@@ -33,6 +33,7 @@ export interface ConditionBranch {
   id: string;
   name: string;
   number?: string;
+  sort?: number;
   isElse: boolean;
   description?: string;
   invalid?: boolean;

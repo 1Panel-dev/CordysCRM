@@ -12,6 +12,7 @@ export interface FlowGraphNodeData {
   branchId?: string; // 条件分支 id（if / else 分支）
   name?: string;
   description?: string;
+  sort?: number;
   actionType?: string; // 动作节点的扩展类型（如 approval）。
   showContent?: boolean; // 当前视图模式下是否显示节点第二行内容（description）
   isElse?: boolean;

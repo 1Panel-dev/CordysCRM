@@ -79,7 +79,7 @@ function createProcessBranchNode(branch: ApprovalConditionBranch, sort: number):
     name: branch.name,
     number: branch.number,
     nodeType: branch.isElse ? ApprovalNodeTypeEnum.DEFAULT : ApprovalNodeTypeEnum.CONDITION,
-    sort,
+    sort: branch.sort ?? sort + 1,
     ...(branch.isElse ? {} : { conditionConfig: branch.conditionConfig }),
   };
 }
@@ -272,7 +272,7 @@ function sortNodeIds(nodeIds: string[], nodeMap: Map<string, ApprovalProcessNode
     const leftNode = nodeMap.get(leftId);
     const rightNode = nodeMap.get(rightId);
 
-    return (leftNode?.sort ?? 0) - (rightNode?.sort ?? 0);
+    return (leftNode?.sort ?? 1) - (rightNode?.sort ?? 1);
   });
 }
 
@@ -414,6 +414,7 @@ function deserializeProcessNodeList(
         id: branchNode.id,
         name: branchNode.name,
         number: branchNode.number,
+        sort: branchNode.sort,
         description: toConditionBranchDescription(branchNode),
         conditionConfig:
           branchNode.nodeType === ApprovalNodeTypeEnum.CONDITION ? branchNode.conditionConfig : undefined,
