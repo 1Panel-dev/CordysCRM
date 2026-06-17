@@ -513,6 +513,10 @@ public class OpportunityQuotationService {
 			response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
 		}
 		for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
+			if (Strings.CS.equals(fieldUpdateParam.getFieldId(), "invalid") && fieldUpdateParam.getFieldValue() != null) {
+				opportunityQuotationFieldService.setResourceFieldValue(quotation, "invalid", fieldUpdateParam.getFieldValue());
+				continue;
+			}
 			if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
 				return;
 			}
