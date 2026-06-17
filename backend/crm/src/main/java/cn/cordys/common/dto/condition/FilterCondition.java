@@ -462,7 +462,11 @@ public class FilterCondition {
         /**
          * 不为空
          */
-        NOT_EMPTY
+        NOT_EMPTY,
+        /**
+         * 不等于原值（用户审批时的条件判断）
+         */
+        NOT_EQUAL_ORIGINAL
     }
 
 }

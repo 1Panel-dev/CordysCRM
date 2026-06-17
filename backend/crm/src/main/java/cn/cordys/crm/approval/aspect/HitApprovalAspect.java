@@ -1,13 +1,22 @@
 package cn.cordys.crm.approval.aspect;
 
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.dto.JsonDifferenceDTO;
+import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.JSON;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
+import cn.cordys.crm.approval.domain.ApprovalResourceData;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.crm.system.service.SysOperationLogService;
+import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +39,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *  切面后置操作: 当命中表单配置的审批流和执行时机时
@@ -48,6 +58,11 @@ public class HitApprovalAspect {
 	private ApprovalFlowService approvalFlowService;
 	@Resource
 	private ApprovalResourceService approvalResourceService;
+	@Resource
+	private BaseMapper<ApprovalResourceData> approvalResourceDataMapper;
+	@Resource
+	private SysOperationLogService sysOperationLogService;
+
 
 	@Pointcut("@annotation(cn.cordys.crm.approval.annotation.HitApproval)")
 	public void pointcut() {
@@ -91,6 +106,9 @@ public class HitApprovalAspect {
 				// 命中审批流, 修改业务资源审批状态为待提审
 				approvalResourceService.clearResourceApprovalDetail(resourceId);
 				approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), operator, OrganizationContext.getOrganizationId());
+
+				// 保存审批过程中的中间数据（执行时机和修改的字段列表）
+				saveApprovalResourceData(annotation, resourceId);
 			}
 		} catch (Exception e) {
 			log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);
@@ -192,6 +210,38 @@ public class HitApprovalAspect {
 			};
 		} catch (Exception e) {
 			return false;
+		}
+	}
+
+	/**
+	 * 保存审批过程中的中间数据
+	 */
+	private void saveApprovalResourceData(HitApproval annotation, String resourceId) {
+		try {
+			// 先删除该资源的旧数据
+			approvalResourceDataMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalResourceData>()
+					.eq(ApprovalResourceData::getResourceId, resourceId));
+
+			ApprovalResourceData data = new ApprovalResourceData();
+			data.setId(IDGenerator.nextStr());
+			data.setFormType(annotation.formKey().getKey());
+			data.setResourceId(resourceId);
+			data.setExecuteTime(annotation.executeType().name());
+
+			LogContextInfo logContext = OperationLogContext.getContext();
+			Object originalValue = logContext.getOriginalValue();
+			Object modifiedValue = logContext.getModifiedValue();
+			if (originalValue != null && modifiedValue != null) {
+				List<JsonDifferenceDTO> jsonDifferences = sysOperationLogService.getJsonDifferences(JSON.toJSONString(originalValue), JSON.toJSONString(modifiedValue));
+				List<String> fieldIds = jsonDifferences.stream()
+						.map(JsonDifferenceDTO::getColumn)
+						.collect(Collectors.toList());
+				data.setUpdateFields(JSON.toJSONString(fieldIds));
+			}
+
+			approvalResourceDataMapper.insert(data);
+		} catch (Exception e) {
+			log.error("保存审批中间数据失败，error:{}", e.getMessage(), e);
 		}
 	}
 }
