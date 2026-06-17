@@ -10,6 +10,8 @@ ALTER TABLE approval_node ADD COLUMN execute_time varchar(30) DEFAULT NULL COMME
 -- approval_instance 增加 execute_time 字段
 ALTER TABLE approval_instance ADD COLUMN execute_time varchar(30) DEFAULT NULL COMMENT '执行时机：CREATE/UPDATE/DELETE';
 
+ALTER TABLE approval_instance ADD `comment` varchar(500) NULL COMMENT '变更说明';
+
 -- 记录审批过程中的中间数据
 CREATE TABLE approval_resource_data(
    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,

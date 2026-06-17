@@ -85,6 +85,7 @@ public class ApprovalInstanceService {
 		Map<String, List<Attachment>> elementAttachmentsMap = queryAttachments(records, signTasks, backRecords);
 		instanceDetail.setNodes(buildApprovalRecordNodeList(latestInstance, tasks, records, signTasks, backRecords, elementAttachmentsMap, simpleUserMap, currentOrgId));
 		instanceDetail.setCurrentNodeId(latestInstance.getCurrentNodeId());
+		instanceDetail.setComment(latestInstance.getComment());
 		return setCurrentNodeFieldPermissions(instanceDetail);
 	}
 

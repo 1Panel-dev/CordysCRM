@@ -397,7 +397,7 @@ public class ApprovalResourceService {
      *
      * @param param 提审参数
      */
-    public void push(ApprovalResourceBaseParam param, String currentOrgId, String currentUserId) {
+    public void push(ApprovalPushParam param, String currentOrgId, String currentUserId) {
         ApprovalResourceData resourceData = getApprovalResourceData(param.getResourceId());
 
         ApprovalFlow approvalFlow = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
@@ -475,7 +475,7 @@ public class ApprovalResourceService {
      * @param currentUserId 当前用户ID
      * @return 审批实例
      */
-    private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalResourceBaseParam param, ApprovalResourceData resourceData, String currentUserId) {
+    private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalPushParam param, ApprovalResourceData resourceData, String currentUserId) {
         ApprovalInstance instance = new ApprovalInstance();
         instance.setId(IDGenerator.nextStr());
         instance.setFlowVersionId(flow.getCurrentVersionId());
@@ -488,6 +488,7 @@ public class ApprovalResourceService {
         instance.setCreateTime(System.currentTimeMillis());
         instance.setUpdateUser(currentUserId);
         instance.setUpdateTime(System.currentTimeMillis());
+        instance.setComment(param.getComment());
         instance.setExecuteTime(resourceData == null ? ExecuteTimingEnum.CREATE.name() : resourceData.getExecuteTime());
         return instance;
     }

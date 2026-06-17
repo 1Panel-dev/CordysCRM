@@ -2,6 +2,7 @@ package cn.cordys.crm.approval.controller;
 
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
+import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalInstanceService;
@@ -27,7 +28,7 @@ public class ApprovalResourceController {
 
 	@PostMapping("/push")
 	@Operation(summary = "提审")
-	public void push(@RequestBody ApprovalResourceBaseParam param) {
+	public void push(@RequestBody ApprovalPushParam param) {
 		approvalResourceService.push(param, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 	}
 
