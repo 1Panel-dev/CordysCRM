@@ -24,7 +24,7 @@ public class SessionUser extends UserDTO implements Serializable {
     /**
      * 加密密钥，用于生成 CSRF Token。建议从配置或环境变量中读取。
      */
-    public static final String secret = "9a9rdqPlTqhpZzkq";
+    public static final String secret = RandomStringUtils.secure().nextAlphabetic(16);
 
     @Serial
     private static final long serialVersionUID = -7149638440406959033L;
