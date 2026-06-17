@@ -21,7 +21,6 @@ import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
-import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -85,7 +84,7 @@ public class CustomFormDataExportService extends BaseExportService {
                 .toList();
 
         batchHandleData(fileId, headList, exportTask, request.getFileName(), request,
-                t -> getExportData(request, orgId, userId, manageOwn, exportTask.getId()));
+                t -> getExportData(t, orgId, userId, manageOwn, exportTask.getId()));
     }
 
     private void exportSelectData(ExportTask exportTask, ExportSelectRequest request,
@@ -119,8 +118,9 @@ public class CustomFormDataExportService extends BaseExportService {
     private List<List<Object>> getExportData(CustomFormDataExportRequest request, String orgId,
                                               String userId, boolean manageOwn, String taskId)
             throws InterruptedException {
-        PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomFormDataListResponse> rawList = extCustomFormDataMapper.list(request, orgId, userId, manageOwn);
+        int limit = request.getPageSize();
+        int offset = (request.getCurrent() - 1) * request.getPageSize();
+        List<CustomFormDataListResponse> rawList = extCustomFormDataMapper.listForExport(request, orgId, userId, manageOwn, limit, offset);
         return buildExportResult(request.getHeadList(), rawList, request.getCustomFormId(), orgId, taskId, userId);
     }
 

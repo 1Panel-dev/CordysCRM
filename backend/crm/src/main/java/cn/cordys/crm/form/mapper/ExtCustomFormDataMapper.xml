@@ -49,6 +49,54 @@
         </include>
     </select>
 
+    <select id="listForExport" resultType="cn.cordys.crm.form.dto.response.CustomFormDataListResponse">
+        select d.id, d.custom_form_id as customFormId, d.name, d.owner, d.create_user as createUser, d.update_user as updateUser,
+               d.create_time as createTime, d.update_time as updateTime
+        from custom_form_data d
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.viewCombineSearch.conditions"/>
+            <property name="tablePrefix" value="viewCombine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        where d.custom_form_id = #{request.customFormId}
+
+        <if test="manageOwn">
+            and d.owner = #{userId}
+        </if>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and d.name like concat('%', #{request.keyword},'%')
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+        <include refid="viewCombine">
+            <property name="combineSearch" value="request.viewCombineSearch"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">
