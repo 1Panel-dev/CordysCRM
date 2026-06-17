@@ -97,8 +97,6 @@ public final class ShiroFilter {
         FILTER_CHAIN_DEFINITION_MAP.put("/organization/settings/third-party/get/**", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/organization/settings/third-party/sync/resource", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/license/validate/**", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/mcp/**", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/opportunity/stage/get", "anon");
     }
 
     /**
