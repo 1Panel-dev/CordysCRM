@@ -58,7 +58,7 @@ export default function useStageConfig(type: Ref<StatusBizType>): UseStatusConfi
       ];
     }
 
-    if (form.value.list.length === 10) {
+    if (form.value.list.length === 15) {
       return [
         {
           label: t('common.delete'),
