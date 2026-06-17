@@ -214,17 +214,22 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 
     private String getLocationComment(BaseField field) {
         StringBuilder sb = new StringBuilder();
+		sb.append(Translator.get("format.preview")).append(": ");
         LocationField locationField = (LocationField) field;
-        if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.C)) {
-            sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.c"));
-        } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.P)) {
-            sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.p"));
+		if (!Strings.CS.equals(locationField.getScope(), LocationResolver.CN)) {
+			sb.append(Translator.get("location.c"));
+			if (!Strings.CS.equals(locationField.getLocationType(), LocationResolver.C)) {
+				sb.append("-");
+			}
+		}
+		if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.P)) {
+            sb.append(Translator.get("location.p"));
         } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PC)) {
-            sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pc"));
+            sb.append(Translator.get("location.pc"));
         } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PCD)) {
-            sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pcd"));
-        } else {
-            sb.append(Translator.get("format.preview")).append(": ").append(Translator.get("location.pcd.detail"));
+            sb.append(Translator.get("location.pcd"));
+        } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PCD_D)){
+            sb.append(Translator.get("location.pcd.detail"));
         }
         return sb.toString();
     }
