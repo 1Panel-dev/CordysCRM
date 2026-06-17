@@ -1,6 +1,7 @@
 package cn.cordys.common.util;
 
 import jakarta.servlet.Filter;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -138,6 +139,23 @@ public class CommonBeanFactory implements ApplicationContextAware {
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    public static String getUser(HttpServletRequest request) {
+        if (packageExists()) {
+            Object user = CommonBeanFactory.invoke("extLicenseService",
+                    clazz -> {
+                        try {
+                            return clazz.getMethod("getUser", HttpServletRequest.class);
+                        } catch (NoSuchMethodException e) {
+                            return null;
+                        }
+                    }, request);
+            if (user != null) {
+                return String.valueOf(user);
+            }
+        }
+        return null;
     }
 
     /**
