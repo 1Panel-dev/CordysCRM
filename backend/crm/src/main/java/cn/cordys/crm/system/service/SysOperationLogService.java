@@ -123,11 +123,7 @@ public class SysOperationLogService {
                 .orElse("");
 
         try {
-            List<JsonDifferenceDTO> differences = new ArrayList<>();
-            JsonDifferenceUtils.compareJson(oldString, newString, differences);
-
-            // 过滤掉不需要的字段
-            differences = filterIgnoreFields(differences);
+            List<JsonDifferenceDTO> differences = getJsonDifferences(oldString, newString);
 
             if (CollectionUtils.isNotEmpty(differences)) {
                 // 获取模块对应处理服务
@@ -149,6 +145,15 @@ public class SysOperationLogService {
         }
 
         return logResponse;
+    }
+
+    public List<JsonDifferenceDTO> getJsonDifferences(String oldString, String newString) throws Exception {
+        List<JsonDifferenceDTO> differences = new ArrayList<>();
+        JsonDifferenceUtils.compareJson(oldString, newString, differences);
+
+        // 过滤掉不需要的字段
+        differences = filterIgnoreFields(differences);
+        return differences;
     }
 
     // 默认差异处理逻辑

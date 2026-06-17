@@ -108,6 +108,8 @@ public class ApprovalFlowService {
     private ExtApprovalInstanceMapper extApprovalInstanceMapper;
     @Resource
     private ApprovalInstanceService approvalInstanceService;
+    @Resource
+    private BaseMapper<ApprovalResourceData> approvalResourceDataMapper;
 
     /**
      * 加签节点后缀分隔符
@@ -1067,10 +1069,9 @@ public class ApprovalFlowService {
     }
 
     /**
-     * 获取下一个节点
-     * 条件节点根据字段值进行匹配，其他类型节点直接返回
+     * 获取下一个节点（带 updateFields 上下文）
      */
-    public ApprovalNodeResponse getNextNode(String nodeId, List<BaseModuleFieldValue> fieldValues) {
+    public ApprovalNodeResponse getNextNode(String nodeId, List<BaseModuleFieldValue> fieldValues, Set<String> updateFields) {
         List<ApprovalNodeResponse> nextNodes = getNextNodes(nodeId);
 
         if (CollectionUtils.isEmpty(nextNodes)) {
@@ -1093,7 +1094,7 @@ public class ApprovalFlowService {
         for (ApprovalNodeResponse nextNode : nextNodes) {
             if (nextNode instanceof ApprovalNodeConditionResponse conditionNode) {
                 // 匹配条件节点，如果匹配成功则立即返回
-                if (matchCondition(conditionNode.getConditionConfig(), fieldValues)) {
+                if (matchCondition(conditionNode.getConditionConfig(), fieldValues, updateFields)) {
                     return conditionNode;
                 }
             } else if (ApprovalNodeTypeEnum.DEFAULT.name().equals(nextNode.getNodeType())) {
@@ -1109,7 +1110,7 @@ public class ApprovalFlowService {
     /**
      * 匹配条件
      */
-    private boolean matchCondition(CombineSearch combineSearch, List<BaseModuleFieldValue> fieldValues) {
+    private boolean matchCondition(CombineSearch combineSearch, List<BaseModuleFieldValue> fieldValues, Set<String> updateFields) {
         if (combineSearch == null || CollectionUtils.isEmpty(combineSearch.getConditions())) {
             return false;
         }
@@ -1125,17 +1126,17 @@ public class ApprovalFlowService {
         // 根据匹配模式进行条件判断
         if (CombineSearch.SearchMode.AND.name().equals(searchMode)) {
             // AND 模式：所有都必须满足
-            return conditions.stream().allMatch(condition -> matchSingleCondition(condition, fieldValueMap));
+            return conditions.stream().allMatch(condition -> matchSingleCondition(condition, fieldValueMap, updateFields));
         } else {
             // OR 模式：任一满足即可
-            return conditions.stream().anyMatch(condition -> matchSingleCondition(condition, fieldValueMap));
+            return conditions.stream().anyMatch(condition -> matchSingleCondition(condition, fieldValueMap, updateFields));
         }
     }
 
     /**
      * 匹配单个条件
      */
-    private boolean matchSingleCondition(FilterCondition condition, Map<String, Object> fieldValueMap) {
+    private boolean matchSingleCondition(FilterCondition condition, Map<String, Object> fieldValueMap, Set<String> updateFields) {
         String fieldName = condition.getName();
         Object actualValue = fieldValueMap.get(fieldName);
 
@@ -1149,6 +1150,14 @@ public class ApprovalFlowService {
             operator = FilterCondition.CombineConditionOperator.valueOf(operatorStr);
         } catch (IllegalArgumentException e) {
             return false;
+        }
+
+        // 处理 NOT_EQUAL_ORIGINAL：判断字段值是否与原值不同（即字段在修改列表中）
+        if (operator == FilterCondition.CombineConditionOperator.NOT_EQUAL_ORIGINAL) {
+            if (updateFields == null || updateFields.isEmpty()) {
+                return false;
+            }
+            return updateFields.contains(fieldName);
         }
 
         // 处理空值判断操作符
@@ -1244,6 +1253,31 @@ public class ApprovalFlowService {
             return matchCompare(actualValue, min) >= 0 && matchCompare(actualValue, max) <= 0;
         }
         return false;
+    }
+
+    /**
+     * 加载修改字段列表
+     */
+    private Set<String> loadUpdateFields(String resourceId) {
+        if (StringUtils.isBlank(resourceId)) {
+            return Collections.emptySet();
+        }
+        try {
+            LambdaQueryWrapper<ApprovalResourceData> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(ApprovalResourceData::getResourceId, resourceId);
+            List<ApprovalResourceData> dataList = approvalResourceDataMapper.selectListByLambda(wrapper);
+            if (CollectionUtils.isEmpty(dataList)) {
+                return Collections.emptySet();
+            }
+            String updateFieldsStr = dataList.getFirst().getUpdateFields();
+            if (StringUtils.isBlank(updateFieldsStr)) {
+                return Collections.emptySet();
+            }
+            List<String> fields = JSON.parseArray(updateFieldsStr, String.class);
+            return CollectionUtils.isEmpty(fields) ? Collections.emptySet() : new HashSet<>(fields);
+        } catch (Exception e) {
+            return Collections.emptySet();
+        }
     }
 
     /**
@@ -1832,7 +1866,9 @@ public class ApprovalFlowService {
      * @return 下一个节点 (结束节点或者审批节点)
      */
     private ApprovalNodeResponse getNextNodeWithExceptionHandler(ApprovalInstance instance, String nodeId, List<BaseModuleFieldValue> fieldValues, String currentOrgId, boolean preview) {
-        ApprovalNodeResponse nextNode = getNextNode(nodeId, fieldValues);
+        // 加载修改字段列表，用于 NOT_EQUAL_ORIGINAL 条件判断
+        Set<String> updateFields = loadUpdateFields(instance.getResourceId());
+        ApprovalNodeResponse nextNode = getNextNode(nodeId, fieldValues, updateFields);
         if (nextNode == null) {
             throw new GenericException(Translator.get("no.approval.next.node"));
         }

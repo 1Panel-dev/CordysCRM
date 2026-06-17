@@ -13,9 +13,11 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
+import cn.cordys.crm.approval.domain.ApprovalResourceData;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
@@ -70,6 +72,8 @@ public class ApprovalResourceService {
     private BaseMapper<ApprovalTask> approvalTaskMapper;
     @Resource
     private BaseMapper<ApprovalRecord> approvalRecordMapper;
+    @Resource
+    private BaseMapper<ApprovalResourceData> approvalResourceDataMapper;
     @Resource
     private BaseMapper<User> userMapper;
     @Resource
@@ -394,12 +398,14 @@ public class ApprovalResourceService {
      * @param param 提审参数
      */
     public void push(ApprovalResourceBaseParam param, String currentOrgId, String currentUserId) {
+        ApprovalResourceData resourceData = getApprovalResourceData(param.getResourceId());
+
         ApprovalFlow approvalFlow = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
         if (approvalFlow == null) {
             throw new GenericException(Translator.get("approval_flow.not.exist"));
         }
         // 初始化审批实例
-        ApprovalInstance instance = initInstance(approvalFlow, param, currentUserId);
+        ApprovalInstance instance = initInstance(approvalFlow, param, resourceData, currentUserId);
         // 获取第一个节点
         ApprovalNodeResponse firstApprovalNode = approvalFlowService.getResourceApprovalInstanceFirstNode(instance, currentOrgId);
         instance.setCurrentNodeId(firstApprovalNode.getId());
@@ -409,6 +415,7 @@ public class ApprovalResourceService {
             instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
+            deleteApprovalResourceData(param.getResourceId());
             return;
         }
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
@@ -417,6 +424,7 @@ public class ApprovalResourceService {
             instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
+            deleteApprovalResourceData(param.getResourceId());
             String resourceName = getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
             if (StringUtils.isBlank(resourceName)) {
                 return;
@@ -456,6 +464,7 @@ public class ApprovalResourceService {
         instance.setUpdateTime(System.currentTimeMillis());
         approvalInstanceMapper.updateById(instance);
         approvalActionService.loseCurrentNode(instance.getId(), instance.getCurrentNodeId());
+        deleteApprovalResourceData(param.getResourceId());
     }
 
     /**
@@ -466,7 +475,7 @@ public class ApprovalResourceService {
      * @param currentUserId 当前用户ID
      * @return 审批实例
      */
-    private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalResourceBaseParam param, String currentUserId) {
+    private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalResourceBaseParam param, ApprovalResourceData resourceData, String currentUserId) {
         ApprovalInstance instance = new ApprovalInstance();
         instance.setId(IDGenerator.nextStr());
         instance.setFlowVersionId(flow.getCurrentVersionId());
@@ -479,8 +488,31 @@ public class ApprovalResourceService {
         instance.setCreateTime(System.currentTimeMillis());
         instance.setUpdateUser(currentUserId);
         instance.setUpdateTime(System.currentTimeMillis());
-        instance.setExecuteTime(param.getExecuteTime());
+        instance.setExecuteTime(resourceData == null ? ExecuteTimingEnum.CREATE.name() : resourceData.getExecuteTime());
         return instance;
+    }
+
+    /**
+     * 获取审批过程中的中间数据
+     *
+     * @param resourceId 资源ID
+     * @return 审批中间数据
+     */
+    public ApprovalResourceData getApprovalResourceData(String resourceId) {
+        LambdaQueryWrapper<ApprovalResourceData> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ApprovalResourceData::getResourceId, resourceId);
+        List<ApprovalResourceData> dataList = approvalResourceDataMapper.selectListByLambda(wrapper);
+        return CollectionUtils.isNotEmpty(dataList) ? dataList.getFirst() : null;
+    }
+
+    /**
+     * 删除审批过程中的中间数据
+     *
+     * @param resourceId 资源ID
+     */
+    public void deleteApprovalResourceData(String resourceId) {
+        approvalResourceDataMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalResourceData>()
+                .eq(ApprovalResourceData::getResourceId, resourceId));
     }
 
     /**
