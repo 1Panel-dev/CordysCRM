@@ -110,6 +110,9 @@
         userStore.initApiKeyList();
         initAgentList();
       }
+    },
+    {
+      immediate: true,
     }
   );
 </script>
