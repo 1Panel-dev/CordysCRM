@@ -11,6 +11,7 @@ import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
+import com.github.pagehelper.PageHelper;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractListResponse;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
@@ -18,7 +19,6 @@ import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
 import cn.cordys.crm.system.excel.domain.MergeResult;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.registry.ExportThreadRegistry;
-import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -52,7 +52,9 @@ public class ContractExportService extends BaseExportService {
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
-        var exportList = collectExportList(exportParam);
+        var collectResult = collectExportList(exportParam);
+        var exportList = collectResult.getLeft();
+        var queryCount = collectResult.getRight();
         if (CollectionUtils.isEmpty(exportList)) {
             return MergeResult.builder().dataList(new ArrayList<>()).mergeRegions(new ArrayList<>()).handleCount(0).build();
         }
@@ -66,23 +68,27 @@ public class ContractExportService extends BaseExportService {
                                 StageConfigResponse::getId,
                                 StageConfigResponse::getName
                         ));
-        return parallelBuildMergeResult(taskId, exportParam, dataList, exportFieldParam, stageConfigMap);
+        return parallelBuildMergeResult(taskId, exportParam, dataList, exportFieldParam, stageConfigMap, queryCount);
     }
 
-    private List<ContractListResponse> collectExportList(ExportDTO exportParam) {
+    private Pair<List<ContractListResponse>, Integer> collectExportList(ExportDTO exportParam) {
         var orgId = exportParam.getOrgId();
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
             // 勾选导出：先查询勾选的数据，然后过滤导出权限
             List<ContractListResponse> exportList = extContractMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
-            return filterExportPermission(exportList, orgId);
+            int queryCount = exportList.size();
+            return Pair.of(filterExportPermission(exportList, orgId), queryCount);
         }
         // 全量导出：先查询分页数据，然后过滤导出权限
         var request = (ContractPageRequest) exportParam.getPageRequest();
-        PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        // offsetAsPageNum=true 时，第一个参数是偏移量而非页码，需要手动计算
+        int offset = (request.getCurrent() - 1) * request.getPageSize();
+        PageHelper.startPage(offset, request.getPageSize());
         List<ContractListResponse> exportList = extContractMapper.list(request, orgId, userId, deptDataPermission, false);
-        return filterExportPermission(exportList, orgId);
+        int queryCount = exportList.size();
+        return Pair.of(filterExportPermission(exportList, orgId), queryCount);
     }
 
     /**
@@ -105,11 +111,12 @@ public class ContractExportService extends BaseExportService {
      * @param exportParam      导出参数
      * @param dataList         数据列表
      * @param exportFieldParam 导出字段参数
+     * @param queryCount       原始查询数量（过滤前）
      * @return 合并结果
      */
     private MergeResult parallelBuildMergeResult(String taskId, ExportDTO exportParam,
                                                  List<ContractListResponse> dataList,
-                                                 ExportFieldParam exportFieldParam, Map<String, String> stageConfigMap) {
+                                                 ExportFieldParam exportFieldParam, Map<String, String> stageConfigMap, int queryCount) {
         int size = dataList.size();
         var cacheMap = new ConcurrentHashMap<>();
         List<List<Object>> mergeRowData = new ArrayList<>(size);
@@ -163,7 +170,7 @@ public class ContractExportService extends BaseExportService {
         return MergeResult.builder()
                 .mergeRegions(mergeRegions)
                 .dataList(mergeRowData)
-                .handleCount(size)
+                .handleCount(queryCount)
                 .build();
     }
 

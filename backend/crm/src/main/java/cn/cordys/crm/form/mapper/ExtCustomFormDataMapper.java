@@ -14,6 +14,13 @@ public interface ExtCustomFormDataMapper {
                                           @Param("userId") String userId,
                                           @Param("manageOwn") boolean manageOwn);
 
+    List<CustomFormDataListResponse> listForExport(@Param("request") CustomFormDataPageRequest request,
+                                                   @Param("orgId") String orgId,
+                                                   @Param("userId") String userId,
+                                                   @Param("manageOwn") boolean manageOwn,
+                                                   @Param("limit") int limit,
+                                                   @Param("offset") int offset);
+
     void batchUpdate(@Param("request") BatchUpdateDbParam batchUpdateDbParam);
 
     void deleteFormDataByCustomFormId(@Param("formId") String formId);
