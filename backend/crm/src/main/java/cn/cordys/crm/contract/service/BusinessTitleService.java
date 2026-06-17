@@ -13,10 +13,7 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
-import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.EncryptUtils;
-import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.Translator;
+import cn.cordys.common.util.*;
 import cn.cordys.common.utils.BeanCopyUtils;
 import cn.cordys.crm.approval.constants.ApprovalState;
 import cn.cordys.crm.contract.constants.BusinessTitleType;
@@ -603,7 +600,7 @@ public class BusinessTitleService {
 
     private Map<String, String> buildHeaders(QccThirdConfigRequest qccConfig) {
         long time = System.currentTimeMillis() / 1000;
-        String token = EncryptUtils.md5(qccConfig.getQccAccessKey() + time + qccConfig.getQccSecretKey()).toUpperCase();
+        String token = CodingUtils.md5(qccConfig.getQccAccessKey() + time + qccConfig.getQccSecretKey()).toUpperCase();
         Map<String, String> headers = new HashMap<>();
         headers.put("Token", token);
         headers.put("Timespan", String.valueOf(time));

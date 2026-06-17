@@ -2,7 +2,7 @@ package cn.cordys.crm.integration.sso.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.service.SSRFValidationService;
-import cn.cordys.common.util.EncryptUtils;
+import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.agent.constant.MaxKBApiPaths;
@@ -246,7 +246,7 @@ public class TokenService {
 
         Map<String, String> resultObj = null;
         try {
-            String credentials = EncryptUtils.base64Encoding(config.get("clientId") + ":" + config.get("secret"));
+            String credentials = CodingUtils.base64Encoding(config.get("clientId") + ":" + config.get("secret"));
             String content = qrCodeClient.postExchange(url, "Basic " + credentials, HttpHeaders.AUTHORIZATION, HttpEntity.EMPTY, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
             resultObj = JSON.parseObject(content, new TypeReference<HashMap<String, String>>() {
             });
@@ -359,7 +359,7 @@ public class TokenService {
     public boolean getQcc(String qccAddress, String qccAccessKey, String qccSecretKey) {
 
         long time = System.currentTimeMillis() / 1000;
-        String token = EncryptUtils.md5(qccAccessKey + time + qccSecretKey).toUpperCase();
+        String token = CodingUtils.md5(qccAccessKey + time + qccSecretKey).toUpperCase();
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Token", token);
