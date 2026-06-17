@@ -82,7 +82,7 @@ public class ContractStageController {
 
 
     @PostMapping("/advanced/config")
-    @Operation(summary = "订单流转配置保存")
+    @Operation(summary = "合同流转配置保存")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void advancedConfigAdd(@RequestBody StageAdvancedConfigRequest request) {
         stageAdvancedConfigService.saveAdvancedConfig(request, FormKey.CONTRACT.getKey(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());

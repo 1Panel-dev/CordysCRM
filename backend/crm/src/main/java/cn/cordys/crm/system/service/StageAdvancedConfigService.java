@@ -1,10 +1,14 @@
 package cn.cordys.crm.system.service;
 
+import cn.cordys.aspectj.constants.LogModule;
+import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.stage.CirculationSetting;
 import cn.cordys.common.dto.stage.StageAdvancedConfigRequest;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
@@ -27,6 +31,8 @@ public class StageAdvancedConfigService {
     private ExtStageAdvancedConfigMapper extStageAdvancedConfigMapper;
     @Resource
     private BaseMapper<StageAdvancedConfig> stageAdvanceConfigMapper;
+    @Resource
+    private LogService logService;
 
     public static final Map<String, String> STAGE_CONFIG_TABLE = new HashMap<>(2);
 
@@ -41,6 +47,8 @@ public class StageAdvancedConfigService {
             return;
         }
         extStageAdvancedConfigMapper.update(tableName, request.getCirculationType(), orgId, userId, System.currentTimeMillis());
+
+        List<StageAdvancedConfig> oldConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, moduleType);
 
         List<CirculationSetting> circulationSettings = request.getCirculationSettings();
         List<StageAdvancedConfig> stageAdvanceConfigList = new ArrayList<>();
@@ -60,9 +68,19 @@ public class StageAdvancedConfigService {
             stageAdvanceConfigList.add(stageAdvanceConfig);
         });
 
+        if (CollectionUtils.isNotEmpty(oldConfigs)) {
+            List<String> ids = oldConfigs.stream().map(StageAdvancedConfig::getId).toList();
+            stageAdvanceConfigMapper.deleteByIds(ids);
+        }
+
         if (CollectionUtils.isNotEmpty(stageAdvanceConfigList)) {
             stageAdvanceConfigMapper.batchInsert(stageAdvanceConfigList);
         }
+
+        LogDTO logDTO = new LogDTO(orgId, IDGenerator.nextStr(), userId, LogType.UPDATE, LogModule.SYSTEM_MODULE, Translator.get(moduleType) + Translator.get("advanced_circulation_setting"));
+        logDTO.setOriginalValue(oldConfigs);
+        logDTO.setModifiedValue(stageAdvanceConfigList);
+        logService.add(logDTO);
     }
 
 
