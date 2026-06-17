@@ -526,6 +526,10 @@ public class OrderService {
             response = JSON.parseObject(snapshot.getOrderValue(), OrderGetResponse.class);
         }
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
+            if (Strings.CS.equals(fieldUpdateParam.getFieldId(), "stage") && fieldUpdateParam.getFieldValue() != null) {
+                orderFieldService.setResourceFieldValue(order, "stage", fieldUpdateParam.getFieldValue());
+                continue;
+            }
             if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
                 return;
             }
