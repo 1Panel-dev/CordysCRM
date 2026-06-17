@@ -33,16 +33,6 @@ public class SseController {
 
 
     /**
-     * 模拟向所有客户端广播事件-(测试使用)
-     */
-    @GetMapping("/broadcast")
-    @Operation(summary = "模拟向所有客户端广播事件-(测试使用)")
-    public String broadcast(@RequestParam String userId, @RequestParam String clientId, @RequestParam String message) {
-        sseService.sendToClient(userId, clientId, "SYSTEM_HEARTBEAT: " + message);
-        return "Broadcast: " + message;
-    }
-
-    /**
      * 主动断开客户端连接
      */
     @GetMapping("/close")
