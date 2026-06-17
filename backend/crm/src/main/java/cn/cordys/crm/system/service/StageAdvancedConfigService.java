@@ -6,6 +6,7 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.stage.CirculationSetting;
 import cn.cordys.common.dto.stage.StageAdvancedConfigRequest;
+import cn.cordys.common.dto.stage.Target;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -54,18 +55,22 @@ public class StageAdvancedConfigService {
         List<StageAdvancedConfig> stageAdvanceConfigList = new ArrayList<>();
 
         circulationSettings.forEach(setting -> {
-            StageAdvancedConfig stageAdvanceConfig = new StageAdvancedConfig();
-            stageAdvanceConfig.setId(IDGenerator.nextStr());
-            stageAdvanceConfig.setOriginId(setting.getOriginId());
-            stageAdvanceConfig.setTargetId(setting.getTargetId());
-            stageAdvanceConfig.setEnable(setting.getEnable());
-            stageAdvanceConfig.setFieldConfig(JSON.toJSONString(setting.getCirculationFieldValues()));
-            stageAdvanceConfig.setModuleType(moduleType);
-            stageAdvanceConfig.setCreateTime(System.currentTimeMillis());
-            stageAdvanceConfig.setCreateUser(userId);
-            stageAdvanceConfig.setUpdateTime(System.currentTimeMillis());
-            stageAdvanceConfig.setUpdateUser(userId);
-            stageAdvanceConfigList.add(stageAdvanceConfig);
+            List<Target> targets = setting.getTargets();
+            targets.forEach(target -> {
+                StageAdvancedConfig stageAdvanceConfig = new StageAdvancedConfig();
+                stageAdvanceConfig.setId(IDGenerator.nextStr());
+                stageAdvanceConfig.setOriginId(setting.getOriginId());
+                stageAdvanceConfig.setTargetId(target.getTargetId());
+                stageAdvanceConfig.setEnable(target.getEnable());
+                stageAdvanceConfig.setFieldConfig(JSON.toJSONString(target.getCirculationFieldValues()));
+                stageAdvanceConfig.setModuleType(moduleType);
+                stageAdvanceConfig.setCreateTime(System.currentTimeMillis());
+                stageAdvanceConfig.setCreateUser(userId);
+                stageAdvanceConfig.setUpdateTime(System.currentTimeMillis());
+                stageAdvanceConfig.setUpdateUser(userId);
+                stageAdvanceConfigList.add(stageAdvanceConfig);
+            });
+
         });
 
         if (CollectionUtils.isNotEmpty(oldConfigs)) {

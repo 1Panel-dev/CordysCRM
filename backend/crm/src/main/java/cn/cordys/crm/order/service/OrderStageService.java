@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -69,16 +70,26 @@ public class OrderStageService {
             response.setCirculationType(first.getCirculationType());
         }
         if (CollectionUtils.isNotEmpty(advancedConfigs)) {
+            Map<String, List<StageAdvancedConfig>> originIdMaps = advancedConfigs.stream().collect(Collectors.groupingBy(StageAdvancedConfig::getOriginId));
             List<StageAdvancedConfigResponse> configs = new ArrayList<>();
+            List<Target> targetList = new ArrayList<>();
             advancedConfigs.forEach(config -> {
                 StageAdvancedConfigResponse configResponse = new StageAdvancedConfigResponse();
                 configResponse.setId(config.getId());
                 configResponse.setOriginId(config.getOriginId());
-                configResponse.setTargetId(config.getTargetId());
-                configResponse.setEnable(config.getEnable());
-                List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
-                });
-                configResponse.setCirculationFieldValues(circulationFieldValues);
+                if (originIdMaps.containsKey(config.getOriginId())) {
+                    List<StageAdvancedConfig> targets = originIdMaps.get(config.getOriginId());
+                    targets.forEach(item -> {
+                        Target target = new Target();
+                        target.setTargetId(item.getTargetId());
+                        target.setEnable(item.getEnable());
+                        List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
+                        });
+                        target.setCirculationFieldValues(circulationFieldValues);
+                        targetList.add(target);
+                    });
+                }
+                configResponse.setTargets(targetList);
                 configResponse.setModuleType(config.getModuleType());
                 configs.add(configResponse);
             });

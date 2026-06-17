@@ -11,14 +11,8 @@ public class CirculationSetting {
     @Schema(description = "源id")
     private String originId;
 
-    @Schema(description = "目标id")
-    private String targetId;
-
-    @Schema(description = "是否允许流转")
-    private Boolean enable;
-
-    @Schema(description = "字段配置")
-    private List<CirculationFieldValue> circulationFieldValues;
+    @Schema(description = "源id对应的行目标ids")
+    private List<Target> targets;
 
     @Schema(description = "模块类型(order-订单/contract-合同)")
     private String moduleType;
