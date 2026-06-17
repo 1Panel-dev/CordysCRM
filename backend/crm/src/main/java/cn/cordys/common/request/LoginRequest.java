@@ -57,7 +57,7 @@ public class LoginRequest {
             return RsaUtils.privateDecrypt(username, rsaKey.getPrivateKey());
         } catch (Exception e) {
             // 解密失败，返回原始用户名
-            return username;
+            throw new RuntimeException("解密用户名失败", e);
         }
     }
 
@@ -72,8 +72,7 @@ public class LoginRequest {
             RsaKey rsaKey = RsaUtils.getRsaKey();
             return RsaUtils.privateDecrypt(password, rsaKey.getPrivateKey());
         } catch (Exception e) {
-            // 解密失败，返回原始密码
-            return password;
+            throw new RuntimeException("解密密码失败", e);
         }
     }
 }

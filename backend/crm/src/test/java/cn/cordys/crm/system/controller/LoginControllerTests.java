@@ -1,6 +1,8 @@
 package cn.cordys.crm.system.controller;
 
 
+import cn.cordys.common.util.rsa.RsaKey;
+import cn.cordys.common.util.rsa.RsaUtils;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -35,18 +37,22 @@ public class LoginControllerTests {
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     public void testLogin() throws Exception {
+        RsaKey rsaKey = RsaUtils.getRsaKey();
+        String password = RsaUtils.publicEncrypt("test.login", rsaKey.getPublicKey());
+        String username = RsaUtils.publicEncrypt("test.login@cordys.io", rsaKey.getPublicKey());
+
         // 1. 正常登录
         String login = "/login";
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(login)
                         .content("""
                                 {
-                                  "username": "test.login@cordys.io",
-                                  "password": "test.login",
+                                  "username": "%s",
+                                  "password": "%s",
                                   "authenticate": "LOCAL",
                                   "loginAddress": "LOCAL",
                                   "platform": "LOCAL"
                                 }
-                                """)
+                                """.formatted(username, password))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

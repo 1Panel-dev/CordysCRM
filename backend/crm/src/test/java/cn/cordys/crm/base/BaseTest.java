@@ -7,6 +7,8 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.rsa.RsaKey;
+import cn.cordys.common.util.rsa.RsaUtils;
 import cn.cordys.crm.system.domain.RolePermission;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.mybatis.BaseMapper;
@@ -111,6 +113,10 @@ public abstract class BaseTest {
     }
 
     private AuthInfo initAuthInfo(String username, String password) throws Exception {
+        RsaKey rsaKey = RsaUtils.getRsaKey();
+        password =  RsaUtils.publicEncrypt(password, rsaKey.getPublicKey());
+        username = RsaUtils.publicEncrypt(username, rsaKey.getPublicKey());
+
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/login")
                         .content(String.format("{\"username\":\"%s\",\"password\":\"%s\",\"platform\":\"%s\"}", username, password, DEFAULT_PLATFORM))
                         .contentType(MediaType.APPLICATION_JSON))

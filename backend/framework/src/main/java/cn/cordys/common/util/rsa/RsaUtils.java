@@ -236,7 +236,7 @@ public class RsaUtils {
     }
 
     private static String publicEncrypt(String originalText, RSAPublicKey publicKey) throws Exception {
-        Cipher cipher = Cipher.getInstance(RSA_CIPHER_TRANSFORMATION_OAEP);
+        Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 
         byte[] encryptedData = rsaSplitCodec(cipher, Cipher.ENCRYPT_MODE, originalText.getBytes(CHARSET), publicKey.getModulus().bitLength());
