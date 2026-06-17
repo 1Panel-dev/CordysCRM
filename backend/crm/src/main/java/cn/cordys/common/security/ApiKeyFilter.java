@@ -1,5 +1,6 @@
 package cn.cordys.common.security;
 
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.security.SessionConstants;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -34,14 +35,14 @@ public class ApiKeyFilter extends AnonymousFilter {
     protected boolean onPreHandle(ServletRequest request, ServletResponse response, Object mappedValue) {
         HttpServletRequest httpRequest = WebUtils.toHttp(request);
 
-        // 如果不是 API 密钥请求且用户未认证，允许请求继续
+        // 如果不是 API 密钥请求且用户未认证，允许请求继续:
         if (!ApiKeyHandler.isApiKeyCall(httpRequest) && !SecurityUtils.getSubject().isAuthenticated()) {
             return true;
         }
 
         // 处理 API 密钥认证
         if (!SecurityUtils.getSubject().isAuthenticated()) {
-            String userId = ApiKeyHandler.getUser(httpRequest);
+            String userId = CommonBeanFactory.getUser(httpRequest);
             if (StringUtils.isNotBlank(userId)) {
                 // 使用 API 密钥中的用户 ID 进行认证，密码设置为默认值
                 SecurityUtils.getSubject().login(new UsernamePasswordToken(userId, NO_PASSWORD));
