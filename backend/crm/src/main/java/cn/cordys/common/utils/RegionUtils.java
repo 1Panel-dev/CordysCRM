@@ -75,6 +75,10 @@ public class RegionUtils {
         StringBuilder result = new StringBuilder();
 
         RegionCode matched = findMatch(regionCodes, queue.peek(), nameToCode);
+        // 根级别未匹配时, 递归在子树中查找
+        if (matched == null) {
+            matched = findMatchInTree(regionCodes, queue.peek(), nameToCode);
+        }
         while (matched != null && !queue.isEmpty()) {
             result = new StringBuilder(nameToCode ? matched.getCode() : matched.getName());
             queue.poll();
@@ -86,6 +90,29 @@ public class RegionUtils {
         queue.forEach(result::append);
 
         return result.toString();
+    }
+
+    /**
+     * 递归在整棵树中查找匹配的区域节点
+     */
+    private static RegionCode findMatchInTree(List<RegionCode> list, String value, boolean nameToCode) {
+        if (StringUtils.isBlank(value) || CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        for (RegionCode item : list) {
+            boolean matched = nameToCode ? Strings.CS.equals(item.getName(), value)
+                    : Strings.CS.equals(item.getCode(), value);
+            if (matched) {
+                return item;
+            }
+            if (CollectionUtils.isNotEmpty(item.getChildren())) {
+                RegionCode found = findMatchInTree(item.getChildren(), value, nameToCode);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 
     /**
