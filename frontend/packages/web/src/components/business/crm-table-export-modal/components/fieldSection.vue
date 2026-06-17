@@ -56,3 +56,19 @@
     emit('selectItem', meta);
   };
 </script>
+
+<style scoped lang="less">
+  :deep(.n-checkbox) {
+    display: inline-flex;
+    align-items: center;
+  }
+  :deep(.n-checkbox-box-wrapper) {
+    display: inline-flex;
+    align-items: center;
+  }
+  :deep(.n-checkbox__label) {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+</style>

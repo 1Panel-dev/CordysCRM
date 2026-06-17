@@ -382,36 +382,37 @@
       return isPoolForm ? baseCondition && field.businessKey !== 'owner' : baseCondition;
     });
 
-    const systemFields: FormCreateField[] = [];
-    if (props.formType === FormDesignKeyEnum.OPPORTUNITY_QUOTATION) {
-      systemFields.push({
-        id: 'invalid',
-        businessKey: 'invalid',
-        name: t('common.status'),
-        type: FieldTypeEnum.SELECT,
-        options: quotationStatus as unknown as FormCreateFieldOption[],
-      } as FormCreateField);
-    }
+    const systemFieldMap: Partial<Record<FormDesignKeyEnum, FormCreateField[]>> = {
+      [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: [
+        {
+          id: 'invalid',
+          businessKey: 'invalid',
+          name: t('common.status'),
+          type: FieldTypeEnum.SELECT,
+          options: quotationStatus as unknown as FormCreateFieldOption[],
+        } as FormCreateField,
+      ],
+      [FormDesignKeyEnum.CONTRACT]: [
+        {
+          id: 'stage',
+          businessKey: 'stage',
+          name: t('contract.status'),
+          type: FieldTypeEnum.SELECT,
+          options: contractStageOptions.value,
+        } as FormCreateField,
+      ],
+      [FormDesignKeyEnum.ORDER]: [
+        {
+          id: 'stage',
+          businessKey: 'stage',
+          name: t('order.status'),
+          type: FieldTypeEnum.SELECT,
+          options: orderStageOptions.value,
+        } as FormCreateField,
+      ],
+    };
 
-    if (props.formType === FormDesignKeyEnum.CONTRACT) {
-      systemFields.push({
-        id: 'stage',
-        businessKey: 'stage',
-        name: t('contract.status'),
-        type: FieldTypeEnum.SELECT,
-        options: contractStageOptions.value,
-      } as FormCreateField);
-    }
-
-    if (props.formType === FormDesignKeyEnum.ORDER) {
-      systemFields.push({
-        id: 'stage',
-        businessKey: 'stage',
-        name: t('order.status'),
-        type: FieldTypeEnum.SELECT,
-        options: orderStageOptions.value,
-      } as FormCreateField);
-    }
+    const systemFields = systemFieldMap[props.formType as FormDesignKeyEnum] || [];
 
     return [...customFields, ...systemFields];
   });
