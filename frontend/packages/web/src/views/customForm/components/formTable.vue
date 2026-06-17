@@ -261,7 +261,7 @@
   const formColumns = computed(() => columns.value);
   function searchData(val?: string, refreshId?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, customFormId: customFormId.value });
-    loadList(false, refreshId);
+    loadList(false, refreshId, customFormId.value);
     if (!refreshId) {
       crmTableRef.value?.scrollTo({ top: 0 });
     }
@@ -273,7 +273,7 @@
     advancedOriginalForm.value = originalForm;
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
-    loadList();
+    loadList(false, undefined, customFormId.value);
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
