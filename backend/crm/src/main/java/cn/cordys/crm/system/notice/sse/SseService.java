@@ -46,7 +46,8 @@ public class SseService {
     public Flux<String> addClient(String userId, String clientId) {
         log.info("当前在线用户数: {} ", userClients.size());
 
-        if (StringUtils.isAnyBlank(userId, clientId)) {
+        // 过滤掉默认 admin 用户
+        if (StringUtils.isAnyBlank(userId, clientId) || "admin".equals(userId)) {
             log.info("User ID or Client ID is blank, cannot add client.");
             return null;
         }
