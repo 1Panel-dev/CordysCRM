@@ -1807,7 +1807,7 @@ public class ApprovalFlowService {
         ApprovalNode nodeCriteria = new ApprovalNode();
         nodeCriteria.setFlowVersionId(instance.getFlowVersionId());
         nodeCriteria.setNodeType(ApprovalNodeTypeEnum.START.name());
-        nodeCriteria.setExecuteTime(instance.getExecuteTime());
+        nodeCriteria.setExecuteTime(StringUtils.isNotBlank(instance.getExecuteTime()) ? instance.getExecuteTime() : ExecuteTimingEnum.CREATE.name());
         ApprovalNode start = approvalNodeMapper.selectOne(nodeCriteria);
         List<BaseModuleFieldValue> resourceFvs = formService.compressResourceDetail(instance.getType(), instance.getResourceId());
         return getNextNodeWithExceptionHandler(instance, start.getId(), resourceFvs, currentOrgId, false);
