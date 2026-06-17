@@ -8,10 +8,12 @@ import cn.cordys.crm.system.dto.field.LocationField;
  */
 public class LocationResolver extends AbstractModuleFieldResolver<LocationField> {
 
+    public static final String PCD_D = "detail";
     public static final String PCD = "PCD";
     public static final String PC = "PC";
     public static final String P = "P";
     public static final String C = "C";
+    public static final String CN = "CN";
 
     @Override
     public void validate(LocationField customField, Object value) {
