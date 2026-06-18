@@ -411,29 +411,21 @@ public class OpportunityService {
 
 
     /**
-     * 商机转移
+     * 商机转移 (与商机阶段无关, 都可转移)
+	 * @param request 请求参数
+	 * @param userId 用户ID
+	 * @param orgId 组织ID
      */
     public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
-        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        // 过滤出成功阶段
-        StageConfigResponse successConfig = stageConfigList.stream().filter(config ->
-                Strings.CI.equals(config.getType(), OpportunityStageType.END.name()) && Strings.CI.equals(config.getRate(), "100")
-        ).findFirst().get();
-
-        LambdaQueryWrapper<Opportunity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(Opportunity::getId, request.getIds());
-        wrapper.nq(Opportunity::getStage, successConfig.getId());
-        List<Opportunity> opportunityList = opportunityMapper.selectListByLambda(wrapper);
-        if (CollectionUtils.isEmpty(opportunityList)) {
-            return;
-        }
+        List<Opportunity> opportunityList = opportunityMapper.selectByIds(request.getIds());
+		if (CollectionUtils.isEmpty(opportunityList)) {
+			return;
+		}
         List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
-
-        long nextPos = getNextPos(orgId, stageConfigList.getFirst().getId());
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
         for (int i = 0; i < ids.size(); i++) {
-            batchUpdateMapper.transfer(request.getOwner(), userId, ids.get(i), System.currentTimeMillis(), nextPos + i, stageConfigList.getFirst().getId());
+            batchUpdateMapper.transfer(request.getOwner(), userId, ids.get(i), System.currentTimeMillis());
         }
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);

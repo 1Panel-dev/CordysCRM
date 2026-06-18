@@ -51,12 +51,10 @@ public class OpportunityFollowRecordController {
     @Operation(summary = "商机跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
-        CustomerDataDTO customerData = followUpRecordService.getOpportunityPermission(SessionUtils.getUserId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", customerData);
+        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER");
     }
 
     @GetMapping("/get/{id}")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, resourceId = "{#id}", formType = FormKeyConstants.FOLLOW_RECORD)
     @Operation(summary = "商机跟进记录详情")
     public FollowUpRecordDetailResponse get(@PathVariable String id) {
         return followUpRecordService.get(id, OrganizationContext.getOrganizationId());

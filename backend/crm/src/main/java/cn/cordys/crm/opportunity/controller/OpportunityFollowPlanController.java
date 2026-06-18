@@ -3,8 +3,8 @@ package cn.cordys.crm.opportunity.controller;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
@@ -53,12 +53,11 @@ public class OpportunityFollowPlanController {
     @Operation(summary = "商机跟进计划列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
-        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", null);
+        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER");
     }
 
 
     @GetMapping("/get/{id}")
-    @CsPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, resourceId = "{#id}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "商机跟进计划详情")
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
         return followUpPlanService.get(id, OrganizationContext.getOrganizationId());

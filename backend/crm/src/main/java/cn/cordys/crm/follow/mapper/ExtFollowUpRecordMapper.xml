@@ -80,28 +80,6 @@
             <if test="request.keyword != null and request.keyword != ''">
                 AND content like concat('%', #{request.keyword},'%')
             </if>
-
-            <if test="customerData != null and !customerData.all and customerData.owner">
-                <if test="customerData.userIds != null and customerData.userIds.size() > 0">
-                    AND owner not in
-                    <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
-                        #{userId}
-                    </foreach>
-                </if>
-            </if>
-
-            <if test="customerData != null and !customerData.all and !customerData.owner and !customerData.self">
-                <if test="customerData.userIds != null and customerData.userIds.size() > 0">
-                    AND owner not in
-                    <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
-                        #{userId}
-                    </foreach>
-                </if>
-            </if>
-
-            <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
-                AND owner = #{userId}
-            </if>
         </where>
         ORDER BY follow_time DESC, create_time DESC
     </select>

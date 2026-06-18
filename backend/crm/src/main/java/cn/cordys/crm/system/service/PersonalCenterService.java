@@ -224,8 +224,7 @@ public class PersonalCenterService {
             return PageUtils.setPageInfoWithOption(page, new ArrayList<>(), new HashMap<>());
 
         }
-        List<FollowUpPlanListResponse> planList = extFollowUpPlanMapper.selectList(
-                request, userId, organizationId, null, null, null, resourceTypeList);
+        List<FollowUpPlanListResponse> planList = extFollowUpPlanMapper.selectList(request, userId, organizationId, null, null, resourceTypeList);
 
         // 6. 构建完整数据和选项映射
         List<FollowUpPlanListResponse> enrichedList = followUpPlanService.buildListData(planList, organizationId);
