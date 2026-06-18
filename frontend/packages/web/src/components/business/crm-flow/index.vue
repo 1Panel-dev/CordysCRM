@@ -1,10 +1,11 @@
 <template>
   <div class="crm-flow relative flex h-full w-full">
     <div class="crm-flow__main relative flex-1 overflow-hidden">
+      <!-- canvasFlow 只影响画布展示；右侧表单和保存仍然使用 model 原始数据。 -->
       <FlowCanvas
         ref="flowCanvasRef"
         :readonly="props.readonly"
-        :flow="flow"
+        :flow="props.canvasFlow ?? flow"
         :selection="selection"
         @node-click="handleNodeClick"
         @branch-click="handleBranchClick"
@@ -45,6 +46,7 @@
   }>();
 
   const props = defineProps<{
+    canvasFlow?: FlowSchema;
     rightContentVisible?: (selection: NodeSelectionState) => boolean;
     readonly?: boolean;
   }>();

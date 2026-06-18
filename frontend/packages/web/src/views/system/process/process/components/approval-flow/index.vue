@@ -13,6 +13,7 @@
       v-if="flowTimingTabs.length"
       ref="crmFlowRef"
       v-model:model="flowSchema"
+      :canvas-flow="canvasFlowSchema"
       :readonly="props.readonly"
       :right-content-visible="isRightContentVisible"
       @add-condition-branch="handleAddConditionBranch"
@@ -88,7 +89,12 @@
 
   import { approvalFlowAddNodeGroups, businessTypeOptions, defaultBasicForm } from '@/config/process';
 
-  import { addApprovalConditionBranch, createDefaultFlow, insertFromAnchor } from './flow';
+  import {
+    addApprovalConditionBranch,
+    createDefaultFlow,
+    insertFromAnchor,
+    resolveApprovalActionNodeDescriptionItems,
+  } from './flow';
   import { resolveConditionDescription } from './flow/conditionDescription';
   import { deserializeProcessNodes, serializeFlowNodes } from './flow/transform';
   import useConditionFilterConfig from './flow/useConditionFilterConfig';
@@ -182,6 +188,35 @@
     delete: createDefaultFlow(resolveStartNodeDescription('delete')),
   });
   const flowSchema = ref<FlowSchema>(flowSchemas.value.create);
+
+  // descriptionItems 只是审批人卡片的展示字段，不能直接写回正在编辑的 flowSchema。
+  // 这里派生一份画布专用数据，避免右侧表单更新审批人时触发流程图深层重绘导致画布消失。
+  function createCanvasFlowNodes(nodes: FlowNode[]): FlowNode[] {
+    return nodes.map((node) => {
+      if (node.type === 'condition-group') {
+        return {
+          ...node,
+          branches: node.branches.map((branch) => ({
+            ...branch,
+            children: createCanvasFlowNodes(branch.children),
+          })),
+        };
+      }
+
+      if (isApprovalActionNode(node)) {
+        return {
+          ...node,
+          descriptionItems: resolveApprovalActionNodeDescriptionItems(node),
+        };
+      }
+
+      return { ...node };
+    });
+  }
+
+  const canvasFlowSchema = computed<FlowSchema>(() => ({
+    nodes: createCanvasFlowNodes(flowSchema.value.nodes),
+  }));
 
   const { descriptionContext, loadFilterConfig: loadConditionFilterConfig } = useConditionFilterConfig({
     formType: () => basicConfig.value.formType,
