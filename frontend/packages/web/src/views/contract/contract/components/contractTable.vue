@@ -326,26 +326,6 @@
     formCreateDrawerVisible.value = true;
   }
 
-  function handleDelete(row: ContractItem) {
-    openModal({
-      type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
-      content: t('common.deleteConfirmContent'),
-      positiveText: t('common.confirmDelete'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        try {
-          await deleteContract(row.id);
-          Message.success(t('common.deleteSuccess'));
-          tableRemoveRefreshId.value = row.id;
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
-        }
-      },
-    });
-  }
-
   const showVoidReasonModal = ref(false);
   function handleVoided(row: ContractItem) {
     activeSourceName.value = row.name;
@@ -397,6 +377,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
   } = useApprovalOperation<ContractItem>({
@@ -424,6 +405,26 @@
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CONTRACT,
   });
+
+  function handleDelete(row: ContractItem) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteContract(row.id);
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          tableRemoveRefreshId.value = row.id;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
 
   function handleRevoke(row: ContractItem) {
     revokeByResourceId(row.id, {

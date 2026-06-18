@@ -261,7 +261,7 @@
     };
   }
 
-  const { initApprovalPermission, resolveRowOperation, enableApproval, hasApprovalScopedPermission } =
+  const { initApprovalPermission, resolveRowOperation, enableApproval, deleteExecute, hasApprovalScopedPermission } =
     useApprovalOperation<ContractItem>({
       formType: FormDesignKeyEnum.CONTRACT,
       dataActionMap: createContractDetailActionMap,
@@ -383,12 +383,12 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('common.deleteConfirmContent'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteContract(row.id);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           visible.value = false;
           emit('delete');
         } catch (error) {

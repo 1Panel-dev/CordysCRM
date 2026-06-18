@@ -136,6 +136,7 @@ export interface QuotationQueryParams extends TableQueryParams {
 export interface QuotationItem {
   id: string;
   name: string;
+  approved?: boolean;
   approvalStatus: ProcessStatusEnum;
   invalid: boolean;
   opportunityId: string;

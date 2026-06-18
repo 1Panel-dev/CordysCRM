@@ -61,6 +61,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   const statusPermissionMap = ref<Map<ProcessStatusEnum, Set<string>>>(new Map());
 
   const enableApproval = ref(false);
+  const deleteExecute = ref(false);
 
   function getApprovalStatus(row: Row) {
     if (!row) {
@@ -336,12 +337,15 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
       if (result) {
         approvalPermissionsDetail.value = result;
         enableApproval.value = result.enable;
+        deleteExecute.value = Boolean(result.deleteExecute);
         statusPermissionMap.value = buildStatusPermissionMap(result.statusPermissions);
       } else {
         approvalPermissionsDetail.value = result;
         enableApproval.value = false;
+        deleteExecute.value = false;
       }
     } catch (error) {
+      deleteExecute.value = false;
       // eslint-disable-next-line no-console
       console.log(error);
     }
@@ -359,5 +363,6 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     getApprovalStatus,
     getBizStatus,
     enableApproval,
+    deleteExecute,
   };
 }

@@ -1439,12 +1439,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     isContinue: boolean,
     callback?: (_isContinue: boolean, res: any) => void,
     noReset = false,
-    isReview = false
+    isReview = false,
+    extraParams: Record<string, any> = {}
   ) {
     try {
       loading.value = true;
       const params: Record<string, any> = {
         ...props.otherSaveParams?.value,
+        ...extraParams,
         moduleFields: [],
         customFormId: customFormConfig.value?.id,
         id: props.sourceId?.value,

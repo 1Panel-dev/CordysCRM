@@ -216,19 +216,51 @@
     ],
   };
 
+  const invoiceDataActionMap = {
+    edit: {
+      label: t('common.edit'),
+      key: 'edit',
+      permission: ['CONTRACT_INVOICE:UPDATE'],
+    },
+    delete: {
+      label: t('common.delete'),
+      key: 'delete',
+      permission: ['CONTRACT_INVOICE:DELETE'],
+    },
+  };
+
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    deleteExecute,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+  } = useApprovalOperation<ContractInvoiceItem>({
+    formType: FormDesignKeyEnum.INVOICE,
+    dataActionMap: invoiceDataActionMap,
+    specialActionFilter: (_row, actionKeys) => {
+      return props.readonly ? [] : actionKeys;
+    },
+  });
+
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: FormDesignKeyEnum.INVOICE,
+  });
+
   // 批量删除
   function handleBatchDelete() {
     openModal({
       type: 'error',
       title: t('invoice.batchDeleteTitle', { count: checkedRowKeys.value.length }),
       content: t('invoice.batchDelete'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await batchDeleteInvoiced(checkedRowKeys.value as string[]);
           tableRefreshId.value += 1;
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -260,12 +292,12 @@
       content: approvalEnable
         ? deleteInvoiceContentMap[row.approvalStatus]
         : deleteInvoiceContentMap[ProcessStatusEnum.NONE],
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteInvoiced(row.id);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -280,37 +312,6 @@
     needInitDetail.value = true;
     formCreateDrawerVisible.value = true;
   }
-
-  const invoiceDataActionMap = {
-    edit: {
-      label: t('common.edit'),
-      key: 'edit',
-      permission: ['CONTRACT_INVOICE:UPDATE'],
-    },
-    delete: {
-      label: t('common.delete'),
-      key: 'delete',
-      permission: ['CONTRACT_INVOICE:DELETE'],
-    },
-  };
-
-  const {
-    initApprovalPermission,
-    resolveRowOperation,
-    enableApproval,
-    hasApprovalScopedPermission,
-    getApprovalActionTip,
-  } = useApprovalOperation<ContractInvoiceItem>({
-    formType: FormDesignKeyEnum.INVOICE,
-    dataActionMap: invoiceDataActionMap,
-    specialActionFilter: (_row, actionKeys) => {
-      return props.readonly ? [] : actionKeys;
-    },
-  });
-
-  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
-    formKey: FormDesignKeyEnum.INVOICE,
-  });
 
   function showDetail(row: ContractInvoiceItem) {
     if (row && !hasApprovalScopedPermission(row, ['CONTRACT_INVOICE:READ'])) {

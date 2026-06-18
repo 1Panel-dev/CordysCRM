@@ -11,7 +11,7 @@ export interface DialogOptionsConfig extends DialogOptions {
   mode?: DialogMode;
   size?: DialogSize;
   hideCancel?: boolean;
-  onPositiveClick: () => Promise<void>;
+  onPositiveClick: () => Promise<void | false> | void | false;
   [key: string]: any;
 }
 
@@ -51,7 +51,7 @@ export default function useModal() {
               dialogReactive.negativeButtonProps.disabled = true;
             }
             if (options.onPositiveClick) {
-              await options.onPositiveClick();
+              return await options.onPositiveClick();
             }
           } catch (error) {
             // eslint-disable-next-line no-console
@@ -67,6 +67,7 @@ export default function useModal() {
           return !dialogReactive.loading;
         },
       } as DialogOptionsConfig);
+      return dialogReactive;
     },
   };
 }
