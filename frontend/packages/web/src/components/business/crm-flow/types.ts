@@ -2,6 +2,11 @@ export type FlowNodeType = 'start' | 'action' | 'condition-group' | 'end';
 
 export type FlowActionType = 'approval';
 
+export interface FlowNodeDescriptionItem {
+  id: string;
+  name: string;
+}
+
 export interface FlowSchema {
   nodes: FlowNode[];
 }
@@ -27,6 +32,7 @@ export interface ActionNode extends BaseFlowNode {
   type: 'action';
   actionType: FlowActionType;
   description?: string;
+  descriptionItems?: FlowNodeDescriptionItem[];
 }
 
 export interface ConditionBranch {

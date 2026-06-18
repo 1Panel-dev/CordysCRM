@@ -216,9 +216,11 @@
       }
 
       const { clientWidth, clientHeight } = resizeTarget;
-      if (clientWidth && clientHeight) {
-        graph.resize(clientWidth, clientHeight);
+      // 抽屉/侧栏动画期间可能读到 0 尺寸；此时重绘 X6 会导致画布内容偶发消失。
+      if (!clientWidth || !clientHeight) {
+        return;
       }
+      graph.resize(clientWidth, clientHeight);
       renderFlow();
       if (fitToContent) {
         fitCanvasToContent();

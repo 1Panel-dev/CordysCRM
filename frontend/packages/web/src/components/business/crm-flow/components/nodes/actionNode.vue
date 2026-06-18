@@ -3,6 +3,7 @@
     :name="nodeData.name ?? ''"
     :number="nodeData.number"
     :description="nodeData.description"
+    :description-items="nodeData.descriptionItems"
     :show-content="nodeData.showContent ?? true"
     :selected="Boolean(nodeData.selected)"
     :invalid="Boolean(nodeData.invalid)"
@@ -22,6 +23,7 @@
 
   import useX6NodeData from '../../composables/useX6NodeData';
   import { renameFlowByGraphData } from '../../graph/renameRegistry';
+  import type { FlowNodeDescriptionItem } from '../../types';
   import type { Node } from '@antv/x6';
 
   defineOptions({
@@ -54,6 +56,7 @@
     name?: string;
     number?: string;
     description?: string;
+    descriptionItems?: FlowNodeDescriptionItem[];
     actionType?: string;
     showContent?: boolean;
     selected?: boolean;

@@ -333,7 +333,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, onMounted, ref, watch } from 'vue';
   import {
     type FormRules,
     NForm,
@@ -374,6 +374,7 @@
     resolveApprovalActionNodeDescription,
   } from '@/config/process';
 
+  import { resolveApprovalActionNodeDescriptionItems } from '../../flow';
   import { canClearInvalidState, clearInvalidState, unlockInvalidClearState } from '../../flow/validation';
 
   defineOptions({
@@ -741,6 +742,14 @@
     nodeConfig.value.description = resolveApprovalActionNodeDescription(nodeConfig.value.approvalType, type);
     clearCurrentNodeInvalid();
   }
+
+  watch(
+    () => [nodeConfig.value.approvalType, nodeConfig.value.approverType, nodeConfig.value.approverSelectedList],
+    () => {
+      nodeConfig.value.descriptionItems = resolveApprovalActionNodeDescriptionItems(nodeConfig.value);
+    },
+    { deep: true, immediate: true }
+  );
 
   function handleCcTypeUpdate(type: ApproverTypeEnum | null) {
     if (props.readonly) {

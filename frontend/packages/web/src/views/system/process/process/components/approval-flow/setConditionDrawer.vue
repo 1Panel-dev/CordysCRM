@@ -64,13 +64,10 @@
   import { FormInst, NForm, NFormItem, NInput, NSelect, NSpin } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
   import type { ApprovalConditionBranch } from '@lib/shared/models/system/process';
 
-  import { operatorOptionsMap } from '@/components/pure/crm-advance-filter';
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import {
     type ConditionsItem,
@@ -79,14 +76,9 @@
     filterOptionKeyMap,
   } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import { getFormConfigApiMap, multipleValueTypeList } from '@/components/business/crm-form-create/config';
-  import type { FormCreateField } from '@/components/business/crm-form-create/types';
+  import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
 
-  import { getContractStatusConfig, getOrderStatusConfig } from '@/api/modules';
-  import { baseFilterConfigList } from '@/config/clue';
-  import { quotationStatus } from '@/config/opportunity';
-  import { processStatusOptions } from '@/config/process';
-  import useFormCreateFilter from '@/hooks/useFormCreateAdvanceFilter';
+  import useConditionFilterConfig from './flow/useConditionFilterConfig';
 
   defineOptions({
     name: 'SetConditionDrawer',
@@ -116,17 +108,13 @@
   });
 
   const { t } = useI18n();
-  const { getFilterListConfig } = useFormCreateFilter();
+  const { loading, filterConfigList, customFieldsFilterConfig, loadFilterConfig } = useConditionFilterConfig({
+    formType: () => props.formType,
+    optionMap: () => props.optionMap,
+  });
 
   const formRef = ref<FormInst | null>(null);
   const filterContentRef = ref<InstanceType<typeof FilterContent> | null>(null);
-
-  const loading = ref(false);
-
-  const filterConfigList = ref<FilterFormItem[]>([]);
-  const customFieldsFilterConfig = ref<FilterFormItem[]>([]);
-
-  const businessStageConfig = ref<OpportunityStageConfig | null>(null);
 
   function createDefaultFormModel(): FilterForm {
     return {
@@ -154,13 +142,19 @@
           type: item.type ?? FieldTypeEnum.INPUT,
         })) ?? [];
 
-    const configMap = new Map(
-      [...filterConfigList.value, ...customFieldsFilterConfig.value].map((item) => [item.dataIndex, item])
-    );
+    const configMap = [...filterConfigList.value, ...customFieldsFilterConfig.value].reduce((map, item) => {
+      if (item.dataIndex) {
+        map.set(item.dataIndex, item);
+      }
+      if (item.id) {
+        map.set(item.id, item);
+      }
+      return map;
+    }, new Map<string, FilterFormItem>());
 
     return sourceList.map((sourceItem): FilterFormItem => {
       const item = cloneDeep(sourceItem) as FilterFormItem;
-      const configItem = configMap.get(item.dataIndex);
+      const configItem = item.dataIndex ? configMap.get(item.dataIndex) : undefined;
       const optionKey = filterOptionKeyMap[item.type];
 
       if (optionKey && item.dataIndex) {
@@ -172,6 +166,8 @@
       return {
         ...cloneDeep(configItem),
         ...item,
+        dataIndex: configItem?.dataIndex ?? item.dataIndex,
+        type: configItem?.type ?? item.type,
       };
     });
   }
@@ -187,200 +183,6 @@
           }
         : createDefaultFormModel(),
     };
-  }
-
-  function createDepartmentFilterItem(): FilterFormItem {
-    return {
-      title: t('opportunity.department'),
-      dataIndex: 'departmentId',
-      type: FieldTypeEnum.TREE_SELECT,
-      treeSelectProps: {
-        labelField: 'name',
-        keyField: 'id',
-        multiple: true,
-        clearFilterAfterSelect: false,
-        checkable: true,
-        showContainChildModule: true,
-      },
-    };
-  }
-
-  function createApprovalStatusFilterItem(title: string): FilterFormItem {
-    return {
-      title,
-      dataIndex: 'approvalStatus',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options: processStatusOptions,
-      },
-    };
-  }
-
-  const fieldChangedOperatorOption = {
-    label: 'advanceFilter.operator.newNotEqualOld',
-    value: OperatorEnum.NEW_NOT_EQUALS_OLD,
-  };
-
-  function appendFieldChangedOperator(item: FilterFormItem): FilterFormItem {
-    const operatorOptions = item.operatorOption?.length ? item.operatorOption : operatorOptionsMap[item.type] ?? [];
-    return {
-      ...item,
-      operatorOption: [
-        ...operatorOptions,
-        ...(!operatorOptions.some((option) => option.value === OperatorEnum.NEW_NOT_EQUALS_OLD)
-          ? [fieldChangedOperatorOption]
-          : []),
-      ],
-    };
-  }
-
-  function createOrderStatusFilterItem(): FilterFormItem {
-    return {
-      title: t('order.status'),
-      dataIndex: 'stage',
-      type: FieldTypeEnum.SELECT_MULTIPLE,
-      selectProps: {
-        options:
-          businessStageConfig.value?.stageConfigList.map((item) => ({
-            label: item.name,
-            value: item.id,
-          })) ?? [],
-      },
-    };
-  }
-
-  const formTypeConfigMap: Partial<Record<FormDesignKeyEnum, () => FilterFormItem[]>> = {
-    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: () => [
-      {
-        title: t('common.status'),
-        dataIndex: 'invalid',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        selectProps: {
-          options: quotationStatus as any,
-        },
-      },
-      createApprovalStatusFilterItem(t('common.approvalStatus')),
-      createDepartmentFilterItem(),
-      ...baseFilterConfigList,
-    ],
-
-    [FormDesignKeyEnum.CONTRACT]: () => [
-      createDepartmentFilterItem(),
-      {
-        title: t('contract.status'),
-        dataIndex: 'stage',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
-        selectProps: {
-          options:
-            businessStageConfig.value?.stageConfigList.map((item) => ({
-              label: item.name,
-              value: item.id,
-            })) ?? [],
-        },
-      },
-      createApprovalStatusFilterItem(t('contract.approvalStatus')),
-      ...baseFilterConfigList,
-    ],
-
-    [FormDesignKeyEnum.INVOICE]: () => [
-      createDepartmentFilterItem(),
-      createApprovalStatusFilterItem(t('contract.approvalStatus')),
-      ...baseFilterConfigList,
-    ],
-
-    [FormDesignKeyEnum.ORDER]: () => [
-      createDepartmentFilterItem(),
-      createOrderStatusFilterItem(),
-      createApprovalStatusFilterItem(t('common.approvalStatus')),
-      ...baseFilterConfigList,
-    ],
-  };
-
-  function createSystemFilterConfigList(): FilterFormItem[] {
-    return formTypeConfigMap[props.formType as FormDesignKeyEnum]?.() ?? [...baseFilterConfigList];
-  }
-
-  function getFieldConfigProps(field: FormCreateField) {
-    if (
-      [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX].includes(
-        field.type
-      )
-    ) {
-      return {
-        selectProps: {
-          options: field.options,
-          multiple: true,
-        },
-      };
-    }
-
-    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
-      return {
-        dataSourceProps: {
-          dataSourceType: field.dataSourceType,
-          maxTagCount: 'responsive',
-        },
-      };
-    }
-
-    return {};
-  }
-
-  function createSubTableFilterConfigList(fields: FormCreateField[] = []) {
-    return fields.flatMap((field) => {
-      if (![FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) || !field.subFields?.length) {
-        return [];
-      }
-
-      return field.subFields
-        .filter(
-          (subField) =>
-            ![
-              FieldTypeEnum.TEXTAREA,
-              FieldTypeEnum.PICTURE,
-              FieldTypeEnum.DIVIDER,
-              FieldTypeEnum.SUB_PRICE,
-              FieldTypeEnum.SUB_PRODUCT,
-            ].includes(subField.type)
-        )
-        .map((subField) => ({
-          title: `${field.name}.${subField.name}`,
-          dataIndex: field.resourceFieldId?.length ? field.id : field.businessKey || field.id,
-          type: subField.type,
-          ...getFieldConfigProps(subField),
-        })) as FilterFormItem[];
-    });
-  }
-
-  async function loadFilterConfig() {
-    loading.value = true;
-
-    try {
-      const api = getFormConfigApiMap[props.formType as FormDesignKeyEnum];
-      const stageConfigApiMap: Partial<Record<FormDesignKeyEnum, () => Promise<OpportunityStageConfig>>> = {
-        [FormDesignKeyEnum.CONTRACT]: getContractStatusConfig,
-        [FormDesignKeyEnum.ORDER]: getOrderStatusConfig,
-      };
-      const stageConfigApi = stageConfigApiMap[props.formType as FormDesignKeyEnum];
-
-      const [stageConfig, formConfig] = await Promise.all([stageConfigApi?.() ?? Promise.resolve(null), api()]);
-
-      businessStageConfig.value = stageConfig;
-
-      filterConfigList.value = createSystemFilterConfigList().map(appendFieldChangedOperator);
-
-      customFieldsFilterConfig.value = [
-        ...getFilterListConfig(formConfig),
-        ...createSubTableFilterConfigList(formConfig.fields),
-      ].map(appendFieldChangedOperator);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-      filterConfigList.value = [];
-      customFieldsFilterConfig.value = [];
-    } finally {
-      loading.value = false;
-    }
   }
 
   async function initialize() {

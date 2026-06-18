@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue';
+  import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
   import { ApprovalTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -88,8 +88,10 @@
 
   import { approvalFlowAddNodeGroups, businessTypeOptions, defaultBasicForm } from '@/config/process';
 
-  import { addApprovalConditionBranch, createDefaultFlow, insertFromAnchor, resolveConditionDescription } from './flow';
+  import { addApprovalConditionBranch, createDefaultFlow, insertFromAnchor } from './flow';
+  import { resolveConditionDescription } from './flow/conditionDescription';
   import { deserializeProcessNodes, serializeFlowNodes } from './flow/transform';
+  import useConditionFilterConfig from './flow/useConditionFilterConfig';
   import { validateFlowNodes as validateFlowSchemaNodes } from './flow/validation';
 
   defineOptions({
@@ -181,6 +183,36 @@
   });
   const flowSchema = ref<FlowSchema>(flowSchemas.value.create);
 
+  const { descriptionContext, loadFilterConfig: loadConditionFilterConfig } = useConditionFilterConfig({
+    formType: () => basicConfig.value.formType,
+    optionMap: () => props.optionMap,
+  });
+
+  // 递归找所有 if 条件分支，然后重新生成卡片描述
+  function updateConditionDescription(nodes: FlowNode[]) {
+    nodes.forEach((node) => {
+      if (node.type !== 'condition-group') {
+        return;
+      }
+
+      node.branches.forEach((branch) => {
+        if (!branch.isElse) {
+          (branch as ApprovalConditionBranch).description = resolveConditionDescription(
+            (branch as ApprovalConditionBranch).conditionConfig,
+            descriptionContext.value
+          );
+        }
+        updateConditionDescription(branch.children);
+      });
+    });
+  }
+
+  function refreshConditionDescriptions() {
+    flowTimingConfig.forEach((timing) => {
+      updateConditionDescription(flowSchemas.value[timing.value].nodes);
+    });
+  }
+
   function getTimingProcessData() {
     return flowTimingConfig.reduce((data, config) => {
       const flowData = serializeFlowNodes(flowSchemas.value[config.value].nodes);
@@ -207,6 +239,7 @@
         ? deserializeProcessNodes(nodes, links, resolveStartNodeDescription(config.value))
         : createDefaultFlow(resolveStartNodeDescription(config.value));
     });
+    refreshConditionDescriptions();
     flowSchema.value = flowSchemas.value[activeFlowTiming.value];
     nextTick(() => {
       refreshCanvas(true);
@@ -280,6 +313,15 @@
     setConditionDrawerVisible.value = true;
   }
 
+  watch(setConditionDrawerVisible, (visible) => {
+    if (visible) {
+      return;
+    }
+    nextTick(() => {
+      refreshCanvas();
+    });
+  });
+
   function handleBranchClick(payload: BranchClickPayload) {
     const location = findBranchLocation<ApprovalConditionBranch>(flowSchema.value.nodes, payload.branchId);
     if (!location || location.group.id !== payload.groupId || location.branch.isElse) {
@@ -321,7 +363,10 @@
 
     activeConditionBranch.value.name = payload.name;
     activeConditionBranch.value.conditionConfig = payload.conditionConfig;
-    activeConditionBranch.value.description = resolveConditionDescription(payload.conditionConfig);
+    activeConditionBranch.value.description = resolveConditionDescription(
+      payload.conditionConfig,
+      descriptionContext.value
+    );
     activeConditionBranch.value.invalid = false;
     updateConditionBranchSort(activeConditionBranch.value, payload.sort);
   }
@@ -390,6 +435,20 @@
       resetToDefaultFlow();
     }
   );
+
+  watch(
+    () => props.optionMap,
+    () => {
+      refreshConditionDescriptions();
+    },
+    {
+      deep: true,
+    }
+  );
+
+  onMounted(() => {
+    loadConditionFilterConfig().then(refreshConditionDescriptions);
+  });
 
   watch(
     flowSchema,
