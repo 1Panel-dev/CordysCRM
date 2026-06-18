@@ -508,6 +508,7 @@ public class ContractService implements ApprovalResourceHandler {
                 response.setFirstApproved(firstNodeApproved.get(response.getId()));
             }
         }
+        response.setApproved(contract.getApproved());
         return response;
     }
 

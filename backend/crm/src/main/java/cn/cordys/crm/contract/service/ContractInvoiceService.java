@@ -18,6 +18,7 @@ import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -407,6 +408,10 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
      * @return 合同详情
      */
     public ContractInvoiceGetResponse getSnapshot(String id, String orgId) {
+        ContractInvoice contractInvoice = contractInvoiceMapper.selectByPrimaryKey(id);
+        if (contractInvoice == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
         LambdaQueryWrapper<ContractInvoiceSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
         ContractInvoiceSnapshot snapshot = snapshotBaseMapper.selectListByLambda(wrapper).stream().findFirst().orElse(null);
@@ -416,6 +421,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                 Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
                 getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
             }
+            getResponse.setApproved(contractInvoice.getApproved());
             return getResponse;
         }
         return null;

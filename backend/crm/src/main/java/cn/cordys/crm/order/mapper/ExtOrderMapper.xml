@@ -16,6 +16,7 @@
         so.amount,
         so.stage,
         so.approval_status,
+        so.approved,
         so.`owner`,
         so.create_user,
         so.create_time,

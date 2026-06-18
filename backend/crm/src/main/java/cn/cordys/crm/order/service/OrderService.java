@@ -492,6 +492,7 @@ public class OrderService implements ApprovalResourceHandler {
                 response.setFirstApproved(firstNodeApproved.get(response.getId()));
             }
         }
+        response.setApproved(order.getApproved());
         return response;
     }
 
