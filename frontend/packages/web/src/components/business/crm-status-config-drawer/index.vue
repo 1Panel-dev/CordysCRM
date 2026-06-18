@@ -306,13 +306,6 @@
                       : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
                   "
                 />
-                <n-select
-                  v-else-if="item.fieldProps.type === FieldTypeEnum.APPROVAL_STATUS"
-                  v-model:value="item.fieldValue"
-                  clearable
-                  :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
-                  :placeholder="t('common.pleaseSelect')"
-                />
                 <n-input
                   v-else
                   v-model:value="item.fieldValue"

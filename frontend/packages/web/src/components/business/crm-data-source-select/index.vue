@@ -98,6 +98,7 @@
     [FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD]: 'crmFormCreate.drawer.contractPaymentRecord',
     [FieldDataSourceTypeEnum.BUSINESS_TITLE]: 'crmFormCreate.drawer.businessTitle',
     [FieldDataSourceTypeEnum.ORDER]: 'crmFormCreate.drawer.order',
+    [FieldDataSourceTypeEnum.INVOICE]: 'crmFormCreate.drawer.invoice',
   };
 
   const customDataSourceForms = ref<CustomFormItem[]>([]);

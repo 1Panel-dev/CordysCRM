@@ -5,6 +5,7 @@
     :width="drawerWidth"
     :show-mask="props.showMask"
     :placement="props.placement"
+    :auto-focus="false"
     class="crm-drawer"
     @after-leave="emit('cancel')"
     @esc="emit('esc')"

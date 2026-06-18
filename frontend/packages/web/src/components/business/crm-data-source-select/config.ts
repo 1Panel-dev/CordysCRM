@@ -10,6 +10,7 @@ import {
   getFieldContractPaymentPlanList,
   getFieldContractPaymentRecordList,
   getFieldCustomerList,
+  getFieldInvoiceList,
   getFieldOpportunityList,
   getFieldOrderList,
   getFieldPriceList,
@@ -33,6 +34,7 @@ export const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<C
   [FieldDataSourceTypeEnum.QUOTATION]: getFieldQuotationList,
   [FieldDataSourceTypeEnum.BUSINESS_TITLE]: getFieldBusinessTitleList,
   [FieldDataSourceTypeEnum.ORDER]: getFieldOrderList,
+  [FieldDataSourceTypeEnum.INVOICE]: getFieldInvoiceList,
 };
 export const formKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {
   [FieldDataSourceTypeEnum.BUSINESS]: FormDesignKeyEnum.BUSINESS,
@@ -48,4 +50,5 @@ export const formKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEn
   [FieldDataSourceTypeEnum.BUSINESS_TITLE]: FormDesignKeyEnum.BUSINESS_TITLE,
   [FieldDataSourceTypeEnum.ORDER]: FormDesignKeyEnum.ORDER,
   [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: FormDesignKeyEnum.CUSTOMER,
+  [FieldDataSourceTypeEnum.INVOICE]: FormDesignKeyEnum.INVOICE,
 };

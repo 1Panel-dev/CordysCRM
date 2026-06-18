@@ -4,6 +4,7 @@
     v-model:show="showModal"
     :show-icon="props.showIcon"
     :preset="props.preset"
+    :auto-focus="false"
     :class="`crm-modal crm-form-modal crm-modal-${props.size || 'medium'}`"
     :style="{ width: props.width ? props.width + 'px' : undefined }"
     @positive-click="positiveClick"

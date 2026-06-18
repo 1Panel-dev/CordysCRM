@@ -3,7 +3,6 @@
     v-model:show="show"
     :title="t('common.export')"
     :width="800"
-    :auto-focus="false"
     :show-back="false"
     closable
     :ok-text="t('common.export')"

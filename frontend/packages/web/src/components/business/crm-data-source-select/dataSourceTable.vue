@@ -222,6 +222,15 @@
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: {},
     [FieldDataSourceTypeEnum.USER_OPTIONS]: {},
     [FieldDataSourceTypeEnum.BUSINESS_TITLE]: {},
+    [FieldDataSourceTypeEnum.INVOICE]: {
+      approvalStatus: (row: ContractItem) =>
+        h(CrmApprovalPopover, {
+          status: row.approvalStatus,
+          formKey: formKey.value as ApprovalPopoverFormKeyType,
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          showMore: false,
+        }),
+    },
   };
 
   const stageConfig = ref<OpportunityStageConfig>();
@@ -293,6 +302,7 @@
       contractId: 'contractName',
       paymentPlanId: 'paymentPlanName',
       opportunityId: 'opportunityName',
+      businessTitleId: 'businessTitleName',
     };
     return keyMap[columnKey] || columnKey;
   }

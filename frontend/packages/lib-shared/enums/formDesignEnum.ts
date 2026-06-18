@@ -77,8 +77,6 @@ export enum FieldTypeEnum {
   SUB_PRODUCT = 'SUB_PRODUCT',
   SUB_PRICE = 'SUB_PRICE',
   INPUT_NUMBER_WITH_UNIT = 'INPUT_NUMBER_WITH_UNIT', // 数值带单位组件，用于到到期提醒等场景X年、月、天、小时
-  // 系统内置特殊字段类型
-  APPROVAL_STATUS = 'APPROVAL_STATUS', // 审批状态
 }
 
 export enum FieldRuleEnum {
@@ -102,6 +100,7 @@ export enum FieldDataSourceTypeEnum {
   CONTRACT_PAYMENT_RECORD = 'CONTRACT_PAYMENT_RECORD', // 回款记录
   BUSINESS_TITLE = 'BUSINESS_TITLE', // 工商抬头
   ORDER = 'ORDER', // 订单
+  INVOICE = 'INVOICE', // 发票
 }
 
 export enum FormLinkScenarioEnum {

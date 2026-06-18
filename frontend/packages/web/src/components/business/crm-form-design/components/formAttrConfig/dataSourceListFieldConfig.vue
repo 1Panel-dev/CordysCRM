@@ -320,6 +320,7 @@
     [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: 'contractPaymentRecordName',
     [FormDesignKeyEnum.PRICE]: 'priceName',
     [FormDesignKeyEnum.BUSINESS_TITLE]: 'name',
+    [FormDesignKeyEnum.INVOICE]: 'invoiceName',
     [FormDesignKeyEnum.CUSTOM_FORM]: 'customFormDataName',
   };
 

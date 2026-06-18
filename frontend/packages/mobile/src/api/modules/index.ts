@@ -382,6 +382,7 @@ export const {
   getFieldCustomerList,
   getFieldOpportunityList,
   getFieldContractList,
+  getFieldInvoiceList,
   getFieldProductList,
   checkRepeat,
   uploadTempFile,

@@ -206,6 +206,11 @@ export const fullFormSettingList = [
     formKey: FormDesignKeyEnum.ORDER,
   },
   {
+    label: t('module.invoiceApproval'),
+    dataSource: FieldDataSourceTypeEnum.INVOICE,
+    formKey: FormDesignKeyEnum.INVOICE,
+  },
+  {
     label: t('module.businessTitle'),
     dataSource: FieldDataSourceTypeEnum.BUSINESS_TITLE,
   },
@@ -990,4 +995,5 @@ export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum,
   [FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD]: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
   [FieldDataSourceTypeEnum.QUOTATION]: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
   [FieldDataSourceTypeEnum.ORDER]: FormDesignKeyEnum.ORDER,
+  [FieldDataSourceTypeEnum.INVOICE]: FormDesignKeyEnum.INVOICE,
 };
