@@ -43,4 +43,7 @@ public class ContractInvoice extends BaseModel {
 
 	@Schema(description = "组织id")
 	private String organizationId;
+
+	@Schema(description = "是否审批通过过")
+	private Boolean approved;
 }

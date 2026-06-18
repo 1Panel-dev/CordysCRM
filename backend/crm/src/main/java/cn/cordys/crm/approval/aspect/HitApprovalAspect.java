@@ -4,19 +4,17 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
-import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
-import cn.cordys.crm.approval.domain.ApprovalResourceData;
+import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.system.service.SysOperationLogService;
-import cn.cordys.mybatis.BaseMapper;
-import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,12 +52,15 @@ public class HitApprovalAspect {
 	private final ExpressionParser parser = new SpelExpressionParser();
 	private final StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
 
+	/**
+	 * 跳过审批检查的标记，用于审批通过后调用实际删除逻辑时避免再次触发审批
+	 */
+	private static final ThreadLocal<Boolean> SKIP_APPROVAL = new ThreadLocal<>();
+
 	@Resource
 	private ApprovalFlowService approvalFlowService;
 	@Resource
 	private ApprovalResourceService approvalResourceService;
-	@Resource
-	private BaseMapper<ApprovalResourceData> approvalResourceDataMapper;
 	@Resource
 	private SysOperationLogService sysOperationLogService;
 
@@ -70,16 +71,21 @@ public class HitApprovalAspect {
 
 	@Around(value = "pointcut()")
 	public Object handleHitApproval(ProceedingJoinPoint joinPoint) throws Throwable {
-		// 先执行方法
-		Object retValue = joinPoint.proceed();
-
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 		Method method = signature.getMethod();
 		HitApproval annotation = method.getAnnotation(HitApproval.class);
 
-		if (annotation == null) {
-			return retValue;
+		if (annotation == null || Boolean.TRUE.equals(SKIP_APPROVAL.get())) {
+			return joinPoint.proceed();
 		}
+
+		// DELETE 时机：先检查是否命中审批流，命中则不执行删除逻辑
+		if (annotation.executeType() == ExecuteTimingEnum.DELETE) {
+			return handleDeleteApproval(joinPoint, annotation, method);
+		}
+
+		// CREATE/UPDATE 时机：先执行方法，再检查审批
+		Object retValue = joinPoint.proceed();
 
 		try {
 			String resourceId = resolveResourceId(method, joinPoint.getArgs(), annotation.resourceId(), retValue, annotation.executeType());
@@ -103,18 +109,77 @@ public class HitApprovalAspect {
 			boolean hit = checkHitApprovalFlow(annotation.formKey(), annotation.executeType(), organizationId);
 
 			if (hit) {
-				// 命中审批流, 修改业务资源审批状态为待提审
-				approvalResourceService.clearResourceApprovalDetail(resourceId);
-				approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), operator, OrganizationContext.getOrganizationId());
+				boolean isCreateExecuteTime = annotation.executeType() == ExecuteTimingEnum.CREATE;
+				if (annotation.executeType() == ExecuteTimingEnum.UPDATE) {
+					// UPDATE 时机：检查资源是否历史上审批通过过，如果没有审批通过过则视为CREATE时机
+					isCreateExecuteTime = !approvalResourceService.isResourceApproved(annotation.formKey(), resourceId);
+				}
 
-				// 保存审批过程中的中间数据（执行时机和修改的字段列表）
-				saveApprovalResourceData(annotation, resourceId);
+				if (isCreateExecuteTime) {
+					approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), operator, OrganizationContext.getOrganizationId());
+				} else {
+					// 命中审批流，直接提审（跳过待提审状态）
+					approvalResourceService.clearResourceApprovalDetail(resourceId);
+					String updateFields = resolveUpdateFields();
+					autoSubmitApproval(annotation.formKey(), annotation.executeType(), resourceId, operator, organizationId, updateFields);
+				}
 			}
 		} catch (Exception e) {
 			log.error("审批流执行时机匹配失败，error:{}", e.getMessage(), e);
 		}
 
 		return retValue;
+	}
+
+	/**
+	 * 处理删除时机的审批逻辑：先检查审批，命中则不执行删除，未命中则正常删除
+	 */
+	private Object handleDeleteApproval(ProceedingJoinPoint joinPoint, HitApproval annotation, Method method) throws Throwable {
+		// 从参数中解析资源ID（DELETE时资源ID从参数获取）
+		String resourceId = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.resourceId());
+		String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
+
+		if (StringUtils.isBlank(resourceId)) {
+			return joinPoint.proceed();
+		}
+
+		// 获取组织ID
+		String organizationId = OrganizationContext.getOrganizationId();
+		if (StringUtils.isBlank(organizationId)) {
+			return joinPoint.proceed();
+		}
+
+		// 检查是否命中审批流
+		boolean hit = checkHitApprovalFlow(annotation.formKey(), annotation.executeType(), organizationId);
+
+		if (!hit) {
+			// 未命中审批流，直接执行删除
+			return joinPoint.proceed();
+		}
+
+		autoSubmitApproval(annotation.formKey(), ExecuteTimingEnum.DELETE, resourceId, operator, organizationId, null);
+		return null;
+	}
+
+	/**
+	 * 解析修改的字段列表
+	 */
+	private String resolveUpdateFields() {
+		try {
+			LogContextInfo logContext = OperationLogContext.getContext();
+			Object originalValue = logContext.getOriginalValue();
+			Object modifiedValue = logContext.getModifiedValue();
+			if (originalValue != null && modifiedValue != null) {
+				List<JsonDifferenceDTO> jsonDifferences = sysOperationLogService.getJsonDifferences(JSON.toJSONString(originalValue), JSON.toJSONString(modifiedValue));
+				List<String> fieldIds = jsonDifferences.stream()
+						.map(JsonDifferenceDTO::getColumn)
+						.collect(Collectors.toList());
+				return JSON.toJSONString(fieldIds);
+			}
+		} catch (Exception e) {
+			log.error("解析修改字段列表失败，error:{}", e.getMessage(), e);
+		}
+		return null;
 	}
 
 	/**
@@ -214,34 +279,32 @@ public class HitApprovalAspect {
 	}
 
 	/**
-	 * 保存审批过程中的中间数据
+	 * 自动提审：命中审批流后直接提审，跳过待提审状态
 	 */
-	private void saveApprovalResourceData(HitApproval annotation, String resourceId) {
+	private void autoSubmitApproval(FormKey formKey, ExecuteTimingEnum executeTimingEnum, String resourceId, String operator, String organizationId, String updateFields) {
+		ApprovalPushParam pushParam = ApprovalPushParam.builder()
+				.orgId(organizationId)
+				.userId(operator)
+				.resourceId(resourceId)
+				.formKey(formKey.getKey())
+				.executeTimingEnum(executeTimingEnum)
+				.updateFields(updateFields)
+				.build();
+		approvalResourceService.push(pushParam);
+	}
+
+	/**
+	 * 在跳过审批检查的情况下执行删除操作
+	 * 用于DELETE审批通过后，执行实际的删除逻辑
+	 *
+	 * @param deleteAction 删除操作
+	 */
+	public static void executeDeleteSkipApproval(Runnable deleteAction) {
+		SKIP_APPROVAL.set(true);
 		try {
-			// 先删除该资源的旧数据
-			approvalResourceDataMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalResourceData>()
-					.eq(ApprovalResourceData::getResourceId, resourceId));
-
-			ApprovalResourceData data = new ApprovalResourceData();
-			data.setId(IDGenerator.nextStr());
-			data.setFormType(annotation.formKey().getKey());
-			data.setResourceId(resourceId);
-			data.setExecuteTime(annotation.executeType().name());
-
-			LogContextInfo logContext = OperationLogContext.getContext();
-			Object originalValue = logContext.getOriginalValue();
-			Object modifiedValue = logContext.getModifiedValue();
-			if (originalValue != null && modifiedValue != null) {
-				List<JsonDifferenceDTO> jsonDifferences = sysOperationLogService.getJsonDifferences(JSON.toJSONString(originalValue), JSON.toJSONString(modifiedValue));
-				List<String> fieldIds = jsonDifferences.stream()
-						.map(JsonDifferenceDTO::getColumn)
-						.collect(Collectors.toList());
-				data.setUpdateFields(JSON.toJSONString(fieldIds));
-			}
-
-			approvalResourceDataMapper.insert(data);
-		} catch (Exception e) {
-			log.error("保存审批中间数据失败，error:{}", e.getMessage(), e);
+			deleteAction.run();
+		} finally {
+			SKIP_APPROVAL.remove();
 		}
 	}
 }

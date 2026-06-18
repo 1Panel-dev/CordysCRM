@@ -43,4 +43,7 @@ public class ApprovalInstance extends BaseModel {
 
     @Schema(description = "变更说明")
     private String comment;
+
+    @Schema(description = "编辑时修改的字段列表")
+    private String updateFields;
 }

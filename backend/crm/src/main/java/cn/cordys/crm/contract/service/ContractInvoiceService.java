@@ -21,6 +21,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
@@ -31,7 +32,9 @@ import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.contract.constants.BusinessTitleConstants;
 import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.ContractInvoiceAddRequest;
@@ -66,7 +69,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ContractInvoiceService {
+public class ContractInvoiceService implements ApprovalResourceHandler {
 
     @Resource
     private ContractInvoiceFieldService invoiceFieldService;
@@ -321,6 +324,16 @@ public class ContractInvoiceService {
         OperationLogContext.setResourceName(invoice.getName());
     }
 
+    @Override
+    public void deleteForResource(String resourceId, String userId, String organizationId) {
+        delete(resourceId, userId);
+    }
+
+    @Override
+    public FormKey getFormKey() {
+        return FormKey.INVOICE;
+    }
+
     private ContractInvoiceGetResponse get(ContractInvoice contractInvoice, List<BaseModuleFieldValue> contractInvoiceFields, ModuleFormConfigDTO contractInvoiceFormConfig) {
         ContractInvoiceGetResponse contractInvoiceGetResponse = BeanUtils.copyBean(new ContractInvoiceGetResponse(), contractInvoice);
         contractInvoiceGetResponse = baseService.setCreateUpdateOwnerUserName(contractInvoiceGetResponse);
@@ -537,10 +550,24 @@ public class ContractInvoiceService {
                 .filter(i -> permittedIds.contains(i.getId()))
                 .collect(Collectors.toList());
 
-        // 删除发票
-        contractInvoiceMapper.deleteByIds(permittedIds);
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        // 触发批量删除审批流，命中审批流的资源不执行删除，进入审批
+        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApproval(permittedIds, FormKey.INVOICE, orgId, userId);
 
-        List<LogDTO> logs = permittedInvoices.stream()
+        // 过滤出未命中审批流的资源，直接删除
+        List<String> deleteIds = approvalIds.isEmpty()
+                ? permittedIds
+                : permittedIds.stream().filter(id -> !approvalIds.contains(id)).toList();
+        if (CollectionUtils.isEmpty(deleteIds)) {
+            return;
+        }
+
+        List<ContractInvoice> deleteInvoices = permittedInvoices.stream()
+                .filter(i -> deleteIds.contains(i.getId()))
+                .toList();
+        contractInvoiceMapper.deleteByIds(deleteIds);
+
+        List<LogDTO> logs = deleteInvoices.stream()
                 .map(invoice ->
                         new LogDTO(orgId, invoice.getId(), userId, LogType.DELETE, LogModule.CONTRACT_INVOICE, invoice.getName())
                 )

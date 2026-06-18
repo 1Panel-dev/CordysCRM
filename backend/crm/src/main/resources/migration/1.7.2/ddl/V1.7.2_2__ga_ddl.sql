@@ -12,20 +12,13 @@ ALTER TABLE approval_instance ADD COLUMN execute_time varchar(30) DEFAULT NULL C
 
 ALTER TABLE approval_instance ADD `comment` varchar(500) NULL COMMENT '变更说明';
 
--- 记录审批过程中的中间数据
-CREATE TABLE approval_resource_data(
-   `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-   `form_type` VARCHAR(50) NOT NULL   COMMENT '表单类型;表单类型：QUOTATION(报价)、CONTRACT(合同)、INVOICE(发票)、ORDER(订单)' ,
-   `resource_id` VARCHAR(32) NOT NULL   COMMENT '资源ID' ,
-   `execute_time` VARCHAR(30) NOT NULL   COMMENT '执行时机：CREATE/UPDATE/DELETE' ,
-   `update_fields` VARCHAR(2000) NOT NULL   COMMENT '执行时机为UPDATE时，有修改的字段列表' ,
-   PRIMARY KEY (id)
-)  COMMENT = '审批过程中的中间数据'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+ALTER TABLE contract ADD approved TINYINT(1) DEFAULT 0 NULL COMMENT '是否审批通过过';
+ALTER TABLE opportunity_quotation ADD approved TINYINT(1) DEFAULT 0 NULL COMMENT '是否审批通过过';
+ALTER TABLE contract_invoice ADD approved TINYINT(1) DEFAULT 0 NULL COMMENT '是否审批通过过';
+ALTER TABLE sales_order ADD approved TINYINT(1) DEFAULT 0 NULL COMMENT '是否审批通过过';
 
-CREATE INDEX idx_resource_id ON approval_resource_data(resource_id ASC);
+-- approval_instance 增加 update_fields 字段
+ALTER TABLE approval_instance ADD COLUMN update_fields VARCHAR(2000) DEFAULT NULL COMMENT '编辑时修改的字段列表';
 
 CREATE TABLE stage_advanced_config
 (

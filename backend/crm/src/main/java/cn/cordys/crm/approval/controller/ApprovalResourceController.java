@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval.controller;
 
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ApprovalInstanceDetail;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
 import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
@@ -28,8 +29,15 @@ public class ApprovalResourceController {
 
 	@PostMapping("/push")
 	@Operation(summary = "提审")
-	public void push(@RequestBody ApprovalPushParam param) {
-		approvalResourceService.push(param, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+	public void push(@RequestBody ApprovalResourceBaseParam param) {
+		ApprovalPushParam approvalPushParam = ApprovalPushParam.builder()
+				.orgId(OrganizationContext.getOrganizationId())
+				.userId(SessionUtils.getUserId())
+				.resourceId(param.getResourceId())
+				.formKey(param.getFormKey())
+				.executeTimingEnum(ExecuteTimingEnum.CREATE)
+				.build();
+		approvalResourceService.push(approvalPushParam);
 	}
 
 	@PostMapping("/revoke")

@@ -24,6 +24,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
@@ -34,6 +35,7 @@ import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
@@ -83,7 +85,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ContractService {
+public class ContractService implements ApprovalResourceHandler {
 
     @Resource
     private ContractFieldService contractFieldService;
@@ -117,8 +119,6 @@ public class ContractService {
     private ExtContractStageConfigMapper extContractStageConfigMapper;
     @Resource
     private ApprovalFlowService approvalFlowService;
-    @Resource
-    private ApprovalResourceService approvalResourceService;
 	@Resource
 	private LogService logService;
 
@@ -467,6 +467,16 @@ public class ContractService {
         snapshotBaseMapper.deleteByLambda(wrapper);
         // 添加日志上下文
         OperationLogContext.setResourceName(contract.getName());
+    }
+
+    @Override
+    public void deleteForResource(String resourceId, String userId, String organizationId) {
+        delete(resourceId, userId);
+    }
+
+    @Override
+    public FormKey getFormKey() {
+        return FormKey.CONTRACT;
     }
 
 
@@ -902,7 +912,8 @@ public class ContractService {
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder().success(0).fail(originContracts.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
-        approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.CONTRACT, organizationId, userId);
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CONTRACT, organizationId, userId);
         List<Contract> permittedContracts = originContracts.stream()
                 .filter(c -> permittedIds.contains(c.getId()))
                 .collect(Collectors.toList());

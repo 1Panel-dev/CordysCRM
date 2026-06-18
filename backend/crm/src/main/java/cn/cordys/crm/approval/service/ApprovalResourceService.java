@@ -11,18 +11,19 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.approval.aspect.HitApprovalAspect;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
-import cn.cordys.crm.approval.domain.ApprovalResourceData;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.integration.common.utils.HttpClientUtils;
@@ -42,17 +43,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -73,15 +73,11 @@ public class ApprovalResourceService {
     @Resource
     private BaseMapper<ApprovalRecord> approvalRecordMapper;
     @Resource
-    private BaseMapper<ApprovalResourceData> approvalResourceDataMapper;
-    @Resource
     private BaseMapper<User> userMapper;
     @Resource
     private ExtApprovalInstanceMapper extApprovalInstanceMapper;
     @Resource
     private ExtApprovalTaskMapper extApprovalTaskMapper;
-    @Resource
-    private ApplicationContext applicationContext;
     @Resource
     private ApprovalFlowService approvalFlowService;
     @Resource
@@ -95,11 +91,21 @@ public class ApprovalResourceService {
     @Resource
     private SSRFValidationService ssrfValidationService;
 
+    @Resource
+    private List<ApprovalResourceHandler> approvalResourceHandlers;
+
+    @PostConstruct
+    private void initFormService() {
+        for (ApprovalResourceHandler handler : approvalResourceHandlers) {
+            FORM_SERVICE.put(handler.getFormKey(), handler);
+        }
+    }
+
     /**
      * 开启的审批流表单表格映射
      */
     public static final Map<String, String> FORM_APPROVAL_TABLE = new HashMap<>(4);
-    public static final Map<FormKey, String> FORM_SERVICE = new HashMap<>(4);
+    public static final Map<FormKey, ApprovalResourceHandler> FORM_SERVICE = new HashMap<>(4);
     public static final String NULL_POST_CONFIG = "null";
 
     static {
@@ -107,12 +113,6 @@ public class ApprovalResourceService {
         FORM_APPROVAL_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
         FORM_APPROVAL_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
         FORM_APPROVAL_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
-
-        FORM_SERVICE.put(FormKey.QUOTATION, "opportunityQuotationService");
-        FORM_SERVICE.put(FormKey.CONTRACT, "contractService");
-        FORM_SERVICE.put(FormKey.INVOICE, "contractInvoiceService");
-        FORM_SERVICE.put(FormKey.ORDER, "orderService");
-        FORM_SERVICE.put(FormKey.ORDER, "orderService");
     }
 
     public ResourceApprovalResponse resourceDetail(String resourceId) {
@@ -239,6 +239,9 @@ public class ApprovalResourceService {
             return;
         }
         extApprovalInstanceMapper.updateApprovalStatus(tableName, resourceId, approvalStatus);
+        if (Strings.CS.equals(approvalStatus, ApprovalStatus.APPROVED.name())) {
+            extApprovalInstanceMapper.setApproved(tableName, resourceId);
+        }
         // 存在快照表, 需要同步刷新审批状态
         if (formKey.hasSnapshot()) {
             updateSnapshotApprovalStatus(formKey, resourceId, approvalStatus);
@@ -314,6 +317,25 @@ public class ApprovalResourceService {
     }
 
     /**
+     * 检查资源是否历史上审批通过过
+     *
+     * @param formKey    表单类型
+     * @param resourceId 资源ID
+     * @return 是否审批通过过
+     */
+    public boolean isResourceApproved(FormKey formKey, String resourceId) {
+        if (formKey == null) {
+            return false;
+        }
+        String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
+        if (StringUtils.isBlank(tableName)) {
+            return false;
+        }
+        Boolean approved = extApprovalInstanceMapper.selectApproved(tableName, resourceId);
+        return Boolean.TRUE.equals(approved);
+    }
+
+    /**
      * 获取审批实例资源名称
      *
      * @param formKey    表单类型
@@ -341,12 +363,10 @@ public class ApprovalResourceService {
         if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
             return;
         }
-        String serviceBeanName = FORM_SERVICE.get(formKey);
-        Object service = applicationContext.getBean(serviceBeanName);
         try {
-            Method method = service.getClass().getMethod("updateSnapshotApprovalStatus", ResourceSnapshotApprovalParam.class);
+            ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
             ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam.builder().resourceId(resourceId).approvalStatus(approvalStatus).build();
-            method.invoke(service, param);
+            handler.updateSnapshotApprovalStatus(param);
         } catch (Exception e) {
             log.error("更新业务数据快照失败", e);
         }
@@ -367,12 +387,10 @@ public class ApprovalResourceService {
 		if (CollectionUtils.isEmpty(fields)) {
 			return;
 		}
-		String serviceBeanName = FORM_SERVICE.get(formKey);
-		Object service = applicationContext.getBean(serviceBeanName);
 		try {
-			Method method = service.getClass().getMethod("updateApprovalPostField", ResourceApprovalPostUpdateParam.class);
+			ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
 			ResourceApprovalPostUpdateParam postUpdateParam = ResourceApprovalPostUpdateParam.builder().fields(fields).resourceId(resourceId).operator(currentUserId).build();
-			method.invoke(service, postUpdateParam);
+			handler.updateApprovalPostField(postUpdateParam);
 		} catch (Exception e) {
 			log.error("更新业务数据失败", e);
 		}
@@ -397,15 +415,15 @@ public class ApprovalResourceService {
      *
      * @param param 提审参数
      */
-    public void push(ApprovalPushParam param, String currentOrgId, String currentUserId) {
-        ApprovalResourceData resourceData = getApprovalResourceData(param.getResourceId());
-
+    public void push(ApprovalPushParam param) {
+        String currentOrgId = param.getOrgId();
+        String currentUserId = param.getUserId();
         ApprovalFlow approvalFlow = approvalFlowService.getEnabledFlow(param.getFormKey(), currentOrgId);
         if (approvalFlow == null) {
             throw new GenericException(Translator.get("approval_flow.not.exist"));
         }
         // 初始化审批实例
-        ApprovalInstance instance = initInstance(approvalFlow, param, resourceData, currentUserId);
+        ApprovalInstance instance = initInstance(approvalFlow, param);
         // 获取第一个节点
         ApprovalNodeResponse firstApprovalNode = approvalFlowService.getResourceApprovalInstanceFirstNode(instance, currentOrgId);
         instance.setCurrentNodeId(firstApprovalNode.getId());
@@ -415,7 +433,6 @@ public class ApprovalResourceService {
             instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
-            deleteApprovalResourceData(param.getResourceId());
             return;
         }
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
@@ -424,7 +441,10 @@ public class ApprovalResourceService {
             instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
-            deleteApprovalResourceData(param.getResourceId());
+            // DELETE审批通过后，执行实际的删除操作
+            if (Strings.CI.equals(instance.getExecuteTime(), ExecuteTimingEnum.DELETE.name())) {
+                executeDeleteAction(instance.getType(), instance.getResourceId(), currentUserId, currentOrgId);
+            }
             String resourceName = getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
             if (StringUtils.isBlank(resourceName)) {
                 return;
@@ -464,7 +484,6 @@ public class ApprovalResourceService {
         instance.setUpdateTime(System.currentTimeMillis());
         approvalInstanceMapper.updateById(instance);
         approvalActionService.loseCurrentNode(instance.getId(), instance.getCurrentNodeId());
-        deleteApprovalResourceData(param.getResourceId());
     }
 
     /**
@@ -472,10 +491,10 @@ public class ApprovalResourceService {
      *
      * @param flow          审批流
      * @param param         参数
-     * @param currentUserId 当前用户ID
      * @return 审批实例
      */
-    private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalPushParam param, ApprovalResourceData resourceData, String currentUserId) {
+    private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalPushParam param) {
+        String currentUserId = param.getUserId();
         ApprovalInstance instance = new ApprovalInstance();
         instance.setId(IDGenerator.nextStr());
         instance.setFlowVersionId(flow.getCurrentVersionId());
@@ -489,44 +508,39 @@ public class ApprovalResourceService {
         instance.setUpdateUser(currentUserId);
         instance.setUpdateTime(System.currentTimeMillis());
         instance.setComment(param.getComment());
-        instance.setExecuteTime(resourceData == null ? ExecuteTimingEnum.CREATE.name() : resourceData.getExecuteTime());
+        instance.setExecuteTime(param.getExecuteTimingEnum().name());
+        instance.setUpdateFields(param.getUpdateFields());
         return instance;
     }
 
     /**
-     * 获取审批过程中的中间数据
+     * DELETE审批通过后，执行实际的删除操作
      *
+     * @param formType   表单类型
      * @param resourceId 资源ID
-     * @return 审批中间数据
+     * @param userId     操作人ID
+     * @param orgId      组织ID
      */
-    public ApprovalResourceData getApprovalResourceData(String resourceId) {
-        LambdaQueryWrapper<ApprovalResourceData> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ApprovalResourceData::getResourceId, resourceId);
-        List<ApprovalResourceData> dataList = approvalResourceDataMapper.selectListByLambda(wrapper);
-        return CollectionUtils.isNotEmpty(dataList) ? dataList.getFirst() : null;
-    }
-
-    /**
-     * 删除审批过程中的中间数据
-     *
-     * @param resourceId 资源ID
-     */
-    public void deleteApprovalResourceData(String resourceId) {
-        approvalResourceDataMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalResourceData>()
-                .eq(ApprovalResourceData::getResourceId, resourceId));
+    public void executeDeleteAction(String formType, String resourceId, String userId, String orgId) {
+        FormKey formKey = FormKey.ofKey(formType);
+        if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+            return;
+        }
+        ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
+        HitApprovalAspect.executeDeleteSkipApproval(() -> handler.deleteForResource(resourceId, userId, orgId));
     }
 
     /**
      * 批量编辑触发审批流
      * 用于批量编辑多个业务资源时，判断是否开启了编辑触发审批流，
-     * 如果开启，则将所有资源的状态改为PENDING
+     * 如果资源历史上审批通过过，直接提审（UPDATE时机）；未通过过则设为待提审（CREATE时机）
      *
      * @param resourceIds    资源ID集合
      * @param formKey        业务模块（表单类型）
      * @param organizationId 组织ID
      * @param userId         操作人ID
      */
-    public void batchEditTriggerApproval(List<String> resourceIds, FormKey formKey, String organizationId, String userId) {
+    public void batchEditTriggerApproval(List<String> resourceIds, String fieldId, FormKey formKey, String organizationId, String userId) {
         if (CollectionUtils.isEmpty(resourceIds) || formKey == null || StringUtils.isBlank(organizationId)) {
             return;
         }
@@ -536,11 +550,63 @@ public class ApprovalResourceService {
             return;
         }
 
-        // 批量更新资源审批状态为待提审
+        for (String resourceId : resourceIds) {
+            boolean approved = isResourceApproved(formKey, resourceId);
+            if (approved) {
+                // 已审批通过过：UPDATE时机，直接提审
+                clearResourceApprovalDetail(resourceId);
+                ApprovalPushParam pushParam = ApprovalPushParam.builder()
+                        .orgId(organizationId)
+                        .userId(userId)
+                        .resourceId(resourceId)
+                        .formKey(formKey.getKey())
+                        .executeTimingEnum(ExecuteTimingEnum.UPDATE)
+                        .updateFields(JSON.toJSONString(List.of(fieldId)))
+                        .build();
+                push(pushParam);
+            } else {
+                // 未审批通过过：CREATE时机，设为待提审
+                updateResourceApprovalStatus(formKey, resourceId, ApprovalStatus.PENDING.name(), userId, organizationId);
+            }
+        }
+    }
+
+    /**
+     * 批量删除触发审批流
+     * 用于批量删除多个业务资源时，判断是否开启了删除触发审批流，
+     * 如果开启则直接提审（DELETE时机），跳过待提审状态
+     *
+     * @param resourceIds    资源ID集合
+     * @param formKey        业务模块（表单类型）
+     * @param organizationId 组织ID
+     * @param userId         操作人ID
+     * @return 命中审批流的资源ID集合
+     */
+    public List<String> batchDeleteTriggerApproval(List<String> resourceIds, FormKey formKey, String organizationId, String userId) {
+        if (CollectionUtils.isEmpty(resourceIds) || formKey == null || StringUtils.isBlank(organizationId)) {
+            return Collections.emptyList();
+        }
+
+        // 检查是否命中删除审批流
+        ApprovalFlow flow = approvalFlowService.getEnabledFlow(formKey.getKey(), organizationId);
+        if (flow == null || !Boolean.TRUE.equals(flow.getDeleteExecute())) {
+            return Collections.emptyList();
+        }
+
+        List<String> approvalResourceIds = new ArrayList<>();
         for (String resourceId : resourceIds) {
             clearResourceApprovalDetail(resourceId);
-            updateResourceApprovalStatus(formKey, resourceId, ApprovalStatus.PENDING.name(), userId, organizationId);
+            ApprovalPushParam pushParam = ApprovalPushParam.builder()
+                    .orgId(organizationId)
+                    .userId(userId)
+                    .resourceId(resourceId)
+                    .formKey(formKey.getKey())
+                    .executeTimingEnum(ExecuteTimingEnum.DELETE)
+                    .build();
+            push(pushParam);
+            approvalResourceIds.add(resourceId);
         }
+        return approvalResourceIds;
     }
 
     /**

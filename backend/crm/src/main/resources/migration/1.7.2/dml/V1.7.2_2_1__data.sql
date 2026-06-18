@@ -77,10 +77,10 @@ WHERE af.create_execute = 1 AND af.update_execute = 1
 -- from_node_id 和 to_node_id 都需要映射到新ID
 INSERT INTO approval_node_link (id, flow_version_id, from_node_id, to_node_id, sort)
 SELECT
-    CAST(anl.id AS UNSIGNED) + 1000,
+    UUID_SHORT(),
     anl.flow_version_id,
-    anl.from_node_id + 1 AS from_node_id,
-    anl.to_node_id  + 1 AS to_node_id,
+    CAST(anl.from_node_id AS UNSIGNED) + 1000 AS from_node_id,
+    CAST(anl.to_node_id AS UNSIGNED) + 1000 AS to_node_id,
     anl.sort
 FROM approval_node_link anl
 INNER JOIN approval_node from_node ON anl.from_node_id = from_node.id
@@ -89,6 +89,12 @@ INNER JOIN approval_flow af ON afv.flow_id = af.id
 WHERE af.create_execute = 1 AND af.update_execute = 1
   AND af.deleted = 0
   AND from_node.execute_time = 'CREATE';
+
+-- 处理已经审批通过的历史数据，设置通过标识位
+update contract set approved = 1 where approval_status = 'APPROVED';
+update opportunity_quotation set approved = 1 where approval_status = 'APPROVED';
+update contract_invoice set approved = 1 where approval_status = 'APPROVED';
+update sales_order set approved = 1 where approval_status = 'APPROVED';
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
