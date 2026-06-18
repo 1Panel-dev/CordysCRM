@@ -79,6 +79,7 @@ public class PoolCustomerControllerTests extends BaseTest {
     @Order(1)
     void prepareTestData() {
         Customer customer = createCustomer();
+		testDataId = customer.getId();
         Customer ownCustomer = createCustomer();
         CustomerCapacity capacity = createCapacity();
         ownCustomer.setInSharedPool(false);
@@ -222,7 +223,6 @@ public class PoolCustomerControllerTests extends BaseTest {
     private Customer createCustomer() {
         Customer customer = new Customer();
         customer.setId(IDGenerator.nextStr());
-        testDataId = customer.getId();
         customer.setName("ct");
         customer.setOwner("cc");
         customer.setCollectionTime(System.currentTimeMillis());

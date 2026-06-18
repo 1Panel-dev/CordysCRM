@@ -47,8 +47,6 @@ public class PoolClueControllerTests extends BaseTest {
     public static final String BATCH_PICK = "/batch-pick";
     public static final String BATCH_ASSIGN = "/batch-assign";
     public static final String BATCH_DELETE = "/batch-delete";
-    protected static final String EXPORT_ALL = "/export-all";
-    protected static final String EXPORT_SELECT = "/export-select";
 
     public static String testDataId;
 
@@ -74,6 +72,7 @@ public class PoolClueControllerTests extends BaseTest {
     @Order(1)
     void prepareTestData() {
         Clue clue = createClue();
+		testDataId = clue.getId();
         Clue ownClue = createClue();
         ClueCapacity capacity = createCapacity();
         ownClue.setInSharedPool(false);
@@ -184,7 +183,6 @@ public class PoolClueControllerTests extends BaseTest {
     private Clue createClue() {
         Clue clue = new Clue();
         clue.setId(IDGenerator.nextStr());
-        testDataId = clue.getId();
         clue.setStage("test");
         clue.setName("ct");
         clue.setOwner("cc");

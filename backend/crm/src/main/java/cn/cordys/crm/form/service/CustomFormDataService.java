@@ -13,6 +13,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
@@ -287,7 +288,10 @@ public class CustomFormDataService {
         try {
             if (request.getModuleFields() != null) {
                 List<BaseModuleFieldValue> originFields = customFormDataFieldService.getModuleFieldValuesByResourceId(request.getId());
-				baseService.handleUpdateLog(originData, updateData, originFields, request.getModuleFields(), originData.getId(), originData.getName());
+                // 过滤掉引用字段（显示字段），这些字段不需要参与日志对比
+                List<BaseModuleFieldValue> logOriginFields = filterRefFields(originFields);
+                List<BaseModuleFieldValue> logModifiedFields = filterRefFields(request.getModuleFields());
+				baseService.handleUpdateLog(originData, updateData, logOriginFields, logModifiedFields, originData.getId(), originData.getName());
                 customFormDataFieldService.deleteByResourceId(request.getId());
                 customFormDataFieldService.saveModuleField(updateData, orgId, userId, request.getModuleFields(), true);
             } else {
@@ -566,5 +570,17 @@ public class CustomFormDataService {
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }
+    }
+
+    /**
+     * 过滤掉引用字段（显示字段），这些字段不需要参与日志对比
+     */
+    private List<BaseModuleFieldValue> filterRefFields(List<BaseModuleFieldValue> fields) {
+        if (CollectionUtils.isEmpty(fields)) {
+            return fields;
+        }
+        return fields.stream()
+                .filter(f -> !f.getFieldId().contains(BaseResourceFieldService.REF_UNDERLINE))
+                .toList();
     }
 }

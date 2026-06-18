@@ -361,6 +361,9 @@ public class PoolCustomerService {
         if (customer == null) {
             throw new IllegalArgumentException(Translator.get("customer.not.exist"));
         }
+        if (!customer.getInSharedPool()) {
+            throw new GenericException(Translator.getWithArgs("customer.pool.occupied", customer.getName()));
+        }
 
         if (!isPoolAdmin && pickRule != null) {
             if (pickRule.getLimitNew()) {
