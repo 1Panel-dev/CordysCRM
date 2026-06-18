@@ -21,5 +21,5 @@ public class StageConfigsResponse {
     private String circulationType;
 
     @Schema(description = "高级流转设置")
-    private List<StageAdvancedConfigResponse> advancedConfigs;
+    private List<CirculationSetting> advancedConfigs;
 }
