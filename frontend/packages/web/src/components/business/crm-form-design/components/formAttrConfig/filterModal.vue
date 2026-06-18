@@ -25,7 +25,7 @@
   import { NScrollbar } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CustomFormItem } from '@lib/shared/models/customForm';
 

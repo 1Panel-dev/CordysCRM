@@ -113,6 +113,8 @@ export const {
   downloadOrder,
   deleteOrderStatus,
   getOrderStatistic,
+  saveAdvanceConfig,
+  switchOrderCirculationType,
 } = orderApi;
 
 export const {
@@ -567,6 +569,8 @@ export const {
   getContractStatusConfig,
   deleteContractStatus,
   updateContractStage,
+  saveContractAdvanceConfig,
+  switchContractCirculationType,
 } = contractApi;
 
 export const {

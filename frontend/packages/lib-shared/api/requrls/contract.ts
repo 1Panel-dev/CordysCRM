@@ -146,3 +146,5 @@ export const AddContractStatusUrl = '/contract/stage/add'; // 合同状态添加
 export const GetContractStatusConfigUrl = '/contract/stage/get'; // 获取合同状态配置
 export const DeleteContractStatusUrl = '/contract/stage/delete'; // 删除合同状态
 export const UpdateContractStageUrl = '/contract/update/stage'; // 更新合同详情阶段
+export const SwitchContractCirculationTypeUrl = '/contract/stage/circulation-type'; // 切换流转类型
+export const SaveContractCirculationConfigUrl = '/contract/stage/advanced/config'; // 保存高级流转配置

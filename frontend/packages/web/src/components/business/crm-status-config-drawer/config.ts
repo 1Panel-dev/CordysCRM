@@ -13,9 +13,13 @@ import {
   getContractStatusConfig,
   getOpportunityStageConfig,
   getOrderStatusConfig,
+  saveAdvanceConfig,
+  saveContractAdvanceConfig,
   sortContractStatus,
   sortOpportunityStage,
   sortOrderStatus,
+  switchContractCirculationType,
+  switchOrderCirculationType,
   updateContractStatus,
   updateContractStatusRollback,
   updateOpportunityStage,
@@ -264,3 +268,15 @@ export function useStatusStrategyConfig(): Record<StatusBizType, StatusStrategyC
     },
   };
 }
+
+export const flowApiMap = {
+  [FormDesignKeyEnum.BUSINESS]: { switch: () => ({}), save: () => ({}) },
+  [FormDesignKeyEnum.ORDER]: {
+    switch: switchOrderCirculationType,
+    save: saveAdvanceConfig,
+  },
+  [FormDesignKeyEnum.CONTRACT]: {
+    switch: switchContractCirculationType,
+    save: saveContractAdvanceConfig,
+  },
+};

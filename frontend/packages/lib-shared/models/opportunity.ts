@@ -1,6 +1,8 @@
 import type { ModuleField, TableQueryParams } from './common';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
+import type { CirculationTypeEnum, CirculationValueTypeEnum } from '@lib/shared/enums/opportunityEnum';
+import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export interface OpportunityItem {
   id: string; // 商机ID
@@ -89,7 +91,7 @@ export interface UpdateOpportunityStageRollbackParams {
   endRollBack: boolean;
 }
 
-export interface StageBaseParams{
+export interface StageBaseParams {
   name: string;
   type: 'AFOOT' | 'END';
   dropPosition: number;
@@ -100,7 +102,7 @@ export interface AddOpportunityStageParams extends StageBaseParams {
   rate: string;
 }
 
-export interface StageConfigBaseItem{
+export interface StageConfigBaseItem {
   id: string;
   createUser: string;
   updateUser: string;
@@ -123,6 +125,8 @@ export interface OpportunityStageConfig {
   afootRollBack: boolean;
   endRollBack: boolean;
   stageHasData: boolean;
+  circulationType: CirculationTypeEnum;
+  advancedConfigs: CirculationSetting[];
 }
 
 export interface QuotationQueryParams extends TableQueryParams {
@@ -175,7 +179,7 @@ export interface BatchUpdateQuotationStatusParams {
   approvalStatus: ProcessStatusEnum;
 }
 
-export interface  BatchVoidQuotationStatusParams {
+export interface BatchVoidQuotationStatusParams {
   ids: (string | number)[];
 }
 
@@ -184,4 +188,28 @@ export interface BatchOperationResult {
   fail: number;
   skip?: number;
   errorMessages?: string;
+}
+
+export interface CirculationFieldValueItem {
+  fieldId?: string;
+  fieldValue: any;
+  required: boolean;
+  valueType: CirculationValueTypeEnum;
+  // 前端渲染使用
+  fieldProps?: FormCreateField;
+}
+export interface CirculationFieldTargetItem {
+  targetId: string;
+  enable: boolean;
+  circulationFieldValues: CirculationFieldValueItem[];
+}
+export interface CirculationSetting {
+  originId: string;
+  targets: CirculationFieldTargetItem[];
+  moduleType: string;
+}
+
+export interface SaveCirculationConfigParams {
+  circulationType: CirculationTypeEnum;
+  circulationSettings: CirculationSetting[];
 }
