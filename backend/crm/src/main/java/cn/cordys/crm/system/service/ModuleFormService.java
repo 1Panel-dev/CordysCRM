@@ -26,6 +26,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.constants.BusinessTitleConstants;
+import cn.cordys.crm.contract.constants.SystemFieldConstants;
 import cn.cordys.crm.form.service.CustomFormDataFieldService;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
@@ -982,6 +983,10 @@ public class ModuleFormService {
         if (Strings.CI.equals(dataSourceType, FieldSourceType.BUSINESS_TITLE.name())) {
             return initBusinessTitleFields();
         }
+        if (Strings.CI.equalsAny(dataSourceType, FieldSourceType.CONTRACT.name(), FieldSourceType.INVOICE.name(), FieldSourceType.ORDER.name(), FieldSourceType.QUOTATION.name())) {
+			// 目前只有这几种数据源支持系统字段
+            return initSourceSystemFields(FieldSourceType.valueOf(dataSourceType));
+        }
         return List.of();
     }
 
@@ -1008,7 +1013,19 @@ public class ModuleFormService {
         return fields;
     }
 
-
+    public List<BaseField> initSourceSystemFields(FieldSourceType sourceType) {
+		if (sourceType == null) {
+			return List.of();
+		}
+        List<BaseField> fields = new ArrayList<>();
+        for (SystemFieldConstants sf : SystemFieldConstants.values()) {
+			// 目前只有下拉类型系统字段, 后续可根据枚举扩展
+			SelectField field = new SelectField();
+            field.setId(sf.getKey());
+            fields.add(field);
+        }
+        return fields;
+    }
 
     /**
      * OptionProp转OptionDTO
