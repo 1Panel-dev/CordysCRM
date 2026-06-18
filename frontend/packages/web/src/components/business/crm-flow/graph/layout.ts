@@ -76,6 +76,7 @@ function createMainNodeLayout(
       name: node.name,
       number: node.number,
       description: node.type !== 'end' ? node.description : undefined,
+      descriptionItems: node.type === 'action' ? node.descriptionItems : undefined,
       actionType: node.type === 'action' ? node.actionType : undefined,
       showContent: options.showNodeDescription,
       invalid: node.invalid,

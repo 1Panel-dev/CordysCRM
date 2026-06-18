@@ -1,4 +1,4 @@
-import type { FlowNodeType } from '../types';
+import type { FlowNodeDescriptionItem, FlowNodeType } from '../types';
 import type { Graph } from '@antv/x6';
 
 export type FlowGraphDataKind = 'start' | 'action' | 'end' | 'condition-branch' | 'add-condition' | 'add-node';
@@ -13,6 +13,7 @@ export interface FlowGraphNodeData {
   name?: string;
   description?: string;
   sort?: number;
+  descriptionItems?: FlowNodeDescriptionItem[];
   actionType?: string; // 动作节点的扩展类型（如 approval）。
   showContent?: boolean; // 当前视图模式下是否显示节点第二行内容（description）
   isElse?: boolean;

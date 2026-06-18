@@ -19,7 +19,8 @@ import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types'
 
 import { resolveApprovalActionNodeDescription } from '@/config/process';
 
-import { createApprovalConditionBranch, createDefaultFlow, resolveConditionDescription } from './index';
+import { resolveConditionDescription } from './conditionDescription';
+import { createApprovalConditionBranch, createDefaultFlow, resolveApprovalActionNodeDescriptionItems } from './index';
 
 const { t } = useI18n();
 
@@ -235,6 +236,7 @@ function mapSelectedOptions(options?: { id: string; name: string }[]) {
 // 这里会把前端展示所需的 selectedList 一并补齐，方便右侧表单直接回显。
 function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalActionNode {
   const approverList = node.approverList ?? [];
+  const approverSelectedList = mapSelectedOptions(node.approverSelectOptions);
   const ccList = node.ccList ?? [];
   const fallbackApprover = node.fallbackApprover ?? null;
 
@@ -245,11 +247,16 @@ function deserializeApproverNode(node: ApprovalProcessApproverNode): ApprovalAct
     name: node.name,
     number: node.number,
     description: resolveApprovalActionNodeDescription(node.approvalType, node.approverType ?? null),
+    descriptionItems: resolveApprovalActionNodeDescriptionItems({
+      approvalType: node.approvalType,
+      approverType: node.approverType ?? null,
+      approverSelectedList,
+    }),
     approvalType: node.approvalType,
     approverType: node.approverType ?? null,
     approverDirection: node.approverDirection ?? ApprovalLevelDirectionEnum.BOTTOM_UP,
     approverList,
-    approverSelectedList: mapSelectedOptions(node.approverSelectOptions),
+    approverSelectedList,
     multiApproverMode: node.multiApproverMode,
     emptyApproverAction: node.emptyApproverAction,
     fallbackApprover,

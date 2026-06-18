@@ -1,6 +1,7 @@
 import {
   ApprovalLevelDirectionEnum,
   ApprovalTypeEnum,
+  ApproverTypeEnum,
   EmptyApproverActionEnum,
   MultiApproverModeEnum,
   SameSubmitterActionEnum,
@@ -8,7 +9,6 @@ import {
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/models/system/process';
 
-import type { FilterForm } from '@/components/pure/crm-advance-filter/type';
 import {
   addConditionBranch,
   insertNodeAfterNode,
@@ -27,11 +27,27 @@ import {
   findConditionGroupById,
   findNodeLocation,
 } from '@/components/business/crm-flow/dsl/queries';
-import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
+import type { FlowNode, FlowNodeDescriptionItem, FlowSchema } from '@/components/business/crm-flow/types';
 
 import { resolveApprovalActionNodeDefaults } from '@/config/process';
 
 const { t } = useI18n();
+
+export function resolveApprovalActionNodeDescriptionItems(
+  node: Pick<ApprovalActionNode, 'approvalType' | 'approverType' | 'approverSelectedList'>
+): FlowNodeDescriptionItem[] {
+  if (
+    node.approvalType !== ApprovalTypeEnum.MANUAL ||
+    ![ApproverTypeEnum.SPECIFIED_MEMBER, ApproverTypeEnum.ROLE].includes(node.approverType as ApproverTypeEnum)
+  ) {
+    return [];
+  }
+
+  return (node.approverSelectedList ?? []).map((item) => ({
+    id: item.id,
+    name: item.name,
+  }));
+}
 
 // 创建审批动作节点
 export function createApprovalActionNode(approvalType: ApprovalTypeEnum = ApprovalTypeEnum.MANUAL): ApprovalActionNode {
@@ -39,6 +55,7 @@ export function createApprovalActionNode(approvalType: ApprovalTypeEnum = Approv
   return createActionNode<ApprovalActionNode>({
     name: defaults.name,
     description: defaults.description,
+    descriptionItems: [],
     actionType: 'approval',
     approvalType,
     approverType: null,
@@ -198,15 +215,4 @@ export function addApprovalConditionBranch(flowSchema: FlowSchema, groupId: stri
   const groupNode = findConditionGroupById(flowSchema.nodes, groupId);
   const nextSort = (groupNode?.branches.filter((branch) => !branch.isElse).length ?? 0) + 1;
   addConditionBranch(flowSchema, groupId, createApprovalConditionBranch({ sort: nextSort }));
-}
-
-// 是否已设置条件
-export function hasConfiguredCondition(conditionConfig?: FilterForm) {
-  return conditionConfig?.conditions?.some((item) => item.name) ?? false;
-}
-
-export function resolveConditionDescription(conditionConfig?: FilterForm) {
-  return hasConfiguredCondition(conditionConfig)
-    ? t('process.process.flow.conditionConfigured')
-    : t('process.process.flow.conditionUnset');
 }

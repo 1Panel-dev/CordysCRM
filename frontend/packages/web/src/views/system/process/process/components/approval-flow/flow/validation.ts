@@ -3,7 +3,7 @@ import type { ApprovalActionNode, ApprovalConditionBranch } from '@lib/shared/mo
 
 import type { FlowNode, FlowSchema } from '@/components/business/crm-flow/types';
 
-import { hasConfiguredCondition } from './index';
+import { hasConfiguredCondition } from './conditionDescription';
 
 interface FlowValidationResult {
   invalidNodeIds: string[];
