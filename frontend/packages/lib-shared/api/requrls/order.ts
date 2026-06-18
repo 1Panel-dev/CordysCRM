@@ -31,3 +31,5 @@ export const SortOrderStatusUrl = '/order/stage/sort'; // 订单状态排序
 export const AddOrderStatusUrl = '/order/stage/add'; // 订单状态添加
 export const GetOrderStatusConfigUrl = '/order/stage/get'; // 获取订单状态配置
 export const DeleteOrderStatusUrl = '/order/stage/delete'; // 删除订单状态
+export const SwitchOrderCirculationTypeUrl = '/order/stage/circulation-type'; // 切换流转配置
+export const SaveAdvanceConfigUrl = '/order/stage/advanced/config'; // 保存高级流转配置

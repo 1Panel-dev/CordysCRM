@@ -29,6 +29,8 @@ import {
   DeleteOrderStatusUrl,
   DownloadOrderUrl,
   OrderStatisticUrl,
+  SaveAdvanceConfigUrl,
+  SwitchOrderCirculationTypeUrl,
 } from '@lib/shared/api/requrls/order';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import type { CommonList, TableDraggedParams } from '@lib/shared/models/common';
@@ -44,7 +46,9 @@ import {
   OpportunityStageConfig,
   UpdateOpportunityStageRollbackParams,
   UpdateStageBaseParams,
+  type SaveCirculationConfigParams,
 } from '@lib/shared/models/opportunity';
+import type { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum';
 
 export default function useOrderApi(CDR: CordysAxios) {
   // 列表
@@ -189,6 +193,16 @@ export default function useOrderApi(CDR: CordysAxios) {
     return CDR.post({ url: OrderStatisticUrl, data }, { ignoreCancelToken: true });
   }
 
+  // 保存高级流转配置
+  function saveAdvanceConfig(data: SaveCirculationConfigParams) {
+    return CDR.post({ url: SaveAdvanceConfigUrl, data });
+  }
+
+  // 切换流转配置
+  function switchOrderCirculationType(type: CirculationTypeEnum) {
+    return CDR.get({ url: `${SwitchOrderCirculationTypeUrl}/${type}` });
+  }
+
   return {
     getOrderFormConfig,
     getOrderFormSnapshotConfig,
@@ -219,5 +233,7 @@ export default function useOrderApi(CDR: CordysAxios) {
     sortOrder,
     downloadOrder,
     getOrderStatistic,
+    switchOrderCirculationType,
+    saveAdvanceConfig,
   };
 }

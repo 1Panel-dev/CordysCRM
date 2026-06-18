@@ -73,7 +73,7 @@
   });
 
   const formKey = computed(() => props.formKey);
-  const { loading, fieldList, formConfig, formDesignRef, unsaved, checkRepeat, buildSavePayload, initFormConfig } =
+  const { loading, fieldList, formConfig, unsaved, checkRepeat, buildSavePayload, initFormConfig } =
     useFormDesignConfig({ formKey });
 
   function showUnsavedLeaveTip() {
