@@ -1,13 +1,5 @@
 <template>
-  <CrmDrawer
-    v-model:show="showDrawer"
-    :width="600"
-    :footer="false"
-    :auto-focus="false"
-    no-padding
-    :show-back="false"
-    closable
-  >
+  <CrmDrawer v-model:show="showDrawer" :width="600" :footer="false" no-padding :show-back="false" closable>
     <template #title>
       <div class="flex items-center gap-[8px]">
         <div class="one-line-text">{{ titleValue }}</div>

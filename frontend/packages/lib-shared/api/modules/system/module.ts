@@ -22,6 +22,7 @@ import {
   GetCustomerPoolPageUrl,
   GetFieldClueListUrl,
   GetFieldContractListUrl,
+  GetFieldInvoiceListUrl,
   GetFieldContractPaymentPlanListUrl,
   GetFieldContractPaymentRecordListUrl,
   GetFieldContactListUrl,
@@ -279,6 +280,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<ContractItem>>({ url: GetFieldContractListUrl, data });
   }
 
+  function getFieldInvoiceList(data: FormDesignDataSourceTableQueryParams) {
+    return CDR.post<CommonList<ContractItem>>({ url: GetFieldInvoiceListUrl, data });
+  }
+
   function getFieldContractPaymentPlanList(data: FormDesignDataSourceTableQueryParams) {
     return CDR.post<CommonList<PaymentPlanItem>>({ url: GetFieldContractPaymentPlanListUrl, data });
   }
@@ -460,6 +465,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getFieldDeptTree,
     getFieldClueList,
     getFieldContractList,
+    getFieldInvoiceList,
     getFieldContractPaymentPlanList,
     getFieldContractPaymentRecordList,
     getFieldContactList,

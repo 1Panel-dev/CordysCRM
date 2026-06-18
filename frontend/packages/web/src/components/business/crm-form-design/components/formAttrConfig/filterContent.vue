@@ -67,11 +67,11 @@
           >
             <n-select
               v-model:value="item.rightFieldId"
-              :options="transformFieldsToOptions(props.rightFields, item.leftFieldType)"
+              :options="transformFieldsToOptions(props.rightFields, item.leftFieldType, item.leftFieldId)"
               :placeholder="t('crmFormDesign.dataSourceFilterValuePlaceholder')"
               :fallback-option="() => fallbackOption(item.leftFieldId)"
               :disabled="isValueDisabled(item)"
-              @update-value="(val, option) => rightFieldChange((option as any).fieldType, listIndex)"
+              @update-value="(val, option) => rightFieldChange(option as any, listIndex)"
             />
           </n-form-item>
           <n-form-item
@@ -210,15 +210,6 @@
                   ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
                   : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
               "
-            />
-            <n-select
-              v-else-if="item.leftFieldType === FieldTypeEnum.APPROVAL_STATUS"
-              v-model:value="item.rightFieldCustomValue"
-              clearable
-              :disabled="isValueDisabled(item)"
-              :placeholder="t('common.pleaseSelect')"
-              v-bind="getSelectedProps(item.leftFieldId).selectProps"
-              @update:value="valueChange"
             />
             <n-input
               v-else
@@ -383,9 +374,9 @@
     changeMatchTypeDefaultValue(currentFormList[index]);
   };
 
-  function rightFieldChange(rightFieldType: FieldTypeEnum, index: number) {
+  function rightFieldChange(option: SelectOption & { fieldType?: FieldTypeEnum }, index: number) {
     const currentFormList = formModel.value.conditions;
-    currentFormList[index].rightFieldType = rightFieldType;
+    currentFormList[index].rightFieldType = option.fieldType || FieldTypeEnum.INPUT;
   }
 
   function matchTypeChange(matchType: DataSourceMatchType, index: number) {
@@ -410,7 +401,11 @@
     changeMatchTypeDefaultValue(currentItem);
   }
 
-  function transformFieldsToOptions(fields: FormCreateField[], leftFieldType?: FieldTypeEnum): SelectOption[] {
+  function transformFieldsToOptions(
+    fields: FormCreateField[],
+    leftFieldType?: FieldTypeEnum,
+    leftFieldId?: string
+  ): SelectOption[] {
     return fields
       .filter((e) => {
         const condition =
@@ -420,7 +415,17 @@
           props.selfId !== e.id &&
           !e.resourceFieldId;
         if (leftFieldType) {
-          return e.type === leftFieldType && condition;
+          const leftField = props.leftFields.find((field) => [field.id, field.businessKey].includes(leftFieldId || ''));
+          const isLeftSystemField = Boolean(
+            (leftField as FormCreateField & { isSystemField?: boolean })?.isSystemField
+          );
+          const isCurrentSystemField = Boolean((e as FormCreateField & { isSystemField?: boolean })?.isSystemField);
+
+          if (isLeftSystemField) {
+            return e.businessKey === leftField?.businessKey && condition;
+          }
+
+          return e.type === leftFieldType && !isCurrentSystemField && condition;
         }
         return condition;
       })
@@ -459,13 +464,9 @@
       const currentSelectedType = field.fieldType as FieldTypeEnum;
       const currentFieldProps: Record<string, any> = {};
       if (
-        [
-          FieldTypeEnum.SELECT,
-          FieldTypeEnum.SELECT_MULTIPLE,
-          FieldTypeEnum.RADIO,
-          FieldTypeEnum.CHECKBOX,
-          FieldTypeEnum.APPROVAL_STATUS,
-        ].includes(currentSelectedType)
+        [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX].includes(
+          currentSelectedType
+        )
       ) {
         currentFieldProps.selectProps = {
           options: field.options,

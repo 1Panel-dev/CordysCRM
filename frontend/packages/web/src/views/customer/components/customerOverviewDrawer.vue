@@ -113,6 +113,7 @@
             :formKey="FormDesignKeyEnum.CUSTOMER_ORDER"
             :sourceId="props.sourceId"
             isCustomerTab
+            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </CrmCard>

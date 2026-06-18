@@ -55,6 +55,7 @@ export const GetFieldCustomerListUrl = '/field/source/account'; // 获取客户�
 export const GetFieldContactListUrl = '/field/source/contact'; // 获取联系人列表
 export const GetFieldClueListUrl = '/field/source/lead'; // 获取线索列表
 export const GetFieldContractListUrl = '/field/source/contract'; // 获取合同列表
+export const GetFieldInvoiceListUrl = '/field/source/invoice'; // 获取发票列表
 export const GetFieldContractPaymentPlanListUrl = '/field/source/contract/payment-plan'; // 获取回款计划列表
 export const GetFieldContractPaymentRecordListUrl = '/field/source/contract/payment-record'; // 获取回款记录列表
 export const GetFieldCustomFormListUrl = '/field/source/custom-form-data'; // 自定义表单数据源列表

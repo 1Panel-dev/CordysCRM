@@ -11,6 +11,7 @@ export default {
   'formCreate.price': 'Price Table',
   'formCreate.quotation': 'Quotation Table',
   'formCreate.order': 'Order',
+  'formCreate.invoice': 'Invoice',
   'formCreate.pickDate': 'Pick Date',
   'formCreate.pickTime': 'Pick Time',
   'formCreate.next': 'Next',

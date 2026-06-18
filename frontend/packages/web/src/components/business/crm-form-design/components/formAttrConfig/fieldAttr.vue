@@ -140,6 +140,7 @@
           <n-select
             v-model:value="fieldConfig.dataSourceType"
             :options="dataSourceOptions"
+            filterable
             :disabled="
               fieldConfig.disabledProps?.includes('dataSourceType') ||
               !!fieldConfig.resourceFieldId ||
@@ -1861,42 +1862,48 @@
   }
 
   const showDataSourceDisplayFieldModal = ref(false);
+
+  function buildDataSourceDisplayField(item: any) {
+    return {
+      ...item,
+      id: `${fieldConfig.value.id}_ref_${item.id}`,
+      name: item.name || item.title,
+      resourceFieldId: fieldConfig.value.id,
+      description: '',
+      showLabel: item.showLabel ?? true,
+      readable: true,
+      editable: false,
+      fieldWidth: item.fieldWidth ?? 1,
+      rules: [],
+      icon: item.icon || '',
+      show: true,
+      businessKey: item.businessKey || item.key || item.id,
+      type: item.type || FieldTypeEnum.INPUT,
+      options: item.options,
+    };
+  }
+
   function handleDataSourceDisplayFieldSave(value: string[], selectedList: any[]) {
     fieldConfig.value.showFields = value;
+    const displayFields = value
+      .map((id) => selectedList.find((item) => item.key === id))
+      .filter(Boolean)
+      .map((item) => buildDataSourceDisplayField(item));
+
     if (isSubTableField.value) {
       const index = parentField.value?.subFields?.findIndex((item) => item.id === fieldConfig.value.id);
       if (index !== undefined && index >= 0 && parentField.value) {
         parentField.value.subFields = parentField.value?.subFields?.filter(
           (item) => item.resourceFieldId !== fieldConfig.value.id
         );
-        parentField.value?.subFields?.splice(
-          index + 1,
-          0,
-          ...selectedList.map((item) => ({
-            ...item,
-            id: `${fieldConfig.value.id}_ref_${item.id}`,
-            resourceFieldId: fieldConfig.value.id,
-            description: '',
-            editable: false,
-          }))
-        );
+        parentField.value?.subFields?.splice(index + 1, 0, ...displayFields);
       }
     } else {
       list.value = list.value.filter((item) => item.resourceFieldId !== fieldConfig.value.id);
       const fieldIndex = list.value.findIndex((item) => item.id === fieldConfig.value.id);
       if (fieldIndex >= 0) {
         nextTick(() => {
-          list.value.splice(
-            fieldIndex + 1,
-            0,
-            ...selectedList.map((item) => ({
-              ...item,
-              id: `${fieldConfig.value.id}_ref_${item.id}`,
-              resourceFieldId: fieldConfig.value.id,
-              description: '',
-              editable: false,
-            }))
-          );
+          list.value.splice(fieldIndex + 1, 0, ...displayFields);
         });
       }
     }

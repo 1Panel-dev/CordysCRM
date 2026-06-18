@@ -657,6 +657,7 @@ export const {
   getFieldDeptTree,
   getFieldClueList,
   getFieldContractList,
+  getFieldInvoiceList,
   getFieldContractPaymentPlanList,
   getFieldContractPaymentRecordList,
   deleteReasonItem,

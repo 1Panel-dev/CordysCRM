@@ -647,10 +647,14 @@
       const showFields = fieldList.value.filter((f) => f.resourceFieldId === item.id);
       showFields.forEach((field) => {
         const target = source.find((s) => s.id === value[0]);
-        formDetail.value[field.id] =
+        // todo xinxinwu
+        const fieldValue =
           field.businessKey && specialBusinessKeyMap[field.businessKey]
             ? target?.[specialBusinessKeyMap[field.businessKey]]
             : target?.[field.businessKey || getFieldItemId(field)];
+        const currentOption = field.options?.find((option: any) => option.value === fieldValue);
+
+        formDetail.value[field.id] = currentOption ? currentOption.label : fieldValue;
       });
     }
 
