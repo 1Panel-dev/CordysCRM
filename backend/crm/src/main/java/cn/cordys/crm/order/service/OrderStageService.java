@@ -71,26 +71,22 @@ public class OrderStageService {
         }
         if (CollectionUtils.isNotEmpty(advancedConfigs)) {
             Map<String, List<StageAdvancedConfig>> originIdMaps = advancedConfigs.stream().collect(Collectors.groupingBy(StageAdvancedConfig::getOriginId));
-            List<StageAdvancedConfigResponse> configs = new ArrayList<>();
-            List<Target> targetList = new ArrayList<>();
-            advancedConfigs.forEach(config -> {
-                StageAdvancedConfigResponse configResponse = new StageAdvancedConfigResponse();
-                configResponse.setId(config.getId());
-                configResponse.setOriginId(config.getOriginId());
-                if (originIdMaps.containsKey(config.getOriginId())) {
-                    List<StageAdvancedConfig> targets = originIdMaps.get(config.getOriginId());
-                    targets.forEach(item -> {
-                        Target target = new Target();
-                        target.setTargetId(item.getTargetId());
-                        target.setEnable(item.getEnable());
-                        List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
-                        });
-                        target.setCirculationFieldValues(circulationFieldValues);
-                        targetList.add(target);
+            List<CirculationSetting> configs = new ArrayList<>();
+            originIdMaps.forEach((key, value) -> {
+                CirculationSetting configResponse = new CirculationSetting();
+                List<Target> targetList = new ArrayList<>();
+                configResponse.setOriginId(key);
+                value.forEach(item -> {
+                    Target target = new Target();
+                    target.setTargetId(item.getTargetId());
+                    target.setEnable(item.getEnable());
+                    List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
                     });
-                }
+                    target.setCirculationFieldValues(circulationFieldValues);
+                    targetList.add(target);
+                });
                 configResponse.setTargets(targetList);
-                configResponse.setModuleType(config.getModuleType());
+                configResponse.setModuleType(value.getFirst().getModuleType());
                 configs.add(configResponse);
             });
             response.setAdvancedConfigs(configs);
