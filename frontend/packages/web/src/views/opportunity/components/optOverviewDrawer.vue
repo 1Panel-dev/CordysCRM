@@ -35,15 +35,13 @@
         v-model:stage="currentStatus"
         :show-confirm-status="true"
         class="mb-[16px]"
-        :stage-config-list="stageConfig?.stageConfigList || []"
+        :stageConfig="stageConfig"
         is-limit-back
         :failure-reason="lastFailureReason"
         :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']"
         :source-id="sourceId"
         :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
         :update-api="updateOptStage"
-        :afoot-roll-back="stageConfig?.afootRollBack"
-        :end-roll-back="stageConfig?.endRollBack"
         @load-detail="refreshList"
       />
     </template>

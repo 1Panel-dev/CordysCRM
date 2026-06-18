@@ -20,4 +20,8 @@ export default {
   'crmStatusConfigDrawer.fieldValue': 'Field value',
   'crmStatusConfigDrawer.addField': 'Add field',
   'crmStatusConfigDrawer.field': 'Field',
+  'crmStatusConfigDrawer.typeChangeTip':
+    'After switching modes, the current mode configuration will be lost, and the new mode will become the effective rule. Do you confirm the switch?',
+  'crmStatusConfigDrawer.flowDisabledTip':
+    '"{f}" is not allowed to be routed to "{t}". Please contact the administrator for route configuration.',
 };

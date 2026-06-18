@@ -33,7 +33,8 @@
       <CrmWorkflowCard
         v-model:stage="currentStatus"
         class="mb-[16px]"
-        :stage-config-list="stageConfig?.stageConfigList || []"
+        :formKey="FormDesignKeyEnum.ORDER"
+        :stageConfig="stageConfig"
         is-limit-back
         is-no-resign-flow
         :readonly="!canUpdateStage"
@@ -41,8 +42,6 @@
         :source-id="sourceId"
         :operation-permission="['ORDER:UPDATE']"
         :update-api="updateOrderStage"
-        :afoot-roll-back="stageConfig?.afootRollBack"
-        :end-roll-back="stageConfig?.endRollBack"
         @load-detail="handleSaved()"
       />
       <CrmCard contentHeight="100%" hide-footer :special-height="122" no-content-padding>
