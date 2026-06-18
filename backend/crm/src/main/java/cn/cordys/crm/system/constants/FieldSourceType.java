@@ -60,7 +60,11 @@ public enum FieldSourceType {
 	/**
 	 * 自定义表单
 	 */
-	CUSTOM_FORM("custom_form_data");
+	CUSTOM_FORM("custom_form_data"),
+	/**
+	 * 发票
+	 */
+	INVOICE("invoice");
 
 	private final String tableName;
 
