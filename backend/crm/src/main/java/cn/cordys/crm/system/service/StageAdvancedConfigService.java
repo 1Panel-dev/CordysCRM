@@ -64,6 +64,7 @@ public class StageAdvancedConfigService {
                 stageAdvanceConfig.setEnable(target.getEnable());
                 stageAdvanceConfig.setFieldConfig(JSON.toJSONString(target.getCirculationFieldValues()));
                 stageAdvanceConfig.setModuleType(moduleType);
+                stageAdvanceConfig.setOrganizationId(orgId);
                 stageAdvanceConfig.setCreateTime(System.currentTimeMillis());
                 stageAdvanceConfig.setCreateUser(userId);
                 stageAdvanceConfig.setUpdateTime(System.currentTimeMillis());
