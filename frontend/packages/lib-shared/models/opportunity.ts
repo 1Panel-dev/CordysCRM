@@ -207,6 +207,9 @@ export interface CirculationSetting {
   originId: string;
   targets: CirculationFieldTargetItem[];
   moduleType: string;
+  // 前端渲染使用
+  name?: string;
+  type?: 'AFOOT' | 'END' | string;
 }
 
 export interface SaveCirculationConfigParams {

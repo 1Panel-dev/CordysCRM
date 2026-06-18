@@ -38,21 +38,6 @@
     <template #transferPopContent>
       <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
     </template>
-    <!-- TODO 先不要了 -->
-    <!-- <template #rightTop>
-      <CrmWorkflowCard
-        v-model:stage="currentStatus"
-        v-model:last-stage="lastStage"
-        class="mb-[16px]"
-        show-error-btn
-        :readonly="isConverted"
-        :base-steps="workflowList"
-        :source-id="sourceId"
-        :update-api="updateClueStatus"
-        :operation-permission="['CLUE_MANAGEMENT:UPDATE']"
-        @load-detail="loadDetail"
-      />
-    </template> -->
     <template #right>
       <div class="h-full pt-[16px]">
         <FollowDetail

@@ -25,7 +25,8 @@
       <CrmWorkflowCard
         v-model:stage="currentStatus"
         class="mb-[16px]"
-        :stage-config-list="stageConfig?.stageConfigList || []"
+        :stageConfig="stageConfig"
+        :formKey="FormDesignKeyEnum.CONTRACT"
         is-limit-back
         is-no-resign-flow
         :readonly="!canUpdateStage"
@@ -34,8 +35,6 @@
         :operation-permission="['CONTRACT:STAGE']"
         :update-api="updateContractStage"
         :before-change-stage="handleBeforeChangeStage"
-        :afoot-roll-back="stageConfig?.afootRollBack"
-        :end-roll-back="stageConfig?.endRollBack"
         @load-detail="handleSaved()"
       />
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">

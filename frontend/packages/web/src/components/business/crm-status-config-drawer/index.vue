@@ -87,7 +87,7 @@
                 type="segment"
                 pane-class="hidden"
                 tab-class="h-[28px]"
-                @update-value="handleFlowTypeChange"
+                @before-leave="handleFlowConfigurationTypeBeforeChange"
               >
                 <n-tab-pane :name="CirculationTypeEnum.NORMAL" :tab="t('crmStatusConfigDrawer.basicFlow')">
                 </n-tab-pane>
@@ -392,6 +392,7 @@
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useModal from '@/hooks/useModal';
 
   import { flowApiMap } from './config';
   import type { StatusBizType, StatusRowItem } from './types';
@@ -404,6 +405,7 @@
 
   const { t } = useI18n();
   const Message = useMessage();
+  const { openModal } = useModal();
 
   const show = defineModel<boolean>('visible', {
     required: true,
@@ -458,6 +460,15 @@
             ],
             moduleType: '',
           }));
+        } else {
+          form.value.advancedConfigs = form.value.advancedConfigs.map((e) => {
+            const stage = form.value.list.find((s) => s.id === e.originId);
+            return {
+              ...e,
+              name: stage?.name,
+              type: stage?.type,
+            };
+          });
         }
       } else {
         tabName.value = 'statusConfig';
@@ -512,11 +523,26 @@
   async function handleFlowTypeChange(val: any) {
     try {
       await flowApiMap[props.type].switch(val);
+      flowConfigurationType.value = val;
       Message.success(t('common.operationSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
+  }
+
+  function handleFlowConfigurationTypeBeforeChange(val: any) {
+    openModal({
+      title: t('common.tip'),
+      type: 'warning',
+      content: t('crmStatusConfigDrawer.typeChangeTip'),
+      negativeText: t('common.cancel'),
+      positiveText: t('common.confirm'),
+      onPositiveClick: async () => {
+        handleFlowTypeChange(val);
+      },
+    });
+    return false;
   }
 
   const flowSettingVisible = ref(false);
@@ -540,6 +566,8 @@
           fieldProps: fieldList.value.find((f) => f.id === v.fieldId),
         }));
         tempCirculationFieldValues.value = cloneDeep(currentFlow.circulationFieldValues);
+      } else {
+        tempCirculationFieldValues.value = currentFlow?.circulationFieldValues || [];
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -650,9 +678,9 @@
             FieldTypeEnum.SERIAL_NUMBER,
             FieldTypeEnum.SUB_PRICE,
             FieldTypeEnum.SUB_PRODUCT,
-            FieldTypeEnum.PICTURE,
-            FieldTypeEnum.ATTACHMENT,
-          ].includes(e.type) && !e.resourceFieldId
+          ].includes(e.type) &&
+          !e.resourceFieldId &&
+          e.editable
       )
       .map((e) => ({
         label: e.name,

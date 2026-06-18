@@ -2,36 +2,46 @@
   <n-scrollbar x-scrollable>
     <div class="crm-workflow-step">
       <div class="flex flex-1 gap-[16px]">
-        <div
+        <n-tooltip
           v-for="(item, index) of workflowData"
           :key="item.value"
-          :class="`crm-workflow-item`"
-          @click="changeStage(item.value as string)"
+          trigger="hover"
+          :disabled="!isDisabledStage(item.value?.toString() || '') || currentStatus === item.value"
         >
-          <div class="crm-workflow-item-status" :class="statusClass(index, item)">
-            <CrmIcon
-              v-if="index < currentStatusIndex || item.value === failureStage"
-              :type="item.value === failureStage ? 'iconicon_close' : 'iconicon_check'"
-              :size="16"
-            />
-            <div v-else class="flex items-center justify-center">{{ index + 1 }} </div>
-          </div>
-          <div class="crm-workflow-item-name" :class="statusClass(index, item)">
-            {{
-              item.value === failureStage && props.failureReason
-                ? `${item.label}（${props.failureReason}）`
-                : item.label
-            }}
-          </div>
-          <div
-            v-if="index !== workflowData.length - 1"
-            class="crm-workflow-item-line"
-            :class="{
-              'in-progress': index < currentStatusIndex,
-            }"
-          >
-          </div>
-        </div>
+          <template #trigger>
+            <div :class="`crm-workflow-item`" @click="changeStage(item.value as string)">
+              <div class="crm-workflow-item-status" :class="statusClass(index, item)">
+                <CrmIcon
+                  v-if="index < currentStatusIndex || item.value === failureStage"
+                  :type="item.value === failureStage ? 'iconicon_close' : 'iconicon_check'"
+                  :size="16"
+                />
+                <div v-else class="flex items-center justify-center">{{ index + 1 }} </div>
+              </div>
+              <div class="crm-workflow-item-name" :class="statusClass(index, item)">
+                {{
+                  item.value === failureStage && props.failureReason
+                    ? `${item.label}（${props.failureReason}）`
+                    : item.label
+                }}
+              </div>
+              <div
+                v-if="index !== workflowData.length - 1"
+                class="crm-workflow-item-line"
+                :class="{
+                  'in-progress': index < currentStatusIndex,
+                }"
+              >
+              </div>
+            </div>
+          </template>
+          {{
+            t('crmStatusConfigDrawer.flowDisabledTip', {
+              f: props.workflowList[currentStatusIndex].label,
+              t: item.label,
+            })
+          }}
+        </n-tooltip>
       </div>
       <slot
         v-if="currentStatusIndex !== workflowData.length - 1"
@@ -44,28 +54,30 @@
 </template>
 
 <script setup lang="ts">
-  import { NScrollbar, SelectOption } from 'naive-ui';
+  import { NScrollbar, NTooltip, SelectOption } from 'naive-ui';
 
-  import { StageConfigItem } from '@lib/shared/models/opportunity';
+  import { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { type OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     workflowList: SelectOption[];
-    stageConfigList: StageConfigItem[]; // 阶段列表
+    stageConfig?: OpportunityStageConfig; // 阶段配置
     operationPermission?: string[];
     readonly?: boolean;
     isLimitBack?: boolean; // 是否限制状态往返
     backStagePermission?: string[];
     failureReason?: string;
-    afootRollBack?: boolean; // 是否允许从跟进中回退
-    endRollBack?: boolean; // 是否允许从成功或失败回退
     isNoResignFlow?: boolean; // 是否是不区分成功失败、无反签逻辑的流程
   }>();
 
   const emit = defineEmits<{
     (e: 'change', value: string): void;
   }>();
+
+  const { t } = useI18n();
 
   const currentStatus = defineModel<string>('status', {
     required: true,
@@ -75,16 +87,25 @@
   const currentStatusIndex = computed(() => workflowData.value.findIndex((e) => e.value === currentStatus.value));
   const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
   const successStage = computed(
-    () => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id || ''
+    () => props.stageConfig?.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id || ''
   );
-  const failureStage = computed(() => props.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id || '');
+  const failureStage = computed(
+    () => props.stageConfig?.stageConfigList.find((e) => e.type === 'END' && e.rate === '0')?.id || ''
+  );
   // 订单没有rate 只判断type
-  const endStages = computed(() => props.stageConfigList.filter((e) => e.type === 'END').map((i) => i.id));
+  const endStages = computed(() => props.stageConfig?.stageConfigList.filter((e) => e.type === 'END').map((i) => i.id));
+  const currentStageConfig = computed(() =>
+    props.stageConfig?.advancedConfigs?.find((e) => e.originId === currentStatus.value)
+  );
 
   const isDisabledStage = (stage: string) => {
+    const targetStage = currentStageConfig.value?.targets.find((e) => e.targetId === stage);
+    if (props.stageConfig?.circulationType === CirculationTypeEnum.ADVANCED && currentStageConfig) {
+      return !targetStage?.enable;
+    }
     const isSameStage = currentStatus.value === stage;
     const isFailureStage = stage === failureStage.value;
-    const isCurrentEndStage = endStages.value.includes(currentStatus.value);
+    const isCurrentEndStage = endStages.value?.includes(currentStatus.value);
     const hasPermission = props.backStagePermission && hasAllPermission(props.backStagePermission);
 
     // 获取当前阶段和目标阶段在流程中的索引
@@ -99,17 +120,17 @@
         }
         // 当前为完结状态，且目标是进行中状态，需要开启完结阶段回退
         if (currentStatus.value === successStage.value || currentStatus.value === failureStage.value) {
-          return isSameStage || readonly.value || !props.endRollBack;
+          return isSameStage || readonly.value || !props.stageConfig?.endRollBack;
         }
       } else if (isCurrentEndStage) {
         // 这类流程没有反签，完结阶段统一按回退开关控制
-        return isSameStage || readonly.value || !props.endRollBack;
+        return isSameStage || readonly.value || !props.stageConfig?.endRollBack;
       }
 
       // 当前处于进行中阶段时的处理逻辑
       if (!isCurrentEndStage) {
         // 开启则不限制
-        if (props.afootRollBack) {
+        if (props.stageConfig?.afootRollBack) {
           return isSameStage || readonly.value;
         }
         // 允许前进到当前阶段的后边的任意阶段 无论是进行中、成功或失败）
