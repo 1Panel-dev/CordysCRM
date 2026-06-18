@@ -81,7 +81,7 @@
     return item.offsetWidth + Number.parseFloat(window.getComputedStyle(item).marginRight || '0');
   }
 
-  // 逐个累加完整成员名称宽度，并给右侧的 “+N” 预留空间。
+  // 逐个累加完整名称宽度，并给右侧 “+N” 预留空间。
   function getVisibleCount(itemElements: Element[], availableWidth: number) {
     let usedWidth = 0;
     for (let index = 0; index < itemElements.length; index += 1) {
@@ -123,7 +123,9 @@
   }
 
   onMounted(() => {
-    descriptionResizeObserver = new ResizeObserver(updateDescriptionOverflow);
+    if (typeof ResizeObserver !== 'undefined') {
+      descriptionResizeObserver = new ResizeObserver(updateDescriptionOverflow);
+    }
     observeDescriptionWrap();
     updateDescriptionOverflow();
   });
