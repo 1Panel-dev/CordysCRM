@@ -24,10 +24,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,7 +85,18 @@ public class ContractStageService {
                 configResponse.setModuleType(value.getFirst().getModuleType());
                 configs.add(configResponse);
             });
-            response.setAdvancedConfigs(configs);
+            Map<String, CirculationSetting> configMap = configs.stream()
+                    .collect(Collectors.toMap(
+                            CirculationSetting::getOriginId,
+                            Function.identity()
+                    ));
+
+            List<CirculationSetting> sortedConfigs = stageConfigList.stream()
+                    .map(stage -> configMap.get(stage.getId()))
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            response.setAdvancedConfigs(sortedConfigs);
         }
     }
 
