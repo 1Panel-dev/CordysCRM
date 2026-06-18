@@ -608,10 +608,7 @@
     </update>
 
     <update id="transfer">
-        update opportunity
-        set owner = #{owner}, stage = #{stage}, last_stage = Null, update_user = #{userId},
-            update_time = #{updateTime}, pos = #{nextPos}
-        where id = #{id}
+        update opportunity set owner = #{owner}, update_user = #{userId}, update_time = #{updateTime} where id = #{id}
     </update>
 
     <select id="getDetail" resultType="cn.cordys.crm.opportunity.dto.response.OpportunityDetailResponse">

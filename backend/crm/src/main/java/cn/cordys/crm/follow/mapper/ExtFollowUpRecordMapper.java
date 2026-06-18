@@ -18,7 +18,7 @@ public interface ExtFollowUpRecordMapper {
 
 
     List<FollowUpRecordListResponse> selectList(@Param("request") FollowUpRecordPageRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                                                @Param("resourceType") String resourceType, @Param("type") String type, @Param("customerData") CustomerDataDTO customerData);
+                                                @Param("resourceType") String resourceType, @Param("type") String type);
 
     /**
      * 记录的汇总查询

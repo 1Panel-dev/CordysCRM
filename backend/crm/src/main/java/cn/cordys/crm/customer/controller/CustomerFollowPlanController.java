@@ -54,18 +54,14 @@ public class CustomerFollowPlanController {
     @Operation(summary = "客户跟进计划列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
-        CustomerDataDTO customerData = followUpPlanService.getCustomerPermission(SessionUtils.getUserId(),
-                request.getSourceId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER", customerData);
+        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER");
     }
 
     @GetMapping("/get/{id}")
-    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_READ, resourceId = "{#id}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "客户跟进计划详情")
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
         return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
     }
-
 
     @GetMapping("/cancel/{id}")
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#id}", formType = FormKeyConstants.FOLLOW_PLAN)

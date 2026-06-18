@@ -16,8 +16,7 @@ public interface ExtFollowUpPlanMapper {
 
 
     List<FollowUpPlanListResponse> selectList(@Param("request") FollowUpPlanPageRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
-                                              @Param("resourceType") String resourceType, @Param("type") String type, @Param("customerData") CustomerDataDTO customerData,
-                                              @Param("resourceTypeList") List<String> resourceTypeList);
+                                              @Param("resourceType") String resourceType, @Param("type") String type, @Param("resourceTypeList") List<String> resourceTypeList);
 
     /**
      * 计划的汇总查询

@@ -8,7 +8,6 @@ import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
-import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
@@ -62,9 +61,7 @@ public class CustomerFollowRecordController {
     @Operation(summary = "客户跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_RECORD.getKey());
-        CustomerDataDTO customerData = followUpRecordService.getCustomerPermission(SessionUtils.getUserId(),
-                request.getSourceId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER", customerData);
+        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER");
     }
 
 

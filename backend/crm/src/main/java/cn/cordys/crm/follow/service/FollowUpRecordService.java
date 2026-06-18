@@ -358,9 +358,9 @@ public class FollowUpRecordService extends BaseFollowUpService {
      *
      * @return
      */
-    public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type, customerData);
+        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type);
         buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list);
         return PageUtils.setPageInfoWithOption(page, list, optionMap);

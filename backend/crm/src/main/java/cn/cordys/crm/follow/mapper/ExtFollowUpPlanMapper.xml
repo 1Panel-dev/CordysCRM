@@ -53,28 +53,6 @@
             AND fup.status = #{request.status}
         </if>
 
-        <if test="customerData != null and !customerData.all and customerData.owner">
-            <if test="customerData.userIds != null and customerData.userIds.size() > 0">
-                AND fup.owner not in
-                <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
-                    #{userId}
-                </foreach>
-            </if>
-        </if>
-
-        <if test="customerData != null and !customerData.all and !customerData.owner and !customerData.self">
-            <if test="customerData.userIds != null and customerData.userIds.size() > 0">
-                AND fup.owner not in
-                <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
-                    #{userId}
-                </foreach>
-            </if>
-        </if>
-
-        <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
-            AND fup.owner = #{userId}
-        </if>
-
         <if test="resourceTypeList!=null and resourceTypeList.size()>0">
             AND fup.type in
             <foreach collection="resourceTypeList" item="type" open="(" close=")" separator=",">
