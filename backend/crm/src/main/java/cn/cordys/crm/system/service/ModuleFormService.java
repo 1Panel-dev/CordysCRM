@@ -1022,6 +1022,7 @@ public class ModuleFormService {
 			// 目前只有下拉类型系统字段, 后续可根据枚举扩展
 			SelectField field = new SelectField();
             field.setId(sf.getKey());
+			field.setBusinessKey(sf.getKey());
             fields.add(field);
         }
         return fields;
