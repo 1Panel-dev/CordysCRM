@@ -13,6 +13,13 @@ public interface ExtApprovalInstanceMapper {
 	 */
 	void updateApprovalStatus(@Param("sourceTable") String sourceTable, @Param("id") String resourceId,
 							  @Param("approvalStatus") String approvalStatus);
+	/**
+	 * 更新业务表的 approved 状态
+	 *
+	 * @param sourceTable     主业务表
+	 * @param resourceId      资源ID
+	 */
+	void setApproved(@Param("sourceTable") String sourceTable, @Param("id") String resourceId);
 
 	/**
 	 * 查询业务表业务名称
@@ -31,6 +38,15 @@ public interface ExtApprovalInstanceMapper {
 	String selectApprovalStatus(@Param("sourceTable") String sourceTable, @Param("id") String id);
 
 	String getResourceOwner(@Param("sourceTable")String sourceTable, @Param("id")String id);
+
+	/**
+	 * 查询业务资源是否审批通过过
+	 *
+	 * @param sourceTable 主业务表
+	 * @param id          资源ID
+	 * @return 是否审批通过过
+	 */
+	Boolean selectApproved(@Param("sourceTable") String sourceTable, @Param("id") String id);
 
 	/**
 	 * 获取节点下一个执行轮次

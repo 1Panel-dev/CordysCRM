@@ -21,6 +21,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
@@ -32,6 +33,7 @@ import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.contract.domain.ContractField;
@@ -82,7 +84,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class OpportunityQuotationService {
+public class OpportunityQuotationService implements ApprovalResourceHandler {
 
     @Resource
     private OpportunityQuotationFieldService opportunityQuotationFieldService;
@@ -116,8 +118,6 @@ public class OpportunityQuotationService {
     private DictService dictService;
     @Resource
     private ApprovalFlowService approvalFlowService;
-    @Resource
-    private ApprovalResourceService approvalResourceService;
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -695,6 +695,16 @@ public class OpportunityQuotationService {
         sendNotice(null, opportunityQuotation, userId, organizationId, NotificationConstants.Event.BUSINESS_QUOTATION_DELETED);
     }
 
+    @Override
+    public void deleteForResource(String resourceId, String userId, String organizationId) {
+        delete(resourceId, userId, organizationId);
+    }
+
+    @Override
+    public FormKey getFormKey() {
+        return FormKey.QUOTATION;
+    }
+
     /**
      * 商机报价单列表
      *
@@ -980,8 +990,8 @@ public class OpportunityQuotationService {
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder().success(0).fail(originQuotations.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
-
-            approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.QUOTATION, organizationId, userId);
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.QUOTATION, organizationId, userId);
 
         // 只对有权限的报价单进行操作
         List<OpportunityQuotation> permittedQuotations = originQuotations.stream()

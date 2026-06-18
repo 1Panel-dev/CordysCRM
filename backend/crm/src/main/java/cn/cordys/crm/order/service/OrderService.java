@@ -25,6 +25,7 @@ import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
@@ -35,6 +36,7 @@ import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.contract.domain.Contract;
@@ -78,7 +80,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class OrderService {
+public class OrderService implements ApprovalResourceHandler {
 
     @Resource
     private OrderFieldService orderFieldService;
@@ -102,8 +104,6 @@ public class OrderService {
     private BaseMapper<Contract> contractMapper;
     @Resource
     private LogService logService;
-    @Resource
-    private ApprovalResourceService approvalResourceService;
     @Resource
     private ExtOrderStageConfigMapper extOrderStageConfigMapper;
     @Resource
@@ -451,6 +451,16 @@ public class OrderService {
         OperationLogContext.setResourceName(order.getName());
     }
 
+    @Override
+    public void deleteForResource(String resourceId, String userId, String organizationId) {
+        delete(resourceId, userId);
+    }
+
+    @Override
+    public FormKey getFormKey() {
+        return FormKey.ORDER;
+    }
+
 
     /**
      * ⚠️反射调用; 勿修改入参, 返回, 方法名!
@@ -789,8 +799,8 @@ public class OrderService {
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder().success(0).fail(originOrders.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
-
-            approvalResourceService.batchEditTriggerApproval(permittedIds, FormKey.ORDER, orgId, userId);
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.ORDER, orgId, userId);
 
         List<Order> permittedOrders = originOrders.stream()
                 .filter(o -> permittedIds.contains(o.getId()))

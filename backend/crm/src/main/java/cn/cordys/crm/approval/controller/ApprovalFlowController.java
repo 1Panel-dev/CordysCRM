@@ -2,6 +2,7 @@ package cn.cordys.crm.approval.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.Pager;
+import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.dto.WebHookConfig;
 import cn.cordys.crm.approval.dto.request.ApprovalFlowAddRequest;
@@ -37,6 +38,7 @@ public class ApprovalFlowController {
     @RequiresPermissions(PermissionConstants.PROCESS_SETTING_READ)
     @Operation(summary = "审批流列表")
     public Pager<List<ApprovalFlowListResponse>> list(@Validated @RequestBody ApprovalFlowPageRequest request) {
+        ConditionFilterUtils.parseCondition(request);
         return approvalFlowService.list(request, OrganizationContext.getOrganizationId());
     }
 

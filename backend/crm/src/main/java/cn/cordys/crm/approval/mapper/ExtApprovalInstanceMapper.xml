@@ -6,6 +6,9 @@
         update ${sourceTable} set approval_status = #{approvalStatus} where id = #{id}
     </select>
 
+    <select id="setApproved" resultType="java.lang.String">
+        update ${sourceTable} set approved = 1 where id = #{id}
+    </select>
 
     <select id="selectBusinessName" resultType="java.lang.String">
         select name from ${sourceTable} where id = #{id}
@@ -18,6 +21,10 @@
 
     <select id="getResourceOwner" resultType="java.lang.String">
         select owner from ${sourceTable} where id = #{id}
+    </select>
+
+    <select id="selectApproved" resultType="java.lang.Boolean">
+        select approved from ${sourceTable} where id = #{id}
     </select>
 
     <select id="getNextNodeRound" resultType="java.lang.Integer">

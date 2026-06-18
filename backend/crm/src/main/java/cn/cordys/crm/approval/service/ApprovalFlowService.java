@@ -108,8 +108,6 @@ public class ApprovalFlowService {
     private ExtApprovalInstanceMapper extApprovalInstanceMapper;
     @Resource
     private ApprovalInstanceService approvalInstanceService;
-    @Resource
-    private BaseMapper<ApprovalResourceData> approvalResourceDataMapper;
 
     /**
      * 加签节点后缀分隔符
@@ -1258,21 +1256,11 @@ public class ApprovalFlowService {
     /**
      * 加载修改字段列表
      */
-    private Set<String> loadUpdateFields(String resourceId) {
-        if (StringUtils.isBlank(resourceId)) {
+    private Set<String> loadUpdateFields(String updateFieldsStr) {
+        if (StringUtils.isBlank(updateFieldsStr)) {
             return Collections.emptySet();
         }
         try {
-            LambdaQueryWrapper<ApprovalResourceData> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(ApprovalResourceData::getResourceId, resourceId);
-            List<ApprovalResourceData> dataList = approvalResourceDataMapper.selectListByLambda(wrapper);
-            if (CollectionUtils.isEmpty(dataList)) {
-                return Collections.emptySet();
-            }
-            String updateFieldsStr = dataList.getFirst().getUpdateFields();
-            if (StringUtils.isBlank(updateFieldsStr)) {
-                return Collections.emptySet();
-            }
             List<String> fields = JSON.parseArray(updateFieldsStr, String.class);
             return CollectionUtils.isEmpty(fields) ? Collections.emptySet() : new HashSet<>(fields);
         } catch (Exception e) {
@@ -1867,7 +1855,7 @@ public class ApprovalFlowService {
      */
     private ApprovalNodeResponse getNextNodeWithExceptionHandler(ApprovalInstance instance, String nodeId, List<BaseModuleFieldValue> fieldValues, String currentOrgId, boolean preview) {
         // 加载修改字段列表，用于 NOT_EQUAL_ORIGINAL 条件判断
-        Set<String> updateFields = loadUpdateFields(instance.getResourceId());
+        Set<String> updateFields = loadUpdateFields(instance.getUpdateFields());
         ApprovalNodeResponse nextNode = getNextNode(nodeId, fieldValues, updateFields);
         if (nextNode == null) {
             throw new GenericException(Translator.get("no.approval.next.node"));

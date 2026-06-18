@@ -1,10 +1,21 @@
 package cn.cordys.crm.approval.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApprovalPushParam extends ApprovalResourceBaseParam{
-	@Schema(description = "变更说明")
+	private String resourceId;
+	private String formKey;
 	private String comment;
+	private String orgId;
+	private String userId;
+	private ExecuteTimingEnum executeTimingEnum;
+	private String updateFields;
 }

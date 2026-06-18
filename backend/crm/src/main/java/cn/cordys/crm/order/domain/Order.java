@@ -40,4 +40,7 @@ public class Order extends BaseModel {
 
     @Schema(description = "自定义排序")
     private Long pos;
+
+    @Schema(description = "是否审批通过过")
+    private Boolean approved;
 }
