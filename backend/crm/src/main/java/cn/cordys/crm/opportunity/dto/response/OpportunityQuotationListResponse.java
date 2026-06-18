@@ -69,4 +69,7 @@ public class OpportunityQuotationListResponse {
 	@Schema(description = "审批第一个节点是否通过")
 	private Boolean firstApproved;
 
+    @Schema(description = "是否审批通过过")
+    private Boolean approved;
+
 }

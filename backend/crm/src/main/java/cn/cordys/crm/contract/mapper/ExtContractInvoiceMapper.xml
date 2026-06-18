@@ -8,6 +8,7 @@
         ci.contract_id,
         c.`name` AS contractName,
         c.`amount` AS contractAmount,
+        ci.approved,
         ci.name,
         ci.amount,
         ci.invoice_type,

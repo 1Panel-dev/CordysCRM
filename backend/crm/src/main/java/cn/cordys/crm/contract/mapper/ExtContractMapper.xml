@@ -13,6 +13,7 @@
         c.pool_id,
         ct.amount,
         ct.approval_status,
+        ct.approved,
         ct.stage,
         ct.`owner`,
         ct.start_time,

@@ -240,6 +240,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
 			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
 			response.setFirstApproved(firstNodeApproved.get(response.getId()));
 		}
+        response.setApproved(opportunityQuotation.getApproved());
         return response;
     }
 
