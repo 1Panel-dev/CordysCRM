@@ -109,6 +109,11 @@ public abstract class BaseField {
 	@Schema(description = "该字段所属子表格ID, 仅子表格字段使用, 用来区分该字段是外层字段还是子表格字段")
 	private String subTableFieldId;
 
+	/**
+	 * 是否系统字段 (后端)
+	 */
+	private boolean isSys;
+
     @JsonIgnore
     public static boolean isBlob(String type) {
         return Strings.CS.equalsAny(type, FieldType.TEXTAREA.name(), FieldType.INPUT_MULTIPLE.name(),

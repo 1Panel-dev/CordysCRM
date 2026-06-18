@@ -1022,8 +1022,7 @@ public class ModuleFormService {
 			// 目前只有下拉类型系统字段, 后续可根据枚举扩展
 			SelectField field = new SelectField();
             field.setId(sf.getKey());
-			field.setType(FieldType.SELECT.name());
-			field.setBusinessKey(sf.getKey());
+			field.setSys(true);
             fields.add(field);
         }
         return fields;
@@ -2311,6 +2310,10 @@ public class ModuleFormService {
 	 * @return 组合后的字段配置
 	 */
 	private BaseField combineFieldsProps(BaseField old, BaseField ref) {
+		if (ref.isSys()) {
+			// 系统字段, 直接返回前端引用的字段配置即可, 后端不组装字段
+			return old;
+		}
 		// 深拷贝 ref 对象, 避免修改原始对象
 		BaseField refCopy = JSON.parseObject(JSON.toJSONString(ref), BaseField.class);
 		// 保留一些可用的属性
