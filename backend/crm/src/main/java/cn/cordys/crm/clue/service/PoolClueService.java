@@ -328,6 +328,9 @@ public class PoolClueService {
         if (clue == null) {
             throw new IllegalArgumentException(Translator.get("clue.not.exist"));
         }
+        if (!clue.getInSharedPool()) {
+            throw new GenericException(Translator.getWithArgs("clue.pool.occupied", clue.getName()));
+        }
         if (!isPoolAdmin && pickRule != null && pickRule.getLimitNew()) {
             LocalDateTime joinPoolTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(clue.getUpdateTime()), ZoneId.systemDefault());
             LocalDateTime releaseDate = joinPoolTime.plusDays(pickRule.getNewPickInterval());
