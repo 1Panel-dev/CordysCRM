@@ -343,7 +343,7 @@ public class OrderService implements ApprovalResourceHandler {
      * @return
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
-    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
+    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
     public Order update(OrderUpdateRequest request, String userId, String orgId) {
         Order oldOrder = orderMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
@@ -801,7 +801,7 @@ public class OrderService implements ApprovalResourceHandler {
             return BatchAffectReasonResponse.builder().success(0).fail(originOrders.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
         ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
-        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.ORDER, orgId, userId);
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.ORDER, orgId, userId, field.getName(), request.getFieldValue());
 
         List<Order> permittedOrders = originOrders.stream()
                 .filter(o -> permittedIds.contains(o.getId()))
@@ -831,7 +831,7 @@ public class OrderService implements ApprovalResourceHandler {
             if (order == null) {
                 continue;
             }
-            List<BaseModuleFieldValue> orderFields = fieldMap.getOrDefault(id, Collections.emptyList());
+            List<BaseModuleFieldValue> orderFields = fieldMap.getOrDefault(id, new ArrayList<>());
             List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(orderFields, moduleFormConfigDTO, orderFieldService, id);
             OrderGetResponse response = get(order, resolveFieldValues, moduleFormConfigDTO);
             if (CollectionUtils.isNotEmpty(response.getModuleFields())) {

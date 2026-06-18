@@ -2,6 +2,7 @@ package cn.cordys.crm.approval.annotation;
 
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import org.apache.logging.log4j.util.Strings;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -43,5 +44,10 @@ public @interface HitApproval {
 	/**
 	 * 操作人 (审批流触发的用户ID)
 	 */
-	String operatorId() default "admin";
+	String operatorId();
+
+	/**
+	 * 变更说明
+	 */
+	String comment() default Strings.EMPTY;
 }
