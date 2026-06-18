@@ -764,7 +764,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
      * @return 更新后的报价单实体
      */
     @OperationLog(module = LogModule.OPPORTUNITY_QUOTATION, type = LogType.UPDATE, resourceName = "{#request.name}", operator = "{#userId}")
-	@HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
+	@HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
     public OpportunityQuotation update(OpportunityQuotationEditRequest request, String userId, String orgId) {
         String id = request.getId();
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
@@ -992,7 +992,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
             return BatchAffectReasonResponse.builder().success(0).fail(originQuotations.size()).skip(0).errorMessages(Translator.get("no.operation.permission")).build();
         }
         ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
-        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.QUOTATION, organizationId, userId);
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.QUOTATION, organizationId, userId, field.getName(), request.getFieldValue());
 
         // 只对有权限的报价单进行操作
         List<OpportunityQuotation> permittedQuotations = originQuotations.stream()

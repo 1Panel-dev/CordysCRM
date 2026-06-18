@@ -91,6 +91,10 @@ public class HitApprovalAspect {
 			String resourceId = resolveResourceId(method, joinPoint.getArgs(), annotation.resourceId(), retValue, annotation.executeType());
 			String updateType = resolveResourceId(method, joinPoint.getArgs(), annotation.updateType(), retValue, annotation.executeType());
 			String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
+			String comment = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.comment());
+			if (StringUtils.isBlank(operator)) {
+				operator = SessionUtils.getUserId();
+			}
 			if (StringUtils.isBlank(resourceId)) {
 				return retValue;
 			}
@@ -121,7 +125,16 @@ public class HitApprovalAspect {
 					// 命中审批流，直接提审（跳过待提审状态）
 					approvalResourceService.clearResourceApprovalDetail(resourceId);
 					String updateFields = resolveUpdateFields();
-					autoSubmitApproval(annotation.formKey(), annotation.executeType(), resourceId, operator, organizationId, updateFields);
+					ApprovalPushParam pushParam = ApprovalPushParam.builder()
+							.orgId(organizationId)
+							.userId(operator)
+							.resourceId(resourceId)
+							.formKey(annotation.formKey().getKey())
+							.executeTimingEnum(ExecuteTimingEnum.UPDATE)
+							.updateFields(updateFields)
+							.comment(comment)
+							.build();
+					approvalResourceService.push(pushParam);
 				}
 			}
 		} catch (Exception e) {
@@ -143,6 +156,10 @@ public class HitApprovalAspect {
 			return joinPoint.proceed();
 		}
 
+		if (StringUtils.isBlank(operator)) {
+			operator = SessionUtils.getUserId();
+		}
+
 		// 获取组织ID
 		String organizationId = OrganizationContext.getOrganizationId();
 		if (StringUtils.isBlank(organizationId)) {
@@ -157,7 +174,14 @@ public class HitApprovalAspect {
 			return joinPoint.proceed();
 		}
 
-		autoSubmitApproval(annotation.formKey(), ExecuteTimingEnum.DELETE, resourceId, operator, organizationId, null);
+		ApprovalPushParam pushParam = ApprovalPushParam.builder()
+				.orgId(organizationId)
+				.userId(operator)
+				.resourceId(resourceId)
+				.formKey(annotation.formKey().getKey())
+				.executeTimingEnum(ExecuteTimingEnum.DELETE)
+				.build();
+		approvalResourceService.push(pushParam);
 		return null;
 	}
 
@@ -276,21 +300,6 @@ public class HitApprovalAspect {
 		} catch (Exception e) {
 			return false;
 		}
-	}
-
-	/**
-	 * 自动提审：命中审批流后直接提审，跳过待提审状态
-	 */
-	private void autoSubmitApproval(FormKey formKey, ExecuteTimingEnum executeTimingEnum, String resourceId, String operator, String organizationId, String updateFields) {
-		ApprovalPushParam pushParam = ApprovalPushParam.builder()
-				.orgId(organizationId)
-				.userId(operator)
-				.resourceId(resourceId)
-				.formKey(formKey.getKey())
-				.executeTimingEnum(executeTimingEnum)
-				.updateFields(updateFields)
-				.build();
-		approvalResourceService.push(pushParam);
 	}
 
 	/**

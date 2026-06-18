@@ -6,6 +6,8 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.SSRFValidationService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
@@ -536,11 +538,14 @@ public class ApprovalResourceService {
      * 如果资源历史上审批通过过，直接提审（UPDATE时机）；未通过过则设为待提审（CREATE时机）
      *
      * @param resourceIds    资源ID集合
+     * @param fieldId        字段ID
      * @param formKey        业务模块（表单类型）
      * @param organizationId 组织ID
      * @param userId         操作人ID
+     * @param fieldName      字段显示名称
+     * @param fieldValue     字段值
      */
-    public void batchEditTriggerApproval(List<String> resourceIds, String fieldId, FormKey formKey, String organizationId, String userId) {
+    public void batchEditTriggerApproval(List<String> resourceIds, String fieldId, FormKey formKey, String organizationId, String userId, String fieldName, Object fieldValue) {
         if (CollectionUtils.isEmpty(resourceIds) || formKey == null || StringUtils.isBlank(organizationId)) {
             return;
         }
@@ -548,6 +553,15 @@ public class ApprovalResourceService {
         // 检查是否命中审批流
         if (!checkHitApprovalFlowEditTrigger(formKey, organizationId)) {
             return;
+        }
+
+        String valueName = fieldValue instanceof List ? JSON.toJSONString(fieldValue) : fieldValue.toString();
+        for (BaseField field : moduleFormCacheService.getConfig(formKey.getKey(), organizationId).getFields()) {
+            if (Strings.CS.equals(field.getId(), fieldId) || Strings.CS.equals(field.getBusinessKey(), fieldId)) {
+                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+                // 将数据库中的字符串值,转换为对应的对象值
+                valueName = customFieldResolver.transformToValue(field, valueName).toString();
+            }
         }
 
         for (String resourceId : resourceIds) {
@@ -562,6 +576,7 @@ public class ApprovalResourceService {
                         .formKey(formKey.getKey())
                         .executeTimingEnum(ExecuteTimingEnum.UPDATE)
                         .updateFields(JSON.toJSONString(List.of(fieldId)))
+                        .comment(Translator.getWithArgs("approval.update.field", fieldName, valueName))
                         .build();
                 push(pushParam);
             } else {
@@ -582,7 +597,7 @@ public class ApprovalResourceService {
      * @param userId         操作人ID
      * @return 命中审批流的资源ID集合
      */
-    public List<String> batchDeleteTriggerApproval(List<String> resourceIds, FormKey formKey, String organizationId, String userId) {
+    public List<String> batchDeleteTriggerApproval(List<String> resourceIds, FormKey formKey, String organizationId, String userId, Map<String, String> resourceNameMap) {
         if (CollectionUtils.isEmpty(resourceIds) || formKey == null || StringUtils.isBlank(organizationId)) {
             return Collections.emptyList();
         }
@@ -602,11 +617,25 @@ public class ApprovalResourceService {
                     .resourceId(resourceId)
                     .formKey(formKey.getKey())
                     .executeTimingEnum(ExecuteTimingEnum.DELETE)
+                    .comment(Translator.getWithArgs("approval.delete.resource", getFormKeyDisplayName(formKey), resourceNameMap.get(resourceId)))
                     .build();
             push(pushParam);
             approvalResourceIds.add(resourceId);
         }
         return approvalResourceIds;
+    }
+
+    private String getFormKeyDisplayName(FormKey formKey) {
+        if (formKey == null) {
+            return "";
+        }
+        return switch (formKey) {
+            case QUOTATION -> Translator.get("module.resource_type.quotation");
+            case CONTRACT -> Translator.get("module.resource_type.contract");
+            case INVOICE -> Translator.get("module.resource_type.invoice");
+            case ORDER -> Translator.get("module.resource_type.order");
+            default -> "";
+        };
     }
 
     /**

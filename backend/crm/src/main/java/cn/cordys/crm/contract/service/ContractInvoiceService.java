@@ -219,7 +219,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
      * @return
      */
     @OperationLog(module = LogModule.CONTRACT_INVOICE, type = LogType.UPDATE, resourceId = "{#request.id}")
-	@HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}")
+	@HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
     public ContractInvoice update(ContractInvoiceUpdateRequest request, String userId, String orgId) {
         ContractInvoice originContractInvoice = invoiceMapper.selectByPrimaryKey(request.getId());
         List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
@@ -556,9 +556,11 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                 .filter(i -> permittedIds.contains(i.getId()))
                 .collect(Collectors.toList());
 
+        Map<String, String> nameMap = invoices.stream().collect(Collectors.toMap(ContractInvoice::getId, ContractInvoice::getName));
+
         ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
         // 触发批量删除审批流，命中审批流的资源不执行删除，进入审批
-        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApproval(permittedIds, FormKey.INVOICE, orgId, userId);
+        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApproval(permittedIds, FormKey.INVOICE, orgId, userId, nameMap);
 
         // 过滤出未命中审批流的资源，直接删除
         List<String> deleteIds = approvalIds.isEmpty()
