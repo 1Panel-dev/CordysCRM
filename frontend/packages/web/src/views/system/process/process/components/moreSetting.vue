@@ -183,6 +183,20 @@
     return Object.keys(row.permissions).find((key) => isReadPermission(key));
   }
 
+  function isStatusPermissionDisabled(status: ProcessStatusEnum, permissionId: string) {
+    return status === ProcessStatusEnum.APPROVING && matchPermissionBySuffix(permissionId, 'UPDATE');
+  }
+
+  function normalizeDisabledStatusPermissions(data: ApprovalAuthorityRow[]) {
+    data.forEach((row) => {
+      Object.keys(row.permissions).forEach((permissionId) => {
+        if (isStatusPermissionDisabled(row.status, permissionId)) {
+          row.permissions[permissionId] = false;
+        }
+      });
+    });
+  }
+
   function flattenStatusPermissions(data: ApprovalAuthorityRow[]): StatusPermissions[] {
     const result: StatusPermissions[] = [];
 
@@ -192,7 +206,7 @@
         result.push({
           approvalStatus: status,
           permission: permissionKey,
-          enabled: Boolean(enabled),
+          enabled: isStatusPermissionDisabled(status, permissionKey) ? false : Boolean(enabled),
         });
       });
     });
@@ -243,15 +257,17 @@
             key: item.id,
             title: item.name,
             minWidth: 70,
-            render: (row: ApprovalAuthorityRow) =>
-              h(NCheckbox, {
-                checked: Boolean(row.permissions[item.id]),
-                disabled: props.readonly,
+            render: (row: ApprovalAuthorityRow) => {
+              const disabled = isStatusPermissionDisabled(row.status, item.id);
+              return h(NCheckbox, {
+                checked: disabled ? false : Boolean(row.permissions[item.id]),
+                disabled: props.readonly || disabled,
                 onUpdateChecked: (checked: boolean) => {
                   updateRowPermission(row, item.id, checked);
                   form.value.statusPermissions = flattenStatusPermissions(permissionData.value);
                 },
-              }),
+              });
+            },
           } as DataTableColumn<ApprovalAuthorityRow>)
       ),
     ];
@@ -306,6 +322,7 @@
       } else {
         permissionData.value = createApprovalAuthorityRows(props.formType, permission.value);
       }
+      normalizeDisabledStatusPermissions(permissionData.value);
       form.value.statusPermissions = flattenStatusPermissions(permissionData.value);
     } catch (error) {
       // eslint-disable-next-line no-console

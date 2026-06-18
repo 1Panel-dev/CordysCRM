@@ -163,6 +163,15 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
     })
   );
 
+  const shouldConfirmUpdateChange = computed(
+    () =>
+      isApprovalForm.value &&
+      enabledApproval.value &&
+      updateExecute.value &&
+      Boolean(options.isEdit.value) &&
+      Boolean(options.detail?.value?.approved)
+  );
+
   async function initApprovalReviewConfig() {
     if (!isApprovalForm.value) {
       enabledApproval.value = false;
@@ -190,6 +199,7 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
     createExecute,
     updateExecute,
     isApprovalForm,
+    shouldConfirmUpdateChange,
     getFormReviewAction,
     reviewAction,
     initApprovalReviewConfig,

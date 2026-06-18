@@ -19,6 +19,7 @@ export interface UpdateOrderParams extends SaveOrderParams {
 export interface OrderItem {
   id: string;
   name: string;
+  approved?: boolean;
   contractName: string;
   contractId: string;
   moduleFields: ModuleField[]; // 自定义字段

@@ -12,6 +12,7 @@ export interface ContractItem {
   customerName: string;
   amount: number;
   alreadyPayAmount: number;
+  approved?: boolean;
   approvalStatus: ProcessStatusEnum;
   stage: string;
   stageName: string;
@@ -208,6 +209,7 @@ export interface ContractInvoiceTableQueryParam extends TableQueryParams {
 export interface ContractInvoiceItem {
   id: string;
   contractId: string;
+  approved?: boolean;
   name: string;
   no: string;
   owner: string;

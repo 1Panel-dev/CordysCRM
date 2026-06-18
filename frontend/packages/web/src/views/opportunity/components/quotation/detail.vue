@@ -172,27 +172,6 @@
     });
   }
 
-  function handleDelete() {
-    openModal({
-      type: 'error',
-      title: t('opportunity.quotation.deleteTitleTip', { name: characterLimit(detailInfo.value.name ?? '') }),
-      content: t('opportunity.quotation.deleteContentTip'),
-      positiveText: t('common.confirmDelete'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        try {
-          await deleteQuotation(props.sourceId);
-          Message.success(t('common.deleteSuccess'));
-          visible.value = false;
-          emit('remove');
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
-        }
-      },
-    });
-  }
-
   function handleReview() {
     reviewByResourceId(props.sourceId, {
       onSuccess: () => {
@@ -212,6 +191,44 @@
   function handleFormCreateSaved() {
     refreshKey.value += 1;
     emit('refresh');
+  }
+
+  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+    useApprovalOperation<Record<string, any>>({
+      formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+      dataActionMap: quotationDataActionMap,
+      isDetail: true,
+      identityResolver: {
+        isApplicant: (row, currentUserId) => row.createUser === currentUserId,
+      },
+      shouldUseRolePermissionOnly: (row) => row.invalid,
+      specialActionFilter: (row, actionKeys) => {
+        if (row.invalid) {
+          return actionKeys.filter((key) => key === 'delete');
+        }
+        return actionKeys;
+      },
+    });
+
+  function handleDelete() {
+    openModal({
+      type: 'error',
+      title: t('opportunity.quotation.deleteTitleTip', { name: characterLimit(detailInfo.value.name ?? '') }),
+      content: t('opportunity.quotation.deleteContentTip'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteQuotation(props.sourceId);
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          visible.value = false;
+          emit('remove');
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
   }
 
   function handleSelect(key: string) {
@@ -241,24 +258,6 @@
         break;
     }
   }
-  const { initApprovalPermission, resolveRowOperation, hasApprovalScopedPermission } = useApprovalOperation<
-    Record<string, any>
-  >({
-    formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
-    dataActionMap: quotationDataActionMap,
-    isDetail: true,
-    identityResolver: {
-      isApplicant: (row, currentUserId) => row.createUser === currentUserId,
-    },
-    shouldUseRolePermissionOnly: (row) => row.invalid,
-    specialActionFilter: (row, actionKeys) => {
-      if (row.invalid) {
-        return actionKeys.filter((key) => key === 'delete');
-      }
-      return actionKeys;
-    },
-  });
-
   const detailActions = computed<{
     groupList: ActionsItem[];
     moreList: ActionsItem[];

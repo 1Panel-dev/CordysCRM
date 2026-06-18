@@ -144,7 +144,7 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation } = useApprovalOperation<ContractInvoiceItem>({
+  const { initApprovalPermission, resolveRowOperation, deleteExecute } = useApprovalOperation<ContractInvoiceItem>({
     formType: FormDesignKeyEnum.INVOICE,
     dataActionMap: invoiceDetailDataActionMap,
     isDetail: true,
@@ -190,12 +190,12 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: row.name }),
       content: deleteInvoiceContentMap[row.approvalStatus],
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteInvoiced(row.id);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           visible.value = false;
           emit('delete');
         } catch (error) {

@@ -196,27 +196,6 @@
     formKey: FormDesignKeyEnum.ORDER,
   });
 
-  async function handleDelete(row: OrderItem) {
-    openModal({
-      type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
-      content: t('common.deleteConfirmContent'),
-      positiveText: t('common.confirmDelete'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        try {
-          await deleteOrder(row.id);
-          Message.success(t('common.deleteSuccess'));
-          visible.value = false;
-          emit('delete');
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
-        }
-      },
-    });
-  }
-
   const orderDetailDataActionMap = {
     edit: {
       key: 'edit',
@@ -236,11 +215,33 @@
     },
   };
 
-  const { initApprovalPermission, resolveRowOperation, hasApprovalScopedPermission } = useApprovalOperation<OrderItem>({
-    formType: FormDesignKeyEnum.ORDER,
-    dataActionMap: orderDetailDataActionMap,
-    isDetail: true,
-  });
+  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+    useApprovalOperation<OrderItem>({
+      formType: FormDesignKeyEnum.ORDER,
+      dataActionMap: orderDetailDataActionMap,
+      isDetail: true,
+    });
+
+  async function handleDelete(row: OrderItem) {
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteOrder(row.id);
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          visible.value = false;
+          emit('delete');
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
 
   const canUpdateStage = computed(() => {
     if (!detailInfo.value) {

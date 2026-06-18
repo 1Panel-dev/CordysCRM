@@ -31,6 +31,9 @@
             {{ props.submitter.submitter }}
           </n-tooltip>
         </div>
+        <div v-if="props.submitter.comment" class="mt-[8px] bg-[var(--text-n9)] p-[8px]">
+          <div class="text-[var(--text-n4)]">{{ props.submitter.comment }}</div>
+        </div>
       </n-timeline-item>
       <n-timeline-item v-for="(node, index) in props.nodes" :key="node.nodeId">
         <template #icon>
@@ -245,6 +248,7 @@
       submitAvatar?: string;
       submitter?: string;
       submitTime?: number;
+      comment?: string;
     };
     currentApprovalNode?: ApprovalNode;
     currentApprovalNodeIndex: number;

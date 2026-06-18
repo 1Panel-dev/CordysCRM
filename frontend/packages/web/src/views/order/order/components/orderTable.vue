@@ -320,6 +320,7 @@
     initApprovalPermission,
     resolveRowOperation,
     enableApproval,
+    deleteExecute,
     hasApprovalScopedPermission,
     getApprovalActionTip,
   } = useApprovalOperation<OrderItem>({
@@ -353,12 +354,12 @@
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('common.deleteConfirmContent'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteOrder(row.id);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
