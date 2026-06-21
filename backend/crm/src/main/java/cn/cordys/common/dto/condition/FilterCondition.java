@@ -66,7 +66,7 @@ public class FilterCondition {
         }
 
         // 针对空值判断操作符
-        if (Strings.CS.equalsAny(operator, CombineConditionOperator.EMPTY.name(), CombineConditionOperator.NOT_EMPTY.name())) {
+        if (Strings.CS.equalsAny(operator, CombineConditionOperator.EMPTY.name(), CombineConditionOperator.NOT_EMPTY.name(), CombineConditionOperator.NOT_EQUAL_ORIGINAL.name())) {
             return true;
         }
 
