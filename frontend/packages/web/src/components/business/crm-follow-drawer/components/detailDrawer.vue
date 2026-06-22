@@ -8,7 +8,7 @@
     no-padding
     :footer="false"
   >
-    <template #titleRight>
+    <template v-if="!props.readonly" #titleRight>
       <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleEdit">
         {{ t('common.edit') }}
       </n-button>
@@ -49,6 +49,7 @@
     formKey: FormDesignKeyEnum;
     sourceName: string;
     refreshKey: number;
+    readonly?: boolean;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {
