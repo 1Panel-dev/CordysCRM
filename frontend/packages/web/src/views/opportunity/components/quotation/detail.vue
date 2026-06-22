@@ -226,11 +226,6 @@
         try {
           await deleteQuotation(props.sourceId);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
-          if (deleteExecute.value) {
-            approvalDetailRefreshKey.value += 1;
-            handleSavedRefresh();
-            return;
-          }
           visible.value = false;
           emit('remove');
         } catch (error) {

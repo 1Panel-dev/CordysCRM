@@ -205,11 +205,6 @@
         try {
           await deleteInvoiced(row.id);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
-          if (deleteExecute.value) {
-            approvalDetailRefreshKey.value += 1;
-            handleSaved();
-            return;
-          }
           visible.value = false;
           emit('delete');
         } catch (error) {
