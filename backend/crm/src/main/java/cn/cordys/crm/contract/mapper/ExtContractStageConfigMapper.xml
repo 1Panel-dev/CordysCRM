@@ -5,7 +5,7 @@
 
 
     <select id="getStageConfigList" resultType="cn.cordys.common.dto.stage.StageConfigResponse">
-        select id, name, type, afoot_roll_back, end_roll_back, pos
+        select id, name, type, afoot_roll_back, end_roll_back, pos, circulation_type
         from contract_stage_config
         where organization_id = #{orgId}
         order by pos asc

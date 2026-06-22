@@ -12,6 +12,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.condition.BaseCondition;
+import cn.cordys.common.dto.stage.CirculationFieldValue;
 import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
@@ -54,16 +55,21 @@ import cn.cordys.crm.order.dto.response.OrderListResponse;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
+import cn.cordys.crm.system.constants.CirculationFieldValueTypeEnum;
+import cn.cordys.crm.system.constants.CirculationTypeEnum;
+import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StageAdvancedConfigService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -113,6 +119,8 @@ public class OrderService implements ApprovalResourceHandler {
     private ApprovalFlowService approvalFlowService;
     @Resource
     private StageAdvancedConfigService stageAdvancedConfigService;
+    @Resource
+    private ExtStageAdvancedConfigMapper extStageAdvancedConfigMapper;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
@@ -534,6 +542,10 @@ public class OrderService implements ApprovalResourceHandler {
         if (snapshot != null) {
             response = JSON.parseObject(snapshot.getOrderValue(), OrderGetResponse.class);
         }
+
+        ResourceApprovalFieldUpdateParam stageField = postFieldParam.getFields().stream().filter(param -> Strings.CS.equals(param.getFieldId(), "stage") && param.getFieldValue() != null).findFirst().orElse(null);
+        handleStageSetting(stageField, order, postFieldParam);
+
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
             if (Strings.CS.equals(fieldUpdateParam.getFieldId(), "stage") && fieldUpdateParam.getFieldValue() != null) {
                 orderFieldService.setResourceFieldValue(order, "stage", fieldUpdateParam.getFieldValue());
@@ -606,6 +618,41 @@ public class OrderService implements ApprovalResourceHandler {
             logDTO.setModifiedValue(contextInfo.getModifiedValue());
             logService.add(logDTO);
             OperationLogContext.clear();
+        }
+    }
+
+
+    /**
+     * 审批后置操作更新阶段配置
+     * @param stageField
+     * @param originOrder
+     * @param postFieldParam
+     */
+    private void handleStageSetting(ResourceApprovalFieldUpdateParam stageField, Order originOrder, ResourceApprovalPostUpdateParam postFieldParam) {
+        if (stageField == null) {
+            return;
+        }
+        if (!stageAdvancedConfigService.checkStage(originOrder.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.name())) {
+            return;
+        }
+        StageConfigResponse first = extOrderStageConfigMapper.getStageConfigList(originOrder.getOrganizationId()).getFirst();
+        if (Strings.CI.equals(first.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
+            StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originOrder.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.name());
+            List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
+            });
+            List<ResourceApprovalFieldUpdateParam> fields = new ArrayList<>();
+            circulationFieldValues.forEach(field -> {
+                if (Strings.CI.equals(field.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name())) {
+                    if (field.getFieldValue() != null) {
+                        ResourceApprovalFieldUpdateParam param = new ResourceApprovalFieldUpdateParam();
+                        param.setEnable(true);
+                        param.setFieldId(field.getFieldId());
+                        param.setFieldValue(field.getFieldValue());
+                        fields.add(param);
+                    }
+                }
+            });
+            postFieldParam.getFields().addAll(fields);
         }
     }
 
