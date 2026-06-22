@@ -3,6 +3,7 @@ package cn.cordys.common.util;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,6 +29,10 @@ public class JsonDifferenceUtils {
             String fieldName = fieldNames1.next();
             JsonNode oldValue = oldNode.get(fieldName);
             JsonNode newValue = newNode.get(fieldName);
+            if ((newValue instanceof NullNode || newValue == null) && (oldValue instanceof NullNode || newValue == null)) {
+                // 都是 null 的情况
+                continue;
+            }
             if (!newNode.has(fieldName)) {
                 //删除的属性
                 JsonDifferenceDTO removed = new JsonDifferenceDTO();
