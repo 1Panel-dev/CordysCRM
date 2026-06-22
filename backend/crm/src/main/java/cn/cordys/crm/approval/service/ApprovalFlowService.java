@@ -1056,8 +1056,9 @@ public class ApprovalFlowService {
                     newItem.setEnabled(false);
                     updatedPermissions.add(newItem);
                 }
-                // 审批中编辑权限 enable 设置为 false
-                if (Strings.CS.equals(approvalStatus, ApprovalStatus.APPROVING.name()) && permission.getId().endsWith(":UPDATE")) {
+                // 审批中编辑和删除权限 enable 设置为 false
+                if (Strings.CS.equals(approvalStatus, ApprovalStatus.APPROVING.name())
+                        && (permission.getId().endsWith(":UPDATE") || permission.getId().endsWith(":DELETE"))) {
                     item.setEnabled(false);
                 }
             }
