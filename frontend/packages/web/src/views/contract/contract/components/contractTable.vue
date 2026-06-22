@@ -895,7 +895,7 @@
 
   function removeItemFromList(id: string) {
     if (deleteExecute.value) {
-      searchData(undefined, id);
+      searchData();
       return;
     }
     if (activeShowType.value === 'billboard') {

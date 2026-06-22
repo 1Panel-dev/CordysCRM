@@ -184,7 +184,10 @@
   }
 
   function isStatusPermissionDisabled(status: ProcessStatusEnum, permissionId: string) {
-    return status === ProcessStatusEnum.APPROVING && matchPermissionBySuffix(permissionId, 'UPDATE');
+    return (
+      status === ProcessStatusEnum.APPROVING &&
+      (matchPermissionBySuffix(permissionId, 'UPDATE') || matchPermissionBySuffix(permissionId, 'DELETE'))
+    );
   }
 
   function normalizeDisabledStatusPermissions(data: ApprovalAuthorityRow[]) {

@@ -568,7 +568,7 @@
 
   function removeItemFromList(id: string) {
     if (deleteExecute.value) {
-      searchData(undefined, id);
+      searchData();
       return;
     }
     propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
