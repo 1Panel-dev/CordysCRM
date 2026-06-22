@@ -83,7 +83,7 @@ docker run -d \
 
 ## Roadmap
 
-- [] 2026.06: Cordys CRM 下载量突破 30 万次
+- [x] 2026.06: Cordys CRM 下载量突破 30 万次
 - [x] 2026.05.29：[v1.7.0 新增审批流、审批记录功能](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.7.0) 发布
 - [x] 2026.03.26：[v1.6.0 新增订单模块、计算组件函数功能增强](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.6.0) 发布
 - [x] 2026.03.11：[Cordys CRM Skills 正式发布](https://github.com/1Panel-dev/CordysCRM-skills)
