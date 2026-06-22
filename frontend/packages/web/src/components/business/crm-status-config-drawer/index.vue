@@ -640,7 +640,7 @@
             {
               default: () => [
                 h(NCheckbox, {
-                  defaultChecked: row.targets.findIndex((r) => r.targetId === e.id) !== -1,
+                  defaultChecked: rowIndex === i || row.targets.find((r) => r.targetId === e.id)?.enable,
                   disabled: rowIndex === i,
                   onUpdateChecked: (val) => {
                     const currentCell = row.targets.find((r) => r.targetId === e.id);

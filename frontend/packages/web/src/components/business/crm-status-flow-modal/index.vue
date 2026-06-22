@@ -71,6 +71,8 @@
   import { changeContractStatus, updateOrderStage } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
+  import cloneDeep from 'lodash-es/cloneDeep';
+
   const props = defineProps<{
     from: { id?: string; name?: string };
     to: { id?: string; name?: string };
@@ -111,21 +113,24 @@
       .map((cf) => {
         const field = fieldList.value.find((f) => f.id === cf.fieldId);
         if (field) {
+          let rules = field.rules || [];
+          if (cf.required && !field.rules.some((e) => e.required)) {
+            rules.push({
+              key: FieldRuleEnum.REQUIRED,
+              required: true,
+              message: 'common.notNull',
+              label: 'common.required',
+              trigger: ['change', 'blur'],
+              type: getRuleType(field),
+            });
+          } else if (!cf.required && field.rules.some((e) => e.required)) {
+            rules = rules.filter((e) => !e.required);
+          }
           return {
             ...field,
             defaultValue: cf.valueType === CirculationValueTypeEnum.FIXED_VALUE ? cf.fieldValue : field.defaultValue,
             fieldWidth: 1,
-            rules:
-              cf.required && field.rules.some((e) => e.required)
-                ? field.rules
-                : {
-                    key: FieldRuleEnum.REQUIRED,
-                    required: true,
-                    message: 'common.notNull',
-                    label: 'common.required',
-                    trigger: ['change', 'blur'],
-                    type: getRuleType(field),
-                  },
+            rules,
           };
         }
         return null;
@@ -216,13 +221,17 @@
       if (!errors) {
         try {
           okLoading.value = true;
+          const result = cloneDeep(formDetail.value);
           await updateApiMap[props.formKey]?.({
             id: props.sourceId,
             stage: props.to.id || '',
-            fields: realFields.value.map((e) => ({
-              fieldId: e.id,
-              fieldValue: getNormalFieldValue(e, transformFieldValue(e, formDetail.value, e.id)),
-            })),
+            fields: realFields.value.map((e) => {
+              transformFieldValue(e, result, e.id);
+              return {
+                fieldId: e.id,
+                fieldValue: getNormalFieldValue(e, result[e.id]),
+              };
+            }),
             voidReason: formDetail.value.voidReason,
           });
           Message.success(t('crmStatusFlow.flowSuccess'));
@@ -239,4 +248,8 @@
   }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .crm-form-create-item {
+    @apply w-full;
+  }
+</style>
