@@ -247,87 +247,85 @@
             </n-form-item>
           </template>
         </div>
+      </template>
 
-        <!-- 抄送人 -->
-        <n-form-item path="ccType" :label="t('process.process.flow.ccMember')">
-          <n-select
-            v-model:value="nodeConfig.ccType"
-            :disabled="props.readonly"
-            :options="approverTypeOptions"
-            clearable
-            :placeholder="t('common.pleaseSelect')"
-            @update:value="handleCcTypeUpdate"
+      <!-- 抄送人 -->
+      <n-form-item path="ccType" :label="t('process.process.flow.ccMember')">
+        <n-select
+          v-model:value="nodeConfig.ccType"
+          :disabled="props.readonly"
+          :options="approverTypeOptions"
+          clearable
+          :placeholder="t('common.pleaseSelect')"
+          @update:value="handleCcTypeUpdate"
+        />
+      </n-form-item>
+
+      <n-form-item
+        v-if="nodeConfig.ccType && isMemberOrRole(nodeConfig.ccType)"
+        path="ccList"
+        :show-label="false"
+        :show-feedback="false"
+      >
+        <ApprovalMemberSelector
+          :key="nodeConfig.ccType ?? 'none'"
+          v-model:value="nodeConfig.ccList"
+          v-model:selected-list="nodeConfig.ccSelectedList"
+          :label="nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('org.addMember')"
+          :add-text="nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.addRole') : t('role.addMember')"
+          :limit-label="nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.member')"
+          :api-type-key="
+            nodeConfig.ccType === ApproverTypeEnum.ROLE ? MemberApiTypeEnum.MODULE_ROLE : MemberApiTypeEnum.FORM_FIELD
+          "
+          :member-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? roleMemberTypes : userMemberTypes"
+          :disabled-node-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? undefined : disabledMemberNodeTypes"
+          required
+          :max-count="ccMaxCount"
+          :disabled="props.readonly"
+          @update:value="clearCurrentNodeInvalid"
+        />
+      </n-form-item>
+
+      <n-form-item v-if="ccLevelConfig" path="ccList" class="specified-level-form-item">
+        <template #label>
+          <span class="inline-flex items-center gap-[8px]">
+            {{ ccLevelConfig.label }}
+            <n-tooltip trigger="hover" :delay="300">
+              <template #trigger>
+                <CrmIcon
+                  :size="16"
+                  type="iconicon_help_circle"
+                  class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                />
+              </template>
+              {{ ccLevelConfig.tooltip }}
+            </n-tooltip>
+          </span>
+
+          <ApprovalLevelExamplePopover
+            v-if="ccLevelConfig.exampleItems"
+            :items="ccLevelConfig.exampleItems"
+            :tip="ccLevelConfig.exampleTip"
           />
-        </n-form-item>
+        </template>
 
-        <n-form-item
-          v-if="nodeConfig.ccType && isMemberOrRole(nodeConfig.ccType)"
-          path="ccList"
-          :show-label="false"
-          :show-feedback="false"
-        >
-          <ApprovalMemberSelector
-            :key="nodeConfig.ccType ?? 'none'"
-            v-model:value="nodeConfig.ccList"
-            v-model:selected-list="nodeConfig.ccSelectedList"
-            :label="nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('org.addMember')"
-            :add-text="nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.addRole') : t('role.addMember')"
-            :limit-label="
-              nodeConfig.ccType === ApproverTypeEnum.ROLE ? t('role.role') : t('process.process.flow.member')
-            "
-            :api-type-key="
-              nodeConfig.ccType === ApproverTypeEnum.ROLE ? MemberApiTypeEnum.MODULE_ROLE : MemberApiTypeEnum.FORM_FIELD
-            "
-            :member-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? roleMemberTypes : userMemberTypes"
-            :disabled-node-types="nodeConfig.ccType === ApproverTypeEnum.ROLE ? undefined : disabledMemberNodeTypes"
-            required
-            :max-count="ccMaxCount"
+        <div class="flex w-full gap-[8px]">
+          <n-select
+            v-model:value="ccDirection"
+            class="w-[120px]"
             :disabled="props.readonly"
+            :options="levelDirectionOptions"
             @update:value="clearCurrentNodeInvalid"
           />
-        </n-form-item>
-
-        <n-form-item v-if="ccLevelConfig" path="ccList" class="specified-level-form-item">
-          <template #label>
-            <span class="inline-flex items-center gap-[8px]">
-              {{ ccLevelConfig.label }}
-              <n-tooltip trigger="hover" :delay="300">
-                <template #trigger>
-                  <CrmIcon
-                    :size="16"
-                    type="iconicon_help_circle"
-                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
-                  />
-                </template>
-                {{ ccLevelConfig.tooltip }}
-              </n-tooltip>
-            </span>
-
-            <ApprovalLevelExamplePopover
-              v-if="ccLevelConfig.exampleItems"
-              :items="ccLevelConfig.exampleItems"
-              :tip="ccLevelConfig.exampleTip"
-            />
-          </template>
-
-          <div class="flex w-full gap-[8px]">
-            <n-select
-              v-model:value="ccDirection"
-              class="w-[120px]"
-              :disabled="props.readonly"
-              :options="levelDirectionOptions"
-              @update:value="clearCurrentNodeInvalid"
-            />
-            <n-select
-              v-model:value="ccLevel"
-              class="flex-1"
-              :disabled="props.readonly"
-              :options="ccLevelConfig.options"
-              @update:value="clearCurrentNodeInvalid"
-            />
-          </div>
-        </n-form-item>
-      </template>
+          <n-select
+            v-model:value="ccLevel"
+            class="flex-1"
+            :disabled="props.readonly"
+            :options="ccLevelConfig.options"
+            @update:value="clearCurrentNodeInvalid"
+          />
+        </div>
+      </n-form-item>
     </n-form>
   </n-scrollbar>
 </template>
