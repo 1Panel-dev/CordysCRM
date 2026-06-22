@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router';
 import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
 
 import { PlanEnumType, RecordEnumType } from '@/config/follow';
+import useUserStore from '@/store/modules/user';
 
 import { CommonRouteEnum } from '@/enums/routeEnum';
 
@@ -65,13 +66,16 @@ export default function useFollowApi(followProps: {
   }
 
   function goDetail(item: FollowDetailItem) {
+    const userStore = useUserStore();
+    const isOwner = userStore.userInfo.id === item.owner;
+    const readonlyString = followProps.readonly || !isOwner;
     router.push({
       name: CommonRouteEnum.FOLLOW_DETAIL,
       query: {
         formKey: followProps.formKey,
         id: item.id,
         needInitDetail: 'Y',
-        readonly: String(followProps.readonly),
+        readonly: String(readonlyString),
       },
     });
   }

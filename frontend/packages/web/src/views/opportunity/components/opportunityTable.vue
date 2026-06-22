@@ -307,15 +307,11 @@
               ? ['OPPORTUNITY_MANAGEMENT:UPDATE']
               : ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'],
         },
-        ...(activeTab.value !== OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
-          ? [
-              {
-                label: t('common.batchTransfer'),
-                key: 'batchTransfer',
-                permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
-              },
-            ]
-          : []),
+        {
+          label: t('common.batchTransfer'),
+          key: 'batchTransfer',
+          permission: ['OPPORTUNITY_MANAGEMENT:TRANSFER'],
+        },
         {
           label: t('common.batchDelete'),
           key: 'batchDelete',
@@ -572,7 +568,9 @@
     }
 
     if (row.stage === successStage.value?.id) {
-      return hasBackStagePermission.value ? [...editAction, ...deleteAction] : [...deleteAction];
+      return hasBackStagePermission.value
+        ? [...editAction, ...transferAction, ...deleteAction]
+        : [...transferAction, ...deleteAction];
     }
 
     return [

@@ -21,7 +21,7 @@
               <StatusTagSelect
                 v-if="item.status"
                 v-model:status="item.status"
-                :disabled="!props.getDisabledFun?.(item) || !!item.converted"
+                :disabled="!props.getDisabledFun?.(item) || !!item.converted || !isOwner(item)"
                 @change="() => emit('change', item)"
               />
               <CrmTag v-if="item.status && item.converted"> {{ t('common.hasConvertToRecord') }} </CrmTag>
@@ -87,6 +87,7 @@
   import StatusTagSelect from './statusTagSelect.vue';
 
   import useOpenNewPage from '@/hooks/useOpenNewPage';
+  import useUserStore from '@/store/modules/user';
 
   import { ClueRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -120,6 +121,9 @@
 
     return new Date(item.followTime).getTime() > Date.now() ? 'crm-follow-dot-future' : '';
   }
+
+  const userStore = useUserStore();
+  const isOwner = (item: FollowDetailItem) => item.owner === userStore.userInfo.id;
 
   function getShowTime(item: FollowDetailItem) {
     const time = 'estimatedTime' in item ? item.estimatedTime : item.followTime;
