@@ -370,16 +370,6 @@ public class ModuleFormService {
                 List<BaseField> sourceRefFields = refFields.stream().filter(rf -> {
 					String actualId = rf.getId().replace(sourceField.getId() + REF_UNDERLINE, StringUtils.EMPTY);
 					return sourceField.getShowFields().contains(actualId);
-				}).map(rf -> {
-					// 引用字段只需保留部分属性
-					BaseField refField = new InputField();
-					refField.setId(rf.getId());
-					refField.setPos(rf.getPos());
-					refField.setName(rf.getName());
-					refField.setType(rf.getType());
-					refField.setFieldWidth(rf.getFieldWidth());
-					refField.setResourceFieldId(rf.getResourceFieldId());
-					return refField;
 				}).toList();
                 sourceField.setRefFields(sourceRefFields);
             }
