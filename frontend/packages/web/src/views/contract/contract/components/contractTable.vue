@@ -158,6 +158,15 @@
     :show-approval-tip="batchEditApprovalTip"
     @refresh="handleRefresh"
   />
+  <CrmStatusFlowModal
+    v-model:show="flowModalShow"
+    :from="{ id: currentStageConfig?.id, name: currentStageConfig?.name }"
+    :to="{ id: targetStageConfig?.id, name: targetStageConfig?.name }"
+    :form-key="FormDesignKeyEnum.CONTRACT"
+    :circulationFieldValues="circulationFieldValues"
+    :source-id="activeSourceId"
+    @success="handleFlowSuccess"
+  />
 </template>
 
 <script setup lang="ts">
@@ -166,13 +175,19 @@
 
   import { ContractStatusEnum } from '@lib/shared/enums/contractEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum.js';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { abbreviateNumber, characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { ContractItem } from '@lib/shared/models/contract';
-  import { BatchOperationResult, OpportunityStageConfig } from '@lib/shared/models/opportunity';
+  import {
+    BatchOperationResult,
+    type CirculationFieldValueItem,
+    OpportunityStageConfig,
+    type StageConfigItem,
+  } from '@lib/shared/models/opportunity';
 
   import { COMMON_SELECTION_OPERATORS } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -189,6 +204,7 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import { OpenDetailType } from '@/components/business/crm-stage-board/types';
+  import CrmStatusFlowModal from '@/components/business/crm-status-flow-modal/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import businessTitleDrawer from '../../businessTitle/components/detail.vue';
@@ -524,14 +540,6 @@
     return isSameStage || targetIndex < currentIndex;
   }
 
-  function getContractStageOptions(row: ContractItem) {
-    return contractStageList.value.map((item) => ({
-      label: item.name,
-      value: item.id,
-      disabled: isContractStageOptionDisabled(row, item.id),
-    }));
-  }
-
   async function initStageConfig() {
     try {
       stageConfig.value = await getContractStatusConfig();
@@ -540,11 +548,32 @@
       console.log(error);
     }
   }
-  await initStageConfig();
+
+  await Promise.all([initStageConfig(), initApprovalPermission()]);
+
+  const flowModalShow = ref(false);
+  const targetStageConfig = ref<StageConfigItem>();
+  const circulationFieldValues = ref<CirculationFieldValueItem[]>([]);
+  const currentStageConfig = ref<StageConfigItem>();
+
+  function getContractStageOptions(row: ContractItem) {
+    const currentStageAdvanceConfig = stageConfig.value?.advancedConfigs.find((e) => e.originId === row.stage);
+    return contractStageList.value.map((item) => ({
+      label: item.name,
+      value: item.id,
+      disabled:
+        stageConfig.value?.circulationType === CirculationTypeEnum.ADVANCED
+          ? currentStageAdvanceConfig?.targets.find((e) => e.targetId === item.id)?.enable
+          : isContractStageOptionDisabled(row, item.id),
+    }));
+  }
 
   async function changeStatus(id: string, stage: string) {
     try {
-      await changeContractStatus(id, stage);
+      await changeContractStatus({
+        id,
+        stage,
+      });
       Message.success(t('common.updateSuccess'));
       return true;
     } catch (error) {
@@ -552,8 +581,6 @@
       console.error(error);
     }
   }
-
-  await initApprovalPermission();
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CONTRACT,
@@ -615,8 +642,16 @@
           'noRender': true,
           'disabled': !canEditStage,
           'onUpdate:status': async (val) => {
-            // 修改为作废的时候需要填写原因
-            if (val === ContractStatusEnum.VOID) {
+            if (stageConfig.value?.circulationType === CirculationTypeEnum.ADVANCED) {
+              activeSourceId.value = row.id;
+              targetStageConfig.value = stageConfig.value?.stageConfigList.find((e) => e.id === val);
+              currentStageConfig.value = stageConfig.value?.stageConfigList.find((e) => e.id === row.stage);
+              circulationFieldValues.value =
+                stageConfig.value?.advancedConfigs
+                  .find((e) => e.originId === row.stage)
+                  ?.targets.find((e) => e.targetId === val)?.circulationFieldValues || [];
+              flowModalShow.value = true;
+            } else if (val === ContractStatusEnum.VOID) {
               handleVoided(row);
             } else {
               const res = await changeStatus(row.id, val);
@@ -654,6 +689,10 @@
     setAdvanceFilter,
   } = useTableRes;
   const billboardRef = ref<InstanceType<typeof billboard>>();
+
+  function handleFlowSuccess() {
+    tableRefreshId.value += 1;
+  }
 
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
   async function getStatistic(_keyword?: string) {

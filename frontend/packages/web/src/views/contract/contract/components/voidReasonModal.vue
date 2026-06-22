@@ -80,7 +80,11 @@
       if (!error) {
         try {
           loading.value = true;
-          await changeContractStatus(props.sourceId, ContractStatusEnum.VOID, form.value.reason);
+          await changeContractStatus({
+            id: props.sourceId,
+            stage: ContractStatusEnum.VOID,
+            voidReason: form.value.reason,
+          });
           Message.success(t('common.voidSuccess'));
           visible.value = false;
           emit('refresh');

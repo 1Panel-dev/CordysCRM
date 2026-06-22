@@ -512,6 +512,7 @@
         })),
       });
       Message.success(t('common.saveSuccess'));
+      show.value = false;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

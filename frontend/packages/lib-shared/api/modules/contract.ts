@@ -158,6 +158,7 @@ import type {
   BatchOperationResult,
   BatchUpdateQuotationStatusParams,
   SaveCirculationConfigParams,
+  UpdateStageParams,
   StageBoardDraggedParams,
   StageBoardPageQueryParams,
 } from '@lib/shared/models/opportunity';
@@ -219,8 +220,8 @@ export default function useContractApi(CDR: CordysAxios) {
     });
   }
 
-  function changeContractStatus(id: string, stage: string, voidReason?: string) {
-    return CDR.post({ url: `${ChangeContractStatusUrl}`, data: { stage, id, voidReason } });
+  function changeContractStatus(data: UpdateStageParams) {
+    return CDR.post({ url: `${ChangeContractStatusUrl}`, data });
   }
 
   // 获取合同tab显隐藏

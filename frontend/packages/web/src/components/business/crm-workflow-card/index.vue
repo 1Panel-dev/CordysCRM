@@ -61,6 +61,8 @@
     :to="{ id: targetStageConfig?.id, name: targetStageConfig?.name }"
     :form-key="props.formKey"
     :circulationFieldValues="circulationFieldValues"
+    :source-id="props.sourceId"
+    @success="handleFlowSuccess"
   />
 </template>
 
@@ -167,6 +169,10 @@
     } finally {
       updateStageLoading.value = false;
     }
+  }
+
+  function handleFlowSuccess() {
+    emit('loadDetail');
   }
 
   const flowModalShow = ref(false);
