@@ -5,6 +5,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.JSON;
+import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
@@ -179,6 +180,8 @@ public class HitApprovalAspect {
 				.resourceId(resourceId)
 				.formKey(annotation.formKey().getKey())
 				.executeTimingEnum(ExecuteTimingEnum.DELETE)
+				.comment(Translator.getWithArgs("approval.delete.resource", approvalResourceService.getFormKeyDisplayName(annotation.formKey()),
+						approvalResourceService.getInstanceResourceName(annotation.formKey(), resourceId)))
 				.build();
 		approvalResourceService.push(pushParam);
 		return null;

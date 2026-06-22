@@ -608,7 +608,7 @@ public class ApprovalResourceService {
         return approvalResourceIds;
     }
 
-    private String getFormKeyDisplayName(FormKey formKey) {
+    public String getFormKeyDisplayName(FormKey formKey) {
         if (formKey == null) {
             return "";
         }
