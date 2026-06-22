@@ -144,6 +144,37 @@ export function getFieldItemId(field: FormCreateField) {
   }
   return field.id;
 }
+/**
+ * 
+ * @param field 
+ * @param fieldValue 
+ * @returns 获取系统字段的值展示
+ */
+export function getDisplayFieldText(field: FormCreateField, fieldValue: any) {
+  const { t } = useI18n();
+  const fieldKey = field.businessKey || getFieldItemId(field);
+
+  if (fieldKey === 'invalid') {
+    if (fieldValue === true || fieldValue === 'true') {
+      return t('common.voided');
+    }
+    if (fieldValue === false || fieldValue === 'false') {
+      return t('common.normal');
+    }
+  }
+
+  const currentOption = field.options?.find((option: any) => {
+    if (option.value === fieldValue) {
+      return true;
+    }
+    if (typeof option.value === 'boolean' && typeof fieldValue === 'string') {
+      return String(option.value) === fieldValue;
+    }
+    return false;
+  });
+
+  return currentOption ? currentOption.label : fieldValue;
+}
 
 export function parseModuleFieldValue(item: FormCreateField, fieldValue: string | string[], options?: any[]) {
   if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
