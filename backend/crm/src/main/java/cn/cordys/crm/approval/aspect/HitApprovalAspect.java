@@ -196,6 +196,13 @@ public class HitApprovalAspect {
 				List<JsonDifferenceDTO> jsonDifferences = sysOperationLogService.getJsonDifferences(JSON.toJSONString(originalValue), JSON.toJSONString(modifiedValue));
 				List<String> fieldIds = jsonDifferences.stream()
 						.map(JsonDifferenceDTO::getColumn)
+						.map(col -> {
+							if (col.contains("-")) {
+								String[] split = col.split("-");
+								return split[split.length - 1];
+							}
+							return col;
+						})
 						.collect(Collectors.toList());
 				return JSON.toJSONString(fieldIds);
 			}

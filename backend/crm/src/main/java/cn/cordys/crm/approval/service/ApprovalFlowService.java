@@ -1136,7 +1136,7 @@ public class ApprovalFlowService {
      */
     private boolean matchSingleCondition(FilterCondition condition, Map<String, Object> fieldValueMap, Set<String> updateFields) {
         String fieldName = condition.getName();
-        Object actualValue = fieldValueMap.get(fieldName);
+        Object actualValue = fieldValueMap.get(getParentFieldIdForSubFieldId(fieldName));
 
         // 获取动态转换后的值和操作符
         Object expectedValue = condition.getCombineValue();
@@ -1155,9 +1155,26 @@ public class ApprovalFlowService {
             if (updateFields == null || updateFields.isEmpty()) {
                 return false;
             }
-            return updateFields.contains(fieldName);
+            return updateFields.contains(getFieldIdForSubFieldId(fieldName));
         }
 
+        if (fieldName.contains(".") && actualValue instanceof List<?> listValues) {
+            for (Object listValue : listValues) {
+                if (listValue instanceof Map map)  {
+                    Object subFileValue = map.get(getFieldIdForSubFieldId(fieldName));
+                    boolean match = matchFieldValue(subFileValue, expectedValue, operator);
+                    if (match) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            return matchFieldValue(actualValue, expectedValue, operator);
+        }
+    }
+
+    private boolean matchFieldValue(Object actualValue, Object expectedValue, FilterCondition.CombineConditionOperator operator) {
         // 处理空值判断操作符
         if (operator == FilterCondition.CombineConditionOperator.EMPTY) {
             return actualValue == null;
@@ -1188,6 +1205,26 @@ public class ApprovalFlowService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private String getParentFieldIdForSubFieldId(String fieldId) {
+        if (fieldId.contains(".")) {
+            String[] split = fieldId.split("\\.");
+            if (split.length > 1) {
+                return split[0];
+            }
+        }
+        return fieldId;
+    }
+
+    private String getFieldIdForSubFieldId(String fieldId) {
+        if (fieldId.contains(".")) {
+            String[] split = fieldId.split("\\.");
+            if (split.length > 1) {
+                return split[1];
+            }
+        }
+        return fieldId;
     }
 
     /**
