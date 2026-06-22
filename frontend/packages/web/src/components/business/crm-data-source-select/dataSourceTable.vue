@@ -65,6 +65,7 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateSystemColumns from '@/hooks/useFormCreateSystemColumns';
   import { FormKey } from '@/hooks/useFormCreateTable';
+  import useUserStore from '@/store/modules/user';
 
   import type { DataSourceType, FormCreateField } from '../crm-form-create/types';
   import { formKeyMap, sourceApi } from './config';
@@ -92,6 +93,7 @@
   }>();
 
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   const selectedKeys = defineModel<DataTableRowKey[]>('selectedKeys', {
     required: true,
@@ -405,7 +407,7 @@
                       ? (row[columnKey] || []).map((_key: string) =>
                           h(NImage, {
                             class: 'h-[40px] w-[40px] mr-[4px]',
-                            src: `${PreviewPictureUrl}/${_key}`,
+                            src: `${PreviewPictureUrl}/${_key}?userId=${userStore.userInfo.id}`,
                           })
                         )
                       : '-',
@@ -461,7 +463,7 @@
                           ? (Array.isArray(row[columnKey]) ? row[columnKey] : []).map((_key: string) =>
                               h(NImage, {
                                 class: 'h-[40px] w-[40px] mr-[4px]',
-                                src: `${PreviewPictureUrl}/${_key}`,
+                                src: `${PreviewPictureUrl}/${_key}?userId=${userStore.userInfo.id}`,
                               })
                             )
                           : '-',

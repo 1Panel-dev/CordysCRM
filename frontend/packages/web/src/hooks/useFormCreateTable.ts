@@ -19,6 +19,7 @@ import {
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
+import useUserStore from '@/store/modules/user';
 
 import useFormCreateSystemColumns from './useFormCreateSystemColumns';
 
@@ -78,6 +79,7 @@ export interface FormCreateTableProps {
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
   const { t } = useI18n();
+  const userStore = useUserStore();
   const { getFilterListConfig, customFieldsFilterConfig } = useFormCreateAdvanceFilter();
   const { internalColumnMap, staticColumns, reasonOptions, noSorterType } = await useFormCreateSystemColumns(props);
   const loading = ref(false);
@@ -229,7 +231,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                             ? (row[key] || []).map((_key: string) =>
                                 h(NImage, {
                                   class: 'h-[40px] w-[40px] mr-[4px]',
-                                  src: `${PreviewPictureUrl}/${_key}`,
+                                  src: `${PreviewPictureUrl}/${_key}?userId=${userStore.userInfo.id}`,
                                 })
                               )
                             : '-',

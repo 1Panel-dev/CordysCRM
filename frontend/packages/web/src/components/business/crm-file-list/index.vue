@@ -54,6 +54,7 @@
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
 
   import { downloadAttachment } from '@/api/modules';
+  import useUserStore from '@/store/modules/user';
 
   import { AttachmentInfo } from '../crm-form-create/types';
 
@@ -67,6 +68,7 @@
 
   const Message = useMessage();
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   async function handleDelete(file: AttachmentInfo, close: () => void) {
     close();
@@ -76,7 +78,7 @@
   const showPreview = ref(false);
   const previewSrc = ref('');
   function handlePreview(file: AttachmentInfo) {
-    previewSrc.value = `${PreviewAttachmentUrl}/${file.id}`;
+    previewSrc.value = `${PreviewAttachmentUrl}/${file.id}?userId=${userStore.userInfo.id}`;
     showPreview.value = true;
   }
 
