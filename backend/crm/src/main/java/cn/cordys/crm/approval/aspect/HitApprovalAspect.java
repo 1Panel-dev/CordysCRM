@@ -123,7 +123,6 @@ public class HitApprovalAspect {
 					approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), operator, OrganizationContext.getOrganizationId());
 				} else {
 					// 命中审批流，直接提审（跳过待提审状态）
-					approvalResourceService.clearResourceApprovalDetail(resourceId);
 					String updateFields = resolveUpdateFields();
 					ApprovalPushParam pushParam = ApprovalPushParam.builder()
 							.orgId(organizationId)
