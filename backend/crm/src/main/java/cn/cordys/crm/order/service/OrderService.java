@@ -624,6 +624,7 @@ public class OrderService implements ApprovalResourceHandler {
 
     /**
      * 审批后置操作更新阶段配置
+     *
      * @param stageField
      * @param originOrder
      * @param postFieldParam
@@ -798,27 +799,8 @@ public class OrderService implements ApprovalResourceHandler {
         }
         order.setStage(request.getStage());
         orderMapper.update(order);
-        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), orgId);
-        List<BaseField> fields = businessFormConfig.getFields();
-        request.getFields().forEach(field -> {
-            BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
-            ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
-            updateRequest.setIds(List.of(request.getId()));
-            updateRequest.setFieldId(field.getFieldId());
-            updateRequest.setFieldValue(field.getFieldValue());
-            orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, orgId);
-        });
-        OrderSnapshot snapshotCriteria = new OrderSnapshot();
-        snapshotCriteria.setOrderId(order.getId());
-        OrderSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
-        if (snapshot != null) {
-            ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
-            List<BaseModuleFieldValue> orderFields = orderFieldService.getModuleFieldValuesByResourceId(order.getId());
-            OrderGetResponse snapshotRes = get(order, orderFields, orderFormConfig);
-            snapshot.setOrderProp(JSON.toJSONString(orderFormConfig));
-            snapshot.setOrderValue(JSON.toJSONString(snapshotRes));
-            snapshotBaseMapper.update(snapshot);
-        }
+
+        updateFieldAndSnapshot(order, request.getFields(),userId);
 
         final Map<String, String> originalVal = new HashMap<>(1);
         originalVal.put("orderStage", stageMap.get(order.getStage()));
@@ -831,6 +813,30 @@ public class OrderService implements ApprovalResourceHandler {
                         .modifiedValue(modifiedVal)
                         .build()
         );
+    }
+
+    private void updateFieldAndSnapshot(Order order, List<BaseModuleFieldValue> requestFields, String userId) {
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), order.getOrganizationId());
+        List<BaseField> fields = businessFormConfig.getFields();
+        requestFields.forEach(field -> {
+            BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
+            ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
+            updateRequest.setIds(List.of(order.getId()));
+            updateRequest.setFieldId(field.getFieldId());
+            updateRequest.setFieldValue(field.getFieldValue());
+            orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, order.getOrganizationId());
+        });
+        OrderSnapshot snapshotCriteria = new OrderSnapshot();
+        snapshotCriteria.setOrderId(order.getId());
+        OrderSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+        if (snapshot != null) {
+            ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
+            List<BaseModuleFieldValue> orderFields = orderFieldService.getModuleFieldValuesByResourceId(order.getId());
+            OrderGetResponse snapshotRes = get(order, orderFields, orderFormConfig);
+            snapshot.setOrderProp(JSON.toJSONString(orderFormConfig));
+            snapshot.setOrderValue(JSON.toJSONString(snapshotRes));
+            snapshotBaseMapper.update(snapshot);
+        }
     }
 
     /**
@@ -1008,6 +1014,11 @@ public class OrderService implements ApprovalResourceHandler {
                 extOrderMapper.moveDownStageOrder(pos, request.getStage(), DEFAULT_POS);
             }
         }
+
+        if (!stageAdvancedConfigService.checkStage(order.getStage(), request.getStage(), FormKey.ORDER.name())) {
+            return;
+        }
+
         Order dragOrder = new Order();
         dragOrder.setId(request.getDragNodeId());
         dragOrder.setPos(pos);
@@ -1015,8 +1026,7 @@ public class OrderService implements ApprovalResourceHandler {
         dragOrder.setUpdateUser(userId);
         dragOrder.setUpdateTime(System.currentTimeMillis());
         orderMapper.updateById(dragOrder);
-
-        updateStageSnapshot(request.getDragNodeId(), request.getStage());
+        updateFieldAndSnapshot(order,request.getFields(),userId);
 
     }
 

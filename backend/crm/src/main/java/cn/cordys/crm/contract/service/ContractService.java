@@ -658,27 +658,8 @@ public class ContractService implements ApprovalResourceHandler {
             contract.setVoidReason(request.getVoidReason());
         }
         contractMapper.update(contract);
-        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
-        List<BaseField> fields = businessFormConfig.getFields();
-        request.getFields().forEach(field -> {
-            BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
-            ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
-            updateRequest.setIds(List.of(request.getId()));
-            updateRequest.setFieldId(field.getFieldId());
-            updateRequest.setFieldValue(field.getFieldValue());
-            contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.ORDER_INDEX, extContractMapper::batchUpdate, userId, orgId);
-        });
-        ContractSnapshot snapshotCriteria = new ContractSnapshot();
-        snapshotCriteria.setContractId(contract.getId());
-        ContractSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
-        if (snapshot != null) {
-            ModuleFormConfigDTO orderFormConfig = getFormConfig(contract.getOrganizationId());
-            List<BaseModuleFieldValue> orderFields = contractFieldService.getModuleFieldValuesByResourceId(contract.getId());
-            ContractGetResponse snapshotRes = get(contract, orderFields, orderFormConfig);
-            snapshot.setContractProp(JSON.toJSONString(orderFormConfig));
-            snapshot.setContractValue(JSON.toJSONString(snapshotRes));
-            snapshotBaseMapper.update(snapshot);
-        }
+
+        updateFieldAndSnapshot(contract, request.getFields(),userId);
 
         final Map<String, String> originalVal = new HashMap<>(1);
         originalVal.put("contractStage", stageMap.get(contract.getStage()));
@@ -700,6 +681,30 @@ public class ContractService implements ApprovalResourceHandler {
                         .build()
         );
 
+    }
+
+    private void updateFieldAndSnapshot(Contract contract, List<BaseModuleFieldValue> requestFields, String userId) {
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), contract.getOrganizationId());
+        List<BaseField> fields = businessFormConfig.getFields();
+        requestFields.forEach(field -> {
+            BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
+            ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
+            updateRequest.setIds(List.of(contract.getId()));
+            updateRequest.setFieldId(field.getFieldId());
+            updateRequest.setFieldValue(field.getFieldValue());
+            contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.ORDER_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId());
+        });
+        ContractSnapshot snapshotCriteria = new ContractSnapshot();
+        snapshotCriteria.setContractId(contract.getId());
+        ContractSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+        if (snapshot != null) {
+            ModuleFormConfigDTO orderFormConfig = getFormConfig(contract.getOrganizationId());
+            List<BaseModuleFieldValue> orderFields = contractFieldService.getModuleFieldValuesByResourceId(contract.getId());
+            ContractGetResponse snapshotRes = get(contract, orderFields, orderFormConfig);
+            snapshot.setContractProp(JSON.toJSONString(orderFormConfig));
+            snapshot.setContractValue(JSON.toJSONString(snapshotRes));
+            snapshotBaseMapper.update(snapshot);
+        }
     }
 
     /**
@@ -1120,8 +1125,7 @@ public class ContractService implements ApprovalResourceHandler {
         dragContract.setUpdateUser(userId);
         dragContract.setUpdateTime(System.currentTimeMillis());
         contractMapper.updateById(dragContract);
-
-        updateStatusSnapshot(request.getDragNodeId(), request.getStage(), null);
+        updateFieldAndSnapshot(contract,request.getFields(),userId);
 
     }
 
