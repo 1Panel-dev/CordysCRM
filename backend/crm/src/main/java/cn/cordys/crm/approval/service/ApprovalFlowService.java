@@ -1931,12 +1931,14 @@ public class ApprovalFlowService {
         ApprovalNodeApproverResponse nextApproverNode = (ApprovalNodeApproverResponse) nextNode;
         if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_PASS) {
             // 自动通过, 插入审批记录, 获取下一个节点
-            saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, null, null, null, false, null);
+            saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_APPROVED, null, null, nextApproverNode.getCcList(), true, null);
+            updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.APPROVE, InternalUser.ADMIN.getValue());
             return getNextNodeWithExceptionHandler(instance, nextApproverNode.getId(), fieldValues, currentOrgId, false);
         }
         if (ApprovalTypeEnum.valueOf(nextApproverNode.getApprovalType()) == ApprovalTypeEnum.AUTO_REJECT) {
             // 自动驳回, 插入审批记录
-            saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_UNAPPROVED, null, null, null, false, null);
+            saveAutoRecord(instance.getId(), nextApproverNode.getId(), ApprovalStatus.AUTO_UNAPPROVED, null, null, nextApproverNode.getCcList(), true, null);
+            updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.REJECT, InternalUser.ADMIN.getValue());
             ApprovalNodeExceptionResponse exNode = BeanUtils.copyBean(new ApprovalNodeExceptionResponse(), nextApproverNode);
             exNode.setNodeType(ApprovalNodeTypeEnum.EXCEPTION.name());
             return exNode;
