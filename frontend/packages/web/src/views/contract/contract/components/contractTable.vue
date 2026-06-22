@@ -855,6 +855,10 @@
   }
 
   function removeItemFromList(id: string) {
+    if (deleteExecute.value) {
+      searchData(undefined, id);
+      return;
+    }
     if (activeShowType.value === 'billboard') {
       billboardRef.value?.refresh();
       getStatistic();

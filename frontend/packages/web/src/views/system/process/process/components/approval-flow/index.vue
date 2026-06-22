@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, nextTick, onMounted, ref, watch } from 'vue';
+  import { computed, nextTick, ref, watch } from 'vue';
 
   import { ApprovalTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -481,9 +481,16 @@
     }
   );
 
-  onMounted(() => {
-    loadConditionFilterConfig().then(refreshConditionDescriptions);
-  });
+  watch(
+    () => basicConfig.value.formType,
+    async () => {
+      await loadConditionFilterConfig();
+      refreshConditionDescriptions();
+    },
+    {
+      immediate: true,
+    }
+  );
 
   watch(
     flowSchema,

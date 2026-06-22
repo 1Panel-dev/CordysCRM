@@ -47,6 +47,7 @@
           <CrmApprovalDetail
             :form-key="FormDesignKeyEnum.CONTRACT"
             :source-id="props.sourceId"
+            :refresh-key="approvalDetailRefreshKey"
             :approval-status="detailInfo?.approvalStatus"
             @saveApproval="handleSaveApproval"
           >
@@ -119,7 +120,7 @@
       :initial-source-name="initialSourceName"
       :link-form-key="FormDesignKeyEnum.CONTRACT"
       :link-form-info="linkFormInfo"
-      @saved="() => handleSaved()"
+      @saved="handleFormCreateSaved"
       @review="handleFormReview"
     />
     <VoidReasonModal
@@ -336,9 +337,17 @@
   }
 
   const refreshKey = ref(0);
+  const approvalDetailRefreshKey = ref(0);
   function handleSaved() {
     refreshKey.value += 1;
     emit('refresh');
+  }
+
+  function handleFormCreateSaved(_res: any, isUpdateReview?: boolean) {
+    if (isUpdateReview) {
+      approvalDetailRefreshKey.value += 1;
+    }
+    handleSaved();
   }
 
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
@@ -389,6 +398,11 @@
         try {
           await deleteContract(row.id);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (deleteExecute.value) {
+            approvalDetailRefreshKey.value += 1;
+            handleSaved();
+            return;
+          }
           visible.value = false;
           emit('delete');
         } catch (error) {
