@@ -3,6 +3,7 @@
     v-model:show="show"
     :title="t('crmStatusFlow.flowPath', { f: props.from.name, t: props.to.name })"
     :positive-text="t('crmStatusFlow.flow')"
+    :ok-loading="okLoading"
     @cancel="handleCancel"
     @confirm="handleConfirm"
   >
@@ -32,6 +33,21 @@
                 />
               </div>
             </template>
+            <div
+              v-if="props.formKey === FormDesignKeyEnum.CONTRACT && props.to.id === 'VOID'"
+              class="crm-form-create-item"
+            >
+              <n-form-item path="reason" :label="t('contract.voidReason')">
+                <n-input
+                  v-model:value="formDetail.reason"
+                  type="textarea"
+                  :placeholder="t('common.pleaseInput')"
+                  allow-clear
+                  maxlength="200"
+                  show-count
+                />
+              </n-form-item>
+            </div>
           </div>
         </n-scrollbar>
       </n-form>
@@ -40,18 +56,19 @@
 </template>
 
 <script setup lang="ts">
-  import { FormInst, NForm, NScrollbar, NSpin } from 'naive-ui';
+  import { FormInst, NForm, NFormItem, NInput, NScrollbar, NSpin, useMessage } from 'naive-ui';
 
-  import { FieldRuleEnum, FieldTypeEnum, type FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { CirculationValueTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getRuleType } from '@lib/shared/method/formCreate';
-  import type { CirculationFieldValueItem } from '@lib/shared/models/opportunity';
+  import { getNormalFieldValue, getRuleType } from '@lib/shared/method/formCreate';
+  import type { CirculationFieldValueItem, UpdateStageParams } from '@lib/shared/models/opportunity';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
+  import { changeContractStatus, updateOrderStage } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   const props = defineProps<{
@@ -59,9 +76,14 @@
     to: { id?: string; name?: string };
     formKey: FormDesignKeyEnum;
     circulationFieldValues: CirculationFieldValueItem[];
+    sourceId: string;
+  }>();
+  const emit = defineEmits<{
+    (e: 'success'): void;
   }>();
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const show = defineModel<boolean>('show', {
     required: true,
@@ -70,7 +92,16 @@
   const formRef = ref<FormInst>();
   const { formKey } = toRefs(props);
 
-  const { fieldList, formConfig, formDetail, originFormDetail, loading, initFormConfig, initForm } = useFormCreateApi({
+  const {
+    fieldList,
+    formConfig,
+    formDetail,
+    originFormDetail,
+    loading,
+    initFormConfig,
+    initForm,
+    transformFieldValue,
+  } = useFormCreateApi({
     formKey,
   });
 
@@ -109,6 +140,9 @@
         await initFormConfig();
         initForm();
         initRealFields();
+        if (props.formKey === FormDesignKeyEnum.CONTRACT && props.to.id === 'VOID') {
+          formDetail.value.voidReason = '';
+        }
       }
     }
   );
@@ -171,14 +205,34 @@
     show.value = false;
   }
 
+  const updateApiMap: Partial<Record<FormDesignKeyEnum, (data: UpdateStageParams) => Promise<any>>> = {
+    [FormDesignKeyEnum.CONTRACT]: changeContractStatus,
+    [FormDesignKeyEnum.ORDER]: updateOrderStage,
+  };
+
+  const okLoading = ref(false);
   function handleConfirm() {
     formRef.value?.validate(async (errors) => {
       if (!errors) {
         try {
-          //
+          okLoading.value = true;
+          await updateApiMap[props.formKey]?.({
+            id: props.sourceId,
+            stage: props.to.id || '',
+            fields: realFields.value.map((e) => ({
+              fieldId: e.id,
+              fieldValue: getNormalFieldValue(e, transformFieldValue(e, formDetail.value, e.id)),
+            })),
+            voidReason: formDetail.value.voidReason,
+          });
+          Message.success(t('crmStatusFlow.flowSuccess'));
+          emit('success');
+          show.value = false;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
+        } finally {
+          okLoading.value = false;
         }
       }
     });

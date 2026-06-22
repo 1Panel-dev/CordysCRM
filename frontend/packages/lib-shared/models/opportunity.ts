@@ -64,6 +64,8 @@ export interface UpdateStageParams {
   stage: string;
   // expectedEndTime?: number; // 预计结束时间
   failureReason?: string | null; // 失败原因
+  voidReason?: string;
+  fields?: ModuleField[];
 }
 
 export interface StageBoardPageQueryParams extends TableQueryParams {

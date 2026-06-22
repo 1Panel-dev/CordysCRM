@@ -47,6 +47,7 @@ import {
   UpdateOpportunityStageRollbackParams,
   UpdateStageBaseParams,
   type SaveCirculationConfigParams,
+  type UpdateStageParams,
 } from '@lib/shared/models/opportunity';
 import type { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum';
 
@@ -179,7 +180,7 @@ export default function useOrderApi(CDR: CordysAxios) {
   }
 
   // 更新阶段
-  function updateOrderStage(data: { id: string; stage: string }) {
+  function updateOrderStage(data: UpdateStageParams) {
     return CDR.post({ url: UpdateOrderStageUrl, data });
   }
 

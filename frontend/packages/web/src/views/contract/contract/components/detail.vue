@@ -34,7 +34,6 @@
         :source-id="sourceId"
         :operation-permission="['CONTRACT:STAGE']"
         :update-api="updateContractStage"
-        :before-change-stage="handleBeforeChangeStage"
         @load-detail="handleSaved()"
       />
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
@@ -123,12 +122,6 @@
       @saved="handleFormCreateSaved"
       @review="handleFormReview"
     />
-    <VoidReasonModal
-      v-model:visible="showVoidReasonModal"
-      :name="title"
-      :sourceId="props.sourceId"
-      @refresh="handleSaved()"
-    />
     <QuotationDetailDrawer
       v-model:visible="showQuotationDetailDrawer"
       :source-id="activeQuotationSourceId"
@@ -168,7 +161,6 @@
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
-  import VoidReasonModal from './voidReasonModal.vue';
   import PaymentTable from '@/views/contract/contractPaymentPlan/components/paymentTable.vue';
   import PaymentRecordTable from '@/views/contract/contractPaymentRecord/components/paymentTable.vue';
   import InvoiceTable from '@/views/contract/invoice/components/invoiceTable.vue';
@@ -204,8 +196,6 @@
   const { t } = useI18n();
   const title = ref('');
   const detailInfo = ref();
-
-  const showVoidReasonModal = ref(false);
 
   const activeTab = ref('contract');
 
@@ -361,15 +351,6 @@
 
     return hasApprovalScopedPermission(detailInfo.value, ['CONTRACT:STAGE']);
   });
-
-  function handleBeforeChangeStage(stage: string) {
-    if (stage === ContractStatusEnum.VOID) {
-      showVoidReasonModal.value = true;
-      return false;
-    }
-
-    return true;
-  }
 
   function handleFormReview(res: any) {
     reviewByFormResult(res, {
