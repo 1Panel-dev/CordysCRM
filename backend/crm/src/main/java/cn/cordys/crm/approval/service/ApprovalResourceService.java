@@ -304,21 +304,6 @@ public class ApprovalResourceService {
     }
 
     /**
-     * 清除资源审批记录
-     *
-     * @param resourceId 资源ID
-     */
-    public void clearResourceApprovalDetail(String resourceId) {
-        List<ApprovalInstance> approvalInstances = approvalInstanceMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalInstance>().eq(ApprovalInstance::getResourceId, resourceId));
-        if (CollectionUtils.isNotEmpty(approvalInstances)) {
-            List<String> instanceIds = approvalInstances.stream().map(ApprovalInstance::getId).toList();
-            approvalTaskMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalTask>().in(ApprovalTask::getInstanceId, instanceIds));
-            approvalRecordMapper.deleteByLambda(new LambdaQueryWrapper<ApprovalRecord>().in(ApprovalRecord::getInstanceId, instanceIds));
-            approvalInstanceMapper.deleteByIds(instanceIds);
-        }
-    }
-
-    /**
      * 检查资源是否历史上审批通过过
      *
      * @param formKey    表单类型
@@ -568,7 +553,6 @@ public class ApprovalResourceService {
             boolean approved = isResourceApproved(formKey, resourceId);
             if (approved) {
                 // 已审批通过过：UPDATE时机，直接提审
-                clearResourceApprovalDetail(resourceId);
                 ApprovalPushParam pushParam = ApprovalPushParam.builder()
                         .orgId(organizationId)
                         .userId(userId)
@@ -610,7 +594,6 @@ public class ApprovalResourceService {
 
         List<String> approvalResourceIds = new ArrayList<>();
         for (String resourceId : resourceIds) {
-            clearResourceApprovalDetail(resourceId);
             ApprovalPushParam pushParam = ApprovalPushParam.builder()
                     .orgId(organizationId)
                     .userId(userId)
