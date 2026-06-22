@@ -567,6 +567,10 @@
   }
 
   function removeItemFromList(id: string) {
+    if (deleteExecute.value) {
+      searchData(undefined, id);
+      return;
+    }
     propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
     propsRes.value.crmPagination = {
       ...propsRes.value.crmPagination,

@@ -108,7 +108,7 @@
   const emit = defineEmits<{
     (e: 'cancel'): void;
     (e: 'init', title: string, formViewSize?: FormViewSize): void;
-    (e: 'saved', isContinue: boolean, res: any): void;
+    (e: 'saved', isContinue: boolean, res: any, isUpdateReview?: boolean): void;
     (e: 'review', res: any): void;
   }>();
 
@@ -835,7 +835,7 @@
           result,
           isContinue,
           (_isContinue, res) => {
-            emit('saved', isContinue, res);
+            emit('saved', isContinue, res, Boolean((extraParams as Record<string, any>).comment));
           },
           false,
           false,

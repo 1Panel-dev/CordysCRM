@@ -67,7 +67,7 @@
     customFormId?: string;
   }>();
   const emit = defineEmits<{
-    (e: 'saved', res: any): void;
+    (e: 'saved', res: any, isUpdateReview?: boolean): void;
     (e: 'review', res: any): void;
   }>();
 
@@ -122,9 +122,9 @@
     }
   }
 
-  function handleSaved(isContinue: boolean, res: any) {
+  function handleSaved(isContinue: boolean, res: any, isUpdateReview?: boolean) {
     visible.value = isContinue;
-    emit('saved', res);
+    emit('saved', res, isUpdateReview);
   }
 
   function handleReview(res: any) {

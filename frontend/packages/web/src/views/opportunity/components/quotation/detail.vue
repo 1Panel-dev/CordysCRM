@@ -35,6 +35,7 @@
     <CrmApprovalDetail
       :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
       :source-id="props.sourceId"
+      :refresh-key="approvalDetailRefreshKey"
       :approval-status="detailInfo?.approvalStatus"
       @saveApproval="handleSaveApproval"
     >
@@ -121,6 +122,7 @@
   });
 
   const refreshKey = ref(0);
+  const approvalDetailRefreshKey = ref(0);
   const title = ref('');
   const detailInfo = ref();
   const formViewSize = ref<FormViewSize>('large');
@@ -188,7 +190,10 @@
     id: '',
   });
 
-  function handleFormCreateSaved() {
+  function handleFormCreateSaved(_res?: any, isUpdateReview?: boolean) {
+    if (isUpdateReview) {
+      approvalDetailRefreshKey.value += 1;
+    }
     refreshKey.value += 1;
     emit('refresh');
   }
@@ -221,6 +226,11 @@
         try {
           await deleteQuotation(props.sourceId);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          if (deleteExecute.value) {
+            approvalDetailRefreshKey.value += 1;
+            handleSavedRefresh();
+            return;
+          }
           visible.value = false;
           emit('remove');
         } catch (error) {

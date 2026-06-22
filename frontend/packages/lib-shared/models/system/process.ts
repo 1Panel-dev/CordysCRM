@@ -300,6 +300,7 @@ export interface ApprovalDetail {
   submitAvatar: string;
   submitter: string;
   submitTime: number;
+  comment: string;
   result: string;
   approvalStatus: ProcessStatusEnum;
   currentNodeId: string;

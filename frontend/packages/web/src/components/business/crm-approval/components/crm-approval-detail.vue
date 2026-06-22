@@ -34,6 +34,7 @@
                 submitter: approvalInfo?.submitter,
                 submitTime: approvalInfo?.submitTime,
                 submitterId: approvalInfo?.submitterId,
+                comment: approvalInfo?.comment,
               }"
               :currentApprovalNode="currentApprovalNode"
               :currentApprovalNodeIndex="currentApprovalNodeIndex"
@@ -236,6 +237,7 @@
   const props = defineProps<{
     sourceId: string;
     formKey: FormDesignKeyEnum;
+    refreshKey?: number;
     layout?: 'horizontal' | 'vertical';
     approvalStatus: ProcessStatusEnum;
   }>();
@@ -722,6 +724,15 @@
     },
     {
       immediate: true,
+    }
+  );
+
+  watch(
+    () => props.refreshKey,
+    () => {
+      if (props.approvalStatus && ![ProcessStatusEnum.PENDING, ProcessStatusEnum.NONE].includes(props.approvalStatus)) {
+        initApprovalDetail();
+      }
     }
   );
 </script>
