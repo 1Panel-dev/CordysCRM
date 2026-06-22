@@ -53,6 +53,9 @@ import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
 import cn.cordys.crm.customer.domain.Customer;
+import cn.cordys.crm.order.domain.Order;
+import cn.cordys.crm.order.domain.OrderSnapshot;
+import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.system.constants.DictModule;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
@@ -62,10 +65,7 @@ import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
-import cn.cordys.crm.system.service.DictService;
-import cn.cordys.crm.system.service.LogService;
-import cn.cordys.crm.system.service.ModuleFormCacheService;
-import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.*;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -121,7 +121,8 @@ public class ContractService implements ApprovalResourceHandler {
     private ApprovalFlowService approvalFlowService;
 	@Resource
 	private LogService logService;
-
+    @Resource
+    private StageAdvancedConfigService stageAdvancedConfigService;
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
 
@@ -641,19 +642,38 @@ public class ContractService implements ApprovalResourceHandler {
         Map<String, String> stageMap = stageConfigList.stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
-        final Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("contractStage", stageMap.get(contract.getStage()));
-
+        if (!stageAdvancedConfigService.checkStage(contract.getStage(), request.getStage(), FormKey.CONTRACT.name())) {
+            return;
+        }
         contract.setStage(request.getStage());
         if (StringUtils.isNotBlank(request.getVoidReason())) {
             contract.setVoidReason(request.getVoidReason());
         }
-
-        contract.setUpdateTime(System.currentTimeMillis());
-        contract.setUpdateUser(userId);
         contractMapper.update(contract);
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), orgId);
+        List<BaseField> fields = businessFormConfig.getFields();
+        request.getFields().forEach(field -> {
+            BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
+            ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
+            updateRequest.setIds(List.of(request.getId()));
+            updateRequest.setFieldId(field.getFieldId());
+            updateRequest.setFieldValue(field.getFieldValue());
+            contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.ORDER_INDEX, extContractMapper::batchUpdate, userId, orgId);
+        });
+        ContractSnapshot snapshotCriteria = new ContractSnapshot();
+        snapshotCriteria.setContractId(contract.getId());
+        ContractSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+        if (snapshot != null) {
+            ModuleFormConfigDTO orderFormConfig = getFormConfig(contract.getOrganizationId());
+            List<BaseModuleFieldValue> orderFields = contractFieldService.getModuleFieldValuesByResourceId(contract.getId());
+            ContractGetResponse snapshotRes = get(contract, orderFields, orderFormConfig);
+            snapshot.setContractProp(JSON.toJSONString(orderFormConfig));
+            snapshot.setContractValue(JSON.toJSONString(snapshotRes));
+            snapshotBaseMapper.update(snapshot);
+        }
 
-        updateStatusSnapshot(request.getId(), request.getStage(), null);
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("contractStage", stageMap.get(contract.getStage()));
 
         if (Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) || Strings.CI.equals(request.getStage(), ContractStage.ARCHIVED.name())) {
             String event = Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) ?
@@ -661,7 +681,6 @@ public class ContractService implements ApprovalResourceHandler {
             Customer customer = customerBaseMapper.selectByPrimaryKey(contract.getCustomerId());
             sendNotice(contract, userId, orgId, event, customer.getName());
         }
-
 
         final Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("contractStage", stageMap.get(request.getStage()));

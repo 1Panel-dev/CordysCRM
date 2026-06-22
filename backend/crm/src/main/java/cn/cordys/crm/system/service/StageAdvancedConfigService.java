@@ -6,16 +6,20 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.stage.CirculationSetting;
 import cn.cordys.common.dto.stage.StageAdvancedConfigRequest;
+import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.Target;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.opportunity.constants.OpportunityStageType;
+import cn.cordys.crm.system.constants.CirculationTypeEnum;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,5 +100,85 @@ public class StageAdvancedConfigService {
             extStageAdvancedConfigMapper.update(tableName, type, orgId, null, null);
         }
 
+    }
+
+
+    /**
+     * stage校验
+     *
+     * @param originStage
+     * @param targetStage
+     * @param moduleType
+     */
+    public boolean checkStage(String originStage, String targetStage, String moduleType) {
+        if (Strings.CI.equals(originStage, targetStage)) {
+            return true;
+        }
+
+        String tableName = STAGE_CONFIG_TABLE.get(moduleType);
+        if (StringUtils.isBlank(tableName)) {
+            return false;
+        }
+
+        StageConfigResponse originConfig = extStageAdvancedConfigMapper.getStageConfig(tableName, originStage);
+        StageConfigResponse targetConfig = extStageAdvancedConfigMapper.getStageConfig(tableName, targetStage);
+
+        if (Strings.CI.equals(originConfig.getCirculationType(), CirculationTypeEnum.NORMAL.name())) {
+            return handleNormal(originConfig, targetConfig);
+        }
+
+        if (Strings.CI.equals(originConfig.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
+            return handleAdvanced(originConfig,targetConfig,moduleType);
+        }
+
+        return false;
+
+    }
+
+    private boolean handleAdvanced(StageConfigResponse originConfig, StageConfigResponse targetConfig,String moduleType) {
+        StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originConfig.getId(), targetConfig.getId(),moduleType);
+        if (config == null) {
+            return false;
+        }
+        return config.getEnable();
+    }
+
+
+    private boolean handleNormal(StageConfigResponse originConfig, StageConfigResponse targetConfig) {
+        // 基础流转
+        if (originConfig.getEndRollBack() && originConfig.getAfootRollBack()) {
+            // 进行中&完结 同时开启 任意流转
+            return true;
+        }
+
+        if (originConfig.getEndRollBack()) {
+            // 只开启完结回退配置
+            // 按pos顺序（目标pos > 源pos）允许任何类型切换
+            if (targetConfig.getPos() > originConfig.getPos()) {
+                return true;
+            }
+            // 特定的类型组合，允许pos不递增的情况
+            String originType = originConfig.getType();
+            String targetType = targetConfig.getType();
+            if ((Strings.CI.equals(OpportunityStageType.AFOOT.name(), originType) && Strings.CI.equals(OpportunityStageType.END.name(), targetType))
+                    || (Strings.CI.equals(OpportunityStageType.END.name(), originType) && Strings.CI.equals(OpportunityStageType.END.name(), targetType))) {
+                return true;
+            }
+            return false;
+        }
+
+        if (originConfig.getAfootRollBack()) {
+            // 只开启进行中回退
+            // 源阶段为 END 时，不允许任何切换
+            if (Strings.CI.equals(OpportunityStageType.END.name(), originConfig.getType())) {
+                return false;
+            }
+
+            // 源阶段为 AFOOT 时，允许目标为 AFOOT 或 END（不限制 pos）
+            String targetType = targetConfig.getType();
+            return Strings.CI.equals(OpportunityStageType.END.name(), targetType) || Strings.CI.equals(OpportunityStageType.AFOOT.name(), targetType);
+        }
+
+        return false;
     }
 }

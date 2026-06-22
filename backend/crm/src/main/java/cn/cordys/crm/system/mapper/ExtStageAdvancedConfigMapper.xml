@@ -25,4 +25,20 @@
         where organization_id = #{orgId}
           and module_type = #{moduleType}
     </select>
+
+
+    <select id="getStageConfig" resultType="cn.cordys.common.dto.stage.StageConfigResponse">
+        select id, name, type, afoot_roll_back, end_roll_back, circulation_type
+        from ${sourceTable}
+        where id = #{id}
+    </select>
+
+
+    <select id="getConfigByOriginAndTarget" resultType="cn.cordys.crm.system.domain.StageAdvancedConfig">
+        select id, enable
+        from stage_advanced_config
+        where origin_id = #{originId}
+          and target_id = #{targetId}
+          and module_type = #{moduleType}
+    </select>
 </mapper>
