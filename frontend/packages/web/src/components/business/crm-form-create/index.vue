@@ -374,7 +374,7 @@
       }
     });
     nextTick(() => {
-      formRef.value?.validate();
+      formRef.value?.restoreValidation();
     });
   }
 

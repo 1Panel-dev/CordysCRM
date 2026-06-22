@@ -708,7 +708,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             case dataSourceTypes.includes(field.type):
               // 数据源填充，且替换initialOptions
               field.initialOptions = linkField.initialOptions || [];
-              formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.id);
+              formDetail.value[field.id] = linkField.value?.map((e: Record<string, any>) => e.id);
               break;
             case multipleTypes.includes(field.type):
               // 多选填充

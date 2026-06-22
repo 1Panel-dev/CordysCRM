@@ -223,7 +223,7 @@ export function parseFormDetailValue(item: FormCreateField, form: FormDetail, so
           }
           return t('common.optionNotExist');
         });
-      } else {
+      } else if (value) {
         name = options.find((e) => e.id === value)?.name || t('common.optionNotExist');
       }
     }
@@ -457,9 +457,7 @@ export function transformData({
         customFieldAttr[field.fieldId] = field.fieldValue !== '' ? [t('common.optionNotExist')] : ['-'];
       } else {
         // 避免这里返回 [['选项不存在']] 这样的嵌套数组
-        customFieldAttr[field.fieldId] = field.fieldValue?.map((e) =>
-          e !== '' ? t('common.optionNotExist') : '-'
-        );
+        customFieldAttr[field.fieldId] = field.fieldValue?.map((e) => (e !== '' ? t('common.optionNotExist') : '-'));
       }
     } else {
       // 其他类型字段，直接赋值
