@@ -650,7 +650,7 @@ public class ContractService implements ApprovalResourceHandler {
         Map<String, String> stageMap = stageConfigList.stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
-        if (!stageAdvancedConfigService.checkStage(contract.getStage(), request.getStage(), FormKey.CONTRACT.name())) {
+        if (!stageAdvancedConfigService.checkStage(contract.getStage(), request.getStage(), FormKey.CONTRACT.getKey())) {
             return;
         }
         contract.setStage(request.getStage());
@@ -684,16 +684,18 @@ public class ContractService implements ApprovalResourceHandler {
     }
 
     private void updateFieldAndSnapshot(Contract contract, List<BaseModuleFieldValue> requestFields, String userId) {
-        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), contract.getOrganizationId());
-        List<BaseField> fields = businessFormConfig.getFields();
-        requestFields.forEach(field -> {
-            BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
-            ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
-            updateRequest.setIds(List.of(contract.getId()));
-            updateRequest.setFieldId(field.getFieldId());
-            updateRequest.setFieldValue(field.getFieldValue());
-            contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.ORDER_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId());
-        });
+        if (CollectionUtils.isNotEmpty(requestFields)) {
+            ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), contract.getOrganizationId());
+            List<BaseField> fields = businessFormConfig.getFields();
+            requestFields.forEach(field -> {
+                BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
+                ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
+                updateRequest.setIds(List.of(contract.getId()));
+                updateRequest.setFieldId(field.getFieldId());
+                updateRequest.setFieldValue(field.getFieldValue());
+                contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.ORDER_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId());
+            });
+        }
         ContractSnapshot snapshotCriteria = new ContractSnapshot();
         snapshotCriteria.setContractId(contract.getId());
         ContractSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
@@ -886,7 +888,7 @@ public class ContractService implements ApprovalResourceHandler {
         if (stageField == null) {
             return;
         }
-        if (!stageAdvancedConfigService.checkStage(originContract.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.name())) {
+        if (!stageAdvancedConfigService.checkStage(originContract.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.getKey())) {
             return;
         }
         StageConfigResponse first = extContractStageConfigMapper.getStageConfigList(originContract.getOrganizationId()).getFirst();
@@ -1118,13 +1120,10 @@ public class ContractService implements ApprovalResourceHandler {
                 extContractMapper.moveDownStageContract(pos, request.getStage(), DEFAULT_POS);
             }
         }
-        Contract dragContract = new Contract();
-        dragContract.setId(request.getDragNodeId());
-        dragContract.setPos(pos);
-        dragContract.setStage(request.getStage());
-        dragContract.setUpdateUser(userId);
-        dragContract.setUpdateTime(System.currentTimeMillis());
-        contractMapper.updateById(dragContract);
+
+        contract.setPos(pos);
+        contract.setStage(request.getStage());
+        contractMapper.updateById(contract);
         updateFieldAndSnapshot(contract,request.getFields(),userId);
 
     }
