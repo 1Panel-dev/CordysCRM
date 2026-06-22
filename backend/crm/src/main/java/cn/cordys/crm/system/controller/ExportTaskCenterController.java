@@ -33,12 +33,12 @@ public class ExportTaskCenterController {
     @GetMapping("/cancel/{taskId}")
     @Operation(summary = "取消导出")
     public void cancel(@PathVariable("taskId") String taskId) {
-        exportTaskCenterService.cancel(taskId);
+        exportTaskCenterService.cancel(taskId, SessionUtils.getUserId());
     }
 
     @GetMapping("/download/{taskId}")
     @Operation(summary = "下载")
     public ResponseEntity<org.springframework.core.io.Resource> download(@PathVariable("taskId") String taskId) {
-        return exportTaskCenterService.download(taskId);
+        return exportTaskCenterService.download(taskId, SessionUtils.getUserId());
     }
 }

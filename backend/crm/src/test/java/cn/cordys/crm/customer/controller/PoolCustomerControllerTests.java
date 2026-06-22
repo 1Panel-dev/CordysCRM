@@ -160,7 +160,7 @@ public class PoolCustomerControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(EXPORT_ALL, request);
         String resultData = getResultData(mvcResult, String.class);
         Thread.sleep(1500); // 等待导出任务完成
-        ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = exportTaskCenterService.download(resultData);
+        ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = exportTaskCenterService.download(resultData, "admin");
         Assertions.assertTrue(resourceResponseEntity.getBody().exists());
         ExportTask exportTask = new ExportTask();
         exportTask.setId(resultData);
