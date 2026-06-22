@@ -8,6 +8,7 @@ import cn.cordys.common.dto.stage.CirculationSetting;
 import cn.cordys.common.dto.stage.StageAdvancedConfigRequest;
 import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.Target;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -128,17 +129,17 @@ public class StageAdvancedConfigService {
         }
 
         if (Strings.CI.equals(originConfig.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
-            return handleAdvanced(originConfig,targetConfig,moduleType);
+            return handleAdvanced(originConfig, targetConfig, moduleType);
         }
 
         return false;
 
     }
 
-    private boolean handleAdvanced(StageConfigResponse originConfig, StageConfigResponse targetConfig,String moduleType) {
-        StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originConfig.getId(), targetConfig.getId(),moduleType);
-        if (config == null) {
-            return false;
+    private boolean handleAdvanced(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
+        StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originConfig.getId(), targetConfig.getId(), moduleType);
+        if (config == null || !config.getEnable()) {
+            throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
         }
         return config.getEnable();
     }
@@ -164,14 +165,14 @@ public class StageAdvancedConfigService {
                     || (Strings.CI.equals(OpportunityStageType.END.name(), originType) && Strings.CI.equals(OpportunityStageType.END.name(), targetType))) {
                 return true;
             }
-            return false;
+            throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
         }
 
         if (originConfig.getAfootRollBack()) {
             // 只开启进行中回退
             // 源阶段为 END 时，不允许任何切换
             if (Strings.CI.equals(OpportunityStageType.END.name(), originConfig.getType())) {
-                return false;
+                throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
             }
 
             // 源阶段为 AFOOT 时，允许目标为 AFOOT 或 END（不限制 pos）
@@ -179,6 +180,6 @@ public class StageAdvancedConfigService {
             return Strings.CI.equals(OpportunityStageType.END.name(), targetType) || Strings.CI.equals(OpportunityStageType.AFOOT.name(), targetType);
         }
 
-        return false;
+        throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
     }
 }
