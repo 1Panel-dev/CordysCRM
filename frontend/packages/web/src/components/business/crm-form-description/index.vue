@@ -16,7 +16,13 @@
       <template #image="{ item }">
         <n-image-group v-if="item.value?.length">
           <n-space :class="`${props.valueAlign ?? '!justify-end'}`">
-            <n-image v-for="img in item.value" :key="img" :src="`${PreviewPictureUrl}/${img}`" width="40" height="40" />
+            <n-image
+              v-for="img in item.value"
+              :key="img"
+              :src="`${PreviewPictureUrl}/${img}?userId=${userStore.userInfo.id}`"
+              width="40"
+              height="40"
+            />
           </n-space>
         </n-image-group>
         <data v-else>-</data>
@@ -252,6 +258,7 @@
   import CrmTextarea from '../crm-form-create/components/basic/textarea.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { AttachmentInfo, type FormCreateField } from '../crm-form-create/types';
@@ -315,6 +322,7 @@
 
   const { t } = useI18n();
   const Message = useMessage();
+  const userStore = useUserStore();
 
   const needInitDetail = computed(() => true);
   const hiddenFieldByPermission = computed(

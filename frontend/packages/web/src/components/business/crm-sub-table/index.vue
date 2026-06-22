@@ -41,6 +41,8 @@
   import select from '@/components/business/crm-form-create/components/basic/select.vue';
   import singleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
 
+  import useUserStore from '@/store/modules/user';
+
   import { FormCreateField } from '../crm-form-create/types';
   import { RowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
 
@@ -61,6 +63,7 @@
 
   const { t } = useI18n();
   const Message = useMessage();
+  const userStore = useUserStore();
 
   const data = defineModel<Record<string, any>[]>('value', {
     required: true,
@@ -450,7 +453,10 @@
                     {
                       default: () =>
                         (row[key] || []).map((img: string) =>
-                          h(NImage, { src: `${PreviewPictureUrl}/${img}`, class: 'w-[100px] h-[100px] mr-[8px]' })
+                          h(NImage, {
+                            src: `${PreviewPictureUrl}/${img}?userId=${userStore.userInfo.id}`,
+                            class: 'w-[100px] h-[100px] mr-[8px]',
+                          })
                         ),
                     }
                   )

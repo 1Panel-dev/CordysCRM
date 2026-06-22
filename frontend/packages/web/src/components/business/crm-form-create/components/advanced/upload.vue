@@ -70,6 +70,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import { uploadTempFile } from '@/api/modules';
+  import useUserStore from '@/store/modules/user';
 
   import { FormCreateField } from '../../types';
 
@@ -86,6 +87,7 @@
 
   const { t } = useI18n();
   const Message = useMessage();
+  const userStore = useUserStore();
 
   const fileKeys = defineModel<string[]>('value', {
     default: () => [],
@@ -202,8 +204,8 @@
           fileKeysMap.value[key] = key;
           fileList.value.push({
             id: key,
-            thumbnailUrl: `${PreviewPictureUrl}/${key}`,
-            url: `${PreviewPictureUrl}/${key}`,
+            thumbnailUrl: `${PreviewPictureUrl}/${key}?userId=${userStore.userInfo.id}`,
+            url: `${PreviewPictureUrl}/${key}?userId=${userStore.userInfo.id}`,
             name: key,
             status: 'finished',
             type: 'image/*',
