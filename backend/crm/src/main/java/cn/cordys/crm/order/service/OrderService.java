@@ -61,6 +61,7 @@ import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StageAdvancedConfigService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -110,6 +111,8 @@ public class OrderService implements ApprovalResourceHandler {
     private BaseMapper<Customer> customerBaseMapper;
     @Resource
     private ApprovalFlowService approvalFlowService;
+    @Resource
+    private StageAdvancedConfigService stageAdvancedConfigService;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
@@ -120,7 +123,6 @@ public class OrderService implements ApprovalResourceHandler {
      * @param request
      * @param operatorId
      * @param orgId
-     *
      * @return
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.ADD)
@@ -247,7 +249,6 @@ public class OrderService implements ApprovalResourceHandler {
      * 获取订单详情
      *
      * @param id
-     *
      * @return
      */
     public OrderGetResponse get(String id, String orgId) {
@@ -267,7 +268,6 @@ public class OrderService implements ApprovalResourceHandler {
      * 获取订单详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
      *
      * @param id 订单ID
-     *
      * @return 订单详情
      */
     public OrderGetResponse getSimple(String id) {
@@ -284,6 +284,7 @@ public class OrderService implements ApprovalResourceHandler {
 
     /**
      * 获取字段详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+     *
      * @param id 订单ID
      * @return 订单详情
      */
@@ -313,7 +314,6 @@ public class OrderService implements ApprovalResourceHandler {
      * 批量获取订单详情 (用于数据源批量查询优化)
      *
      * @param ids 订单ID集合
-     *
      * @return 订单详情列表
      */
     public List<OrderGetResponse> batchGetSimpleByIds(List<String> ids) {
@@ -339,7 +339,6 @@ public class OrderService implements ApprovalResourceHandler {
      * @param request
      * @param userId
      * @param orgId
-     *
      * @return
      */
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -466,7 +465,6 @@ public class OrderService implements ApprovalResourceHandler {
      * ⚠️反射调用; 勿修改入参, 返回, 方法名!
      *
      * @param id 订单ID
-     *
      * @return 订单详情
      */
     public OrderGetResponse getSnapshot(String id, String orgId) {
@@ -518,7 +516,7 @@ public class OrderService implements ApprovalResourceHandler {
      *
      * @param postFieldParam 参数
      */
-	@SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
         ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
         List<BaseField> fields = formConfig.getFields();
@@ -545,8 +543,8 @@ public class OrderService implements ApprovalResourceHandler {
                 return;
             }
             BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
-			AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
-			if (fieldConfig.hasBusinessKey()) {
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+            if (fieldConfig.hasBusinessKey()) {
                 // 业务主表字段
                 orderFieldService.setResourceFieldValue(order, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
             } else {
@@ -568,7 +566,7 @@ public class OrderService implements ApprovalResourceHandler {
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-					field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     orderFieldBlobs.add(field);
                 } else {
                     // 自定义表
@@ -578,7 +576,7 @@ public class OrderService implements ApprovalResourceHandler {
                     field.setId(IDGenerator.nextStr());
                     field.setResourceId(postFieldParam.getResourceId());
                     field.setFieldId(fieldUpdateParam.getFieldId());
-					field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
                     orderFields.add(field);
                 }
             }
@@ -592,7 +590,7 @@ public class OrderService implements ApprovalResourceHandler {
         }
         // 更新快照
         if (snapshot != null) {
-			OrderGetResponse snapshotRes = get(order, response.getModuleFields(), formConfig);
+            OrderGetResponse snapshotRes = get(order, response.getModuleFields(), formConfig);
             snapshot.setOrderValue(JSON.toJSONString(snapshotRes));
             snapshotBaseMapper.update(snapshot);
         }
@@ -619,7 +617,6 @@ public class OrderService implements ApprovalResourceHandler {
      * @param userId
      * @param orgId
      * @param deptDataPermission
-     *
      * @return
      */
     public PagerWithOption<List<OrderListResponse>> list(OrderPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, Boolean source) {
@@ -694,7 +691,6 @@ public class OrderService implements ApprovalResourceHandler {
      *
      * @param id
      * @param orgId
-     *
      * @return
      */
     public ModuleFormConfigDTO getFormSnapshot(String id, String orgId) {
@@ -750,17 +746,35 @@ public class OrderService implements ApprovalResourceHandler {
         Map<String, String> stageMap = stageConfigList.stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
+        if (!stageAdvancedConfigService.checkStage(order.getStage(), request.getStage(), FormKey.ORDER.name())) {
+            return;
+        }
+        order.setStage(request.getStage());
+        orderMapper.update(order);
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), orgId);
+        List<BaseField> fields = businessFormConfig.getFields();
+        request.getFields().forEach(field -> {
+            BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
+            ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
+            updateRequest.setIds(List.of(request.getId()));
+            updateRequest.setFieldId(field.getFieldId());
+            updateRequest.setFieldValue(field.getFieldValue());
+            orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, orgId);
+        });
+        OrderSnapshot snapshotCriteria = new OrderSnapshot();
+        snapshotCriteria.setOrderId(order.getId());
+        OrderSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
+        if (snapshot != null) {
+            ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
+            List<BaseModuleFieldValue> orderFields = orderFieldService.getModuleFieldValuesByResourceId(order.getId());
+            OrderGetResponse snapshotRes = get(order, orderFields, orderFormConfig);
+            snapshot.setOrderProp(JSON.toJSONString(orderFormConfig));
+            snapshot.setOrderValue(JSON.toJSONString(snapshotRes));
+            snapshotBaseMapper.update(snapshot);
+        }
+
         final Map<String, String> originalVal = new HashMap<>(1);
         originalVal.put("orderStage", stageMap.get(order.getStage()));
-
-        order.setStage(request.getStage());
-
-        order.setUpdateTime(System.currentTimeMillis());
-        order.setUpdateUser(userId);
-        orderMapper.update(order);
-
-        updateStageSnapshot(request.getId(), request.getStage());
-
         final Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("orderStage", stageMap.get(request.getStage()));
         OperationLogContext.setContext(
@@ -874,7 +888,6 @@ public class OrderService implements ApprovalResourceHandler {
      * @param userId
      * @param orgId
      * @param deptDataPermission
-     *
      * @return
      */
     public OrderStatisticResponse searchStatistic(BaseCondition request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -887,7 +900,6 @@ public class OrderService implements ApprovalResourceHandler {
      * 通过ID集合获取订单名称
      *
      * @param ids id集合
-     *
      * @return 工商表头名称
      */
     public Object getOrderNameByIds(List<String> ids) {
@@ -907,7 +919,6 @@ public class OrderService implements ApprovalResourceHandler {
      * 通过名称获取订单集合
      *
      * @param names 名称
-     *
      * @return 订单名称
      */
     public List<Order> getOrderListByNames(List<String> names) {

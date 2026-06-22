@@ -1,9 +1,12 @@
 package cn.cordys.crm.contract.dto.request;
 
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class ContractStageRequest {
@@ -21,4 +24,7 @@ public class ContractStageRequest {
     @Size(max = 255)
     @Schema(description = "作废原因")
     private String voidReason;
+
+    @Schema(description = "更新字段")
+    private List<BaseModuleFieldValue> fields;
 }
