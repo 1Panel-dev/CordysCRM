@@ -15,6 +15,7 @@ import cn.cordys.crm.system.constants.UserViewConditionValueType;
 import cn.cordys.crm.system.domain.UserView;
 import cn.cordys.crm.system.domain.UserViewCondition;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.request.UserViewAddRequest;
 import cn.cordys.crm.system.dto.request.UserViewUpdateRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -237,6 +238,14 @@ public class UserViewService {
         if (customerFormConfig != null && CollectionUtils.isNotEmpty(customerFormConfig.getFields())) {
             customerFormConfig.getFields().stream()
                     .forEach(baseField -> {
+                        if (baseField instanceof SubField subField) {
+                            subField.getSubFields().forEach(sub -> {
+                                fieldIdTypeMap.put(baseField.getId() + "." + sub.getId(), sub.getType());
+                                if (StringUtils.isNotBlank(baseField.getBusinessKey())) {
+                                    fieldIdTypeMap.put(baseField.getId() + "." + baseField.getBusinessKey(), sub.getType());
+                                }
+                            });
+                        }
                         fieldIdTypeMap.put(baseField.getId(), baseField.getType());
                         if (StringUtils.isNotBlank(baseField.getBusinessKey())) {
                             fieldIdTypeMap.put(baseField.getBusinessKey(), baseField.getType());

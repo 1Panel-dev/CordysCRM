@@ -492,7 +492,7 @@ public class ModuleFormService {
         Map<String, String> fieldIdSourceTypeMap = new HashMap<>();
 
         typeIdsMap.forEach((fieldId, ids) -> {
-            var sourceType = optionMeta.idTypeMap().get(fieldId);
+            var sourceType = optionMeta.idTypeMap().get(getFieldIdForSubFieldId(fieldId));
             if (CollectionUtils.isEmpty(ids)) {
                 return;
             }
@@ -574,7 +574,10 @@ public class ModuleFormService {
     private Map<String, List<String>> collectOptionIds(List<BaseModuleFieldValue> allFieldValues, Map<String, String> idTypeMap) {
         var typeIdsMap = new HashMap<String, List<String>>(8);
         allFieldValues.stream()
-                .filter(fv -> idTypeMap.containsKey(fv.getFieldId()))
+                .filter(fv -> {
+                    String fieldId = getFieldIdForSubFieldId(fv.getFieldId());
+                    return idTypeMap.containsKey(fieldId);
+                })
                 .forEach(fv -> {
                     typeIdsMap.putIfAbsent(fv.getFieldId(), new ArrayList<>());
                     var value = fv.getFieldValue();
@@ -588,6 +591,16 @@ public class ModuleFormService {
                     }
                 });
         return typeIdsMap;
+    }
+
+    private String getFieldIdForSubFieldId(String fieldId) {
+        if (fieldId.contains(".")) {
+            String[] split = fieldId.split("\\.");
+            if (split.length > 1) {
+                return split[1];
+            }
+        }
+        return fieldId;
     }
 
     private record OptionMetadata(Map<String, List<OptionDTO>> staticOptions, Map<String, String> idTypeMap) {
