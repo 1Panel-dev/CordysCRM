@@ -633,7 +633,7 @@ public class OrderService implements ApprovalResourceHandler {
         if (stageField == null) {
             return;
         }
-        if (!stageAdvancedConfigService.checkStage(originOrder.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.name())) {
+        if (!stageAdvancedConfigService.checkStage(originOrder.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.getKey())) {
             return;
         }
         StageConfigResponse first = extOrderStageConfigMapper.getStageConfigList(originOrder.getOrganizationId()).getFirst();
@@ -794,13 +794,13 @@ public class OrderService implements ApprovalResourceHandler {
         Map<String, String> stageMap = stageConfigList.stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
-        if (!stageAdvancedConfigService.checkStage(order.getStage(), request.getStage(), FormKey.ORDER.name())) {
+        if (!stageAdvancedConfigService.checkStage(order.getStage(), request.getStage(), FormKey.ORDER.getKey())) {
             return;
         }
         order.setStage(request.getStage());
         orderMapper.update(order);
 
-        updateFieldAndSnapshot(order, request.getFields(),userId);
+        updateFieldAndSnapshot(order, request.getFields(), userId);
 
         final Map<String, String> originalVal = new HashMap<>(1);
         originalVal.put("orderStage", stageMap.get(order.getStage()));
@@ -816,16 +816,18 @@ public class OrderService implements ApprovalResourceHandler {
     }
 
     private void updateFieldAndSnapshot(Order order, List<BaseModuleFieldValue> requestFields, String userId) {
-        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), order.getOrganizationId());
-        List<BaseField> fields = businessFormConfig.getFields();
-        requestFields.forEach(field -> {
-            BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
-            ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
-            updateRequest.setIds(List.of(order.getId()));
-            updateRequest.setFieldId(field.getFieldId());
-            updateRequest.setFieldValue(field.getFieldValue());
-            orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, order.getOrganizationId());
-        });
+        if (CollectionUtils.isNotEmpty(requestFields)) {
+            ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), order.getOrganizationId());
+            List<BaseField> fields = businessFormConfig.getFields();
+            requestFields.forEach(field -> {
+                BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
+                ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
+                updateRequest.setIds(List.of(order.getId()));
+                updateRequest.setFieldId(field.getFieldId());
+                updateRequest.setFieldValue(field.getFieldValue());
+                orderFieldService.batchUpdate(updateRequest, baseField, List.of(order), Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, order.getOrganizationId());
+            });
+        }
         OrderSnapshot snapshotCriteria = new OrderSnapshot();
         snapshotCriteria.setOrderId(order.getId());
         OrderSnapshot snapshot = snapshotBaseMapper.selectOne(snapshotCriteria);
@@ -1015,18 +1017,14 @@ public class OrderService implements ApprovalResourceHandler {
             }
         }
 
-        if (!stageAdvancedConfigService.checkStage(order.getStage(), request.getStage(), FormKey.ORDER.name())) {
+        if (!stageAdvancedConfigService.checkStage(order.getStage(), request.getStage(), FormKey.ORDER.getKey())) {
             return;
         }
 
-        Order dragOrder = new Order();
-        dragOrder.setId(request.getDragNodeId());
-        dragOrder.setPos(pos);
-        dragOrder.setStage(request.getStage());
-        dragOrder.setUpdateUser(userId);
-        dragOrder.setUpdateTime(System.currentTimeMillis());
-        orderMapper.updateById(dragOrder);
-        updateFieldAndSnapshot(order,request.getFields(),userId);
+        order.setPos(pos);
+        order.setStage(request.getStage());
+        orderMapper.updateById(order);
+        updateFieldAndSnapshot(order, request.getFields(), userId);
 
     }
 
