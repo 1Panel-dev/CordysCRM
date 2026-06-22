@@ -57,9 +57,9 @@ public class ExportTaskCenterService {
      *
      * @param taskId 任务ID
      */
-    public void cancel(String taskId) {
+    public void cancel(String taskId, String userId) {
         ExportTask exportTask = exportTaskMapper.selectByPrimaryKey(taskId);
-        if (exportTask == null) {
+        if (exportTask == null || !Strings.CS.equals(exportTask.getCreateUser(), userId)) {
             throw new GenericException(Translator.get("task_not_found"));
         }
         if (Strings.CI.equals(exportTask.getStatus(), ExportConstants.ExportStatus.SUCCESS.name())) {
@@ -76,9 +76,9 @@ public class ExportTaskCenterService {
      *
      * @param taskId 任务ID
      */
-    public ResponseEntity<org.springframework.core.io.Resource> download(String taskId) {
+    public ResponseEntity<org.springframework.core.io.Resource> download(String taskId, String userId) {
         ExportTask exportTask = exportTaskMapper.selectByPrimaryKey(taskId);
-        if (exportTask == null) {
+        if (exportTask == null || !Strings.CS.equals(exportTask.getCreateUser(), userId)) {
             throw new GenericException(Translator.get("task_not_found"));
         }
         String filePath = getFilePath(exportTask);
