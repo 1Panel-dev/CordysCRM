@@ -1,22 +1,22 @@
 <template>
   <div class="flex h-full flex-col">
-    <CrmTab v-if="isManualApproval" v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+    <CrmTab :key="tabKey" v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
 
     <div class="flex-1 overflow-hidden">
       <ApproverSettingTab
-        v-if="!isManualApproval || activeTab === 'approver'"
+        v-if="activeTab === 'approver'"
         v-model:node-config="nodeConfig"
         :readonly="props.readonly"
         @switch-more-setting="emit('switchMoreSetting')"
       />
       <FormPermissionTab
-        v-else-if="activeTab === 'formPermission'"
+        v-else-if="isManualApproval && activeTab === 'formPermission'"
         v-model:node-config="nodeConfig"
         :form-type="formType"
         :readonly="props.readonly"
       />
       <AfterApprovalTab
-        v-else
+        v-else-if="activeTab === 'afterApproval'"
         v-model:node-config="nodeConfig"
         :form-type="formType"
         :option-map="props.optionMap"
@@ -60,7 +60,7 @@
   const activeTab = ref('approver');
   const isManualApproval = computed(() => nodeConfig.value.approvalType === ApprovalTypeEnum.MANUAL);
 
-  const tabList = [
+  const manualTabList = [
     {
       name: 'approver',
       tab: t('process.process.flow.approverSetting'),
@@ -75,8 +75,12 @@
     },
   ];
 
-  watch(isManualApproval, (isManual) => {
-    if (!isManual) {
+  const autoApprovalTabList = manualTabList.filter((item) => item.name !== 'formPermission');
+  const tabList = computed(() => (isManualApproval.value ? manualTabList : autoApprovalTabList));
+  const tabKey = computed(() => `${nodeConfig.value.approvalType}-${tabList.value.length}`);
+
+  watch(tabList, (list) => {
+    if (!list.some((item) => item.name === activeTab.value)) {
       activeTab.value = 'approver';
     }
   });

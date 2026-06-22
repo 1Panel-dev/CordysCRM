@@ -81,14 +81,14 @@ function validateApprovalActionNode(node: ApprovalActionNode, result: FlowValida
   const ccList = node.ccList ?? [];
   const isInvalid =
     isEmptyValue(node.name) ||
+    (isMemberOrRole(node.ccType) && !hasSelectedItems(ccList)) ||
     (isManualApproval &&
       (isEmptyValue(node.approverType) ||
         (isMemberOrRole(node.approverType) && !hasSelectedItems(approverList)) ||
         ([EmptyApproverActionEnum.ASSIGN_SPECIFIC, EmptyApproverActionEnum.ASSIGN_ADMIN].includes(
           node.emptyApproverAction
         ) &&
-          isEmptyValue(node.fallbackApprover)) ||
-        (isMemberOrRole(node.ccType) && !hasSelectedItems(ccList))));
+          isEmptyValue(node.fallbackApprover))));
 
   if (isInvalid) {
     result.invalidNodeIds.push(node.id);
