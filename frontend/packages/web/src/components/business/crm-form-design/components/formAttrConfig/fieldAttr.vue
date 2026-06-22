@@ -1889,7 +1889,7 @@
       .map((id) => selectedList.find((item) => item.key === id))
       .filter(Boolean)
       .map((item) => buildDataSourceDisplayField(item));
-
+    fieldConfig.value.refFields = displayFields;
     if (isSubTableField.value) {
       const index = parentField.value?.subFields?.findIndex((item) => item.id === fieldConfig.value.id);
       if (index !== undefined && index >= 0 && parentField.value) {
@@ -1910,6 +1910,7 @@
   }
   function handleClearDataSourceDisplayField() {
     fieldConfig.value.showFields = [];
+    fieldConfig.value.refFields = [];
     if (isSubTableField.value && parentField.value) {
       parentField.value.subFields = parentField.value?.subFields?.filter(
         (item) => item.resourceFieldId !== fieldConfig.value.id

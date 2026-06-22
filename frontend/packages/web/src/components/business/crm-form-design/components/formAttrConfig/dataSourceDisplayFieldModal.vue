@@ -311,13 +311,16 @@
     show.value = false;
   }
 
-  watch([() => props.fieldConfig?.showFields, customList, systemList.value, subTableList], () => {
-    const allSelectedOptions = [...customList.value, ...systemList.value, ...subTableList.value];
+  watch(
+    [() => props.fieldConfig?.showFields, () => customList.value, () => systemList.value, () => subTableList],
+    () => {
+      const allSelectedOptions = [...customList.value, ...systemList.value, ...subTableList.value];
 
-    if (props.fieldConfig?.showFields && allSelectedOptions.length) {
-      selectedList.value = allSelectedOptions.filter((item) => props.fieldConfig?.showFields?.includes(item.key));
-    } else {
-      selectedList.value = [];
+      if (props.fieldConfig?.showFields && allSelectedOptions.length) {
+        selectedList.value = allSelectedOptions.filter((item) => props.fieldConfig?.showFields?.includes(item.key));
+      } else {
+        selectedList.value = [];
+      }
     }
-  });
+  );
 </script>
