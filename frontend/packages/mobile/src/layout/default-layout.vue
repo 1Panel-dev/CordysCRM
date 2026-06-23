@@ -151,10 +151,6 @@
     });
   }, true);
 
-  onBeforeMount(() => {
-    appStore.showSQLBot();
-  });
-
   watch(
     () => appStore.orgId,
     (val) => {

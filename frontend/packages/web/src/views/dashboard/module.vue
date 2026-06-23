@@ -1,22 +1,38 @@
 <template>
   <CrmCard no-content-padding hide-footer>
     <n-spin class="block h-full flex-1" :show="loading" content-class="h-full">
-      <iframe id="iframe-dashboard-view" style="width: 100%; height: 100%; border: 0" :src="iframeSrc"></iframe>
-      <n-empty v-if="isError" size="large" :description="t('dashboard.loadFailed')"> </n-empty>
+      <n-empty
+        v-if="isError"
+        size="large"
+        class="flex h-full items-center justify-center"
+        :description="t('dashboard.loadFailed')"
+      >
+        <template #extra>
+          <n-button type="primary" text @click="openNewPage(AppRouteEnum.SYSTEM_BUSINESS)">
+            {{ t('dashboard.goConfig') }}
+          </n-button>
+        </template>
+      </n-empty>
+      <iframe v-else id="iframe-dashboard-view" style="width: 100%; height: 100%; border: 0" :src="iframeSrc"></iframe>
     </n-spin>
   </CrmCard>
 </template>
 
 <script setup lang="ts">
-  import { NEmpty, NSpin } from 'naive-ui';
+  import { NButton, NEmpty, NSpin } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
 
   import { getDEToken } from '@/api/modules';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
+
+  import { AppRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
+  const { openNewPage } = useOpenNewPage();
+
   const loading = ref(false);
   const isError = ref(false);
   const iframeSrc = ref('');

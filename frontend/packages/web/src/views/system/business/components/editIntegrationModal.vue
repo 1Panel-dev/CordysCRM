@@ -84,11 +84,7 @@
       </template>
 
       <!-- 应用密钥 -->
-      <n-form-item
-        v-if="![CompanyTypeEnum.SQLBot, CompanyTypeEnum.QCC].includes(form.type)"
-        path="appSecret"
-        :label="getAppSecretText"
-      >
+      <n-form-item v-if="![CompanyTypeEnum.QCC].includes(form.type)" path="appSecret" :label="getAppSecretText">
         <n-input
           v-model:value="form.config.appSecret"
           type="password"
@@ -100,25 +96,6 @@
               : t('common.pleaseInput')
           "
         />
-      </n-form-item>
-
-      <n-form-item
-        v-if="[CompanyTypeEnum.SQLBot].includes(form.type)"
-        path="appSecret"
-        :label="t('system.business.SQLBot.embeddedScript')"
-      >
-        <n-input
-          v-model:value="form.config.appSecret"
-          type="textarea"
-          :placeholder="`${t('common.pleaseInput')}${t('system.business.SQLBot.embeddedScript')}`"
-        />
-        <div class="text-[var(--primary-8)]">
-          {{
-            t('system.business.SQLBot.example', {
-              url: '&lt;script async deferid="XXXXXX" src="XXXXXX"&gt;&lt;/script&gt;',
-            })
-          }}
-        </div>
       </n-form-item>
 
       <n-form-item
@@ -293,7 +270,6 @@
 
   const getAppSecretText = computed(() => {
     if (props.integration?.type === CompanyTypeEnum.DATA_EASE) return 'APP Secret';
-    if (props.integration?.type === CompanyTypeEnum.SQLBot) return t('system.business.SQLBot.embeddedScript');
     if (props.integration?.type === CompanyTypeEnum.MAXKB) return 'API Key';
     return t('system.business.appSecret');
   });

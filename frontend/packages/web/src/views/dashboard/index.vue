@@ -1,6 +1,6 @@
 <template>
   <div class="flex h-full flex-col gap-[8px]">
-    <div class="flex w-full items-center gap-[12px] bg-[var(--text-n10)] p-[8px]">
+    <div v-if="dashboardList.length" class="flex w-full items-center gap-[12px] bg-[var(--text-n10)] p-[8px]">
       <CrmTag
         v-for="item of dashboardList"
         :key="item.key"
@@ -39,15 +39,19 @@
   import { getThirdPartyConfig } from '@/api/modules';
   import { defaultThirdPartyConfigMap } from '@/config/business';
   import useLocalForage from '@/hooks/useLocalForage';
+  import useModal from '@/hooks/useModal.js';
+  import useLicenseStore from '@/store/modules/setting/license.js';
 
   const { t } = useI18n();
+  const { openModal } = useModal();
+  const licenseStore = useLicenseStore();
   const { setItem, getItem } = useLocalForage();
   const fullList = [
-    {
-      key: 'LINK',
-      label: t('system.business.DE.link'),
-      icon: 'iconicon_link2',
-    },
+    // {
+    //   key: 'LINK',
+    //   label: t('system.business.DE.link'),
+    //   icon: 'iconicon_link2',
+    // },
     {
       key: 'DE',
       label: 'DataEase',
@@ -71,11 +75,9 @@
   }
 
   const dashboardList = computed(() => {
-    return fullList.filter(
-      (item) => (item.key === 'DE' && DEConfig.value?.config.deBoardEnable) || item.key === 'LINK'
-    );
+    return fullList.filter((item) => item.key === 'DE' && DEConfig.value?.config?.deBoardEnable);
   });
-  const activeDashboard = ref(dashboardList.value[0].key);
+  const activeDashboard = ref(dashboardList.value[0]?.key);
   const activeDashboardKey = 'dashboard-active-tab';
   async function clickTag(key: string) {
     activeDashboard.value = key;
@@ -93,6 +95,10 @@
   }
 
   onBeforeMount(async () => {
+    if (!licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+      openModal(licenseStore.getNoLicenseModalConfig());
+      return;
+    }
     await init();
     loadActiveDashboard();
   });

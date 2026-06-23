@@ -10,7 +10,14 @@
   >
     <n-scrollbar>
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="searchData()" />
+        <CrmTab
+          v-model:active-tab="activeTab"
+          no-content
+          :tab-list="tabList"
+          type="line"
+          :before-leave="handleBeforeLeave"
+          @change="searchData()"
+        />
       </CrmCard>
       <CrmCard v-if="activeTab === PersonalEnum.INFO" hide-footer :special-height="64">
         <div class="flex font-medium text-[var(--text-n1)]">
@@ -116,11 +123,15 @@
 
   import { getPersonalInfo } from '@/api/modules';
   import { defaultUserInfo } from '@/config/business';
+  import useModal from '@/hooks/useModal.js';
   import { useUserStore } from '@/store';
+  import useLicenseStore from '@/store/modules/setting/license.js';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const userStore = useUserStore();
+  const { openModal } = useModal();
+  const licenseStore = useLicenseStore();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
@@ -200,6 +211,14 @@
   );
 
   const refreshKey = ref(0);
+
+  function handleBeforeLeave(newVal: string | number) {
+    if (newVal === PersonalEnum.API_KEY && !licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+      openModal(licenseStore.getNoLicenseModalConfig());
+      return false;
+    }
+    return true;
+  }
 </script>
 
 <style scoped lang="less"></style>

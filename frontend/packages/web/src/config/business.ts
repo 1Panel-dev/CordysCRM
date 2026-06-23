@@ -472,12 +472,6 @@ export const defaultThirdPartDEConfig: ThirdPartyDEConfig = {
   redirectUrl: '',
 };
 
-export const defaultThirdPartSQLBotConfig: ThirdPartySQLBotConfig = {
-  appSecret: '',
-  sqlBotChatEnable: false,
-  sqlBotBoardEnable: false,
-};
-
 export const defaultThirdPartMaxKBConfig: ThirdPartyMKConfig = {
   appSecret: '',
   mkAddress: '',
@@ -501,7 +495,6 @@ export const defaultThirdPartyConfigMap = {
   [CompanyTypeEnum.DINGTALK]: defaultThirdPartDingTalkLoginConfig,
   [CompanyTypeEnum.LARK]: defaultThirdPartLarkLoginConfig,
   [CompanyTypeEnum.DATA_EASE]: defaultThirdPartDEConfig,
-  [CompanyTypeEnum.SQLBot]: defaultThirdPartSQLBotConfig,
   [CompanyTypeEnum.MAXKB]: defaultThirdPartMaxKBConfig,
   [CompanyTypeEnum.TENDER]: defaultThirdPartTenderConfig,
   [CompanyTypeEnum.QCC]: defaultThirdPartQichachaConfig,

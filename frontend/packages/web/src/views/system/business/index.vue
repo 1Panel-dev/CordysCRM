@@ -7,7 +7,13 @@
   >
     <div class="business-container">
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+        <CrmTab
+          v-model:active-tab="activeTab"
+          no-content
+          :tab-list="tabList"
+          type="line"
+          :before-leave="handleBeforeLeave"
+        />
       </CrmCard>
       <PageSettings v-if="activeTab === 'pageSettings'" />
       <MailSettings v-if="activeTab === 'mailSettings'" />
@@ -26,14 +32,15 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import IntegrationList from './components/integrationList.vue';
 
+  import useModal from '@/hooks/useModal.js';
   import useLicenseStore from '@/store/modules/setting/license';
 
   const PageSettings = defineAsyncComponent(() => import('./components/pageSettings.vue'));
   const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
   const { t } = useI18n();
+  const { openModal } = useModal();
 
   const licenseStore = useLicenseStore();
-  const xPack = computed(() => licenseStore.hasLicense());
 
   const activeTab = ref('syncOrganization');
 
@@ -48,21 +55,13 @@
 
   const tabList = ref([...initTabList]);
 
-  watch(
-    () => xPack.value,
-    async (val) => {
-      if (val) {
-        tabList.value = [...initTabList];
-        activeTab.value = 'pageSettings';
-      } else {
-        tabList.value = initTabList.filter((e) => e.name !== 'pageSettings');
-        activeTab.value = 'syncOrganization';
-      }
-    },
-    {
-      immediate: true,
+  function handleBeforeLeave(newVal: string | number) {
+    if (newVal === 'pageSettings' && !licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+      openModal(licenseStore.getNoLicenseModalConfig());
+      return false;
     }
-  );
+    return true;
+  }
 </script>
 
 <style lang="less" scoped>

@@ -364,4 +364,6 @@ export default {
   'common.batchVoidApprovalTip': 'Only data with approval statuses {statuses} can be batch voided',
   'common.testLink': 'Test link',
   'common.batchDeleteTitle': 'Confirm delete {count} data?',
+  'common.businessFeatureTip':
+    'This is the Enterprise Edition feature; click the link to view details of the Enterprise Edition features.',
 };
