@@ -3,6 +3,7 @@ package cn.cordys.crm.approval.service;
 import cn.cordys.common.dto.EnableFieldValue;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.JsonDifferenceUtils;
 import cn.cordys.common.util.Translator;
@@ -10,14 +11,17 @@ import cn.cordys.crm.approval.constants.ApproverTypeEnum;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.WebHookConfig;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
+import cn.cordys.crm.approval.dto.response.ApprovalFlowNodeConfigResponse;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.mapper.ExtRoleMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.BaseModuleLogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.crm.system.service.SysOperationLogService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -29,14 +33,15 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @Transactional(rollbackFor = Exception.class)
 public class ApprovalFlowLogService extends BaseModuleLogService {
 
     private static final String NODES_COLUMN = "nodes";
-    private static final String NODE_COLUMN_PREFIX = "流程设置";
     private static final String NULL_STRING = "null";
 
     private ApprovalFlowDetailResponse oldApprovalFlowDetail;
+    private ApprovalFlowDetailResponse newApprovalFlowDetail;
     private List<BaseField> fields;
 
     @Resource
@@ -49,15 +54,15 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
 
-        JsonDifferenceDTO nodesDiff = getNodesJsonDifferenceDTO(differences, NODES_COLUMN);
-
-        differences.removeIf(differ -> Strings.CS.equalsAny(differ.getColumn(), "currentVersionId", "links", "nodes", "optionMap", "createUserName", "updateUserName"));
+        differences.removeIf(differ -> Strings.CS.equalsAny(differ.getColumn(), "currentVersionId", "links", "nodes",
+                "optionMap", "createUserName", "updateUserName", "createNodeConfig", "updateNodeConfig", "deleteNodeConfig"));
 
         Map<String, Consumer<JsonDifferenceDTO>> handlers = Map.ofEntries(
                 Map.entry("formType", this::handleFormType),
                 Map.entry("enable", this::handleEnable),
                 Map.entry("createExecute", this::handleBooleanValue),
                 Map.entry("updateExecute", this::handleBooleanValue),
+                Map.entry("deleteExecute", this::handleBooleanValue),
                 Map.entry("submitterCanRevoke", this::handleBooleanValue),
                 Map.entry("allowBatchProcess", this::handleBooleanValue),
                 Map.entry("allowWithdraw", this::handleBooleanValue),
@@ -77,22 +82,48 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             }
         });
 
-        if (isValidValue(oldValue)) {
+        if (isValidValue(oldValue) && isValidValue(newValue)) {
             oldApprovalFlowDetail = JSON.parseObject(oldValue, ApprovalFlowDetailResponse.class);
+            newApprovalFlowDetail = JSON.parseObject(newValue, ApprovalFlowDetailResponse.class);
+            fields = moduleFormCacheService.getBusinessFormConfig(oldApprovalFlowDetail.getFormType(), orgId).getFields();
+            List<JsonDifferenceDTO> createNodeDiffs = handleNodeConfigDifference(oldApprovalFlowDetail.getCreateNodeConfig(), newApprovalFlowDetail.getCreateNodeConfig(), Translator.get("opportunity.add"));
+            List<JsonDifferenceDTO> updateNodeDiffs = handleNodeConfigDifference(oldApprovalFlowDetail.getUpdateNodeConfig(), newApprovalFlowDetail.getUpdateNodeConfig(), Translator.get("permission.edit"));
+            List<JsonDifferenceDTO> deleteNodeDiffs = handleNodeConfigDifference(oldApprovalFlowDetail.getDeleteNodeConfig(), newApprovalFlowDetail.getDeleteNodeConfig(), Translator.get("permission.delete"));
+            differences.addAll(createNodeDiffs);
+            differences.addAll(updateNodeDiffs);
+            differences.addAll(deleteNodeDiffs);
         }
 
-        // 处理 nodes 字段的差异
-        handleNodesDifference(differences, nodesDiff, orgId);
-
         return differences;
+    }
+
+    private List<JsonDifferenceDTO> handleNodeConfigDifference(ApprovalFlowNodeConfigResponse oldCreateNodeConfig, ApprovalFlowNodeConfigResponse newNodeConfig, String prefix) {
+        SysOperationLogService logService = CommonBeanFactory.getBean(SysOperationLogService.class);
+        String oldStr = oldCreateNodeConfig == null ? "{}" : JSON.toJSONString(oldCreateNodeConfig);
+        String newStr = newNodeConfig == null ? "{}" : JSON.toJSONString(newNodeConfig);
+        try {
+            List<JsonDifferenceDTO> configDifferences = logService.getJsonDifferences(oldStr, newStr);
+            JsonDifferenceDTO nodesDiff = getNodesJsonDifferenceDTO(configDifferences, NODES_COLUMN);
+            // 处理 nodes 字段的差异
+            List<JsonDifferenceDTO> nodesDifference = handleNodesDifference(nodesDiff);
+            nodesDifference.forEach(diff -> {
+                diff.setColumnName(prefix + "-" + diff.getColumnName());
+            });
+            return nodesDifference;
+        } catch (Exception e) {
+           log.error(e.getMessage(), e);
+        }
+        return List.of();
     }
 
     /**
      * 处理 nodes 字段的差异
      * 按 number 分组比较节点属性，生成格式为 "流程设置-{number}-{属性名}" 的差异记录
      */
-    private void handleNodesDifference(List<JsonDifferenceDTO> differences, JsonDifferenceDTO nodesDiff, String orgId) {
-        if (nodesDiff == null) return;
+    private List<JsonDifferenceDTO> handleNodesDifference(JsonDifferenceDTO nodesDiff) {
+        if (nodesDiff == null) {
+            return List.of();
+        }
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode oldNodes = nodesDiff.getOldValue() != null
@@ -101,8 +132,6 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             JsonNode newNodes = nodesDiff.getNewValue() != null
                     ? mapper.valueToTree(nodesDiff.getNewValue())
                     : mapper.createArrayNode();
-
-            fields = moduleFormCacheService.getBusinessFormConfig(oldApprovalFlowDetail.getFormType(), orgId).getFields();
 
             // 按 number 分组
             Map<String, JsonNode> oldNodeMap = buildNodeMapByNumber(oldNodes);
@@ -131,10 +160,11 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 }
             }
 
-            differences.addAll(nodeDifferences);
+            return nodeDifferences;
         } catch (Exception e) {
             // 解析失败时忽略
         }
+        return List.of();
     }
 
     private JsonDifferenceDTO getNodesJsonDifferenceDTO(List<JsonDifferenceDTO> differences, String nodeName) {
@@ -266,7 +296,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
      * 构建节点列名
      */
     private String buildNodeColumnName(String number, String propertyName) {
-        return NODE_COLUMN_PREFIX + "-" + number + "-" + propertyName;
+        return Translator.get("approval_flow.log.process_setup") + "-" + number + "-" + propertyName;
     }
 
     /**
