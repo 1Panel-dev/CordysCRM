@@ -106,7 +106,8 @@ public class ModuleFormService {
                 Map.entry(FieldSourceType.PAYMENT_PLAN.name(), "contract_payment_plan"),
                 Map.entry(FieldSourceType.BUSINESS_TITLE.name(), "business_title"),
                 Map.entry(FieldSourceType.CONTRACT_PAYMENT_RECORD.name(), "contract_payment_record"),
-                Map.entry(FieldSourceType.ORDER.name(), "sales_order")
+                Map.entry(FieldSourceType.ORDER.name(), "sales_order"),
+                Map.entry(FieldSourceType.INVOICE.name(), "contract_invoice")
         );
     }
 
@@ -837,6 +838,9 @@ public class ModuleFormService {
         Set<String> businessTitleIdSet = Arrays.stream(BusinessTitleConstants.values())
                 .map(BusinessTitleConstants::getId)
                 .collect(Collectors.toSet());
+        if (field.isSys()) {
+            return;
+        }
         if (StringUtils.isNotBlank(field.getResourceFieldId())) {
             String actualFieldId = field.getId().replace((field.getResourceFieldId() + REF_UNDERLINE), StringUtils.EMPTY);
             if (businessTitleIdSet.contains(actualFieldId)) {
@@ -906,6 +910,9 @@ public class ModuleFormService {
 					if (businessField != null) {
 						combineField.setBusinessKey(businessField.getBusinessKey());
 					}
+                    if (combineField.isSys()) {
+                        combineField.setBusinessKey(refField.getBusinessKey());
+                    }
 					combineField.setSubTableFieldId(oldField.getSubTableFieldId());
 					it.set(combineField);
 				}
@@ -2315,6 +2322,7 @@ public class ModuleFormService {
 	private BaseField combineFieldsProps(BaseField old, BaseField ref) {
 		if (ref.isSys()) {
 			// 系统字段, 直接返回前端引用的字段配置即可, 后端不组装字段
+            old.setSys(true);
 			return old;
 		}
 		// 深拷贝 ref 对象, 避免修改原始对象
