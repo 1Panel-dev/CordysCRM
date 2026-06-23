@@ -1,11 +1,9 @@
 import { defineStore } from 'pinia';
 
-import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { getGenerateId } from '@lib/shared/method';
 import { clearToken, setToken } from '@lib/shared/method/auth';
 import { removeRouteListener } from '@lib/shared/method/route-listener';
-import { removeScript } from '@lib/shared/method/scriptLoader';
 import type { ApiKeyItem } from '@lib/shared/models/system/business';
 import type { LoginParams } from '@lib/shared/models/system/login';
 import type { UserInfo } from '@lib/shared/models/user';
@@ -117,7 +115,6 @@ const useUserStore = defineStore('user', {
       clearToken();
 
       removeRouteListener();
-      removeScript(CompanyTypeEnum.SQLBot);
       appStore.hideLoading();
       router.push({ name: 'login' });
     },

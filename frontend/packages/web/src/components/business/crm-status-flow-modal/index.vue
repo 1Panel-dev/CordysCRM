@@ -61,7 +61,7 @@
   import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { CirculationValueTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getNormalFieldValue, getRuleType } from '@lib/shared/method/formCreate';
+  import { getNormalFieldValue, getRuleType, transformFieldValue } from '@lib/shared/method/formCreate';
   import type { CirculationFieldValueItem, UpdateStageParams } from '@lib/shared/models/opportunity';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -94,16 +94,7 @@
   const formRef = ref<FormInst>();
   const { formKey } = toRefs(props);
 
-  const {
-    fieldList,
-    formConfig,
-    formDetail,
-    originFormDetail,
-    loading,
-    initFormConfig,
-    initForm,
-    transformFieldValue,
-  } = useFormCreateApi({
+  const { fieldList, formConfig, formDetail, originFormDetail, loading, initFormConfig, initForm } = useFormCreateApi({
     formKey,
   });
 

@@ -335,29 +335,18 @@
     legacyCopy(version);
   }
 
-  const moreActions = computed<ActionsItem[]>(() => {
-    if (licenseStore.hasLicense()) {
-      return [
-        {
-          label: t('settings.help.doc'),
-          key: 'helpDoc',
-          iconType: 'iconicon_help_circle',
-        },
-        {
-          label: t('settings.help.apiDoc'),
-          key: 'apiDoc',
-          iconType: 'iconicon_info_circle',
-        },
-      ];
-    }
-    return [
-      {
-        label: t('settings.help.doc'),
-        key: 'helpDoc',
-        iconType: 'iconicon_help_circle',
-      },
-    ];
-  });
+  const moreActions: ActionsItem[] = [
+    {
+      label: t('settings.help.doc'),
+      key: 'helpDoc',
+      iconType: 'iconicon_help_circle',
+    },
+    {
+      label: t('settings.help.apiDoc'),
+      key: 'apiDoc',
+      iconType: 'iconicon_info_circle',
+    },
+  ];
 
   function selectMoreActions(item: ActionsItem) {
     switch (item.key) {
@@ -365,6 +354,10 @@
         window.open(appStore.pageConfig.helpDoc, '_blank');
         break;
       case 'apiDoc':
+        if (!licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+          openModal(licenseStore.getNoLicenseModalConfig());
+          return;
+        }
         const apiDocUrl = `${window.location.origin}/swagger-ui/index.html`;
         window.open(apiDocUrl, '_blank');
         break;
@@ -385,7 +378,6 @@
       appStore.initMessage();
     }
     appStore.connectSystemMessageSSE(userStore.showSystemNotify);
-    appStore.showSQLBot();
     userStore.initApiKeyList();
   });
 

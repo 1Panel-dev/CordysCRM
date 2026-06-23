@@ -71,23 +71,23 @@ export function loadScript(scriptContent: string, options: ScriptOptions): Promi
   });
 }
 
-export function removeScript(identifier: string): void {
-  const scriptId = scriptElementsMap.get(identifier);
-  if (scriptId && identifier === CompanyTypeEnum.SQLBot) {
-    // 清理全局单例标记
-    const propName = `${scriptId}-state`;
-    delete (window as any)[propName];
-    if ((window as any).sqlbot_assistant_handler) {
-      delete (window as any).sqlbot_assistant_handler;
-    }
-    // 删除页面上渲染的
-    const floatingElements = document.querySelectorAll('[id^="sqlbot-"]');
-    floatingElements.forEach((el) => {
-      if (el.parentNode && !el.parentNode.isEqualNode(document.body) && !el.parentNode.isEqualNode(document.head)) {
-        (el.parentNode as Element).remove();
-      }
-      el.remove();
-    });
-    scriptElementsMap.delete(identifier);
-  }
-}
+// export function removeScript(identifier: string): void {
+//   const scriptId = scriptElementsMap.get(identifier);
+//   if (scriptId && identifier === CompanyTypeEnum.SQLBot) {
+//     // 清理全局单例标记
+//     const propName = `${scriptId}-state`;
+//     delete (window as any)[propName];
+//     if ((window as any).sqlbot_assistant_handler) {
+//       delete (window as any).sqlbot_assistant_handler;
+//     }
+//     // 删除页面上渲染的
+//     const floatingElements = document.querySelectorAll('[id^="sqlbot-"]');
+//     floatingElements.forEach((el) => {
+//       if (el.parentNode && !el.parentNode.isEqualNode(document.body) && !el.parentNode.isEqualNode(document.head)) {
+//         (el.parentNode as Element).remove();
+//       }
+//       el.remove();
+//     });
+//     scriptElementsMap.delete(identifier);
+//   }
+// }

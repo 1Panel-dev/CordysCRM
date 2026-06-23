@@ -364,17 +364,6 @@ const useAppStore = defineStore('app', {
         console.log(error);
       }
     },
-    // 显示 SQLBot
-    async showSQLBot() {
-      // TODO license 先放开
-      // const licenseStore = useLicenseStore();
-      // if (!licenseStore.hasLicense()) return;
-      const res = await getThirdConfigByType(CompanyTypeEnum.SQLBot);
-      if (res.config?.sqlBotChatEnable) {
-        await loadScript(res.config?.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
-      }
-    },
-
     // 初始化页面配置
     async initPageConfig() {
       try {

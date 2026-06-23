@@ -77,6 +77,7 @@
     singleTypes,
     specialBusinessKeyMap,
     transformData,
+    transformFieldValue,
   } from '@lib/shared/method/formCreate';
   import { FormViewSize } from '@lib/shared/models/system/module';
 
@@ -150,7 +151,6 @@
     saveForm,
     initForm,
     initFormShowControl,
-    transformFieldValue,
     detail,
   } = useFormCreateApi({
     formKey,

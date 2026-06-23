@@ -236,6 +236,7 @@
                   v-model:rows="item.fieldProps.initialOptions"
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   :data-source-type="item.fieldProps.dataSourceType"
+                  :multiple="item.fieldProps.type === FieldTypeEnum.MEMBER_MULTIPLE"
                 />
                 <n-select
                   v-else-if="
@@ -504,7 +505,17 @@
             enable: target.enable,
             circulationFieldValues: target.circulationFieldValues.map((tc) => ({
               fieldId: tc.fieldId,
-              fieldValue: tc.fieldValue,
+              fieldValue:
+                tc.fieldProps &&
+                [
+                  FieldTypeEnum.SELECT,
+                  FieldTypeEnum.DEPARTMENT,
+                  FieldTypeEnum.DATA_SOURCE,
+                  FieldTypeEnum.MEMBER,
+                ].includes(tc.fieldProps.type) &&
+                Array.isArray(tc.fieldValue)
+                  ? tc.fieldValue[0] || ''
+                  : tc.fieldValue,
               required: tc.required,
               valueType: tc.valueType,
             })),

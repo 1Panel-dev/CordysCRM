@@ -18,7 +18,7 @@
         <div class="flex">
           <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
             <CrmSvgIcon
-              v-if="[CompanyTypeEnum.DATA_EASE, CompanyTypeEnum.SQLBot].includes(item.type as CompanyTypeEnum)"
+              v-if="[CompanyTypeEnum.DATA_EASE].includes(item.type as CompanyTypeEnum)"
               :name="item.logo"
               width="24px"
               height="24px"
@@ -137,7 +137,7 @@
         <div class="flex">
           <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
             <CrmSvgIcon
-              v-if="[CompanyTypeEnum.DATA_EASE, CompanyTypeEnum.SQLBot].includes(item.type as CompanyTypeEnum)"
+              v-if="[CompanyTypeEnum.DATA_EASE].includes(item.type as CompanyTypeEnum)"
               :name="item.logo"
               width="24px"
               height="24px"
@@ -222,38 +222,6 @@
             {{ t('system.business.notConfiguredTip') }}
           </n-tooltip>
           <div class="text-[12px]">{{ t('common.dashboard') }}</div>
-        </div>
-        <div v-else-if="item.type === CompanyTypeEnum.SQLBot" class="flex justify-between gap-[8px]">
-          <!--          <div class="flex items-center gap-[8px]">
-            <n-tooltip :disabled="item.verify">
-              <template #trigger>
-                <n-switch
-                  size="small"
-                  :rubber-band="false"
-                  :value="item.config.sqlBotBoardEnable"
-                  :disabled="!item.hasConfig || !item.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
-                  @update:value="handleChangeEnable(item, 'sqlBotBoardEnable')"
-                />
-              </template>
-              {{ t('system.business.notConfiguredTip') }}
-            </n-tooltip>
-            <div class="text-[12px]">{{ t('common.dashboard') }}</div>
-          </div>-->
-          <div class="flex items-center gap-[8px]">
-            <n-tooltip :disabled="item.verify">
-              <template #trigger>
-                <n-switch
-                  size="small"
-                  :rubber-band="false"
-                  :value="item.config.sqlBotChatEnable"
-                  :disabled="!item.hasConfig || !item.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
-                  @update:value="handleChangeEnable(item, 'sqlBotChatEnable')"
-                />
-              </template>
-              {{ t('system.business.notConfiguredTip') }}
-            </n-tooltip>
-            <div class="text-[12px]">{{ t('system.business.SQLBot.switch') }}</div>
-          </div>
         </div>
       </div>
     </div>
@@ -515,7 +483,6 @@
   import { NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
-  import { loadScript, removeScript } from '@lib/shared/method/scriptLoader';
   import type { IntegrationItem, ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -534,11 +501,13 @@
   import { defaultThirdPartyConfigMap, platformType } from '@/config/business';
   import useModal from '@/hooks/useModal';
   import { useAppStore } from '@/store';
+  import useLicenseStore from '@/store/modules/setting/license.js';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const Message = useMessage();
   const appStore = useAppStore();
+  const licenseStore = useLicenseStore();
   const { openModal } = useModal();
   const activePlatformTab = ref<CompanyTypeEnum>(CompanyTypeEnum.WECOM);
 
@@ -573,12 +542,6 @@
       title: 'DataEase',
       description: t('system.business.DE.description'),
       logo: 'dataease',
-    },
-    {
-      type: CompanyTypeEnum.SQLBot,
-      title: 'SQLBot',
-      description: t('system.business.SQLBot.description'),
-      logo: 'SQLBot',
     },
     {
       type: CompanyTypeEnum.MAXKB,
@@ -630,7 +593,6 @@
           [
             ...platformType,
             CompanyTypeEnum.DATA_EASE,
-            CompanyTypeEnum.SQLBot,
             CompanyTypeEnum.MAXKB,
             CompanyTypeEnum.TENDER,
             CompanyTypeEnum.QCC,
@@ -675,6 +637,9 @@
   });
 
   function handleEdit(item: IntegrationItem) {
+    if (item.type === 'DE' && !licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+      openModal(licenseStore.getNoLicenseModalConfig());
+    }
     currentTitle.value = item.title;
     currentIntegration.value = { ...item };
     showEditIntegrationModal.value = true;
@@ -729,11 +694,6 @@
           Message.success(item.config[key] ? t('common.disableSuccess') : t('common.enableSuccess'));
           await initSyncList();
           appStore.initThirdPartyResource();
-          if (item.config[key]) {
-            removeScript(CompanyTypeEnum.SQLBot);
-          } else {
-            await loadScript(item.config.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
-          }
         })
         .catch(() => {
           item.verify = false;
@@ -776,11 +736,6 @@
 
   async function editDone() {
     await initSyncList();
-    const sqlItem = integrationList.value.find((item) => item.type === CompanyTypeEnum.SQLBot);
-    removeScript(CompanyTypeEnum.SQLBot);
-    if (sqlItem && sqlItem.config.sqlBotChatEnable) {
-      await loadScript(sqlItem.config.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
-    }
   }
 
   async function initThirdPartyResource() {
