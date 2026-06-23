@@ -207,7 +207,9 @@
         currentSourceId.value = result.id;
       }
       disableSavedDataSourceType();
-      unsaved.value = false;
+      nextTick(() => {
+        unsaved.value = false;
+      });
       emit('saved', currentSourceId.value);
       Message.success(t('common.saveSuccess'));
       return true;
