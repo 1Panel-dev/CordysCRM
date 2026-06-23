@@ -35,7 +35,7 @@
 
 
     <select id="getConfigByOriginAndTarget" resultType="cn.cordys.crm.system.domain.StageAdvancedConfig">
-        select id, enable
+        select id, enable, field_config
         from stage_advanced_config
         where origin_id = #{originId}
           and target_id = #{targetId}
