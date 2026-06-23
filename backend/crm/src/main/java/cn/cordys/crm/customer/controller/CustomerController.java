@@ -1,10 +1,12 @@
 package cn.cordys.crm.customer.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.*;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.common.permission.CsBatchPermission;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.dto.chart.ChartResult;
@@ -199,14 +201,41 @@ public class CustomerController {
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        return customerExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CUSTOMER.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CUSTOMER_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .pageRequest(request)
+                .formKey(FormKey.CUSTOMER.getKey())
+                .build();
+        return customerExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中客户")
     @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        return customerExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CUSTOMER.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CUSTOMER_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .selectIds(request.getIds())
+                .selectRequest(request)
+                .formKey(FormKey.CUSTOMER.getKey())
+                .build();
+        return customerExportService.exportSelectWithMergeStrategy(exportDTO);
     }
 
     @GetMapping("/template/download")

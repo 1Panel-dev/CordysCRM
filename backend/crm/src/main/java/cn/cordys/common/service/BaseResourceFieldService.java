@@ -1381,7 +1381,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param <K>       资源类型
      */
     private <K> void businessFieldRepeatCheck(String orgId, K resource, List<String> updateIds, BaseField field, String fieldName) {
-        if (!field.needRepeatCheck() || StringUtils.contains(field.getId(), REF_UNDERLINE)) {
+        if (!field.needRepeatCheck() || StringUtils.containsAny(field.getId(), REF_UNDERLINE)) {
             return;
         }
         Class<?> clazz = resource.getClass();
