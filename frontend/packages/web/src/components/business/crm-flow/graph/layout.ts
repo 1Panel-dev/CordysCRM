@@ -192,6 +192,7 @@ function createConditionBranchNodeLayout(
   branchNodeId: string,
   branchCardX: number,
   branchStartY: number,
+  sort: number | undefined,
   options: FlowLayoutOptions
 ): FlowGraphLayoutNode {
   registerBranchRenameHandler(groupId, branch.id, (value: string) => {
@@ -211,7 +212,7 @@ function createConditionBranchNodeLayout(
       branchId: branch.id,
       name: branch.name,
       number: branch.number,
-      sort: branch.sort,
+      sort,
       description: branch.description,
       showContent: options.showNodeDescription,
       isElse: branch.isElse,
@@ -364,6 +365,7 @@ function layoutConditionGroup(
     Math.max(0, branchWidths.length - 1) * options.branchColumnGap;
   // 当前分支槽位左边界，从整体居中位置开始
   let branchSlotLeft = centerX - totalBranchesWidth / 2;
+  let ifBranchIndex = 0;
 
   // 记录每个分支中心 x，用于绘制总线
   const branchCenters: number[] = [];
@@ -382,12 +384,15 @@ function layoutConditionGroup(
     const branchCardX = slotCenterX - options.cardWidth / 2;
     // 分支可视节点 id
     const branchNodeId = createBranchNodeId(node.id, branch.id);
+    const sort = branch.isElse ? undefined : (ifBranchIndex += 1);
 
     // 记录分支中心供后续总线使用
     branchCenters.push(slotCenterX);
 
     // 渲染分支卡片节点（if/else）
-    nodes.push(createConditionBranchNodeLayout(node.id, branch, branchNodeId, branchCardX, branchStartY, options));
+    nodes.push(
+      createConditionBranchNodeLayout(node.id, branch, branchNodeId, branchCardX, branchStartY, sort, options)
+    );
 
     // 渲染分支卡片下方 add-node
     nodes.push(

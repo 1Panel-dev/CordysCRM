@@ -58,6 +58,7 @@
       :branch="activeConditionBranch"
       :form-type="basicConfig.formType"
       :option-map="props.optionMap"
+      :sort="activeConditionBranchSort"
       :priority-options="conditionPriorityOptions"
       :readonly="props.readonly"
       @confirm="handleConditionConfirm"
@@ -285,6 +286,28 @@
   const setConditionDrawerVisible = ref(false);
   const activeConditionBranch = ref<ApprovalConditionBranch | null>(null);
 
+  const activeIfConditionBranches = computed(() => {
+    if (!activeConditionBranch.value) {
+      return [];
+    }
+
+    return (
+      findBranchLocation<ApprovalConditionBranch>(
+        flowSchema.value.nodes,
+        activeConditionBranch.value.id
+      )?.group.branches.filter((branch) => !branch.isElse) ?? []
+    );
+  });
+
+  const activeConditionBranchSort = computed(() => {
+    if (!activeConditionBranch.value) {
+      return 1;
+    }
+
+    const index = activeIfConditionBranches.value.findIndex((branch) => branch.id === activeConditionBranch.value?.id);
+    return index >= 0 ? index + 1 : 1;
+  });
+
   function handleFlowTimingChange(value: string | number) {
     setConditionDrawerVisible.value = false;
     activeConditionBranch.value = null;
@@ -324,24 +347,12 @@
       return [];
     }
 
-    const location = findBranchLocation<ApprovalConditionBranch>(
-      flowSchema.value.nodes,
-      activeConditionBranch.value.id
-    );
-    const ifBranchCount = location?.group.branches.filter((branch) => !branch.isElse).length ?? 0;
+    const ifBranchCount = activeIfConditionBranches.value.length;
     return Array.from({ length: ifBranchCount }, (_, index) => ({
       label: `P${index + 1}`,
       value: index + 1,
     }));
   });
-
-  function normalizeConditionBranchSort(branches: ApprovalConditionBranch[]) {
-    branches
-      .filter((branch) => !branch.isElse)
-      .forEach((branch, index) => {
-        branch.sort = index + 1;
-      });
-  }
 
   function openConditionDrawer(branch: ApprovalConditionBranch) {
     activeConditionBranch.value = branch;
@@ -363,7 +374,6 @@
       return;
     }
 
-    normalizeConditionBranchSort(location.group.branches as ApprovalConditionBranch[]);
     openConditionDrawer(location.branch);
   }
 
@@ -374,21 +384,15 @@
     }
 
     const ifBranches = location.group.branches.filter((item) => !item.isElse);
-    const currentBranch = ifBranches.find((item) => item.id === branch.id);
-    const targetBranch = ifBranches.find((item) => item.sort === targetSort);
-    if (!currentBranch || !targetBranch || currentBranch.id === targetBranch.id) {
+    const currentIndex = ifBranches.findIndex((item) => item.id === branch.id);
+    const targetIndex = targetSort - 1;
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= ifBranches.length || currentIndex === targetIndex) {
       return;
     }
 
-    const currentSort = currentBranch.sort ?? 1;
-    currentBranch.sort = targetSort;
-    targetBranch.sort = currentSort;
-
+    [ifBranches[currentIndex], ifBranches[targetIndex]] = [ifBranches[targetIndex], ifBranches[currentIndex]];
     const elseBranches = location.group.branches.filter((item) => item.isElse);
-    location.group.branches = [
-      ...ifBranches.sort((leftBranch, rightBranch) => (leftBranch.sort ?? 1) - (rightBranch.sort ?? 1)),
-      ...elseBranches,
-    ];
+    location.group.branches = [...ifBranches, ...elseBranches];
   }
 
   function handleConditionConfirm(payload: { name: string; sort: number; conditionConfig: FilterForm }) {
