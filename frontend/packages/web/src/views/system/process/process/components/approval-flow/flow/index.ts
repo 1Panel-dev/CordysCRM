@@ -84,7 +84,6 @@ export function createDefaultFlow(startDescription: string): FlowSchema {
 export function createApprovalConditionBranch(partial: Partial<ApprovalConditionBranch> = {}): ApprovalConditionBranch {
   return createConditionBranch<ApprovalConditionBranch>({
     ...partial,
-    sort: partial.sort ?? 1,
     description: partial.description ?? t('process.process.flow.conditionUnset'),
     children: partial.children ?? [createApprovalActionNode()],
   });
@@ -212,7 +211,5 @@ export function insertFromAnchor(payload: {
 
 // 条件组新增 if 分支时，默认仍然补一个审批节点，保持分支规则一致
 export function addApprovalConditionBranch(flowSchema: FlowSchema, groupId: string) {
-  const groupNode = findConditionGroupById(flowSchema.nodes, groupId);
-  const nextSort = (groupNode?.branches.filter((branch) => !branch.isElse).length ?? 0) + 1;
-  addConditionBranch(flowSchema, groupId, createApprovalConditionBranch({ sort: nextSort }));
+  addConditionBranch(flowSchema, groupId, createApprovalConditionBranch());
 }

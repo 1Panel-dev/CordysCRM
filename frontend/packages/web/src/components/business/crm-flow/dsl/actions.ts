@@ -68,14 +68,6 @@ export function deleteNodeById(schema: FlowSchema, nodeId: string): boolean {
   return true;
 }
 
-function normalizeConditionBranchSort(branches: ConditionBranch[]) {
-  branches
-    .filter((branch) => !branch.isElse)
-    .forEach((branch, index) => {
-      branch.sort = index + 1;
-    });
-}
-
 // 删除条件分支：先走 guard，命中规则时会删除整个条件组
 export function deleteConditionBranch(schema: FlowSchema, groupId: string, branchId: string): boolean {
   const groupNode = findConditionGroupById(schema.nodes, groupId);
@@ -98,9 +90,6 @@ export function deleteConditionBranch(schema: FlowSchema, groupId: string, branc
   }
 
   groupNode.branches.splice(branchIndex, 1);
-
-  // 重置优先级
-  normalizeConditionBranchSort(groupNode.branches);
   return true;
 }
 

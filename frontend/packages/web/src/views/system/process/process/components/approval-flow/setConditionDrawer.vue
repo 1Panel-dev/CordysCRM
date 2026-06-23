@@ -88,6 +88,7 @@
     branch: ApprovalConditionBranch | null;
     formType: string;
     optionMap?: Record<string, any[]>;
+    sort?: number;
     priorityOptions?: Array<{ label: string; value: number }>;
     readonly?: boolean;
   }>();
@@ -175,7 +176,7 @@
   function initDraft(branch: ApprovalConditionBranch | null) {
     form.value = {
       name: branch?.name ?? '',
-      sort: branch?.sort ?? 1,
+      sort: props.sort ?? 1,
       conditionConfig: branch?.conditionConfig
         ? {
             ...branch.conditionConfig,
@@ -191,7 +192,7 @@
   }
 
   watch(
-    () => [show.value, props.branch?.id, props.formType],
+    () => [show.value, props.branch?.id, props.formType, props.sort],
     async ([visible]) => {
       if (visible) {
         await initialize();
