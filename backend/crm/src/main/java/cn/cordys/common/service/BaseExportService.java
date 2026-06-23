@@ -169,7 +169,9 @@ public abstract class BaseExportService {
                 Sheet mergeSheet = writer.writeContext().writeWorkbookHolder().getWorkbook().getSheetAt(0);
                 SummaryMergeHandler strategy = new SummaryMergeHandler(mergeResult.getMergeRegions(), mergeColumns, getSummaryColIdx(headList, mergeColumns), offset);
                 strategy.merge(mergeSheet);
-                if (mergeResult.getHandleCount() < EXPORT_MAX_COUNT) {
+                // 使用 queryCount（过滤前数量）判断是否还有下一页，避免过滤后数量减少导致提前终止
+                int fetchedCount = mergeResult.getQueryCount() > 0 ? mergeResult.getQueryCount() : mergeResult.getHandleCount();
+                if (fetchedCount < EXPORT_MAX_COUNT) {
                     break;
                 }
                 // 下一页&&记录偏移量
@@ -901,7 +903,7 @@ public abstract class BaseExportService {
 
     protected String getOptionLabel(String value, List<OptionProp> options) {
         for (OptionProp option : options) {
-            if (Strings.CS.equals(option.getValue(), value)) {
+            if (option.getValue() != null && Strings.CS.equals(option.getValue().toString(), value)) {
                 return option.getLabel();
             }
         }

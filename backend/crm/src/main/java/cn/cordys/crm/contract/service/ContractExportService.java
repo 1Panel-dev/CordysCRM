@@ -20,6 +20,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,34 +47,40 @@ public class ContractExportService extends BaseExportService {
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
-        var exportList = collectExportList(exportParam);
-        if (CollectionUtils.isEmpty(exportList)) {
-            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
+        var queryResult = collectExportList(exportParam);
+        var filteredList = queryResult.getLeft();
+        var queryCount = queryResult.getRight();
+        if (CollectionUtils.isEmpty(filteredList)) {
+            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).queryCount(queryCount).build();
         }
-        var dataList = contractService.buildList(exportList, exportParam.getOrgId());
+        var dataList = contractService.buildList(filteredList, exportParam.getOrgId());
         Map<String, String> stageConfigMap = extContractStageConfigMapper.getStageConfigList(exportParam.getOrgId())
-                .stream()
-                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
-        return buildExportMergeResult(taskId, exportParam, dataList,
+                .stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+        var result = buildExportMergeResult(taskId, exportParam, dataList,
                 ContractListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
                         getSystemFieldMap(detail, metas, stageConfigMap), cache));
+        result.setQueryCount(queryCount);
+        return result;
     }
 
-    private List<ContractListResponse> collectExportList(ExportDTO exportParam) {
+    private Pair<List<ContractListResponse>, Integer> collectExportList(ExportDTO exportParam) {
         var orgId = exportParam.getOrgId();
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
         List<ContractListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
             exportList = extContractMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
+            return Pair.of(exportList, exportList.size());
         } else {
             var request = (ContractPageRequest) exportParam.getPageRequest();
             int offset = (request.getCurrent() - 1) * request.getPageSize();
             PageHelper.startPage(offset, request.getPageSize());
             exportList = extContractMapper.list(request, orgId, userId, deptDataPermission, false);
+            int queryCount = exportList.size();
+            var filtered = filterExportPermission(exportList, orgId);
+            return Pair.of(filtered, queryCount);
         }
-        return filterExportPermission(exportList, orgId);
     }
 
     private List<ContractListResponse> filterExportPermission(List<ContractListResponse> exportList, String orgId) {

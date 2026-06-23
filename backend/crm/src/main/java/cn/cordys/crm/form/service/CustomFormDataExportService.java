@@ -23,7 +23,7 @@ import cn.idev.excel.support.ExcelTypeEnum;
 import cn.idev.excel.write.metadata.WriteSheet;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,7 +121,7 @@ public class CustomFormDataExportService extends BaseExportService {
         int limit = request.getPageSize();
         int offset = (request.getCurrent() - 1) * request.getPageSize();
         List<CustomFormDataListResponse> rawList = extCustomFormDataMapper.listForExport(request, orgId, userId, manageOwn, limit, offset);
-        return buildExportResult(request.getHeadList(), rawList, request.getCustomFormId(), orgId, taskId, userId);
+        return buildExportResult(request.getHeadList(), rawList, request.getCustomFormId(), orgId, taskId);
     }
 
     private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids,
@@ -136,20 +136,19 @@ public class CustomFormDataExportService extends BaseExportService {
         CustomFormRoleKey dataScope = customFormDataService.getDataScope(formId, userId, false);
         if (dataScope == CustomFormRoleKey.MANAGE_OWN) {
             rawList = rawList.stream()
-                    .filter(item -> StringUtils.equals(item.getOwner(), userId))
+                    .filter(item -> Strings.CI.equals(item.getOwner(), userId))
                     .collect(Collectors.toList());
         }
         if (rawList.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return buildExportResult(headList, rawList, formId, orgId, taskId, userId);
+        return buildExportResult(headList, rawList, formId, orgId, taskId);
     }
 
     private List<List<Object>> buildExportResult(List<ExportHeadDTO> headList,
                                                   List<CustomFormDataListResponse> rawList,
-                                                  String formId, String orgId, String taskId,
-                                                  String userId) throws InterruptedException {
+                                                  String formId, String orgId, String taskId) throws InterruptedException {
         // 构建含数据源显示字段的数据
         CustomFormDataFieldService.setFormKey(formId);
         List<CustomFormDataListResponse> dataList;

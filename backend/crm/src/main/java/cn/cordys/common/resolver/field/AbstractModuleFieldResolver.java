@@ -109,10 +109,9 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
         if (options == null) {
             options = List.of();
         }
-        Set<String> values = options.stream()
-                .map(OptionProp::getValue)
-                .collect(Collectors.toSet());
-        if (!values.contains(value)) {
+        boolean match = options.stream()
+                .anyMatch(option -> option.getValue() != null && option.getValue().toString().equals(value.toString()));
+        if (!match) {
 			throwOptionException(name);
         }
     }

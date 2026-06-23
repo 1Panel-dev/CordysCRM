@@ -37,7 +37,7 @@ public class SelectResolver extends AbstractModuleFieldResolver<SelectField> {
     @Override
     public Object transformToValue(SelectField selectField, String value) {
         return selectField.getOptions().stream()
-                .filter(option -> Strings.CI.equals(option.getValue(), value))
+                .filter(option -> Strings.CI.equals(String.valueOf(option.getValue()), value))
                 .findFirst()
                 .map(OptionProp::getLabel)
                 .orElse(StringUtils.EMPTY);
