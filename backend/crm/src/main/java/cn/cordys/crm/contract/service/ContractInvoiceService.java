@@ -515,6 +515,31 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
 	}
 
     /**
+     * 批量获取发票详情 (⚠️反射调用, 用于数据源批量查询优化)
+     * @param ids 发票ID集合
+     * @return 发票详情列表
+     */
+    public List<ContractInvoiceGetResponse> batchGetSimpleByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        // 批量查询资源基本信息
+        List<ContractInvoice> invoices = contractInvoiceMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(invoices)) {
+            return Collections.emptyList();
+        }
+        // 批量查询自定义字段值
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = invoiceFieldService.getResourceFieldMap(ids, true);
+
+        // 组装结果
+        return invoices.stream().map(invoice -> {
+            ContractInvoiceGetResponse response = BeanUtils.copyBean(new ContractInvoiceGetResponse(), invoice);
+            response.setModuleFields(fieldValueMap.get(invoice.getId()));
+            return response;
+        }).toList();
+    }
+
+    /**
      * 获取字段详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
      * @param id 发票ID
      * @return 发票详情
