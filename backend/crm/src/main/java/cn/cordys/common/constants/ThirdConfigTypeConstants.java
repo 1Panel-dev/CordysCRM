@@ -26,10 +26,6 @@ public enum ThirdConfigTypeConstants {
      */
     DE,
     /**
-     * SQLBOT
-     */
-    SQLBOT,
-    /**
      * maxKB
      */
     MAXKB,

@@ -202,36 +202,6 @@ public class TokenService {
     }
 
     /**
-     * 获取sqlBot的src 是否能连通
-     */
-    public boolean getSqlBotSrc(String scriptCode) {
-        Pattern pattern = Pattern.compile("src\\s*=\\s*\"([^\"]+)\"");
-        Matcher matcher = pattern.matcher(scriptCode);
-
-        String jsUrl;
-        if (matcher.find()) {
-            jsUrl = matcher.group(1);
-        } else {
-            return false;
-        }
-        try {
-            // SSRF 校验
-            ssrfValidationService.validate(jsUrl);
-            URL url = URI.create(jsUrl).toURL();
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("HEAD"); // 更轻量，只请求头部
-            connection.setConnectTimeout(3000);
-            connection.setReadTimeout(3000);
-            int responseCode = connection.getResponseCode();
-            return responseCode == HttpURLConnection.HTTP_OK;
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return false;
-        }
-
-    }
-
-    /**
      * @param code   code
      * @param config 认证配置的map
      * @return access_token

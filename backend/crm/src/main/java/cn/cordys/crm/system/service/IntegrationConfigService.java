@@ -285,10 +285,6 @@ public class IntegrationConfigService {
      */
     private void buildDetailData(List<OrganizationConfigDetail> details,
                                  List<ThirdConfigBaseDTO<?>> configDTOs) {
-
-        ThirdConfigBaseDTO<SqlBotThirdConfigRequest> sqlBotConfig = new ThirdConfigBaseDTO<>();
-        SqlBotThirdConfigRequest sqlBotDTO = new SqlBotThirdConfigRequest();
-
         for (OrganizationConfigDetail detail : details) {
             String type = detail.getType();
             String content = new String(detail.getContent());
@@ -329,22 +325,6 @@ public class IntegrationConfigService {
                 );
                 configDTOs.add(dto);
 
-            } else if (Strings.CI.equals(type, ThirdDetailType.SQLBOT_CHAT.name())
-                    || Strings.CI.equals(type, ThirdDetailType.SQLBOT_BOARD.name())) {
-
-                ThirdConfigBaseDTO<?> dto = JSON.parseObject(content, ThirdConfigBaseDTO.class);
-                SqlBotThirdConfigRequest cfg = buildConfig(dto, content, SqlBotThirdConfigRequest.class);
-
-                if (Strings.CI.equals(type, ThirdDetailType.SQLBOT_CHAT.name())) {
-                    sqlBotDTO.setSqlBotChatEnable(detail.getEnable());
-                } else {
-                    sqlBotDTO.setSqlBotBoardEnable(detail.getEnable());
-                }
-
-                sqlBotDTO.setAppSecret(cfg.getAppSecret());
-                sqlBotConfig.setType(ThirdConfigTypeConstants.SQLBOT.name());
-                sqlBotConfig.setVerify(dto.getVerify());
-
             } else if (Strings.CI.equals(type, ThirdDetailType.MAXKB.name())) {
                 ThirdConfigBaseDTO<?> dto = buildDto(
                         content,
@@ -372,11 +352,6 @@ public class IntegrationConfigService {
                 );
                 configDTOs.add(dto);
             }
-        }
-
-        if (sqlBotConfig.getType() != null) {
-            sqlBotConfig.setConfig(sqlBotDTO);
-            configDTOs.add(sqlBotConfig);
         }
     }
 
@@ -585,16 +560,6 @@ public class IntegrationConfigService {
                 verify = configDTO.getVerify();
                 addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(deConfig)));
             }
-            case SQLBOT -> {
-                SqlBotThirdConfigRequest sqlBotConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
-                if (sqlBotConfig.getSqlBotBoardEnable() || sqlBotConfig.getSqlBotChatEnable()) {
-                    verifyToken(token, configDTO);
-                }
-                configDTO.setConfig(sqlBotConfig);
-                jsonContent = JSON.toJSONString(configDTO);
-                verify = configDTO.getVerify();
-                addLog(new HashMap<>(), configDTO, null, JSON.parseToMap(JSON.toJSONString(sqlBotConfig)));
-            }
             case MAXKB -> {
                 MaxKBThirdConfigRequest mkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
                 if (mkConfig.getMkEnable()) {
@@ -796,24 +761,6 @@ public class IntegrationConfigService {
                 openEnable = enable;
 
                 DeThirdConfigRequest oldConfig = parseOldConfig(detail, DeThirdConfigRequest.class);
-
-                addConfigLog(oldConfig, configDTO, id, config);
-            }
-
-            case SQLBOT -> {
-                SqlBotThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
-
-                if (config.getSqlBotBoardEnable() || config.getSqlBotChatEnable()) {
-                    verifyToken(token, configDTO);
-                }
-
-                configDTO.setConfig(config);
-                jsonContent = JSON.toJSONString(configDTO);
-
-                boolean isVerified = Boolean.TRUE.equals(configDTO.getVerify());
-                openEnable = isVerified && enable;
-
-                SqlBotThirdConfigRequest oldConfig = parseOldConfig(detail, SqlBotThirdConfigRequest.class);
 
                 addConfigLog(oldConfig, configDTO, id, config);
             }
@@ -1052,10 +999,6 @@ public class IntegrationConfigService {
             case DINGTALK -> List.of(ThirdDetailType.DINGTALK_SYNC.name());
             case LARK -> List.of(ThirdDetailType.LARK_SYNC.name());
             case DE -> List.of(ThirdDetailType.DE_BOARD.name());
-            case SQLBOT -> List.of(
-                    ThirdDetailType.SQLBOT_CHAT.name(),
-                    ThirdDetailType.SQLBOT_BOARD.name()
-            );
             case MAXKB -> List.of(ThirdDetailType.MAXKB.name());
             case TENDER -> List.of(ThirdDetailType.TENDER.name());
             case QCC -> List.of(ThirdDetailType.QCC.name());
@@ -1091,11 +1034,6 @@ public class IntegrationConfigService {
             case DE -> {
                 DeThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
                 map.put(ThirdDetailType.DE_BOARD.name(), config.getDeBoardEnable());
-            }
-            case SQLBOT -> {
-                SqlBotThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
-                map.put(ThirdDetailType.SQLBOT_CHAT.name(), config.getSqlBotChatEnable());
-                map.put(ThirdDetailType.SQLBOT_BOARD.name(), config.getSqlBotBoardEnable());
             }
             case MAXKB -> {
                 MaxKBThirdConfigRequest config = JSON.MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
@@ -1143,10 +1081,6 @@ public class IntegrationConfigService {
                 DeThirdConfigRequest deConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), DeThirdConfigRequest.class);
                 boolean verify = validDeConfig(deConfig);
                 return verify ? "true" : null;
-            }
-            case SQLBOT -> {
-                SqlBotThirdConfigRequest sqlBotConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), SqlBotThirdConfigRequest.class);
-                return tokenService.getSqlBotSrc(sqlBotConfig.getAppSecret()) ? "true" : null;
             }
             case MAXKB -> {
                 MaxKBThirdConfigRequest mkConfig = JSON.MAPPER.convertValue(configDTO.getConfig(), MaxKBThirdConfigRequest.class);
