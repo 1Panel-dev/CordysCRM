@@ -160,7 +160,7 @@ public class ContractStageService {
      * @param orgId
      */
     private void checkConfigCount(String orgId) {
-        if (extContractStageConfigMapper.countStageConfig(orgId) > 10) {
+        if (extContractStageConfigMapper.countStageConfig(orgId) > 15) {
             throw new GenericException(Translator.get("contract_stage_config_list"));
         }
     }
