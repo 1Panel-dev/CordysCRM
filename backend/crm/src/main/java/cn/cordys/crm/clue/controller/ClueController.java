@@ -1,12 +1,15 @@
 package cn.cordys.crm.clue.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.ChartAnalysisRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsBatchPermission;
@@ -175,14 +178,41 @@ public class ClueController {
         ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
-        return clueExportService.exportAll(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CLUE.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CLUE_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .pageRequest(request)
+                .formKey(FormKey.CLUE.getKey())
+                .build();
+        return clueExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
     @PostMapping("/export-select")
     @CsBatchPermission(value = PermissionConstants.CLUE_MANAGEMENT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "导出选中")
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        return clueExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CLUE_MANAGEMENT_READ);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CLUE.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CLUE_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .selectIds(request.getIds())
+                .selectRequest(request)
+                .formKey(FormKey.CLUE.getKey())
+                .build();
+        return clueExportService.exportSelectWithMergeStrategy(exportDTO);
     }
 
     @PostMapping("/transition/account/page")

@@ -1,9 +1,12 @@
 package cn.cordys.crm.clue.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -121,14 +124,37 @@ public class PoolClueController {
     @Operation(summary = "导出全部")
     public String exportAll(@Validated @RequestBody ClueExportRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
-        return cluePoolExportService.exportCrossPage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null, LocaleContextHolder.getLocale());
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CLUE_POOL.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CLUE_POOL_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .pageRequest(request)
+                .formKey(FormKey.CLUE.getKey())
+                .build();
+        return cluePoolExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
     @PostMapping("/export-select")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_EXPORT)
     @Operation(summary = "导出选中")
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        return cluePoolExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CLUE_POOL.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CLUE_POOL_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .selectIds(request.getIds())
+                .selectRequest(request)
+                .formKey(FormKey.CLUE.getKey())
+                .build();
+        return cluePoolExportService.exportSelectWithMergeStrategy(exportDTO);
     }
 
     @PostMapping("/chart")

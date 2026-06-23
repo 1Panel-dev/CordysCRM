@@ -43,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -50,6 +51,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -526,6 +528,115 @@ public abstract class BaseExportService {
      */
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) throws InterruptedException {
         return null;
+    }
+
+    /**
+     * 通用的并行构建导出数据方法
+     *
+     * @param taskId           导出任务ID
+     * @param dataList         数据列表
+     * @param exportFieldParam 导出字段参数
+     * @param exportMetas      导出元数据
+     * @param rowBuilder       单行数据构建函数
+     * @param <T>              数据类型
+     * @return 合并结果
+     */
+    protected <T> MergeResult parallelBuildExportData(String taskId, List<T> dataList,
+                                                       ExportFieldParam exportFieldParam,
+                                                       List<FieldExportMeta> exportMetas,
+                                                       ExportRowBuilder<T> rowBuilder) {
+        int size = dataList.size();
+        var cacheMap = new ConcurrentHashMap<>();
+        List<List<Object>> mergeRowData = new ArrayList<>(size);
+        List<int[]> mergeRegions = new ArrayList<>();
+
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            Semaphore dbSemaphore = new Semaphore(100);
+            List<Future<Pair<Integer, List<List<Object>>>>> futures = new ArrayList<>(size);
+
+            for (int i = 0; i < size; i++) {
+                final int idx = i;
+                T detail = dataList.get(i);
+                futures.add(executor.submit(() -> {
+                    if (ExportThreadRegistry.isInterrupted(taskId)) {
+                        throw new InterruptedException("导出中断");
+                    }
+                    dbSemaphore.acquire();
+                    try {
+                        List<List<Object>> buildData = rowBuilder.buildRow(detail, exportFieldParam, exportMetas, cacheMap);
+                        return Pair.of(idx, buildData);
+                    } finally {
+                        dbSemaphore.release();
+                    }
+                }));
+            }
+
+            List<Pair<Integer, List<List<Object>>>> results = new ArrayList<>(size);
+            for (Future<Pair<Integer, List<List<Object>>>> f : futures) {
+                try {
+                    results.add(f.get());
+                } catch (Exception e) {
+                    log.error("Parse row data error: {}", e.getMessage());
+                }
+            }
+
+            results.sort(Comparator.comparingInt(Pair::getLeft));
+
+            int offset = 0;
+            for (Pair<Integer, List<List<Object>>> r : results) {
+                List<List<Object>> buildData = r.getRight();
+                if (buildData.size() > 1) {
+                    mergeRegions.add(new int[]{offset, offset + buildData.size() - 1});
+                }
+                offset += buildData.size();
+                mergeRowData.addAll(buildData);
+            }
+        }
+
+        cacheMap.clear();
+
+        return MergeResult.builder()
+                .mergeRegions(mergeRegions)
+                .dataList(mergeRowData)
+                .handleCount(size)
+                .build();
+    }
+
+    /**
+     * 通用的导出数据收集和构建方法
+     *
+     * @param taskId           导出任务ID
+     * @param exportParam      导出参数
+     * @param dataList         已构建的数据列表
+     * @param getModuleFields  获取模块字段的函数
+     * @param rowBuilder       单行数据构建函数
+     * @param <T>              数据类型
+     * @return 合并结果
+     */
+    protected <T> MergeResult buildExportMergeResult(String taskId, ExportDTO exportParam,
+                                                      List<T> dataList,
+                                                      Function<T, List<BaseModuleFieldValue>> getModuleFields,
+                                                      ExportRowBuilder<T> rowBuilder) {
+        if (CollectionUtils.isEmpty(dataList)) {
+            return MergeResult.builder().dataList(new ArrayList<>()).mergeRegions(new ArrayList<>()).handleCount(0).build();
+        }
+        // 处理模块字段值
+        ModuleFormService moduleFormService = CommonBeanFactory.getBean(ModuleFormService.class);
+        if (moduleFormService == null) {
+            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
+        }
+        moduleFormService.getBaseModuleFieldValues(dataList, getModuleFields);
+        var exportFieldParam = exportParam.getExportFieldParam();
+        return parallelBuildExportData(taskId, dataList, exportFieldParam, exportParam.getExportMetas(), rowBuilder);
+    }
+
+    /**
+     * 导出单行数据构建接口
+     */
+    @FunctionalInterface
+    protected interface ExportRowBuilder<T> {
+        List<List<Object>> buildRow(T detail, ExportFieldParam exportFieldParam,
+                                     List<FieldExportMeta> exportMetas, Map<Object, Object> cacheMap);
     }
 
     /**

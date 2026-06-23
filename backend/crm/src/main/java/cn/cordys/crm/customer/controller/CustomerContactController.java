@@ -1,5 +1,6 @@
 package cn.cordys.crm.customer.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
@@ -7,8 +8,10 @@ import cn.cordys.common.dto.ChartAnalysisRequest;
 import cn.cordys.common.permission.CsBatchPermission;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
@@ -164,7 +167,19 @@ public class CustomerContactController {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
-        return customerContactExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CUSTOMER_CONTACT.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CUSTOMER_CONTACT)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .pageRequest(request)
+                .formKey(FormKey.CONTACT.getKey())
+                .build();
+        return customerContactExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
 
@@ -172,7 +187,22 @@ public class CustomerContactController {
     @Operation(summary = "导出选中联系人")
     @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     public String customerContactExportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        return customerContactExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CUSTOMER_CONTACT.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CUSTOMER_CONTACT)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .selectIds(request.getIds())
+                .selectRequest(request)
+                .formKey(FormKey.CONTACT.getKey())
+                .build();
+        return customerContactExportService.exportSelectWithMergeStrategy(exportDTO);
     }
 
     @GetMapping("/template/download")

@@ -1,5 +1,6 @@
 package cn.cordys.crm.opportunity.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
@@ -7,8 +8,10 @@ import cn.cordys.common.permission.CsBatchPermission;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.dto.ChartAnalysisRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.pager.PagerWithOption;
@@ -168,7 +171,19 @@ public class OpportunityController {
         ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
-        return opportunityExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.OPPORTUNITY.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.OPPORTUNITY_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .pageRequest(request)
+                .formKey(FormKey.OPPORTUNITY.getKey())
+                .build();
+        return opportunityExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
 
@@ -176,7 +191,22 @@ public class OpportunityController {
     @Operation(summary = "导出选中商机")
     @CsPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        return opportunityExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.OPPORTUNITY.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.OPPORTUNITY_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .selectIds(request.getIds())
+                .selectRequest(request)
+                .formKey(FormKey.OPPORTUNITY.getKey())
+                .build();
+        return opportunityExportService.exportSelectWithMergeStrategy(exportDTO);
     }
 
     @GetMapping("/template/download")
