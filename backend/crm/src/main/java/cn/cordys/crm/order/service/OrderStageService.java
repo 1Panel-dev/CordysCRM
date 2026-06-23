@@ -7,6 +7,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.dto.stage.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
@@ -17,6 +18,7 @@ import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
+import cn.cordys.crm.system.service.UserViewService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -42,6 +44,8 @@ public class OrderStageService {
     private BaseMapper<OrderStageConfig> orderStageConfigMapper;
     @Resource
     private ExtStageAdvancedConfigMapper extStageAdvancedConfigMapper;
+    @Resource
+    private UserViewService userViewService;
 
 
     /**
@@ -54,11 +58,11 @@ public class OrderStageService {
         StageConfigsResponse stageConfigListResponse = new StageConfigsResponse();
         List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
         List<StageAdvancedConfig> advancedConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, FormKey.ORDER.getKey());
-        buildList(stageConfigList, stageConfigListResponse, advancedConfigs);
+        buildList(stageConfigList, stageConfigListResponse, advancedConfigs, orgId);
         return stageConfigListResponse;
     }
 
-    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigsResponse response, List<StageAdvancedConfig> advancedConfigs) {
+    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigsResponse response, List<StageAdvancedConfig> advancedConfigs, String orgId) {
         response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
             var first = stageConfigList.getFirst();
@@ -70,6 +74,7 @@ public class OrderStageService {
         if (CollectionUtils.isNotEmpty(advancedConfigs)) {
             Map<String, List<StageAdvancedConfig>> originIdMaps = advancedConfigs.stream().collect(Collectors.groupingBy(StageAdvancedConfig::getOriginId));
             List<CirculationSetting> configs = new ArrayList<>();
+            List<CirculationFieldValue> allConfigs = new ArrayList<>();
             originIdMaps.forEach((key, value) -> {
                 CirculationSetting configResponse = new CirculationSetting();
                 List<Target> targetList = new ArrayList<>();
@@ -82,6 +87,7 @@ public class OrderStageService {
                     });
                     target.setCirculationFieldValues(circulationFieldValues);
                     targetList.add(target);
+                    allConfigs.addAll(circulationFieldValues);
                 });
                 configResponse.setTargets(targetList);
                 configResponse.setModuleType(value.getFirst().getModuleType());
@@ -100,6 +106,19 @@ public class OrderStageService {
                     .toList();
 
             response.setAdvancedConfigs(sortedConfigs);
+
+            List<FilterCondition> combinedConditions = allConfigs.stream()
+                    .map(config -> {
+                        FilterCondition condition = new FilterCondition();
+                        condition.setName(config.getFieldId());
+                        condition.setValue(config.getFieldValue());
+                        return condition;
+                    })
+                    .collect(Collectors.toList());
+
+            if (CollectionUtils.isNotEmpty(combinedConditions)) {
+                response.setOptionMap(userViewService.buildOptionMap(orgId, FormKey.ORDER.getKey(), combinedConditions));
+            }
         }
 
     }

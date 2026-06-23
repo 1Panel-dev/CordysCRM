@@ -1,9 +1,11 @@
 package cn.cordys.common.dto.stage;
 
+import cn.cordys.common.dto.OptionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class StageConfigsResponse {
@@ -22,4 +24,7 @@ public class StageConfigsResponse {
 
     @Schema(description = "高级流转设置")
     private List<CirculationSetting> advancedConfigs;
+
+    @Schema(description = "条件节点字段选项映射")
+    private Map<String, List<OptionDTO>> optionMap;
 }
