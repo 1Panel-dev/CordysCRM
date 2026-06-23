@@ -1,8 +1,10 @@
 package cn.cordys.crm.system.service;
 
+import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
-import cn.cordys.aspectj.dto.LogDTO;
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.stage.CirculationSetting;
 import cn.cordys.common.dto.stage.StageAdvancedConfigRequest;
@@ -10,6 +12,7 @@ import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.Target;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.opportunity.constants.OpportunityStageType;
@@ -47,6 +50,7 @@ public class StageAdvancedConfigService {
         STAGE_CONFIG_TABLE.put(FormKey.CONTRACT.getKey(), "contract_stage_config");
     }
 
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void saveAdvancedConfig(StageAdvancedConfigRequest request, String moduleType, String orgId, String userId) {
         String tableName = STAGE_CONFIG_TABLE.get(moduleType);
         if (StringUtils.isBlank(tableName)) {
@@ -58,40 +62,66 @@ public class StageAdvancedConfigService {
 
         List<CirculationSetting> circulationSettings = request.getCirculationSettings();
         List<StageAdvancedConfig> stageAdvanceConfigList = new ArrayList<>();
+        List<StageAdvancedConfig> updateStageAdvanceConfigList = new ArrayList<>();
 
         circulationSettings.forEach(setting -> {
             List<Target> targets = setting.getTargets();
             targets.forEach(target -> {
-                StageAdvancedConfig stageAdvanceConfig = new StageAdvancedConfig();
-                stageAdvanceConfig.setId(IDGenerator.nextStr());
-                stageAdvanceConfig.setOriginId(setting.getOriginId());
-                stageAdvanceConfig.setTargetId(target.getTargetId());
-                stageAdvanceConfig.setEnable(target.getEnable());
-                stageAdvanceConfig.setFieldConfig(JSON.toJSONString(target.getCirculationFieldValues()));
-                stageAdvanceConfig.setModuleType(moduleType);
-                stageAdvanceConfig.setOrganizationId(orgId);
-                stageAdvanceConfig.setCreateTime(System.currentTimeMillis());
-                stageAdvanceConfig.setCreateUser(userId);
-                stageAdvanceConfig.setUpdateTime(System.currentTimeMillis());
-                stageAdvanceConfig.setUpdateUser(userId);
-                stageAdvanceConfigList.add(stageAdvanceConfig);
+                StageAdvancedConfig stageAdvancedConfig = oldConfigs.stream().filter(oldConfig -> Strings.CI.equals(oldConfig.getOriginId(), setting.getOriginId())
+                        && Strings.CI.equals(oldConfig.getTargetId(), target.getTargetId())
+                        && Strings.CI.equals(oldConfig.getModuleType(), moduleType)).findFirst().orElse(null);
+                if (stageAdvancedConfig == null) {
+                    StageAdvancedConfig stageAdvanceConfig = new StageAdvancedConfig();
+                    stageAdvanceConfig.setId(IDGenerator.nextStr());
+                    stageAdvanceConfig.setOriginId(setting.getOriginId());
+                    stageAdvanceConfig.setTargetId(target.getTargetId());
+                    stageAdvanceConfig.setEnable(target.getEnable());
+                    stageAdvanceConfig.setFieldConfig(JSON.toJSONString(target.getCirculationFieldValues()));
+                    stageAdvanceConfig.setModuleType(moduleType);
+                    stageAdvanceConfig.setOrganizationId(orgId);
+                    stageAdvanceConfig.setCreateTime(System.currentTimeMillis());
+                    stageAdvanceConfig.setCreateUser(userId);
+                    stageAdvanceConfig.setUpdateTime(System.currentTimeMillis());
+                    stageAdvanceConfig.setUpdateUser(userId);
+                    stageAdvanceConfigList.add(stageAdvanceConfig);
+                } else {
+                    StageAdvancedConfig updateConfig = new StageAdvancedConfig();
+                    BeanUtils.copyBean(updateConfig, stageAdvancedConfig);
+                    updateConfig.setEnable(target.getEnable());
+                    updateConfig.setFieldConfig(JSON.toJSONString(target.getCirculationFieldValues()));
+                    updateConfig.setCreateTime(System.currentTimeMillis());
+                    updateConfig.setCreateUser(userId);
+                    updateConfig.setUpdateTime(System.currentTimeMillis());
+                    updateConfig.setUpdateUser(userId);
+                    updateStageAdvanceConfigList.add(updateConfig);
+                }
+
+
             });
 
         });
 
-        if (CollectionUtils.isNotEmpty(oldConfigs)) {
-            List<String> ids = oldConfigs.stream().map(StageAdvancedConfig::getId).toList();
-            stageAdvanceConfigMapper.deleteByIds(ids);
+        if (CollectionUtils.isNotEmpty(updateStageAdvanceConfigList)) {
+            updateStageAdvanceConfigList.forEach(stageAdvanceConfigMapper::update);
         }
 
         if (CollectionUtils.isNotEmpty(stageAdvanceConfigList)) {
             stageAdvanceConfigMapper.batchInsert(stageAdvanceConfigList);
         }
 
-        LogDTO logDTO = new LogDTO(orgId, IDGenerator.nextStr(), userId, LogType.UPDATE, LogModule.SYSTEM_MODULE, Translator.get(moduleType) + Translator.get("advanced_circulation_setting"));
-        logDTO.setOriginalValue(oldConfigs);
-        logDTO.setModifiedValue(stageAdvanceConfigList);
-        logService.add(logDTO);
+        List<StageAdvancedConfig> newConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, moduleType);
+        final Map<String, Object> originalVal = new HashMap<>(1);
+        originalVal.put(moduleType + "Setting", oldConfigs);
+        final Map<String, Object> modifiedVal = new HashMap<>(1);
+        modifiedVal.put(moduleType + "Setting", newConfigs);
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(IDGenerator.nextStr())
+                        .resourceName(Translator.get(moduleType) + Translator.get("advanced_circulation_setting"))
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
+                        .build()
+        );
     }
 
 
