@@ -398,6 +398,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
             Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
             getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
         }
+        getResponse.setApproved(contractInvoice.getApproved());
         return getResponse;
     }
 
