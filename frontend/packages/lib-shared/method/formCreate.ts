@@ -467,8 +467,12 @@ export function transformData({
           // 多选
           name = field.fieldValue?.map((e) => options.find((o) => o.id === e)?.name || t('common.optionNotExist'));
         }
-      } else if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
-        // 若值是单个字符串/数字
+      } else if (
+        typeof field.fieldValue === 'string' ||
+        typeof field.fieldValue === 'number' ||
+        typeof field.fieldValue === 'boolean'
+      ) {
+        // 若值是单个字符串/数字/布尔值
         name = options.find((e) => e.id === field.fieldValue)?.name || t('common.optionNotExist');
       } else {
         // 若值是数组
