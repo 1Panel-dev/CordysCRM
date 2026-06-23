@@ -834,8 +834,8 @@ public class OrderService implements ApprovalResourceHandler {
         if (snapshot != null) {
             ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
             List<BaseModuleFieldValue> orderFields = orderFieldService.getModuleFieldValuesByResourceId(order.getId());
-            OrderGetResponse snapshotRes = get(order, orderFields, orderFormConfig);
-            snapshot.setOrderProp(JSON.toJSONString(orderFormConfig));
+            Order newOrder = orderMapper.selectByPrimaryKey(order.getId());
+            OrderGetResponse snapshotRes = get(newOrder, orderFields, orderFormConfig);
             snapshot.setOrderValue(JSON.toJSONString(snapshotRes));
             snapshotBaseMapper.update(snapshot);
         }

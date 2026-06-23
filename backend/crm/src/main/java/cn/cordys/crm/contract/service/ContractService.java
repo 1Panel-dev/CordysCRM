@@ -702,8 +702,8 @@ public class ContractService implements ApprovalResourceHandler {
         if (snapshot != null) {
             ModuleFormConfigDTO orderFormConfig = getFormConfig(contract.getOrganizationId());
             List<BaseModuleFieldValue> orderFields = contractFieldService.getModuleFieldValuesByResourceId(contract.getId());
-            ContractGetResponse snapshotRes = get(contract, orderFields, orderFormConfig);
-            snapshot.setContractProp(JSON.toJSONString(orderFormConfig));
+            Contract newContract = contractMapper.selectByPrimaryKey(contract.getId());
+            ContractGetResponse snapshotRes = get(newContract, orderFields, orderFormConfig);
             snapshot.setContractValue(JSON.toJSONString(snapshotRes));
             snapshotBaseMapper.update(snapshot);
         }
