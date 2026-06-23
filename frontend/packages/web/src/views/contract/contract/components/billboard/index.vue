@@ -55,7 +55,14 @@
 
   import { getContractList, getContractStatistic, getContractStatusConfig, sortContract } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useViewStore from '@/store/modules/view';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import {
+    hasContractEndTimeCondition,
+    hasContractEndTimeFilter,
+    withDefaultUnendedContractFilters,
+  } from '../../defaultUnendedContractFilter';
 
   const props = defineProps<{
     advanceFilter?: FilterResult;
@@ -74,6 +81,29 @@
   const { initFormConfig, fieldList } = useFormCreateApi({
     formKey: computed(() => FormDesignKeyEnum.CONTRACT),
   });
+  const viewStore = useViewStore();
+
+  function hasViewEndTimeCondition(viewId?: string) {
+    const activeView = [...viewStore.internalViews, ...viewStore.customViews].find((item) => item.id === viewId);
+    return hasContractEndTimeFilter(activeView?.list) || hasContractEndTimeCondition(activeView);
+  }
+
+  function getStageFilters(stageId: string, advanceFilter?: FilterResult, viewId?: string) {
+    const defaultFilters =
+      hasContractEndTimeCondition(advanceFilter) || hasViewEndTimeCondition(viewId)
+        ? []
+        : withDefaultUnendedContractFilters();
+
+    return [
+      ...defaultFilters,
+      {
+        name: 'stage',
+        value: stageId,
+        multipleValue: false,
+        operator: 'EQUALS',
+      },
+    ];
+  }
 
   const stageConfig = ref<OpportunityStageConfig>();
   async function initStageConfig() {
@@ -100,14 +130,7 @@
       pageSize: params.pageSize,
       keyword: params.keyword,
       combineSearch: params.advanceFilter,
-      filters: [
-        {
-          name: 'stage',
-          value: params.stageId,
-          multipleValue: false,
-          operator: 'EQUALS',
-        },
-      ],
+      filters: getStageFilters(params.stageId, params.advanceFilter, params.viewId),
       board: true,
       viewId: params.viewId,
     });
@@ -117,14 +140,7 @@
     return getContractStatistic({
       keyword: params.keyword,
       combineSearch: params.advanceFilter,
-      filters: [
-        {
-          name: 'stage',
-          value: params.stageId,
-          multipleValue: false,
-          operator: 'EQUALS',
-        },
-      ],
+      filters: getStageFilters(params.stageId, params.advanceFilter, params.viewId),
       viewId: params.viewId,
     }) as Promise<StageBoardStatistic>;
   }

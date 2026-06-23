@@ -5,6 +5,7 @@ import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEn
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatNumberValueToString, transformData } from '@lib/shared/method/formCreate';
+import type { TableQueryParams } from '@lib/shared/models/common';
 import type { CustomFormDetail } from '@lib/shared/models/customForm';
 import type { StageConfigItem } from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
@@ -75,6 +76,7 @@ export interface FormCreateTableProps {
   hiddenRefresh?: boolean;
   enableApproval?: Ref<boolean>;
   customFormId?: Ref<string | undefined>; // 自定义表单id
+  transformLoadListParams?: (params: TableQueryParams) => TableQueryParams;
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -589,7 +591,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         fields: fieldList.value,
         excludeFieldIds: props.excludeFieldIds,
       });
-    }
+    },
+    props.transformLoadListParams
   );
 
   return {

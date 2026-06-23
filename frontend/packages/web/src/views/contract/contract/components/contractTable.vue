@@ -180,7 +180,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
   import { abbreviateNumber, characterLimit } from '@lib/shared/method';
-  import { ExportTableColumnItem } from '@lib/shared/models/common';
+  import type { ExportTableColumnItem, TableQueryParams } from '@lib/shared/models/common';
   import type { ContractItem } from '@lib/shared/models/contract';
   import {
     BatchOperationResult,
@@ -229,10 +229,17 @@
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
   // import useViewChartParams, { STORAGE_VIEW_CHART_KEY, ViewChartResult } from '@/hooks/useViewChartParams';
+  import useViewStore from '@/store/modules/view';
   import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { ContractRouteEnum } from '@/enums/routeEnum';
+
+  import {
+    hasContractEndTimeCondition,
+    hasContractEndTimeFilter,
+    withDefaultUnendedContractFilters,
+  } from '../defaultUnendedContractFilter';
 
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
@@ -250,6 +257,7 @@
   const { openModal } = useModal();
   const { getItem, setItem } = useLocalForage();
   const route = useRoute();
+  const viewStore = useViewStore();
 
   const activeShowType = ref<'table' | 'billboard'>();
   const activeTab = ref();
@@ -421,6 +429,24 @@
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CONTRACT,
   });
+
+  function hasActiveViewEndTimeCondition() {
+    const activeView = [...viewStore.internalViews, ...viewStore.customViews].find(
+      (item) => item.id === activeTab.value
+    );
+    return hasContractEndTimeFilter(activeView?.list) || hasContractEndTimeCondition(activeView);
+  }
+
+  function withDefaultContractTableParams(params: TableQueryParams): TableQueryParams {
+    if (hasContractEndTimeCondition(params.combineSearch) || hasActiveViewEndTimeCondition()) {
+      return params;
+    }
+
+    return {
+      ...params,
+      filters: withDefaultUnendedContractFilters(params.filters),
+    };
+  }
 
   function handleDelete(row: ContractItem) {
     openModal({
@@ -677,6 +703,7 @@
     containerClass: '.crm-contract-table',
     contractStage: stageConfig.value?.stageConfigList || [],
     enableApproval,
+    transformLoadListParams: withDefaultContractTableParams,
   });
   const {
     propsRes,
@@ -695,13 +722,26 @@
   }
 
   const statisticInfo = ref({ amount: 0, averageAmount: 0 });
+  function getContractFilters() {
+    return hasContractEndTimeCondition(advanceFilter) || hasActiveViewEndTimeCondition()
+      ? filterItem.value
+      : withDefaultUnendedContractFilters(filterItem.value);
+  }
+
+  function getContractListParams(searchKeyword = keyword.value) {
+    return {
+      keyword: searchKeyword,
+      viewId: activeTab.value,
+    };
+  }
+
   async function getStatistic(_keyword?: string) {
     try {
       const res = await getContractStatistic({
         keyword: _keyword ?? keyword.value,
         viewId: activeTab.value,
         combineSearch: advanceFilter,
-        filters: filterItem.value,
+        filters: getContractFilters(),
       });
       statisticInfo.value = res;
     } catch (error) {
@@ -741,6 +781,7 @@
   const exportParams = computed(() => {
     return {
       ...tableQueryParams.value,
+      filters: getContractFilters(),
       ids: checkedRowKeys.value,
     };
   });
@@ -827,6 +868,7 @@
     advancedOriginalForm.value = originalForm;
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
+    setLoadListParams(getContractListParams());
     if (activeShowType.value === 'billboard') {
       billboardRef.value?.refresh();
       getStatistic();
@@ -839,7 +881,7 @@
 
   function searchData(val?: string, refreshId?: string) {
     if (!activeTab.value) return;
-    setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
+    setLoadListParams(getContractListParams(val ?? keyword.value));
     if (activeShowType.value === 'billboard') {
       billboardRef.value?.refresh();
       getStatistic(val);
@@ -953,7 +995,7 @@
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value });
+        setLoadListParams(getContractListParams());
         // initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
         getStatistic();

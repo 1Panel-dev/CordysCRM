@@ -13,6 +13,7 @@
     "build:localProd": "vue-tsc --noEmit &&  vite build --config ./config/vite.config.prod.ts --mode localProd",
     "report": "cross-env REPORT=true npm run build",
     "preview": "npm run build && vite preview --host",
+    "test:contract-unended-filter": "node ../../scripts/test-contract-unended-filter.mjs",
     "type:check": "vue-tsc --noEmit --skipLibCheck -p tsconfig.json",
     "lint-staged": "npx lint-staged",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -36,7 +37,7 @@
   },
   "devDependencies": {
     "@types/sortablejs": "^1.15.9",
-    "@vitejs/plugin-legacy": "^8.0.2",
+    "@vitejs/plugin-legacy": "7.2.1",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vitejs/plugin-vue-jsx": "^4.2.0",
     "@vue/babel-plugin-jsx": "^1.5.0",

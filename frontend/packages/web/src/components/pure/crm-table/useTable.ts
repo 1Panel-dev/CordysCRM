@@ -25,7 +25,8 @@ export default function useTable<T>(
   dataTransform?: (
     item: CrmTableDataItem<T>,
     originalData?: CommonList<CrmTableDataItem<T>>
-  ) => CrmTableDataItem<T> | any
+  ) => CrmTableDataItem<T> | any,
+  transformLoadListParams?: (params: TableQueryParams) => TableQueryParams
 ) {
   const defaultProps: CrmTableProps<T> = {
     bordered: false,
@@ -165,6 +166,9 @@ export default function useTable<T>(
         ...loadListParams.value,
         filters: filterItem.value,
       };
+      if (transformLoadListParams) {
+        tableQueryParams.value = transformLoadListParams(tableQueryParams.value);
+      }
       let refreshPage = 0;
       if (refreshId !== undefined) {
         refreshPage = Math.max(
