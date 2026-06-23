@@ -287,6 +287,7 @@
         const executionTimingLabels = [
           row.createExecute ? t('common.create') : '',
           row.updateExecute ? t('common.edit') : '',
+          row.deleteExecute ? t('common.delete') : '',
         ].filter(Boolean);
         return h(CrmNameTooltip, {
           text: executionTimingLabels.join('/') || '-',
