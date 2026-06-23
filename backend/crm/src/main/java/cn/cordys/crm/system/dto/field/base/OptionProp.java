@@ -11,7 +11,12 @@ import lombok.NoArgsConstructor;
 public class OptionProp {
 
     @Schema(description = "值")
-    private String value;
+    private Object value;
     @Schema(description = "文本")
     private String label;
+
+    public OptionProp(String value, String label) {
+        this.value = value;
+        this.label = label;
+    }
 }

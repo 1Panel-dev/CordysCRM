@@ -1051,7 +1051,7 @@ public class ModuleFormService {
         return options.stream().map(option -> {
             OptionDTO optionDTO = new OptionDTO();
             optionDTO.setName(option.getLabel());
-            optionDTO.setId(option.getValue());
+            optionDTO.setId(option.getValue() != null ? option.getValue().toString() : null);
             return optionDTO;
         }).toList();
     }
@@ -1729,7 +1729,9 @@ public class ModuleFormService {
         if (CollectionUtils.isEmpty(options) || value == null) {
             return null;
         }
-        Map<String, String> optionMap = options.stream().collect(Collectors.toMap(OptionProp::getValue, OptionProp::getLabel));
+        Map<String, String> optionMap = options.stream()
+                .filter(option -> option.getValue() != null)
+                .collect(Collectors.toMap(option -> option.getValue().toString(), OptionProp::getLabel, (a, b) -> a));
         if (value instanceof List) {
             return ((List<?>) value).stream().map(v -> optionMap.get(v.toString())).toList();
         } else {
@@ -1748,7 +1750,9 @@ public class ModuleFormService {
         if (CollectionUtils.isEmpty(options) || text == null) {
             return null;
         }
-        Map<String, String> optionMap = options.stream().collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue));
+        Map<String, String> optionMap = options.stream()
+                .filter(option -> option.getValue() != null)
+                .collect(Collectors.toMap(OptionProp::getLabel, option -> option.getValue().toString(), (a, b) -> a));
         if (text instanceof List) {
             return ((List<?>) text).stream().map(v -> optionMap.get(v.toString())).filter(Objects::nonNull).toList();
         } else {

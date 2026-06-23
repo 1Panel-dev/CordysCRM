@@ -37,7 +37,7 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
     @Override
     public Object transformToValue(RadioField radioField, String value) {
         return radioField.getOptions().stream()
-                .filter(option -> Strings.CI.equals(option.getValue(), value))
+                .filter(option -> Strings.CI.equals(String.valueOf(option.getValue()), value))
                 .map(OptionProp::getLabel)
                 .findFirst()
                 .orElse(StringUtils.EMPTY);

@@ -54,8 +54,8 @@ public class PriceLogService extends BaseModuleLogService {
         }
         List<OptionProp> options = ((HasOption) statusField.get()).getOptions();
         differ.setNewValueName(options.stream()
-                .filter(optionProp -> Strings.CS.equals(optionProp.getValue(), differ.getNewValue().toString())).map(OptionProp::getLabel));
+                .filter(optionProp -> optionProp.getValue() != null && Strings.CS.equals(optionProp.getValue().toString(), differ.getNewValue().toString())).map(OptionProp::getLabel));
         differ.setOldValueName(options.stream()
-                .filter(optionProp -> Strings.CS.equals(optionProp.getValue(), differ.getOldValue().toString())).map(OptionProp::getLabel));
+                .filter(optionProp -> optionProp.getValue() != null && Strings.CS.equals(optionProp.getValue().toString(), differ.getOldValue().toString())).map(OptionProp::getLabel));
     }
 }

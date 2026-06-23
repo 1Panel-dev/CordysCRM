@@ -44,7 +44,9 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
         }
         List<String> list = JSON.parseArray(value, String.class);
         List<String> result = new ArrayList<>();
-        Map<String, String> optionValueMap = checkBoxField.getOptions().stream().collect(Collectors.toMap(OptionProp::getValue, OptionProp::getLabel));
+        Map<String, String> optionValueMap = checkBoxField.getOptions().stream()
+                .filter(option -> option.getValue() != null)
+                .collect(Collectors.toMap(option -> option.getValue().toString(), OptionProp::getLabel, (a, b) -> a));
         list.forEach(item -> {
             if (optionValueMap.containsKey(item)) {
                 result.add(optionValueMap.get(item));
@@ -64,7 +66,8 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
                 return StringUtils.EMPTY;
             }
             Map<String, String> optionMap = field.getOptions().stream()
-                    .collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue, (v1, v2) -> v1));
+                    .filter(option -> option.getValue() != null)
+                    .collect(Collectors.toMap(OptionProp::getLabel, option -> option.getValue().toString(), (v1, v2) -> v1));
             List<String> values = texts.stream()
                     .filter(item -> item != null && optionMap.containsKey(item))
                     .map(optionMap::get)

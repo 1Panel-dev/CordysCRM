@@ -131,7 +131,7 @@ public class ContractPaymentRecordExportService extends BaseExportService {
 	private String processInternalOptions(String value, String formKey, String orgId, String internalKey) {
 		List<OptionProp> options = moduleFieldExtService.getFieldOptions(formKey, orgId, internalKey);
 		for (OptionProp option : options) {
-			if (Strings.CS.equals(option.getValue(), value)) {
+			if (option.getValue() != null && Strings.CS.equals(option.getValue().toString(), value)) {
 				return option.getLabel();
 			}
 		}

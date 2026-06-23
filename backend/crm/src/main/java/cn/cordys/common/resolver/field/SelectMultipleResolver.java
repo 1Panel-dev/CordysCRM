@@ -49,7 +49,8 @@ public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMu
             }
 
             Map<String, String> optionValueMap = selectMultipleField.getOptions().stream()
-                    .collect(Collectors.toMap(OptionProp::getValue, OptionProp::getLabel, (a, b) -> a));
+                    .filter(option -> option.getValue() != null)
+                    .collect(Collectors.toMap(option -> option.getValue().toString(), OptionProp::getLabel, (a, b) -> a));
 
             List<String> result = list.stream()
                     .filter(item -> item != null && optionValueMap.containsKey(item))
@@ -75,7 +76,8 @@ public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMu
             }
 
             Map<String, String> optionMap = field.getOptions().stream()
-                    .collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue, (v1, v2) -> v1));
+                    .filter(option -> option.getValue() != null)
+                    .collect(Collectors.toMap(OptionProp::getLabel, option -> option.getValue().toString(), (v1, v2) -> v1));
             List<String> values = texts.stream()
                     .filter(item -> item != null && optionMap.containsKey(item))
                     .map(optionMap::get)
