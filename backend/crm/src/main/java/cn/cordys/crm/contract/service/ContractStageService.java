@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.dto.condition.FilterCondition;
 import cn.cordys.common.dto.stage.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
@@ -16,6 +17,7 @@ import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
+import cn.cordys.crm.system.service.UserViewService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -40,6 +42,8 @@ public class ContractStageService {
     private BaseMapper<ContractStageConfig> contractStageConfigMapper;
     @Resource
     private ExtStageAdvancedConfigMapper extStageAdvancedConfigMapper;
+    @Resource
+    private UserViewService userViewService;
 
     /**
      * 列表
@@ -51,11 +55,11 @@ public class ContractStageService {
         StageConfigsResponse stageConfigListResponse = new StageConfigsResponse();
         List<StageConfigResponse> stageConfigList = extContractStageConfigMapper.getStageConfigList(orgId);
         List<StageAdvancedConfig> advancedConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, FormKey.CONTRACT.getKey());
-        buildList(stageConfigList, stageConfigListResponse, advancedConfigs);
+        buildList(stageConfigList, stageConfigListResponse, advancedConfigs, orgId);
         return stageConfigListResponse;
     }
 
-    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigsResponse response, List<StageAdvancedConfig> advancedConfigs) {
+    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigsResponse response, List<StageAdvancedConfig> advancedConfigs, String orgId) {
         response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
             var first = stageConfigList.getFirst();
@@ -67,7 +71,7 @@ public class ContractStageService {
         if (CollectionUtils.isNotEmpty(advancedConfigs)) {
             Map<String, List<StageAdvancedConfig>> originIdMaps = advancedConfigs.stream().collect(Collectors.groupingBy(StageAdvancedConfig::getOriginId));
             List<CirculationSetting> configs = new ArrayList<>();
-
+            List<CirculationFieldValue> allConfigs = new ArrayList<>();
             originIdMaps.forEach((key, value) -> {
                 CirculationSetting configResponse = new CirculationSetting();
                 List<Target> targetList = new ArrayList<>();
@@ -80,6 +84,7 @@ public class ContractStageService {
                     });
                     target.setCirculationFieldValues(circulationFieldValues);
                     targetList.add(target);
+                    allConfigs.addAll(circulationFieldValues);
                 });
                 configResponse.setTargets(targetList);
                 configResponse.setModuleType(value.getFirst().getModuleType());
@@ -95,8 +100,20 @@ public class ContractStageService {
                     .map(stage -> configMap.get(stage.getId()))
                     .filter(Objects::nonNull)
                     .toList();
-
             response.setAdvancedConfigs(sortedConfigs);
+            List<FilterCondition> combinedConditions = allConfigs.stream()
+                    .map(config -> {
+                        FilterCondition condition = new FilterCondition();
+                        condition.setName(config.getFieldId());
+                        condition.setValue(config.getFieldValue());
+                        return condition;
+                    })
+                    .collect(Collectors.toList());
+
+            if (CollectionUtils.isNotEmpty(combinedConditions)) {
+                response.setOptionMap(userViewService.buildOptionMap(orgId, FormKey.CONTRACT.getKey(), combinedConditions));
+            }
+
         }
     }
 
