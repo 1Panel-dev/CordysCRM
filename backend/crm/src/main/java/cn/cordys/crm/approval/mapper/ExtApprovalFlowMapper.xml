@@ -13,6 +13,7 @@
             af.enable,
             af.create_execute,
             af.update_execute,
+            af.delete_execute,
             af.description,
             af.organization_id,
             af.create_user,
