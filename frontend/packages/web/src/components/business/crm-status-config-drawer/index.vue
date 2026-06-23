@@ -440,6 +440,33 @@
   const drawerLoading = ref(false);
   const flowConfigurationType = ref<CirculationTypeEnum>(CirculationTypeEnum.NORMAL);
 
+  function initAdvanceConfig() {
+    flowConfigurationType.value = form.value.circulationType;
+    if (!form.value.advancedConfigs?.length) {
+      form.value.advancedConfigs = form.value.list.map((e) => ({
+        ...e,
+        originId: e.id!,
+        targets: [
+          {
+            targetId: e.id!,
+            circulationFieldValues: [],
+            enable: true,
+          },
+        ],
+        moduleType: '',
+      }));
+    } else {
+      form.value.advancedConfigs = form.value.advancedConfigs.map((e) => {
+        const stage = form.value.list.find((s) => s.id === e.originId);
+        return {
+          ...e,
+          name: stage?.name,
+          type: stage?.type,
+        };
+      });
+    }
+  }
+
   watch(
     () => show.value,
     async (val) => {
@@ -447,34 +474,30 @@
         drawerLoading.value = true;
         await init();
         drawerLoading.value = false;
-        flowConfigurationType.value = form.value.circulationType;
-        if (!form.value.advancedConfigs?.length) {
-          form.value.advancedConfigs = form.value.list.map((e) => ({
-            ...e,
-            originId: e.id!,
-            targets: [
-              {
-                targetId: e.id!,
-                circulationFieldValues: [],
-                enable: true,
-              },
-            ],
-            moduleType: '',
-          }));
-        } else {
-          form.value.advancedConfigs = form.value.advancedConfigs.map((e) => {
-            const stage = form.value.list.find((s) => s.id === e.originId);
-            return {
-              ...e,
-              name: stage?.name,
-              type: stage?.type,
-            };
-          });
-        }
+        initAdvanceConfig();
       } else {
         tabName.value = 'statusConfig';
       }
     }
+  );
+
+  watch(
+    () => form.value.list,
+    (arr) => {
+      form.value.advancedConfigs = arr.map((e) => ({
+        ...e,
+        originId: e.id!,
+        targets: form.value.advancedConfigs.find((ac) => ac.originId === e.id)?.targets || [
+          {
+            targetId: e.id!,
+            circulationFieldValues: [],
+            enable: true,
+          },
+        ],
+        moduleType: '',
+      }));
+    },
+    { deep: true }
   );
 
   const loading = ref(false);
@@ -573,10 +596,28 @@
       // 初始化未初始化过的字段属性
       const currentFlow = row.targets.find((e) => e.targetId === col.id);
       if (currentFlow && currentFlow.circulationFieldValues.some((e) => e.fieldProps === undefined)) {
-        currentFlow.circulationFieldValues = currentFlow.circulationFieldValues.map((v) => ({
-          ...v,
-          fieldProps: fieldList.value.find((f) => f.id === v.fieldId),
-        }));
+        currentFlow.circulationFieldValues = currentFlow.circulationFieldValues.map((v) => {
+          const field = fieldList.value.find((f) => f.id === v.fieldId);
+          if (field) {
+            const options = form.value.optionMap?.[field.id]?.map((e: Record<string, any>) => ({
+              id: e.id,
+              name: e.name || t('common.optionNotExist'),
+            }));
+            if (options && options.length > 0) {
+              field.initialOptions = options
+                ?.filter((e) => v.fieldValue.includes(e.id))
+                .map((e) => ({
+                  ...e,
+                  name: e.name || t('common.optionNotExist'),
+                }));
+            }
+            return {
+              ...v,
+              fieldProps: field,
+            };
+          }
+          return v;
+        });
         tempCirculationFieldValues.value = cloneDeep(currentFlow.circulationFieldValues);
       } else {
         tempCirculationFieldValues.value = currentFlow?.circulationFieldValues || [];
