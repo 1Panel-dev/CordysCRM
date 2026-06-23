@@ -37,6 +37,7 @@ export default function useStageConfig(type: Ref<StatusBizType>): UseStatusConfi
     list: [],
     circulationType: CirculationTypeEnum.NORMAL,
     advancedConfigs: [],
+    optionMap: {},
   });
 
   function createEmptyRow(): StatusRowItem {
@@ -101,6 +102,7 @@ export default function useStageConfig(type: Ref<StatusBizType>): UseStatusConfi
       })),
       circulationType: res.circulationType,
       advancedConfigs: res.advancedConfigs,
+      optionMap: res.optionMap,
     };
   }
 

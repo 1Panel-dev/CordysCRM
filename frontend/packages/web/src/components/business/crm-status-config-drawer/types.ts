@@ -26,6 +26,7 @@ export interface StatusFormModel {
   list: StatusRowItem[];
   circulationType: CirculationTypeEnum;
   advancedConfigs: CirculationSetting[];
+  optionMap?: Record<string, any[]>;
 }
 
 export interface StatusSwitchConfigItem {

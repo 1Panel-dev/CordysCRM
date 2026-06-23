@@ -129,6 +129,7 @@ export interface OpportunityStageConfig {
   stageHasData: boolean;
   circulationType: CirculationTypeEnum;
   advancedConfigs: CirculationSetting[];
+  optionMap?: Record<string, any[]>;
 }
 
 export interface QuotationQueryParams extends TableQueryParams {
