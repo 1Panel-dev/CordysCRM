@@ -908,7 +908,12 @@ public class ContractService implements ApprovalResourceHandler {
                     }
                 }
             });
-            postFieldParam.getFields().addAll(fields);
+            List<ResourceApprovalFieldUpdateParam> newFields =
+                    Optional.ofNullable(postFieldParam.getFields())
+                            .map(ArrayList::new)
+                            .orElseGet(ArrayList::new);
+            newFields.addAll(fields);
+            postFieldParam.setFields(newFields);
         }
     }
 
