@@ -528,6 +528,11 @@
 .n-input__textarea-el {
   word-break: break-all !important;
 }
+.n-input.n-input--textarea:has(.n-input-word-count) {
+  .n-input-wrapper {
+    padding-bottom: 16px;
+  }
+}
 // 表单
 .n-form-item-blank {
   @apply flex-wrap;
