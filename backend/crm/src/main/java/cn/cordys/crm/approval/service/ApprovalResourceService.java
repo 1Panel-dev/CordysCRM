@@ -49,6 +49,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.scheduling.annotation.Async;
@@ -359,29 +360,30 @@ public class ApprovalResourceService {
         }
     }
 
-	/**
-	 * 审批后置字段更新
-	 * @param formKey 表单Key
-	 * @param resourceId 资源ID
-	 * @param postConfig 后置配置
-	 */
-	public void updateApprovalPostField(FormKey formKey, String resourceId, String postConfig, String currentUserId) {
-		if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
-			return;
-		}
-		List<ResourceApprovalFieldUpdateParam> fields = getUpdateFieldOfPostConfig(postConfig);
-		fields = fields.stream().filter(ResourceApprovalFieldUpdateParam::isEnable).filter(f -> f.getFieldValue() != null).toList();
-		if (CollectionUtils.isEmpty(fields)) {
-			return;
-		}
-		try {
-			ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
-			ResourceApprovalPostUpdateParam postUpdateParam = ResourceApprovalPostUpdateParam.builder().fields(fields).resourceId(resourceId).operator(currentUserId).build();
-			handler.updateApprovalPostField(postUpdateParam);
-		} catch (Exception e) {
-			log.error("更新业务数据失败", e);
-		}
-	}
+    /**
+     * 审批后置字段更新
+     *
+     * @param formKey    表单Key
+     * @param resourceId 资源ID
+     * @param postConfig 后置配置
+     */
+    public void updateApprovalPostField(FormKey formKey, String resourceId, String postConfig, String currentUserId) {
+        if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+            return;
+        }
+        List<ResourceApprovalFieldUpdateParam> fields = getUpdateFieldOfPostConfig(postConfig);
+        fields = fields.stream().filter(ResourceApprovalFieldUpdateParam::isEnable).filter(f -> f.getFieldValue() != null).toList();
+        if (CollectionUtils.isEmpty(fields)) {
+            return;
+        }
+        try {
+            ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
+            ResourceApprovalPostUpdateParam postUpdateParam = ResourceApprovalPostUpdateParam.builder().fields(fields).resourceId(resourceId).operator(currentUserId).build();
+            handler.updateApprovalPostField(postUpdateParam);
+        } catch (Exception e) {
+            log.error("更新业务数据失败", e);
+        }
+    }
 
     /**
      * 获取审批流字段更新配置
@@ -476,8 +478,8 @@ public class ApprovalResourceService {
     /**
      * 初始化审批实例
      *
-     * @param flow          审批流
-     * @param param         参数
+     * @param flow  审批流
+     * @param param 参数
      * @return 审批实例
      */
     private ApprovalInstance initInstance(ApprovalFlow flow, ApprovalPushParam param) {
@@ -663,12 +665,12 @@ public class ApprovalResourceService {
         }
         if (webHookConfig != null && webHookConfig.getWebHookEnable()) {
             switch (webHookConfig.getWebHookMethod()) {
-                case "POST":
-                    sendPost(webHookConfig, formConfig.getFields(), fieldValues, false);
-                case "GET":
-                    sendGet(webHookConfig, formConfig.getFields(), fieldValues, false);
-                default:
-                    break;
+                case "POST" ->
+                        sendPost(webHookConfig, formConfig.getFields(), fieldValues, false, instance.getResourceId());
+                case "GET" ->
+                        sendGet(webHookConfig, formConfig.getFields(), fieldValues, false, instance.getResourceId());
+                default -> {
+                }
             }
         }
     }
@@ -683,7 +685,7 @@ public class ApprovalResourceService {
      * @param isTest
      * @return
      */
-    private HashMap<String, Object> sendGet(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, Boolean isTest) {
+    private HashMap<String, Object> sendGet(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, Boolean isTest, String resourceId) {
         Map<String, String> headers = new HashMap<>();
         String url = "";
         try {
@@ -691,11 +693,12 @@ public class ApprovalResourceService {
                 headers = JSON.parseMap(webHookConfig.getWebHookHeader());
             }
             if (!isTest) {
-                url = getDataParse(webHookConfig, moduleFields, fieldValues);
+                url = getDataParse(webHookConfig, moduleFields, fieldValues, resourceId);
             }
             log.info("GET请求原始参数：{}", webHookConfig.getWebHookUrl());
             log.info("GET请求解析参数：{}", url);
             String body = HttpClientUtils.sendGetRequest(StringUtils.isNotBlank(url) ? url : webHookConfig.getWebHookUrl(), headers);
+            log.info("GET请求webhook返回result：{}",body);
             return JSON.parseObject(body, new TypeReference<HashMap<String, Object>>() {
             });
         } catch (Exception e) {
@@ -712,7 +715,7 @@ public class ApprovalResourceService {
      * @param fieldValues
      * @return
      */
-    private String getDataParse(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues) {
+    private String getDataParse(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, String resourceId) {
         Pattern pattern = Pattern.compile("\\$\\{([^}]+)}");
         Matcher matcher = pattern.matcher(webHookConfig.getWebHookUrl());
         StringBuffer sb = new StringBuffer();
@@ -722,7 +725,8 @@ public class ApprovalResourceService {
                     placeholder.split("\\."),
                     1,
                     moduleFields,
-                    fieldValues
+                    fieldValues,
+                    resourceId
             );
 
             String param = URLEncoder.encode(String.valueOf(value), StandardCharsets.UTF_8);
@@ -745,7 +749,7 @@ public class ApprovalResourceService {
      * @param isTest
      * @return
      */
-    private HashMap<String, Object> sendPost(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, Boolean isTest) {
+    private HashMap<String, Object> sendPost(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, Boolean isTest, String resourceId) {
         Map<String, String> headers = new HashMap<>();
         String queryBody = "";
         try {
@@ -753,11 +757,14 @@ public class ApprovalResourceService {
                 headers = JSON.parseMap(webHookConfig.getWebHookHeader());
             }
             if (!isTest) {
-                queryBody = postDataParse(webHookConfig, moduleFields, fieldValues);
+                queryBody = postDataParse(webHookConfig, moduleFields, fieldValues, resourceId);
+            } else {
+                queryBody = webHookConfig.getWebHookBody();
             }
             log.info("POST请求原始参数：{}", webHookConfig.getWebHookBody());
             log.info("POST请求解析参数：{}", queryBody);
             String body = HttpClientUtils.sendPostRequest(webHookConfig.getWebHookUrl(), queryBody, headers);
+            log.info("POST请求webhook返回result：{}", body);
             return JSON.parseObject(body, new TypeReference<HashMap<String, Object>>() {
             });
         } catch (Exception e) {
@@ -774,11 +781,11 @@ public class ApprovalResourceService {
      * @param fieldValues
      * @throws Exception
      */
-    private String postDataParse(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues) throws Exception {
+    private String postDataParse(WebHookConfig webHookConfig, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, String resourceId) throws Exception {
         String webHookBody = webHookConfig.getWebHookBody();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(webHookBody);
-        replacePlaceholders(rootNode, moduleFields, fieldValues);
+        replacePlaceholders(rootNode, moduleFields, fieldValues, resourceId);
         String resultJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
         return resultJson;
     }
@@ -791,7 +798,7 @@ public class ApprovalResourceService {
      * @param moduleFields
      * @param fieldValues
      */
-    private static void replacePlaceholders(JsonNode node, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues) {
+    private static void replacePlaceholders(JsonNode node, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, String resourceId) {
         if (node.isObject()) {
             ObjectNode objNode = (ObjectNode) node;
             Iterator<Map.Entry<String, JsonNode>> fields = objNode.fields();
@@ -800,7 +807,7 @@ public class ApprovalResourceService {
                 JsonNode childNode = entry.getValue();
                 if (childNode.isTextual()) {
                     String text = childNode.asText();
-                    Object value = replaceText(text, moduleFields, fieldValues);
+                    Object value = replaceText(text, moduleFields, fieldValues, resourceId);
                     if (value instanceof Integer) {
                         objNode.put(entry.getKey(), (Integer) value);
                     } else if (value instanceof Long) {
@@ -810,6 +817,8 @@ public class ApprovalResourceService {
                     } else {
                         objNode.put(entry.getKey(), String.valueOf(value));
                     }
+                } else {
+                    replacePlaceholders(childNode, moduleFields, fieldValues, resourceId);
                 }
             }
         }
@@ -824,15 +833,15 @@ public class ApprovalResourceService {
      * @param fieldValues
      * @return
      */
-    private static Object replaceText(String text, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues) {
+    private static Object replaceText(String text, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, String resourceId) {
         Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
             String placeholder = matcher.group(1);
             String[] parts = placeholder.split("\\.");
-            return getFieldValueRecursive(parts, 1, moduleFields, fieldValues);
+            return getFieldValueRecursive(parts, 1, moduleFields, fieldValues, resourceId);
         }
-        return null;
+        return text;
     }
 
 
@@ -845,11 +854,14 @@ public class ApprovalResourceService {
      * @param fieldValues
      * @return
      */
-    private static Object getFieldValueRecursive(String[] parts, int index, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues) {
+    private static Object getFieldValueRecursive(String[] parts, int index, List<BaseField> moduleFields, List<BaseModuleFieldValue> fieldValues, String resourceId) {
         if (index >= parts.length || moduleFields == null || moduleFields.isEmpty()) {
             return null;
         }
         String key = parts[index];
+        if (Strings.CI.equals(key, "id")) {
+            return resourceId;
+        }
         // 找到当前层级的字段
         BaseField field = moduleFields.stream()
                 .filter(f -> Strings.CI.equals(f.getName(), key))
@@ -925,15 +937,17 @@ public class ApprovalResourceService {
             ssrfValidationService.validate(webHookConfig.getWebHookUrl());
             switch (webHookConfig.getWebHookMethod()) {
                 case "POST":
-                    resultObj = sendPost(webHookConfig, null, null, true);
-                    if (!Strings.CI.equals(resultObj.get("code").toString(), "200")) {
+                    resultObj = sendPost(webHookConfig, null, null, true, null);
+                    if (MapUtils.isEmpty(resultObj)) {
                         throw new GenericException("测试连接不通过");
                     }
+                    break;
                 case "GET":
-                    resultObj = sendGet(webHookConfig, null, null, true);
-                    if (!Strings.CI.equals(resultObj.get("code").toString(), "200")) {
+                    resultObj = sendGet(webHookConfig, null, null, true, null);
+                    if (MapUtils.isEmpty(resultObj)) {
                         throw new GenericException("测试连接不通过");
                     }
+                    break;
                 default:
                     break;
             }
