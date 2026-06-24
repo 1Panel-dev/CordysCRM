@@ -62,7 +62,7 @@
                   size="small"
                   type="default"
                   class="outline--secondary mr-[8px] px-[8px]"
-                  @click="handleSyncDE()"
+                  @click="handleSyncDE(item)"
                 >
                   {{ t('common.sync') }}
                 </n-button>
@@ -181,7 +181,7 @@
                   size="small"
                   type="default"
                   class="outline--secondary mr-[8px] px-[8px]"
-                  @click="handleSyncDE()"
+                  @click="handleSyncDE(item)"
                 >
                   {{ t('common.sync') }}
                 </n-button>
@@ -639,13 +639,18 @@
   function handleEdit(item: IntegrationItem) {
     if (item.type === 'DE' && !licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
       openModal(licenseStore.getNoLicenseModalConfig());
+      return;
     }
     currentTitle.value = item.title;
     currentIntegration.value = { ...item };
     showEditIntegrationModal.value = true;
   }
 
-  async function handleSyncDE() {
+  async function handleSyncDE(item: IntegrationItem) {
+    if (item.type === 'DE' && !licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+      openModal(licenseStore.getNoLicenseModalConfig());
+      return;
+    }
     try {
       loading.value = true;
       await syncDE();

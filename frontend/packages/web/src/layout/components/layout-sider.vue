@@ -103,6 +103,7 @@
   import personalExportDrawer from '@/views/system/business/components/personalExportDrawer.vue';
 
   import useMenuTree from '@/hooks/useMenuTree';
+  import useModal from '@/hooks/useModal';
   import useUser from '@/hooks/useUser';
   import useVisit from '@/hooks/useVisit';
   import type { AppRouteRecordRaw } from '@/router/routes/types';
@@ -128,6 +129,7 @@
 
   const { logout } = useUser();
 
+  const { openModal } = useModal();
   const { t } = useI18n();
   const appStore = useAppStore();
   const userStore = useUserStore();
@@ -256,6 +258,17 @@
   async function menuChange(key: string, item: MenuOption) {
     const routeItem = item as unknown as AppRouteRecordRaw;
     const name = routeItem.meta?.hideChildrenInMenu ? getFirstRouterNameByCurrentRoute(routeItem.name as string) : key;
+    if (
+      name === DashboardRouteEnum.DASHBOARD_INDEX &&
+      !licenseStore.hasLicense() &&
+      licenseStore.isEnterpriseVersion()
+    ) {
+      openModal(licenseStore.getNoLicenseModalConfig());
+      nextTick(() => {
+        menuValue.value = router.currentRoute.value.name as string;
+      });
+      return;
+    }
     await router.push({ name });
     if (isRequiredExportRoute(key as OpportunityRouteEnum | ClueRouteEnum | CustomerRouteEnum)) {
       initExportPop();
