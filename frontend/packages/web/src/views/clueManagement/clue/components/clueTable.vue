@@ -650,7 +650,7 @@
   ]);
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
-    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[])
+    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)
   );
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();

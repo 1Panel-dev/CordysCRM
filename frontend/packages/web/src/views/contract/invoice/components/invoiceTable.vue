@@ -389,7 +389,7 @@
 
   await initApprovalPermission();
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.isContractTab ? FormDesignKeyEnum.CONTRACT_INVOICE : FormDesignKeyEnum.INVOICE,
     operationColumn: {
       key: 'operation',
@@ -476,7 +476,7 @@
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
-    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], [], true)
+    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)
   );
 
   const exportParams = computed(() => {
