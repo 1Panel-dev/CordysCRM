@@ -99,6 +99,9 @@
   );
 
   const isDisabledStage = (stage: string) => {
+    if (currentStatus.value === stage) {
+      return true;
+    }
     const targetStage = currentStageConfig.value?.targets.find((e) => e.targetId === stage);
     if (props.stageConfig?.circulationType === CirculationTypeEnum.ADVANCED && currentStageConfig) {
       return !targetStage?.enable;

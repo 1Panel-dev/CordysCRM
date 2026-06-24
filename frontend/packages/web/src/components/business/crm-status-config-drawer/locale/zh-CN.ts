@@ -18,6 +18,7 @@ export default {
   'crmStatusConfigDrawer.fieldValue': '字段值',
   'crmStatusConfigDrawer.addField': '添加字段',
   'crmStatusConfigDrawer.field': '字段',
+  'crmStatusConfigDrawer.fieldDefaultValueTip': '使用字段当前值',
   'crmStatusConfigDrawer.typeChangeTip': '切换模式后，当前模式配置将丢失，切换后的模式将成为生效规则，是否确认切换？',
   'crmStatusConfigDrawer.flowDisabledTip': '「{f}」不允许流转至「{t}」，请联系管理员进行流转配置',
 };

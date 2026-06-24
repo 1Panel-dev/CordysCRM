@@ -92,10 +92,21 @@
   });
 
   const formRef = ref<FormInst>();
-  const { formKey } = toRefs(props);
+  const { formKey, sourceId } = toRefs(props);
 
-  const { fieldList, formConfig, formDetail, originFormDetail, loading, initFormConfig, initForm } = useFormCreateApi({
+  const {
+    fieldList,
+    formConfig,
+    formDetail,
+    originFormDetail,
+    loading,
+    initFormConfig,
+    initFormDetail,
+    initForm,
+    resetForm,
+  } = useFormCreateApi({
     formKey,
+    sourceId,
   });
 
   const realFields = ref<FormCreateField[]>([]);
@@ -109,8 +120,8 @@
             rules.push({
               key: FieldRuleEnum.REQUIRED,
               required: true,
-              message: 'common.notNull',
-              label: 'common.required',
+              message: t('common.notNull', { value: field.name }),
+              label: t('common.required'),
               trigger: ['change', 'blur'],
               type: getRuleType(field),
             });
@@ -119,7 +130,10 @@
           }
           return {
             ...field,
-            defaultValue: cf.valueType === CirculationValueTypeEnum.FIXED_VALUE ? cf.fieldValue : field.defaultValue,
+            defaultValue:
+              cf.valueType === CirculationValueTypeEnum.FIXED_VALUE
+                ? cf.fieldValue
+                : formDetail.value[field.businessKey || field.id],
             fieldWidth: 1,
             rules,
           };
@@ -134,11 +148,14 @@
     async (val) => {
       if (val) {
         await initFormConfig();
+        initFormDetail();
         initForm();
         initRealFields();
         if (props.formKey === FormDesignKeyEnum.CONTRACT && props.to.id === 'VOID') {
           formDetail.value.voidReason = '';
         }
+      } else {
+        resetForm();
       }
     }
   );
