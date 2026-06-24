@@ -4,6 +4,7 @@
       ref="crmTableRef"
       v-bind="propsRes"
       class="crm-plan-table"
+      :columns="tableColumns"
       :not-show-table="activeShowType === 'timeline'"
       :action-config="{ baseAction: [] }"
       @page-change="propsEvent.pageChange"
@@ -69,10 +70,33 @@
                 <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
                   {{ t('common.detail') }}
                 </n-button>
-                <n-button type="primary" class="text-btn-primary" quaternary @click="handleEdit(item)">
+                <n-button
+                  v-if="
+                    isOwner(item) && [CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) && !item.converted
+                  "
+                  type="primary"
+                  class="text-btn-primary"
+                  quaternary
+                  @click="handleConvert(item)"
+                >
+                  {{ t('common.convertPlanToRecord') }}
+                </n-button>
+                <n-button
+                  v-if="isOwner(item)"
+                  type="primary"
+                  class="text-btn-primary"
+                  quaternary
+                  @click="handleEdit(item)"
+                >
                   {{ t('common.edit') }}
                 </n-button>
-                <n-button type="error" class="text-btn-error" quaternary @click="handleDelete(item.id)">
+                <n-button
+                  v-if="isOwner(item)"
+                  type="error"
+                  class="text-btn-error"
+                  quaternary
+                  @click="handleDelete(item.id)"
+                >
                   {{ t('common.delete') }}
                 </n-button>
               </div>
@@ -94,9 +118,12 @@
 
     <CrmFormCreateDrawer
       v-model:visible="formDrawerVisible"
-      :form-key="FormDesignKeyEnum.FOLLOW_PLAN"
+      :form-key="realFormKey"
       :source-id="realFollowSourceId"
-      need-init-detail
+      :need-init-detail="needInitDetail"
+      :link-form-info="linkFormFieldMap"
+      :link-form-key="linkFormKey"
+      :link-scenario="linkScenario"
       :other-save-params="otherFollowRecordSaveParams"
       @saved="handleAfterSave"
     />
@@ -106,8 +133,11 @@
       :source-id="sourceId"
       :source-name="sourceName"
       :refresh-key="refreshKey"
+      :detail="activeItem"
+      :readonly="!isOwner(activeItem)"
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
+      @convert="(detail) => handleConvert(detail)"
     />
   </CrmCard>
 </template>
@@ -117,7 +147,7 @@
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import { EQUAL, NOT_EQUAL } from '@/components/pure/crm-advance-filter/index';
@@ -140,12 +170,15 @@
 
   import { deleteFollowPlan, updateFollowPlanStatus } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
+  import useUserStore from '@/store/modules/user';
 
   const { t } = useI18n();
+  const userStore = useUserStore();
   const Message = useMessage();
   const { setItem, getItem } = useLocalForage();
   const { goDetail } = useOpenDetailPage();
@@ -206,6 +239,11 @@
       label: t('common.delete'),
       key: 'delete',
     },
+    {
+      label: 'more',
+      key: 'more',
+      slotName: 'more',
+    },
   ];
 
   const tableRefreshId = ref(0);
@@ -229,6 +267,7 @@
   const sourceName = ref('');
   const showDetailDrawer = ref(false);
   const activeItem = ref<any>();
+  const isOwner = (item?: any) => item?.owner === userStore.userInfo.id;
 
   function handleDetail(row: any) {
     sourceId.value = row.id;
@@ -266,17 +305,82 @@
     converted: false,
   });
   const realFollowSourceId = ref<string | undefined>('');
+
+  const followFormKeyMap = {
+    [FormDesignKeyEnum.CUSTOMER]: {
+      followRecord: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
+      followPlan: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
+    },
+    [FormDesignKeyEnum.BUSINESS]: {
+      followRecord: FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS,
+      followPlan: FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS,
+    },
+    [FormDesignKeyEnum.CLUE]: {
+      followRecord: FormDesignKeyEnum.FOLLOW_RECORD_CLUE,
+      followPlan: FormDesignKeyEnum.FOLLOW_PLAN_CLUE,
+    },
+  } as const;
+
+  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
+  function getApiKey(item: any) {
+    if (item.clueId?.length || item.resourceType === 'CLUE') {
+      return FormDesignKeyEnum.CLUE;
+    }
+    if (item.opportunityId?.length && item.customerId?.length) {
+      return FormDesignKeyEnum.BUSINESS;
+    }
+    return FormDesignKeyEnum.CUSTOMER;
+  }
+
+  const linkScenario = ref(FormLinkScenarioEnum.PLAN_TO_RECORD);
+  const activePlan = ref();
+  const isConverted = ref(false);
+
+  const needInitDetail = ref(false);
+  const planNeedInitDetail = ref(false);
+  const linkFormKey = ref(FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER);
+
+  const linkSourceId = computed(() => {
+    if (linkScenario.value !== FormLinkScenarioEnum.PLAN_TO_RECORD) {
+      return realFollowSourceId.value;
+    }
+    return activePlan.value?.id;
+  });
+
+  const { fieldList, formDetail, initFormDetail, initFormConfig, linkFormFieldMap, saveForm } = useFormCreateApi({
+    formKey: computed(() => linkFormKey.value),
+    sourceId: linkSourceId,
+    needInitDetail: computed(() => planNeedInitDetail.value),
+    otherSaveParams: computed(() => otherFollowRecordSaveParams.value),
+  });
+
   function handleEdit(item: any) {
+    realFormKey.value =
+      followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.followPlan ?? realFormKey.value;
     realFollowSourceId.value = item.id;
+    needInitDetail.value = true;
     formDrawerVisible.value = true;
+    isConverted.value = false;
     otherFollowRecordSaveParams.value.converted = item.converted;
   }
 
-  function handleAfterSave() {
-    if (showDetailDrawer.value) {
-      refreshKey.value += 1;
+  async function handleConvert(item: any) {
+    if (![CustomerFollowPlanStatusEnum.COMPLETED].includes(item.status) || item.converted) {
+      return;
     }
-    tableRefreshId.value += 1;
+    linkScenario.value = FormLinkScenarioEnum.PLAN_TO_RECORD;
+    activePlan.value = item;
+    isConverted.value = true;
+    otherFollowRecordSaveParams.value.converted = isConverted.value;
+    realFollowSourceId.value = '';
+    realFormKey.value =
+      followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.followRecord ?? realFormKey.value;
+    linkFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER;
+    needInitDetail.value = false;
+    planNeedInitDetail.value = false;
+    await initFormConfig();
+    await initFormDetail(false, true);
+    formDrawerVisible.value = true;
   }
 
   function handleActionSelect(row: any, actionKey: string) {
@@ -289,6 +393,9 @@
         break;
       case 'edit':
         handleEdit(row);
+        break;
+      case 'convert':
+        handleConvert(row);
         break;
       default:
         break;
@@ -303,11 +410,27 @@
       key: 'operation',
       width: 140,
       fixed: 'right',
-      render: (row: any) =>
-        h(CrmOperationButton, {
-          groupList: operationGroupList,
+      render: (row: any) => {
+        const showConvert =
+          isOwner(row) && [CustomerFollowPlanStatusEnum.COMPLETED].includes(row.status) && !row.converted;
+        return h(CrmOperationButton, {
+          groupList: operationGroupList.filter((item) => {
+            if (item.key === 'detail') return true;
+            if (!isOwner(row)) return false;
+            if (item.key === 'more') return showConvert;
+            return true;
+          }),
+          moreList: showConvert
+            ? [
+                {
+                  label: t('common.convertPlanToRecord'),
+                  key: 'convert',
+                },
+              ]
+            : undefined,
           onSelect: (key: string) => handleActionSelect(row, key),
-        }),
+        });
+      },
     },
     specialRender: {
       name: (row: any) => {
@@ -327,7 +450,7 @@
       status: (row: any) => {
         return h(StatusTagSelect, {
           'status': row.status,
-          'disabled': !!row.converted,
+          'disabled': !!row.converted || !isOwner(row),
           'onUpdate:status': (val) => {
             row.status = val;
           },
@@ -339,6 +462,20 @@
     },
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const tableColumns = computed(() =>
+    propsRes.value.columns.map((column) =>
+      column.key === 'operation'
+        ? {
+            ...column,
+            width: [CustomerFollowPlanStatusEnum.COMPLETED, CustomerFollowPlanStatusEnum.ALL].includes(
+              activeStatus.value
+            )
+              ? 190
+              : 140,
+          }
+        : column
+    )
+  );
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);
@@ -428,6 +565,47 @@
     ) {
       propsEvent.value.pageChange(propsRes.value.crmPagination.page + 1);
     }
+  }
+
+  async function updatePlan() {
+    linkFormKey.value = followFormKeyMap[getApiKey(activePlan.value) as keyof typeof followFormKeyMap]
+      ?.followPlan as FormDesignKeyEnum;
+    planNeedInitDetail.value = true;
+    await initFormConfig();
+    await initFormDetail();
+    fieldList.value.forEach((item) => {
+      if (
+        [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(item.type) &&
+        Array.isArray(formDetail.value[item.id])
+      ) {
+        formDetail.value[item.id] = formDetail.value[item.id]?.[0];
+      }
+    });
+    await saveForm(formDetail.value, false, () => ({}), true);
+    planNeedInitDetail.value = false;
+    isConverted.value = false;
+    otherFollowRecordSaveParams.value.converted = isConverted.value;
+    formDrawerVisible.value = false;
+  }
+
+  async function handleAfterSave() {
+    if (isConverted.value) {
+      try {
+        await updatePlan();
+        showDetailDrawer.value = false;
+        tableRefreshId.value += 1;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      } finally {
+        planNeedInitDetail.value = false;
+      }
+      return;
+    }
+    if (showDetailDrawer.value) {
+      refreshKey.value += 1;
+    }
+    tableRefreshId.value += 1;
   }
 </script>
 

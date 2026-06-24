@@ -42,6 +42,9 @@
             <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
               {{ t('common.detail') }}
             </n-button>
+            <n-button v-if="isOwner(item)" type="primary" class="text-btn-primary" quaternary @click="handleEdit(item)">
+              {{ t('common.edit') }}
+            </n-button>
             <n-button
               v-if="
                 props.activeType === 'followPlan' &&
@@ -55,22 +58,6 @@
               @click="handleConvert(item)"
             >
               {{ t('common.convertPlanToRecord') }}
-            </n-button>
-            <n-button
-              v-if="
-                (props.activeType === 'followRecord' && isOwner(item)) ||
-                (props.activeType === 'followPlan' &&
-                  ![CustomerFollowPlanStatusEnum.CANCELLED, CustomerFollowPlanStatusEnum.CANCELLED].includes(
-                    item.status
-                  ) &&
-                  isOwner(item))
-              "
-              type="primary"
-              class="text-btn-primary"
-              quaternary
-              @click="handleEdit(item)"
-            >
-              {{ t('common.edit') }}
             </n-button>
             <n-button v-if="isOwner(item)" type="error" class="text-btn-error" quaternary @click="handleDelete(item)">
               {{ t('common.delete') }}
@@ -109,8 +96,10 @@
       :source-name="sourceName"
       :refresh-key="refreshDetailKey"
       :readonly="!detailIsOwner"
+      :detail="activeItem"
       @delete="handleDelete(activeItem as FollowDetailItem)"
       @edit="handleEdit(activeItem as FollowDetailItem)"
+      @convert="(activeItem)=>handleConvert(activeItem as FollowDetailItem)"
     />
     />
   </div>
@@ -379,15 +368,16 @@
     await saveForm(formDetail.value, false, () => ({}), true);
     isConverted.value = false;
     otherFollowRecordSaveParams.value.converted = isConverted.value;
-    loadFollowList();
   }
 
-  function handleAfterSave() {
+  async function handleAfterSave() {
     if (isConverted.value) {
-      updatePlan();
-    } else {
+      await updatePlan();
+      showDetailDrawer.value = false;
       loadFollowList();
+      return;
     }
+    loadFollowList();
     if (showDetailDrawer.value) {
       refreshDetailKey.value += 1;
     }

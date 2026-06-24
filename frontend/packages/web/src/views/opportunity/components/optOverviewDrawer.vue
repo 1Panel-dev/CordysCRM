@@ -211,8 +211,8 @@
 
     if (isSuccess.value) {
       return hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])
-        ? [...editAction, ...deleteAction]
-        : [...deleteAction];
+        ? [...editAction, ...transferAction, ...deleteAction]
+        : [...transferAction, ...deleteAction];
     }
 
     return [...editAction, ...transferAction, ...deleteAction];

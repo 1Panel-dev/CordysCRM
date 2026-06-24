@@ -42,7 +42,6 @@
             <div v-if="!props.readonly && isOwner(item)" class="flex items-center gap-[16px]">
               <CrmTextButton icon="iconicon_delete" color="var(--error-red)" icon-size="16px" @click="emit('delete')" />
               <CrmTextButton
-                v-if="!isPlan || (isPlan && item.status !== CustomerFollowPlanStatusEnum.CANCELLED)"
                 icon="iconicon_handwritten_signature"
                 color="var(--primary-8)"
                 icon-size="16px"
