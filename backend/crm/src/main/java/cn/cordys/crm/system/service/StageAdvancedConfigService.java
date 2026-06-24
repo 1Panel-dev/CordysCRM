@@ -5,6 +5,7 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.stage.CirculationSetting;
 import cn.cordys.common.dto.stage.StageAdvancedConfigRequest;
@@ -50,7 +51,7 @@ public class StageAdvancedConfigService {
         STAGE_CONFIG_TABLE.put(FormKey.CONTRACT.getKey(), "contract_stage_config");
     }
 
-    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
+
     public void saveAdvancedConfig(StageAdvancedConfigRequest request, String moduleType, String orgId, String userId) {
         String tableName = STAGE_CONFIG_TABLE.get(moduleType);
         if (StringUtils.isBlank(tableName)) {
@@ -114,14 +115,11 @@ public class StageAdvancedConfigService {
         originalVal.put(moduleType + "Setting", oldConfigs);
         final Map<String, Object> modifiedVal = new HashMap<>(1);
         modifiedVal.put(moduleType + "Setting", newConfigs);
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceId(IDGenerator.nextStr())
-                        .resourceName(Translator.get(moduleType) + Translator.get("advanced_circulation_setting"))
-                        .originalValue(originalVal)
-                        .modifiedValue(modifiedVal)
-                        .build()
-        );
+
+        LogDTO logDTO = new LogDTO(orgId, IDGenerator.nextStr(), userId, CollectionUtils.isNotEmpty(oldConfigs) ? LogType.UPDATE : LogType.ADD, LogModule.SYSTEM_MODULE, Translator.get(moduleType) + Translator.get("advanced_circulation_setting"));
+        logDTO.setOriginalValue(originalVal);
+        logDTO.setModifiedValue(modifiedVal);
+        logService.add(logDTO);
     }
 
 
@@ -132,7 +130,7 @@ public class StageAdvancedConfigService {
             extStageAdvancedConfigMapper.update(tableName, type, orgId, null, null);
         }
         final Map<String, Object> originalVal = new HashMap<>(1);
-        originalVal.put("circulationType", Strings.CI.equals(CirculationTypeEnum.NORMAL.name(),type)?Translator.get(CirculationTypeEnum.ADVANCED.name()):Translator.get(Translator.get(CirculationTypeEnum.NORMAL.name())));
+        originalVal.put("circulationType", Strings.CI.equals(CirculationTypeEnum.NORMAL.name(), type) ? Translator.get(CirculationTypeEnum.ADVANCED.name()) : Translator.get(Translator.get(CirculationTypeEnum.NORMAL.name())));
         final Map<String, Object> modifiedVal = new HashMap<>(1);
         modifiedVal.put("circulationType", Translator.get(type));
         OperationLogContext.setContext(

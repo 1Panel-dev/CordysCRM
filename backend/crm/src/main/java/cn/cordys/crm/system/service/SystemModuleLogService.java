@@ -7,6 +7,7 @@ import cn.cordys.common.dto.stage.CirculationFieldValue;
 import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.system.constants.CirculationFieldValueTypeEnum;
@@ -40,8 +41,11 @@ public class SystemModuleLogService extends BaseModuleLogService {
     @Resource
     private ExtOrderStageConfigMapper extOrderStageConfigMapper;
     @Resource
+    private ExtContractStageConfigMapper extContractStageConfigMapper;
+    @Resource
     private ModuleFormCacheService moduleFormCacheService;
     private List<BaseField> fields;
+    private List<StageConfigResponse> stageConfigList;
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
@@ -107,10 +111,10 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 searchSetting(differ);
             }
 
-            if (Strings.CS.equalsAny(differ.getColumn(),"orderSetting", "contractSetting")) {
+            if (Strings.CS.equalsAny(differ.getColumn(), "orderSetting", "contractSetting")) {
                 differ.setColumnName(Translator.get("advanced_circulation_setting"));
-                differ.setNewValueName(handleConfig(differ.getNewValue(), orgId, Strings.CI.equals(differ.getColumn(),"orderSetting")?FormKey.ORDER.getKey():FormKey.CONTRACT.getKey()).toString());
-                differ.setOldValueName(handleConfig(differ.getOldValue(), orgId, Strings.CI.equals(differ.getColumn(),"orderSetting")?FormKey.ORDER.getKey():FormKey.CONTRACT.getKey()).toString());
+                differ.setNewValueName(handleConfig(differ.getNewValue(), orgId, Strings.CI.equals(differ.getColumn(), "orderSetting") ? FormKey.ORDER.getKey() : FormKey.CONTRACT.getKey()).toString());
+                differ.setOldValueName(handleConfig(differ.getOldValue(), orgId, Strings.CI.equals(differ.getColumn(), "orderSetting") ? FormKey.ORDER.getKey() : FormKey.CONTRACT.getKey()).toString());
             }
 
             if (Strings.CS.equals("circulationType", differ.getColumn())) {
@@ -136,7 +140,13 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 List<StageAdvancedConfig> list = values.stream().filter(valueConfig -> !Strings.CI.equals(valueConfig.getOriginId(), valueConfig.getTargetId())).toList();
 
                 if (CollectionUtils.isNotEmpty(list)) {
-                    List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
+                    if (Strings.CI.equals(formKey, FormKey.ORDER.getKey())) {
+                        stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
+                    } else if (Strings.CI.equals(formKey, FormKey.CONTRACT.getKey())) {
+                        stageConfigList = extContractStageConfigMapper.getStageConfigList(orgId);
+                    } else {
+
+                    }
                     fields = moduleFormCacheService.getBusinessFormConfig(formKey, orgId).getFields();
 
                     Map<String, String> configNameMap = stageConfigList.stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
