@@ -4,14 +4,18 @@ import cn.cordys.common.util.CodingUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>表示会话中的用户信息，继承自 {@link UserDTO}，并包含用于防止 CSRF 攻击的 token 和会话 ID。</p>
@@ -63,7 +67,7 @@ public class SessionUser extends UserDTO implements Serializable {
 
         try {
             // 使用 AES 加密生成 CSRF Token
-            sessionUser.csrfToken = CodingUtils.aesEncrypt(StringUtils.join(infos, "|"), secret, CodingUtils.generateIv());
+            sessionUser.csrfToken = CodingUtils.aesEncrypt(StringUtils.join(infos, "|"), getRandomAlphabetic(user.getId()), CodingUtils.generateIv());
         } catch (Exception e) {
             // 异常处理：加密失败时可以记录日志或者返回默认值
             sessionUser.csrfToken = StringUtils.EMPTY;
@@ -73,4 +77,16 @@ public class SessionUser extends UserDTO implements Serializable {
         sessionUser.sessionId = sessionId;
         return sessionUser;
     }
+
+    public static String getRandomAlphabetic(String userId) {
+        try {
+            byte[] hashedKey = MessageDigest.getInstance("SHA-256")
+                    .digest(Objects.requireNonNull(userId).getBytes(StandardCharsets.UTF_8));
+            return Base64.encodeBase64String(Arrays.copyOf(hashedKey, 16)); // 取 16 字节作 AES-128
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating random alphabetic string", e);
+        }
+    }
+
 }

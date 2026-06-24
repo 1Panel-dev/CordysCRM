@@ -3,7 +3,6 @@ package cn.cordys.common.security;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.security.SessionConstants;
-import cn.cordys.security.SessionUser;
 import cn.cordys.security.SessionUtils;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -17,6 +16,8 @@ import org.apache.shiro.web.filter.authc.AnonymousFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
+
+import static cn.cordys.security.SessionUser.getRandomAlphabetic;
 
 /**
  * 自定义过滤器，用于处理 CSRF 校验。
@@ -117,7 +118,7 @@ public class CsrfFilter extends AnonymousFilter {
         }
 
         // 解密 CSRF token
-        csrfToken = CodingUtils.aesDecrypt(csrfToken, SessionUser.secret, CodingUtils.generateIv());
+        csrfToken = CodingUtils.aesDecrypt(csrfToken, getRandomAlphabetic(SessionUtils.getUserId()), CodingUtils.generateIv());
 
         String[] signatureArray = StringUtils.split(StringUtils.trimToNull(csrfToken), "|");
         if (signatureArray.length != 4) {
