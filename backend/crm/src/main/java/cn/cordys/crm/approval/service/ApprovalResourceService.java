@@ -514,7 +514,7 @@ public class ApprovalResourceService {
             return;
         }
         ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
-        HitApprovalAspect.executeDeleteSkipApproval(() -> handler.deleteForResource(resourceId, userId, orgId));
+        HitApprovalAspect.executeDeleteSkipApproval(() -> handler.delete(resourceId, userId, orgId));
     }
 
     /**

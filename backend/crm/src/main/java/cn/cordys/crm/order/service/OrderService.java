@@ -439,9 +439,9 @@ public class OrderService implements ApprovalResourceHandler {
      *
      * @param id 订单ID
      */
+    @Override
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.DELETE, resourceId = "{#id}")
-    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
-    public void delete(String id, String userId) {
+    public void delete(String id, String userId, String orgId) {
         Order order = orderMapper.selectByPrimaryKey(id);
         if (order == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
@@ -458,10 +458,12 @@ public class OrderService implements ApprovalResourceHandler {
         OperationLogContext.setResourceName(order.getName());
     }
 
-    @Override
-    public void deleteForResource(String resourceId, String userId, String organizationId) {
-        delete(resourceId, userId);
+    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        // 校验审批流
+        delete(id, userId, orgId);
     }
+
 
     @Override
     public FormKey getFormKey() {

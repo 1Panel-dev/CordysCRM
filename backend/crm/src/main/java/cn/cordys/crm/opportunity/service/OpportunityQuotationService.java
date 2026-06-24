@@ -675,7 +675,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
      * @param userId         用户ID
      * @param organizationId 组织ID
      */
-    @HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    @Override
     public void delete(String id, String userId, String organizationId) {
         OpportunityQuotation opportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
         if (opportunityQuotation == null) {
@@ -697,9 +697,10 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         sendNotice(null, opportunityQuotation, userId, organizationId, NotificationConstants.Event.BUSINESS_QUOTATION_DELETED);
     }
 
-    @Override
-    public void deleteForResource(String resourceId, String userId, String organizationId) {
-        delete(resourceId, userId, organizationId);
+    @HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        // 校验审批流
+        delete(id, userId, orgId);
     }
 
     @Override
