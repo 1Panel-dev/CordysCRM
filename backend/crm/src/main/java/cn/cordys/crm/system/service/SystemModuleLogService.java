@@ -112,6 +112,13 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 differ.setNewValueName(handleConfig(differ.getNewValue(), orgId, Strings.CI.equals(differ.getColumn(),"orderSetting")?FormKey.ORDER.getKey():FormKey.CONTRACT.getKey()).toString());
                 differ.setOldValueName(handleConfig(differ.getOldValue(), orgId, Strings.CI.equals(differ.getColumn(),"orderSetting")?FormKey.ORDER.getKey():FormKey.CONTRACT.getKey()).toString());
             }
+
+            if (Strings.CS.equals("circulationType", differ.getColumn())) {
+                differ.setColumnName(Translator.get("circulation_setting"));
+                differ.setNewValueName(differ.getNewValue());
+                differ.setOldValueName(differ.getOldValue());
+            }
+
         });
 
         differences.removeIf(differ -> differ.getOldValueName() == null && differ.getNewValueName() == null);
