@@ -125,12 +125,24 @@ public class StageAdvancedConfigService {
     }
 
 
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void switchType(String type, String moduleType, String orgId) {
         String tableName = STAGE_CONFIG_TABLE.get(moduleType);
         if (StringUtils.isNotBlank(tableName)) {
             extStageAdvancedConfigMapper.update(tableName, type, orgId, null, null);
         }
-
+        final Map<String, Object> originalVal = new HashMap<>(1);
+        originalVal.put("circulationType", Strings.CI.equals(CirculationTypeEnum.NORMAL.name(),type)?Translator.get(CirculationTypeEnum.ADVANCED.name()):Translator.get(Translator.get(CirculationTypeEnum.NORMAL.name())));
+        final Map<String, Object> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("circulationType", Translator.get(type));
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(IDGenerator.nextStr())
+                        .resourceName(Translator.get(moduleType) + Translator.get("advanced_circulation_setting"))
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
+                        .build()
+        );
     }
 
 
