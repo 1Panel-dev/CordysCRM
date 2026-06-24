@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class OpportunityExportService extends BaseExportService {
 
+    private static final String STAGE_CONFIG_MAP_KEY = "stageConfigMap";
+
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
     @Resource
@@ -36,13 +38,20 @@ public class OpportunityExportService extends BaseExportService {
         if (CollectionUtils.isEmpty(exportList)) {
             return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
         }
-        Map<String, String> stageConfigMap = extOpportunityStageConfigMapper.getStageConfigList(exportParam.getOrgId())
-                .stream()
-                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+        // 从缓存获取阶段配置，避免重复查询
+        Map<String, String> stageConfigMap = getOrLoadStageConfigMap(exportParam);
         return buildExportMergeResult(taskId, exportParam, exportList,
                 OpportunityListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
                         OpportunityFieldUtils.getSystemFieldMap(detail, null, stageConfigMap, null), cache));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> getOrLoadStageConfigMap(ExportDTO exportParam) {
+        return (Map<String, String>) exportParam.getExtraParams()
+                .computeIfAbsent(STAGE_CONFIG_MAP_KEY, key ->
+                        extOpportunityStageConfigMapper.getStageConfigList(exportParam.getOrgId())
+                                .stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName)));
     }
 
     private List<OpportunityListResponse> collectExportList(ExportDTO exportParam) {
