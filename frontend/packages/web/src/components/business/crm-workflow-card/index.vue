@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-[var(--text-n10)] p-[16px]">
+  <div v-bind="attrs" class="bg-[var(--text-n10)] p-[16px]">
     <n-spin :show="updateStageLoading">
       <WorkflowStep
         v-model:status="currentStage"
@@ -67,6 +67,7 @@
 </template>
 
 <script lang="ts" setup>
+  import { useAttrs } from 'vue';
   import { FormInst, FormRules, NButton, NForm, NFormItem, NSelect, NSpin, SelectOption, useMessage } from 'naive-ui';
 
   import type { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum.js';
@@ -87,8 +88,13 @@
 
   import { getReasonConfig } from '@/api/modules';
 
+  defineOptions({
+    inheritAttrs: false,
+  });
+
   const { t } = useI18n();
   const Message = useMessage();
+  const attrs = useAttrs();
 
   const props = defineProps<{
     formKey?: FormDesignKeyEnum;

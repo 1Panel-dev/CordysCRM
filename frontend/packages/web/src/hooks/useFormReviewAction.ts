@@ -4,7 +4,7 @@ import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
-import { getApprovalConfigDetail } from '@/api/modules';
+import { loadApprovalConfig } from '@/hooks/useApprovalConfigCache';
 import { useUserStore } from '@/store';
 
 export interface FormReviewAction {
@@ -26,26 +26,6 @@ interface UseFormReviewActionOptions {
   isEdit: Ref<boolean | undefined>;
   approvalStatus: Ref<ProcessStatusEnum | undefined>;
   detail?: Ref<Record<string, any> | undefined>;
-}
-
-interface ApprovalReviewConfig {
-  enable: boolean;
-  createExecute: boolean;
-  updateExecute: boolean;
-}
-
-const approvalReviewConfigCache = new Map<FormDesignKeyEnum, ApprovalReviewConfig>();
-const approvalReviewConfigPendingMap = new Map<FormDesignKeyEnum, Promise<ApprovalReviewConfig>>();
-
-export function clearApprovalReviewConfigCache(formKey?: FormDesignKeyEnum | string) {
-  if (formKey) {
-    approvalReviewConfigCache.delete(formKey as FormDesignKeyEnum);
-    approvalReviewConfigPendingMap.delete(formKey as FormDesignKeyEnum);
-    return;
-  }
-
-  approvalReviewConfigCache.clear();
-  approvalReviewConfigPendingMap.clear();
 }
 
 export default function useFormReviewAction(options: UseFormReviewActionOptions) {
@@ -112,39 +92,6 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
     };
   }
 
-  async function loadApprovalReviewConfig(formKey: FormDesignKeyEnum) {
-    const cachedConfig = approvalReviewConfigCache.get(formKey);
-
-    if (cachedConfig) {
-      return cachedConfig;
-    }
-
-    const pendingConfig = approvalReviewConfigPendingMap.get(formKey);
-
-    if (pendingConfig) {
-      return pendingConfig;
-    }
-
-    const request = getApprovalConfigDetail(formKey)
-      .then((result) => {
-        const config: ApprovalReviewConfig = {
-          enable: Boolean(result?.enable),
-          createExecute: Boolean(result?.createExecute),
-          updateExecute: Boolean(result?.updateExecute),
-        };
-
-        approvalReviewConfigCache.set(formKey, config);
-        return config;
-      })
-      .finally(() => {
-        approvalReviewConfigPendingMap.delete(formKey);
-      });
-
-    approvalReviewConfigPendingMap.set(formKey, request);
-
-    return request;
-  }
-
   const isApprovalForm = computed(() => approvalFormKeys.includes(options.formKey.value));
 
   const reviewAction = computed(() =>
@@ -181,7 +128,7 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
     }
 
     try {
-      const result = await loadApprovalReviewConfig(options.formKey.value);
+      const result = await loadApprovalConfig(options.formKey.value);
       enabledApproval.value = Boolean(result?.enable);
       createExecute.value = Boolean(result?.createExecute);
       updateExecute.value = Boolean(result?.updateExecute);
