@@ -28,7 +28,7 @@
 
 
     <select id="getStageConfig" resultType="cn.cordys.common.dto.stage.StageConfigResponse">
-        select id, name, type, afoot_roll_back, end_roll_back, circulation_type
+        select id, name, type, afoot_roll_back, end_roll_back, circulation_type, pos
         from ${sourceTable}
         where id = #{id}
     </select>
