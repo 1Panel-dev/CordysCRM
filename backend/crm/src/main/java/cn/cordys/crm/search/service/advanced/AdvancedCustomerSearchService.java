@@ -256,7 +256,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
                 .toList();
 
         return extOpportunityMapper.getRepeatCountMap(customerIds).stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
     }
 
     /**
@@ -288,7 +288,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
                 .toList();
 
         return extClueMapper.getRepeatCountMap(customerNames).stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
     }
 
     /**
@@ -304,7 +304,7 @@ public class AdvancedCustomerSearchService extends BaseSearchService<CustomerPag
 
     private void getProductNames(List<OptionDTO> productOption, List<AdvancedClueResponse> list) {
         // 设置产品名称
-        Map<String, String> productMap = productOption.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+        Map<String, String> productMap = productOption.stream().collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
         list.forEach(clue -> {
             // 设置产品名称
             List<String> productNames = new ArrayList<>();

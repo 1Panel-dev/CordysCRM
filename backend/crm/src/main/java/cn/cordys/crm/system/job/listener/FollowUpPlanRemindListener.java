@@ -88,7 +88,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
             if (CollectionUtils.isNotEmpty(customerIds)) {
                 customerMap = extCustomerMapper.selectOptionByIds(customerIds)
                         .stream()
-                        .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                        .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             }
 
             // 构建商机ID与名称的映射
@@ -96,7 +96,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
             if (CollectionUtils.isNotEmpty(opportunityIds)) {
                 opportunityMap = extOpportunityMapper.getOpportunityOptionsByIds(opportunityIds)
                         .stream()
-                        .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                        .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             }
 
             // 构建线索ID与名称的映射
@@ -104,7 +104,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
             if (CollectionUtils.isNotEmpty(clueIds)) {
                 clueMap = extClueMapper.selectOptionByIds(clueIds)
                         .stream()
-                        .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                        .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             }
 
             // 遍历所有到期的跟进计划，发送相应通知

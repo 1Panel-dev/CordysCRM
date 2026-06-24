@@ -243,7 +243,7 @@ public class DataEaseSyncService {
             userUpdateRequest.setRoleIds(updateRoleIds);
         } else {
             // 设置为DE原值
-            List<String> roleIds = roleItems.stream().map(OptionDTO::getId).toList();
+            List<String> roleIds = roleItems.stream().map(OptionDTO::getIdAsString).toList();
             userUpdateRequest.setRoleIds(roleIds);
         }
 

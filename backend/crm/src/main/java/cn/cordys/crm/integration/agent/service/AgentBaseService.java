@@ -315,7 +315,7 @@ public class AgentBaseService extends DashboardSortService {
             List<OptionDTO> options = extUserMapper.selectUserOptionByIds(ids);
             Map<String, String> userMap = options
                     .stream()
-                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                    .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
 
             Set<String> myCollects = new HashSet<>(extAgentCollectionMapper.getByUserId(userId));
 

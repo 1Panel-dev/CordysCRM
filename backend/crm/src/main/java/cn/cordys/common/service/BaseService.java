@@ -228,7 +228,7 @@ public class BaseService {
         }
         return extUserMapper.selectUserOptionByIds(userIds)
                 .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
     }
 
     public String getUserName(String userId) {
@@ -283,7 +283,7 @@ public class BaseService {
         }
         return extCustomerContactMapper.selectContactOptionByIds(contactIds)
                 .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
     }
 
 
@@ -579,7 +579,7 @@ public class BaseService {
                 .toList());
         List<OptionDTO> fieldOptions = extModuleFieldMapper.getSourceOptionsByIds("sys_module_field", fieldIds);
         Map<String, String> nameMap = fieldOptions.stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
 
         if (CollectionUtils.isNotEmpty(moduleFormConfigDTO.getFields())) {
             for (BaseField field : moduleFormConfigDTO.getFields()) {
@@ -642,7 +642,7 @@ public class BaseService {
         }
         return extCustomerMapper.getCustomerOptionsByIds(customerIds)
                 .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
     }
 
     /**
@@ -657,7 +657,7 @@ public class BaseService {
         }
         return extOpportunityMapper.getOpportunityOptionsByIds(opportunityIds)
                 .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
     }
 
 
@@ -673,7 +673,7 @@ public class BaseService {
         }
         return extClueMapper.selectOptionByIds(clueIds)
                 .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
 
     }
 
@@ -689,7 +689,7 @@ public class BaseService {
         }
         return extCustomerContactMapper.selectContactPhoneOptionByIds(contactIds)
                 .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
     }
 
     public String getAndCheckOptionName(String option) {

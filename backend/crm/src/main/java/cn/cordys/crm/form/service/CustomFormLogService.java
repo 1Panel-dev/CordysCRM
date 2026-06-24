@@ -145,7 +145,7 @@ public class CustomFormLogService extends BaseModuleLogService {
             return Collections.emptyMap();
         }
         return extUserMapper.selectUserOptionByIds(userIds).stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName, (a, b) -> a));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName, (a, b) -> a));
     }
 
     private Map<String, String> getRoleNameMap(Set<String> roleIds) {

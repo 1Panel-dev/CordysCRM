@@ -1051,7 +1051,7 @@ public class ModuleFormService {
         return options.stream().map(option -> {
             OptionDTO optionDTO = new OptionDTO();
             optionDTO.setName(option.getLabel());
-            optionDTO.setId(option.getValue() != null ? option.getValue().toString() : null);
+            optionDTO.setId(option.getValue());
             return optionDTO;
         }).toList();
     }
@@ -1386,7 +1386,7 @@ public class ModuleFormService {
                     return optionDTO;
                 })
                 .distinct()
-                .filter(option -> StringUtils.isNotEmpty(option.getId()))
+                .filter(option -> StringUtils.isNotEmpty(option.getIdAsString()))
                 .toList();
     }
 

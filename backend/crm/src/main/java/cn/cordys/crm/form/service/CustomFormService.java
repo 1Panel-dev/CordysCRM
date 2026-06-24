@@ -198,7 +198,7 @@ public class CustomFormService {
                 .toList();
         Map<String, String> userNameMap = new HashMap<>(userIds.size());
         extUserMapper.selectUserOptionByIds(userIds)
-                .forEach(option -> userNameMap.putIfAbsent(option.getId(), option.getName()));
+                .forEach(option -> userNameMap.putIfAbsent(option.getIdAsString(), option.getName()));
         return userIds.stream()
                 .map(uid -> new OptionDTO(uid, userNameMap.get(uid)))
                 .toList();
@@ -395,7 +395,7 @@ public class CustomFormService {
     public void setAdmins(CustomFormAdminBatchRequest request, String userId) {
         checkFormAdmin(request.getCustomFormId(), userId);
 
-        List<String> originUserIds = getAdminOptions(request.getCustomFormId()).stream().map(OptionDTO::getId).toList();
+        List<String> originUserIds = getAdminOptions(request.getCustomFormId()).stream().map(OptionDTO::getIdAsString).toList();
 
         String formId = request.getCustomFormId();
         deleteCustomFormAdminByFormId(formId);

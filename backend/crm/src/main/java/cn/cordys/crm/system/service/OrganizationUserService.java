@@ -167,7 +167,7 @@ public class OrganizationUserService {
             List<OptionDTO> options = extUserMapper.selectUserOptionByIds(ids);
             Map<String, String> userMap = options
                     .stream()
-                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                    .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             //直属上级
             List<String> supervisorIds = list.stream()
                     .map(UserPageResponse::getSupervisorId)
@@ -175,7 +175,7 @@ public class OrganizationUserService {
                     .toList();
             List<OptionDTO> supervisors = extUserMapper.selectUserOptionByIds(supervisorIds);
             Map<String, String> supervisorMap = supervisors.stream()
-                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                    .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             //部门
             List<String> departmentIds = list.stream()
                     .map(UserPageResponse::getDepartmentId)
@@ -472,16 +472,16 @@ public class OrganizationUserService {
         SubListUtils.dealForSubList(request.getIds(), 50, ids -> {
             List<OptionDTO> orgUsers = extOrganizationUserMapper.selectEnableOrgUser(ids, !request.isEnable());
             if (!request.isEnable()) {
-                List<String> userIds = orgUsers.stream().map(OptionDTO::getId).toList();
+                List<String> userIds = orgUsers.stream().map(OptionDTO::getIdAsString).toList();
                 approvalActionService.refreshApprovingTasksForDisabledUser(userIds, orgId);
             }
 
             List<LogDTO> logs = new ArrayList<>();
             orgUsers.forEach(orgUser -> {
                 // 踢出该用户
-                SessionUtils.kickOutUser(operatorId, orgUser.getId());
+                SessionUtils.kickOutUser(operatorId, orgUser.getIdAsString());
 
-                LogDTO logDTO = new LogDTO(orgId, orgUser.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, orgUser.getName());
+                LogDTO logDTO = new LogDTO(orgId, orgUser.getIdAsString(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, orgUser.getName());
                 logDTO.setOriginalValue(originUser);
                 logDTO.setModifiedValue(newUser);
                 logs.add(logDTO);

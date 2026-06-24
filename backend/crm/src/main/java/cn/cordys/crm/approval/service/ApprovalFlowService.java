@@ -671,7 +671,7 @@ public class ApprovalFlowService {
         }
         // 按照 userIds 顺序返回
         Map<String, OptionDTO> optionMap = userOptions.stream()
-                .collect(Collectors.toMap(OptionDTO::getId, o -> o));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, o -> o));
         return userIds.stream()
                 .map(optionMap::get)
                 .filter(Objects::nonNull)
@@ -688,7 +688,7 @@ public class ApprovalFlowService {
         }
         // 按照 roleIds 顺序返回
         Map<String, OptionDTO> optionMap = roleOptions.stream()
-                .collect(Collectors.toMap(OptionDTO::getId, o -> o));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, o -> o));
         return roleIds.stream()
                 .map(optionMap::get)
                 .filter(Objects::nonNull)
@@ -1052,13 +1052,13 @@ public class ApprovalFlowService {
                     // 添加缺失的权限，默认不启用
                     StatusPermissionDTO newItem = new StatusPermissionDTO();
                     newItem.setApprovalStatus(approvalStatus);
-                    newItem.setPermission(permission.getId());
+                    newItem.setPermission(permission.getIdAsString());
                     newItem.setEnabled(false);
                     updatedPermissions.add(newItem);
                 }
                 // 审批中编辑和删除权限 enable 设置为 false
                 if (Strings.CS.equals(approvalStatus, ApprovalStatus.APPROVING.name())
-                        && (permission.getId().endsWith(":UPDATE") || permission.getId().endsWith(":DELETE"))) {
+                        && (permission.getIdAsString().endsWith(":UPDATE") || permission.getIdAsString().endsWith(":DELETE"))) {
                     item.setEnabled(false);
                 }
             }
