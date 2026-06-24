@@ -670,18 +670,22 @@
         return props.readonly ? h(CrmNameTooltip, { text: row.name }) : createNameButton();
       },
       customerId: (row: OpportunityItem) => {
-        return props.isCustomerTab ||
+        if (
+          props.isCustomerTab ||
           props.formKey === FormDesignKeyEnum.SEARCH_ADVANCED_OPPORTUNITY ||
           (!row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) ||
           (row.inCustomerPool && !hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:READ']))
+        ) {
+          return h(
+            CrmNameTooltip,
+            { text: row.customerName },
+            {
+              default: () => row.customerName,
+            }
+          );
+        }
+        return row.customerName
           ? h(
-              CrmNameTooltip,
-              { text: row.customerName },
-              {
-                default: () => row.customerName,
-              }
-            )
-          : h(
               CrmTableButton,
               {
                 onClick: () => {
@@ -689,7 +693,8 @@
                 },
               },
               { default: () => row.customerName, trigger: () => row.customerName }
-            );
+            )
+          : '-';
       },
       stage: (row: OpportunityItem) => {
         return row.stageName || '-';
