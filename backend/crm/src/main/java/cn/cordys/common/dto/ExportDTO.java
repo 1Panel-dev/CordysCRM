@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Data
 @Builder
@@ -30,4 +31,9 @@ public class ExportDTO {
 	private ExportFieldParam exportFieldParam;
 	private List<String> mergeHeads;
 	private List<FieldExportMeta> exportMetas;
+	/**
+	 * 扩展参数，用于存储导出过程中需要缓存的数据（如阶段配置等）
+	 */
+	@Builder.Default
+	private Map<String, Object> extraParams = new java.util.HashMap<>();
 }

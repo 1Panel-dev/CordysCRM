@@ -14,12 +14,40 @@ import java.util.List;
  * 动态合并单元格策略(汇总)
  * @author song-cc-rock
  */
-public record SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeColumns, List<Integer> summaryCols, int offset) {
+public class SummaryMergeHandler {
+
+	private final List<int[]> mergeRegions;
+	private final List<Integer> mergeColumns;
+	private final List<Integer> summaryCols;
+	private final int offset;
+	private CellStyle cachedSummaryStyle;
+
+	public SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeColumns, List<Integer> summaryCols, int offset) {
+		this.mergeRegions = mergeRegions;
+		this.mergeColumns = mergeColumns;
+		this.summaryCols = summaryCols;
+		this.offset = offset;
+	}
+
+	/**
+	 * 获取或创建汇总单元格样式（缓存复用，避免重复创建）
+	 */
+	private CellStyle getOrCreateSummaryStyle(Workbook workbook) {
+		if (cachedSummaryStyle == null) {
+			cachedSummaryStyle = workbook.createCellStyle();
+			cachedSummaryStyle.setAlignment(HorizontalAlignment.RIGHT);
+			cachedSummaryStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+		}
+		return cachedSummaryStyle;
+	}
 
 	public void merge(Sheet sheet) {
 		if (CollectionUtils.isEmpty(mergeRegions) || CollectionUtils.isEmpty(mergeColumns)) {
 			return;
 		}
+
+		Workbook workbook = sheet.getWorkbook();
+		CellStyle summaryStyle = getOrCreateSummaryStyle(workbook);
 
 		// 合并行区域内的汇总列的值
 		for (int[] region : mergeRegions) {
@@ -61,11 +89,7 @@ public record SummaryMergeHandler(List<int[]> mergeRegions, List<Integer> mergeC
 				if (total.compareTo(BigDecimal.ZERO) != 0) {
 					Cell sumCell = sheet.getRow(start).getCell(colIndex);
 					sumCell.setCellValue(InputNumberField.formatNumber(total, decimalPlaces, showThousandsSeparator, hasPercent));
-					Workbook wb = sheet.getWorkbook();
-					CellStyle style = wb.createCellStyle();
-					style.setAlignment(HorizontalAlignment.RIGHT);
-					style.setVerticalAlignment(VerticalAlignment.CENTER);
-					sumCell.setCellStyle(style);
+					sumCell.setCellStyle(summaryStyle);
 				}
 
 				// 只保留第一行, 清空其他行汇总列的单元格值 (不同值合并展示有误)

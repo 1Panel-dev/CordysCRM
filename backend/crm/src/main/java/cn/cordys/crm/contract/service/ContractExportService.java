@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ContractExportService extends BaseExportService {
 
+    private static final String STAGE_CONFIG_MAP_KEY = "stageConfigMap";
+
     @Resource
     private ContractService contractService;
     @Resource
@@ -54,14 +56,22 @@ public class ContractExportService extends BaseExportService {
             return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).queryCount(queryCount).build();
         }
         var dataList = contractService.buildList(filteredList, exportParam.getOrgId());
-        Map<String, String> stageConfigMap = extContractStageConfigMapper.getStageConfigList(exportParam.getOrgId())
-                .stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+        // 从缓存获取阶段配置，避免重复查询
+        Map<String, String> stageConfigMap = getOrLoadStageConfigMap(exportParam);
         var result = buildExportMergeResult(taskId, exportParam, dataList,
                 ContractListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
                         getSystemFieldMap(detail, metas, stageConfigMap), cache));
         result.setQueryCount(queryCount);
         return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> getOrLoadStageConfigMap(ExportDTO exportParam) {
+        return (Map<String, String>) exportParam.getExtraParams()
+                .computeIfAbsent(STAGE_CONFIG_MAP_KEY, key ->
+                        extContractStageConfigMapper.getStageConfigList(exportParam.getOrgId())
+                                .stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName)));
     }
 
     private Pair<List<ContractListResponse>, Integer> collectExportList(ExportDTO exportParam) {

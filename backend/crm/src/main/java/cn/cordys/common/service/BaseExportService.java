@@ -228,11 +228,7 @@ public abstract class BaseExportService {
                 dataList.add(systemFieldMap.get(head.getKey()));
             } else if (moduleFieldMap.containsKey(head.getKey())) {
                 //自定义字段
-                Map<String, Object> collect = moduleFieldMap.entrySet().stream()
-                        .filter(entry -> entry.getKey().equals(head.getKey()))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-                getResourceFieldMap(collect, dataList, fieldConfigMap);
+                getResourceFieldMap(Map.of(head.getKey(), moduleFieldMap.get(head.getKey())), dataList, fieldConfigMap);
             } else {
                 dataList.add(null);
             }
@@ -593,9 +589,9 @@ public abstract class BaseExportService {
                 offset += buildData.size();
                 mergeRowData.addAll(buildData);
             }
+        } finally {
+            cacheMap.clear();
         }
-
-        cacheMap.clear();
 
         return MergeResult.builder()
                 .mergeRegions(mergeRegions)
