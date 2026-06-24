@@ -144,7 +144,7 @@
       </n-tabs>
     </div>
   </CrmDrawer>
-  <CrmModal v-model:show="flowSettingVisible" @cancel="handleCancel" @confirm="handleConfirm">
+  <CrmModal v-model:show="flowSettingVisible" :mask-closable="false" @cancel="handleCancel" @confirm="handleConfirm">
     <template #title>
       <div class="flex items-center gap-[8px]">
         {{ t('crmStatusConfigDrawer.flowSetting') }}
@@ -172,7 +172,7 @@
                 v-model:value="item.fieldId"
                 filterable
                 :placeholder="t('common.pleaseSelect')"
-                :options="fieldOptions"
+                :options="getFieldOptions(item.fieldId)"
                 :fallback-option="() => fallbackOption(item.fieldId)"
                 :loading="fieldLoading"
                 :render-option="renderOption"
@@ -290,7 +290,6 @@
                   "
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   clearable
-                  multiple
                   check-strategy="parent"
                 />
                 <CrmIndustrySelect
@@ -303,7 +302,6 @@
                   "
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   clearable
-                  multiple
                   check-strategy="parent"
                 />
                 <CrmUserTagSelector
@@ -316,6 +314,7 @@
                     ].includes(item.fieldProps.type)
                   "
                   v-model:value="item.fieldValue"
+                  :selected-list="item.fieldProps?.initialOptions"
                   :multiple="
                     [FieldTypeEnum.DEPARTMENT_MULTIPLE, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.fieldProps.type)
                   "
@@ -357,7 +356,7 @@
                   :placeholder="
                     item.valueType === CirculationValueTypeEnum.FIELD_VALUE
                       ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
-                      : t('common.pleaseSelect')
+                      : t('common.pleaseInput')
                   "
                 />
               </template>
@@ -497,6 +496,9 @@
   const drawerLoading = ref(false);
   const flowConfigurationType = ref<CirculationTypeEnum>(CirculationTypeEnum.NORMAL);
   const formRef = ref<FormInst | null>(null);
+  const tempForm = ref({
+    circulationFieldValues: [] as CirculationFieldValueItem[],
+  });
 
   function handleMaskClick() {
     if (unsaved.value) {
@@ -552,6 +554,9 @@
         initAdvanceConfig();
         unsaved.value = false;
       } else {
+        tempForm.value = {
+          circulationFieldValues: [] as CirculationFieldValueItem[],
+        };
         tabName.value = 'statusConfig';
       }
     }
@@ -661,9 +666,6 @@
   const activeRow = ref<CirculationSetting & StatusRowItem>();
   const activeCol = ref<StatusRowItem>();
   const fieldLoading = ref(false);
-  const tempForm = ref({
-    circulationFieldValues: [] as CirculationFieldValueItem[],
-  });
 
   async function openFlowSetting(row: CirculationSetting & StatusRowItem, col: StatusRowItem) {
     try {
@@ -807,7 +809,7 @@
                   ? undefined
                   : h(CrmIcon, {
                       type: 'iconicon_set_up',
-                      class: row.targets.findIndex((r) => r.targetId === e.id) !== -1 ? 'setting-icon' : 'hidden',
+                      class: row.targets.find((r) => r.targetId === e.id)?.enable ? 'setting-icon' : 'hidden',
                       onClick: () => openFlowSetting(row, e),
                     }),
               ],
@@ -822,7 +824,7 @@
     fieldList.value
       .filter(
         (e) =>
-          ![
+          (![
             FieldTypeEnum.DIVIDER,
             FieldTypeEnum.SERIAL_NUMBER,
             FieldTypeEnum.SUB_PRICE,
@@ -831,14 +833,21 @@
             FieldTypeEnum.FORMULA,
             FieldTypeEnum.PICTURE,
           ].includes(e.type) &&
-          !e.resourceFieldId &&
-          e.editable
+            !e.resourceFieldId &&
+            e.editable) ||
+          (e.type === FieldTypeEnum.INPUT && e.defaultValueType === 'custom')
       )
       .map((e) => ({
         label: e.name,
         value: e.id,
       }))
   );
+
+  function getFieldOptions(currentFieldId?: string) {
+    const alreadySelectedFields = tempForm.value.circulationFieldValues.map((e) => e.fieldId);
+    return fieldOptions.value.filter((e) => e.value === currentFieldId || !alreadySelectedFields.includes(e.value));
+  }
+
   function fallbackOption(val?: string | number) {
     return {
       label: t('common.optionNotExist'),
@@ -847,10 +856,16 @@
   }
 
   function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
-    return h(NTooltip, null, {
-      trigger: () => node,
-      default: () => option.label,
-    });
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+      },
+      {
+        trigger: () => node,
+        default: () => option.label,
+      }
+    );
   }
 
   function leftFieldChange(item: CirculationFieldValueItem) {
@@ -858,7 +873,7 @@
       const field = fieldList.value.find((e) => e.id === item.fieldId);
       item.valueType = CirculationValueTypeEnum.FIELD_VALUE;
       item.required = false;
-      item.fieldValue = field?.defaultValue;
+      item.fieldValue = field?.defaultValue !== '' ? field?.defaultValue : undefined;
       item.fieldProps = field;
     });
   }

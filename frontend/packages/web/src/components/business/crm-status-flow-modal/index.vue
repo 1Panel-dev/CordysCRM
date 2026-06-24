@@ -128,12 +128,14 @@
           } else if (!cf.required && field.rules.some((e) => e.required)) {
             rules = rules.filter((e) => !e.required);
           }
+          if (cf.valueType === CirculationValueTypeEnum.FIXED_VALUE) {
+            formDetail.value[field.id] =
+              cf.valueType === CirculationValueTypeEnum.FIXED_VALUE ? cf.fieldValue : formDetail.value[field.id];
+          }
           return {
             ...field,
             defaultValue:
-              cf.valueType === CirculationValueTypeEnum.FIXED_VALUE
-                ? cf.fieldValue
-                : formDetail.value[field.businessKey || field.id],
+              cf.valueType === CirculationValueTypeEnum.FIXED_VALUE ? cf.fieldValue : formDetail.value[field.id],
             fieldWidth: 1,
             rules,
           };
@@ -148,7 +150,7 @@
     async (val) => {
       if (val) {
         await initFormConfig();
-        initFormDetail();
+        await initFormDetail();
         initForm();
         initRealFields();
         if (props.formKey === FormDesignKeyEnum.CONTRACT && props.to.id === 'VOID') {
