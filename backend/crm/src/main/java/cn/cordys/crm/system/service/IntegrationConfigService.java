@@ -214,7 +214,7 @@ public class IntegrationConfigService {
         // 构建选项列表
         return details.stream()
                 .map(this::getOptionDTO)
-                .sorted(Comparator.comparing(OptionDTO::getId).reversed())
+                .sorted(Comparator.comparing(OptionDTO::getIdAsString).reversed())
                 .toList();
     }
 

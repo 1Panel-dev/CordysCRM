@@ -534,7 +534,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         }
         // 按 userIds 顺序返回名称
         Map<String, String> nameMap = userOptions.stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName, (a, b) -> a));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName, (a, b) -> a));
         return userIds.stream()
                 .map(nameMap::get)
                 .filter(Objects::nonNull)
@@ -563,7 +563,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         }
         // 按 roleIds 顺序返回名称
         Map<String, String> nameMap = roleOptions.stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName, (a, b) -> a));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName, (a, b) -> a));
         return roleIds.stream()
                 .map(nameMap::get)
                 .filter(Objects::nonNull)

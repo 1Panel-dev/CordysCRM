@@ -73,7 +73,7 @@ public class SysOperationLogService {
 
             List<OptionDTO> userList = extUserMapper.selectUserOptionByIds(userIds);
             Map<String, String> userMap = userList.stream()
-                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                    .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
 
             list.forEach(item -> item.setOperatorName(userMap.getOrDefault(item.getOperator(), StringUtils.EMPTY)));
         }

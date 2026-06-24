@@ -53,14 +53,14 @@ public class BaseChartService {
         Map<String, String> categoryOptionMap = Optional.ofNullable(optionMap.get(categoryAxisParam.getFieldId()))
                 .orElse(List.of())
                 .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
 
         Map<String, String> subCategoryOptionMap = null;
         if (subCategoryAxisField != null) {
             subCategoryOptionMap = Optional.ofNullable(optionMap.get(subCategoryAxisParam.getFieldId()))
                     .orElse(List.of())
                     .stream()
-                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                    .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
         }
 
         for (ChartResult chartResult : chartResults) {

@@ -149,7 +149,7 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
                 .collect(Collectors.toList());
         Map<String, String> customNameMap = extCustomerMapper.selectOptionByIds(customerIds)
                 .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
 
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);

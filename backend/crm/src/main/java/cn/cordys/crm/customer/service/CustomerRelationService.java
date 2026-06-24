@@ -74,7 +74,7 @@ public class CustomerRelationService {
             // 设置客户名称
             var customerMap = extCustomerMapper.selectOptionByIds(customerIds)
                     .stream()
-                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                    .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             result.forEach(item -> item.setCustomerName(customerMap.get(item.getCustomerId())));
         }
 

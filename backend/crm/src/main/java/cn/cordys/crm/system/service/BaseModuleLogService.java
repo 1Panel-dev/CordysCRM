@@ -316,17 +316,17 @@ public abstract class BaseModuleLogService {
         List<String> oldNameList = new ArrayList<>();
         List<String> newNameList = new ArrayList<>();
         for (OptionDTO option : options) {
-            if (differ.getOldValue() instanceof String strValue && Strings.CS.equals(option.getId(), strValue)) {
+            if (differ.getOldValue() instanceof String strValue && Strings.CS.equals(option.getIdAsString(), strValue)) {
                 // 设置旧值名称
                 differ.setOldValueName(option.getName());
             }
-            if (differ.getNewValue() instanceof String strValue && Strings.CS.equals(option.getId(), strValue)) {
+            if (differ.getNewValue() instanceof String strValue && Strings.CS.equals(option.getIdAsString(), strValue)) {
                 // 设置新值名称
                 differ.setNewValueName(option.getName());
             }
             if (differ.getOldValue() instanceof List<?> oldValueList) {
                 for (Object oldValue : oldValueList) {
-                    if (oldValue instanceof String strValue && Strings.CS.equals(option.getId(), strValue)) {
+                    if (oldValue instanceof String strValue && Strings.CS.equals(option.getIdAsString(), strValue)) {
                         // 设置旧值名称
                         oldNameList.add(option.getName());
                     }
@@ -336,7 +336,7 @@ public abstract class BaseModuleLogService {
             if (differ.getNewValue() instanceof List<?> newValueList) {
 
                 for (Object newValue : newValueList) {
-                    if (newValue instanceof String strValue && Strings.CS.equals(option.getId(), strValue)) {
+                    if (newValue instanceof String strValue && Strings.CS.equals(option.getIdAsString(), strValue)) {
                         // 设置新值名称
                         newNameList.add(option.getName());
                     }

@@ -110,7 +110,7 @@ public class AdvancedCustomerContactSearchService extends BaseSearchService<Cust
 
         Map<String, String> customNameMap = extCustomerMapper.selectOptionByIds(customerIds)
                 .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+                .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
 
         List<String> ownerIds = list.stream()
                 .map(CustomerContactListResponse::getOwner)

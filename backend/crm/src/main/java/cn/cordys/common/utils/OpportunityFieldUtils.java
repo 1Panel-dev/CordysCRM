@@ -59,7 +59,7 @@ public class OpportunityFieldUtils {
     private static Object getProducts(Map<String, List<OptionDTO>> optionMap, List<String> products) {
         List<String> productNames = new ArrayList<>();
         if (optionMap != null && optionMap.containsKey(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey()) && CollectionUtils.isNotEmpty(products)) {
-            Map<String, String> productsMap = optionMap.get(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey()).stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+            Map<String, String> productsMap = optionMap.get(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey()).stream().collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             products.forEach(product -> {
                 if (productsMap.containsKey(product)) {
                     productNames.add(productsMap.get(product));

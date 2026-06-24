@@ -333,7 +333,7 @@ public class MessageNotificationService {
 
         if (CollectionUtils.isNotEmpty(externalRoles)) {
             extRoleMapper.getIdNameByIds(externalRoles)
-                    .forEach(role -> roleNameMap.put(role.getId(), role.getName()));
+                    .forEach(role -> roleNameMap.put(role.getIdAsString(), role.getName()));
         }
 
         internalRoles.forEach(role ->
