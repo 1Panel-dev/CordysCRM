@@ -71,6 +71,7 @@
 
   import type { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum.js';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum.js';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type {
     CirculationFieldValueItem,
@@ -204,7 +205,10 @@
       props.stageConfig?.advancedConfigs
         ?.find((e) => e.originId === currentStage.value)
         ?.targets.find((e) => e.targetId === targetStageConfig.value?.id)?.circulationFieldValues || [];
-    if (circulationFieldValues.value.length > 0) {
+    if (
+      circulationFieldValues.value.length > 0 &&
+      props.stageConfig?.circulationType === CirculationTypeEnum.ADVANCED
+    ) {
       flowModalShow.value = true;
     } else {
       handleSave(stage);

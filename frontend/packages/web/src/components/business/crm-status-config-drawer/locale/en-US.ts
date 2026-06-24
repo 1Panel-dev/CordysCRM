@@ -20,6 +20,7 @@ export default {
   'crmStatusConfigDrawer.fieldValue': 'Field value',
   'crmStatusConfigDrawer.addField': 'Add field',
   'crmStatusConfigDrawer.field': 'Field',
+  'crmStatusConfigDrawer.fieldDefaultValueTip': 'Use the current value of the field',
   'crmStatusConfigDrawer.typeChangeTip':
     'After switching modes, the current mode configuration will be lost, and the new mode will become the effective rule. Do you confirm the switch?',
   'crmStatusConfigDrawer.flowDisabledTip':

@@ -1347,14 +1347,60 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     field.defaultValue = defaultValue;
   }
 
+  function initFormCreateFieldDefaultValue(field: FormCreateField) {
+    let defaultValue = field.defaultValue || '';
+    if (field.resourceFieldId && field.defaultValue) {
+      defaultValue = parseModuleFieldValue(
+        field,
+        field.defaultValue,
+        field.initialOptions || field.options?.map((opt) => ({ id: opt.value, name: opt.label }))
+      );
+      formDetail.value[field.id] = defaultValue;
+      return defaultValue;
+    }
+    if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(field.type)) {
+      defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
+    } else if (getRuleType(field) === 'array') {
+      defaultValue =
+        [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(field.type) &&
+        typeof field.defaultValue === 'string'
+          ? [defaultValue]
+          : defaultValue || [];
+    } else if ([FieldTypeEnum.PICTURE, FieldTypeEnum.ATTACHMENT].includes(field.type)) {
+      defaultValue = defaultValue || [];
+    } else if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(field.type) && field.hasCurrentUser) {
+      field.defaultValue = field.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id;
+      field.initialOptions = [
+        ...(field.initialOptions || []),
+        {
+          id: userStore.userInfo.id,
+          name: userStore.userInfo.name,
+        },
+      ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+      return field.defaultValue;
+    } else if (
+      [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(field.type) &&
+      field.hasCurrentUserDept
+    ) {
+      field.defaultValue = field.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId;
+      field.initialOptions = [
+        ...(field.initialOptions || []),
+        {
+          id: userStore.userInfo.departmentId,
+          name: userStore.userInfo.departmentName,
+        },
+      ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+      return field.defaultValue;
+    }
+    return defaultValue;
+  }
+
   function initForm(linkScenario?: FormLinkScenarioEnum) {
     fieldList.value.forEach((item) => {
-      // const initLine: Record<string, any> = {};
       if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
         item.subFields?.forEach((subField) => {
           subFieldInit(subField);
           replaceRule(subField, item.id);
-          // initLine[subField.businessKey || subField.id] = subField.defaultValue;
         });
         if (!formDetail.value[item.id]) {
           formDetail.value[item.id] = [];
@@ -1365,53 +1411,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         // 详情页编辑时，从详情获取值，不需要默认值
         item.defaultValue = undefined;
       }
-      let defaultValue = item.defaultValue || '';
-      if (item.resourceFieldId && item.defaultValue) {
-        defaultValue = parseModuleFieldValue(
-          item,
-          item.defaultValue,
-          item.initialOptions || item.options?.map((opt) => ({ id: opt.value, name: opt.label }))
-        );
-        formDetail.value[item.id] = defaultValue;
-        return;
-      }
-      if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.type)) {
-        defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
-      } else if (getRuleType(item) === 'array') {
-        defaultValue =
-          [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
-          typeof item.defaultValue === 'string'
-            ? [defaultValue]
-            : defaultValue || [];
-      } else if ([FieldTypeEnum.PICTURE, FieldTypeEnum.ATTACHMENT].includes(item.type)) {
-        defaultValue = defaultValue || [];
-      }
+      const defaultValue = initFormCreateFieldDefaultValue(item);
       if (!formDetail.value[item.id]) {
         formDetail.value[item.id] = defaultValue;
       }
       replaceRule(item);
-      if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
-        item.defaultValue = item.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id;
-        item.initialOptions = [
-          ...(item.initialOptions || []),
-          {
-            id: userStore.userInfo.id,
-            name: userStore.userInfo.name,
-          },
-        ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
-      } else if (
-        [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
-        item.hasCurrentUserDept
-      ) {
-        item.defaultValue = item.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId;
-        item.initialOptions = [
-          ...(item.initialOptions || []),
-          {
-            id: userStore.userInfo.departmentId,
-            name: userStore.userInfo.departmentName,
-          },
-        ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
-      }
       if (Object.keys(props.linkFormInfo?.value || {}).length && linkScenario) {
         // 如果有关联表单信息，则填充关联表单字段值
         fillLinkFormFieldValue(item, linkScenario);

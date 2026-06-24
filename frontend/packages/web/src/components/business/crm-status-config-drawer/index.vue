@@ -6,6 +6,8 @@
     :title="textConfig.title"
     body-content-class="bg-[var(--text-n9)]"
     :loading="drawerLoading"
+    :mask-closable="false"
+    @mask-click="handleMaskClick"
   >
     <div class="h-full">
       <n-tabs v-model:value="tabName" type="line" size="medium">
@@ -95,8 +97,12 @@
                 </n-tab-pane>
               </n-tabs>
               <div v-if="flowConfigurationType === CirculationTypeEnum.ADVANCED" class="flex items-center gap-[8px]">
-                <n-button secondary @click="handleCancelFlowConfiguration">{{ t('common.cancel') }}</n-button>
-                <n-button type="primary" @click="handleConfirmFlowConfiguration">{{ t('common.save') }}</n-button>
+                <n-button secondary :disabled="!unsaved" @click="handleCancelFlowConfiguration">
+                  {{ t('common.cancel') }}
+                </n-button>
+                <n-button type="primary" :disabled="!unsaved" @click="handleConfirmFlowConfiguration">
+                  {{ t('common.save') }}
+                </n-button>
               </div>
             </div>
             <template v-if="flowConfigurationType === CirculationTypeEnum.NORMAL">
@@ -150,17 +156,17 @@
     <div class="mb-[16px]">{{ t('crmStatusConfigDrawer.flowSettingCondition') }}</div>
     <div class="flex w-full rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
       <div class="min-w-0 flex-1">
-        <n-form ref="formRef" :model="activeRow">
+        <n-form ref="formRef" :model="tempForm">
           <div
-            v-for="(item, listIndex) in tempCirculationFieldValues"
+            v-for="(item, listIndex) in tempForm.circulationFieldValues"
             :key="item.fieldId"
             class="flex items-start gap-[8px]"
           >
             <n-form-item
               :label="listIndex === 0 ? t('crmStatusConfigDrawer.field') : ''"
-              :path="`conditions[${listIndex}].fieldId`"
+              :path="`circulationFieldValues[${listIndex}].fieldId`"
               :rule="[{ required: true, message: t('common.notNull', { value: t('crmStatusConfigDrawer.field') }) }]"
-              class="fieldId-col block flex-1 overflow-hidden"
+              class="block flex-1 overflow-hidden"
             >
               <n-select
                 v-model:value="item.fieldId"
@@ -169,12 +175,13 @@
                 :options="fieldOptions"
                 :fallback-option="() => fallbackOption(item.fieldId)"
                 :loading="fieldLoading"
+                :render-option="renderOption"
                 @update-value="() => leftFieldChange(item)"
               />
             </n-form-item>
             <n-form-item
               :label="listIndex === 0 ? t('crmStatusConfigDrawer.defaultValueType') : ''"
-              :path="`conditions[${listIndex}].valueType`"
+              :path="`circulationFieldValues[${listIndex}].valueType`"
               class="block w-[105px]"
             >
               <n-select
@@ -194,13 +201,8 @@
             </n-form-item>
             <n-form-item
               :label="listIndex === 0 ? t('crmFormDesign.defaultValue') : ''"
-              :path="`conditions[${listIndex}].fieldValue`"
-              class="block flex-[1.5] overflow-hidden"
-              :rule="
-                item.valueType === CirculationValueTypeEnum.FIELD_VALUE
-                  ? []
-                  : [{ required: true, message: t('common.notNull', { value: t('common.defaultValue') }) }]
-              "
+              :path="`circulationFieldValues[${listIndex}].fieldValue`"
+              class="block flex-1 overflow-hidden"
             >
               <template v-if="item.fieldProps">
                 <n-date-picker
@@ -211,13 +213,22 @@
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   class="w-full"
                   :default-time="undefined"
+                  :placeholder="
+                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                      : t('common.pleaseInput')
+                  "
                 />
                 <CrmInputNumber
                   v-else-if="[FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.fieldProps.type)"
                   v-model:value="item.fieldValue"
                   clearable
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
-                  :placeholder="t('common.pleaseInput')"
+                  :placeholder="
+                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                      : t('common.pleaseInput')
+                  "
                   class="w-full"
                 />
                 <CrmTagInput
@@ -226,6 +237,11 @@
                   clearable
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   class="w-full"
+                  :placeholder="
+                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                      : t('common.pleaseInput')
+                  "
                 />
                 <CrmDataSource
                   v-else-if="
@@ -236,7 +252,12 @@
                   v-model:rows="item.fieldProps.initialOptions"
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   :data-source-type="item.fieldProps.dataSourceType"
-                  :multiple="item.fieldProps.type === FieldTypeEnum.MEMBER_MULTIPLE"
+                  :multiple="item.fieldProps.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
+                  :placeholder="
+                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                      : t('common.pleaseSelect')
+                  "
                 />
                 <n-select
                   v-else-if="
@@ -251,13 +272,22 @@
                   clearable
                   max-tag-count="responsive"
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
-                  :placeholder="t('common.pleaseSelect')"
-                  :multiple="item.fieldProps.type === FieldTypeEnum.SELECT_MULTIPLE"
+                  :placeholder="
+                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                      : t('common.pleaseSelect')
+                  "
+                  :multiple="[FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.CHECKBOX].includes(item.fieldProps.type)"
+                  :options="item.fieldProps.options"
                 />
                 <CrmCitySelect
                   v-else-if="item.fieldProps.type === FieldTypeEnum.LOCATION"
                   v-model:value="item.fieldValue"
-                  :placeholder="t('common.pleaseInput')"
+                  :placeholder="
+                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                      : t('common.pleaseSelect')
+                  "
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   clearable
                   multiple
@@ -266,7 +296,11 @@
                 <CrmIndustrySelect
                   v-else-if="item.fieldProps.type === FieldTypeEnum.INDUSTRY"
                   v-model:value="item.fieldValue"
-                  :placeholder="t('common.pleaseInput')"
+                  :placeholder="
+                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                      : t('common.pleaseSelect')
+                  "
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   clearable
                   multiple
@@ -282,7 +316,9 @@
                     ].includes(item.fieldProps.type)
                   "
                   v-model:value="item.fieldValue"
-                  multiple
+                  :multiple="
+                    [FieldTypeEnum.DEPARTMENT_MULTIPLE, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.fieldProps.type)
+                  "
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   :drawer-title="t('crmFormDesign.selectDataSource')"
                   :api-type-key="MemberApiTypeEnum.FORM_FIELD"
@@ -306,6 +342,11 @@
                       ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
                       : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
                   "
+                  :placeholder="
+                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                      : t('common.pleaseSelect')
+                  "
                 />
                 <n-input
                   v-else
@@ -313,7 +354,11 @@
                   allow-clear
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   :maxlength="255"
-                  :placeholder="t('common.pleaseInput')"
+                  :placeholder="
+                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                      : t('common.pleaseSelect')
+                  "
                 />
               </template>
               <n-input
@@ -322,20 +367,28 @@
                 allow-clear
                 :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                 :maxlength="255"
-                :placeholder="t('common.pleaseInput')"
+                :placeholder="
+                  item.valueType === CirculationValueTypeEnum.FIELD_VALUE
+                    ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
+                    : t('common.pleaseInput')
+                "
               />
             </n-form-item>
             <n-form-item
               :label="listIndex === 0 ? t('common.required') : ''"
               :path="`conditions[${listIndex}].required`"
+              :show-label="listIndex === 0"
+              class="w-[30px]"
             >
               <n-checkbox v-model:checked="item.required" />
             </n-form-item>
-            <n-button ghost class="self-center px-[8px]" @click="handleDeleteItem(listIndex)">
-              <template #icon>
-                <CrmIcon type="iconicon_minus_circle1" :size="16" />
-              </template>
-            </n-button>
+            <n-form-item :show-label="false" :class="listIndex === 0 ? 'self-center' : 'self-start'">
+              <n-button ghost class="px-[8px]" @click="handleDeleteItem(listIndex)">
+                <template #icon>
+                  <CrmIcon type="iconicon_minus_circle1" :size="16" />
+                </template>
+              </n-button>
+            </n-form-item>
           </div>
         </n-form>
         <n-button type="primary" text class="w-[fit-content]" @click="handleAddItem">
@@ -365,6 +418,7 @@
     NTabPane,
     NTabs,
     NTooltip,
+    type SelectOption,
     useMessage,
   } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
@@ -376,6 +430,7 @@
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { scrollIntoView } from '@lib/shared/method/dom';
+  import { initFieldValue } from '@lib/shared/method/formCreate';
   import type { CirculationFieldValueItem, CirculationSetting } from '@lib/shared/models/opportunity';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -399,6 +454,7 @@
   import type { StatusBizType, StatusRowItem } from './types';
   import useStageConfig from './useStageConfig';
   import type { TableColumn } from 'naive-ui/es/data-table/src/interface';
+  import type { VNodeChild } from 'vue';
 
   const props = defineProps<{
     type: StatusBizType;
@@ -413,6 +469,7 @@
   });
 
   const batchFormRef = ref<InstanceType<typeof CrmBatchForm>>();
+  const unsaved = ref(false);
 
   const {
     textConfig,
@@ -439,6 +496,24 @@
   const tabName = ref('statusConfig');
   const drawerLoading = ref(false);
   const flowConfigurationType = ref<CirculationTypeEnum>(CirculationTypeEnum.NORMAL);
+  const formRef = ref<FormInst | null>(null);
+
+  function handleMaskClick() {
+    if (unsaved.value) {
+      openModal({
+        type: 'warning',
+        title: t('common.tip'),
+        content: t('common.editUnsavedLeave'),
+        positiveText: t('common.confirm'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: () => {
+          show.value = false;
+        },
+      });
+    } else {
+      show.value = false;
+    }
+  }
 
   function initAdvanceConfig() {
     flowConfigurationType.value = form.value.circulationType;
@@ -475,6 +550,7 @@
         await init();
         drawerLoading.value = false;
         initAdvanceConfig();
+        unsaved.value = false;
       } else {
         tabName.value = 'statusConfig';
       }
@@ -546,6 +622,7 @@
         })),
       });
       Message.success(t('common.saveSuccess'));
+      unsaved.value = false;
       show.value = false;
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -584,7 +661,9 @@
   const activeRow = ref<CirculationSetting & StatusRowItem>();
   const activeCol = ref<StatusRowItem>();
   const fieldLoading = ref(false);
-  const tempCirculationFieldValues = ref<CirculationFieldValueItem[]>([]);
+  const tempForm = ref({
+    circulationFieldValues: [] as CirculationFieldValueItem[],
+  });
 
   async function openFlowSetting(row: CirculationSetting & StatusRowItem, col: StatusRowItem) {
     try {
@@ -595,7 +674,7 @@
       await initFormConfig();
       // 初始化未初始化过的字段属性
       const currentFlow = row.targets.find((e) => e.targetId === col.id);
-      if (currentFlow && currentFlow.circulationFieldValues.some((e) => e.fieldProps === undefined)) {
+      if (currentFlow) {
         currentFlow.circulationFieldValues = currentFlow.circulationFieldValues.map((v) => {
           const field = fieldList.value.find((f) => f.id === v.fieldId);
           if (field) {
@@ -613,14 +692,15 @@
             }
             return {
               ...v,
+              fieldValue: initFieldValue(field, v.fieldValue),
               fieldProps: field,
             };
           }
           return v;
         });
-        tempCirculationFieldValues.value = cloneDeep(currentFlow.circulationFieldValues);
-      } else {
-        tempCirculationFieldValues.value = currentFlow?.circulationFieldValues || [];
+        tempForm.value = {
+          circulationFieldValues: cloneDeep(currentFlow.circulationFieldValues),
+        };
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -634,12 +714,27 @@
     flowSettingVisible.value = false;
   }
 
+  function validateForm(cb: (res?: Record<string, any>) => void) {
+    formRef.value?.validate(async (errors) => {
+      if (errors) {
+        scrollIntoView(document.querySelector('.n-form-item-blank--error'), { block: 'center' });
+        return;
+      }
+      if (typeof cb === 'function') {
+        cb();
+      }
+    });
+  }
+
   function handleConfirm() {
-    const currentFlow = activeRow.value?.targets.find((e) => e.targetId === activeCol.value?.id);
-    if (currentFlow) {
-      currentFlow.circulationFieldValues = cloneDeep(tempCirculationFieldValues.value);
-    }
-    flowSettingVisible.value = false;
+    validateForm(() => {
+      const currentFlow = activeRow.value?.targets.find((e) => e.targetId === activeCol.value?.id);
+      if (currentFlow) {
+        currentFlow.circulationFieldValues = cloneDeep(tempForm.value.circulationFieldValues);
+      }
+      unsaved.value = true;
+      flowSettingVisible.value = false;
+    });
   }
 
   const columns = computed<TableColumn<CirculationSetting & StatusRowItem>[]>(() => {
@@ -705,6 +800,7 @@
                         circulationFieldValues: [],
                       });
                     }
+                    unsaved.value = true;
                   },
                 }),
                 rowIndex === i
@@ -731,6 +827,9 @@
             FieldTypeEnum.SERIAL_NUMBER,
             FieldTypeEnum.SUB_PRICE,
             FieldTypeEnum.SUB_PRODUCT,
+            FieldTypeEnum.ATTACHMENT,
+            FieldTypeEnum.FORMULA,
+            FieldTypeEnum.PICTURE,
           ].includes(e.type) &&
           !e.resourceFieldId &&
           e.editable
@@ -747,6 +846,13 @@
     };
   }
 
+  function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
+    return h(NTooltip, null, {
+      trigger: () => node,
+      default: () => option.label,
+    });
+  }
+
   function leftFieldChange(item: CirculationFieldValueItem) {
     nextTick(() => {
       const field = fieldList.value.find((e) => e.id === item.fieldId);
@@ -757,21 +863,8 @@
     });
   }
 
-  const formRef = ref<FormInst | null>(null);
-  function validateForm(cb: (res?: Record<string, any>) => void) {
-    formRef.value?.validate(async (errors) => {
-      if (errors) {
-        scrollIntoView(document.querySelector('.n-form-item-blank--error'), { block: 'center' });
-        return;
-      }
-      if (typeof cb === 'function') {
-        cb();
-      }
-    });
-  }
-
   function handleDeleteItem(index: number) {
-    tempCirculationFieldValues.value.splice(index, 1);
+    tempForm.value.circulationFieldValues.splice(index, 1);
   }
 
   function handleAddItem() {
@@ -783,7 +876,7 @@
         valueType: CirculationValueTypeEnum.FIELD_VALUE,
         required: false,
       };
-      tempCirculationFieldValues.value.push(item);
+      tempForm.value.circulationFieldValues.push(item);
     });
   }
 </script>
@@ -816,15 +909,9 @@
     @apply flex items-center;
 
     gap: 8px;
-    &:hover {
-      .setting-icon {
-        visibility: visible;
-      }
-    }
     .setting-icon {
       color: var(--text-n4);
       cursor: pointer;
-      visibility: hidden;
     }
   }
 </style>
