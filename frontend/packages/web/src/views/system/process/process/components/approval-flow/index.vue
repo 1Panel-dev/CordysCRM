@@ -421,25 +421,18 @@
     });
   }
 
-  // 更新开始节点描述
-  watch(
-    () => [basicConfig.value.formType],
-    () => {
-      flowTimingConfig.forEach((timing) => {
-        const firstNode = flowSchemas.value[timing.value].nodes[0];
-        const startNode =
-          firstNode?.type === 'start'
-            ? firstNode
-            : flowSchemas.value[timing.value].nodes.find((node) => node.type === 'start');
-        if (startNode) {
-          startNode.description = resolveStartNodeDescription(timing.value);
-        }
-      });
-    },
-    {
-      immediate: true,
-    }
-  );
+  function updateStartNodeDescriptions() {
+    flowTimingConfig.forEach((timing) => {
+      const firstNode = flowSchemas.value[timing.value].nodes[0];
+      const startNode =
+        firstNode?.type === 'start'
+          ? firstNode
+          : flowSchemas.value[timing.value].nodes.find((node) => node.type === 'start');
+      if (startNode) {
+        startNode.description = resolveStartNodeDescription(timing.value);
+      }
+    });
+  }
 
   watch(
     flowTimingTabs,
@@ -465,17 +458,6 @@
   }
 
   watch(
-    () => basicConfig.value.formType,
-    (formType, oldFormType) => {
-      if (props.readonly || !oldFormType || formType === oldFormType) {
-        return;
-      }
-
-      resetToDefaultFlow();
-    }
-  );
-
-  watch(
     () => props.optionMap,
     () => {
       refreshConditionDescriptions();
@@ -487,7 +469,13 @@
 
   watch(
     () => basicConfig.value.formType,
-    async () => {
+    async (formType, oldFormType) => {
+      updateStartNodeDescriptions();
+
+      if (!props.readonly && oldFormType && formType !== oldFormType) {
+        resetToDefaultFlow();
+      }
+
       await loadConditionFilterConfig();
       refreshConditionDescriptions();
     },

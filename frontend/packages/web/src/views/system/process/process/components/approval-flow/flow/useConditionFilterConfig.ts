@@ -172,8 +172,8 @@ export default function useConditionFilterConfig(options: {
     ],
   };
 
-  function createSystemFilterConfigList(): FilterFormItem[] {
-    return formTypeConfigMap[toValue(options.formType) as FormDesignKeyEnum]?.() ?? [...baseFilterConfigList];
+  function createSystemFilterConfigList(formType: FormDesignKeyEnum): FilterFormItem[] {
+    return formTypeConfigMap[formType]?.() ?? [...baseFilterConfigList];
   }
 
   function getFieldConfigProps(field: FormCreateField) {
@@ -243,7 +243,11 @@ export default function useConditionFilterConfig(options: {
       userResult.status === 'fulfilled' ? userResult.value.map((item: any) => ({ id: item.id, name: item.name })) : [];
   }
 
+  // 每次加载字段配置都生成一个编号；旧请求晚回来时，编号对不上就丢弃，避免覆盖当前业务类型。
+  let latestLoadId = 0;
+
   async function loadFilterConfig() {
+    const loadId = ++latestLoadId;
     loading.value = true;
 
     try {
@@ -259,9 +263,13 @@ export default function useConditionFilterConfig(options: {
         stageConfigApi?.() ?? Promise.resolve(null),
         api?.() ?? Promise.resolve({ fields: [] }),
       ]);
+      // 例如先加载报价、马上切到发票：报价请求如果晚回来，不能再写入发票页面的描述上下文
+      if (loadId !== latestLoadId) {
+        return;
+      }
 
       businessStageConfig.value = stageConfig;
-      filterConfigList.value = createSystemFilterConfigList().map(appendFieldChangedOperator);
+      filterConfigList.value = createSystemFilterConfigList(formType).map(appendFieldChangedOperator);
       customFieldsFilterConfig.value = [
         ...getFilterListConfig(formConfig, true),
         ...createSubTableFilterConfigList(formConfig.fields),
