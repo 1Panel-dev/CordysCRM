@@ -122,7 +122,7 @@ public class OpportunityStageService {
      * @param orgId
      */
     private void checkConfigCount(String orgId) {
-        if (extOpportunityStageConfigMapper.countStageConfig(orgId) >= 10) {
+        if (extOpportunityStageConfigMapper.countStageConfig(orgId) >= 15) {
             throw new GenericException(Translator.get("opportunity_stage_config_list"));
         }
     }
