@@ -155,9 +155,9 @@
     return targetIndex >= fromIndex;
   }
 
-  await Promise.all([initStageConfig(), initFormConfig()]);
-
   defineExpose({
     refresh,
   });
+
+  await Promise.all([initStageConfig(), initFormConfig()]);
 </script>

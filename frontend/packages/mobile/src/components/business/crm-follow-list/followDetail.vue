@@ -25,7 +25,6 @@
           />
         </div>
         <van-button
-          v-if="!isPlan || (isPlan && detail.status !== CustomerFollowPlanStatusEnum.CANCELLED)"
           type="primary"
           class="flex-1 !rounded-[var(--border-radius-small)] !text-[16px]"
           plain

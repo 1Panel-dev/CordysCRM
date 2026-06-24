@@ -62,10 +62,22 @@
                 <n-button type="primary" class="text-btn-primary" quaternary @click="handleDetail(item)">
                   {{ t('common.detail') }}
                 </n-button>
-                <n-button type="primary" class="text-btn-primary" quaternary @click="handleEdit(item)">
+                <n-button
+                  v-if="isOwner(item)"
+                  type="primary"
+                  class="text-btn-primary"
+                  quaternary
+                  @click="handleEdit(item)"
+                >
                   {{ t('common.edit') }}
                 </n-button>
-                <n-button type="error" class="text-btn-error" quaternary @click="handleDelete(item.id)">
+                <n-button
+                  v-if="isOwner(item)"
+                  type="error"
+                  class="text-btn-error"
+                  quaternary
+                  @click="handleDelete(item.id)"
+                >
                   {{ t('common.delete') }}
                 </n-button>
               </div>
@@ -98,6 +110,7 @@
       :source-id="sourceId"
       :refresh-key="refreshKey"
       :source-name="sourceName"
+      :readonly="!isOwner(activeItem)"
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
     />
@@ -132,8 +145,10 @@
   import useLocalForage from '@/hooks/useLocalForage';
   import useModal from '@/hooks/useModal';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
+  import useUserStore from '@/store/modules/user';
 
   const { t } = useI18n();
+  const userStore = useUserStore();
   const Message = useMessage();
   const { goDetail } = useOpenDetailPage();
   const { setItem, getItem } = useLocalForage();
@@ -190,6 +205,7 @@
   const sourceId = ref('');
   const sourceName = ref('');
   const showDetailDrawer = ref(false);
+  const isOwner = (item?: any) => item?.owner === userStore.userInfo.id;
   function handleDetail(row: any) {
     sourceId.value = row.id;
     activeItem.value = row;
@@ -261,7 +277,7 @@
       fixed: 'right',
       render: (row: any) =>
         h(CrmOperationButton, {
-          groupList: operationGroupList,
+          groupList: operationGroupList.filter((item) => item.key === 'detail' || isOwner(row)),
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
