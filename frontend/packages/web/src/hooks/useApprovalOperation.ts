@@ -7,8 +7,8 @@ import { ApprovalProcessDetail, StatusPermissions } from '@lib/shared/models/sys
 
 import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 
-import { getApprovalConfigDetail } from '@/api/modules';
 import { processStatusOptions } from '@/config/process';
+import { loadApprovalConfig } from '@/hooks/useApprovalConfigCache';
 import { useUserStore } from '@/store';
 import { hasAnyPermission } from '@/utils/permission';
 
@@ -332,7 +332,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
   async function initApprovalPermission() {
     try {
-      const result = await getApprovalConfigDetail(options.formType);
+      const result = await loadApprovalConfig(options.formType);
 
       if (result) {
         approvalPermissionsDetail.value = result;

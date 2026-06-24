@@ -81,7 +81,7 @@
 
   import { addApprovalProcess, approvalProcessDetail, updateApprovalProcess } from '@/api/modules';
   import { defaultBasicForm, defaultMoreConfig } from '@/config/process';
-  import { clearApprovalReviewConfigCache } from '@/hooks/useFormReviewAction';
+  import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useModal from '@/hooks/useModal';
 
   const props = defineProps<{
@@ -224,7 +224,7 @@
         await addApprovalProcess(params);
         Message.success(t('common.addSuccess'));
       }
-      clearApprovalReviewConfigCache(form.value.basicConfig.formType);
+      clearApprovalConfigCache(form.value.basicConfig.formType);
       emit('refresh');
       closeDrawer();
     } catch (error) {
@@ -315,7 +315,7 @@
           name: newName,
         };
         await updateApprovalProcess(params);
-        clearApprovalReviewConfigCache(form.value.basicConfig.formType);
+        clearApprovalConfigCache(form.value.basicConfig.formType);
         form.value.basicConfig.name = newName;
         editingName.value = newName;
         done?.();
