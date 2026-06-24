@@ -557,7 +557,7 @@
   const currentStageConfig = ref<StageConfigItem>();
 
   function getContractStageOptions(row: ContractItem) {
-    const currentStageAdvanceConfig = stageConfig.value?.advancedConfigs.find((e) => e.originId === row.stage);
+    const currentStageAdvanceConfig = stageConfig.value?.advancedConfigs?.find((e) => e.originId === row.stage);
     return contractStageList.value.map((item) => ({
       label: item.name,
       value: item.id,
