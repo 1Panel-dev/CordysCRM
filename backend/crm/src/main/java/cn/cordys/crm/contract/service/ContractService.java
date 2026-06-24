@@ -452,15 +452,21 @@ public class ContractService implements ApprovalResourceHandler {
         contractFieldService.saveModuleField(contract, orgId, userId, moduleFields, true);
     }
 
+    @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        // 校验审批流
+        delete(id, userId, orgId);
+    }
+
 
     /**
      * 删除合同
      *
      * @param id 合同ID
      */
+    @Override
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.DELETE, resourceId = "{#id}")
-    @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
-    public void delete(String id, String userId) {
+    public void delete(String id, String userId, String orgId) {
         Contract contract = contractMapper.selectByPrimaryKey(id);
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
@@ -476,11 +482,6 @@ public class ContractService implements ApprovalResourceHandler {
         snapshotBaseMapper.deleteByLambda(wrapper);
         // 添加日志上下文
         OperationLogContext.setResourceName(contract.getName());
-    }
-
-    @Override
-    public void deleteForResource(String resourceId, String userId, String organizationId) {
-        delete(resourceId, userId);
     }
 
     @Override

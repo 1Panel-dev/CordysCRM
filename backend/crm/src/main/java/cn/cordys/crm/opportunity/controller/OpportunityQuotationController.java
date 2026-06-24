@@ -151,7 +151,7 @@ public class OpportunityQuotationController {
     @CsPermission(value = PermissionConstants.OPPORTUNITY_QUOTATION_DELETE, resourceId = "{#id}", formType = FormKeyConstants.QUOTATION)
     @Operation(summary = "删除报价单")
     public void delete(@PathVariable("id") String id) {
-        opportunityQuotationService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        opportunityQuotationService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")

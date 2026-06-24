@@ -305,9 +305,9 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
      *
      * @param id
      */
+    @Override
     @OperationLog(module = LogModule.CONTRACT_INVOICE, type = LogType.DELETE, resourceId = "{#id}")
-    @HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
-    public void delete(String id, String userId) {
+    public void delete(String id, String userId, String orgId) {
         ContractInvoice invoice = invoiceMapper.selectByPrimaryKey(id);
         if (invoice == null) {
             throw new GenericException(Translator.get("invoice.not.exist"));
@@ -325,9 +325,10 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
         OperationLogContext.setResourceName(invoice.getName());
     }
 
-    @Override
-    public void deleteForResource(String resourceId, String userId, String organizationId) {
-        delete(resourceId, userId);
+    @HitApproval(formKey = FormKey.INVOICE, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        // 校验审批流
+        delete(id, userId, orgId);
     }
 
     @Override

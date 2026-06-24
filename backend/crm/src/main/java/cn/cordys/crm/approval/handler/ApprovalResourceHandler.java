@@ -22,7 +22,7 @@ public interface ApprovalResourceHandler {
      * @param userId         操作人ID
      * @param organizationId 组织ID
      */
-    void deleteForResource(String resourceId, String userId, String organizationId);
+    void delete(String resourceId, String userId, String organizationId);
 
     /**
      * 更新业务快照审批状态

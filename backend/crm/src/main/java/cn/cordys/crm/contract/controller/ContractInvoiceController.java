@@ -97,7 +97,7 @@ public class ContractInvoiceController {
     @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_INVOICE)
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
-        contractInvoiceService.delete(id, SessionUtils.getUserId());
+        contractInvoiceService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/module/form/snapshot/{id}")

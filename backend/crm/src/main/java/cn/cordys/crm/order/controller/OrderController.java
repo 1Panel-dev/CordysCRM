@@ -87,7 +87,7 @@ public class OrderController {
     @CsPermission(value = PermissionConstants.ORDER_DELETE, resourceId = "{#id}", formType = FormKeyConstants.ORDER)
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
-        orderService.delete(id, SessionUtils.getUserId());
+        orderService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/snapshot/{id}")
