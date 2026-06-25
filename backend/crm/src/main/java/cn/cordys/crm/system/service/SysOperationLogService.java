@@ -184,7 +184,7 @@ public class SysOperationLogService {
         differences = differences
                 .stream()
                 .filter(differ -> !Strings.CS.equalsAny(differ.getColumn(),
-                        "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage", "pos"))
+                        "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage", "pos", "approved"))
                 .collect(Collectors.toList());
         return differences;
     }
