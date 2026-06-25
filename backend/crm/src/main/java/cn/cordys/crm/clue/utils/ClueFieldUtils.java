@@ -37,7 +37,7 @@ public class ClueFieldUtils {
 
     public static Object getProducts(Map<String, List<OptionDTO>> optionMap, List<String> products) {
         List<String> productNames = new ArrayList<>();
-        if (optionMap.containsKey(BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()) && CollectionUtils.isNotEmpty(products)) {
+        if (optionMap != null && optionMap.containsKey(BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()) && CollectionUtils.isNotEmpty(products)) {
             Map<String, String> productsMap = optionMap.get(BusinessModuleField.CLUE_PRODUCTS.getBusinessKey()).stream().collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
             products.forEach(product -> {
                 if (productsMap.containsKey(product)) {
