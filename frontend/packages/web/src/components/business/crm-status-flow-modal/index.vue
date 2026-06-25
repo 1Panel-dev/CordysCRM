@@ -61,7 +61,7 @@
   import { FieldRuleEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { CirculationValueTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getNormalFieldValue, getRuleType, transformFieldValue } from '@lib/shared/method/formCreate';
+  import { getNormalFieldValue, getRuleType, initFieldValue, transformFieldValue } from '@lib/shared/method/formCreate';
   import type { CirculationFieldValueItem, UpdateStageParams } from '@lib/shared/models/opportunity';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -130,12 +130,16 @@
           }
           if (cf.valueType === CirculationValueTypeEnum.FIXED_VALUE) {
             formDetail.value[field.id] =
-              cf.valueType === CirculationValueTypeEnum.FIXED_VALUE ? cf.fieldValue : formDetail.value[field.id];
+              cf.valueType === CirculationValueTypeEnum.FIXED_VALUE
+                ? initFieldValue(field, cf.fieldValue)
+                : formDetail.value[field.id];
           }
           return {
             ...field,
             defaultValue:
-              cf.valueType === CirculationValueTypeEnum.FIXED_VALUE ? cf.fieldValue : formDetail.value[field.id],
+              cf.valueType === CirculationValueTypeEnum.FIXED_VALUE
+                ? initFieldValue(field, cf.fieldValue)
+                : formDetail.value[field.id],
             fieldWidth: 1,
             rules,
           };
@@ -261,5 +265,7 @@
 <style lang="less" scoped>
   .crm-form-create-item {
     @apply w-full;
+
+    margin-bottom: 16px;
   }
 </style>
