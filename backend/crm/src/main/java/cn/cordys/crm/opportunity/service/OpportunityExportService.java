@@ -31,6 +31,8 @@ public class OpportunityExportService extends BaseExportService {
     private ExtOpportunityMapper extOpportunityMapper;
     @Resource
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
+    @Resource
+    private OpportunityService opportunityService;
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
@@ -38,9 +40,11 @@ public class OpportunityExportService extends BaseExportService {
         if (CollectionUtils.isEmpty(exportList)) {
             return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
         }
+        // 构建自定义字段数据
+        var dataList = opportunityService.buildListData(exportList, exportParam.getOrgId());
         // 从缓存获取阶段配置，避免重复查询
         Map<String, String> stageConfigMap = getOrLoadStageConfigMap(exportParam);
-        return buildExportMergeResult(taskId, exportParam, exportList,
+        return buildExportMergeResult(taskId, exportParam, dataList,
                 OpportunityListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
                         OpportunityFieldUtils.getSystemFieldMap(detail, null, stageConfigMap, null), cache));

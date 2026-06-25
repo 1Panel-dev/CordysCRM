@@ -26,6 +26,8 @@ public class ClueExportService extends BaseExportService {
 
     @Resource
     private ExtClueMapper extClueMapper;
+    @Resource
+    private ClueService clueService;
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
@@ -33,7 +35,9 @@ public class ClueExportService extends BaseExportService {
         if (CollectionUtils.isEmpty(exportList)) {
             return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
         }
-        return buildExportMergeResult(taskId, exportParam, exportList, ClueListResponse::getModuleFields,
+        // 构建自定义字段数据
+        var dataList = clueService.buildListData(exportList, exportParam.getOrgId());
+        return buildExportMergeResult(taskId, exportParam, dataList, ClueListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
                         PoolClueFieldUtils.getSystemFieldMap(detail, null), cache));
     }
