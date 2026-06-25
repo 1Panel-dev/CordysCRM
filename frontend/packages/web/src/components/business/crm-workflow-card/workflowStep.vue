@@ -6,7 +6,7 @@
           v-for="(item, index) of workflowData"
           :key="item.value"
           trigger="hover"
-          :disabled="isDisabledStage(item.value?.toString() || '') || currentStatus === item.value"
+          :disabled="props.readonly || !isDisabledStage(item.value?.toString() || '') || currentStatus === item.value"
         >
           <template #trigger>
             <div :class="`crm-workflow-item`" @click="changeStage(item.value as string)">
