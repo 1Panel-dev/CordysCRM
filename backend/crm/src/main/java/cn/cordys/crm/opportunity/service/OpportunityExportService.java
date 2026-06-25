@@ -1,6 +1,9 @@
 package cn.cordys.crm.opportunity.service;
 
+import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.ExportDTO;
+import cn.cordys.common.dto.ExportFieldParam;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.utils.OpportunityFieldUtils;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
@@ -9,6 +12,7 @@ import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.system.excel.domain.MergeResult;
+import cn.cordys.crm.system.service.ModuleFormService;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +37,8 @@ public class OpportunityExportService extends BaseExportService {
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
     @Resource
     private OpportunityService opportunityService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
@@ -42,12 +48,14 @@ public class OpportunityExportService extends BaseExportService {
         }
         // 构建自定义字段数据
         var dataList = opportunityService.buildListData(exportList, exportParam.getOrgId());
+        // 构建选项数据
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(dataList, exportParam.getExportFieldParam());
         // 从缓存获取阶段配置，避免重复查询
         Map<String, String> stageConfigMap = getOrLoadStageConfigMap(exportParam);
         return buildExportMergeResult(taskId, exportParam, dataList,
                 OpportunityListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        OpportunityFieldUtils.getSystemFieldMap(detail, null, stageConfigMap, null), cache));
+                        OpportunityFieldUtils.getSystemFieldMap(detail, optionMap, stageConfigMap, null), cache));
     }
 
     @SuppressWarnings("unchecked")
@@ -68,5 +76,12 @@ public class OpportunityExportService extends BaseExportService {
         var request = (OpportunityPageRequest) exportParam.getPageRequest();
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return extOpportunityMapper.list(request, orgId, userId, deptDataPermission, false);
+    }
+
+    private Map<String, List<OptionDTO>> buildOptionMap(List<OpportunityListResponse> dataList,
+                                                        ExportFieldParam exportFieldParam) {
+        List<BaseModuleFieldValue> moduleFieldValues =
+                moduleFormService.getBaseModuleFieldValues(dataList, OpportunityListResponse::getModuleFields);
+        return moduleFormService.getOptionMap(exportFieldParam.getFormConfig(), moduleFieldValues);
     }
 }
