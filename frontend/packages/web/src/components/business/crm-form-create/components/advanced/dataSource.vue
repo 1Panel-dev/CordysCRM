@@ -117,6 +117,7 @@
   const { fieldList, initFormConfig } = useFormCreateApi({
     formKey,
     customFormId: computed(() => (isCustomForm.value ? dataSourceType.value : undefined)),
+    isDatasource: true,
   });
 
   const listApi = isCustomForm.value
