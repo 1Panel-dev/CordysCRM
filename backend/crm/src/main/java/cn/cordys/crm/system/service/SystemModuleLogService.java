@@ -168,7 +168,7 @@ public class SystemModuleLogService extends BaseModuleLogService {
                                             Translator.get("advanced_circulation_condition") + "\n" +
                                             Translator.get("advanced_circulation_condition_field") + baseField.getName() + "\n" +
                                             Translator.get("advanced_circulation_condition_type") + Translator.get(fieldValue.getValueType()) + "\n" +
-                                            Translator.get("advanced_circulation_condition_default_value") + (Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "\n" +
+                                            Translator.get("advanced_circulation_condition_default_value") + ((Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) && (fieldValue.getFieldValue() != null)) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "\n" +
                                             Translator.get("isRequired") + Translator.get(fieldValue.getRequired().toString()) + "\n");
                                 }
                             });
