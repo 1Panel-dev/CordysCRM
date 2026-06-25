@@ -651,6 +651,9 @@ public class ContractService implements ApprovalResourceHandler {
         Map<String, String> stageMap = stageConfigList.stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
 
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("contractStage", stageMap.get(contract.getStage()));
+
         if (!stageAdvancedConfigService.checkStage(contract.getStage(), request.getStage(), FormKey.CONTRACT.getKey())) {
             return;
         }
@@ -661,9 +664,6 @@ public class ContractService implements ApprovalResourceHandler {
         contractMapper.update(contract);
 
         updateFieldAndSnapshot(contract, request.getFields(),userId);
-
-        final Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("contractStage", stageMap.get(contract.getStage()));
 
         if (Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) || Strings.CI.equals(request.getStage(), ContractStage.ARCHIVED.name())) {
             String event = Strings.CI.equals(request.getStage(), ContractStage.VOID.name()) ?
