@@ -128,7 +128,7 @@ export function formatNumberValueToString(value: number, item: FormCreateField) 
   return '-';
 }
 
-export function initFieldValue(field: FormCreateField, value: string | number | (string | number)[]) {
+export function initFieldValue(field: FormCreateField, value?: string | number | (string | number)[]) {
   if (
     [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) &&
     (typeof value === 'string' || value === undefined || value === null)
