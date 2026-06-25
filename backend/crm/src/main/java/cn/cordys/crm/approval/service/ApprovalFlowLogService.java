@@ -13,6 +13,7 @@ import cn.cordys.crm.approval.dto.WebHookConfig;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowNodeConfigResponse;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
 import cn.cordys.crm.system.mapper.ExtRoleMapper;
 import cn.cordys.crm.system.mapper.ExtUserMapper;
 import cn.cordys.crm.system.service.BaseModuleLogService;
@@ -46,6 +47,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
 
     @Resource
     private ExtUserMapper extUserMapper;
+    @Resource
+    private ExtDepartmentMapper extDepartmentMapper;
     @Resource
     private ExtRoleMapper extRoleMapper;
     @Resource
@@ -438,10 +441,10 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 break;
             case "conditionConfig":
                 if (hasOldValue && isValidValue(diff.getOldValue())) {
-                    diff.setOldValueName(JSON.toJSONString(diff.getOldValue()));
+                    diff.setOldValueName(translateConditionConfig(diff.getOldValue()));
                 }
                 if (hasNewValue && isValidValue(diff.getNewValue())) {
-                    diff.setNewValueName(JSON.toJSONString(diff.getNewValue()));
+                    diff.setNewValueName(translateConditionConfig(diff.getNewValue()));
                 }
                 break;
             default:
@@ -538,6 +541,26 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         return userIds.stream()
                 .map(nameMap::get)
                 .filter(Objects::nonNull)
+                .collect(Collectors.joining(", "));
+    }
+
+    /**
+     * 翻译成员列表（ID -> 名称）
+     * 支持单个用户ID字符串或用户ID列表
+     */
+    private String translateDepartmentList(Object value) {
+        List<String> deptIds = parseStringList(value);
+        // 如果不是列表格式，尝试作为单个ID处理
+        if (deptIds.isEmpty() && value != null && !NULL_STRING.equals(value.toString())) {
+            String singleId = value.toString();
+            if (StringUtils.isNotBlank(singleId)) {
+                deptIds = List.of(singleId);
+            }
+        }
+        if (deptIds.isEmpty()) {
+            return "";
+        }
+        return extDepartmentMapper.getNameByIds(deptIds).stream()
                 .collect(Collectors.joining(", "));
     }
 
@@ -808,9 +831,138 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     }
 
     /**
-     * 翻译字段权限配置
-     * 将 FieldPermissionDTO 列表翻译为 "字段名: 权限类型" 格式
+     * 翻译条件配置
+     * 将 conditionConfig 翻译为 "字段名-操作符" 格式，如 [名称-新值不等于旧值，创建时间-动态-本周]
      */
+    private String translateConditionConfig(Object value) {
+        if (value == null) return "";
+        try {
+            String jsonStr = value instanceof String ? (String) value : JSON.toJSONString(value);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode configNode = mapper.readTree(jsonStr);
+
+            JsonNode conditionsNode = configNode.get("conditions");
+            if (conditionsNode == null || !conditionsNode.isArray() || conditionsNode.isEmpty()) {
+                return "";
+            }
+
+            Map<String, BaseField> fieldMap = fields != null
+                    ? fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (a, b) -> a))
+                    : Map.of();
+
+            List<String> conditionParts = new ArrayList<>();
+            for (JsonNode condition : conditionsNode) {
+                String nameValue = condition.has("name") ? condition.get("name").asText() : "";
+                String operator = condition.has("operator") ? condition.get("operator").asText() : "";
+
+                String fieldName = translateConditionFieldName(nameValue, fieldMap);
+                String operatorName = Translator.get("approval_flow.condition.operator." + operator.toLowerCase(), operator);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(fieldName).append("-").append(operatorName);
+
+                if ("DYNAMICS".equals(operator) && condition.has("value") && !condition.get("value").isNull()) {
+                    String dynamicValue = condition.get("value").asText();
+                    String dynamicName = translateDynamicTimeValue(dynamicValue);
+                    sb.append("-").append(dynamicName);
+                } else if (!Strings.CS.equalsAny(operator, "NOT_EQUAL_ORIGINAL", "EMPTY", "NOT_EMPTY")
+                        && condition.has("value") && !condition.get("value").isNull()) {
+                    String translatedValue = translateConditionValue(condition.get("value"), nameValue, fieldMap);
+                    if (StringUtils.isNotBlank(translatedValue)) {
+                        sb.append("-").append(translatedValue);
+                    }
+                }
+
+                conditionParts.add(sb.toString());
+            }
+
+            return "[" + String.join("，", conditionParts) + "]";
+        } catch (Exception e) {
+            return value.toString();
+        }
+    }
+
+    /**
+     * 翻译条件字段名
+     * 先按字段ID从业务字段中查找，再尝试i18n翻译系统字段
+     */
+    private String translateConditionFieldName(String name, Map<String, BaseField> fieldMap) {
+        BaseField field = fieldMap.get(name);
+        if (field != null) {
+            return field.getName();
+        }
+        return Translator.get("approval_flow.condition.field." + name, name);
+    }
+
+    /**
+     * 翻译动态时间值
+     * 支持单值（WEEK, MONTH等）和自定义格式（0,1,BEFORE_DAY等）
+     */
+    private String translateDynamicTimeValue(String value) {
+        if (value == null || value.isEmpty()) return "";
+        String[] parts = value.split(",");
+        if (parts.length == 1) {
+            return Translator.get("approval_flow.condition.dynamics." + parts[0].toLowerCase(), parts[0]);
+        } else if (parts.length >= 3) {
+            String dateNumber = parts[1];
+            String dateUnit = parts[2];
+            String unitName = Translator.get("approval_flow.condition.dynamics." + dateUnit.toLowerCase(), dateUnit);
+            return dateNumber + unitName;
+        } else if (parts.length == 2) {
+            String dateNumber = parts[0];
+            String unitName = Translator.get("approval_flow.condition.dynamics." + parts[1].toLowerCase(), parts[1]);
+            return dateNumber + unitName;
+        }
+        return value;
+    }
+
+    /**
+     * 翻译条件值
+     * 根据字段类型将值翻译为可读文本（用户ID→名称、数据源ID→名称、选项值→标签等）
+     * 单选类型字段且值为数组时，循环匹配选项标签
+     */
+    private String translateConditionValue(JsonNode valueNode, String fieldName, Map<String, BaseField> fieldMap) {
+        BaseField field = fieldMap.get(fieldName);
+        if (field != null) {
+            try {
+                // 单选类型字段（RADIO/SELECT）且值为数组时，逐项匹配选项标签
+                if (valueNode.isArray() && field.hasSingleOptions()) {
+                    List<String> labels = new ArrayList<>();
+                    for (String item : JSON.parseArray(valueNode.toString(), String.class)) {
+                        Object translated = transformFieldValue(field, item);
+                        if (translated instanceof String translatedStr) {
+                            labels.add(translatedStr);
+                        }
+                    }
+                    return labels.stream().collect(Collectors.joining(", "));
+                } else {
+                    Object translated = transformFieldValue(field, valueNode);
+                    return translated != null ? translated.toString() : "";
+                }
+            } catch (Exception e) {
+                return valueNode.asText("");
+            }
+        }
+        // 系统字段特殊处理：ownerId 翻译为用户名称
+        if ("ownerId".equals(fieldName)) {
+            return translateMemberList(valueNode);
+        }
+        if (fieldName.toLowerCase().contains("user")) {
+            return translateMemberList(valueNode);
+        }
+        if (fieldName.contains("department")) {
+            return translateDepartmentList(valueNode);
+        }
+        if (valueNode.isArray()) {
+            List<String> items = new ArrayList<>();
+            for (JsonNode item : valueNode) {
+                items.add(item.asText(""));
+            }
+            return JSON.parseArray(valueNode.toString(), String.class).stream().collect(Collectors.joining(", "));
+        }
+        return valueNode.asText("");
+    }
+
     private String translateFieldPermissions(Object value) {
         if (value == null) return "";
         try {
