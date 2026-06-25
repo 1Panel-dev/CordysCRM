@@ -873,10 +873,12 @@
   function leftFieldChange(item: CirculationFieldValueItem) {
     nextTick(() => {
       const field = fieldList.value.find((e) => e.id === item.fieldId);
-      item.valueType = CirculationValueTypeEnum.FIELD_VALUE;
-      item.required = false;
-      item.fieldValue = field?.defaultValue !== '' ? field?.defaultValue : undefined;
-      item.fieldProps = field;
+      if (field) {
+        item.valueType = CirculationValueTypeEnum.FIELD_VALUE;
+        item.required = false;
+        item.fieldValue = initFieldValue(field, undefined);
+        item.fieldProps = field;
+      }
     });
   }
 
@@ -889,7 +891,7 @@
       const item: CirculationFieldValueItem = {
         fieldId: undefined,
         fieldProps: undefined,
-        fieldValue: '',
+        fieldValue: undefined,
         valueType: CirculationValueTypeEnum.FIELD_VALUE,
         required: false,
       };
