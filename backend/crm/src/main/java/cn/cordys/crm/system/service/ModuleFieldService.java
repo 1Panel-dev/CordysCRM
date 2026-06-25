@@ -151,7 +151,11 @@ public class ModuleFieldService {
         } else {
             repeatName = commonMapper.checkFieldRepeatName(tableName, tableName + "_field", request.getId(), value, currentOrg);
         }
-        return FieldRepeatCheckResponse.builder().name(repeatName).repeat(StringUtils.isNotBlank(repeatName)).build();
+        boolean repeat = true;
+        if (StringUtils.isNotBlank(repeatName)) {
+            repeat = Strings.CS.equals(request.getValue(), repeatName);
+        }
+        return FieldRepeatCheckResponse.builder().name(repeatName).repeat(repeat).build();
     }
 
 	@SuppressWarnings("unchecked")
