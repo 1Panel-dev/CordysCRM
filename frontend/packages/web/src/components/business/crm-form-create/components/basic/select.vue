@@ -27,6 +27,7 @@
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
       :fallback-option="value !== null && value !== undefined && value !== '' ? fallbackOption : false"
+      :render-option="renderOption"
       max-tag-count="responsive"
       clearable
     />
@@ -34,7 +35,8 @@
 </template>
 
 <script setup lang="ts">
-  import { NDivider, NFormItem, NSelect } from 'naive-ui';
+  import { VNode, VNodeChild } from 'vue';
+  import { NDivider, NFormItem, NSelect, NTooltip, SelectOption } from 'naive-ui';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -89,6 +91,19 @@
       label: t('common.optionNotExist'),
       value: val,
     };
+  }
+
+  function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+      },
+      {
+        trigger: () => node,
+        default: () => option.label,
+      }
+    );
   }
 
   onBeforeMount(() => {

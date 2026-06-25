@@ -26,6 +26,7 @@
               v-model:value="line.fieldId"
               :disabled="props.readonly"
               filterable
+              :render-option="renderOption"
               :options="getFieldOptions(line.fieldId)"
               :placeholder="t('common.pleaseSelect')"
               @update:value="(value) => handleFieldUpdate(line, value)"
@@ -216,7 +217,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, shallowRef, watch } from 'vue';
+  import { computed, ref, shallowRef, VNode, VNodeChild, watch } from 'vue';
   import {
     type FormInst,
     NButton,
@@ -230,6 +231,7 @@
     NSelect,
     NSwitch,
     NTooltip,
+    SelectOption,
     useMessage,
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
@@ -314,6 +316,19 @@
   // 通过后操作 / 驳回后操作共用同一套 UI，这里按当前 tab 取对应配置
   function getCurrentPostConfig(): ApprovalPostConfig | undefined {
     return activePostTab.value === 'pass' ? nodeConfig.value.passPostConfig : nodeConfig.value.rejectPostConfig;
+  }
+
+  function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+      },
+      {
+        trigger: () => node,
+        default: () => option.label,
+      }
+    );
   }
 
   function ensureActivePostConfig(): ApprovalPostConfig {
