@@ -6,6 +6,7 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalRole;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.OptionDTO;
@@ -686,6 +687,15 @@ public class ApprovalFlowService {
         if (CollectionUtils.isEmpty(roleOptions)) {
             return List.of();
         }
+        roleOptions.forEach(o -> {
+            if (InternalRole.ORG_ADMIN.getValue().equals(o.getId())) {
+                o.setName(Translator.get("role.org_admin"));
+            } else if (InternalRole.SALES_MANAGER.getValue().equals(o.getId())) {
+                o.setName(Translator.get("role.sales_staff"));
+            } else if (InternalRole.SALES_STAFF.getValue().equals(o.getId())) {
+                o.setName(Translator.get("role.sales_staff"));
+            }
+        });
         // 按照 roleIds 顺序返回
         Map<String, OptionDTO> optionMap = roleOptions.stream()
                 .collect(Collectors.toMap(OptionDTO::getIdAsString, o -> o));
