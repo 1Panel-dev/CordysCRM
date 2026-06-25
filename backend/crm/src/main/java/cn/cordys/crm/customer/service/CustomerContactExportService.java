@@ -23,6 +23,8 @@ public class CustomerContactExportService extends BaseExportService {
 
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
+    @Resource
+    private CustomerContactService customerContactService;
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
@@ -30,7 +32,9 @@ public class CustomerContactExportService extends BaseExportService {
         if (CollectionUtils.isEmpty(exportList)) {
             return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
         }
-        return buildExportMergeResult(taskId, exportParam, exportList,
+        // 构建自定义字段数据
+        var dataList = customerContactService.buildListData(exportList, exportParam.getOrgId());
+        return buildExportMergeResult(taskId, exportParam, dataList,
                 CustomerContactListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
                         CustomerContactFieldUtils.getSystemFieldMap(detail), cache));
