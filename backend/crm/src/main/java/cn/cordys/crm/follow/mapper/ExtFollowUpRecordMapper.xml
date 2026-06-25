@@ -48,49 +48,68 @@
 
     <select id="selectList" resultType="cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse">
         SELECT
-        id,
-        customer_id,
-        opportunity_id,
-        type,
-        clue_id,
-        content,
-        follow_time,
-        owner,
-        contact_id,
-        create_time,
-        update_time,
-        create_user,
-        update_user,
-        follow_method
+        fur.id,
+        fur.customer_id,
+        fur.opportunity_id,
+        fur.type,
+        fur.clue_id,
+        fur.content,
+        fur.follow_time,
+        fur.owner,
+        fur.contact_id,
+        fur.create_time,
+        fur.update_time,
+        fur.create_user,
+        fur.update_user,
+        fur.follow_method
         FROM
-        follow_up_record
+        follow_up_record fur
         <where>
             <if test="resourceType == 'CUSTOMER'">
-                AND customer_id = #{request.sourceId}
+                AND fur.customer_id = #{request.sourceId}
             </if>
             <if test="resourceType == 'CLUE'">
-                AND clue_id = #{request.sourceId}
+                AND fur.clue_id = #{request.sourceId}
             </if>
             <if test="resourceType == 'OPPORTUNITY'">
-                AND opportunity_id = #{request.sourceId}
+                AND fur.opportunity_id = #{request.sourceId}
             </if>
             <if test="orgId != null and orgId != ''">
-                AND organization_id = #{orgId}
+                AND fur.organization_id = #{orgId}
             </if>
             <if test="request.keyword != null and request.keyword != ''">
-                AND content like concat('%', #{request.keyword},'%')
+                AND fur.content like concat('%', #{request.keyword},'%')
             </if>
-            <!-- 协作人数据隔离：排除当前客户其他协作人创建的记录 -->
+            <!-- 协作人数据隔离：协作人只能看到自己创建的，非协作者看不到协作人创建的 -->
             <if test="resourceType == 'CUSTOMER'">
-                AND NOT EXISTS (
-                    SELECT 1 FROM customer_collaboration cc
-                    WHERE cc.customer_id = customer_id
-                    AND cc.user_id = create_user
-                    AND cc.user_id != #{userId}
+                AND (
+                    -- 协作人只能看到自己创建的
+                    (
+                        EXISTS (
+                            SELECT 1 FROM customer_collaboration cc
+                            WHERE cc.customer_id = fur.customer_id
+                            AND cc.user_id = #{userId}
+                        )
+                        AND fur.create_user = #{userId}
+                    )
+                    OR
+                    -- 非协作者看不到协作人创建的
+                    (
+                        NOT EXISTS (
+                            SELECT 1 FROM customer_collaboration cc
+                            WHERE cc.customer_id = fur.customer_id
+                            AND cc.user_id = #{userId}
+                        )
+                        AND NOT EXISTS (
+                            SELECT 1 FROM customer_collaboration cc
+                            WHERE cc.customer_id = fur.customer_id
+                            AND cc.user_id = fur.create_user
+                        )
+                    )
                 )
             </if>
         </where>
-        ORDER BY follow_time DESC, create_time DESC
+        ORDER BY fur.follow_time DESC, fur.create_time DESC
     </select>
 
     <select id="selectTotalList" resultType="cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse">

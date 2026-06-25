@@ -52,13 +52,32 @@
         <if test="request.status != null and request.status != '' and request.status != 'ALL'">
             AND fup.status = #{request.status}
         </if>
-        <!-- 协作人数据隔离：排除当前客户其他协作人创建的计划 -->
+        <!-- 协作人数据隔离：协作人只能看到自己创建的，非协作者看不到协作人创建的 -->
         <if test="resourceType == 'CUSTOMER'">
-            AND NOT EXISTS (
-                SELECT 1 FROM customer_collaboration cc
-                WHERE cc.customer_id = fup.customer_id
-                AND cc.user_id = fup.create_user
-                AND cc.user_id != #{userId}
+            AND (
+                -- 协作人只能看到自己创建的
+                (
+                    EXISTS (
+                        SELECT 1 FROM customer_collaboration cc
+                        WHERE cc.customer_id = fup.customer_id
+                        AND cc.user_id = #{userId}
+                    )
+                    AND fup.create_user = #{userId}
+                )
+                OR
+                -- 非协作者看不到协作人创建的
+                (
+                    NOT EXISTS (
+                        SELECT 1 FROM customer_collaboration cc
+                        WHERE cc.customer_id = fup.customer_id
+                        AND cc.user_id = #{userId}
+                    )
+                    AND NOT EXISTS (
+                        SELECT 1 FROM customer_collaboration cc
+                        WHERE cc.customer_id = fup.customer_id
+                        AND cc.user_id = fup.create_user
+                    )
+                )
             )
         </if>
 
