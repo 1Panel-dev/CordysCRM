@@ -17,7 +17,7 @@
             @click.stop="
               () => {
                 if (!props.activeTaskType.includes('copied') || getResourcePermission(item)) {
-                  emit('openDetail', item.resourceId, item.approvalFlowId, item.approvalTaskId);
+                  emit('openDetail', item.resourceId, item.resourceType, item.approvalTaskId);
                 }
               }
             "
@@ -103,7 +103,7 @@
     :approval-type="approvalType"
     :approval-item="approvalItem"
     :approval-item-keys="selectedKeys"
-    :approval-flow-id="approvalItem?.approvalFlowId || ''"
+    :resourceType="approvalItem?.resourceType || ''"
     module="WORKBENCH"
     @approval-cancel="handleApproveCancel"
     @approval-success="handleApproveSuccess"
