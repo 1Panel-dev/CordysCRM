@@ -164,16 +164,28 @@ public class StageAdvancedConfigService {
         StageConfigResponse originConfig = extStageAdvancedConfigMapper.getStageConfig(tableName, originStage);
         StageConfigResponse targetConfig = extStageAdvancedConfigMapper.getStageConfig(tableName, targetStage);
 
+        if (originConfig == null || targetConfig == null) {
+            return false;
+        }
+
         if (Strings.CI.equals(originConfig.getCirculationType(), CirculationTypeEnum.NORMAL.name())) {
             return handleNormal(originConfig, targetConfig);
         }
 
         if (Strings.CI.equals(originConfig.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
-            return handleAdvanced(originConfig, targetConfig, moduleType);
+            return checkAdvanced(originConfig, targetConfig, moduleType);
         }
 
         return false;
 
+    }
+
+    /**
+     * 高级流转校验（不抛异常，返回false）
+     */
+    private boolean checkAdvanced(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
+        StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originConfig.getId(), targetConfig.getId(), moduleType);
+        return config != null && config.getEnable();
     }
 
     private boolean handleAdvanced(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
