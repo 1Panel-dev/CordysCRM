@@ -290,7 +290,6 @@
                   "
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   clearable
-                  check-strategy="parent"
                 />
                 <CrmIndustrySelect
                   v-else-if="item.fieldProps.type === FieldTypeEnum.INDUSTRY"
@@ -302,7 +301,6 @@
                   "
                   :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
                   clearable
-                  check-strategy="parent"
                 />
                 <CrmUserTagSelector
                   v-else-if="
@@ -314,7 +312,7 @@
                     ].includes(item.fieldProps.type)
                   "
                   v-model:value="item.fieldValue"
-                  :selected-list="item.fieldProps?.initialOptions"
+                  v-model:selected-list="item.fieldProps.initialOptions"
                   :multiple="
                     [FieldTypeEnum.DEPARTMENT_MULTIPLE, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.fieldProps.type)
                   "
@@ -685,12 +683,14 @@
               name: e.name || t('common.optionNotExist'),
             }));
             if (options && options.length > 0) {
-              field.initialOptions = options
-                ?.filter((e) => v.fieldValue.includes(e.id))
-                .map((e) => ({
-                  ...e,
-                  name: e.name || t('common.optionNotExist'),
-                }));
+              field.initialOptions = (v.fieldProps?.initialOptions || []).concat(
+                options
+                  ?.filter((e) => v.fieldValue?.includes(e.id))
+                  .map((e) => ({
+                    ...e,
+                    name: e.name || t('common.optionNotExist'),
+                  }))
+              );
             }
             return {
               ...v,
@@ -832,6 +832,7 @@
             FieldTypeEnum.ATTACHMENT,
             FieldTypeEnum.FORMULA,
             FieldTypeEnum.PICTURE,
+            FieldTypeEnum.INPUT,
           ].includes(e.type) &&
             !e.resourceFieldId &&
             e.editable) ||
@@ -860,6 +861,7 @@
       NTooltip,
       {
         delay: 300,
+        placement: 'left',
       },
       {
         trigger: () => node,

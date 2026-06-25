@@ -85,7 +85,6 @@
   }>();
 
   const showSelectDrawer = ref(false);
-  const crmSelectUserDrawerRef = ref<InstanceType<typeof CrmSelectUserDrawer>>();
   const resolvedMaxTagCount = computed(() => (props.maxTagCount === false ? undefined : props.maxTagCount));
   function handleShowSelectDrawer() {
     if (props.disabled) return;
