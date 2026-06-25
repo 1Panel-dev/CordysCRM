@@ -889,12 +889,15 @@ public class ContractService implements ApprovalResourceHandler {
         if (stageField == null) {
             return;
         }
-        if (!stageAdvancedConfigService.checkStage(originContract.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.getKey())) {
+        if (!stageAdvancedConfigService.checkStage(originContract.getStage(), stageField.getFieldValue().toString(), FormKey.CONTRACT.getKey())) {
             return;
         }
         StageConfigResponse first = extContractStageConfigMapper.getStageConfigList(originContract.getOrganizationId()).getFirst();
         if (Strings.CI.equals(first.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
-            StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originContract.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.name());
+            StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originContract.getStage(), stageField.getFieldValue().toString(), FormKey.CONTRACT.name());
+            if (config == null || config.getFieldConfig() == null) {
+                return;
+            }
             List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
             });
             List<ResourceApprovalFieldUpdateParam> fields = new ArrayList<>();
