@@ -163,7 +163,11 @@
   onMounted(() => {
     adjustOSTheme();
     window.onerror = (_message) => {
-      if (typeof _message === 'string' && _message.includes('Failed to fetch dynamically imported')) {
+      if (
+        typeof _message === 'string' &&
+        (_message.includes('Failed to fetch dynamically imported') ||
+          _message.includes('error loading dynamically imported module'))
+      ) {
         showUpdateMessage();
       }
     };
@@ -173,7 +177,8 @@
         event &&
         event.reason &&
         event.reason.message &&
-        event.reason.message.includes('Failed to fetch dynamically imported')
+        (event.reason.message.includes('Failed to fetch dynamically imported') ||
+          event.reason.message.includes('error loading dynamically imported module'))
       ) {
         showUpdateMessage();
       }
