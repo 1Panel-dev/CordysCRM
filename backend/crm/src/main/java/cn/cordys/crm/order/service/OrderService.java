@@ -801,6 +801,8 @@ public class OrderService implements ApprovalResourceHandler {
         List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(orgId);
         Map<String, String> stageMap = stageConfigList.stream()
                 .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("orderStage", stageMap.get(order.getStage()));
 
         if (!stageAdvancedConfigService.checkStage(order.getStage(), request.getStage(), FormKey.ORDER.getKey())) {
             return;
@@ -810,8 +812,6 @@ public class OrderService implements ApprovalResourceHandler {
 
         updateFieldAndSnapshot(order, request.getFields(), userId);
 
-        final Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("orderStage", stageMap.get(order.getStage()));
         final Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("orderStage", stageMap.get(request.getStage()));
         OperationLogContext.setContext(
