@@ -80,6 +80,15 @@
             <if test="request.keyword != null and request.keyword != ''">
                 AND content like concat('%', #{request.keyword},'%')
             </if>
+            <!-- 协作人数据隔离：排除当前客户其他协作人创建的记录 -->
+            <if test="resourceType == 'CUSTOMER'">
+                AND NOT EXISTS (
+                    SELECT 1 FROM customer_collaboration cc
+                    WHERE cc.customer_id = customer_id
+                    AND cc.user_id = create_user
+                    AND cc.user_id != #{userId}
+                )
+            </if>
         </where>
         ORDER BY follow_time DESC, create_time DESC
     </select>
