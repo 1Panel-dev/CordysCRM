@@ -59,9 +59,9 @@
 
   import {
     agreeApproval,
-    approvalProcessDetail,
     batchAgreeApproval,
     batchRejectApproval,
+    getApprovalConfigDetail,
     rejectApproval,
   } from '@/api/modules/index';
 
@@ -70,7 +70,7 @@
     approvalItemKeys?: string[];
     approvalType: 'approve' | 'reject';
     module: 'WORKBENCH' | 'CONTRACT_INDEX' | 'ORDER_INDEX' | 'OPPORTUNITY_QUOTATION' | 'CONTRACT_INVOICE';
-    approvalFlowId: string; // 审批流 id
+    resourceType: string;
   }>();
   const emit = defineEmits<{
     (e: 'approvalSuccess'): void;
@@ -188,9 +188,7 @@
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
   async function initApprovalConfig() {
     try {
-      if (props.approvalFlowId) {
-        approvalConfig.value = await approvalProcessDetail(props.approvalFlowId);
-      }
+      approvalConfig.value = await getApprovalConfigDetail(props.resourceType);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
