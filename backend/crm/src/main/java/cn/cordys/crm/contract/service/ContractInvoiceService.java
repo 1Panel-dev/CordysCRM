@@ -768,4 +768,44 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
 		});
 		extContractInvoiceMapper.updateOldApprovalStatusNone();
 	}
+
+    /**
+     * 获取发票名
+     * @param id 发票ID
+     * @return 发票名
+     */
+    public String getInvoiceName(String id) {
+        ContractInvoice invoice = contractInvoiceMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(invoice).map(ContractInvoice::getName).orElse(null);
+    }
+
+    /**
+     * 通过名称获取发票集合
+     *
+     * @param names 名称集合
+     * @return 发票集合
+     */
+    public List<ContractInvoice> getContractInvoiceListByNames(List<String> names) {
+        LambdaQueryWrapper<ContractInvoice> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(ContractInvoice::getName, names);
+        return contractInvoiceMapper.selectListByLambda(lambdaQueryWrapper);
+    }
+
+    /**
+     * 通过ID集合获取发票名称
+     *
+     * @param ids id集合
+     * @return 发票名称
+     */
+    public Object getInvoiceNameByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return StringUtils.EMPTY;
+        }
+        List<ContractInvoice> invoices = contractInvoiceMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(invoices)) {
+            List<String> names = invoices.stream().map(ContractInvoice::getName).toList();
+            return String.join(",", names);
+        }
+        return StringUtils.EMPTY;
+    }
 }

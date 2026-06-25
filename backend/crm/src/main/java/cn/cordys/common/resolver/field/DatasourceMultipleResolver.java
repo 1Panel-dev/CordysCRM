@@ -4,14 +4,8 @@ import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.service.ClueService;
-import cn.cordys.crm.contract.domain.BusinessTitle;
-import cn.cordys.crm.contract.domain.Contract;
-import cn.cordys.crm.contract.domain.ContractPaymentPlan;
-import cn.cordys.crm.contract.domain.ContractPaymentRecord;
-import cn.cordys.crm.contract.service.BusinessTitleService;
-import cn.cordys.crm.contract.service.ContractPaymentPlanService;
-import cn.cordys.crm.contract.service.ContractPaymentRecordService;
-import cn.cordys.crm.contract.service.ContractService;
+import cn.cordys.crm.contract.domain.*;
+import cn.cordys.crm.contract.service.*;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.service.CustomerContactService;
@@ -52,6 +46,7 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
 	private static final OrderService orderService;
 	private static final ContractService contractService;
 	private static final CustomFormDataService customFormDataService;
+    private static final ContractInvoiceService invoiceService;
 
 	public static final String EMPTY_ARRAY_STRING = "[]";
 
@@ -69,6 +64,7 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
         orderService = CommonBeanFactory.getBean(OrderService.class);
 		contractService = CommonBeanFactory.getBean(ContractService.class);
         customFormDataService = CommonBeanFactory.getBean(CustomFormDataService.class);
+        invoiceService =  CommonBeanFactory.getBean(ContractInvoiceService.class);
     }
 
     @Override
@@ -139,6 +135,9 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
 		if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
 			return Objects.requireNonNull(contractService).getContractNameByIds(list);
 		}
+        if (Strings.CI.equals(datasourceMultipleField.getDataSourceType(), FieldSourceType.INVOICE.name())) {
+            return Objects.requireNonNull(invoiceService).getInvoiceNameByIds(list);
+        }
 
         return Objects.requireNonNull(customFormDataService).getNameStrByIds(list);
     }
@@ -217,6 +216,12 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
 			List<String> ids = contracts.stream().map(Contract::getId).toList();
 			return CollectionUtils.isEmpty(ids) ? names : ids;
 		}
+
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.INVOICE.name())) {
+            List<ContractInvoice> invoices = Objects.requireNonNull(invoiceService).getContractInvoiceListByNames(names);
+            List<String> ids = invoices.stream().map(ContractInvoice::getId).toList();
+            return CollectionUtils.isEmpty(ids) ? names : ids;
+        }
 
         List<CustomFormData> contracts = Objects.requireNonNull(customFormDataService).selectByNames(names);
         List<String> ids = contracts.stream().map(CustomFormData::getId).toList();
