@@ -130,7 +130,7 @@ public class StageAdvancedConfigService {
             extStageAdvancedConfigMapper.update(tableName, type, orgId, null, null);
         }
         final Map<String, Object> originalVal = new HashMap<>(1);
-        originalVal.put("circulationType", Strings.CI.equals(CirculationTypeEnum.NORMAL.name(), type) ? Translator.get(CirculationTypeEnum.ADVANCED.name()) : Translator.get(Translator.get(CirculationTypeEnum.NORMAL.name())));
+        originalVal.put("circulationType", Strings.CI.equals(CirculationTypeEnum.NORMAL.name(), type) ? Translator.get(CirculationTypeEnum.ADVANCED.name()) : Translator.get(CirculationTypeEnum.NORMAL.name()));
         final Map<String, Object> modifiedVal = new HashMap<>(1);
         modifiedVal.put("circulationType", Translator.get(type));
         OperationLogContext.setContext(
@@ -201,8 +201,9 @@ public class StageAdvancedConfigService {
             // 特定的类型组合，允许pos不递增的情况
             String originType = originConfig.getType();
             String targetType = targetConfig.getType();
-            if ((Strings.CI.equals(OpportunityStageType.AFOOT.name(), originType) && Strings.CI.equals(OpportunityStageType.END.name(), targetType))
-                    || (Strings.CI.equals(OpportunityStageType.END.name(), originType) && Strings.CI.equals(OpportunityStageType.END.name(), targetType))) {
+
+            boolean bothAfoot = Strings.CI.equals(OpportunityStageType.AFOOT.name(), originType) && Strings.CI.equals(OpportunityStageType.AFOOT.name(), targetType);
+            if (!bothAfoot) {
                 return true;
             }
             throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
