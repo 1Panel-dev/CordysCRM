@@ -113,11 +113,12 @@
   const formKey = computed<FormDesignKeyEnum>(
     () => getDataSourceFormKey(dataSourceType.value, formKeyMap) as FormDesignKeyEnum
   );
+  const isDatasourceFormConfig = computed(() => dataSourceType.value !== FieldDataSourceTypeEnum.BUSINESS_TITLE);
 
   const { fieldList, initFormConfig } = useFormCreateApi({
     formKey,
     customFormId: computed(() => (isCustomForm.value ? dataSourceType.value : undefined)),
-    isDatasource: true,
+    isDatasource: isDatasourceFormConfig.value,
   });
 
   const listApi = isCustomForm.value
