@@ -401,33 +401,39 @@
     changeMatchTypeDefaultValue(currentItem);
   }
 
+  function isSystemField(fieldId?: string) {
+    if (!fieldId) {
+      return false;
+    }
+    return props.leftFields.some(
+      (field) =>
+        Boolean((field as FormCreateField & { isSystemField?: boolean })?.isSystemField) &&
+        [field.id, field.businessKey].includes(fieldId)
+    );
+  }
+
   function transformFieldsToOptions(
     fields: FormCreateField[],
     leftFieldType?: FieldTypeEnum,
     leftFieldId?: string
   ): SelectOption[] {
+    if (leftFieldType && isSystemField(leftFieldId)) {
+      return [];
+    }
+
     return fields
       .filter((e) => {
-        const condition =
+        const baseCondition =
           ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
             e.type
           ) &&
           props.selfId !== e.id &&
           !e.resourceFieldId;
         if (leftFieldType) {
-          const leftField = props.leftFields.find((field) => [field.id, field.businessKey].includes(leftFieldId || ''));
-          const isLeftSystemField = Boolean(
-            (leftField as FormCreateField & { isSystemField?: boolean })?.isSystemField
-          );
           const isCurrentSystemField = Boolean((e as FormCreateField & { isSystemField?: boolean })?.isSystemField);
-
-          if (isLeftSystemField) {
-            return e.businessKey === leftField?.businessKey && condition;
-          }
-
-          return e.type === leftFieldType && !isCurrentSystemField && condition;
+          return e.type === leftFieldType && !isCurrentSystemField && baseCondition;
         }
-        return condition;
+        return baseCondition;
       })
       .map((field) => ({
         ...field,
