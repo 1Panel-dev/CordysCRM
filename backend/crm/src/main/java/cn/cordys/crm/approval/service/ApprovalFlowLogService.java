@@ -1,17 +1,23 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.EnableFieldValue;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.JsonDifferenceUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.constants.ApproverTypeEnum;
 import cn.cordys.crm.approval.dto.ApprovalPostConfigDTO;
 import cn.cordys.crm.approval.dto.WebHookConfig;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowDetailResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalFlowNodeConfigResponse;
+import cn.cordys.crm.contract.service.ContractStageService;
+import cn.cordys.crm.order.service.OrderStageService;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.mapper.ExtDepartmentMapper;
 import cn.cordys.crm.system.mapper.ExtRoleMapper;
@@ -44,6 +50,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     private ApprovalFlowDetailResponse oldApprovalFlowDetail;
     private ApprovalFlowDetailResponse newApprovalFlowDetail;
     private List<BaseField> fields;
+    private String formType;
 
     @Resource
     private ExtUserMapper extUserMapper;
@@ -88,6 +95,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         if (isValidValue(oldValue) && isValidValue(newValue)) {
             oldApprovalFlowDetail = JSON.parseObject(oldValue, ApprovalFlowDetailResponse.class);
             newApprovalFlowDetail = JSON.parseObject(newValue, ApprovalFlowDetailResponse.class);
+            formType = oldApprovalFlowDetail.getFormType();
             fields = moduleFormCacheService.getBusinessFormConfig(oldApprovalFlowDetail.getFormType(), orgId).getFields();
             List<JsonDifferenceDTO> createNodeDiffs = handleNodeConfigDifference(oldApprovalFlowDetail.getCreateNodeConfig(), newApprovalFlowDetail.getCreateNodeConfig(), Translator.get("opportunity.add"));
             List<JsonDifferenceDTO> updateNodeDiffs = handleNodeConfigDifference(oldApprovalFlowDetail.getUpdateNodeConfig(), newApprovalFlowDetail.getUpdateNodeConfig(), Translator.get("permission.edit"));
@@ -846,9 +854,13 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 return "";
             }
 
-            Map<String, BaseField> fieldMap = fields != null
-                    ? fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f, (a, b) -> a))
-                    : Map.of();
+            Map<String, BaseField> fieldMap = new HashMap<>();
+            fields.forEach(field -> {
+                fieldMap.put(field.getId(), field);
+                if (StringUtils.isNotBlank(field.getBusinessKey())) {
+                    fieldMap.put(field.getBusinessKey(), field);
+                }
+            });
 
             List<String> conditionParts = new ArrayList<>();
             for (JsonNode condition : conditionsNode) {
@@ -884,12 +896,20 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
 
     /**
      * 翻译条件字段名
-     * 先按字段ID从业务字段中查找，再尝试i18n翻译系统字段
+     * 先按字段ID从业务字段中查找，再通过BusinessModuleField匹配businessKey翻译，最后尝试i18n
      */
     private String translateConditionFieldName(String name, Map<String, BaseField> fieldMap) {
         BaseField field = fieldMap.get(name);
         if (field != null) {
             return field.getName();
+        }
+        // 通过 businessKey 查找 BusinessModuleField 获取 i18n key
+        if (formType != null) {
+            for (BusinessModuleField bmf : BusinessModuleField.values()) {
+                if (bmf.getBusinessKey().equals(name) && formType.equals(bmf.getFormKey())) {
+                    return Translator.get(bmf.getKey(), name);
+                }
+            }
         }
         return Translator.get("approval_flow.condition.field." + name, name);
     }
@@ -919,13 +939,12 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
     /**
      * 翻译条件值
      * 根据字段类型将值翻译为可读文本（用户ID→名称、数据源ID→名称、选项值→标签等）
-     * 单选类型字段且值为数组时，循环匹配选项标签
+     * 单选类型字段且值为数组时，循环匹配选项标签；系统字段按businessKey类型翻译
      */
     private String translateConditionValue(JsonNode valueNode, String fieldName, Map<String, BaseField> fieldMap) {
         BaseField field = fieldMap.get(fieldName);
         if (field != null) {
             try {
-                // 单选类型字段（RADIO/SELECT）且值为数组时，逐项匹配选项标签
                 if (valueNode.isArray() && field.hasSingleOptions()) {
                     List<String> labels = new ArrayList<>();
                     for (String item : JSON.parseArray(valueNode.toString(), String.class)) {
@@ -943,9 +962,13 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                 return valueNode.asText("");
             }
         }
-        // 系统字段特殊处理：ownerId 翻译为用户名称
-        if ("ownerId".equals(fieldName)) {
-            return translateMemberList(valueNode);
+        // 系统字段值翻译：根据 businessKey 判断字段类型
+        if (valueNode.isNull()) {
+            return "";
+        }
+        // owner → 用户名称
+        if ("owner".equals(fieldName)) {
+            return translateMemberList(valueNode.asText(""));
         }
         if (fieldName.toLowerCase().contains("user")) {
             return translateMemberList(valueNode);
@@ -953,14 +976,51 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         if (fieldName.contains("department")) {
             return translateDepartmentList(valueNode);
         }
+        // stage → 阶段名称
+        if ("stage".equals(fieldName)) {
+            return translateStageValue(valueNode.asText(""));
+        }
+        // approvalStatus → 审批状态
+        if ("approvalStatus".equals(fieldName)) {
+            return Translator.get("approval_flow.condition.approval_status." + valueNode.asText("").toLowerCase(), valueNode.asText(""));
+        }
+
         if (valueNode.isArray()) {
             List<String> items = new ArrayList<>();
             for (JsonNode item : valueNode) {
                 items.add(item.asText(""));
             }
-            return JSON.parseArray(valueNode.toString(), String.class).stream().collect(Collectors.joining(", "));
+            return items.stream().collect(Collectors.joining(", "));
         }
         return valueNode.asText("");
+    }
+
+    /**
+     * 翻译阶段值
+     */
+    private String translateStageValue(String stageId) {
+        if (StringUtils.isBlank(stageId)) {
+            return "";
+        }
+        try {
+            OrderStageService orderStageService = CommonBeanFactory.getBean(OrderStageService.class);
+            ContractStageService contractStageService = CommonBeanFactory.getBean(ContractStageService.class);
+            List<StageConfigResponse> stages;
+            if (formType != null && (formType.equals(FormKey.ORDER.getKey()))) {
+                stages = orderStageService != null ? orderStageService.getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList() : List.of();
+            } else if (formType != null && formType.equals(FormKey.CONTRACT.getKey())) {
+                stages = contractStageService != null ? contractStageService.getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList() : List.of();
+            } else {
+                return stageId;
+            }
+            return stages.stream()
+                    .filter(s -> s.getId().equals(stageId))
+                    .findFirst()
+                    .map(StageConfigResponse::getName)
+                    .orElse(stageId);
+        } catch (Exception e) {
+            return stageId;
+        }
     }
 
     private String translateFieldPermissions(Object value) {
