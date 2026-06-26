@@ -3,6 +3,7 @@ package cn.cordys.common.security;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.security.SessionConstants;
+import cn.cordys.security.SessionUser;
 import cn.cordys.security.SessionUtils;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -118,7 +119,7 @@ public class CsrfFilter extends AnonymousFilter {
         }
 
         // 解密 CSRF token
-        csrfToken = CodingUtils.aesDecrypt(csrfToken, getRandomAlphabetic(SessionUtils.getUserId()), CodingUtils.generateIv());
+        csrfToken = CodingUtils.aesDecrypt(csrfToken, SessionUser.secret, CodingUtils.generateIv());
 
         String[] signatureArray = StringUtils.split(StringUtils.trimToNull(csrfToken), "|");
         if (signatureArray.length != 4) {
