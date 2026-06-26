@@ -1,6 +1,7 @@
 package cn.cordys.security;
 
 import cn.cordys.common.util.CodingUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,6 +9,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -28,7 +30,7 @@ public class SessionUser extends UserDTO implements Serializable {
     /**
      * 加密密钥，用于生成 CSRF Token。建议从配置或环境变量中读取。
      */
-    public static final String secret = RandomStringUtils.secure().nextAlphabetic(16);
+    public static String secret;
 
     @Serial
     private static final long serialVersionUID = -7149638440406959033L;
@@ -67,7 +69,7 @@ public class SessionUser extends UserDTO implements Serializable {
 
         try {
             // 使用 AES 加密生成 CSRF Token
-            sessionUser.csrfToken = CodingUtils.aesEncrypt(StringUtils.join(infos, "|"), getRandomAlphabetic(user.getId()), CodingUtils.generateIv());
+            sessionUser.csrfToken = CodingUtils.aesEncrypt(StringUtils.join(infos, "|"), secret, CodingUtils.generateIv());
         } catch (Exception e) {
             // 异常处理：加密失败时可以记录日志或者返回默认值
             sessionUser.csrfToken = StringUtils.EMPTY;

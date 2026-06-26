@@ -7,9 +7,11 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.rsa.RsaKey;
 import cn.cordys.common.util.rsa.RsaUtils;
 import cn.cordys.crm.system.service.ExtScheduleService;
+import cn.cordys.security.SessionUser;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -30,6 +32,9 @@ class TestAppListener implements ApplicationRunner {
     @Resource
     private DataInitService dataInitService;
 
+    @Value("${cordys.secret.key}")
+    private String secretInstance;
+
     /**
      * 应用启动后执行的初始化方法。
      * <p>
@@ -41,6 +46,7 @@ class TestAppListener implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         log.info("===== 开始初始化配置 =====");
+        SessionUser.secret = secretInstance;
 
         // 初始化唯一ID生成器
         uidGenerator.init();
