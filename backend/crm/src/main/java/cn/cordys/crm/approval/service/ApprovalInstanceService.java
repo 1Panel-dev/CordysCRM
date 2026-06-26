@@ -239,7 +239,9 @@ public class ApprovalInstanceService {
 		List<ApprovalRecordNode> nodes = new ArrayList<>(ListUtils.union(processedApprovalNodes, pendingApprovalNodes));
 		// 处理结束节点
 		ApprovalRecordNode endNode = getInstanceEndNode(instance);
-		nodes.addLast(endNode);
+        if (endNode != null) {
+            nodes.addLast(endNode);
+        }
 
 		List<String> allNodeIds = nodes.stream().map(ApprovalRecordNode::getNodeId).distinct().toList();
 		Map<String, ApprovalNodeApprover> approverNodeMap = getApproverNodeMapByIds(allNodeIds);
@@ -461,6 +463,9 @@ public class ApprovalInstanceService {
 		approvalNode.setNodeType(ApprovalNodeTypeEnum.END.name());
 		approvalNode.setExecuteTime(StringUtils.isNotBlank(instance.getExecuteTime()) ? instance.getExecuteTime() : ExecuteTimingEnum.CREATE.name());
 		ApprovalNode endNode = approvalNodeMapper.selectOne(approvalNode);
+        if (endNode == null) {
+            return null;
+        }
 		return ApprovalRecordNode.builder().nodeId(endNode.getId()).build();
 	}
 
