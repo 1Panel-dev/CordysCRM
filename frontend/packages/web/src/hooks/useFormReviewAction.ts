@@ -17,6 +17,7 @@ export interface GetFormReviewActionParams {
   isEdit: boolean;
   approvalStatus?: ProcessStatusEnum;
   canReview: boolean;
+  approved?: boolean;
   createExecute: boolean;
   updateExecute: boolean;
 }
@@ -50,7 +51,11 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
       return false;
     }
 
-    return params.isEdit ? params.updateExecute : params.createExecute;
+    if (!params.isEdit) {
+      return params.createExecute;
+    }
+
+    return params.updateExecute && !params.approved && params.createExecute;
   }
 
   function canShowByIdentity(params: GetFormReviewActionParams) {
@@ -60,7 +65,7 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
   function getReviewActionTextByStatus(params: GetFormReviewActionParams) {
     const approvalStatus = params.approvalStatus ?? ProcessStatusEnum.NONE;
 
-    if (!params.isEdit || [ProcessStatusEnum.NONE, ProcessStatusEnum.PENDING].includes(approvalStatus)) {
+    if (!params.isEdit || approvalStatus === ProcessStatusEnum.PENDING) {
       return t('common.review');
     }
 
@@ -105,6 +110,7 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
         !options.isEdit.value ||
         options.detail?.value?.createUser === userStore.userInfo.id ||
         options.detail?.value?.owner === userStore.userInfo.id,
+      approved: options.detail?.value?.approved,
       createExecute: createExecute.value,
       updateExecute: updateExecute.value,
     })
