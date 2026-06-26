@@ -113,8 +113,8 @@ public class SystemModuleLogService extends BaseModuleLogService {
 
             if (Strings.CS.equalsAny(differ.getColumn(), "orderSetting", "contractSetting")) {
                 differ.setColumnName(Translator.get("advanced_circulation_setting"));
-                differ.setNewValueName(handleConfig(differ.getNewValue(), orgId, Strings.CI.equals(differ.getColumn(), "orderSetting") ? FormKey.ORDER.getKey() : FormKey.CONTRACT.getKey()).toString());
-                differ.setOldValueName(handleConfig(differ.getOldValue(), orgId, Strings.CI.equals(differ.getColumn(), "orderSetting") ? FormKey.ORDER.getKey() : FormKey.CONTRACT.getKey()).toString());
+                differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, Strings.CI.equals(differ.getColumn(), "orderSetting") ? FormKey.ORDER.getKey() : FormKey.CONTRACT.getKey())));
+                differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, Strings.CI.equals(differ.getColumn(), "orderSetting") ? FormKey.ORDER.getKey() : FormKey.CONTRACT.getKey()).toString()));
             }
 
             if (Strings.CS.equals("circulationType", differ.getColumn())) {
@@ -157,21 +157,18 @@ public class SystemModuleLogService extends BaseModuleLogService {
                         List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
                         });
                         if (CollectionUtils.isNotEmpty(circulationFieldValues)) {
-                            circulationFieldValues.forEach(fieldValue -> {
+                            String title = Translator.get("advanced_circulation_condition") + "\n" +
+                                    Translator.get("advanced_circulation_condition_field") + "|" + Translator.get("advanced_circulation_condition_type") + "|" + Translator.get("advanced_circulation_condition_default_value") + "|" + Translator.get("isRequired");
+                            String data = "";
+                            for (CirculationFieldValue fieldValue : circulationFieldValues) {
                                 BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldValue.getFieldId())).findFirst().orElse(null);
                                 if (baseField != null) {
-
-                                    if (Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name())) {
-                                        Object o = transformFieldValue(baseField, fieldValue.getValueType());
-                                    }
-                                    newValuesList.add(stageName + "\n" +
-                                            Translator.get("advanced_circulation_condition") + "\n" +
-                                            Translator.get("advanced_circulation_condition_field") + baseField.getName() + "\n" +
-                                            Translator.get("advanced_circulation_condition_type") + Translator.get(fieldValue.getValueType()) + "\n" +
-                                            Translator.get("advanced_circulation_condition_default_value") + ((Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) && (fieldValue.getFieldValue() != null)) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "\n" +
-                                            Translator.get("isRequired") + Translator.get(fieldValue.getRequired().toString()) + "\n");
+                                    String s = baseField.getName() + "|" + Translator.get(fieldValue.getValueType()) + "|" + ((Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) && (fieldValue.getFieldValue() != null)) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "|" + Translator.get(fieldValue.getRequired().toString());
+                                    data = (data + s) + "\n";
                                 }
-                            });
+                            }
+                            ;
+                            newValuesList.add(stageName + "\n" + title + "\n" + data);
                         } else {
                             newValuesList.add(stageName);
                         }
