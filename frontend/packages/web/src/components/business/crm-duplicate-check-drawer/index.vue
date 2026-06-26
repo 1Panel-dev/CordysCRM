@@ -375,6 +375,9 @@
         (document.querySelector('.crm-duplicateCheck-search input') as HTMLInputElement)?.focus();
       });
       getEnableAdvanced();
+    },
+    {
+      immediate: true,
     }
   );
 
