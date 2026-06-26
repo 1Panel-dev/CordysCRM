@@ -62,6 +62,7 @@
     :form-key="props.formKey"
     :circulationFieldValues="circulationFieldValues"
     :source-id="props.sourceId"
+    :stageConfig="stageConfig"
     @success="handleFlowSuccess"
   />
 </template>
