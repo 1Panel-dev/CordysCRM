@@ -63,7 +63,11 @@
   import { CirculationValueTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getNormalFieldValue, getRuleType, initFieldValue, transformFieldValue } from '@lib/shared/method/formCreate';
-  import type { CirculationFieldValueItem, UpdateStageParams } from '@lib/shared/models/opportunity';
+  import type {
+    CirculationFieldValueItem,
+    OpportunityStageConfig,
+    UpdateStageParams,
+  } from '@lib/shared/models/opportunity';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
@@ -80,6 +84,7 @@
     formKey: FormDesignKeyEnum;
     circulationFieldValues: CirculationFieldValueItem[];
     sourceId: string;
+    stageConfig?: OpportunityStageConfig; // 阶段配置
   }>();
   const emit = defineEmits<{
     (e: 'success'): void;
@@ -126,11 +131,25 @@
               trigger: ['change', 'blur'],
               type: getRuleType(field),
             });
-          } else if (!cf.required && field.rules.some((e) => e.required)) {
-            rules = rules.filter((e) => !e.required);
+          } else if (!cf.required && field.rules.some((e) => e.key === 'required')) {
+            rules = rules.filter((e) => e.key !== 'required');
           }
           if (cf.valueType === CirculationValueTypeEnum.FIXED_VALUE) {
             formDetail.value[field.id] = initFieldValue(field, cf.fieldValue);
+            const options = props.stageConfig?.optionMap?.[field.id]?.map((e: Record<string, any>) => ({
+              id: e.id,
+              name: e.name || t('common.optionNotExist'),
+            }));
+            if (options && options.length > 0) {
+              field.initialOptions = options
+                ?.filter((e) => cf.fieldValue?.includes(e.id))
+                .map((e) => ({
+                  ...e,
+                  name: e.name || t('common.optionNotExist'),
+                }));
+            } else {
+              field.initialOptions = [];
+            }
           }
           return {
             ...field,
