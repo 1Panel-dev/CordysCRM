@@ -271,9 +271,11 @@ public abstract class BaseExportService {
                 WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
                 setRowAccessWindowSize(writer);
                 AtomicInteger offset = new AtomicInteger(2);
-                SubListUtils.dealForSubList(exportParam.getSelectIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (ids) -> {
+                List<String> allSelectIds = exportParam.getSelectIds();
+                SubListUtils.dealForSubList(allSelectIds, SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
                     MergeResult mergeResult = new MergeResult();
                     try {
+                        exportParam.setSelectIds(subIds);
                         mergeResult = getExportMergeData(task.getId(), exportParam);
                     } catch (InterruptedException e) {
                         log.error("任务停止中断", e);
