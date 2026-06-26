@@ -691,6 +691,8 @@
                     name: e.name || t('common.optionNotExist'),
                   }))
               );
+            } else {
+              field.initialOptions = v.fieldProps?.initialOptions || field.initialOptions;
             }
             return {
               ...v,

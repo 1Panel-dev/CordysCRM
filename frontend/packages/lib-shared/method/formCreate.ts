@@ -135,6 +135,9 @@ export function initFieldValue(field: FormCreateField, value?: string | number |
   ) {
     return value ? [value] : [];
   }
+  if (value === null) {
+    return undefined;
+  }
   return value;
 }
 

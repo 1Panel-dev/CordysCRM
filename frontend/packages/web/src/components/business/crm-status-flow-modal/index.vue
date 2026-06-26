@@ -7,7 +7,7 @@
     @cancel="handleCancel"
     @confirm="handleConfirm"
   >
-    <n-spin :show="loading" class="block">
+    <n-spin :show="loading" class="block" :class="loading ? 'min-h-[150px]' : ''">
       <n-form ref="formRef" :model="formDetail" label-placement="top" label-width="auto" class="crm-form-create">
         <n-scrollbar>
           <div class="crm-form-create">
@@ -30,6 +30,7 @@
                     layout: 1,
                     labelPos: 'top',
                   }"
+                  needInitDetail
                 />
               </div>
             </template>
@@ -129,10 +130,7 @@
             rules = rules.filter((e) => !e.required);
           }
           if (cf.valueType === CirculationValueTypeEnum.FIXED_VALUE) {
-            formDetail.value[field.id] =
-              cf.valueType === CirculationValueTypeEnum.FIXED_VALUE
-                ? initFieldValue(field, cf.fieldValue)
-                : formDetail.value[field.id];
+            formDetail.value[field.id] = initFieldValue(field, cf.fieldValue);
           }
           return {
             ...field,
@@ -153,14 +151,17 @@
     () => show.value,
     async (val) => {
       if (val) {
+        loading.value = true;
         await initFormConfig();
         await initFormDetail();
-        initForm();
         initRealFields();
+        initForm();
         if (props.formKey === FormDesignKeyEnum.CONTRACT && props.to.id === 'VOID') {
           formDetail.value.voidReason = '';
         }
+        loading.value = false;
       } else {
+        realFields.value = [];
         resetForm();
       }
     }
