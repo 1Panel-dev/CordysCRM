@@ -642,14 +642,17 @@
           'noRender': true,
           'disabled': !canEditStage,
           'onUpdate:status': async (val) => {
-            if (stageConfig.value?.circulationType === CirculationTypeEnum.ADVANCED) {
+            circulationFieldValues.value =
+              stageConfig.value?.advancedConfigs
+                .find((e) => e.originId === row.stage)
+                ?.targets.find((e) => e.targetId === val)?.circulationFieldValues || [];
+            if (
+              stageConfig.value?.circulationType === CirculationTypeEnum.ADVANCED &&
+              circulationFieldValues.value.length
+            ) {
               activeSourceId.value = row.id;
               targetStageConfig.value = stageConfig.value?.stageConfigList.find((e) => e.id === val);
               currentStageConfig.value = stageConfig.value?.stageConfigList.find((e) => e.id === row.stage);
-              circulationFieldValues.value =
-                stageConfig.value?.advancedConfigs
-                  .find((e) => e.originId === row.stage)
-                  ?.targets.find((e) => e.targetId === val)?.circulationFieldValues || [];
               flowModalShow.value = true;
             } else if (val === ContractStatusEnum.VOID) {
               handleVoided(row);
