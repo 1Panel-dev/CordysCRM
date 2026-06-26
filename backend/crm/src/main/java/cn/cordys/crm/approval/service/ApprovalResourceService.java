@@ -415,6 +415,9 @@ public class ApprovalResourceService {
         ApprovalInstance instance = initInstance(approvalFlow, param);
         // 获取第一个节点
         ApprovalNodeResponse firstApprovalNode = approvalFlowService.getResourceApprovalInstanceFirstNode(instance, currentOrgId);
+        if (firstApprovalNode == null) {
+            throw new GenericException(Translator.get("approval_first_node.not.exist"));
+        }
         instance.setCurrentNodeId(firstApprovalNode.getId());
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.EXCEPTION) {
             // 异常节点, 目前只有自动拒绝的场景, 直接驳回
