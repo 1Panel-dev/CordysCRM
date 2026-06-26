@@ -110,17 +110,20 @@ public class HitApprovalAspect {
 				return retValue;
 			}
 
+			ExecuteTimingEnum executeTiming = annotation.executeType();
+			if (annotation.executeType() == ExecuteTimingEnum.UPDATE) {
+				// UPDATE 时机：检查资源是否历史上审批通过过，如果没有审批通过过则视为CREATE时机
+				boolean isCreateExecuteTime = !approvalResourceService.isResourceApproved(annotation.formKey(), resourceId);
+				if (isCreateExecuteTime) {
+					executeTiming = ExecuteTimingEnum.CREATE;
+				}
+			}
+
 			// 检查是否命中审批流
-			boolean hit = checkHitApprovalFlow(annotation.formKey(), annotation.executeType(), organizationId);
+			boolean hit = checkHitApprovalFlow(annotation.formKey(), executeTiming, organizationId);
 
 			if (hit) {
-				boolean isCreateExecuteTime = annotation.executeType() == ExecuteTimingEnum.CREATE;
-				if (annotation.executeType() == ExecuteTimingEnum.UPDATE) {
-					// UPDATE 时机：检查资源是否历史上审批通过过，如果没有审批通过过则视为CREATE时机
-					isCreateExecuteTime = !approvalResourceService.isResourceApproved(annotation.formKey(), resourceId);
-				}
-
-				if (isCreateExecuteTime) {
+				if (executeTiming == ExecuteTimingEnum.CREATE) {
 					approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), operator, OrganizationContext.getOrganizationId());
 				} else {
 					// 命中审批流，直接提审（跳过待提审状态）
