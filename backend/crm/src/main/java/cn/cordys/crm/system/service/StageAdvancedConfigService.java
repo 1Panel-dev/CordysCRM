@@ -204,6 +204,14 @@ public class StageAdvancedConfigService {
             return true;
         }
 
+        if (!originConfig.getEndRollBack() && !originConfig.getAfootRollBack()) {
+            // 进行中&完结 同时关闭
+            if (targetConfig.getPos() > originConfig.getPos()) {
+                return true;
+            }
+            throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
+        }
+
         if (originConfig.getEndRollBack()) {
             // 只开启完结回退配置
             // 按pos顺序（目标pos > 源pos）允许任何类型切换

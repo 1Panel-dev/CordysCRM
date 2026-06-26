@@ -170,7 +170,7 @@ public class SystemModuleLogService extends BaseModuleLogService {
                             ;
                             newValuesList.add(stageName + "\n" + title + "\n" + data);
                         } else {
-                            newValuesList.add(stageName);
+                            newValuesList.add(stageName+"\n");
                         }
                     });
                 }
