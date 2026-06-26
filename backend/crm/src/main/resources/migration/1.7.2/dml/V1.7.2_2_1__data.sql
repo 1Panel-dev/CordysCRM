@@ -96,5 +96,8 @@ update opportunity_quotation set approved = 1 where approval_status = 'APPROVED'
 update contract_invoice set approved = 1 where approval_status = 'APPROVED';
 update sales_order set approved = 1 where approval_status = 'APPROVED';
 
+-- 再执行一次审批中历史数据
+delete from sys_parameter where param_key in ('handler.contract.approval.status', 'handler.contract.invoice.approval.status', 'handler.quotation.approval.status', 'handler.order.approval.status');
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
