@@ -1040,7 +1040,7 @@ public class OrderService implements ApprovalResourceHandler {
      * 处理旧版本审批状态 (APPROVING => NONE)
      */
     public void handleOldApprovalData() {
-        List<Order> orders = orderMapper.selectAll(null);
+        List<Order> orders = orderMapper.selectListByLambda(new LambdaQueryWrapper<Order>().eq(Order::getApprovalStatus, ApprovalStatus.APPROVING.name()));
         orders.forEach(order -> {
             ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam
                     .builder()

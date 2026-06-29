@@ -547,6 +547,6 @@
     </update>
 
     <update id="updateOldApprovalStatusNone">
-        update sales_order set approval_status = 'NONE';
+        update sales_order set approval_status = 'NONE' where approval_status = 'APPROVING';
     </update>
 </mapper>
