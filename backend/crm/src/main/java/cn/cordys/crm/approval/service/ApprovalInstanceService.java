@@ -239,6 +239,10 @@ public class ApprovalInstanceService {
 		List<ApprovalRecordNode> nodes = new ArrayList<>(ListUtils.union(processedApprovalNodes, pendingApprovalNodes));
 		// 处理结束节点
 		ApprovalRecordNode endNode = getInstanceEndNode(instance);
+        if (endNode == null) {
+            // 历史数据兜底
+            endNode = getInstanceAnyEndNode(instance);
+        }
         if (endNode != null) {
             nodes.addLast(endNode);
         }
@@ -271,7 +275,6 @@ public class ApprovalInstanceService {
 				}
 			}
 			if (CollectionUtils.isEmpty(node.getTaskNodes())) {
-
 				node.setTaskNodes(List.of());
 			}
 		});
@@ -468,6 +471,22 @@ public class ApprovalInstanceService {
         }
 		return ApprovalRecordNode.builder().nodeId(endNode.getId()).build();
 	}
+
+    /**
+     * 获取审批流可能的结束节点
+     * @param instance 审批实例
+     * @return 结束节点
+     */
+    private ApprovalRecordNode getInstanceAnyEndNode(ApprovalInstance instance) {
+        ApprovalNode approvalNode = new ApprovalNode();
+        approvalNode.setFlowVersionId(instance.getFlowVersionId());
+        approvalNode.setNodeType(ApprovalNodeTypeEnum.END.name());
+        ApprovalNode endNode = approvalNodeMapper.selectOne(approvalNode);
+        if (endNode == null) {
+            return null;
+        }
+        return ApprovalRecordNode.builder().nodeId(endNode.getId()).build();
+    }
 
 
 	/**
