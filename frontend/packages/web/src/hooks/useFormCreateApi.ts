@@ -821,9 +821,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     } else {
       // 其他的字段读取moduleFields
       const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
-      if (field) {
-        formDetail.value[item.id] = initFieldValue(item, field.fieldValue);
-      }
+      formDetail.value[item.id] = initFieldValue(item, field?.fieldValue);
       const options = res.optionMap?.[item.id];
       if (
         [
