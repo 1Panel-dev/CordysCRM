@@ -63,7 +63,7 @@ public class StageAdvancedConfigService {
 
         List<CirculationSetting> circulationSettings = request.getCirculationSettings();
         List<StageAdvancedConfig> stageAdvanceConfigList = new ArrayList<>();
-        List<StageAdvancedConfig> updateStageAdvanceConfigList = new ArrayList<>();
+        //List<StageAdvancedConfig> updateStageAdvanceConfigList = new ArrayList<>();
 
         circulationSettings.forEach(setting -> {
             List<Target> targets = setting.getTargets();
@@ -90,20 +90,21 @@ public class StageAdvancedConfigService {
                     BeanUtils.copyBean(updateConfig, stageAdvancedConfig);
                     updateConfig.setEnable(target.getEnable());
                     updateConfig.setFieldConfig(JSON.toJSONString(target.getCirculationFieldValues()));
+                    updateConfig.setOrganizationId(orgId);
                     updateConfig.setCreateTime(System.currentTimeMillis());
                     updateConfig.setCreateUser(userId);
                     updateConfig.setUpdateTime(System.currentTimeMillis());
                     updateConfig.setUpdateUser(userId);
-                    updateStageAdvanceConfigList.add(updateConfig);
+                    stageAdvanceConfigList.add(updateConfig);
                 }
-
-
             });
 
         });
 
-        if (CollectionUtils.isNotEmpty(updateStageAdvanceConfigList)) {
-            updateStageAdvanceConfigList.forEach(stageAdvanceConfigMapper::update);
+        if (CollectionUtils.isNotEmpty(oldConfigs)) {
+            List<String> ids = oldConfigs.stream().map(StageAdvancedConfig::getId).toList();
+            stageAdvanceConfigMapper.deleteByIds(ids);
+
         }
 
         if (CollectionUtils.isNotEmpty(stageAdvanceConfigList)) {
