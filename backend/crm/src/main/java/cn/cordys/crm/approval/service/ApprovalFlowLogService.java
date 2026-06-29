@@ -910,6 +910,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                     return Translator.get(bmf.getKey(), name);
                 }
             }
+            if (formType.equals(FormKey.ORDER.getKey()) && Strings.CI.equals(name, "stage")) {
+                return Translator.get("order.stage", name);
+            }
         }
         return Translator.get("approval_flow.condition.field." + name, name);
     }
@@ -978,7 +981,10 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         }
         // stage → 阶段名称
         if ("stage".equals(fieldName)) {
-            return translateStageValue(valueNode.asText(""));
+            return translateStageValue(valueNode);
+        }
+        if ("invalid".equals(fieldName)) {
+            return translateInvalidValue(valueNode);
         }
         // approvalStatus → 审批状态
         if ("approvalStatus".equals(fieldName)) {
@@ -997,9 +1003,17 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
 
     /**
      * 翻译阶段值
+     * 支持单个阶段ID字符串或阶段ID数组
      */
-    private String translateStageValue(String stageId) {
-        if (StringUtils.isBlank(stageId)) {
+    private String translateStageValue(Object value) {
+        List<String> stageIds = parseStringList(value);
+        if (stageIds.isEmpty() && value != null && !NULL_STRING.equals(value.toString())) {
+            String singleId = value.toString();
+            if (StringUtils.isNotBlank(singleId)) {
+                stageIds = List.of(singleId);
+            }
+        }
+        if (stageIds.isEmpty()) {
             return "";
         }
         try {
@@ -1011,16 +1025,34 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             } else if (formType != null && formType.equals(FormKey.CONTRACT.getKey())) {
                 stages = contractStageService != null ? contractStageService.getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList() : List.of();
             } else {
-                return stageId;
+                return String.join(", ", stageIds);
             }
-            return stages.stream()
-                    .filter(s -> s.getId().equals(stageId))
-                    .findFirst()
-                    .map(StageConfigResponse::getName)
-                    .orElse(stageId);
+            Map<String, String> stageMap = stages.stream()
+                    .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName, (a, b) -> a));
+            return stageIds.stream()
+                    .map(id -> stageMap.getOrDefault(id, id))
+                    .collect(Collectors.joining(", "));
         } catch (Exception e) {
-            return stageId;
+            return String.join(", ", stageIds);
         }
+    }
+
+    /**
+     * 翻译作废状态值
+     * Boolean 或 Boolean 数组，true → 作废，false → 正常
+     */
+    private String translateInvalidValue(JsonNode valueNode) {
+        if (valueNode == null || valueNode.isNull()) {
+            return "";
+        }
+        if (valueNode.isArray()) {
+            List<String> results = new ArrayList<>();
+            for (JsonNode item : valueNode) {
+                results.add(Translator.get("approval_flow.invalid." + item.asBoolean()));
+            }
+            return String.join(", ", results);
+        }
+        return Translator.get("approval_flow.invalid." + valueNode.asBoolean());
     }
 
     private String translateFieldPermissions(Object value) {
