@@ -26,6 +26,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -152,6 +153,7 @@ public class StageAdvancedConfigService {
      * @param targetStage
      * @param moduleType
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public boolean checkStage(String originStage, String targetStage, String moduleType) {
         if (Strings.CI.equals(originStage, targetStage)) {
             return true;
@@ -174,19 +176,11 @@ public class StageAdvancedConfigService {
         }
 
         if (Strings.CI.equals(originConfig.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
-            return checkAdvanced(originConfig, targetConfig, moduleType);
+            return handleAdvanced(originConfig, targetConfig, moduleType);
         }
 
         return false;
 
-    }
-
-    /**
-     * 高级流转校验（不抛异常，返回false）
-     */
-    private boolean checkAdvanced(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
-        StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originConfig.getId(), targetConfig.getId(), moduleType);
-        return config != null && config.getEnable();
     }
 
     private boolean handleAdvanced(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
