@@ -84,11 +84,13 @@
   watch(
     () => [props.fieldConfig.numberFormat, props.fieldConfig.precision, props.fieldConfig.showThousandsSeparator],
     () => {
-      const temp = value.value;
-      value.value = null;
-      nextTick(() => {
-        value.value = temp;
-      });
+      if (props.isDefaultValueRender) {
+        const temp = value.value;
+        value.value = null;
+        nextTick(() => {
+          value.value = temp;
+        });
+      }
     },
     {
       deep: true,

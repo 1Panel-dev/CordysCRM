@@ -135,6 +135,9 @@ export function initFieldValue(field: FormCreateField, value?: string | number |
   ) {
     return value ? [value] : [];
   }
+  if (value === undefined && field.type === FieldTypeEnum.INPUT_NUMBER) {
+    return null;
+  }
   if (value === null) {
     return undefined;
   }
