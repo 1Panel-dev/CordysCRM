@@ -546,10 +546,10 @@ public class OrderService implements ApprovalResourceHandler {
         }
 
         ResourceApprovalFieldUpdateParam stageField = postFieldParam.getFields().stream().filter(param -> Strings.CS.equals(param.getFieldId(), "stage") && param.getFieldValue() != null).findFirst().orElse(null);
-        handleStageSetting(stageField, order, postFieldParam);
+        boolean stageFlag = handleStageSetting(stageField, order, postFieldParam);
 
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
-            if (Strings.CS.equals(fieldUpdateParam.getFieldId(), "stage") && fieldUpdateParam.getFieldValue() != null) {
+            if (Strings.CS.equals(fieldUpdateParam.getFieldId(), "stage") && fieldUpdateParam.getFieldValue() != null && stageFlag) {
                 orderFieldService.setResourceFieldValue(order, "stage", fieldUpdateParam.getFieldValue());
                 continue;
             }
@@ -631,16 +631,23 @@ public class OrderService implements ApprovalResourceHandler {
      * @param originOrder
      * @param postFieldParam
      */
-    private void handleStageSetting(ResourceApprovalFieldUpdateParam stageField, Order originOrder, ResourceApprovalPostUpdateParam postFieldParam) {
+    private boolean handleStageSetting(ResourceApprovalFieldUpdateParam stageField, Order originOrder, ResourceApprovalPostUpdateParam postFieldParam) {
         if (stageField == null) {
-            return;
+            return true;
         }
-        if (!stageAdvancedConfigService.checkStage(originOrder.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.getKey())) {
-            return;
+        try {
+            if (!stageAdvancedConfigService.checkStage(originOrder.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.getKey())) {
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
         }
         StageConfigResponse first = extOrderStageConfigMapper.getStageConfigList(originOrder.getOrganizationId()).getFirst();
         if (Strings.CI.equals(first.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
             StageAdvancedConfig config = extStageAdvancedConfigMapper.getConfigByOriginAndTarget(originOrder.getStage(), stageField.getFieldValue().toString(), FormKey.ORDER.name());
+            if (config == null || config.getFieldConfig() == null) {
+                return true;
+            }
             List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(config.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
             });
             List<ResourceApprovalFieldUpdateParam> fields = new ArrayList<>();
@@ -663,6 +670,7 @@ public class OrderService implements ApprovalResourceHandler {
             postFieldParam.setFields(newFields);
 
         }
+        return true;
     }
 
 
