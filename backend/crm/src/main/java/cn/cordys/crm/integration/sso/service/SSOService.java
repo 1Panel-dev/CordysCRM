@@ -9,6 +9,8 @@ import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.common.util.rsa.RsaKey;
+import cn.cordys.common.util.rsa.RsaUtils;
 import cn.cordys.crm.integration.common.dto.ThirdConfigBaseDTO;
 import cn.cordys.crm.integration.common.request.DingTalkThirdConfigRequest;
 import cn.cordys.crm.integration.common.request.LarkThirdConfigRequest;
@@ -329,20 +331,36 @@ public class SSOService {
     }
 
     private LoginRequest createLoginRequest(String username, String password, String platform) {
-        LoginRequest request = new LoginRequest();
-        request.setUsername(username);
-        request.setPassword(password);
-        request.setPlatform(platform);
-        return request;
+        try {
+            RsaKey rsaKey = RsaUtils.getRsaKey();
+            password = RsaUtils.publicEncrypt(password, rsaKey.getPublicKey());
+            username = RsaUtils.publicEncrypt(username, rsaKey.getPublicKey());
+
+            LoginRequest request = new LoginRequest();
+            request.setUsername(username);
+            request.setPassword(password);
+            request.setPlatform(platform);
+            return request;
+        } catch (Exception e) {
+            throw new RuntimeException("加密用户名或密码失败", e);
+        }
     }
 
     private LoginRequest createThirdPartyLoginRequest(UserDTO user, String platform, String authenticateType) {
-        LoginRequest request = new LoginRequest();
-        request.setUsername(user.getId());
-        request.setPassword(generateDefaultPassword(user));
-        request.setPlatform(platform);
-        request.setAuthenticate(authenticateType);
-        return request;
+        try {
+            RsaKey rsaKey = RsaUtils.getRsaKey();
+            String password = RsaUtils.publicEncrypt(generateDefaultPassword(user), rsaKey.getPublicKey());
+            String username = RsaUtils.publicEncrypt(user.getId(), rsaKey.getPublicKey());
+
+            LoginRequest request = new LoginRequest();
+            request.setUsername(username);
+            request.setPassword(password);
+            request.setPlatform(platform);
+            request.setAuthenticate(authenticateType);
+            return request;
+        } catch (Exception e) {
+            throw new RuntimeException("加密用户名或密码失败", e);
+        }
     }
 
     private String generateDefaultPassword(UserDTO user) {
