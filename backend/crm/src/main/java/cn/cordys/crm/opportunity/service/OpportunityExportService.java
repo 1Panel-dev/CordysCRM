@@ -1,5 +1,6 @@
 package cn.cordys.crm.opportunity.service;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportFieldParam;
@@ -11,6 +12,7 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
+import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.excel.domain.MergeResult;
 import cn.cordys.crm.system.service.ModuleFormService;
 import com.github.pagehelper.PageHelper;
@@ -49,13 +51,15 @@ public class OpportunityExportService extends BaseExportService {
         // 构建自定义字段数据
         var dataList = opportunityService.buildListData(exportList, exportParam.getOrgId());
         // 构建选项数据
-        Map<String, List<OptionDTO>> optionMap = buildOptionMap(dataList, exportParam.getExportFieldParam());
+        Map<String, BaseField> fieldConfigMap =
+                getFieldConfigMap(FormKey.OPPORTUNITY.getKey(), exportParam.getOrgId());
+        Map<String, List<OptionDTO>> optionMap = opportunityService.buildOptionMap(exportParam.getOrgId(), exportList, dataList);
         // 从缓存获取阶段配置，避免重复查询
         Map<String, String> stageConfigMap = getOrLoadStageConfigMap(exportParam);
         return buildExportMergeResult(taskId, exportParam, dataList,
                 OpportunityListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        OpportunityFieldUtils.getSystemFieldMap(detail, optionMap, stageConfigMap, null), cache));
+                        OpportunityFieldUtils.getSystemFieldMap(detail, optionMap, stageConfigMap, fieldConfigMap), cache));
     }
 
     @SuppressWarnings("unchecked")
