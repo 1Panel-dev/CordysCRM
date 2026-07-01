@@ -377,21 +377,23 @@ public abstract class BaseExportService {
         if (value == null) {
             return null;
         }
-        if (field instanceof DatasourceField ||
-                field instanceof DepartmentField ||
-                field instanceof SelectField ||
-                field instanceof SelectMultipleField) {
-
-            if (cacheMap.containsKey(value)) {
-                return cacheMap.get(value);
-            } else {
-                var data = resolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
+        String parseVal = value instanceof List ? JSON.toJSONString(value) : value.toString();
+        try {
+            if (field instanceof DatasourceField || field instanceof DepartmentField ||
+                    field instanceof SelectField || field instanceof SelectMultipleField) {
+                if (cacheMap.containsKey(value)) {
+                    return cacheMap.get(value);
+                }
+                var data = resolver.transformToValue(field, parseVal);
                 cacheMap.put(value, data);
                 return data;
             }
-        }
 
-        return resolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
+            return resolver.transformToValue(field, parseVal);
+        } catch (Exception e) {
+            logFieldParseError(field, parseVal, e);
+            return null;
+        }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -400,8 +402,27 @@ public abstract class BaseExportService {
             return null;
         }
         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-        // 将数据库中的字符串值,转换为对应的对象值
-        return customFieldResolver.transformToValue(field, value instanceof List ? JSON.toJSONString(value) : value.toString());
+        String stringValue = value instanceof List ? JSON.toJSONString(value) : value.toString();
+        try {
+            return customFieldResolver.transformToValue(field, stringValue);
+        } catch (Exception e) {
+            logFieldParseError(field, stringValue, e);
+            return null;
+        }
+    }
+
+    /**
+     * 字段解析异常
+     * @param field 字段信息
+     * @param val 字段值
+     * @param e 异常信息
+     */
+    private void logFieldParseError(BaseField field, String val, Exception e) {
+        log.error("Parse field value error, field={}, value={}: {}", fieldName(field), val, e.getMessage());
+    }
+
+    private static String fieldName(BaseField field) {
+        return field == null ? "null" : (field.getName() == null ? field.getId() : field.getName());
     }
 
     /**
@@ -576,7 +597,7 @@ public abstract class BaseExportService {
                 try {
                     results.add(f.get());
                 } catch (Exception e) {
-                    log.error("Parse row data error: {}", e.getMessage());
+                    log.error("Parse row data error: {}", e.getMessage(), e);
                 }
             }
 
