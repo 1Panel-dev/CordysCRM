@@ -25,7 +25,7 @@ const useLicenseStore = defineStore('license', {
       return this.licenseInfo?.status === 'valid';
     },
     isEnterpriseVersion() {
-      return this.licenseInfo?.status !== 'not_found';
+      return ['valid', 'expired'].includes(this.licenseInfo?.status || '');
     },
     getExpirationTime(resTime: string) {
       if (!this.isEnterpriseVersion()) {
