@@ -105,11 +105,12 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
         headMap.forEach((k, v) -> {
             if (Strings.CI.equals(request.getImportType(), BusinessTitleImportType.ADD.name())) {
                 validateRequired(rowData.get(k), errText, v);
-                validateNameUniques(rowData.get(k), errText, v);
             }
             if (Strings.CI.equals(request.getImportType(), BusinessTitleImportType.UPDATE.name())) {
+                validateId(rowData.get(k), errText, v);
                 validateNameExist(rowData.get(k), errText, v);
             }
+            validateNameUniques(rowData.get(k), errText, v);
             validateLenLimit(rowData.get(k), errText, v);
         });
         if (StringUtils.isNotEmpty(errText)) {
@@ -121,6 +122,15 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
         } else if (!errRows.contains(rowIndex)) {
             success++;
         }
+    }
+
+    private void validateId(String data, StringBuilder errText, String v) {
+        if (BusinessTitleImportFiled.fromHeader(v) != null &&BusinessTitleImportFiled.ID.equals(BusinessTitleImportFiled.fromHeader(v))) {
+            if (StringUtils.isBlank(data)) {
+                errText.append(v).append(Translator.get("required")).append(";");
+            }
+        }
+
     }
 
     private void validateNameExist(String data, StringBuilder errText, String v) {

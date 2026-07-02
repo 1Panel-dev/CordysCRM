@@ -15,6 +15,11 @@ import java.util.Locale;
 @Setter
 public class BusinessTitleExcelData {
     /**
+     * id
+     */
+    @ExcelIgnore
+    private String id;
+    /**
      * 公司名称
      */
     @ExcelIgnore
