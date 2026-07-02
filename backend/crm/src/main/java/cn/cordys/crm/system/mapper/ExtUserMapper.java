@@ -7,6 +7,7 @@ import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
 import cn.cordys.crm.system.dto.convert.UserRoleConvert;
 import cn.cordys.crm.system.dto.response.UserResponse;
+import cn.cordys.crm.system.dto.response.EnableOptionDTO;
 import cn.cordys.security.UserDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -49,7 +50,7 @@ public interface ExtUserMapper {
 
     int countByPhone(@Param("phone") String phone, @Param("id") String id);
 
-    List<OptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId, @Param("defaultOrder") String defaultOrder);
+    List<EnableOptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId, @Param("defaultOrder") String defaultOrder, @Param("includeDisabled") Boolean includeDisabled);
 
     List<UserDTO> selectNameAndEmail(@Param("orgId") String orgId);
 

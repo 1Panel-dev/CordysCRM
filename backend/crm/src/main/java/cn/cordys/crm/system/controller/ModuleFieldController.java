@@ -117,8 +117,8 @@ public class ModuleFieldController {
 
     @GetMapping("/user/dept/tree")
     @Operation(summary = "获取部门用户树")
-    public List<DeptUserTreeNode> getDeptUserTree() {
-        return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId());
+    public List<DeptUserTreeNode> getDeptUserTree(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+        return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 
     @PostMapping("/source/lead")
