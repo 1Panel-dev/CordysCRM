@@ -297,6 +297,9 @@
             "id": "CLUE_MANAGEMENT_POOL:DELETE"
           },
           {
+            "id": "CLUE_MANAGEMENT_POOL:IMPORT"
+          },
+          {
             "id": "CLUE_MANAGEMENT_POOL:EXPORT"
           }
         ]
