@@ -13,4 +13,7 @@ public class PoolReasonRequest {
 
     @Schema(description = "原因")
     private String reasonId;
+
+    @Schema(description = "池ID")
+    private String poolId;
 }
