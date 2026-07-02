@@ -190,6 +190,7 @@ public class CustomFormDataExportService extends BaseExportService {
     private LinkedHashMap<String, Object> getSystemFieldMap(CustomFormDataListResponse data) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
+        systemFieldMap.put("id", data.getId());
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("createUser", data.getCreateUserName());
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));

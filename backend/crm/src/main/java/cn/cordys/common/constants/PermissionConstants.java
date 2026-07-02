@@ -125,6 +125,7 @@ public class PermissionConstants {
     public static final String CLUE_MANAGEMENT_POOL_PICK = "CLUE_MANAGEMENT_POOL:PICK";
     public static final String CLUE_MANAGEMENT_POOL_ASSIGN = "CLUE_MANAGEMENT_POOL:ASSIGN";
     public static final String CLUE_MANAGEMENT_POOL_UPDATE = "CLUE_MANAGEMENT_POOL:UPDATE";
+    public static final String CLUE_MANAGEMENT_POOL_IMPORT = "CLUE_MANAGEMENT_POOL:IMPORT";
     public static final String CLUE_MANAGEMENT_POOL_EXPORT = "CLUE_MANAGEMENT_POOL:EXPORT";
     /*------ end: CLUE_MANAGEMENT_POOL ------*/
 
