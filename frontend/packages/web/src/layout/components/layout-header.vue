@@ -108,16 +108,18 @@
                   </div>
                   <div class="font-semibold">{{ appStore.versionInfo.latestVersion }}</div>
                 </div>
-                <div
-                  v-if="licenseStore.isEnterpriseVersion() && hasAnyPermission(['LICENSE:READ'])"
-                  class="flex flex-col gap-[4px]"
-                >
+                <div v-if="hasAnyPermission(['LICENSE:READ'])" class="flex flex-col gap-[4px]">
                   <n-divider class="!my-0" />
                   <div class="flex flex-col gap-[8px]">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-[8px]">
                         <div class="font-semibold text-[var(--text-n1)]">License</div>
-                        <CrmTag tooltip-disabled :type="getLicenseStatus.status" theme="light">
+                        <CrmTag
+                          v-if="licenseStore.isEnterpriseVersion()"
+                          tooltip-disabled
+                          :type="getLicenseStatus.status"
+                          theme="light"
+                        >
                           {{ getLicenseStatus.title }}
                         </CrmTag>
                       </div>
@@ -125,23 +127,24 @@
                         {{ t('common.update') }}
                       </n-button>
                     </div>
-                    <div class="flex items-center gap-[8px]">
+                    <div v-if="licenseStore.isEnterpriseVersion()" class="flex items-center gap-[8px]">
                       <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
                         {{ t('system.license.customerName') }}
                       </div>
                       <div class="font-semibold">{{ licenseStore?.licenseInfo?.corporation }}</div>
                     </div>
-                    <div class="flex items-center gap-[8px]">
+                    <div v-if="licenseStore.isEnterpriseVersion()" class="flex items-center gap-[8px]">
                       <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
                         {{ t('system.license.productionVersion') }}
                       </div>
                       <div class="font-semibold">
                         {{
-                          licenseVersionMap[licenseStore?.licenseInfo?.edition as keyof typeof licenseVersionMap] ?? '-'
+                          licenseVersionMap[licenseStore?.licenseInfo?.edition as keyof typeof licenseVersionMap] ??
+                          licenseVersionMap.Standard
                         }}
                       </div>
                     </div>
-                    <div class="flex items-center gap-[8px]">
+                    <div v-if="licenseStore.isEnterpriseVersion()" class="flex items-center gap-[8px]">
                       <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
                         {{ t('system.license.LicenseAccountCount') }}
                       </div>
@@ -149,7 +152,7 @@
                         {{ licenseStore?.licenseInfo?.count ?? '-' }}
                       </div>
                     </div>
-                    <div class="flex items-center gap-[8px]">
+                    <div v-if="licenseStore.isEnterpriseVersion()" class="flex items-center gap-[8px]">
                       <div class="text-[12px] leading-[20px] text-[var(--text-n4)]">
                         {{ t('system.license.authorizationTime') }}
                       </div>
