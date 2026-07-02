@@ -442,18 +442,17 @@ public class BusinessTitleService {
                     SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
                     ExtBusinessTitleMapper mapper = sqlSession.getMapper(ExtBusinessTitleMapper.class);
                     afterDto = (businessTitles) -> {
-                        List<BusinessTitle> titleList = extBusinessTitleMapper.selectByNames(businessTitles.stream().map(BusinessTitle::getName).toList());
-                        Map<String, BusinessTitle> nameNap = titleList.stream().collect(Collectors.toMap(BusinessTitle::getName, Function.identity()));
+                        List<BusinessTitle> titleList = businessTitleMapper.selectByIds(businessTitles.stream().map(BusinessTitle::getId).toList());
+                        Map<String, BusinessTitle> idMap = titleList.stream().collect(Collectors.toMap(BusinessTitle::getId, Function.identity()));
                         List<LogDTO> logs = new ArrayList<>();
                         Set<String> titleSet = new HashSet<>();
                         businessTitles.removeIf(user -> !titleSet.add(user.getName()));
                         businessTitles.forEach(title -> {
                             //1.通过name查询id
                             //2.setId 并更新
-                            if (nameNap.containsKey(title.getName())) {
-                                BusinessTitle originTitle = nameNap.get(title.getName());
+                            if (idMap.containsKey(title.getId())) {
+                                BusinessTitle originTitle = idMap.get(title.getName());
                                 BeanCopyUtils.fillEmptyFields(title, originTitle);
-                                title.setId(originTitle.getId());
                                 title.setUpdateTime(System.currentTimeMillis());
                                 title.setUpdateUser(userId);
                                 mapper.updateById(title);

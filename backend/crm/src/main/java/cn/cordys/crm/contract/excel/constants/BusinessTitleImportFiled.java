@@ -12,6 +12,7 @@ import java.util.function.Function;
 
 public enum BusinessTitleImportFiled {
 
+    ID("id", "ID", "ID", BusinessTitleExcelData::getId),
     NAME("name", "公司名称", "Name", BusinessTitleExcelData::getName),
     IDENTIFICATION_NUMBER("identificationNumber", "纳税人识别号", "Identification number", BusinessTitleExcelData::getIdentificationNumber),
     OPENING_BANK("openingBank", "开户银行", "Opening bank", BusinessTitleExcelData::getOpeningBank),
