@@ -4,8 +4,6 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.FieldExportMeta;
 import cn.cordys.common.dto.stage.StageConfigResponse;
-import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
-import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
@@ -24,10 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -124,22 +119,27 @@ public class ContractExportService extends BaseExportService {
 
         Map<String, FieldExportMeta> metaMap = exportMetas.stream()
                 .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
-
-        resolveAndPutTimeField(systemFieldMap, metaMap, "startTime", String.valueOf(data.getStartTime()));
-        resolveAndPutTimeField(systemFieldMap, metaMap, "endTime", String.valueOf(data.getEndTime()));
+        resolveAndPutTimeField(systemFieldMap, metaMap, "startTime", data.getStartTime());
+        resolveAndPutTimeField(systemFieldMap, metaMap, "endTime", data.getEndTime());
 
         return systemFieldMap;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private void resolveAndPutTimeField(LinkedHashMap<String, Object> map,
-                                        Map<String, FieldExportMeta> metaMap,
-                                        String businessKey,
-                                        String rawValue) {
+    /**
+     * 解析合同开始结束时间
+     * @param sysMap 系统字段值集合
+     * @param metaMap 导出字段信息
+     * @param businessKey 业务Key
+     * @param rawValue 原始值
+     */
+    private void resolveAndPutTimeField(LinkedHashMap<String, Object> sysMap, Map<String, FieldExportMeta> metaMap,
+                                        String businessKey, Long rawValue) {
+        if (rawValue == null) {
+            return;
+        }
         FieldExportMeta meta = metaMap.get(businessKey);
-        if (meta != null) {
-            AbstractModuleFieldResolver resolver = ModuleFieldResolverFactory.getResolver(meta.getField().getType());
-            map.put(businessKey, resolver.transformToValue(meta.getField(), rawValue));
+        if (meta != null && meta.getField() != null) {
+            sysMap.put(businessKey, transformFieldValue(meta.getResolver(), meta.getField(), rawValue, new HashMap<>()));
         }
     }
 }
