@@ -8,6 +8,7 @@ public class PoolCustomerFieldUtils {
 
     public static LinkedHashMap<String, Object> getSystemFieldMap(CustomerListResponse data) {
         LinkedHashMap<String, Object> systemFieldMap = CustomerFieldUtils.getSystemFieldMap(data);
+        systemFieldMap.put("id", data.getId());
         systemFieldMap.put("reasonId", data.getReasonName());
         return systemFieldMap;
     }
