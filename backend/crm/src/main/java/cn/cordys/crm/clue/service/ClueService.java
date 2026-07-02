@@ -128,6 +128,8 @@ public class ClueService {
     @Resource
     private BaseMapper<CluePoolRecycleRule> recycleRuleMapper;
     @Resource
+    private BaseMapper<CluePool> cluePoolMapper;
+    @Resource
     private ClueOwnerHistoryService clueOwnerHistoryService;
     @Resource
     private FollowUpRecordService followUpRecordService;
@@ -652,15 +654,21 @@ public class ClueService {
         LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Clue::getId, request.getIds());
         List<Clue> clues = clueMapper.selectListByLambda(wrapper);
-        List<String> ownerIds = getOwners(clues);
 
-        Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        CluePool targetPool = null;
+        Map<String, CluePool> ownersDefaultPoolMap = new HashMap<>(4);
+        if (StringUtils.isNotBlank(request.getPoolId())) {
+            targetPool = getTargetCluePool(request.getPoolId(), orgId);
+        } else {
+            List<String> ownerIds = getOwners(clues);
+            ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        }
         int success = 0;
         List<LogDTO> logs = new ArrayList<>();
         for (Clue clue : clues) {
-            CluePool cluePool = ownersDefaultPoolMap.get(clue.getOwner());
+            CluePool cluePool = targetPool != null ? targetPool : ownersDefaultPoolMap.get(clue.getOwner());
             if (cluePool == null) {
-                // 未找到默认公海，不移入
+                // 未找到默认线索池，不移入
                 continue;
             }
             // 日志
@@ -698,8 +706,17 @@ public class ClueService {
     public BatchAffectResponse toPool(PoolReasonRequest request, String currentUser, String orgId) {
         BatchPoolReasonRequest batchRequest = new BatchPoolReasonRequest();
         batchRequest.setReasonId(request.getReasonId());
+        batchRequest.setPoolId(request.getPoolId());
         batchRequest.setIds(List.of(request.getId()));
         return batchToPool(batchRequest, currentUser, orgId);
+    }
+
+    private CluePool getTargetCluePool(String poolId, String orgId) {
+        CluePool cluePool = cluePoolMapper.selectByPrimaryKey(poolId);
+        if (cluePool == null || !Strings.CS.equals(cluePool.getOrganizationId(), orgId) || !BooleanUtils.isTrue(cluePool.getEnable())) {
+            throw new GenericException(Translator.get("clue_pool_not_exist"));
+        }
+        return cluePool;
     }
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String organizationId) {
