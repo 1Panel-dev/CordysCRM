@@ -233,7 +233,7 @@
               : FormDesignKeyEnum.CONTACT,
         });
         if (info.repeat) {
-          return info.name.length
+          return info.name?.length
             ? t('formCreate.repeatTip', { name: info.name })
             : t('formCreate.repeatTipWithoutName');
         }
