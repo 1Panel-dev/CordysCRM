@@ -23,6 +23,7 @@ public class OpportunityFieldUtils {
     public static LinkedHashMap<String, Object> getSystemFieldMap(OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, String> stageConfigMap, Map<String, BaseField> fieldConfigMap) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
+        systemFieldMap.put("id", data.getId());
         systemFieldMap.put("customerId", data.getCustomerName());
         systemFieldMap.put("amount", data.getAmount());
         systemFieldMap.put("expectedEndTime", TimeUtils.getDateStr(data.getExpectedEndTime()));

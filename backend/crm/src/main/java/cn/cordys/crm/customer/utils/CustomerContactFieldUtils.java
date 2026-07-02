@@ -11,6 +11,7 @@ public class CustomerContactFieldUtils {
     public static LinkedHashMap<String, Object> getSystemFieldMap(CustomerContactListResponse data) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("customerId", data.getCustomerName());
+        systemFieldMap.put("id", data.getId());
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("phone", data.getPhone());
         systemFieldMap.put("owner", data.getOwnerName());

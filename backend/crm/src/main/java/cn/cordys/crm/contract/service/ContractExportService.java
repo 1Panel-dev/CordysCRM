@@ -102,6 +102,7 @@ public class ContractExportService extends BaseExportService {
     public LinkedHashMap<String, Object> getSystemFieldMap(ContractListResponse data, List<FieldExportMeta> exportMetas, Map<String, String> stageConfigMap) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
+        systemFieldMap.put("id", data.getId());
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         systemFieldMap.put("customerId", data.getCustomerName());
