@@ -182,6 +182,8 @@
     exportProductPriceSelected,
   } from '@/api/modules';
 
+  import useExportFieldCache from './useExportFieldCache';
+
   const props = defineProps<{
     params: Record<string, any>;
     type:
@@ -202,6 +204,7 @@
     isExportAll?: boolean;
     showApprovalTip?: string;
     customFormTypeString?: string;
+    customFormId?: string;
   }>();
   const emit = defineEmits<{
     (e: 'createSuccess'): void;
@@ -236,24 +239,27 @@
     fileName: '',
   });
 
-  watch(
-    () => show.value,
-    (newVal) => {
-      if (newVal) {
-        const typeString = props.type === 'customForm' ? props.customFormTypeString : typeStringMap[props.type];
-        form.value.fileName = `${dayjs().format('YYYYMMDD-HHmmss')}-${typeString}`;
-      }
-    }
-  );
-
   function validator(rule: FormItemRule, value: string) {
     if (/\//g.test(value)) {
       return Promise.reject(new Error(t('common.notAllowForwardSlash')));
     }
     return Promise.resolve();
   }
+  const excludedUniqueIdTypes = ['price', 'opportunity', 'contract', 'order'];
 
-  const systemList = computed(() => props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.SYSTEM));
+  const uniqueIdColumn: ExportTableColumnItem = {
+    key: 'id',
+    title: t('common.uniqueID'),
+    columnType: ColumnTypeEnum.SYSTEM,
+  };
+
+  const systemList = computed(() => {
+    const list = props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.SYSTEM);
+    if (excludedUniqueIdTypes.includes(props.type)) {
+      return list;
+    }
+    return [...list, uniqueIdColumn];
+  });
   const customList = computed(() => props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.CUSTOM));
   const showFieldList = computed(() =>
     props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.SHOW_FIELD)
@@ -261,7 +267,24 @@
   const allList = computed(() => [...systemList.value, ...customList.value, ...showFieldList.value]);
 
   // 已选
-  const selectedList = ref<any[]>([]);
+  const selectedList = ref<ExportTableColumnItem[]>([]);
+
+  const { getSelectedListByCache, saveSelectedListCache } = useExportFieldCache({
+    type: computed(() => props.type),
+    customFormId: computed(() => props.customFormId),
+    columns: allList,
+  });
+
+  watch(
+    () => show.value,
+    async (newVal) => {
+      if (newVal) {
+        const typeString = props.type === 'customForm' ? props.customFormTypeString : typeStringMap[props.type];
+        form.value.fileName = `${dayjs().format('YYYYMMDD-HHmmss')}-${typeString}`;
+        selectedList.value = await getSelectedListByCache();
+      }
+    }
+  );
 
   const updateSelectedList = (ids: string[], sourceList: any[]) => {
     const newItems = sourceList.filter((item) => ids.includes(item.key));
@@ -370,6 +393,7 @@
             fileName: form.value.fileName.trim(),
             headList: selectedList.value,
           });
+          await saveSelectedListCache(selectedList.value);
           form.value.fileName = '';
           show.value = false;
           message.success(t('common.exportTaskCreate'));

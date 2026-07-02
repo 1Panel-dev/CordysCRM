@@ -84,6 +84,7 @@
     :export-columns="exportColumns"
     :is-export-all="isExportAll"
     type="customForm"
+    :custom-form-id="props.formKey"
     :custom-form-type-string="formKeyName"
     @create-success="handleExportCreateSuccess"
   />
