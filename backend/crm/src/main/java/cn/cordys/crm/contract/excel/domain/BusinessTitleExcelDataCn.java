@@ -11,6 +11,12 @@ import java.util.Locale;
 @Data
 @ColumnWidth(15)
 public class BusinessTitleExcelDataCn extends BusinessTitleExcelData {
+    /**
+     * id
+     */
+    @ColumnWidth(32)
+    @ExcelProperty("id")
+    private String id;
 
     /**
      * 公司名称

@@ -13,6 +13,12 @@ import java.util.Locale;
 public class BusinessTitleExcelDataUs extends BusinessTitleExcelData {
 
     /**
+     * id
+     */
+    @ColumnWidth(32)
+    @ExcelProperty("id")
+    private String id;
+    /**
      * 公司名称
      */
     @ColumnWidth(255)
