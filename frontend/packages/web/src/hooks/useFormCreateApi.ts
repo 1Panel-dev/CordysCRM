@@ -1294,7 +1294,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 if (info.repeat) {
                   return Promise.reject(
                     new Error(
-                      info.name.length
+                      info.name?.length
                         ? t('crmFormCreate.repeatTip', { name: info.name })
                         : t('crmFormCreate.repeatTipWithoutName')
                     )
