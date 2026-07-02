@@ -334,11 +334,13 @@ export interface UpdateFollowPlanStatusParams {
 export interface MoveToPublicPoolParams {
   id: string | number;
   reasonId?: string | null;
+  poolId?: string | null;
 }
 
 export interface BatchMoveToPublicPoolParams {
   ids: (string | number)[];
   reasonId?: string | null;
+  poolId?: string | null;
 }
 
 export interface PoolTableExportParams extends TableExportParams {

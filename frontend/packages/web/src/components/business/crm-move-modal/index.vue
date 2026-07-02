@@ -6,15 +6,30 @@
     show-icon
     :mask-closable="false"
     :type="props.type"
-    :ok-button-props="{ disabled: enableReason ? !form.reason : false, type: props.type || 'primary' }"
+    :ok-button-props="{ disabled: confirmDisabled, type: props.type || 'primary' }"
     :positive-text="t('common.confirmMoveIn')"
     :ok-loading="loading"
     @confirm="handleConfirm"
     @cancel="handleCancel"
   >
     <div class="mb-[16px]">{{ contentTip }}</div>
-    <n-form v-if="enableReason" ref="formRef" :model="form" label-placement="left" require-mark-placement="left">
-      <n-form-item path="reason" :label="t('common.moveInReason')">
+    <n-form
+      v-if="enableReason || isCluePoolReason"
+      ref="formRef"
+      :model="form"
+      :label-width="90"
+      label-placement="left"
+      require-mark-placement="left"
+    >
+      <n-form-item v-if="isCluePoolReason" path="poolId" :label="t('clue.targetCluePool')">
+        <n-select
+          v-model:value="form.poolId"
+          :placeholder="t('common.pleaseSelect')"
+          :options="poolOptions"
+          :loading="poolLoading"
+        />
+      </n-form-item>
+      <n-form-item v-if="enableReason" path="reason" :label="t('common.moveInReason')">
         <n-select v-model:value="form.reason" :placeholder="t('common.pleaseSelect')" clearable :options="reasonList" />
       </n-form-item>
     </n-form>
@@ -45,6 +60,7 @@
   import {
     batchMoveCustomer,
     batchToCluePool,
+    getPoolOptions,
     getReasonConfig,
     moveCustomerToPool,
     moveToLeadPool,
@@ -80,13 +96,28 @@
     [ReasonTypeEnum.CUSTOMER_POOL_RS]: moveCustomerToPool,
   };
 
-  const form = ref({
+  const form = ref<{
+    reason: string | null;
+    poolId: string | null;
+  }>({
     reason: null,
+    poolId: null,
   });
   const successCount = ref<number>(0);
   const failCount = ref<number>(0);
 
   const reasonList = ref<Option[]>([]);
+  const poolOptions = ref<Option[]>([]);
+  const poolLoading = ref(false);
+  const enableReason = ref(false);
+
+  const isCluePoolReason = computed(() => props.reasonKey === ReasonTypeEnum.CLUE_POOL_RS);
+  const confirmDisabled = computed(() => {
+    if (enableReason.value && !form.value.reason) {
+      return true;
+    }
+    return isCluePoolReason.value && !form.value.poolId;
+  });
 
   const title = computed(() => {
     const isArraySourceIds = Array.isArray(props.sourceId);
@@ -115,6 +146,7 @@
   function handleCancel() {
     showModal.value = false;
     form.value.reason = null;
+    form.value.poolId = null;
   }
 
   const showToPoolResultModel = ref(false);
@@ -130,6 +162,7 @@
         const { success, fail } = await batchMoveApiMap[props.reasonKey]({
           ids: props.sourceId,
           reasonId: form.value.reason,
+          poolId: isCluePoolReason.value ? form.value.poolId : null,
         });
         successCount.value = success;
         failCount.value = fail;
@@ -138,6 +171,7 @@
         const { success, fail } = await moveApiMap[props.reasonKey]({
           id: props.sourceId,
           reasonId: form.value.reason,
+          poolId: isCluePoolReason.value ? form.value.poolId : null,
         });
         successCount.value = success;
         failCount.value = fail;
@@ -166,9 +200,8 @@
     }
   }
 
-  const enableReason = ref(false);
   function handleConfirm() {
-    if (enableReason.value) {
+    if (enableReason.value || isCluePoolReason.value) {
       formRef.value?.validate(async (error) => {
         if (!error) {
           handleSave();
@@ -176,6 +209,23 @@
       });
     } else {
       handleSave();
+    }
+  }
+
+  async function initPoolOptions() {
+    if (!isCluePoolReason.value) {
+      return;
+    }
+    try {
+      poolLoading.value = true;
+      const options = await getPoolOptions();
+      poolOptions.value = options.map((item) => ({ label: item.name, value: item.id }));
+      form.value.poolId = poolOptions.value[0]?.value ?? null;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    } finally {
+      poolLoading.value = false;
     }
   }
 
@@ -200,6 +250,7 @@
     (val) => {
       if (val) {
         initReasonConfig();
+        initPoolOptions();
       }
     }
   );
