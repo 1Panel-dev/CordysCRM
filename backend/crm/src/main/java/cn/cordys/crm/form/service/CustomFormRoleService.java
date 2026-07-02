@@ -103,9 +103,9 @@ public class CustomFormRoleService {
         return PageUtils.setPageInfo(page, roleUsers);
     }
 
-    public List<DeptUserTreeNode> getDeptUserTree(String orgId) {
+    public List<DeptUserTreeNode> getDeptUserTree(String orgId, Boolean includeDisabled) {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
-        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId);
+        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId, includeDisabled);
         userNodes = departmentService.sortByCommander(orgId, userNodes);
         userNodes.addAll(treeNodes);
         return BaseTreeNode.buildTree(userNodes);

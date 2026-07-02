@@ -46,8 +46,8 @@ public class CustomFormRoleController {
     @GetMapping("/user/dept/tree")
     @Operation(summary = "获取部门用户树")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public List<DeptUserTreeNode> getDeptUserTree() {
-        return customFormRoleService.getDeptUserTree(OrganizationContext.getOrganizationId());
+    public List<DeptUserTreeNode> getDeptUserTree(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+        return customFormRoleService.getDeptUserTree(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 
     @GetMapping("/user/role/tree")

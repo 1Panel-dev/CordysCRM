@@ -166,13 +166,16 @@
         </where>
     </select>
 
-    <select id="selectUserOptionByOrgId" resultType="cn.cordys.common.dto.OptionDTO">
-        SELECT su.id, su.name
+    <select id="selectUserOptionByOrgId" resultType="cn.cordys.crm.system.dto.response.EnableOptionDTO">
+        SELECT su.id, su.name, sou.enable as enable
         FROM sys_user su
         INNER JOIN sys_organization_user sou on su.id = sou.user_id
         LEFT JOIN
         ( SELECT distinct user_id, 1 AS is_commander FROM sys_department_commander ) uc ON su.id = uc.user_id
         WHERE sou.organization_id = #{orgId}
+        <if test="!includeDisabled">
+            and sou.enable = true
+        </if>
         ORDER BY sou.enable DESC,
         <if test="defaultOrder != null and defaultOrder != ''">
             ${defaultOrder},

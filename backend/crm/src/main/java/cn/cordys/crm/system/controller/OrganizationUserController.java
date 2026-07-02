@@ -10,6 +10,7 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.dto.request.*;
 import cn.cordys.crm.system.dto.response.RoleListResponse;
 import cn.cordys.crm.system.dto.response.UserImportResponse;
+import cn.cordys.crm.system.dto.response.EnableOptionDTO;
 import cn.cordys.crm.system.dto.response.UserPageResponse;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.service.OrganizationConfigService;
@@ -140,14 +141,14 @@ public class OrganizationUserController {
 
     @GetMapping(value = "/option")
     @Operation(summary = "获取用户下拉option")
-    public List<OptionDTO> getUserList() {
-        return organizationUserService.getUserOptions(OrganizationContext.getOrganizationId());
+    public List<EnableOptionDTO> getUserList(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+        return organizationUserService.getUserOptions(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 
     @GetMapping(value = "/admin/option")
     @Operation(summary = "获取管理员用户下拉option")
-    public List<OptionDTO> getAdminUserList() {
-        return organizationUserService.getAdminUserOptions(OrganizationContext.getOrganizationId());
+    public List<EnableOptionDTO> getAdminUserList(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+        return organizationUserService.getAdminUserOptions(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 
     @GetMapping(value = "/role/option")

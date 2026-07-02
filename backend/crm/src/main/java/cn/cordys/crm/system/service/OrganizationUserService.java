@@ -28,6 +28,7 @@ import cn.cordys.crm.system.dto.convert.UserRoleConvert;
 import cn.cordys.crm.system.dto.request.*;
 import cn.cordys.crm.system.dto.response.UserImportDTO;
 import cn.cordys.crm.system.dto.response.UserImportResponse;
+import cn.cordys.crm.system.dto.response.EnableOptionDTO;
 import cn.cordys.crm.system.dto.response.UserPageResponse;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.excel.domain.UserExcelData;
@@ -855,10 +856,10 @@ public class OrganizationUserService {
      * @param orgId 组织ID
      * @return 用户选项列表
      */
-    public List<OptionDTO> getUserOptions(String orgId) {
+    public List<EnableOptionDTO> getUserOptions(String orgId, Boolean includeDisabled) {
         List<String> allDpIds = getSortDepartmentIds(orgId);
         String defaultOrder = CollectionUtils.isEmpty(allDpIds) ? StringUtils.EMPTY : buildOrderByFieldClause(allDpIds);
-        return extUserMapper.selectUserOptionByOrgId(orgId, defaultOrder);
+        return extUserMapper.selectUserOptionByOrgId(orgId, defaultOrder, includeDisabled);
     }
 
 
@@ -965,7 +966,7 @@ public class OrganizationUserService {
      */
     public List<DeptUserTreeNode> getUserTreeByDepId(String departmentId, String orgId) {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
-        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId);
+        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId, false);
         userNodes.forEach(userNode -> {
             if (!Strings.CS.equals(userNode.getParentId(), departmentId)) {
                 userNode.setEnabled(false);
@@ -998,7 +999,7 @@ public class OrganizationUserService {
         return sortDpIds;
     }
 
-    public List<OptionDTO> getAdminUserOptions(String organizationId) {
-        return extUserRoleMapper.selectUserOptionByRoleId(organizationId, InternalRole.ORG_ADMIN.getValue());
+    public List<EnableOptionDTO> getAdminUserOptions(String organizationId, Boolean includeDisabled) {
+        return extUserRoleMapper.selectUserOptionByRoleId(organizationId, InternalRole.ORG_ADMIN.getValue(), includeDisabled);
     }
 }

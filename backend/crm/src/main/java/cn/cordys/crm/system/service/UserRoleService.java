@@ -130,9 +130,9 @@ public class UserRoleService {
      *
      * @return List<DeptUserTreeNode>
      */
-    public List<DeptUserTreeNode> getDeptUserTree(String orgId, String roleId) {
+    public List<DeptUserTreeNode> getDeptUserTree(String orgId, String roleId, Boolean includeDisabled) {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
-        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForRelevance(orgId, roleId);
+        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForRelevance(orgId, roleId, includeDisabled);
         // 如果已经关联的用户，设置为 disable
         Set<String> currentRoleUserIds = new HashSet<>(extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId)));
         userNodes.forEach(userNode -> {
@@ -273,8 +273,8 @@ public class UserRoleService {
         logService.batchAdd(logs);
     }
 
-    public List<RoleUserOptionResponse> getUserOptionByRoleId(String organizationId, String roleId) {
-        List<RoleUserOptionResponse> roleUserOptions = extUserRoleMapper.selectUserOption(organizationId);
+    public List<RoleUserOptionResponse> getUserOptionByRoleId(String organizationId, String roleId, Boolean includeDisabled) {
+        List<RoleUserOptionResponse> roleUserOptions = extUserRoleMapper.selectUserOption(organizationId, includeDisabled);
         Set<String> roleUserIdSet = new HashSet<>(extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId)));
 
         roleUserOptions.forEach(userOption -> userOption.setEnabled(!roleUserIdSet.contains(userOption.getId())));

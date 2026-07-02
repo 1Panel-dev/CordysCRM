@@ -57,8 +57,8 @@ public class ModuleController {
     @GetMapping("/user/dept/tree")
     @Operation(summary = "获取部门用户树")
     @RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
-    public List<DeptUserTreeNode> getDeptUserTree() {
-        return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId());
+    public List<DeptUserTreeNode> getDeptUserTree(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+        return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId(), includeDisabled);
     }
 
     @GetMapping("/role/tree")
