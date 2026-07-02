@@ -963,6 +963,9 @@ public class ModuleFormService {
 					sourceField.setRefFields(new ArrayList<>());
 					for (String showFieldKey : sourceField.getShowFields()) {
 						BaseField refField = reloadFieldMap.get(showFieldKey);
+                        if (refField == null) {
+                            continue;
+                        }
 						refField.setResourceFieldId(sourceField.getId());
 						sourceField.getRefFields().add(refField);
 					}
