@@ -99,20 +99,26 @@
     </sql>
 
     <select id="selectUserDeptForRelevance" resultType="cn.cordys.common.dto.DeptUserTreeNode">
-        select temp.id, temp.name, temp.department_id as parentId, if(sur.id, 0, 1) as enable, 'USER' as nodeType
+        select temp.id, temp.name, temp.department_id as parentId, if(temp.user_enable = 1, if(sur.id, 0, 1), 0) as enable, 'USER' as nodeType
         from
         (
-            select su.id, su.name, sou.department_id from sys_organization_user sou
+            select su.id, su.name, sou.department_id, sou.enable as user_enable from sys_organization_user sou
             join sys_user su
             on sou.organization_id = #{orgId} and sou.user_id = su.id
+            <if test="!includeDisabled">
+                and sou.enable = true
+            </if>
         ) as temp
         left join sys_user_role sur
         on temp.id = sur.user_id and sur.role_id = #{roleId}
     </select>
 
     <select id="selectUserDeptForOrg" resultType="cn.cordys.common.dto.DeptUserTreeNode">
-        select su.id, su.name, sou.department_id as parentId, 'USER' as nodeType from sys_organization_user sou
-        join sys_user su on sou.organization_id = #{orgId} and sou.user_id = su.id and sou.enable = true
+        select su.id, su.name, sou.department_id as parentId, sou.enable as enable, 'USER' as nodeType from sys_organization_user sou
+        join sys_user su on sou.organization_id = #{orgId} and sou.user_id = su.id
+        <if test="!includeDisabled">
+            and sou.enable = true
+        </if>
     </select>
 
     <select id="selectUserRoleForRelevance" resultType="cn.cordys.common.dto.RoleUserTreeNode">
@@ -143,19 +149,25 @@
     </select>
 
     <select id="selectUserOption" resultType="cn.cordys.crm.system.dto.response.RoleUserOptionResponse">
-        select su.id, su.name, sue.avatar
+        select su.id, su.name, sue.avatar, sou.enable as enabled
         from sys_user su
         join sys_organization_user sou
-            on su.id = sou.user_id and sou.organization_id = #{orgId} and sou.enable = true
+            on su.id = sou.user_id and sou.organization_id = #{orgId}
+        <if test="!includeDisabled">
+            and sou.enable = true
+        </if>
         left join sys_user_extend sue
             on su.id = sue.id
     </select>
 
-    <select id="selectUserOptionByRoleId" resultType="cn.cordys.common.dto.OptionDTO">
-        select su.id, su.name
+    <select id="selectUserOptionByRoleId" resultType="cn.cordys.crm.system.dto.response.EnableOptionDTO">
+        select su.id, su.name, sou.enable as enable
         from sys_user su
         join sys_organization_user sou
-            on su.id = sou.user_id and sou.organization_id = #{orgId}  and sou.enable = true
+            on su.id = sou.user_id and sou.organization_id = #{orgId}
+        <if test="!includeDisabled">
+            and sou.enable = true
+        </if>
         join sys_user_role sur
             on su.id = sur.user_id and sur.role_id = #{roleId}
     </select>
