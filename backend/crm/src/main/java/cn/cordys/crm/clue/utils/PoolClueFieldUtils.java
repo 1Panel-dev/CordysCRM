@@ -11,6 +11,7 @@ public class PoolClueFieldUtils {
 
     public static LinkedHashMap<String, Object> getSystemFieldMap(ClueListResponse data, Map<String, List<OptionDTO>> optionMap) {
         LinkedHashMap<String, Object> systemFieldMap = ClueFieldUtils.getSystemFieldMap(data, optionMap);
+        systemFieldMap.put("id", data.getId());
         systemFieldMap.put("reasonId", data.getReasonName());
         return systemFieldMap;
     }

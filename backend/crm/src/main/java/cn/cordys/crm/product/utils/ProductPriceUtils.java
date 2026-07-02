@@ -17,6 +17,7 @@ public class ProductPriceUtils {
 	public static LinkedHashMap<String, Object> getSystemFieldMap(ProductPriceResponse data, Map<String, List<OptionDTO>> optionMap) {
 		LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
 		systemFieldMap.put("name", data.getName());
+		systemFieldMap.put("id", data.getId());
 		systemFieldMap.put("status", getStatusName(data.getStatus(), optionMap));
 		systemFieldMap.put("createUser", data.getCreateUserName());
 		systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));

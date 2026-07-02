@@ -75,6 +75,7 @@ public class ContractPaymentPlanExportService extends BaseExportService {
     public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentPlanListResponse data, Map<String, BaseField> fieldConfigMap) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
+        systemFieldMap.put("id", data.getId());
         systemFieldMap.put("contractId", data.getContractName());
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
