@@ -366,4 +366,5 @@ export default {
   'common.batchDeleteTitle': 'Confirm delete {count} data?',
   'common.businessFeatureTip':
     'This is the Enterprise Edition feature; click the link to view details of the Enterprise Edition features.',
+  'common.uniqueID': 'ID',
 };
