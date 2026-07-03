@@ -31,6 +31,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalResourceUpdateType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
@@ -771,6 +772,36 @@ public class ContractService implements ApprovalResourceHandler {
             response.setApprovalStatus(param.getApprovalStatus());
             snapshot.setContractValue(JSON.toJSONString(response));
             snapshotBaseMapper.update(snapshot);
+        }
+    }
+
+    @Override
+    public String getPreUpdateSnapshotData(String resourceId, String userId, String orgId) {
+        Contract contract = contractMapper.selectByPrimaryKey(resourceId);
+        if (contract == null) {
+            return null;
+        }
+        List<BaseModuleFieldValue> contractFields = contractFieldService.getModuleFieldValuesByResourceId(resourceId);
+        ContractUpdateRequest snapshotReq = BeanUtils.copyBean(new ContractUpdateRequest(), contract);
+        snapshotReq.setAmount(contract.getAmount() != null ? contract.getAmount().toString() : null);
+        snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
+        ModuleFormConfigDTO contractFormConfig = getFormConfig(contract.getOrganizationId());
+        snapshotReq.setModuleFormConfigDTO(contractFormConfig);
+        // 获取模块字段
+        moduleFormService.processBusinessFieldValues(snapshotReq, contractFields, contractFormConfig);
+        return JSON.toJSONString(snapshotReq);
+    }
+
+    @Override
+    public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
+        try {
+            ContractUpdateRequest request = JSON.parseObject(snapshotData, ContractUpdateRequest.class);
+            if (request == null) {
+                return;
+            }
+            CommonBeanFactory.getBean(ContractService.class).update(request, userId, orgId);
+        } catch (Exception e) {
+            log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
         }
     }
 

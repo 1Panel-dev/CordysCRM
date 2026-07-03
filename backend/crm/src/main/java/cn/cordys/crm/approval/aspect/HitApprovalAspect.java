@@ -8,10 +8,12 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalResourceUpdateType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.dto.ApprovalPushParam;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.system.service.SysOperationLogService;
@@ -85,46 +87,52 @@ public class HitApprovalAspect {
 			return handleDeleteApproval(joinPoint, annotation, method);
 		}
 
-		// CREATE/UPDATE 时机：先执行方法，再检查审批
+		// 提前解析通用参数
+		String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
+		if (StringUtils.isBlank(operator)) {
+			operator = SessionUtils.getUserId();
+		}
+		String organizationId = OrganizationContext.getOrganizationId();
+
+		// UPDATE 时提前解析更新类型，approval回退直接放行
+		String updateType = null;
+		if (annotation.executeType() == ExecuteTimingEnum.UPDATE) {
+			updateType = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.updateType());
+		}
+		if (Strings.CI.equals(updateType, ApprovalResourceUpdateType.APPROVAL.getValue()) || StringUtils.isBlank(organizationId)) {
+			return joinPoint.proceed();
+		}
+
+		String resourceId = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.resourceId());
+		ExecuteTimingEnum executeTiming = getExecuteTimingEnum(annotation, resourceId);
+		// 检查是否命中审批流
+		boolean hit = checkHitApprovalFlow(annotation.formKey(), executeTiming, organizationId);
+
+		// UPDATE 前置处理：保存编辑前快照（用于审批驳回/撤回时回退）
+		if (executeTiming == ExecuteTimingEnum.UPDATE && hit) {
+			ApprovalResourceHandler handler = ApprovalResourceService.FORM_SERVICE.get(annotation.formKey());
+			if (handler != null) {
+				String snapshotData = handler.getPreUpdateSnapshotData(resourceId, operator, organizationId);
+				if (StringUtils.isNotBlank(snapshotData)) {
+					approvalResourceService.savePreUpdateSnapshot(annotation.formKey(), resourceId, operator, organizationId, snapshotData);
+				}
+			}
+		}
+
 		Object retValue = joinPoint.proceed();
 
 		try {
-			String resourceId = resolveResourceId(method, joinPoint.getArgs(), annotation.resourceId(), retValue, annotation.executeType());
-			String updateType = resolveResourceId(method, joinPoint.getArgs(), annotation.updateType(), retValue, annotation.executeType());
-			String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
-			String comment = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.comment());
-			if (StringUtils.isBlank(operator)) {
-				operator = SessionUtils.getUserId();
+			if (StringUtils.isBlank(resourceId)) {
+				resourceId = resolveResourceId(method, joinPoint.getArgs(), annotation.resourceId(), retValue, annotation.executeType());
 			}
 			if (StringUtils.isBlank(resourceId)) {
 				return retValue;
 			}
-
-			if (Strings.CI.equals(updateType, "approval")) {
-				return retValue;
-			}
-
-			// 获取组织ID
-			String organizationId = OrganizationContext.getOrganizationId();
-			if (StringUtils.isBlank(organizationId)) {
-				return retValue;
-			}
-
-			ExecuteTimingEnum executeTiming = annotation.executeType();
-			if (annotation.executeType() == ExecuteTimingEnum.UPDATE) {
-				// UPDATE 时机：检查资源是否历史上审批通过过，如果没有审批通过过则视为CREATE时机
-				boolean isCreateExecuteTime = !approvalResourceService.isResourceApproved(annotation.formKey(), resourceId);
-				if (isCreateExecuteTime) {
-					executeTiming = ExecuteTimingEnum.CREATE;
-				}
-			}
-
-			// 检查是否命中审批流
-			boolean hit = checkHitApprovalFlow(annotation.formKey(), executeTiming, organizationId);
+			String comment = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.comment());
 
 			if (hit) {
 				if (executeTiming == ExecuteTimingEnum.CREATE) {
-					approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), operator, OrganizationContext.getOrganizationId());
+					approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), operator, organizationId);
 				} else {
 					// 命中审批流，直接提审（跳过待提审状态）
 					String updateFields = resolveUpdateFields();
@@ -145,6 +153,21 @@ public class HitApprovalAspect {
 		}
 
 		return retValue;
+	}
+
+	private ExecuteTimingEnum getExecuteTimingEnum(HitApproval annotation, String resourceId) {
+		if (StringUtils.isBlank(resourceId)) {
+			return annotation.executeType();
+		}
+		ExecuteTimingEnum executeTiming = annotation.executeType();
+		if (annotation.executeType() == ExecuteTimingEnum.UPDATE) {
+			// UPDATE 时机：检查资源是否历史上审批通过过，如果没有审批通过过则视为CREATE时机
+			boolean isCreateExecuteTime = !approvalResourceService.isResourceApproved(annotation.formKey(), resourceId);
+			if (isCreateExecuteTime) {
+				executeTiming = ExecuteTimingEnum.CREATE;
+			}
+		}
+		return executeTiming;
 	}
 
 	/**

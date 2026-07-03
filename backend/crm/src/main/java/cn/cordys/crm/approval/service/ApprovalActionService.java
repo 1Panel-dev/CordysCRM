@@ -16,7 +16,9 @@ import cn.cordys.crm.approval.dto.AddSignSortInfo;
 import cn.cordys.crm.approval.dto.request.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
+import cn.cordys.crm.approval.mapper.ExtApprovalResourceSnapshotMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.OrganizationUser;
@@ -41,6 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.cordys.crm.approval.service.ApprovalResourceService.FORM_SERVICE;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -79,6 +83,10 @@ public class ApprovalActionService {
 	private CommonNoticeSendService commonNoticeSendService;
 	@Resource
 	private BaseMapper<OrganizationUser> organizationUserMapper;
+	@Resource
+	private BaseMapper<ApprovalResourceSnapshot> approvalResourceSnapshotMapper;
+	@Resource
+	private ExtApprovalResourceSnapshotMapper extApprovalResourceSnapshotMapper;
 
 	public static final Long DEFAULT_SIGN_SORT_STEP = 100L;
     @Resource
@@ -189,13 +197,44 @@ public class ApprovalActionService {
 		// 任一审批任务驳回即驳回整个节点
 		approvalInstanceService.rejectApprovalInstance(instance, currentUserId);
 		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+		FormKey formKey = FormKey.ofKey(instance.getType());
 		if (resourceService != null) {
-			resourceService.updateResourceApprovalStatus(FormKey.ofKey(instance.getType()), instance.getResourceId(), instance.getApprovalStatus(), currentUserId, currentOrgId);
+			resourceService.updateResourceApprovalStatus(formKey, instance.getResourceId(), instance.getApprovalStatus(), currentUserId, currentOrgId);
 		}
 		loseCurrentNode(instance.getId(), currentTask.getNodeId());
 		approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.REJECT, currentUserId);
+		// 撤回时从快照还原业务数据
+		revertFromSnapshot(formKey, instance.getExecuteTime(), instance.getResourceId(), currentUserId, currentOrgId);
+
 		// 日志 && 通知
 		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.REJECT);
+	}
+
+	/**
+	 * 审批驳回/撤回时，从快照还原业务数据
+	 *
+	 * @param formKey        表单类型
+	 * @param resourceId     资源ID
+	 * @param userId         操作人ID
+	 * @param orgId          组织ID
+	 */
+	public void revertFromSnapshot(FormKey formKey, String executeTime, String resourceId, String userId, String orgId) {
+		if (!Strings.CS.contains(executeTime, ExecuteTimingEnum.UPDATE.name())) {
+			// 编辑才需要回退
+			return;
+		}
+
+		if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+			return;
+		}
+		ApprovalResourceSnapshot snapshot = extApprovalResourceSnapshotMapper.selectByResourceId(resourceId);
+		if (snapshot == null) {
+			return;
+		}
+		ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
+		handler.revertToSnapshot(resourceId, userId, orgId, snapshot.getSnapshotData());
+		// 回退成功后清理快照
+		approvalResourceSnapshotMapper.deleteByPrimaryKey(snapshot.getId());
 	}
 
 	/**

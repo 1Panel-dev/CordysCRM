@@ -37,7 +37,8 @@ public @interface HitApproval {
 	boolean autoSubmit() default false;
 
 	/**
-	 * 更新类型 (支持SpEL表达式，从返回值或者方法参数中获取资源ID) normal-正常更新  approval-评审更新
+	 * 更新类型 (支持SpEL表达式，从返回值或者方法参数中获取资源ID) normal-正常更新(需要走评审切面)  approval-评审时候的更新（直接更新不走切面）
+	 * {@link cn.cordys.crm.approval.constants.ApprovalResourceUpdateType}
 	 */
 	String updateType() default "normal";
 

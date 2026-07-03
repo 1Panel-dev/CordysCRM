@@ -28,6 +28,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalResourceUpdateType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
@@ -807,5 +808,34 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
             return String.join(",", names);
         }
         return StringUtils.EMPTY;
+    }
+
+    @Override
+    public String getPreUpdateSnapshotData(String resourceId, String userId, String orgId) {
+        ContractInvoice contractInvoice = contractInvoiceMapper.selectByPrimaryKey(resourceId);
+        if (contractInvoice == null) {
+            return null;
+        }
+        List<BaseModuleFieldValue> contractInvoiceFields = invoiceFieldService.getModuleFieldValuesByResourceId(resourceId);
+        ContractInvoiceUpdateRequest snapshotReq = BeanUtils.copyBean(new ContractInvoiceUpdateRequest(), contractInvoice);
+        snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
+        ModuleFormConfigDTO contractInvoiceFormConfig = getFormConfig(contractInvoice.getOrganizationId());
+        snapshotReq.setModuleFormConfigDTO(contractInvoiceFormConfig);
+        // 获取模块字段
+        moduleFormService.processBusinessFieldValues(snapshotReq, contractInvoiceFields, contractInvoiceFormConfig);
+        return JSON.toJSONString(snapshotReq);
+    }
+
+    @Override
+    public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
+        try {
+            ContractInvoiceUpdateRequest request = JSON.parseObject(snapshotData, ContractInvoiceUpdateRequest.class);
+            if (request == null) {
+                return;
+            }
+            CommonBeanFactory.getBean(ContractInvoiceService.class).update(request, userId, orgId);
+        } catch (Exception e) {
+            log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
+        }
     }
 }

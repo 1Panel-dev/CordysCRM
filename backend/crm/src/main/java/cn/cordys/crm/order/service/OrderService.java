@@ -32,6 +32,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalResourceUpdateType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
@@ -1058,5 +1059,34 @@ public class OrderService implements ApprovalResourceHandler {
             updateSnapshotApprovalStatus(param);
         });
         extOrderMapper.updateOldApprovalStatusNone();
+    }
+
+    @Override
+    public String getPreUpdateSnapshotData(String resourceId, String userId, String orgId) {
+        Order order = orderMapper.selectByPrimaryKey(resourceId);
+        if (order == null) {
+            return null;
+        }
+        List<BaseModuleFieldValue> orderFields = orderFieldService.getModuleFieldValuesByResourceId(resourceId);
+        OrderUpdateRequest snapshotReq = BeanUtils.copyBean(new OrderUpdateRequest(), order);
+        snapshotReq.setAmount(order.getAmount() != null ? order.getAmount().toString() : null);
+        snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
+        ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
+        snapshotReq.setModuleFormConfigDTO(orderFormConfig);
+        moduleFormService.processBusinessFieldValues(snapshotReq, orderFields, orderFormConfig);
+        return JSON.toJSONString(snapshotReq);
+    }
+
+    @Override
+    public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
+        try {
+            OrderUpdateRequest request = JSON.parseObject(snapshotData, OrderUpdateRequest.class);
+            if (request == null) {
+                return;
+            }
+            CommonBeanFactory.getBean(OrderService.class).update(request, userId, orgId);
+        } catch (Exception e) {
+            log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
+        }
     }
 }
