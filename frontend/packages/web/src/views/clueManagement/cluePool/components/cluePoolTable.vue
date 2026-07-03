@@ -670,7 +670,6 @@
 
   async function init() {
     await getCluePoolOptions();
-    searchData();
   }
 
   onBeforeMount(() => {
