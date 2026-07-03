@@ -7,6 +7,7 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.ThirdConfigTypeConstants;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
@@ -23,7 +24,7 @@ import cn.cordys.crm.contract.domain.BusinessTitleConfig;
 import cn.cordys.crm.contract.domain.ContractInvoice;
 import cn.cordys.crm.contract.dto.request.*;
 import cn.cordys.crm.contract.dto.response.BusinessTitleListResponse;
-import cn.cordys.crm.contract.excel.constants.BusinessTitleImportType;
+import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.contract.excel.domain.BusinessTitleExcelDataFactory;
 import cn.cordys.crm.contract.excel.handler.BusinessTitleTemplateWriteHandler;
 import cn.cordys.crm.contract.excel.listener.BusinessTitleCheckEventListener;
@@ -379,7 +380,7 @@ public class BusinessTitleService {
      * @param orgId
      * @return
      */
-    public ImportResponse importPreCheck(MultipartFile file, String orgId, BusinessTitleImportRequest request) {
+    public ImportResponse importPreCheck(MultipartFile file, String orgId, ImportRequest request) {
         if (file == null) {
             throw new GenericException(Translator.get("file_cannot_be_null"));
         }
@@ -394,7 +395,7 @@ public class BusinessTitleService {
      * @param orgId
      * @return
      */
-    private ImportResponse checkImportExcel(MultipartFile file, String orgId, BusinessTitleImportRequest request) {
+    private ImportResponse checkImportExcel(MultipartFile file, String orgId, ImportRequest request) {
         try {
             Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
             BusinessTitleCheckEventListener eventListener = new BusinessTitleCheckEventListener(clazz, getBusinessTitleConfig(orgId), orgId, getTemplateHead(), request);
@@ -416,17 +417,17 @@ public class BusinessTitleService {
      * @param orgId
      * @return
      */
-    public ImportResponse realImport(MultipartFile file, String userId, String orgId, BusinessTitleImportRequest request) {
+    public ImportResponse realImport(MultipartFile file, String userId, String orgId, ImportRequest request) {
         if (file == null) {
             throw new GenericException(Translator.get("file_cannot_be_null"));
         }
         try {
             Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
 
-            BusinessTitleImportType businessTitleImportType = EnumUtils.valueOf(BusinessTitleImportType.class, request.getImportType());
+            ImportType businessTitleImportType = EnumUtils.valueOf(ImportType.class, request.getImportType());
             Consumer<List<BusinessTitle>> afterDto = null;
             switch (businessTitleImportType) {
-                case BusinessTitleImportType.ADD -> {
+                case ADD -> {
                     afterDto = (businessTitles) -> {
                         List<LogDTO> logs = new ArrayList<>();
                         businessTitles.forEach(title -> {
@@ -438,7 +439,7 @@ public class BusinessTitleService {
                         logService.batchAdd(logs);
                     };
                 }
-                case BusinessTitleImportType.UPDATE -> {
+                case UPDATE -> {
                     SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
                     ExtBusinessTitleMapper mapper = sqlSession.getMapper(ExtBusinessTitleMapper.class);
                     afterDto = (businessTitles) -> {

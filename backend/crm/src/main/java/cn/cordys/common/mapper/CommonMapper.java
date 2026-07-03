@@ -1,5 +1,6 @@
 package cn.cordys.common.mapper;
 
+import cn.cordys.common.domain.BaseResourceSubField;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -22,7 +23,6 @@ public interface CommonMapper {
      * @param tableName 表
      * @param fieldName 值
      * @param orgId     组织ID
-     *
      * @return 值集合
      */
     List<String> getCheckValList(@Param("tableName") String tableName,
@@ -36,7 +36,6 @@ public interface CommonMapper {
      * @param fieldId    字段ID
      * @param fieldValue 字段值
      * @param orgId      组织ID
-     *
      * @return 是否重复
      */
     String checkFieldRepeatName(@Param("dataTable") String dataTable, @Param("fieldTable") String fieldTable,
@@ -52,10 +51,27 @@ public interface CommonMapper {
      * @param businessName 业务字段名
      * @param value        值
      * @param orgId        组织ID
-     *
      * @return 是否重复
      */
     String checkInternalRepeatName(@Param("dataTable") String dataTable, @Param("businessName") String businessName,
                                    @Param("value") String value, @Param("orgId") String orgId);
+
+    /**
+     * 获取资源自定义字段
+     *
+     * @param tableName
+     * @param resourceId
+     * @param fieldId
+     * @return
+     */
+    BaseResourceSubField getResourceField(@Param("tableName") String tableName, @Param("resourceId") String resourceId, @Param("fieldId") String fieldId);
+
+    /**
+     * 更新自定义字段
+     *
+     * @param tableName
+     * @param field
+     */
+    void updateCustomerField(@Param("tableName") String tableName, @Param("field") BaseResourceSubField field);
 }
 

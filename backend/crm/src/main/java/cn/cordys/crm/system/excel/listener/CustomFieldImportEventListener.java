@@ -28,7 +28,6 @@ import java.util.*;
  * 自定义字段导入处理器
  *
  * @param <T> 业务实体
- *
  * @author song-cc-rock
  */
 @Slf4j
@@ -158,6 +157,15 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             if (isNormalRow(rowIndex) || isMergeFirstRow(rowIndex)) {
                 // 非合并行才创建实体
                 String rowKey = IDGenerator.nextStr();
+                Integer key = headMap.entrySet().stream()
+                        .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID"))
+                        .map(Map.Entry::getKey)
+                        .findFirst()
+                        .orElse(null);
+                if (key != null && rowData.containsKey(key)) {
+                    rowKey = rowData.get(key);
+                }
+
                 mergedTmpEntity = entityClass.getDeclaredConstructor().newInstance();
                 setInternal(mergedTmpEntity, rowKey);
                 subRowId = 1;
@@ -193,8 +201,13 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                         throw new GenericException(e);
                     }
                 } else {
+                    BaseResourceSubField baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey());
                     BaseResourceSubField resourceField = new BaseResourceSubField();
-                    resourceField.setId(IDGenerator.nextStr());
+                    if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
+                        resourceField.setId(baseResourceSubField.getId());
+                    } else {
+                        resourceField.setId(IDGenerator.nextStr());
+                    }
                     resourceField.setResourceId(id.get().toString());
                     resourceField.setFieldId(field.idOrBusinessKey());
                     resourceField.setFieldValue(val);
@@ -244,7 +257,6 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      *
      * @param text  文本
      * @param field 字段
-     *
      * @return 值
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -280,7 +292,6 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * 判断是否合并首行
      *
      * @param rowIndex 行号
-     *
      * @return 是否为合并首行
      */
     private boolean isMergeFirstRow(int rowIndex) {
@@ -295,7 +306,6 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * 判断当前行是否为合并尾行
      *
      * @param rowIndex 行号
-     *
      * @return 是否为合并尾行
      */
     private boolean isMergedLastRow(int rowIndex) {
@@ -310,7 +320,6 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * 非合并行
      *
      * @param rowIndex 行号
-     *
      * @return 是否为正常行
      */
     private boolean isNormalRow(int rowIndex) {
@@ -322,7 +331,6 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      *
      * @param instance 实例对象
      * @param rowKey   唯一Key
-     *
      * @throws Exception 异常
      */
     private void setInternal(T instance, String rowKey) throws Exception {
@@ -340,7 +348,6 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * @param instance  实例对象
      * @param fieldName 字段名
      * @param value     值
-     *
      * @throws Exception 异常
      */
     private void setPropertyValue(T instance, String fieldName, Object value) throws Exception {
@@ -354,9 +361,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      * 获取资源ID
      *
      * @param instance 实例对象
-     *
      * @return 资源ID
-     *
      * @throws Exception 异常信息
      */
     private Object getResourceId(T instance) throws Exception {
