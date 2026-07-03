@@ -357,7 +357,7 @@
         window.open(appStore.pageConfig.helpDoc, '_blank');
         break;
       case 'apiDoc':
-        if (!licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+        if (!licenseStore.hasLicense()) {
           openModal(licenseStore.getNoLicenseModalConfig());
           return;
         }

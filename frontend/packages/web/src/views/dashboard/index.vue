@@ -95,7 +95,7 @@
   }
 
   onBeforeMount(async () => {
-    if (!licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+    if (!licenseStore.hasLicense()) {
       openModal(licenseStore.getNoLicenseModalConfig());
       return;
     }
