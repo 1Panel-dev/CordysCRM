@@ -637,7 +637,7 @@
   });
 
   function handleEdit(item: IntegrationItem) {
-    if (item.type === 'DE' && !licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+    if (item.type === 'DE' && !licenseStore.hasLicense()) {
       openModal(licenseStore.getNoLicenseModalConfig());
       return;
     }
@@ -647,7 +647,7 @@
   }
 
   async function handleSyncDE(item: IntegrationItem) {
-    if (item.type === 'DE' && !licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+    if (item.type === 'DE' && !licenseStore.hasLicense()) {
       openModal(licenseStore.getNoLicenseModalConfig());
       return;
     }
