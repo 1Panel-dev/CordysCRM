@@ -29,7 +29,12 @@ import {
   CustomFormExportAllUrl,
   CustomFormExportSelectedUrl,
 } from '@lib/shared/api/requrls/customForm';
-import type { CommonList, TableExportParams, TableExportSelectedParams } from '@lib/shared/models/common';
+import type {
+  CommonList,
+  ImportUploadParams,
+  TableExportParams,
+  TableExportSelectedParams,
+} from '@lib/shared/models/common';
 import type {
   AddCustomFormDataParams,
   BatchUpdateCustomFormDataParams,
@@ -144,8 +149,12 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.get<CustomFormItem[]>({ url:GetCustomFormOptionsUrl });
   }
 
-  function preCheckImportCustomForm(file: File, customFormId?: string) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckCustomFormImportUrl, params:{ customFormId } }, { fileList: [file] }, 'file');
+  function preCheckImportCustomForm(params: ImportUploadParams, customFormId?: string) {
+    return CDR.uploadFile<{ data: ValidateInfo }>(
+      { url: PreCheckCustomFormImportUrl, params: { customFormId } },
+      params,
+      'file'
+    );
   }
 
   function downloadCustomFormTemplate(customFormId?: string) {
@@ -153,14 +162,18 @@ export default function useCustomFormApi(CDR: CordysAxios) {
       {
         url: DownloadCustomFormTemplateUrl,
         responseType: 'blob',
-        params:{ customFormId },
+        params: { customFormId },
       },
       { isTransformResponse: false, isReturnNativeResponse: true }
     );
   }
 
-  function importCustomForm(file: File, customFormId?: string) {
-    return CDR.uploadFile({ url: ImportCustomFormUrl, params:{ customFormId } }, { fileList: [file] }, 'file');
+  function importCustomForm(params: ImportUploadParams, customFormId?: string) {
+    return CDR.uploadFile(
+      { url: ImportCustomFormUrl, params: { customFormId } },
+      params,
+      'file'
+    );
   }
 
   function exportCustomFormAll(data: TableExportParams) {

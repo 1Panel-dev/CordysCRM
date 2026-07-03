@@ -126,6 +126,7 @@ import type {
   ChartResponseDataItem,
   CommonList,
   GenerateChartParams,
+  ImportUploadParams,
   TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
@@ -482,12 +483,8 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.post({ url: DragPaymentRecordViewUrl, data });
   }
 
-  function preCheckImportContractPaymentRecord(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>(
-      { url: PreCheckPaymentRecordImportUrl },
-      { fileList: [file] },
-      'file'
-    );
+  function preCheckImportContractPaymentRecord(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckPaymentRecordImportUrl }, params, 'file');
   }
 
   function downloadContractPaymentRecordTemplate() {
@@ -500,15 +497,15 @@ export default function useContractApi(CDR: CordysAxios) {
     );
   }
 
-  function importContractPaymentRecord(file: File) {
-    return CDR.uploadFile({ url: ImportPaymentRecordUrl }, { fileList: [file] }, 'file');
+  function importContractPaymentRecord(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportPaymentRecordUrl }, params, 'file');
   }
 
   // 合同-工商抬头导入
-  function preCheckImportBusinessTitle(file: File, importType?: string) {
+  function preCheckImportBusinessTitle(params: ImportUploadParams) {
     return CDR.uploadFile<{ data: ValidateInfo }>(
       { url: PreCheckBusinessTitleImportUrl },
-      { fileList: [file], request: { importType } },
+      params,
       'file'
     );
   }
@@ -523,8 +520,8 @@ export default function useContractApi(CDR: CordysAxios) {
     );
   }
 
-  function importBusinessTitle(file: File, importType?: string) {
-    return CDR.uploadFile({ url: ImportBusinessTitleUrl }, { fileList: [file], request: { importType } }, 'file');
+  function importBusinessTitle(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportBusinessTitleUrl }, params, 'file');
   }
 
   // 工商抬头列表

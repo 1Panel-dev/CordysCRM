@@ -130,6 +130,7 @@ import type {
   ChartResponseDataItem,
   CommonList,
   GenerateChartParams,
+  ImportUploadParams,
   TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
@@ -700,8 +701,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 客户导入
-  function preCheckImportAccount(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckAccountImportUrl }, { fileList: [file] }, 'file');
+  function preCheckImportAccount(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckAccountImportUrl }, params, 'file');
   }
 
   function downloadAccountTemplate() {
@@ -714,13 +715,13 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
-  function importAccount(file: File) {
-    return CDR.uploadFile({ url: ImportAccountUrl }, { fileList: [file] }, 'file');
+  function importAccount(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportAccountUrl }, params, 'file');
   }
 
   // 联系人导入
-  function preCheckImportContact(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckContactImportUrl }, { fileList: [file] }, 'file');
+  function preCheckImportContact(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckContactImportUrl }, params, 'file');
   }
 
   function downloadContactTemplate() {
@@ -733,8 +734,8 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
-  function importContact(file: File) {
-    return CDR.uploadFile({ url: ImportContactUrl }, { fileList: [file] }, 'file');
+  function importContact(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportContactUrl }, params, 'file');
   }
 
   // 公海视图

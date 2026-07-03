@@ -30,6 +30,7 @@ import {
 } from '@lib/shared/api/requrls/product';
 import type {
   CommonList,
+  ImportUploadParams,
   TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
@@ -91,8 +92,8 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: DragSortProductUrl, data });
   }
 
-  function preCheckImportProduct(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckProductImportUrl }, { fileList: [file] }, 'file');
+  function preCheckImportProduct(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckProductImportUrl }, params, 'file');
   }
 
   function downloadProductTemplate() {
@@ -105,8 +106,8 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
-  function importProduct(file: File) {
-    return CDR.uploadFile({ url: ImportProductUrl }, { fileList: [file] }, 'file');
+  function importProduct(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportProductUrl }, params, 'file');
   }
 
   // 获取意向产品选项
@@ -166,13 +167,13 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 预检查导入价格表
-  function preCheckImportProductPrice(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckImportProductPriceUrl }, { fileList: [file] }, 'file');
+  function preCheckImportProductPrice(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckImportProductPriceUrl }, params, 'file');
   }
 
   // 导入价格表
-  function importProductPrice(file: File) {
-    return CDR.uploadFile({ url: ImportProductPriceUrl }, { fileList: [file] }, 'file');
+  function importProductPrice(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportProductPriceUrl }, params, 'file');
   }
 
   // 导出所有的价格表
