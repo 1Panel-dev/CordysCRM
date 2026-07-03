@@ -32,7 +32,6 @@ export default {
   'clue.moveToLeadPoolTip': 'Warning: Leads will become unassigned after transfer!',
   'clue.moveIntoCluePoolTitle': 'Confirm move-in {name} to lead pool?',
   'clue.belongingCluePool': 'Belonging lead Pool',
-  'clue.targetCluePool': 'Target lead pool',
   'clue.convert': 'Convert',
   'clue.convertClueToOther': 'Convert the lead to',
   'clue.convertClueToOtherTitle': 'Convert into',

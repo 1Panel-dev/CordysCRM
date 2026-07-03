@@ -107,6 +107,8 @@ public class CustomerService {
     @Resource
     private CustomerPoolService customerPoolService;
     @Resource
+    private BaseMapper<CustomerPool> customerPoolMapper;
+    @Resource
     private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
@@ -621,13 +623,19 @@ public class CustomerService {
      */
     public BatchAffectResponse batchToPool(BatchPoolReasonRequest request, String currentUser, String orgId) {
         List<Customer> customers = customerMapper.selectByIds(request.getIds());
-        List<String> ownerIds = getOwners(customers);
-        Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        CustomerPool targetPool = null;
+        Map<String, CustomerPool> ownersDefaultPoolMap = new HashMap<>(4);
+        if (StringUtils.isNotBlank(request.getPoolId())) {
+            targetPool = getTargetCustomerPool(request.getPoolId(), orgId);
+        } else {
+            List<String> ownerIds = getOwners(customers);
+            ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        }
 
         int success = 0;
         var logs = new ArrayList<LogDTO>();
         for (Customer customer : customers) {
-            CustomerPool customerPool = ownersDefaultPoolMap.get(customer.getOwner());
+            CustomerPool customerPool = targetPool != null ? targetPool : ownersDefaultPoolMap.get(customer.getOwner());
             if (customerPool == null) {
                 // 未找到默认公海，不移入
                 continue;
@@ -675,8 +683,17 @@ public class CustomerService {
     public BatchAffectResponse toPool(PoolReasonRequest request, String currentUser, String orgId) {
         BatchPoolReasonRequest batchRequest = new BatchPoolReasonRequest();
         batchRequest.setReasonId(request.getReasonId());
+        batchRequest.setPoolId(request.getPoolId());
         batchRequest.setIds(List.of(request.getId()));
         return batchToPool(batchRequest, currentUser, orgId);
+    }
+
+    private CustomerPool getTargetCustomerPool(String poolId, String orgId) {
+        CustomerPool customerPool = customerPoolMapper.selectByPrimaryKey(poolId);
+        if (customerPool == null || !Strings.CS.equals(customerPool.getOrganizationId(), orgId) || !BooleanUtils.isTrue(customerPool.getEnable())) {
+            throw new GenericException(Translator.get("customer_pool_not_exist"));
+        }
+        return customerPool;
     }
 
     public List<OptionDTO> getCustomerOptions(String keyword, String organizationId) {

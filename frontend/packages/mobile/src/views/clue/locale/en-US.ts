@@ -33,5 +33,4 @@ export default {
   'clue.countDownTip': 'Returning to the clue list in {count} seconds. You can also go back manually.',
   'clue.moveToLeadPoolTip': 'Warning: Leads will become unassigned after transfer!',
   'clue.moveIntoCluePool': 'Move to lead pool',
-  'clue.targetCluePool': 'Target lead pool',
 };
