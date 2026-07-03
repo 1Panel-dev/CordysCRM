@@ -258,11 +258,7 @@
   async function menuChange(key: string, item: MenuOption) {
     const routeItem = item as unknown as AppRouteRecordRaw;
     const name = routeItem.meta?.hideChildrenInMenu ? getFirstRouterNameByCurrentRoute(routeItem.name as string) : key;
-    if (
-      name === DashboardRouteEnum.DASHBOARD_INDEX &&
-      !licenseStore.hasLicense() &&
-      licenseStore.isEnterpriseVersion()
-    ) {
+    if (name === DashboardRouteEnum.DASHBOARD_INDEX && !licenseStore.hasLicense()) {
       openModal(licenseStore.getNoLicenseModalConfig());
       nextTick(() => {
         menuValue.value = router.currentRoute.value.name as string;
