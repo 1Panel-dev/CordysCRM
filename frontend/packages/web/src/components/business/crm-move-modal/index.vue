@@ -14,14 +14,14 @@
   >
     <div class="mb-[16px]">{{ contentTip }}</div>
     <n-form
-      v-if="enableReason || isCluePoolReason"
+      v-if="enableReason || isPoolReason"
       ref="formRef"
       :model="form"
       :label-width="90"
       label-placement="left"
       require-mark-placement="left"
     >
-      <n-form-item v-if="isCluePoolReason" path="poolId" :label="t('clue.targetCluePool')">
+      <n-form-item v-if="isPoolReason" path="poolId" :label="poolLabel">
         <n-select
           v-model:value="form.poolId"
           :placeholder="t('common.pleaseSelect')"
@@ -60,6 +60,7 @@
   import {
     batchMoveCustomer,
     batchToCluePool,
+    getOpenSeaOptions,
     getPoolOptions,
     getReasonConfig,
     moveCustomerToPool,
@@ -112,11 +113,14 @@
   const enableReason = ref(false);
 
   const isCluePoolReason = computed(() => props.reasonKey === ReasonTypeEnum.CLUE_POOL_RS);
+  const isCustomerPoolReason = computed(() => props.reasonKey === ReasonTypeEnum.CUSTOMER_POOL_RS);
+  const isPoolReason = computed(() => isCluePoolReason.value || isCustomerPoolReason.value);
+  const poolLabel = computed(() => (isCluePoolReason.value ? t('clue.moveIntoCluePool') : t('customer.moveToOpenSea')));
   const confirmDisabled = computed(() => {
     if (enableReason.value && !form.value.reason) {
       return true;
     }
-    return isCluePoolReason.value && !form.value.poolId;
+    return isPoolReason.value && !form.value.poolId;
   });
 
   const title = computed(() => {
@@ -143,10 +147,17 @@
     props.reasonKey === ReasonTypeEnum.CLUE_POOL_RS ? t('clue.moveToLeadPoolTip') : t('customer.batchMoveContentTip')
   );
 
-  function handleCancel() {
-    showModal.value = false;
+  function resetForm() {
     form.value.reason = null;
     form.value.poolId = null;
+    poolOptions.value = [];
+    reasonList.value = [];
+    enableReason.value = false;
+  }
+
+  function handleCancel() {
+    showModal.value = false;
+    resetForm();
   }
 
   const showToPoolResultModel = ref(false);
@@ -162,7 +173,7 @@
         const { success, fail } = await batchMoveApiMap[props.reasonKey]({
           ids: props.sourceId,
           reasonId: form.value.reason,
-          poolId: isCluePoolReason.value ? form.value.poolId : null,
+          poolId: isPoolReason.value ? form.value.poolId : null,
         });
         successCount.value = success;
         failCount.value = fail;
@@ -171,7 +182,7 @@
         const { success, fail } = await moveApiMap[props.reasonKey]({
           id: props.sourceId,
           reasonId: form.value.reason,
-          poolId: isCluePoolReason.value ? form.value.poolId : null,
+          poolId: isPoolReason.value ? form.value.poolId : null,
         });
         successCount.value = success;
         failCount.value = fail;
@@ -201,7 +212,7 @@
   }
 
   function handleConfirm() {
-    if (enableReason.value || isCluePoolReason.value) {
+    if (enableReason.value || isPoolReason.value) {
       formRef.value?.validate(async (error) => {
         if (!error) {
           handleSave();
@@ -213,14 +224,17 @@
   }
 
   async function initPoolOptions() {
-    if (!isCluePoolReason.value) {
+    if (!isPoolReason.value) {
       return;
     }
     try {
       poolLoading.value = true;
-      const options = await getPoolOptions();
+      form.value.poolId = null;
+      poolOptions.value = [];
+      const options = isCluePoolReason.value ? await getPoolOptions() : await getOpenSeaOptions();
       poolOptions.value = options.map((item) => ({ label: item.name, value: item.id }));
-      form.value.poolId = poolOptions.value[0]?.value ?? null;
+      const defaultPool = [...options].sort((prev, next) => next.createTime - prev.createTime)[0];
+      form.value.poolId = defaultPool?.id ?? null;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
@@ -249,8 +263,11 @@
     () => showModal.value,
     (val) => {
       if (val) {
+        resetForm();
         initReasonConfig();
         initPoolOptions();
+      } else {
+        resetForm();
       }
     }
   );
