@@ -21,7 +21,6 @@
         <CrmImportButton
           v-if="hasAnyPermission(['CONTRACT_BUSINESS_TITLE:IMPORT'])"
           :api-type="ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT"
-          showImportRadio
           :title="t('module.businessTitle')"
           @import-success="() => searchData()"
         />

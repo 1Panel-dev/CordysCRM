@@ -50,7 +50,13 @@
                     class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
                   />
                 </template>
-                {{ t('crmImportButton.importUpdates.tooltip') }}
+                <div>
+                  <div>{{ t('crmImportButton.importUpdates.tooltip') }}</div>
+                  <div>{{ t('crmImportButton.importUpdates.defaultLogic') }}</div>
+                  <div>{{ t('crmImportButton.importUpdates.defaultLogic.emptyValue') }}</div>
+                  <div>{{ t('crmImportButton.importUpdates.defaultLogic.workflow') }}</div>
+                  <div>{{ t('crmImportButton.importUpdates.defaultLogic.unique') }}</div>
+                </div>
               </n-tooltip>
             </div>
           </n-radio>
