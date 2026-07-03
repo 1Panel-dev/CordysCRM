@@ -2477,4 +2477,18 @@ public class ModuleFormService {
         });
         return heads;
     }
+
+    public List<BaseField> getAllCustomImportFieldsNoOwner(String formKey, String orgId) {
+        List<BaseField> allFields = getAllFields(formKey, orgId);
+        if (CollectionUtils.isEmpty(allFields)) {
+            return null;
+        }
+
+        List<BaseField> fields = allFields
+                .stream()
+                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport() && !Strings.CI.equals(f.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()))
+                .toList();
+        return fields;
+    }
+
 }

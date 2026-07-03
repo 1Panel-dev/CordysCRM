@@ -46,7 +46,6 @@ public interface ExtClueMapper {
      * 获取线索重复数据数量
      *
      * @param customerNames 客户名称列表
-     *
      * @return 重复数据数量
      */
     List<OptionDTO> getRepeatCountMap(@Param("customerNames") List<String> customerNames);
@@ -55,7 +54,6 @@ public interface ExtClueMapper {
      * 获取相似线索列表
      *
      * @param customerName 客户名称
-     *
      * @return 相似线索列表
      */
     List<AdvancedClueResponse> getSimilarClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
@@ -64,7 +62,6 @@ public interface ExtClueMapper {
      * 获取重复线索列表
      *
      * @param customerName 客户名称
-     *
      * @return 重复线索列表
      */
     List<AdvancedClueResponse> getRepeatClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
@@ -73,7 +70,6 @@ public interface ExtClueMapper {
      * 查询用户负责的线索条数
      *
      * @param ownerId 负责用户ID
-     *
      * @return 数量
      */
     long getOwnerCount(@Param("ownerId") String ownerId);
@@ -109,7 +105,6 @@ public interface ExtClueMapper {
      * 检查字段值是否唯一
      *
      * @param field 字段值
-     *
      * @return bool
      */
     boolean checkFieldValueRepeat(@Param("field") BaseModuleFieldValue field);
@@ -120,11 +115,19 @@ public interface ExtClueMapper {
      * 查询客户的转移线索ID集合
      *
      * @param customerId 客户ID
-     *
      * @return 线索ID集合
      */
     List<String> getTransitionClueIds(@Param("customerId") String customerId);
 
     List<ChartResult> chart(@Param("request") ClueChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
                             @Param("dataPermission") DeptDataPermissionDTO dataPermission);
+
+    /**
+     * 更新线索
+     *
+     * @param clue
+     */
+    void updateClue(@Param("clue") Clue clue);
+
+
 }

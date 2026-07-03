@@ -595,4 +595,39 @@
             </if>
         </if>
     </sql>
+
+
+    <select id="getResourceField" resultType="cn.cordys.common.domain.BaseResourceSubField">
+        select t.*
+        from `${tableName}` t
+        where t.resource_id = #{resourceId} and t.field_id = #{fieldId}
+    </select>
+
+    <update id="updateCustomerField">
+        update `${tableName}` t
+        <set>
+            <if test="field.resourceId != null and field.resourceId != ''">
+                t.resource_id = #{field.resourceId},
+            </if>
+            <if test="field.fieldId != null and field.fieldId != ''">
+                t.field_id = #{field.fieldId},
+            </if>
+            <if test="field.fieldValue != null and field.fieldValue != ''">
+                t.field_value = #{field.fieldValue},
+            </if>
+            <if test="field.refSubId != null and field.refSubId != ''">
+                t.ref_sub_id = #{field.refSubId},
+            </if>
+            <if test="field.rowId != null and field.rowId != ''">
+                t.row_id = #{field.rowId},
+            </if>
+            <if test="field.bizId != null and field.bizId != ''">
+                t.biz_id = #{field.bizId},
+            </if>
+        </set>
+        <where>
+            id = #{field.id}
+        </where>
+
+    </update>
 </mapper>

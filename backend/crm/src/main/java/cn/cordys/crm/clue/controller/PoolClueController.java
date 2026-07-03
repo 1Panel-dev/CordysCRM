@@ -13,10 +13,7 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.CluePoolDTO;
-import cn.cordys.crm.clue.dto.request.ClueExportRequest;
-import cn.cordys.crm.clue.dto.request.CluePageRequest;
-import cn.cordys.crm.clue.dto.request.PoolClueAssignRequest;
-import cn.cordys.crm.clue.dto.request.PoolCluePickRequest;
+import cn.cordys.crm.clue.dto.request.*;
 import cn.cordys.crm.clue.dto.response.ClueGetResponse;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import cn.cordys.crm.clue.service.CluePoolExportService;
@@ -185,15 +182,15 @@ public class PoolClueController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_POOL_IMPORT)
-    public ImportResponse preCheck(@RequestParam String poolId, @RequestPart(value = "file") MultipartFile file) {
-        return poolClueService.importPreCheck(file, poolId, OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") CluePoolImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return poolClueService.importPreCheck(file, request, OrganizationContext.getOrganizationId());
     }
 
 
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_POOL_IMPORT)
-    public ImportResponse realImport(@RequestParam String poolId, @RequestPart(value = "file") MultipartFile file) {
-        return poolClueService.realImport(file, poolId, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") CluePoolImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return poolClueService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

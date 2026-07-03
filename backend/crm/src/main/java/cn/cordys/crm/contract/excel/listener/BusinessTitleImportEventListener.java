@@ -3,7 +3,7 @@ package cn.cordys.crm.contract.excel.listener;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.contract.dto.request.BusinessTitleImportRequest;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.contract.excel.constants.BusinessTitleImportFiled;
 import cn.cordys.excel.domain.ExcelErrData;
 import cn.idev.excel.context.AnalysisContext;
@@ -40,7 +40,7 @@ public class BusinessTitleImportEventListener<T> extends BusinessTitleCheckEvent
      */
     private final Class<T> entityClass;
 
-    public BusinessTitleImportEventListener(Class<?> clazz, Class<T> entityClass, Map<String, Boolean> requiredFieldMap, String orgId, String userId, Consumer<List<T>> consumer, List<List<String>> heads, BusinessTitleImportRequest request) {
+    public BusinessTitleImportEventListener(Class<?> clazz, Class<T> entityClass, Map<String, Boolean> requiredFieldMap, String orgId, String userId, Consumer<List<T>> consumer, List<List<String>> heads, ImportRequest request) {
         super(clazz, requiredFieldMap, orgId, heads, request);
         this.entityClass = entityClass;
         this.userId = userId;

@@ -4,9 +4,9 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.contract.dto.request.BusinessTitleImportRequest;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.contract.excel.constants.BusinessTitleImportFiled;
-import cn.cordys.crm.contract.excel.constants.BusinessTitleImportType;
+import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.excel.domain.ExcelErrData;
 import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.context.AnalysisContext;
@@ -46,9 +46,9 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private final List<List<String>> heads;
     protected boolean atLeastOne = false;
     private final Map<String, Boolean> excelValueCache = new ConcurrentHashMap<>();
-    private BusinessTitleImportRequest request = new BusinessTitleImportRequest();
+    private ImportRequest request = new ImportRequest();
 
-    public BusinessTitleCheckEventListener(Class<?> clazz, Map<String, Boolean> requiredFieldMap, String orgId, List<List<String>> heads, BusinessTitleImportRequest request) {
+    public BusinessTitleCheckEventListener(Class<?> clazz, Map<String, Boolean> requiredFieldMap, String orgId, List<List<String>> heads, ImportRequest request) {
         this.excelDataClass = clazz;
         this.requiredFieldMap = requiredFieldMap;
         this.orgId = orgId;
@@ -103,10 +103,10 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private void validateRowData(Integer rowIndex, Map<Integer, String> rowData) {
         StringBuilder errText = new StringBuilder();
         headMap.forEach((k, v) -> {
-            if (Strings.CI.equals(request.getImportType(), BusinessTitleImportType.ADD.name())) {
+            if (Strings.CI.equals(request.getImportType(), ImportType.ADD.name())) {
                 validateRequired(rowData.get(k), errText, v);
             }
-            if (Strings.CI.equals(request.getImportType(), BusinessTitleImportType.UPDATE.name())) {
+            if (Strings.CI.equals(request.getImportType(), ImportType.UPDATE.name())) {
                 validateId(rowData.get(k), errText, v);
                 validateNameExist(rowData.get(k), errText, v);
             }

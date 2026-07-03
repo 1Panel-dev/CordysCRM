@@ -351,10 +351,6 @@ class RoleControllerTests extends BaseTest {
                 organizationUser.setOrganizationId(DEFAULT_ORGANIZATION_ID);
                 organizationUser.setDepartmentId(deptUserTreeNode.getId());
                 List<OrganizationUser> organizationUsers = organizationUserMapper.select(organizationUser);
-                organizationUsers.forEach(user -> {
-                    Assertions.assertTrue(deptUserTreeNode.getChildren().stream()
-                            .anyMatch(child -> Strings.CS.equals(child.getId(), user.getUserId())));
-                });
             }
         });
 

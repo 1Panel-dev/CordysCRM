@@ -35,7 +35,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * 源数据表
      */
     private final String sourceTable;
-    private final String fieldTable;
+    protected final String fieldTable;
     protected final String currentOrg;
     /**
      * 必填校验
@@ -47,7 +47,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     private final Map<String, BaseField> uniques = new HashMap<>();
     private final Map<String, Set<String>> uniqueCheckSet = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
-    private final CommonMapper commonMapper;
+    protected final CommonMapper commonMapper;
     /**
      * 长度校验
      */
@@ -211,7 +211,6 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      *
      * @param rowIndex 行序号
      * @param colIndex 列序号
-     *
      * @return 是否需要校验
      */
     private boolean isValidateCell(int rowIndex, int colIndex) {
@@ -237,7 +236,6 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      *
      * @param val   值
      * @param field 字段
-     *
      * @return 是否唯一
      */
     private boolean checkFieldValUnique(String val, BaseField field) {
@@ -259,7 +257,6 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * 表头是否非法
      *
      * @param headMap 表头集合
-     *
      * @return 是否非法
      */
     private String checkIllegalHead(Map<Integer, String> headMap) {
@@ -286,9 +283,9 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         if (field.needRepeatCheck()) {
             uniques.put(field.getName(), field);
         }
-		if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name())) {
-			fieldLenLimit.put(field.getName(), 32);
-		}
+        if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name())) {
+            fieldLenLimit.put(field.getName(), 32);
+        }
         if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(), FieldType.RADIO.name(),
                 FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name(), FieldType.INDUSTRY.name())) {
             fieldLenLimit.put(field.getName(), 255);

@@ -737,6 +737,7 @@
         </foreach>
     </update>
 
+
     <select id="checkFieldValueRepeat" resultType="java.lang.Boolean">
         select count(1) > 0 from clue_field cf join clue c on cf.resource_id = c.id
         where cf.field_id = #{field.fieldId} and cf.field_value = #{field.fieldValue} and (c.transition_type != 'CUSTOMER' or c.transition_type is null)
@@ -745,4 +746,73 @@
     <select id="getTransitionClueIds" resultType="java.lang.String">
         select id from clue where clue.transition_type = 'CUSTOMER' and clue.transition_id = #{customerId}
     </select>
+
+    <update id="updateClue">
+        update clue
+        <set>
+            <if test="clue.name != null and clue.name != ''">
+                name = #{clue.name},
+            </if>
+            <if test="clue.owner != null and clue.owner != ''">
+                owner = #{clue.owner},
+            </if>
+            <if test="clue.lastStage != null and clue.lastStage != ''">
+                last_stage = #{clue.lastStage},
+            </if>
+            <if test="clue.stage != null and clue.stage != ''">
+                stage = #{clue.stage},
+            </if>
+            <if test="clue.collectionTime != null">
+                collection_time = #{clue.collectionTime},
+            </if>
+            <if test="clue.contact != null and clue.contact != ''">
+                contact = #{clue.contact},
+            </if>
+            <if test="clue.phone != null and clue.phone != ''">
+                phone = #{clue.phone},
+            </if>
+            <if test="clue.products != null and clue.products != ''">
+                products = #{clue.products},
+            </if>
+            <if test="clue.organizationId != null and clue.organizationId != ''">
+                organization_id = #{clue.organizationId},
+            </if>
+            <if test="clue.createTime != null">
+                create_time = #{clue.createTime},
+            </if>
+            <if test="clue.updateTime != null">
+                update_time = #{clue.updateTime},
+            </if>
+            <if test="clue.createUser != null and clue.createUser != ''">
+                create_user = #{clue.createUser},
+            </if>
+            <if test="clue.updateUser != null and clue.updateUser != ''">
+                update_user = #{clue.updateUser},
+            </if>
+            <if test="clue.transitionType != null and clue.transitionType != ''">
+                transition_type = #{clue.transitionType},
+            </if>
+            <if test="clue.transitionId != null and clue.transitionId != ''">
+                transition_id = #{clue.transitionId},
+            </if>
+            <if test="clue.inSharedPool != null">
+                in_shared_pool = #{clue.inSharedPool},
+            </if>
+            <if test="clue.follower != null and clue.follower != ''">
+                follower = #{clue.follower},
+            </if>
+            <if test="clue.followTime != null">
+                follow_time = #{clue.followTime},
+            </if>
+            <if test="clue.poolId != null and clue.poolId != ''">
+                pool_id = #{clue.poolId},
+            </if>
+            <if test="clue.reasonId != null and clue.reasonId != ''">
+                reason_id = #{clue.reasonId},
+            </if>
+        </set>
+        <where>
+            id = #{clue.id}
+        </where>
+    </update>
 </mapper>

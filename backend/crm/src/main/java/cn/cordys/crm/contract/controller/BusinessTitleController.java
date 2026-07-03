@@ -5,6 +5,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -157,7 +158,7 @@ public class BusinessTitleController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "excel导入检查")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
-    public ImportResponse preCheck(@RequestPart(value = "file", required = false) MultipartFile file, @Validated @RequestPart("request") BusinessTitleImportRequest request) {
+    public ImportResponse preCheck(@RequestPart(value = "file", required = false) MultipartFile file, @Validated @RequestPart("request") ImportRequest request) {
         return businessTitleService.importPreCheck(file, OrganizationContext.getOrganizationId(), request);
     }
 
@@ -165,7 +166,7 @@ public class BusinessTitleController {
     @PostMapping(value = "/import")
     @Operation(summary = "导入")
     @RequiresPermissions(PermissionConstants.CONTRACT_BUSINESS_TITLE_IMPORT)
-    public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file, @Validated @RequestPart("request") BusinessTitleImportRequest request) {
+    public ImportResponse realImport(@RequestPart(value = "file", required = false) MultipartFile file, @Validated @RequestPart("request") ImportRequest request) {
         return businessTitleService.realImport(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), request);
     }
 
