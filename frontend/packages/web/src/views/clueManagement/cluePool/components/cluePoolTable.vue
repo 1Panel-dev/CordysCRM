@@ -9,7 +9,7 @@
     :columns="filterColumns"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
-    @sorter-change="propsEvent.sorterChange"
+    @sorter-change="handleSorterChange"
     @filter-change="propsEvent.filterChange"
     @batch-action="handleBatchAction"
     @refresh="searchData"
@@ -124,7 +124,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CluePoolListItem } from '@lib/shared/models/clue';
-  import { ExportTableColumnItem } from '@lib/shared/models/common';
+  import { ExportTableColumnItem, type SortParams } from '@lib/shared/models/common';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { CluePoolItem } from '@lib/shared/models/system/module';
 
@@ -541,6 +541,14 @@
   });
 
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  function handleSorterChange(sorter: SortParams) {
+    if (poolId.value) {
+      setLoadListParams({ keyword: keyword.value, poolId: poolId.value, viewId: activeTab.value });
+      propsEvent.value.sorterChange(sorter);
+    }
+  }
+
   const hiddenColumns = computed<string[]>(() => {
     const cluePoolSetting = cluePoolOptions.value.find((item) => item.id === poolId.value);
     return cluePoolSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
@@ -583,9 +591,6 @@
     try {
       cluePoolOptions.value = await getPoolOptions();
       poolId.value = cluePoolOptions.value[0]?.id || '';
-      if (poolId.value) {
-        searchData();
-      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
