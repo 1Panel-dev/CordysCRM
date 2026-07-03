@@ -213,7 +213,7 @@
   const refreshKey = ref(0);
 
   function handleBeforeLeave(newVal: string | number) {
-    if (newVal === PersonalEnum.API_KEY && !licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+    if (newVal === PersonalEnum.API_KEY && !licenseStore.hasLicense()) {
       openModal(licenseStore.getNoLicenseModalConfig());
       return false;
     }
