@@ -213,16 +213,6 @@
     });
   }
 
-  async function getCluePoolOptions() {
-    try {
-      cluePoolOptions.value = await getPoolOptions();
-      poolId.value = cluePoolOptions.value[0]?.id || '';
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-
   const keyword = ref('');
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const showOverviewDrawer = ref(false);
@@ -589,6 +579,19 @@
     }
   }
 
+  async function getCluePoolOptions() {
+    try {
+      cluePoolOptions.value = await getPoolOptions();
+      poolId.value = cluePoolOptions.value[0]?.id || '';
+      if (poolId.value) {
+        searchData();
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
   handleSearchData.value = searchData;
 
   const filterConfigList = computed(
@@ -669,7 +672,7 @@
   );
 
   async function init() {
-    await getCluePoolOptions();
+    getCluePoolOptions();
   }
 
   onBeforeMount(() => {
