@@ -45,7 +45,7 @@ class RoleControllerTests extends BaseTest {
     private static final String PERMISSION_SETTING = "permission/setting";
     private static final String USER_PAGE = "user/page";
     private static final String DEPT_TREE = "dept/tree";
-    private static final String USER_DEPT_TREE = "user/dept/tree/{roleId}";
+    private static final String USER_DEPT_TREE = "user/dept/tree/{roleId}?includeDisabled=true";
     private static final String USER_ROLE_TREE = "user/role/tree/{roleId}";
     private static final String USER_OPTION = "user/option/{roleId}";
     private static final String USER_RELATE = "user/relate";

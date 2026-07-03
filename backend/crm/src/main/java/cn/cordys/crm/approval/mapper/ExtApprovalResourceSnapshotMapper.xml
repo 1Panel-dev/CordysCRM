@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalResourceSnapshotMapper">
+    <select id="selectByResourceId" resultType="cn.cordys.crm.approval.domain.ApprovalResourceSnapshot">
+        SELECT * FROM approval_resource_snapshot WHERE resource_id = #{resourceId}
+    </select>
+
+    <delete id="deleteByResourceId">
+        DELETE FROM approval_resource_snapshot WHERE resource_id = #{resourceId}
+    </delete>
+</mapper>

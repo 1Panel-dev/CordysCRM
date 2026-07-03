@@ -26,10 +26,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
-import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
-import cn.cordys.crm.approval.constants.ApprovalState;
-import cn.cordys.crm.approval.constants.ApprovalStatus;
-import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.constants.*;
 import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
@@ -262,7 +259,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
             response = JSON.parseObject(snapshot.getQuotationValue(), OpportunityQuotationGetResponse.class);
         }
         response.setApprovalStatus(opportunityQuotation.getApprovalStatus());
-        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), opportunityQuotation.getOrganizationId());
+        ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(opportunityQuotation.getOrganizationId());
         List<BaseModuleFieldValue> moduleFieldValues = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(id);
         List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFieldValues, moduleFormConfigDTO, opportunityQuotationFieldService, opportunityQuotation.getId());
         List<BaseModuleFieldValue> fvs = opportunityQuotationFieldService.setBusinessRefFieldValue(List.of(response), moduleFormService.getFlattenFormFields(FormKey.QUOTATION.getKey(), opportunityQuotation.getOrganizationId()),
@@ -291,7 +288,11 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         return response;
     }
 
-	/**
+    private ModuleFormConfigDTO getFormConfig(String orgId) {
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), orgId);
+    }
+
+    /**
 	 * 获取报价单详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
 	 * @param id 报价单ID
 	 * @return 报价单详情
@@ -302,7 +303,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
 			return null;
 		}
 		OpportunityQuotationGetResponse response = BeanUtils.copyBean(new OpportunityQuotationGetResponse(), opportunityQuotation);
-		ModuleFormConfigDTO quotationFormConf = moduleFormCacheService.getBusinessFormConfig(FormKey.QUOTATION.getKey(), opportunityQuotation.getOrganizationId());
+		ModuleFormConfigDTO quotationFormConf = getFormConfig(opportunityQuotation.getOrganizationId());
 		List<BaseModuleFieldValue> fvs = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(id);
 		moduleFormService.processBusinessFieldValues(response, fvs, quotationFormConf);
 		return response;
@@ -1309,5 +1310,35 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
 				snapshotBaseMapper.update(snapshot);
 			}
 		});
+	}
+
+    @Override
+    public String getPreUpdateSnapshotData(String resourceId, String userId, String orgId) {
+        OpportunityQuotation quotation = opportunityQuotationMapper.selectByPrimaryKey(resourceId);
+        if (quotation == null) {
+            return null;
+        }
+        List<BaseModuleFieldValue> quotationFields = opportunityQuotationFieldService.getModuleFieldValuesByResourceId(resourceId);
+        OpportunityQuotationEditRequest snapshotReq = BeanUtils.copyBean(new OpportunityQuotationEditRequest(), quotation);
+        snapshotReq.setAmount(quotation.getAmount() != null ? quotation.getAmount().toString() : null);
+        snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
+        ModuleFormConfigDTO quotationFormConfig = getFormConfig(quotation.getOrganizationId());
+        snapshotReq.setModuleFormConfigDTO(quotationFormConfig);
+        // 获取模块字段
+        moduleFormService.processBusinessFieldValues(snapshotReq, quotationFields, quotationFormConfig);
+        return JSON.toJSONString(snapshotReq);
+    }
+
+	@Override
+	public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
+        try {
+            OpportunityQuotationEditRequest request = JSON.parseObject(snapshotData, OpportunityQuotationEditRequest.class);
+            if (request == null) {
+                return;
+            }
+            CommonBeanFactory.getBean(OpportunityQuotationService.class).update(request, userId, orgId);
+        } catch (Exception e) {
+            log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
+        }
 	}
 }

@@ -19,6 +19,7 @@ import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.ApprovalFlow;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.domain.ApprovalResourceSnapshot;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.*;
@@ -27,6 +28,7 @@ import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
+import cn.cordys.crm.approval.mapper.ExtApprovalResourceSnapshotMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.integration.common.utils.HttpClientUtils;
 import cn.cordys.crm.system.constants.FieldType;
@@ -81,6 +83,10 @@ public class ApprovalResourceService {
     private ExtApprovalInstanceMapper extApprovalInstanceMapper;
     @Resource
     private ExtApprovalTaskMapper extApprovalTaskMapper;
+    @Resource
+    private ExtApprovalResourceSnapshotMapper extApprovalResourceSnapshotMapper;
+    @Resource
+    private BaseMapper<ApprovalResourceSnapshot> approvalResourceSnapshotMapper;
     @Resource
     private ApprovalFlowService approvalFlowService;
     @Resource
@@ -361,6 +367,42 @@ public class ApprovalResourceService {
     }
 
     /**
+     * 保存编辑前的资源数据快照（用于审批驳回/撤回时回退）
+     *
+     * @param formKey      表单类型
+     * @param resourceId   资源ID
+     * @param userId       操作人ID
+     * @param orgId        组织ID
+     * @param snapshotData 编辑前请求参数快照(JSON)
+     */
+    public void savePreUpdateSnapshot(FormKey formKey, String resourceId, String userId, String orgId, String snapshotData) {
+        if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+            return;
+        }
+        if (StringUtils.isBlank(snapshotData)) {
+            return;
+        }
+        try {
+            // 清理旧快照（防止重复保存）
+            extApprovalResourceSnapshotMapper.deleteByResourceId(resourceId);
+            ApprovalResourceSnapshot snapshot = new ApprovalResourceSnapshot();
+            snapshot.setId(IDGenerator.nextStr());
+            snapshot.setFormKey(formKey.getKey());
+            snapshot.setResourceId(resourceId);
+            snapshot.setSnapshotData(snapshotData);
+            snapshot.setCreateTime(System.currentTimeMillis());
+            snapshot.setCreateUser(userId);
+            snapshot.setUpdateTime(System.currentTimeMillis());
+            snapshot.setUpdateUser(userId);
+            approvalResourceSnapshotMapper.insert(snapshot);
+        } catch (Exception e) {
+            log.error("保存编辑前快照失败", e);
+        }
+    }
+
+
+
+    /**
      * 审批后置字段更新
      *
      * @param formKey    表单Key
@@ -422,6 +464,7 @@ public class ApprovalResourceService {
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.EXCEPTION) {
             // 异常节点, 目前只有自动拒绝的场景, 直接驳回
             updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.UNAPPROVED.name(), currentUserId, currentOrgId);
+            approvalActionService.revertFromSnapshot(FormKey.ofKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
             instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
@@ -470,6 +513,9 @@ public class ApprovalResourceService {
         if (instance == null) {
             throw new GenericException(Translator.get("no.approval.instance"));
         }
+        // 撤回时从快照还原业务数据
+        approvalActionService.revertFromSnapshot(FormKey.ofKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
+
         instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
         instance.setApprovalTime(System.currentTimeMillis());
         instance.setUpdateUser(currentUserId);
