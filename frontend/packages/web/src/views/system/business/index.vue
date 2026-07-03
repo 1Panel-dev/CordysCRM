@@ -56,7 +56,7 @@
   const tabList = ref([...initTabList]);
 
   function handleBeforeLeave(newVal: string | number) {
-    if (newVal === 'pageSettings' && !licenseStore.hasLicense() && licenseStore.isEnterpriseVersion()) {
+    if (newVal === 'pageSettings' && !licenseStore.hasLicense()) {
       openModal(licenseStore.getNoLicenseModalConfig());
       return false;
     }
