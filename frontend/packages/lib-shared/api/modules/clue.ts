@@ -90,6 +90,7 @@ import type {
   ChartResponseDataItem,
   CommonList,
   GenerateChartParams,
+  ImportUploadParams,
   TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
@@ -380,8 +381,8 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: DragClueViewUrl, data });
   }
 
-  function preCheckImportLead(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckImportUrl }, { fileList: [file] }, 'file');
+  function preCheckImportLead(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckImportUrl }, params, 'file');
   }
 
   function downloadLeadTemplate() {
@@ -394,8 +395,8 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
-  function importLead(file: File) {
-    return CDR.uploadFile({ url: ImportLeadUrl }, { fileList: [file] }, 'file');
+  function importLead(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportLeadUrl }, params, 'file');
   }
 
   function getAdvancedSearchClueList(data: CustomerTableParams) {

@@ -78,6 +78,7 @@ import type {
   ChartResponseDataItem,
   CommonList,
   GenerateChartParams,
+  ImportUploadParams,
   TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
@@ -337,8 +338,8 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<OpportunityItem>>({ url: AdvancedSearchOptDetailUrl, data });
   }
 
-  function preCheckImportOpt(file: File) {
-    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckOptImportUrl }, { fileList: [file] }, 'file');
+  function preCheckImportOpt(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckOptImportUrl }, params, 'file');
   }
 
   function downloadOptTemplate() {
@@ -351,8 +352,8 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
-  function importOpportunity(file: File) {
-    return CDR.uploadFile({ url: ImportOpportunityUrl }, { fileList: [file] }, 'file');
+  function importOpportunity(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportOpportunityUrl }, params, 'file');
   }
 
   // 批量更新商机

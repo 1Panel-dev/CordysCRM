@@ -9,7 +9,7 @@
     :description-tip="props.descriptionTip"
     :confirm-loading="validateLoading"
     :download-template-api="downloadTemplateApi"
-    :show-import-radio="props.showImportRadio"
+    :show-import-radio="showImportRadio"
     @validate="validateTemplate"
   />
 
@@ -34,6 +34,7 @@
   import { ref } from 'vue';
   import { NButton, useMessage } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ValidateInfo } from '@lib/shared/models/system/org';
 
@@ -44,7 +45,7 @@
 
   import useProgressBar from '@/hooks/useProgressBar';
 
-  import { importApiMap, ImportApiType } from './utils';
+  import { importApiMap, ImportApiType, type ImportRequestParams } from './utils';
 
   const { t } = useI18n();
   const { progress, start, finish } = useProgressBar();
@@ -55,7 +56,6 @@
     title?: string;
     buttonText?: string;
     descriptionTip?: string; // 描述提示
-    showImportRadio?: boolean; // 导入新建和导入更新
     customFormId?: string;
   }>();
 
@@ -65,6 +65,8 @@
 
   const importModal = ref<boolean>(false);
   const validateLoading = ref<boolean>(false);
+
+  const showImportRadio = computed(() => !([FormDesignKeyEnum.PRICE] as ImportApiType[]).includes(props.apiType));
 
   function handleImport() {
     importModal.value = true;
@@ -104,10 +106,21 @@
     return download ? () => download(props.customFormId) : undefined;
   });
 
+  function getImportRequestParams(file: File, type?: string): ImportRequestParams {
+    return {
+      uploadParams: {
+        fileList: [file],
+        request: showImportRadio.value ? { importType: type } : undefined,
+      },
+      customFormId: props.customFormId,
+    };
+  }
+
   async function importHandler() {
     try {
       importLoading.value = true;
-      await importApiMap[props.apiType].save(fileList.value[0].file as File, importType.value, props.customFormId);
+      const params = getImportRequestParams(fileList.value[0].file as File, importType.value);
+      await importApiMap[props.apiType].save(params);
       Message.success(t('common.importSuccess'));
 
       emit('importSuccess');
@@ -146,7 +159,7 @@
       validateModal.value = true;
       start();
 
-      const result = await importApiMap[props.apiType].preCheck(file, type, props.customFormId);
+      const result = await importApiMap[props.apiType].preCheck(getImportRequestParams(file, type));
       validateInfo.value = result.data;
       finish();
     } catch (error) {

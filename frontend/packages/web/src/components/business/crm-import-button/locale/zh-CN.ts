@@ -20,7 +20,13 @@ export default {
   'crmImportButton.onlyAllowFileTypeTip': '仅支持 xls/xlsx 格式的文件',
   'crmImportButton.fileChange': '文件已修改，请重新上传',
   'crmImportButton.importNew': '导入新建',
-  'crmImportButton.importNew.tooltip': '公司名称唯一，若存在多条重复信息，仅导入第一条。',
+  'crmImportButton.importNew.tooltip':
+    '若表单配置唯一字段，导入时将依据该字段校验数据唯一性，存在重复数据的条目不予导入',
   'crmImportButton.importUpdates': '导入更新',
-  'crmImportButton.importUpdates.tooltip': '系统按公司名称匹配成功后，Excel 中存在有效值的列将覆盖系统对应记录。',
+  'crmImportButton.importUpdates.tooltip':
+    '导入文件必须包含「唯一ID」字段，系统依据该字段校验数据唯一性，匹配到相同「唯一ID」则更新对应原有数据，无匹配数据不执行更新。',
+  'crmImportButton.importUpdates.defaultLogic': '系统默认处理逻辑：',
+  'crmImportButton.importUpdates.defaultLogic.emptyValue': '1.导入数据有空值时不更新现有字段数据',
+  'crmImportButton.importUpdates.defaultLogic.workflow': '2.导入数据不触发工作流',
+  'crmImportButton.importUpdates.defaultLogic.unique': '3.导入数据违反表单唯一性校验时，跳过处理（同导入新增逻辑一致）',
 };
