@@ -107,8 +107,9 @@ public class RoleController {
     @GetMapping("/user/dept/tree/{roleId}")
     @Operation(summary = "获取部门用户树")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
-    public List<DeptUserTreeNode> getDeptUserTree(@PathVariable String roleId) {
-        return userRoleService.getDeptUserTree(OrganizationContext.getOrganizationId(), roleId);
+    public List<DeptUserTreeNode> getDeptUserTree(@PathVariable String roleId,
+                                                   @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+        return userRoleService.getDeptUserTree(OrganizationContext.getOrganizationId(), roleId, includeDisabled);
     }
 
     @GetMapping("/user/role/tree/{roleId}")
@@ -121,8 +122,9 @@ public class RoleController {
     @GetMapping("/user/option/{roleId}")
     @Operation(summary = "获取所有用户选项")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
-    public List<RoleUserOptionResponse> RoleUserOptionResponse(@PathVariable String roleId) {
-        return userRoleService.getUserOptionByRoleId(OrganizationContext.getOrganizationId(), roleId);
+    public List<RoleUserOptionResponse> RoleUserOptionResponse(@PathVariable String roleId,
+                                                                @RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
+        return userRoleService.getUserOptionByRoleId(OrganizationContext.getOrganizationId(), roleId, includeDisabled);
     }
 
     @PostMapping("/user/relate")
