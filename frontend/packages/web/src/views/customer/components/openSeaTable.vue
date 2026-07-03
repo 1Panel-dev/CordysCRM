@@ -619,9 +619,17 @@
   );
 
   async function initOpenSeaOptions() {
-    const res = await getOpenSeaOptions();
-    openSeaOptions.value = res;
-    openSea.value = openSeaOptions.value[0]?.id || '';
+    try {
+      const res = await getOpenSeaOptions();
+      openSeaOptions.value = res;
+      openSea.value = openSeaOptions.value[0]?.id || '';
+      if (openSea.value) {
+        searchData();
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   const filterConfigList = computed(
@@ -643,8 +651,8 @@
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)
   );
 
-  async function init() {
-    await initOpenSeaOptions();
+  function init() {
+    initOpenSeaOptions();
   }
 
   function handleRefresh() {
