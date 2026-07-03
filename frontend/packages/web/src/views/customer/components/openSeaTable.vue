@@ -645,7 +645,6 @@
 
   async function init() {
     await initOpenSeaOptions();
-    searchData();
   }
 
   function handleRefresh() {
