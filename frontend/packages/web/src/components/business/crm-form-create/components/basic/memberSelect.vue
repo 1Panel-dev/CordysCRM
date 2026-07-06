@@ -116,6 +116,7 @@
       } else {
         selectedUsers.value = val || [];
       }
+      selectedUsers.value = selectedUsers.value?.filter((item) => (value.value as string[]).includes(item.id));
     },
     {
       immediate: true,

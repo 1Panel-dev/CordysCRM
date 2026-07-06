@@ -10,7 +10,7 @@ import {
   type FormLinkScenarioEnum,
 } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { getCityPath, getIndustryPath, safeFractionConvert } from '@lib/shared/method';
+import { formatTimeValue, getCityPath, getIndustryPath, safeFractionConvert } from '@lib/shared/method';
 import {
   dataSourceTypes,
   departmentTypes,
@@ -741,13 +741,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
                 formDetail.value[field.id] = linkField.value.join(',').slice(0, limitLength);
               } else if (linkField.type === FieldTypeEnum.DATE_TIME) {
                 // 联动的字段是日期时间则转换
-                if (linkField.dateType === 'month') {
-                  formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM');
-                } else if (linkField.dateType === 'date') {
-                  formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD');
-                } else {
-                  formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD HH:mm:ss');
-                }
+                formDetail.value[field.id] = formatTimeValue(linkField.value, linkField.dateType);
               } else if (linkField.type === FieldTypeEnum.LOCATION) {
                 // 联动的字段是省市区则填充城市路径
                 const addressArr: string[] = linkField.value.split('-') || [];
@@ -868,7 +862,15 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   function makeSubFieldInitialOptions(subField: FormCreateField, parentFieldId: string, res: FormDetail) {
     if (subField.businessKey) {
       const options = res.optionMap?.[subField.businessKey];
-      if ([FieldTypeEnum.DATA_SOURCE].includes(subField.type)) {
+      if (
+        [
+          FieldTypeEnum.DATA_SOURCE,
+          FieldTypeEnum.MEMBER,
+          FieldTypeEnum.MEMBER_MULTIPLE,
+          FieldTypeEnum.DEPARTMENT,
+          FieldTypeEnum.DEPARTMENT_MULTIPLE,
+        ].includes(subField.type)
+      ) {
         // 处理成员和数据源类型的字段
         subField.initialOptions = options
           ?.filter((e) =>
@@ -883,7 +885,15 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       }
     } else {
       const options = res.optionMap?.[subField.id];
-      if ([FieldTypeEnum.DATA_SOURCE].includes(subField.type)) {
+      if (
+        [
+          FieldTypeEnum.DATA_SOURCE,
+          FieldTypeEnum.MEMBER,
+          FieldTypeEnum.MEMBER_MULTIPLE,
+          FieldTypeEnum.DEPARTMENT,
+          FieldTypeEnum.DEPARTMENT_MULTIPLE,
+        ].includes(subField.type)
+      ) {
         // 处理成员和数据源类型的字段
         subField.initialOptions = options
           ?.filter((e) =>

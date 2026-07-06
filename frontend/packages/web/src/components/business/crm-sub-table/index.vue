@@ -37,7 +37,9 @@
   import dataSource from '@/components/business/crm-form-create/components/advanced/dataSource.vue';
   import formula from '@/components/business/crm-form-create/components/advanced/formula.vue';
   import upload from '@/components/business/crm-form-create/components/advanced/upload.vue';
+  import dateTime from '@/components/business/crm-form-create/components/basic/dateTime.vue';
   import inputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
+  import memberSelect from '@/components/business/crm-form-create/components/basic/memberSelect.vue';
   import select from '@/components/business/crm-form-create/components/basic/select.vue';
   import singleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
 
@@ -131,8 +133,16 @@
       }
       return Array.isArray(name) ? name.join(', ') : name;
     }
-    if (field.type === FieldTypeEnum.DATA_SOURCE) {
-      // 数据源字段且找不到 optionMap 对应值，则显示不存在
+    if (
+      [
+        FieldTypeEnum.DATA_SOURCE,
+        FieldTypeEnum.MEMBER,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT,
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      ].includes(field.type)
+    ) {
+      // 选项字段找不到 optionMap 对应值，则显示不存在
       return t('common.optionNotExist');
     }
     switch (field.type) {
@@ -201,10 +211,25 @@
           field.resourceFieldId && isNotEmpty(field.defaultValue)
             ? formatNumberValue(field.defaultValue, field)
             : field.defaultValue ?? null;
+      } else if (field.type === FieldTypeEnum.DATE_TIME) {
+        if (field.resourceFieldId) {
+          newRow[key] = formatTimeValue(field.defaultValue, field.dateType);
+        } else {
+          newRow[key] =
+            Number.isNaN(Number(field.defaultValue)) || field.defaultValue === '' ? null : Number(field.defaultValue);
+        }
       } else if (field.type === FieldTypeEnum.FORMULA) {
         newRow[key] = field.resourceFieldId ? null : field.defaultValue ?? null;
       } else if (
-        [FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.PICTURE].includes(field.type)
+        [
+          FieldTypeEnum.SELECT_MULTIPLE,
+          FieldTypeEnum.DATA_SOURCE,
+          FieldTypeEnum.PICTURE,
+          FieldTypeEnum.DEPARTMENT,
+          FieldTypeEnum.DEPARTMENT_MULTIPLE,
+          FieldTypeEnum.MEMBER,
+          FieldTypeEnum.MEMBER_MULTIPLE,
+        ].includes(field.type)
       ) {
         newRow[key] = [];
       } else {
@@ -547,6 +572,77 @@
               });
             },
             fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
+        if (
+          [
+            FieldTypeEnum.MEMBER,
+            FieldTypeEnum.MEMBER_MULTIPLE,
+            FieldTypeEnum.DEPARTMENT,
+            FieldTypeEnum.DEPARTMENT_MULTIPLE,
+          ].includes(field.type)
+        ) {
+          return {
+            title,
+            width: 250,
+            key,
+            ellipsis: {
+              tooltip: true,
+            },
+            fieldId: key,
+            render: (row: any, rowIndex: number) => {
+              return h(memberSelect, {
+                value: row[key],
+                fieldConfig: {
+                  ...field,
+                  initialOptions: mergeUniqueOptions(sumInitialOptions, field.initialOptions || []),
+                },
+                path: `${props.parentId}[${rowIndex}].${key}`,
+                isSubTableRender: true,
+                needInitDetail: props.needInitDetail,
+                formDetail: props.formDetail,
+                disabled: props.disabled,
+                class: 'w-[240px]',
+                onChange: (val) => {
+                  row[key] = val;
+                  emit('change', data.value);
+                },
+                onChangeOptions: (options) => {
+                  sumInitialOptions = mergeUniqueOptions(
+                    sumInitialOptions,
+                    options.filter((s) => !sumInitialOptions.some((io) => io.id === s.id))
+                  );
+                },
+              });
+            },
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+          };
+        }
+        if (field.type === FieldTypeEnum.DATE_TIME) {
+          return {
+            title,
+            width: 200,
+            key,
+            ellipsis: {
+              tooltip: true,
+            },
+            fieldId: key,
+            render: (row: any, rowIndex: number) =>
+              h(dateTime, {
+                value: row[key],
+                fieldConfig: field,
+                path: `${props.parentId}[${rowIndex}].${key}`,
+                isSubTableRender: true,
+                disabled: props.disabled,
+                needInitDetail: props.needInitDetail,
+                onChange: (val: any) => {
+                  row[key] = val;
+                  emit('change', data.value);
+                },
+              }),
+            fixed: props.fixedColumn && props.fixedColumn >= index + 1 ? 'left' : undefined,
+            filedType: field.type,
+            fieldConfig: field,
           };
         }
         if (field.type === FieldTypeEnum.FORMULA) {
