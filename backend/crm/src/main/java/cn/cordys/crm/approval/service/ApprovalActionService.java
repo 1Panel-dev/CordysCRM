@@ -115,10 +115,11 @@ public class ApprovalActionService {
 		ApprovalAddSignTask addSignTask = saveAddSignTask(request, appendActionTask.getId());
 		// 之后加签(多人或签), 需要刷新实例当前审批节点
 		if (ApprovalAddSignType.valueOf(request.getType()) == ApprovalAddSignType.AFTER && isMultiAnyMode(appendActionTask.getNodeId(), userId, orgId)) {
-			handlePreCcTasks(currentTask.getNodeId(), instance, userId, orgId);
 			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE, userId);
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(appendActionTask, instance, orgId);
 			handleNextApprovalNode(nextNode, instance, currentTask.getApproverId(), userId, orgId);
+			// 发送当前节点的抄送, 放在节点流转后, 获取最新的实例状态
+			handlePreCcTasks(currentTask.getNodeId(), instance, userId, orgId);
 		}
 		// 保存加签附件
 		if (CollectionUtils.isNotEmpty(request.getAttachmentIds())) {
@@ -480,12 +481,12 @@ public class ApprovalActionService {
 
 		// 节点状态流转类型的待办
 		if (isCurrentSingleNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId(), instance.getSubmitterId(), currentOrgId) || isCurrentMultiNodeApproved(currentTask.getNodeId(), currentTask.getInstanceId())) {
-			// 流转之前需要发送当前节点的抄送
-			handlePreCcTasks(currentTask.getNodeId(), instance, currentUserId, currentOrgId);
 			approvalFlowService.updateApprovalPostField(instance, currentTask.getNodeId(), ApprovalAction.APPROVE, currentUserId);
 			// 单人审批或者多人审批但节点流转通过
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(currentTask, instance, currentOrgId);
 			handleNextApprovalNode(nextNode, instance, currentTask.getApproverId(), currentUserId, currentOrgId);
+			// 发送当前节点的抄送, 放在节点流转后, 获取最新的实例状态
+			handlePreCcTasks(currentTask.getNodeId(), instance, currentUserId, currentOrgId);
 			// 多人或签, 移除审批中的任务
 			loseCurrentNode(instance.getId(), currentTask.getNodeId());
 		}
@@ -972,6 +973,28 @@ public class ApprovalActionService {
 		List<ApprovalTask> ccTasks = getNodeCcTasks(currentNodeId, ccList.stream().map(User::getId).toList(), instance.getId(), currentUserId);
 		if (CollectionUtils.isNotEmpty(ccTasks)) {
 			approvalTaskMapper.batchInsert(ccTasks);
+			sendCcNotice(ccTasks, instance, currentOrgId);
+		}
+	}
+
+	/**
+	 * 发送抄送消息通知
+	 * @param ccTasks 抄送任务集合
+	 * @param instance 审批实例
+	 * @param currentOrgId 当前组织ID
+	 */
+	private void sendCcNotice(List<ApprovalTask> ccTasks, ApprovalInstance instance, String currentOrgId) {
+		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+		if (resourceService != null) {
+			List<String> ccUserIds = ccTasks.stream().map(ApprovalTask::getApproverId).toList();
+			String type = Translator.get(instance.getType());
+			String name = resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
+			String state = Translator.get("contract.approval_status." + instance.getApprovalStatus().toLowerCase());
+			Map<String, Object> paramMap = new HashMap<>(3);
+			paramMap.put("type", type);
+			paramMap.put("name", name);
+			paramMap.put("state", state);
+			commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL, NotificationConstants.Event.APPROVAL_CC, paramMap, instance.getSubmitterId(), currentOrgId, ccUserIds, true);
 		}
 	}
 
@@ -1222,6 +1245,9 @@ public class ApprovalActionService {
 		String state = approvalStatus == ApprovalStatus.APPROVED
 				? Translator.get("contract.approval_status.approved")
 				: Translator.get("contract.approval_status.unapproved");
+
+		String type = Translator.get(instance.getType());
+
 		String module;
 		String event;
 		switch (formKey) {
@@ -1249,7 +1275,7 @@ public class ApprovalActionService {
 		commonNoticeSendService.sendNotice(
 				module,
 				event,
-				Map.of("name", StringUtils.defaultString(resourceName), "state", state),
+				Map.of("name", StringUtils.defaultString(resourceName), "state", state, "type", type),
 				userId,
 				orgId,
 				List.of(instance.getSubmitterId()),
