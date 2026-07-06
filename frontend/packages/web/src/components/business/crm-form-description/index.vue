@@ -43,7 +43,6 @@
               showLabel: false,
             }"
             :path="item.fieldInfo.id"
-            :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo.id]"
             class="flex-1"
@@ -165,17 +164,70 @@
             {{ item.label }}
           </div>
           <CrmDateTime
+            v-if="
+              editableByPermission.includes(item.fieldInfo.id) ||
+              (item.fieldInfo.businessKey === 'expectedEndTime' && !item.fieldInfo.resourceFieldId)
+            "
             v-model:value="formDetail[item.fieldInfo.id]"
             :field-config="{
               ...item.fieldInfo,
               showLabel: false,
             }"
             :path="item.fieldInfo.id"
-            :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+            :disabled="
+              item.fieldInfo.businessKey === 'expectedEndTime' && !item.fieldInfo.resourceFieldId
+                ? !item.fieldInfo.editable
+                : !editableByPermission.includes(item.fieldInfo.id)
+            "
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo.id]"
-            @change="() => handleFormChange()"
+            @change="editableByPermission.includes(item.fieldInfo.id) ? undefined : handleFormChange()"
           />
+          <div v-else>{{ item.value }}</div>
+        </div>
+      </template>
+      <template #[FieldTypeEnum.SELECT]="{ item }">
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-nowrap text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
+          <CrmSelect
+            v-if="editableByPermission.includes(item.fieldInfo.id)"
+            v-model:value="formDetail[item.fieldInfo.id]"
+            :field-config="{
+              ...item.fieldInfo,
+              showLabel: false,
+            }"
+            :path="item.fieldInfo.id"
+            isDescriptionRender
+            :feedback="feedbackMap[item.fieldInfo.id]"
+          />
+          <CrmTagGroup
+            v-else-if="Array.isArray(item.value) && item.value.length"
+            :tags="item.value"
+            :label-key="item.tagProps?.labelKey"
+            :class="`justify-${props.valueAlign ?? 'end'}`"
+          />
+          <div v-else>{{ item.value }}</div>
+        </div>
+      </template>
+      <template #[FieldTypeEnum.INPUT_NUMBER]="{ item }">
+        <div class="field-line flex w-full items-center">
+          <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
+            {{ item.label }}
+          </div>
+          <CrmInputNumber
+            v-if="editableByPermission.includes(item.fieldInfo.id)"
+            v-model:value="formDetail[item.fieldInfo.id]"
+            :field-config="{
+              ...item.fieldInfo,
+              showLabel: false,
+            }"
+            :path="item.fieldInfo.id"
+            isDescriptionRender
+            :feedback="feedbackMap[item.fieldInfo.id]"
+          />
+          <div v-else>{{ item.value }}</div>
         </div>
       </template>
       <template #[FieldTypeEnum.ATTACHMENT]="{ item }">
@@ -254,6 +306,8 @@
   import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import CrmSubTable from '@/components/business/crm-sub-table/index.vue';
   import CrmDateTime from '../crm-form-create/components/basic/dateTime.vue';
+  import CrmInputNumber from '../crm-form-create/components/basic/inputNumber.vue';
+  import CrmSelect from '../crm-form-create/components/basic/select.vue';
   import CrmSingleText from '../crm-form-create/components/basic/singleText.vue';
   import CrmTextarea from '../crm-form-create/components/basic/textarea.vue';
 

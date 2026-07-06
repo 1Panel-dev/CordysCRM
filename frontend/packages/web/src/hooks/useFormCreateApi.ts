@@ -42,6 +42,7 @@ import type { FormCreateField, FormCreateFieldRule, FormDetail } from '@/compone
 
 import { checkRepeat, getDatasourceFieldConfig } from '@/api/modules';
 import useUserStore from '@/store/modules/user';
+import { hasAnyPermission } from '@/utils/permission';
 
 export interface FormCreateApiProps {
   sourceId?: Ref<string | undefined>;
@@ -411,12 +412,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   function makeDescriptionItem(item: FormCreateField, form: FormDetail) {
     if (item.show === false || !item.readable) return;
     if (item.businessKey === 'expectedEndTime' && !item.resourceFieldId) {
-      // TODO:商机结束时间原位编辑
       descriptions.value.push({
         label: item.name,
         value: parseFormDetailValue(item, form),
         slotName: FieldTypeEnum.DATE_TIME,
-        fieldInfo: item,
+        fieldInfo: {
+          ...item,
+          editable: !hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']),
+        },
         tooltipPosition: 'top-end',
       });
     } else if (
@@ -514,8 +517,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         FieldTypeEnum.DEPARTMENT_MULTIPLE,
         FieldTypeEnum.MEMBER,
         FieldTypeEnum.MEMBER_MULTIPLE,
-        FieldTypeEnum.SELECT,
-        FieldTypeEnum.SELECT_MULTIPLE,
         FieldTypeEnum.RADIO,
         FieldTypeEnum.CHECKBOX,
       ].includes(item.type)
@@ -526,11 +527,20 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         fieldInfo: item,
         tooltipPosition: 'top-end',
       });
+    } else if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type)) {
+      descriptions.value.push({
+        label: item.name,
+        value: parseFormDetailValue(item, form),
+        slotName: FieldTypeEnum.SELECT,
+        fieldInfo: item,
+        tooltipPosition: 'top-end',
+      });
     } else if (item.type === FieldTypeEnum.DATE_TIME) {
       descriptions.value.push({
         label: item.name,
         value: parseFormDetailValue(item, form),
         fieldInfo: item,
+        slotName: FieldTypeEnum.DATE_TIME,
         tooltipPosition: 'top-end',
       });
     } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
@@ -538,6 +548,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         label: item.name,
         value: parseFormDetailValue(item, form),
         fieldInfo: item,
+        slotName: FieldTypeEnum.INPUT_NUMBER,
         tooltipPosition: 'top-end',
       });
     } else if (item.type === FieldTypeEnum.TEXTAREA) {

@@ -12,7 +12,7 @@
       <template #1>
         <div class="flex h-full w-full p-[24px_8px_24px_24px]">
           <n-scrollbar :content-style="{ paddingRight: '8px' }" x-scrollable>
-            <slot name="left" :fieldPermissions="filedPermission"></slot>
+            <slot name="left" :fieldPermissions="filedPermission" :taskNode="currentTaskNode"></slot>
           </n-scrollbar>
         </div>
       </template>
@@ -101,7 +101,7 @@
     </CrmSplitPanel>
     <div v-else class="flex h-full w-full p-[24px_16px_24px_24px]">
       <n-scrollbar x-scrollable>
-        <slot name="left" :fieldPermissions="[]"></slot>
+        <slot name="left" :fieldPermissions="[]" :taskNode="currentTaskNode"></slot>
       </n-scrollbar>
     </div>
   </CrmCard>

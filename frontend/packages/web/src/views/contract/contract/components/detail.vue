@@ -50,7 +50,7 @@
             :approval-status="detailInfo?.approvalStatus"
             @saveApproval="handleSaveApproval"
           >
-            <template #left="{ fieldPermissions }">
+            <template #left="{ fieldPermissions, taskNode }">
               <CrmFormDescription
                 ref="formDescriptionRef"
                 :form-key="FormDesignKeyEnum.CONTRACT_SNAPSHOT"
@@ -65,7 +65,7 @@
                 :fieldPermissions="fieldPermissions"
                 :otherSaveParams="{
                   updateType: 'approval',
-                  approvalTaskId: props.approvalTaskId,
+                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
                 }"
                 @openCustomerDetail="emit('showCustomerDrawer', $event)"
                 @openOpportunityDetail="openOpportunityDetail"

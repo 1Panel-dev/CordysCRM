@@ -52,7 +52,7 @@
           :approval-status="detailInfo?.approvalStatus"
           @saveApproval="handleSaveApproval"
         >
-          <template #left="{ fieldPermissions }">
+          <template #left="{ fieldPermissions, taskNode }">
             <CrmFormDescription
               ref="formDescriptionRef"
               :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
@@ -62,7 +62,7 @@
               :fieldPermissions="fieldPermissions"
               :otherSaveParams="{
                 updateType: 'approval',
-                approvalTaskId: props.approvalTaskId,
+                approvalTaskId: props.approvalTaskId || taskNode?.taskId,
               }"
               label-width="auto"
               value-align="start"
