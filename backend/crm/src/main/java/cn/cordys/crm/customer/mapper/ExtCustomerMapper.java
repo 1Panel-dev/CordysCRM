@@ -95,4 +95,5 @@ public interface ExtCustomerMapper {
     List<ChartResult> chart(@Param("request") CustomerChartAnalysisDbRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
                             @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
+    void updateCustomer(@Param("customer")Customer customer);
 }

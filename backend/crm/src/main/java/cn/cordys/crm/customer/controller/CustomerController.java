@@ -6,13 +6,12 @@ import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.*;
-import cn.cordys.crm.system.constants.ExportConstants;
-import cn.cordys.common.permission.CsBatchPermission;
-import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -32,7 +31,9 @@ import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
 import cn.cordys.crm.order.service.OrderService;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
@@ -81,8 +82,8 @@ public class CustomerController {
     private ContractService contractService;
     @Resource
     private ContractPaymentPlanService contractPaymentPlanService;
-	@Resource
-	private ContractPaymentRecordService contractPaymentRecordService;
+    @Resource
+    private ContractPaymentRecordService contractPaymentRecordService;
     @Resource
     private ContractInvoiceService contractInvoiceService;
     @Resource
@@ -255,8 +256,8 @@ public class CustomerController {
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_IMPORT)
-    public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
-        return customerService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return customerService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping("/merge/page")
@@ -326,25 +327,25 @@ public class CustomerController {
         return contractPaymentPlanService.calculateCustomerPaymentPlanStatistic(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
-	@PostMapping("/contract/payment-record/page")
-	@RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
-	@Operation(summary = "客户详情-合同回款记录列表")
-	public PagerWithOption<List<ContractPaymentRecordResponse>> recordList(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
+    @PostMapping("/contract/payment-record/page")
+    @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
+    @Operation(summary = "客户详情-合同回款记录列表")
+    public PagerWithOption<List<ContractPaymentRecordResponse>> recordList(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
-		request.setViewId(InternalUserView.ALL.name());
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
-	}
+        request.setViewId(InternalUserView.ALL.name());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
 
-	@GetMapping("/contract/payment-record/statistic/{accountId}")
-	@RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
-	@Operation(summary = "客户详情-合同回款记录列表统计")
-	public CustomerPaymentRecordStatisticResponse calculateCustomerPaymentRecordStatistic(@PathVariable String accountId) {
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		return contractPaymentRecordService.sumCustomerPaymentAmount(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
-	}
+    @GetMapping("/contract/payment-record/statistic/{accountId}")
+    @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_PAYMENT_RECORD_READ})
+    @Operation(summary = "客户详情-合同回款记录列表统计")
+    public CustomerPaymentRecordStatisticResponse calculateCustomerPaymentRecordStatistic(@PathVariable String accountId) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        return contractPaymentRecordService.sumCustomerPaymentAmount(accountId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
 
     @PostMapping("/invoice/page")
     @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CONTRACT_INVOICE_READ})
