@@ -431,6 +431,7 @@ public class BusinessTitleService {
                     afterDto = (businessTitles) -> {
                         List<LogDTO> logs = new ArrayList<>();
                         businessTitles.forEach(title -> {
+                            title.setId(IDGenerator.nextStr());
                             title.setType(BusinessTitleType.CUSTOM.name());
                             title.setApprovalStatus(ContractApprovalStatus.APPROVING.name());
                             logs.add(new LogDTO(orgId, title.getId(), userId, LogType.ADD, LogModule.CONTRACT_BUSINESS_TITLE, title.getName()));

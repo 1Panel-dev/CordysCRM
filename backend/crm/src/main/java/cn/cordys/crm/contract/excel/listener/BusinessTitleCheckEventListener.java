@@ -108,9 +108,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
             }
             if (Strings.CI.equals(request.getImportType(), ImportType.UPDATE.name())) {
                 validateId(rowData.get(k), errText, v);
-                validateNameExist(rowData.get(k), errText, v);
             }
-            validateNameUniques(rowData.get(k), errText, v);
             validateLenLimit(rowData.get(k), errText, v);
         });
         if (StringUtils.isNotEmpty(errText)) {
@@ -125,7 +123,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     }
 
     private void validateId(String data, StringBuilder errText, String v) {
-        if (BusinessTitleImportFiled.fromHeader(v) != null &&BusinessTitleImportFiled.ID.equals(BusinessTitleImportFiled.fromHeader(v))) {
+        if (BusinessTitleImportFiled.fromHeader(v) != null && BusinessTitleImportFiled.ID.equals(BusinessTitleImportFiled.fromHeader(v))) {
             if (StringUtils.isBlank(data)) {
                 errText.append(v).append(Translator.get("required")).append(";");
             }
