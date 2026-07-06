@@ -94,10 +94,15 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import {
     dataSourceDefaultFieldConfig,
+    dateTimeDefaultFieldConfig,
+    departmentDefaultFieldConfig,
+    departmentMultipleDefaultFieldConfig,
     formulaDefaultFieldConfig,
     getFieldIcon,
     inputDefaultFieldConfig,
     inputNumberDefaultFieldConfig,
+    memberDefaultFieldConfig,
+    memberMultipleDefaultFieldConfig,
     pictureDefaultFieldConfig,
     selectDefaultFieldConfig,
     selectMultipleDefaultFieldConfig,
@@ -122,6 +127,11 @@
     dataSourceDefaultFieldConfig,
     formulaDefaultFieldConfig,
     pictureDefaultFieldConfig,
+    dateTimeDefaultFieldConfig,
+    memberDefaultFieldConfig,
+    memberMultipleDefaultFieldConfig,
+    departmentDefaultFieldConfig,
+    departmentMultipleDefaultFieldConfig,
   ].map((field) => ({
     ...field,
     label: t(field.name),

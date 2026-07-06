@@ -120,6 +120,11 @@
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.FORMULA,
             FieldTypeEnum.PICTURE,
+            FieldTypeEnum.DATE_TIME,
+            FieldTypeEnum.MEMBER,
+            FieldTypeEnum.MEMBER_MULTIPLE,
+            FieldTypeEnum.DEPARTMENT,
+            FieldTypeEnum.DEPARTMENT_MULTIPLE,
           ].includes(e.data.type)
         : true)
     );

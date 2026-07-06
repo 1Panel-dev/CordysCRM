@@ -23,7 +23,7 @@
     <n-date-picker
       v-model:value="value"
       :type="props.fieldConfig.dateType"
-      :placeholder="props.fieldConfig.placeholder"
+      :placeholder="props.fieldConfig.placeholder || t('common.pleaseInput')"
       :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       class="w-full"
       :status="props.feedback ? 'error' : undefined"
@@ -36,6 +36,7 @@
 <script setup lang="ts">
   import { NDatePicker, NDivider, NFormItem } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
   import { FormCreateField } from '../../types';
@@ -55,6 +56,8 @@
     (e: 'change', value: null | number | (string | number)[]): void;
   }>();
 
+  const { t } = useI18n();
+
   const value = defineModel<null | number | [number, number]>('value', {
     default: null,
   });
@@ -63,7 +66,7 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       if (!props.needInitDetail) {
-        value.value = val !== undefined ? val : value.value;
+        value.value = Number.isNaN(Number(val)) || val === '' ? value.value : Number(val);
         emit('change', value.value);
       }
     },
