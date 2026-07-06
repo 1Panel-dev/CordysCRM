@@ -806,22 +806,53 @@ public class CustomerService {
                         Map<String, Customer> originCustomerMaps = originCustomerList.stream().collect(Collectors.toMap(Customer::getId, Function.identity()));
                         Map<String, List<BaseModuleFieldValue>> originFieldValueMap = customerFieldService.getResourceFieldMap(ids, true);
 
+                        List<CustomerField> insertField = new ArrayList<>();
+                        List<CustomerFieldBlob> insertFieldBlob = new ArrayList<>();
                         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
                         ExtCustomerMapper customerBatchMapper = sqlSession.getMapper(ExtCustomerMapper.class);
                         CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-                        customers.forEach(customer -> {
-                            customer.setInSharedPool(false);
-                            customerBatchMapper.updateCustomer(customer);
-                        });
-                        customerFields.forEach(customerField -> {
-                            commonMapper.updateCustomerField("customer_field", customerField);
-                        });
 
-                        customerFieldBlobs.forEach(customerFieldBlob -> {
-                            commonMapper.updateCustomerField("customer_field_blob", customerFieldBlob);
-                        });
+                        if (CollectionUtils.isNotEmpty(customers)) {
+                            customers.forEach(customer -> {
+                                customer.setInSharedPool(false);
+                                customerBatchMapper.updateCustomer(customer);
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(customerFields)) {
+                            List<CustomerField> fieldList = customerFieldMapper.selectByIds(customerFields.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, CustomerField> fieldMap = fieldList.stream().collect(Collectors.toMap(CustomerField::getId, Function.identity()));
+                            customerFields.forEach(customerField -> {
+                                if (fieldMap.containsKey(customerField.getId())) {
+                                    commonMapper.updateCustomerField("customer_field", customerField);
+                                } else {
+                                    insertField.add(BeanUtils.copyBean(new CustomerField(), customerField));
+                                }
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(customerFieldBlobs)) {
+                            List<CustomerFieldBlob> blobList = customerFieldBlobMapper.selectByIds(customerFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, CustomerFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(CustomerFieldBlob::getId, Function.identity()));
+                            customerFieldBlobs.forEach(customerFieldBlob -> {
+                                if (blobMap.containsKey(customerFieldBlob.getId())) {
+                                    commonMapper.updateCustomerField("customer_field_blob", customerFieldBlob);
+                                } else {
+                                    insertFieldBlob.add(BeanUtils.copyBean(new CustomerFieldBlob(), customerFieldBlob));
+                                }
+                            });
+
+                        }
+
                         sqlSession.flushStatements();
                         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                        if (CollectionUtils.isNotEmpty(insertField)) {
+                            customerFieldMapper.batchInsert(insertField);
+                        }
+                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                            customerFieldBlobMapper.batchInsert(insertFieldBlob);
+                        }
 
                         Map<String, Customer> modifiedCustomerMaps = customerMapper.selectByIds(ids).stream().collect(Collectors.toMap(Customer::getId, Function.identity()));
                         Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customerFieldService.getResourceFieldMap(ids, true);

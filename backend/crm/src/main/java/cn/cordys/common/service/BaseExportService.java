@@ -41,6 +41,7 @@ import cn.idev.excel.write.metadata.WriteSheet;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
@@ -381,6 +382,10 @@ public abstract class BaseExportService {
         try {
             if (field instanceof DatasourceField || field instanceof DepartmentField ||
                     field instanceof SelectField || field instanceof SelectMultipleField) {
+                if (cacheMap == null) {
+                    var data = resolver.transformToValue(field, parseVal);
+                    return data;
+                }
                 if (cacheMap.containsKey(value)) {
                     return cacheMap.get(value);
                 }

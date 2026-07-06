@@ -519,24 +519,54 @@ public class PoolClueService {
                         Map<String, Clue> originClueMaps = originClueList.stream().collect(Collectors.toMap(Clue::getId, Function.identity()));
                         Map<String, List<BaseModuleFieldValue>> originFieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
 
+                        List<ClueField> insertField = new ArrayList<>();
+                        List<ClueFieldBlob> insertFieldBlob = new ArrayList<>();
                         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
                         ExtClueMapper clueBatchMapper = sqlSession.getMapper(ExtClueMapper.class);
                         CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
                         //更新
-                        clues.forEach(clue -> {
-                            clue.setInSharedPool(true);
-                            clue.setPoolId(request.getPoolId());
-                            clueBatchMapper.updateClue(clue);
-                        });
-                        clueFields.forEach(clueField -> {
-                            commonMapper.updateCustomerField("clue_field", clueField);
-                        });
+                        if (CollectionUtils.isNotEmpty(clues)) {
+                            clues.forEach(clue -> {
+                                clue.setInSharedPool(true);
+                                clue.setPoolId(request.getPoolId());
+                                clueBatchMapper.updateClue(clue);
+                            });
+                        }
 
-                        clueFieldBlobs.forEach(clueFieldBlob -> {
-                            commonMapper.updateCustomerField("clue_field_blob", clueFieldBlob);
-                        });
+                        if (CollectionUtils.isNotEmpty(clueFields)) {
+                            List<ClueField> fieldList = clueFieldMapper.selectByIds(clueFields.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, ClueField> fieldMap = fieldList.stream().collect(Collectors.toMap(ClueField::getId, Function.identity()));
+                            clueFields.forEach(clueField -> {
+                                if (fieldMap.containsKey(clueField.getId())) {
+                                    commonMapper.updateCustomerField("clue_field", clueField);
+                                } else {
+                                    insertField.add(BeanUtils.copyBean(new ClueField(), clueField));
+                                }
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(clueFieldBlobs)) {
+                            List<ClueFieldBlob> blobList = clueFieldBlobMapper.selectByIds(clueFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, ClueFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(ClueFieldBlob::getId, Function.identity()));
+                            clueFieldBlobs.forEach(clueFieldBlob -> {
+                                if (blobMap.containsKey(clueFieldBlob.getId())) {
+                                    commonMapper.updateCustomerField("clue_field_blob", clueFieldBlob);
+                                } else {
+                                    insertFieldBlob.add(BeanUtils.copyBean(new ClueFieldBlob(), clueFieldBlob));
+                                }
+                            });
+                        }
+
                         sqlSession.flushStatements();
                         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                        if (CollectionUtils.isNotEmpty(insertField)) {
+                            clueFieldMapper.batchInsert(insertField);
+                        }
+                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                            clueFieldBlobMapper.batchInsert(insertFieldBlob);
+                        }
+
 
                         Map<String, Clue> modifiedClueMaps = clueMapper.selectByIds(ids).stream().collect(Collectors.toMap(Clue::getId, Function.identity()));
                         Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
