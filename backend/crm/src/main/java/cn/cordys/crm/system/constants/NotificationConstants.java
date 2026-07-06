@@ -160,6 +160,8 @@ public class NotificationConstants {
 		@Schema(description = "message.approval_todo")
 		String APPROVAL_TODO = "APPROVAL_TODO";
 
+		@Schema(description = "message.approval_cc")
+		String APPROVAL_CC = "APPROVAL_CC";
     }
 
     public interface RelatedUser {
@@ -259,10 +261,6 @@ public class NotificationConstants {
         @Schema(description = "message.business_follow_up_plan_due_text")
         String BUSINESS_FOLLOW_UP_PLAN_DUE_TEXT = "BUSINESS_FOLLOW_UP_PLAN_DUE_TEXT";
 
-        //${OPERATOR}审批了${name}报价单，审批结果为${state}
-        @Schema(description = "message.business_quotation_approval_text")
-        String BUSINESS_QUOTATION_APPROVAL_TEXT = "BUSINESS_QUOTATION_APPROVAL_TEXT";
-
         //${OPERATOR}删除了${name}报价单
         @Schema(description = "message.business_quotation_deleted_text")
         String BUSINESS_QUOTATION_DELETED_TEXT = "BUSINESS_QUOTATION_DELETED_TEXT";
@@ -299,17 +297,23 @@ public class NotificationConstants {
         @Schema(description = "message.sync_organization_structure_text")
         String SYNC_ORGANIZATION_STRUCTURE_TEXT = "SYNC_ORGANIZATION_STRUCTURE_TEXT";
 
-        @Schema(description = "message.contract_approval_text")
+        @Schema(description = "message.approval_result_text")
         String CONTRACT_APPROVAL_TEXT = "CONTRACT_APPROVAL_TEXT";
 
-        @Schema(description = "message.order_approval_text")
+        @Schema(description = "message.approval_result_text")
         String ORDER_APPROVAL_TEXT = "ORDER_APPROVAL_TEXT";
 
-        @Schema(description = "message.invoice_approval_text")
+        @Schema(description = "message.approval_result_text")
         String INVOICE_APPROVAL_TEXT = "INVOICE_APPROVAL_TEXT";
+
+        @Schema(description = "message.message.approval_result_text")
+        String BUSINESS_QUOTATION_APPROVAL_TEXT = "BUSINESS_QUOTATION_APPROVAL_TEXT";
 
 		@Schema(description = "message.approval_todo_text")
 		String APPROVAL_TODO_TEXT = "APPROVAL_TODO_TEXT";
+
+		@Schema(description = "message.approval_cc_text")
+		String APPROVAL_CC_TEXT = "APPROVAL_CC_TEXT";
     }
 
 
