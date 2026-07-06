@@ -15,6 +15,7 @@ import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
@@ -23,6 +24,7 @@ import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -52,6 +54,7 @@ import cn.cordys.crm.opportunity.service.OpportunityService;
 import cn.cordys.crm.product.mapper.ExtProductMapper;
 import cn.cordys.crm.product.service.ProductService;
 import cn.cordys.crm.system.constants.DictModule;
+import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.Dict;
@@ -59,6 +62,7 @@ import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.form.FormLinkFill;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
@@ -88,11 +92,16 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -179,6 +188,8 @@ public class ClueService {
     private BaseMapper<FollowUpPlanField> followUpPlanFieldMapper;
     @Resource
     private BaseMapper<FollowUpPlanFieldBlob> followUpPlanFieldBlobMapper;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission, Boolean source) {
@@ -297,9 +308,7 @@ public class ClueService {
     }
 
     /**
-     *
      * @param id 线索ID
-     *
      * @return 线索详情
      */
     public ClueGetResponse get(String id) {
@@ -378,47 +387,49 @@ public class ClueService {
         return clueGetResponse;
     }
 
-	/**
-	 * 获取线索详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
-	 * @param id 线索ID
-	 * @return 详情
-	 */
-	public ClueGetResponse getSimple(String id) {
-		Clue clue = clueMapper.selectByPrimaryKey(id);
-		if (clue == null) {
-			return null;
-		}
-		ClueGetResponse clueGetResponse = BeanUtils.copyBean(new ClueGetResponse(), clue);
-		// 获取模块字段
-		List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(id);
-		clueGetResponse.setModuleFields(clueFields);
-		return clueGetResponse;
-	}
+    /**
+     * 获取线索详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+     *
+     * @param id 线索ID
+     * @return 详情
+     */
+    public ClueGetResponse getSimple(String id) {
+        Clue clue = clueMapper.selectByPrimaryKey(id);
+        if (clue == null) {
+            return null;
+        }
+        ClueGetResponse clueGetResponse = BeanUtils.copyBean(new ClueGetResponse(), clue);
+        // 获取模块字段
+        List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(id);
+        clueGetResponse.setModuleFields(clueFields);
+        return clueGetResponse;
+    }
 
-	/**
-	 * 批量获取线索详情 (用于数据源批量查询优化)
-	 * @param ids 线索ID集合
-	 * @return 线索详情列表
-	 */
-	public List<ClueGetResponse> batchGetSimpleByIds(List<String> ids) {
-		if (CollectionUtils.isEmpty(ids)) {
-			return Collections.emptyList();
-		}
-		// 批量查询资源基本信息
-		List<Clue> clues = clueMapper.selectByIds(ids);
-		if (CollectionUtils.isEmpty(clues)) {
-			return Collections.emptyList();
-		}
-		// 批量查询自定义字段值
-		Map<String, List<BaseModuleFieldValue>> fieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
+    /**
+     * 批量获取线索详情 (用于数据源批量查询优化)
+     *
+     * @param ids 线索ID集合
+     * @return 线索详情列表
+     */
+    public List<ClueGetResponse> batchGetSimpleByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        // 批量查询资源基本信息
+        List<Clue> clues = clueMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(clues)) {
+            return Collections.emptyList();
+        }
+        // 批量查询自定义字段值
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
 
-		// 组装结果
-		return clues.stream().map(clue -> {
-			ClueGetResponse response = BeanUtils.copyBean(new ClueGetResponse(), clue);
-			response.setModuleFields(fieldValueMap.get(clue.getId()));
-			return response;
-		}).toList();
-	}
+        // 组装结果
+        return clues.stream().map(clue -> {
+            ClueGetResponse response = BeanUtils.copyBean(new ClueGetResponse(), clue);
+            response.setModuleFields(fieldValueMap.get(clue.getId()));
+            return response;
+        }).toList();
+    }
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD)
     public Clue add(ClueAddRequest request, String userId, String orgId) {
@@ -444,10 +455,10 @@ public class ClueService {
         clueMapper.insert(clue);
         baseService.handleAddLogWithResourceName(clue, request.getModuleFields());
 
-		// 消息通知
-		commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-				NotificationConstants.Event.CLUE_ADD, clue.getName(), userId,
-				orgId, List.of(clue.getOwner()), true);
+        // 消息通知
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                NotificationConstants.Event.CLUE_ADD, clue.getName(), userId,
+                orgId, List.of(clue.getOwner()), true);
         return clue;
     }
 
@@ -791,8 +802,8 @@ public class ClueService {
 
         // 转移线索的计划&记录
         batchCopyCluePlanAndRecord(clue.getId(), transitionCs.getId(), null, transformCsAssociateDTO.getContactId());
-		// 刷新转换过程中同名客户的最新跟进时间
-		refreshCsFollowTime(clue, transitionCs);
+        // 刷新转换过程中同名客户的最新跟进时间
+        refreshCsFollowTime(clue, transitionCs);
 
         // 只通知线索负责人
         Map<String, Object> paramMap = new HashMap<>(8);
@@ -834,8 +845,8 @@ public class ClueService {
             // 根据表单联动来创建客户
             transformCustomer = generateCustomerByLinkForm(clue, currentUser, orgId);
         }
-		// 刷新转换过程中同名客户的最新跟进时间
-		refreshCsFollowTime(clue, transformCustomer);
+        // 刷新转换过程中同名客户的最新跟进时间
+        refreshCsFollowTime(clue, transformCustomer);
 
         TransformCsAssociateDTO transformCsAssociateDTO = transformCsAssociate(clue, transformCustomer, currentUser, orgId);
         clue.setTransitionId(transformCustomer.getId());
@@ -962,7 +973,6 @@ public class ClueService {
      * 同名客户选择器
      *
      * @param customers 客户列表
-     *
      * @return 客户
      */
     public Customer selectorCs(List<Customer> customers, String clueOwner) {
@@ -981,7 +991,6 @@ public class ClueService {
      * @param clue        线索
      * @param currentUser 当前用户
      * @param orgId       组织ID
-     *
      * @return 客户
      */
     public Customer generateCustomerByLinkForm(Clue clue, String currentUser, String orgId) {
@@ -1013,7 +1022,6 @@ public class ClueService {
      * @param contactId   联系人ID
      * @param currentUser 当前用户
      * @param orgId       组织ID
-     *
      * @return 商机
      */
     public Opportunity generateOpportunityByLinkForm(Clue clue, String contactId, Customer transformCustomer, String currentUser, String orgId) {
@@ -1048,28 +1056,29 @@ public class ClueService {
         return opportunityService.add(addRequest, currentUser, orgId);
     }
 
-	/**
-	 * 通过表单联动来构建客户联系人创建对象
-	 * @param clue 线索
-	 * @param orgId 组织ID
-	 * @return 客户联系人创建对象
-	 */
-	public CustomerContactAddRequest buildContactRequestByLinkForm(Clue clue, String orgId) {
-		ModuleFormConfigDTO contactFormConfig = moduleFormService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
-		FormLinkFill<CustomerContactAddRequest> fillDTO = null;
-		try {
-			fillDTO = moduleFormService.fillFormLinkValue(new CustomerContactAddRequest(), get(clue.getId()),
-					contactFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_CONTACT.name());
-		} catch (Exception e) {
-			log.error("Attempt to fill contact form error: {}", e.getMessage());
-		}
-		if (fillDTO == null || fillDTO.getEntity() == null) {
-			return new CustomerContactAddRequest();
-		}
-		CustomerContactAddRequest request = fillDTO.getEntity();
-		request.setModuleFields(fillDTO.getFields());
-		return request;
-	}
+    /**
+     * 通过表单联动来构建客户联系人创建对象
+     *
+     * @param clue  线索
+     * @param orgId 组织ID
+     * @return 客户联系人创建对象
+     */
+    public CustomerContactAddRequest buildContactRequestByLinkForm(Clue clue, String orgId) {
+        ModuleFormConfigDTO contactFormConfig = moduleFormService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
+        FormLinkFill<CustomerContactAddRequest> fillDTO = null;
+        try {
+            fillDTO = moduleFormService.fillFormLinkValue(new CustomerContactAddRequest(), get(clue.getId()),
+                    contactFormConfig, orgId, FormKey.CLUE.getKey(), LinkScenarioKey.CLUE_TO_CONTACT.name());
+        } catch (Exception e) {
+            log.error("Attempt to fill contact form error: {}", e.getMessage());
+        }
+        if (fillDTO == null || fillDTO.getEntity() == null) {
+            return new CustomerContactAddRequest();
+        }
+        CustomerContactAddRequest request = fillDTO.getEntity();
+        request.setModuleFields(fillDTO.getFields());
+        return request;
+    }
 
     /**
      * 转换客户处理
@@ -1091,19 +1100,19 @@ public class ClueService {
         }
 
         // 线索联系人 => 客户联系人
-		CustomerContactAddRequest request = buildContactRequestByLinkForm(clue, orgId);
-		if (StringUtils.isEmpty(request.getName())) {
-			return transformDTO;
-		}
-		boolean unique = customerContactService.checkCustomerContactUnique(request.getName(), request.getPhone(), transformCs.getId(), orgId);
-		if (unique) {
-			request.setCustomerId(transformCs.getId());
-			if (StringUtils.isEmpty(request.getOwner())) {
-				request.setOwner(clue.getOwner());
-			}
-			CustomerContact contact = customerContactService.add(request, currentUser, orgId);
-			transformDTO.setContactId(contact.getId());
-		}
+        CustomerContactAddRequest request = buildContactRequestByLinkForm(clue, orgId);
+        if (StringUtils.isEmpty(request.getName())) {
+            return transformDTO;
+        }
+        boolean unique = customerContactService.checkCustomerContactUnique(request.getName(), request.getPhone(), transformCs.getId(), orgId);
+        if (unique) {
+            request.setCustomerId(transformCs.getId());
+            if (StringUtils.isEmpty(request.getOwner())) {
+                request.setOwner(clue.getOwner());
+            }
+            CustomerContact contact = customerContactService.add(request, currentUser, orgId);
+            transformDTO.setContactId(contact.getId());
+        }
 
         return transformDTO;
     }
@@ -1126,7 +1135,6 @@ public class ClueService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
-     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
@@ -1142,28 +1150,79 @@ public class ClueService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
-     *
      * @return 导入返回信息
      */
-    public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+    public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CLUE.getKey(), currentOrg);
             CustomImportAfterDoConsumer<Clue, BaseResourceSubField> afterDo = (clues, clueFields, clueFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
-                clues.forEach(clue -> {
-                    clue.setCollectionTime(clue.getCreateTime());
-                    clue.setStage(ClueStatus.NEW.name());
-                    clue.setInSharedPool(false);
-                    logs.add(new LogDTO(currentOrg, clue.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX, clue.getName()));
-					// 消息通知 (异步)
-					commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_ADD, clue.getName(), currentUser,
-							currentOrg, List.of(clue.getOwner()), true);
-                });
-                clueMapper.batchInsert(clues);
-                clueFieldMapper.batchInsert(clueFields.stream().map(field -> BeanUtils.copyBean(new ClueField(), field)).toList());
-                clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
-                // 日志
-                logService.batchAdd(logs);
+                ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
+                switch (importType) {
+                    case ADD -> {
+                        clues.forEach(clue -> {
+                            clue.setCollectionTime(clue.getCreateTime());
+                            clue.setStage(ClueStatus.NEW.name());
+                            clue.setInSharedPool(false);
+                            logs.add(new LogDTO(currentOrg, clue.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX, clue.getName()));
+                        });
+                        clueMapper.batchInsert(clues);
+                        clueFieldMapper.batchInsert(clueFields.stream().map(field -> BeanUtils.copyBean(new ClueField(), field)).toList());
+                        clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
+                        // 日志
+                        logService.batchAdd(logs);
+                    }
+                    case UPDATE -> {
+                        List<String> ids = clues.stream().map(Clue::getId).toList();
+                        if (org.apache.commons.collections4.CollectionUtils.isEmpty(ids)) {
+                            break;
+                        }
+                        //原数据
+                        List<Clue> originClueList = clueMapper.selectByIds(ids);
+                        if (org.apache.commons.collections4.CollectionUtils.isEmpty(originClueList)) {
+                            break;
+                        }
+                        Map<String, Clue> originClueMaps = originClueList.stream().collect(Collectors.toMap(Clue::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
+
+                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                        ExtClueMapper clueBatchMapper = sqlSession.getMapper(ExtClueMapper.class);
+                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                        //更新
+                        clues.forEach(clue -> {
+                            clue.setInSharedPool(true);
+                            clueBatchMapper.updateClue(clue);
+                        });
+                        clueFields.forEach(clueField -> {
+                            commonMapper.updateCustomerField("clue_field", clueField);
+                        });
+
+                        clueFieldBlobs.forEach(clueFieldBlob -> {
+                            commonMapper.updateCustomerField("clue_field_blob", clueFieldBlob);
+                        });
+                        sqlSession.flushStatements();
+                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                        Map<String, Clue> modifiedClueMaps = clueMapper.selectByIds(ids).stream().collect(Collectors.toMap(Clue::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
+
+                        //日志
+                        ids.forEach(id -> {
+                            Clue originDate = originClueMaps.get(id);
+                            Clue modifiedDate = modifiedClueMaps.get(id);
+                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            LogContextInfo contextInfo = OperationLogContext.getContext();
+                            if (contextInfo != null) {
+                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CLUE_INDEX, modifiedDate.getName());
+                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                                logs.add(logDTO);
+                                OperationLogContext.clear();
+                            }
+                        });
+                        logService.batchAdd(logs);
+                    }
+                }
             };
             CustomFieldImportEventListener<Clue> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
                     "clue_field", afterDo, 2000, null, null);
@@ -1181,7 +1240,6 @@ public class ClueService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
-     *
      * @return 检查信息
      */
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
@@ -1197,7 +1255,7 @@ public class ClueService {
         }
     }
 
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = clueFieldService.getAndCheckField(request.getFieldId(), organizationId);
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
@@ -1254,19 +1312,19 @@ public class ClueService {
                 records.add(clueRecord);
                 ClueFollowDTO clueFollowDTO = clueFollowMap.get(customerId);
                 if (clueFollowDTO == null) {
-					clueFollowMap.put(customerId, ClueFollowDTO.builder().follower(clueRecord.getOwner())
+                    clueFollowMap.put(customerId, ClueFollowDTO.builder().follower(clueRecord.getOwner())
                             .followerTime(clueRecord.getFollowTime()).build());
                 } else {
-					Long recordTime = clueRecord.getFollowTime();
-					if (recordTime == null) {
-						return;
-					}
-					Long followerTime = clueFollowDTO.getFollowerTime();
-					if (followerTime == null || recordTime > followerTime) {
-						clueFollowDTO.setFollower(clueRecord.getOwner());
-						clueFollowDTO.setFollowerTime(recordTime);
-						clueFollowMap.put(customerId, clueFollowDTO);
-					}
+                    Long recordTime = clueRecord.getFollowTime();
+                    if (recordTime == null) {
+                        return;
+                    }
+                    Long followerTime = clueFollowDTO.getFollowerTime();
+                    if (followerTime == null || recordTime > followerTime) {
+                        clueFollowDTO.setFollower(clueRecord.getOwner());
+                        clueFollowDTO.setFollowerTime(recordTime);
+                        clueFollowMap.put(customerId, clueFollowDTO);
+                    }
                 }
             }
         });
@@ -1302,23 +1360,24 @@ public class ClueService {
         });
     }
 
-	/**
-	 * 刷新客户的最新跟进时间
-	 * @param clue 线索信息
-	 * @param transitionCs 转移的客户信息
-	 */
-	private void refreshCsFollowTime(Clue clue, Customer transitionCs) {
-		Long clueFollowTime = clue.getFollowTime();
-		Long customerFollowTime = transitionCs.getFollowTime();
-		if (clueFollowTime == null) {
-			return;
-		}
-		if (customerFollowTime == null || customerFollowTime < clueFollowTime) {
-			Customer updateCustomer = new Customer();
-			updateCustomer.setId(transitionCs.getId());
-			updateCustomer.setFollower(clue.getFollower());
-			updateCustomer.setFollowTime(clueFollowTime);
-			customerMapper.updateById(updateCustomer);
-		}
-	}
+    /**
+     * 刷新客户的最新跟进时间
+     *
+     * @param clue         线索信息
+     * @param transitionCs 转移的客户信息
+     */
+    private void refreshCsFollowTime(Clue clue, Customer transitionCs) {
+        Long clueFollowTime = clue.getFollowTime();
+        Long customerFollowTime = transitionCs.getFollowTime();
+        if (clueFollowTime == null) {
+            return;
+        }
+        if (customerFollowTime == null || customerFollowTime < clueFollowTime) {
+            Customer updateCustomer = new Customer();
+            updateCustomer.setId(transitionCs.getId());
+            updateCustomer.setFollower(clue.getFollower());
+            updateCustomer.setFollowTime(clueFollowTime);
+            customerMapper.updateById(updateCustomer);
+        }
+    }
 }
