@@ -29,6 +29,7 @@ import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
@@ -254,8 +255,8 @@ public class ClueController {
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
-    public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
-        return clueService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return clueService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping("/chart")

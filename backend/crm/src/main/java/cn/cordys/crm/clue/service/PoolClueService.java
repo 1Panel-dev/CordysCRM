@@ -26,7 +26,6 @@ import cn.cordys.crm.clue.dto.CluePoolPickRuleDTO;
 import cn.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import cn.cordys.crm.clue.dto.request.CluePoolImportRequest;
 import cn.cordys.crm.clue.dto.request.PoolCluePickRequest;
-import cn.cordys.crm.clue.dto.response.ClueGetResponse;
 import cn.cordys.crm.clue.mapper.ExtClueCapacityMapper;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
 import cn.cordys.crm.system.constants.ImportType;
@@ -45,7 +44,10 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
-import cn.cordys.crm.system.service.*;
+import cn.cordys.crm.system.service.LogService;
+import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -114,8 +116,6 @@ public class PoolClueService {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private BaseService baseService;
-    @Resource
-    private DictService dictService;
 
     /**
      * 获取当前用户线索池选项
@@ -438,7 +438,7 @@ public class PoolClueService {
         List<List<String>> headList = moduleFormService.getCustomImportHeadsNoRefAndOwner(FormKey.CLUE.getKey(), orgId);
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
                 headList,
-                Translator.get("clue.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
+                Translator.get("clue_pool.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
                 new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFieldsNoOwner(FormKey.CLUE.getKey(), orgId)),
                 new CustomHeadColWidthStyleStrategy());
     }
@@ -571,24 +571,4 @@ public class PoolClueService {
         }
     }
 
-
-    public List<ClueGetResponse> batchGetyIds(List<String> ids) {
-        if (org.apache.commons.collections.CollectionUtils.isEmpty(ids)) {
-            return Collections.emptyList();
-        }
-        // 批量查询资源基本信息
-        List<Clue> clues = clueMapper.selectByIds(ids);
-        if (org.apache.commons.collections.CollectionUtils.isEmpty(clues)) {
-            return Collections.emptyList();
-        }
-        // 批量查询自定义字段值
-        Map<String, List<BaseModuleFieldValue>> fieldValueMap = clueFieldService.getResourceFieldMap(ids, true);
-
-        // 组装结果
-        return clues.stream().map(clue -> {
-            ClueGetResponse response = BeanUtils.copyBean(new ClueGetResponse(), clue);
-            response.setModuleFields(fieldValueMap.get(clue.getId()));
-            return response;
-        }).toList();
-    }
 }
