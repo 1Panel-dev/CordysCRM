@@ -317,6 +317,9 @@
     <update id="updateById">
         update business_title
         <set>
+            <if test="title.name != null and title.name != ''">
+                name = #{title.name},
+            </if>
             <if test="title.identificationNumber != null and title.identificationNumber != ''">
                 identification_number = #{title.identificationNumber},
             </if>
