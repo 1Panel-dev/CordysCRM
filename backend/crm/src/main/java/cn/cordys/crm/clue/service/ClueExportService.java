@@ -48,7 +48,7 @@ public class ClueExportService extends BaseExportService {
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(dataList, exportParam.getExportFieldParam());
         return buildExportMergeResult(taskId, exportParam, dataList, ClueListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        PoolClueFieldUtils.getSystemFieldMap(detail, optionMap), cache));
+                        PoolClueFieldUtils.getSystemFieldMap(detail, optionMap), null));
     }
 
     private List<ClueListResponse> collectExportList(ExportDTO exportParam) {

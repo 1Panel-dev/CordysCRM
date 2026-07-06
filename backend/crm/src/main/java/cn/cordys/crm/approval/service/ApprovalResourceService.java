@@ -982,8 +982,6 @@ public class ApprovalResourceService {
     public void testConnect(WebHookConfig webHookConfig) {
         if (webHookConfig != null && webHookConfig.getWebHookEnable()) {
             HashMap<String, Object> resultObj = new HashMap<>();
-            // SSRF安全校验
-            ssrfValidationService.validate(webHookConfig.getWebHookUrl());
             switch (webHookConfig.getWebHookMethod()) {
                 case "POST":
                     resultObj = sendPost(webHookConfig, null, null, true, null);
