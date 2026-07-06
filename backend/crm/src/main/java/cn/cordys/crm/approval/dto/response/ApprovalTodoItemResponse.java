@@ -44,4 +44,7 @@ public class ApprovalTodoItemResponse {
 
     @Schema(description = "审批流版本ID")
     private String approvalFlowVersionId;
+
+    @Schema(description = "执行时机：CREATE/UPDATE/DELETE")
+    private String executeTime;
 }
