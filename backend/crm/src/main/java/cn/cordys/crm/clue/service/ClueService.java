@@ -1174,12 +1174,12 @@ public class ClueService {
                     }
                     case UPDATE -> {
                         List<String> ids = clues.stream().map(Clue::getId).toList();
-                        if (org.apache.commons.collections4.CollectionUtils.isEmpty(ids)) {
+                        if (CollectionUtils.isEmpty(ids)) {
                             break;
                         }
                         //原数据
                         List<Clue> originClueList = clueMapper.selectByIds(ids);
-                        if (org.apache.commons.collections4.CollectionUtils.isEmpty(originClueList)) {
+                        if (CollectionUtils.isEmpty(originClueList)) {
                             break;
                         }
                         Map<String, Clue> originClueMaps = originClueList.stream().collect(Collectors.toMap(Clue::getId, Function.identity()));
@@ -1190,7 +1190,7 @@ public class ClueService {
                         CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
                         //更新
                         clues.forEach(clue -> {
-                            clue.setInSharedPool(true);
+                            clue.setInSharedPool(false);
                             clueBatchMapper.updateClue(clue);
                         });
                         clueFields.forEach(clueField -> {
