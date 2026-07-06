@@ -69,6 +69,7 @@ export interface ImportUploadParams {
   fileList: File[];
   request?: {
     importType?: string;
+    poolId?: string;
     [key: string]: any;
   };
 }

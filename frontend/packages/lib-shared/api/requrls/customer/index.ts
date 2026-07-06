@@ -119,6 +119,9 @@ export const DragContactViewUrl = '/account/contact/view/edit/pos';
 export const PreCheckAccountImportUrl = '/account/import/pre-check';
 export const DownloadAccountTemplateUrl = '/account/template/download';
 export const ImportAccountUrl = '/account/import';
+export const PreCheckPoolAccountImportUrl = '/pool/account/import/pre-check';
+export const DownloadPoolAccountTemplateUrl = '/pool/account/template/download';
+export const ImportPoolAccountUrl = '/pool/account/import';
 
 // 联系人导入
 export const PreCheckContactImportUrl = '/account/contact/import/pre-check';

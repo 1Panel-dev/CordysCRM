@@ -37,6 +37,7 @@ import {
   DisableCustomerContactUrl,
   DownloadAccountTemplateUrl,
   DownloadContactTemplateUrl,
+  DownloadPoolAccountTemplateUrl,
   DragAccountPoolViewUrl,
   DragContactViewUrl,
   DragCustomerViewUrl,
@@ -95,6 +96,7 @@ import {
   GetOpenSeaOptionsUrl,
   ImportAccountUrl,
   ImportContactUrl,
+  ImportPoolAccountUrl,
   IsCustomerOpenSeaNoPickUrl,
   MergeAccountPageUrl,
   MergeAccountUrl,
@@ -103,6 +105,7 @@ import {
   PoolAccountBatchUpdateUrl,
   PreCheckAccountImportUrl,
   PreCheckContactImportUrl,
+  PreCheckPoolAccountImportUrl,
   SaveCustomerRelationUrl,
   SwitchCustomerOpenSeaUrl,
   UpdateAccountPoolViewUrl,
@@ -719,6 +722,32 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.uploadFile({ url: ImportAccountUrl }, params, 'file');
   }
 
+  function preCheckImportPoolAccount(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>(
+      { url: PreCheckPoolAccountImportUrl, params: { poolId: params?.request?.poolId?? ''} },
+      params,
+      'file'
+    );
+  }
+
+  function downloadPoolAccountTemplate() {
+    return CDR.get(
+      {
+        url: DownloadPoolAccountTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importPoolAccount(params: ImportUploadParams) {
+    return CDR.uploadFile(
+      { url: ImportPoolAccountUrl, params: { poolId: params?.request?.poolId?? '' } },
+      params,
+      'file'
+    );
+  }
+
   // 联系人导入
   function preCheckImportContact(params: ImportUploadParams) {
     return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckContactImportUrl }, params, 'file');
@@ -901,6 +930,9 @@ export default function useProductApi(CDR: CordysAxios) {
     preCheckImportAccount,
     downloadAccountTemplate,
     importAccount,
+    preCheckImportPoolAccount,
+    downloadPoolAccountTemplate,
+    importPoolAccount,
     preCheckImportContact,
     downloadContactTemplate,
     importContact,

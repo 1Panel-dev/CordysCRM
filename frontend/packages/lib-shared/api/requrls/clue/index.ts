@@ -76,6 +76,9 @@ export const DragClueViewUrl = '/lead/view/edit/pos';
 export const PreCheckImportUrl = '/lead/import/pre-check';
 export const DownloadTemplateUrl = '/lead/template/download';
 export const ImportLeadUrl = '/lead/import';
+export const PreCheckPoolLeadImportUrl = '/pool/lead/import/pre-check';
+export const DownloadPoolLeadTemplateUrl = '/pool/lead/template/download';
+export const ImportPoolLeadUrl = '/pool/lead/import';
 
 // 线索池视图
 export const GetPoolLeadViewDetailUrl = 'pool/lead/view/detail';
