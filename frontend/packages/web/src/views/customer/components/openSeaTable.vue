@@ -29,6 +29,13 @@
           class="w-[200px]"
           @update-value="(e) => searchData(undefined, e)"
         />
+        <CrmImportButton
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:IMPORT']) && !props.readonly"
+          :api-type="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
+          :title="t('module.openSea')"
+          :pool-id="openSea"
+          @import-success="() => searchData()"
+        />
         <n-button
           v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:EXPORT']) && !props.readonly"
           type="primary"
@@ -129,6 +136,7 @@
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';

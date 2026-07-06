@@ -36,6 +36,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { ImportUploadParams } from '@lib/shared/models/common';
   import type { ValidateInfo } from '@lib/shared/models/system/org';
 
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
@@ -57,6 +58,7 @@
     buttonText?: string;
     descriptionTip?: string; // 描述提示
     customFormId?: string;
+    poolId?: string | number;
   }>();
 
   const emit = defineEmits<{
@@ -107,10 +109,17 @@
   });
 
   function getImportRequestParams(file: File, type?: string): ImportRequestParams {
+    const request: ImportUploadParams['request'] = showImportRadio.value
+      ? {
+          importType: type,
+          ...(props.poolId ? { poolId: props.poolId as string } : {}),
+        }
+      : undefined;
+
     return {
       uploadParams: {
         fileList: [file],
-        request: showImportRadio.value ? { importType: type } : undefined,
+        request,
       },
       customFormId: props.customFormId,
     };

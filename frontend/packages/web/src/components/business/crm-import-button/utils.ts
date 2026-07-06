@@ -11,6 +11,8 @@ import {
   downloadCustomFormTemplate,
   downloadLeadTemplate,
   downloadOptTemplate,
+  downloadPoolAccountTemplate,
+  downloadPoolLeadTemplate,
   downloadProductPriceTemplate,
   downloadProductTemplate,
   importAccount,
@@ -20,6 +22,8 @@ import {
   importCustomForm,
   importLead,
   importOpportunity,
+  importPoolAccount,
+  importPoolLead,
   importProduct,
   importProductPrice,
   preCheckImportAccount,
@@ -29,14 +33,18 @@ import {
   preCheckImportCustomForm,
   preCheckImportLead,
   preCheckImportOpt,
+  preCheckImportPoolAccount,
+  preCheckImportPoolLead,
   preCheckImportProduct,
   preCheckImportProductPrice,
 } from '@/api/modules';
 
 export type ImportApiType =
   | FormDesignKeyEnum.CLUE
+  | FormDesignKeyEnum.CLUE_POOL
   | FormDesignKeyEnum.BUSINESS
   | FormDesignKeyEnum.CUSTOMER
+  | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
   | FormDesignKeyEnum.CONTACT
   | FormDesignKeyEnum.PRODUCT
   | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
@@ -61,10 +69,20 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     save: (params) => importLead(params.uploadParams),
     download: downloadLeadTemplate,
   },
+  [FormDesignKeyEnum.CLUE_POOL]: {
+    preCheck: (params) => preCheckImportPoolLead(params.uploadParams),
+    save: (params) => importPoolLead(params.uploadParams),
+    download: downloadPoolLeadTemplate,
+  },
   [FormDesignKeyEnum.CUSTOMER]: {
     preCheck: (params) => preCheckImportAccount(params.uploadParams),
     save: (params) => importAccount(params.uploadParams),
     download: downloadAccountTemplate,
+  },
+  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: {
+    preCheck: (params) => preCheckImportPoolAccount(params.uploadParams),
+    save: (params) => importPoolAccount(params.uploadParams),
+    download: downloadPoolAccountTemplate,
   },
   [FormDesignKeyEnum.CONTACT]: {
     preCheck: (params) => preCheckImportContact(params.uploadParams),

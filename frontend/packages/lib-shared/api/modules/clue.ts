@@ -22,6 +22,7 @@ import {
   DeleteClueUrl,
   DeleteClueViewUrl,
   DeletePoolLeadViewUrl,
+  DownloadPoolLeadTemplateUrl,
   DownloadTemplateUrl,
   DragClueViewUrl,
   DragPoolLeadViewUrl,
@@ -59,9 +60,11 @@ import {
   GetPoolLeadViewListUrl,
   GetPoolOptionsUrl,
   ImportLeadUrl,
+  ImportPoolLeadUrl,
   MoveToPoolLeadUrl,
   PickClueUrl,
   PreCheckImportUrl,
+  PreCheckPoolLeadImportUrl,
   ReTransitionCustomerUrl,
   TransformClueUrl,
   UpdateClueFollowPlanStatusUrl,
@@ -399,6 +402,32 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.uploadFile({ url: ImportLeadUrl }, params, 'file');
   }
 
+  function preCheckImportPoolLead(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>(
+      { url: PreCheckPoolLeadImportUrl, params: { poolId: params?.request?.poolId?? '' } },
+      params,
+      'file'
+    );
+  }
+
+  function downloadPoolLeadTemplate() {
+    return CDR.get(
+      {
+        url: DownloadPoolLeadTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importPoolLead(params: ImportUploadParams) {
+    return CDR.uploadFile(
+      { url: ImportPoolLeadUrl, params: { poolId: params?.request?.poolId?? '' } },
+      params,
+      'file'
+    );
+  }
+
   function getAdvancedSearchClueList(data: CustomerTableParams) {
     return CDR.post<CommonList<ClueListItem>>({ url: GetAdvancedSearchClueListUrl, data }, { ignoreCancelToken: true });
   }
@@ -512,6 +541,9 @@ export default function useProductApi(CDR: CordysAxios) {
     preCheckImportLead,
     downloadLeadTemplate,
     importLead,
+    preCheckImportPoolLead,
+    downloadPoolLeadTemplate,
+    importPoolLead,
     getAdvancedSearchClueList,
     getAdvancedCluePoolList,
     getAdvancedSearchClueDetail,
