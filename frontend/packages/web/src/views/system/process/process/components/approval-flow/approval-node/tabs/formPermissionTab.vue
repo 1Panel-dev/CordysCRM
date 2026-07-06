@@ -55,10 +55,17 @@
     },
   ];
 
-  // 仅单行文本、多行文本支持编辑， 其它类型的编辑按钮禁用
+  // 仅部分类型支持编辑， 其它类型的编辑按钮禁用
   function isEditableField(field: FormCreateField) {
     return (
-      [FieldTypeEnum.INPUT, FieldTypeEnum.TEXTAREA].includes(field.type) &&
+      [
+        FieldTypeEnum.INPUT,
+        FieldTypeEnum.TEXTAREA,
+        FieldTypeEnum.INPUT_NUMBER,
+        FieldTypeEnum.SELECT,
+        FieldTypeEnum.SELECT_MULTIPLE,
+        FieldTypeEnum.DATE_TIME,
+      ].includes(field.type) &&
       field.editable !== false &&
       !field.resourceFieldId
     );
