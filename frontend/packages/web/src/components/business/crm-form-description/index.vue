@@ -201,6 +201,7 @@
             :path="item.fieldInfo.id"
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo.id]"
+            @update:value="handleFieldChange(item.fieldInfo, $event)"
           />
           <CrmTagGroup
             v-else-if="Array.isArray(item.value) && item.value.length"
@@ -406,6 +407,8 @@
     initFormConfig,
     initFormDescription,
     saveForm,
+    initFormShowControl,
+    applyFieldLink,
   } = useFormCreateApi({
     formKey,
     sourceId,
@@ -466,6 +469,17 @@
     }
     feedbackMap.value[field.id] = '';
     return true;
+  }
+
+  function handleFieldChange(item: FormCreateField, value: any) {
+    // 控制显示规则
+    if (item.showControlRules?.length) {
+      initFormShowControl(value);
+    }
+    // 字段联动
+    if (item.linkProp?.targetField && item.linkProp?.linkOptions.length) {
+      applyFieldLink(item);
+    }
   }
 
   function handleFormChange(callback?: () => void) {

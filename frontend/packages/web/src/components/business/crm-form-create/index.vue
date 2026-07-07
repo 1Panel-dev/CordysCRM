@@ -151,6 +151,7 @@
     saveForm,
     initForm,
     initFormShowControl,
+    applyFieldLink,
     detail,
   } = useFormCreateApi({
     formKey,
@@ -234,32 +235,6 @@
     }
     if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
       return CrmFormCreateComponents.advancedComponents.dataTable;
-    }
-  }
-
-  function applyFieldLink(item: FormCreateField) {
-    const currentFieldValue = formDetail.value[item.id];
-    const linkField = fieldList.value.find((f) => f.id === item.linkProp?.targetField);
-    if (item.linkProp?.linkOptions) {
-      for (let i = 0; i < item.linkProp?.linkOptions.length; i++) {
-        const option = item.linkProp?.linkOptions[i];
-        if (isEqual(currentFieldValue, option.current)) {
-          if (linkField) {
-            if (option.method === 'HIDDEN') {
-              linkField.linkRange = Array.isArray(option.target) ? option.target : [option.target];
-            } else {
-              linkField.linkRange = undefined;
-              formDetail.value[linkField.id] = option.target;
-            }
-            return;
-          }
-        } else if (linkField) {
-          linkField.linkRange = undefined;
-        }
-      }
-      nextTick(() => {
-        formRef.value?.restoreValidation();
-      });
     }
   }
 
@@ -628,7 +603,11 @@
     }
     // 字段联动
     if (item.linkProp?.targetField && item.linkProp?.linkOptions.length) {
-      applyFieldLink(item);
+      applyFieldLink(item, () => {
+        nextTick(() => {
+          formRef.value?.restoreValidation();
+        });
+      });
     }
     // 单选数据源字段联动
     if (item.linkFields?.length && value && value.length) {
