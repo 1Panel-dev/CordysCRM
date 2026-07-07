@@ -158,11 +158,15 @@ public class PoolCustomerService {
                 poolDTO.setUpdateUserName(userMap.get(pool.getUpdateUser()));
 
                 var pickRule = new CustomerPoolPickRuleDTO();
-                BeanUtils.copyBean(pickRule, pickRuleMap.get(pool.getId()));
+                if (pickRuleMap.get(pool.getId()) != null) {
+                    BeanUtils.copyBean(pickRule, pickRuleMap.get(pool.getId()));
+                }
                 var recycleRule = new CustomerPoolRecycleRuleDTO();
                 CustomerPoolRecycleRule customerPoolRecycleRule = recycleRuleMap.get(pool.getId());
-                BeanUtils.copyBean(recycleRule, customerPoolRecycleRule);
-                recycleRule.setConditions(JSON.parseArray(customerPoolRecycleRule.getCondition(), RuleConditionDTO.class));
+                if (customerPoolRecycleRule != null) {
+                    BeanUtils.copyBean(recycleRule, customerPoolRecycleRule);
+                    recycleRule.setConditions(JSON.parseArray(customerPoolRecycleRule.getCondition(), RuleConditionDTO.class));
+                }
                 poolDTO.setPickRule(pickRule);
                 poolDTO.setRecycleRule(recycleRule);
                 poolDTO.setEditable(ownerIds.contains(currentUser));
@@ -426,6 +430,39 @@ public class PoolCustomerService {
                     List.of(ownerId), true
             );
         }
+    }
+
+    /**
+     * 校验当前用户是否为公海成员（成员或管理员均可访问）
+     *
+     * @param poolId   公海ID
+     * @param userId   当前用户ID
+     * @param orgId    组织ID
+     */
+    public void checkPoolMember(String poolId, String userId, String orgId) {
+        CustomerPool pool = poolMapper.selectByPrimaryKey(poolId);
+        if (pool == null) {
+            throw new GenericException(Translator.get("customer_pool_not_exist"));
+        }
+        List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
+        List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
+        if (!scopeIds.contains(userId) && !ownerIds.contains(userId) && !Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
+            throw new GenericException(Translator.get("customer_pool_member_access_fail"));
+        }
+    }
+
+    /**
+     * 根据客户ID获取所属公海ID
+     *
+     * @param customerId 客户ID
+     * @return 公海ID
+     */
+    public String getPoolIdByCustomerId(String customerId) {
+        Customer customer = customerMapper.selectByPrimaryKey(customerId);
+        if (customer == null) {
+            throw new GenericException(Translator.get("customer.not.exist"));
+        }
+        return customer.getPoolId();
     }
 
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
