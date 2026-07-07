@@ -372,8 +372,8 @@
         limit 1
     </select>
 
-    <select id="getCheckValList" resultType="java.lang.String">
-        select `${fieldName}`
+    <select id="getCheckValList" resultType="cn.cordys.common.domain.BaseResourceSubField">
+        select `${fieldName}`,id
         from `${tableName}` t
         where organization_id = #{orgId}
         <if test="tableName == 'clue'">
@@ -390,8 +390,8 @@
         limit 1
     </select>
 
-    <select id="getCheckFieldValList" resultType="java.lang.String">
-        select f.field_value from `${fieldTable}` f join `${dataTable}` d on f.resource_id = d.id
+    <select id="getCheckFieldValList" resultType="cn.cordys.common.domain.BaseResourceSubField">
+        select f.field_value, f.resource_id from `${fieldTable}` f join `${dataTable}` d on f.resource_id = d.id
         where f.field_id = #{fieldId} and d.organization_id = #{orgId}
         <if test="dataTable == 'clue'">
             and (d.transition_type != 'CUSTOMER' or d.transition_type is null)
