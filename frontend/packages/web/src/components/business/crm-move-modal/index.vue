@@ -27,7 +27,16 @@
           :placeholder="t('common.pleaseSelect')"
           :options="poolOptions"
           :loading="poolLoading"
-        />
+        >
+          <template #empty>
+            <div class="flex items-center justify-center">
+              <span>{{ poolConfigTip }}</span>
+              <n-button text type="primary" @mousedown.prevent @click.stop="handleGoConfig">
+                {{ poolConfigActionText }}
+              </n-button>
+            </div>
+          </template>
+        </n-select>
       </n-form-item>
       <n-form-item v-if="enableReason" path="reason" :label="t('common.moveInReason')">
         <n-select v-model:value="form.reason" :placeholder="t('common.pleaseSelect')" clearable :options="reasonList" />
@@ -46,7 +55,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { DataTableRowKey, FormInst, NForm, NFormItem, NSelect } from 'naive-ui';
+  import { DataTableRowKey, FormInst, NButton, NForm, NFormItem, NSelect } from 'naive-ui';
 
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -66,8 +75,12 @@
     moveCustomerToPool,
     moveToLeadPool,
   } from '@/api/modules';
+  import useOpenNewPage from '@/hooks/useOpenNewPage';
+
+  import { SystemRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
+  const { openNewPage } = useOpenNewPage();
 
   export type ReasonKey = ReasonTypeEnum.CLUE_POOL_RS | ReasonTypeEnum.CUSTOMER_POOL_RS;
 
@@ -115,7 +128,14 @@
   const isCluePoolReason = computed(() => props.reasonKey === ReasonTypeEnum.CLUE_POOL_RS);
   const isCustomerPoolReason = computed(() => props.reasonKey === ReasonTypeEnum.CUSTOMER_POOL_RS);
   const isPoolReason = computed(() => isCluePoolReason.value || isCustomerPoolReason.value);
+  const isBatchMultiSource = computed(() => Array.isArray(props.sourceId) && props.sourceId.length > 1);
   const poolLabel = computed(() => (isCluePoolReason.value ? t('clue.moveIntoCluePool') : t('customer.moveToOpenSea')));
+  const poolConfigTip = computed(() =>
+    isCluePoolReason.value ? t('clue.moveIntoCluePoolFailedContent1') : t('customer.moveToOpenSeaFailedContent1')
+  );
+  const poolConfigActionText = computed(() =>
+    isCluePoolReason.value ? t('clue.moveIntoCluePoolFailedContent2') : t('customer.moveToOpenSeaFailedContent2')
+  );
   const confirmDisabled = computed(() => {
     if (enableReason.value && !form.value.reason) {
       return true;
@@ -233,6 +253,9 @@
       poolOptions.value = [];
       const options = isCluePoolReason.value ? await getPoolOptions() : await getOpenSeaOptions();
       poolOptions.value = options.map((item) => ({ label: item.name, value: item.id }));
+      if (isBatchMultiSource.value) {
+        return;
+      }
       const defaultPool = [...options].sort((prev, next) => next.createTime - prev.createTime)[0];
       form.value.poolId = defaultPool?.id ?? null;
     } catch (e) {
@@ -257,6 +280,20 @@
   function handleResultCancel() {
     showModal.value = false;
     showToPoolResultModel.value = false;
+  }
+
+  function handleGoConfig() {
+    showModal.value = false;
+    openNewPage(
+      SystemRouteEnum.SYSTEM_MODULE,
+      isCluePoolReason.value
+        ? {
+            openCluePoolDrawer: 'Y',
+          }
+        : {
+            openOpenSeaDrawer: 'Y',
+          }
+    );
   }
 
   watch(
