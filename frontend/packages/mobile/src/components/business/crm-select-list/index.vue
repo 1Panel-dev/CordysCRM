@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-  import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+  import type { CommonList } from '@lib/shared/models/common';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
 
@@ -46,7 +46,7 @@
     multiple?: boolean;
     listParams?: Record<string, any>;
     noPageNation?: boolean;
-    loadListApi?: (params: TableQueryParams) => Promise<CommonList<Record<string, any>>>;
+    loadListApi?: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
     transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
   }>();
 
