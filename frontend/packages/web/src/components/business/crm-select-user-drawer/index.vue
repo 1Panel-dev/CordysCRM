@@ -28,6 +28,7 @@
         :options="flatOptions"
         :render-source-list="renderSourceList"
         :render-target-label="renderTargetLabel"
+        :source-title="props.showIncludeDisabled ? renderSourceTitle : undefined"
         source-filterable
         class="addMemberTransfer"
         :class="props.multiple ? '' : 'addMemberTransfer--single'"
@@ -50,6 +51,7 @@
 <script setup lang="ts">
   import {
     NButton,
+    NCheckbox,
     NSkeleton,
     NTabPane,
     NTabs,
@@ -95,9 +97,11 @@
       okText?: string;
       disabledNodeTypes?: DeptNodeTypeEnum[]; // 需要禁用掉的节点类型
       maxCount?: number;
+      showIncludeDisabled?: boolean;
     }>(),
     {
       multiple: true,
+      showIncludeDisabled: false,
     }
   );
 
@@ -109,24 +113,30 @@
     required: true,
   });
 
-  const addMemberType = ref<MemberSelectTypeEnum>(
-    (props.memberTypes?.[0]?.value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG
+  const addMemberTypes = computed<Option[]>(() =>
+    props.memberTypes?.length
+      ? props.memberTypes
+      : [
+          {
+            label: t('menu.settings.org'),
+            value: MemberSelectTypeEnum.ORG,
+          },
+          {
+            label: t('role.role'),
+            value: MemberSelectTypeEnum.ROLE,
+          },
+        ]
   );
-  const addMemberTypes = ref(
-    props.memberTypes || [
-      {
-        label: t('menu.settings.org'),
-        value: MemberSelectTypeEnum.ORG,
-      },
-      {
-        label: t('role.role'),
-        value: MemberSelectTypeEnum.ROLE,
-      },
-    ]
-  );
+
+  function getDefaultAddMemberType() {
+    return (addMemberTypes.value[0]?.value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG;
+  }
+
+  const addMemberType = ref<MemberSelectTypeEnum>(getDefaultAddMemberType());
 
   const addMembers = ref<string[]>([]);
   const selectedNodes = ref<SelectedUsersItem[]>([]);
+  const includeDisabled = ref(false);
 
   const remainingCount = computed(() => {
     if (!props.maxCount) {
@@ -148,7 +158,7 @@
     visible.value = false;
     addMembers.value = [];
     selectedNodes.value = [];
-    addMemberType.value = (props.memberTypes?.[0]?.value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG;
+    addMemberType.value = getDefaultAddMemberType();
   }
 
   function flattenTree(list: undefined | Option[]): Option[] {
@@ -175,6 +185,9 @@
       roleOptions.value = [];
       userOptions.value = [];
       let params = { ...props.baseParams };
+      if (props.showIncludeDisabled) {
+        params.includeDisabled = includeDisabled.value;
+      }
       switch (value) {
         case MemberSelectTypeEnum.ORG:
         case MemberSelectTypeEnum.ONLY_ORG:
@@ -280,6 +293,23 @@
     return [];
   });
 
+  function renderDisabledTag(item: Record<string, any>) {
+    if (!(item.nodeType === DeptNodeTypeEnum.USER && item.enable === false)) {
+      return null;
+    }
+
+    return h(
+      CrmTag,
+      {
+        theme: 'light',
+        class: 'ml-[4px] shrink-0',
+        size: 'small',
+        tooltipDisabled: true,
+      },
+      { default: () => t('common.disabled') }
+    );
+  }
+
   function renderTargetLabel({ option }: { option: TransferOption }) {
     return h(
       NTooltip,
@@ -300,14 +330,37 @@
           return h(
             'div',
             {
-              class: 'one-line-text',
+              class: 'flex w-full items-center',
             },
             {
-              default: () => option.label,
+              default: () => [
+                h('span', { class: 'one-line-text min-w-0 flex-1' }, { default: () => option.label }),
+                renderDisabledTag(option),
+              ],
             }
           );
         },
       }
+    );
+  }
+
+  function handleIncludeDisabledChange(value: boolean) {
+    includeDisabled.value = value;
+    if (!value) {
+      addMembers.value = [];
+      selectedNodes.value = [];
+    }
+    loadData(addMemberType.value);
+  }
+
+  function renderSourceTitle() {
+    return h(
+      NCheckbox,
+      {
+        'checked': includeDisabled.value,
+        'onUpdate:checked': handleIncludeDisabledChange,
+      },
+      { default: () => h('span', { class: 'text-[var(--text-n2)]' }, { default: () => t('common.showDisabledUsers') }) }
     );
   }
 
@@ -377,39 +430,42 @@
               trigger: () => {
                 return h(
                   'div',
-                  { class: 'w-full flex items-center' },
+                  { class: 'flex w-full items-center' },
                   {
                     default: () => [
                       h(
                         'div',
                         {
-                          class: 'one-line-text',
+                          class: 'flex min-w-0 flex-1 items-center',
                         },
                         {
-                          default: () => option.label,
-                        }
-                      ),
-                      option.commander
-                        ? h(
-                            'div',
-                            {},
-                            {
-                              default: () => [
-                                h(
+                          default: () => [
+                            h(
+                              'span',
+                              {
+                                class: 'one-line-text min-w-0',
+                              },
+                              {
+                                default: () => option.label,
+                              }
+                            ),
+                            option.commander
+                              ? h(
                                   CrmTag,
                                   {
                                     type: 'primary',
                                     theme: 'lightOutLine',
-                                    class: 'ml-[8px]',
+                                    class: 'ml-[8px] shrink-0',
                                     size: 'small',
                                     tooltipDisabled: true,
                                   },
                                   { default: () => t('common.head') }
-                                ),
-                              ],
-                            }
-                          )
-                        : null,
+                                )
+                              : null,
+                          ],
+                        }
+                      ),
+                      renderDisabledTag(option),
                     ],
                   }
                 );
@@ -442,6 +498,7 @@
               id: node.value as string,
               name: node.label as string,
               scope: type,
+              enable: typeof node.enable === 'boolean' ? node.enable : undefined,
             });
           });
         },
@@ -486,11 +543,18 @@
     selectedNodes.value = selectedNodes.value.filter((e) => enabledValue.includes(e.id));
   }
 
+  function syncAddMemberType() {
+    const values = addMemberTypes.value.map((item) => item.value);
+    if (!values.includes(addMemberType.value)) {
+      addMemberType.value = getDefaultAddMemberType();
+    }
+  }
+
   watch(
     () => visible.value,
     (val) => {
       if (val) {
-        // TODO: 别的接口
+        syncAddMemberType();
         loadData(addMemberType.value);
       }
     }
@@ -504,7 +568,13 @@
       @apply h-full;
       .n-transfer-list-header {
         padding: 16px;
+        .n-transfer-list-header__title {
+          order: 3;
+          flex: none;
+          margin-left: auto !important;
+        }
         .n-transfer-list-header__button {
+          order: 1;
           padding: 2px 8px;
           height: auto;
           .n-button__content {
@@ -512,6 +582,7 @@
           }
         }
         .n-transfer-list-header__extra {
+          order: 2;
           font-size: 14px;
         }
       }
@@ -535,10 +606,16 @@
         }
         .n-tree-node-content__text {
           @apply overflow-hidden;
+
+          width: 100%;
         }
       }
       .n-transfer-list-item--target {
         margin-bottom: 8px;
+        .n-transfer-list-item__label {
+          overflow: hidden;
+          width: 100%;
+        }
         .n-transfer-list-item__background {
           background-color: var(--text-n9) !important;
         }

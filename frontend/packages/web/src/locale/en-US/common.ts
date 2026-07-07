@@ -257,6 +257,7 @@ export default {
   'common.addTime': 'Add time',
   'common.opened': 'Enabled',
   'common.disabled': 'Disabled',
+  'common.showDisabledUsers': 'Show disabled/resigned users',
   'common.ViewMore': 'View more',
   'common.unNamed': 'Not named',
   'common.revokeChange': 'Revoke change',

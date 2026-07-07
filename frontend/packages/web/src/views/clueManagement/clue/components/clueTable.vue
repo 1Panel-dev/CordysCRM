@@ -403,6 +403,16 @@
     ...defaultTransferForm,
   });
 
+  function resetTransferForm() {
+    transferForm.value = { ...defaultTransferForm };
+  }
+
+  function handleTransferPopUpdate(key: string, show: boolean) {
+    if (key === 'transfer' && show) {
+      resetTransferForm();
+    }
+  }
+
   function handleTransfer(row: ClueListItem, done?: () => void) {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
@@ -414,7 +424,7 @@
           });
           done?.();
           Message.success(t('common.transferSuccess'));
-          transferForm.value = { ...defaultTransferForm };
+          resetTransferForm();
           tableRefreshId.value += 1;
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -564,9 +574,8 @@
                       },
                     ],
                     onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
-                    onCancel: () => {
-                      transferForm.value = { ...defaultTransferForm };
-                    },
+                    onCancel: resetTransferForm,
+                    onPopUpdate: handleTransferPopUpdate,
                   },
                   {
                     transferPopContent: () => {

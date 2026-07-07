@@ -255,6 +255,7 @@ export default {
   'common.addTime': '添加时间',
   'common.opened': '已开启',
   'common.disabled': '已禁用',
+  'common.showDisabledUsers': '显示已禁用/离职人员',
   'common.ViewMore': '查看更多',
   'common.unNamed': '未命名',
   'common.revokeChange': '撤销更改',

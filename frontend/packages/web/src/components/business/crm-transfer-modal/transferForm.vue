@@ -15,7 +15,9 @@
         value-field="id"
         label-field="name"
         mode="remote"
+        :show-checkmark="false"
         :fetch-api="getUserOptions"
+        show-include-disabled
         max-tag-count="responsive"
       />
     </n-form-item>

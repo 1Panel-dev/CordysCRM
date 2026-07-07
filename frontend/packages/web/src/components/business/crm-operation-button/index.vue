@@ -5,6 +5,7 @@
     :not-show-divider="props.notShowDivider"
     @select="handleSelect"
     @cancel="emit('cancel')"
+    @pop-update="(key: string, show: boolean) => emit('popUpdate', key, show)"
   >
     <template v-if="props.moreList?.length" #more>
       <!-- 更多操作 -->
@@ -12,6 +13,7 @@
         :options="props.moreList"
         placement="bottom"
         @pop-cancel="emit('cancel')"
+        @pop-update="(key: string, show: boolean) => emit('popUpdate', key, show)"
         @pop-select="handleSelect"
         @select="handleMoreSelect"
       >
@@ -54,6 +56,7 @@
   const emit = defineEmits<{
     (e: 'select', key: string, done?: () => void): void;
     (e: 'cancel'): void;
+    (e: 'popUpdate', key: string, show: boolean): void;
   }>();
 
   const { t } = useI18n();

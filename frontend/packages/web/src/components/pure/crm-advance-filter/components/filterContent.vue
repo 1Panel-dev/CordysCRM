@@ -187,6 +187,7 @@
                     ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
                     : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
                 "
+                :show-include-disabled="[FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type)"
               />
               <CrmTreeSelect
                 v-else-if="item.type === FieldTypeEnum.TREE_SELECT"
@@ -205,7 +206,9 @@
                 label-field="name"
                 :disabled="isValueDisabled(item)"
                 multiple
-                :options="userOptionsList"
+                mode="remote"
+                :fetch-api="getUserOptions"
+                show-include-disabled
                 max-tag-count="responsive"
                 @update:value="valueChange"
               />
@@ -290,7 +293,6 @@
   import { operatorOptionsMap, scopeOptions } from '../index';
   import type { FilterForm, FilterFormItem } from '../type';
   import { getDefaultOperator } from '../utils';
-  import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
 
   const { t } = useI18n();
 
@@ -365,16 +367,6 @@
     return mergedList.find((item) => item.dataIndex === dataIndex);
   };
 
-  const userOptionsList = ref<SelectMixedOption[]>([]);
-  async function getUserOption() {
-    try {
-      userOptionsList.value = await getUserOptions();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   onMounted(() => {
     // 初始化视图回显
     formModel.value.list.forEach((item, index) => {
@@ -390,7 +382,6 @@
         formModel.value.list[index] = currentListItem;
       }
     });
-    getUserOption();
   });
 
   // 改变第一列值

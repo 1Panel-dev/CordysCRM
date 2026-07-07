@@ -142,8 +142,8 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取部门用户树
-  function getModuleUserDeptTree() {
-    return CDR.get<DeptUserTreeNode[]>({ url: ModuleUserDeptTreeUrl });
+  function getModuleUserDeptTree(params?: { includeDisabled?: boolean }) {
+    return CDR.get<DeptUserTreeNode[]>({ url: ModuleUserDeptTreeUrl, params });
   }
   // 获取角色树
   function getModuleRoleTree() {
@@ -264,8 +264,8 @@ export default function useProductApi(CDR: CordysAxios) {
     );
   }
 
-  function getFieldDeptUerTree() {
-    return CDR.get<DeptUserTreeNode[]>({ url: GetFieldDeptUerTreeUrl });
+  function getFieldDeptUerTree(params?: { includeDisabled?: boolean }) {
+    return CDR.get<DeptUserTreeNode[]>({ url: GetFieldDeptUerTreeUrl, params });
   }
 
   function getFieldDeptTree() {
