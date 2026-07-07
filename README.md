@@ -15,9 +15,7 @@
 
 **Cordys CRM** 是新一代的开源 AI CRM 系统，是集信息化、数字化、智能化于一体的「客户关系管理系统」，由 [飞致云](https://fit2cloud.com/) 匠心出品。
 
-Cordys CRM 能够帮助企业实现从线索到回款（L2C）的全流程精细化管理，覆盖线索获取、智能分配、客户与联系人管理、商机跟进、合同签约及回款执行，构建端到端的销售运营闭环。
-
-<img alt="Cordys CRM Overview" src="https://cordys.cn/images/cordyscrm-202606.png" />
+<img alt="Cordys CRM Overview" src="https://cordys.cn/images/cordyscrm-202607.png" />
 
 ## 核心优势
 
