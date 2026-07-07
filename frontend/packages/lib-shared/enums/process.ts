@@ -96,3 +96,9 @@ export enum ApprovalListTypeEnum {
   INITIATED = 'initiated',
   COPIED = 'copied',
 }
+
+export enum ApprovalTaskExecuteTimeEnum {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+}

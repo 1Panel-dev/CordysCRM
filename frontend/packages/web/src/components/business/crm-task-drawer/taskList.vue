@@ -76,6 +76,10 @@
                     <div>{{ item.applicant }}</div>
                   </div>
                   <div class="flex items-center gap-[8px]">
+                    <div class="text-[var(--text-n2)]">{{ t('taskDrawer.approvalType') }}</div>
+                    <div>{{ getExecuteType(item.executeTime) }}</div>
+                  </div>
+                  <div class="flex items-center gap-[8px]">
                     <div class="text-[var(--text-n2)]">{{ t('taskDrawer.applyTime') }}</div>
                     <div>{{ dayjs(item.submitTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
                   </div>
@@ -114,7 +118,12 @@
   import { NButton, NCheckbox, NCheckboxGroup, NSpin, NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import { ApprovalListTypeEnum, ApprovalOperationEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
+  import {
+    ApprovalListTypeEnum,
+    ApprovalOperationEnum,
+    ApprovalResourceTypeEnum,
+    ApprovalTaskExecuteTimeEnum,
+  } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ApprovalProcessDetail, ApprovalTodoItem } from '@lib/shared/models/system/process';
 
@@ -201,6 +210,19 @@
     } finally {
       loading.value = false;
       finished.value = true;
+    }
+  }
+
+  function getExecuteType(executeTime: ApprovalTaskExecuteTimeEnum) {
+    switch (executeTime) {
+      case ApprovalTaskExecuteTimeEnum.CREATE:
+        return t('common.create');
+      case ApprovalTaskExecuteTimeEnum.UPDATE:
+        return t('common.update');
+      case ApprovalTaskExecuteTimeEnum.DELETE:
+        return t('common.delete');
+      default:
+        return '-';
     }
   }
 
