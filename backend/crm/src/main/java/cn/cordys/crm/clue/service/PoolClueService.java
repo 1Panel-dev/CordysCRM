@@ -175,11 +175,16 @@ public class PoolClueService {
                 poolDTO.setUpdateUserName(userMap.get(pool.getUpdateUser()));
 
                 CluePoolPickRuleDTO pickRule = new CluePoolPickRuleDTO();
-                BeanUtils.copyBean(pickRule, pickRuleMap.get(pool.getId()));
+                if (pickRuleMap.get(pool.getId()) != null) {
+                    BeanUtils.copyBean(pickRule, pickRuleMap.get(pool.getId()));
+                }
+
                 CluePoolRecycleRuleDTO recycleRule = new CluePoolRecycleRuleDTO();
                 CluePoolRecycleRule cluePoolRecycleRule = recycleRuleMap.get(pool.getId());
-                BeanUtils.copyBean(recycleRule, cluePoolRecycleRule);
-                recycleRule.setConditions(JSON.parseArray(cluePoolRecycleRule.getCondition(), RuleConditionDTO.class));
+                if (cluePoolRecycleRule != null) {
+                    BeanUtils.copyBean(recycleRule, cluePoolRecycleRule);
+                    recycleRule.setConditions(JSON.parseArray(cluePoolRecycleRule.getCondition(), RuleConditionDTO.class));
+                }
 
                 poolDTO.setPickRule(pickRule);
                 poolDTO.setRecycleRule(recycleRule);
@@ -408,6 +413,39 @@ public class PoolClueService {
             commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_DISTRIBUTED,
                     clue.getName(), operateUserId, currentOrgId, List.of(clue.getOwner()), true);
         }
+    }
+
+    /**
+     * 校验当前用户是否为线索池成员（成员或管理员均可访问）
+     *
+     * @param poolId   线索池ID
+     * @param userId   当前用户ID
+     * @param orgId    组织ID
+     */
+    public void checkPoolMember(String poolId, String userId, String orgId) {
+        CluePool pool = poolMapper.selectByPrimaryKey(poolId);
+        if (pool == null) {
+            throw new GenericException(Translator.get("clue_pool_not_exist"));
+        }
+        List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), orgId);
+        List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), orgId);
+        if (!scopeIds.contains(userId) && !ownerIds.contains(userId) && !Strings.CS.equals(userId, InternalUser.ADMIN.getValue())) {
+            throw new GenericException(Translator.get("clue_pool_member_access_fail"));
+        }
+    }
+
+    /**
+     * 根据线索ID获取所属线索池ID
+     *
+     * @param clueId 线索ID
+     * @return 线索池ID
+     */
+    public String getPoolIdByClueId(String clueId) {
+        Clue clue = clueMapper.selectByPrimaryKey(clueId);
+        if (clue == null) {
+            throw new GenericException(Translator.get("clue.not.exist"));
+        }
+        return clue.getPoolId();
     }
 
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {

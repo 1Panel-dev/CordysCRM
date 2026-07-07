@@ -61,6 +61,7 @@ public class PoolCustomerController {
         if (StringUtils.isEmpty(request.getPoolId())) {
             throw new GenericException(Translator.get("miss.customer_pool_id"));
         }
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         return customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
     }
@@ -69,6 +70,7 @@ public class PoolCustomerController {
     @Operation(summary = "领取客户")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK})
     public void pick(@Validated @RequestBody PoolCustomerPickRequest request) {
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         poolCustomerService.pick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -76,6 +78,8 @@ public class PoolCustomerController {
     @Operation(summary = "分配客户")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN})
     public void assign(@Validated @RequestBody PoolCustomerAssignRequest request) {
+        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getCustomerId());
+        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         poolCustomerService.assign(request.getCustomerId(), request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
@@ -83,6 +87,8 @@ public class PoolCustomerController {
     @Operation(summary = "删除客户")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE})
     public void delete(@PathVariable String id) {
+        String poolId = poolCustomerService.getPoolIdByCustomerId(id);
+        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         poolCustomerService.delete(id);
     }
 
@@ -90,6 +96,8 @@ public class PoolCustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
     @Operation(summary = "客户详情")
     public CustomerGetResponse get(@PathVariable String id) {
+        String poolId = poolCustomerService.getPoolIdByCustomerId(id);
+        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         return customerService.get(id);
     }
 
@@ -97,6 +105,7 @@ public class PoolCustomerController {
     @Operation(summary = "批量领取客户")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK})
     public void batchPick(@Validated @RequestBody PoolBatchPickRequest request) {
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         poolCustomerService.batchPick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -104,6 +113,8 @@ public class PoolCustomerController {
     @Operation(summary = "批量分配客户")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN})
     public void batchAssign(@Validated @RequestBody PoolBatchAssignRequest request) {
+        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getBatchIds().getFirst());
+        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         poolCustomerService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
@@ -111,6 +122,8 @@ public class PoolCustomerController {
     @Operation(summary = "批量删除客户")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE})
     public void batchDelete(@Validated @RequestBody PoolBatchRequest request) {
+        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getBatchIds().getFirst());
+        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -118,6 +131,8 @@ public class PoolCustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_UPDATE)
     @Operation(summary = "批量更新客户")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getIds().getFirst());
+        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         poolCustomerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -125,6 +140,7 @@ public class PoolCustomerController {
     @Operation(summary = "客户导出全部")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
     public String customerPoolExportAll(@Validated @RequestBody CustomerExportRequest request) {
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CUSTOMER_POOL.name())
@@ -144,6 +160,8 @@ public class PoolCustomerController {
     @Operation(summary = "导出选中客户")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
     public String customerPoolExportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getIds().getFirst());
+        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         ExportDTO exportDTO = ExportDTO.builder()
                 .exportType(ExportConstants.ExportType.CUSTOMER_POOL.name())
                 .fileName(request.getFileName())
@@ -163,6 +181,7 @@ public class PoolCustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
     @Operation(summary = "客户图表生成")
     public List<ChartResult> chart(@Validated @RequestBody PoolCustomerChartAnalysisRequest request) {
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         return poolCustomerService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
     }
 }
