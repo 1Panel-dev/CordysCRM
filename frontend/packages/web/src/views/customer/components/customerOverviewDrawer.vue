@@ -10,6 +10,7 @@
     :source-id="props.sourceId"
     :formViewSize="formViewSize"
     show-tab-setting
+    @button-pop-update="handleTransferPopUpdate"
     @button-select="handleButtonSelect"
     @saved="handleSaved"
   >
@@ -323,6 +324,19 @@
     belongToPublicPool: null,
   });
 
+  function resetTransferForm() {
+    transferForm.value = {
+      owner: null,
+      belongToPublicPool: null,
+    };
+  }
+
+  function handleTransferPopUpdate(key: string, visible: boolean) {
+    if (key === 'transfer' && visible) {
+      resetTransferForm();
+    }
+  }
+
   // 转移
   async function transfer() {
     try {
@@ -332,6 +346,7 @@
         owner: transferForm.value.owner,
       });
       Message.success(t('common.transferSuccess'));
+      resetTransferForm();
       descriptionRef.value?.initFormDescription();
       emit('transfer');
     } catch (error) {

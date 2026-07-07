@@ -6,7 +6,6 @@
     :ok-loading="loading"
     :positive-text="props.positiveText || t('common.transfer')"
     @confirm="confirmHandler"
-    @cancel="closeHandler"
   >
     <TransferForm ref="transferFormRef" v-model:form="form" />
   </CrmModal>
@@ -59,13 +58,18 @@
     ...defaultTransferForm,
   });
 
-  function closeHandler() {
-    form.value = { ...defaultTransferForm };
-  }
-
   const loading = ref<boolean>(false);
 
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
+
+  watch(
+    () => showModal.value,
+    (val) => {
+      if (val) {
+        form.value = { ...defaultTransferForm };
+      }
+    }
+  );
 
   function confirmHandler() {
     transferFormRef.value?.formRef?.validate(async (error) => {

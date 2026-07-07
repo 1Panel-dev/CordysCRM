@@ -9,13 +9,14 @@
             v-bind="item.popConfirmProps"
             @confirm="emit('select', `pop-${item.key}` as string, cancel)"
             @cancel="emit('cancel')"
+            @update:show="(show: boolean) => handlePopShowUpdate(item.key as string, show)"
           >
             <n-button
               text
               v-bind="item"
               type="primary"
               :class="item.text === false ? '' : '!p-0'"
-              @click="() => (popShow[item.key as string] = true)"
+              @click="() => handlePopShowUpdate(item.key as string, true)"
             >
               {{ item.label }}
             </n-button>
@@ -80,6 +81,7 @@
   const emit = defineEmits<{
     (e: 'select', key: string, done?: () => void): void;
     (e: 'cancel'): void;
+    (e: 'popUpdate', key: string, show: boolean): void;
   }>();
 
   function cancel() {
@@ -87,6 +89,11 @@
     Object.keys(popShow.value).forEach((key) => {
       popShow.value[key] = false;
     });
+  }
+
+  function handlePopShowUpdate(key: string, show: boolean) {
+    popShow.value[key] = show;
+    emit('popUpdate', key, show);
   }
 
   const buttonGroupList = computed(() => {

@@ -483,6 +483,16 @@
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   const transferLoading = ref(false);
 
+  function resetTransferForm() {
+    transferForm.value = { ...defaultTransferForm };
+  }
+
+  function handleTransferPopUpdate(key: string, show: boolean) {
+    if (key === 'transfer' && show) {
+      resetTransferForm();
+    }
+  }
+
   // 转移
   function handleTransfer(row: OpportunityItem, done?: () => void) {
     transferFormRef.value?.formRef?.validate(async (error) => {
@@ -494,7 +504,7 @@
             ids: [row.id],
           });
           Message.success(t('common.transferSuccess'));
-          transferForm.value = { ...defaultTransferForm };
+          resetTransferForm();
           tableRefreshId.value += 1;
           done?.();
         } catch (e) {
@@ -633,9 +643,8 @@
                   {
                     groupList: getOperationGroupList(row),
                     onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
-                    onCancel: () => {
-                      transferForm.value = { ...defaultTransferForm };
-                    },
+                    onCancel: resetTransferForm,
+                    onPopUpdate: handleTransferPopUpdate,
                   },
                   {
                     transferPopContent: () => {

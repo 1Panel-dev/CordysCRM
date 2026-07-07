@@ -23,7 +23,12 @@
       </n-tooltip>
     </template>
     <template #titleRight>
-      <CrmButtonGroup :list="props.buttonList" not-show-divider @select="handleButtonClick">
+      <CrmButtonGroup
+        :list="props.buttonList"
+        not-show-divider
+        @pop-update="(key: string, show: boolean) => emit('buttonPopUpdate', key, show)"
+        @select="handleButtonClick"
+      >
         <template v-for="item in props.buttonList" #[item.popSlotContent]>
           <slot :name="item.popSlotContent"></slot>
         </template>
@@ -32,6 +37,7 @@
         v-if="props.buttonMoreList?.length"
         :options="props.buttonMoreList"
         trigger="click"
+        @pop-update="(key: string, show: boolean) => emit('buttonPopUpdate', key, show)"
         @select="(item:ActionsItem) => emit('buttonSelect', item.key as string)"
       >
         <n-button type="primary" ghost class="n-btn-outline-primary ml-[12px]">
@@ -156,6 +162,7 @@
 
   const emit = defineEmits<{
     (e: 'buttonSelect', key: string, done?: () => void): void;
+    (e: 'buttonPopUpdate', key: string, show: boolean): void;
     (e: 'saved', res: any): void;
   }>();
 

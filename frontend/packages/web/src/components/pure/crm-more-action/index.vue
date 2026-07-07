@@ -83,6 +83,7 @@
     (e: 'close'): void;
     (e: 'popSelect', key: string, done?: () => void): void;
     (e: 'popCancel'): void;
+    (e: 'popUpdate', key: string, show: boolean): void;
   }>();
 
   function handleSelect(key: string | number) {
@@ -162,6 +163,7 @@
                   'onCancel': () => emit('popCancel'),
                   'onUpdate:show': (val: boolean) => {
                     popShow.value[option.key as string] = val;
+                    emit('popUpdate', option.key as string, val);
 
                     // popconfirm 打开时锁住dropdown
                     if (isHoverTrigger.value && val) {

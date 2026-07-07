@@ -134,13 +134,13 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 用户(员工)-获取用户下拉
-  function getUserOptions() {
-    return CDR.get({ url: getUserOptionsUrl });
+  function getUserOptions(params?: { includeDisabled?: boolean }) {
+    return CDR.get({ url: getUserOptionsUrl, params });
   }
 
   // 用户(员工)-获取审批管理员下拉
-  function getAdminOptions() {
-    return CDR.get<{ id: string; name: string }[]>({ url: getAdminOptionsUrl });
+  function getAdminOptions(params?: { includeDisabled?: boolean }) {
+    return CDR.get<{ id: string; name: string; enable?: boolean }[]>({ url: getAdminOptionsUrl, params });
   }
 
   // 用户(员工)-获取角色下拉

@@ -11,6 +11,7 @@
     :form-key="FormDesignKeyEnum.BUSINESS"
     :source-id="sourceId"
     :formViewSize="formViewSize"
+    @button-pop-update="handleTransferPopUpdate"
     @button-select="handleSelect"
     @saved="refreshList"
   >
@@ -250,6 +251,17 @@
 
   // 转移
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
+
+  function resetTransferForm() {
+    transferForm.value = { ...defaultTransferForm };
+  }
+
+  function handleTransferPopUpdate(key: string, show: boolean) {
+    if (key === 'transfer' && show) {
+      resetTransferForm();
+    }
+  }
+
   function handleTransfer(done?: () => void) {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
@@ -260,7 +272,7 @@
             ids: [sourceId.value],
           });
           Message.success(t('common.transferSuccess'));
-          transferForm.value = { ...defaultTransferForm };
+          resetTransferForm();
           showOptOverviewDrawer.value = false;
           done?.();
           emit('refresh');

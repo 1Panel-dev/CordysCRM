@@ -11,6 +11,7 @@
     :form-key="FormDesignKeyEnum.CLUE"
     :show-tab-setting="false"
     :formViewSize="formViewSize"
+    @button-pop-update="handleTransferPopUpdate"
     @button-select="handleSelect"
     @saved="
       (res) => {
@@ -136,6 +137,17 @@
 
   // 转移
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
+
+  function resetTransferForm() {
+    transferForm.value = { ...defaultTransferForm };
+  }
+
+  function handleTransferPopUpdate(key: string, visible: boolean) {
+    if (key === 'transfer' && visible) {
+      resetTransferForm();
+    }
+  }
+
   function handleTransfer() {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
@@ -146,7 +158,7 @@
             ids: [sourceId.value],
           });
           Message.success(t('common.transferSuccess'));
-          transferForm.value = { ...defaultTransferForm };
+          resetTransferForm();
           closeAndRefresh();
         } catch (e) {
           // eslint-disable-next-line no-console

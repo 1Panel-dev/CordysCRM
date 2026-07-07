@@ -11,17 +11,26 @@
     max-tag-count="responsive"
     :options="sortedOptions"
     :placeholder="props.placeholder || t('common.pleaseSelect')"
+    :render-label="renderLabel"
     @search="handleSearch"
     @update:value="change"
-  />
+  >
+    <template v-if="props.showIncludeDisabled" #header>
+      <n-checkbox v-model:checked="includeDisabled" @update:checked="handleIncludeDisabledChange">
+        <span class="text-[var(--text-n2)]">{{ t('common.showDisabledUsers') }}</span>
+      </n-checkbox>
+    </template>
+  </n-select>
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NSelect } from 'naive-ui';
+  import { NCheckbox, NSelect, SelectOption } from 'naive-ui';
   import { debounce } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   import useLocalForage from '@/hooks/useLocalForage';
 
@@ -39,6 +48,7 @@
     fetchApi?: (params: Record<string, any>) => Promise<Record<string, any>[]>;
     params?: Record<string, any>;
     disabledIds?: string[];
+    showIncludeDisabled?: boolean;
   }
 
   const props = withDefaults(defineProps<CrmUserSelectProps>(), {
@@ -62,13 +72,19 @@
 
   const recentlyUserIds = ref<string[]>([]);
   const optionsList = ref<SelectMixedOption[]>([]);
+  const includeDisabled = ref(false);
 
   const loadUsers = async (keyword = '') => {
     if (props.mode !== 'remote' || !props.fetchApi) return;
 
     try {
-      const res = await props.fetchApi({ keyword, ...props.params });
+      const res = await props.fetchApi({
+        keyword,
+        ...props.params,
+        ...(props.showIncludeDisabled ? { includeDisabled: includeDisabled.value } : {}),
+      });
       optionsList.value = res.map((user) => ({
+        ...user,
         [props.labelField]: user[props.labelField],
         [props.valueField]: user[props.valueField],
         disabled: props.disabledIds?.includes(user[props.valueField]),
@@ -78,6 +94,21 @@
       console.log(error);
     }
   };
+
+  function clearSelectedValue() {
+    const emptyValue = Array.isArray(innerValue.value) ? [] : null;
+    const emptyOption = Array.isArray(emptyValue) ? [] : null;
+    innerValue.value = emptyValue;
+    emit('change', emptyValue, emptyOption);
+  }
+
+  function handleIncludeDisabledChange(value: boolean) {
+    includeDisabled.value = value;
+    if (!value) {
+      clearSelectedValue();
+    }
+    loadUsers();
+  }
 
   const handleSearch = debounce(async (query: string) => {
     if (props.mode === 'remote' && props.fetchApi) {
@@ -102,15 +133,36 @@
   }
 
   const computedOptions = computed<SelectMixedOption[]>(() => {
-    return props.mode === 'static'
-      ? (props.options || []).map((item) => ({
-          ...item,
-          [props.labelField]: item[props.labelField],
-          [props.valueField]: item[props.valueField],
-          disabled: props.disabledIds?.includes(item[props.valueField] as string),
-        }))
-      : optionsList.value;
+    const list =
+      props.mode === 'static'
+        ? (props.options || []).map((item) => ({
+            ...item,
+            [props.labelField]: item[props.labelField],
+            [props.valueField]: item[props.valueField],
+            disabled: props.disabledIds?.includes(item[props.valueField] as string),
+          }))
+        : optionsList.value;
+
+    return props.showIncludeDisabled && !includeDisabled.value ? list.filter((item) => item.enable !== false) : list;
   });
+
+  function renderLabel(option: SelectOption) {
+    return h('div', { class: 'flex w-full items-center justify-between' }, [
+      h('span', { class: 'one-line-text min-w-0' }, { default: () => option[props.labelField] as string }),
+      option.enable === false
+        ? h(
+            CrmTag,
+            {
+              theme: 'light',
+              size: 'small',
+              tooltipDisabled: true,
+              class: 'ml-[8px] shrink-0',
+            },
+            { default: () => t('common.disabled') }
+          )
+        : null,
+    ]);
+  }
 
   const sortedOptions = computed<SelectMixedOption[]>(() => {
     const sorted = [...computedOptions.value];

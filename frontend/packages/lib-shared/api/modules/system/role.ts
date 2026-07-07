@@ -61,8 +61,9 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取部门用户树
-  function getRoleDeptUserTree(params: { roleId: string }) {
-    return CDR.get<DeptUserTreeNode[]>({ url: `${GetRoleDeptTreeUrl}/${params.roleId}` });
+  function getRoleDeptUserTree(params: { roleId: string; includeDisabled?: boolean }) {
+    const { roleId, ...query } = params;
+    return CDR.get<DeptUserTreeNode[]>({ url: `${GetRoleDeptTreeUrl}/${roleId}`, params: query });
   }
 
   // 获取部门树
