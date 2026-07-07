@@ -1,5 +1,6 @@
 export default {
   'taskDrawer.applicant': '申请人',
+  'taskDrawer.approvalType': '审批类型',
   'taskDrawer.applyTime': '提交时间',
   'taskDrawer.approved': '已通过',
   'taskDrawer.approveReason': '通过原因',

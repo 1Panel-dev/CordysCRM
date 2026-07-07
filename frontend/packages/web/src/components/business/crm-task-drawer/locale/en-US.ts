@@ -1,5 +1,6 @@
 export default {
   'taskDrawer.applicant': 'Applicant',
+  'taskDrawer.approvalType': 'Approval Type',
   'taskDrawer.applyTime': 'Apply Time',
   'taskDrawer.approved': 'Approved',
   'taskDrawer.approveReason': 'Approve Reason',
