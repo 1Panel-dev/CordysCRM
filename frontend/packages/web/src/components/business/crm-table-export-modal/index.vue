@@ -245,7 +245,7 @@
     }
     return Promise.resolve();
   }
-  const excludedUniqueIdTypes = ['price', 'opportunity', 'contract', 'order'];
+  const excludedUniqueIdTypes = ['price', 'contract', 'order'];
 
   const uniqueIdColumn: ExportTableColumnItem = {
     key: 'id',
