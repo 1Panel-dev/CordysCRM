@@ -137,6 +137,15 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
               ({
                 ...subField,
                 id: subField.id,
+                defaultValue:
+                  [
+                    FieldTypeEnum.SELECT,
+                    FieldTypeEnum.DEPARTMENT,
+                    FieldTypeEnum.DATA_SOURCE,
+                    FieldTypeEnum.MEMBER,
+                  ].includes(subField.type) && Array.isArray(subField.defaultValue)
+                    ? subField.defaultValue[0] || ''
+                    : subField.defaultValue,
               } as FormCreateField)
           );
         }
