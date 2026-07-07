@@ -210,6 +210,9 @@
             "id": "CUSTOMER_MANAGEMENT_POOL:DELETE"
           },
           {
+            "id": "CUSTOMER_MANAGEMENT_POOL:IMPORT"
+          },
+          {
             "id": "CUSTOMER_MANAGEMENT_POOL:EXPORT"
           }
         ]

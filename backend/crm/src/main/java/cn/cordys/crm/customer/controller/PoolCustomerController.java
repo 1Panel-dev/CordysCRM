@@ -7,11 +7,12 @@ import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.util.Translator;
-import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.clue.dto.request.CluePoolImportRequest;
 import cn.cordys.crm.customer.dto.CustomerPoolDTO;
 import cn.cordys.crm.customer.dto.request.*;
 import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
@@ -19,19 +20,23 @@ import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.service.CustomerPoolExportService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.customer.service.PoolCustomerService;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -183,5 +188,29 @@ public class PoolCustomerController {
     public List<ChartResult> chart(@Validated @RequestBody PoolCustomerChartAnalysisRequest request) {
         poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         return poolCustomerService.chart(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
+    }
+
+
+    @GetMapping("/template/download")
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        poolCustomerService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "导入检查")
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_IMPORT)
+    public ImportResponse preCheck(@Validated @RequestPart("request") CustomerPoolImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return poolCustomerService.importPreCheck(file, request, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import")
+    @Operation(summary = "导入")
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_IMPORT)
+    public ImportResponse realImport(@Validated @RequestPart("request") CustomerPoolImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        poolCustomerService.checkPoolMember(request.getPoolId(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return poolCustomerService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }
