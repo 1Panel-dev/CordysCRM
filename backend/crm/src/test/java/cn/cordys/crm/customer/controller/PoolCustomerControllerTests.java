@@ -7,9 +7,11 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.base.BaseTest;
+import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerCapacity;
 import cn.cordys.crm.customer.domain.CustomerOwner;
+import cn.cordys.crm.customer.domain.CustomerPool;
 import cn.cordys.crm.customer.domain.CustomerPoolPickRule;
 import cn.cordys.crm.customer.dto.request.CustomerExportRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -56,6 +58,7 @@ public class PoolCustomerControllerTests extends BaseTest {
     protected static final String EXPORT_ALL = "/export-all";
     protected static final String EXPORT_SELECT = "/export-select";
     public static String testDataId;
+    public static String testPoolId;
 
     @Resource
     private BaseMapper<Customer> customerMapper;
@@ -65,6 +68,8 @@ public class PoolCustomerControllerTests extends BaseTest {
     private BaseMapper<CustomerCapacity> customerCapacityMapper;
     @Resource
     private BaseMapper<CustomerPoolPickRule> customerPoolPickRuleMapper;
+    @Resource
+    private BaseMapper<CustomerPool> customerPoolMapper;
     @Resource
     private BaseMapper<ExportTask> exportTaskBaseMapper;
     @Resource
@@ -78,8 +83,12 @@ public class PoolCustomerControllerTests extends BaseTest {
     @Test
     @Order(1)
     void prepareTestData() {
+        CustomerPool pool = createPool();
+        customerPoolMapper.insert(pool);
+        testPoolId = pool.getId();
+
         Customer customer = createCustomer();
-		testDataId = customer.getId();
+        testDataId = customer.getId();
         Customer ownCustomer = createCustomer();
         CustomerCapacity capacity = createCapacity();
         ownCustomer.setInSharedPool(false);
@@ -99,7 +108,7 @@ public class PoolCustomerControllerTests extends BaseTest {
     @Order(3)
     void page() throws Exception {
         CustomerPageRequest request = new CustomerPageRequest();
-        request.setPoolId("test-pool-id");
+        request.setPoolId(testPoolId);
         request.setCurrent(1);
         request.setPageSize(10);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(PAGE, request);
@@ -113,17 +122,19 @@ public class PoolCustomerControllerTests extends BaseTest {
     void pickFailWithOverCapacity() throws Exception {
         PoolCustomerPickRequest request = new PoolCustomerPickRequest();
         request.setCustomerId(testDataId);
-        request.setPoolId("test-pool-id");
+        request.setPoolId(testPoolId);
         MvcResult mvcResult = this.requestPost(PICK, request).andExpect(status().is5xxServerError()).andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.getWithArgs("customer.capacity.over", 0));
         customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
         CustomerPoolPickRule pickRule = createPickRule();
         pickRule.setLimitOnNumber(false);
-        pickRule.setPoolId("test-pool-id");
+        pickRule.setPoolId(testPoolId);
         customerPoolPickRuleMapper.insert(pickRule);
         this.requestPost(PICK, request);
         customerPoolPickRuleMapper.deleteByLambda(new LambdaQueryWrapper<>());
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK, PICK, request);
+
+        resetPoolCustomer();
     }
 
     @Test
@@ -134,6 +145,8 @@ public class PoolCustomerControllerTests extends BaseTest {
         request.setAssignUserId("aa");
         this.requestPostWithOk(ASSIGN, request);
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN, ASSIGN, request);
+
+        resetPoolCustomer();
     }
 
     @Test
@@ -143,6 +156,14 @@ public class PoolCustomerControllerTests extends BaseTest {
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ, GET_DETAIL + testDataId);
     }
 
+    private void resetPoolCustomer() {
+        Customer customer = new Customer();
+        customer.setId(testDataId);
+        customer.setPoolId(testPoolId);
+        customer.setInSharedPool(true);
+        customerMapper.updateById(customer);
+    }
+
 
     @Test
     @Order(6)
@@ -150,7 +171,7 @@ public class PoolCustomerControllerTests extends BaseTest {
         CustomerExportRequest request = new CustomerExportRequest();
         request.setCurrent(1);
         request.setPageSize(10);
-        request.setPoolId("test-pool-id");
+        request.setPoolId(testPoolId);
         request.setFileName("测试跨页导出公海");
 
         List<ExportHeadDTO> list = new ArrayList<>();
@@ -195,7 +216,7 @@ public class PoolCustomerControllerTests extends BaseTest {
         customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
         PoolBatchPickRequest request = new PoolBatchPickRequest();
         request.setBatchIds(List.of(testDataId));
-        request.setPoolId("test-pool-id");
+        request.setPoolId(testPoolId);
         this.requestPost(BATCH_PICK, request);
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK, BATCH_PICK, request);
     }
@@ -214,10 +235,34 @@ public class PoolCustomerControllerTests extends BaseTest {
     @Test
     @Order(10)
     void batchDeleteSuccess() throws Exception {
+        Customer customer = createCustomer();
+        customerMapper.insert(customer);
         PoolBatchRequest request = new PoolBatchRequest();
-        request.setBatchIds(List.of(testDataId));
+        request.setBatchIds(List.of(customer.getId()));
         this.requestPostWithOk(BATCH_DELETE, request);
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE, BATCH_DELETE, request);
+    }
+
+    @Test
+    @Order(11)
+    void cleanup() {
+        customerPoolMapper.deleteByLambda(new LambdaQueryWrapper<CustomerPool>().eq(CustomerPool::getId, testPoolId));
+    }
+
+    private CustomerPool createPool() {
+        CustomerPool pool = new CustomerPool();
+        pool.setId(IDGenerator.nextStr());
+        pool.setName("test-pool");
+        pool.setScopeId("[\"admin\"]");
+        pool.setOwnerId("[\"admin\"]");
+        pool.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        pool.setEnable(true);
+        pool.setAuto(false);
+        pool.setCreateTime(System.currentTimeMillis());
+        pool.setCreateUser("admin");
+        pool.setUpdateTime(System.currentTimeMillis());
+        pool.setUpdateUser("admin");
+        return pool;
     }
 
     private Customer createCustomer() {
@@ -226,7 +271,7 @@ public class PoolCustomerControllerTests extends BaseTest {
         customer.setName("ct");
         customer.setOwner("cc");
         customer.setCollectionTime(System.currentTimeMillis());
-        customer.setPoolId("test-pool-id");
+        customer.setPoolId(testPoolId);
         customer.setInSharedPool(true);
         customer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         customer.setCreateTime(System.currentTimeMillis());
@@ -252,7 +297,7 @@ public class PoolCustomerControllerTests extends BaseTest {
     private CustomerPoolPickRule createPickRule() {
         CustomerPoolPickRule rule = new CustomerPoolPickRule();
         rule.setId(IDGenerator.nextStr());
-        rule.setPoolId("test-pool-id");
+        rule.setPoolId(testPoolId);
         rule.setLimitOnNumber(false);
         rule.setLimitPreOwner(false);
         rule.setLimitNew(false);
