@@ -1,5 +1,5 @@
 import { useMessage } from 'naive-ui';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, isEqual } from 'lodash-es';
 import dayjs from 'dayjs';
 
 import {
@@ -345,6 +345,36 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         }
       }
     });
+  }
+
+  /**
+   * 字段联动
+   * @param item 触发字段
+   */
+  function applyFieldLink(item: FormCreateField, callback?: () => void) {
+    const currentFieldValue = formDetail.value[item.id];
+    const linkField = fieldList.value.find((f) => f.id === item.linkProp?.targetField);
+    if (item.linkProp?.linkOptions) {
+      for (let i = 0; i < item.linkProp?.linkOptions.length; i++) {
+        const option = item.linkProp?.linkOptions[i];
+        if (isEqual(currentFieldValue, option.current)) {
+          if (linkField) {
+            if (option.method === 'HIDDEN') {
+              linkField.linkRange = Array.isArray(option.target) ? option.target : [option.target];
+            } else {
+              linkField.linkRange = undefined;
+              formDetail.value[linkField.id] = option.target;
+            }
+            return;
+          }
+        } else if (linkField) {
+          linkField.linkRange = undefined;
+        }
+      }
+      if (callback) {
+        callback();
+      }
+    }
   }
 
   /**
@@ -1570,6 +1600,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     resetForm,
     initFormShowControl,
     makeLinkFormFields,
+    applyFieldLink,
     moduleFormConfig,
     detail,
   };
