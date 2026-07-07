@@ -264,7 +264,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         }
         Set<BaseResourceSubField> uniqueCheck = uniqueCheckSet.get(field.getName());
         BaseResourceSubField result = uniqueCheck.stream()
-                .filter(item -> !Strings.CI.equals(item.getResourceId(), sourceId) && Strings.CI.equals(val, item.getFieldValue().toString()))
+                .filter(item -> !Strings.CI.equals(item.getResourceId(), sourceId) && item.getFieldValue() != null && Strings.CI.equals(val, item.getFieldValue().toString()))
                 .findFirst()
                 .orElse(null);
         return result == null;
