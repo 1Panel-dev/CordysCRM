@@ -373,7 +373,7 @@
     </select>
 
     <select id="getCheckValList" resultType="cn.cordys.common.domain.BaseResourceSubField">
-        select `${fieldName}`,id
+        select `${fieldName}` as fieldValue, id as resourceId
         from `${tableName}` t
         where organization_id = #{orgId}
         <if test="tableName == 'clue'">
