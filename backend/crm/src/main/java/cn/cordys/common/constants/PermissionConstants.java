@@ -72,6 +72,7 @@ public class PermissionConstants {
     public static final String CUSTOMER_MANAGEMENT_POOL_PICK = "CUSTOMER_MANAGEMENT_POOL:PICK";
     public static final String CUSTOMER_MANAGEMENT_POOL_ASSIGN = "CUSTOMER_MANAGEMENT_POOL:ASSIGN";
     public static final String CUSTOMER_MANAGEMENT_POOL_EXPORT = "CUSTOMER_MANAGEMENT_POOL:EXPORT";
+    public static final String CUSTOMER_MANAGEMENT_POOL_IMPORT = "CUSTOMER_MANAGEMENT_POOL:IMPORT";
     /*------ end: CUSTOMER_MANAGEMENT_POOL ------*/
 
 
