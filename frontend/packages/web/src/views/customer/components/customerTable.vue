@@ -700,13 +700,13 @@
   }
   handleSearchData.value = searchData;
 
-  function handleFormCreateSaved(res: any) {
+  function handleFormCreateSaved(res: any, isUpdateReview?: boolean, isContinue?: boolean) {
     if (needInitDetail.value || activeFormKey.value === FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER) {
       searchData(undefined, res.id);
     } else {
       searchData();
     }
-    if (activeFormKey.value === FormDesignKeyEnum.CUSTOMER && !needInitDetail.value) {
+    if (activeFormKey.value === FormDesignKeyEnum.CUSTOMER && !needInitDetail.value && !isContinue) {
       // 新建客户后打开新建联系人
       activeSourceId.value = res.id;
       initialSourceName.value = res.name;
