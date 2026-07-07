@@ -4,16 +4,11 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.ChartAnalysisRequest;
-import cn.cordys.common.permission.CsBatchPermission;
-import cn.cordys.common.permission.CsPermission;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.ExportDTO;
-import cn.cordys.common.dto.ExportSelectRequest;
-import cn.cordys.common.dto.ResourceTabEnableDTO;
-import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -24,6 +19,8 @@ import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import cn.cordys.crm.customer.service.CustomerContactExportService;
 import cn.cordys.crm.customer.service.CustomerContactService;
+import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -222,8 +219,8 @@ public class CustomerContactController {
     @PostMapping("/import")
     @Operation(summary = "导入")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
-    public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
-        return customerContactService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return customerContactService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping("/batch/update")

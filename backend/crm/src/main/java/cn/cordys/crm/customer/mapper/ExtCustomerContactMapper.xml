@@ -566,4 +566,47 @@
         </foreach>
         and organization_id = #{orgId}
     </select>
+
+
+    <update id="updateCustomerContact">
+        update customer_contact
+        <set>
+            <if test="customerContact.customerId != null and customerContact.customerId != ''">
+                customer_id = #{customerContact.customerId},
+            </if>
+            <if test="customerContact.name != null and customerContact.name != ''">
+                name = #{customerContact.name},
+            </if>
+            <if test="customerContact.phone != null and customerContact.phone != ''">
+                phone = #{customerContact.phone},
+            </if>
+            <if test="customerContact.owner != null and customerContact.owner != ''">
+                owner = #{customerContact.owner},
+            </if>
+            <if test="customerContact.createTime != null">
+                create_time = #{customerContact.createTime},
+            </if>
+            <if test="customerContact.updateTime != null">
+                update_time = #{customerContact.updateTime},
+            </if>
+            <if test="customerContact.createUser != null and customerContact.createUser != ''">
+                create_user = #{customerContact.createUser},
+            </if>
+            <if test="customerContact.updateUser != null and customerContact.updateUser != ''">
+                update_user = #{customerContact.updateUser},
+            </if>
+            <if test="customerContact.enable != null">
+                enable = #{customerContact.enable},
+            </if>
+            <if test="customerContact.disableReason != null and customerContact.disableReason != ''">
+                disable_reason = #{customerContact.disableReason},
+            </if>
+            <if test="customerContact.organizationId != null and customerContact.organizationId != ''">
+                organization_id = #{customerContact.organizationId},
+            </if>
+        </set>
+        <where>
+            id = #{customerContact.id}
+        </where>
+    </update>
 </mapper>
