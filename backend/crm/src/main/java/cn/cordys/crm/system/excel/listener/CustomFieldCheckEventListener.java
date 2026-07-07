@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.excel.listener;
 
 import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -45,7 +46,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * 唯一校验&&数据库属性值缓存&&Excel列值缓存
      */
     private final Map<String, BaseField> uniques = new HashMap<>();
-    private final Map<String, Set<String>> uniqueCheckSet = new ConcurrentHashMap<>();
+    private final Map<String, Set<BaseResourceSubField>> uniqueCheckSet = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
     protected final CommonMapper commonMapper;
     /**
@@ -140,9 +141,18 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         if (data == null) {
             return;
         }
+        String sourceId = "";
+        Integer key = headMap.entrySet().stream()
+                .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID"))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
+        if (key != null && data.containsKey(key)) {
+            sourceId = data.get(key);
+        }
         atLeastOne = true;
         Integer rowIndex = context.readRowHolder().getRowIndex();
-        validateRowData(rowIndex, data);
+        validateRowData(rowIndex, data, sourceId);
     }
 
     @Override
@@ -162,10 +172,10 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                     // 子表格字段不走业务唯一性校验
                     BusinessModuleField businessModuleField = businessFieldMap.get(field.getInternalKey());
                     String fieldName = businessModuleField.getBusinessKey();
-                    List<String> valList = commonMapper.getCheckValList(sourceTable, fieldName, currentOrg);
+                    List<BaseResourceSubField> valList = commonMapper.getCheckValList(sourceTable, fieldName, currentOrg);
                     uniqueCheckSet.put(field.getName(), new HashSet<>(valList.stream().distinct().toList()));
                 } else {
-                    List<String> valList = commonMapper.getCheckFieldValList(sourceTable, fieldTable, field.getId(), currentOrg);
+                    List<BaseResourceSubField> valList = commonMapper.getCheckFieldValList(sourceTable, fieldTable, field.getId(), currentOrg);
                     uniqueCheckSet.put(field.getName(), new HashSet<>(valList));
                 }
             });
@@ -178,7 +188,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * @param rowIndex 行索引
      * @param rowData  行数据
      */
-    private void validateRowData(Integer rowIndex, Map<Integer, String> rowData) {
+    private void validateRowData(Integer rowIndex, Map<Integer, String> rowData, String sourceId) {
         StringBuilder errText = new StringBuilder();
         headMap.forEach((k, v) -> {
             if (!isValidateCell(rowIndex, k)) {
@@ -187,7 +197,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k))) {
                 errText.append(v).append(Translator.get("cannot_be_null")).append(";");
             }
-            if (uniques.containsKey(v) && !checkFieldValUnique(rowData.get(k), uniques.get(v))) {
+            if (uniques.containsKey(v) && !checkFieldValUnique(rowData.get(k), uniques.get(v), sourceId)) {
                 errText.append(v).append(Translator.get("cell.not.unique")).append(";");
             }
             if (fieldLenLimit.containsKey(v) && StringUtils.isNotEmpty(rowData.get(k)) &&
@@ -238,7 +248,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * @param field 字段
      * @return 是否唯一
      */
-    private boolean checkFieldValUnique(String val, BaseField field) {
+    private boolean checkFieldValUnique(String val, BaseField field, String sourceId) {
         if (StringUtils.isEmpty(val)) {
             return true;
         }
@@ -249,8 +259,15 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             return false;
         }
         // 数据库唯一性校验
-        Set<String> uniqueCheck = uniqueCheckSet.get(field.getName());
-        return !uniqueCheck.contains(val);
+        if (StringUtils.isBlank(sourceId)) {
+            return false;
+        }
+        Set<BaseResourceSubField> uniqueCheck = uniqueCheckSet.get(field.getName());
+        BaseResourceSubField result = uniqueCheck.stream()
+                .filter(item -> !Strings.CI.equals(item.getResourceId(), sourceId) && Strings.CI.equals(val, item.getFieldValue().toString()))
+                .findFirst()
+                .orElse(null);
+        return result == null;
     }
 
     /**
