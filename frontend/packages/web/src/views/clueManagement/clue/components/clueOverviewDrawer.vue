@@ -68,6 +68,7 @@
     :reason-key="ReasonTypeEnum.CLUE_POOL_RS"
     :source-id="sourceId"
     :name="sourceName"
+    type="warning"
     @refresh="handleMovedSuccess"
   />
   <convertClueModal v-model:show="showConvertClueModal" :clue-id="sourceId" @success="emit('remove')" />

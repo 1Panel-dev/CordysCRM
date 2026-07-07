@@ -116,6 +116,7 @@
     :reason-key="ReasonTypeEnum.CLUE_POOL_RS"
     :source-id="moveIds"
     :name="activeRowName"
+    type="warning"
     @refresh="() => handleRefresh()"
   />
   <customerOverviewDrawer
