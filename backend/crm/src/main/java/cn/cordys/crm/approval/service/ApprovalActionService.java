@@ -181,8 +181,9 @@ public class ApprovalActionService {
 	public void approve(ApprovalActionRequest request, String currentUserId, String currentOrgId) {
 		ApprovalTask currentTask = saveActionTask(request, ApprovalAction.APPROVE, currentUserId, currentOrgId, null);
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
-		approvedProcess(instance, currentTask, currentUserId, currentOrgId);
-		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.APPROVE);
+		String resourceName = getResourceName(instance);
+		approvedProcess(instance, currentTask, currentUserId, currentOrgId, resourceName);
+		saveLogAndNotice(instance, currentUserId, currentOrgId, ApprovalAction.APPROVE, resourceName);
 	}
 
 	/**
@@ -435,7 +436,7 @@ public class ApprovalActionService {
 	 * @param currentUserId 当前用户ID
 	 * @param currentOrgId 当前组织ID
 	 */
-	private void approvedProcess(ApprovalInstance instance, ApprovalTask currentTask, String currentUserId, String currentOrgId) {
+	private void approvedProcess(ApprovalInstance instance, ApprovalTask currentTask, String currentUserId, String currentOrgId, String resourceName) {
 		// 加签类型的待办任务
 		appendProcessSignTask(instance, currentTask, currentOrgId);
 		// 多人依次审批类型的待办
@@ -486,7 +487,7 @@ public class ApprovalActionService {
 			ApprovalNodeResponse nextNode = approvalFlowService.getTaskNextNode(currentTask, instance, currentOrgId);
 			handleNextApprovalNode(nextNode, instance, currentTask.getApproverId(), currentUserId, currentOrgId);
 			// 发送当前节点的抄送, 放在节点流转后, 获取最新的实例状态
-			handlePreCcTasks(currentTask.getNodeId(), instance, currentUserId, currentOrgId);
+			handlePreCcTasks(currentTask.getNodeId(), instance, currentUserId, currentOrgId, resourceName);
 			// 多人或签, 移除审批中的任务
 			loseCurrentNode(instance.getId(), currentTask.getNodeId());
 		}
@@ -968,7 +969,7 @@ public class ApprovalActionService {
 	 * @param currentUserId 当前用户ID
 	 * @param currentOrgId 当前组织ID
 	 */
-	private void handlePreCcTasks(String currentNodeId, ApprovalInstance instance, String currentUserId, String currentOrgId) {
+	private void handlePreCcTasks(String currentNodeId, ApprovalInstance instance, String currentUserId, String currentOrgId, String resourceName) {
 		List<User> ccList = approvalFlowService.getCurrentNodeCcList(currentNodeId, instance.getSubmitterId(), currentOrgId);
 		List<ApprovalTask> ccTasks = getNodeCcTasks(currentNodeId, ccList.stream().map(User::getId).toList(), instance.getId(), currentUserId);
 		if (CollectionUtils.isNotEmpty(ccTasks)) {
@@ -976,6 +977,12 @@ public class ApprovalActionService {
 			sendCcNotice(ccTasks, instance, currentOrgId);
 		}
 	}
+
+	private void handlePreCcTasks(String currentNodeId, ApprovalInstance instance, String currentUserId, String currentOrgId) {
+		String resourceName = getResourceName(instance);
+		handlePreCcTasks(currentNodeId, instance, currentUserId, currentOrgId, resourceName);
+	}
+
 
 	/**
 	 * 发送抄送消息通知
@@ -1207,19 +1214,34 @@ public class ApprovalActionService {
 	 * @param orgId 当前组织ID
 	 */
 	private void saveLogAndNotice(ApprovalInstance instance, String userId, String orgId, ApprovalAction action) {
+		String resourceName = getResourceName(instance);
+		saveLogAndNotice(instance, userId, orgId, action, resourceName);
+	}
+
+	/**
+	 * 保存审批执行的日志和消息通知
+	 * @param instance 审批实例
+	 * @param userId 当前用户ID
+	 * @param orgId 当前组织ID
+	 */
+	private void saveLogAndNotice(ApprovalInstance instance, String userId, String orgId, ApprovalAction action, String resourceName) {
+		if (StringUtils.isBlank(resourceName)) {
+			return;
+		}
 		// 日志
+		LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, getLogModuleOfFormKey(FormKey.ofKey(instance.getType())), resourceName);
+		logDTO.setDetail(Translator.get(StringUtils.lowerCase(action.name())));
+		logService.add(logDTO);
+		sendFinishNotice(instance, resourceName, userId, orgId);
+	}
+
+	private String getResourceName(ApprovalInstance instance) {
+		String resourceName = null;
 		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
 		if (resourceService != null) {
-			String resourceName = resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
-			if (StringUtils.isBlank(resourceName)) {
-				return;
-			}
-			LogDTO logDTO = new LogDTO(orgId, instance.getResourceId(), userId, LogType.APPROVAL, getLogModuleOfFormKey(FormKey.ofKey(instance.getType())),
-					resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId()));
-			logDTO.setDetail(Translator.get(StringUtils.lowerCase(action.name())));
-			logService.add(logDTO);
-			sendFinishNotice(instance, resourceName, userId, orgId);
+			resourceName = resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
 		}
+		return resourceName;
 	}
 
 	/**
