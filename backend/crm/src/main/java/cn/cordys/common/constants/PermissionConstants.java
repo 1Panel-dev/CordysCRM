@@ -199,6 +199,8 @@ public class PermissionConstants {
     public static final String CONTRACT_PAYMENT_PLAN_ADD = "CONTRACT_PAYMENT_PLAN:ADD";
     public static final String CONTRACT_PAYMENT_PLAN_UPDATE = "CONTRACT_PAYMENT_PLAN:UPDATE";
     public static final String CONTRACT_PAYMENT_PLAN_DELETE = "CONTRACT_PAYMENT_PLAN:DELETE";
+    public static final String CONTRACT_PAYMENT_PLAN_IMPORT = "CONTRACT_PAYMENT_PLAN:IMPORT";
+    public static final String CONTRACT_PAYMENT_PLAN_EXPORT = "CONTRACT_PAYMENT_PLAN:EXPORT";
     /*------ end: CONTRACT_CONTRACT_PAYMENT_PLAN_ROLE ------*/
 
 
