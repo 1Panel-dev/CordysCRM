@@ -35,6 +35,7 @@ import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -339,16 +340,23 @@ public class CustomerPoolService {
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#id}")
     public void switchStatus(String id, String currentUserId) {
         CustomerPool pool = checkPoolExist(id);
-        pool.setEnable(!pool.getEnable());
+        Boolean oldEnable = pool.getEnable();
+        Boolean newEnable = !BooleanUtils.isTrue(oldEnable);
+        pool.setEnable(newEnable);
         pool.setUpdateTime(System.currentTimeMillis());
         pool.setUpdateUser(currentUserId);
         customerPoolMapper.updateById(pool);
 
+        Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("module.switch", pool.getName() + ": " + Translator.get("log.enable." + oldEnable));
+        Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("module.switch", pool.getName() + ": " + Translator.get("log.enable." + newEnable));
+
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceName(Translator.get("module.customer.pool.setting"))
-                        .originalValue(pool)
-                        .modifiedValue(customerPoolMapper.selectByPrimaryKey(id))
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
                         .build()
         );
     }
