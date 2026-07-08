@@ -301,7 +301,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             uniques.put(field.getName(), field);
         }
         if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name())) {
-            fieldLenLimit.put(field.getName(), 32);
+            fieldLenLimit.put(field.getName(), 255);
         }
         if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(), FieldType.RADIO.name(),
                 FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name(), FieldType.INDUSTRY.name())) {
