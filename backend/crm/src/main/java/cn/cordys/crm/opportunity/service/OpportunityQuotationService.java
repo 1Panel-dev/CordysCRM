@@ -131,9 +131,9 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
     @OperationLog(module = LogModule.OPPORTUNITY_QUOTATION, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")
 	@HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.CREATE, operatorId = "{#userId}")
     public OpportunityQuotation add(OpportunityQuotationAddRequest request, String orgId, String userId) {
-        List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
+        List<BaseModuleFieldValue> moduleFields = request.getModuleFields() == null ? new ArrayList<>() : request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
-        checkQuotationInfo(moduleFields, moduleFormConfigDTO);
+        checkQuotationInfo(moduleFormConfigDTO);
 
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         OpportunityQuotation opportunityQuotation = new OpportunityQuotation();
@@ -770,9 +770,9 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
 	@HitApproval(formKey = FormKey.QUOTATION, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
     public OpportunityQuotation update(OpportunityQuotationEditRequest request, String userId, String orgId) {
         String id = request.getId();
-        List<BaseModuleFieldValue> moduleFields = request.getModuleFields();
+        List<BaseModuleFieldValue> moduleFields = request.getModuleFields() == null ? new ArrayList<>() : request.getModuleFields();
         ModuleFormConfigDTO moduleFormConfigDTO = request.getModuleFormConfigDTO();
-        checkQuotationInfo(moduleFields, moduleFormConfigDTO);
+        checkQuotationInfo(moduleFormConfigDTO);
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
 
         OpportunityQuotation oldOpportunityQuotation = opportunityQuotationMapper.selectByPrimaryKey(id);
@@ -831,13 +831,9 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
     /**
      * 检查报价单信息
      *
-     * @param moduleFields        报价单字段值
      * @param moduleFormConfigDTO 报价单表单配置
      */
-    private void checkQuotationInfo(List<BaseModuleFieldValue> moduleFields, ModuleFormConfigDTO moduleFormConfigDTO) {
-        if (CollectionUtils.isEmpty(moduleFields)) {
-            throw new GenericException(Translator.get("opportunity.quotation.field.required"));
-        }
+    private void checkQuotationInfo(ModuleFormConfigDTO moduleFormConfigDTO) {
         if (moduleFormConfigDTO == null) {
             throw new GenericException(Translator.get("opportunity.quotation.form.config.required"));
         }

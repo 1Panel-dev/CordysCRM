@@ -2128,6 +2128,10 @@ public class ModuleFormService {
      */
     public <T extends BaseResourceField, V extends BaseResourceField> List<BaseModuleFieldValue> resolveSnapshotFields(List<BaseModuleFieldValue> fieldValues,
                                                                                                                        ModuleFormConfigDTO formConfig, BaseResourceFieldService<T, V> baseResourceFieldService, String resourceId) {
+       if (CollectionUtils.isEmpty(fieldValues)) {
+           return new ArrayList<>();
+       }
+
         // 1. 扁平化所有字段
         final List<BaseField> flattenFields = flattenFormAllFields(formConfig);
         List<BaseModuleFieldValue> resolveFvs = resolveSubKeyToId(fieldValues, flattenFields);
