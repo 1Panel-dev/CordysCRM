@@ -771,8 +771,8 @@
             <if test="clue.phone != null and clue.phone != ''">
                 phone = #{clue.phone},
             </if>
-            <if test="clue.products != null and clue.products != ''">
-                products = #{clue.products},
+            <if test="clue.products != null and clue.products.size() > 0">
+                products = #{clue.products,typeHandler=cn.cordys.common.handler.ListTypeHandler},
             </if>
             <if test="clue.organizationId != null and clue.organizationId != ''">
                 organization_id = #{clue.organizationId},

@@ -698,6 +698,10 @@ public class CustomerContactService {
                             customerContactFieldBlobMapper.batchInsert(insertFieldBlob);
                         }
 
+                        SqlSession currentSession =
+                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                        currentSession.clearCache();
+
                         Map<String, CustomerContact> modifiedCustomerMaps = customerContactMapper.selectByIds(ids).stream().collect(Collectors.toMap(CustomerContact::getId, Function.identity()));
                         Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = customerContactFieldService.getResourceFieldMap(ids, true);
 
