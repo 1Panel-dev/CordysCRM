@@ -71,7 +71,7 @@
             :feedback="feedbackMap[item.fieldInfo.id]"
             class="flex-1"
           />
-          <div v-if="item.value" v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
+          <div v-else-if="item.value" v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
           <div v-else>-</div>
         </div>
       </template>
