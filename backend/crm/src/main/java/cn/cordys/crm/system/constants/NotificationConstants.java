@@ -306,7 +306,7 @@ public class NotificationConstants {
         @Schema(description = "message.approval_result_text")
         String INVOICE_APPROVAL_TEXT = "INVOICE_APPROVAL_TEXT";
 
-        @Schema(description = "message.message.approval_result_text")
+        @Schema(description = "message.approval_result_text")
         String BUSINESS_QUOTATION_APPROVAL_TEXT = "BUSINESS_QUOTATION_APPROVAL_TEXT";
 
 		@Schema(description = "message.approval_todo_text")
