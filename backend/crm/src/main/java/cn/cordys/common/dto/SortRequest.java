@@ -2,7 +2,6 @@ package cn.cordys.common.dto;
 
 import cn.cordys.common.utils.SqlInjectionChecker;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +16,6 @@ import org.apache.commons.lang3.Strings;
 @AllArgsConstructor
 public class SortRequest {
 
-    @Pattern(regexp = "^[A-Za-z0-9]+$")
     @Schema(description = "排序字段")
     private String name;
 
@@ -41,6 +39,9 @@ public class SortRequest {
     }
 
     public String getName() {
+        if (name == null || !name.matches("^[A-Za-z0-9]+$")) {
+            return "1";
+        }
         if (SqlInjectionChecker.containsSqlInjectionRisk(name)) {
             return "1";
         }
