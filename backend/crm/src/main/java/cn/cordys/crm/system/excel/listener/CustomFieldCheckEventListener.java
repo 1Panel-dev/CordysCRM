@@ -260,7 +260,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         }
         // 数据库唯一性校验
         if (StringUtils.isBlank(sourceId)) {
-            return false;
+            return true;
         }
         Set<BaseResourceSubField> uniqueCheck = uniqueCheckSet.get(field.getName());
         BaseResourceSubField result = uniqueCheck.stream()
