@@ -56,6 +56,16 @@ public class LoginController {
         return null;
     }
 
+
+    /**
+     * 获取当前登录用户信息(带拦截)
+     * @return 返回用户会话信息
+     */
+    @GetMapping(value = "/get-auth")
+    @Operation(summary = "用户信息")
+    public SessionUser getAutUser() {
+        return isLogin();
+    }
     /**
      * 获取 RSA 公钥。
      *
