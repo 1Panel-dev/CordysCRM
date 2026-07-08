@@ -665,6 +665,12 @@ public class ClueService {
         LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Clue::getId, request.getIds());
         List<Clue> clues = clueMapper.selectListByLambda(wrapper);
+        clues = clues.stream()
+                .filter(clue -> !BooleanUtils.isTrue(clue.getInSharedPool()))
+                .toList();
+        if (CollectionUtils.isEmpty(clues)) {
+            return BatchAffectResponse.builder().success(0).fail(request.getIds().size()).build();
+        }
 
         CluePool targetPool = null;
         Map<String, CluePool> ownersDefaultPoolMap = new HashMap<>(4);

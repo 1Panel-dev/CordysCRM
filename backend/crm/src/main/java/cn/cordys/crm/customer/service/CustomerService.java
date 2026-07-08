@@ -636,6 +636,12 @@ public class CustomerService {
      */
     public BatchAffectResponse batchToPool(BatchPoolReasonRequest request, String currentUser, String orgId) {
         List<Customer> customers = customerMapper.selectByIds(request.getIds());
+        customers = customers.stream()
+                .filter(customer -> !BooleanUtils.isTrue(customer.getInSharedPool()))
+                .toList();
+        if (CollectionUtils.isEmpty(customers)) {
+            return BatchAffectResponse.builder().success(0).fail(request.getIds().size()).build();
+        }
         CustomerPool targetPool = null;
         Map<String, CustomerPool> ownersDefaultPoolMap = new HashMap<>(4);
         if (StringUtils.isNotBlank(request.getPoolId())) {
