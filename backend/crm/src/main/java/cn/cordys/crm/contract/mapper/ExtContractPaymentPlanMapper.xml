@@ -358,4 +358,47 @@
             </otherwise>
         </choose>
     </sql>
+
+
+    <update id="updatePaymentPlan">
+        update contract_payment_plan
+        <set>
+            <if test="contractPaymentPlan.name != null and contractPaymentPlan.name != ''">
+                name = #{contractPaymentPlan.name},
+            </if>
+            <if test="contractPaymentPlan.contractId != null and contractPaymentPlan.contractId != ''">
+                contract_id = #{contractPaymentPlan.contractId},
+            </if>
+            <if test="contractPaymentPlan.owner != null and contractPaymentPlan.owner != ''">
+                owner = #{contractPaymentPlan.owner},
+            </if>
+            <if test="contractPaymentPlan.planStatus != null and contractPaymentPlan.planStatus != ''">
+                plan_status = #{contractPaymentPlan.planStatus},
+            </if>
+            <if test="contractPaymentPlan.planAmount != null">
+                plan_amount = #{contractPaymentPlan.planAmount},
+            </if>
+            <if test="contractPaymentPlan.planEndTime != null">
+                plan_end_time = #{contractPaymentPlan.planEndTime},
+            </if>
+            <if test="contractPaymentPlan.organizationId != null and contractPaymentPlan.organizationId != ''">
+                organization_id = #{contractPaymentPlan.organizationId},
+            </if>
+            <if test="contractPaymentPlan.createTime != null">
+                create_time = #{contractPaymentPlan.createTime},
+            </if>
+            <if test="contractPaymentPlan.updateTime != null">
+                update_time = #{contractPaymentPlan.updateTime},
+            </if>
+            <if test="contractPaymentPlan.createUser != null and contractPaymentPlan.createUser != ''">
+                create_user = #{contractPaymentPlan.createUser},
+            </if>
+            <if test="contractPaymentPlan.updateUser != null and contractPaymentPlan.updateUser != ''">
+                update_user = #{contractPaymentPlan.updateUser},
+            </if>
+        </set>
+        <where>
+            id = #{contractPaymentPlan.id}
+        </where>
+    </update>
 </mapper>
