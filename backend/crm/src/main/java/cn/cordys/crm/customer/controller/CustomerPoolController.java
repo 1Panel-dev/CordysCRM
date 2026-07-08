@@ -32,7 +32,7 @@ public class CustomerPoolController {
     @PostMapping("/page")
     @Operation(summary = "分页获取公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public Pager<List<CustomerPoolDTO>> page(@RequestBody BasePageRequest request) {
+    public Pager<List<CustomerPoolDTO>> page(@Validated @RequestBody BasePageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, customerPoolService.page(request, OrganizationContext.getOrganizationId()));
     }
