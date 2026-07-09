@@ -22,6 +22,7 @@ import cn.cordys.crm.contract.dto.response.ContractPaymentRecordStatisticRespons
 import cn.cordys.crm.contract.service.ContractPaymentRecordExportService;
 import cn.cordys.crm.contract.service.ContractPaymentRecordService;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -47,128 +48,128 @@ import java.util.List;
 @RequestMapping("/contract/payment-record")
 public class ContractPaymentRecordController {
 
-	@Resource
-	private ModuleFormCacheService moduleFormCacheService;
-	@Resource
-	private DataScopeService dataScopeService;
-	@Resource
-	private ContractPaymentRecordService contractPaymentRecordService;
-	@Resource
-	private ContractPaymentRecordExportService contractPaymentRecordExportService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private DataScopeService dataScopeService;
+    @Resource
+    private ContractPaymentRecordService contractPaymentRecordService;
+    @Resource
+    private ContractPaymentRecordExportService contractPaymentRecordExportService;
 
-	@GetMapping("/module/form")
-	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
-	@Operation(summary = "获取表单配置")
-	public ModuleFormConfigDTO getModuleFormConfig() {
-		return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/module/form")
+    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+    @Operation(summary = "获取表单配置")
+    public ModuleFormConfigDTO getModuleFormConfig() {
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/page")
-	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
-	@Operation(summary = "回款记录列表")
-	public PagerWithOption<List<ContractPaymentRecordResponse>> list(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
-		ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
-	}
+    @PostMapping("/page")
+    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+    @Operation(summary = "回款记录列表")
+    public PagerWithOption<List<ContractPaymentRecordResponse>> list(@Validated @RequestBody ContractPaymentRecordPageRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        return contractPaymentRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
 
-	@PostMapping("/add")
-	@RequiresPermissions(value = {PermissionConstants.CONTRACT_PAYMENT_RECORD_ADD, PermissionConstants.CONTRACT_PAYMENT}, logical = Logical.OR)
-	@Operation(summary = "添加回款记录")
-	public ContractPaymentRecord add(@Validated @RequestBody ContractPaymentRecordAddRequest request) {
-		return contractPaymentRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/add")
+    @RequiresPermissions(value = {PermissionConstants.CONTRACT_PAYMENT_RECORD_ADD, PermissionConstants.CONTRACT_PAYMENT}, logical = Logical.OR)
+    @Operation(summary = "添加回款记录")
+    public ContractPaymentRecord add(@Validated @RequestBody ContractPaymentRecordAddRequest request) {
+        return contractPaymentRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/update")
-	@CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
-	@Operation(summary = "修改回款记录")
-	public ContractPaymentRecord update(@Validated @RequestBody ContractPaymentRecordUpdateRequest request) {
-		return contractPaymentRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/update")
+    @CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
+    @Operation(summary = "修改回款记录")
+    public ContractPaymentRecord update(@Validated @RequestBody ContractPaymentRecordUpdateRequest request) {
+        return contractPaymentRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
-	@GetMapping("/delete/{id}")
-	@CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
-	@Operation(summary = "删除回款记录")
-	public void delete(@PathVariable String id) {
-		contractPaymentRecordService.delete(id);
-	}
+    @GetMapping("/delete/{id}")
+    @CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
+    @Operation(summary = "删除回款记录")
+    public void delete(@PathVariable String id) {
+        contractPaymentRecordService.delete(id);
+    }
 
-	@GetMapping("/get/{id}")
-	@CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
-	@Operation(summary = "回款记录详情")
-	public ContractPaymentRecordGetResponse get(@PathVariable String id) {
-		return contractPaymentRecordService.get(id);
-	}
+    @GetMapping("/get/{id}")
+    @CsPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
+    @Operation(summary = "回款记录详情")
+    public ContractPaymentRecordGetResponse get(@PathVariable String id) {
+        return contractPaymentRecordService.get(id);
+    }
 
-	@GetMapping("/tab")
-	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
-	@Operation(summary = "视图TAB显示配置")
-	public ResourceTabEnableDTO getTabEnableConfig() {
-		return contractPaymentRecordService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/tab")
+    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+    @Operation(summary = "视图TAB显示配置")
+    public ResourceTabEnableDTO getTabEnableConfig() {
+        return contractPaymentRecordService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
-	@GetMapping("/template/download")
-	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
-	@Operation(summary = "下载导入模板")
-	public void downloadImportTpl(HttpServletResponse response) {
-		contractPaymentRecordService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/template/download")
+    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        contractPaymentRecordService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/import/pre-check")
-	@Operation(summary = "导入检查")
-	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
-	public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
-		return contractPaymentRecordService.importPreCheck(file, OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "导入检查")
+    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return contractPaymentRecordService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/import")
-	@Operation(summary = "导入")
-	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
-	public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
-		return contractPaymentRecordService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-	}
+    @PostMapping("/import")
+    @Operation(summary = "导入")
+    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return contractPaymentRecordService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
 
-	@PostMapping("/export-select")
-	@Operation(summary = "导出选中回款记录")
-	@CsBatchPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
-	public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		ExportDTO exportDTO = ExportDTO.builder().exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
-				.fileName(request.getFileName()).headList(request.getHeadList())
-				.logModule(LogModule.CONTRACT_PAYMENT_RECORD).locale(LocaleContextHolder.getLocale())
-				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
-				.deptDataPermission(deptDataPermission).selectIds(request.getIds())
-				.selectRequest(request)
-				.build();
-		return contractPaymentRecordExportService.exportSelect(exportDTO);
-	}
+    @PostMapping("/export-select")
+    @Operation(summary = "导出选中回款记录")
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_PAYMENT_RECORD_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT_PAYMENT_RECORD)
+    public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        ExportDTO exportDTO = ExportDTO.builder().exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
+                .fileName(request.getFileName()).headList(request.getHeadList())
+                .logModule(LogModule.CONTRACT_PAYMENT_RECORD).locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission).selectIds(request.getIds())
+                .selectRequest(request)
+                .build();
+        return contractPaymentRecordExportService.exportSelect(exportDTO);
+    }
 
-	@PostMapping("/export-all")
-	@Operation(summary = "导出全部回款记录")
-	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_IMPORT)
-	public String exportAll(@Validated @RequestBody ContractPaymentRecordExportRequest request) {
-		ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		ExportDTO exportDTO = ExportDTO.builder().exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
-				.fileName(request.getFileName()).headList(request.getHeadList())
-				.logModule(LogModule.CONTRACT_PAYMENT_RECORD).locale(LocaleContextHolder.getLocale())
-				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
-				.deptDataPermission(deptDataPermission).pageRequest(request)
-				.build();
-		return contractPaymentRecordExportService.export(exportDTO);
-	}
+    @PostMapping("/export-all")
+    @Operation(summary = "导出全部回款记录")
+    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_EXPORT)
+    public String exportAll(@Validated @RequestBody ContractPaymentRecordExportRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        ExportDTO exportDTO = ExportDTO.builder().exportType(ExportConstants.ExportType.CONTRACT_PAYMENT_RECORD.name())
+                .fileName(request.getFileName()).headList(request.getHeadList())
+                .logModule(LogModule.CONTRACT_PAYMENT_RECORD).locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission).pageRequest(request)
+                .build();
+        return contractPaymentRecordExportService.export(exportDTO);
+    }
 
 
-	@PostMapping("/statistic")
-	@CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
-	@Operation(summary = "回款统计")
-	public ContractPaymentRecordStatisticResponse searchStatistic(@Validated @RequestBody ContractPaymentRecordStatisticRequest request) {
-		ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
-		return contractPaymentRecordService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
-	}
+    @PostMapping("/statistic")
+    @CsPermission(PermissionConstants.CONTRACT_PAYMENT_RECORD_READ)
+    @Operation(summary = "回款统计")
+    public ContractPaymentRecordStatisticResponse searchStatistic(@Validated @RequestBody ContractPaymentRecordStatisticRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTRACT_PAYMENT_RECORD.getKey());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CONTRACT_PAYMENT_RECORD_READ);
+        return contractPaymentRecordService.searchStatistic(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
 }
