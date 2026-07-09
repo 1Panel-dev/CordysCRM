@@ -4,10 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
-import cn.cordys.common.constants.BusinessModuleField;
-import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.constants.ModuleKey;
-import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.constants.*;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
@@ -22,11 +19,13 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.clue.service.PoolClueService;
+import cn.cordys.crm.customer.service.PoolCustomerService;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
+import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
-import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
@@ -45,6 +44,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -556,25 +556,21 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return clueTabConfig.or(customerTabConfig);
     }
 
-
     /**
-     * 拦截跟进记录的操作权限
+     * 拦截跟进记录的操作权限（角色权限位 + 所属客户/商机/线索的数据权限）
      *
      * @param id    记录ID
      * @param orgId 组织ID
      */
-    public void checkRecordPermission(String id, String orgId) {
-        FollowUpRecordDetailResponse recordDetail = get(id, orgId);
-        boolean hasPermission;
-        if (Strings.CS.equals(recordDetail.getType(), ModuleKey.CLUE.name())) {
-            hasPermission = PermissionUtils.hasPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE);
-        } else if (StringUtils.isNotEmpty(recordDetail.getOpportunityId())) {
-            hasPermission = PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE);
-        } else {
-            hasPermission = PermissionUtils.hasPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
+    public void checkRecordPermission(String id, String orgId, String userId, boolean isRead) {
+        checkRecordPermission(followUpRecordMapper.selectByPrimaryKey(id), orgId, userId, isRead);
+    }
+
+    public void checkUpdatePermission(String id, String userId) {
+        FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
+        if (Strings.CS.equals(userId, InternalUser.ADMIN.toString()) || Strings.CS.equals(followUpRecord.getOwner(), userId)) {
+            return;
         }
-        if (!hasPermission) {
-            throw new GenericException(Translator.get("no.operation.permission"));
-        }
+        throw new GenericException(Translator.get("no.operation.permission"));
     }
 }

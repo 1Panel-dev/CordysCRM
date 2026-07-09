@@ -6,6 +6,7 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
@@ -70,34 +71,36 @@ public class FollowUpPlanController {
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除跟进计划")
     public void delete(@PathVariable String id) {
-        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId());
+        followUpPlanService.checkUpdatePermission(id, SessionUtils.getUserId());
         followUpPlanService.delete(id);
     }
 
     @PostMapping("/status/update")
     @Operation(summary = "更新跟进计划状态")
     public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
-        followUpPlanService.checkPlanPermission(request.getId(), OrganizationContext.getOrganizationId());
+        followUpPlanService.checkUpdatePermission(request.getId(), SessionUtils.getUserId());
         followUpPlanService.updateStatus(request, SessionUtils.getUserId());
     }
 
     @GetMapping("/get/{id}")
     @Operation(summary = "跟进计划详情")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
+        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
         return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @Operation(summary = "更新跟进计划")
     public FollowUpPlan update(@Validated @RequestBody FollowUpPlanUpdateRequest request) {
-        followUpPlanService.checkPlanPermission(request.getId(), OrganizationContext.getOrganizationId());
+        followUpPlanService.checkUpdatePermission(request.getId(), SessionUtils.getUserId());
         return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 	@PostMapping("/add")
 	@Operation(summary = "添加跟进计划")
 	public FollowUpPlan add(@Validated @RequestBody FollowUpPlanAddRequest request) {
-		return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        followUpPlanService.checkPlanPermission(BeanUtils.copyBean(new FollowUpPlan(), request),
+                OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), false);
+        return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 }
