@@ -122,4 +122,18 @@ public class SessionUtils {
         // 保存用户 ID 到 Session
         SecurityUtils.getSubject().getSession().setAttribute(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, sessionUser.getId());
     }
+    
+    /**
+     * 检查 Session 是否存在（用户是否已登录）
+     *
+     * @param sessionId 会话ID
+     * @return 是否存在
+     */
+    public static boolean sessionExists(String sessionId) {
+        if (sessionId == null) {
+            return false;
+        }
+        RedisIndexedSessionRepository repo = CommonBeanFactory.getBean(RedisIndexedSessionRepository.class);
+        return repo != null && repo.findById(sessionId) != null;
+    }
 }
