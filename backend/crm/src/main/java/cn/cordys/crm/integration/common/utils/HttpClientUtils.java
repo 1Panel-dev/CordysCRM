@@ -1,6 +1,6 @@
 package cn.cordys.crm.integration.common.utils;
 
-import cn.cordys.common.service.SSRFValidationService;
+import cn.cordys.common.security.validator.SSRFValidator;
 import cn.cordys.common.util.CommonBeanFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -69,8 +69,8 @@ public class HttpClientUtils {
     }
 
     private static String doGet(String url, Map<String, String> headers) {
-        SSRFValidationService ssrfValidationService = CommonBeanFactory.getBean(SSRFValidationService.class);
-        ssrfValidationService.validate(url);
+        SSRFValidator ssrfValidator = CommonBeanFactory.getBean(SSRFValidator.class);
+        ssrfValidator.validate(url);
         var entity = new HttpEntity<>(null, buildHeaders(headers));
         return extractBody(restTemplate.exchange(URI.create(url), HttpMethod.GET, entity, String.class));
     }
@@ -90,8 +90,8 @@ public class HttpClientUtils {
     }
 
     private static String doPost(String url, String body, Map<String, String> headers) {
-        SSRFValidationService ssrfValidationService = CommonBeanFactory.getBean(SSRFValidationService.class);
-        ssrfValidationService.validate(url);
+        SSRFValidator ssrfValidator = CommonBeanFactory.getBean(SSRFValidator.class);
+        ssrfValidator.validate(url);
         var httpHeaders = buildHeaders(headers);
         if (!httpHeaders.containsKey(HttpHeaders.CONTENT_TYPE)) {
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -115,8 +115,8 @@ public class HttpClientUtils {
     }
 
     private static String doRequest(HttpMethod method, String url, String body, Map<String, String> headers) {
-        SSRFValidationService ssrfValidationService = CommonBeanFactory.getBean(SSRFValidationService.class);
-        ssrfValidationService.validate(url);
+        SSRFValidator ssrfValidator = CommonBeanFactory.getBean(SSRFValidator.class);
+        ssrfValidator.validate(url);
         var httpHeaders = buildHeaders(headers);
         if (body != null && !httpHeaders.containsKey(HttpHeaders.CONTENT_TYPE)) {
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
