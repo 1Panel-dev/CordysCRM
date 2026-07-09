@@ -41,6 +41,9 @@ public final class ShiroFilter {
         // 认证相关路径
         addAuthenticationFilters();
 
+        // 附件预览路径（使用 Cookie 认证）
+        addFileAccessFilters();
+
         return Collections.unmodifiableMap(FILTER_CHAIN_DEFINITION_MAP);
     }
 
@@ -74,6 +77,15 @@ public final class ShiroFilter {
         FILTER_CHAIN_DEFINITION_MAP.put("/get-key", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/403", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/sso/callback/**", "anon");
+    }
+
+    /**
+     * 添加文件预览过滤器规则（使用 Cookie 认证）
+     */
+    private static void addFileAccessFilters() {
+        // 附件预览使用 attachmentAuth 过滤器进行 Cookie 认证
+        FILTER_CHAIN_DEFINITION_MAP.put("/attachment/preview/**", "authf");
+        FILTER_CHAIN_DEFINITION_MAP.put("/pic/preview/**", "authf");
     }
 
     /**
