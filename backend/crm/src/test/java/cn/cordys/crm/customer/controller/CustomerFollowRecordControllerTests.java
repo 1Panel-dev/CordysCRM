@@ -1,8 +1,11 @@
 package cn.cordys.crm.customer.controller;
 
 
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.crm.base.BaseTest;
+import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
@@ -18,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -30,6 +34,10 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
     private static FollowUpRecord addFollowUpRecord;
     @Resource
     private BaseMapper<FollowUpRecord> followUpRecordMapper;
+    @Resource
+    private BaseMapper<Customer> customerMapper;
+
+    public static String customerId;
 
     @Override
     protected String getBasePath() {
@@ -39,8 +47,9 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
     @Test
     @Order(1)
     void testAdd() throws Exception {
+        insertCustomer();
         FollowUpRecordAddRequest request = new FollowUpRecordAddRequest();
-        request.setCustomerId("123");
+        request.setCustomerId(customerId);
         request.setOpportunityId("12345");
         request.setOwner("admin");
         request.setContactId("123456");
@@ -54,13 +63,30 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
         addFollowUpRecord = followUpRecordMapper.selectByPrimaryKey(resultData.getId());
     }
 
+    private Customer insertCustomer() {
+        Customer customer = new Customer();
+        customer.setId(IDGenerator.nextStr());
+        customer.setName(UUID.randomUUID().toString());
+        customer.setOwner(InternalUser.ADMIN.getValue());
+        customer.setCollectionTime(System.currentTimeMillis());
+        customer.setPoolId("testPoolId");
+        customer.setInSharedPool(false);
+        customer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        customer.setCreateTime(System.currentTimeMillis());
+        customer.setCreateUser(InternalUser.ADMIN.getValue());
+        customer.setUpdateTime(System.currentTimeMillis());
+        customer.setUpdateUser(InternalUser.ADMIN.getValue());
+        customerMapper.insert(customer);
+        customerId = customer.getId();
+        return customer;
+    }
 
     @Test
     @Order(2)
     void testUpdate() throws Exception {
         FollowUpRecordUpdateRequest request = new FollowUpRecordUpdateRequest();
         request.setId("1234");
-        request.setCustomerId("123");
+        request.setCustomerId(customerId);
         request.setOpportunityId("12345");
         request.setOwner("admin");
         request.setContactId("1234567");
@@ -79,7 +105,7 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
     @Order(3)
     void testList() throws Exception {
         FollowUpRecordPageRequest request = new FollowUpRecordPageRequest();
-        request.setSourceId("123");
+        request.setSourceId(customerId);
         request.setCurrent(1);
         request.setPageSize(10);
         this.requestPost(DEFAULT_PAGE, request);
@@ -96,7 +122,7 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
     @Order(3)
     void testPoolList() throws Exception {
         FollowUpRecordPageRequest request = new FollowUpRecordPageRequest();
-        request.setSourceId("123");
+        request.setSourceId(customerId);
         request.setCurrent(1);
         request.setPageSize(10);
         this.requestPost(POOL_PAGE, request);

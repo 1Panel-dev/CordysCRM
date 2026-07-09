@@ -1,14 +1,12 @@
 package cn.cordys.crm.clue.controller;
 
 import cn.cordys.common.constants.FormKey;
-import cn.cordys.common.constants.FormKeyConstants;
-import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.constants.ModuleKey;
 import cn.cordys.common.pager.PagerWithOption;
-import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
-import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
@@ -34,58 +32,62 @@ public class ClueFollowPlanController {
     private FollowUpPlanService followUpPlanService;
 
     @PostMapping("/add")
-    @CsPermission(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "添加线索跟进计划")
     public FollowUpPlan add(@Validated @RequestBody FollowUpPlanAddRequest request) {
+        followUpPlanService.checkPlanPermission(BeanUtils.copyBean(new FollowUpPlan(), request),
+                OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), false);
         return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
     @PostMapping("/update")
-    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "更新线索跟进计划")
     public FollowUpPlan update(@Validated @RequestBody FollowUpPlanUpdateRequest request) {
+        followUpPlanService.checkUpdatePermission(request.getId(), SessionUtils.getUserId());
         return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
     @PostMapping("/page")
-    @CsPermission(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索跟进计划列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
+        FollowUpPlan followPlanRecord = new FollowUpPlan();
+        followPlanRecord.setClueId(request.getSourceId());
+        followPlanRecord.setType(ModuleKey.CLUE.name());
+        followUpPlanService.checkPlanPermission(followPlanRecord, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
         ConditionFilterUtils.parseCondition(request, FormKey.FOLLOW_PLAN.getKey());
         return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CLUE", "CLUE");
     }
 
 
     @GetMapping("/get/{id}")
-    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_READ, resourceId = "{#id}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "线索跟进计划详情")
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
+        followUpPlanService.checkPlanPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
         return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
     }
 
 
     @GetMapping("/cancel/{id}")
-    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_UPDATE, resourceId = "{#id}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "取消线索跟进计划")
     public void cancelPlan(@PathVariable String id) {
+        followUpPlanService.checkUpdatePermission(id, SessionUtils.getUserId());
         followUpPlanService.cancelPlan(id, SessionUtils.getUserId());
     }
 
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "线索删除跟进计划")
-    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_UPDATE, resourceId = "{#id}", formType = FormKeyConstants.FOLLOW_PLAN)
     public void deletePlan(@PathVariable String id) {
+        followUpPlanService.checkUpdatePermission(id, SessionUtils.getUserId());
         followUpPlanService.delete(id);
     }
 
 
     @PostMapping("/status/update")
-    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.FOLLOW_PLAN)
     @Operation(summary = "线索更新跟进计划状态")
     public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
+        followUpPlanService.checkUpdatePermission(request.getId(), SessionUtils.getUserId());
         followUpPlanService.updateStatus(request, SessionUtils.getUserId());
     }
 }

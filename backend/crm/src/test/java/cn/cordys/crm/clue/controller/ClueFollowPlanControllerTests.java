@@ -1,7 +1,10 @@
 package cn.cordys.crm.clue.controller;
 
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.crm.base.BaseTest;
+import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.constants.FollowUpPlanStatusType;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
@@ -20,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -34,6 +38,10 @@ public class ClueFollowPlanControllerTests extends BaseTest {
     private static FollowUpPlan addFollowUpPlan;
     @Resource
     private BaseMapper<FollowUpPlan> followUpPlanMapper;
+    @Resource
+    private BaseMapper<Customer> customerMapper;
+
+    public static String customerId;
 
     @Override
     protected String getBasePath() {
@@ -43,8 +51,9 @@ public class ClueFollowPlanControllerTests extends BaseTest {
     @Test
     @Order(1)
     void testAdd() throws Exception {
+        insertCustomer();
         FollowUpPlanAddRequest request = new FollowUpPlanAddRequest();
-        request.setCustomerId("123");
+        request.setCustomerId(customerId);
         request.setOpportunityId("12345");
         request.setOwner("admin");
         request.setContactId("123456");
@@ -58,13 +67,30 @@ public class ClueFollowPlanControllerTests extends BaseTest {
         addFollowUpPlan = followUpPlanMapper.selectByPrimaryKey(resultData.getId());
     }
 
+    private Customer insertCustomer() {
+        Customer customer = new Customer();
+        customer.setId(IDGenerator.nextStr());
+        customer.setName(UUID.randomUUID().toString());
+        customer.setOwner(InternalUser.ADMIN.getValue());
+        customer.setCollectionTime(System.currentTimeMillis());
+        customer.setPoolId("testPoolId");
+        customer.setInSharedPool(false);
+        customer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        customer.setCreateTime(System.currentTimeMillis());
+        customer.setCreateUser(InternalUser.ADMIN.getValue());
+        customer.setUpdateTime(System.currentTimeMillis());
+        customer.setUpdateUser(InternalUser.ADMIN.getValue());
+        customerMapper.insert(customer);
+        customerId = customer.getId();
+        return customer;
+    }
 
     @Test
     @Order(2)
     void testUpdate() throws Exception {
         FollowUpPlanUpdateRequest request = new FollowUpPlanUpdateRequest();
         request.setId("1234");
-        request.setCustomerId("123");
+        request.setCustomerId(customerId);
         request.setOpportunityId("12345");
         request.setOwner("admin");
         request.setContactId("1234567");
@@ -85,7 +111,7 @@ public class ClueFollowPlanControllerTests extends BaseTest {
     @Order(3)
     void testList() throws Exception {
         FollowUpRecordPageRequest request = new FollowUpRecordPageRequest();
-        request.setSourceId("123");
+        request.setSourceId(customerId);
         request.setCurrent(1);
         request.setPageSize(10);
         this.requestPost(DEFAULT_PAGE, request);
