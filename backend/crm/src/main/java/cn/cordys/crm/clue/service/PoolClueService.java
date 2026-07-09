@@ -418,9 +418,9 @@ public class PoolClueService {
     /**
      * 校验当前用户是否为线索池成员（成员或管理员均可访问）
      *
-     * @param poolId   线索池ID
-     * @param userId   当前用户ID
-     * @param orgId    组织ID
+     * @param poolId 线索池ID
+     * @param userId 当前用户ID
+     * @param orgId  组织ID
      */
     public void checkPoolMember(String poolId, String userId, String orgId) {
         CluePool pool = poolMapper.selectByPrimaryKey(poolId);
@@ -497,14 +497,14 @@ public class PoolClueService {
         if (pool == null) {
             throw new GenericException(Translator.get("clue_pool_not_exist"));
         }
-        return checkImportExcel(file, orgId);
+        return checkImportExcel(file,request.getImportType(), orgId);
     }
 
-    private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+    private ImportResponse checkImportExcel(MultipartFile file,String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CLUE.getKey(), currentOrg);
             fields.removeIf(baseField -> Strings.CI.equals(baseField.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()));
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "clue", "clue_field", currentOrg);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "clue", "clue_field", currentOrg, importType);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
@@ -632,7 +632,7 @@ public class PoolClueService {
 
             };
             CustomFieldImportEventListener<Clue> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, orgId, userId,
-                    "clue_field", afterDo, 2000, null, null);
+                    "clue_field", afterDo, 2000, null, null, request.getImportType());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();

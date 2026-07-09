@@ -32,6 +32,7 @@ import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.dto.response.CustomerPaymentRecordStatisticResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
+import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -216,43 +217,45 @@ public class ContractPaymentRecordService {
         return recordDetail;
     }
 
-	/**
-	 * 获取回款记录详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
-	 * @param id 回款记录ID
-	 * @return 回款记录详情
-	 */
-	public ContractPaymentRecordGetResponse getSimple(String id) {
-		ContractPaymentRecord paymentRecord = contractPaymentRecordMapper.selectByPrimaryKey(id);
-		if (paymentRecord == null) {
-			return null;
-		}
-		ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), paymentRecord);
-		List<BaseModuleFieldValue> fvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(id);
-		response.setModuleFields(fvs);
-		return response;
-	}
+    /**
+     * 获取回款记录详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
+     *
+     * @param id 回款记录ID
+     * @return 回款记录详情
+     */
+    public ContractPaymentRecordGetResponse getSimple(String id) {
+        ContractPaymentRecord paymentRecord = contractPaymentRecordMapper.selectByPrimaryKey(id);
+        if (paymentRecord == null) {
+            return null;
+        }
+        ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), paymentRecord);
+        List<BaseModuleFieldValue> fvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(id);
+        response.setModuleFields(fvs);
+        return response;
+    }
 
-	/**
-	 * 批量获取回款记录详情 (用于数据源批量查询优化)
-	 * @param ids 回款记录ID集合
-	 * @return 回款记录详情列表
-	 */
-	public List<ContractPaymentRecordGetResponse> batchGetSimpleByIds(List<String> ids) {
-		if (CollectionUtils.isEmpty(ids)) {
-			return Collections.emptyList();
-		}
-		List<ContractPaymentRecord> records = contractPaymentRecordMapper.selectByIds(ids);
-		if (CollectionUtils.isEmpty(records)) {
-			return Collections.emptyList();
-		}
-		Map<String, List<BaseModuleFieldValue>> fieldValueMap = contractPaymentRecordFieldService.getResourceFieldMap(ids, true);
+    /**
+     * 批量获取回款记录详情 (用于数据源批量查询优化)
+     *
+     * @param ids 回款记录ID集合
+     * @return 回款记录详情列表
+     */
+    public List<ContractPaymentRecordGetResponse> batchGetSimpleByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        List<ContractPaymentRecord> records = contractPaymentRecordMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(records)) {
+            return Collections.emptyList();
+        }
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = contractPaymentRecordFieldService.getResourceFieldMap(ids, true);
 
-		return records.stream().map(record -> {
-			ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), record);
-			response.setModuleFields(fieldValueMap.get(record.getId()));
-			return response;
-		}).toList();
-	}
+        return records.stream().map(record -> {
+            ContractPaymentRecordGetResponse response = BeanUtils.copyBean(new ContractPaymentRecordGetResponse(), record);
+            response.setModuleFields(fieldValueMap.get(record.getId()));
+            return response;
+        }).toList();
+    }
 
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
@@ -297,7 +300,7 @@ public class ContractPaymentRecordService {
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "contract_payment_record", "contract_payment_record_field", currentOrg);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "contract_payment_record", "contract_payment_record_field", currentOrg, ImportType.ADD.name());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
@@ -335,7 +338,7 @@ public class ContractPaymentRecordService {
                 logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<ContractPaymentRecord> eventListener = new CustomFieldImportEventListener<>(fields, ContractPaymentRecord.class, currentOrg, currentUser,
-                    "contract_payment_record_field", afterDo, 2000, null, null);
+                    "contract_payment_record_field", afterDo, 2000, null, null, ImportType.ADD.name());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();

@@ -4,12 +4,7 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.ChartAnalysisRequest;
-import cn.cordys.common.dto.DeptDataPermissionDTO;
-import cn.cordys.common.dto.ExportDTO;
-import cn.cordys.common.dto.ExportSelectRequest;
-import cn.cordys.common.dto.ResourceTabEnableDTO;
-import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsBatchPermission;
@@ -28,6 +23,7 @@ import cn.cordys.crm.customer.dto.request.ClueTransformRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.service.CustomerService;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
@@ -248,8 +244,8 @@ public class ClueController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
-    public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
-        return clueService.importPreCheck(file, OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return clueService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")

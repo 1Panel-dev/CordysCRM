@@ -45,10 +45,7 @@ import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.product.mapper.ExtProductMapper;
 import cn.cordys.crm.product.service.ProductService;
-import cn.cordys.crm.system.constants.DictModule;
-import cn.cordys.crm.system.constants.FieldType;
-import cn.cordys.crm.system.constants.NotificationConstants;
-import cn.cordys.crm.system.constants.SheetKey;
+import cn.cordys.crm.system.constants.*;
 import cn.cordys.crm.system.domain.Dict;
 import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.field.SelectField;
@@ -178,14 +175,14 @@ public class OpportunityService {
         // 联系人
         List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(buildList,
                 OpportunityListResponse::getContactId, OpportunityListResponse::getContactName);
-		if (CollectionUtils.isNotEmpty(contactFieldOption)) {
-			optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
-		}
+        if (CollectionUtils.isNotEmpty(contactFieldOption)) {
+            optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+        }
 
         List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
-		if (CollectionUtils.isNotEmpty(productOption)) {
-			optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
-		}
+        if (CollectionUtils.isNotEmpty(productOption)) {
+            optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
+        }
 
         return optionMap;
 
@@ -202,7 +199,7 @@ public class OpportunityService {
         List<String> opportunityIds = list.stream().map(OpportunityListResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(opportunityIds, true);
-		Map<String, List<BaseModuleFieldValue>> fvMap = opportunityFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.OPPORTUNITY.getKey(), orgId), opportunityFiledMap);
+        Map<String, List<BaseModuleFieldValue>> fvMap = opportunityFieldService.setBusinessRefFieldValue(list, moduleFormService.getFlattenFormFields(FormKey.OPPORTUNITY.getKey(), orgId), opportunityFiledMap);
 
         List<String> ownerIds = list.stream()
                 .map(OpportunityListResponse::getOwner)
@@ -315,10 +312,10 @@ public class OpportunityService {
 
         baseService.handleAddLogWithResourceName(opportunity, request.getModuleFields());
 
-		// 消息通知
-		commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-				NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), operatorId,
-				orgId, List.of(opportunity.getOwner()), true);
+        // 消息通知
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), operatorId,
+                orgId, List.of(opportunity.getOwner()), true);
         return opportunity;
     }
 
@@ -412,15 +409,16 @@ public class OpportunityService {
 
     /**
      * 商机转移 (与商机阶段无关, 都可转移)
-	 * @param request 请求参数
-	 * @param userId 用户ID
-	 * @param orgId 组织ID
+     *
+     * @param request 请求参数
+     * @param userId  用户ID
+     * @param orgId   组织ID
      */
     public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
         List<Opportunity> opportunityList = opportunityMapper.selectByIds(request.getIds());
-		if (CollectionUtils.isEmpty(opportunityList)) {
-			return;
-		}
+        if (CollectionUtils.isEmpty(opportunityList)) {
+            return;
+        }
         List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
@@ -499,18 +497,18 @@ public class OpportunityService {
     }
 
 
-	/**
-	 * @param id 商机ID
-	 * @return 商机详情
-	 */
+    /**
+     * @param id 商机ID
+     * @return 商机详情
+     */
     public OpportunityDetailResponse get(String id) {
         OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
         if (response == null) {
             return null;
         }
         List<BaseModuleFieldValue> fieldValueList = opportunityFieldService.getModuleFieldValuesByResourceId(id);
-		fieldValueList = opportunityFieldService.setBusinessRefFieldValue(List.of(response),
-				moduleFormService.getFlattenFormFields(FormKey.OPPORTUNITY.getKey(), response.getOrganizationId()), new HashMap<>(Map.of(id, fieldValueList))).get(id);
+        fieldValueList = opportunityFieldService.setBusinessRefFieldValue(List.of(response),
+                moduleFormService.getFlattenFormFields(FormKey.OPPORTUNITY.getKey(), response.getOrganizationId()), new HashMap<>(Map.of(id, fieldValueList))).get(id);
         response.setModuleFields(fieldValueList);
         List<String> userIds = Stream.of(Arrays.asList(response.getCreateUser(), response.getUpdateUser(), response.getOwner(), response.getFollower()))
                 .flatMap(Collection::stream)
@@ -559,18 +557,18 @@ public class OpportunityService {
         // 联系人
         List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(response,
                 OpportunityDetailResponse::getContactId, OpportunityDetailResponse::getContactName);
-		if (CollectionUtils.isNotEmpty(contactFieldOption)) {
-			optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
-		}
+        if (CollectionUtils.isNotEmpty(contactFieldOption)) {
+            optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+        }
 
         List<OptionDTO> customerOption = moduleFormService.getBusinessFieldOption(response,
                 OpportunityDetailResponse::getCustomerId, OpportunityDetailResponse::getCustomerName);
         optionMap.put(BusinessModuleField.OPPORTUNITY_CUSTOMER_NAME.getBusinessKey(), customerOption);
 
         List<OptionDTO> productOption = extProductMapper.getOptions(response.getOrganizationId());
-		if (CollectionUtils.isNotEmpty(productOption)) {
-			optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
-		}
+        if (CollectionUtils.isNotEmpty(productOption)) {
+            optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
+        }
 
         response.setOptionMap(optionMap);
 
@@ -580,45 +578,47 @@ public class OpportunityService {
         return response;
     }
 
-	/**
-	 * 获取商机详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
-	 * @param id 商机ID
-	 * @return 商机详情
-	 */
-	public OpportunityDetailResponse getSimple(String id) {
-		OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
-		if (response == null) {
-			return null;
-		}
-		List<BaseModuleFieldValue> fvs = opportunityFieldService.getModuleFieldValuesByResourceId(id);
-		response.setModuleFields(fvs);
-		return response;
-	}
+    /**
+     * 获取商机详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+     *
+     * @param id 商机ID
+     * @return 商机详情
+     */
+    public OpportunityDetailResponse getSimple(String id) {
+        OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
+        if (response == null) {
+            return null;
+        }
+        List<BaseModuleFieldValue> fvs = opportunityFieldService.getModuleFieldValuesByResourceId(id);
+        response.setModuleFields(fvs);
+        return response;
+    }
 
-	/**
-	 * 批量获取商机详情 (用于数据源批量查询优化)
-	 * @param ids 商机ID集合
-	 * @return 商机详情列表
-	 */
-	public List<OpportunityDetailResponse> batchGetSimpleByIds(List<String> ids) {
-		if (CollectionUtils.isEmpty(ids)) {
-			return Collections.emptyList();
-		}
-		// 批量查询资源基本信息
-		List<Opportunity> opportunities = opportunityMapper.selectByIds(ids);
-		if (CollectionUtils.isEmpty(opportunities)) {
-			return Collections.emptyList();
-		}
-		// 批量查询自定义字段值
-		Map<String, List<BaseModuleFieldValue>> fieldValueMap = opportunityFieldService.getResourceFieldMap(ids, true);
+    /**
+     * 批量获取商机详情 (用于数据源批量查询优化)
+     *
+     * @param ids 商机ID集合
+     * @return 商机详情列表
+     */
+    public List<OpportunityDetailResponse> batchGetSimpleByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        // 批量查询资源基本信息
+        List<Opportunity> opportunities = opportunityMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(opportunities)) {
+            return Collections.emptyList();
+        }
+        // 批量查询自定义字段值
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = opportunityFieldService.getResourceFieldMap(ids, true);
 
-		// 组装结果
-		return opportunities.stream().map(opportunity -> {
-			OpportunityDetailResponse response = BeanUtils.copyBean(new OpportunityDetailResponse(), opportunity);
-			response.setModuleFields(fieldValueMap.get(opportunity.getId()));
-			return response;
-		}).toList();
-	}
+        // 组装结果
+        return opportunities.stream().map(opportunity -> {
+            OpportunityDetailResponse response = BeanUtils.copyBean(new OpportunityDetailResponse(), opportunity);
+            response.setModuleFields(fieldValueMap.get(opportunity.getId()));
+            return response;
+        }).toList();
+    }
 
 
     /**
@@ -763,10 +763,10 @@ public class OpportunityService {
                     opportunity.setStage(stageConfigList.getFirst().getId());
                     opportunity.setPos(nextPos + i);
                     logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD, LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
-					// 消息通知(异步)
-					commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-							NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), currentUser,
-							currentOrg, List.of(opportunity.getOwner()), true);
+                    // 消息通知(异步)
+                    commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                            NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), currentUser,
+                            currentOrg, List.of(opportunity.getOwner()), true);
                 }
                 opportunityMapper.batchInsert(opportunities);
                 opportunityFieldMapper.batchInsert(opportunityFields.stream().map(field -> BeanUtils.copyBean(new OpportunityField(), field)).toList());
@@ -775,7 +775,7 @@ public class OpportunityService {
                 logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<Opportunity> eventListener = new CustomFieldImportEventListener<>(fields, Opportunity.class, currentOrg, currentUser,
-                    "opportunity_field", afterDo, 2000, null, null);
+                    "opportunity_field", afterDo, 2000, null, null, ImportType.ADD.name());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
@@ -795,7 +795,7 @@ public class OpportunityService {
     private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg,ImportType.ADD.name());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
