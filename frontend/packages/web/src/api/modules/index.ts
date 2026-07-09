@@ -577,6 +577,9 @@ export const {
   updateContractStage,
   saveContractAdvanceConfig,
   switchContractCirculationType,
+  preCheckImportContractPaymentPlan,
+  importContractPaymentPlan,
+  downloadContractPaymentPlanTemplate,
 } = contractApi;
 
 export const {
