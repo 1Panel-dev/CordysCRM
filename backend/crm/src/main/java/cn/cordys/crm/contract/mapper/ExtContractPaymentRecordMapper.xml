@@ -426,4 +426,46 @@
 
     </select>
 
+    <update id="updateRecord">
+        update contract_payment_record
+        <set>
+            <if test="contractPaymentRecord.name != null and contractPaymentRecord.name != ''">
+                name = #{contractPaymentRecord.name},
+            </if>
+            <if test="contractPaymentRecord.owner != null and contractPaymentRecord.owner != ''">
+                owner = #{contractPaymentRecord.owner},
+            </if>
+            <if test="contractPaymentRecord.contractId != null and contractPaymentRecord.contractId != ''">
+                contract_id = #{contractPaymentRecord.contractId},
+            </if>
+            <if test="contractPaymentRecord.paymentPlanId != null and contractPaymentRecord.paymentPlanId != ''">
+                payment_plan_id = #{contractPaymentRecord.paymentPlanId},
+            </if>
+            <if test="contractPaymentRecord.recordAmount != null">
+                record_amount = #{contractPaymentRecord.recordAmount},
+            </if>
+            <if test="contractPaymentRecord.recordEndTime != null">
+                record_end_time = #{contractPaymentRecord.recordEndTime},
+            </if>
+            <if test="contractPaymentRecord.organizationId != null and contractPaymentRecord.organizationId != ''">
+                organization_id = #{contractPaymentRecord.organizationId},
+            </if>
+            <if test="contractPaymentRecord.createTime != null">
+                create_time = #{contractPaymentRecord.createTime},
+            </if>
+            <if test="contractPaymentRecord.updateTime != null">
+                update_time = #{contractPaymentRecord.updateTime},
+            </if>
+            <if test="contractPaymentRecord.createUser != null and contractPaymentRecord.createUser != ''">
+                create_user = #{contractPaymentRecord.createUser},
+            </if>
+            <if test="contractPaymentRecord.updateUser != null and contractPaymentRecord.updateUser != ''">
+                update_user = #{contractPaymentRecord.updateUser},
+            </if>
+        </set>
+        <where>
+            id = #{contractPaymentRecord.id}
+        </where>
+    </update>
+
 </mapper>

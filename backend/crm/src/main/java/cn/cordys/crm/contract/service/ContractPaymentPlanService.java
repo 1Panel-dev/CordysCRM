@@ -107,6 +107,7 @@ public class ContractPaymentPlanService {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private BaseMapper<ContractPaymentPlanField> contractPaymentPlanFieldMapper;
+    @Resource
     private BaseMapper<ContractPaymentPlanFieldBlob> contractPaymentPlanFieldBlobMapper;
 
 
@@ -506,11 +507,11 @@ public class ContractPaymentPlanService {
                         if (CollectionUtils.isNotEmpty(paymentPlanFields)) {
                             List<ContractPaymentPlanField> fieldList = contractPaymentPlanFieldMapper.selectByIds(paymentPlanFields.stream().map(BaseResourceSubField::getId).toList());
                             Map<String, ContractPaymentPlanField> fieldMap = fieldList.stream().collect(Collectors.toMap(ContractPaymentPlanField::getId, Function.identity()));
-                            paymentPlanFields.forEach(customerField -> {
-                                if (fieldMap.containsKey(customerField.getId())) {
-                                    commonMapper.updateCustomerField("contract_payment_plan_field", customerField);
+                            paymentPlanFields.forEach(planField -> {
+                                if (fieldMap.containsKey(planField.getId())) {
+                                    commonMapper.updateCustomerField("contract_payment_plan_field", planField);
                                 } else {
-                                    insertField.add(BeanUtils.copyBean(new ContractPaymentPlanField(), customerField));
+                                    insertField.add(BeanUtils.copyBean(new ContractPaymentPlanField(), planField));
                                 }
                             });
                         }
@@ -518,11 +519,11 @@ public class ContractPaymentPlanService {
                         if (CollectionUtils.isNotEmpty(paymentPlanFieldBlobs)) {
                             List<ContractPaymentPlanFieldBlob> blobList = contractPaymentPlanFieldBlobMapper.selectByIds(paymentPlanFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
                             Map<String, ContractPaymentPlanFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(ContractPaymentPlanFieldBlob::getId, Function.identity()));
-                            paymentPlanFieldBlobs.forEach(customerFieldBlob -> {
-                                if (blobMap.containsKey(customerFieldBlob.getId())) {
-                                    commonMapper.updateCustomerField("contract_payment_plan_field_blob", customerFieldBlob);
+                            paymentPlanFieldBlobs.forEach(planFieldBlob -> {
+                                if (blobMap.containsKey(planFieldBlob.getId())) {
+                                    commonMapper.updateCustomerField("contract_payment_plan_field_blob", planFieldBlob);
                                 } else {
-                                    insertFieldBlob.add(BeanUtils.copyBean(new ContractPaymentPlanFieldBlob(), customerFieldBlob));
+                                    insertFieldBlob.add(BeanUtils.copyBean(new ContractPaymentPlanFieldBlob(), planFieldBlob));
                                 }
                             });
 
