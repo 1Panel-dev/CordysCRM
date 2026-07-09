@@ -212,8 +212,8 @@ public class CustomerContactController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_IMPORT)
-    public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
-        return customerContactService.importPreCheck(file, OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return customerContactService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")

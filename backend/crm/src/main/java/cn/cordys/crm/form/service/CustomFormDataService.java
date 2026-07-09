@@ -26,6 +26,7 @@ import cn.cordys.crm.form.dto.request.CustomFormDataUpdateRequest;
 import cn.cordys.crm.form.dto.response.CustomFormDataGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
 import cn.cordys.crm.form.mapper.ExtCustomFormDataMapper;
+import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ImportResponse;
@@ -199,7 +200,6 @@ public class CustomFormDataService {
      * 获取详情（⚠️反射调用; 勿修改入参, 返回, 方法名!）
      *
      * @param id 订单ID
-     *
      * @return 详情
      */
     public CustomFormDataGetResponse getSimple(String id) {
@@ -216,6 +216,7 @@ public class CustomFormDataService {
 
     /**
      * 批量获取自定义数据详情 (用于数据源批量查询优化)
+     *
      * @param ids ID集合
      * @return 详情列表
      */
@@ -291,7 +292,7 @@ public class CustomFormDataService {
                 // 过滤掉引用字段（显示字段），这些字段不需要参与日志对比
                 List<BaseModuleFieldValue> logOriginFields = filterRefFields(originFields);
                 List<BaseModuleFieldValue> logModifiedFields = filterRefFields(request.getModuleFields());
-				baseService.handleUpdateLog(originData, updateData, logOriginFields, logModifiedFields, originData.getId(), originData.getName());
+                baseService.handleUpdateLog(originData, updateData, logOriginFields, logModifiedFields, originData.getId(), originData.getName());
                 customFormDataFieldService.deleteByResourceId(request.getId());
                 customFormDataFieldService.saveModuleField(updateData, orgId, userId, request.getModuleFields(), true);
             } else {
@@ -471,9 +472,9 @@ public class CustomFormDataService {
     /**
      * 下载导入模板
      *
-     * @param response   响应
+     * @param response     响应
      * @param customFormId 自定义表单ID
-     * @param orgId      组织ID
+     * @param orgId        组织ID
      */
     public void downloadImportTpl(HttpServletResponse response, String customFormId, String orgId) {
         CustomForm customForm = customFormMapper.selectByPrimaryKey(customFormId);
@@ -491,7 +492,6 @@ public class CustomFormDataService {
      * @param file         导入文件
      * @param customFormId 自定义表单ID
      * @param orgId        组织ID
-     *
      * @return 导入检查信息
      */
     public ImportResponse importPreCheck(MultipartFile file, String customFormId, String orgId) {
@@ -508,7 +508,6 @@ public class CustomFormDataService {
      * @param customFormId 自定义表单ID
      * @param orgId        组织ID
      * @param userId       用户ID
-     *
      * @return 导入结果
      */
     public ImportResponse realImport(MultipartFile file, String customFormId, String orgId, String userId) {
@@ -533,7 +532,7 @@ public class CustomFormDataService {
                 logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<CustomFormData> eventListener = new CustomFieldImportEventListener<>(
-                    fields, CustomFormData.class, orgId, userId, "custom_form_data_field", afterDo, 2000, null, null);
+                    fields, CustomFormData.class, orgId, userId, "custom_form_data_field", afterDo, 2000, null, null, ImportType.ADD.name());
             FastExcelFactory.read(file.getInputStream(), eventListener)
                     .headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
@@ -552,14 +551,13 @@ public class CustomFormDataService {
      * @param file         文件
      * @param customFormId 自定义表单ID
      * @param orgId        组织ID
-     *
      * @return 检查结果
      */
     private ImportResponse checkImportExcel(MultipartFile file, String customFormId, String orgId) {
         try {
             CustomFormDataFieldService.setFormKey(customFormId);
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(customFormId, orgId);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "custom_form_data", "custom_form_data_field", orgId);
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "custom_form_data", "custom_form_data_field", orgId, ImportType.ADD.name());
             FastExcelFactory.read(file.getInputStream(), eventListener)
                     .headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())

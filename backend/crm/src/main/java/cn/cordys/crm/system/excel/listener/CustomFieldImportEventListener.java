@@ -9,6 +9,7 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -81,8 +82,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
 
     public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable,
                                           CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
-                                          Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
-        super(fields, EntityTableMapper.generateTableName(clazz), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap);
+                                          Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap, String importType) {
+        super(fields, EntityTableMapper.generateTableName(clazz), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap, importType);
         this.entityClass = clazz;
         this.operator = operator;
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
@@ -157,13 +158,15 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             if (isNormalRow(rowIndex) || isMergeFirstRow(rowIndex)) {
                 // 非合并行才创建实体
                 String rowKey = IDGenerator.nextStr();
-                Integer key = headMap.entrySet().stream()
-                        .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID"))
-                        .map(Map.Entry::getKey)
-                        .findFirst()
-                        .orElse(null);
-                if (key != null && rowData.containsKey(key)) {
-                    rowKey = rowData.get(key);
+                if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
+                    Integer key = headMap.entrySet().stream()
+                            .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID"))
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(null);
+                    if (key != null && rowData.containsKey(key)) {
+                        rowKey = rowData.get(key);
+                    }
                 }
 
                 mergedTmpEntity = entityClass.getDeclaredConstructor().newInstance();
@@ -201,10 +204,14 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                         throw new GenericException(e);
                     }
                 } else {
-                    BaseResourceSubField baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey());
                     BaseResourceSubField resourceField = new BaseResourceSubField();
-                    if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
-                        resourceField.setId(baseResourceSubField.getId());
+                    if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
+                        BaseResourceSubField baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey());
+                        if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
+                            resourceField.setId(baseResourceSubField.getId());
+                        } else {
+                            resourceField.setId(IDGenerator.nextStr());
+                        }
                     } else {
                         resourceField.setId(IDGenerator.nextStr());
                     }

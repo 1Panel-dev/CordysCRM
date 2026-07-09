@@ -7,6 +7,7 @@ import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.FieldType;
+import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.excel.domain.ExcelErrData;
@@ -38,6 +39,10 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     private final String sourceTable;
     protected final String fieldTable;
     protected final String currentOrg;
+    /**
+     * 类型
+     */
+    protected final String importType;
     /**
      * 必填校验
      */
@@ -85,12 +90,12 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     protected int maxHeadRow;
     protected final Map<Integer, Map<Integer, String>> mergeRowDataMap;
 
-    public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg) {
-        this(fields, sourceTable, fieldTable, currentOrg, null, null);
+    public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg, String importType) {
+        this(fields, sourceTable, fieldTable, currentOrg, null, null, importType);
     }
 
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg,
-                                         Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap) {
+                                         Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap, String importType) {
         for (BaseField field : fields) {
             if (isInvalidField(field)) {
                 continue;
@@ -115,6 +120,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         this.fieldTable = fieldTable;
         this.mergeCellMap = mergeCellMap;
         this.mergeRowDataMap = mergeRowDataMap;
+        this.importType = importType;
     }
 
     @Override
@@ -194,6 +200,10 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             if (!isValidateCell(rowIndex, k)) {
                 return;
             }
+            if (Strings.CI.equals("唯一ID", v) && Strings.CI.equals(importType, ImportType.UPDATE.name()) && StringUtils.isBlank(sourceId)) {
+                errText.append(v).append("唯一ID不能为空").append(";");
+            }
+
             if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k))) {
                 errText.append(v).append(Translator.get("cannot_be_null")).append(";");
             }
@@ -259,15 +269,27 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             return false;
         }
         // 数据库唯一性校验
-        if (StringUtils.isBlank(sourceId)) {
-            return true;
+        if (Strings.CI.equals(importType, ImportType.ADD.name())) {
+            Set<BaseResourceSubField> uniqueCheck = uniqueCheckSet.get(field.getName());
+            BaseResourceSubField result = uniqueCheck.stream()
+                    .filter(item -> item.getFieldValue() != null && Strings.CI.equals(val, item.getFieldValue().toString()))
+                    .findFirst()
+                    .orElse(null);
+            return result == null;
         }
-        Set<BaseResourceSubField> uniqueCheck = uniqueCheckSet.get(field.getName());
-        BaseResourceSubField result = uniqueCheck.stream()
-                .filter(item -> !Strings.CI.equals(item.getResourceId(), sourceId) && item.getFieldValue() != null && Strings.CI.equals(val, item.getFieldValue().toString()))
-                .findFirst()
-                .orElse(null);
-        return result == null;
+
+        if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
+            if (StringUtils.isBlank(sourceId)) {
+                return true;
+            }
+            Set<BaseResourceSubField> uniqueCheck = uniqueCheckSet.get(field.getName());
+            BaseResourceSubField result = uniqueCheck.stream()
+                    .filter(item -> !Strings.CI.equals(item.getResourceId(), sourceId) && item.getFieldValue() != null && Strings.CI.equals(val, item.getFieldValue().toString()))
+                    .findFirst()
+                    .orElse(null);
+            return result == null;
+        }
+        return false;
     }
 
     /**
