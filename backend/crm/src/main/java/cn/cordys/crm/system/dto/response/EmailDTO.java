@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.dto.response;
 
+import cn.cordys.common.security.validator.SafeHost;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
