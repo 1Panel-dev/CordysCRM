@@ -1,4 +1,4 @@
-package cn.cordys.crm.system.dto.response;
+package cn.cordys.common.security.validator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
