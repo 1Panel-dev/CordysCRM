@@ -18,6 +18,22 @@ public class SqlInjectionChecker {
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
 
+    private static volatile Pattern dangerousPattern = DANGEROUS_PATTERN;
+
+
+    /**
+     * 用户自定义配置注入检测规则，覆盖默认规则。
+     */
+    public static void setDangerousPattern(String configuredPattern) {
+        try {
+            if (StringUtils.isNotBlank(configuredPattern)) {
+                dangerousPattern = Pattern.compile(configuredPattern, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            }
+        } catch (Exception e) {
+            dangerousPattern = DANGEROUS_PATTERN;
+        }
+    }
+
     /**
      * 检测输入字符串是否包含可疑的 SQL 注入特征。
      *
@@ -32,7 +48,7 @@ public class SqlInjectionChecker {
         // 归一化处理：尝试解码常见编码绕过（如双重URL编码、Unicode编码等）
         String normalized = normalize(input);
 
-        return DANGEROUS_PATTERN.matcher(normalized).find();
+        return dangerousPattern.matcher(normalized).find();
     }
 
     // 简单归一化：解码URL编码、反引号等，防止编码绕过
