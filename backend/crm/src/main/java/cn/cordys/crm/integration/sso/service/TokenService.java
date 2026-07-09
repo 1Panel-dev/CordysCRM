@@ -1,7 +1,7 @@
 package cn.cordys.crm.integration.sso.service;
 
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.service.SSRFValidationService;
+import cn.cordys.common.security.validator.SSRFValidator;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -44,8 +44,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static cn.cordys.crm.integration.dingtalk.constant.DingTalkApiPaths.DING_USER_TOKEN_URL;
 
@@ -57,7 +55,7 @@ public class TokenService {
     @Resource
     private QrCodeClient qrCodeClient;
     @Resource
-    private SSRFValidationService ssrfValidationService;
+    private SSRFValidator ssrfValidator;
     /**
      * 获取assess_Token
      *
@@ -296,7 +294,7 @@ public class TokenService {
      */
     public Boolean getMaxKBToken(String mkAddress, String apiKey) {
         String urlTransfer = HttpClientUtils.urlTransfer(mkAddress.concat(MaxKBApiPaths.APPLICATION), "default");
-        ssrfValidationService.validate(urlTransfer);
+        ssrfValidator.validate(urlTransfer);
 
         String body = qrCodeClient.exchange(
                 urlTransfer,

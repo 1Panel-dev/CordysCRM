@@ -12,7 +12,7 @@ import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
-import cn.cordys.common.service.SSRFValidationService;
+import cn.cordys.common.security.validator.SSRFValidator;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -75,7 +75,7 @@ public class DashboardService extends DashboardSortService {
     @Resource
     private DepartmentService departmentService;
     @Resource
-    private SSRFValidationService ssrfValidationService;
+    private SSRFValidator ssrfValidator;
 
     /**
      * 添加仪表板
@@ -88,7 +88,7 @@ public class DashboardService extends DashboardSortService {
      */
     @OperationLog(module = LogModule.DASHBOARD, type = LogType.ADD)
     public Dashboard addDashboard(DashboardAddRequest request, String orgId, String userId) {
-        ssrfValidationService.validateAgainstWhitelist(request.getResourceUrl());
+        ssrfValidator.validateAgainstWhitelist(request.getResourceUrl());
 
         checkDashboardName(request.getName(), request.getDashboardModuleId(), orgId, null);
         dashboardModuleService.checkDashboardModule(request.getDashboardModuleId());

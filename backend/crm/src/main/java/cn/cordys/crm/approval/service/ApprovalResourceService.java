@@ -8,7 +8,7 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
-import cn.cordys.common.service.SSRFValidationService;
+import cn.cordys.common.security.validator.SSRFValidator;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -92,7 +92,7 @@ public class ApprovalResourceService {
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
-    private SSRFValidationService ssrfValidationService;
+    private SSRFValidator ssrfValidator;
 
     @Resource
     private List<ApprovalResourceHandler> approvalResourceHandlers;
