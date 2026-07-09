@@ -110,11 +110,13 @@
     () => props.fieldConfig.initialOptions,
     (val) => {
       if ([FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)) {
-        selectedUsers.value = val as SelectedUsersItem[];
+        selectedUsers.value = cloneDeep(val as SelectedUsersItem[]);
       } else if (Array.isArray(val) && val.length) {
-        selectedUsers.value = [val[0]];
+        selectedUsers.value = [
+          val.find((item) => (item as SelectedUsersItem).id === value.value) as SelectedUsersItem,
+        ].filter(Boolean);
       } else {
-        selectedUsers.value = val || [];
+        selectedUsers.value = cloneDeep(val || []);
       }
       selectedUsers.value = selectedUsers.value?.filter((item) => (value.value as string[]).includes(item.id));
     },
