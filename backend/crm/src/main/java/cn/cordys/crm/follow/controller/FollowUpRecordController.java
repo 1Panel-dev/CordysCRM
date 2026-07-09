@@ -6,6 +6,7 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
@@ -69,7 +70,7 @@ public class FollowUpRecordController {
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除跟进记录")
     public void delete(@PathVariable String id) {
-        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId());
+        followUpRecordService.checkUpdatePermission(id, SessionUtils.getUserId());
         followUpRecordService.delete(id);
     }
 
@@ -77,19 +78,22 @@ public class FollowUpRecordController {
     @Operation(summary = "跟进记录详情")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     public FollowUpRecordDetailResponse get(@PathVariable String id) {
+        followUpRecordService.checkRecordPermission(id, OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
         return followUpRecordService.get(id, OrganizationContext.getOrganizationId());
     }
 
 	@PostMapping("/add")
 	@Operation(summary = "添加跟进记录")
 	public FollowUpRecord add(@Validated @RequestBody FollowUpRecordAddRequest request) {
-		return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        followUpRecordService.checkRecordPermission(BeanUtils.copyBean(new FollowUpRecord(), request),
+                OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), false);
+        return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
     @PostMapping("/update")
     @Operation(summary = "更新跟进记录")
     public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
-        followUpRecordService.checkRecordPermission(request.getId(), OrganizationContext.getOrganizationId());
+        followUpRecordService.checkUpdatePermission(request.getId(), SessionUtils.getUserId());
         return followUpRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

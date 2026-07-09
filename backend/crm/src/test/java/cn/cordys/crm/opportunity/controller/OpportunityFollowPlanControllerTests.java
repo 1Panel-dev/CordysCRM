@@ -1,6 +1,8 @@
 package cn.cordys.crm.opportunity.controller;
 
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.constants.FollowUpPlanStatusType;
@@ -25,6 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -45,6 +48,8 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
 
+    public static String customerId;
+
     @Override
     protected String getBasePath() {
         return BASE_PATH;
@@ -53,11 +58,12 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
     @Test
     @Order(1)
     void testAdd() throws Exception {
+        insertCustomer();
         long timestamp = LocalDate.now()
                 .atStartOfDay(ZoneId.systemDefault())
                 .toEpochSecond() * 1000;
         FollowUpPlanAddRequest request = new FollowUpPlanAddRequest();
-        request.setCustomerId("wx_123");
+        request.setCustomerId(customerId);
         request.setOpportunityId("wx_12345");
         request.setOwner("admin");
         request.setContactId("123456");
@@ -79,7 +85,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
                 .atStartOfDay(ZoneId.systemDefault())
                 .toEpochSecond() * 1000;
         FollowUpPlanUpdateRequest request = new FollowUpPlanUpdateRequest();
-        request.setId("1234");
+        request.setId(customerId);
         request.setCustomerId("wx_123");
         request.setOpportunityId("wx_12345");
         request.setOwner("admin");
@@ -96,12 +102,30 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         this.requestPostWithOk(DEFAULT_UPDATE, request);
     }
 
+    private Customer insertCustomer() {
+        Customer customer = new Customer();
+        customer.setId(IDGenerator.nextStr());
+        customer.setName(UUID.randomUUID().toString());
+        customer.setOwner(InternalUser.ADMIN.getValue());
+        customer.setCollectionTime(System.currentTimeMillis());
+        customer.setPoolId("testPoolId");
+        customer.setInSharedPool(false);
+        customer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        customer.setCreateTime(System.currentTimeMillis());
+        customer.setCreateUser(InternalUser.ADMIN.getValue());
+        customer.setUpdateTime(System.currentTimeMillis());
+        customer.setUpdateUser(InternalUser.ADMIN.getValue());
+        customerMapper.insert(customer);
+        customerId = customer.getId();
+        return customer;
+    }
+
 
     @Test
     @Order(3)
     void testList() throws Exception {
         FollowUpRecordPageRequest request = new FollowUpRecordPageRequest();
-        request.setSourceId("123");
+        request.setSourceId(customerId);
         request.setCurrent(1);
         request.setPageSize(10);
         this.requestPost(DEFAULT_PAGE, request);
