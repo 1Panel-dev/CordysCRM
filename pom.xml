@@ -27,7 +27,7 @@
         <shiro.version>2.1.0</shiro.version>
         <fastexcel.version>1.3.0</fastexcel.version>
         <pagehelper.version>6.1.1</pagehelper.version>
-        <quartz-starter.version>1.0.0</quartz-starter.version>
+        <quartz-starter.version>1.0.1</quartz-starter.version>
         <redisson-starter.version>3.52.0</redisson-starter.version>
         <mybatis-starter.version>3.0.5</mybatis-starter.version>
         <springdoc-openapi-ui.version>2.8.16</springdoc-openapi-ui.version>
