@@ -41,9 +41,6 @@ public final class ShiroFilter {
         // 认证相关路径
         addAuthenticationFilters();
 
-        // 其他公共路径
-        addPublicPathFilters();
-
         return Collections.unmodifiableMap(FILTER_CHAIN_DEFINITION_MAP);
     }
 
@@ -77,26 +74,6 @@ public final class ShiroFilter {
         FILTER_CHAIN_DEFINITION_MAP.put("/get-key", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/403", "anon");
         FILTER_CHAIN_DEFINITION_MAP.put("/sso/callback/**", "anon");
-    }
-
-    /**
-     * 添加其他公共路径过滤器规则
-     */
-    private static void addPublicPathFilters() {
-        FILTER_CHAIN_DEFINITION_MAP.put("/display/info", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/pic/preview/**", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/attachment/preview/**", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/ui/display/preview", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/ui/display/info", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/anonymous/**", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/system/version/current", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/sse/subscribe/**", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/sse/close/**", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/sse/broadcast/**", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/organization/settings/third-party/types", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/organization/settings/third-party/get/**", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/organization/settings/third-party/sync/resource", "anon");
-        FILTER_CHAIN_DEFINITION_MAP.put("/license/validate/**", "anon");
     }
 
     /**
