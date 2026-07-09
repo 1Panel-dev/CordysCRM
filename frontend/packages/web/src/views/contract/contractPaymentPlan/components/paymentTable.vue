@@ -25,6 +25,12 @@
         >
           {{ t('contract.newPlan') }}
         </n-button>
+        <CrmImportButton
+          v-if="hasAnyPermission(['CONTRACT_PAYMENT_PLAN:IMPORT']) && !props.isContractTab"
+          :api-type="FormDesignKeyEnum.CONTRACT_PAYMENT"
+          :title="t('module.paymentPlan')"
+          @import-success="() => searchData()"
+        />
         <n-button
           v-permission="['CONTRACT_PAYMENT_PLAN:EXPORT']"
           type="primary"
@@ -111,6 +117,7 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';

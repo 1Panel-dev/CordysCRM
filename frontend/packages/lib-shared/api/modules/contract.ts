@@ -64,6 +64,9 @@ import {
   EnablePaymentRecordViewUrl,
   DeletePaymentRecordViewUrl,
   DragPaymentRecordViewUrl,
+  PreCheckPaymentPlanImportUrl,
+  DownloadPaymentPlanTemplateUrl,
+  ImportPaymentPlanUrl,
   PreCheckPaymentRecordImportUrl,
   DownloadPaymentRecordTemplateUrl,
   ImportPaymentRecordUrl,
@@ -483,6 +486,24 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.post({ url: DragPaymentRecordViewUrl, data });
   }
 
+  function preCheckImportContractPaymentPlan(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckPaymentPlanImportUrl }, params, 'file');
+  }
+
+  function downloadContractPaymentPlanTemplate() {
+    return CDR.get(
+      {
+        url: DownloadPaymentPlanTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importContractPaymentPlan(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportPaymentPlanUrl }, params, 'file');
+  }
+
   function preCheckImportContractPaymentRecord(params: ImportUploadParams) {
     return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckPaymentRecordImportUrl }, params, 'file');
   }
@@ -838,6 +859,9 @@ export default function useContractApi(CDR: CordysAxios) {
     enablePaymentRecordView,
     deletePaymentRecordView,
     dragPaymentRecordView,
+    preCheckImportContractPaymentPlan,
+    importContractPaymentPlan,
+    downloadContractPaymentPlanTemplate,
     preCheckImportContractPaymentRecord,
     importContractPaymentRecord,
     downloadContractPaymentRecordTemplate,
