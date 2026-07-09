@@ -5,6 +5,7 @@ import cn.cordys.common.security.AuthFilter;
 import cn.cordys.common.security.CsrfFilter;
 import cn.cordys.common.security.realm.LocalRealm;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.security.FileAccessAuthFilter;
 import cn.cordys.security.ShiroFilter;
 import jakarta.servlet.Filter;
 import org.apache.shiro.aop.AnnotationResolver;
@@ -69,6 +70,7 @@ public class ShiroConfig {
         filters.put("apikey", new ApiKeyFilter());
         filters.put("csrf", new CsrfFilter());
         filters.put("authc", new AuthFilter());
+        filters.put("authf", new FileAccessAuthFilter());
 
         chain.putAll(ShiroFilter.loadBaseFilterChain());
         chain.putAll(ShiroFilter.ignoreCsrfFilter());
