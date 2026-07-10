@@ -497,4 +497,53 @@
     <update id="updateOldApprovalStatusNone">
         update contract_invoice set approval_status = 'NONE' where approval_status = 'APPROVING';
     </update>
+
+
+    <update id="updateInvoice">
+        update contract_invoice
+        <set>
+            <if test="contractInvoice.name != null and contractInvoice.name != ''">
+                name = #{contractInvoice.name},
+            </if>
+            <if test="contractInvoice.contractId != null and contractInvoice.contractId != ''">
+                contract_id = #{contractInvoice.contractId},
+            </if>
+            <if test="contractInvoice.owner != null and contractInvoice.owner != ''">
+                owner = #{contractInvoice.owner},
+            </if>
+            <if test="contractInvoice.amount != null">
+                amount = #{contractInvoice.amount},
+            </if>
+            <if test="contractInvoice.invoiceType != null and contractInvoice.invoiceType != ''">
+                invoice_type = #{contractInvoice.invoiceType},
+            </if>
+            <if test="contractInvoice.taxRate != null">
+                tax_rate = #{contractInvoice.taxRate},
+            </if>
+            <if test="contractInvoice.businessTitleId != null and contractInvoice.businessTitleId != ''">
+                business_title_id = #{contractInvoice.businessTitleId},
+            </if>
+            <if test="contractInvoice.organizationId != null and contractInvoice.organizationId != ''">
+                organization_id = #{contractInvoice.organizationId},
+            </if>
+            <if test="contractInvoice.createTime != null">
+                create_time = #{contractInvoice.createTime},
+            </if>
+            <if test="contractInvoice.updateTime != null">
+                update_time = #{contractInvoice.updateTime},
+            </if>
+            <if test="contractInvoice.createUser != null and contractInvoice.createUser != ''">
+                create_user = #{contractInvoice.createUser},
+            </if>
+            <if test="contractInvoice.updateUser != null and contractInvoice.updateUser != ''">
+                update_user = #{contractInvoice.updateUser},
+            </if>
+            <if test="contractInvoice.approved != null">
+                approved = #{contractInvoice.approved},
+            </if>
+        </set>
+        <where>
+            id = #{contractInvoice.id}
+        </where>
+    </update>
 </mapper>
