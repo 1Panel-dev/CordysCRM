@@ -110,16 +110,16 @@ public class CustomFormDataController {
 
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入预检查")
-    public ImportResponse importPreCheck(@RequestParam String customFormId,
+    public ImportResponse importPreCheck(@Validated @RequestPart("request") CustomerFormImportRequest request,
                                          @RequestPart(value = "file") MultipartFile file) {
-        return customFormDataService.importPreCheck(file, customFormId, OrganizationContext.getOrganizationId());
+        return customFormDataService.importPreCheck(file, request, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入表单数据")
-    public ImportResponse realImport(@RequestParam String customFormId,
+    public ImportResponse realImport(@Validated @RequestPart("request") CustomerFormImportRequest request,
                                      @RequestPart(value = "file") MultipartFile file) {
-        return customFormDataService.realImport(file, customFormId,
+        return customFormDataService.realImport(file, request,
                 OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

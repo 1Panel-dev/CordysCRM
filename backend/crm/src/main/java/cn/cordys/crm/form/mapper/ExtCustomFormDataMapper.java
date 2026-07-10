@@ -1,6 +1,7 @@
 package cn.cordys.crm.form.mapper;
 
 import cn.cordys.common.dto.BatchUpdateDbParam;
+import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
 import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
 import org.apache.ibatis.annotations.Param;
@@ -26,4 +27,6 @@ public interface ExtCustomFormDataMapper {
     void deleteFormDataByCustomFormId(@Param("formId") String formId);
 
     List<CustomFormDataListResponse> getListByIds(@Param("ids") List<String> ids);
+
+    void updateData(@Param("customFormData")CustomFormData customFormData);
 }
