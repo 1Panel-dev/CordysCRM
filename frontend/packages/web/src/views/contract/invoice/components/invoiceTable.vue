@@ -25,6 +25,12 @@
         >
           {{ t('invoice.new') }}
         </n-button>
+        <CrmImportButton
+          v-if="hasAnyPermission(['CONTRACT_INVOICE:IMPORT']) && !props.isContractTab"
+          :api-type="FormDesignKeyEnum.INVOICE"
+          :title="t('module.invoice')"
+          @import-success="() => searchData()"
+        />
         <n-button
           v-permission="['CONTRACT_INVOICE:EXPORT']"
           type="primary"
@@ -114,6 +120,7 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';

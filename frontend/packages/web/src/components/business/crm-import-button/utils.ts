@@ -7,6 +7,7 @@ import {
   downloadAccountTemplate,
   downloadBusinessTitleTemplate,
   downloadContactTemplate,
+  downloadContractInvoicedTemplate,
   downloadContractPaymentPlanTemplate,
   downloadContractPaymentRecordTemplate,
   downloadCustomFormTemplate,
@@ -19,6 +20,7 @@ import {
   importAccount,
   importBusinessTitle,
   importContact,
+  importContractInvoiced,
   importContractPaymentPlan,
   importContractPaymentRecord,
   importCustomForm,
@@ -31,6 +33,7 @@ import {
   preCheckImportAccount,
   preCheckImportBusinessTitle,
   preCheckImportContact,
+  preCheckImportContractInvoiced,
   preCheckImportContractPaymentPlan,
   preCheckImportContractPaymentRecord,
   preCheckImportCustomForm,
@@ -50,6 +53,7 @@ export type ImportApiType =
   | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
   | FormDesignKeyEnum.CONTACT
   | FormDesignKeyEnum.PRODUCT
+  | FormDesignKeyEnum.INVOICE
   | FormDesignKeyEnum.CONTRACT_PAYMENT
   | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
   | FormDesignKeyEnum.PRICE
@@ -112,6 +116,11 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     preCheck: (params) => preCheckImportContractPaymentRecord(params.uploadParams),
     save: (params) => importContractPaymentRecord(params.uploadParams),
     download: downloadContractPaymentRecordTemplate,
+  },
+  [FormDesignKeyEnum.INVOICE]: {
+    preCheck: (params) => preCheckImportContractInvoiced(params.uploadParams),
+    save: (params) => importContractInvoiced(params.uploadParams),
+    download: downloadContractInvoicedTemplate,
   },
   [FormDesignKeyEnum.CONTRACT_PAYMENT]: {
     preCheck: (params) => preCheckImportContractPaymentPlan(params.uploadParams),
