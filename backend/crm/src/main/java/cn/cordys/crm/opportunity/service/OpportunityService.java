@@ -863,7 +863,7 @@ public class OpportunityService {
                 }
             };
             CustomFieldImportEventListener<Opportunity> eventListener = new CustomFieldImportEventListener<>(fields, Opportunity.class, currentOrg, currentUser,
-                    "opportunity_field", afterDo, 2000, null, null, ImportType.ADD.name());
+                    "opportunity_field", afterDo, 2000, null, null, request.getImportType());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
