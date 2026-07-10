@@ -1,6 +1,7 @@
 package cn.cordys.crm.contract.mapper;
 
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.crm.contract.domain.ContractInvoice;
 import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceListResponse;
@@ -36,4 +37,6 @@ public interface ExtContractInvoiceMapper {
     Boolean hasContractInvoice(@Param("contractId") String contractId);
 
 	void updateOldApprovalStatusNone();
+
+    void updateInvoice(@Param("contractInvoice")ContractInvoice contractInvoice);
 }

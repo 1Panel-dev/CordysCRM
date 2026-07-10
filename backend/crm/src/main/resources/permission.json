@@ -659,6 +659,9 @@
             "id": "CONTRACT_INVOICE:DELETE"
           },
           {
+            "id": "CONTRACT_INVOICE:IMPORT"
+          },
+          {
             "id": "CONTRACT_INVOICE:EXPORT"
           }
         ]
