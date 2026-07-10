@@ -1077,7 +1077,7 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
                     String permissionType = map.get("permissionType") != null ? map.get("permissionType").toString() : "";
 
                     BaseField field = fieldMap.get(fieldId);
-                    String fieldName = field != null ? field.getName() : fieldId;
+                    String fieldName = field != null ? field.getName() : "[" + Translator.get("module.field.not_exist") + "]";
                     String translatedPermission = Translator.get("approval_flow.field_permission." + permissionType.toLowerCase(), permissionType);
 
                     parts.add(fieldName + ": " + translatedPermission);
