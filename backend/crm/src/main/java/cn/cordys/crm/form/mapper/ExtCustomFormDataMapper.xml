@@ -320,4 +320,36 @@
         </foreach>
     </select>
 
+    <update id="updateData">
+        update custom_form_data
+        <set>
+            <if test="customFormData.customFormId != null and customFormData.customFormId != ''">
+                custom_form_id = #{customFormData.customFormId},
+            </if>
+            <if test="customFormData.name != null and customFormData.name != ''">
+                name = #{customFormData.name},
+            </if>
+            <if test="customFormData.owner != null and customFormData.owner != ''">
+                owner = #{customFormData.owner},
+            </if>
+            <if test="customFormData.organizationId != null and customFormData.organizationId != ''">
+                organization_id = #{customFormData.organizationId},
+            </if>
+            <if test="customFormData.createTime != null">
+                create_time = #{customFormData.createTime},
+            </if>
+            <if test="customFormData.updateTime != null">
+                update_time = #{customFormData.updateTime},
+            </if>
+            <if test="customFormData.createUser != null and customFormData.createUser != ''">
+                create_user = #{customFormData.createUser},
+            </if>
+            <if test="customFormData.updateUser != null and customFormData.updateUser != ''">
+                update_user = #{customFormData.updateUser},
+            </if>
+        </set>
+        <where>
+            id = #{customFormData.id}
+        </where>
+    </update>
 </mapper>
