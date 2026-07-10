@@ -79,8 +79,7 @@ public class ContractExportService extends BaseExportService {
             return Pair.of(exportList, exportList.size());
         } else {
             var request = (ContractPageRequest) exportParam.getPageRequest();
-            int offset = (request.getCurrent() - 1) * request.getPageSize();
-            PageHelper.startPage(offset, request.getPageSize());
+            PageHelper.startPage(request.getCurrent(), request.getPageSize());
             exportList = extContractMapper.list(request, orgId, userId, deptDataPermission, false);
             int queryCount = exportList.size();
             var filtered = filterExportPermission(exportList, orgId);
