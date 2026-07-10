@@ -174,10 +174,15 @@ public abstract class BaseTest {
                 .andExpect(status().isOk());
     }
 
-    protected ResultActions requestGetStreamWithOk(String url, Object... uriVariables) throws Exception {
-        return mockMvc.perform(getRequestBuilder(url, uriVariables))
+    protected void requestGetStreamWithOk(String url, Object... uriVariables) throws Exception {
+        mockMvc.perform(getRequestBuilder(url, uriVariables))
                 .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
                 .andExpect(status().isOk());
+    }
+
+    protected void requestGetStreamWith4xx(String url, Object... uriVariables) throws Exception {
+        mockMvc.perform(getRequestBuilder(url, uriVariables))
+                .andExpect(status().is4xxClientError());
     }
 
     protected MvcResult requestGetWithOkAndReturn(String url, Object... uriVariables) throws Exception {
