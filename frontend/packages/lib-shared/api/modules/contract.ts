@@ -94,6 +94,9 @@ import {
   ContractInvoicedDetailUrl,
   ContractInvoicedExportAllUrl,
   ContractInvoicedExportSelectedUrl,
+  PreCheckContractInvoicedImportUrl,
+  DownloadContractInvoicedTemplateUrl,
+  ImportContractInvoicedUrl,
   ContractInvoicedFormConfigSnapshotUrl,
   ContractInvoicedFormConfigUrl,
   ContractInvoicedPageUrl,
@@ -693,6 +696,24 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.post({ url: ContractInvoicedExportSelectedUrl, data });
   }
 
+  function preCheckImportContractInvoiced(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckContractInvoicedImportUrl }, params, 'file');
+  }
+
+  function downloadContractInvoicedTemplate() {
+    return CDR.get(
+      {
+        url: DownloadContractInvoicedTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importContractInvoiced(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportContractInvoicedUrl }, params, 'file');
+  }
+
   // 获取发票 tab 显隐
   function getInvoicedTab() {
     return CDR.get<CustomerTabHidden>({ url: ContractInvoicedTabUrl });
@@ -918,5 +939,9 @@ export default function useContractApi(CDR: CordysAxios) {
     updateContractStage,
     saveContractAdvanceConfig,
     switchContractCirculationType,
+    // 发票导入
+    preCheckImportContractInvoiced,
+    downloadContractInvoicedTemplate,
+    importContractInvoiced,
   };
 }

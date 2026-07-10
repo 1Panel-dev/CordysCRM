@@ -133,6 +133,11 @@ export const ContractInvoicedDeleteUrl = '/invoice/delete'; // 发票删除
 export const ContractInvoicedRevokeUrl = '/invoice/revoke'; // 发票撤回
 export const ContractInvoicedTabUrl = '/invoice/tab'; // 发票tab显隐
 
+// 发票导入
+export const PreCheckContractInvoicedImportUrl = '/invoice/import/pre-check'; // 发票导入预检查
+export const DownloadContractInvoicedTemplateUrl = '/invoice/template/download'; // 发票导入模板下载
+export const ImportContractInvoicedUrl = '/invoice/import'; // 发票导入
+
 // 发票视图
 export const UpdateContractInvoicedViewUrl = '/invoice/view/update'; // 更新发票视图
 export const DragContractInvoicedViewUrl = '/invoice/view/edit/pos'; // 拖拽发票视图排序
