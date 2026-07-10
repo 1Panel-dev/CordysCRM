@@ -1007,4 +1007,58 @@
         </foreach>
         and organization_id = #{orgId}
     </select>
+
+    <update id="updateOpportunity">
+        update opportunity
+        <set>
+            <if test="opportunity.customerId != null and opportunity.customerId != ''">
+                customer_id = #{opportunity.customerId},
+            </if>
+            <if test="opportunity.name != null and opportunity.name != ''">
+                name = #{opportunity.name},
+            </if>
+            <if test="opportunity.amount != null">
+                amount = #{opportunity.amount},
+            </if>
+            <if test="opportunity.possible != null">
+                possible = #{opportunity.possible},
+            </if>
+            <if test="opportunity.products != null and products.size() > 0">
+                products = #{opportunity.products,typeHandler=cn.cordys.common.handler.ListTypeHandler},
+            </if>
+            <if test="opportunity.organizationId != null and opportunity.organizationId != ''">
+                organization_id = #{opportunity.organizationId},
+            </if>
+            <if test="opportunity.contactId != null and opportunity.contactId != ''">
+                contact_id = #{opportunity.contactId},
+            </if>
+            <if test="opportunity.owner != null and opportunity.owner != ''">
+                owner = #{opportunity.owner},
+            </if>
+            <if test="opportunity.updateUser != null and opportunity.updateUser != ''">
+                update_user = #{opportunity.updateUser},
+            </if>
+            <if test="opportunity.createTime != null">
+                create_time = #{opportunity.createTime},
+            </if>
+            <if test="opportunity.updateTime != null">
+                update_time = #{opportunity.updateTime},
+            </if>
+            <if test="opportunity.createUser != null and opportunity.createUser != ''">
+                create_user = #{opportunity.createUser},
+            </if>
+            <if test="opportunity.expectedEndTime != null">
+                expected_end_time = #{opportunity.expectedEndTime},
+            </if>
+            <if test="opportunity.actualEndTime != null">
+                actual_end_time = #{opportunity.actualEndTime},
+            </if>
+            <if test="opportunity.failureReason != null and opportunity.failureReason != ''">
+                failure_reason = #{opportunity.failureReason},
+            </if>
+        </set>
+        <where>
+            id = #{opportunity.id}
+        </where>
+    </update>
 </mapper>

@@ -15,6 +15,7 @@ import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
@@ -23,6 +24,7 @@ import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
@@ -51,6 +53,7 @@ import cn.cordys.crm.system.dto.DictConfigDTO;
 import cn.cordys.crm.system.dto.field.SelectField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -735,11 +738,11 @@ public class OpportunityService {
      * @param currentOrg 当前组织
      * @return 导入检查信息
      */
-    public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+    public ImportResponse importPreCheck(MultipartFile file, String importType, String currentOrg) {
         if (file == null) {
             throw new GenericException(Translator.get("file_cannot_be_null"));
         }
-        return checkImportExcel(file, currentOrg);
+        return checkImportExcel(file, importType, currentOrg);
     }
 
     /**
@@ -750,7 +753,7 @@ public class OpportunityService {
      * @param currentUser 当前用户
      * @return 导入返回信息
      */
-    public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+    public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(currentOrg);
 
@@ -758,6 +761,110 @@ public class OpportunityService {
             long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
             CustomImportAfterDoConsumer<Opportunity, BaseResourceSubField> afterDo = (opportunities, opportunityFields, opportunityFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
+                ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
+                switch (importType) {
+                    case ADD -> {
+                        for (int i = 0; i < opportunities.size(); i++) {
+                            Opportunity opportunity = opportunities.get(i);
+                            opportunity.setStage(stageConfigList.getFirst().getId());
+                            opportunity.setPos(nextPos + i);
+                            logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD, LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
+                            commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                                    NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), currentUser,
+                                    currentOrg, List.of(opportunity.getOwner()), true);
+                        }
+                        opportunityMapper.batchInsert(opportunities);
+                        opportunityFieldMapper.batchInsert(opportunityFields.stream().map(field -> BeanUtils.copyBean(new OpportunityField(), field)).toList());
+                        opportunityFieldBlobMapper.batchInsert(opportunityFieldBlobs.stream().map(field -> BeanUtils.copyBean(new OpportunityFieldBlob(), field)).toList());
+                        // record logs
+                        logService.batchAdd(logs);
+                    }
+                    case UPDATE -> {
+                        List<String> ids = opportunities.stream().map(Opportunity::getId).toList();
+                        if (CollectionUtils.isEmpty(ids)) {
+                            break;
+                        }
+                        //原数据
+                        List<Opportunity> originOpportunityList = opportunityMapper.selectByIds(ids);
+                        if (CollectionUtils.isEmpty(originOpportunityList)) {
+                            break;
+                        }
+                        Map<String, Opportunity> originOpportunityMaps = originOpportunityList.stream().collect(Collectors.toMap(Opportunity::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = opportunityFieldService.getResourceFieldMap(ids, true);
+
+                        List<OpportunityField> insertField = new ArrayList<>();
+                        List<OpportunityFieldBlob> insertFieldBlob = new ArrayList<>();
+                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                        ExtOpportunityMapper batchMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
+                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+
+                        if (CollectionUtils.isNotEmpty(opportunities)) {
+                            opportunities.forEach(opportunity -> {
+                                batchMapper.updateOpportunity(opportunity);
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(opportunityFields)) {
+                            List<OpportunityField> fieldList = opportunityFieldMapper.selectByIds(opportunityFields.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, OpportunityField> fieldMap = fieldList.stream().collect(Collectors.toMap(OpportunityField::getId, Function.identity()));
+                            opportunityFields.forEach(opportunityField -> {
+                                if (fieldMap.containsKey(opportunityField.getId())) {
+                                    commonMapper.updateCustomerField("opportunity_field", opportunityField);
+                                } else {
+                                    insertField.add(BeanUtils.copyBean(new OpportunityField(), opportunityField));
+                                }
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(opportunityFieldBlobs)) {
+                            List<OpportunityFieldBlob> blobList = opportunityFieldBlobMapper.selectByIds(opportunityFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, OpportunityFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(OpportunityFieldBlob::getId, Function.identity()));
+                            opportunityFieldBlobs.forEach(opportunityFieldBlob -> {
+                                if (blobMap.containsKey(opportunityFieldBlob.getId())) {
+                                    commonMapper.updateCustomerField("opportunity_field_blob", opportunityFieldBlob);
+                                } else {
+                                    insertFieldBlob.add(BeanUtils.copyBean(new OpportunityFieldBlob(), opportunityFieldBlob));
+                                }
+                            });
+                        }
+
+                        sqlSession.flushStatements();
+                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                        if (CollectionUtils.isNotEmpty(insertField)) {
+                            opportunityFieldMapper.batchInsert(insertField);
+                        }
+                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                            opportunityFieldBlobMapper.batchInsert(insertFieldBlob);
+                        }
+
+                        SqlSession currentSession =
+                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                        currentSession.clearCache();
+
+                        Map<String, Opportunity> modifiedOpportunityMaps = opportunityMapper.selectByIds(ids).stream().collect(Collectors.toMap(Opportunity::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = opportunityFieldService.getResourceFieldMap(ids, true);
+
+                        ids.forEach(id -> {
+                            Opportunity originDate = originOpportunityMaps.get(id);
+                            Opportunity modifiedDate = modifiedOpportunityMaps.get(id);
+                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            LogContextInfo contextInfo = OperationLogContext.getContext();
+                            if (contextInfo != null) {
+                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.OPPORTUNITY_INDEX, modifiedDate.getName());
+                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                                logs.add(logDTO);
+                                OperationLogContext.clear();
+                            }
+                        });
+                        logService.batchAdd(logs);
+
+
+                    }
+                }
+
+
                 for (int i = 0; i < opportunities.size(); i++) {
                     Opportunity opportunity = opportunities.get(i);
                     opportunity.setStage(stageConfigList.getFirst().getId());
@@ -792,10 +899,10 @@ public class OpportunityService {
      * @param currentOrg 当前组织
      * @return 检查信息
      */
-    private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+    private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg,ImportType.ADD.name());
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg, importType);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
