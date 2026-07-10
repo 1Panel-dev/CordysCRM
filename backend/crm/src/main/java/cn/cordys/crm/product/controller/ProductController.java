@@ -1,18 +1,30 @@
 package cn.cordys.crm.product.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.ExportDTO;
+import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.product.domain.Product;
 import cn.cordys.crm.product.dto.request.ProductEditRequest;
+import cn.cordys.crm.product.dto.request.ProductExportRequest;
 import cn.cordys.crm.product.dto.request.ProductPageRequest;
 import cn.cordys.crm.product.dto.response.ProductGetResponse;
 import cn.cordys.crm.product.dto.response.ProductListResponse;
+import cn.cordys.crm.product.service.ProductExportService;
 import cn.cordys.crm.product.service.ProductService;
+import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -24,6 +36,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +56,10 @@ public class ProductController {
 
     @Resource
     private ProductService productService;
+    @Resource
+    private DataScopeService dataScopeService;
+    @Resource
+    private ProductExportService productExportService;
 
 
     @GetMapping("/module/form")
@@ -120,15 +137,15 @@ public class ProductController {
     @PostMapping("/import/pre-check")
     @Operation(summary = "导入检查")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_IMPORT)
-    public ImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
-        return productService.importPreCheck(file, OrganizationContext.getOrganizationId());
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return productService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/import")
     @Operation(summary = "导入产品")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_IMPORT)
-    public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
-        return productService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return productService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @GetMapping("/list/option")
@@ -137,5 +154,48 @@ public class ProductController {
         return productService.listOption(OrganizationContext.getOrganizationId());
     }
 
+    @PostMapping("/export-all")
+    @Operation(summary = "产品导出全部")
+    @CsPermission(PermissionConstants.PRODUCT_MANAGEMENT_EXPORT)
+    public String productExportAll(@Validated @RequestBody ProductExportRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.PRODUCT.getKey());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.PRODUCT_MANAGEMENT_READ);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.PRODUCT.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.PRODUCT_MANAGEMENT)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .pageRequest(request)
+                .formKey(FormKey.PRODUCT.getKey())
+                .build();
+        return productExportService.exportAllWithMergeStrategy(exportDTO);
+    }
 
+
+    @PostMapping("/export-select")
+    @Operation(summary = "导出选中合同")
+    @CsBatchPermission(value = PermissionConstants.PRODUCT_MANAGEMENT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.PRODUCT)
+    public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.PRODUCT_MANAGEMENT_READ);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.PRODUCT.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.PRODUCT_MANAGEMENT)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .selectIds(request.getIds())
+                .selectRequest(request)
+                .formKey(FormKey.PRODUCT.getKey())
+                .build();
+        return productExportService.exportSelectWithMergeStrategy(exportDTO);
+    }
 }

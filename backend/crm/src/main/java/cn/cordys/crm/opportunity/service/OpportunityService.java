@@ -758,12 +758,12 @@ public class OpportunityService {
             List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(currentOrg);
 
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
-            long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
             CustomImportAfterDoConsumer<Opportunity, BaseResourceSubField> afterDo = (opportunities, opportunityFields, opportunityFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                     case ADD -> {
+                        long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
                         for (int i = 0; i < opportunities.size(); i++) {
                             Opportunity opportunity = opportunities.get(i);
                             opportunity.setStage(stageConfigList.getFirst().getId());
@@ -859,27 +859,8 @@ public class OpportunityService {
                             }
                         });
                         logService.batchAdd(logs);
-
-
                     }
                 }
-
-
-                for (int i = 0; i < opportunities.size(); i++) {
-                    Opportunity opportunity = opportunities.get(i);
-                    opportunity.setStage(stageConfigList.getFirst().getId());
-                    opportunity.setPos(nextPos + i);
-                    logs.add(new LogDTO(currentOrg, opportunity.getId(), currentUser, LogType.ADD, LogModule.OPPORTUNITY_INDEX, opportunity.getName()));
-                    // 消息通知(异步)
-                    commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                            NotificationConstants.Event.BUSINESS_ADD, opportunity.getName(), currentUser,
-                            currentOrg, List.of(opportunity.getOwner()), true);
-                }
-                opportunityMapper.batchInsert(opportunities);
-                opportunityFieldMapper.batchInsert(opportunityFields.stream().map(field -> BeanUtils.copyBean(new OpportunityField(), field)).toList());
-                opportunityFieldBlobMapper.batchInsert(opportunityFieldBlobs.stream().map(field -> BeanUtils.copyBean(new OpportunityFieldBlob(), field)).toList());
-                // record logs
-                logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<Opportunity> eventListener = new CustomFieldImportEventListener<>(fields, Opportunity.class, currentOrg, currentUser,
                     "opportunity_field", afterDo, 2000, null, null, ImportType.ADD.name());

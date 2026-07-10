@@ -942,7 +942,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                             logs.add(new LogDTO(currentOrg, invoice.getId(), currentUser, LogType.ADD, LogModule.CONTRACT_INVOICE, invoice.getName()));
                         });
                         contractInvoiceMapper.batchInsert(invoices);
-                        invoiceFieldMapper.batchInsert(invoices.stream().map(field -> BeanUtils.copyBean(new ContractInvoiceField(), field)).toList());
+                        invoiceFieldMapper.batchInsert(invoiceFields.stream().map(field -> BeanUtils.copyBean(new ContractInvoiceField(), field)).toList());
                         invoiceFieldBlobMapper.batchInsert(invoiceFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ContractInvoiceFieldBlob(), field)).toList());
                         // record logs
                         logService.batchAdd(logs);

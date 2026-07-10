@@ -4,6 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
@@ -11,10 +12,12 @@ import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.request.PosRequest;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
@@ -29,6 +32,7 @@ import cn.cordys.crm.product.mapper.ExtProductMapper;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -51,12 +55,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -85,6 +94,8 @@ public class ProductService {
     private BaseMapper<ProductField> productFieldMapper;
     @Resource
     private BaseMapper<ProductFieldBlob> productFieldBlobMapper;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
 
     public PagerWithOption<List<ProductListResponse>> list(ProductPageRequest request, String orgId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -99,7 +110,7 @@ public class ProductService {
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    private List<ProductListResponse> buildListData(List<ProductListResponse> list) {
+    public List<ProductListResponse> buildListData(List<ProductListResponse> list) {
         List<String> productIds = list.stream().map(ProductListResponse::getId)
                 .collect(Collectors.toList());
 
@@ -118,7 +129,6 @@ public class ProductService {
      * ⚠️反射调用; 勿修改入参, 返回, 方法名!
      *
      * @param id 产品ID
-     *
      * @return 产品详情
      */
     public ProductGetResponse get(String id) {
@@ -140,44 +150,46 @@ public class ProductService {
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
 
-	/**
-	 * 获取产品详情（简化版）, ⚠️反射调用; 勿修改入参, 返回, 方法名!
-	 * @param id 产品ID
-	 * @return 产品详情
-	 */
-	public ProductGetResponse getSimple(String id) {
-		Product product = productBaseMapper.selectByPrimaryKey(id);
-		if (product == null) {
-			return null;
-		}
-		ProductGetResponse response = BeanUtils.copyBean(new ProductGetResponse(), product);
-		// 获取模块字段
-		List<BaseModuleFieldValue> fvs = productFieldService.getModuleFieldValuesByResourceId(id);
-		response.setModuleFields(fvs);
-		return response;
-	}
+    /**
+     * 获取产品详情（简化版）, ⚠️反射调用; 勿修改入参, 返回, 方法名!
+     *
+     * @param id 产品ID
+     * @return 产品详情
+     */
+    public ProductGetResponse getSimple(String id) {
+        Product product = productBaseMapper.selectByPrimaryKey(id);
+        if (product == null) {
+            return null;
+        }
+        ProductGetResponse response = BeanUtils.copyBean(new ProductGetResponse(), product);
+        // 获取模块字段
+        List<BaseModuleFieldValue> fvs = productFieldService.getModuleFieldValuesByResourceId(id);
+        response.setModuleFields(fvs);
+        return response;
+    }
 
-	/**
-	 * 批量获取产品详情 (用于数据源批量查询优化)
-	 * @param ids 产品ID集合
-	 * @return 产品详情列表
-	 */
-	public List<ProductGetResponse> batchGetSimpleByIds(List<String> ids) {
-		if (CollectionUtils.isEmpty(ids)) {
-			return Collections.emptyList();
-		}
-		List<Product> products = productBaseMapper.selectByIds(ids);
-		if (CollectionUtils.isEmpty(products)) {
-			return Collections.emptyList();
-		}
-		Map<String, List<BaseModuleFieldValue>> fieldValueMap = productFieldService.getResourceFieldMap(ids, true);
+    /**
+     * 批量获取产品详情 (用于数据源批量查询优化)
+     *
+     * @param ids 产品ID集合
+     * @return 产品详情列表
+     */
+    public List<ProductGetResponse> batchGetSimpleByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        List<Product> products = productBaseMapper.selectByIds(ids);
+        if (CollectionUtils.isEmpty(products)) {
+            return Collections.emptyList();
+        }
+        Map<String, List<BaseModuleFieldValue>> fieldValueMap = productFieldService.getResourceFieldMap(ids, true);
 
-		return products.stream().map(product -> {
-			ProductGetResponse response = BeanUtils.copyBean(new ProductGetResponse(), product);
-			response.setModuleFields(fieldValueMap.get(product.getId()));
-			return response;
-		}).toList();
-	}
+        return products.stream().map(product -> {
+            ProductGetResponse response = BeanUtils.copyBean(new ProductGetResponse(), product);
+            response.setModuleFields(fieldValueMap.get(product.getId()));
+            return response;
+        }).toList();
+    }
 
     @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.ADD, operator = "{#userId}")
     public Product add(ProductEditRequest request, String userId, String orgId) {
@@ -360,14 +372,13 @@ public class ProductService {
      *
      * @param file       导入文件
      * @param currentOrg 当前组织
-     *
      * @return 导入检查信息
      */
-    public ImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+    public ImportResponse importPreCheck(MultipartFile file, String importType, String currentOrg) {
         if (file == null) {
             throw new GenericException(Translator.get("file_cannot_be_null"));
         }
-        return checkImportExcel(file, currentOrg);
+        return checkImportExcel(file, importType, currentOrg);
     }
 
     /**
@@ -376,24 +387,111 @@ public class ProductService {
      * @param file        导入文件
      * @param currentOrg  当前组织
      * @param currentUser 当前用户
-     *
      * @return 导入返回信息
      */
-    public ImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+    public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
-            AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
+
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.PRODUCT.getKey(), currentOrg);
             CustomImportAfterDoConsumer<Product, BaseResourceSubField> afterDo = (products, productFields, productFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
-                products.forEach(product -> {
-                    product.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
-                    logs.add(new LogDTO(currentOrg, product.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_MANAGEMENT, product.getName()));
-                });
-                productBaseMapper.batchInsert(products);
-                productFieldMapper.batchInsert(productFields.stream().map(field -> BeanUtils.copyBean(new ProductField(), field)).toList());
-                productFieldBlobMapper.batchInsert(productFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ProductFieldBlob(), field)).toList());
-                // record logs
-                logService.batchAdd(logs);
+                ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
+                switch (importType) {
+                    case ADD -> {
+                        AtomicLong initPos = new AtomicLong(getNextOrder(currentOrg));
+                        products.forEach(product -> {
+                            product.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
+                            logs.add(new LogDTO(currentOrg, product.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_MANAGEMENT, product.getName()));
+                        });
+                        productBaseMapper.batchInsert(products);
+                        productFieldMapper.batchInsert(productFields.stream().map(field -> BeanUtils.copyBean(new ProductField(), field)).toList());
+                        productFieldBlobMapper.batchInsert(productFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ProductFieldBlob(), field)).toList());
+                        // record logs
+                        logService.batchAdd(logs);
+                    }
+                    case UPDATE -> {
+                        List<String> ids = products.stream().map(Product::getId).toList();
+                        if (CollectionUtils.isEmpty(ids)) {
+                            break;
+                        }
+                        //原数据
+                        List<Product> originProductList = productBaseMapper.selectByIds(ids);
+                        if (CollectionUtils.isEmpty(originProductList)) {
+                            break;
+                        }
+                        Map<String, Product> originProductMaps = originProductList.stream().collect(Collectors.toMap(Product::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = productFieldService.getResourceFieldMap(ids, true);
+
+                        List<ProductField> insertField = new ArrayList<>();
+                        List<ProductFieldBlob> insertFieldBlob = new ArrayList<>();
+                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                        ExtProductMapper batchMapper = sqlSession.getMapper(ExtProductMapper.class);
+                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+
+                        if (CollectionUtils.isNotEmpty(products)) {
+                            products.forEach(product -> {
+                                batchMapper.updateProduct(product);
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(productFields)) {
+                            List<ProductField> fieldList = productFieldMapper.selectByIds(productFields.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, ProductField> fieldMap = fieldList.stream().collect(Collectors.toMap(ProductField::getId, Function.identity()));
+                            productFields.forEach(productField -> {
+                                if (fieldMap.containsKey(productField.getId())) {
+                                    commonMapper.updateCustomerField("product_field", productField);
+                                } else {
+                                    insertField.add(BeanUtils.copyBean(new ProductField(), productField));
+                                }
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(productFieldBlobs)) {
+                            List<ProductFieldBlob> blobList = productFieldBlobMapper.selectByIds(productFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, ProductFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(ProductFieldBlob::getId, Function.identity()));
+                            productFieldBlobs.forEach(productFieldBlob -> {
+                                if (blobMap.containsKey(productFieldBlob.getId())) {
+                                    commonMapper.updateCustomerField("product_field_blob", productFieldBlob);
+                                } else {
+                                    insertFieldBlob.add(BeanUtils.copyBean(new ProductFieldBlob(), productFieldBlob));
+                                }
+                            });
+                        }
+
+                        sqlSession.flushStatements();
+                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(insertField)) {
+                            productFieldMapper.batchInsert(insertField);
+                        }
+                        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                            productFieldBlobMapper.batchInsert(insertFieldBlob);
+                        }
+
+                        SqlSession currentSession =
+                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                        currentSession.clearCache();
+
+                        Map<String, Product> modifiedProductMaps = productBaseMapper.selectByIds(ids).stream().collect(Collectors.toMap(Product::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = productFieldService.getResourceFieldMap(ids, true);
+
+                        ids.forEach(id -> {
+                            Product originDate = originProductMaps.get(id);
+                            Product modifiedDate = modifiedProductMaps.get(id);
+                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            LogContextInfo contextInfo = OperationLogContext.getContext();
+                            if (contextInfo != null) {
+                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.PRODUCT_MANAGEMENT, modifiedDate.getName());
+                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                                logs.add(logDTO);
+                                OperationLogContext.clear();
+                            }
+                        });
+                        logService.batchAdd(logs);
+
+                    }
+                }
             };
             CustomFieldImportEventListener<Product> eventListener = new CustomFieldImportEventListener<>(fields, Product.class, currentOrg, currentUser,
                     "product_field", afterDo, 2000, null, null, ImportType.ADD.name());
@@ -411,13 +509,12 @@ public class ProductService {
      *
      * @param file       文件
      * @param currentOrg 当前组织
-     *
      * @return 检查信息
      */
-    private ImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+    private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.PRODUCT.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product", "product_field", currentOrg,ImportType.ADD.name());
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "product", "product_field", currentOrg, importType);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
@@ -431,7 +528,6 @@ public class ProductService {
      * 获取产品选项列表
      *
      * @param organizationId 组织ID
-     *
      * @return 产品选项列表
      */
     public List<OptionDTO> listOption(String organizationId) {

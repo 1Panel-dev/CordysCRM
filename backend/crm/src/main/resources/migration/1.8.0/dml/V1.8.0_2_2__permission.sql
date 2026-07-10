@@ -7,7 +7,8 @@ INSERT INTO sys_role_permission
 VALUES (UUID_SHORT(), 'org_admin', 'CLUE_MANAGEMENT_POOL:IMPORT'),
        (UUID_SHORT(), 'org_admin', 'CUSTOMER_MANAGEMENT_POOL:IMPORT'),
        (UUID_SHORT(), 'org_admin', 'CONTRACT_PAYMENT_PLAN:IMPORT'),
-       (UUID_SHORT(), 'org_admin', 'CONTRACT_INVOICE:IMPORT');
+       (UUID_SHORT(), 'org_admin', 'CONTRACT_INVOICE:IMPORT'),
+       (UUID_SHORT(), 'org_admin', 'PRODUCT_MANAGEMENT:EXPORT');
 
 
 

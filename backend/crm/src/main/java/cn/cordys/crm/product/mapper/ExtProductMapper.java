@@ -32,4 +32,8 @@ public interface ExtProductMapper {
     Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
 
     Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
+
+    void updateProduct(@Param("product") Product product);
+
+    List<ProductListResponse> selectByIds(@Param("ids") List<String> ids);
 }
