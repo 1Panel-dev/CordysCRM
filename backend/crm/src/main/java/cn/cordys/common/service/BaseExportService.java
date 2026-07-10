@@ -19,8 +19,8 @@ import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.DepartmentField;
+import cn.cordys.crm.system.dto.field.MemberField;
 import cn.cordys.crm.system.dto.field.SelectField;
-import cn.cordys.crm.system.dto.field.SelectMultipleField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.field.base.SubField;
@@ -383,23 +383,23 @@ public abstract class BaseExportService {
         if (value == null) {
             return null;
         }
+        // 部分单选类型的字段值可走缓存
+        boolean cacheable = field instanceof DatasourceField || field instanceof DepartmentField
+                || field instanceof SelectField || field instanceof MemberField;
+        if (cacheable) {
+            Object cached = cacheMap.get(value);
+            if (cached != null) {
+                return cached;
+            }
+        }
+
         String parseVal = value instanceof List ? JSON.toJSONString(value) : value.toString();
         try {
-            if (field instanceof DatasourceField || field instanceof DepartmentField ||
-                    field instanceof SelectField || field instanceof SelectMultipleField) {
-                if (cacheMap == null) {
-                    var data = resolver.transformToValue(field, parseVal);
-                    return data;
-                }
-                if (cacheMap.containsKey(value)) {
-                    return cacheMap.get(value);
-                }
-                var data = resolver.transformToValue(field, parseVal);
+            Object data = resolver.transformToValue(field, parseVal);
+            if (cacheable && data != null) {
                 cacheMap.put(value, data);
-                return data;
             }
-
-            return resolver.transformToValue(field, parseVal);
+            return data;
         } catch (Exception e) {
             logFieldParseError(field, parseVal, e);
             return null;
@@ -428,7 +428,7 @@ public abstract class BaseExportService {
      * @param e 异常信息
      */
     private void logFieldParseError(BaseField field, String val, Exception e) {
-        log.error("Parse field value error, field={}, value={}: {}", fieldName(field), val, e.getMessage());
+        log.error("Parse field value error, field={}, value={}, errorMsg={}", fieldName(field), val, e.getMessage());
     }
 
     private static String fieldName(BaseField field) {
