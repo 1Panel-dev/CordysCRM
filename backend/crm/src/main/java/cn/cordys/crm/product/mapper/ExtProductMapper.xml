@@ -308,4 +308,49 @@
             and name like concat('%', #{keyword},'%')
         </if>
     </select>
+
+
+    <update id="updateProduct">
+        update product
+        <set>
+            <if test="product.name != null and product.name != ''">
+                name = #{product.name},
+            </if>
+            <if test="product.price != null">
+                price = #{product.price},
+            </if>
+            <if test="product.status != null and product.status != ''">
+                status = #{product.status},
+            </if>
+            <if test="product.organizationId != null and product.organizationId != ''">
+                organization_id = #{product.organizationId},
+            </if>
+            <if test="product.createTime != null">
+                create_time = #{product.createTime},
+            </if>
+            <if test="product.updateTime != null">
+                update_time = #{product.updateTime},
+            </if>
+            <if test="product.createUser != null and product.createUser != ''">
+                create_user = #{product.createUser},
+            </if>
+            <if test="product.updateUser != null and product.updateUser != ''">
+                update_user = #{product.updateUser},
+            </if>
+        </set>
+        <where>
+            id = #{product.id}
+        </where>
+    </update>
+
+    <select id="selectByIds" resultType="cn.cordys.crm.product.dto.response.ProductListResponse">
+        select p.id, p.name, p.price, p.status, p.create_time, p.update_time, p.create_user, p.update_user
+        from product p
+        where p.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by p.create_time desc
+
+    </select>
 </mapper>

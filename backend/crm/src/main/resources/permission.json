@@ -393,6 +393,9 @@
           },
           {
             "id": "PRODUCT_MANAGEMENT:IMPORT"
+          },
+          {
+            "id": "PRODUCT_MANAGEMENT:EXPORT"
           }
         ]
       },

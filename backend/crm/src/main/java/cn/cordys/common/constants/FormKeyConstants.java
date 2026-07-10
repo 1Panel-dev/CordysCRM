@@ -20,6 +20,7 @@ public class FormKeyConstants {
 	public static final String QUOTATION = "quotation";
 	public static final String FOLLOW_PLAN = "plan";
 	public static final String FOLLOW_RECORD = "record";
+	public static final String PRODUCT = "product";
 
 
 }

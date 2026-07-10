@@ -91,6 +91,7 @@ public class PermissionConstants {
     public static final String PRODUCT_MANAGEMENT_UPDATE = "PRODUCT_MANAGEMENT:UPDATE";
     public static final String PRODUCT_MANAGEMENT_DELETE = "PRODUCT_MANAGEMENT:DELETE";
     public static final String PRODUCT_MANAGEMENT_IMPORT = "PRODUCT_MANAGEMENT:IMPORT";
+    public static final String PRODUCT_MANAGEMENT_EXPORT = "PRODUCT_MANAGEMENT:EXPORT";
     /*------ end: PRODUCT_MANAGEMENT ------*/
 
     /*------ start: OPPORTUNITY_MANAGEMENT ------*/
