@@ -654,8 +654,11 @@
   function transformSubFieldsValue(item: FormCreateField, result: Record<string, any>[]) {
     const currentFieldValues = result.map((res) => res[item.businessKey || item.id]);
     currentFieldValues.forEach((fieldValue, index) => {
-      if ([FieldTypeEnum.DATA_SOURCE].includes(item.type) && Array.isArray(fieldValue)) {
-        // 处理数据源字段，单选传单个值
+      if (
+        [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(item.type) &&
+        Array.isArray(fieldValue)
+      ) {
+        // 处理数据源/成员/部门字段，单选传单个值
         result[index][item.businessKey || item.id] = result[index].price_sub
           ? fieldValue?.filter((e) => e !== result[index].price_sub)[0] // 价格表子表格特殊处理，price_sub是行号，这里不填充到fieldValue中
           : fieldValue?.[0];
