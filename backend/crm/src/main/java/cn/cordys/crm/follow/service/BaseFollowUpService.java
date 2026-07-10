@@ -207,8 +207,9 @@ public class BaseFollowUpService {
                 if (BooleanUtils.isTrue(clue.getInSharedPool())) {
                     // 校验线索池
                     poolClueService.checkPoolMember(clue.getPoolId(), userId, orgId);
+                } else {
+                    checkPermission(orgId, userId, permission, clue.getOwner());
                 }
-                checkPermission(orgId, userId, permission, clue.getOwner());
             } else {
                 throw new GenericException(Translator.get("no.operation.permission"));
             }
