@@ -100,8 +100,10 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     @Override
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
         super.invokeHeadMap(headMap, context);
-        Optional<BaseField> anySerial = this.fieldMap.values().stream().filter(BaseField::isSerialNumber).findAny();
-        anySerial.ifPresent(field -> serialField = field);
+        if (Strings.CI.equals(importType, ImportType.ADD.name())) {
+            Optional<BaseField> anySerial = this.fieldMap.values().stream().filter(BaseField::isSerialNumber).findAny();
+            anySerial.ifPresent(field -> serialField = field);
+        }
     }
 
     @Override
@@ -186,6 +188,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             headMap.forEach((k, v) -> {
                 BaseField field = fieldMap.get(v);
                 if (field == null || field.isSerialNumber()) {
+                    return;
+                }
+                if (Strings.CI.equals(importType, ImportType.UPDATE.name()) && !field.getEditable()) {
                     return;
                 }
                 Object val = convertValue(rowData.get(k), field);

@@ -1167,7 +1167,6 @@ public class ClueService {
                 switch (importType) {
                     case ADD -> {
                         clues.forEach(clue -> {
-                            clue.setId(IDGenerator.nextStr());
                             clue.setCollectionTime(clue.getCreateTime());
                             clue.setStage(ClueStatus.NEW.name());
                             clue.setInSharedPool(false);
