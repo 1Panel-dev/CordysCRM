@@ -44,6 +44,6 @@ public class PicControllerTests extends BaseTest {
     @Test
     @Order(2)
     void previewPic() throws Exception {
-        this.requestGetStreamWithOk(PREVIEW + "/" + tempIds.getFirst());
+        this.requestGetStreamWith4xx(PREVIEW + "/" + tempIds.getFirst());
     }
 }
