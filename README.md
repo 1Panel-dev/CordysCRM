@@ -75,10 +75,6 @@ docker run -d \
   </tr>  
 </table>
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=1Panel-dev/CordysCRM&type=date&legend=top-left)](https://www.star-history.com/#1Panel-dev/CordysCRM&type=date&legend=top-left)
-
 ## Roadmap
 
 - [x] 2026.07：[Cordys x WorkBuddy：飞致云 AI CRM 案例发布](https://cordys.cn/blog/fit2cloud-ai-crm-case-study.html) 
