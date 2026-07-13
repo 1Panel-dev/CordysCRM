@@ -177,6 +177,8 @@ export const {
   preCheckImportProductPrice,
   importProductPrice,
   copyProductPrice,
+  exportProductAll,
+  exportProductSelected,
 } = productApi;
 
 export const {

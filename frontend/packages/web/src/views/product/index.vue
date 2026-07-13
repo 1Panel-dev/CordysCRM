@@ -36,6 +36,16 @@
               :title="t('module.productManagement')"
               @import-success="() => searchData()"
             />
+            <n-button
+              v-if="hasAnyPermission(['PRODUCT_MANAGEMENT:EXPORT'])"
+              type="primary"
+              ghost
+              class="n-btn-outline-primary"
+              :disabled="propsRes.data.length === 0"
+              @click="handleExportAllClick"
+            >
+              {{ t('common.exportAll') }}
+            </n-button>
           </div>
         </template>
         <template #actionRight>
@@ -64,6 +74,14 @@
     :refresh-id="tableRefreshId"
     @edit="handleEdit"
   />
+  <CrmTableExportModal
+    v-model:show="showExportModal"
+    :params="exportParams"
+    :export-columns="exportColumns"
+    :is-export-all="isExportAll"
+    type="product"
+    @create-success="handleExportCreateSuccess"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -72,9 +90,10 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
-  import type { TableDraggedParams } from '@lib/shared/models/common';
+  import { ExportTableColumnItem, type TableDraggedParams } from '@lib/shared/models/common';
   import type { ProductListItem } from '@lib/shared/models/product';
 
+  import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -85,12 +104,14 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import detailDrawer from './components/detail.vue';
 
   import { batchDeleteProduct, deleteProduct, dragSortProduct } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { getExportColumns } from '@/utils/export';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
@@ -105,9 +126,16 @@
   const activeProductId = ref('');
   const tableRefreshId = ref(0);
   const tableRefreshIdKey = ref(0);
+  const showExportModal = ref(false);
+  const isExportAll = ref(false);
 
   const actionConfig: BatchActionConfig = {
     baseAction: [
+      {
+        label: t('common.exportChecked'),
+        key: 'exportChecked',
+        permission: ['PRODUCT_MANAGEMENT:EXPORT'],
+      },
       {
         label: t('common.batchEdit'),
         key: 'batchEdit',
@@ -154,6 +182,10 @@
 
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
+      case 'exportChecked':
+        isExportAll.value = false;
+        showExportModal.value = true;
+        break;
       case 'batchEdit':
         handleBatchEdit();
         break;
@@ -232,7 +264,7 @@
   ];
   const detailDrawerVisible = ref(false);
 
-  const { useTableRes, fieldList } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.PRODUCT,
     containerClass: '.crm-product-table',
     operationColumn: {
@@ -262,6 +294,22 @@
     permission: ['PRODUCT_MANAGEMENT:UPDATE', 'PRODUCT_MANAGEMENT:DELETE'],
   });
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
+
+  const exportParams = computed(() => ({
+    ids: checkedRowKeys.value as string[],
+  }));
+
+  const exportColumns = computed<ExportTableColumnItem[]>(() =>
+    getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)
+  );
+  function handleExportAllClick() {
+    isExportAll.value = true;
+    showExportModal.value = true;
+  }
+
+  function handleExportCreateSuccess() {
+    checkedRowKeys.value = [];
+  }
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(val?: string) {

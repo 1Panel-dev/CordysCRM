@@ -178,8 +178,10 @@
     exportPaymentPlanSelected,
     exportPaymentRecordAll,
     exportPaymentRecordSelected,
+    exportProductAll,
     exportProductPriceAll,
     exportProductPriceSelected,
+    exportProductSelected,
   } from '@/api/modules';
 
   import useExportFieldCache from './useExportFieldCache';
@@ -196,6 +198,7 @@
       | 'contract'
       | 'contractPaymentPlan'
       | 'contractPaymentRecord'
+      | 'product'
       | 'price'
       | 'businessTitle'
       | 'invoice'
@@ -228,6 +231,7 @@
     contract: t('module.contract'),
     contractPaymentPlan: t('module.paymentPlan'),
     contractPaymentRecord: t('module.paymentRecord'),
+    product: t('module.productManagement'),
     price: t('module.productManagementPrice'),
     businessTitle: t('module.businessTitle'),
     invoice: t('module.invoice'),
@@ -359,6 +363,7 @@
     contract: exportContractAll,
     contractPaymentPlan: exportPaymentPlanAll,
     contractPaymentRecord: exportPaymentRecordAll,
+    product: exportProductAll,
     price: exportProductPriceAll,
     businessTitle: exportBusinessTitleAll,
     invoice: exportInvoicedAll,
@@ -375,6 +380,7 @@
     contract: exportContractSelected,
     contractPaymentPlan: exportPaymentPlanSelected,
     contractPaymentRecord: exportPaymentRecordSelected,
+    product: exportProductSelected,
     price: exportProductPriceSelected,
     businessTitle: exportBusinessTitleSelected,
     invoice: exportInvoicedSelected,
