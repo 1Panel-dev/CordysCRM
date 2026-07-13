@@ -48,9 +48,9 @@ public class NavigationService {
      * @param userId
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, operator = "{#currentUser}")
-    public void sort(ModuleSortRequest request, String userId) {
+    public void sort(ModuleSortRequest request, String userId, String orgId) {
         Navigation navigation = navigationMapper.selectByPrimaryKey(request.getDragModuleId());
-        if (navigation == null) {
+        if (navigation == null || !navigation.getOrganizationId().equals(orgId)) {
             throw new GenericException(Translator.get("module.not_exist"));
         }
         List<String> beforeKeys = getNavigationSortKeys(navigation.getOrganizationId());
