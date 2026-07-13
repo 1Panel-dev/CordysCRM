@@ -147,6 +147,7 @@ public class OrganizationUserController {
 
     @GetMapping(value = "/admin/option")
     @Operation(summary = "获取管理员用户下拉option")
+    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_READ)
     public List<EnableOptionDTO> getAdminUserList(@RequestParam(required = false, defaultValue = "false") Boolean includeDisabled) {
         return organizationUserService.getAdminUserOptions(OrganizationContext.getOrganizationId(), includeDisabled);
     }
