@@ -34,4 +34,6 @@ public interface ExtAgentMapper {
     List<BaseTreeNode> selectAgentNode(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId, @Param("userId") String userId);
 
     List<AgentOptionDTO> getOptions(@Param("userId") String userId, @Param("orgId") String orgId, @Param("departmentIds") List<String> departmentIds);
+
+    int checkPermission(@Param("userId") String userId, @Param("id") String id, @Param("departmentIds") List<String> departmentIds);
 }

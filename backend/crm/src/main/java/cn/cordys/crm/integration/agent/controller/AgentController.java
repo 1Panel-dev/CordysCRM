@@ -52,6 +52,7 @@ public class AgentController {
     @Operation(summary = "智能体-详情")
     @RequiresPermissions(PermissionConstants.AGENT_READ)
     public AgentDetailResponse getDetail(@PathVariable String id) {
+        agentBaseService.checkPermission(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), id);
         return agentBaseService.getDetail(id);
     }
 
@@ -60,6 +61,7 @@ public class AgentController {
     @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
     @Operation(summary = "智能体-更新")
     public void updateAgent(@Validated @RequestBody AgentUpdateRequest request) {
+        agentBaseService.checkPermission(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), request.getId());
         agentBaseService.updateAgent(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
@@ -68,6 +70,7 @@ public class AgentController {
     @RequiresPermissions(PermissionConstants.AGENT_UPDATE)
     @Operation(summary = "智能体-重命名")
     public void rename(@Validated @RequestBody AgentRenameRequest request) {
+        agentBaseService.checkPermission(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), request.getId());
         agentBaseService.rename(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
@@ -75,6 +78,7 @@ public class AgentController {
     @RequiresPermissions(PermissionConstants.AGENT_DELETE)
     @Operation(summary = "智能体-删除")
     public void delete(@PathVariable String id) {
+        agentBaseService.checkPermission(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), id);
         agentBaseService.delete(id);
     }
 
