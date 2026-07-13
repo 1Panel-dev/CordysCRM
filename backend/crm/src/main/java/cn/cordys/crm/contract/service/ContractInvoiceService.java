@@ -1033,7 +1033,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                 }
             };
             CustomFieldImportEventListener<ContractInvoice> eventListener = new CustomFieldImportEventListener<>(fields, ContractInvoice.class, currentOrg, currentUser,
-                    "contract_invoice_field", afterDo, 2000, null, null, request.getImportType());
+                    "contract_invoice_field", "contract_invoice_field_blob", afterDo, 2000, null, null, request.getImportType());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();

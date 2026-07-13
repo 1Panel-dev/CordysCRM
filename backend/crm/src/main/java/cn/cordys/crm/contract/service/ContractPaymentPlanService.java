@@ -565,7 +565,7 @@ public class ContractPaymentPlanService {
                 }
             };
             CustomFieldImportEventListener<ContractPaymentPlan> eventListener = new CustomFieldImportEventListener<>(fields, ContractPaymentPlan.class, currentOrg, currentUser,
-                    "contract_payment_plan_field", afterDo, 2000, null, null, request.getImportType());
+                    "contract_payment_plan_field", "contract_payment_plan_field_blob", afterDo, 2000, null, null, request.getImportType());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();

@@ -544,6 +544,7 @@ public class ProductPriceService {
                 currentOrg,
                 currentUser,
                 "product_price_field",
+                "product_price_field_blob",
                 afterDo,
                 2000,
                 mergeCellMap,
