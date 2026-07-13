@@ -190,7 +190,11 @@ export default function useTable<T>(
         const tmpArr = data as CommonList<CrmTableDataItem<T>>;
         if (isPageChange && paginationType.value === 'scrollPagination') {
           tmpArr.list?.forEach((item: CrmTableDataItem<T>) => {
-            propsRes.value.data.push(processRecordItem(item, tmpArr));
+            if (
+              !propsRes.value.data.some((e) => e[propsRes.value.tableRowKey!] === item[propsRes.value.tableRowKey!])
+            ) {
+              propsRes.value.data.push(processRecordItem(item, tmpArr));
+            }
           }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
           setPagination(tmpArr.current, tmpArr.total);
         } else if (refreshId) {
