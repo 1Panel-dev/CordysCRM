@@ -198,4 +198,20 @@
         </if>
         order by a.pos desc
     </select>
+
+    <select id="checkPermission" resultType="java.lang.Integer">
+        select count(id)
+        from agent
+        where id = #{id}
+        <if test="userId != null and userId != 'admin'">
+            AND ((
+            JSON_CONTAINS(`scope_id`, json_array(#{userId}))
+            or `scope_id` = '[]'
+            <foreach collection="departmentIds" item="departmentId">
+                or JSON_CONTAINS(`scope_id`, json_array(#{departmentId}))
+            </foreach>
+            )
+            or create_user = #{userId} )
+        </if>
+    </select>
 </mapper>
