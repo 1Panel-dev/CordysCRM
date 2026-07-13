@@ -81,6 +81,7 @@ docker run -d \
 
 ## Roadmap
 
+- [x] 2026.07：[Cordys x WorkBuddy：飞致云 AI CRM 案例发布](https://cordys.cn/blog/fit2cloud-ai-crm-case-study.html) 
 - [x] 2026.06: Cordys CRM 下载量突破 30 万次
 - [x] 2026.05.29：[v1.7.0 新增审批流、审批记录功能](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.7.0) 发布
 - [x] 2026.03.26：[v1.6.0 新增订单模块、计算组件函数功能增强](https://github.com/1Panel-dev/CordysCRM/releases/tag/v1.6.0) 发布
