@@ -22,6 +22,8 @@ import {
   GetProductUrl,
   ImportProductPriceUrl,
   ImportProductUrl,
+  ExportProductUrl,
+  ExportAllProductUrl,
   PreCheckImportProductPriceUrl,
   PreCheckProductImportUrl,
   UpdateProductPriceUrl,
@@ -108,6 +110,16 @@ export default function useProductApi(CDR: CordysAxios) {
 
   function importProduct(params: ImportUploadParams) {
     return CDR.uploadFile({ url: ImportProductUrl }, params, 'file');
+  }
+
+  // 导出所有的产品
+  function exportProductAll(data: TableExportParams) {
+    return CDR.post({ url: ExportAllProductUrl, data });
+  }
+
+  // 导出选择的产品
+  function exportProductSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportProductUrl, data });
   }
 
   // 获取意向产品选项
@@ -204,6 +216,8 @@ export default function useProductApi(CDR: CordysAxios) {
     preCheckImportProduct,
     downloadProductTemplate,
     importProduct,
+    exportProductAll,
+    exportProductSelected,
     getProductOptions,
     updateProductPrice,
     getProductPriceList,
