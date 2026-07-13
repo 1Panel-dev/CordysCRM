@@ -71,7 +71,7 @@ docker run -d \
   </tr>
   <tr>
     <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/bi.png" alt="BI" /></td>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://resource.fit2cloud.com/1panel/cordys-crm/img/ai.png" alt="AI" /></td>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://cordys.cn/images/blog/cordys-25.png" alt="WorkBuddy集成" /></td>
   </tr>  
 </table>
 
