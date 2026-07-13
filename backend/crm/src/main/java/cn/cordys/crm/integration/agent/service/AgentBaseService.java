@@ -666,4 +666,17 @@ public class AgentBaseService extends DashboardSortService {
         var dataMap = (Map) map.get("data");
         return (String) dataMap.get("edition");
     }
+
+
+    public void checkPermission(String orgId, String userId, String id) {
+        List<String> departmentIds = new ArrayList<>();
+        if (!Strings.CI.equals(userId, InternalUser.ADMIN.getValue())) {
+            String departmentId = extOrganizationUserMapper.getDepartmentByUserId(userId);
+            List<BaseTreeNode> departmentTree = departmentService.getTree(orgId);
+            departmentIds = agentModuleService.getParentIds(departmentTree, departmentId);
+        }
+        if (extAgentMapper.checkPermission(userId, id, departmentIds) <= 0) {
+            throw new GenericException(Translator.get("no.operation.permission"));
+        }
+    }
 }
