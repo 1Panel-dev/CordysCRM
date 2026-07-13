@@ -1023,7 +1023,7 @@
             <if test="opportunity.possible != null">
                 possible = #{opportunity.possible},
             </if>
-            <if test="opportunity.products != null and products.size() > 0">
+            <if test="opportunity.products != null and opportunity.products.size() > 0">
                 products = #{opportunity.products,typeHandler=cn.cordys.common.handler.ListTypeHandler},
             </if>
             <if test="opportunity.organizationId != null and opportunity.organizationId != ''">
