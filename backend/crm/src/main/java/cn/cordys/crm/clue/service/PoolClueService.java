@@ -497,10 +497,10 @@ public class PoolClueService {
         if (pool == null) {
             throw new GenericException(Translator.get("clue_pool_not_exist"));
         }
-        return checkImportExcel(file,request.getImportType(), orgId);
+        return checkImportExcel(file, request.getImportType(), orgId);
     }
 
-    private ImportResponse checkImportExcel(MultipartFile file,String importType, String currentOrg) {
+    private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CLUE.getKey(), currentOrg);
             fields.removeIf(baseField -> Strings.CI.equals(baseField.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()));
@@ -632,7 +632,7 @@ public class PoolClueService {
 
             };
             CustomFieldImportEventListener<Clue> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, orgId, userId,
-                    "clue_field", afterDo, 2000, null, null, request.getImportType());
+                    "clue_field", "clue_field_blob", afterDo, 2000, null, null, request.getImportType());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();

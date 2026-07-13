@@ -632,7 +632,7 @@ public class CustomFormDataService {
                 }
             };
             CustomFieldImportEventListener<CustomFormData> eventListener = new CustomFieldImportEventListener<>(
-                    fields, CustomFormData.class, orgId, userId, "custom_form_data_field", afterDo, 2000, null, null, request.getImportType());
+                    fields, CustomFormData.class, orgId, userId, "custom_form_data_field","custom_form_data_field_blob", afterDo, 2000, null, null, request.getImportType());
             FastExcelFactory.read(file.getInputStream(), eventListener)
                     .headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())

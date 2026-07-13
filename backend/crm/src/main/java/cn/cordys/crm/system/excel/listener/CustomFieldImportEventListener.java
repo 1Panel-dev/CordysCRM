@@ -44,6 +44,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      */
     private final List<BaseResourceSubField> fields;
     private final List<BaseResourceSubField> blobFields;
+    protected final String fieldTableBlob;
     /**
      * 批次限制
      */
@@ -80,7 +81,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     private T mergedTmpEntity;
     private int subRowId;
 
-    public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable,
+    public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable, String fieldTableBlob,
                                           CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
                                           Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap, String importType) {
         super(fields, EntityTableMapper.generateTableName(clazz), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap, importType);
@@ -88,6 +89,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         this.operator = operator;
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
         this.consumer = consumer;
+        this.fieldTableBlob = fieldTableBlob;
         this.batchSize = batchSize > 0 ? batchSize : 2000;
         // 初始化大小,扩容有开销
         this.dataList = new ArrayList<>(batchSize);
@@ -211,7 +213,12 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 } else {
                     BaseResourceSubField resourceField = new BaseResourceSubField();
                     if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
-                        BaseResourceSubField baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey());
+                        BaseResourceSubField baseResourceSubField = new BaseResourceSubField();
+                        if (field.isBlob()) {
+                            baseResourceSubField = commonMapper.getResourceField(fieldTableBlob, id.get().toString(), field.idOrBusinessKey());
+                        } else {
+                            baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey());
+                        }
                         if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
                             resourceField.setId(baseResourceSubField.getId());
                         } else {
