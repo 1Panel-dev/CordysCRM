@@ -201,7 +201,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                 return;
             }
             if (Strings.CI.equals("唯一ID", v) && Strings.CI.equals(importType, ImportType.UPDATE.name()) && StringUtils.isBlank(sourceId)) {
-                errText.append(v).append("唯一ID不能为空").append(";");
+                errText.append(v).append(Translator.get("cannot_be_null")).append(";");
             }
 
             if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k))) {
