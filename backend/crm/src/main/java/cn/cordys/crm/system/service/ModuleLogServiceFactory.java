@@ -39,6 +39,7 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.SYSTEM_ROLE, CommonBeanFactory.getBean(RoleLogService.class));
         logServiceMap.put(LogModule.SYSTEM_MODULE, CommonBeanFactory.getBean(SystemModuleLogService.class));
         logServiceMap.put(LogModule.CONTRACT_PAYMENT, CommonBeanFactory.getBean(ContractPaymentPlanLogService.class));
+        logServiceMap.put(LogModule.CONTRACT_PAYMENT_RECORD, CommonBeanFactory.getBean(ContractPaymentRecordLogService.class));
         logServiceMap.put(LogModule.CONTRACT_INVOICE, CommonBeanFactory.getBean(ContractInvoiceLogService.class));
         logServiceMap.put(LogModule.ORDER_INDEX, CommonBeanFactory.getBean(OrderLogService.class));
         logServiceMap.put(LogModule.APPROVAL_FLOW, CommonBeanFactory.getBean(ApprovalFlowLogService.class));

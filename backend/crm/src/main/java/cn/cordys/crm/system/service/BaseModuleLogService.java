@@ -11,6 +11,7 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.service.ClueService;
 import cn.cordys.crm.contract.service.BusinessTitleService;
+import cn.cordys.crm.contract.service.ContractPaymentPlanService;
 import cn.cordys.crm.contract.service.ContractService;
 import cn.cordys.crm.customer.service.CustomerContactService;
 import cn.cordys.crm.opportunity.service.OpportunityService;
@@ -60,65 +61,67 @@ public abstract class BaseModuleLogService {
         differ.setNewValueName(differ.getNewValue());
     }
 
-	/**
-	 * TODO: 处理字段变更日志详情
-	 * @param differ 差异
-	 */
-	public void handleFieldsLogDetail(JsonDifferenceDTO differ) {
-		List<String> oldFieldNames = parseFieldList(differ.getOldValue()).stream()
-				.map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
-				.toList();
-		List<String> newFieldNames = parseFieldList(differ.getNewValue()).stream()
-				.map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
-				.toList();
+    /**
+     * TODO: 处理字段变更日志详情
+     *
+     * @param differ 差异
+     */
+    public void handleFieldsLogDetail(JsonDifferenceDTO differ) {
+        List<String> oldFieldNames = parseFieldList(differ.getOldValue()).stream()
+                .map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
+                .toList();
+        List<String> newFieldNames = parseFieldList(differ.getNewValue()).stream()
+                .map(f -> String.valueOf(((Map<?, ?>) f).get("name")))
+                .toList();
 
-		// 如果字段没有实际变化则不产生日志
-		if (Objects.equals(oldFieldNames, newFieldNames)) {
-			differ.setOldValueName(null);
-			differ.setNewValueName(null);
-			return;
-		}
+        // 如果字段没有实际变化则不产生日志
+        if (Objects.equals(oldFieldNames, newFieldNames)) {
+            differ.setOldValueName(null);
+            differ.setNewValueName(null);
+            return;
+        }
 
-		differ.setOldValueName(oldFieldNames);
-		differ.setNewValueName(newFieldNames);
-	}
+        differ.setOldValueName(oldFieldNames);
+        differ.setNewValueName(newFieldNames);
+    }
 
-	private List<?> parseFieldList(Object value) {
-		if (value instanceof List<?> list) {
-			return list;
-		}
-		return Collections.emptyList();
-	}
+    private List<?> parseFieldList(Object value) {
+        if (value instanceof List<?> list) {
+            return list;
+        }
+        return Collections.emptyList();
+    }
 
-	/**
-	 * 表单配置的日志详情对比
-	 * @param differ 差异
-	 */
-	public void handleFormPropLogDetail(JsonDifferenceDTO differ) {
-		if (differ.getOldValue() != null && differ.getNewValue() != null) {
-			FormProp oldFormProp = JSON.parseObject(JSON.toJSONString(differ.getOldValue()), FormProp.class);
-			differ.setOldValueName(buildFormPropDisplayText(oldFormProp));
+    /**
+     * 表单配置的日志详情对比
+     *
+     * @param differ 差异
+     */
+    public void handleFormPropLogDetail(JsonDifferenceDTO differ) {
+        if (differ.getOldValue() != null && differ.getNewValue() != null) {
+            FormProp oldFormProp = JSON.parseObject(JSON.toJSONString(differ.getOldValue()), FormProp.class);
+            differ.setOldValueName(buildFormPropDisplayText(oldFormProp));
 
-			FormProp newFormProp = JSON.parseObject(JSON.toJSONString(differ.getNewValue()), FormProp.class);
-			differ.setNewValueName(buildFormPropDisplayText(newFormProp));
-		}
-	}
+            FormProp newFormProp = JSON.parseObject(JSON.toJSONString(differ.getNewValue()), FormProp.class);
+            differ.setNewValueName(buildFormPropDisplayText(newFormProp));
+        }
+    }
 
-	/**
-	 * 构建表单属性展示文本
-	 * 格式: viewSize, layout, labelPos, inputWidth, optBtnPos
-	 *
-	 * @param formProp 表单属性
-	 * @return 展示文本
-	 */
-	private String buildFormPropDisplayText(FormProp formProp) {
-		String viewSize = Translator.get(formProp.getViewSize());
-		String layout = Translator.get("formProp.layout." + formProp.getLayout());
-		String labelPos = Translator.get("formProp.labelPos." + formProp.getLabelPos());
-		String inputWidth = Translator.get("formProp.inputWidth." + formProp.getInputWidth());
-		String optBtnPos = Translator.get("formProp.optBtnPos." + formProp.getOptBtnPos());
-		return String.join(", ", viewSize, layout, labelPos, inputWidth, optBtnPos);
-	}
+    /**
+     * 构建表单属性展示文本
+     * 格式: viewSize, layout, labelPos, inputWidth, optBtnPos
+     *
+     * @param formProp 表单属性
+     * @return 展示文本
+     */
+    private String buildFormPropDisplayText(FormProp formProp) {
+        String viewSize = Translator.get(formProp.getViewSize());
+        String layout = Translator.get("formProp.layout." + formProp.getLayout());
+        String labelPos = Translator.get("formProp.labelPos." + formProp.getLabelPos());
+        String inputWidth = Translator.get("formProp.inputWidth." + formProp.getInputWidth());
+        String optBtnPos = Translator.get("formProp.optBtnPos." + formProp.getOptBtnPos());
+        return String.join(", ", viewSize, layout, labelPos, inputWidth, optBtnPos);
+    }
 
     abstract public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId);
 
@@ -295,7 +298,8 @@ public abstract class BaseModuleLogService {
                     DateTimeField dateTimeField = (DateTimeField) baseField;
                     switch (dateTimeField.getDateType()) {
                         case "date" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M-d"));
-                        case "datetime" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M-d HH:mm:ss"));
+                        case "datetime" ->
+                                setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M-d HH:mm:ss"));
                         case "month" -> setFormatDataTimeFieldValueName(differ, new SimpleDateFormat("yyyy-M"));
                     }
                 }
@@ -356,28 +360,28 @@ public abstract class BaseModuleLogService {
     private void parseValue(BaseField moduleField, JsonDifferenceDTO differ) {
         if (moduleField != null) {
             if (differ.getOldValue() != null) {
-				Object ov = transformFieldValue(moduleField, differ.getOldValue());
-				if (ov == null || StringUtils.isBlank(ov.toString())) {
-					if (differ.getOldValue() instanceof List) {
-						differ.setOldValueName(String.join(",", (List) differ.getOldValue()));
-					} else {
-						differ.setOldValueName(differ.getOldValue());
-					}
-				} else {
-					differ.setOldValueName(ov);
-				}
+                Object ov = transformFieldValue(moduleField, differ.getOldValue());
+                if (ov == null || StringUtils.isBlank(ov.toString())) {
+                    if (differ.getOldValue() instanceof List) {
+                        differ.setOldValueName(String.join(",", (List) differ.getOldValue()));
+                    } else {
+                        differ.setOldValueName(differ.getOldValue());
+                    }
+                } else {
+                    differ.setOldValueName(ov);
+                }
             }
             if (differ.getNewValue() != null) {
-				Object nv = transformFieldValue(moduleField, differ.getNewValue());
-				if (nv == null || StringUtils.isBlank(nv.toString())) {
-					if (differ.getNewValue() instanceof List) {
-						differ.setNewValueName(String.join(",", (List) differ.getNewValue()));
-					} else {
-						differ.setNewValueName(differ.getNewValue());
-					}
-				} else {
-					differ.setNewValueName(nv);
-				}
+                Object nv = transformFieldValue(moduleField, differ.getNewValue());
+                if (nv == null || StringUtils.isBlank(nv.toString())) {
+                    if (differ.getNewValue() instanceof List) {
+                        differ.setNewValueName(String.join(",", (List) differ.getNewValue()));
+                    } else {
+                        differ.setNewValueName(differ.getNewValue());
+                    }
+                } else {
+                    differ.setNewValueName(nv);
+                }
             }
         } else {
             differ.setOldValueName(differ.getOldValue());
@@ -495,13 +499,31 @@ public abstract class BaseModuleLogService {
         }
     }
 
-    protected void setApprovalName(JsonDifferenceDTO differ) {
-		differ.setColumnName(Translator.get("log.approvalStatus"));
+    /**
+     * 计划名称
+     *
+     * @param differ
+     */
+    protected void setPlanFieldName(JsonDifferenceDTO differ) {
+        ContractPaymentPlanService planService = CommonBeanFactory.getBean(ContractPaymentPlanService.class);
+        assert planService != null;
         if (differ.getOldValue() != null) {
-			differ.setOldValueName(Translator.get("log.approvalStatus." + differ.getOldValueName().toString()));
+            String customerName = planService.getPlanName(differ.getOldValue().toString());
+            differ.setOldValueName(customerName);
         }
         if (differ.getNewValue() != null) {
-			differ.setNewValueName(Translator.get("log.approvalStatus." + differ.getNewValueName().toString()));
+            String userName = planService.getPlanName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
+    }
+
+    protected void setApprovalName(JsonDifferenceDTO differ) {
+        differ.setColumnName(Translator.get("log.approvalStatus"));
+        if (differ.getOldValue() != null) {
+            differ.setOldValueName(Translator.get("log.approvalStatus." + differ.getOldValueName().toString()));
+        }
+        if (differ.getNewValue() != null) {
+            differ.setNewValueName(Translator.get("log.approvalStatus." + differ.getNewValueName().toString()));
         }
     }
 
