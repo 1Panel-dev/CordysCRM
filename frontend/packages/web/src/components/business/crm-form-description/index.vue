@@ -45,6 +45,7 @@
             :path="item.fieldInfo.id"
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo.id]"
+            needInitDetail
             class="flex-1"
           />
           <div v-else>{{ item.value || '-' }}</div>
@@ -69,6 +70,7 @@
             :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo.id]"
+            needInitDetail
             class="flex-1"
           />
           <div v-else-if="item.value" v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
@@ -181,6 +183,7 @@
             "
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo.id]"
+            needInitDetail
             @change="editableByPermission.includes(item.fieldInfo.id) ? undefined : handleFormChange()"
           />
           <div v-else>{{ item.value }}</div>
@@ -201,6 +204,8 @@
             :path="item.fieldInfo.id"
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo.id]"
+            class="w-[180px]"
+            needInitDetail
             @update:value="handleFieldChange(item.fieldInfo, $event)"
           />
           <CrmTagGroup
@@ -227,6 +232,7 @@
             :path="item.fieldInfo.id"
             isDescriptionRender
             :feedback="feedbackMap[item.fieldInfo.id]"
+            needInitDetail
           />
           <div v-else>{{ item.value }}</div>
         </div>
@@ -423,7 +429,8 @@
       .filter(
         (item) =>
           !props.hiddenFields?.includes(item.fieldInfo.id) &&
-          !hiddenFieldByPermission.value?.includes(item.fieldInfo.id)
+          !hiddenFieldByPermission.value?.includes(item.fieldInfo.id) &&
+          item.fieldInfo?.show !== false
       )
       .map((item) => {
         // 独占一行
@@ -474,7 +481,7 @@
   function handleFieldChange(item: FormCreateField, value: any) {
     // 控制显示规则
     if (item.showControlRules?.length) {
-      initFormShowControl(value);
+      initFormShowControl();
     }
     // 字段联动
     if (item.linkProp?.targetField && item.linkProp?.linkOptions.length) {

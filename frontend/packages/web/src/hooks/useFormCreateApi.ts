@@ -440,7 +440,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   }
 
   function makeDescriptionItem(item: FormCreateField, form: FormDetail) {
-    if (item.show === false || !item.readable) return;
+    if (!item.readable) return; // 这里不过滤 show = false字段，在描述组件内过滤
     if (item.businessKey === 'expectedEndTime' && !item.resourceFieldId) {
       descriptions.value.push({
         label: item.name,
@@ -1601,6 +1601,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     initFormShowControl,
     makeLinkFormFields,
     applyFieldLink,
+    formDescriptionShowControlRulesSet,
     moduleFormConfig,
     detail,
   };
