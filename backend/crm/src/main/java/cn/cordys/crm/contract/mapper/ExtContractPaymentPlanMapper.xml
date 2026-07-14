@@ -384,14 +384,8 @@
             <if test="contractPaymentPlan.organizationId != null and contractPaymentPlan.organizationId != ''">
                 organization_id = #{contractPaymentPlan.organizationId},
             </if>
-            <if test="contractPaymentPlan.createTime != null">
-                create_time = #{contractPaymentPlan.createTime},
-            </if>
             <if test="contractPaymentPlan.updateTime != null">
                 update_time = #{contractPaymentPlan.updateTime},
-            </if>
-            <if test="contractPaymentPlan.createUser != null and contractPaymentPlan.createUser != ''">
-                create_user = #{contractPaymentPlan.createUser},
             </if>
             <if test="contractPaymentPlan.updateUser != null and contractPaymentPlan.updateUser != ''">
                 update_user = #{contractPaymentPlan.updateUser},

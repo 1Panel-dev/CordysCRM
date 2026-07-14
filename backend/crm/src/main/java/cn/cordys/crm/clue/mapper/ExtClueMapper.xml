@@ -777,14 +777,8 @@
             <if test="clue.organizationId != null and clue.organizationId != ''">
                 organization_id = #{clue.organizationId},
             </if>
-            <if test="clue.createTime != null">
-                create_time = #{clue.createTime},
-            </if>
             <if test="clue.updateTime != null">
                 update_time = #{clue.updateTime},
-            </if>
-            <if test="clue.createUser != null and clue.createUser != ''">
-                create_user = #{clue.createUser},
             </if>
             <if test="clue.updateUser != null and clue.updateUser != ''">
                 update_user = #{clue.updateUser},

@@ -1038,14 +1038,8 @@
             <if test="opportunity.updateUser != null and opportunity.updateUser != ''">
                 update_user = #{opportunity.updateUser},
             </if>
-            <if test="opportunity.createTime != null">
-                create_time = #{opportunity.createTime},
-            </if>
             <if test="opportunity.updateTime != null">
                 update_time = #{opportunity.updateTime},
-            </if>
-            <if test="opportunity.createUser != null and opportunity.createUser != ''">
-                create_user = #{opportunity.createUser},
             </if>
             <if test="opportunity.expectedEndTime != null">
                 expected_end_time = #{opportunity.expectedEndTime},

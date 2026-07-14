@@ -583,14 +583,8 @@
             <if test="customerContact.owner != null and customerContact.owner != ''">
                 owner = #{customerContact.owner},
             </if>
-            <if test="customerContact.createTime != null">
-                create_time = #{customerContact.createTime},
-            </if>
             <if test="customerContact.updateTime != null">
                 update_time = #{customerContact.updateTime},
-            </if>
-            <if test="customerContact.createUser != null and customerContact.createUser != ''">
-                create_user = #{customerContact.createUser},
             </if>
             <if test="customerContact.updateUser != null and customerContact.updateUser != ''">
                 update_user = #{customerContact.updateUser},

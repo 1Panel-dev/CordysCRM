@@ -335,14 +335,8 @@
             <if test="customFormData.organizationId != null and customFormData.organizationId != ''">
                 organization_id = #{customFormData.organizationId},
             </if>
-            <if test="customFormData.createTime != null">
-                create_time = #{customFormData.createTime},
-            </if>
             <if test="customFormData.updateTime != null">
                 update_time = #{customFormData.updateTime},
-            </if>
-            <if test="customFormData.createUser != null and customFormData.createUser != ''">
-                create_user = #{customFormData.createUser},
             </if>
             <if test="customFormData.updateUser != null and customFormData.updateUser != ''">
                 update_user = #{customFormData.updateUser},
