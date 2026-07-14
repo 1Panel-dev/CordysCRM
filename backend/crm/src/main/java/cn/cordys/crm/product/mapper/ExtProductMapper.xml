@@ -325,14 +325,8 @@
             <if test="product.organizationId != null and product.organizationId != ''">
                 organization_id = #{product.organizationId},
             </if>
-            <if test="product.createTime != null">
-                create_time = #{product.createTime},
-            </if>
             <if test="product.updateTime != null">
                 update_time = #{product.updateTime},
-            </if>
-            <if test="product.createUser != null and product.createUser != ''">
-                create_user = #{product.createUser},
             </if>
             <if test="product.updateUser != null and product.updateUser != ''">
                 update_user = #{product.updateUser},

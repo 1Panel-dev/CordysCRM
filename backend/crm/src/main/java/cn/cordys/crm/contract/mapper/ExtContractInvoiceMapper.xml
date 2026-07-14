@@ -526,14 +526,8 @@
             <if test="contractInvoice.organizationId != null and contractInvoice.organizationId != ''">
                 organization_id = #{contractInvoice.organizationId},
             </if>
-            <if test="contractInvoice.createTime != null">
-                create_time = #{contractInvoice.createTime},
-            </if>
             <if test="contractInvoice.updateTime != null">
                 update_time = #{contractInvoice.updateTime},
-            </if>
-            <if test="contractInvoice.createUser != null and contractInvoice.createUser != ''">
-                create_user = #{contractInvoice.createUser},
             </if>
             <if test="contractInvoice.updateUser != null and contractInvoice.updateUser != ''">
                 update_user = #{contractInvoice.updateUser},

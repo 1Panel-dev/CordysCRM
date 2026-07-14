@@ -785,14 +785,8 @@
             <if test="customer.poolId != null and customer.poolId != ''">
                 pool_id = #{customer.poolId},
             </if>
-            <if test="customer.createTime != null">
-                create_time = #{customer.createTime},
-            </if>
             <if test="customer.updateTime != null">
                 update_time = #{customer.updateTime},
-            </if>
-            <if test="customer.createUser != null and customer.createUser != ''">
-                create_user = #{customer.createUser},
             </if>
             <if test="customer.updateUser != null and customer.updateUser != ''">
                 update_user = #{customer.updateUser},

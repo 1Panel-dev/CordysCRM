@@ -450,14 +450,8 @@
             <if test="contractPaymentRecord.organizationId != null and contractPaymentRecord.organizationId != ''">
                 organization_id = #{contractPaymentRecord.organizationId},
             </if>
-            <if test="contractPaymentRecord.createTime != null">
-                create_time = #{contractPaymentRecord.createTime},
-            </if>
             <if test="contractPaymentRecord.updateTime != null">
                 update_time = #{contractPaymentRecord.updateTime},
-            </if>
-            <if test="contractPaymentRecord.createUser != null and contractPaymentRecord.createUser != ''">
-                create_user = #{contractPaymentRecord.createUser},
             </if>
             <if test="contractPaymentRecord.updateUser != null and contractPaymentRecord.updateUser != ''">
                 update_user = #{contractPaymentRecord.updateUser},
