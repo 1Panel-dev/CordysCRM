@@ -79,6 +79,7 @@ public class ApprovalFlowController {
 
     @GetMapping("/status-permission/setting/{formType}")
     @Operation(summary = "根据表单类型获取审批流状态权限配置")
+    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_READ)
     public StatusPermissionSettingResponse getStatusPermissionSetting(@PathVariable("formType") String formType) {
         return approvalFlowService.getStatusPermissionsByFormType(formType, OrganizationContext.getOrganizationId());
     }
