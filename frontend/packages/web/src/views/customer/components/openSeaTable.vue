@@ -34,6 +34,8 @@
           :api-type="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
           :title="t('module.openSea')"
           :pool-id="openSea"
+          :readonly="!openSea"
+          :disabled-tooltip="!openSea ? t('common.emptyPoolImportTip', { name: t('module.openSea') }) : ''"
           @import-success="() => searchData()"
         />
         <n-button

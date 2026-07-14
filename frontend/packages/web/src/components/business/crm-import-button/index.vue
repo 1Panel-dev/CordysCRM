@@ -1,7 +1,12 @@
 <template>
-  <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleImport">
-    {{ `${t('common.import')}${props.title ?? ''}` }}
-  </n-button>
+  <n-tooltip :delay="300" :disabled="!disabledTooltip">
+    <template #trigger>
+      <n-button type="primary" ghost class="n-btn-outline-primary" :disabled="props.readonly" @click="handleImport">
+        {{ `${t('common.import')}${props.title ?? ''}` }}
+      </n-button>
+    </template>
+    {{ props.disabledTooltip }}
+  </n-tooltip>
 
   <ImportModal
     v-model:show="importModal"
@@ -32,7 +37,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NButton, useMessage } from 'naive-ui';
+  import { NButton, NTooltip, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -59,6 +64,8 @@
     descriptionTip?: string; // 描述提示
     customFormId?: string;
     poolId?: string | number;
+    readonly?: boolean;
+    disabledTooltip?: string;
   }>();
 
   const emit = defineEmits<{
