@@ -28,7 +28,7 @@
           :show-checkmark="false"
           label-field="name"
           class="w-[200px]"
-          @update-value="(e) => searchData(undefined, e)"
+          @update-value="handlePoolChange"
         />
         <CrmImportButton
           v-if="hasAnyPermission(['CLUE_MANAGEMENT_POOL:IMPORT']) && !props.readonly"
@@ -587,6 +587,11 @@
     if (!refreshId) {
       crmTableRef.value?.scrollTo({ top: 0 });
     }
+  }
+
+  function handlePoolChange(e: string) {
+    checkedRowKeys.value = [];
+    searchData(undefined, e);
   }
 
   async function getCluePoolOptions() {

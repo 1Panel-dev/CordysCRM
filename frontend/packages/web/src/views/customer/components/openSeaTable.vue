@@ -27,7 +27,7 @@
           value-field="id"
           label-field="name"
           class="w-[200px]"
-          @update-value="(e) => searchData(undefined, e)"
+          @update-value="handlePoolChange"
         />
         <CrmImportButton
           v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_POOL:IMPORT']) && !props.readonly"
@@ -593,6 +593,11 @@
     });
     loadList(false, refreshId);
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  function handlePoolChange(e: string) {
+    checkedRowKeys.value = [];
+    searchData(undefined, e);
   }
 
   function handleGeneratedChart(res: FilterResult, form: FilterForm) {
