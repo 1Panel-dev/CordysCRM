@@ -71,7 +71,12 @@
     type="warning"
     @refresh="handleMovedSuccess"
   />
-  <convertClueModal v-model:show="showConvertClueModal" :clue-id="sourceId" @success="emit('remove')" />
+  <convertClueModal
+    v-model:show="showConvertClueModal"
+    :clue-id="sourceId"
+    @success="emit('remove')"
+    @finish="show = false"
+  />
 </template>
 
 <script setup lang="ts">
