@@ -1213,7 +1213,7 @@ public class ApprovalActionService {
 	 * @param userId 当前用户ID
 	 * @param orgId 当前组织ID
 	 */
-	private void saveLogAndNotice(ApprovalInstance instance, String userId, String orgId, ApprovalAction action) {
+	public void saveLogAndNotice(ApprovalInstance instance, String userId, String orgId, ApprovalAction action) {
 		String resourceName = getResourceName(instance);
 		saveLogAndNotice(instance, userId, orgId, action, resourceName);
 	}
