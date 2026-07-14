@@ -368,4 +368,5 @@ export default {
   'common.businessFeatureTip':
     'This is the Enterprise Edition feature; click the link to view details of the Enterprise Edition features.',
   'common.uniqueID': 'ID',
+  'common.emptyPoolImportTip': 'Please add {name}, and then to import operation',
 };

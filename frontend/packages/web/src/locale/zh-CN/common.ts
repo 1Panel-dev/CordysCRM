@@ -379,4 +379,5 @@ export default {
   'common.batchDeleteTitle': '确认删除 {count} 个数据吗？',
   'common.businessFeatureTip': '当前为企业版功能，可点击链接查看企业版本功能详情',
   'common.uniqueID': '唯一ID',
+  'common.emptyPoolImportTip': '请先添加{name}，再进行导入操作',
 };

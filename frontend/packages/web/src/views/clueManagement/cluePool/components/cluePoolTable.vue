@@ -35,6 +35,8 @@
           :api-type="FormDesignKeyEnum.CLUE_POOL"
           :title="t('module.cluePool')"
           :pool-id="poolId"
+          :readonly="!poolId"
+          :disabled-tooltip="!poolId ? t('common.emptyPoolImportTip', { name: t('module.cluePool') }) : ''"
           @import-success="() => searchData()"
         />
         <n-button
