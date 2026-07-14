@@ -12,7 +12,7 @@ export const logTypeOption = [
   },
   {
     value: OperationTypeEnum.UPDATE,
-    label: 'common.modify',
+    label: 'common.update',
   },
   {
     value: OperationTypeEnum.DELETE,
