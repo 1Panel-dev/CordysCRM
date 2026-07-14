@@ -33,6 +33,7 @@ COPY installer/shells /shells
 COPY installer/conf /installer/conf
 
 COPY installer/mcp /app/mcp
+COPY installer/cockpit /app/cockpit
 
 ENV JAVA_CLASSPATH=/app:/app/lib/*
 ENV JAVA_MAIN_CLASS=cn.cordys.Application
