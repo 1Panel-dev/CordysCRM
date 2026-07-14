@@ -1954,6 +1954,9 @@ public class ApprovalFlowService {
             updateApprovalPostField(instance, nextApproverNode.getId(), ApprovalAction.REJECT, InternalUser.ADMIN.getValue());
             ApprovalNodeExceptionResponse exNode = BeanUtils.copyBean(new ApprovalNodeExceptionResponse(), nextApproverNode);
             exNode.setNodeType(ApprovalNodeTypeEnum.EXCEPTION.name());
+            ApprovalActionService approvalActionService = CommonBeanFactory.getBean(ApprovalActionService.class);
+            // 撤回时从快照还原业务数据
+            approvalActionService.revertFromSnapshot(FormKey.ofKey(instance.getType()), instance.getExecuteTime(), instance.getResourceId(), InternalUser.ADMIN.getValue(), currentOrgId);
             return exNode;
         }
 
