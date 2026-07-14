@@ -37,7 +37,7 @@ public class CustomerContactExportService extends BaseExportService {
         return buildExportMergeResult(taskId, exportParam, dataList,
                 CustomerContactListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        CustomerContactFieldUtils.getSystemFieldMap(detail), cache));
+                        CustomerContactFieldUtils.getSystemFieldMap(detail, exportParam.getLocale()), cache));
     }
 
     private List<CustomerContactListResponse> collectExportList(ExportDTO exportParam) {

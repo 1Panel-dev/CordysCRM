@@ -5,17 +5,18 @@ import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.dto.response.CustomerContactListResponse;
 
 import java.util.LinkedHashMap;
+import java.util.Locale;
 
 public class CustomerContactFieldUtils {
 
-    public static LinkedHashMap<String, Object> getSystemFieldMap(CustomerContactListResponse data) {
+    public static LinkedHashMap<String, Object> getSystemFieldMap(CustomerContactListResponse data, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("customerId", data.getCustomerName());
         systemFieldMap.put("id", data.getId());
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("phone", data.getPhone());
         systemFieldMap.put("owner", data.getOwnerName());
-        systemFieldMap.put("enable", Translator.get("log.enable." + data.getEnable()));
+        systemFieldMap.put("enable", Translator.get("log.enable." + data.getEnable(), locale));
         systemFieldMap.put("disableReason", data.getDisableReason());
         systemFieldMap.put("departmentId", data.getDepartmentName());
 
