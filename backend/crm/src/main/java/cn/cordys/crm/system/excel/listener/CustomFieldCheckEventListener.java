@@ -204,7 +204,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                 errText.append(v).append(Translator.get("cannot_be_null")).append(";");
             }
             if (Strings.CI.equals("唯一ID", v) && Strings.CI.equals(importType, ImportType.UPDATE.name())) {
-                checkId(v, errText);
+                checkId(v, sourceId, errText);
             }
 
             if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k))) {
@@ -235,8 +235,8 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * @param v
      * @param errText
      */
-    private void checkId(String v, StringBuilder errText) {
-        if (commonMapper.checkIdCount(v, fieldTable) <= 0) {
+    private void checkId(String v, String resourceId, StringBuilder errText) {
+        if (commonMapper.checkIdCount(resourceId, sourceTable) <= 0) {
             errText.append(v).append("不存在;");
         }
     }

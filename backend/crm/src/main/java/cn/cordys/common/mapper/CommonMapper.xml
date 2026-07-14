@@ -377,7 +377,7 @@
         from `${tableName}` t
         where organization_id = #{orgId}
         <if test="tableName == 'clue'">
-            and (t.transition_type != 'CUSTOMER' or t.transition_type is null) and t.in_shared_pool = false
+            and (t.transition_type != 'CUSTOMER' or t.transition_type is null)
         </if>
     </select>
 
