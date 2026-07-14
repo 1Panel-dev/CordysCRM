@@ -73,5 +73,7 @@ public interface CommonMapper {
      * @param field
      */
     void updateCustomerField(@Param("tableName") String tableName, @Param("field") BaseResourceSubField field);
+
+    int checkIdCount(@Param("id")String id, @Param("tableName")String tableName);
 }
 
