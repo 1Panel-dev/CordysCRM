@@ -367,7 +367,12 @@ public abstract class BaseExportService {
                 value = subRowMap.get(fieldId);
             }
 
-            dataList.add(value == null ? null : transformFieldValue(meta.getResolver(), field, value, cacheMap));
+            String internalKey = field.getInternalKey();
+            if (StringUtils.isNotBlank(internalKey)) {
+                dataList.add(value == null ? null : transformFieldValue(meta.getResolver(), field, value, null));
+            } else {
+                dataList.add(value == null ? null : transformFieldValue(meta.getResolver(), field, value, cacheMap));
+            }
         }
 
         return dataList;
