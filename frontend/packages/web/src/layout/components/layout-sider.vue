@@ -30,6 +30,7 @@
           :collapsed-icon-size="28"
           :options="menuOptions"
           :render-label="renderLabel"
+          :expand-icon="renderExpandMenuIcon"
           accordion
           @update-value="menuChange"
         />
@@ -248,6 +249,14 @@
         timer = null;
       }, 5000);
     }
+  }
+
+  function renderExpandMenuIcon(option: MenuOption) {
+    const type = expandedKeys.value.includes(option.key as string) ? 'iconicon_chevron_down' : 'iconicon_chevron_right';
+    return h(CrmIcon, {
+      size: 16,
+      type,
+    });
   }
 
   const isRequiredExportRoute = (key: OpportunityRouteEnum | ClueRouteEnum | CustomerRouteEnum) =>
