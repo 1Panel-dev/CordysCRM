@@ -2171,12 +2171,41 @@ public class ApprovalFlowService {
         if (sendCc && CollectionUtils.isNotEmpty(ccList)) {
             // 节点执行完成, 发送抄送
             ApprovalActionService approvalActionService = CommonBeanFactory.getBean(ApprovalActionService.class);
-            if (approvalActionService != null) {
-                List<ApprovalTask> ccTasks = approvalActionService.getNodeCcTasks(nodeId, ccList, instanceId, InternalUser.ADMIN.getValue());
-                approvalTaskMapper.batchInsert(ccTasks);
-                approvalActionService.sendCcNotice(ccTasks, instance, orgId);
+            List<ApprovalTask> ccTasks = approvalActionService.getNodeCcTasks(nodeId, ccList, instanceId, InternalUser.ADMIN.getValue());
+            approvalTaskMapper.batchInsert(ccTasks);
+
+            boolean isNextEnd = isNextEnd(nodeId);
+            ApprovalInstance noticeInstance = BeanUtils.copyBean(new ApprovalInstance(), instance);
+            noticeInstance.setApprovalStatus(getAutoApprovalStatus(isNextEnd, approvalStatus).toString());
+            noticeInstance.setSubmitterId(InternalUser.ADMIN.getValue());
+            approvalActionService.sendCcNotice(ccTasks, noticeInstance, orgId);
+        }
+    }
+
+    /**
+     * 获取自动审批过后的审批状态
+     * @param isNextEnd
+     * @param approvalStatus
+     * @return
+     */
+    private ApprovalStatus getAutoApprovalStatus(boolean isNextEnd, ApprovalStatus approvalStatus) {
+        ApprovalStatus status = ApprovalStatus.APPROVING;
+        if (isNextEnd) {
+            if (approvalStatus == ApprovalStatus.AUTO_APPROVED) {
+                status = ApprovalStatus.APPROVED;
+            } else if (approvalStatus == ApprovalStatus.AUTO_UNAPPROVED) {
+                status = ApprovalStatus.UNAPPROVED;
             }
         }
+        return status;
+    }
+
+    private boolean isNextEnd(String nodeId) {
+        List<ApprovalNodeResponse> nextNodes = getNextNodes(nodeId);
+        if (CollectionUtils.isEmpty(nextNodes) || ApprovalNodeTypeEnum.END.name().equals(nextNodes.getFirst().getNodeType())) {
+           return true;
+        }
+        return false;
     }
 
     /**

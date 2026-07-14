@@ -4,6 +4,7 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
@@ -484,7 +485,9 @@ public class ApprovalResourceService {
             if (StringUtils.isBlank(resourceName)) {
                 return;
             }
-            approvalActionService.sendFinishNotice(instance, resourceName, currentUserId, currentOrgId);
+            // 如果中间有自动通过，那还是要通知的
+            String noticeCurrentUserId = Strings.CS.equals(instance.getSubmitterId(), currentUserId) ? InternalUser.ADMIN.name() : currentUserId;
+            approvalActionService.sendFinishNotice(instance, resourceName, noticeCurrentUserId, currentOrgId);
             return;
         }
         /*
