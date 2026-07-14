@@ -3,7 +3,17 @@
 <mapper namespace="cn.cordys.crm.system.mapper.ExtUserMapper">
 
     <select id="selectByPhoneOrEmail" resultType="cn.cordys.security.UserDTO">
-        SELECT sys_user.*,
+        SELECT sys_user.id,
+               sys_user.name,
+               sys_user.phone,
+               sys_user.email,
+               sys_user.language,
+               sys_user.last_organization_id,
+               sys_user.gender,
+               sys_user.create_time,
+               sys_user.update_time,
+               sys_user.create_user,
+               sys_user.update_user,
                sys_user_extend.avatar,
                sys_user_extend.platform_info
         FROM sys_user
