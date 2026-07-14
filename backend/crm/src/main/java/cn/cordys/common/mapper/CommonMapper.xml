@@ -630,4 +630,9 @@
         </where>
 
     </update>
+
+
+    <select id="checkIdCount" resultType="java.lang.Integer">
+        select count(id) from `${tableName}` t where t.id = #{id}
+    </select>
 </mapper>
