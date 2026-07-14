@@ -163,6 +163,7 @@
 
   const emit = defineEmits<{
     (e: 'success'): void;
+    (e: 'finish'): void;
   }>();
 
   const visible = defineModel<boolean>('show', { required: true });
@@ -275,6 +276,7 @@
     );
 
   function handleFinish() {
+    emit('finish');
     showConvertedSuccessModal.value = false;
     activeCount.value = false;
   }
