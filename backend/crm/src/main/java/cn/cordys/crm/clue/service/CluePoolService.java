@@ -512,4 +512,13 @@ public class CluePoolService {
             return RecycleConditionUtils.matchTime(condition, clue.getFollowTime());
         }
     }
+
+    public void checkPermission(String id, String userId, String orgId) {
+        CluePool cluePool = checkPoolExist(id);
+        List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(cluePool.getOwnerId(), String.class), orgId);
+        if (!ownerIds.contains(userId)) {
+            throw new GenericException(Translator.get("no.operation.permission"));
+        }
+
+    }
 }
