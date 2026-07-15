@@ -132,6 +132,10 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         if (headMap == null) {
             throw new GenericException(Translator.get("user_import_table_header_missing"));
         }
+        if (Strings.CI.equals(importType, ImportType.UPDATE.name()) && !headMap.containsValue("唯一ID")) {
+            throw new GenericException(Translator.getWithArgs("illegal_header", "唯一ID"));
+        }
+
         String errHead = checkIllegalHead(headMap);
         if (StringUtils.isNotEmpty(errHead)) {
             throw new GenericException(Translator.getWithArgs("illegal_header", errHead));
