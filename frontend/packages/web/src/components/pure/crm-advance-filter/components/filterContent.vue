@@ -17,7 +17,7 @@
         <n-form ref="formRef" :model="formModel">
           <div
             v-for="(item, listIndex) in formModel.list"
-            :key="`filter_item_${listIndex}`"
+            :key="`filter_item_${listIndex}_${item.dataIndex ?? 'empty'}_${item.operator ?? 'empty'}`"
             class="flex items-start gap-[8px]"
           >
             <n-form-item
