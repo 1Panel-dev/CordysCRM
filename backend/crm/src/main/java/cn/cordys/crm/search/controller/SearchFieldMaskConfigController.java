@@ -1,6 +1,7 @@
 package cn.cordys.crm.search.controller;
 
 
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.search.request.FieldMaskConfigDTO;
 import cn.cordys.crm.search.service.SearchFieldMaskConfigService;
@@ -8,6 +9,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +24,7 @@ public class SearchFieldMaskConfigController {
 
     @PostMapping("/save")
     @Operation(summary = "保存配置")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void save(@Validated @RequestBody FieldMaskConfigDTO request) {
         searchFieldMaskConfigService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }

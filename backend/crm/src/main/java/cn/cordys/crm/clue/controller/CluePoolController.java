@@ -54,6 +54,8 @@ public class CluePoolController {
     @PostMapping("/quick-update")
     @Operation(summary = "快捷保存线索池")
     public void quickUpdate(@Validated @RequestBody CluePoolUpdateRequest request) {
+        //校验
+        cluePoolService.checkPermission(request.getId(),SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         cluePoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
