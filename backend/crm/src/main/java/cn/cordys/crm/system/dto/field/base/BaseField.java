@@ -137,12 +137,17 @@ public abstract class BaseField {
     }
 
 	@JsonIgnore
-	public boolean includeFormula() {
-		if (Strings.CS.equals(type, FieldType.INPUT.name())) {
-			return StringUtils.isNotEmpty(((InputField) this).getFormula());
+	public static boolean includeFormula(BaseField field) {
+		if (Strings.CS.equals(field.getType(), FieldType.INPUT.name())) {
+            if (field instanceof InputField inputField) {
+                if (inputField.getDefaultValueType().equals("formula")) {
+                    return StringUtils.isNotEmpty(inputField.getFormula());
+                }
+            }
+
 		}
-		if (Strings.CS.equals(type, FieldType.FORMULA.name())) {
-			return StringUtils.isNotEmpty(((FormulaField) this).getFormula());
+		if (Strings.CS.equals(field.getType(), FieldType.FORMULA.name())) {
+			return StringUtils.isNotEmpty(((FormulaField) field).getFormula());
 		}
 		return false;
 	}
@@ -177,11 +182,11 @@ public abstract class BaseField {
     }
 
     @JsonIgnore
-    public boolean canImport() {
+    public static boolean canImport(BaseField field) {
 		// 序列号、附件、图片、分割线、公式字段（计算/文本+公式）、不可见字段, 不支持导入.
-        return !Strings.CS.equalsAny(type, FieldType.SERIAL_NUMBER.name()) && !Strings.CS.equalsAny(type, FieldType.ATTACHMENT.name())
-                && !Strings.CS.equalsAny(type, FieldType.PICTURE.name()) && !Strings.CS.equalsAny(type, FieldType.DIVIDER.name())
-				&& !includeFormula() && readable;
+        return !Strings.CS.equalsAny(field.getType(), FieldType.SERIAL_NUMBER.name()) && !Strings.CS.equalsAny(field.getType(), FieldType.ATTACHMENT.name())
+                && !Strings.CS.equalsAny(field.getType(), FieldType.PICTURE.name()) && !Strings.CS.equalsAny(field.getType(), FieldType.DIVIDER.name())
+				&& !includeFormula(field) && field.getReadable();
     }
 
 
