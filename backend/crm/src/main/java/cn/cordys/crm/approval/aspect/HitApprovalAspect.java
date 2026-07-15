@@ -114,7 +114,7 @@ public class HitApprovalAspect {
 			if (handler != null) {
 				String snapshotData = handler.getPreUpdateSnapshotData(resourceId, operator, organizationId);
 				if (StringUtils.isNotBlank(snapshotData)) {
-					approvalResourceService.savePreUpdateSnapshot(annotation.formKey(), resourceId, operator, organizationId, snapshotData);
+					approvalResourceService.savePreUpdateSnapshot(annotation.formKey(), resourceId, operator, snapshotData);
 				}
 			}
 		}

@@ -160,6 +160,10 @@ public class ApprovalActionService {
 	 */
 	public void revoke(ApprovalRevokeRequest request, String currentUserId, String orgId) {
 		ApprovalTask currentTask = getTaskById(request.getId());
+		// 校验当前用户是否是该任务的审批人，防止越权操作
+		if (!Strings.CI.equals(currentTask.getApproverId(), currentUserId)) {
+			throw new GenericException(Translator.get("not.approval.task.owner"));
+		}
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(currentTask.getInstanceId());
 		// 审批流是否允许撤回
 		ApprovalFlow approvalFlow = approvalFlowService.selectApprovalFlowByFormType(instance.getType(), orgId);
@@ -521,6 +525,10 @@ public class ApprovalActionService {
 	private ApprovalTask saveActionTask(ApprovalActionRequest request, ApprovalAction action, String currentUserId, String currentOrgId, ApprovalAddSignType signType) {
 		// 保存执行的任务及记录
 		ApprovalTask currentTask = getTaskById(request.getId());
+		// 校验当前用户是否是该任务的审批人，防止越权操作
+		if (!Strings.CI.equals(currentTask.getApproverId(), currentUserId)) {
+			throw new GenericException(Translator.get("not.approval.task.owner"));
+		}
 		switch (action) {
 			case APPROVE: {
 				currentTask.setAction(ApprovalAction.APPROVE.name());

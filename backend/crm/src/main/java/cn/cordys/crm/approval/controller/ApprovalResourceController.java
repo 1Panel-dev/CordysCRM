@@ -8,6 +8,8 @@ import cn.cordys.crm.approval.dto.ApprovalResourceBaseParam;
 import cn.cordys.crm.approval.dto.response.ResourceApprovalResponse;
 import cn.cordys.crm.approval.service.ApprovalInstanceService;
 import cn.cordys.crm.approval.service.ApprovalResourceService;
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.Translator;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,12 +51,14 @@ public class ApprovalResourceController {
     @GetMapping("/simple-detail/{resourceId}")
     @Operation(summary = "列表详情")
     public ResourceApprovalResponse resourceDetail(@PathVariable String resourceId) {
+        approvalResourceService.checkViewPermission(resourceId);
         return approvalResourceService.resourceDetail(resourceId);
     }
 
 	@GetMapping("/detail/{resourceId}")
-	@Operation(summary = "记录详情")
-	public ApprovalInstanceDetail getRecordDetail(@PathVariable String resourceId) {
-		return approvalInstanceService.getLatestApprovalInstanceDetail(resourceId, OrganizationContext.getOrganizationId());
-	}
+    @Operation(summary = "记录详情")
+    public ApprovalInstanceDetail getRecordDetail(@PathVariable String resourceId) {
+        approvalResourceService.checkViewPermission(resourceId);
+        return approvalInstanceService.getLatestApprovalInstanceDetail(resourceId, OrganizationContext.getOrganizationId());
+    }
 }

@@ -5,24 +5,26 @@ import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.permission.ResourceAccessContext;
+import cn.cordys.common.permission.ResourceAccessContextProvider;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
-import cn.cordys.common.security.validator.SSRFValidator;
+import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.aspect.HitApprovalAspect;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
-import cn.cordys.crm.approval.domain.ApprovalFlow;
-import cn.cordys.crm.approval.domain.ApprovalInstance;
-import cn.cordys.crm.approval.domain.ApprovalResourceSnapshot;
-import cn.cordys.crm.approval.domain.ApprovalRecord;
-import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.*;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeApproverResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalNodeResponse;
@@ -43,6 +45,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
 import cn.cordys.security.UserApprovalDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -99,7 +102,7 @@ public class ApprovalResourceService {
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
-    private SSRFValidator ssrfValidator;
+    private DataScopeService dataScopeService;
 
     @Resource
     private List<ApprovalResourceHandler> approvalResourceHandlers;
@@ -373,10 +376,9 @@ public class ApprovalResourceService {
      * @param formKey      表单类型
      * @param resourceId   资源ID
      * @param userId       操作人ID
-     * @param orgId        组织ID
      * @param snapshotData 编辑前请求参数快照(JSON)
      */
-    public void savePreUpdateSnapshot(FormKey formKey, String resourceId, String userId, String orgId, String snapshotData) {
+    public void savePreUpdateSnapshot(FormKey formKey, String resourceId, String userId, String snapshotData) {
         if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
             return;
         }
@@ -1009,5 +1011,148 @@ public class ApprovalResourceService {
                     break;
             }
         }
+    }
+
+    /**
+     * 校验用户是否有权限查看审批详情
+     */
+    public void checkViewPermission(String resourceId) {
+        if (!hasViewPermission(resourceId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId())) {
+            throw new GenericException(Translator.get("no.view.permission"));
+        }
+    }
+
+    /**
+     * 校验用户是否有权限查看审批详情
+     *
+     * @param resourceId 资源ID
+     * @param userId     当前用户ID
+     * @param orgId      组织ID
+     * @return 是否有权限
+     */
+    private boolean hasViewPermission(String resourceId, String userId, String orgId) {
+        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(userId)) {
+            return false;
+        }
+
+        // 查询资源最近一次审批实例
+        ApprovalInstance latestInstance = extApprovalTaskMapper.selectLatestInstanceByResourceId(resourceId);
+        if (latestInstance == null) {
+            // 无审批记录，检查是否有资源权限（新建中的审批）
+            return hasResourcePermission(resourceId, userId, orgId);
+        }
+
+        // Check 1: 当前用户是审批提交人
+        if (userId.equals(latestInstance.getSubmitterId())) {
+            return true;
+        }
+
+        // Check 2: 当前用户拥有审批中的任务或拥护抄送任务
+        if (hasApprovalTaskPermission(latestInstance, userId)) {
+            return true;
+        }
+
+        // Check 3: 当前用户拥有该资源的查看权限
+        return hasResourcePermission(resourceId, userId, orgId);
+    }
+
+    /**
+     * 校验用户是否是当前审批人（包括当前节点的待审批任务和抄送任务）
+     */
+    private boolean hasApprovalTaskPermission(ApprovalInstance instance, String userId) {
+        if (instance == null || StringUtils.isBlank(instance.getCurrentNodeId())) {
+            return false;
+        }
+
+        // 查询当前节点的所有审批中任务
+        LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
+        taskWrapper.eq(ApprovalTask::getInstanceId, instance.getId())
+                .eq(ApprovalTask::getNodeId, instance.getCurrentNodeId())
+                .nq(ApprovalTask::getType, ApprovalTaskType.CC.name());
+        List<ApprovalTask> tasks = approvalTaskMapper.selectListByLambda(taskWrapper);
+
+        // 检查是否有待自己审批的任务
+        for (ApprovalTask task : tasks) {
+            if (userId.equals(task.getApproverId()) && ApprovalStatus.APPROVING.name().equals(task.getStatus())) {
+                return true;
+            }
+        }
+
+        // 查询抄送给当前用户的任务
+        LambdaQueryWrapper<ApprovalTask> ccWrapper = new LambdaQueryWrapper<>();
+        ccWrapper.eq(ApprovalTask::getInstanceId, instance.getId())
+                .eq(ApprovalTask::getApproverId, userId)
+                .eq(ApprovalTask::getType, ApprovalTaskType.CC.name());
+        return !approvalTaskMapper.selectListByLambda(ccWrapper).isEmpty();
+    }
+
+    /**
+     * 校验用户是否拥有该资源模块的查看权限
+     */
+    private boolean hasResourcePermission(String resourceId, String userId, String orgId) {
+        String formType = getFormTypeByResourceId(resourceId);
+        if (StringUtils.isBlank(formType)) {
+            return false;
+        }
+
+        // 根据 formType 获取对应的权限常量
+        String readPermission = getReadPermissionByFormType(formType);
+        if (StringUtils.isBlank(readPermission)) {
+            return false;
+        }
+
+        // Check 1: 角色权限位
+        if (!PermissionUtils.hasPermission(readPermission)) {
+            return false;
+        }
+
+        // Check 2: 数据权限（资源负责人）
+        ResourceAccessContextProvider provider = getResourceAccessContextProvider(formType);
+        if (provider != null) {
+            ResourceAccessContext context = provider.getAccessContext(resourceId, orgId);
+            String ownerId = context != null ? context.getOwnerId() : null;
+            return !StringUtils.isNotBlank(ownerId) || dataScopeService.hasDataPermission(userId, orgId, ownerId, readPermission);
+        }
+
+        return true;
+    }
+
+    /**
+     * 根据 resourceId 获取 formType
+     */
+    private String getFormTypeByResourceId(String resourceId) {
+        ApprovalInstance instance = extApprovalTaskMapper.selectLatestInstanceByResourceId(resourceId);
+        return instance != null ? instance.getType() : null;
+    }
+
+    /**
+     * 根据 formType 获取查看权限常量
+     */
+    private String getReadPermissionByFormType(String formType) {
+        if (StringUtils.isBlank(formType)) {
+            return null;
+        }
+        FormKey key = FormKey.ofKey(formType);
+        if (key == null) {
+            return null;
+        }
+        return switch (key) {
+            case QUOTATION -> PermissionConstants.OPPORTUNITY_QUOTATION_READ;
+            case CONTRACT -> PermissionConstants.CONTRACT_READ;
+            case INVOICE -> PermissionConstants.CONTRACT_INVOICE_READ;
+            case ORDER -> PermissionConstants.ORDER_READ;
+            default -> null;
+        };
+    }
+
+    /**
+     * 获取 ResourceAccessContextProvider
+     */
+    private ResourceAccessContextProvider getResourceAccessContextProvider(String formType) {
+        Map<String, ResourceAccessContextProvider> providers = CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class);
+        return providers.values().stream()
+                .filter(p -> formType.equals(p.getFormType()))
+                .findFirst()
+                .orElse(null);
     }
 }

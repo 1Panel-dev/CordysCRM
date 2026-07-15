@@ -53,6 +53,7 @@ public class CustomerPoolController {
 
     @PostMapping("/quick-update")
     @Operation(summary = "快捷保存公海池")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void quickUpdate(@Validated @RequestBody CustomerPoolUpdateRequest request) {
         customerPoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
