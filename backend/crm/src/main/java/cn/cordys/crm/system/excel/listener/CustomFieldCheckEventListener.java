@@ -319,7 +319,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private String checkIllegalHead(Map<Integer, String> headMap) {
         for (BaseField field : fieldMap.values()) {
-            if (!field.canImport() || Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
+            if (!field.canImport(field) || Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
                 continue;
             }
             if (!headMap.containsValue(field.getName())) {
@@ -357,6 +357,6 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         if (StringUtils.isNotEmpty(field.getResourceFieldId())) {
             return true;
         }
-        return !field.canImport() && !field.isSerialNumber();
+        return !field.canImport(field) && !field.isSerialNumber();
     }
 }

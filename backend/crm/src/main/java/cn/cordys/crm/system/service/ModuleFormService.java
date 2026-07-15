@@ -1522,14 +1522,14 @@ public class ModuleFormService {
 
         List<BaseField> fields = allFields
                 .stream()
-                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport())
+                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f))
                 .toList();
 
         List<List<String>> heads = new ArrayList<>();
         fields.forEach(field -> {
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
                 subField.getSubFields().forEach(f -> {
-                    if (StringUtils.isNotEmpty(f.getResourceFieldId()) || !f.canImport()) {
+                    if (StringUtils.isNotEmpty(f.getResourceFieldId()) || !f.canImport(f)) {
                         return;
                     }
                     List<String> head = new ArrayList<>();
@@ -2460,14 +2460,14 @@ public class ModuleFormService {
 
         List<BaseField> fields = allFields
                 .stream()
-                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport() && !Strings.CI.equals(f.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()))
+                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f) && !Strings.CI.equals(f.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()))
                 .toList();
 
         List<List<String>> heads = new ArrayList<>();
         fields.forEach(field -> {
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
                 subField.getSubFields().forEach(f -> {
-                    if (StringUtils.isNotEmpty(f.getResourceFieldId()) || !f.canImport()) {
+                    if (StringUtils.isNotEmpty(f.getResourceFieldId()) || !f.canImport(f)) {
                         return;
                     }
                     List<String> head = new ArrayList<>();
@@ -2490,7 +2490,7 @@ public class ModuleFormService {
 
         List<BaseField> fields = allFields
                 .stream()
-                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport() && !Strings.CI.equals(f.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()))
+                .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f) && !Strings.CI.equals(f.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey()))
                 .toList();
         return fields;
     }

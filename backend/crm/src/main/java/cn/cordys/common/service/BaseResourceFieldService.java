@@ -197,7 +197,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         allFields.stream()
                 .filter(field -> {
                     BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
-                    return (fieldValue != null && fieldValue.valid()) || field.isSerialNumber() || field.isSubField() || field.includeFormula();
+                    return (fieldValue != null && fieldValue.valid()) || field.isSerialNumber() || field.isSubField() || field.includeFormula(field);
                 })
                 .sorted(Comparator.comparing((BaseField f) -> !f.isSerialNumber()).thenComparing(f -> f.getPos() != null ? f.getPos() : Long.MAX_VALUE))
                 .forEach(field -> {
@@ -1170,7 +1170,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
 
         // 公式字段
-        if (field.includeFormula()) {
+        if (field.includeFormula(field)) {
             if (StringUtils.isNotEmpty(field.getBusinessKey())) {
                 // 业务字段直接替换, 公式字段的业务字段不入库.
                 Object serialNo = getResourceFieldValue(resource, field.getBusinessKey());
