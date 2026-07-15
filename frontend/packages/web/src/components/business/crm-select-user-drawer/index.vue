@@ -364,6 +364,10 @@
     );
   }
 
+  function isSelectedDisabledOption(item: Record<string, any>) {
+    return props.disabledList?.includes(item.id || item.value);
+  }
+
   const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
     return h(
       NTree,
@@ -443,7 +447,10 @@
                             h(
                               'span',
                               {
-                                class: 'one-line-text min-w-0',
+                                class: [
+                                  'one-line-text min-w-0',
+                                  isSelectedDisabledOption(option) ? 'text-[var(--text-n6)]' : '',
+                                ],
                               },
                               {
                                 default: () => option.label,
@@ -572,6 +579,9 @@
           order: 3;
           flex: none;
           margin-left: auto !important;
+          .n-checkbox__label {
+            padding-right: 0;
+          }
         }
         .n-transfer-list-header__button {
           order: 1;
@@ -582,8 +592,9 @@
           }
         }
         .n-transfer-list-header__extra {
+          margin-right: 16px;
+          font-size: 12px;
           order: 2;
-          font-size: 14px;
         }
       }
       .n-transfer-filter {
@@ -625,9 +636,17 @@
         }
       }
     }
+    :deep(.n-transfer-list--source) {
+      .n-transfer-list-header__button {
+        margin-left: 0;
+      }
+    }
     :deep(.n-transfer-list--target) {
       .n-transfer-list-body {
         padding: 0 16px;
+      }
+      .n-transfer-list-header__button {
+        margin-left: 4px;
       }
     }
   }

@@ -31,6 +31,7 @@
         :row="currentRow"
         :type="ModuleConfigEnum.CLUE_MANAGEMENT"
         @refresh="refreshTable"
+        @saved="refreshTable(currentRow?.id)"
       />
     </div>
   </CrmDrawer>
@@ -321,10 +322,12 @@
   });
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  function refreshTable() {
+  function refreshTable(refreshId?: string) {
     setLoadListParams({});
-    loadList();
-    crmTableRef.value?.scrollTo({ top: 0 });
+    loadList(false, refreshId);
+    if (!refreshId) {
+      crmTableRef.value?.scrollTo({ top: 0 });
+    }
   }
 
   watch(

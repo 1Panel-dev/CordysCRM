@@ -81,7 +81,7 @@
       const res = await props.fetchApi({
         keyword,
         ...props.params,
-        ...(props.showIncludeDisabled ? { includeDisabled: includeDisabled.value } : {}),
+        ...(props.showIncludeDisabled ? { includeDisabled: true } : {}),
       });
       optionsList.value = res.map((user) => ({
         ...user,
@@ -107,7 +107,6 @@
     if (!value) {
       clearSelectedValue();
     }
-    loadUsers();
   }
 
   const handleSearch = debounce(async (query: string) => {
@@ -132,18 +131,23 @@
     emit('change', value, option);
   }
 
-  const computedOptions = computed<SelectMixedOption[]>(() => {
-    const list =
-      props.mode === 'static'
-        ? (props.options || []).map((item) => ({
-            ...item,
-            [props.labelField]: item[props.labelField],
-            [props.valueField]: item[props.valueField],
-            disabled: props.disabledIds?.includes(item[props.valueField] as string),
-          }))
-        : optionsList.value;
+  const rawOptions = computed<SelectMixedOption[]>(() =>
+    props.mode === 'static'
+      ? (props.options || []).map((item) => ({
+          ...item,
+          [props.labelField]: item[props.labelField],
+          [props.valueField]: item[props.valueField],
+          disabled: props.disabledIds?.includes(item[props.valueField] as string),
+        }))
+      : optionsList.value
+  );
 
-    return props.showIncludeDisabled && !includeDisabled.value ? list.filter((item) => item.enable !== false) : list;
+  const computedOptions = computed<SelectMixedOption[]>(() => {
+    if (!props.showIncludeDisabled || includeDisabled.value) {
+      return rawOptions.value;
+    }
+
+    return rawOptions.value.filter((item) => item.enable !== false);
   });
 
   function renderLabel(option: SelectOption) {
@@ -184,6 +188,37 @@
       recentlyUserIds.value = ids;
     }
   });
+
+  function getValueList(value = innerValue.value): Array<string | number> {
+    if (Array.isArray(value)) {
+      return value;
+    }
+    return value || value === 0 ? [value] : [];
+  }
+
+  function isSameValue(left: unknown, right: unknown) {
+    return String(left) === String(right);
+  }
+
+  // 如果当前值里包含禁用人员，会自动勾选【显示已禁用人员】
+  function syncIncludeDisabledByValue(list: SelectMixedOption[]) {
+    const selectedValues = getValueList();
+    const hasSelectedDisabledUser = list.some(
+      (item) =>
+        item.enable === false && selectedValues.some((value) => isSameValue(value, item[props.valueField] as string))
+    );
+    if (props.showIncludeDisabled && hasSelectedDisabledUser) {
+      includeDisabled.value = true;
+    }
+  }
+
+  watch(
+    [rawOptions, () => innerValue.value],
+    ([list]) => {
+      syncIncludeDisabledByValue(list);
+    },
+    { deep: true, immediate: true }
+  );
 
   defineExpose({
     loadUsers,
