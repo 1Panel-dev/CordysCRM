@@ -469,6 +469,8 @@ public class ApprovalResourceService {
             instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
+
+            sendFinishNotice(currentOrgId, currentUserId, instance);
             return;
         }
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
@@ -481,13 +483,8 @@ public class ApprovalResourceService {
             if (Strings.CI.equals(instance.getExecuteTime(), ExecuteTimingEnum.DELETE.name())) {
                 executeDeleteAction(instance.getType(), instance.getResourceId(), currentUserId, currentOrgId);
             }
-            String resourceName = getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
-            if (StringUtils.isBlank(resourceName)) {
-                return;
-            }
-            // 如果中间有自动通过，那还是要通知的
-            String noticeCurrentUserId = Strings.CS.equals(instance.getSubmitterId(), currentUserId) ? InternalUser.ADMIN.name() : currentUserId;
-            approvalActionService.sendFinishNotice(instance, resourceName, noticeCurrentUserId, currentOrgId);
+
+            sendFinishNotice(currentOrgId, currentUserId, instance);
             return;
         }
         /*
@@ -499,6 +496,16 @@ public class ApprovalResourceService {
         approvalInstanceMapper.insert(instance);
         ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
         approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, null, currentUserId, null, currentOrgId);
+    }
+
+    private void sendFinishNotice(String currentOrgId, String currentUserId, ApprovalInstance instance) {
+        String resourceName = getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
+        if (StringUtils.isBlank(resourceName)) {
+            return;
+        }
+        // 如果中间有自动通过或者驳回，那还是要通知的
+        String noticeCurrentUserId = Strings.CS.equals(instance.getSubmitterId(), currentUserId) ? InternalUser.ADMIN.name() : currentUserId;
+        approvalActionService.sendFinishNotice(instance, resourceName, noticeCurrentUserId, currentOrgId);
     }
 
     /**
