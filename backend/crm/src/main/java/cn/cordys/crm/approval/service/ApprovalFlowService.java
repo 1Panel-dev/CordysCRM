@@ -2177,7 +2177,6 @@ public class ApprovalFlowService {
             boolean isNextEnd = isNextEnd(nodeId);
             ApprovalInstance noticeInstance = BeanUtils.copyBean(new ApprovalInstance(), instance);
             noticeInstance.setApprovalStatus(getAutoApprovalStatus(isNextEnd, approvalStatus).toString());
-            noticeInstance.setSubmitterId(InternalUser.ADMIN.getValue());
             approvalActionService.sendCcNotice(ccTasks, noticeInstance, orgId);
         }
     }
