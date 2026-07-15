@@ -133,7 +133,6 @@ public abstract class BaseExportService {
      * @param func         获取数据方法
      * @param mergeColumns 合并列
      * @param <T>          参数类型
-     *
      * @throws InterruptedException 异常信息
      */
     public <T extends BasePageRequest> void batchHandleDataWithMergeStrategy(List<List<String>> headList, ExportTask task, String fileName,
@@ -188,7 +187,6 @@ public abstract class BaseExportService {
      *
      * @param fileId   文件ID
      * @param fileName 文件名
-     *
      * @return 导出文件
      */
     public File prepareExportFile(String fileId, String fileName, String orgId) {
@@ -242,7 +240,6 @@ public abstract class BaseExportService {
      * 导出全部(合并策略)
      *
      * @param exportParam 导出参数
-     *
      * @return 导出任务ID
      */
     public String exportAllWithMergeStrategy(ExportDTO exportParam) {
@@ -258,7 +255,6 @@ public abstract class BaseExportService {
      * 导出选中(合并策略)
      *
      * @param exportParam 导出参数
-     *
      * @return 导出任务ID
      */
     public String exportSelectWithMergeStrategy(ExportDTO exportParam) {
@@ -299,7 +295,6 @@ public abstract class BaseExportService {
      *
      * @param exportParam 导出参数
      * @param executor    导出执行器
-     *
      * @return 导出任务ID
      */
     private String exportWithMergeStrategy(ExportDTO exportParam, ExportExecutor executor) {
@@ -314,7 +309,6 @@ public abstract class BaseExportService {
      *
      * @param headList   表头列表
      * @param currentOrg 当前组织
-     *
      * @return 表头信息
      */
     private List<List<String>> getExportMergeHeadList(List<ExportHeadDTO> headList, String currentOrg, String formKey) {
@@ -326,7 +320,6 @@ public abstract class BaseExportService {
      *
      * @param metas          表头元信息
      * @param sysFieldValMap 系统字段值
-     *
      * @return 单行记录值
      */
     public List<Object> transFieldValueWithSub(List<FieldExportMeta> metas, LinkedHashMap<String, Object> sysFieldValMap, Map<String, Object> normalFieldMap,
@@ -386,7 +379,7 @@ public abstract class BaseExportService {
         // 部分单选类型的字段值可走缓存
         boolean cacheable = field instanceof DatasourceField || field instanceof DepartmentField
                 || field instanceof SelectField || field instanceof MemberField;
-        if (cacheable) {
+        if (cacheable && MapUtils.isNotEmpty(cacheMap)) {
             Object cached = cacheMap.get(value);
             if (cached != null) {
                 return cached;
@@ -396,7 +389,7 @@ public abstract class BaseExportService {
         String parseVal = value instanceof List ? JSON.toJSONString(value) : value.toString();
         try {
             Object data = resolver.transformToValue(field, parseVal);
-            if (cacheable && data != null) {
+            if (cacheable && MapUtils.isNotEmpty(cacheMap) && data != null) {
                 cacheMap.put(value, data);
             }
             return data;
@@ -423,9 +416,10 @@ public abstract class BaseExportService {
 
     /**
      * 字段解析异常
+     *
      * @param field 字段信息
-     * @param val 字段值
-     * @param e 异常信息
+     * @param val   字段值
+     * @param e     异常信息
      */
     private void logFieldParseError(BaseField field, String val, Exception e) {
         log.error("Parse field value error, field={}, value={}, errorMsg={}", fieldName(field), val, e.getMessage());
@@ -442,7 +436,6 @@ public abstract class BaseExportService {
      * @param exportFieldParam  导出参数
      * @param metas             导出表头元数据
      * @param systemFieldMap    系统字段值
-     *
      * @return 导出数据列表
      */
     protected List<List<Object>> buildDataWithSub(List<BaseModuleFieldValue> moduleFieldValues, ExportFieldParam exportFieldParam, List<FieldExportMeta> metas, LinkedHashMap<String, Object> systemFieldMap, Map<Object, Object> cacheMap) {
@@ -540,7 +533,6 @@ public abstract class BaseExportService {
      * 构建全部导出数据
      *
      * @return 导出数据列表
-     *
      * @throws InterruptedException 异常信息
      */
     protected List<List<Object>> getExportData(String taskId, ExportDTO exportDTO) throws InterruptedException {
@@ -552,9 +544,7 @@ public abstract class BaseExportService {
      *
      * @param taskId      任务ID
      * @param exportParam 导出参数
-     *
      * @return 导出数据列表 && 合并区域
-     *
      * @throws InterruptedException 异常信息
      */
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) throws InterruptedException {
@@ -573,9 +563,9 @@ public abstract class BaseExportService {
      * @return 合并结果
      */
     protected <T> MergeResult parallelBuildExportData(String taskId, List<T> dataList,
-                                                       ExportFieldParam exportFieldParam,
-                                                       List<FieldExportMeta> exportMetas,
-                                                       ExportRowBuilder<T> rowBuilder) {
+                                                      ExportFieldParam exportFieldParam,
+                                                      List<FieldExportMeta> exportMetas,
+                                                      ExportRowBuilder<T> rowBuilder) {
         int size = dataList.size();
         var cacheMap = new ConcurrentHashMap<>();
         List<List<Object>> mergeRowData = new ArrayList<>(size);
@@ -636,18 +626,18 @@ public abstract class BaseExportService {
     /**
      * 通用的导出数据收集和构建方法
      *
-     * @param taskId           导出任务ID
-     * @param exportParam      导出参数
-     * @param dataList         已构建的数据列表
-     * @param getModuleFields  获取模块字段的函数
-     * @param rowBuilder       单行数据构建函数
-     * @param <T>              数据类型
+     * @param taskId          导出任务ID
+     * @param exportParam     导出参数
+     * @param dataList        已构建的数据列表
+     * @param getModuleFields 获取模块字段的函数
+     * @param rowBuilder      单行数据构建函数
+     * @param <T>             数据类型
      * @return 合并结果
      */
     protected <T> MergeResult buildExportMergeResult(String taskId, ExportDTO exportParam,
-                                                      List<T> dataList,
-                                                      Function<T, List<BaseModuleFieldValue>> getModuleFields,
-                                                      ExportRowBuilder<T> rowBuilder) {
+                                                     List<T> dataList,
+                                                     Function<T, List<BaseModuleFieldValue>> getModuleFields,
+                                                     ExportRowBuilder<T> rowBuilder) {
         if (CollectionUtils.isEmpty(dataList)) {
             return MergeResult.builder().dataList(new ArrayList<>()).mergeRegions(new ArrayList<>()).handleCount(0).build();
         }
@@ -667,14 +657,13 @@ public abstract class BaseExportService {
     @FunctionalInterface
     protected interface ExportRowBuilder<T> {
         List<List<Object>> buildRow(T detail, ExportFieldParam exportFieldParam,
-                                     List<FieldExportMeta> exportMetas, Map<Object, Object> cacheMap);
+                                    List<FieldExportMeta> exportMetas, Map<Object, Object> cacheMap);
     }
 
     /**
      * 构建选择的导出数据
      *
      * @return 导出数据列表
-     *
      * @throws InterruptedException 异常信息
      */
     protected List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {
@@ -719,7 +708,6 @@ public abstract class BaseExportService {
      * 获取一些公共的导出字段参数
      *
      * @param exportParam 导出参数
-     *
      * @return 导出字段参数
      */
     protected ExportFieldParam getExportFieldParam(ExportDTO exportParam) {
@@ -739,7 +727,6 @@ public abstract class BaseExportService {
      *
      * @param fieldConfigMap 字段配置
      * @param heads          表头信息集合
-     *
      * @return 预处理后的表头字段信息集合
      */
     private List<FieldExportMeta> getExportFieldMeta(Map<String, BaseField> fieldConfigMap, List<String> heads) {
@@ -778,7 +765,6 @@ public abstract class BaseExportService {
      * @param exportHeads 表头信息
      * @param currentOrg  当前组织
      * @param formKey     表单Key
-     *
      * @return 表头ID集合
      */
     private List<String> getMergeHeads(List<ExportHeadDTO> exportHeads, String formKey, String currentOrg) {
@@ -789,7 +775,6 @@ public abstract class BaseExportService {
      * 获取需要合并的列索引
      *
      * @param heads 导出的表头信息
-     *
      * @return 需要合并的列索引集合
      */
     private List<Integer> getMergeColumns(List<List<String>> heads) {
@@ -943,7 +928,6 @@ public abstract class BaseExportService {
      * 是否为空子表格
      *
      * @param subFvs 子表格字段值
-     *
      * @return 是否为空子表格
      */
     private boolean isNullSubValue(List<BaseModuleFieldValue> subFvs) {
@@ -964,7 +948,6 @@ public abstract class BaseExportService {
      * 合并对齐多个子表格的值
      *
      * @param subFvs 多子表格字段值
-     *
      * @return 合并后的子表格值列表
      */
     @SuppressWarnings("unchecked")
@@ -1002,7 +985,6 @@ public abstract class BaseExportService {
      *
      * @param headList     表头信息
      * @param mergeColumns 合并的列索引
-     *
      * @return 汇总列索引
      */
     private List<Integer> getSummaryColIdx(List<List<String>> headList, List<Integer> mergeColumns) {
@@ -1025,31 +1007,31 @@ public abstract class BaseExportService {
     /**
      * 根据审批流状态权限过滤可导出的数据
      *
-     * @param resources    原始数据列表
-     * @param orgId     组织ID
-     * @param formKey   表单类型
-     * @param idGetter 获取资源ID的函数
-     * @param statusGetter 获取审批状态的函数
+     * @param resources           原始数据列表
+     * @param orgId               组织ID
+     * @param formKey             表单类型
+     * @param idGetter            获取资源ID的函数
+     * @param statusGetter        获取审批状态的函数
      * @param approvalFlowService 审批流服务
-     * @param <T>     资源类型
+     * @param <T>                 资源类型
      * @return 过滤后可导出的数据列表
      */
     protected <T> List<T> filterApprovalExportPermission(List<T> resources, String orgId, String formKey,
-                                  Function<T, String> idGetter,
-                                  Function<T, String> statusGetter,
-                                  ApprovalFlowService approvalFlowService) {
+                                                         Function<T, String> idGetter,
+                                                         Function<T, String> statusGetter,
+                                                         ApprovalFlowService approvalFlowService) {
         if (CollectionUtils.isEmpty(resources)) {
             return resources;
         }
         List<String> filteredIds = approvalFlowService.filterResourcesWithExportPermission(formKey, resources, orgId, idGetter, statusGetter);
-		if (CollectionUtils.isEmpty(filteredIds)) {
-			return new ArrayList<>();
-		}
-		Map<String, T> resourceMap = resources.stream().collect(Collectors.toMap(idGetter, Function.identity(), (a, b) -> a));
-		return filteredIds.stream()
-				.map(resourceMap::get)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(filteredIds)) {
+            return new ArrayList<>();
+        }
+        Map<String, T> resourceMap = resources.stream().collect(Collectors.toMap(idGetter, Function.identity(), (a, b) -> a));
+        return filteredIds.stream()
+                .map(resourceMap::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     /**
