@@ -56,6 +56,7 @@
         ai.submit_time AS submitTime,
         CASE WHEN at.action IS NULL OR at.action = '' THEN at.status ELSE at.action END AS approvalOperation,
         ai.approval_status AS dataResult,
+        ai.execute_time,
         at.id AS approvalTaskId,
         at.node_id AS approvalNodeId,
         at.instance_id AS approvalInstanceId,

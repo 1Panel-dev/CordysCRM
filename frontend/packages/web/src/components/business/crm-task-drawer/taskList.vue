@@ -218,7 +218,7 @@
       case ApprovalTaskExecuteTimeEnum.CREATE:
         return t('common.create');
       case ApprovalTaskExecuteTimeEnum.UPDATE:
-        return t('common.update');
+        return t('common.edit');
       case ApprovalTaskExecuteTimeEnum.DELETE:
         return t('common.delete');
       default:
