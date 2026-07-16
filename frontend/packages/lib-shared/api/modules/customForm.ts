@@ -149,9 +149,9 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.get<CustomFormItem[]>({ url:GetCustomFormOptionsUrl });
   }
 
-  function preCheckImportCustomForm(params: ImportUploadParams, customFormId?: string) {
+  function preCheckImportCustomForm(params: ImportUploadParams) {
     return CDR.uploadFile<{ data: ValidateInfo }>(
-      { url: PreCheckCustomFormImportUrl, params: { customFormId } },
+      { url: PreCheckCustomFormImportUrl  },
       params,
       'file'
     );
@@ -168,9 +168,9 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     );
   }
 
-  function importCustomForm(params: ImportUploadParams, customFormId?: string) {
+  function importCustomForm(params: ImportUploadParams) {
     return CDR.uploadFile(
-      { url: ImportCustomFormUrl, params: { customFormId } },
+      { url: ImportCustomFormUrl },
       params,
       'file'
     );

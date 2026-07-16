@@ -133,8 +133,8 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     download: downloadBusinessTitleTemplate,
   },
   [FormDesignKeyEnum.CUSTOM_FORM]: {
-    preCheck: (params) => preCheckImportCustomForm(params.uploadParams, params.customFormId),
-    save: (params) => importCustomForm(params.uploadParams, params.customFormId),
+    preCheck: (params) => preCheckImportCustomForm(params.uploadParams),
+    save: (params) => importCustomForm(params.uploadParams),
     download: downloadCustomFormTemplate,
   },
 };

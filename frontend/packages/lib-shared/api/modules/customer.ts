@@ -724,7 +724,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   function preCheckImportPoolAccount(params: ImportUploadParams) {
     return CDR.uploadFile<{ data: ValidateInfo }>(
-      { url: PreCheckPoolAccountImportUrl, params: { poolId: params?.request?.poolId?? ''} },
+      { url: PreCheckPoolAccountImportUrl },
       params,
       'file'
     );
@@ -742,7 +742,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   function importPoolAccount(params: ImportUploadParams) {
     return CDR.uploadFile(
-      { url: ImportPoolAccountUrl, params: { poolId: params?.request?.poolId?? '' } },
+      { url: ImportPoolAccountUrl },
       params,
       'file'
     );

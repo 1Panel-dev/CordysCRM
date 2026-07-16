@@ -70,6 +70,7 @@ export interface ImportUploadParams {
   request?: {
     importType?: string;
     poolId?: string;
+    customFormId?: string;
     [key: string]: any;
   };
 }
