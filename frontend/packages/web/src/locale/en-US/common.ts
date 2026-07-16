@@ -344,6 +344,7 @@ export default {
   'common.unApprovedSuccess': 'Approval not passed',
   'common.skipped': 'Skipped',
   'common.backToTop': 'Back to top',
+  'common.lastStep': 'Last step',
   'common.nextStep': 'Next step',
   'common.approvalStatus': 'Approval status',
   'common.pending': 'Pending',

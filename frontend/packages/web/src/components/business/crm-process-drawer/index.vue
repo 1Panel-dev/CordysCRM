@@ -47,11 +47,20 @@
               {{ t('common.cancel') }}
             </n-button>
             <n-button
+              v-if="activeTab !== props.tabList[0].name"
               type="primary"
               ghost
               class="n-btn-outline-primary"
-              :disabled="activeTab === props.tabList[props.tabList.length - 1].name"
-              @click="() => emit('nextStep')"
+              @click="() => emit('changeStep', 'prev')"
+            >
+              {{ t('common.lastStep') }}
+            </n-button>
+            <n-button
+              v-if="activeTab !== props.tabList[props.tabList.length - 1].name"
+              type="primary"
+              ghost
+              class="n-btn-outline-primary"
+              @click="() => emit('changeStep', 'next')"
             >
               {{ t('common.nextStep') }}
             </n-button>
@@ -98,7 +107,7 @@
 
   const emit = defineEmits<{
     (e: 'save'): void;
-    (e: 'nextStep'): void;
+    (e: 'changeStep', type: 'prev' | 'next'): void;
     (e: 'cancel'): void;
   }>();
 

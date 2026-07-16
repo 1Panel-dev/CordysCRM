@@ -192,7 +192,7 @@
   const childrenTabList = computed(() => childrenTabMap[activeTab.value] ?? []);
 
   function handleFirstMenuChange(value: string) {
-    activeChildrenTab.value = (childrenTabList.value[0].name as string) ?? '';
+    activeChildrenTab.value = (childrenTabList.value[0]?.name || '') as string;
   }
 
   const exportStatus = ref('');
