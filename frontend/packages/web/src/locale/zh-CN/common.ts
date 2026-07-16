@@ -354,6 +354,7 @@ export default {
   'common.unApprovedSuccess': '审批不通过',
   'common.skipped': '跳过',
   'common.backToTop': '回到顶部',
+  'common.lastStep': '上一步',
   'common.nextStep': '下一步',
   'common.approvalStatus': '审批状态',
   'common.pending': '待提审',

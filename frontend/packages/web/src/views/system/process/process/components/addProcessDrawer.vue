@@ -9,7 +9,7 @@
     @pointerdown.capture="handleUserInteraction"
     @keydown.capture="handleUserInteraction"
     @save="handleSave"
-    @next-step="handleNextStep"
+    @change-step="handleChangeStep"
     @cancel="handleCancel"
   >
     <template #title>
@@ -195,12 +195,11 @@
     return false;
   }
 
-  function handleNextStep() {
+  function handleChangeStep(type: 'prev' | 'next') {
     const index = tabList.findIndex((item) => item.name === activeTab.value);
-    if (index === tabList.length - 1) {
-      return;
-    }
-    const nextTab = tabList[index + 1].name;
+
+    const lastIndex = type === 'next' ? index + 1 : index - 1;
+    const nextTab = tabList[lastIndex].name;
     if (handleBeforeChangeTab(nextTab)) {
       activeTab.value = nextTab;
     }
