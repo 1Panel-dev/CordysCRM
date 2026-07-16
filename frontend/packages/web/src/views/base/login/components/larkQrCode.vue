@@ -7,7 +7,7 @@
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 
-  import { getThirdConfigByType } from '@/api/modules';
+  import { getOauthState, getThirdConfigByType } from '@/api/modules';
 
   const { load } = useScriptTag(
     'https://lf-package-cn.feishucdn.com/obj/feishu-static/lark/passport/qrcode/LarkSSOSDKWebQRCode-1.0.3.js'
@@ -16,10 +16,13 @@
   const initActive = async () => {
     const data = await getThirdConfigByType(CompanyTypeEnum.LARK);
     const { config } = data;
+    const state = await getOauthState('lark');
 
     await load(true);
     const redirectUrL = encodeURIComponent(window.location.origin);
-    const url = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${config.agentId}&redirect_uri=${redirectUrL}&response_type=code&state=LARK`;
+    const url = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${
+      config.agentId
+    }&redirect_uri=${redirectUrL}&response_type=code&state=${encodeURIComponent(state)}`;
 
     const QRLoginObj = window.QRLogin({
       id: 'lark-qr',

@@ -64,7 +64,7 @@ export function sleep(ms: number): Promise<void> {
   });
 }
 
-export function getQueryVariable(variable: string) {
+export function getQueryVariable(variable: string): string | undefined {
   const urlString = window.location.href;
   const queryIndex = urlString.indexOf('?');
   if (queryIndex !== -1) {
@@ -76,7 +76,7 @@ export function getQueryVariable(variable: string) {
     // 分割查询参数
     const params = query.split('&');
     // 遍历参数，找到 _token 参数的值
-    let variableValue;
+    let variableValue: string | undefined;
     params.forEach((param) => {
       const equalIndex = param.indexOf('=');
       const variableName = param.substring(0, equalIndex);
@@ -597,7 +597,7 @@ export function isDingTalkBrowser() {
 // 飞书
 export function isLarkBrowser(): boolean {
   const ua = window.navigator.userAgent.toLowerCase();
-  return ua.includes('lark') || ua.includes('feishu') || getQueryVariable('state') === 'LARK';
+  return ua.includes('lark') || ua.includes('feishu') || getQueryVariable('state')?.startsWith('lark.') === true;
 }
 
 /**

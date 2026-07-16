@@ -13,7 +13,7 @@ import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 import { ThirdPartyResourceConfig } from '@lib/shared/models/system/business';
 import type { Result } from '@lib/shared/types/axios';
 
-import { getThirdConfigByType, getThirdOauthCallback } from '@/api/modules';
+import { getOauthState, getThirdConfigByType, getThirdOauthCallback } from '@/api/modules';
 import { AUTH_DISABLED_ROUTE_NAME } from '@/router/constants';
 import useUserStore from '@/store/modules/user';
 
@@ -28,13 +28,13 @@ const platformConfig = {
     type: 'wecom',
     codeKey: 'code',
     codeKeysParams: ['code', 'state'],
-    authUrl: (config: Record<string, any>) => {
+    authUrl: (config: Record<string, any>, state: string) => {
       const redirectUrl = `${window.location.origin}/mobile`;
       return `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
         config.corpId
       }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
         config.agentId
-      }#wechat_redirect`;
+      }&state=${encodeURIComponent(state)}#wechat_redirect`;
     },
   },
   // 钉钉
@@ -45,13 +45,13 @@ const platformConfig = {
     type: 'ding-talk',
     codeKey: 'authCode',
     codeKeysParams: ['code', 'authCode', 'state'],
-    authUrl: (config: Record<string, any>) => {
+    authUrl: (config: Record<string, any>, state: string) => {
       const redirectUrl = `${window.location.origin}/mobile`;
       return `https://login.dingtalk.com/oauth2/auth?redirect_uri=${encodeURIComponent(
         redirectUrl
-      )}&response_type=code&client_id=${config.agentId}&scope=openid corpid&state=ding&prompt=consent&corpid=${
-        config.corpId
-      }`;
+      )}&response_type=code&client_id=${config.agentId}&scope=openid corpid&state=${encodeURIComponent(
+        state
+      )}&prompt=consent&corpid=${config.corpId}`;
     },
   },
   'lark': {
@@ -61,11 +61,11 @@ const platformConfig = {
     type: 'lark-mobile',
     codeKey: 'code',
     codeKeysParams: ['code', 'state'],
-    authUrl: (config: Record<string, any>) => {
+    authUrl: (config: Record<string, any>, state: string) => {
       const redirectUrl = `${window.location.origin}/mobile`;
       return `https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=${
         config.agentId
-      }&redirect_uri=${encodeURIComponent(redirectUrl)}&state=LARK`;
+      }&redirect_uri=${encodeURIComponent(redirectUrl)}&state=${encodeURIComponent(state)}`;
     },
   },
 } as const;
@@ -74,9 +74,9 @@ export default function useLogin() {
   const userStore = useUserStore();
   const router = useRouter();
 
-  async function thirdAuthLogin(code: string, type: string, loginType: CompanyTypeEnum) {
+  async function thirdAuthLogin(code: string, state: string, type: string, loginType: CompanyTypeEnum) {
     try {
-      const res = await getThirdOauthCallback(code, type);
+      const res = await getThirdOauthCallback(code, type, state);
       const success = userStore.setLoginInfo(res.data.data);
       if (success) {
         setLoginExpires();
@@ -104,8 +104,9 @@ export default function useLogin() {
   async function handleThirdAuthLogin(platformKey: keyof typeof platformConfig) {
     const platform = platformConfig[platformKey];
     const code = getQueryVariable(platform.codeKey) ?? '';
+    const state = getQueryVariable('state') ?? '';
     if (code) {
-      await thirdAuthLogin(code, platform.type, platform.authLoginType);
+      await thirdAuthLogin(code, state, platform.type, platform.authLoginType);
 
       // 清理参数
       const url = new URL(window.location.href);
@@ -124,7 +125,8 @@ export default function useLogin() {
     );
     if (res) {
       const { data } = res.data;
-      const redirectUrl = platform.authUrl(data.config);
+      const oauthState = await getOauthState(platform.type);
+      const redirectUrl = platform.authUrl(data.config, oauthState);
       window.location.replace(redirectUrl);
     }
   }

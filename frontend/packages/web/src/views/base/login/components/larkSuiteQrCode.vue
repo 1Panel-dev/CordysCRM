@@ -5,6 +5,8 @@
 <script lang="ts" setup>
   import { useScriptTag } from '@vueuse/core';
 
+  import { getOauthState } from '@/api/modules';
+
   // import { getLarkSuiteInfo } from '@/api/modules/user';
 
   const { load } = useScriptTag(
@@ -17,9 +19,12 @@
     const data = {
       agentId: 'cli_9f7b1b1b',
     };
+    const state = await getOauthState('lark');
     await load(true);
     const redirectUrL = encodeURIComponent(window.location.origin);
-    const url = `https://passport.larksuite.com/suite/passport/oauth/authorize?client_id=${data.agentId}&redirect_uri=${redirectUrL}&response_type=code&state=fit2cloud-lark-suite-qr`;
+    const url = `https://passport.larksuite.com/suite/passport/oauth/authorize?client_id=${
+      data.agentId
+    }&redirect_uri=${redirectUrL}&response_type=code&state=${encodeURIComponent(state)}`;
 
     const QRLoginObj = window.QRLogin({
       id: 'lark-suite-qr',
