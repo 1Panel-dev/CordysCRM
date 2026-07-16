@@ -293,11 +293,14 @@
     },
     permission: ['PRODUCT_MANAGEMENT:UPDATE', 'PRODUCT_MANAGEMENT:DELETE'],
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams } = useTableRes;
 
-  const exportParams = computed(() => ({
-    ids: checkedRowKeys.value as string[],
-  }));
+  const exportParams = computed(() => {
+    return {
+      ...tableQueryParams.value,
+      ids: checkedRowKeys.value,
+    };
+  });
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)
