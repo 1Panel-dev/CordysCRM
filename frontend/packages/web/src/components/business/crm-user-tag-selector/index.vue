@@ -93,20 +93,6 @@
     showSelectDrawer.value = true;
   }
 
-  function renderDisabledTag(item?: SelectedUsersItem) {
-    if (item?.enable !== false) return null;
-
-    return h(
-      CrmTag,
-      {
-        theme: 'light',
-        size: 'small',
-        tooltipDisabled: true,
-      },
-      { default: () => t('common.disabled') }
-    );
-  }
-
   function handleSelectConfirm(params: SelectedUsersItem[]) {
     if (props.multiple) {
       selectedList.value = [...(selectedList.value || []), ...params];
@@ -136,10 +122,7 @@
       {
         default: () => {
           const current = selectedList.value?.find((item) => item.id === option.value);
-          return h('div', { class: 'flex min-w-0 items-center' }, [
-            h('span', { class: 'one-line-text' }, { default: () => current?.name }),
-            renderDisabledTag(current),
-          ]);
+          return h('span', { class: 'one-line-text' }, { default: () => current?.name });
         },
         tooltipContent: () => selectedList.value?.find((item) => item.id === option.value)?.name,
       }
