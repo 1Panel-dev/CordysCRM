@@ -11,7 +11,7 @@
     max-tag-count="responsive"
     :options="sortedOptions"
     :placeholder="props.placeholder || t('common.pleaseSelect')"
-    :render-label="renderLabel"
+    :render-option="renderOption"
     @search="handleSearch"
     @update:value="change"
   >
@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, type VNode } from 'vue';
   import { NCheckbox, NSelect, SelectOption } from 'naive-ui';
   import { debounce } from 'lodash-es';
 
@@ -150,22 +150,29 @@
     return rawOptions.value.filter((item) => item.enable !== false);
   });
 
-  function renderLabel(option: SelectOption) {
-    return h('div', { class: 'flex w-full items-center justify-between' }, [
-      h('span', { class: 'one-line-text min-w-0' }, { default: () => option[props.labelField] as string }),
-      option.enable === false
-        ? h(
-            CrmTag,
-            {
-              theme: 'light',
-              size: 'small',
-              tooltipDisabled: true,
-              class: 'ml-[8px] shrink-0',
-            },
-            { default: () => t('common.disabled') }
-          )
-        : null,
-    ]);
+  function renderDisabledTag(option: SelectOption) {
+    if (option.enable !== false) return null;
+
+    return h(
+      CrmTag,
+      {
+        theme: 'light',
+        size: 'small',
+        tooltipDisabled: true,
+        class: 'ml-[8px] shrink-0',
+      },
+      { default: () => t('common.disabled') }
+    );
+  }
+
+  function renderOption({ node, option }: { node: VNode; option: SelectOption }) {
+    node.children = [
+      h('div', { class: 'flex w-full items-center justify-between' }, [
+        h('span', { class: 'one-line-text min-w-0' }, { default: () => option[props.labelField] as string }),
+        renderDisabledTag(option),
+      ]),
+    ];
+    return node;
   }
 
   const sortedOptions = computed<SelectMixedOption[]>(() => {
