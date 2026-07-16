@@ -4,9 +4,9 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.contract.excel.constants.BusinessTitleImportFiled;
 import cn.cordys.crm.system.constants.ImportType;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.excel.domain.ExcelErrData;
 import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.context.AnalysisContext;
@@ -63,6 +63,9 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
             throw new GenericException(Translator.get("user_import_table_header_missing"));
         }
 
+        if (Strings.CI.equals(request.getImportType(), ImportType.UPDATE.name()) && !headMap.containsValue(BusinessTitleImportFiled.ID.name())) {
+            throw new GenericException(Translator.getWithArgs("illegal_header", BusinessTitleImportFiled.ID.name()));
+        }
         List<String> headList = heads.stream().flatMap(List::stream).toList();
 
         headList.forEach(head -> {
@@ -87,9 +90,18 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
         if (data == null) {
             return;
         }
+        String sourceId = "";
+        Integer key = headMap.entrySet().stream()
+                .filter(entry -> BusinessTitleImportFiled.ID.equals(BusinessTitleImportFiled.fromHeader(entry.getValue())))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
+        if (key != null && data.containsKey(key)) {
+            sourceId = data.get(key);
+        }
         atLeastOne = true;
         Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
-        validateRowData(rowIndex, data);
+        validateRowData(rowIndex, data, sourceId);
     }
 
     @Override
@@ -100,14 +112,18 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     }
 
 
-    private void validateRowData(Integer rowIndex, Map<Integer, String> rowData) {
+    private void validateRowData(Integer rowIndex, Map<Integer, String> rowData, String sourceId) {
         StringBuilder errText = new StringBuilder();
         headMap.forEach((k, v) -> {
             if (Strings.CI.equals(request.getImportType(), ImportType.ADD.name())) {
                 validateRequired(rowData.get(k), errText, v);
+                validateNameExist(rowData.get(k), errText, v);
             }
             if (Strings.CI.equals(request.getImportType(), ImportType.UPDATE.name())) {
                 validateId(rowData.get(k), errText, v);
+                if (StringUtils.isNotBlank(sourceId)) {
+                    validateNameUniques(rowData.get(k), errText, v, sourceId);
+                }
             }
             validateLenLimit(rowData.get(k), errText, v);
         });
@@ -134,8 +150,8 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
     private void validateNameExist(String data, StringBuilder errText, String v) {
         if (data != null && BusinessTitleImportFiled.NAME.equals(BusinessTitleImportFiled.fromHeader(v))) {
             boolean repeat = commonMapper.checkAddExist("business_title", BusinessTitleImportFiled.NAME.name().toLowerCase(), data, orgId);
-            if (!repeat) {
-                errText.append(v).append(":").append(Translator.get("business_title.not.exist")).append(";");
+            if (repeat) {
+                errText.append(v).append(":").append(Translator.get("business_title.exist")).append(";");
             }
         }
     }
@@ -149,7 +165,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
         }
     }
 
-    private void validateNameUniques(String data, StringBuilder errText, String v) {
+    private void validateNameUniques(String data, StringBuilder errText, String v, String sourceId) {
         if (data != null && BusinessTitleImportFiled.NAME.equals(BusinessTitleImportFiled.fromHeader(v))) {
             Boolean existed = excelValueCache.putIfAbsent(data, true);
             if (existed != null) {
@@ -157,7 +173,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
                 return;
             }
 
-            boolean repeat = commonMapper.checkAddExist("business_title", BusinessTitleImportFiled.NAME.name().toLowerCase(), data, orgId);
+            boolean repeat = commonMapper.checkUpdateExist("business_title", BusinessTitleImportFiled.NAME.name().toLowerCase(), data, orgId, List.of(sourceId));
             if (repeat) {
                 errText.append(v).append(":").append(Translator.get("business_title.exist")).append(";");
             }
