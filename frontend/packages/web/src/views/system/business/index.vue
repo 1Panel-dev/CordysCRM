@@ -1,11 +1,12 @@
 <template>
   <n-scrollbar
-    :class="`business ${activeTab === 'syncOrganization' && licenseStore.expiredDuring ? '!h-[calc(100%-64px)]' : ''}`"
+    :class="`business ${activeTab === 'syncOrganization' && licenseStore.expiredDuring ? '!h-[calc(100%-64px)]' : ''} 
+    ${activeTab === 'modelSettings' ? '!h-full' : ''}`"
     :content-class="`${
       ['pageSettings', 'syncOrganization'].includes(activeTab) ? 'overflow-auto' : 'h-full overflow-hidden'
     }`"
   >
-    <div class="business-container">
+    <div class="business-container" :class="`${activeTab === 'modelSettings' ? 'flex h-full flex-col' : ''}`">
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
         <CrmTab
           v-model:active-tab="activeTab"
@@ -17,6 +18,7 @@
       </CrmCard>
       <PageSettings v-if="activeTab === 'pageSettings'" />
       <MailSettings v-if="activeTab === 'mailSettings'" />
+      <ModelSettings v-if="activeTab === 'modelSettings'" />
       <!-- TODO license 先放开 <IntegrationList v-if="activeTab === 'syncOrganization' && xPack" /> -->
       <IntegrationList v-if="activeTab === 'syncOrganization'" />
     </div>
@@ -37,6 +39,7 @@
 
   const PageSettings = defineAsyncComponent(() => import('./components/pageSettings.vue'));
   const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
+  const ModelSettings = defineAsyncComponent(() => import('./components/modelSettings/index.vue'));
   const { t } = useI18n();
   const { openModal } = useModal();
 
@@ -51,6 +54,7 @@
     { name: 'pageSettings', tab: t('system.business.tab.interfaceSettings') },
     { name: 'syncOrganization', tab: t('system.business.tab.third') },
     { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
+    { name: 'modelSettings', tab: t('system.business.tab.modelSettings') },
   ];
 
   const tabList = ref([...initTabList]);
