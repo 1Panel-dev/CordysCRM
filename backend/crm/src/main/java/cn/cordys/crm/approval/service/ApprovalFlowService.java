@@ -2158,8 +2158,9 @@ public class ApprovalFlowService {
         record.setNodeId(nodeId);
         record.setNodeRound(nodeRound);
         record.setResult(approvalStatus.name());
+        boolean isAutoApproved = approvalStatus == ApprovalStatus.AUTO_APPROVED;
         if (StringUtils.isBlank(comment)) {
-            record.setComment(approvalStatus == ApprovalStatus.AUTO_APPROVED ? Translator.get("auto.approval.passed") : Translator.get("auto.approval.rejected"));
+            record.setComment(isAutoApproved ? Translator.get("auto.approval.passed") : Translator.get("auto.approval.rejected"));
         } else {
             record.setComment(comment);
         }
@@ -2168,35 +2169,19 @@ public class ApprovalFlowService {
         record.setUpdateTime(System.currentTimeMillis());
         record.setUpdateUser(InternalUser.ADMIN.getValue());
         approvalRecordMapper.insert(record);
-        if (sendCc && CollectionUtils.isNotEmpty(ccList)) {
-            // 节点执行完成, 发送抄送
+        if (sendCc && CollectionUtils.isNotEmpty(ccList) && isAutoApproved) {
+            // 节点执行完成, 发送抄送, 通过才抄送
             ApprovalActionService approvalActionService = CommonBeanFactory.getBean(ApprovalActionService.class);
             List<ApprovalTask> ccTasks = approvalActionService.getNodeCcTasks(nodeId, ccList, instanceId, InternalUser.ADMIN.getValue());
             approvalTaskMapper.batchInsert(ccTasks);
 
             boolean isNextEnd = isNextEnd(nodeId);
             ApprovalInstance noticeInstance = BeanUtils.copyBean(new ApprovalInstance(), instance);
-            noticeInstance.setApprovalStatus(getAutoApprovalStatus(isNextEnd, approvalStatus).toString());
+            if (isNextEnd) {
+                noticeInstance.setApprovalStatus(ApprovalStatus.APPROVED.name());
+            }
             approvalActionService.sendCcNotice(ccTasks, noticeInstance, orgId);
         }
-    }
-
-    /**
-     * 获取自动审批过后的审批状态
-     * @param isNextEnd
-     * @param approvalStatus
-     * @return
-     */
-    private ApprovalStatus getAutoApprovalStatus(boolean isNextEnd, ApprovalStatus approvalStatus) {
-        ApprovalStatus status = ApprovalStatus.APPROVING;
-        if (isNextEnd) {
-            if (approvalStatus == ApprovalStatus.AUTO_APPROVED) {
-                status = ApprovalStatus.APPROVED;
-            } else if (approvalStatus == ApprovalStatus.AUTO_UNAPPROVED) {
-                status = ApprovalStatus.UNAPPROVED;
-            }
-        }
-        return status;
     }
 
     private boolean isNextEnd(String nodeId) {
