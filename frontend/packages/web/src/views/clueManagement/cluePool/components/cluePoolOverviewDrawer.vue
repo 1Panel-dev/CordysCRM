@@ -11,6 +11,7 @@
     :show-tab-setting="true"
     :formViewSize="formViewSize"
     @button-select="handleSelect"
+    @button-pop-update="handleButtonPopUpdate"
     @saved="() => (refreshKey += 1)"
   >
     <template #left>
@@ -154,6 +155,18 @@
   const distributeForm = ref<TransferParams>({
     ...defaultTransferForm,
   });
+
+  function resetDistributeForm() {
+    distributeForm.value = { ...defaultTransferForm };
+    distributeFormRef.value?.formRef?.restoreValidation();
+  }
+
+  function handleButtonPopUpdate(key: string, visible: boolean) {
+    if (key === 'distribute' && visible) {
+      resetDistributeForm();
+    }
+  }
+
   function handleDistribute() {
     distributeFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
@@ -164,7 +177,7 @@
             clueId: sourceId.value,
           });
           Message.success(t('common.distributeSuccess'));
-          distributeForm.value = { ...defaultTransferForm };
+          resetDistributeForm();
           emit('remove');
           show.value = false;
         } catch (e) {
