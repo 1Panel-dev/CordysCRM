@@ -6,94 +6,118 @@
     :title="t('common.export')"
     :footer="false"
     class="min-w-[800px]"
+    :no-padding="true"
     @cancel="handleCancel"
   >
-    <n-alert type="default" class="mb-[16px]" closable>
-      <template #icon>
-        <CrmIcon type="iconicon_info_circle_filled" :size="20" />
-      </template>
-      {{ t('system.personal.exportTip') }}
-    </n-alert>
-    <div class="mb-[16px] flex flex-wrap items-center justify-between gap-[16px]">
-      <div class="flex items-center gap-[12px]">
-        <div>
-          <CrmTab v-model:active-tab="activeTab" class="inline-block" type="segment" no-content :tab-list="tabList" />
-        </div>
-        <n-select
-          v-model:value="exportStatus"
-          :options="exportStatusOptions"
-          class="w-[120px]"
-          @update-value="changeExportStatus"
+    <div class="h-full bg-[var(--text-n9)] p-[16px]">
+      <n-alert type="default" class="mb-[16px]" closable>
+        <template #icon>
+          <CrmIcon type="iconicon_info_circle_filled" :size="20" />
+        </template>
+        {{ t('system.personal.exportTip') }}
+      </n-alert>
+      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab
+          v-model:active-tab="activeTab"
+          no-content
+          type="line"
+          :tab-list="firstTabList"
+          @change="(val:any)=>handleFirstMenuChange(val as string)"
         />
-      </div>
+      </CrmCard>
 
-      <div class="flex items-center gap-[12px]">
-        <CrmSearchInput
-          v-model:value="keyword"
-          :placeholder="t('common.searchByName')"
-          class="!w-[200px]"
-          @search="searchData"
-        />
-        <n-button class="!px-[7px]" @click="() => searchData()">
-          <template #icon>
-            <CrmIcon type="iconicon_refresh" class="text-[var(--text-n1)]" :size="16" />
-          </template>
-        </n-button>
-      </div>
-    </div>
-    <div>
-      <n-spin :show="loading">
-        <n-scrollbar class="max-h-[calc(100vh-204px)]">
-          <div v-if="list.length" class="grid h-full grid-cols-2 gap-[16px]">
-            <div v-for="item of list" :key="item.id" class="export-item">
-              <div class="mb-[8px] flex items-center justify-between">
-                <exportStatusTag :status="item.status" />
-                <CrmTag type="info" theme="light">
-                  {{ getItemType(item.resourceType) }}
-                </CrmTag>
+      <CrmCard hide-footer no-content-padding :special-height="136">
+        <div class="h-full p-[16px]">
+          <div class="mb-[16px]">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div v-if="childrenTabList.length > 0" class="mr-[12px] flex items-center">
+                  <CrmTab
+                    v-model:active-tab="activeChildrenTab"
+                    class="inline-block"
+                    type="segment"
+                    no-content
+                    :tab-list="childrenTabList"
+                  />
+                </div>
+
+                <n-select
+                  v-model:value="exportStatus"
+                  :options="exportStatusOptions"
+                  class="w-[120px]"
+                  @update-value="changeExportStatus"
+                />
               </div>
-              <div class="flex flex-nowrap items-center justify-between">
-                <div class="flex items-center gap-[8px] overflow-hidden">
-                  <n-tooltip :delay="300">
-                    <template #trigger>
-                      <div class="one-line-text text-[var(--text-n2)]">{{ item.fileName }}</div>
-                    </template>
-                    {{ item.fileName }}
-                  </n-tooltip>
-                  <div class="flex-shrink-0 text-[var(--text-n4)]">
-                    {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
-                  </div>
-                </div>
-                <div
-                  v-if="[PersonalExportStatusEnum.SUCCESS, PersonalExportStatusEnum.PREPARED].includes(item.status)"
-                  class="ml-[24px] flex items-center"
-                >
-                  <n-button
-                    v-if="item.status === PersonalExportStatusEnum.SUCCESS"
-                    text
-                    type="primary"
-                    @click="handleDownload(item)"
-                  >
-                    {{ t('common.downloadFile') }}
-                  </n-button>
-                  <n-button
-                    v-if="item.status === PersonalExportStatusEnum.PREPARED"
-                    text
-                    type="primary"
-                    @click="handleCancelExport(item.id)"
-                  >
-                    {{ t('common.cancelExport') }}
-                  </n-button>
-                </div>
+
+              <div class="flex items-center gap-[12px]">
+                <CrmSearchInput
+                  v-model:value="keyword"
+                  :placeholder="t('common.searchByName')"
+                  class="!w-[200px]"
+                  @search="searchData"
+                />
+                <n-button class="!px-[7px]" @click="() => searchData()">
+                  <template #icon>
+                    <CrmIcon type="iconicon_refresh" class="text-[var(--text-n1)]" :size="16" />
+                  </template>
+                </n-button>
               </div>
             </div>
           </div>
+          <n-spin :show="loading">
+            <n-scrollbar class="max-h-[calc(100vh-304px)]">
+              <div v-if="list.length" class="grid h-full grid-cols-2 gap-[16px]">
+                <div v-for="item of list" :key="item.id" class="export-item">
+                  <div class="mb-[8px] flex items-center justify-between">
+                    <exportStatusTag :status="item.status" />
+                    <CrmTag type="info" theme="light">
+                      {{ getItemType(item.resourceType) }}
+                    </CrmTag>
+                  </div>
+                  <div class="flex flex-nowrap items-center justify-between">
+                    <div class="flex items-center gap-[8px] overflow-hidden">
+                      <n-tooltip :delay="300">
+                        <template #trigger>
+                          <div class="one-line-text text-[var(--text-n2)]">{{ item.fileName }}</div>
+                        </template>
+                        {{ item.fileName }}
+                      </n-tooltip>
+                      <div class="flex-shrink-0 text-[var(--text-n4)]">
+                        {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+                      </div>
+                    </div>
+                    <div
+                      v-if="[PersonalExportStatusEnum.SUCCESS, PersonalExportStatusEnum.PREPARED].includes(item.status)"
+                      class="ml-[24px] flex items-center"
+                    >
+                      <n-button
+                        v-if="item.status === PersonalExportStatusEnum.SUCCESS"
+                        text
+                        type="primary"
+                        @click="handleDownload(item)"
+                      >
+                        {{ t('common.downloadFile') }}
+                      </n-button>
+                      <n-button
+                        v-if="item.status === PersonalExportStatusEnum.PREPARED"
+                        text
+                        type="primary"
+                        @click="handleCancelExport(item.id)"
+                      >
+                        {{ t('common.cancelExport') }}
+                      </n-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          <div v-else class="w-full p-[16px] text-center text-[var(--text-n4)]">
-            {{ t('system.personal.noExportTask') }}
-          </div>
-        </n-scrollbar>
-      </n-spin>
+              <div v-else class="h-full w-full p-[16px] text-center text-[var(--text-n4)]">
+                {{ t('system.personal.noExportTask') }}
+              </div>
+            </n-scrollbar>
+          </n-spin>
+        </div>
+      </CrmCard>
     </div>
   </CrmDrawer>
 </template>
@@ -108,9 +132,10 @@
   import { downloadByteFile } from '@lib/shared/method';
   import { ExportCenterItem } from '@lib/shared/models/system/business';
 
+  import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
-  import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmTab, { CrmTabListItem } from '@/components/pure/crm-tab/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import exportStatusTag from './exportStatusTag.vue';
 
@@ -125,21 +150,50 @@
   });
 
   const activeTab = ref('');
+  const activeChildrenTab = ref('');
   const loading = ref(false);
 
   const keyword = ref('');
 
-  const tabList = ref([
+  const firstTabList = ref([
     { name: '', tab: t('common.all') },
     { name: SystemResourceMessageTypeEnum.CUSTOMER, tab: t('menu.customer') },
     { name: SystemResourceMessageTypeEnum.CLUE, tab: t('menu.clue') },
     { name: SystemResourceMessageTypeEnum.OPPORTUNITY, tab: t('menu.opportunity') },
     { name: SystemResourceMessageTypeEnum.CONTRACT, tab: t('module.contract') },
-    { name: SystemResourceMessageTypeEnum.PRODUCT_PRICE, tab: t('module.productManagementPrice') },
-    { name: SystemResourceMessageTypeEnum.BUSINESS_TITLE, tab: t('module.businessTitle') },
-    { name: SystemResourceMessageTypeEnum.CONTRACT_INVOICE, tab: t('module.invoice') },
+    { name: SystemResourceMessageTypeEnum.PRODUCT, tab: t('module.productManagement') },
     { name: SystemResourceMessageTypeEnum.CUSTOM_FORM, tab: t('module.customForm') },
   ]);
+
+  const childrenTabMap: Record<string, CrmTabListItem[]> = {
+    [SystemResourceMessageTypeEnum.CUSTOMER]: [
+      { name: SystemResourceMessageTypeEnum.CUSTOMER, tab: t('menu.customer') },
+      { name: SystemResourceMessageTypeEnum.CUSTOMER_CONTACT, tab: t('common.contact') },
+      { name: SystemResourceMessageTypeEnum.CUSTOMER_POOL, tab: t('module.openSea') },
+    ],
+    [SystemResourceMessageTypeEnum.CLUE]: [
+      { name: SystemResourceMessageTypeEnum.CLUE, tab: t('menu.clue') },
+      { name: SystemResourceMessageTypeEnum.CLUE_POOL, tab: t('module.cluePool') },
+    ],
+    [SystemResourceMessageTypeEnum.OPPORTUNITY]: [],
+    [SystemResourceMessageTypeEnum.CONTRACT]: [
+      { name: SystemResourceMessageTypeEnum.CONTRACT, tab: t('module.contract') },
+      { name: SystemResourceMessageTypeEnum.CONTRACT_PAYMENT_PLAN, tab: t('module.paymentPlan') },
+      { name: SystemResourceMessageTypeEnum.CONTRACT_PAYMENT_RECORD, tab: t('module.paymentRecord') },
+      { name: SystemResourceMessageTypeEnum.CONTRACT_INVOICE, tab: t('module.invoice') },
+      { name: SystemResourceMessageTypeEnum.BUSINESS_TITLE, tab: t('module.businessTitle') },
+    ],
+    [SystemResourceMessageTypeEnum.PRODUCT]: [
+      { name: SystemResourceMessageTypeEnum.PRODUCT, tab: t('module.productManagement') },
+      { name: SystemResourceMessageTypeEnum.PRODUCT_PRICE, tab: t('module.productManagementPrice') },
+    ],
+  };
+
+  const childrenTabList = computed(() => childrenTabMap[activeTab.value] ?? []);
+
+  function handleFirstMenuChange(value: string) {
+    activeChildrenTab.value = (childrenTabList.value[0].name as string) ?? '';
+  }
 
   const exportStatus = ref('');
   const exportStatusOptions = ref([
@@ -168,7 +222,7 @@
       loading.value = true;
       list.value = await getExportCenterList({
         keyword: val ?? keyword.value,
-        exportType: activeTab.value,
+        exportType: childrenTabList.value.length > 0 ? activeChildrenTab.value : activeTab.value,
         exportStatus: exportStatus.value,
       });
     } catch (error) {
@@ -211,6 +265,8 @@
         return t('module.invoice');
       case SystemResourceMessageTypeEnum.CUSTOM_FORM:
         return t('module.customForm');
+      case SystemResourceMessageTypeEnum.PRODUCT:
+        return t('module.productManagement');
       default:
         return t('menu.opportunity');
     }
@@ -251,12 +307,9 @@
     activeTab.value = '';
   }
 
-  watch(
-    () => activeTab.value,
-    () => {
-      searchData();
-    }
-  );
+  watch([() => activeTab.value, () => activeChildrenTab.value], () => {
+    searchData();
+  });
 
   watch(
     () => visible.value,
