@@ -416,7 +416,7 @@ export const {
   getApiKeyList,
 } = businessApi;
 
-export const { isLogin, signout, getKey, login, getThirdOauthCallback, getThirdCallback } = loginApi;
+export const { isLogin, signout, getKey, login, getThirdOauthCallback, getThirdCallback, getOauthState } = loginApi;
 
 export const { getLicense, addLicense } = licenseApi;
 

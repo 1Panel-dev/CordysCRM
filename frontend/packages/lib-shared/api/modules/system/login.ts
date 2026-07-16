@@ -3,6 +3,7 @@ import {
   getKeyUrl,
   isLoginUrl,
   loginUrl,
+  oauthStateUrl,
   signoutUrl,
   thirdCallbackUrl,
   thirdOauthCallbackUrl,
@@ -34,16 +35,20 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 三方二维码登录
-  function getThirdCallback(code: string, type: string) {
-    return CDR.get<UserInfo>({ url: `${thirdCallbackUrl}/${type}`, params: { code } });
+  function getThirdCallback(code: string, type: string, state: string) {
+    return CDR.get<UserInfo>({ url: `${thirdCallbackUrl}/${type}`, params: { code, state } });
   }
 
   // 三方oauth2登录
-  function getThirdOauthCallback(code: string, type: string) {
+  function getThirdOauthCallback(code: string, type: string, state: string) {
     return CDR.get<AxiosResponse<Result<UserInfo>>>(
-      { url: `${thirdOauthCallbackUrl}/${type}`, params: { code } },
+      { url: `${thirdOauthCallbackUrl}/${type}`, params: { code, state } },
       { ignoreCancelToken: true, isReturnNativeResponse: true, noErrorTip: true }
     );
+  }
+
+  function getOauthState(flow: string) {
+    return CDR.get<string>({ url: `${oauthStateUrl}/${flow}` });
   }
 
   return {
@@ -53,5 +58,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getKey,
     getThirdCallback,
     getThirdOauthCallback,
+    getOauthState,
   };
 }

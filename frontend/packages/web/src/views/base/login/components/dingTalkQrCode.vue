@@ -10,7 +10,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
-  import { getThirdCallback, getThirdConfigByType } from '@/api/modules';
+  import { getOauthState, getThirdCallback, getThirdConfigByType } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useUserStore from '@/store/modules/user';
@@ -28,6 +28,7 @@
   const initActive = async () => {
     const data = await getThirdConfigByType(CompanyTypeEnum.DINGTALK);
     const { config } = data;
+    const state = await getOauthState('qr-ding-talk');
 
     await load(true);
     const url = encodeURIComponent(window.location.origin);
@@ -42,13 +43,13 @@
         client_id: config.agentId ?? '',
         scope: 'openid corpid',
         response_type: 'code',
-        state: 'fit2cloud-ding-qr',
+        state,
         prompt: 'consent',
         corpId: config.corpId ?? '',
       },
       async (loginResult) => {
         const { authCode } = loginResult;
-        const dingCallback = getThirdCallback(authCode, 'ding-talk');
+        const dingCallback = getThirdCallback(authCode, 'ding-talk', state);
         const boolean = await userStore.qrCodeLogin(await dingCallback);
         if (boolean) {
           setLoginExpires();

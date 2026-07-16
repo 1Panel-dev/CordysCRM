@@ -9,7 +9,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
-  import { getThirdCallback, getThirdConfigByType } from '@/api/modules';
+  import { getOauthState, getThirdCallback, getThirdConfigByType } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useUserStore from '@/store/modules/user';
@@ -34,6 +34,7 @@
   const init = async () => {
     const data = await getThirdConfigByType(CompanyTypeEnum.WECOM);
     const { config } = data;
+    const state = await getOauthState('qr-wecom');
     wwLogin.value = ww.createWWLoginPanel({
       el: '#wecom-qr',
       params: {
@@ -41,13 +42,13 @@
         appid: config.corpId ?? '',
         agentid: config.agentId,
         redirect_uri: window.location.origin,
-        state: 'fit2cloud-wecom-qr',
+        state,
         redirect_type: WWLoginRedirectType.callback,
         panel_size: WWLoginPanelSizeType.small,
       },
       onCheckWeComLogin: obj.value,
       async onLoginSuccess({ code }: any) {
-        const weComCallback = getThirdCallback(code, 'wecom');
+        const weComCallback = getThirdCallback(code, 'wecom', state);
         const boolean = userStore.qrCodeLogin(await weComCallback);
         if (boolean) {
           setLoginExpires();

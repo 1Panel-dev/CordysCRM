@@ -768,7 +768,7 @@ export const {
   batchRemoveRoleMember,
 } = roleApi;
 
-export const { login, signout, isLogin, getKey, getThirdCallback, getThirdOauthCallback } = loginApi;
+export const { login, signout, isLogin, getKey, getThirdCallback, getThirdOauthCallback, getOauthState } = loginApi;
 
 export const { getSystemVersion, changeLocaleBackEnd } = sysApi;
 
