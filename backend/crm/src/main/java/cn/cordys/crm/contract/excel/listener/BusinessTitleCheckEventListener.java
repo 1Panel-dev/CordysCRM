@@ -63,7 +63,10 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
             throw new GenericException(Translator.get("user_import_table_header_missing"));
         }
 
-        if (Strings.CI.equals(request.getImportType(), ImportType.UPDATE.name()) && !headMap.containsValue(BusinessTitleImportFiled.ID.name())) {
+        if (Strings.CI.equals(request.getImportType(), ImportType.UPDATE.name()) &&
+                !headMap.values()
+                .stream()
+                .anyMatch(head -> BusinessTitleImportFiled.ID.containsHead(head))) {
             throw new GenericException(Translator.getWithArgs("illegal_header", BusinessTitleImportFiled.ID.name()));
         }
         List<String> headList = heads.stream().flatMap(List::stream).toList();
