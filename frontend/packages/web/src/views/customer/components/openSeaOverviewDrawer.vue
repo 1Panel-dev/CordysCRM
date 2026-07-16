@@ -10,6 +10,7 @@
     :source-id="props.sourceId"
     :formViewSize="formViewSize"
     @button-select="handleButtonSelect"
+    @button-pop-update="handleButtonPopUpdate"
     @saved="() => (refreshKey += 1)"
   >
     <template #distributePopContent>
@@ -174,6 +175,19 @@
     head: null,
   });
 
+  function resetDistributeForm() {
+    distributeForm.value = {
+      head: null,
+    };
+    distributeFormRef.value?.formRef?.restoreValidation();
+  }
+
+  function handleButtonPopUpdate(key: string, visible: boolean) {
+    if (key === 'distribute' && visible) {
+      resetDistributeForm();
+    }
+  }
+
   // 删除
   function handleDelete() {
     openModal({
@@ -222,9 +236,10 @@
       distributeLoading.value = true;
       await assignOpenSeaCustomer({
         customerId: id,
-        assignUserId: distributeForm.value.owner,
+        assignUserId: distributeForm.value.owner || '',
       });
       Message.success(t('common.distributeSuccess'));
+      resetDistributeForm();
       emit('delete');
       show.value = false;
     } catch (error) {
