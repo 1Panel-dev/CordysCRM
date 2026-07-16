@@ -140,7 +140,7 @@ public abstract class BaseField {
 	public static boolean includeFormula(BaseField field) {
 		if (Strings.CS.equals(field.getType(), FieldType.INPUT.name())) {
             if (field instanceof InputField inputField) {
-                if (inputField.getDefaultValueType().equals("formula")) {
+                if (Strings.CI.equals(inputField.getDefaultValueType(), "formula")) {
                     return StringUtils.isNotEmpty(inputField.getFormula());
                 }
             }
