@@ -120,6 +120,7 @@
       ? {
           importType: type,
           ...(props.poolId ? { poolId: props.poolId as string } : {}),
+          ...(props.customFormId ? { customFormId: props.customFormId as string } : {}),
         }
       : undefined;
 

@@ -404,7 +404,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   function preCheckImportPoolLead(params: ImportUploadParams) {
     return CDR.uploadFile<{ data: ValidateInfo }>(
-      { url: PreCheckPoolLeadImportUrl, params: { poolId: params?.request?.poolId?? '' } },
+      { url: PreCheckPoolLeadImportUrl },
       params,
       'file'
     );
@@ -422,7 +422,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   function importPoolLead(params: ImportUploadParams) {
     return CDR.uploadFile(
-      { url: ImportPoolLeadUrl, params: { poolId: params?.request?.poolId?? '' } },
+      { url: ImportPoolLeadUrl },
       params,
       'file'
     );
