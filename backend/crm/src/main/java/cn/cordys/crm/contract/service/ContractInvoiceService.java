@@ -932,6 +932,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.INVOICE.getKey(), currentOrg);
+            ModuleFormConfigDTO moduleFormConfigDTO = getBusinessFormConfig(currentOrg);
             CustomImportAfterDoConsumer<ContractInvoice, BaseResourceSubField> afterDo = (invoices, invoiceFields, invoiceFieldBlobs) -> {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
@@ -1028,9 +1029,18 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                             }
                         });
                         logService.batchAdd(logs);
-
+                        LambdaQueryWrapper<ContractInvoiceSnapshot> delWrapper = new LambdaQueryWrapper<>();
+                        delWrapper.in(ContractInvoiceSnapshot::getInvoiceId, invoices.stream().map(ContractInvoice::getId).toList());
+                        snapshotBaseMapper.deleteByLambda(delWrapper);
                     }
                 }
+                List<ContractInvoiceGetResponse> contractInvoiceGetResponses = batchGetSimpleByIds(invoices.stream().map(ContractInvoice::getId).toList());
+                contractInvoiceGetResponses.forEach(response -> {
+                    // 保存表单配置快照
+                    List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(response.getModuleFields(), moduleFormConfigDTO, invoiceFieldService, response.getId());
+                    ContractInvoiceGetResponse contractInvoiceGetResponse = get(response, resolveFieldValues, moduleFormConfigDTO);
+                    saveSnapshot(response, moduleFormConfigDTO, contractInvoiceGetResponse);
+                });
             };
             CustomFieldImportEventListener<ContractInvoice> eventListener = new CustomFieldImportEventListener<>(fields, ContractInvoice.class, currentOrg, currentUser,
                     "contract_invoice_field", "contract_invoice_field_blob", afterDo, 2000, null, null, request.getImportType());
