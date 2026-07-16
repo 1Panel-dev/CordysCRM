@@ -1,13 +1,17 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddApiKeyUrl,
+  AddAiModelUrl,
   CancelCenterExportUrl,
   CreateAuthUrl,
+  DeleteAiModelUrl,
   DeleteApiKeyUrl,
   DeleteAuthUrl,
   DisableApiKeyUrl,
   EnableApiKeyUrl,
   ExportCenterDownloadUrl,
+  GetAiModelListUrl,
+  GetAiModelRouteStrategyUrl,
   GetApiKeyListUrl,
   GetAuthDetailUrl,
   GetAuthsUrl,
@@ -29,6 +33,9 @@ import {
   SyncDEUrl,
   TestConfigEmailUrl,
   TestConfigSynchronizationUrl,
+  UpdateAiModelRouteStrategyUrl,
+  UpdateAiModelStatusUrl,
+  UpdateAiModelUrl,
   UpdateApiKeyUrl,
   UpdateAuthNameUrl,
   UpdateAuthStatusUrl,
@@ -39,7 +46,7 @@ import {
   UpdateUserPasswordUrl,
 } from '@lib/shared/api/requrls/system/business';
 import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
-import type { CommonList } from '@lib/shared/models/common';
+import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import { CustomerFollowPlanTableParams, FollowDetailItem } from '@lib/shared/models/customer';
 import type {
   ApiKey,
@@ -64,6 +71,12 @@ import {
   PersonalPassword,
   SendEmailDTO,
 } from '@lib/shared/models/system/business';
+import type {
+  AiModelItem,
+  AiModelRouteStrategy,
+  AiModelSaveParams,
+  AiModelStatusParams,
+} from '@lib/shared/models/system/aiModel';
 import { type DEToken, OrgUserInfo } from '@lib/shared/models/system/org';
 
 export default function useProductApi(CDR: CordysAxios) {
@@ -269,6 +282,41 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<ThirdPartyResourceConfig>({ url: GetTenderConfigUrl }, { ignoreCancelToken: true });
   }
 
+  // 模型设置-列表查询
+  function getAiModelList(data: TableQueryParams) {
+    return CDR.post<CommonList<AiModelItem>>({ url: GetAiModelListUrl, data });
+  }
+
+  // 模型设置-添加模型
+  function addAiModel(data: AiModelSaveParams) {
+    return CDR.post({ url: AddAiModelUrl, data });
+  }
+
+  // 模型设置-更新模型
+  function updateAiModel(data: AiModelSaveParams) {
+    return CDR.post({ url: UpdateAiModelUrl, data });
+  }
+
+  // 模型设置-更新模型状态
+  function updateAiModelStatus(data: AiModelStatusParams) {
+    return CDR.get({ url: `${UpdateAiModelStatusUrl}/${data.id}` });
+  }
+
+  // 模型设置-删除模型
+  function deleteAiModel(id: string) {
+    return CDR.get({ url: `${DeleteAiModelUrl}/${id}` });
+  }
+
+  // 模型设置-获取路由策略
+  function getAiModelRouteStrategy() {
+    return CDR.get<AiModelRouteStrategy>({ url: GetAiModelRouteStrategyUrl });
+  }
+
+  // 模型设置-更新路由策略
+  function updateAiModelRouteStrategy(data: AiModelRouteStrategy) {
+    return CDR.post({ url: UpdateAiModelRouteStrategyUrl, data });
+  }
+
   return {
     getConfigEmail,
     updateConfigEmail,
@@ -308,5 +356,12 @@ export default function useProductApi(CDR: CordysAxios) {
     savePageConfig,
     getPageConfig,
     getTenderConfig,
+    getAiModelList,
+    addAiModel,
+    updateAiModel,
+    updateAiModelStatus,
+    deleteAiModel,
+    getAiModelRouteStrategy,
+    updateAiModelRouteStrategy,
   };
 }
