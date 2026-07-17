@@ -1,11 +1,9 @@
 package cn.cordys.config;
 
-import cn.cordys.security.SessionConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.session.web.http.CookieHttpSessionIdResolver;
 import org.springframework.session.web.http.DefaultCookieSerializer;
-import org.springframework.session.web.http.HeaderHttpSessionIdResolver;
 import org.springframework.session.web.http.HttpSessionIdResolver;
 
 import java.util.List;
@@ -30,12 +28,11 @@ public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
     /** OAuth state 签发路径，仅该路径范围需要写入专用 Cookie。 */
     private static final String OAUTH_STATE_PATH = "/sso/callback/oauth/state/";
 
-    /** 常规接口沿用的请求头会话解析器。 */
-    private final HeaderHttpSessionIdResolver headerResolver =
-            new HeaderHttpSessionIdResolver(SessionConstants.HEADER_TOKEN);
-
     /** 仅服务于 OAuth 授权跳转的 Cookie 会话解析器。 */
-    private final CookieHttpSessionIdResolver cookieResolver = createCookieResolver();
+    private final CookieHttpSessionIdResolver oauthCookieResolver = createCookieResolver();
+
+    /** 常规接口沿用默认的会话解析器。 */
+    private HttpSessionIdResolver defaultSessionIdResolver = new CookieHttpSessionIdResolver();
 
     /**
      * 解析当前请求的 Session ID。
@@ -46,12 +43,12 @@ public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
     @Override
     public List<String> resolveSessionIds(HttpServletRequest request) {
         if (isSsoCallbackRequest(request)) {
-            List<String> oauthSessionIds = cookieResolver.resolveSessionIds(request);
+            List<String> oauthSessionIds = oauthCookieResolver.resolveSessionIds(request);
             if (!oauthSessionIds.isEmpty()) {
                 return oauthSessionIds;
             }
         }
-        return headerResolver.resolveSessionIds(request);
+        return defaultSessionIdResolver.resolveSessionIds(request);
     }
 
     /**
@@ -61,18 +58,18 @@ public class OAuthAwareSessionIdResolver implements HttpSessionIdResolver {
      */
     @Override
     public void setSessionId(HttpServletRequest request, HttpServletResponse response, String sessionId) {
-        headerResolver.setSessionId(request, response, sessionId);
+        defaultSessionIdResolver.setSessionId(request, response, sessionId);
         if (getRequestPath(request).startsWith(OAUTH_STATE_PATH)) {
-            cookieResolver.setSessionId(request, response, sessionId);
+            oauthCookieResolver.setSessionId(request, response, sessionId);
         }
     }
 
     /** 清理常规会话标识，并在 SSO 回调链路同步清理 OAuth 专用 Cookie。 */
     @Override
     public void expireSession(HttpServletRequest request, HttpServletResponse response) {
-        headerResolver.expireSession(request, response);
+        defaultSessionIdResolver.expireSession(request, response);
         if (isSsoCallbackRequest(request)) {
-            cookieResolver.expireSession(request, response);
+            oauthCookieResolver.expireSession(request, response);
         }
     }
 
