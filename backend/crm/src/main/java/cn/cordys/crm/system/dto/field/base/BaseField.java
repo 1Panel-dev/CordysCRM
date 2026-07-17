@@ -186,7 +186,7 @@ public abstract class BaseField {
 		// 序列号、附件、图片、分割线、公式字段（计算/文本+公式）、不可见字段, 不支持导入.
         return !Strings.CS.equalsAny(field.getType(), FieldType.SERIAL_NUMBER.name()) && !Strings.CS.equalsAny(field.getType(), FieldType.ATTACHMENT.name())
                 && !Strings.CS.equalsAny(field.getType(), FieldType.PICTURE.name()) && !Strings.CS.equalsAny(field.getType(), FieldType.DIVIDER.name())
-				&& !includeFormula(field) && field.getReadable();
+                && field.getReadable();
     }
 
 

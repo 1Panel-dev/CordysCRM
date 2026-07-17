@@ -3,9 +3,12 @@ package cn.cordys.crm.system.excel.handler;
 import cn.cordys.common.resolver.field.DateTimeResolver;
 import cn.cordys.common.resolver.field.LocationResolver;
 import cn.cordys.common.resolver.field.NumberResolver;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.dto.field.DateTimeField;
+import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.InputNumberField;
 import cn.cordys.crm.system.dto.field.LocationField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -135,6 +138,14 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
             fieldIndexMap.forEach((k, v) -> {
                 if (k.needComment()) {
                     setComment(v, buildComment(k));
+                }
+                if (Strings.CS.equals(k.getType(), FieldType.INPUT.name())) {
+                    if (k instanceof InputField inputField) {
+                        if (Strings.CI.equals(inputField.getDefaultValueType(), "formula")) {
+                            Map map = JSON.parseObject(inputField.getFormula(), Map.class);
+                            setComment(v, map.get("display").toString());
+                        }
+                    }
                 }
             });
         }
