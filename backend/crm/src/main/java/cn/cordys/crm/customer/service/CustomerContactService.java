@@ -683,7 +683,7 @@ public class CustomerContactService {
                                 if (blobMap.containsKey(contactFieldBlob.getId())) {
                                     commonMapper.updateCustomerField("customer_contact_field_blob", contactFieldBlob);
                                 } else {
-                                    insertField.add(BeanUtils.copyBean(new CustomerContactField(), contactFieldBlob));
+                                    insertFieldBlob.add(BeanUtils.copyBean(new CustomerContactFieldBlob(), contactFieldBlob));
                                 }
                             });
                         }
