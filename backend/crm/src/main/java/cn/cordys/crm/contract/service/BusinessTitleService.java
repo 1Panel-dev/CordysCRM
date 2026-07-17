@@ -455,10 +455,8 @@ public class BusinessTitleService {
                         Set<String> titleSet = new HashSet<>();
                         businessTitles.removeIf(user -> !titleSet.add(user.getName()));
                         businessTitles.forEach(title -> {
-                            //1.通过name查询id
-                            //2.setId 并更新
                             if (idMap.containsKey(title.getId())) {
-                                BusinessTitle originTitle = idMap.get(title.getName());
+                                BusinessTitle originTitle = idMap.get(title.getId());
                                 BeanCopyUtils.fillEmptyFields(title, originTitle);
                                 title.setUpdateTime(System.currentTimeMillis());
                                 title.setUpdateUser(userId);
