@@ -351,7 +351,7 @@ public class OpportunityService {
                 // 更新模块字段
                 updateModuleField(updateOpportunity, request.getModuleFields(), orgId, userId);
             }
-            extOpportunityMapper.updateOpportunity(updateOpportunity);
+            extOpportunityMapper.updateIncludeNullById(updateOpportunity);
             baseService.handleUpdateLog(oldOpportunity, newOpportunity, originCustomerFields, request.getModuleFields(), oldOpportunity.getId(), oldOpportunity.getName());
         }, () -> {
             throw new GenericException("opportunity_not_found");
