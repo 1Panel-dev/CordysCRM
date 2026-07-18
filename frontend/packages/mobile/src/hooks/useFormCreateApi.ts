@@ -4,15 +4,15 @@ import dayjs from 'dayjs';
 
 import { FieldTypeEnum, FormDesignKeyEnum, type FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath, getIndustryPath, safeFractionConvert, sleep } from '@lib/shared/method';
+import { getCityPath, safeFractionConvert, sleep } from '@lib/shared/method';
 import {
   dataSourceTypes,
   departmentTypes,
-  formatNumberValue,
   getNormalFieldValue,
   linkAllAcceptTypes,
   memberTypes,
   multipleTypes,
+  parseFormDetailValue,
   singleTypes,
 } from '@lib/shared/method/formCreate';
 import type { ModuleField } from '@lib/shared/models/common';
@@ -127,9 +127,25 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           // 处理显示规则
           if (fieldShowControlMap.value[fieldId][ruleId].includes(value)) {
             field.show = true;
+            if (field.showFields?.length) {
+              // 显示数据源字段也显示该数据源的显示字段
+              fieldList.value.forEach((f) => {
+                if (f.resourceFieldId === field.id) {
+                  f.show = true;
+                }
+              });
+            }
             break; // 满足显示规则就停止，因为只需要满足一个规则字段即显示
           } else {
             field.show = false;
+            if (field.showFields?.length) {
+              // 隐藏数据源字段也隐藏该数据源的显示字段
+              fieldList.value.forEach((f) => {
+                if (f.resourceFieldId === field.id) {
+                  f.show = false;
+                }
+              });
+            }
           }
         }
       }
@@ -144,110 +160,69 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       descriptions.value = [];
       detail.value = form;
       collaborationType.value = form.collaborationType;
+      sourceName.value = form.name;
       formDescriptionShowControlRulesSet(form);
       fieldList.value.forEach((item) => {
         if (item.show === false || !item.readable) return;
-        if (item.businessKey) {
-          const options = form.optionMap?.[item.businessKey];
-          // 业务标准字段读取最外层，读取form[item.businessKey]取到 id 值，然后去 options 里取 name
-          let name: string | string[] = '';
-          const value = form[item.businessKey];
-          // 若字段值是选项值，则取选项值的name
-          if (options) {
-            if (Array.isArray(value)) {
-              name = value.map((e) => {
-                const option = options.find((opt) => opt.id === e);
-                if (option) {
-                  return option.name || t('common.optionNotExist');
-                }
-                return t('common.optionNotExist');
-              });
-            } else {
-              name = options.find((e) => e.id === value)?.name;
-            }
-          }
-          if (item.type === FieldTypeEnum.DATE_TIME) {
-            descriptions.value.push({
-              label: item.name,
-              value: formatTimeValue(name || form[item.businessKey], item.dateType),
-            });
-          } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
-            descriptions.value.push({
-              label: item.name,
-              value: formatNumberValue(name || form[item.businessKey], item),
-            });
-          } else {
-            descriptions.value.push({
-              label: item.name,
-              value: name || form[item.businessKey],
-            });
-          }
-          if (item.businessKey === 'name') {
-            sourceName.value = name || form[item.businessKey];
-          }
+        const value = item.businessKey
+          ? form[item.businessKey]
+          : form.moduleFields?.find((mf) => mf.fieldId === item.id)?.fieldValue;
+        if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type) && item.subFields?.length) {
+          if (!item.readable || !value || value?.length === 0) return;
+          descriptions.value.push({
+            label: item.name,
+            value,
+            fieldInfo: item,
+            optionMap: form.optionMap,
+          });
+        } else if (
+          [
+            FieldTypeEnum.DATA_SOURCE,
+            FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+            FieldTypeEnum.DEPARTMENT,
+            FieldTypeEnum.DEPARTMENT_MULTIPLE,
+            FieldTypeEnum.MEMBER,
+            FieldTypeEnum.MEMBER_MULTIPLE,
+            FieldTypeEnum.RADIO,
+            FieldTypeEnum.CHECKBOX,
+          ].includes(item.type)
+        ) {
+          descriptions.value.push({
+            label: item.name,
+            value: parseFormDetailValue(item, form),
+          });
+        } else if (item.type === FieldTypeEnum.DIVIDER) {
+          descriptions.value.push({
+            label: item.name,
+            value: parseFormDetailValue(item, form),
+            isTitle: true,
+            fieldInfo: item,
+          });
+        } else if (item.type === FieldTypeEnum.PICTURE) {
+          descriptions.value.push({
+            label: item.name,
+            value: parseFormDetailValue(item, form),
+            isImage: true,
+          });
+        } else if (item.type === FieldTypeEnum.LINK) {
+          descriptions.value.push({
+            label: item.name,
+            value: parseFormDetailValue(item, form),
+            isLink: true,
+            fieldInfo: item,
+          });
+        } else if (item.type === FieldTypeEnum.ATTACHMENT) {
+          descriptions.value.push({
+            label: item.name,
+            value: form.attachmentMap?.[item.id] || [],
+            isAttachment: true,
+          });
         } else {
-          const options = form.optionMap?.[item.id];
-          // 其他的字段读取moduleFields
-          const field = form.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
-          if (item.type === FieldTypeEnum.DIVIDER) {
-            descriptions.value.push({
-              label: item.name,
-              value: field?.fieldValue || [],
-              isTitle: true,
-              fieldInfo: item,
-            });
-          } else if (item.type === FieldTypeEnum.PICTURE) {
-            descriptions.value.push({
-              label: item.name,
-              value: field?.fieldValue || [],
-              isImage: true,
-            });
-          } else if (item.type === FieldTypeEnum.LINK) {
-            descriptions.value.push({
-              label: item.name,
-              value: field?.fieldValue || '',
-              isLink: true,
-              fieldInfo: item,
-            });
-          } else if (item.type === FieldTypeEnum.ATTACHMENT) {
-            descriptions.value.push({
-              label: item.name,
-              value: form.attachmentMap?.[item.id] || [],
-              isAttachment: true,
-            });
-          } else {
-            let value = field?.fieldValue || '';
-            if (field && options) {
-              // 若字段值是选项值，则取选项值的name
-              if (Array.isArray(field.fieldValue)) {
-                value = field.fieldValue.map((e) => {
-                  const option = options.find((opt) => opt.id === e);
-                  if (option) {
-                    return option.name || t('common.optionNotExist');
-                  }
-                  return t('common.optionNotExist');
-                });
-              } else {
-                value = options.find((e) => e.id === field.fieldValue)?.name;
-              }
-            } else if (item.type === FieldTypeEnum.LOCATION) {
-              const addressArr = (field?.fieldValue as string)?.split('-') || [];
-              value = addressArr.length
-                ? `${getCityPath(addressArr[0], item.scope)}-${addressArr.filter((e, i) => i > 0).join('-')}`
-                : '-';
-            } else if (item.type === FieldTypeEnum.INDUSTRY) {
-              value = field?.fieldValue ? getIndustryPath(field.fieldValue as string) : '-';
-            } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
-              value = formatNumberValue(field?.fieldValue as string, item);
-            } else if (item.type === FieldTypeEnum.DATE_TIME) {
-              value = formatTimeValue(field?.fieldValue as string, item.dateType);
-            }
-            descriptions.value.push({
-              label: item.name,
-              isTag: [FieldTypeEnum.INPUT_MULTIPLE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type),
-              value,
-            });
-          }
+          descriptions.value.push({
+            label: item.name,
+            isTag: [FieldTypeEnum.INPUT_MULTIPLE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type),
+            value: parseFormDetailValue(item, form),
+          });
         }
       });
     } catch (error) {
@@ -564,7 +539,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function initFormConfig() {
     try {
       loading.value = true;
-      const res = await getFormConfigApiMap[props.formKey]();
+      const res = await getFormConfigApiMap[props.formKey](props.sourceId?.value ?? '');
       formConfig.value = res.formProp;
       fieldList.value = res.fields.map((item) => {
         const { defaultValue, initialOptions } = specialFormFieldInit(item);

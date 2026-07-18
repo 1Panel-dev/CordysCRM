@@ -12,6 +12,8 @@
     type="textarea"
     rows="1"
     autosize
+    label-align="left"
+    :required="props.fieldConfig.rules.some((e) => e.key === FieldRuleEnum.REQUIRED)"
     @click="handleClick"
     @update:model-value="($event) => emit('change', $event)"
   >
@@ -94,7 +96,7 @@
 <script setup lang="ts">
   import { FieldRule } from 'vant';
 
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { mapTree } from '@lib/shared/method';

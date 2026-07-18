@@ -27,7 +27,58 @@
         <span class="ml-[8px] text-[var(--primary-8)]" @click="changePassword">{{ t('mine.changePassword') }}</span>
       </van-notice-bar>
     </div>
-
+    <van-cell-group inset class="py-[16px]">
+      <van-cell :border="false" class="!py-0">
+        <template #title>
+          <div class="font-semibold text-[var(--text-n1)]">{{ t('workbench.task') }}</div>
+        </template>
+        <template #value>
+          <div class="text-[var(--text-n4)]" @click="goTask()">
+            {{ t('common.checkMore') }}
+          </div>
+        </template>
+      </van-cell>
+      <div class="mt-[12px] flex gap-[8px] px-[16px]">
+        <div
+          class="approval-card rounded-[var(--border-radius-small)] p-[12px]"
+          @click="goTask(ApprovalListTypeEnum.PENDING)"
+        >
+          <div
+            class="flex h-[24px] w-[24px] items-center justify-center rounded-[var(--border-radius-small)] bg-[var(--text-n10)]"
+          >
+            <CrmIcon name="iconicon_contract" width="16px" height="16px" color="var(--info-blue)" />
+          </div>
+          <div class="mt-[8px] flex items-baseline justify-between font-semibold text-[var(--text-n10)]">
+            <div class="text-[14px]">{{ t('workbench.myApproval') }}</div>
+            <div class="text-[16px]">{{ todoStatistic?.total }}</div>
+          </div>
+        </div>
+        <div class="flex flex-1 flex-col gap-[4px]">
+          <div class="task-card justify-between" @click="goTask(ApprovalListTypeEnum.COPIED)">
+            <div class="flex items-center gap-[8px]">
+              <div class="task-icon border border-[var(--warning-yellow)]">
+                <CrmIcon name="iconicon_send" width="14px" height="14px" color="var(--warning-yellow)" />
+              </div>
+              <div class="text-[12px]">{{ t('workbench.copyToMe') }}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-[4px]">
+            <div class="task-card flex-1 gap-[8px]" @click="goTask(ApprovalListTypeEnum.INITIATED)">
+              <div class="task-icon border border-[var(--primary-8)]">
+                <CrmIcon name="iconicon_add" width="14px" height="14px" color="var(--primary-8)" />
+              </div>
+              <div class="text-[14px]">{{ t('workbench.myApply') }}</div>
+            </div>
+            <div class="task-card flex-1 gap-[8px]" @click="goTask(ApprovalListTypeEnum.APPROVAL)">
+              <div class="task-icon border border-[var(--success-green)]">
+                <CrmIcon name="iconicon_check_circle" width="14px" height="14px" color="var(--success-green)" />
+              </div>
+              <div class="text-[14px]">{{ t('workbench.myProcess') }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </van-cell-group>
     <van-cell-group inset class="py-[16px]">
       <van-cell :border="false" class="!py-0">
         <template #title>
@@ -72,7 +123,6 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { hasToken } from '@lib/shared/method/auth';
   import type { MessageCenterItem } from '@lib/shared/models/system/message';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -86,6 +136,9 @@
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
 
   import { lastScopedOptions } from './duplicateCheck/config';
+  import { getTodoStatistic } from '@/api/modules';
+  import type { TodoStatistic } from '@lib/shared/models/system/process';
+  import { ApprovalListTypeEnum } from '@lib/shared/enums/process';
 
   const appStore = useAppStore();
   const userStore = useUserStore();
@@ -164,8 +217,6 @@
     router.push({ name: CommonRouteEnum.FORM_CREATE, query: { formKey } });
   }
 
-  const crmListRef = ref<InstanceType<typeof CrmList>>();
-
   const showBadge = computed(() => {
     return !appStore.messageInfo.read;
   });
@@ -179,15 +230,51 @@
     }
   );
 
+  const todoStatistic = ref<TodoStatistic>();
+  async function initTodoStatistic() {
+    try {
+      todoStatistic.value = await getTodoStatistic();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function goTask(type?: ApprovalListTypeEnum) {
+    router.push({ name: WorkbenchRouteEnum.WORKBENCH_TASK, query: { type } });
+  }
+
   onBeforeMount(() => {
     appStore.initMessage();
     appStore.connectSystemMessageSSE();
     appStore.initStageConfig();
     userStore.initApiKeyList();
+    initTodoStatistic();
   });
 </script>
 
 <style lang="less" scoped>
+  .approval-card {
+    width: 114px;
+    height: 80px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-image: url('@/assets/svg/approvalBg.svg'), linear-gradient(to left, #4d7ef2 5%, #1c60ff);
+  }
+  .task-card {
+    @apply flex items-center;
+
+    padding: 8px 4px;
+    border-radius: var(--border-radius-small);
+    background-color: var(--text-n9);
+    .task-icon {
+      @apply flex items-center;
+
+      padding: 2px;
+      border-radius: var(--border-radius-small);
+    }
+  }
   .quick-entry-card {
     @apply flex basis-1/4 flex-col items-center;
 

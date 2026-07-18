@@ -98,4 +98,5 @@ export default {
   'common.hasConvertToRecord': 'Have record',
   'common.moveInReason': 'Move-in reason',
   'common.noReason': 'Reason for migration not configured',
+  'common.sum': 'Sum',
 };

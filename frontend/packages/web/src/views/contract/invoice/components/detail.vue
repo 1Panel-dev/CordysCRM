@@ -239,12 +239,12 @@
   async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
     if (hasFieldPermission) {
       formDescriptionRef.value?.handleFormChange(async () => {
-        await callback();
+        // await callback();
         refreshKey.value += 1;
         emit('refresh');
       });
     } else {
-      await callback();
+      // await callback();
       refreshKey.value += 1;
       emit('refresh');
     }

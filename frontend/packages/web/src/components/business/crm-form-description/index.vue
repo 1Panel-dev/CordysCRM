@@ -516,7 +516,7 @@
               });
             }
           }
-          if (!validateField(item)) {
+          if (item.show && !validateField(item)) {
             hasErrorField = true;
             break;
           }

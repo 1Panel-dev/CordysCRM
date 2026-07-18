@@ -49,6 +49,28 @@ const workbench: AppRouteRecordRaw = {
         isCache: true,
       },
     },
+    {
+      path: 'task',
+      name: WorkbenchRouteEnum.WORKBENCH_TASK,
+      component: () => import('@/views/workbench/task/index.vue'),
+      meta: {
+        locale: '',
+        permissions: [],
+        depth: 1,
+        isCache: true,
+      },
+    },
+    {
+      path: 'approval',
+      name: WorkbenchRouteEnum.WORKBENCH_APPROVAL,
+      component: () => import('@/views/workbench/approval/index.vue'),
+      meta: {
+        locale: '',
+        permissions: [],
+        depth: 1,
+        isCache: true,
+      },
+    },
   ],
 };
 

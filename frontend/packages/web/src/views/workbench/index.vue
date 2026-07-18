@@ -132,7 +132,6 @@
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
-  import { getTodoStatistic } from '@/api/modules/index';
   import { quickAccessList } from '@/config/workbench';
   import { useAppStore, useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';

@@ -99,4 +99,5 @@ export default {
   'common.hasConvertToRecord': '已转记录',
   'common.moveInReason': '移入原因',
   'common.noReason': '未配置移入原因',
+  'common.sum': '汇总',
 };

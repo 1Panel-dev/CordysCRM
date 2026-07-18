@@ -1530,7 +1530,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         } else {
           params.moduleFields.push({
             fieldId: item.id,
-            fieldValue: getNormalFieldValue(item, form[item.id]),
+            fieldValue: getNormalFieldValue(item, form[item.id] === t('common.optionNotExist') ? '' : form[item.id]),
           });
         }
       });

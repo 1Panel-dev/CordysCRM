@@ -10,6 +10,7 @@
         :before-read="handleBeforeRead"
         :before-delete="handleBeforeDelete"
         :after-read="handleAfterRead"
+        :max-count="10"
         multiple
       />
     </template>

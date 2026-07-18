@@ -25,6 +25,7 @@ declare module 'vue' {
     CrmPageWrapper: typeof import('./src/components/pure/crm-page-wrapper/index.vue')['default']
     CrmPasswordInput: typeof import('./src/components/pure/crm-password-input/index.vue')['default']
     CrmSelectList: typeof import('./src/components/business/crm-select-list/index.vue')['default']
+    CrmSubTable: typeof import('./src/components/pure/crm-sub-table/index.vue')['default']
     CrmTag: typeof import('./src/components/pure/crm-tag/index.vue')['default']
     CrmTextButton: typeof import('./src/components/pure/crm-text-button/index.vue')['default']
     CrmWorkflowCard: typeof import('./src/components/business/crm-workflow-card/index.vue')['default']
