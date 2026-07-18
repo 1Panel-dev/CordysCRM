@@ -6,6 +6,9 @@
         :key="item"
         :color="props.bgColor"
         :text-color="props.textColor"
+        :size="props.size"
+        :round="props.round"
+        :plain="props.plain"
         class="!p-[2px_6px]"
       >
         {{ item }}

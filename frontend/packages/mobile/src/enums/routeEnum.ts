@@ -50,6 +50,8 @@ export enum WorkbenchRouteEnum {
   WORKBENCH_AGENT = 'workbenchAgent',
   WORKBENCH_DUPLICATE_CHECK = 'workbenchDuplicateCheck',
   WORKBENCH_DUPLICATE_CHECK_DETAIL = 'workbenchDuplicateCheckDetail',
+  WORKBENCH_TASK = 'workbenchTask',
+  WORKBENCH_APPROVAL = 'workbenchApproval',
 }
 
 export const AppRouteEnum = {

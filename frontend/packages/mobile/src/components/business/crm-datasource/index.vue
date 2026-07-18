@@ -148,7 +148,7 @@
 
   const typeLocaleMap = {
     [FieldDataSourceTypeEnum.CUSTOMER]: 'formCreate.customer',
-    [FieldDataSourceTypeEnum.CONTACT]: 'formCreate.contract',
+    [FieldDataSourceTypeEnum.CONTACT]: 'formCreate.contact',
     [FieldDataSourceTypeEnum.BUSINESS]: 'formCreate.business',
     [FieldDataSourceTypeEnum.PRODUCT]: 'formCreate.product',
     [FieldDataSourceTypeEnum.CLUE]: 'formCreate.clue',

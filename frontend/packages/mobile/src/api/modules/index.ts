@@ -16,6 +16,7 @@ import useLoginApi from '@lib/shared/api/modules/system/login';
 import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
+import useProcess from '@lib/shared/api/modules/system/process';
 
 import checkStatus from '../http/checkStatus';
 
@@ -38,6 +39,7 @@ const followApi = useFollowApi(CDR);
 const contractApi = useContractApi(CDR);
 const orderApi = useOrderApi(CDR);
 const agentApi = useAgentApi(CDR);
+const processApi = useProcess(CDR);
 
 export const {
   getFollowPlanDetail,
@@ -439,3 +441,23 @@ export const {
   batchDeleteCustomFormData,
   deleteCustomFormData,
 } = useCustomFormApi(CDR);
+
+export const {
+  getTodoStatistic,
+  addApprovalProcess,
+  getPendingApprovalList,
+  getProcessedApprovalList,
+  getInitiatedApprovalList,
+  getCcApprovalList,
+  getApprovalConfigDetail,
+  agreeApproval,
+  rejectApproval,
+  batchAgreeApproval,
+  batchRejectApproval,
+  getApprovalResourceDetail,
+  backApproval,
+  addSignApproval,
+  revokeApproval,
+  revokeResource,
+  reviewResource,
+} = processApi;
