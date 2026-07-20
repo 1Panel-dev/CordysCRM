@@ -677,7 +677,7 @@ public class CustomerContactService {
                         }
 
                         if (CollectionUtils.isNotEmpty(contactFieldBlobs)) {
-                            List<CustomerContactFieldBlob> blobList = customerContactFieldBlobMapper.selectByIds(contactFields.stream().map(BaseResourceSubField::getId).toList());
+                            List<CustomerContactFieldBlob> blobList = customerContactFieldBlobMapper.selectByIds(contactFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
                             Map<String, CustomerContactFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(CustomerContactFieldBlob::getId, Function.identity()));
                             contactFieldBlobs.forEach(contactFieldBlob -> {
                                 if (blobMap.containsKey(contactFieldBlob.getId())) {
