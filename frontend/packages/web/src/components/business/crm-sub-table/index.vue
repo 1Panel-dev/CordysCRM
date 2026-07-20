@@ -214,6 +214,8 @@
       } else if (field.type === FieldTypeEnum.DATE_TIME) {
         if (field.resourceFieldId) {
           newRow[key] = formatTimeValue(field.defaultValue, field.dateType);
+        } else if (field.dateDefaultType === 'current') {
+          newRow[key] = Date.now();
         } else {
           newRow[key] =
             Number.isNaN(Number(field.defaultValue)) || field.defaultValue === '' ? null : Number(field.defaultValue);

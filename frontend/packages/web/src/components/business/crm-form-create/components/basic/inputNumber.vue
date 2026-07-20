@@ -25,7 +25,7 @@
       :max="1000000000"
       :min="-1000000000"
       :placeholder="props.fieldConfig.placeholder"
-      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       :parse="parse"
       :format="format"
       :precision="props.fieldConfig.precision"
@@ -58,6 +58,7 @@
     isDefaultValueRender?: boolean; // 是否是默认值渲染
     isDescriptionRender?: boolean; // 是否是描述渲染
     ignoreRule?: boolean;
+    disabled?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: number | null): void;

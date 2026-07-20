@@ -22,7 +22,7 @@
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
     <n-select
       v-model:value="value"
-      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       :options="options"
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
@@ -52,6 +52,7 @@
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
     isDescriptionRender?: boolean; // 是否是描述渲染
+    disabled?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number | (string | number)[]): void;

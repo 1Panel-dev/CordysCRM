@@ -25,7 +25,7 @@
       :multiple="[FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldConfig.type)"
       :drawer-title="t('crmFormDesign.selectDataSource', { type: props.fieldConfig.name })"
       :api-type-key="MemberApiTypeEnum.FORM_FIELD"
-      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       :member-types="memberTypes"
       :disabled-node-types="
         [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)
@@ -63,6 +63,7 @@
     isSubTableRender?: boolean; // 是否是子表渲染
     isDescriptionRender?: boolean; // 是否是描述渲染
     feedback?: string;
+    disabled?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | number | (string | number)[]): void;

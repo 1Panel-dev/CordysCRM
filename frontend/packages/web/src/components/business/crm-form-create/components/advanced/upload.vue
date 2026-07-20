@@ -28,7 +28,7 @@
       :accept="props.fieldConfig.type === FieldTypeEnum.PICTURE ? 'image/*' : '*/*'"
       :list-type="props.fieldConfig.pictureShowType === 'card' ? 'image-card' : 'text'"
       :custom-request="customRequest"
-      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       :file-list-class="props.isSubTableRender ? 'crm-upload--subtable-file-list' : ''"
       :trigger-style="getTriggerStyle"
       multiple
@@ -80,6 +80,7 @@
     formConfig?: FormConfig;
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
+    disabled?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string[], files: UploadFileInfo[]): void;
