@@ -25,7 +25,7 @@
       :rows="props.fieldConfig.initialOptions"
       :multiple="fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
       :data-source-type="(props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER) as DataSourceType"
-      :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
       :filter-params="getParams()"
       :fieldConfig="props.fieldConfig"
       :disabled-selection="props.disabledSelection"
@@ -68,6 +68,7 @@
     isDescriptionRender?: boolean; // 是否是描述渲染
     feedback?: string;
     hideChildTag?: boolean;
+    disabled?: boolean;
     disabledSelection?: (row: Record<string, any>) => boolean;
   }>();
   const emit = defineEmits<{

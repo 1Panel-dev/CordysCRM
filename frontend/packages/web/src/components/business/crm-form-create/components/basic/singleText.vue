@@ -40,6 +40,7 @@
           :placeholder="props.fieldConfig.placeholder"
           :disabled="
             props.fieldConfig.editable === false ||
+            props.disabled ||
             !!props.fieldConfig.resourceFieldId ||
             props.fieldConfig.defaultValueType === 'formula'
           "
@@ -75,6 +76,7 @@
     isSubTableRender?: boolean; // 是否是子表渲染
     isDescriptionRender?: boolean; // 是否是描述渲染
     formDetail?: Record<string, any>;
+    disabled?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;

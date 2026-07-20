@@ -1379,23 +1379,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     item.rules = fullRules;
   }
 
-  function subFieldInit(field: FormCreateField) {
-    let defaultValue = field.defaultValue || '';
-    if (field.resourceFieldId && field.defaultValue) {
-      defaultValue = parseModuleFieldValue(field, field.defaultValue, field.initialOptions);
-    } else if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(field.type)) {
-      defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
-    } else if ([FieldTypeEnum.PICTURE, FieldTypeEnum.ATTACHMENT].includes(field.type)) {
-      defaultValue = defaultValue || [];
-    } else if (getRuleType(field) === 'array') {
-      defaultValue =
-        field.type === FieldTypeEnum.DATA_SOURCE && typeof field.defaultValue === 'string'
-          ? [defaultValue]
-          : defaultValue || [];
-    }
-    field.defaultValue = defaultValue;
-  }
-
   function initFormCreateFieldDefaultValue(field: FormCreateField) {
     let defaultValue = field.defaultValue || '';
     if (field.resourceFieldId && field.defaultValue) {
@@ -1448,7 +1431,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     fieldList.value.forEach((item) => {
       if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
         item.subFields?.forEach((subField) => {
-          subFieldInit(subField);
+          initFormCreateFieldDefaultValue(subField);
           replaceRule(subField, item.id);
         });
         if (!formDetail.value[item.id]) {

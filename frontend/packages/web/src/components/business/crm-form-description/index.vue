@@ -86,7 +86,7 @@
           >
             {{ item.label }}
           </div>
-          <n-tooltip :delay="300">
+          <n-tooltip v-if="item.value" :delay="300">
             <template #trigger>
               <div class="one-line-text cursor-pointer text-[var(--primary-8)]" @click="openLink(item)">
                 {{ item.value || '-' }}
@@ -94,6 +94,7 @@
             </template>
             {{ item.value || '-' }}
           </n-tooltip>
+          <div v-else>-</div>
         </div>
       </template>
 
@@ -115,20 +116,19 @@
             {{ item.value }}
           </CrmTableButton>
           <n-tooltip
-            v-else
+            v-else-if="item.value !== undefined && item.value !== null && item.value?.toString() !== ''"
             :delay="300"
             :placement="(props.tooltipPosition || item.tooltipPosition) ?? 'top-start'"
             :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"
           >
             <template #trigger>
               <div class="one-line-text">
-                {{
-                  item.value === undefined || item.value === null || item.value?.toString() === '' ? '-' : item.value
-                }}
+                {{ item.value }}
               </div>
             </template>
             {{ item.value }}
           </n-tooltip>
+          <div v-else>-</div>
         </div>
       </template>
 
@@ -214,7 +214,7 @@
             :label-key="item.tagProps?.labelKey"
             :class="`justify-${props.valueAlign ?? 'end'}`"
           />
-          <div v-else>{{ item.value }}</div>
+          <div v-else>-</div>
         </div>
       </template>
       <template #[FieldTypeEnum.INPUT_NUMBER]="{ item }">
