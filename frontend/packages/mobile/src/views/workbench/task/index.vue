@@ -345,6 +345,7 @@
         id: item.resourceId,
         formKey: formKeyMap[item.resourceType],
         taskId: item.approvalTaskId,
+        approvalStatus: item.approvalOperation,
       },
     });
   }

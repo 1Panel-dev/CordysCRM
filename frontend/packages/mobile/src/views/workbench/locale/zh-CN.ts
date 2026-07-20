@@ -58,6 +58,7 @@ export default {
   'workbench.beforeMe': '在我之前',
   'workbench.afterMe': '在我之后',
   'workbench.addSignReviewer': '加签审批人',
+  'workbench.addSignAndApproved': '同意并加签',
   'workbench.cancelApprovalApplyConfirm': '确认撤销审批吗？',
   'workbench.cancelApprovalApplyTip': '撤销后，审批流将终止，请谨慎操作！',
   'workbench.confirmCancelApprovalApply': '确认撤销',

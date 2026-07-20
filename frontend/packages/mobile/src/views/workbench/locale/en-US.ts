@@ -58,6 +58,7 @@ export default {
   'workbench.beforeMe': 'Before me',
   'workbench.afterMe': 'After me',
   'workbench.addSignReviewer': 'Add sign approver',
+  'workbench.addSignAndApproved': 'Agree and add sign',
   'workbench.cancelApprovalApplyConfirm': 'Confirm to cancel the approval?',
   'workbench.cancelApprovalApplyTip':
     'After cancellation, the approval process will be terminated. Please operate with caution!',
