@@ -123,7 +123,7 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
                 validateNameExist(rowData.get(k), errText, v);
             }
             if (Strings.CI.equals(request.getImportType(), ImportType.UPDATE.name())) {
-                validateId(rowData.get(k), errText, v);
+                validateId(rowData.get(k), errText, v,sourceId);
                 if (StringUtils.isNotBlank(sourceId)) {
                     validateNameUniques(rowData.get(k), errText, v, sourceId);
                 }
@@ -141,13 +141,21 @@ public class BusinessTitleCheckEventListener extends AnalysisEventListener<Map<I
         }
     }
 
-    private void validateId(String data, StringBuilder errText, String v) {
+    private void validateId(String data, StringBuilder errText, String v,String sourceId) {
         if (BusinessTitleImportFiled.fromHeader(v) != null && BusinessTitleImportFiled.ID.equals(BusinessTitleImportFiled.fromHeader(v))) {
             if (StringUtils.isBlank(data)) {
-                errText.append(v).append(Translator.get("required")).append(";");
+                errText.append(v).append(Translator.get("cannot_be_null")).append(";");
+            } else {
+                checkId(v, sourceId, errText);
             }
         }
 
+    }
+
+    private void checkId(String v, String resourceId, StringBuilder errText) {
+        if (commonMapper.checkIdCount(resourceId, "business_title") <= 0) {
+            errText.append(v).append("不存在;");
+        }
     }
 
     private void validateNameExist(String data, StringBuilder errText, String v) {
