@@ -66,7 +66,7 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       if (!props.needInitDetail) {
-        value.value = Number.isNaN(Number(val)) || val === '' ? value.value : Number(val);
+        value.value = Number.isNaN(Number(val)) || val === '' || val === null ? value.value : Number(val);
         emit('change', value.value);
       }
     },

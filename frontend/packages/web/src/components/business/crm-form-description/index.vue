@@ -86,13 +86,13 @@
           >
             {{ item.label }}
           </div>
-          <n-tooltip v-if="item.value" :delay="300">
+          <n-tooltip v-if="item.value !== '-'" :delay="300">
             <template #trigger>
               <div class="one-line-text cursor-pointer text-[var(--primary-8)]" @click="openLink(item)">
-                {{ item.value || '-' }}
+                {{ item.value }}
               </div>
             </template>
-            {{ item.value || '-' }}
+            {{ item.value }}
           </n-tooltip>
           <div v-else>-</div>
         </div>
@@ -105,7 +105,7 @@
             {{ item.label }}
           </div>
           <CrmTableButton
-            v-if="canOpenDataSource(item) && item.value"
+            v-if="canOpenDataSource(item) && item.value !== '-'"
             class="crm-form-description-link-button flex-1 overflow-hidden"
             :class="`justify-${props.valueAlign ?? 'end'}`"
             @click="openDataSource(item)"
@@ -116,7 +116,9 @@
             {{ item.value }}
           </CrmTableButton>
           <n-tooltip
-            v-else-if="item.value !== undefined && item.value !== null && item.value?.toString() !== ''"
+            v-else-if="
+              item.value !== undefined && item.value !== null && item.value?.toString() !== '' && item.value !== '-'
+            "
             :delay="300"
             :placement="(props.tooltipPosition || item.tooltipPosition) ?? 'top-start'"
             :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"

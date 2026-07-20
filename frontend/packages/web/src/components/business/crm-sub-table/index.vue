@@ -218,7 +218,9 @@
           newRow[key] = Date.now();
         } else {
           newRow[key] =
-            Number.isNaN(Number(field.defaultValue)) || field.defaultValue === '' ? null : Number(field.defaultValue);
+            Number.isNaN(Number(field.defaultValue)) || field.defaultValue === '' || field.defaultValue === null
+              ? null
+              : Number(field.defaultValue);
         }
       } else if (field.type === FieldTypeEnum.FORMULA) {
         newRow[key] = field.resourceFieldId ? null : field.defaultValue ?? null;
