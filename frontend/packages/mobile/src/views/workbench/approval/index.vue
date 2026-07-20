@@ -70,7 +70,7 @@
     @refresh="refresh"
   />
   <van-popup v-model:show="showMore" position="bottom">
-    <template v-if="fallbackOptions.length">
+    <template v-if="fallbackOptions.length && isApprover">
       <van-button
         class="rounded-none border-none"
         @click="
@@ -85,7 +85,7 @@
       </van-button>
       <van-divider class="!m-0" />
     </template>
-    <template v-if="approvalConfig?.allowAddSign">
+    <template v-if="approvalConfig?.allowAddSign && isApprover">
       <van-button
         class="rounded-none border-none"
         @click="
@@ -363,6 +363,7 @@
               });
               showSuccessToast(t('workbench.cancelApprovalApplySuccess'));
               await sleep(300);
+              router.back();
               return Promise.resolve(true);
             } catch (error) {
               // eslint-disable-next-line no-console

@@ -70,14 +70,8 @@
       >
         {{ t('common.cancel') }}
       </van-button>
-      <van-button
-        type="primary"
-        class="flex-1"
-        :loading="loading"
-        :disabled="!addSignForm.reason"
-        @click="handleFallback"
-      >
-        {{ t('workbench.operation.SIGN') }}
+      <van-button type="primary" class="flex-1" :loading="loading" @click="handleFallback">
+        {{ addSignForm.type === 'BEFORE' ? t('workbench.operation.SIGN') : t('workbench.addSignAndApproved') }}
       </van-button>
     </div>
   </van-popup>

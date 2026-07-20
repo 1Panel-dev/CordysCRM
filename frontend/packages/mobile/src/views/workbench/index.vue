@@ -59,7 +59,7 @@
               <div class="task-icon border border-[var(--warning-yellow)]">
                 <CrmIcon name="iconicon_send" width="14px" height="14px" color="var(--warning-yellow)" />
               </div>
-              <div class="text-[12px]">{{ t('workbench.copyToMe') }}</div>
+              <div>{{ t('workbench.copyToMe') }}</div>
             </div>
           </div>
           <div class="flex items-center gap-[4px]">
