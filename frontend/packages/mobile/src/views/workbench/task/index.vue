@@ -63,6 +63,13 @@
             </div>
             <div class="relative z-10">
               <div class="flex items-center gap-[8px]">
+                <CrmTag
+                  v-if="activeName === ApprovalListTypeEnum.APPROVAL"
+                  :text-color="getApprovedTagColor(item.approvalOperation).textColor"
+                  :bg-color="getApprovedTagColor(item.approvalOperation).borderColor"
+                  :tag="t(`workbench.operation.${item.approvalOperation}`)"
+                  plain
+                />
                 <ApprovalStatus :status="item.dataResult as ProcessStatusEnum" />
                 <div class="one-line-text font-semibold">{{ item.resourceName }}</div>
               </div>
@@ -148,6 +155,7 @@
   import type { ApprovalProcessDetail, ApprovalTodoItem, TodoStatistic } from '@lib/shared/models/system/process';
   import {
     ApprovalListTypeEnum,
+    ApprovalOperationEnum,
     ApprovalResourceTypeEnum,
     ApprovalTaskExecuteTimeEnum,
     ProcessStatusEnum,
@@ -260,6 +268,36 @@
         return t('common.delete');
       default:
         return '-';
+    }
+  }
+
+  function getApprovedTagColor(result: ApprovalOperationEnum) {
+    switch (result) {
+      case ApprovalOperationEnum.APPROVE:
+        return {
+          color: 'transparent',
+          textColor: 'var(--success-green)',
+          borderColor: 'var(--success-green)',
+        };
+      case ApprovalOperationEnum.REJECT:
+        return {
+          color: 'transparent',
+          textColor: 'var(--error-red)',
+          borderColor: 'var(--error-red)',
+        };
+      case ApprovalOperationEnum.SIGN:
+        return {
+          color: 'transparent',
+          textColor: 'var(--info-blue)',
+          borderColor: 'var(--info-blue)',
+        };
+      case ApprovalOperationEnum.BACK:
+      default:
+        return {
+          color: 'transparent',
+          textColor: 'var(--text-n1)',
+          borderColor: 'var(--text-n7)',
+        };
     }
   }
 
