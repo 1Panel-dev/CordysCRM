@@ -11,6 +11,7 @@ import cn.cordys.crm.product.mapper.ExtProductMapper;
 import cn.cordys.crm.product.utils.ProductUtils;
 import cn.cordys.crm.system.excel.domain.MergeResult;
 import cn.cordys.crm.system.service.ModuleFormService;
+import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class ProductExportService extends BaseExportService {
             return extProductMapper.selectByIds(exportParam.getSelectIds());
         }
         var request = (ProductPageRequest) exportParam.getPageRequest();
+        PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return extProductMapper.list(request, exportParam.getOrgId());
     }
 
