@@ -145,7 +145,7 @@
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 
-  const { sourceName, descriptions, formDetail, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { sourceName, descriptions, detail, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: route.query.formKey as FormDesignKeyEnum,
     sourceId,
     needInitDetail: true,
@@ -165,7 +165,7 @@
         route.query.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT
           ? {
               label: t('workbench.quotationStatus'),
-              value: formDetail.value.invalid,
+              value: detail.value.invalid,
               valueSlotName: 'quotationStatus',
             }
           : null,
