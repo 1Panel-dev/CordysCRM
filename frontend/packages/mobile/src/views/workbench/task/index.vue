@@ -25,6 +25,7 @@
                     selectedKeys = [];
                     setLocalStorage('resourceType', item.name);
                     initStatistic();
+                    initApprovalConfig();
                   }
                 "
               >
@@ -249,9 +250,7 @@
 
   async function initApprovalConfig() {
     try {
-      if (route.query.formKey) {
-        approvalConfig.value = await getApprovalConfigDetail(route.query.formKey?.toString().replace('Snapshot', ''));
-      }
+      approvalConfig.value = await getApprovalConfigDetail(resourceType.value);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -396,11 +395,11 @@
   );
 
   onBeforeMount(() => {
-    initApprovalConfig();
     initStatistic();
     activeName.value = localStorage.getItem('activeTaskType') || ApprovalListTypeEnum.PENDING;
     resourceType.value =
       (localStorage.getItem('resourceType') as ApprovalResourceTypeEnum) || ApprovalResourceTypeEnum.QUOTATION;
+    initApprovalConfig();
   });
 </script>
 
