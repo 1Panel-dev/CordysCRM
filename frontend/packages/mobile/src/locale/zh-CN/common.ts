@@ -100,4 +100,5 @@ export default {
   'common.moveInReason': '移入原因',
   'common.noReason': '未配置移入原因',
   'common.sum': '汇总',
+  'common.voided': '作废',
 };

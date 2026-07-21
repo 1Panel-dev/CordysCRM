@@ -70,13 +70,7 @@
       >
         {{ t('common.cancel') }}
       </van-button>
-      <van-button
-        type="primary"
-        class="flex-1"
-        :loading="loading"
-        :disabled="!fallbackForm.reason"
-        @click="handleFallback"
-      >
+      <van-button type="primary" class="flex-1" :loading="loading" @click="handleFallback">
         {{ t('workbench.operation.BACK') }}
       </van-button>
     </div>

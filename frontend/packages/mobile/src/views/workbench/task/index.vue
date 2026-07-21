@@ -23,6 +23,8 @@
                   () => {
                     resourceType = item.name;
                     selectedKeys = [];
+                    setLocalStorage('resourceType', item.name);
+                    initStatistic();
                   }
                 "
               >
@@ -53,7 +55,7 @@
             @click="() => handleItemClick(item)"
           >
             <div
-              v-if="activeName === ApprovalListTypeEnum.PENDING"
+              v-if="activeName === ApprovalListTypeEnum.PENDING && approvalConfig?.allowBatchProcess"
               class="icon-split-bg"
               :class="selectedKeys.includes(item.approvalTaskId) ? 'icon-split-bg--active' : ''"
             >
@@ -61,12 +63,7 @@
             </div>
             <div class="relative z-10">
               <div class="flex items-center gap-[8px]">
-                <CrmTag
-                  plain
-                  :tag="processStatusMap[item.dataResult as ProcessStatusEnum].label"
-                  :text-color="processStatusMap[item.dataResult as ProcessStatusEnum].color"
-                  :bgColor="processStatusMap[item.dataResult as ProcessStatusEnum].bgColor"
-                />
+                <ApprovalStatus :status="item.dataResult as ProcessStatusEnum" />
                 <div class="one-line-text font-semibold">{{ item.resourceName }}</div>
               </div>
               <div class="mt-[8px] flex items-center gap-[8px]">
@@ -137,17 +134,18 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import ApprovalPopup from '../approval/approvalPopup.vue';
+  import ApprovalStatus from '../approval/approvalStatus.vue';
 
   import {
+    getApprovalConfigDetail,
     getCcApprovalList,
     getInitiatedApprovalList,
     getPendingApprovalList,
     getProcessedApprovalList,
     getTodoStatistic,
   } from '@/api/modules';
-  import type { ApprovalTodoItem, TodoStatistic } from '@lib/shared/models/system/process';
+  import type { ApprovalProcessDetail, ApprovalTodoItem, TodoStatistic } from '@lib/shared/models/system/process';
   import {
     ApprovalListTypeEnum,
     ApprovalResourceTypeEnum,
@@ -158,6 +156,7 @@
   import dayjs from 'dayjs';
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum.js';
+  import { setLocalStorage } from '@lib/shared/method/local-storage.js';
 
   const { t } = useI18n();
   const route = useRoute();
@@ -238,57 +237,18 @@
     }
   }
 
-  const processStatusMap: Record<ProcessStatusEnum, any> = {
-    [ProcessStatusEnum.APPROVED]: {
-      label: t('workbench.result.APPROVED'),
-      icon: 'iconicon_succeed_filled',
-      color: 'var(--success-green)',
-      bgColor: 'var(--success-green)',
-    },
-    [ProcessStatusEnum.AUTO_APPROVED]: {
-      label: t('workbench.result.AUTO_APPROVED'),
-      icon: 'iconicon_succeed_filled',
-      color: 'var(--success-green)',
-      bgColor: 'var(--success-green)',
-    },
-    [ProcessStatusEnum.APPROVING]: {
-      label: t('workbench.result.APPROVING'),
-      icon: 'iconicon_wait',
-      color: 'var(--warning-yellow)',
-      bgColor: 'var(--warning-yellow)',
-    },
-    [ProcessStatusEnum.AUTO_UNAPPROVED]: {
-      label: t('workbench.result.AUTO_UNAPPROVED'),
-      icon: 'iconicon_close_circle_filled',
-      color: 'var(--error-red)',
-      bgColor: 'var(--error-red)',
-    },
-    [ProcessStatusEnum.UNAPPROVED]: {
-      label: t('workbench.result.UNAPPROVED'),
-      icon: 'iconicon_close_circle_filled',
-      color: 'var(--error-red)',
-      bgColor: 'var(--error-red)',
-    },
-    [ProcessStatusEnum.REVOKED]: {
-      label: t('workbench.result.REVOKED'),
-      icon: 'iconicon_skip_planarity',
-      color: 'var(--text-n4)',
-      bgColor: '',
-    },
-    [ProcessStatusEnum.PENDING]: {
-      label: t('workbench.result.PENDING'),
-      icon: 'iconicon_minus_circle_filled1',
-      color: 'var(--text-n4)',
-      bgColor: '',
-    },
+  const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
 
-    [ProcessStatusEnum.NONE]: {
-      label: '-',
-      icon: '',
-      color: '',
-      bgColor: '',
-    },
-  };
+  async function initApprovalConfig() {
+    try {
+      if (route.query.formKey) {
+        approvalConfig.value = await getApprovalConfigDetail(route.query.formKey?.toString().replace('Snapshot', ''));
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   function getExecuteType(executeTime: ApprovalTaskExecuteTimeEnum) {
     switch (executeTime) {
@@ -304,7 +264,7 @@
   }
 
   function handleItemClick(item: ApprovalTodoItem) {
-    if (activeName.value !== ApprovalListTypeEnum.PENDING) {
+    if (activeName.value !== ApprovalListTypeEnum.PENDING || !approvalConfig.value?.allowBatchProcess) {
       return;
     }
     const index = selectedKeys.value.indexOf(item.approvalTaskId);
@@ -329,7 +289,11 @@
 
   function changeResourceTab() {
     refreshTaskList();
+    initStatistic();
     selectedKeys.value = [];
+    nextTick(() => {
+      localStorage.setItem('activeTaskType', activeName.value);
+    });
   }
   const formKeyMap = {
     [ApprovalResourceTypeEnum.ALL]: '',
@@ -394,12 +358,11 @@
   );
 
   onBeforeMount(() => {
+    initApprovalConfig();
     initStatistic();
-    if (route.query.type) {
-      activeName.value = route.query.type as ApprovalListTypeEnum;
-    } else {
-      activeName.value = ApprovalListTypeEnum.PENDING;
-    }
+    activeName.value = localStorage.getItem('activeTaskType') || ApprovalListTypeEnum.PENDING;
+    resourceType.value =
+      (localStorage.getItem('resourceType') as ApprovalResourceTypeEnum) || ApprovalResourceTypeEnum.QUOTATION;
   });
 </script>
 

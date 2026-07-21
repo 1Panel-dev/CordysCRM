@@ -128,7 +128,7 @@
       });
       showToast({
         type: 'success',
-        message: t('workbench.fallbackSuccess'),
+        message: t('workbench.addSignSuccess'),
       });
       emit('refresh');
       setTimeout(() => {

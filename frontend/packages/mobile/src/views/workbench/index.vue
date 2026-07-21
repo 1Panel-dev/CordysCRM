@@ -241,7 +241,8 @@
   }
 
   function goTask(type?: ApprovalListTypeEnum) {
-    router.push({ name: WorkbenchRouteEnum.WORKBENCH_TASK, query: { type } });
+    localStorage.setItem('activeTaskType', type?.toString() || '');
+    router.push({ name: WorkbenchRouteEnum.WORKBENCH_TASK });
   }
 
   onBeforeMount(() => {

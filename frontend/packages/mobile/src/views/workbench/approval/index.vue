@@ -1,7 +1,14 @@
 <template>
   <CrmPageWrapper :title="sourceName || ''">
     <div class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
-      <CrmDescription :description="descriptions" />
+      <CrmDescription :description="renderDescriptions">
+        <template #approvalStatus>
+          <ApprovalStatus v-if="approvalInfo" :status="approvalInfo?.approvalStatus" />
+        </template>
+        <template #quotationStatus="{ item }">
+          <CrmTag :tag="item.value ? t('common.voided') : t('common.normal')" />
+        </template>
+      </CrmDescription>
     </div>
     <template #footer>
       <div
@@ -121,7 +128,7 @@
   import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ApprovalDetail, ApprovalNode, ApprovalProcessDetail } from '@lib/shared/models/system/process';
-  import CrmDescription from '@/components/pure/crm-description/index.vue';
+  import CrmDescription, { type CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
   import { useRoute } from 'vue-router';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import ApprovalPopup from './approvalPopup.vue';
@@ -130,6 +137,7 @@
   import { showConfirmDialog, showSuccessToast, type PickerOption } from 'vant';
   import { sleep } from '@lib/shared/method/index.js';
   import router from '@/router/index.js';
+  import ApprovalStatus from './approvalStatus.vue';
 
   const { t } = useI18n();
   const userStore = useUserStore();
@@ -137,11 +145,34 @@
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 
-  const { sourceName, descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { sourceName, descriptions, formDetail, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: route.query.formKey as FormDesignKeyEnum,
     sourceId,
     needInitDetail: true,
+    otherSaveParams: {
+      approvalTaskId: route.query.taskId,
+    },
   });
+
+  const renderDescriptions = computed(
+    () =>
+      [
+        {
+          label: t('workbench.approvalStatus'),
+          value: approvalInfo.value?.approvalStatus,
+          valueSlotName: 'approvalStatus',
+        },
+        route.query.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT
+          ? {
+              label: t('workbench.quotationStatus'),
+              value: formDetail.value.invalid,
+              valueSlotName: 'quotationStatus',
+            }
+          : null,
+        ...descriptions.value,
+      ].filter(Boolean) as CrmDescriptionItem[]
+  );
+
   const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
 
@@ -319,7 +350,7 @@
     return {
       approvalTaskId: currentTaskNode.value.taskId,
       approvalNodeId: currentApprovalNode.value.nodeId,
-      approvalInstanceId: approvalConfig.value?.id,
+      approvalInstanceId: approvalInfo.value?.id,
       approvalId: currentTaskNode.value.approverId,
     };
   });

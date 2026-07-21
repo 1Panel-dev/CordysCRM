@@ -59,6 +59,7 @@ export default {
   'workbench.afterMe': 'After me',
   'workbench.addSignReviewer': 'Add sign approver',
   'workbench.addSignAndApproved': 'Agree and add sign',
+  'workbench.addSignSuccess': 'Signed',
   'workbench.cancelApprovalApplyConfirm': 'Confirm to cancel the approval?',
   'workbench.cancelApprovalApplyTip':
     'After cancellation, the approval process will be terminated. Please operate with caution!',
@@ -69,4 +70,6 @@ export default {
     'After withdrawal, the approval process will be terminated. Please operate with caution!',
   'workbench.confirmCancelApproval': 'Confirm withdrawal',
   'workbench.cancelApprovalSuccess': 'Withdrawn',
+  'workbench.approvalStatus': 'Approval status',
+  'workbench.quotationStatus': 'Status',
 };

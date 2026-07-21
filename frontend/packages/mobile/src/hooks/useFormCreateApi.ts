@@ -156,7 +156,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey];
       if (!asyncApi || !props.sourceId?.value) return;
-      const form = await asyncApi(props.sourceId?.value);
+      const form = await asyncApi(props.sourceId?.value, props.otherSaveParams?.approvalTaskId);
       descriptions.value = [];
       detail.value = form;
       collaborationType.value = form.collaborationType;
@@ -539,7 +539,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function initFormConfig() {
     try {
       loading.value = true;
-      const res = await getFormConfigApiMap[props.formKey](props.sourceId?.value ?? '');
+      const res = await getFormConfigApiMap[props.formKey](
+        props.sourceId?.value ?? '',
+        props.otherSaveParams?.approvalTaskId
+      );
       formConfig.value = res.formProp;
       fieldList.value = res.fields.map((item) => {
         const { defaultValue, initialOptions } = specialFormFieldInit(item);
