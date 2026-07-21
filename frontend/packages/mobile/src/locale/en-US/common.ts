@@ -99,4 +99,5 @@ export default {
   'common.moveInReason': 'Move-in reason',
   'common.noReason': 'Reason for migration not configured',
   'common.sum': 'Sum',
+  'common.voided': 'Voided',
 };
