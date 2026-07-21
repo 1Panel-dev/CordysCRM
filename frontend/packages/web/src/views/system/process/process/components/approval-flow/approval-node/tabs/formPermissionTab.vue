@@ -15,13 +15,14 @@
   import { h, ref, watch } from 'vue';
   import { DataTableColumn, NDataTable, NRadio, NScrollbar } from 'naive-ui';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { ApprovalFieldPermissionModeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ApprovalActionNode } from '@lib/shared/models/system/process';
 
-  import { getFormConfigApiMap } from '@/components/business/crm-form-create/config';
   import type { FormCreateField } from '@/components/business/crm-form-create/types';
+
+  import { getDatasourceFieldConfig } from '@/api/modules';
 
   defineOptions({
     name: 'FormPermissionTab',
@@ -173,8 +174,7 @@
   async function loadFormFields() {
     try {
       loading.value = true;
-      const api = getFormConfigApiMap[props.formType as FormDesignKeyEnum];
-      const res = await api();
+      const res = await getDatasourceFieldConfig(props.formType);
       // 仅使用顶层字段；子表格保留父字段名，不展开 subFields 明细。
       formFields.value = res.fields;
       normalizeFieldPermissions(formFields.value);

@@ -7,11 +7,16 @@ import type { OpportunityStageConfig } from '@lib/shared/models/opportunity';
 
 import { operatorOptionsMap } from '@/components/pure/crm-advance-filter';
 import type { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
-import { getFormConfigApiMap } from '@/components/business/crm-form-create/config';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 import { resolveFieldId } from '@/components/business/crm-formula-editor/utils';
 
-import { getContractStatusConfig, getFieldDeptTree, getOrderStatusConfig, getUserOptions } from '@/api/modules';
+import {
+  getContractStatusConfig,
+  getDatasourceFieldConfig,
+  getFieldDeptTree,
+  getOrderStatusConfig,
+  getUserOptions,
+} from '@/api/modules';
 import { baseFilterConfigList } from '@/config/clue';
 import { quotationStatus } from '@/config/opportunity';
 import { processStatusOptions } from '@/config/process';
@@ -252,7 +257,6 @@ export default function useConditionFilterConfig(options: {
 
     try {
       const formType = toValue(options.formType) as FormDesignKeyEnum;
-      const api = getFormConfigApiMap[formType];
       const stageConfigApiMap: Partial<Record<FormDesignKeyEnum, () => Promise<OpportunityStageConfig>>> = {
         [FormDesignKeyEnum.CONTRACT]: getContractStatusConfig,
         [FormDesignKeyEnum.ORDER]: getOrderStatusConfig,
@@ -261,7 +265,7 @@ export default function useConditionFilterConfig(options: {
 
       const [stageConfig, formConfig] = await Promise.all([
         stageConfigApi?.() ?? Promise.resolve(null),
-        api?.() ?? Promise.resolve({ fields: [] }),
+        getDatasourceFieldConfig(formType),
       ]);
       // 例如先加载报价、马上切到发票：报价请求如果晚回来，不能再写入发票页面的描述上下文
       if (loadId !== latestLoadId) {
