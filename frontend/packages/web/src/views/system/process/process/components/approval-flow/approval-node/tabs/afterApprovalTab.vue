@@ -265,14 +265,19 @@
   import SingleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
   import TagInput from '@/components/business/crm-form-create/components/basic/tagInput.vue';
   import Textarea from '@/components/business/crm-form-create/components/basic/textarea.vue';
-  import { getFormConfigApiMap, rules } from '@/components/business/crm-form-create/config';
+  import { rules } from '@/components/business/crm-form-create/config';
   import type {
     FormCreateField,
     FormCreateFieldOption,
     FormCreateFieldRule,
   } from '@/components/business/crm-form-create/types';
 
-  import { getContractStatusConfig, getOrderStatusConfig, testApprovalWebHook } from '@/api/modules';
+  import {
+    getContractStatusConfig,
+    getDatasourceFieldConfig,
+    getOrderStatusConfig,
+    testApprovalWebHook,
+  } from '@/api/modules';
   import { quotationStatus } from '@/config/opportunity';
   import { defaultWebHookConfig } from '@/config/process';
 
@@ -775,10 +780,7 @@
 
   async function loadFormFields() {
     try {
-      const api =
-        getFormConfigApiMap[props.formType as FormDesignKeyEnum] ??
-        getFormConfigApiMap[FormDesignKeyEnum.OPPORTUNITY_QUOTATION];
-      const res = await api();
+      const res = await getDatasourceFieldConfig(props.formType);
       formFields.value = res.fields;
       initStage();
       if (!props.readonly) {
