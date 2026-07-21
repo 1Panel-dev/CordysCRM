@@ -13,13 +13,14 @@
       >
         <template #tableTop>
           <div class="flex gap-[12px]">
-            <n-button type="primary" @click="openAddDrawer">
+            <n-button v-permission="['SYSTEM_SETTING:ADD']" type="primary" @click="openAddDrawer">
               {{ t('system.business.modelSettings.addModel') }}
             </n-button>
             <n-tooltip trigger="hover" :disabled="!isRouteStrategyDisabled">
               <template #trigger>
                 <span>
                   <n-button
+                    v-permission="['SYSTEM_SETTING:UPDATE']"
                     class="n-btn-outline-primary"
                     type="primary"
                     ghost
@@ -199,10 +200,10 @@
       render: (row) =>
         h(NSwitch, {
           'value': row.enable,
+          'disabled': !hasAnyPermission(['SYSTEM_SETTING:UPDATE']),
           'rubberBand': false,
           'onUpdate:value': (enable: boolean) => {
-            // TODO lmy Permission
-            if (!hasAnyPermission(['MODULE_SETTING:UPDATE'])) return;
+            if (!hasAnyPermission(['SYSTEM_SETTING:UPDATE'])) return;
             toggleModelStatus(row, enable);
           },
         }),
@@ -266,9 +267,8 @@
       render: (row) =>
         h(CrmOperationButton, {
           groupList: [
-            // TODO lmy permission
-            { label: t('common.edit'), key: 'edit', permission: [''] },
-            { label: t('common.delete'), key: 'delete', permission: [''] },
+            { label: t('common.edit'), key: 'edit', permission: ['SYSTEM_SETTING:UPDATE'] },
+            { label: t('common.delete'), key: 'delete', permission: ['SYSTEM_SETTING:DELETE'] },
           ],
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
@@ -278,7 +278,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable<AiModelItem>(getAiModelList, {
     columns,
     tableKey: TableKeyEnum.SYSTEM_MODEL_SETTINGS,
-    permission: ['SYSTEM_ROLE:REMOVE_USER'], // TODO lmy
+    permission: ['SYSTEM_SETTING:UPDATE', 'SYSTEM_SETTING:DELETE'],
     showSetting: true,
     containerClass: '.model-settings-table',
   });
