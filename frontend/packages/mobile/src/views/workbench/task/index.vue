@@ -82,7 +82,13 @@
                   <div class="flex items-center justify-between">
                     <div class="one-line-text flex-1">{{ item.applicant }}</div>
                     <div class="flex items-center gap-[8px]">
-                      <van-button type="primary" size="mini" class="h-[20px]" @click.stop="goDetail(item)">
+                      <van-button
+                        v-if="activeName !== ApprovalListTypeEnum.COPIED || getResourcePermission(item)"
+                        type="primary"
+                        size="mini"
+                        class="h-[20px]"
+                        @click.stop="goDetail(item)"
+                      >
                         {{ t('common.detail') }}
                       </van-button>
                       <template v-if="activeName === ApprovalListTypeEnum.PENDING">
@@ -166,6 +172,7 @@
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum.js';
   import { setLocalStorage } from '@lib/shared/method/local-storage.js';
+  import { hasAnyPermission } from '@/utils/permission.js';
 
   const { t } = useI18n();
   const route = useRoute();
@@ -243,6 +250,21 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    }
+  }
+
+  function getResourcePermission(item: ApprovalTodoItem) {
+    switch (item.resourceType) {
+      case ApprovalResourceTypeEnum.CONTRACT:
+        return hasAnyPermission(['CONTRACT:READ']);
+      case ApprovalResourceTypeEnum.INVOICE:
+        return hasAnyPermission(['CONTRACT_INVOICE:READ']);
+      case ApprovalResourceTypeEnum.ORDER:
+        return hasAnyPermission(['ORDER:READ']);
+      case ApprovalResourceTypeEnum.QUOTATION:
+        return hasAnyPermission(['OPPORTUNITY_QUOTATION:READ']);
+      default:
+        return false;
     }
   }
 
