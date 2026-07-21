@@ -67,6 +67,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -423,6 +424,7 @@ public class BusinessTitleService {
      * @param orgId
      * @return
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, String userId, String orgId, ImportRequest request) {
         if (file == null) {
             throw new GenericException(Translator.get("file_cannot_be_null"));

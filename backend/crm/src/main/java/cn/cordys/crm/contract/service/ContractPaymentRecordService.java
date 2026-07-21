@@ -68,6 +68,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -329,6 +330,7 @@ public class ContractPaymentRecordService {
      * @param currentUser 当前用户
      * @return 导入返回信息
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);

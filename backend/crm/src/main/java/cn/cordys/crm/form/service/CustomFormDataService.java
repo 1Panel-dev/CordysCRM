@@ -57,6 +57,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -517,6 +518,7 @@ public class CustomFormDataService {
      * @param userId  用户ID
      * @return 导入结果
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, CustomerFormImportRequest request, String orgId, String userId) {
         try {
             CustomFormDataFieldService.setFormKey(request.getCustomFormId());
