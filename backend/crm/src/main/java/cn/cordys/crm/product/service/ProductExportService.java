@@ -51,7 +51,7 @@ public class ProductExportService extends BaseExportService {
             return extProductMapper.selectByIds(exportParam.getSelectIds());
         }
         var request = (ProductPageRequest) exportParam.getPageRequest();
-        PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
         return extProductMapper.list(request, exportParam.getOrgId());
     }
 

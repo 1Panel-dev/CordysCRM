@@ -48,7 +48,7 @@ public class CustomerExportService extends BaseExportService {
             return extCustomerMapper.getListByIds(exportParam.getSelectIds());
         }
         var request = (CustomerPageRequest) exportParam.getPageRequest();
-        PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
         return extCustomerMapper.list(request, orgId, userId, deptDataPermission);
     }
 }

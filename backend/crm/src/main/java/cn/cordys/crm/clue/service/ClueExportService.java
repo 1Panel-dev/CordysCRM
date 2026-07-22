@@ -59,7 +59,7 @@ public class ClueExportService extends BaseExportService {
             return extClueMapper.getListByIds(exportParam.getSelectIds());
         }
         var request = (CluePageRequest) exportParam.getPageRequest();
-        PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
         return extClueMapper.list(request, orgId, userId, deptDataPermission, false);
     }
 

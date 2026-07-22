@@ -44,7 +44,7 @@ public class ContractPaymentPlanExportService extends BaseExportService {
     public List<List<Object>> getExportData(String taskId, ExportDTO exportDTO) throws InterruptedException {
         ContractPaymentPlanPageRequest pageRequest = (ContractPaymentPlanPageRequest) exportDTO.getPageRequest();
         String orgId = exportDTO.getOrgId();
-        PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize());
+        PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize(), false);
         //获取数据
         List<ContractPaymentPlanListResponse> allList = extContractPaymentPlanMapper.list(pageRequest, exportDTO.getUserId(), orgId, exportDTO.getDeptDataPermission());
         List<ContractPaymentPlanListResponse> dataList = contractPaymentPlanService.buildListData(allList, orgId);

@@ -103,7 +103,7 @@ public class BusinessTitleExportService extends BaseExportService {
     public List<List<Object>> getExportData(String taskId, ExportDTO exportDTO) throws InterruptedException {
         var pageRequest = (BusinessTitlePageRequest) exportDTO.getPageRequest();
         var orgId = exportDTO.getOrgId();
-        PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize());
+        PageHelper.startPage(pageRequest.getCurrent(), pageRequest.getPageSize(), false);
         var dataList = extBusinessTitleMapper.list(pageRequest, orgId, exportDTO.getUserId());
         baseService.setCreateAndUpdateUserName(dataList);
         return buildExportResult(dataList, taskId, exportDTO);
