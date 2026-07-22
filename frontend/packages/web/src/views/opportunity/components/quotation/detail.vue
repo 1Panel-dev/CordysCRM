@@ -68,6 +68,7 @@
     :initial-source-name="initialSourceName"
     :other-save-params="otherSaveParams"
     @saved="handleFormCreateSaved"
+    @review="handleFormReview"
   />
 </template>
 
@@ -142,7 +143,7 @@
     emit('refresh');
   }
 
-  const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
   });
 
@@ -168,6 +169,14 @@
 
   function handleRevoke() {
     revokeByResourceId(props.sourceId, {
+      onSuccess: () => {
+        handleSavedRefresh();
+      },
+    });
+  }
+
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
       onSuccess: () => {
         handleSavedRefresh();
       },
