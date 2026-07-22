@@ -200,6 +200,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
         invoice.setUpdateTime(System.currentTimeMillis());
         invoice.setUpdateUser(operatorId);
         invoice.setApprovalStatus(ApprovalStatus.NONE.name());
+        invoice.setApproved(false);
 
         if (StringUtils.isBlank(request.getOwner())) {
             invoice.setOwner(operatorId);

@@ -148,6 +148,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         opportunityQuotation.setUpdateUser(userId);
         opportunityQuotation.setCreateTime(System.currentTimeMillis());
         opportunityQuotation.setUpdateTime(System.currentTimeMillis());
+        opportunityQuotation.setApproved(false);
 
         //判断总金额
         setAmount(request.getAmount(), opportunityQuotation);
