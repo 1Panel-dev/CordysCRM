@@ -718,7 +718,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
         }
         for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
             if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
-                return;
+                continue;
             }
             BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
