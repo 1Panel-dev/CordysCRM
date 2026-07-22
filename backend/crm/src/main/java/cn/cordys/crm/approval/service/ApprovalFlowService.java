@@ -1887,6 +1887,10 @@ public class ApprovalFlowService {
         if (currentNodeId.contains(SIGN_SPILT)) {
             currentNodeId = currentNodeId.split(SIGN_SPILT)[0];
         }
+        ApprovalNode approvalNode = approvalNodeMapper.selectByPrimaryKey(currentNodeId);
+        if (Strings.CS.equals(ApprovalNodeTypeEnum.END.name(),approvalNode.getNodeType())) {
+            return new ArrayList<>(0);
+        }
         ApprovalNodeResponse next = getNextNodeWithExceptionHandler(instance, currentNodeId, resourceFvs, currentOrgId, true);
         while (ApprovalNodeTypeEnum.valueOf(next.getNodeType()) == ApprovalNodeTypeEnum.APPROVER) {
             nodes.add((ApprovalNodeApproverResponse) next);

@@ -168,6 +168,7 @@ public class ContractService implements ApprovalResourceHandler {
         contract.setCreateUser(operatorId);
         contract.setUpdateTime(System.currentTimeMillis());
         contract.setUpdateUser(operatorId);
+        contract.setApproved(false);
 
         if (!dictService.isDictConfigEnable(DictModule.CONTRACT_APPROVAL.name(), orgId)) {
             contract.setApprovalStatus(ContractApprovalStatus.NONE.name());

@@ -156,6 +156,7 @@ public class OrderService implements ApprovalResourceHandler {
         order.setCreateUser(operatorId);
         order.setUpdateTime(System.currentTimeMillis());
         order.setUpdateUser(operatorId);
+        order.setApproved(false);
 
         //判断总金额
         setAmount(request.getAmount(), order);
