@@ -28,4 +28,11 @@ export default {
   'customer.cooperation': '协作',
   'customer.moveToOpenSea': '移入公海',
   'customer.batchMoveContentTip': '移入后，客户将无负责人，请谨慎操作！',
+  'customer.recycleReason': '回收原因',
+  'customer.lastFollowUpDate': '最新跟进时间',
+  'customer.lastFollowUps': '最新跟进人员',
+  'customer.remainingVesting': '剩余归属',
+  'customer.collectionTime': '领取时间',
+  'customer.disableReason': '停用原因',
+  'customer.recycleOpenSea': '回收公海',
 };

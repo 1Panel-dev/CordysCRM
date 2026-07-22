@@ -101,4 +101,10 @@ export default {
   'common.noReason': '未配置移入原因',
   'common.sum': '汇总',
   'common.voided': '作废',
+  'common.creator': '创建人',
+  'common.updateUserName': '更新人',
+  'common.updateTime': '更新时间',
+  'common.department': '部门',
+  'common.alreadyPayAmount': '已回款金额',
+  'common.status': '状态',
 };
