@@ -834,7 +834,7 @@ public class ContractService implements ApprovalResourceHandler {
                 continue;
             }
             if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
-                return;
+                continue;
             }
             BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
