@@ -1,5 +1,11 @@
 <template>
-  <van-popup v-model:show="show" position="bottom" :style="{ height: '100vh' }">
+  <van-popup
+    v-model:show="show"
+    position="bottom"
+    :style="{ height: '100vh' }"
+    safe-area-inset-top
+    safe-area-inset-bottom
+  >
     <div class="relative p-[16px] text-center">
       <CrmTextButton
         icon="iconicon_chevron_left"
@@ -45,7 +51,7 @@
         type="textarea"
         maxlength="300"
       />
-      <CrmUpload
+      <CrmUploadFile
         v-model:value="fallbackForm.fileList"
         :field-config="{
           id: getGenerateId(),
@@ -77,7 +83,7 @@
   </van-popup>
 </template>
 <script setup lang="ts">
-  import CrmUpload from '@/components/business/crm-form-create/components/advanced/upload.vue';
+  import CrmUploadFile from '@/components/business/crm-form-create/components/advanced/file.vue';
   import { getGenerateId } from '@lib/shared/method';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
