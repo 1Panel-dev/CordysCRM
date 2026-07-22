@@ -27,4 +27,11 @@ export default {
   'customer.cooperation': 'Cooperation',
   'customer.moveToOpenSea': 'Move to Open Sea',
   'customer.batchMoveContentTip': 'After moving, the account will have no owner. Please proceed with caution!',
+  'customer.recycleReason': 'Recycle reason',
+  'customer.lastFollowUpDate': 'Latest follow-up date',
+  'customer.lastFollowUps': 'Latest follow-up personnel',
+  'customer.remainingVesting': 'Remaining vesting',
+  'customer.collectionTime': 'Collection time',
+  'customer.disableReason': 'Disable reason',
+  'customer.recycleOpenSea': 'Recycle to Open Sea',
 };

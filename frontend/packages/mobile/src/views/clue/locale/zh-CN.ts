@@ -27,4 +27,5 @@ export default {
   'clue.countDownTip': '{count} 秒后回到线索列表，也可手动回到线索列表',
   'clue.moveToLeadPoolTip': '移入后，线索将无负责人，请谨慎操作！',
   'clue.moveIntoCluePool': '移入线索池',
+  'clue.recyclePool': '回收线索池',
 };

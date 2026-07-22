@@ -83,7 +83,7 @@
                     <div class="one-line-text flex-1">{{ item.applicant }}</div>
                     <div class="flex items-center gap-[8px]">
                       <van-button
-                        v-if="activeName !== ApprovalListTypeEnum.COPIED || getResourcePermission(item)"
+                        v-if="activeName === ApprovalListTypeEnum.PENDING || getResourcePermission(item)"
                         type="primary"
                         size="mini"
                         class="h-[20px]"

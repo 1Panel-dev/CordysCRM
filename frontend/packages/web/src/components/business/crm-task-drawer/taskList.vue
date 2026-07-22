@@ -16,7 +16,7 @@
             :class="selectedKeys.includes(item.approvalTaskId) ? '!border-[var(--primary-8)]' : ''"
             @click.stop="
               () => {
-                if (!props.activeTaskType.includes('copied') || getResourcePermission(item)) {
+                if (props.activeTaskType.includes('pending') || getResourcePermission(item)) {
                   emit('openDetail', item.resourceId, item.resourceType, item.approvalTaskId);
                 }
               }
@@ -41,7 +41,7 @@
                   <CrmApprovalStatus :status="item.dataResult" isTag scene="approvalRecord" />
                 </div>
                 <CrmTableButton
-                  v-if="!props.activeTaskType.includes('copied')"
+                  v-if="props.activeTaskType.includes('pending')"
                   type="primary"
                   text
                   size="small"

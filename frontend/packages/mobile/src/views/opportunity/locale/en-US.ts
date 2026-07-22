@@ -27,4 +27,5 @@ export default {
   'opportunity.complexDecisionChain': 'Complex decision chain',
   'opportunity.budgetLimit': 'Budget limit',
   'opportunity.requirementChange': 'Requirement change',
+  'opportunity.actualEndTime': 'Actual end time',
 };
