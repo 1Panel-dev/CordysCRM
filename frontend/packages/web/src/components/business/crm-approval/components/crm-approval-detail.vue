@@ -329,7 +329,10 @@
   // 是否可以撤销审批申请
   const canCancelApply = computed(() => {
     // 未配置撤销申请
-    if (!approvalConfig.value?.submitterCanRevoke) {
+    if (
+      !approvalConfig.value?.submitterCanRevoke &&
+      approvalInfo.value?.nodes[0].approvalStatus !== ProcessStatusEnum.APPROVING
+    ) {
       return false;
     }
     // 流程结束不允许撤销

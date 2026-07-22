@@ -24,6 +24,15 @@
         :label="t('workbench.fallbackTo')"
         :placeholder="t('common.pleaseSelect')"
         label-align="left"
+        required
+        :rules="[
+          {
+            required: approvalConfig?.requireComment,
+            message: t('common.notNull', {
+              value: t('workbench.fallbackTo'),
+            }),
+          },
+        ]"
         @click="showPicker = true"
       />
       <van-popup v-model:show="showPicker" destroy-on-close round position="bottom">
