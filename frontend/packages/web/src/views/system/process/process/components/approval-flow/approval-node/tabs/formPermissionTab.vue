@@ -56,6 +56,10 @@
     },
   ];
 
+  function isReadableField(field: FormCreateField) {
+    return field.readable !== false;
+  }
+
   // 仅部分类型支持编辑， 其它类型的编辑按钮禁用
   function isEditableField(field: FormCreateField) {
     return (
@@ -68,12 +72,16 @@
         FieldTypeEnum.DATE_TIME,
       ].includes(field.type) &&
       field.editable !== false &&
+      isReadableField(field) &&
       !field.resourceFieldId
     );
   }
 
   function getFieldPermission(fieldId: string) {
-    return nodeConfig.value.fieldPermissions?.find((item) => item.fieldId === fieldId)?.permissionType ?? 'VIEW';
+    return (
+      nodeConfig.value.fieldPermissions?.find((item) => item.fieldId === fieldId)?.permissionType ??
+      ApprovalFieldPermissionModeEnum.VIEW
+    );
   }
 
   function setFieldPermission(fieldId: string, permissionType: ApprovalFieldPermissionModeEnum) {
@@ -93,6 +101,14 @@
   }
 
   function isPermissionDisabled(field: FormCreateField, permissionType: ApprovalFieldPermissionModeEnum) {
+    const isViewOrEditPermission =
+      permissionType === ApprovalFieldPermissionModeEnum.VIEW ||
+      permissionType === ApprovalFieldPermissionModeEnum.EDIT;
+
+    if (isViewOrEditPermission && !isReadableField(field)) {
+      return true;
+    }
+
     return permissionType === ApprovalFieldPermissionModeEnum.EDIT && !isEditableField(field);
   }
 
@@ -161,6 +177,14 @@
 
     nodeConfig.value.fieldPermissions = fields.map((field) => {
       const permissionType = existingPermissionMap.get(field.id) ?? ApprovalFieldPermissionModeEnum.VIEW;
+
+      if (!isReadableField(field)) {
+        return {
+          fieldId: field.id,
+          permissionType: ApprovalFieldPermissionModeEnum.HIDDEN,
+        };
+      }
+
       return {
         fieldId: field.id,
         permissionType:
