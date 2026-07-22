@@ -78,7 +78,7 @@ public class OpportunityExportService extends BaseExportService {
             return extOpportunityMapper.getListByIds(exportParam.getSelectIds());
         }
         var request = (OpportunityPageRequest) exportParam.getPageRequest();
-        PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
         return extOpportunityMapper.list(request, orgId, userId, deptDataPermission, false);
     }
 
