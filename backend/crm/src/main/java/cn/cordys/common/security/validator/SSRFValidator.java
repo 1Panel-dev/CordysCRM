@@ -138,6 +138,28 @@ public class SSRFValidator {
                 return; // 无需再检查 IPv6 特有段
             }
 
+            // NAT64: 64:ff9b::/96
+            embedded = extractIPv4FromNAT64((Inet6Address) addr);
+            if (embedded != null) {
+                validateIpAddress(embedded);
+                return;
+            }
+
+            // 6to4: 2002::/16
+            embedded = extractIPv4From6to4((Inet6Address) addr);
+            if (embedded != null) {
+                validateIpAddress(embedded);
+                return;
+            }
+
+            // Teredo: 2001::/32
+            embedded = extractIPv4FromTeredo((Inet6Address) addr);
+            if (embedded != null) {
+                validateIpAddress(embedded);
+                return;
+            }
+
+
             // IPv6 ULA (fc00::/7)
             if (isIPv6ULA((Inet6Address) addr)) {
                 throw new IllegalArgumentException("禁止访问 IPv6 唯一本地地址 (ULA)");
@@ -177,6 +199,77 @@ public class SSRFValidator {
         }
         return null;
     }
+
+
+    /**
+     * NAT64 提取 (64:ff9b::/96)
+     *
+     * @param addr
+     * @return
+     */
+    private InetAddress extractIPv4FromNAT64(Inet6Address addr) {
+        byte[] bytes = addr.getAddress();
+        if (bytes.length != 16) return null;
+        // 前缀: 64 ff 9b，后面9个字节（从索引3到11）必须为0
+        if (bytes[0] == 0x64 && bytes[1] == (byte) 0xff && bytes[2] == (byte) 0x9b) {
+            for (int i = 3; i < 12; i++) {
+                if (bytes[i] != 0) return null;
+            }
+            try {
+                return InetAddress.getByAddress(Arrays.copyOfRange(bytes, 12, 16));
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 6to4 提取 (2002::/16)
+     *
+     * @param addr
+     * @return
+     */
+    private InetAddress extractIPv4From6to4(Inet6Address addr) {
+        byte[] bytes = addr.getAddress();
+        if (bytes.length != 16) return null;
+        // 前缀: 20 02
+        if (bytes[0] == 0x20 && bytes[1] == 0x02) {
+            // IPv4 位于索引 2~5
+            try {
+                return InetAddress.getByAddress(Arrays.copyOfRange(bytes, 2, 6));
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Teredo 提取 (2001::/32)
+     *
+     * @param addr
+     * @return
+     */
+    private InetAddress extractIPv4FromTeredo(Inet6Address addr) {
+        byte[] bytes = addr.getAddress();
+        if (bytes.length != 16) return null;
+        // 前缀: 20 01 00 00 (2001::/32)
+        if (bytes[0] == 0x20 && bytes[1] == 0x01 && bytes[2] == 0x00 && bytes[3] == 0x00) {
+            // Teredo 客户端 IPv4 位于最后 4 个字节，需要按位取反
+            byte[] ipv4 = Arrays.copyOfRange(bytes, 12, 16);
+            for (int i = 0; i < 4; i++) {
+                ipv4[i] = (byte) ~ipv4[i];
+            }
+            try {
+                return InetAddress.getByAddress(ipv4);
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * 检查是否为 IPv6 唯一本地地址 (fc00::/7)
@@ -241,7 +334,6 @@ public class SSRFValidator {
      * 若全局白名单启用，则主机必须匹配白名单模式。
      *
      * @param host 主机名或 IP（建议不含协议和端口）
-     *
      * @throws IllegalArgumentException 如果主机不安全或被白名单禁止
      */
     public void validateHost(String host) {
