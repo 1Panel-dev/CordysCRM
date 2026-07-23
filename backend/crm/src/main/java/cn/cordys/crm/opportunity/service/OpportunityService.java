@@ -760,12 +760,12 @@ public class OpportunityService {
             List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(currentOrg);
 
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
+            long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
             CustomImportAfterDoConsumer<Opportunity, BaseResourceSubField> afterDo = (opportunities, opportunityFields, opportunityFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                     case ADD -> {
-                        long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
                         for (int i = 0; i < opportunities.size(); i++) {
                             Opportunity opportunity = opportunities.get(i);
                             opportunity.setStage(stageConfigList.getFirst().getId());
