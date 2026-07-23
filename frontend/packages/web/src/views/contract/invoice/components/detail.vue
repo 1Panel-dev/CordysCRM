@@ -96,7 +96,7 @@
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
-  import { approvalInvoiced, deleteInvoiced } from '@/api/modules';
+  import { deleteInvoiced } from '@/api/modules';
   import { deleteInvoiceContentMap } from '@/config/contract';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
@@ -220,31 +220,16 @@
     formCreateDrawerVisible.value = true;
   }
 
-  async function handleApproval(approval = false) {
-    const approvalStatus = approval ? ProcessStatusEnum.APPROVED : ProcessStatusEnum.UNAPPROVED;
-    try {
-      await approvalInvoiced({
-        id: props.sourceId,
-        approvalStatus,
-      });
-      Message.success(approval ? t('common.approvedSuccess') : t('common.unApprovedSuccess'));
-      handleSaved();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
   async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
     if (hasFieldPermission) {
       formDescriptionRef.value?.handleFormChange(async () => {
-        // await callback();
+        await callback();
         refreshKey.value += 1;
         emit('refresh');
       });
     } else {
-      // await callback();
+      await callback();
       refreshKey.value += 1;
       emit('refresh');
     }

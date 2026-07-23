@@ -913,16 +913,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         ].includes(subField.type)
       ) {
         // 处理成员和数据源类型的字段
-        subField.initialOptions = options
-          ?.filter((e) =>
-            formDetail.value[parentFieldId]?.some((item: Record<string, any>) =>
-              item[subField.businessKey!]?.includes(e.id)
+        subField.initialOptions = [
+          ...(subField.initialOptions || []),
+          ...(options
+            ?.filter((e) =>
+              formDetail.value[parentFieldId]?.some((item: Record<string, any>) =>
+                item[subField.businessKey!]?.includes(e.id)
+              )
             )
-          )
-          .map((e) => ({
-            ...e,
-            name: e.name || t('common.optionNotExist'),
-          }));
+            .map((e) => ({
+              ...e,
+              name: e.name || t('common.optionNotExist'),
+            })) || []),
+        ];
       }
     } else {
       const options = res.optionMap?.[subField.id];
@@ -936,14 +939,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         ].includes(subField.type)
       ) {
         // 处理成员和数据源类型的字段
-        subField.initialOptions = options
-          ?.filter((e) =>
-            formDetail.value[parentFieldId]?.some((item: Record<string, any>) => item[subField.id]?.includes(e.id))
-          )
-          .map((e) => ({
-            ...e,
-            name: e.name || t('common.optionNotExist'),
-          }));
+        subField.initialOptions = [
+          ...(subField.initialOptions || []),
+          ...(options
+            ?.filter((e) =>
+              formDetail.value[parentFieldId]?.some((item: Record<string, any>) =>
+                item[subField.businessKey!]?.includes(e.id)
+              )
+            )
+            .map((e) => ({
+              ...e,
+              name: e.name || t('common.optionNotExist'),
+            })) || []),
+        ];
       }
     }
   }
