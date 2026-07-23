@@ -183,8 +183,6 @@ export function getDisplayFieldText(field: FormCreateField, fieldValue: any) {
 }
 
 export function parseModuleFieldValue(item: FormCreateField, fieldValue: string | string[], options?: any[]) {
-  console.log(item.name, fieldValue);
-
   if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
     return '-';
   }
