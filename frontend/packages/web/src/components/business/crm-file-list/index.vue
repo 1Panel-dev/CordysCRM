@@ -31,7 +31,7 @@
           <n-button :disabled="props.readonly" type="error" text>{{ t('common.delete') }}</n-button>
         </CrmPopConfirm>
         <template v-if="/(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.type)">
-          <n-divider vertical />
+          <n-divider v-if="!props.readonly" vertical />
           <n-button type="default" text @click="handlePreview(file)">{{ t('common.preview') }}</n-button>
         </template>
         <n-divider v-if="/(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.type) || !props.readonly" vertical />
@@ -112,5 +112,6 @@
     border: 1px solid var(--text-n8);
     border-radius: var(--border-radius-small);
     background-color: var(--text-n10);
+    gap: 8px;
   }
 </style>

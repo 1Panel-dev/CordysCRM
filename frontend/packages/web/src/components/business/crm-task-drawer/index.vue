@@ -99,6 +99,7 @@
     v-model:visible="contractDetailVisible"
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
+    @show-customer-drawer="handleOpenCustomerDetail"
     @refresh="handleApproveSuccess"
   />
   <QuotationDetailDrawer
@@ -118,6 +119,8 @@
     :source-id="activeResourceId"
     :approvalTaskId="approvalTaskId"
     @refresh="handleApproveSuccess"
+    @open-contract-drawer="handleOpenContractDetail"
+    @open-customer-drawer="handleOpenCustomerDetail"
   />
 </template>
 
@@ -140,12 +143,16 @@
   import OrderDetailDrawer from '@/views/order/order/components/detail.vue';
 
   import { getApprovalConfigDetail, getTodoStatistic } from '@/api/modules';
+  import useOpenNewPage from '@/hooks/useOpenNewPage.js';
+
+  import { ContractRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum.js';
 
   const props = defineProps<{
     type?: ApprovalListTypeEnum;
   }>();
 
   const { t } = useI18n();
+  const { openNewPage } = useOpenNewPage();
 
   const show = defineModel<boolean>('show', {
     required: true,
@@ -380,6 +387,25 @@
     taskListRef.value?.loadTaskList(true);
     allSelect.value = false;
     selectedKeys.value = [];
+  }
+
+  function handleOpenCustomerDetail(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    if (params.inCustomerPool) {
+      openNewPage(CustomerRouteEnum.CUSTOMER_OPEN_SEA, {
+        id: params.customerId,
+        poolId: params.poolId,
+      });
+    } else {
+      openNewPage(CustomerRouteEnum.CUSTOMER_INDEX, {
+        id: params.customerId,
+      });
+    }
+  }
+
+  function handleOpenContractDetail(params: { id: string }) {
+    openNewPage(ContractRouteEnum.CONTRACT_INDEX, {
+      id: params.id,
+    });
   }
 </script>
 

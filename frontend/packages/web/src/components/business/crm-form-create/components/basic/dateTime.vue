@@ -84,7 +84,7 @@
 
       if (val === 'current') {
         value.value = new Date().getTime();
-      } else if (val === 'custom' && props.fieldConfig.defaultValue === null) {
+      } else if (val === 'custom' && props.fieldConfig.defaultValue === null && !value.value) {
         value.value = null;
       }
       emit('change', value.value);
