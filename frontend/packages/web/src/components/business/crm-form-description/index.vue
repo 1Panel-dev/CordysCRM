@@ -86,7 +86,7 @@
           >
             {{ item.label }}
           </div>
-          <n-tooltip v-if="item.value !== '-'" :delay="300">
+          <n-tooltip v-if="item.value && item.value !== '-'" :delay="300">
             <template #trigger>
               <div class="one-line-text cursor-pointer text-[var(--primary-8)]" @click="openLink(item)">
                 {{ item.value }}
@@ -105,7 +105,7 @@
             {{ item.label }}
           </div>
           <CrmTableButton
-            v-if="canOpenDataSource(item) && item.value !== '-'"
+            v-if="canOpenDataSource(item) && item.value !== '-' && item.value"
             class="crm-form-description-link-button flex-1 overflow-hidden"
             :class="`justify-${props.valueAlign ?? 'end'}`"
             @click="openDataSource(item)"
@@ -140,7 +140,10 @@
           <div class="mr-[16px] text-[var(--text-n2)]" :style="{ width: props.labelWidth || '120px' }">
             {{ item.label }}
           </div>
-          <div v-if="canOpenDataSource(item)" class="flex flex-1 flex-col items-start gap-[12px] overflow-hidden">
+          <div
+            v-if="canOpenDataSource(item) && item.value && item.value.length"
+            class="flex flex-1 flex-col items-start gap-[12px] overflow-hidden"
+          >
             <CrmTableButton
               v-for="v in item.value"
               :key="v.id || v"
@@ -159,6 +162,7 @@
             :label-key="item.tagProps?.labelKey"
             :class="`justify-${props.valueAlign ?? 'end'}`"
           />
+          <div v-else>-</div>
         </div>
       </template>
 
@@ -188,7 +192,7 @@
             needInitDetail
             @change="editableByPermission.includes(item.fieldInfo.id) ? undefined : handleFormChange()"
           />
-          <div v-else>{{ item.value }}</div>
+          <div v-else>{{ item.value || '-' }}</div>
         </div>
       </template>
       <template #[FieldTypeEnum.SELECT]="{ item }">
@@ -236,7 +240,7 @@
             :feedback="feedbackMap[item.fieldInfo.id]"
             needInitDetail
           />
-          <div v-else>{{ item.value }}</div>
+          <div v-else>{{ isNotEmpty(item.value) ? item.value : '-' }}</div>
         </div>
       </template>
       <template #[FieldTypeEnum.ATTACHMENT]="{ item }">
@@ -304,6 +308,7 @@
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ApprovalFieldPermissionModeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { isNotEmpty } from '@lib/shared/method/is.js';
   import { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig } from '@lib/shared/models/system/module';
   import type { ApprovalFieldPermission } from '@lib/shared/models/system/process';

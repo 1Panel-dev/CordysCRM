@@ -402,6 +402,8 @@
     (val) => {
       if (val) {
         initApprovalPermission();
+      } else {
+        detailInfo.value = {};
       }
     }
   );

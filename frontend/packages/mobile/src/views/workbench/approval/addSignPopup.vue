@@ -64,7 +64,7 @@
           description: '',
           icon: '',
           rules: [],
-          limitSize: '50',
+          limitSize: '50MB',
         }"
       />
     </van-form>
