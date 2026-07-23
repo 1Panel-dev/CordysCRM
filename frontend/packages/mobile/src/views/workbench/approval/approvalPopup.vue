@@ -50,6 +50,7 @@
           description: '',
           icon: '',
           rules: [],
+          limitSize: '50',
         }"
       />
     </van-form>

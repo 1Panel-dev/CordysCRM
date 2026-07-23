@@ -125,9 +125,14 @@
   import { getApprovalConfigDetail, getApprovalResourceDetail, revokeApproval, revokeResource } from '@/api/modules';
   import useUserStore from '@/store/modules/user';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
+  import { ApprovalFieldPermissionModeEnum, MultiApproverModeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { ApprovalDetail, ApprovalNode, ApprovalProcessDetail } from '@lib/shared/models/system/process';
+  import type {
+    ApprovalDetail,
+    ApprovalFieldPermission,
+    ApprovalNode,
+    ApprovalProcessDetail,
+  } from '@lib/shared/models/system/process';
   import CrmDescription, { type CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
   import { useRoute } from 'vue-router';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -153,25 +158,6 @@
       approvalTaskId: route.query.taskId,
     },
   });
-
-  const renderDescriptions = computed(
-    () =>
-      [
-        {
-          label: t('workbench.approvalStatus'),
-          value: approvalInfo.value?.approvalStatus,
-          valueSlotName: 'approvalStatus',
-        },
-        route.query.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT
-          ? {
-              label: t('workbench.quotationStatus'),
-              value: detail.value.invalid,
-              valueSlotName: 'quotationStatus',
-            }
-          : null,
-        ...descriptions.value,
-      ].filter(Boolean) as CrmDescriptionItem[]
-  );
 
   const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
@@ -217,12 +203,18 @@
     );
   });
   // 只有当前审批中的人才展示编辑权限，其他节点展示只读权限
-  // const filedPermission = computed(() => {
-  //   if (currentTaskNode.value && approvalInfo.value?.currentNodeFieldPermissions) {
-  //     return (JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]) || [];
-  //   }
-  //   return [];
-  // });
+  const filedPermission = computed(() => {
+    if (currentTaskNode.value && approvalInfo.value?.currentNodeFieldPermissions) {
+      return (JSON.parse(approvalInfo.value?.currentNodeFieldPermissions || '[]') as ApprovalFieldPermission[]) || [];
+    }
+    return [];
+  });
+  const hiddenFieldByPermission = computed(
+    () =>
+      filedPermission.value
+        ?.filter((e) => e.permissionType === ApprovalFieldPermissionModeEnum.HIDDEN)
+        .map((e) => e.fieldId) || []
+  );
 
   // 是否是审批人
   const isApprover = computed(() => {
@@ -328,6 +320,25 @@
       );
     }
   });
+
+  const renderDescriptions = computed(
+    () =>
+      [
+        {
+          label: t('workbench.approvalStatus'),
+          value: approvalInfo.value?.approvalStatus,
+          valueSlotName: 'approvalStatus',
+        },
+        route.query.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT
+          ? {
+              label: t('workbench.quotationStatus'),
+              value: detail.value.invalid,
+              valueSlotName: 'quotationStatus',
+            }
+          : null,
+        ...descriptions.value.filter((e) => e.fieldInfo && !hiddenFieldByPermission.value?.includes(e.fieldInfo.id)),
+      ].filter(Boolean) as CrmDescriptionItem[]
+  );
 
   const noApproval = ref(false);
   async function initApprovalDetail() {

@@ -8,15 +8,17 @@
             v-else-if="
               item.fieldInfo && [FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.fieldInfo.type)
             "
-            class="flex flex-wrap"
+            class="flex w-full flex-wrap"
           >
             <div class="crm-description-label mb-[16px]">{{ item.label }}</div>
             <CrmSubTable
+              v-if="item.fieldInfo?.subFields?.length"
               :data="item.value as Record<string,any>[]"
               :sub-fields="item.fieldInfo?.subFields || []"
               :option-map="item.optionMap"
               :sum-columns="item.fieldInfo?.sumColumns"
             />
+            <div v-else>-</div>
           </div>
           <template v-else>
             <div class="crm-description-label">{{ item.label }}</div>
@@ -136,8 +138,7 @@
       color: var(--text-n1);
     }
     .crm-description-label {
-      @apply break-words;
-
+      word-break: break-all;
       width: 20%;
       font-size: 14px;
       color: var(--text-n2);
