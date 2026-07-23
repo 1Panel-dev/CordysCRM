@@ -1,5 +1,6 @@
 import createAxios from '@lib/shared/api/http';
 import useAgentApi from '@lib/shared/api/modules/agent';
+import useAiApi from '@lib/shared/api/modules/ai';
 import useClueApi from '@lib/shared/api/modules/clue';
 import useContractApi from '@lib/shared/api/modules/contract';
 import useCustomerApi from '@lib/shared/api/modules/customer';
@@ -37,6 +38,7 @@ const clueApi = useClueApi(CDR);
 const roleApi = useRoleApi(CDR);
 const homeApi = useHomeApi(CDR);
 const loginApi = useLoginApi(CDR);
+const aiApi = useAiApi(CDR);
 const agentApi = useAgentApi(CDR);
 const moduleApi = useModuleApi(CDR);
 const followApi = useFollowApi(CDR);
@@ -762,6 +764,8 @@ export const {
 } = roleApi;
 
 export const { login, signout, isLogin, getKey, getThirdCallback, getThirdOauthCallback } = loginApi;
+
+export const { streamAgentChat, cancelAgentChat } = aiApi;
 
 export const { getSystemVersion, changeLocaleBackEnd } = sysApi;
 
