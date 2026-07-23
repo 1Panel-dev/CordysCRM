@@ -167,7 +167,7 @@
     ApprovalTaskExecuteTimeEnum,
     ProcessStatusEnum,
   } from '@lib/shared/enums/process';
-  import { useRoute, useRouter } from 'vue-router';
+  import { useRouter } from 'vue-router';
   import dayjs from 'dayjs';
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum.js';
@@ -175,7 +175,6 @@
   import { hasAnyPermission } from '@/utils/permission.js';
 
   const { t } = useI18n();
-  const route = useRoute();
   const router = useRouter();
 
   const activeName = ref();
@@ -324,6 +323,7 @@
 
   function handleItemClick(item: ApprovalTodoItem) {
     if (activeName.value !== ApprovalListTypeEnum.PENDING || !approvalConfig.value?.allowBatchProcess) {
+      goDetail(item);
       return;
     }
     const index = selectedKeys.value.indexOf(item.approvalTaskId);

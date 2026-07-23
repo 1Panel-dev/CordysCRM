@@ -16,7 +16,10 @@
             :class="selectedKeys.includes(item.approvalTaskId) ? '!border-[var(--primary-8)]' : ''"
             @click.stop="
               () => {
-                if (props.activeTaskType.includes('pending') || getResourcePermission(item)) {
+                if (
+                  !item.resourceNotFound &&
+                  (props.activeTaskType.includes('pending') || getResourcePermission(item))
+                ) {
                   emit('openDetail', item.resourceId, item.resourceType, item.approvalTaskId);
                 }
               }
@@ -41,7 +44,7 @@
                   <CrmApprovalStatus :status="item.dataResult" isTag scene="approvalRecord" />
                 </div>
                 <CrmTableButton
-                  v-if="props.activeTaskType.includes('pending')"
+                  v-if="props.activeTaskType.includes('pending') && !item.resourceNotFound"
                   type="primary"
                   text
                   size="small"
@@ -52,7 +55,7 @@
                   <template #trigger> {{ item.resourceName }} </template>
                 </CrmTableButton>
                 <CrmTableButton
-                  v-else-if="getResourcePermission(item)"
+                  v-else-if="getResourcePermission(item) && !item.resourceNotFound"
                   type="primary"
                   text
                   size="small"
