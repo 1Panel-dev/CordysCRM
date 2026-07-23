@@ -19,7 +19,15 @@
         <tr v-for="(row, rowIndex) in data">
           <td>{{ rowIndex + 1 }}</td>
           <td v-for="col in realColumns.filter((e) => e.key !== '_table_order')">
-            {{ col.fieldConfig ? initFieldValueText(col.fieldConfig, col.key, row[col.key]) : '-' }}
+            <div v-if="col.fieldConfig?.type === FieldTypeEnum.PICTURE">
+              <img
+                v-for="img in row[col.key] || []"
+                width="48px"
+                height="48px"
+                :src="`${PreviewPictureUrl}/${img}?userId=${userStore.userInfo.id}`"
+              />
+            </div>
+            <div v-else> {{ col.fieldConfig ? initFieldValueText(col.fieldConfig, col.key, row[col.key]) : '-' }}</div>
           </td>
         </tr>
         <tr v-if="props.sumColumns?.length">
@@ -39,6 +47,8 @@
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { formatNumberValueToString, normalizeNumber } from '@lib/shared/method/formCreate';
   import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+  import useUserStore from '@/store/modules/user';
 
   const props = defineProps<{
     subFields: FormCreateField[];
@@ -48,6 +58,7 @@
   }>();
 
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   interface TableColumn {
     title: string;
