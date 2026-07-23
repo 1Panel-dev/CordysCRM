@@ -1024,35 +1024,22 @@ public class ApprovalResourceService {
 
     /**
      * 校验用户是否有权限查看审批详情
-     *
-     * @param resourceId 资源ID
-     * @param userId     当前用户ID
-     * @param orgId      组织ID
-     * @return 是否有权限
      */
     private boolean hasViewPermission(String resourceId, String userId, String orgId) {
         if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(userId)) {
             return false;
         }
 
-        // 查询资源最近一次审批实例
         ApprovalInstance latestInstance = extApprovalTaskMapper.selectLatestInstanceByResourceId(resourceId);
-        if (latestInstance == null) {
-            // 无审批记录，检查是否有资源权限（新建中的审批）
-            return hasResourcePermission(resourceId, userId, orgId);
+        
+        // 有审批实例时：提交人或审批人/抄送人直接通过
+        if (latestInstance != null) {
+            if (userId.equals(latestInstance.getSubmitterId()) || hasApprovalTaskPermission(latestInstance, userId)) {
+                return true;
+            }
         }
 
-        // Check 1: 当前用户是审批提交人
-        if (userId.equals(latestInstance.getSubmitterId())) {
-            return true;
-        }
-
-        // Check 2: 当前用户拥有审批中的任务或拥护抄送任务
-        if (hasApprovalTaskPermission(latestInstance, userId)) {
-            return true;
-        }
-
-        // Check 3: 当前用户拥有该资源的查看权限
+        // 最终都需校验资源权限
         return hasResourcePermission(resourceId, userId, orgId);
     }
 
@@ -1088,25 +1075,33 @@ public class ApprovalResourceService {
 
     /**
      * 校验用户是否拥有该资源模块的查看权限
+     * 当没有审批实例时，通过遍历所有 ResourceAccessContextProvider 来判断资源归属
      */
     private boolean hasResourcePermission(String resourceId, String userId, String orgId) {
         String formType = getFormTypeByResourceId(resourceId);
+        
+        // 没有审批实例时，遍历 Provider 找到资源归属并获取 formType
         if (StringUtils.isBlank(formType)) {
-            return false;
+            Map<String, ResourceAccessContextProvider> providers = CommonBeanFactory.getBeansOfType(ResourceAccessContextProvider.class);
+            if (MapUtils.isNotEmpty(providers)) {
+                for (ResourceAccessContextProvider provider : providers.values()) {
+                    ResourceAccessContext context = provider.getAccessContext(resourceId, orgId);
+                    if (context != null) {
+                        formType = provider.getFormType();
+                        break;
+                    }
+                }
+            }
+            if (StringUtils.isBlank(formType)) {
+                return false;
+            }
         }
 
-        // 根据 formType 获取对应的权限常量
         String readPermission = getReadPermissionByFormType(formType);
-        if (StringUtils.isBlank(readPermission)) {
+        if (StringUtils.isBlank(readPermission) || !PermissionUtils.hasPermission(readPermission)) {
             return false;
         }
 
-        // Check 1: 角色权限位
-        if (!PermissionUtils.hasPermission(readPermission)) {
-            return false;
-        }
-
-        // Check 2: 数据权限（资源负责人）
         ResourceAccessContextProvider provider = getResourceAccessContextProvider(formType);
         if (provider != null) {
             ResourceAccessContext context = provider.getAccessContext(resourceId, orgId);
