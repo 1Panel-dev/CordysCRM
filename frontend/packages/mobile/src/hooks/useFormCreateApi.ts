@@ -392,6 +392,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           descriptions.value.push({
             label: item.name,
             value: parseFormDetailValue(item, form),
+            fieldInfo: item,
           });
         } else if (item.type === FieldTypeEnum.DIVIDER) {
           descriptions.value.push({
@@ -405,6 +406,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             label: item.name,
             value: parseFormDetailValue(item, form),
             isImage: true,
+            fieldInfo: item,
           });
         } else if (item.type === FieldTypeEnum.LINK) {
           descriptions.value.push({
@@ -418,12 +420,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             label: item.name,
             value: form.attachmentMap?.[item.id] || [],
             isAttachment: true,
+            fieldInfo: item,
           });
         } else {
           descriptions.value.push({
             label: item.name,
             isTag: [FieldTypeEnum.INPUT_MULTIPLE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type),
             value: parseFormDetailValue(item, form),
+            fieldInfo: item,
           });
         }
       });

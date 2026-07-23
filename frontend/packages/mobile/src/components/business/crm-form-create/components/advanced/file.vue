@@ -75,7 +75,7 @@
     const maxSize = parseInt(props.fieldConfig.limitSize || '', 10) || 20;
     const _maxSize = props.fieldConfig.limitSize?.includes('KB') ? maxSize * 1024 : maxSize * 1024 * 1024;
     if (Array.isArray(file) ? file.some((f) => f.size > _maxSize) : file.size > _maxSize) {
-      showToast(t('formCreate.advanced.overSize', { size: props.fieldConfig.limitSize || '20MB' }));
+      showToast(t('formCreate.advanced.overSize', { size: props.fieldConfig.limitSize || '20' }));
       return false;
     }
     if (props.fieldConfig.onlyOne) {
