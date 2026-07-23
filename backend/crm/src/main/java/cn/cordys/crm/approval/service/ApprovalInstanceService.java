@@ -255,7 +255,7 @@ public class ApprovalInstanceService {
 			if (approverNode != null) {
 				node.setMultiApproverMode(MultiApproverModeEnum.valueOf(approverNode.getMultiApproverMode()));
 				if (CollectionUtils.isNotEmpty(node.getTaskNodes()) && node.getTaskNodes().size() > 1 && StringUtils.isBlank(node.getApprovalStatus())) {
-					ApprovalStatus approvalStatusOfMultiNode = getNodeApprovalStatusOfMultiTask(node.getTaskNodes());
+					ApprovalStatus approvalStatusOfMultiNode = getNodeApprovalStatusOfMultiTask(node.getTaskNodes(), node.getMultiApproverMode());
 					node.setApprovalStatus(approvalStatusOfMultiNode == null ? null : approvalStatusOfMultiNode.name());
 				} else if (node.getTaskNodes().size() == 1 && StringUtils.isBlank(node.getApprovalStatus())){
 					node.setApprovalStatus(node.getTaskNodes().getFirst().getApprovalStatus());
@@ -494,36 +494,20 @@ public class ApprovalInstanceService {
 	 * @param taskNodes 任务节点
 	 * @return 审批状态
 	 */
-	private ApprovalStatus getNodeApprovalStatusOfMultiTask(List<ApprovalTaskNode> taskNodes) {
-		boolean anyReject = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.UNAPPROVED);
-		boolean anyAutoReject = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.AUTO_UNAPPROVED);
-		boolean anyApproving = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.APPROVING);
-		boolean anyRevoked = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.REVOKED);
-		boolean anyApproved = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.APPROVED);
-		boolean anyAutoApproved = taskNodes.stream().anyMatch(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()) == ApprovalStatus.AUTO_APPROVED);
+    private ApprovalStatus getNodeApprovalStatusOfMultiTask(List<ApprovalTaskNode> taskNodes, MultiApproverModeEnum approverMode) {
+        // 分组设置优先级
+        Map<ApprovalStatus, Long> counts = taskNodes.stream()
+                .collect(Collectors.groupingBy(tn -> ApprovalStatus.valueOf(tn.getApprovalStatus()), Collectors.counting()));
+        List<ApprovalStatus> priority = approverMode == MultiApproverModeEnum.ANY
+                ? List.of(ApprovalStatus.UNAPPROVED, ApprovalStatus.AUTO_UNAPPROVED, ApprovalStatus.APPROVED,
+                ApprovalStatus.AUTO_APPROVED, ApprovalStatus.APPROVING, ApprovalStatus.REVOKED)
+                : List.of(ApprovalStatus.UNAPPROVED, ApprovalStatus.AUTO_UNAPPROVED, ApprovalStatus.APPROVING,
+                ApprovalStatus.REVOKED, ApprovalStatus.APPROVED, ApprovalStatus.AUTO_APPROVED);
 
-		// 所有多人审批模式统一: 任一驳回即驳回 (状态优先级: 驳回 > 自动驳回 -> 审批中 -> 已通过 -> 自动通过)
-		if (anyReject) {
-			return ApprovalStatus.UNAPPROVED;
-		}
-		if (anyAutoReject) {
-			return ApprovalStatus.AUTO_UNAPPROVED;
-		}
-		if (anyApproving) {
-			return ApprovalStatus.APPROVING;
-		}
-		if (anyRevoked) {
-			return ApprovalStatus.NONE;
-		}
-		if (anyApproved) {
-			return ApprovalStatus.APPROVED;
-		}
-		if (anyAutoApproved) {
-			return ApprovalStatus.AUTO_APPROVED;
-		}
-
-		return null;
-	}
+        return priority.stream()
+                .filter(s -> counts.getOrDefault(s, 0L) > 0)
+                .findFirst().filter(s -> s != ApprovalStatus.REVOKED).orElse(null);
+    }
 
 	/**
 	 * 获取所有审批节点集合
