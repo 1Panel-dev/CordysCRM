@@ -29,7 +29,7 @@ public class JsonDifferenceUtils {
             String fieldName = fieldNames1.next();
             JsonNode oldValue = oldNode.get(fieldName);
             JsonNode newValue = newNode.get(fieldName);
-            if ((newValue instanceof NullNode || newValue == null) && (oldValue instanceof NullNode || newValue == null)) {
+            if ((newValue instanceof NullNode || newValue == null) && (oldValue instanceof NullNode || oldValue == null)) {
                 // 都是 null 的情况
                 continue;
             }
