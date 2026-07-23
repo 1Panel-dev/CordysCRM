@@ -75,17 +75,22 @@
                       scene="approvalRecord"
                       class="font-normal"
                     />
-                    <n-popover v-if="node.backNode" trigger="hover" placement="left-start">
+                    <n-popover v-if="node.backNode" trigger="click" placement="left-start">
                       <template #trigger>
-                        <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
+                        <CrmIcon
+                          type="iconicon_info_circle_filled"
+                          color="var(--warning-yellow)"
+                          :size="16"
+                          @click.stop
+                        />
                       </template>
                       <div class="flex max-w-[400px] flex-col items-center gap-[8px]">
                         <div class="mr-auto flex items-center gap-[8px]">
                           <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                           <div>{{ t('crm.approval.fallbackReason') }}</div>
                         </div>
-                        <div class="text-[var(--text-n4)]">{{ node.backReason }}</div>
-                        <n-scrollbar :content-style="{ maxHeight: '400px' }" class="mt-[8px]">
+                        <div class="w-full text-[var(--text-n4)]">{{ node.backReason }}</div>
+                        <n-scrollbar :content-style="{ maxHeight: '400px' }">
                           <CrmFileList
                             v-if="node.backAttachments?.length > 0"
                             :files="node.backAttachments"
@@ -132,9 +137,9 @@
                           </template>
                           {{ task.approver }}
                         </n-tooltip>
-                        <n-popover v-if="task.sign" trigger="hover" placement="left-start">
+                        <n-popover v-if="task.sign" trigger="click" placement="left-start">
                           <template #trigger>
-                            <CrmTag type="info" theme="outline" tooltipDisabled>
+                            <CrmTag type="info" theme="outline" tooltipDisabled @click.stop>
                               {{ t('common.COUNTERSIGNATURE') }}
                             </CrmTag>
                           </template>
@@ -143,8 +148,8 @@
                               <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                               <div>{{ t('crm.approval.addSign') }}</div>
                             </div>
-                            <div class="text-[var(--text-n4)]">{{ task.signComment }}</div>
-                            <n-scrollbar :content-style="{ maxHeight: '400px' }" class="mt-[8px]">
+                            <div class="w-full text-[var(--text-n4)]">{{ task.signComment }}</div>
+                            <n-scrollbar :content-style="{ maxHeight: '400px' }">
                               <CrmFileList
                                 v-if="task.signAttachments?.length > 0"
                                 :files="task.signAttachments"

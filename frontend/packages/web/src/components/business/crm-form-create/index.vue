@@ -525,7 +525,7 @@
                     line[currentKey] = subData[`${childLinkField.id}_original`];
                     break;
                   default:
-                    line[currentKey] = subData[key];
+                    line[currentKey] = subData[key] === '-' ? '' : subData[key];
                     break;
                 }
               }

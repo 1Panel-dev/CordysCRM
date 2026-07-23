@@ -216,7 +216,7 @@
             :label-key="item.tagProps?.labelKey"
             :class="`justify-${props.valueAlign ?? 'end'}`"
           />
-          <div v-else>-</div>
+          <div v-else>{{ item.value || '-' }}</div>
         </div>
       </template>
       <template #[FieldTypeEnum.INPUT_NUMBER]="{ item }">
