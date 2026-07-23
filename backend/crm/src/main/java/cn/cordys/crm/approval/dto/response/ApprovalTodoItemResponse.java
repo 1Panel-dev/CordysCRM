@@ -47,4 +47,7 @@ public class ApprovalTodoItemResponse {
 
     @Schema(description = "执行时机：CREATE/UPDATE/DELETE")
     private String executeTime;
+
+    @Schema(description = "资源未找到")
+    private boolean resourceNotFound;
 }
