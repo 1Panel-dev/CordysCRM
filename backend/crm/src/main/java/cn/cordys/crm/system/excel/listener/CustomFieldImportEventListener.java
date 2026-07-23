@@ -118,7 +118,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         }
         // build entity by row-data
         buildEntityFromRow(rowIndex, data);
-        if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
+        if (dataList.size() >= batchSize) {
             batchProcessData();
         }
     }
