@@ -19,13 +19,21 @@
     "lint:styles": "stylelint 'src/**/*.{vue,html,css,scss,less}' --fix"
   },
   "dependencies": {
+    "@ai-sdk/vue": "^2.0.0",
     "@antv/x6": "^3.1.7",
     "@antv/x6-vue-shape": "^3.0.2",
     "@types/color": "^4.2.1",
     "@vicons/ionicons5": "^0.13.0",
+    "@vscode/markdown-it-katex": "^1.1.2",
     "@wecom/jssdk": "^2.4.0",
+    "ai": "5.0.218",
+    "dompurify": "^3.4.11",
     "echarts": "^6.1.0",
+    "highlight.js": "^11.11.1",
     "jsencrypt": "^3.5.4",
+    "katex": "^0.18.1",
+    "markdown-it": "^14.3.0",
+    "mermaid": "^11.16.0",
     "naive-ui": "^2.44.1",
     "nprogress": "^0.2.0",
     "seemly": "^0.3.10",
@@ -35,6 +43,7 @@
     "vue3-colorpicker": "^2.3.0"
   },
   "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
     "@types/sortablejs": "^1.15.9",
     "@vitejs/plugin-legacy": "^6.0.0",
     "@vitejs/plugin-vue": "^6.0.7",

@@ -79,4 +79,7 @@ export default {
   'workbench.dataOverview.approvedByMe': 'Approved by Me',
   'workbench.dataOverview.initiatedByMe': 'Initiated by Me',
   'workbench.dataOverview.copiedToMe': 'Copied to Me',
+  'workbench.smart.composerPlaceholder':
+    'Enter an instruction or question, for example "Help me follow up on today’s high-intent leads"',
+  'workbench.smart.noModelTip': 'Please add and enable a model in enterprise settings first',
 };

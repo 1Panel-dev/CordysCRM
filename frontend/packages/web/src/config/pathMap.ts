@@ -24,7 +24,19 @@ export const pathMap: PathMapItem[] = [
   {
     key: 'WORKBENCH',
     locale: 'menu.workbench',
-    route: AppRouteEnum.WORKBENCH_INDEX,
+    route: AppRouteEnum.WORKBENCH_SMART,
+    children: [
+      {
+        key: 'WORKBENCH_SMART',
+        locale: 'menu.workbench.smart',
+        route: AppRouteEnum.WORKBENCH_SMART,
+      },
+      {
+        key: 'WORKBENCH_BOARD',
+        locale: 'menu.workbench.board',
+        route: AppRouteEnum.WORKBENCH_BOARD,
+      },
+    ],
   },
   {
     key: 'PRODUCT_MANAGEMENT',

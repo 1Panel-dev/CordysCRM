@@ -60,7 +60,8 @@ export enum PersonalRouteEnum {
 
 export enum WorkbenchRouteEnum {
   WORKBENCH = 'workbench',
-  WORKBENCH_INDEX = 'workbenchIndex',
+  WORKBENCH_SMART = 'workbenchSmart',
+  WORKBENCH_BOARD = 'workbenchBoard',
 }
 
 export enum AgentRouteEnum {

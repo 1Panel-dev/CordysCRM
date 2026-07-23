@@ -6,7 +6,7 @@ import type { AppRouteRecordRaw } from '../types';
 const workbench: AppRouteRecordRaw = {
   path: '/workbench',
   name: WorkbenchRouteEnum.WORKBENCH,
-  redirect: '/workbench/index',
+  redirect: '/workbench/smart',
   component: DEFAULT_LAYOUT,
   meta: {
     hideChildrenInMenu: true,
@@ -17,12 +17,23 @@ const workbench: AppRouteRecordRaw = {
   },
   children: [
     {
+      path: 'smart',
+      name: WorkbenchRouteEnum.WORKBENCH_SMART,
+      component: () => import('@/views/workbench/smart/index.vue'),
+      meta: {
+        locale: 'menu.workbench.smart',
+        permissions: [],
+        isTopMenu: true,
+      },
+    },
+    {
       path: 'index',
-      name: WorkbenchRouteEnum.WORKBENCH_INDEX,
+      name: WorkbenchRouteEnum.WORKBENCH_BOARD,
       component: () => import('@/views/workbench/index.vue'),
       meta: {
-        locale: 'menu.workbench',
+        locale: 'menu.workbench.board',
         permissions: [],
+        isTopMenu: true,
       },
     },
   ],

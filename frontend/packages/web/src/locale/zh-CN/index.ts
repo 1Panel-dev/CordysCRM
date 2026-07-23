@@ -19,6 +19,8 @@ Object.keys(_Vmodules).forEach((key) => {
 export default {
   message: {
     'menu.workbench': '首页',
+    'menu.workbench.smart': '智慧工作台',
+    'menu.workbench.board': '我的看板',
     'menu.settings': '系统',
     'menu.collapsedSettings': '系统',
     'menu.settings.org': '组织架构',
