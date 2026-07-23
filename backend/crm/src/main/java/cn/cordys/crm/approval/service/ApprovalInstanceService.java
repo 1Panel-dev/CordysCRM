@@ -542,30 +542,35 @@ public class ApprovalInstanceService {
 	 * @param signTaskMap 加签任务集合
 	 * @return 加签任务集合
 	 */
-	private List<ApprovalTask> flatSignTask(ApprovalTask currentTask, Map<String, List<ApprovalAddSignTask>> rootAddSignMap, Map<String, ApprovalTask> signTaskMap) {
-		if (!rootAddSignMap.containsKey(currentTask.getId())) {
-			// 不存在加签链
-			return List.of(currentTask);
-		}
-		List<ApprovalAddSignTask> signTasks = rootAddSignMap.get(currentTask.getId());
-		Optional<ApprovalAddSignTask> rootNext = signTasks.stream().filter(signTask -> Strings.CS.equals(signTask.getSignTaskId(), currentTask.getId())).findFirst();
-		if (rootNext.isEmpty()) {
-			// 不存在加签链
-			return List.of(currentTask);
-		}
-		signTasks.sort(Comparator.comparing(ApprovalAddSignTask::getSort));
-		List<ApprovalTask> signChain = new ArrayList<>();
-		if (ApprovalAddSignType.valueOf(rootNext.get().getType()) == ApprovalAddSignType.BEFORE) {
-			// 下一个节点在基础节点之前
-			signChain.addAll(signTasks.stream().map(signTask -> signTaskMap.get(signTask.getTaskId())).toList());
-			signChain.addLast(currentTask);
-		} else {
-			// 下一个节点在基础节点之后
-			signChain.addFirst(currentTask);
-			signChain.addAll(signTasks.stream().map(signTask -> signTaskMap.get(signTask.getTaskId())).toList());
-		}
-		return signChain;
-	}
+    private List<ApprovalTask> flatSignTask(ApprovalTask currentTask, Map<String, List<ApprovalAddSignTask>> rootAddSignMap, Map<String, ApprovalTask> signTaskMap) {
+        List<ApprovalAddSignTask> signTasks = rootAddSignMap.get(currentTask.getId());
+        if (signTasks == null || signTasks.isEmpty()) {
+            return List.of(currentTask);
+        }
+        signTasks.sort(Comparator.comparing(ApprovalAddSignTask::getSort));
+
+        // 是否存在根节点之前的加签
+        ApprovalAddSignTask lastBeforeOnRoot = signTasks.stream()
+                .filter(s -> s.getSignTaskId().equals(currentTask.getId()) && ApprovalAddSignType.valueOf(s.getType()) == ApprovalAddSignType.BEFORE)
+                .reduce((first, second) -> second)
+                .orElse(null);
+
+        List<ApprovalTask> result = new ArrayList<>();
+        if (lastBeforeOnRoot != null) {
+            // 需要在中间插入根节点
+            for (ApprovalAddSignTask sign : signTasks) {
+                result.add(signTaskMap.get(sign.getTaskId()));
+                if (sign == lastBeforeOnRoot) {
+                    result.add(currentTask);
+                }
+            }
+        } else {
+            // （都是根节点之后加签）根节点就是第一个节点
+            result.add(currentTask);
+            signTasks.forEach(s -> result.add(signTaskMap.get(s.getTaskId())));
+        }
+        return result;
+    }
 
 	/**
 	 * 获取最终的节点顺序 (同一节点可能执行多轮)

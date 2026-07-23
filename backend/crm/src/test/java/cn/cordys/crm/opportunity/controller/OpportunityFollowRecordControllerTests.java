@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
@@ -36,6 +38,8 @@ public class OpportunityFollowRecordControllerTests extends BaseTest {
 
     @Test
     @Order(1)
+    @Sql(scripts = {"/dml/init_opportunity_test.sql"}, config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     void testAdd() throws Exception {
         FollowUpRecordAddRequest request = new FollowUpRecordAddRequest();
         request.setCustomerId("123");
