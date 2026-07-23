@@ -489,6 +489,9 @@
     (val) => {
       if (val) {
         initStageConfig();
+        initApprovalPermission();
+      } else {
+        detailInfo.value = {};
       }
     }
   );
@@ -496,13 +499,4 @@
   function showBusinessTitleDetail(params: { id: string }) {
     emit('openBusinessTitleDrawer', params);
   }
-
-  watch(
-    () => visible.value,
-    (val) => {
-      if (val) {
-        initApprovalPermission();
-      }
-    }
-  );
 </script>

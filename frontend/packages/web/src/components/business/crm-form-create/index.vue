@@ -667,6 +667,10 @@
         // 去空格
         result[index][item.businessKey || item.id] = fieldValue?.replace(/[\s\uFEFF\xA0]+/g, '');
       }
+      if (item.type === FieldTypeEnum.DATE_TIME && typeof fieldValue === 'string') {
+        // 去空格
+        result[index][item.businessKey || item.id] = dayjs(fieldValue).valueOf();
+      }
     });
   }
 

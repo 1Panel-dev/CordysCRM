@@ -40,6 +40,9 @@
     closeInitLoad?: boolean; // 关闭首次加载
     notShowLoadingToast?: boolean;
   }>();
+  const emit = defineEmits<{
+    (e: 'refresh'): void;
+  }>();
 
   const { t } = useI18n();
 
@@ -134,6 +137,7 @@
     refreshing.value = true;
     await loadList(true);
     showSuccessToast(t('common.refreshSuccess'));
+    emit('refresh');
   }
 
   defineExpose({
