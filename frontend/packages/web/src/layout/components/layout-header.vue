@@ -377,7 +377,7 @@
 
   onBeforeMount(() => {
     appStore.getVersion();
-    if (route.name !== WorkbenchRouteEnum.WORKBENCH_INDEX) {
+    if (route.name !== WorkbenchRouteEnum.WORKBENCH_BOARD) {
       appStore.initMessage();
     }
     appStore.connectSystemMessageSSE(userStore.showSystemNotify);

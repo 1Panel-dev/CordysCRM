@@ -20,6 +20,8 @@ Object.keys(_Vmodules).forEach((key) => {
 export default {
   message: {
     'menu.workbench': 'Home',
+    'menu.workbench.smart': 'Smart Workspace',
+    'menu.workbench.board': 'My Dashboard',
     'menu.settings': 'Settings',
     'menu.collapsedSettings': 'System',
     'menu.settings.org': 'Organization',
