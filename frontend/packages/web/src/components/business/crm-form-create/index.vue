@@ -521,7 +521,9 @@
                       line[currentKey] = subData[key];
                     }
                     break;
-                  case currentChildField.type === FieldTypeEnum.INPUT_NUMBER:
+                  case [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.DATE_TIME, FieldTypeEnum.PHONE].includes(
+                    currentChildField.type
+                  ):
                     line[currentKey] = subData[`${childLinkField.id}_original`];
                     break;
                   default:
