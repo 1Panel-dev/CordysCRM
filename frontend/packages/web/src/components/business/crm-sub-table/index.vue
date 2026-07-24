@@ -237,6 +237,10 @@
         } else {
           newRow[key] = field.defaultValue;
         }
+        if (field.type === FieldTypeEnum.MEMBER_MULTIPLE && typeof newRow[key] === 'string') {
+          // 多选值为数组
+          newRow[key] = [newRow[key]];
+        }
       } else if ([FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(field.type)) {
         if (field.hasCurrentUserDept) {
           newRow[key] = field.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId;
@@ -249,6 +253,10 @@
           ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
         } else {
           newRow[key] = field.defaultValue;
+        }
+        if (field.type === FieldTypeEnum.DEPARTMENT_MULTIPLE && typeof newRow[key] === 'string') {
+          // 多选值为数组
+          newRow[key] = [newRow[key]];
         }
       } else if (
         [FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.PICTURE].includes(field.type)
