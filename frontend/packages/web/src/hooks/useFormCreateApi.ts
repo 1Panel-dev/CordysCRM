@@ -943,9 +943,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           ...(subField.initialOptions || []),
           ...(options
             ?.filter((e) =>
-              formDetail.value[parentFieldId]?.some((item: Record<string, any>) =>
-                item[subField.businessKey!]?.includes(e.id)
-              )
+              formDetail.value[parentFieldId]?.some((item: Record<string, any>) => item[subField.id]?.includes(e.id))
             )
             .map((e) => ({
               ...e,
