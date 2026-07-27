@@ -22,6 +22,12 @@
         <n-button v-permission="['CONTRACT:ADD']" type="primary" @click="handleNewClick">
           {{ t('contract.new') }}
         </n-button>
+        <CrmImportButton
+          v-if="hasAnyPermission(['CONTRACT:IMPORT'])"
+          :api-type="FormDesignKeyEnum.CONTRACT"
+          :title="t('module.contract')"
+          @import-success="() => searchData()"
+        />
         <n-button
           v-permission="['CONTRACT:EXPORT']"
           type="primary"
@@ -202,6 +208,7 @@
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import { OpenDetailType } from '@/components/business/crm-stage-board/types';
   import CrmStatusFlowModal from '@/components/business/crm-status-flow-modal/index.vue';

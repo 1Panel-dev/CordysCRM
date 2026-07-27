@@ -18,14 +18,22 @@
     @refresh="searchData"
   >
     <template #actionLeft>
-      <n-button
-        v-if="!props.readonly && !props.isCustomerTab"
-        v-permission="['ORDER:ADD']"
-        type="primary"
-        @click="handleNewClick"
-      >
-        {{ t('order.new') }}
-      </n-button>
+      <div class="flex items-center gap-[12px]">
+        <n-button
+          v-if="!props.readonly && !props.isCustomerTab"
+          v-permission="['ORDER:ADD']"
+          type="primary"
+          @click="handleNewClick"
+        >
+          {{ t('order.new') }}
+        </n-button>
+        <CrmImportButton
+          v-if="hasAnyPermission(['ORDER:IMPORT']) && !props.readonly && !props.isContractTab && !props.isCustomerTab"
+          :api-type="FormDesignKeyEnum.ORDER"
+          :title="t('module.order')"
+          @import-success="() => searchData()"
+        />
+      </div>
     </template>
     <template #actionRight>
       <CrmAdvanceFilter
@@ -154,6 +162,7 @@
   import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import { OpenDetailType } from '@/components/business/crm-stage-board/types';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';

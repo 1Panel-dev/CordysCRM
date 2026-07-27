@@ -116,6 +116,9 @@ import {
   ContractInvoicedDetailSnapshotUrl,
   ContractStatisticUrl,
   SortContractUrl,
+  PreCheckContractImportUrl,
+  DownloadContractTemplateUrl,
+  ImportContractUrl,
   GetPaymentRecordStatisticUrl,
   UpdateContractStatusUrl,
   UpdateContractStatusRollbackUrl,
@@ -759,6 +762,24 @@ export default function useContractApi(CDR: CordysAxios) {
     return CDR.post({ url: DragContractInvoicedViewUrl, data });
   }
 
+  function preCheckImportContract(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckContractImportUrl }, params, 'file');
+  }
+
+  function downloadContractTemplate() {
+    return CDR.get(
+      {
+        url: DownloadContractTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importContract(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportContractUrl }, params, 'file');
+  }
+
   // 合同统计
   function getContractStatistic(data: TableQueryParams) {
     return CDR.post({ url: ContractStatisticUrl, data }, { ignoreCancelToken: true });
@@ -841,6 +862,9 @@ export default function useContractApi(CDR: CordysAxios) {
     batchUpdateContract,
     approvalContract,
     revokeContract,
+    preCheckImportContract,
+    downloadContractTemplate,
+    importContract,
     getContractStatistic,
     // 回款计划
     getPaymentPlanList,
