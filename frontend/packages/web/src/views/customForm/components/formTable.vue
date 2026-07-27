@@ -74,6 +74,7 @@
     v-model:visible="showOverviewDrawer"
     :source-id="activeSourceId"
     :customFormId="props.formKey"
+    :refreshId="refreshKey"
     @edit="handleEdit"
     @refresh="removeItemFromList(activeSourceId)"
   />
@@ -118,7 +119,6 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import { getExportColumns } from '@/utils/export';
-  import { hasAnyPermission } from '@/utils/permission';
 
   import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
@@ -150,6 +150,7 @@
   const activeSourceId = ref('');
   const initialSourceName = ref('');
   const needInitDetail = ref(false);
+  const refreshKey = ref(0);
 
   function handleNewClick() {
     needInitDetail.value = false;
@@ -375,6 +376,7 @@
   }
 
   function handleFormCreateSaved(res?: any) {
+    refreshKey.value += 1;
     if (needInitDetail.value) {
       searchData(undefined);
     } else {
