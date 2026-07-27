@@ -1,6 +1,7 @@
 package cn.cordys.crm.product.mapper;
 
 import cn.cordys.common.dto.BatchUpdateDbParam;
+import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import org.apache.ibatis.annotations.Param;
@@ -60,4 +61,6 @@ public interface ExtProductPriceMapper {
 	 * @return 价格信息列表
 	 */
 	List<ProductPriceResponse> selectByIds(@Param("ids") List<String> ids);
+
+    void updateProductPrice(@Param("productPrice") ProductPrice productPrice);
 }

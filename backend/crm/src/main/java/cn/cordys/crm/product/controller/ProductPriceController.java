@@ -19,6 +19,7 @@ import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import cn.cordys.crm.product.service.ProductPriceExportService;
 import cn.cordys.crm.product.service.ProductPriceService;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -47,8 +48,8 @@ public class ProductPriceController {
 
     @Resource
     private ProductPriceService priceService;
-	@Resource
-	private ProductPriceExportService priceExportService;
+    @Resource
+    private ProductPriceExportService priceExportService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
 
@@ -62,7 +63,7 @@ public class ProductPriceController {
     @RequiresPermissions(PermissionConstants.PRICE_READ)
     @Operation(summary = "价格列表")
     public PagerWithOption<List<ProductPriceResponse>> list(@Validated @RequestBody ProductPricePageRequest request) {
-		ConditionFilterUtils.parseCondition(request, FormKey.PRICE.getKey());
+        ConditionFilterUtils.parseCondition(request, FormKey.PRICE.getKey());
         return priceService.list(request, OrganizationContext.getOrganizationId());
     }
 
@@ -73,12 +74,12 @@ public class ProductPriceController {
         return priceService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-	@GetMapping("/copy/{id}")
-	@RequiresPermissions(PermissionConstants.PRICE_ADD)
-	@Operation(summary = "复制价格表")
-	public ProductPrice copy(@PathVariable String id) {
-		return priceService.copy(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/copy/{id}")
+    @RequiresPermissions(PermissionConstants.PRICE_ADD)
+    @Operation(summary = "复制价格表")
+    public ProductPrice copy(@PathVariable String id) {
+        return priceService.copy(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
@@ -101,12 +102,12 @@ public class ProductPriceController {
         priceService.delete(id);
     }
 
-	@PostMapping("/batch/update")
-	@RequiresPermissions(PermissionConstants.PRICE_UPDATE)
-	@Operation(summary = "批量更新价格表")
-	public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-		priceService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/batch/update")
+    @RequiresPermissions(PermissionConstants.PRICE_UPDATE)
+    @Operation(summary = "批量更新价格表")
+    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        priceService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
     @PostMapping("/edit/pos")
     @Operation(summary = "拖拽排序")
@@ -115,45 +116,45 @@ public class ProductPriceController {
         priceService.editPos(request);
     }
 
-	@GetMapping("/template/download")
-	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
-	@Operation(summary = "下载导入模板")
-	public void downloadImportTpl(HttpServletResponse response) {
-		priceService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
-	}
+    @GetMapping("/template/download")
+    @RequiresPermissions(PermissionConstants.PRICE_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        priceService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/import/pre-check")
-	@Operation(summary = "导入检查")
-	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
-	public ImportResponse preCheck(@RequestPart(value = "file") @NotNull MultipartFile file) {
-		return priceService.importPreCheck(file, OrganizationContext.getOrganizationId());
-	}
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "导入检查")
+    @RequiresPermissions(PermissionConstants.PRICE_IMPORT)
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") @NotNull MultipartFile file) {
+        return priceService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
+    }
 
-	@PostMapping("/import")
-	@Operation(summary = "导入")
-	@RequiresPermissions(PermissionConstants.PRICE_IMPORT)
-	public ImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
-		return priceService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-	}
+    @PostMapping("/import")
+    @Operation(summary = "导入")
+    @RequiresPermissions(PermissionConstants.PRICE_IMPORT)
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return priceService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
 
-	@PostMapping("/export")
-	@RequiresPermissions(PermissionConstants.PRICE_EXPORT)
-	@Operation(summary = "导出全部")
-	public String exportAll(@Validated @RequestBody ProductPriceExportRequest request) {
-		ConditionFilterUtils.parseCondition(request, FormKey.PRICE.getKey());
-		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
-				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
-				.locale(LocaleContextHolder.getLocale()).pageRequest(request).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
-		return priceExportService.exportAllWithMergeStrategy(exportParam);
-	}
+    @PostMapping("/export")
+    @RequiresPermissions(PermissionConstants.PRICE_EXPORT)
+    @Operation(summary = "导出全部")
+    public String exportAll(@Validated @RequestBody ProductPriceExportRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.PRICE.getKey());
+        ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
+                .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
+                .locale(LocaleContextHolder.getLocale()).pageRequest(request).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
+        return priceExportService.exportAllWithMergeStrategy(exportParam);
+    }
 
-	@PostMapping("/export-select")
-	@RequiresPermissions(PermissionConstants.PRICE_EXPORT)
-	@Operation(summary = "导出选中")
-	public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-		ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
-				.orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
-				.locale(LocaleContextHolder.getLocale()).selectIds(request.getIds()).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
-		return priceExportService.exportSelectWithMergeStrategy(exportParam);
-	}
+    @PostMapping("/export-select")
+    @RequiresPermissions(PermissionConstants.PRICE_EXPORT)
+    @Operation(summary = "导出选中")
+    public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        ExportDTO exportParam = ExportDTO.builder().formKey(FormKey.PRICE.getKey()).fileName(request.getFileName()).headList(request.getHeadList())
+                .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId()).exportType(ExportConstants.ExportType.PRODUCT_PRICE.name())
+                .locale(LocaleContextHolder.getLocale()).selectIds(request.getIds()).logModule(LogModule.PRODUCT_PRICE_MANAGEMENT).build();
+        return priceExportService.exportSelectWithMergeStrategy(exportParam);
+    }
 }
