@@ -296,4 +296,26 @@
             #{id}
         </foreach>
     </select>
+
+
+    <update id="updateProductPrice">
+        update product_price
+        <set>
+            <if test="productPrice.name != null and productPrice.name != ''">
+                name = #{productPrice.name},
+            </if>
+            <if test="productPrice.status != null and productPrice.status != ''">
+                status = #{productPrice.status},
+            </if>
+            <if test="productPrice.updateTime != null">
+                update_time = #{productPrice.updateTime},
+            </if>
+            <if test="productPrice.updateUser != null and productPrice.updateUser != ''">
+                update_user = #{productPrice.updateUser},
+            </if>
+        </set>
+        <where>
+            id = #{productPrice.id}
+        </where>
+    </update>
 </mapper>
