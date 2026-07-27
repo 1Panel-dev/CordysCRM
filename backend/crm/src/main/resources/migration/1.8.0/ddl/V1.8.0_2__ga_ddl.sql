@@ -32,6 +32,7 @@ CREATE TABLE agent_task
 (
     `id`                  VARCHAR(32)  NOT NULL COMMENT 'ID',
     `name`                VARCHAR(255) NOT NULL COMMENT '任务名称',
+    `trigger_type`        VARCHAR(32) NOT NULL   COMMENT '触发类型',
     `execution_condition` TEXT(255) COMMENT '执行条件',
     `execution_action`    TEXT(255) COMMENT '执行动作',
     `confirmation_level`  VARCHAR(20)  NOT NULL COMMENT '确认级别',
