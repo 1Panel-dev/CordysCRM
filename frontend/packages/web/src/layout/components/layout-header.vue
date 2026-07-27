@@ -357,10 +357,6 @@
         window.open(appStore.pageConfig.helpDoc, '_blank');
         break;
       case 'apiDoc':
-        if (!licenseStore.hasLicense()) {
-          openModal(licenseStore.getNoLicenseModalConfig());
-          return;
-        }
         const apiDocUrl = `${window.location.origin}/swagger-ui/index.html`;
         window.open(apiDocUrl, '_blank');
         break;
