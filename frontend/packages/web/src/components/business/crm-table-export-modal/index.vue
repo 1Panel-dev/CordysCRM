@@ -174,6 +174,8 @@
     exportInvoicedSelected,
     exportOpportunityAll,
     exportOpportunitySelected,
+    exportOrderAll,
+    exportOrderSelected,
     exportPaymentPlanAll,
     exportPaymentPlanSelected,
     exportPaymentRecordAll,
@@ -202,6 +204,7 @@
       | 'price'
       | 'businessTitle'
       | 'invoice'
+      | 'order'
       | 'customForm';
     exportColumns: ExportTableColumnItem[];
     isExportAll?: boolean;
@@ -235,6 +238,7 @@
     price: t('module.productManagementPrice'),
     businessTitle: t('module.businessTitle'),
     invoice: t('module.invoice'),
+    order: t('order.all'),
   };
 
   const loading = ref<boolean>(false);
@@ -249,7 +253,6 @@
     }
     return Promise.resolve();
   }
-  const excludedUniqueIdTypes = ['price', 'contract', 'order'];
 
   const uniqueIdColumn: ExportTableColumnItem = {
     key: 'id',
@@ -259,9 +262,6 @@
 
   const systemList = computed(() => {
     const list = props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.SYSTEM);
-    if (excludedUniqueIdTypes.includes(props.type)) {
-      return list;
-    }
     return [...list, uniqueIdColumn];
   });
   const customList = computed(() => props.exportColumns.filter((item) => item.columnType === ColumnTypeEnum.CUSTOM));
@@ -367,6 +367,7 @@
     price: exportProductPriceAll,
     businessTitle: exportBusinessTitleAll,
     invoice: exportInvoicedAll,
+    order: exportOrderAll,
     customForm: exportCustomFormAll,
   };
 
@@ -384,6 +385,7 @@
     price: exportProductPriceSelected,
     businessTitle: exportBusinessTitleSelected,
     invoice: exportInvoicedSelected,
+    order: exportOrderSelected,
     customForm: exportCustomFormSelected,
   };
 

@@ -13,6 +13,8 @@ export const OrderInContractPageUrl = '/contract/order/page';
 export const DownloadOrderUrl = '/order/download';
 export const OrderStatisticUrl = '/order/statistic';
 export const SortOrderUrl = '/order/sort';
+export const ExportOrderAllUrl = '/order/export-all';
+export const ExportOrderSelectedUrl = '/order/export-select';
 
 // 订单导入
 export const PreCheckOrderImportUrl = '/order/import/pre-check';
