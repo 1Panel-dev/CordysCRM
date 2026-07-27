@@ -14,6 +14,11 @@ export const DownloadOrderUrl = '/order/download';
 export const OrderStatisticUrl = '/order/statistic';
 export const SortOrderUrl = '/order/sort';
 
+// 订单导入
+export const PreCheckOrderImportUrl = '/order/import/pre-check';
+export const DownloadOrderTemplateUrl = '/order/template/download';
+export const ImportOrderUrl = '/order/import';
+
 // 订单视图
 export const AddOrderViewUrl = '/order/view/add';
 export const UpdateOrderViewUrl = '/order/view/update';

@@ -10,9 +10,11 @@ import {
   downloadContractInvoicedTemplate,
   downloadContractPaymentPlanTemplate,
   downloadContractPaymentRecordTemplate,
+  downloadContractTemplate,
   downloadCustomFormTemplate,
   downloadLeadTemplate,
   downloadOptTemplate,
+  downloadOrderTemplate,
   downloadPoolAccountTemplate,
   downloadPoolLeadTemplate,
   downloadProductPriceTemplate,
@@ -20,12 +22,14 @@ import {
   importAccount,
   importBusinessTitle,
   importContact,
+  importContract,
   importContractInvoiced,
   importContractPaymentPlan,
   importContractPaymentRecord,
   importCustomForm,
   importLead,
   importOpportunity,
+  importOrder,
   importPoolAccount,
   importPoolLead,
   importProduct,
@@ -33,12 +37,14 @@ import {
   preCheckImportAccount,
   preCheckImportBusinessTitle,
   preCheckImportContact,
+  preCheckImportContract,
   preCheckImportContractInvoiced,
   preCheckImportContractPaymentPlan,
   preCheckImportContractPaymentRecord,
   preCheckImportCustomForm,
   preCheckImportLead,
   preCheckImportOpt,
+  preCheckImportOrder,
   preCheckImportPoolAccount,
   preCheckImportPoolLead,
   preCheckImportProduct,
@@ -58,7 +64,9 @@ export type ImportApiType =
   | FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD
   | FormDesignKeyEnum.PRICE
   | ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT
-  | FormDesignKeyEnum.CUSTOM_FORM;
+  | FormDesignKeyEnum.CUSTOM_FORM
+  | FormDesignKeyEnum.CONTRACT
+  | FormDesignKeyEnum.ORDER;
 
 export interface importRequestType {
   preCheck: (params: ImportRequestParams) => Promise<{ data: ValidateInfo }>;
@@ -126,6 +134,16 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     preCheck: (params) => preCheckImportContractPaymentPlan(params.uploadParams),
     save: (params) => importContractPaymentPlan(params.uploadParams),
     download: downloadContractPaymentPlanTemplate,
+  },
+  [FormDesignKeyEnum.CONTRACT]: {
+    preCheck: (params) => preCheckImportContract(params.uploadParams),
+    save: (params) => importContract(params.uploadParams),
+    download: downloadContractTemplate,
+  },
+  [FormDesignKeyEnum.ORDER]: {
+    preCheck: (params) => preCheckImportOrder(params.uploadParams),
+    save: (params) => importOrder(params.uploadParams),
+    download: downloadOrderTemplate,
   },
   [ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT]: {
     preCheck: (params) => preCheckImportBusinessTitle(params.uploadParams),

@@ -16,6 +16,11 @@ export const RevokeContractUrl = '/contract/revoke';
 export const ContractStatisticUrl = '/contract/statistic';
 export const SortContractUrl = '/contract/sort';
 
+// 合同导入
+export const PreCheckContractImportUrl = '/contract/import/pre-check';
+export const DownloadContractTemplateUrl = '/contract/template/download';
+export const ImportContractUrl = '/contract/import';
+
 // 合同导出
 export const ExportContractAllUrl = '/contract/export-all'; // 合同导出全量
 export const ExportContractSelectedUrl = '/contract/export-select'; // 合同导出选中
