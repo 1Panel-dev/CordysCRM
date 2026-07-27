@@ -14,7 +14,6 @@
     :description-tip="props.descriptionTip"
     :confirm-loading="validateLoading"
     :download-template-api="downloadTemplateApi"
-    :show-import-radio="showImportRadio"
     @validate="validateTemplate"
   />
 
@@ -75,8 +74,6 @@
   const importModal = ref<boolean>(false);
   const validateLoading = ref<boolean>(false);
 
-  const showImportRadio = computed(() => !([FormDesignKeyEnum.PRICE] as ImportApiType[]).includes(props.apiType));
-
   function handleImport() {
     importModal.value = true;
   }
@@ -116,14 +113,11 @@
   });
 
   function getImportRequestParams(file: File, type?: string): ImportRequestParams {
-    const request: ImportUploadParams['request'] = showImportRadio.value
-      ? {
-          importType: type,
-          ...(props.poolId ? { poolId: props.poolId as string } : {}),
-          ...(props.customFormId ? { customFormId: props.customFormId as string } : {}),
-        }
-      : undefined;
-
+    const request: ImportUploadParams['request'] = {
+      importType: type,
+      ...(props.poolId ? { poolId: props.poolId as string } : {}),
+      ...(props.customFormId ? { customFormId: props.customFormId as string } : {}),
+    };
     return {
       uploadParams: {
         fileList: [file],

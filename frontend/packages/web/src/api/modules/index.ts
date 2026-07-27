@@ -111,6 +111,8 @@ export const {
   getOrderStatusConfig,
   updateOrderStage,
   downloadOrder,
+  exportOrderAll,
+  exportOrderSelected,
   preCheckImportOrder,
   downloadOrderTemplate,
   importOrder,

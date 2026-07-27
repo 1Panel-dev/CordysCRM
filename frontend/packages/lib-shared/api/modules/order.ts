@@ -28,6 +28,8 @@ import {
   GetOrderStatusConfigUrl,
   DeleteOrderStatusUrl,
   DownloadOrderUrl,
+  ExportOrderAllUrl,
+  ExportOrderSelectedUrl,
   OrderStatisticUrl,
   SaveAdvanceConfigUrl,
   SwitchOrderCirculationTypeUrl,
@@ -37,11 +39,15 @@ import {
 } from '@lib/shared/api/requrls/order';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
-import type { CommonList, ImportUploadParams, TableDraggedParams } from '@lib/shared/models/common';
+import type {
+  CommonList,
+  ImportUploadParams, TableDraggedParams,
+  TableExportParams,
+  TableExportSelectedParams,
+  TableQueryParams,
+} from '@lib/shared/models/common';
 import type { BatchUpdatePoolAccountParams, CustomerTabHidden } from '@lib/shared/models/customer';
 import type { OrderItem, UpdateOrderParams } from '@lib/shared/models/order';
-import type { TableQueryParams } from '@lib/shared/models/common';
-
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 import {
   StageBoardPageQueryParams,
@@ -113,6 +119,14 @@ export default function useOrderApi(CDR: CordysAxios) {
 
   function downloadOrder(id: string) {
     return CDR.get({ url: `${DownloadOrderUrl}/${id}` });
+  }
+
+  function exportOrderAll(data: TableExportParams) {
+    return CDR.post({ url: ExportOrderAllUrl, data });
+  }
+
+  function exportOrderSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportOrderSelectedUrl, data });
   }
 
   // 获取订单tab显隐配置
@@ -255,6 +269,8 @@ export default function useOrderApi(CDR: CordysAxios) {
     updateOrderStage,
     sortOrder,
     downloadOrder,
+    exportOrderAll,
+    exportOrderSelected,
     preCheckImportOrder,
     downloadOrderTemplate,
     importOrder,

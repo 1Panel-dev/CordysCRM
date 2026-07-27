@@ -22,7 +22,7 @@
           </div>
         </div>
       </n-alert>
-      <n-radio-group v-if="props.showImportRadio" v-model:value="importType" class="mb-[16px]" name="radiogroup">
+      <n-radio-group v-model:value="importType" class="mb-[16px]" name="radiogroup">
         <n-space class="!gap-[24px]">
           <n-radio key="ADD" value="ADD">
             <div class="flex items-center gap-[8px]">
@@ -98,7 +98,6 @@
     title?: string; // 标题
     descriptionTip?: string; // 描述提示内容
     downloadTemplateApi?: () => Promise<any>; // 下载模板Api
-    showImportRadio?: boolean;
   }>();
 
   const emit = defineEmits<{
