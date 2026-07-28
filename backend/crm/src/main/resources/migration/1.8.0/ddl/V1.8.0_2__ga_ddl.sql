@@ -108,7 +108,7 @@ CREATE TABLE agent_message(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
     `role` VARCHAR(50) NOT NULL  DEFAULT 'user/assistant' COMMENT '对话角色' ,
     `conversation_id` VARCHAR(32) NOT NULL   COMMENT '对话ID' ,
-    `model_id` VARCHAR(32)    COMMENT '模型ID' ,
+    `model_name` VARCHAR(255)    COMMENT '模型名称' ,
     `prompt_tokens` BIGINT    COMMENT '本次调用输入' ,
     `completion_tokens` BIGINT(255)    COMMENT '本次调用输出' ,
     `total_tokens` BIGINT(255)    COMMENT '累计调用' ,
