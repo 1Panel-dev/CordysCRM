@@ -10,12 +10,14 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.stage.CirculationFieldValue;
 import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
@@ -24,6 +26,8 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.uid.SerialNumGenerator;
+import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
@@ -55,35 +59,53 @@ import cn.cordys.crm.contract.mapper.ExtContractInvoiceMapper;
 import cn.cordys.crm.contract.mapper.ExtContractMapper;
 import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
 import cn.cordys.crm.customer.domain.Customer;
-import cn.cordys.crm.system.constants.CirculationFieldValueTypeEnum;
-import cn.cordys.crm.system.constants.CirculationTypeEnum;
-import cn.cordys.crm.system.constants.DictModule;
-import cn.cordys.crm.system.constants.NotificationConstants;
+import cn.cordys.crm.system.constants.*;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
+import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
+import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
+import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
+import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.*;
+import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.idev.excel.FastExcelFactory;
+import cn.idev.excel.enums.CellExtraTypeEnum;
+import cn.idev.excel.metadata.CellExtra;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -129,6 +151,14 @@ public class ContractService implements ApprovalResourceHandler {
     private StageAdvancedConfigService stageAdvancedConfigService;
     @Resource
     private ExtStageAdvancedConfigMapper extStageAdvancedConfigMapper;
+    @Resource
+    private BaseMapper<ContractField> contractFieldMapper;
+    @Resource
+    private BaseMapper<ContractFieldBlob> contractFieldBlobMapper;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private SerialNumGenerator serialNumGenerator;
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
 
@@ -1178,5 +1208,296 @@ public class ContractService implements ApprovalResourceHandler {
             updateSnapshotApprovalStatus(param);
         });
         extContractMapper.updateOldApprovalStatusNone();
+    }
+
+
+    /**
+     * 下载导入模板
+     *
+     * @param response
+     * @param currentOrg
+     */
+    public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
+        new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
+                moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT.getKey(), currentOrg),
+                Translator.get("contract.import_tpl.name"),
+                Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
+                new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CONTRACT.getKey(), currentOrg)),
+                new CustomHeadColWidthStyleStrategy()
+        );
+    }
+
+
+    /**
+     * 导入检查
+     *
+     * @param file       导入文件
+     * @param currentOrg 当前组织
+     * @return 导入检查信息
+     */
+    public ImportResponse importPreCheck(MultipartFile file, String importType, String currentOrg) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        return checkImportExcel(file, importType, currentOrg);
+    }
+
+
+    /**
+     * 检查导入的文件
+     *
+     * @param file       文件
+     * @param currentOrg 当前组织
+     * @return 检查信息
+     */
+    private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
+        try {
+            List<BaseField> fields = moduleFormService.getAllCustomImportFields(
+                    FormKey.CONTRACT.getKey(),
+                    currentOrg
+            );
+
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+
+            // 1 先读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            // 2 校验数据
+            CustomFieldCheckEventListener eventListener =
+                    new CustomFieldCheckEventListener(
+                            fields,
+                            "contract",
+                            "contract_field",
+                            currentOrg,
+                            mergeCellEventListener.getMergeCellMap(),
+                            mergeCellEventListener.getMergeRowDataMap(),
+                            importType
+                    );
+
+            FastExcelFactory.read(file.getInputStream(), eventListener)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            return ImportResponse.builder()
+                    .errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess())
+                    .failCount(eventListener.getErrList().size())
+                    .build();
+
+        } catch (Exception e) {
+            log.error("contract import pre-check error: {}", e.getMessage(), e);
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+
+    /**
+     * 价格表导入
+     *
+     * @param file        导入文件
+     * @param currentOrg  当前组织
+     * @param currentUser 当前用户
+     * @return 导入返回信息
+     */
+    public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentUser, String currentOrg) {
+        try {
+            List<BaseField> fields = moduleFormService.getAllFields(
+                    FormKey.CONTRACT.getKey(),
+                    currentOrg
+            );
+
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+
+            // 1 读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            // 2 实际导入
+            CustomFieldImportEventListener<Contract> eventListener =
+                    getContractEventListener(
+                            currentOrg,
+                            currentUser,
+                            fields,
+                            mergeCellEventListener.getMergeCellMap(),
+                            mergeCellEventListener.getMergeRowDataMap(),
+                            request
+                    );
+
+            FastExcelFactory.read(file.getInputStream(), eventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            return ImportResponse.builder()
+                    .errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccessCount())
+                    .failCount(eventListener.getErrList().size())
+                    .build();
+
+        } catch (Exception e) {
+            log.error("contract import error: {}", e.getMessage(), e);
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public CustomFieldImportEventListener<Contract> getContractEventListener(String currentOrg, String currentUser, List<BaseField> fields, Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap, ImportRequest request) {
+        List<StageConfigResponse> stageConfigList = extContractStageConfigMapper.getStageConfigList(currentOrg);
+        ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), currentOrg);
+        long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
+        CustomImportAfterDoConsumer<Contract, BaseResourceSubField> afterDo = (contracts, contractFields, contractFieldBlobs) -> {
+            List<LogDTO> logs = new ArrayList<>();
+            ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
+            switch (importType) {
+                case ADD -> {
+                    Optional<BaseField> serialOptional = fields.stream().filter(field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_NO.getKey())).findAny();
+                    for (int i = 0; i < contracts.size(); i++) {
+                        Contract contract = contracts.get(i);
+                        if (serialOptional.isPresent()) {
+                            List<String> serialNumberRules = ((SerialNumberField) serialOptional.get()).getSerialNumberRules();
+                            contract.setNumber(serialNumGenerator.generateByRules(serialNumberRules, currentOrg, FormKey.CONTRACT.getKey()));
+                        }
+                        contract.setStage(stageConfigList.getFirst().getId());
+                        contract.setPos(nextPos + i);
+                        logs.add(new LogDTO(currentOrg, contract.getId(), currentUser, LogType.ADD, LogModule.CONTRACT_INDEX, contract.getName()));
+                    }
+                    contractMapper.batchInsert(contracts);
+                    contractFieldMapper.batchInsert(contractFields.stream().map(field -> BeanUtils.copyBean(new ContractField(), field)).toList());
+                    contractFieldBlobMapper.batchInsert(contractFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ContractFieldBlob(), field)).toList());
+                    // record logs
+                    logService.batchAdd(logs);
+                }
+                case UPDATE -> {
+                    List<String> ids = contracts.stream().map(Contract::getId).toList();
+                    if (CollectionUtils.isEmpty(ids)) {
+                        break;
+                    }
+                    //原数据
+                    List<Contract> originList = contractMapper.selectByIds(ids);
+                    if (CollectionUtils.isEmpty(originList)) {
+                        break;
+                    }
+                    Map<String, Contract> originMaps = originList.stream().collect(Collectors.toMap(Contract::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> originFieldValueMap = contractFieldService.getResourceFieldMap(ids, true);
+
+                    List<ContractField> insertField = new ArrayList<>();
+                    List<ContractFieldBlob> insertFieldBlob = new ArrayList<>();
+                    SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                    ExtContractMapper batchMapper = sqlSession.getMapper(ExtContractMapper.class);
+                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+
+                    if (CollectionUtils.isNotEmpty(contracts)) {
+                        contracts.forEach(contract -> {
+                            batchMapper.updateContract(contract);
+                        });
+                    }
+
+                    if (CollectionUtils.isNotEmpty(contractFields)) {
+                        List<ContractField> fieldList = contractFieldMapper.selectByIds(contractFields.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ContractField> fieldMap = fieldList.stream().collect(Collectors.toMap(ContractField::getId, Function.identity()));
+                        contractFields.forEach(contractField -> {
+                            if (fieldMap.containsKey(contractField.getId())) {
+                                commonMapper.updateCustomerField("contract_field", contractField);
+                            } else {
+                                insertField.add(BeanUtils.copyBean(new ContractField(), contractField));
+                            }
+                        });
+                    }
+
+                    if (CollectionUtils.isNotEmpty(contractFieldBlobs)) {
+                        List<ContractFieldBlob> blobList = contractFieldBlobMapper.selectByIds(contractFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                        Map<String, ContractFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(ContractFieldBlob::getId, Function.identity()));
+                        contractFieldBlobs.forEach(contractFieldBlob -> {
+                            if (blobMap.containsKey(contractFieldBlob.getId())) {
+                                commonMapper.updateCustomerField("contract_field_blob", contractFieldBlob);
+                            } else {
+                                insertFieldBlob.add(BeanUtils.copyBean(new ContractFieldBlob(), contractFieldBlob));
+                            }
+                        });
+                    }
+
+                    sqlSession.flushStatements();
+                    SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                    if (CollectionUtils.isNotEmpty(insertField)) {
+                        contractFieldMapper.batchInsert(insertField);
+                    }
+                    if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                        contractFieldBlobMapper.batchInsert(insertFieldBlob);
+                    }
+
+                    SqlSession currentSession =
+                            SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                    currentSession.clearCache();
+
+                    Map<String, Contract> modifiedMaps = contractMapper.selectByIds(ids).stream().collect(Collectors.toMap(Contract::getId, Function.identity()));
+                    Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = contractFieldService.getResourceFieldMap(ids, true);
+
+                    ids.forEach(id -> {
+                        Contract originDate = originMaps.get(id);
+                        Contract modifiedDate = modifiedMaps.get(id);
+                        baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                        LogContextInfo contextInfo = OperationLogContext.getContext();
+                        if (contextInfo != null) {
+                            LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CONTRACT_INDEX, modifiedDate.getName());
+                            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                            logs.add(logDTO);
+                            OperationLogContext.clear();
+                        }
+                    });
+                    logService.batchAdd(logs);
+                    //删除快照
+                    LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
+                    wrapper.in(ContractSnapshot::getContractId, ids);
+                    snapshotBaseMapper.deleteByLambda(wrapper);
+                }
+            }
+
+            List<ContractGetResponse> contractGetResponses = batchGetSimpleByIds(contracts.stream().map(Contract::getId).toList());
+            contractGetResponses.forEach(response -> {
+                // 保存表单配置快照
+                List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(response.getModuleFields(), moduleFormConfigDTO, contractFieldService, response.getId());
+                ContractGetResponse contractGetResponse = get(response, resolveFieldValues, moduleFormConfigDTO);
+                saveSnapshot(response, moduleFormConfigDTO, contractGetResponse);
+            });
+        };
+
+        return new CustomFieldImportEventListener<>(
+                fields,
+                Contract.class,
+                currentOrg,
+                currentUser,
+                "contract_field",
+                "contract_field_blob",
+                afterDo,
+                2000,
+                mergeCellMap,
+                mergeRowDataMap,
+                request.getImportType()
+        );
+
     }
 }

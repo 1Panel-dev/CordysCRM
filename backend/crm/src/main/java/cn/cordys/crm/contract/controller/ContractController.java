@@ -27,18 +27,23 @@ import cn.cordys.crm.customer.dto.request.ContractOrderPageRequest;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -267,5 +272,27 @@ public class ContractController {
     @Operation(summary = "合同阶段看板拖拽排序")
     public void sortModule(@Validated @RequestBody StageSortRequest request) {
         contractService.sort(request, SessionUtils.getUserId());
+    }
+
+
+    @GetMapping("/template/download")
+    @RequiresPermissions(PermissionConstants.CONTRACT_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        contractService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "导入检查")
+    @RequiresPermissions(PermissionConstants.CONTRACT_IMPORT)
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") @NotNull MultipartFile file) {
+        return contractService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import")
+    @Operation(summary = "导入")
+    @RequiresPermissions(PermissionConstants.CONTRACT_IMPORT)
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return contractService.realImport(file, request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

@@ -45,5 +45,7 @@ public interface ExtContractMapper {
 
     void moveDownStageContract(@Param("end") Long end, @Param("stage") String stage, @Param("pos") Long pos);
 
-	void updateOldApprovalStatusNone();
+    void updateOldApprovalStatusNone();
+
+    void updateContract(@Param("contract") Contract contract);
 }
