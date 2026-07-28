@@ -448,7 +448,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         slotName: FieldTypeEnum.DATE_TIME,
         fieldInfo: {
           ...item,
-          editable: !hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']),
+          editable: hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']),
         },
         tooltipPosition: 'top-end',
       });
