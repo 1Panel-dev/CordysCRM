@@ -87,5 +87,44 @@ CREATE TABLE agent_action_approve
 
 CREATE INDEX idx_user_id ON agent_action_approve (user_id ASC);
 
+CREATE TABLE agent_conversation(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `title` VARCHAR(255) NOT NULL   COMMENT '对话标题' ,
+    `user_id` VARCHAR(32) NOT NULL   COMMENT '用户ID' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '会话'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_user_id ON agent_conversation(user_id ASC);
+
+CREATE TABLE agent_message(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `role` VARCHAR(50) NOT NULL  DEFAULT 'user/assistant' COMMENT '对话角色' ,
+    `conversation_id` VARCHAR(32) NOT NULL   COMMENT '对话ID' ,
+    `model_id` VARCHAR(32)    COMMENT '模型ID' ,
+    `prompt_tokens` BIGINT    COMMENT '本次调用输入' ,
+    `completion_tokens` BIGINT(255)    COMMENT '本次调用输出' ,
+    `total_tokens` BIGINT(255)    COMMENT '累计调用' ,
+    `content` MEDIUMTEXT    COMMENT '消息内容' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '消息'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_conversation_id ON agent_message(conversation_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
