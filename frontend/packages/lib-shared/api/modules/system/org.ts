@@ -134,7 +134,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 用户(员工)-获取用户下拉
-  function getUserOptions(params?: { includeDisabled?: boolean }) {
+  function getUserOptions(params?: { includeDisabled?: boolean; keyword?: string }) {
     return CDR.get({ url: getUserOptionsUrl, params });
   }
 
