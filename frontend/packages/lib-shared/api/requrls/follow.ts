@@ -6,6 +6,13 @@ export const GetFollowRecordUrl = '/follow/record/get'; // 跟进记录详情
 export const UpdateFollowRecordUrl = '/follow/record/update';
 export const AddFollowRecordUrl = '/follow/record/add';
 
+// 跟进记录评论
+// TODO xinxinwu: 后端确认跟进记录评论接口路径后，替换为真实接口地址
+export const GetFollowRecordCommentListUrl = '/follow/record/comment/page';
+export const AddFollowRecordCommentUrl = '/follow/record/comment/add';
+export const UpdateFollowRecordCommentUrl = '/follow/record/comment/update';
+export const DeleteFollowRecordCommentUrl = '/follow/record/comment/delete';
+
 // 跟进计划
 export const UpdateFollowPlanStatusUrl = '/follow/plan/status/update'; // 更新跟进计划状态
 export const GetFollowPlanPageUrl = '/follow/plan/page'; // 跟进计划列表
@@ -14,6 +21,13 @@ export const DeleteFollowPlanUrl = '/follow/plan/delete'; // 删除跟进计划
 export const GetFollowPlanUrl = '/follow/plan/get'; // 跟进计划详情
 export const UpdateFollowPlanUrl = '/follow/plan/update';
 export const AddFollowPlanUrl = '/follow/plan/add';
+
+// 跟进计划评论
+// TODO xinxinwu: 后端确认跟进计划评论接口路径后，替换为真实接口地址
+export const GetFollowPlanCommentListUrl = '/follow/plan/comment/page';
+export const AddFollowPlanCommentUrl = '/follow/plan/comment/add';
+export const UpdateFollowPlanCommentUrl = '/follow/plan/comment/update';
+export const DeleteFollowPlanCommentUrl = '/follow/plan/comment/delete';
 
 // 视图
 export const AddFollowRecordViewUrl = '/follow/record/view/add';

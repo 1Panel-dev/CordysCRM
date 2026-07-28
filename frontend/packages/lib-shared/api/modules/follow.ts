@@ -1,9 +1,13 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
+  AddFollowPlanCommentUrl,
+  AddFollowRecordCommentUrl,
   AddFollowPlanViewUrl,
   AddFollowRecordViewUrl,
+  DeleteFollowPlanCommentUrl,
   DeleteFollowPlanUrl,
   DeleteFollowPlanViewUrl,
+  DeleteFollowRecordCommentUrl,
   DeleteFollowRecordUrl,
   DeleteFollowRecordViewUrl,
   DragFollowPlanViewUrl,
@@ -12,11 +16,13 @@ import {
   EnableFollowRecordViewUrl,
   FixedFollowPlanViewUrl,
   FixedFollowRecordViewUrl,
+  GetFollowPlanCommentListUrl,
   GetFollowPlanPageUrl,
   GetFollowPlanTabUrl,
   GetFollowPlanUrl,
   GetFollowPlanViewDetailUrl,
   GetFollowPlanViewListUrl,
+  GetFollowRecordCommentListUrl,
   GetFollowRecordPageUrl,
   GetFollowRecordTabUrl,
   GetFollowRecordUrl,
@@ -25,6 +31,8 @@ import {
   UpdateFollowPlanStatusUrl,
   UpdateFollowPlanUrl,
   UpdateFollowPlanViewUrl,
+  UpdateFollowPlanCommentUrl,
+  UpdateFollowRecordCommentUrl,
   UpdateFollowRecordUrl,
   AddFollowRecordUrl,
   AddFollowPlanUrl,
@@ -38,6 +46,12 @@ import type {
   UpdateCustomerFollowRecordParams,
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
+import type {
+  FollowCommentItem,
+  FollowCommentListParams,
+  SaveFollowCommentParams,
+  UpdateFollowCommentParams,
+} from '@lib/shared/models/follow';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useFollowApi(CDR: CordysAxios) {
@@ -97,6 +111,40 @@ export default function useFollowApi(CDR: CordysAxios) {
 
   function addFollowPlan(data: UpdateCustomerFollowRecordParams) {
     return CDR.post({ url: AddFollowPlanUrl, data });
+  }
+
+  // 跟进记录评论
+  function getFollowRecordCommentList(data: FollowCommentListParams) {
+    return CDR.post<CommonList<FollowCommentItem>>({ url: GetFollowRecordCommentListUrl, data });
+  }
+
+  function addFollowRecordComment(data: SaveFollowCommentParams) {
+    return CDR.post({ url: AddFollowRecordCommentUrl, data });
+  }
+
+  function updateFollowRecordComment(data: UpdateFollowCommentParams) {
+    return CDR.post({ url: UpdateFollowRecordCommentUrl, data });
+  }
+
+  function deleteFollowRecordComment(id: string) {
+    return CDR.get({ url: `${DeleteFollowRecordCommentUrl}/${id}` });
+  }
+
+  // 跟进计划评论
+  function getFollowPlanCommentList(data: FollowCommentListParams) {
+    return CDR.post<CommonList<FollowCommentItem>>({ url: GetFollowPlanCommentListUrl, data });
+  }
+
+  function addFollowPlanComment(data: SaveFollowCommentParams) {
+    return CDR.post({ url: AddFollowPlanCommentUrl, data });
+  }
+
+  function updateFollowPlanComment(data: UpdateFollowCommentParams) {
+    return CDR.post({ url: UpdateFollowPlanCommentUrl, data });
+  }
+
+  function deleteFollowPlanComment(id: string) {
+    return CDR.get({ url: `${DeleteFollowPlanCommentUrl}/${id}` });
   }
 
   // 视图
@@ -179,6 +227,14 @@ export default function useFollowApi(CDR: CordysAxios) {
     updateFollowRecord,
     addFollowRecord,
     addFollowPlan,
+    getFollowRecordCommentList,
+    addFollowRecordComment,
+    updateFollowRecordComment,
+    deleteFollowRecordComment,
+    getFollowPlanCommentList,
+    addFollowPlanComment,
+    updateFollowPlanComment,
+    deleteFollowPlanComment,
     addFollowRecordView,
     updateFollowRecordView,
     getFollowRecordViewList,
