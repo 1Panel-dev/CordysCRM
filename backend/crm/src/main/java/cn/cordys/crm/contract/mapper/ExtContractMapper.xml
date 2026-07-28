@@ -637,4 +637,32 @@
     <update id="updateOldApprovalStatusNone">
         update contract set approval_status = 'NONE' where approval_status = 'APPROVING';
     </update>
+
+
+    <update id="updateContract">
+        update contract
+        <set>
+            <if test="contract.name != null and contract.name != ''">
+                name = #{contract.name},
+            </if>
+            <if test="contract.customerId != null and contract.customerId != ''">
+                customer_id = #{contract.customerId},
+            </if>
+            <if test="contract.owner != null and contract.owner != ''">
+                owner = #{contract.owner},
+            </if>
+            <if test="contract.amount != null">
+                amount = #{contract.amount},
+            </if>
+            <if test="contract.updateTime != null">
+                update_time = #{contract.updateTime},
+            </if>
+            <if test="contract.updateUser != null and contract.updateUser != ''">
+                update_user = #{contract.updateUser},
+            </if>
+        </set>
+        <where>
+            id = #{contract.id}
+        </where>
+    </update>
 </mapper>

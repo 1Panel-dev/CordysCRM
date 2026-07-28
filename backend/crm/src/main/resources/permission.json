@@ -555,6 +555,10 @@
             "license": false
           },
           {
+            "id": "CONTRACT:IMPORT",
+            "license": false
+          },
+          {
             "id": "CONTRACT:EXPORT",
             "license": false
           },
