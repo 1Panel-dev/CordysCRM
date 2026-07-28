@@ -118,7 +118,7 @@
       {
         "id": "SYSTEM_LICENSE",
         "name": "permission.system.license",
-        "license": true,
+        "license": false,
         "permissions": [
           {
             "id": "LICENSE:READ",
