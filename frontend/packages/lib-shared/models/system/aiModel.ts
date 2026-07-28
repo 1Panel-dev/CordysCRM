@@ -29,6 +29,12 @@ export interface AiModelStatusParams {
   id: string;
 }
 
+export interface AiModelOption {
+  id: string;
+  name: string;
+  idAsString: string;
+}
+
 export interface AiModelRouteStrategy {
   defaultModelId?: string;
   insightModelId?: string;

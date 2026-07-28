@@ -45,7 +45,7 @@
     </div>
   </CrmCard>
 
-  <ModelSettingsDrawer v-model:show="drawerVisible" :model="editingModel" @saved="handleModelSaved(editingModel?.id)" />
+  <ModelSettingsDrawer v-model:show="drawerVisible" :model="editingModel" @saved="handleModelSaved" />
 
   <RouteStrategyModal v-model:show="routeModalVisible" />
 </template>
@@ -98,6 +98,7 @@
     routeModalVisible.value = true;
   }
 
+  const tableRemoveRefreshId = ref('');
   function handleDelete(row: AiModelItem) {
     openModal({
       type: 'error',
@@ -108,8 +109,8 @@
       onPositiveClick: async () => {
         try {
           await deleteAiModel(row.id);
-          tableRefreshId.value += 1;
           Message.success(t('common.deleteSuccess'));
+          tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -296,11 +297,28 @@
     searchData(keyword.value, refreshId);
   }
 
+  function removeItemFromList(id: string) {
+    propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id) as typeof propsRes.value.data;
+    propsRes.value.crmPagination = {
+      ...propsRes.value.crmPagination,
+      itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
+    };
+  }
+
   watch(
     () => tableRefreshId.value,
     () => {
       crmTableRef.value?.clearCheckedRowKeys();
       searchData(keyword.value);
+    }
+  );
+
+  watch(
+    () => tableRemoveRefreshId.value,
+    (val) => {
+      if (val) {
+        removeItemFromList(val);
+      }
     }
   );
 

@@ -637,12 +637,19 @@ export const {
   updateConfigSynchronization,
   getTenderConfig,
   getAiModelList,
+  getAiModelOptions,
   addAiModel,
   updateAiModel,
   updateAiModelStatus,
   deleteAiModel,
   getAiModelRouteStrategy,
   updateAiModelRouteStrategy,
+  getAgentTaskList,
+  addAgentTask,
+  updateAgentTask,
+  switchAgentTask,
+  getAgentTaskDetail,
+  deleteAgentTask,
 } = businessApi;
 
 export const {

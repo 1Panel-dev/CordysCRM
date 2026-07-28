@@ -119,8 +119,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'saved'): void;
-    (e: 'cancel'): void;
+    (e: 'saved', refreshId?: string): void;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {
@@ -224,7 +223,7 @@
     ],
   };
 
-  function resetFormState(model?: Partial<AiModelItem>): void {
+  function resetFormState(model?: Partial<AiModelItem>) {
     Object.assign(form, createDefaultForm(model));
     formRef.value?.restoreValidation();
   }
@@ -240,9 +239,8 @@
     }
   );
 
-  function resetForm(): void {
+  function resetForm() {
     resetFormState();
-    emit('cancel');
   }
 
   function createModelPayload(): AiModelSaveParams {
@@ -258,21 +256,23 @@
     return payload;
   }
 
-  async function submit(continueAdd: boolean): Promise<void> {
+  async function submit(continueAdd: boolean) {
     await formRef.value?.validate();
     try {
       saving.value = true;
       const payload = createModelPayload();
+      let refreshId = payload.id;
 
       if (payload.id) {
         await updateAiModel(payload);
         Message.success(t('common.updateSuccess'));
       } else {
         await addAiModel(payload);
+        refreshId = undefined;
         Message.success(t('common.addSuccess'));
       }
 
-      emit('saved');
+      emit('saved', refreshId);
       if (!continueAdd) {
         showDrawer.value = false;
       } else {
