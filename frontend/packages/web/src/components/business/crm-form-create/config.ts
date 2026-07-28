@@ -154,65 +154,104 @@ export const fullFormSettingList = [
     label: t('crmFormDesign.customer'),
     dataSource: FieldDataSourceTypeEnum.CUSTOMER,
     formKey: FormDesignKeyEnum.CUSTOMER,
+    permission: {
+      CREATE: 'CUSTOMER_MANAGEMENT:ADD',
+    },
   },
   {
     label: t('crmFormDesign.contact'),
     dataSource: FieldDataSourceTypeEnum.CONTACT,
     formKey: FormDesignKeyEnum.CONTACT,
+    permission: {
+      CREATE: 'CUSTOMER_MANAGEMENT_CONTACT:ADD',
+    },
   },
   {
     label: t('crmFormDesign.opportunity'),
     dataSource: FieldDataSourceTypeEnum.BUSINESS,
     formKey: FormDesignKeyEnum.BUSINESS,
+    permission: {
+      CREATE: 'OPPORTUNITY_MANAGEMENT:ADD',
+    },
   },
   {
     label: t('crmFormDesign.product'),
     dataSource: FieldDataSourceTypeEnum.PRODUCT,
     formKey: FormDesignKeyEnum.PRODUCT,
+    permission: {
+      CREATE: 'PRODUCT_MANAGEMENT:ADD',
+    },
   },
   {
     label: t('crmFormDesign.clue'),
     dataSource: FieldDataSourceTypeEnum.CLUE,
     formKey: FormDesignKeyEnum.CLUE,
+    permission: {
+      CREATE: 'CLUE_MANAGEMENT:ADD',
+    },
   },
   {
     label: t('crmFormCreate.drawer.price'),
     dataSource: FieldDataSourceTypeEnum.PRICE,
     formKey: FormDesignKeyEnum.PRICE,
+    permission: {
+      CREATE: 'PRICE:ADD',
+    },
   },
   {
     label: t('crmFormCreate.drawer.quotation'),
     dataSource: FieldDataSourceTypeEnum.QUOTATION,
     formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+    permission: {
+      CREATE: 'OPPORTUNITY_QUOTATION:ADD',
+    },
   },
   {
     label: t('module.contract'),
     dataSource: FieldDataSourceTypeEnum.CONTRACT,
     formKey: FormDesignKeyEnum.CONTRACT,
+    permission: {
+      CREATE: 'CONTRACT:ADD',
+    },
   },
   {
     label: t('module.paymentPlan'),
     dataSource: FieldDataSourceTypeEnum.CONTRACT_PAYMENT,
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT,
+    permission: {
+      CREATE: 'CONTRACT_PAYMENT_PLAN:ADD',
+    },
   },
   {
     label: t('module.paymentRecord'),
     dataSource: FieldDataSourceTypeEnum.CONTRACT_PAYMENT_RECORD,
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+    permission: {
+      CREATE: 'CONTRACT_PAYMENT_RECORD:ADD',
+    },
   },
   {
     label: t('module.order'),
     dataSource: FieldDataSourceTypeEnum.ORDER,
     formKey: FormDesignKeyEnum.ORDER,
+    permission: {
+      CREATE: 'ORDER:ADD',
+    },
   },
   {
     label: t('module.invoiceApproval'),
     dataSource: FieldDataSourceTypeEnum.INVOICE,
     formKey: FormDesignKeyEnum.INVOICE,
+    permission: {
+      CREATE: 'CONTRACT_INVOICE:ADD',
+    },
   },
   {
     label: t('module.businessTitle'),
     dataSource: FieldDataSourceTypeEnum.BUSINESS_TITLE,
+    permission: {
+      CREATE: 'CONTRACT_BUSINESS_TITLE:ADD',
+    },
   },
 ];
 

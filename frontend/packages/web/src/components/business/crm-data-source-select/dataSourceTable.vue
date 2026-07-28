@@ -21,6 +21,11 @@
       @refresh="searchData"
     >
       <template #tableTop>
+        <n-button v-if="hasCreatePermission" type="primary" @click="handleNewCreate">
+          {{ `${t('common.newCreate')}${fullFormSettingList.find((e) => e.dataSource === props.sourceType)?.label}` }}
+        </n-button>
+      </template>
+      <template #actionRight>
         <CrmSearchInput
           v-model:value="keyword"
           class="crm-data-source-search-input !w-[240px]"
@@ -30,10 +35,17 @@
       </template>
     </CrmTable>
   </div>
+  <CrmFormCreateDrawer
+    v-if="realFormKey"
+    v-model:visible="formCreateVisible"
+    :form-key="realFormKey"
+    :need-init-detail="false"
+    @saved="handleFormCreateSave"
+  />
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, NImage, NImageGroup, NSwitch } from 'naive-ui';
+  import { DataTableRowKey, NButton, NImage, NImageGroup, NSwitch } from 'naive-ui';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { ContractPaymentPlanEnum } from '@lib/shared/enums/contractEnum';
@@ -58,6 +70,7 @@
   } from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmBusinessNamePrefix from '@/components/business/crm-business-name-prefix/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
 
   import { getFieldCustomFormList, getOpportunityStageConfig, getOrderStatusConfig } from '@/api/modules';
@@ -66,7 +79,9 @@
   import useFormCreateSystemColumns from '@/hooks/useFormCreateSystemColumns';
   import { FormKey } from '@/hooks/useFormCreateTable';
   import useUserStore from '@/store/modules/user';
+  import { hasAnyPermission } from '@/utils/permission';
 
+  import { fullFormSettingList } from '../crm-form-create/config';
   import type { DataSourceType, FormCreateField } from '../crm-form-create/types';
   import { formKeyMap, sourceApi } from './config';
   import { getDataSourceFormKey, isCustomDataSourceType } from './utils';
@@ -106,6 +121,14 @@
   const formKey = computed<FormDesignKeyEnum>(
     () => getDataSourceFormKey(props.sourceType, formKeyMap) as FormDesignKeyEnum
   );
+  const hasCreatePermission = computed(() => {
+    if (isCustomForm.value) {
+      return hasAnyPermission(['CUSTOM_FORM:ADD']);
+    }
+    return hasAnyPermission([
+      fullFormSettingList.find((e) => e.dataSource === props.sourceType)?.permission.CREATE || '',
+    ]);
+  });
 
   const searchPlaceholder = computed(() => {
     if (isCustomForm.value) {
@@ -604,6 +627,16 @@
       selectedKeys.value = keys;
       selectedRows.value = _rows;
     }
+  }
+
+  const formCreateVisible = ref(false);
+  const realFormKey = computed(() => fullFormSettingList.find((e) => e.dataSource === props.sourceType)?.formKey);
+  function handleNewCreate() {
+    formCreateVisible.value = true;
+  }
+
+  function handleFormCreateSave() {
+    searchData();
   }
 
   const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);

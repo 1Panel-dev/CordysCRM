@@ -26,7 +26,6 @@
 
 <script setup lang="ts">
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import type { ContractItem } from '@lib/shared/models/contract';
   import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
