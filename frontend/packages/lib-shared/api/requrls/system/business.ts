@@ -51,9 +51,18 @@ export const GetTitleImgUrl = `${
 
 // 模型设置
 export const GetAiModelListUrl = '/agent-model/page'; // 模型设置-列表查询
+export const GetAiModelOptionsUrl = '/agent-model/options'; // 模型设置-查询可用模型选项
 export const AddAiModelUrl = '/agent-model/add'; // 模型设置-添加模型
 export const UpdateAiModelUrl = '/agent-model/update'; // 模型设置-更新模型
 export const DeleteAiModelUrl = '/agent-model/delete'; // 模型设置-删除模型
 export const UpdateAiModelStatusUrl = '/agent-model/switch'; // 模型设置-更新模型状态
 export const GetAiModelRouteStrategyUrl = '/organization/settings/model/route-strategy'; // 模型设置-获取路由策略 TODO lmy
 export const UpdateAiModelRouteStrategyUrl = '/organization/settings/model/route-strategy/update'; // 模型设置-更新路由策略
+
+// 全局任务
+export const AddAgentTaskUrl = '/agent-task/add'; // 全局任务-添加任务
+export const UpdateAgentTaskUrl = '/agent-task/update'; // 全局任务-修改任务
+export const GetAgentTaskListUrl = '/agent-task/page'; // 全局任务-分页查询任务列表
+export const SwitchAgentTaskUrl = '/agent-task/switch'; // 全局任务-启用/禁用任务
+export const GetAgentTaskDetailUrl = '/agent-task/get'; // 全局任务-获取任务详情
+export const DeleteAgentTaskUrl = '/agent-task/delete'; // 全局任务-删除任务
