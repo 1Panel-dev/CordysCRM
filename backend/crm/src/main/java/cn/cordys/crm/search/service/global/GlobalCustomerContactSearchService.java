@@ -117,9 +117,9 @@ public class GlobalCustomerContactSearchService extends BaseSearchService<BasePa
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         //搜索客户
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        ConditionFilterUtils.parseCondition(request, FormKey.CONTACT.getKey());
         List<GlobalCustomerContactResponse> globalContactResponses = extCustomerContactMapper.globalSearchList(request, orgId);
         if (CollectionUtils.isEmpty(globalContactResponses)) {
             return PageUtils.setPageInfo(page, List.of());

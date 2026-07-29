@@ -123,9 +123,9 @@ public class GlobalClueSearchService extends BaseSearchService<BasePageRequest, 
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        ConditionFilterUtils.parseCondition(request, FormKey.CLUE.getKey());
         List<GlobalClueResponse> globalClueResponses = extClueMapper.globalSearchList(request, orgId);
         if (CollectionUtils.isEmpty(globalClueResponses)) {
             return PageUtils.setPageInfo(page, List.of());

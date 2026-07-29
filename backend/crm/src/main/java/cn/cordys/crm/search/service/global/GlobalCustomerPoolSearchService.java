@@ -95,9 +95,9 @@ public class GlobalCustomerPoolSearchService extends BaseSearchService<BasePageR
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         List<GlobalCustomerPoolResponse> customerPoolResponses = extCustomerMapper.globalPoolSearchList(request, orgId);
         if (CollectionUtils.isEmpty(customerPoolResponses)) {
             return PageUtils.setPageInfo(page, List.of());

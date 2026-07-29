@@ -119,9 +119,9 @@ public class GlobalOpportunitySearchService extends BaseSearchService<BasePageRe
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         // 查询重复商机列表
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         List<GlobalOpportunityResponse> globalOpportunityResponses = extOpportunityMapper.globalSearchList(request, orgId);
         if (CollectionUtils.isEmpty(globalOpportunityResponses)) {
             return PageUtils.setPageInfo(page, List.of());
