@@ -31,6 +31,7 @@
       :fullscreen-target-ref="fullscreenTargetRef"
       :fieldConfig="props.fieldConfig"
       :isSubTableRender="props.hideChildTag"
+      :dataSourceTitle="dataSourceTitle"
       @init-form="handleFormInit"
       @toggle-full-screen="(val) => (fullScreenModal = val)"
     />

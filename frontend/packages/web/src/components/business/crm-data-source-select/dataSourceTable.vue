@@ -22,7 +22,11 @@
     >
       <template #tableTop>
         <n-button v-if="hasCreatePermission" type="primary" @click="handleNewCreate">
-          {{ `${t('common.newCreate')}${fullFormSettingList.find((e) => e.dataSource === props.sourceType)?.label}` }}
+          {{
+            `${t('common.newCreate')}${
+              fullFormSettingList.find((e) => e.dataSource === props.sourceType)?.label || props.dataSourceTitle
+            }`
+          }}
         </n-button>
       </template>
       <template #actionRight>
@@ -40,6 +44,7 @@
     v-model:visible="formCreateVisible"
     :form-key="realFormKey"
     :need-init-detail="false"
+    :custom-form-id="props.sourceType"
     @saved="handleFormCreateSave"
   />
 </template>
@@ -96,6 +101,7 @@
       fullscreenTargetRef?: HTMLElement | null;
       fieldConfig?: FormCreateField;
       isSubTableRender?: boolean;
+      dataSourceTitle?: string;
     }>(),
     {
       multiple: true,
@@ -630,7 +636,11 @@
   }
 
   const formCreateVisible = ref(false);
-  const realFormKey = computed(() => fullFormSettingList.find((e) => e.dataSource === props.sourceType)?.formKey);
+  const realFormKey = computed(() =>
+    isCustomForm.value
+      ? FormDesignKeyEnum.CUSTOM_FORM
+      : fullFormSettingList.find((e) => e.dataSource === props.sourceType)?.formKey
+  );
   function handleNewCreate() {
     formCreateVisible.value = true;
   }
