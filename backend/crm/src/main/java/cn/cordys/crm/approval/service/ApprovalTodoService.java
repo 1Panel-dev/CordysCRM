@@ -77,13 +77,7 @@ public class ApprovalTodoService {
     }
 
     public ApprovalTodoCountResponse getPendingCount(String userId) {
-        // 初始化统计响应对象并设置默认值。
-        ApprovalTodoCountResponse response = new ApprovalTodoCountResponse();
-        response.setTotal(0);
-        response.setQuotation(0);
-        response.setContract(0);
-        response.setOrder(0);
-        response.setInvoice(0);
+        ApprovalTodoCountResponse response = emptyCountResponse();
         // 未登录用户直接返回空统计。
         if (StringUtils.isBlank(userId)) {
             return response;
@@ -98,6 +92,20 @@ public class ApprovalTodoService {
         response.setContract(Optional.ofNullable(count.getContract()).orElse(0));
         response.setOrder(Optional.ofNullable(count.getOrder()).orElse(0));
         response.setInvoice(Optional.ofNullable(count.getInvoice()).orElse(0));
+        return response;
+    }
+
+    public ApprovalTodoCountResponse getCcCount(String userId) {
+        return extApprovalTaskMapper.countCcByApprover(userId);
+    }
+
+    private ApprovalTodoCountResponse emptyCountResponse() {
+        ApprovalTodoCountResponse response = new ApprovalTodoCountResponse();
+        response.setTotal(0);
+        response.setQuotation(0);
+        response.setContract(0);
+        response.setOrder(0);
+        response.setInvoice(0);
         return response;
     }
 
