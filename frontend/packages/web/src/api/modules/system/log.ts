@@ -1,6 +1,14 @@
-import { GetOperationLogDetailUrl, LoginLogListUrl, OperationLogListUrl } from '@lib/shared/api/requrls/system/log';
+import {
+  AiExecutionLogListUrl,
+  GetAiExecutionLogDetailUrl,
+  GetOperationLogDetailUrl,
+  LoginLogListUrl,
+  OperationLogListUrl,
+} from '@lib/shared/api/requrls/system/log';
 import type { CommonList } from '@lib/shared/models/common';
 import type {
+  AiExecutionLogItem,
+  AiExecutionLogParams,
   LoginLogItem,
   LoginLogParams,
   OperationLogDetail,
@@ -23,4 +31,14 @@ export function operationLogList(data: OperationLogParams) {
 // 操作日志-详情
 export function operationLogDetail(id: string) {
   return CDR.get<OperationLogDetail>({ url: `${GetOperationLogDetailUrl}/${id}` });
+}
+
+// AI 执行日志
+export function aiExecutionLogList(data: AiExecutionLogParams) {
+  return CDR.post<CommonList<AiExecutionLogItem>>({ url: AiExecutionLogListUrl, data });
+}
+
+// AI 执行日志-详情
+export function aiExecutionLogDetail(id: string) {
+  return CDR.get<AiExecutionLogItem>({ url: `${GetAiExecutionLogDetailUrl}/${id}` });
 }

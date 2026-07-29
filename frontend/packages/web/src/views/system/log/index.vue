@@ -12,13 +12,24 @@
         :model="form"
         class="grid grid-cols-3 gap-x-[24px]"
       >
-        <n-form-item :label="t('common.operator')" path="operator">
+        <n-form-item v-if="activeTab !== 'aiExecution'" :label="t('common.operator')" path="operator">
           <CrmUserSelect
             v-model:value="form.operator"
             value-field="id"
             label-field="name"
             mode="remote"
             :fetch-api="getUserOptions"
+            filterable
+            clearable
+          />
+        </n-form-item>
+        <n-form-item v-else :label="t('common.operator')" path="operator">
+          <CrmUserSelect
+            v-model:value="form.operator"
+            value-field="id"
+            label-field="name"
+            mode="remote"
+            :fetch-api="getAiOperatorOptions"
             filterable
             clearable
           />
@@ -53,6 +64,35 @@
             <n-input v-model:value="form.keyword" :placeholder="t('common.pleaseInput')" clearable />
           </n-form-item>
         </template>
+        <template v-if="activeTab === 'aiExecution'">
+          <n-form-item :label="t('log.operationType')" path="operationType">
+            <n-select
+              v-model:value="form.operationType"
+              :options="aiOperationTypeOptions"
+              :placeholder="t('common.pleaseSelect')"
+              clearable
+            />
+          </n-form-item>
+          <n-form-item :label="t('log.model')" path="modelId">
+            <n-select
+              v-model:value="form.modelId"
+              :options="aiModelOptions"
+              :placeholder="t('common.pleaseSelect')"
+              clearable
+            />
+          </n-form-item>
+          <n-form-item :label="t('common.status')" path="status">
+            <n-select
+              v-model:value="form.status"
+              :options="aiStatusOptions"
+              :placeholder="t('common.pleaseSelect')"
+              clearable
+            />
+          </n-form-item>
+          <n-form-item :label="t('system.business.globalTask.taskName')" path="keyword">
+            <n-input v-model:value="form.keyword" :placeholder="t('common.pleaseInput')" clearable />
+          </n-form-item>
+        </template>
         <n-form-item>
           <n-button ghost class="mr-[12px]" type="primary" @click="searchData">
             {{ t('advanceFilter.filter') }}
@@ -80,12 +120,29 @@
         @filter-change="propsEvent.filterChange"
       />
     </CrmCard>
+    <CrmCard
+      v-if="activeTab === 'aiExecution'"
+      no-content-bottom-padding
+      hide-footer
+      :special-height="licenseStore.expiredDuring ? 272 : 0"
+    >
+      <CrmTable
+        ref="aiExecutionTableRef"
+        v-bind="aiExecutionTablePropsRes"
+        class="crm-ai-execution-log-table"
+        @page-change="aiExecutionTablePropsEvent.pageChange"
+        @page-size-change="aiExecutionTablePropsEvent.pageSizeChange"
+        @sorter-change="aiExecutionTablePropsEvent.sorterChange"
+        @filter-change="aiExecutionTablePropsEvent.filterChange"
+      />
+    </CrmCard>
     <LoginLog v-if="activeTab === 'login'" ref="loginLogRef" />
   </n-scrollbar>
 
   <CrmDrawer v-model:show="showDetailDrawer" :footer="false" :show-mask="false" :title="t('log.detail')" :width="680">
     <LogDetailItem :detail="activeLogDetail" />
   </CrmDrawer>
+  <AiExecutionLogDetailDrawer v-model:show="showAiExecutionLogDetailDrawer" :detail="activeAiExecutionLogDetail" />
 </template>
 
 <script setup lang="ts">
@@ -99,6 +156,7 @@
     NInput,
     NScrollbar,
     NSelect,
+    NTag,
   } from 'naive-ui';
   import dayjs from 'dayjs';
 
@@ -107,7 +165,12 @@
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getCityPath, getIndustryPath } from '@lib/shared/method';
-  import type { OperationLogDetail, OperationLogItem, OperationLogParams } from '@lib/shared/models/system/log';
+  import type {
+    AiExecutionLogItem,
+    OperationLogDetail,
+    OperationLogItem,
+    OperationLogParams,
+  } from '@lib/shared/models/system/log';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -117,11 +180,17 @@
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
+  import AiExecutionLogDetailDrawer from './components/aiExecutionLogDetailDrawer.vue';
   import LogDetailItem from './components/logDetailItem.vue';
   import LoginLog from './components/loginLog.vue';
 
-  import { getUserOptions } from '@/api/modules';
-  import { operationLogDetail, operationLogList } from '@/api/modules/system/log';
+  import { getAiModelOptions, getUserOptions } from '@/api/modules';
+  import {
+    aiExecutionLogDetail,
+    aiExecutionLogList,
+    operationLogDetail,
+    operationLogList,
+  } from '@/api/modules/system/log';
   import { logTypeOption } from '@/config/system';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import usePathMap from '@/hooks/usePathMap';
@@ -139,6 +208,10 @@
     {
       name: 'login',
       tab: t('log.loginLog'),
+    },
+    {
+      name: 'aiExecution',
+      tab: t('log.aiExecutionLog'),
     },
   ];
 
@@ -189,6 +262,10 @@
     type: null,
     module: null,
     operator: null,
+    operationType: null,
+    modelId: null,
+    status: null,
+    keyword: '',
     time: [dayjs().subtract(1, 'M').valueOf(), dayjs().valueOf()],
   };
   const form = ref<OperationLogParams>({
@@ -198,6 +275,59 @@
   // 详情
   const activeLogDetail = ref<OperationLogDetail>();
   const showDetailDrawer = ref(false);
+
+  const activeAiExecutionLogDetail = ref<AiExecutionLogItem>();
+  const showAiExecutionLogDetailDrawer = ref(false);
+
+  async function getAiOperatorOptions(params: Record<string, any>) {
+    try {
+      const users = await getUserOptions(params);
+      const keyword = params.keyword?.trim();
+      const autoOption = { id: 'auto', name: t('log.autoExecution') };
+      return !keyword || autoOption.name.includes(keyword) ? [autoOption, ...users] : users;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      return [];
+    }
+  }
+
+  const aiModelOptions = ref<{ label: string; value: string }[]>([]);
+  async function initAiModelOptions() {
+    try {
+      const models = await getAiModelOptions();
+      aiModelOptions.value = models.map((item) => ({
+        label: item.name,
+        value: item.id,
+      }));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
+  const aiOperationTypeOptions = [
+    { label: t('log.operationType.dataWrite'), value: 'data_write' },
+    { label: t('log.operationType.dataRead'), value: 'data_read' },
+    { label: t('log.operationType.taskExecution'), value: 'task_execution' },
+    { label: t('log.operationType.modelCall'), value: 'model_call' },
+  ];
+
+  const aiStatusList = computed(() => [
+    { label: t('common.success'), value: 'success', type: 'success' as const },
+    { label: t('common.fail'), value: 'failed', type: 'error' as const },
+    { label: t('log.status.confirming'), value: 'confirming', type: 'warning' as const },
+  ]);
+
+  const aiStatusOptions = computed(() => aiStatusList.value.map(({ label, value }) => ({ label, value })));
+
+  const aiStatusTagMap = computed(() =>
+    Object.fromEntries(aiStatusList.value.map(({ label, type, value }) => [value, { label, type }]))
+  );
+
+  const aiOperationTypeLabelMap = computed(() =>
+    Object.fromEntries(aiOperationTypeOptions.map((item) => [item.value, item.label]))
+  );
 
   function cityFormat(val: string) {
     const address = val?.split('-');
@@ -317,8 +447,94 @@
     containerClass: '.crm-operation-log-table',
   });
 
+  async function openAiExecutionLogDetail(row: AiExecutionLogItem) {
+    try {
+      activeAiExecutionLogDetail.value = await aiExecutionLogDetail(row.id);
+      showAiExecutionLogDetailDrawer.value = true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
+  const aiExecutionColumns: CrmDataTableColumn<AiExecutionLogItem>[] = [
+    {
+      title: t('common.operator'),
+      key: 'operatorName',
+      width: 170,
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row) => [row.operatorName, row.confirmerName].filter(Boolean).join(' / '),
+    },
+    {
+      title: t('log.usedModel'),
+      key: 'modelName',
+      width: 140,
+    },
+    {
+      title: t('log.tokenCost'),
+      key: 'tokenCost',
+      width: 120,
+      render: (row) => row.tokenCost.toLocaleString(),
+    },
+    {
+      title: t('log.operationType'),
+      key: 'operationType',
+      width: 140,
+      render: (row) => aiOperationTypeLabelMap.value[row.operationType] || '-',
+    },
+    {
+      title: t('common.status'),
+      key: 'status',
+      width: 120,
+      render: (row) => {
+        const status = aiStatusTagMap.value[row.status];
+        return h(NTag, { type: status.type, bordered: false }, { default: () => status.label });
+      },
+    },
+    {
+      title: t('system.business.globalTask.taskName'),
+      key: 'taskName',
+      minWidth: 180,
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row) =>
+        h(
+          CrmTableButton,
+          {
+            onClick: () => openAiExecutionLogDetail(row),
+          },
+          { default: () => row.taskName, trigger: () => row.taskName }
+        ),
+    },
+    {
+      title: t('log.operationTime'),
+      key: 'createTime',
+      width: 180,
+      sortOrder: false,
+      sorter: true,
+      resizable: false,
+    },
+  ];
+
+  const {
+    propsRes: aiExecutionTablePropsRes,
+    propsEvent: aiExecutionTablePropsEvent,
+    loadList: loadAiExecutionList,
+    setLoadListParams: setAiExecutionLoadListParams,
+  } = useTable<AiExecutionLogItem>(aiExecutionLogList, {
+    showSetting: false,
+    columns: aiExecutionColumns,
+    tableKey: TableKeyEnum.AI_EXECUTION_LOG,
+    hiddenRefresh: true,
+    containerClass: '.crm-ai-execution-log-table',
+  });
+
   const loginLogRef = ref<InstanceType<typeof LoginLog>>();
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const aiExecutionTableRef = ref<InstanceType<typeof CrmTable>>();
 
   async function searchData() {
     const { time, ...otherForm } = form.value;
@@ -326,6 +542,10 @@
       setLoadListParams({ ...otherForm, startTime: time[0], endTime: time[1] });
       await loadList();
       crmTableRef.value?.scrollTo({ top: 0 });
+    } else if (activeTab.value === 'aiExecution') {
+      setAiExecutionLoadListParams({ ...otherForm, startTime: time[0], endTime: time[1] });
+      await loadAiExecutionList();
+      aiExecutionTableRef.value?.scrollTo({ top: 0 });
     } else {
       nextTick(() => {
         loginLogRef.value?.searchData({ operator: otherForm.operator, startTime: time[0], endTime: time[1] });
@@ -348,6 +568,7 @@
 
   onMounted(() => {
     initModuleOptions();
+    initAiModelOptions();
   });
 </script>
 

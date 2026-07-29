@@ -13,6 +13,7 @@ import {
   EnableApiKeyUrl,
   ExportCenterDownloadUrl,
   GetAgentTaskDetailUrl,
+  GetAgentTaskExecutionRecordListUrl,
   GetAgentTaskListUrl,
   GetAiModelListUrl,
   GetAiModelOptionsUrl,
@@ -85,7 +86,7 @@ import type {
   AiModelSaveParams,
   AiModelStatusParams,
 } from '@lib/shared/models/system/aiModel';
-import type { AgentTaskItem, AgentTaskParams } from '@lib/shared/models/system/agentTask';
+import type { AgentTaskExecutionRecordItem, AgentTaskItem, AgentTaskParams } from '@lib/shared/models/system/agentTask';
 import { type DEToken, OrgUserInfo } from '@lib/shared/models/system/org';
 
 export default function useProductApi(CDR: CordysAxios) {
@@ -361,6 +362,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DeleteAgentTaskUrl}/${id}` });
   }
 
+  // 全局任务-分页查询执行记录
+  function getAgentTaskExecutionRecordList(data: TableQueryParams) {
+    return CDR.post<CommonList<AgentTaskExecutionRecordItem>>({ url: GetAgentTaskExecutionRecordListUrl, data });
+  }
+
   return {
     getConfigEmail,
     updateConfigEmail,
@@ -409,6 +415,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getAiModelRouteStrategy,
     updateAiModelRouteStrategy,
     getAgentTaskList,
+    getAgentTaskExecutionRecordList,
     addAgentTask,
     updateAgentTask,
     switchAgentTask,

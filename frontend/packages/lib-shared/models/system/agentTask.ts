@@ -31,3 +31,15 @@ export interface AgentTaskItem extends Omit<AgentTaskParams, 'applicableRoles'> 
   createUserName?: string;
   updateUserName?: string;
 }
+
+export type AgentTaskExecutionStatus = 'allocated' | 'created' | 'pending' | 'failed';
+
+export interface AgentTaskExecutionRecordItem {
+  id: string;
+  executionTime: number;
+  taskName: string;
+  triggerReason: string;
+  result: string;
+  status: AgentTaskExecutionStatus;
+  confirmerName: string;
+}
