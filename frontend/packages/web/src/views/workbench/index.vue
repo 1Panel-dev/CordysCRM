@@ -34,7 +34,7 @@
                 :refresh-key="refreshKey"
                 class="mt-[16px]"
                 active-type="followPlan"
-                wrapper-class="h-[calc(100%-38px)] !p-[0px] !pr-[1px]"
+                wrapper-class="h-[calc(100%-38px)] !p-[0px] !pr-[8px]"
                 :virtual-scroll-height="`${
                   hasAnyPermission(quickAccessPermissionList)
                     ? `calc(100vh - ${!showAlert ? 402 : 464}px)`

@@ -49,3 +49,19 @@ export interface UpdateFollowCommentParams {
   content: string;
   mentionUserIds?: string[];
 }
+
+export interface FollowCommentSubmitValue {
+  content: string;
+  mentionUserIds: string[];
+}
+
+export interface FollowCommentActionValue extends FollowCommentSubmitValue {
+  comment: FollowCommentItem;
+}
+
+export type FollowCommentEditorAction = 'create' | 'reply' | 'edit';
+
+export interface FollowCommentActiveEditor {
+  action: FollowCommentEditorAction;
+  commentId?: string;
+}
