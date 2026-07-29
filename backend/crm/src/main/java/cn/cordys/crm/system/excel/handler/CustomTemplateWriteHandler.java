@@ -43,6 +43,7 @@ import java.util.Map;
 
 /**
  * 自定义模板处理器
+ *
  * @author song-cc-rock
  */
 public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHandler, CellWriteHandler {
@@ -55,49 +56,49 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
     private final int totalColumns;
     private Sheet mainSheet;
     private Drawing<?> drawingPatriarch;
-	/**
-	 * 多级表格需要记录偏移位置
-	 */
-	private final List<Integer> downOffSet = new ArrayList<>();
-	private final List<String> centerCells = new ArrayList<>();
+    /**
+     * 多级表格需要记录偏移位置
+     */
+    private final List<Integer> downOffSet = new ArrayList<>();
+    private final List<String> centerCells = new ArrayList<>();
 
-	public static final int MAX_DROPDOWN_LENGTH = 255;
+    public static final int MAX_DROPDOWN_LENGTH = 255;
 
     public CustomTemplateWriteHandler(List<BaseField> fields) {
         int index = 0;
-		List<BaseField> importFields = fields.stream().filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f)).toList();
-		for (BaseField field : importFields) {
-			if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
-				for (BaseField f : subField.getSubFields()) {
-					if (StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f)) {
-						downOffSet.add(index);
-						setExtra(f, index++);
-					}
-				}
-				centerCells.add(subField.getName());
-				continue;
-			}
-			setExtra(field, index++);
+        List<BaseField> importFields = fields.stream().filter(f -> StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f)).toList();
+        for (BaseField field : importFields) {
+            if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
+                for (BaseField f : subField.getSubFields()) {
+                    if (StringUtils.isEmpty(f.getResourceFieldId()) && f.canImport(f)) {
+                        downOffSet.add(index);
+                        setExtra(f, index++);
+                    }
+                }
+                centerCells.add(subField.getName());
+                continue;
+            }
+            setExtra(field, index++);
         }
         totalColumns = index;
     }
 
-	private void setExtra(BaseField field, int index) {
-		fieldIndexMap.put(field, index);
-		if (field.needRequireCheck()) {
-			requires.add(field.getName());
-		}
-		if (field.needRepeatCheck()) {
-			uniques.add(field.getName());
-		}
-		if (field.multiple()) {
-			multiples.add(field.getName());
-		}
-		if (field instanceof HasOption optionField && CollectionUtils.isNotEmpty(optionField.getOptions())) {
-			// set options for data validation
-			validationOptionMap.put(index, optionField.getOptions().stream().map(OptionProp::getLabel).toList());
-		}
-	}
+    private void setExtra(BaseField field, int index) {
+        fieldIndexMap.put(field, index);
+        if (field.needRequireCheck()) {
+            requires.add(field.getName());
+        }
+        if (field.needRepeatCheck()) {
+            uniques.add(field.getName());
+        }
+        if (field.multiple()) {
+            multiples.add(field.getName());
+        }
+        if (field instanceof HasOption optionField && CollectionUtils.isNotEmpty(optionField.getOptions())) {
+            // set options for data validation
+            validationOptionMap.put(index, optionField.getOptions().stream().map(OptionProp::getLabel).toList());
+        }
+    }
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
@@ -119,8 +120,8 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
             // set data validation
             DataValidationHelper dataValidationHelper = sheet.getDataValidationHelper();
             validationOptionMap.forEach((k, v) -> {
-				List<String> simpleOps = limitCellDropdown(v);
-				DataValidationConstraint dvc = dataValidationHelper.createExplicitListConstraint(simpleOps.toArray(String[]::new));
+                List<String> simpleOps = limitCellDropdown(v);
+                DataValidationConstraint dvc = dataValidationHelper.createExplicitListConstraint(simpleOps.toArray(String[]::new));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dvc, new CellRangeAddressList(1, 1048575, k, k));
                 sheet.addValidationData(dataValidation);
             });
@@ -130,9 +131,9 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
     @Override
     public void afterRowDispose(RowWriteHandlerContext context) {
         Sheet sheet = context.getWriteSheetHolder().getSheet();
-		int maxHeadRow = context.getWriteSheetHolder().getExcelWriteHeadProperty().getHeadRowNumber();
+        int maxHeadRow = context.getWriteSheetHolder().getExcelWriteHeadProperty().getHeadRowNumber();
         if (BooleanUtils.isTrue(context.getHead()) && context.getRow().getRowNum() == maxHeadRow - 1
-				&& Strings.CS.equals(sheet.getSheetName(), Translator.get(SheetKey.DATA))) {
+                && Strings.CS.equals(sheet.getSheetName(), Translator.get(SheetKey.DATA))) {
             mainSheet = sheet;
             drawingPatriarch = sheet.createDrawingPatriarch();
             fieldIndexMap.forEach((k, v) -> {
@@ -141,7 +142,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
                 }
                 if (Strings.CS.equals(k.getType(), FieldType.INPUT.name())) {
                     if (k instanceof InputField inputField) {
-                        if (Strings.CI.equals(inputField.getDefaultValueType(), "formula")) {
+                        if (Strings.CI.equals(inputField.getDefaultValueType(), "formula") && StringUtils.isNotBlank(inputField.getFormula())) {
                             Map map = JSON.parseObject(inputField.getFormula(), Map.class);
                             setComment(v, map.get("display").toString());
                         }
@@ -167,10 +168,10 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
             if (multiples.contains(cell.getStringCellValue())) {
                 font.setUnderline(Font.U_SINGLE);
             }
-			if (centerCells.contains(cell.getStringCellValue())) {
-				headStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
-				headStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-			}
+            if (centerCells.contains(cell.getStringCellValue())) {
+                headStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+                headStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            }
         }
         font.setFontHeightInPoints((short) 12);
         headStyle.setWriteFont(font);
@@ -225,21 +226,21 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 
     private String getLocationComment(BaseField field) {
         StringBuilder sb = new StringBuilder();
-		sb.append(Translator.get("format.preview")).append(": ");
+        sb.append(Translator.get("format.preview")).append(": ");
         LocationField locationField = (LocationField) field;
-		if (!Strings.CS.equals(locationField.getScope(), LocationResolver.CN)) {
-			sb.append(Translator.get("location.c"));
-			if (!Strings.CS.equals(locationField.getLocationType(), LocationResolver.C)) {
-				sb.append("-");
-			}
-		}
-		if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.P)) {
+        if (!Strings.CS.equals(locationField.getScope(), LocationResolver.CN)) {
+            sb.append(Translator.get("location.c"));
+            if (!Strings.CS.equals(locationField.getLocationType(), LocationResolver.C)) {
+                sb.append("-");
+            }
+        }
+        if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.P)) {
             sb.append(Translator.get("location.p"));
         } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PC)) {
             sb.append(Translator.get("location.pc"));
         } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PCD)) {
             sb.append(Translator.get("location.pcd"));
-        } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PCD_D)){
+        } else if (Strings.CS.equals(locationField.getLocationType(), LocationResolver.PCD_D)) {
             sb.append(Translator.get("location.pcd.detail"));
         }
         return sb.toString();
@@ -257,21 +258,21 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
         return null;
     }
 
-	private static List<String> limitCellDropdown(List<String> options) {
-		List<String> limitOps = new ArrayList<>();
-		int currentLength = 0;
-		for (String option : options) {
-			if (option == null || option.isEmpty()) {
-				continue;
-			}
-			int optionLength = option.length();
-			int extra = CollectionUtils.isEmpty(limitOps) ? optionLength : optionLength + 1;
-			if (currentLength + extra > MAX_DROPDOWN_LENGTH) {
-				break;
-			}
-			limitOps.add(option);
-			currentLength += extra;
-		}
-		return limitOps;
-	}
+    private static List<String> limitCellDropdown(List<String> options) {
+        List<String> limitOps = new ArrayList<>();
+        int currentLength = 0;
+        for (String option : options) {
+            if (option == null || option.isEmpty()) {
+                continue;
+            }
+            int optionLength = option.length();
+            int extra = CollectionUtils.isEmpty(limitOps) ? optionLength : optionLength + 1;
+            if (currentLength + extra > MAX_DROPDOWN_LENGTH) {
+                break;
+            }
+            limitOps.add(option);
+            currentLength += extra;
+        }
+        return limitOps;
+    }
 }
