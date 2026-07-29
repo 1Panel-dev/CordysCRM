@@ -96,6 +96,7 @@ export interface CustomerFollowRecordListItem {
   departmentId: string;
   departmentName: string;
   poolId: string;
+  resourceType: string;
   moduleFields: ModuleField[];
 }
 

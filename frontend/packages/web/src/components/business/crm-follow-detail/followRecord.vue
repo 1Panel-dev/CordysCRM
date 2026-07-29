@@ -29,6 +29,16 @@
               <div class="crm-follow-record-method">
                 {{ (props.type === 'followRecord' ? item.followMethod : item.method) ?? '-' }}
               </div>
+              <n-tooltip
+                v-if="item.opportunityName && props.type === 'followRecord' && item.resourceType === 'CUSTOMER'"
+                trigger="hover"
+                :disabled="!item.opportunityName"
+              >
+                <template #trigger>
+                  <div class="one-line-text max-w-[300px]">{{ item.opportunityName ?? '-' }}</div>
+                </template>
+                {{ item.opportunityName ?? '-' }}
+              </n-tooltip>
             </div>
 
             <slot name="headerAction" :item="item"></slot>
@@ -84,6 +94,7 @@
 </template>
 
 <script setup lang="ts">
+  import { NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
