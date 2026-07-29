@@ -100,9 +100,9 @@ public class GlobalCustomerSearchService extends BaseSearchService<BasePageReque
         }
         //构造查询参数
         buildCombineSearch(conditions, request);
+        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         //搜索客户
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        ConditionFilterUtils.parseCondition(request, FormKey.CUSTOMER.getKey());
         List<GlobalCustomerResponse> globalCustomerResponses = extCustomerMapper.globalSearchList(request, orgId);
         if (CollectionUtils.isEmpty(globalCustomerResponses)) {
             return PageUtils.setPageInfo(page, List.of());
