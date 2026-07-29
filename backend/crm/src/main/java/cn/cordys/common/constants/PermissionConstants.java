@@ -248,6 +248,8 @@ public class PermissionConstants {
     public static final String ORDER_UPDATE = "ORDER:UPDATE";
     public static final String ORDER_DELETE = "ORDER:DELETE";
     public static final String ORDER_DOWNLOAD = "ORDER:DOWNLOAD";
+    public static final String ORDER_IMPORT = "ORDER:IMPORT";
+    public static final String ORDER_EXPORT = "ORDER:EXPORT";
     /*------ end: ORDER_ROLE ------*/
 
     /*------ start: PROCESS_SETTING ------*/

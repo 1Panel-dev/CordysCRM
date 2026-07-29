@@ -698,6 +698,12 @@
           },
           {
             "id": "ORDER:DOWNLOAD"
+          },
+          {
+            "id": "ORDER:IMPORT"
+          },
+          {
+            "id": "ORDER:EXPORT"
           }
         ]
       }

@@ -1,27 +1,29 @@
 package cn.cordys.crm.order.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.dto.ExportDTO;
+import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.pager.PagerWithOption;
-import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.permission.CsBatchPermission;
+import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.order.domain.Order;
-import cn.cordys.crm.order.dto.request.OrderAddRequest;
-import cn.cordys.crm.order.dto.request.OrderPageRequest;
-import cn.cordys.crm.order.dto.request.OrderStageRequest;
-import cn.cordys.crm.order.dto.request.OrderUpdateRequest;
+import cn.cordys.crm.order.dto.request.*;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
 import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
+import cn.cordys.crm.order.service.OrderExportService;
 import cn.cordys.crm.order.service.OrderService;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -30,6 +32,7 @@ import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +49,8 @@ public class OrderController {
     private DataScopeService dataScopeService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private OrderExportService orderExportService;
 
     @GetMapping("/module/form")
     @CsPermission(PermissionConstants.ORDER_READ)
@@ -153,4 +158,48 @@ public class OrderController {
         orderService.sort(request, SessionUtils.getUserId());
     }
 
+
+    @PostMapping("/export-select")
+    @Operation(summary = "导出选中订单")
+    @CsBatchPermission(value = PermissionConstants.ORDER_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.ORDER)
+    public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.ORDER_READ);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.ORDER.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.ORDER_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .selectIds(request.getIds())
+                .selectRequest(request)
+                .formKey(FormKey.ORDER.getKey())
+                .build();
+        return orderExportService.exportSelectWithMergeStrategy(exportDTO);
+    }
+
+    @PostMapping("/export-all")
+    @Operation(summary = "导出全部订单")
+    @CsPermission(PermissionConstants.ORDER_EXPORT)
+    public String exportAll(@Validated @RequestBody OrderExportRequest request) {
+        ConditionFilterUtils.parseCondition(request, FormKey.ORDER.getKey());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.ORDER_READ);
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.ORDER.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.ORDER_INDEX)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .deptDataPermission(deptDataPermission)
+                .pageRequest(request)
+                .formKey(FormKey.ORDER.getKey())
+                .build();
+        return orderExportService.exportAllWithMergeStrategy(exportDTO);
+    }
 }

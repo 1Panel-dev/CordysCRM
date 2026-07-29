@@ -74,7 +74,7 @@ public class ContractInvoiceExportService extends BaseExportService {
             return Pair.of(exportList, exportList.size());
         } else {
             var request = (ContractInvoicePageRequest) exportParam.getPageRequest();
-            PageHelper.startPage(request.getCurrent(), request.getPageSize());
+            PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
             exportList = extContractInvoiceMapper.list(request, orgId, userId, deptDataPermission);
             int queryCount = exportList.size();
             var filtered = filterExportPermission(exportList, orgId);

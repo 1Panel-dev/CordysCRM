@@ -79,7 +79,7 @@ public class ContractExportService extends BaseExportService {
             return Pair.of(exportList, exportList.size());
         } else {
             var request = (ContractPageRequest) exportParam.getPageRequest();
-            PageHelper.startPage(request.getCurrent(), request.getPageSize());
+            PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
             exportList = extContractMapper.list(request, orgId, userId, deptDataPermission, false);
             int queryCount = exportList.size();
             var filtered = filterExportPermission(exportList, orgId);
@@ -127,10 +127,11 @@ public class ContractExportService extends BaseExportService {
 
     /**
      * 解析合同开始结束时间
-     * @param sysMap 系统字段值集合
-     * @param metaMap 导出字段信息
+     *
+     * @param sysMap      系统字段值集合
+     * @param metaMap     导出字段信息
      * @param businessKey 业务Key
-     * @param rawValue 原始值
+     * @param rawValue    原始值
      */
     private void resolveAndPutTimeField(LinkedHashMap<String, Object> sysMap, Map<String, FieldExportMeta> metaMap,
                                         String businessKey, Long rawValue) {
