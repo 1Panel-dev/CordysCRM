@@ -9,6 +9,7 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -192,7 +193,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 if (field == null || field.isSerialNumber()) {
                     return;
                 }
-                if (Strings.CI.equals(importType, ImportType.UPDATE.name()) && !field.getEditable()) {
+                if (Strings.CI.equals(importType, ImportType.UPDATE.name()) && !field.getEditable() && !Strings.CI.equals(field.getType(), FieldType.FORMULA.name())) {
                     return;
                 }
                 Object val = convertValue(rowData.get(k), field);

@@ -137,7 +137,7 @@ public class ContractInvoiceController {
                 .selectRequest(request)
                 .formKey(FormKey.INVOICE.getKey())
                 .build();
-        return contractInvoiceExportService.exportSelect(exportDTO);
+        return contractInvoiceExportService.exportSelectWithMergeStrategy(exportDTO);
     }
 
     @PostMapping("/export-all")
@@ -159,7 +159,7 @@ public class ContractInvoiceController {
                 .pageRequest(request)
                 .formKey(FormKey.INVOICE.getKey())
                 .build();
-        return contractInvoiceExportService.export(exportDTO);
+        return contractInvoiceExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
     @PostMapping("/batch/delete")
