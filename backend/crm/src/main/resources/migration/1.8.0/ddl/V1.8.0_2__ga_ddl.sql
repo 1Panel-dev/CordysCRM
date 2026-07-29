@@ -126,5 +126,40 @@ CREATE TABLE agent_message(
 
 CREATE INDEX idx_conversation_id ON agent_message(conversation_id ASC);
 
+CREATE TABLE agent_term_catalog(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '分类名称' ,
+    `pos` BIGINT(255) NOT NULL   COMMENT '排序' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '术语分类'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE TABLE agent_term(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `catalog_id` VARCHAR(32) NOT NULL   COMMENT '分类ID' ,
+    `standard_term` VARCHAR(255) NOT NULL   COMMENT '标准术语' ,
+    `also_called` VARCHAR(255)    COMMENT '同义词' ,
+    `avoid_these` VARCHAR(255)    COMMENT '禁用词' ,
+    `use_case` VARCHAR(255)    COMMENT '试用场景' ,
+    `system_reference` VARCHAR(255)    COMMENT '系统映射' ,
+    `enable` TINYINT(1) NOT NULL   COMMENT '状态' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '术语配置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_catalog_id ON agent_term(catalog_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
