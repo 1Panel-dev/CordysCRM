@@ -178,6 +178,19 @@
         
     </select>
 
+    <select id="countCcByApprover" resultType="cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse">
+        SELECT COUNT(*)                                                                            AS total,
+               IFNULL(SUM(CASE WHEN ai.type IN ('quotation', 'quote') THEN 1 ELSE 0 END), 0)       AS quotation,
+               IFNULL(SUM(CASE WHEN ai.type = 'contract' THEN 1 ELSE 0 END), 0)                    AS contract,
+               IFNULL(SUM(CASE WHEN ai.type = 'order' THEN 1 ELSE 0 END), 0)                       AS `order`,
+               IFNULL(SUM(CASE WHEN ai.type = 'invoice' THEN 1 ELSE 0 END), 0)                     AS invoice
+        FROM approval_task at
+                 INNER JOIN approval_instance ai ON ai.id = at.instance_id
+                 INNER JOIN approval_flow_version afv ON afv.id = ai.flow_version_id
+        WHERE at.approver_id = #{approverId}
+          AND at.type IN ('CC')
+    </select>
+
     <update id="updateTaskById">
         update approval_task
         <set>
