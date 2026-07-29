@@ -161,5 +161,17 @@ CREATE TABLE agent_term(
 
 CREATE INDEX idx_catalog_id ON agent_term(catalog_id ASC);
 
+CREATE TABLE agent_term_discovery(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `free_term` VARCHAR(255) NOT NULL   COMMENT '未定义术语' ,
+    `source` VARCHAR(50)    COMMENT '发现来源' ,
+    `reference` VARCHAR(255)    COMMENT '映射' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    PRIMARY KEY (id)
+)  COMMENT = '术语发现'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
