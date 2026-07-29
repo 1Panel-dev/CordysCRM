@@ -66,3 +66,4 @@ export const GetAgentTaskListUrl = '/agent-task/page'; // 全局任务-分页查
 export const SwitchAgentTaskUrl = '/agent-task/switch'; // 全局任务-启用/禁用任务
 export const GetAgentTaskDetailUrl = '/agent-task/get'; // 全局任务-获取任务详情
 export const DeleteAgentTaskUrl = '/agent-task/delete'; // 全局任务-删除任务
+export const GetAgentTaskExecutionRecordListUrl = '/agent-task/execution-record/page'; // 全局任务-分页查询执行记录
