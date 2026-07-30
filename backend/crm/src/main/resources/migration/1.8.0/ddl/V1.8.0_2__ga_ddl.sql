@@ -131,7 +131,6 @@ CREATE INDEX idx_conversation_id ON agent_message(conversation_id ASC);
 CREATE TABLE agent_term_catalog(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `name` VARCHAR(255) NOT NULL   COMMENT '分类名称' ,
-    `pos` BIGINT(255) NOT NULL   COMMENT '排序' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
@@ -176,6 +175,22 @@ CREATE TABLE agent_term_discovery(
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
+
+CREATE TABLE agent_task_execute_log(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `task_id` VARCHAR(32) NOT NULL   COMMENT '任务ID' ,
+    `execute_time` BIGINT NOT NULL   COMMENT '执行时间' ,
+    `execute_reason` VARCHAR(500) NOT NULL   COMMENT '触发原因' ,
+    `result` VARCHAR(255) NOT NULL   COMMENT '结果' ,
+    `confirm_user` VARCHAR(32)    COMMENT '确认用户' ,
+    PRIMARY KEY (id)
+)  COMMENT = '执行记录'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_task_id ON agent_task_execute_log(task_id ASC);
+CREATE INDEX idx_confirm_user ON agent_task_execute_log(confirm_user ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
