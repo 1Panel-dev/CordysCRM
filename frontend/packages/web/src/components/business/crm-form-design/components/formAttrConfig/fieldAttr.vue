@@ -1713,8 +1713,13 @@
         (e) => e.dataSourceType === FieldDataSourceTypeEnum.PRICE && e.id !== fieldConfig.value?.id
       )
         ? // 子表格里只能有一个价格表
-          systemOptions.filter((item) => item.value !== FieldDataSourceTypeEnum.PRICE && item.formKey !== props.formKey)
-        : systemOptions.filter((item) => item.formKey !== props.formKey);
+          [
+            ...systemOptions.filter(
+              (item) => item.value !== FieldDataSourceTypeEnum.PRICE && item.formKey !== props.formKey
+            ),
+            ...customOptions,
+          ]
+        : [...systemOptions.filter((item) => item.formKey !== props.formKey), ...customOptions];
     }
     return [...systemOptions.filter((item) => item.formKey !== props.formKey), ...customOptions];
   });
