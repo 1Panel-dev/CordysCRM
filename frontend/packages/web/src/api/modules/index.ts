@@ -887,4 +887,5 @@ export const {
   agreeApproval,
   batchAgreeApproval,
   testApprovalWebHook,
+  getCCStatistic,
 } = processApi;

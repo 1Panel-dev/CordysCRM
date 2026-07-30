@@ -55,11 +55,14 @@
         </div>
         <div class="flex flex-1 flex-col gap-[4px]">
           <div class="task-card justify-between" @click="goTask(ApprovalListTypeEnum.COPIED)">
-            <div class="flex items-center gap-[8px]">
+            <div class="flex w-full items-center gap-[8px]">
               <div class="task-icon border border-[var(--warning-yellow)]">
                 <CrmIcon name="iconicon_send" width="14px" height="14px" color="var(--warning-yellow)" />
               </div>
-              <div>{{ t('workbench.copyToMe') }}</div>
+              <div class="flex w-full items-center justify-between">
+                <div class="text-[14px]">{{ t('workbench.copyToMe') }}</div>
+                <div class="text-[16px] text-[var(--primary-8)]">{{ CCApprovalCount || 0 }}</div>
+              </div>
             </div>
           </div>
           <div class="flex items-center gap-[4px]">
@@ -136,7 +139,7 @@
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
 
   import { lastScopedOptions } from './duplicateCheck/config';
-  import { getTodoStatistic } from '@/api/modules';
+  import { getTodoStatistic, getCCStatistic } from '@/api/modules';
   import type { TodoStatistic } from '@lib/shared/models/system/process';
   import { ApprovalListTypeEnum } from '@lib/shared/enums/process';
 
@@ -240,6 +243,16 @@
     }
   }
 
+  const CCApprovalCount = ref(0);
+  async function initCCStatistic() {
+    try {
+      CCApprovalCount.value = (await getCCStatistic()).total;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   function goTask(type?: ApprovalListTypeEnum) {
     localStorage.setItem('activeTaskType', type?.toString() || '');
     router.push({ name: WorkbenchRouteEnum.WORKBENCH_TASK });
@@ -251,6 +264,7 @@
     appStore.initStageConfig();
     userStore.initApiKeyList();
     initTodoStatistic();
+    initCCStatistic();
   });
 </script>
 

@@ -25,6 +25,7 @@ import {
   BatchRejectApprovalUrl,
   BatchApprovalApprovalUrl,
   TestApprovalWebHookUrl,
+  GetCCStatisticUrl,
 } from '@lib/shared/api/requrls/system/process';
 import {
   AddApprovalProcessParams,
@@ -150,6 +151,11 @@ export default function useProcessApi(CDR: CordysAxios) {
     return CDR.get<TodoStatistic>({ url: GetTodoStatisticUrl });
   }
 
+  // 获取抄送统计
+  function getCCStatistic() {
+    return CDR.get<TodoStatistic>({ url: GetCCStatisticUrl });
+  }
+
   // 提审
   function reviewResource(data: CommonApprovalActionParams) {
     return CDR.post({ url: ReviewResourceUrl, data });
@@ -191,5 +197,6 @@ export default function useProcessApi(CDR: CordysAxios) {
     batchRejectApproval,
     batchAgreeApproval,
     testApprovalWebHook,
+    getCCStatistic,
   };
 }

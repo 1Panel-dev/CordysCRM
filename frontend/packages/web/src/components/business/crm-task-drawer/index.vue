@@ -22,13 +22,15 @@
                 "
               >
                 {{ child.title }}
-                <div v-if="item.name === 'pending'" class="task-count">{{ child.count }}</div>
+                <div v-if="['pending', 'copied'].includes(item.name)" class="task-count">{{ child.count }}</div>
               </div>
               <template #arrow>
                 <CrmIcon type="iconicon_right" :size="12" color="var(--text-n2)" class="mr-[4px]" />
               </template>
               <template #header-extra>
-                <div v-if="item.name === 'pending'" class="task-count mr-[16px]">{{ item.count }}</div>
+                <div v-if="['pending', 'copied'].includes(item.name)" class="task-count mr-[16px]">
+                  {{ item.count }}
+                </div>
               </template>
             </n-collapse-item>
           </n-collapse>
@@ -142,7 +144,7 @@
   import QuotationDetailDrawer from '@/views/opportunity/components/quotation/detail.vue';
   import OrderDetailDrawer from '@/views/order/order/components/detail.vue';
 
-  import { getApprovalConfigDetail, getTodoStatistic } from '@/api/modules';
+  import { getApprovalConfigDetail, getCCStatistic, getTodoStatistic } from '@/api/modules';
   import useOpenNewPage from '@/hooks/useOpenNewPage.js';
 
   import { ContractRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum.js';
@@ -163,6 +165,13 @@
   const activeTaskType = ref<string>('pending-QUOTATION');
 
   const statistic = ref<Record<string, any>>({
+    total: 0,
+    contract: 0,
+    quotation: 0,
+    order: 0,
+    invoice: 0,
+  });
+  const CCApprovalCount = ref<Record<string, any>>({
     total: 0,
     contract: 0,
     quotation: 0,
@@ -229,6 +238,16 @@
           };
         });
       }
+      if (e.name === 'copied') {
+        e.count = CCApprovalCount.value.total;
+        e.children = e.children.map((child) => {
+          const [_, name] = child.name.split('-');
+          return {
+            ...child,
+            count: CCApprovalCount.value[name.toLowerCase()],
+          };
+        });
+      }
       return e;
     });
   });
@@ -279,11 +298,21 @@
     }
   }
 
+  async function initCCStatistic() {
+    try {
+      CCApprovalCount.value = await getCCStatistic();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   watch(
     () => show.value,
     (val) => {
       if (val) {
         initStatistic();
+        initCCStatistic();
       }
     },
     {
@@ -304,6 +333,7 @@
   function refresh() {
     searchData();
     initStatistic();
+    initCCStatistic();
   }
 
   const approvalVisible = ref(false);
@@ -384,6 +414,7 @@
 
   function handleApproveSuccess() {
     initStatistic();
+    initCCStatistic();
     taskListRef.value?.loadTaskList(true);
     allSelect.value = false;
     selectedKeys.value = [];
