@@ -1,7 +1,14 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 
-import { getClueTab, getCustomerContactTab, getCustomerTab, getOptTab } from '@/api/modules';
+import {
+  getClueTab,
+  getCustomerContactTab,
+  getCustomerTab,
+  getFollowPlanTab,
+  getFollowRecordTab,
+  getOptTab,
+} from '@/api/modules';
 
 export interface TabPaneProps {
   name: string;
@@ -12,7 +19,9 @@ export type TabType =
   | FormDesignKeyEnum.CUSTOMER
   | FormDesignKeyEnum.BUSINESS
   | FormDesignKeyEnum.CLUE
-  | FormDesignKeyEnum.CONTACT;
+  | FormDesignKeyEnum.CONTACT
+  | FormDesignKeyEnum.FOLLOW_PLAN
+  | FormDesignKeyEnum.FOLLOW_RECORD;
 export default function useHiddenTab(tabData: TabPaneProps[], type?: TabType) {
   const activeFilter = ref();
 
@@ -21,6 +30,8 @@ export default function useHiddenTab(tabData: TabPaneProps[], type?: TabType) {
     [FormDesignKeyEnum.CONTACT]: getCustomerContactTab,
     [FormDesignKeyEnum.BUSINESS]: getOptTab,
     [FormDesignKeyEnum.CLUE]: getClueTab,
+    [FormDesignKeyEnum.FOLLOW_RECORD]: getFollowRecordTab,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: getFollowPlanTab,
   };
 
   const tabList = ref<TabPaneProps[]>([]);

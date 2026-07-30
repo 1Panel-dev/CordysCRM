@@ -7,6 +7,7 @@
     :keyword="props.keyword"
     :list-params="props.listParams"
     :load-list-api="props.loadListApi"
+    :no-page-nation="props.noPageNation"
     :transform="props.transform"
   >
     <template #item="{ item }">

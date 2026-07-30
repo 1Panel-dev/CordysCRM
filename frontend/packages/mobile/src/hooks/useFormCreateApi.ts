@@ -463,6 +463,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   async function initFormDetail() {
     try {
+      loading.value = true;
       const asyncApi = getFormDetailApiMap[props.formKey];
       if (!asyncApi || !props.sourceId?.value) return;
       const res = await asyncApi(props.sourceId?.value);

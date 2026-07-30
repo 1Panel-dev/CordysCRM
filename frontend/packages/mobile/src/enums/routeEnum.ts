@@ -29,6 +29,7 @@ export enum CommonRouteEnum {
   FORM_CREATE = 'formCreate',
   CONTACT_DETAIL = 'contactDetail',
   FOLLOW_DETAIL = 'followDetail',
+  FOLLOW_COMMENT = 'followComment',
   WORKFLOW_STAGE = 'workflowStage',
 }
 

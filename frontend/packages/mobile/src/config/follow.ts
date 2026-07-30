@@ -8,6 +8,8 @@ import {
   deleteClueFollowRecord,
   deleteCustomerFollowPlan,
   deleteCustomerFollowRecord,
+  deleteFollowPlan,
+  deleteFollowRecord,
   deleteOptFollowPlan,
   deleteOptFollowRecord,
   getClueFollowPlanList,
@@ -16,10 +18,13 @@ import {
   getCustomerFollowPlanList,
   getCustomerFollowRecordList,
   getCustomerOpenSeaFollowRecordList,
+  getFollowPLanPage,
+  getFollowRecordPage,
   getOptFollowPlanList,
   getOptFollowRecordList,
   updateClueFollowPlanStatus,
   updateCustomerFollowPlanStatus,
+  updateFollowPlanStatus,
   updateOptFollowPlanStatus,
 } from '@/api/modules';
 
@@ -67,7 +72,8 @@ export type RecordEnumType =
   | FormDesignKeyEnum.FOLLOW_RECORD_CLUE
   | FormDesignKeyEnum.CLUE_POOL
   | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
-  | FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
+  | FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS
+  | FormDesignKeyEnum.FOLLOW_RECORD;
 
 export const followRecordApiMap: {
   list: Record<RecordEnumType, (params: any) => Promise<CommonList<FollowDetailItem>>>;
@@ -79,32 +85,38 @@ export const followRecordApiMap: {
     [FormDesignKeyEnum.CLUE_POOL]: getCluePoolFollowRecordList,
     [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: getOptFollowRecordList,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getCustomerOpenSeaFollowRecordList,
+    [FormDesignKeyEnum.FOLLOW_RECORD]: getFollowRecordPage,
   },
   delete: {
     [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: deleteCustomerFollowRecord,
     [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: deleteClueFollowRecord,
     [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: deleteOptFollowRecord,
+    [FormDesignKeyEnum.FOLLOW_RECORD]: deleteFollowRecord,
   },
 };
 
 export type PlanEnumType =
   | FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER
   | FormDesignKeyEnum.FOLLOW_PLAN_CLUE
-  | FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS;
+  | FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS
+  | FormDesignKeyEnum.FOLLOW_PLAN;
 export const followPlanApiMap = {
   list: {
     [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: getCustomerFollowPlanList,
     [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: getClueFollowPlanList,
     [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: getOptFollowPlanList,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: getFollowPLanPage,
   },
   delete: {
     [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: deleteCustomerFollowPlan,
     [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: deleteClueFollowPlan,
     [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: deleteOptFollowPlan,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: deleteFollowPlan,
   },
   changeStatus: {
     [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: updateCustomerFollowPlanStatus,
     [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: updateClueFollowPlanStatus,
     [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: updateOptFollowPlanStatus,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: updateFollowPlanStatus,
   },
 };

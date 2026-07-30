@@ -52,14 +52,15 @@ export interface UpdateFollowCommentParams {
 
 export interface FollowCommentSubmitValue {
   content: string;
-  mentionUserIds: string[];
+  mentionUsers?: FollowCommentUser[];
+  mentionUserIds?: string[];
 }
+
+export type FollowCommentEditorAction = 'create' | 'reply' | 'edit';
 
 export interface FollowCommentActionValue extends FollowCommentSubmitValue {
   comment: FollowCommentItem;
 }
-
-export type FollowCommentEditorAction = 'create' | 'reply' | 'edit';
 
 export interface FollowCommentActiveEditor {
   action: FollowCommentEditorAction;

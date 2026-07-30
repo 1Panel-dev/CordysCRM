@@ -71,14 +71,14 @@
   import { showImagePreview } from 'vant';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
+  import CrmSubTable from '@/components/pure/crm-sub-table/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmFileListPop from '@/components/business/crm-file-list-pop/index.vue';
-  import CrmSubTable from '@/components/pure/crm-sub-table/index.vue';
 
   import { AttachmentInfo, type FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
   export interface CrmDescriptionItem {
     label: string;

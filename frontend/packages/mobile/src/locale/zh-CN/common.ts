@@ -58,6 +58,8 @@ export default {
   'common.required': '必填',
   'common.onlyOne': '不允许重复值',
   'common.contact': '联系人',
+  'common.followRecord': '跟进记录',
+  'common.followPlan': '跟进计划',
   'common.customerContact': '联系人',
   'common.confirmDelete': '确认删除',
   'common.copySuccess': '复制成功',

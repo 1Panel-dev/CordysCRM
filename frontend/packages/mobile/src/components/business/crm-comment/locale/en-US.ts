@@ -1,0 +1,15 @@
+export default {
+  'crmComment.title': 'Comments',
+  'crmComment.addComment': 'Add comment',
+  'crmComment.commentPlaceholder': 'Comment, supports',
+  'crmComment.commentPlaceholderOthers': 'mentions',
+  'crmComment.replyPlaceholder': 'Reply {name}',
+  'crmComment.reply': 'Reply',
+  'crmComment.replyTo': 'Reply to',
+  'crmComment.edit': 'Edit',
+  'crmComment.delete': 'Delete',
+  'crmComment.save': 'Save',
+  'crmComment.moreReplies': 'More replies ({count})',
+  'crmComment.collapseReplies': 'Collapse',
+  'crmComment.submit': 'Send',
+};

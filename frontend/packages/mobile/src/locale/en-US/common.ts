@@ -58,6 +58,8 @@ export default {
   'common.required': 'Required',
   'common.onlyOne': 'Not allowed to repeat value',
   'common.contact': 'Contact',
+  'common.followRecord': 'Follow-up record',
+  'common.followPlan': 'Follow-up plan',
   'common.customerContact': 'Contact',
   'common.confirmDelete': 'Confirm delete',
   'common.copySuccess': 'Copy success',
