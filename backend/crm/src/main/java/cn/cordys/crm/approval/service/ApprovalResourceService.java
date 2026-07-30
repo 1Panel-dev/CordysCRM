@@ -616,6 +616,13 @@ public class ApprovalResourceService {
             boolean approved = isResourceApproved(formKey, resourceId);
             if (approved) {
                 // 已审批通过过：UPDATE时机，直接提审
+                ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
+                if (handler != null) {
+                    String snapshotData = handler.getPreUpdateSnapshotData(resourceId, userId, organizationId);
+                    if (StringUtils.isNotBlank(snapshotData)) {
+                        savePreUpdateSnapshot(formKey, resourceId, userId, snapshotData);
+                    }
+                }
                 ApprovalPushParam pushParam = ApprovalPushParam.builder()
                         .orgId(organizationId)
                         .userId(userId)
