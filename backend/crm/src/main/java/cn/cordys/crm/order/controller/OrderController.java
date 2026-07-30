@@ -24,17 +24,21 @@ import cn.cordys.crm.order.dto.response.OrderStatisticResponse;
 import cn.cordys.crm.order.service.OrderExportService;
 import cn.cordys.crm.order.service.OrderService;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -201,5 +205,27 @@ public class OrderController {
                 .formKey(FormKey.ORDER.getKey())
                 .build();
         return orderExportService.exportAllWithMergeStrategy(exportDTO);
+    }
+
+
+    @GetMapping("/template/download")
+    @CsPermission(PermissionConstants.ORDER_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        orderService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "导入检查")
+    @CsPermission(PermissionConstants.ORDER_IMPORT)
+    public ImportResponse preCheck(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return orderService.importPreCheck(file, request.getImportType(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import")
+    @Operation(summary = "导入")
+    @CsPermission(PermissionConstants.ORDER_IMPORT)
+    public ImportResponse realImport(@Validated @RequestPart("request") ImportRequest request, @RequestPart(value = "file") MultipartFile file) {
+        return orderService.realImport(file, request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

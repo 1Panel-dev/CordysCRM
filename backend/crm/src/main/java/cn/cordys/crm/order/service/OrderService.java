@@ -10,12 +10,14 @@ import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.stage.CirculationFieldValue;
 import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
@@ -25,6 +27,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
@@ -58,31 +61,52 @@ import cn.cordys.crm.order.mapper.ExtOrderMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.crm.system.constants.CirculationFieldValueTypeEnum;
 import cn.cordys.crm.system.constants.CirculationTypeEnum;
+import cn.cordys.crm.system.constants.ImportType;
+import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
+import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
+import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
+import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
+import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StageAdvancedConfigService;
+import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.idev.excel.FastExcelFactory;
+import cn.idev.excel.enums.CellExtraTypeEnum;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -122,6 +146,12 @@ public class OrderService implements ApprovalResourceHandler {
     private StageAdvancedConfigService stageAdvancedConfigService;
     @Resource
     private ExtStageAdvancedConfigMapper extStageAdvancedConfigMapper;
+    @Resource
+    private BaseMapper<OrderField> orderFieldMapper;
+    @Resource
+    private BaseMapper<OrderFieldBlob> orderFieldBlobMapper;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
@@ -1082,6 +1112,218 @@ public class OrderService implements ApprovalResourceHandler {
             CommonBeanFactory.getBean(OrderService.class).update(request, userId, orgId);
         } catch (Exception e) {
             log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
+        }
+    }
+
+
+    /**
+     * 下载导入模板
+     *
+     * @param response
+     * @param currentOrg
+     */
+    public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
+        new EasyExcelExporter()
+                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.ORDER.getKey(), currentOrg),
+                        Translator.get("order.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
+                        new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.ORDER.getKey(), currentOrg)),
+                        new CustomHeadColWidthStyleStrategy());
+    }
+
+
+    /**
+     * 导入检查
+     *
+     * @param file
+     * @param importType
+     * @param currentOrg
+     * @return
+     */
+    public ImportResponse importPreCheck(MultipartFile file, String importType, String currentOrg) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        return checkImportExcel(file, importType, currentOrg);
+    }
+
+
+    private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
+        try {
+            List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.ORDER.getKey(), currentOrg);
+
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+            // 1 先读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener = new CustomFieldMergeCellEventListener();
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+            // 2 校验数据
+            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "sales_order", "sales_order_field", currentOrg,
+                    mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), importType);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            log.error("order import pre-check error: {}", e.getMessage());
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+
+    /**
+     * 订单导入
+     *
+     * @param file
+     * @param request
+     * @param currentOrg
+     * @param currentUser
+     * @return
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
+        try {
+            List<BaseField> fields = moduleFormService.getAllFields(FormKey.ORDER.getKey(), currentOrg);
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+
+            // 1 读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), currentOrg);
+            List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(currentOrg);
+            long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
+            CustomImportAfterDoConsumer<Order, BaseResourceSubField> afterDo = (orders, orderFields, orderFieldBlobs) -> {
+                var logs = new ArrayList<LogDTO>();
+                ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
+                switch (importType) {
+                    case ADD -> {
+                        for (int i = 0; i < orders.size(); i++) {
+                            Order order = orders.get(i);
+                            order.setStage(stageConfigList.getFirst().getId());
+                            order.setApprovalStatus(ApprovalStatus.NONE.name());
+                            order.setPos(nextPos + i);
+                            logs.add(new LogDTO(currentOrg, order.getId(), currentUser, LogType.ADD, LogModule.ORDER_INDEX, order.getName()));
+                        }
+                        orderMapper.batchInsert(orders);
+                        orderFieldMapper.batchInsert(orderFields.stream().map(field -> BeanUtils.copyBean(new OrderField(), field)).toList());
+                        orderFieldBlobMapper.batchInsert(orderFieldBlobs.stream().map(field -> BeanUtils.copyBean(new OrderFieldBlob(), field)).toList());
+                        // record logs
+                        logService.batchAdd(logs);
+                    }
+                    case UPDATE -> {
+                        List<String> ids = orders.stream().map(Order::getId).toList();
+                        if (CollectionUtils.isEmpty(ids)) {
+                            break;
+                        }
+                        //原数据
+                        List<Order> originList = orderMapper.selectByIds(ids);
+                        if (CollectionUtils.isEmpty(originList)) {
+                            break;
+                        }
+                        Map<String, Order> originMaps = originList.stream().collect(Collectors.toMap(Order::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> originFieldValueMap = orderFieldService.getResourceFieldMap(ids, true);
+
+                        List<OrderField> insertField = new ArrayList<>();
+                        List<OrderFieldBlob> insertFieldBlob = new ArrayList<>();
+                        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+                        ExtOrderMapper batchMapper = sqlSession.getMapper(ExtOrderMapper.class);
+                        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+
+                        if (CollectionUtils.isNotEmpty(orders)) {
+                            orders.forEach(order -> {
+                                batchMapper.updateOrder(order);
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(orderFields)) {
+                            List<OrderField> fieldList = orderFieldMapper.selectByIds(orderFields.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, OrderField> fieldMap = fieldList.stream().collect(Collectors.toMap(OrderField::getId, Function.identity()));
+                            orderFields.forEach(orderField -> {
+                                if (fieldMap.containsKey(orderField.getId())) {
+                                    commonMapper.updateCustomerField("sales_order_field", orderField);
+                                } else {
+                                    insertField.add(BeanUtils.copyBean(new OrderField(), orderField));
+                                }
+                            });
+                        }
+
+                        if (CollectionUtils.isNotEmpty(orderFieldBlobs)) {
+                            List<OrderFieldBlob> blobList = orderFieldBlobMapper.selectByIds(orderFieldBlobs.stream().map(BaseResourceSubField::getId).toList());
+                            Map<String, OrderFieldBlob> blobMap = blobList.stream().collect(Collectors.toMap(OrderFieldBlob::getId, Function.identity()));
+                            orderFieldBlobs.forEach(orderFieldBlob -> {
+                                if (blobMap.containsKey(orderFieldBlob.getId())) {
+                                    commonMapper.updateCustomerField("sales_order_field_blob", orderFieldBlob);
+                                } else {
+                                    insertFieldBlob.add(BeanUtils.copyBean(new OrderFieldBlob(), orderFieldBlob));
+                                }
+                            });
+
+                        }
+
+                        sqlSession.flushStatements();
+                        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+
+                        if (CollectionUtils.isNotEmpty(insertField)) {
+                            orderFieldMapper.batchInsert(insertField);
+                        }
+                        if (CollectionUtils.isNotEmpty(insertFieldBlob)) {
+                            orderFieldBlobMapper.batchInsert(insertFieldBlob);
+                        }
+
+                        SqlSession currentSession =
+                                SqlSessionUtils.getSqlSession(sqlSessionFactory);
+                        currentSession.clearCache();
+
+                        Map<String, Order> modifiedMaps = orderMapper.selectByIds(ids).stream().collect(Collectors.toMap(Order::getId, Function.identity()));
+                        Map<String, List<BaseModuleFieldValue>> modifiedFieldValueMap = orderFieldService.getResourceFieldMap(ids, true);
+
+                        ids.forEach(id -> {
+                            Order originDate = originMaps.get(id);
+                            Order modifiedDate = modifiedMaps.get(id);
+                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            LogContextInfo contextInfo = OperationLogContext.getContext();
+                            if (contextInfo != null) {
+                                LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.ORDER_INDEX, modifiedDate.getName());
+                                logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                                logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                                logs.add(logDTO);
+                                OperationLogContext.clear();
+                            }
+                        });
+                        logService.batchAdd(logs);
+                        LambdaQueryWrapper<OrderSnapshot> delWrapper = new LambdaQueryWrapper<>();
+                        delWrapper.in(OrderSnapshot::getOrderId, orders.stream().map(Order::getId).toList());
+                        snapshotBaseMapper.deleteByLambda(delWrapper);
+                    }
+                }
+                List<OrderGetResponse> orderGetResponses = batchGetSimpleByIds(orders.stream().map(Order::getId).toList());
+                orderGetResponses.forEach(response -> {
+                    // 保存表单配置快照
+                    List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(response.getModuleFields(), moduleFormConfigDTO, orderFieldService, response.getId());
+                    OrderGetResponse orderGetResponse = get(response, resolveFieldValues, moduleFormConfigDTO);
+                    saveSnapshot(response, moduleFormConfigDTO, orderGetResponse);
+                });
+            };
+            CustomFieldImportEventListener<Order> eventListener = new CustomFieldImportEventListener<>(fields, Order.class, currentOrg, currentUser,
+                    "sales_order_field", "sales_order_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), request.getImportType());
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
+            return ImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            log.error("customer import error: {}", e.getMessage());
+            throw new GenericException(e.getMessage());
         }
     }
 }
