@@ -11,7 +11,7 @@ export const ReviewResourceUrl = '/approval-resource/push'; // 提审
 export const RevokeResourceUrl = '/approval-resource/revoke'; // 撤销
 
 // 审批流webHook连接测试
-export const TestApprovalWebHookUrl = '/approval-flow/webhook/test '; 
+export const TestApprovalWebHookUrl = '/approval-flow/webhook/test';
 
 // 审批待办
 export const GetProcessedApprovalTodosUrl = '/approval-todo/processed/page'; // 已处理审批待办列表
@@ -19,6 +19,7 @@ export const GetPendingApprovalTodosUrl = '/approval-todo/pending/page'; // 待�
 export const GetInitiatedApprovalTodosUrl = '/approval-todo/initiated/page'; // 我发起审批待办列表
 export const GetCcApprovalTodosUrl = '/approval-todo/cc/page'; // 抄送我的审批待办列表
 export const GetTodoStatisticUrl = '/approval-todo/pending/count'; // 获取待办统计
+export const GetCCStatisticUrl = '/approval-todo/cc/count'; // 获取抄送统计
 
 // 审批
 export const RejectApprovalUrl = '/approval-action/reject'; // 驳回

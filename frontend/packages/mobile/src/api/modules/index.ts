@@ -460,4 +460,5 @@ export const {
   revokeApproval,
   revokeResource,
   reviewResource,
+  getCCStatistic,
 } = processApi;
