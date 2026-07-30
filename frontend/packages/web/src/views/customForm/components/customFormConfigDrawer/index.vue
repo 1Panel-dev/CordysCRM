@@ -132,7 +132,8 @@
   });
 
   const formKey = ref(FormDesignKeyEnum.CUSTOM_FORM);
-  const { loading, fieldList, formConfig, unsaved, formDesignRef, checkRepeat, buildSavePayload, setFormConfigDetail } =
+  const formDesignRef = ref<InstanceType<typeof CrmFormDesign>>();
+  const { loading, fieldList, formConfig, unsaved, checkRepeat, buildSavePayload, setFormConfigDetail } =
     useFormDesignConfig({ formKey });
 
   function showUnsavedLeaveTip() {
@@ -193,9 +194,10 @@
     if (!customFormNameDraft.value.trim().length) {
       return false;
     }
-
-    if (!checkRepeat()) {
+    const validRes = checkRepeat();
+    if (validRes !== true) {
       activeTab.value = 'design';
+      formDesignRef.value?.setActiveField(validRes);
       return false;
     }
 
