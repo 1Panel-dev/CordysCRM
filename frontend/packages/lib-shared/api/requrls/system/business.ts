@@ -67,3 +67,21 @@ export const SwitchAgentTaskUrl = '/agent-task/switch'; // 全局任务-启用/�
 export const GetAgentTaskDetailUrl = '/agent-task/get'; // 全局任务-获取任务详情
 export const DeleteAgentTaskUrl = '/agent-task/delete'; // 全局任务-删除任务
 export const GetAgentTaskExecutionRecordListUrl = '/agent-task/execution-record/page'; // 全局任务-分页查询执行记录
+
+// 术语设置
+export const GetTermCategoryListUrl = '/agent-term-catalog/list'; // 术语设置-分类列表
+export const AddTermCategoryUrl = '/agent-term-catalog/add'; // 术语设置-新增分类
+export const UpdateTermCategoryUrl = '/agent-term-catalog/update'; // 术语设置-更新分类
+export const DeleteTermCategoryUrl = '/agent-term-catalog/delete'; // 术语设置-删除分类
+export const GetTermListUrl = '/agent-term/page'; // 术语设置-分页查询术语列表
+export const AddTermUrl = '/agent-term/add'; // 术语设置-新增术语
+export const UpdateTermUrl = '/agent-term/update'; // 术语设置-更新术语
+export const GetTermDetailUrl = '/agent-term/get'; // 术语设置-术语详情
+export const DeleteTermUrl = '/agent-term/delete'; // 术语设置-删除术语
+export const SwitchTermUrl = '/agent-term/switch'; // 术语设置-启用/禁用术语
+export const DownloadTermTemplateUrl = '/agent-term/template/download'; // 术语设置-下载导入模板
+export const ImportTermUrl = '/agent-term/import'; // 术语设置-批量导入术语
+export const PreCheckImportTermUrl = '/agent-term/import/pre-check'; // 术语设置-导入预检查
+export const GetTermDiscoveryListUrl = '/agent-term-discovery/page'; // 术语设置-分页查询术语发现
+export const IgnoreTermDiscoveryUrl = '/agent-term-discovery/ignore'; // 术语设置-忽略术语发现
+export const AdoptTermDiscoveryUrl = '/agent-term-discovery/adopt'; // 术语设置-采纳术语发现
