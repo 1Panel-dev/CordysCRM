@@ -29,6 +29,7 @@
     getFieldItemId,
     mergeUniqueOptions,
     normalizeNumber,
+    specialBusinessKeyMap,
   } from '@lib/shared/method/formCreate';
   import { isNotEmpty } from '@lib/shared/method/is';
 
@@ -292,7 +293,10 @@
       showFields.forEach((sf) => {
         let fieldVal: string | string[] = '';
         if (targetSource) {
-          const sourceFieldVal = targetSource[getFieldItemId(sf)]; // 数据源的显示字段都使用id 读取
+          const sourceFieldVal =
+            sf.businessKey && specialBusinessKeyMap[sf.businessKey]
+              ? targetSource[specialBusinessKeyMap[sf.businessKey]]
+              : targetSource[sf.businessKey || getFieldItemId(sf)];
           if (sf.subTableFieldId) {
             // 如果数据源显示字段是数据源的子表格字段，则需要 rowId 定位数据源子表格的行
             const subTableData = targetSource[sf.subTableFieldId];
