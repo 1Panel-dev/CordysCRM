@@ -40,15 +40,19 @@
     </table>
   </div>
 </template>
+
 <script setup lang="ts">
-  import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
-  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
-  import { formatNumberValueToString, normalizeNumber } from '@lib/shared/method/formCreate';
-  import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
+  import { formatNumberValueToString, normalizeNumber } from '@lib/shared/method/formCreate';
+
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+
   import useUserStore from '@/store/modules/user';
+
+  import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{
     subFields: FormCreateField[];
@@ -201,7 +205,7 @@
             const rowVal = normalizeNumber(row[col.key]);
             return prev + Math.round(rowVal * 100);
           }, 0) / 100;
-        if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(col.fieldConfig?.type!) && col.fieldConfig) {
+        if (col.fieldConfig && [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(col.fieldConfig.type)) {
           summaryRes[col.key] = formatNumberValueToString(sum, col.fieldConfig);
         }
         summaryRes[col.key] = sum;
@@ -210,6 +214,7 @@
     return summaryRes;
   });
 </script>
+
 <style lang="less" scoped>
   .sub-table-wrapper {
     overflow: auto;

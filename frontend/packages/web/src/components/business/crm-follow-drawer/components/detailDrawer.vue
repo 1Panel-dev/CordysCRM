@@ -137,13 +137,13 @@
 
   function handleCreateComment(value: FollowCommentSubmitValue) {
     // TODO xinxinwu: 后端评论新增接口完成后，按跟进记录/计划分流调用真实接口并刷新。
-    mockCommentList.value.unshift(createLocalComment(value.content, value.mentionUserIds));
+    mockCommentList.value.unshift(createLocalComment(value.content, value.mentionUserIds || []));
   }
 
   function handleReplyComment(value: FollowCommentActionValue) {
     // TODO xinxinwu: 后端评论回复接口完成后，提交 parentId、replyToUserId、mentionUserIds 并刷新。
     const reply = {
-      ...createLocalComment(value.content, value.mentionUserIds),
+      ...createLocalComment(value.content, value.mentionUserIds || []),
       parentId: value.comment.parentId || value.comment.id,
       replyToUserId: value.comment.createUser,
       replyToUserName: value.comment.createUserName,
@@ -167,7 +167,7 @@
       return;
     }
     targetComment.content = value.content;
-    targetComment.mentionUsers = value.mentionUserIds.map((id) => ({
+    targetComment.mentionUsers = (value.mentionUserIds || []).map((id) => ({
       id,
       name: id,
     }));

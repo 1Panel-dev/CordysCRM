@@ -10,7 +10,7 @@ import { CommonRouteEnum } from '@/enums/routeEnum';
 export default function useFollowApi(followProps: {
   type: 'followRecord' | 'followPlan';
   formKey: PlanEnumType | RecordEnumType;
-  sourceId: string;
+  sourceId?: string;
   initialSourceName?: string;
   readonly?: boolean;
 }) {

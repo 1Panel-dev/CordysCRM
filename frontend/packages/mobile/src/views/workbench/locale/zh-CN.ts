@@ -1,5 +1,7 @@
 export default {
   'workbench.searchPlaceholder': '请输入客户名或手机号',
+  'workbench.smartWorkbench': '智慧工作台',
+  'workbench.myDashboard': '我的看板',
   'workbench.quickEntry': '快速入口',
   'workbench.duplicateCheck': '搜索',
   'workbench.duplicateCheck.result': '客户相关',
@@ -70,4 +72,10 @@ export default {
   'workbench.cancelApprovalSuccess': '已撤回',
   'workbench.approvalStatus': '审批状态',
   'workbench.quotationStatus': '状态',
+  'workbench.plan.all': '所有计划',
+  'workbench.plan.depart': '部门计划',
+  'workbench.plan.personal': '我的计划',
+  'workbench.record.all': '所有记录',
+  'workbench.record.depart': '部门记录',
+  'workbench.record.personal': '我的记录',
 };

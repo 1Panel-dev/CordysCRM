@@ -1,0 +1,15 @@
+export default {
+  'crmComment.title': '评论',
+  'crmComment.addComment': '添加评论',
+  'crmComment.commentPlaceholder': '输入评论，支持',
+  'crmComment.commentPlaceholderOthers': '他人',
+  'crmComment.replyPlaceholder': '回复{name}',
+  'crmComment.reply': '回复',
+  'crmComment.replyTo': '回复',
+  'crmComment.edit': '编辑',
+  'crmComment.delete': '删除',
+  'crmComment.save': '保存',
+  'crmComment.moreReplies': '更多回复（{count}）',
+  'crmComment.collapseReplies': '收起',
+  'crmComment.submit': '发送',
+};

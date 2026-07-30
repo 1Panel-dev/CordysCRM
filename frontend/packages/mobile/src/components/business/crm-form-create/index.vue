@@ -5,10 +5,10 @@
         <template v-for="item in mobileFieldList" :key="item.id">
           <component
             :is="getItemComponent(item.type)"
-            v-if="item.show !== false"
+            v-if="item.show !== false && item.readable"
             :id="item.id"
             v-model:value="formDetail[item.id]"
-            :field-config="item"
+            :field-config="item.resourceFieldId ? { ...item, rules: [] } : item"
             :origin-form-detail="originFormDetail"
             :form-detail="formDetail"
             :need-init-detail="route.query.needInitDetail === 'Y'"
@@ -186,7 +186,8 @@
   onBeforeMount(async () => {
     await initFormConfig();
     if (route.query.id && route.query.needInitDetail === 'Y') {
-      initFormDetail();
+      // 编辑页需要等详情和 originFormDetail 初始化完成，否则保存校验可能拿不到旧值而误触发 repeat 接口。
+      await initFormDetail();
     }
   });
 

@@ -1,5 +1,7 @@
 export default {
   'workbench.searchPlaceholder': 'Please input the account name or phone number',
+  'workbench.smartWorkbench': 'Smart Workbench',
+  'workbench.myDashboard': 'My Dashboard',
   'workbench.quickEntry': 'Quick Entry',
   'workbench.duplicateCheck': 'Search',
   'workbench.duplicateCheck.result': 'Account related',
