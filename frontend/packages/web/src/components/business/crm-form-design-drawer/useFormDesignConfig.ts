@@ -6,8 +6,6 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 import { safeFractionConvert } from '@lib/shared/method';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
-import type CrmFormDesign from '@/components/business/crm-form-design/index.vue';
-
 import { getFormDesignConfig } from '@/api/modules';
 
 import type { FormCreateField } from '../crm-form-create/types';
@@ -62,7 +60,6 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
   const loading = ref(false);
   const fieldList = ref<FormCreateField[]>([]);
   const formConfig = ref<FormConfig>(createDefaultFormConfig(t));
-  const formDesignRef = ref<InstanceType<typeof CrmFormDesign>>();
   const unsaved = ref(false);
 
   watch(
@@ -81,8 +78,7 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
       const field = fieldList.value[i];
       if (fieldNameSet.has(field.name)) {
         message.error(t('crmFormDesign.repeatFieldName'));
-        formDesignRef.value?.setActiveField(field);
-        return false;
+        return field;
       }
 
       if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && field.subFields) {
@@ -91,8 +87,7 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
           const subField = field.subFields[j];
           if (subFieldNameSet.has(subField.name)) {
             message.error(t('crmFormDesign.repeatFieldName'));
-            formDesignRef.value?.setActiveField(field);
-            return false;
+            return field;
           }
 
           subFieldNameSet.add(subField.name);
@@ -115,8 +110,7 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
         const option = optionList[j];
         if (optionLabelSet.has(option.label)) {
           message.error(t('crmFormDesign.repeatOptionName'));
-          formDesignRef.value?.setActiveField(field);
-          return false;
+          return field;
         }
 
         optionLabelSet.add(option.label);
@@ -217,7 +211,6 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
     loading,
     fieldList,
     formConfig,
-    formDesignRef,
     unsaved,
     checkRepeat,
     buildSavePayload,

@@ -73,6 +73,7 @@
   });
 
   const formKey = computed(() => props.formKey);
+  const formDesignRef = ref<InstanceType<typeof CrmFormDesign>>();
   const { loading, fieldList, formConfig, unsaved, checkRepeat, buildSavePayload, initFormConfig } =
     useFormDesignConfig({ formKey });
 
@@ -100,7 +101,9 @@
   }
 
   async function handleSave() {
-    if (!checkRepeat()) {
+    const result = checkRepeat();
+    if (result !== true) {
+      formDesignRef.value?.setActiveField(result);
       return;
     }
     try {
