@@ -3,6 +3,7 @@ package cn.cordys.crm.order.mapper;
 import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
+import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.order.dto.request.OrderPageRequest;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
 import cn.cordys.crm.order.dto.response.OrderListResponse;
@@ -33,5 +34,7 @@ public interface ExtOrderMapper {
 
     Long selectNextPos(@Param("orgId") String orgId, @Param("stage") String stage);
 
-	void updateOldApprovalStatusNone();
+    void updateOldApprovalStatusNone();
+
+    void updateOrder(@Param("order") Order order);
 }
