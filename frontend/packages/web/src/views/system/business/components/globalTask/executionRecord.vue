@@ -73,7 +73,7 @@
     },
     {
       title: t('system.business.globalTask.confirmer'),
-      key: 'confirmerName',
+      key: 'confirmUserName',
       width: 120,
       ellipsis: {
         tooltip: true,

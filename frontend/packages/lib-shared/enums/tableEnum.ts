@@ -5,6 +5,8 @@ export enum TableKeyEnum {
   SYSTEM_MODEL_SETTINGS = 'systemModelSettings',
   SYSTEM_GLOBAL_TASK = 'systemGlobalTask',
   SYSTEM_GLOBAL_TASK_EXECUTION_RECORD = 'systemGlobalTaskExecutionRecord',
+  SYSTEM_TERM = 'systemTerm',
+  SYSTEM_TERM_DISCOVERY = 'systemTermDiscovery',
   SYSTEM_MESSAGE_TABLE = 'systemMessageTable',
   SYSTEM_ANNOUNCEMENT_TABLE = 'systemAnnouncementTable',
   MODULE_OPPORTUNITY_RULE_TABLE = 'moduleOpportunityRuleTable',

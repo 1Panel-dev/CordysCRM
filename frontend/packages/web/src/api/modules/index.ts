@@ -659,6 +659,22 @@ export const {
   switchAgentTask,
   getAgentTaskDetail,
   deleteAgentTask,
+  getTermCategoryList,
+  addTermCategory,
+  updateTermCategory,
+  deleteTermCategory,
+  getTermList,
+  addTerm,
+  updateTerm,
+  getTermDetail,
+  deleteTerm,
+  switchTerm,
+  preCheckImportTerm,
+  downloadTermTemplate,
+  importTerm,
+  getTermDiscoveryList,
+  ignoreTermDiscovery,
+  adoptTermDiscovery,
 } = businessApi;
 
 export const {

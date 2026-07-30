@@ -32,14 +32,13 @@ export interface AgentTaskItem extends Omit<AgentTaskParams, 'applicableRoles'> 
   updateUserName?: string;
 }
 
-export type AgentTaskExecutionStatus = 'allocated' | 'created' | 'pending' | 'failed';
-
 export interface AgentTaskExecutionRecordItem {
   id: string;
   executionTime: number;
+  taskId: string;
   taskName: string;
   triggerReason: string;
   result: string;
-  status: AgentTaskExecutionStatus;
-  confirmerName: string;
+  confirmUser: string;
+  confirmUserName: string;
 }

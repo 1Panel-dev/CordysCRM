@@ -19,6 +19,7 @@ import {
   downloadPoolLeadTemplate,
   downloadProductPriceTemplate,
   downloadProductTemplate,
+  downloadTermTemplate,
   importAccount,
   importBusinessTitle,
   importContact,
@@ -34,6 +35,7 @@ import {
   importPoolLead,
   importProduct,
   importProductPrice,
+  importTerm,
   preCheckImportAccount,
   preCheckImportBusinessTitle,
   preCheckImportContact,
@@ -49,6 +51,7 @@ import {
   preCheckImportPoolLead,
   preCheckImportProduct,
   preCheckImportProductPrice,
+  preCheckImportTerm,
 } from '@/api/modules';
 
 export type ImportApiType =
@@ -66,7 +69,8 @@ export type ImportApiType =
   | ImportTypeExcludeFormDesignEnum.CONTRACT_BUSINESS_TITLE_IMPORT
   | FormDesignKeyEnum.CUSTOM_FORM
   | FormDesignKeyEnum.CONTRACT
-  | FormDesignKeyEnum.ORDER;
+  | FormDesignKeyEnum.ORDER
+  | ImportTypeExcludeFormDesignEnum.TERM_IMPORT;
 
 export interface importRequestType {
   preCheck: (params: ImportRequestParams) => Promise<{ data: ValidateInfo }>;
@@ -149,6 +153,11 @@ export const importApiMap: Record<ImportApiType, importRequestType> = {
     preCheck: (params) => preCheckImportBusinessTitle(params.uploadParams),
     save: (params) => importBusinessTitle(params.uploadParams),
     download: downloadBusinessTitleTemplate,
+  },
+  [ImportTypeExcludeFormDesignEnum.TERM_IMPORT]: {
+    preCheck: (params) => preCheckImportTerm(params.uploadParams),
+    save: (params) => importTerm(params.uploadParams),
+    download: downloadTermTemplate,
   },
   [FormDesignKeyEnum.CUSTOM_FORM]: {
     preCheck: (params) => preCheckImportCustomForm(params.uploadParams),

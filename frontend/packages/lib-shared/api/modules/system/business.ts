@@ -3,13 +3,19 @@ import {
   AddApiKeyUrl,
   AddAiModelUrl,
   AddAgentTaskUrl,
+  AddTermCategoryUrl,
+  AddTermUrl,
+  AdoptTermDiscoveryUrl,
   CancelCenterExportUrl,
   CreateAuthUrl,
   DeleteAgentTaskUrl,
   DeleteAiModelUrl,
   DeleteApiKeyUrl,
   DeleteAuthUrl,
+  DeleteTermCategoryUrl,
+  DeleteTermUrl,
   DisableApiKeyUrl,
+  DownloadTermTemplateUrl,
   EnableApiKeyUrl,
   ExportCenterDownloadUrl,
   GetAgentTaskDetailUrl,
@@ -30,12 +36,20 @@ import {
   GetPersonalFollowUrl,
   GetPersonalUrl,
   GetTenderConfigUrl,
+  GetTermCategoryListUrl,
+  GetTermDetailUrl,
+  GetTermDiscoveryListUrl,
+  GetTermListUrl,
   GetThirdPartyConfigUrl,
   GetThirdPartyResourceUrl,
   GetThirdTypeListUrl,
+  ImportTermUrl,
+  IgnoreTermDiscoveryUrl,
+  PreCheckImportTermUrl,
   SavePageConfigUrl,
   SendEmailCodeUrl,
   SwitchAgentTaskUrl,
+  SwitchTermUrl,
   SwitchThirdPartyUrl,
   SyncDEUrl,
   TestConfigEmailUrl,
@@ -51,10 +65,12 @@ import {
   UpdateConfigEmailUrl,
   UpdateConfigSynchronizationUrl,
   UpdatePersonalUrl,
+  UpdateTermCategoryUrl,
+  UpdateTermUrl,
   UpdateUserPasswordUrl,
 } from '@lib/shared/api/requrls/system/business';
 import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
-import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+import type { CommonList, ImportUploadParams, TableQueryParams } from '@lib/shared/models/common';
 import { CustomerFollowPlanTableParams, FollowDetailItem } from '@lib/shared/models/customer';
 import type {
   ApiKey,
@@ -87,7 +103,16 @@ import type {
   AiModelStatusParams,
 } from '@lib/shared/models/system/aiModel';
 import type { AgentTaskExecutionRecordItem, AgentTaskItem, AgentTaskParams } from '@lib/shared/models/system/agentTask';
-import { type DEToken, OrgUserInfo } from '@lib/shared/models/system/org';
+import { type DEToken, OrgUserInfo, type ValidateInfo } from '@lib/shared/models/system/org';
+import type {
+  TermCategoryItem,
+  TermCategoryParams,
+  TermDiscoveryAdoptParams,
+  TermDiscoveryItem,
+  TermItem,
+  TermListParams,
+  TermParams,
+} from '@lib/shared/models/system/term';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 获取邮件设置
@@ -367,6 +392,92 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<AgentTaskExecutionRecordItem>>({ url: GetAgentTaskExecutionRecordListUrl, data });
   }
 
+  // 术语设置-分类列表
+  function getTermCategoryList() {
+    return CDR.get<TermCategoryItem[]>({ url: GetTermCategoryListUrl });
+  }
+
+  // 术语设置-新增分类
+  function addTermCategory(data: TermCategoryParams) {
+    return CDR.post<TermCategoryItem>({ url: AddTermCategoryUrl, data });
+  }
+
+  // 术语设置-更新分类
+  function updateTermCategory(data: TermCategoryParams) {
+    return CDR.post({ url: UpdateTermCategoryUrl, data });
+  }
+
+  // 术语设置-删除分类
+  function deleteTermCategory(id: string) {
+    return CDR.get({ url: `${DeleteTermCategoryUrl}/${id}` });
+  }
+
+  // 术语设置-分页查询术语列表
+  function getTermList(data: TermListParams) {
+    return CDR.post<CommonList<TermItem>>({ url: GetTermListUrl, data });
+  }
+
+  // 术语设置-新增术语
+  function addTerm(data: TermParams) {
+    return CDR.post<TermItem>({ url: AddTermUrl, data });
+  }
+
+  // 术语设置-更新术语
+  function updateTerm(data: TermParams) {
+    return CDR.post({ url: UpdateTermUrl, data });
+  }
+
+  // 术语设置-术语详情
+  function getTermDetail(id: string) {
+    return CDR.get<TermItem>({ url: `${GetTermDetailUrl}/${id}` });
+  }
+
+  // 术语设置-删除术语
+  function deleteTerm(id: string) {
+    return CDR.get({ url: `${DeleteTermUrl}/${id}` });
+  }
+
+  // 术语设置-启用/禁用术语
+  function switchTerm(id: string) {
+    return CDR.get({ url: `${SwitchTermUrl}/${id}` });
+  }
+
+  // 术语设置-导入预检查
+  function preCheckImportTerm(params: ImportUploadParams) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckImportTermUrl }, params, 'file');
+  }
+
+  // 术语设置-下载导入模板
+  function downloadTermTemplate() {
+    return CDR.get(
+      {
+        url: DownloadTermTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  // 术语设置-批量导入术语
+  function importTerm(params: ImportUploadParams) {
+    return CDR.uploadFile({ url: ImportTermUrl }, params, 'file');
+  }
+
+  // 术语设置-分页查询术语发现
+  function getTermDiscoveryList(data: TableQueryParams) {
+    return CDR.post<CommonList<TermDiscoveryItem>>({ url: GetTermDiscoveryListUrl, data });
+  }
+
+  // 术语设置-忽略术语发现
+  function ignoreTermDiscovery(id: string) {
+    return CDR.get({ url: `${IgnoreTermDiscoveryUrl}/${id}` });
+  }
+
+  // 术语设置-采纳术语发现
+  function adoptTermDiscovery(data: TermDiscoveryAdoptParams) {
+    return CDR.post<TermItem>({ url: AdoptTermDiscoveryUrl, data });
+  }
+
   return {
     getConfigEmail,
     updateConfigEmail,
@@ -421,5 +532,21 @@ export default function useProductApi(CDR: CordysAxios) {
     switchAgentTask,
     getAgentTaskDetail,
     deleteAgentTask,
+    getTermCategoryList,
+    addTermCategory,
+    updateTermCategory,
+    deleteTermCategory,
+    getTermList,
+    addTerm,
+    updateTerm,
+    getTermDetail,
+    deleteTerm,
+    switchTerm,
+    preCheckImportTerm,
+    downloadTermTemplate,
+    importTerm,
+    getTermDiscoveryList,
+    ignoreTermDiscovery,
+    adoptTermDiscovery,
   };
 }
