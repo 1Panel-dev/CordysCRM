@@ -469,4 +469,33 @@ public class FilterCondition {
         NOT_EQUAL_ORIGINAL
     }
 
+
+    /**
+     * 兜底 Getter，防止 OGNL 访问不存在的属性抛异常。
+     * 子类 FilterDBCondition 有自己的字段实现，会覆盖此方法。
+     */
+    public String getRefMainTableName() {
+        return null;
+    }
+
+    public String getRefMainFieldName() {
+        return null;
+    }
+
+    public Boolean getCustomField() {
+        return null;
+    }
+
+    public Boolean getBlob() {
+        return null;
+    }
+
+    public Boolean getRefFiled() {
+        return null;
+    }
+
+    public Boolean getRefMainCustomField() {
+        return null;
+    }
+
 }
