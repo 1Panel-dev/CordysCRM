@@ -31,7 +31,7 @@
               >
                 <div class="flex items-center gap-[4px]">
                   {{ item.tab }}
-                  <div v-if="[ApprovalListTypeEnum.PENDING, ApprovalListTypeEnum.COPIED].includes(activeName)">
+                  <div v-if="activeName === ApprovalListTypeEnum.PENDING">
                     {{ item.count > 99 ? '99+' : item.count }}
                   </div>
                 </div>
@@ -158,7 +158,6 @@
   import {
     getApprovalConfigDetail,
     getCcApprovalList,
-    getCCStatistic,
     getInitiatedApprovalList,
     getPendingApprovalList,
     getProcessedApprovalList,
@@ -210,40 +209,27 @@
   const keyword = ref('');
   const resourceType = ref(ApprovalResourceTypeEnum.QUOTATION);
   const statistic = ref<TodoStatistic>();
-  const CCApprovalCount = ref<TodoStatistic>();
   const resourceTypes = computed(() => {
     return [
       {
         name: ApprovalResourceTypeEnum.QUOTATION,
         tab: t('formCreate.quotation'),
-        count:
-          activeName.value === ApprovalListTypeEnum.PENDING
-            ? statistic.value?.quotation || 0
-            : CCApprovalCount.value?.quotation || 0,
+        count: statistic.value?.quotation || 0,
       },
       {
         name: ApprovalResourceTypeEnum.CONTRACT,
         tab: t('formCreate.contract'),
-        count:
-          activeName.value === ApprovalListTypeEnum.PENDING
-            ? statistic.value?.contract || 0
-            : CCApprovalCount.value?.contract || 0,
+        count: statistic.value?.contract || 0,
       },
       {
         name: ApprovalResourceTypeEnum.ORDER,
         tab: t('formCreate.order'),
-        count:
-          activeName.value === ApprovalListTypeEnum.PENDING
-            ? statistic.value?.order || 0
-            : CCApprovalCount.value?.order || 0,
+        count: statistic.value?.order || 0,
       },
       {
         name: ApprovalResourceTypeEnum.INVOICE,
         tab: t('formCreate.invoice'),
-        count:
-          activeName.value === ApprovalListTypeEnum.PENDING
-            ? statistic.value?.invoice || 0
-            : CCApprovalCount.value?.invoice || 0,
+        count: statistic.value?.invoice || 0,
       },
     ];
   });
@@ -264,15 +250,6 @@
   async function initStatistic() {
     try {
       statistic.value = await getTodoStatistic();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  async function initCCStatistic() {
-    try {
-      CCApprovalCount.value = await getCCStatistic();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -371,7 +348,6 @@
     });
     if (refreshCount) {
       initStatistic();
-      initCCStatistic();
     }
     selectedKeys.value = [];
   }
@@ -379,7 +355,6 @@
   function changeResourceTab() {
     refreshTaskList();
     initStatistic();
-    initCCStatistic();
     selectedKeys.value = [];
     nextTick(() => {
       localStorage.setItem('activeTaskType', activeName.value);
@@ -452,7 +427,6 @@
 
   onBeforeMount(() => {
     initStatistic();
-    initCCStatistic();
     activeName.value = localStorage.getItem('activeTaskType') || ApprovalListTypeEnum.PENDING;
     resourceType.value =
       (localStorage.getItem('resourceType') as ApprovalResourceTypeEnum) || ApprovalResourceTypeEnum.QUOTATION;

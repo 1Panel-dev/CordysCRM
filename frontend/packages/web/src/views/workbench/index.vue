@@ -80,7 +80,6 @@
                     </div>
                     <div class="flex flex-1 items-center justify-between">
                       {{ t('workbench.dataOverview.copiedToMe') }}
-                      <div class="font-semibold text-[var(--primary-8)]">{{ CCApprovalCount }}</div>
                     </div>
                   </div>
                 </div>
@@ -119,7 +118,7 @@
   import { NAlert, NButton, NScrollbar } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { ApprovalListTypeEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
+  import { ApprovalListTypeEnum } from '@lib/shared/enums/process';
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -135,7 +134,6 @@
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
-  import { getCCStatistic } from '@/api/modules/index.js';
   import { quickAccessList } from '@/config/workbench';
   import { useAppStore, useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
@@ -197,7 +195,6 @@
 
   // 待办
   const pendingApprovalCount = computed(() => appStore.todoStatistic.total);
-  const CCApprovalCount = ref(0);
   const showTaskDrawer = ref(false);
   const activeTaskType = ref<ApprovalListTypeEnum>(ApprovalListTypeEnum.PENDING);
   function openTaskDrawer(type: ApprovalListTypeEnum) {
@@ -212,19 +209,9 @@
     return appStore.messageInfo.notificationDTOList;
   });
 
-  async function initCCStatistic() {
-    try {
-      CCApprovalCount.value = (await getCCStatistic()).total;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   onBeforeMount(() => {
     appStore.initMessage();
     appStore.initTodoStatistic();
-    initCCStatistic();
   });
 </script>
 
