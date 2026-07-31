@@ -51,10 +51,4 @@ public class ApprovalTodoController {
     public ApprovalTodoCountResponse pendingCount() {
         return approvalTodoService.getPendingCount(SessionUtils.getUserId());
     }
-
-    @GetMapping("/cc/count")
-    @Operation(summary = "审核代办-抄送给我的待办统计")
-    public ApprovalTodoCountResponse ccCount() {
-        return approvalTodoService.getCcCount(SessionUtils.getUserId());
-    }
 }

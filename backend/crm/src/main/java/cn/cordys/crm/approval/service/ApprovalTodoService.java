@@ -95,10 +95,6 @@ public class ApprovalTodoService {
         return response;
     }
 
-    public ApprovalTodoCountResponse getCcCount(String userId) {
-        return extApprovalTaskMapper.countCcByApprover(userId);
-    }
-
     private ApprovalTodoCountResponse emptyCountResponse() {
         ApprovalTodoCountResponse response = new ApprovalTodoCountResponse();
         response.setTotal(0);
