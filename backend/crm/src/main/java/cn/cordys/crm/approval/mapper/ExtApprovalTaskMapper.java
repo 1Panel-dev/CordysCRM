@@ -42,11 +42,6 @@ public interface ExtApprovalTaskMapper {
     ApprovalTodoCountResponse countPendingByApprover(@Param("approverId") String approverId,
                                                      @Param("pendingStatus") String pendingStatus);
 
-    /**
-     * 统计抄送给我的待办数量（总数 + 各资源类型）。
-     */
-    ApprovalTodoCountResponse countCcByApprover(@Param("approverId") String approverId);
-
     void updateTaskById(@Param("approvalTask") ApprovalTask approvalTask);
 
 	/**

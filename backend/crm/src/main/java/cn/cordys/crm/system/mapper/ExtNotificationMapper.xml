@@ -21,6 +21,9 @@
         <if test='request.resourceType != null and request.resourceType != ""'>
             AND sys_notification.resource_type LIKE CONCAT('%', #{request.resourceType},'%')
         </if>
+        <if test='request.operation != null and request.operation != ""'>
+            AND sys_notification.operation = #{operation}
+        </if>
         <if test='request.createTime != null and request.endTime == null'>
             AND sys_notification.create_time &gt;= #{request.createTime}
         </if>
