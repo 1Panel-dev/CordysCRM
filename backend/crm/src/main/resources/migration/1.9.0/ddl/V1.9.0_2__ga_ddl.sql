@@ -2,20 +2,20 @@
 SET SESSION innodb_lock_wait_timeout = 7200;
 
 -- modify field table, add unique id
-ALTER TABLE contract_invoice_field ADD COLUMN ref_sub_id VARCHAR(32) NULL COMMENT '引用子表格ID;关联的子表格字段ID';
-ALTER TABLE contract_invoice_field ADD COLUMN row_id VARCHAR(32) NULL COMMENT '子表格行实例ID;行实例数据ID';
+ALTER TABLE contract_invoice_field ADD COLUMN ref_sub_id VARCHAR(32) NULL COMMENT '引用子表格ID';
+ALTER TABLE contract_invoice_field ADD COLUMN row_id VARCHAR(32) NULL COMMENT '子表格行实例ID';
 ALTER TABLE contract_invoice_field ADD COLUMN biz_id VARCHAR(32) NULL COMMENT '唯一业务行ID';
 
-ALTER TABLE contract_invoice_field_blob ADD COLUMN ref_sub_id VARCHAR(32) NULL COMMENT '引用子表格ID;关联的子表格字段ID';
-ALTER TABLE contract_invoice_field_blob ADD COLUMN row_id VARCHAR(32) NULL COMMENT '子表格行实例ID;行实例数据ID';
+ALTER TABLE contract_invoice_field_blob ADD COLUMN ref_sub_id VARCHAR(32) NULL COMMENT '引用子表格ID';
+ALTER TABLE contract_invoice_field_blob ADD COLUMN row_id VARCHAR(32) NULL COMMENT '子表格行实例ID';
 ALTER TABLE contract_invoice_field_blob ADD COLUMN biz_id VARCHAR(32) NULL COMMENT '唯一业务行ID';
 
-ALTER TABLE custom_form_data_field ADD COLUMN ref_sub_id VARCHAR(32) NULL COMMENT '引用子表格ID;关联的子表格字段ID';
-ALTER TABLE custom_form_data_field ADD COLUMN row_id VARCHAR(32) NULL COMMENT '子表格行实例ID;行实例数据ID';
+ALTER TABLE custom_form_data_field ADD COLUMN ref_sub_id VARCHAR(32) NULL COMMENT '引用子表格ID';
+ALTER TABLE custom_form_data_field ADD COLUMN row_id VARCHAR(32) NULL COMMENT '子表格行实例ID';
 ALTER TABLE custom_form_data_field ADD COLUMN biz_id VARCHAR(32) NULL COMMENT '唯一业务行ID';
 
-ALTER TABLE custom_form_data_field_blob ADD COLUMN ref_sub_id VARCHAR(32) NULL COMMENT '引用子表格ID;关联的子表格字段ID';
-ALTER TABLE custom_form_data_field_blob ADD COLUMN row_id VARCHAR(32) NULL COMMENT '子表格行实例ID;行实例数据ID';
+ALTER TABLE custom_form_data_field_blob ADD COLUMN ref_sub_id VARCHAR(32) NULL COMMENT '引用子表格ID';
+ALTER TABLE custom_form_data_field_blob ADD COLUMN row_id VARCHAR(32) NULL COMMENT '子表格行实例ID';
 ALTER TABLE custom_form_data_field_blob ADD COLUMN biz_id VARCHAR(32) NULL COMMENT '唯一业务行ID';
 
 -- add unique index
