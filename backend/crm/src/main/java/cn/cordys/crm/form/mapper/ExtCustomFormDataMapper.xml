@@ -318,6 +318,9 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+        <if test="manageOwn">
+            and d.owner = #{userId}
+        </if>
     </select>
 
     <update id="updateData">
