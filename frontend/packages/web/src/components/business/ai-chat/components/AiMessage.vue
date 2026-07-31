@@ -1,5 +1,5 @@
 <template>
-  <article class="mb-[32px] flex gap-[16px]" :class="messageClass">
+  <article class="group mb-[32px] flex gap-[16px]" :class="messageClass">
     <div>
       <slot name="avatar" :message="props.message">
         <n-avatar v-if="props.message.role === 'assistant'" round class="bg-[var(--primary-6)]" :size="32">
@@ -16,27 +16,36 @@
 
       <div class="ai-chat-message__bubble">
         <template v-if="isEditing">
-          <n-input
-            v-model:value="editContent"
-            class="w-full"
-            type="textarea"
-            :autosize="{ minRows: 2, maxRows: 8 }"
-            :disabled="runtime.state.loading.value"
-            @keydown.enter.exact.prevent="handleEditSubmit"
-          />
-          <div class="mt-[8px] flex justify-end gap-[8px]">
-            <n-button size="small" :disabled="runtime.state.loading.value" @click="cancelEdit">
-              {{ t('common.cancel') }}
-            </n-button>
-            <n-button
-              size="small"
-              type="primary"
-              :disabled="!canSubmitEdit"
-              :loading="runtime.state.loading.value"
-              @click="handleEditSubmit"
-            >
-              {{ t('aiChat.send') }}
-            </n-button>
+          <div class="ai-chat-message__edit rounded-[4px] bg-[var(--text-n9)] p-[16px]">
+            <n-input
+              v-model:value="editContent"
+              class="ai-chat-message__edit-input w-full"
+              type="textarea"
+              :bordered="false"
+              :autosize="{ minRows: 1, maxRows: 10 }"
+              :disabled="runtime.state.loading.value"
+              @keydown.enter.exact.prevent="handleEditSubmit"
+            />
+            <div class="mt-[16px] flex items-center justify-between">
+              <div class="flex min-w-0 items-center gap-[4px] text-[12px] text-[var(--text-n4)]">
+                <CrmIcon type="iconicon_info_circle" :size="14" />
+                <span>{{ t('aiChat.editRestartTip') }}</span>
+              </div>
+              <div class="flex gap-[12px]">
+                <n-button :disabled="runtime.state.loading.value" @click="cancelEdit">
+                  {{ t('common.cancel') }}
+                </n-button>
+                <n-button
+                  type="primary"
+                  ghost
+                  :disabled="!canSubmitEdit"
+                  :loading="runtime.state.loading.value"
+                  @click="handleEditSubmit"
+                >
+                  {{ t('aiChat.send') }}
+                </n-button>
+              </div>
+            </div>
           </div>
         </template>
 
@@ -67,29 +76,41 @@
             <component :is="item.renderer" v-if="item.renderer" :part="item.part" :index="item.index" />
             <div v-else class="ai-chat-block">{{ item.part.type }}</div>
           </template>
+          <AiLoadingBlock v-if="showAssistantLoading" />
         </template>
       </div>
 
-      <div v-if="showActions" class="mt-[6px] flex gap-[8px]" :class="isUser ? 'justify-end' : 'justify-start'">
-        <slot name="actions" :message="props.message">
-          <CrmButtonGroup :list="messageActions" not-show-divider class="gap-[8px]" @select="handleActionSelect" />
-        </slot>
+      <div
+        v-if="showActions"
+        class="mt-[8px] flex gap-[12px] text-[var(--text-n4)] opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100"
+        :class="isUser ? 'justify-end' : 'justify-start'"
+      >
+        <n-tooltip v-for="action in messageActions" :key="action.key" :delay="300">
+          <template #trigger>
+            <CrmIcon
+              class="cursor-pointer"
+              :type="action.iconType"
+              :size="16"
+              @click="handleActionSelect(action.key)"
+            />
+          </template>
+          {{ action.tooltipContent }}
+        </n-tooltip>
       </div>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
-  import { computed, h, ref, watch } from 'vue';
-  import { NAvatar, NButton, NInput } from 'naive-ui';
+  import { computed, ref, watch } from 'vue';
+  import { NAvatar, NButton, NInput, NTooltip } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import AiErrorBlock from '../blocks/AiErrorBlock.vue';
+  import AiLoadingBlock from '../blocks/AiLoadingBlock.vue';
   import AiMarkdownBlock from '../blocks/AiMarkdownBlock.vue';
   import AiTextBlock from '../blocks/AiTextBlock.vue';
 
@@ -102,6 +123,13 @@
   const props = defineProps<{
     message: AiChatMessage;
   }>();
+
+  interface AiMessageAction {
+    key: 'copy' | 'retry' | 'edit';
+    iconType: string;
+    tooltipContent: string;
+    visible: boolean;
+  }
 
   const { t } = useI18n();
   const runtime = useAiChatRuntime();
@@ -123,7 +151,6 @@
   const editContent = ref('');
 
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);
-  const canEdit = computed(() => isUser.value && !runtime.state.loading.value);
   const canSubmitEdit = computed(() => editContent.value.trim().length > 0 && !runtime.state.loading.value);
   const isGenerating = computed(() => runtime.state.loading.value);
   const copyableText = computed(() =>
@@ -135,7 +162,6 @@
   );
   const canCopy = computed(() => copyableText.value.length > 0);
   const canShowActionArea = computed(() => !isEditing.value && (isUser.value || !isGenerating.value));
-  const showActions = computed(() => canShowActionArea.value);
 
   const messageMcps = computed(() => props.message.metadata?.mcps ?? []);
   const messageAttachments = computed(() => props.message.metadata?.attachments ?? []);
@@ -156,6 +182,19 @@
         };
       })
   );
+  const showAssistantLoading = computed(() => {
+    const hasContent = props.message.parts.some((part) => {
+      if (part.type === 'data-error') {
+        return true;
+      }
+
+      return ['text', 'reasoning'].includes(part.type) && 'text' in part && part.text.trim().length > 0;
+    });
+
+    return (
+      !isUser.value && runtime.state.messages.value.at(-1)?.id === props.message.id && isGenerating.value && !hasContent
+    );
+  });
 
   const messageClass = computed(() => ({
     'flex-row-reverse': isUser.value,
@@ -205,30 +244,26 @@
       [
         {
           key: 'copy',
-          label: '',
+          iconType: 'iconicon_file_copy',
           tooltipContent: t('common.copy'),
-          renderIcon: () => h(CrmIcon, { type: 'iconicon_file_copy' }),
-          disabled: !canCopy.value,
-          visible: isUser.value || !isGenerating.value,
+          visible: canCopy.value && (isUser.value || !isGenerating.value),
         },
         {
           key: 'retry',
-          label: '',
+          iconType: 'iconicon_refresh',
           tooltipContent: t('common.retry'),
-          renderIcon: () => h(CrmIcon, { type: 'iconicon_refresh' }),
-          disabled: false,
           visible: canRetry.value,
         },
         {
           key: 'edit',
-          label: '',
+          iconType: 'iconicon_edit',
           tooltipContent: t('common.edit'),
-          renderIcon: () => h(CrmIcon, { type: 'iconicon_edit' }),
-          disabled: false,
-          visible: canEdit.value,
+          visible: isUser.value && !runtime.state.loading.value,
         },
-      ].filter((action) => action.visible) as ActionsItem[]
+      ].filter((action) => action.visible) as AiMessageAction[]
   );
+
+  const showActions = computed(() => canShowActionArea.value && messageActions.value.length > 0);
 
   async function handleActionSelect(key: string) {
     switch (key) {
@@ -266,6 +301,19 @@
 <style scoped lang="scss">
   .ai-chat-message__bubble :deep(.ai-chat-block + .ai-chat-block) {
     margin-top: 8px;
+  }
+  .ai-chat-message__edit-input {
+    background: transparent;
+    &.n-input--focus {
+      background: transparent;
+    }
+    :deep(.n-input-wrapper) {
+      padding: 0;
+    }
+    :deep(.n-input__textarea-el) {
+      padding: 0;
+      background: transparent;
+    }
   }
   .ai-chat-message--user {
     .ai-chat-message__bubble {

@@ -1,27 +1,43 @@
 <template>
-  <n-scrollbar ref="threadScrollbarRef" class="h-full" content-class="min-h-full flex" @scroll="updateStickToBottom">
-    <div
-      ref="threadContentRef"
-      class="w-full p-[24px]"
-      :class="{ 'flex items-center justify-center': messages.length === 0 }"
-    >
-      <div v-if="messages.length === 0">
-        <slot name="empty">
-          <n-empty :description="props.emptyText" />
-        </slot>
-      </div>
+  <div class="relative h-full">
+    <n-scrollbar ref="threadScrollbarRef" class="h-full" content-class="min-h-full flex" @scroll="updateStickToBottom">
+      <div
+        ref="threadContentRef"
+        class="w-full p-[24px]"
+        :class="{ 'flex items-center justify-center': messages.length === 0 }"
+      >
+        <div v-if="messages.length === 0">
+          <slot name="empty">
+            <n-empty :description="props.emptyText" />
+          </slot>
+        </div>
 
-      <template v-else>
-        <AiMessage v-for="message in messages" :key="message.id" :message="message" />
+        <template v-else>
+          <AiMessage v-for="message in messages" :key="message.id" :message="message" />
+          <AiLoadingBlock v-if="showThreadLoading" class="mb-[32px]" />
+        </template>
+      </div>
+    </n-scrollbar>
+
+    <n-button
+      v-if="showBackToBottom"
+      circle
+      class="base-box-shadow absolute bottom-[16px] right-[24px] z-[1]"
+      @click="scrollToBottom"
+    >
+      <template #icon>
+        <CrmIcon type="iconicon_arrow_down" :size="16" />
       </template>
-    </div>
-  </n-scrollbar>
+    </n-button>
+  </div>
 </template>
 
 <script setup lang="ts">
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
-  import { NEmpty, NScrollbar, ScrollbarInst } from 'naive-ui';
+  import { NButton, NEmpty, NScrollbar, ScrollbarInst } from 'naive-ui';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import AiLoadingBlock from '../blocks/AiLoadingBlock.vue';
   import AiMessage from './AiMessage.vue';
 
   import { useAiChatRuntime } from '../runtime/useAiChatRuntime';
@@ -54,6 +70,13 @@
   const shouldStickToBottom = ref(true);
 
   const messages = computed(() => runtime.state.messages.value);
+  const showThreadLoading = computed(() => {
+    const lastMessage = messages.value.at(-1);
+
+    return runtime.state.loading.value && Boolean(lastMessage) && lastMessage?.role !== 'assistant';
+  });
+  const showBackToBottom = computed(() => messages.value.length > 0 && !shouldStickToBottom.value);
+
   const latestMessageSnapshot = computed(() => {
     const latestMessage = messages.value[messages.value.length - 1];
 
@@ -124,4 +147,12 @@
       scrollToBottom();
     }
   );
+
+  watch(showThreadLoading, () => {
+    if (!props.autoScroll || !shouldStickToBottom.value) {
+      return;
+    }
+
+    scrollToBottom();
+  });
 </script>
