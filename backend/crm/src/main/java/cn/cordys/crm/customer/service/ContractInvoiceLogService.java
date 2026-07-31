@@ -21,6 +21,7 @@ public class ContractInvoiceLogService extends BaseModuleLogService {
         differences = super.handleModuleLogField(differences, orgId, FormKey.INVOICE.getKey());
 
         for (JsonDifferenceDTO differ : differences) {
+            var column = differ.getColumn();
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.INVOICE_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
             } else if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.INVOICE_CONTRACT_ID.getBusinessKey())) {
@@ -29,6 +30,8 @@ public class ContractInvoiceLogService extends BaseModuleLogService {
                 setBusinessTitleName(differ);
             } else if (Strings.CI.equals(differ.getColumn(), "approvalStatus")) {
                 setApprovalName(differ);
+            } else if (column != null && column.contains("-")) {
+                differ.setColumnName(column);
             }
         }
         return differences;
