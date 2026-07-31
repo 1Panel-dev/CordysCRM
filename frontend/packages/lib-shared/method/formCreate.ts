@@ -169,6 +169,10 @@ export function getDisplayFieldText(field: FormCreateField, fieldValue: any) {
     }
   }
 
+  if (Array.isArray(fieldValue)) {
+    return fieldValue.join(',');
+  }
+
   const currentOption = field.options?.find((option: any) => {
     if (option.value === fieldValue) {
       return true;
