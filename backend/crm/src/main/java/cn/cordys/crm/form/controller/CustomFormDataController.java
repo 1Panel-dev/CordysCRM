@@ -1,7 +1,8 @@
 package cn.cordys.crm.form.controller;
 
+import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.ExportSelectRequest;
+import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.common.utils.ConditionFilterUtils;
@@ -12,6 +13,7 @@ import cn.cordys.crm.form.dto.response.CustomFormDataGetResponse;
 import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
 import cn.cordys.crm.form.service.CustomFormDataExportService;
 import cn.cordys.crm.form.service.CustomFormDataService;
+import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -90,16 +92,37 @@ public class CustomFormDataController {
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public String exportAll(@Validated @RequestBody CustomFormDataExportRequest request) {
         ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
-        return customFormDataExportService.exportAll(request, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CUSTOM_FORM_DATA.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CUSTOM_FORM_DATA)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .pageRequest(request)
+                .formKey(request.getCustomFormId())
+                .build();
+        return customFormDataExportService.exportAllWithMergeStrategy(exportDTO);
     }
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        return customFormDataExportService.exportSelect(request, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+    public String exportSelect(@Validated @RequestBody CustomFormExportSelectRequest request) {
+        ExportDTO exportDTO = ExportDTO.builder()
+                .exportType(ExportConstants.ExportType.CUSTOM_FORM_DATA.name())
+                .fileName(request.getFileName())
+                .headList(request.getHeadList())
+                .logModule(LogModule.CUSTOM_FORM_DATA)
+                .locale(LocaleContextHolder.getLocale())
+                .orgId(OrganizationContext.getOrganizationId())
+                .userId(SessionUtils.getUserId())
+                .selectIds(request.getIds())
+                .selectRequest(request)
+                .formKey(request.getCustomFormId())
+                .build();
+        return customFormDataExportService.exportSelectWithMergeStrategy(exportDTO);
     }
 
     @GetMapping("/template/download")

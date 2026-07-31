@@ -26,7 +26,10 @@ public interface ExtCustomFormDataMapper {
 
     void deleteFormDataByCustomFormId(@Param("formId") String formId);
 
-    List<CustomFormDataListResponse> getListByIds(@Param("ids") List<String> ids);
+    List<CustomFormDataListResponse> getListByIds(@Param("ids") List<String> ids,
+                                                  @Param("orgId") String orgId,
+                                                  @Param("userId") String userId,
+                                                  @Param("manageOwn") boolean manageOwn);
 
-    void updateData(@Param("customFormData")CustomFormData customFormData);
+    void updateData(@Param("customFormData") CustomFormData customFormData);
 }
