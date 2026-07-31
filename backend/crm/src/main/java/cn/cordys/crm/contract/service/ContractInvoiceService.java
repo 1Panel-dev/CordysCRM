@@ -210,7 +210,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
         invoiceFieldService.saveModuleField(invoice, orgId, operatorId, moduleFields, false);
         invoiceMapper.insert(invoice);
 
-        baseService.handleAddLog(invoice, request.getModuleFields());
+        baseService.handleAddLogWithSubTable(invoice, moduleFields, Translator.get("products_info"), moduleFormConfigDTO);
         OperationLogContext.getContext().setResourceName(invoice.getName());
         OperationLogContext.getContext().setResourceId(invoice.getId());
 
@@ -300,7 +300,8 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
             saveSnapshot(invoice, saveModuleFormConfigDTO, response);
 
             // 处理日志上下文
-            baseService.handleUpdateLog(originContractInvoice, invoice, originFields, moduleFields, request.getId(), invoice.getName());
+            baseService.handleUpdateLogWithSubTable(originContractInvoice, invoice, originFields, moduleFields,
+                    request.getId(), invoice.getName(), Translator.get("products_info"), moduleFormConfigDTO);
         }, () -> {
             throw new GenericException(Translator.get("invoice.not.exist"));
         });

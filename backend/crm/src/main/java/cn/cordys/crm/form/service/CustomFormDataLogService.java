@@ -44,8 +44,11 @@ public class CustomFormDataLogService extends BaseModuleLogService {
         differences.removeIf(differ -> Strings.CS.equalsAny(differ.getColumn(), "customFormId"));
         differences = super.handleModuleLogField(differences, orgId, formId);
         for (JsonDifferenceDTO differ : differences) {
+            var column = differ.getColumn();
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.CUSTOM_FORM_DATA_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
+            } else if (column != null && column.contains("-")) {
+                differ.setColumnName(column);
             }
         }
         return differences;

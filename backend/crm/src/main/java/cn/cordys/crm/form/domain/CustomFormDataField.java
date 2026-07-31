@@ -1,10 +1,10 @@
 package cn.cordys.crm.form.domain;
 
-import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.domain.BaseResourceSubField;
 import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
 @Table(name = "custom_form_data_field")
-public class CustomFormDataField extends BaseResourceField {
+public class CustomFormDataField extends BaseResourceSubField {
 }
