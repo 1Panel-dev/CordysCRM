@@ -162,7 +162,7 @@
     () => showDrawer.value,
     (visible) => {
       if (visible) {
-        resetFormState(isEdit.value && props.term ? props.term : undefined);
+        resetFormState(props.term ? props.term : undefined);
       }
     }
   );

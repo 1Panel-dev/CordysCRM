@@ -1,7 +1,6 @@
 import { AgentChatCancelUrl, AgentChatStreamUrl } from '../requrls/ai';
 import { useI18n } from '../../hooks/useI18n';
 import { getToken } from '../../method/auth';
-import { getLocalStorage } from '../../method/local-storage';
 import type { CordysAxios } from '../http/Axios';
 import type {
   AgentChatCancelParams,
@@ -33,7 +32,6 @@ function getApiUrl(path: string): string {
 // 请求头处理
 function getAgentHeaders(): Record<string, string> {
   const currentLocale = localStorage.getItem('CRM-locale') || 'zh-CN';
-  const app = getLocalStorage<Record<string, any>>('app', true);
   const token = getToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -47,7 +45,6 @@ function getAgentHeaders(): Record<string, string> {
       'X-AUTH-TOKEN': sessionId ?? '',
       'CSRF-TOKEN': csrfToken ?? '',
       'Accept-Language': currentLocale,
-      'Organization-Id': app?.orgId,
     };
   }
 
