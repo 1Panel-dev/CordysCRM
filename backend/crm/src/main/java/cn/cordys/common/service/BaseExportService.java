@@ -263,7 +263,7 @@ public abstract class BaseExportService {
         exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
         return exportWithMergeStrategy(exportParam, (task) -> {
             File file = prepareExportFile(task.getFileId(), exportParam.getFileName(), task.getOrganizationId());
-            try (ExcelWriter writer = EasyExcel.write(file).head(exportHeads).excelType(ExcelTypeEnum.XLSX)
+            try (ExcelWriter writer = EasyExcel.write(file).head(processDuplicateHeads(exportHeads)).excelType(ExcelTypeEnum.XLSX)
                     .registerWriteHandler(new CustomHeadColWidthStyleStrategy()).build()) {
                 WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
                 setRowAccessWindowSize(writer);
@@ -288,6 +288,22 @@ public abstract class BaseExportService {
                 });
             }
         });
+    }
+
+    private List<List<String>> processDuplicateHeads(List<List<String>> exportHeads) {
+        Map<String, Integer> countMap = new HashMap<>();
+        for (List<String> head : exportHeads) {
+            String key = String.join("\u0001", head);
+            int count = countMap.getOrDefault(key, 0);
+            if (count > 0) {
+                // 修改最后一级标题
+                int lastIndex = head.size() - 1;
+                head.set(lastIndex,
+                        head.get(lastIndex) + "\u00A0".repeat(count));
+            }
+            countMap.put(key, count + 1);
+        }
+        return exportHeads;
     }
 
     /**
