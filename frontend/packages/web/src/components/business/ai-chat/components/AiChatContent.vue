@@ -7,6 +7,8 @@
       </slot>
     </div>
 
+    <AiConfirmModal v-if="pendingConfirm" :confirm="pendingConfirm" />
+
     <!-- 输入区 -->
     <div>
       <slot name="composer">
@@ -17,6 +19,14 @@
 </template>
 
 <script setup lang="ts">
+  import { computed } from 'vue';
+
   import AiComposer from './AiComposer.vue';
+  import AiConfirmModal from './AiConfirmModal.vue';
   import AiThread from './AiThread.vue';
+
+  import { useAiChatRuntime } from '../runtime/useAiChatRuntime';
+
+  const runtime = useAiChatRuntime();
+  const pendingConfirm = computed(() => runtime.state.pendingConfirm.value);
 </script>

@@ -1,3 +1,5 @@
+import type { CommonList, TableQueryParams } from './common';
+
 export interface AgentChatStreamParams {
   message: string;
   conversationId?: string;
@@ -14,11 +16,105 @@ export interface AgentChatCancelParams {
   sessionId: string;
 }
 
+export interface AgentChatRunData {
+  conversationId: string;
+  runId: string;
+  userMessageId?: string;
+  assistantMessageId?: string;
+}
+
+export interface AgentChatConfirmData {
+  dialogId: string;
+  conversationId?: string;
+  orgId?: string;
+  sessionId?: string;
+  userId?: string;
+  items: AgentChatConfirmItem[];
+  createdAt?: number;
+}
+
+export interface AgentChatConfirmItem {
+  prompt: string;
+  title: string;
+  selectionType: 'SINGLE' | 'MULTIPLE';
+  options: AgentChatConfirmOption[];
+}
+
+export interface AgentChatConfirmOption {
+  label: string;
+  description?: string;
+}
+
+export interface AgentChatProgressData {
+  schemaVersion?: number;
+  sequence: number;
+  actionId: string;
+  stage: string;
+  status: string;
+  title: string;
+  description?: string;
+  timestamp?: number;
+  details?: {
+    input?: string;
+    output?: string;
+    [key: string]: unknown;
+  };
+}
+
+export interface AgentChatDoneData {
+  runId?: string;
+  output?: number;
+  conversationId?: string;
+  input?: number;
+  assistantMessageId?: string;
+  total?: number; // Tokens 消耗
+}
+
 export interface AgentChatStreamEvent {
-  type: 'session' | 'chunk' | 'error' | 'done';
+  type: 'run' | 'progress' | 'chunk' | 'confirm' | 'error' | 'done';
   content?: string;
   conversationId?: string;
   sessionId?: string;
+  run?: AgentChatRunData;
+  progress?: AgentChatProgressData;
+  confirm?: AgentChatConfirmData;
+  data?: AgentChatDoneData;
   errorMessage?: string;
   raw?: unknown;
+}
+
+export type AgentConversationQueryRequest = TableQueryParams;
+
+export interface AgentConversationItem {
+  id: string;
+  createUser?: string;
+  updateUser?: string;
+  createTime?: number;
+  updateTime?: number;
+  organizationId?: string;
+  userId?: string;
+  title: string;
+}
+
+export type AgentConversationPageResult = CommonList<AgentConversationItem>;
+
+export interface AgentConversationMessage {
+  id: string;
+  createUser?: string;
+  updateUser?: string;
+  createTime?: number;
+  updateTime?: number;
+  promptTokens?: number;
+  content: string;
+  modelId?: string;
+  completionTokens?: number;
+  totalTokens?: number;
+  organizationId?: string;
+  role: 'user' | 'assistant';
+  conversationId: string;
+}
+
+export interface AgentConversationDetail {
+  messages: AgentConversationMessage[];
+  conversation: AgentConversationItem;
 }

@@ -32,11 +32,21 @@
   >
     <AiChat
       v-if="chatRuntime"
+      ref="aiChatRef"
       :key="chatSessionId"
       :runtime="chatRuntime"
       :history-items="historyItems"
+      :active-history-id="activeHistoryId"
+      :history-loading="historyLoading"
+      :history-no-more="historyNoMore"
       :model-name="currentModelName"
       :mcp-options="mcpOptions"
+      @new="handleNewConversation"
+      @search-history="handleHistorySearch"
+      @history-reach-bottom="loadMoreHistory"
+      @history-click="handleHistoryClick"
+      @history-delete="handleHistoryDelete"
+      @history-rename="handleHistoryRename"
     />
   </CrmDrawer>
 </template>
@@ -46,6 +56,7 @@
   import { NScrollbar } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { AgentConversationDetail, AgentConversationItem, AgentConversationMessage } from '@lib/shared/models/ai';
   import type { AiModelItem } from '@lib/shared/models/system/aiModel';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -53,6 +64,7 @@
   import {
     AiChat,
     type AiChatMcp,
+    type AiChatMessage,
     AiChatProvider,
     type AiChatRuntime,
     AiComposer,
@@ -61,28 +73,90 @@
     createAiChatRuntime,
   } from '@/components/business/ai-chat';
 
-  import { cancelAgentChat, getAiModelList, streamAgentChat } from '@/api/modules';
+  import {
+    cancelAgentChat,
+    confirmAgentChat,
+    deleteAgentConversation,
+    getAgentConversationDetail,
+    getAgentConversationPage,
+    getAiModelList,
+    renameAgentConversation,
+    streamAgentChat,
+  } from '@/api/modules';
 
   const { t } = useI18n();
   const showChatDrawer = ref(false);
+  const aiChatRef = ref<InstanceType<typeof AiChat>>();
   const chatRuntime = ref<AiChatRuntime>();
   const chatSessionId = ref('');
   const agentConversationId = ref('');
   const agentSessionId = ref('');
   const activeModel = ref<AiModelItem>();
-  const historyItems = ref<{ id: string; title: string }[]>([]);
+  const activeHistoryId = ref('');
+  const historyItems = ref<AgentConversationItem[]>([]);
+  const historyLoading = ref(false);
+  const historyNoMore = ref(true);
+  const historyKeyword = ref('');
+  const historyCurrent = ref(1);
+  const historyPageSize = 50;
+  let historyRequestIndex = 0;
   const currentModelName = computed(() => activeModel.value?.displayName || activeModel.value?.modelName || '');
 
   const mcpOptions: AiChatMcp[] = [];
+
+  async function loadHistory(options: { reset?: boolean; keyword?: string } = {}): Promise<void> {
+    const reset = options.reset ?? false;
+
+    if (historyLoading.value && !reset) {
+      return;
+    }
+
+    historyRequestIndex += 1;
+    const requestIndex = historyRequestIndex;
+
+    if (typeof options.keyword === 'string') {
+      historyKeyword.value = options.keyword;
+    }
+
+    if (reset) {
+      historyCurrent.value = 1;
+      historyNoMore.value = false;
+    }
+
+    historyLoading.value = true;
+
+    try {
+      const res = await getAgentConversationPage({
+        current: historyCurrent.value,
+        pageSize: historyPageSize,
+        keyword: historyKeyword.value || undefined,
+      });
+
+      if (requestIndex !== historyRequestIndex) {
+        return;
+      }
+
+      const list = res.list ?? [];
+
+      historyItems.value = reset ? list : [...historyItems.value, ...list];
+      historyNoMore.value = historyItems.value.length >= (res.total ?? 0);
+      historyCurrent.value += 1;
+    } finally {
+      if (requestIndex === historyRequestIndex) {
+        historyLoading.value = false;
+      }
+    }
+  }
 
   async function loadDefaultModel(): Promise<void> {
     const res = await getAiModelList({ current: 1, pageSize: 100 });
     activeModel.value = res.list.find((model) => model.enable) ?? res.list[0];
   }
 
-  function createWorkbenchRuntime(): AiChatRuntime {
+  function createWorkbenchRuntime(initialMessages: AiChatMessage[] = []): AiChatRuntime {
     return createAiChatRuntime({
       initialModelName: currentModelName.value,
+      initialMessages,
       transport: createAgentChatTransport({
         send(context) {
           if (!activeModel.value) {
@@ -113,6 +187,23 @@
           });
         }
       },
+      async onConfirm(data, answerMap) {
+        const { dialogId } = data;
+
+        if (dialogId) {
+          await confirmAgentChat(dialogId, answerMap);
+        }
+      },
+      async onFinish() {
+        const conversationId = agentConversationId.value;
+
+        if (!conversationId) {
+          return;
+        }
+
+        await loadHistory({ reset: true });
+        activeHistoryId.value = conversationId;
+      },
     });
   }
 
@@ -120,31 +211,16 @@
     initialModelName: currentModelName.value,
   });
 
-  function createChatSession(title = ''): AiChatRuntime {
+  function createChatSession(initialMessages: AiChatMessage[] = []): AiChatRuntime {
     const sessionId = `chat_${Date.now()}`;
 
     chatSessionId.value = sessionId;
     agentConversationId.value = '';
     agentSessionId.value = '';
-    historyItems.value = title
-      ? [
-          {
-            id: sessionId,
-            title,
-          },
-        ]
-      : [];
-    chatRuntime.value = createWorkbenchRuntime();
+    activeHistoryId.value = '';
+    chatRuntime.value = createWorkbenchRuntime(initialMessages);
 
     return chatRuntime.value;
-  }
-
-  function openChatDrawer(): void {
-    if (!chatRuntime.value) {
-      createChatSession();
-    }
-
-    showChatDrawer.value = true;
   }
 
   async function handleComposerSubmit(payload: AiComposerSubmitPayload): Promise<void> {
@@ -152,9 +228,9 @@
       await loadDefaultModel();
     }
 
-    const modelName = currentModelName.value || payload.options?.model || '';
+    const modelName = currentModelName.value;
     const selectedMcps = payload.options?.mcps ?? [];
-    const runtime = createChatSession(payload.content);
+    const runtime = createChatSession();
 
     runtime.setSelectedMcps(selectedMcps);
     runtime.setModelName(modelName);
@@ -165,10 +241,86 @@
       content: payload.content,
       attachments: payload.attachments,
       options: {
-        model: modelName,
         mcps: selectedMcps,
       },
     });
+  }
+
+  function toChatMessage(message: AgentConversationMessage, index: number): AiChatMessage {
+    return {
+      id: message.id || `history_${message.conversationId}_${index}`,
+      role: message.role,
+      metadata: {
+        tokens: message.totalTokens,
+      },
+      parts: [
+        {
+          type: 'text',
+          text: message.content || '',
+        },
+      ],
+    };
+  }
+
+  function openChatDrawer(): void {
+    if (!chatRuntime.value) {
+      createChatSession();
+    }
+
+    showChatDrawer.value = true;
+    loadHistory({ reset: true }).catch(() => undefined);
+  }
+
+  async function loadMoreHistory(): Promise<void> {
+    if (historyNoMore.value) {
+      return;
+    }
+
+    await loadHistory();
+  }
+
+  async function handleHistorySearch(keyword: string): Promise<void> {
+    await loadHistory({ reset: true, keyword });
+  }
+
+  function handleNewConversation(): void {
+    chatRuntime.value?.clear();
+    agentConversationId.value = '';
+    agentSessionId.value = '';
+    activeHistoryId.value = '';
+    chatSessionId.value = `chat_${Date.now()}`;
+  }
+
+  async function handleHistoryClick(conversationId: string): Promise<void> {
+    const detail = (await getAgentConversationDetail(conversationId)) as AgentConversationDetail;
+    const messages = (detail.messages ?? []).map(toChatMessage);
+
+    agentConversationId.value = conversationId;
+    agentSessionId.value = '';
+    activeHistoryId.value = conversationId;
+    chatSessionId.value = conversationId;
+    chatRuntime.value = createWorkbenchRuntime(messages);
+  }
+
+  async function handleHistoryDelete(conversationId: string): Promise<void> {
+    await deleteAgentConversation(conversationId);
+
+    historyItems.value = historyItems.value.filter((item) => item.id !== conversationId);
+
+    if (activeHistoryId.value === conversationId) {
+      handleNewConversation();
+    }
+  }
+
+  async function handleHistoryRename(conversationId: string, title: string): Promise<void> {
+    try {
+      await renameAgentConversation(conversationId, { title });
+
+      historyItems.value = historyItems.value.map((item) => (item.id === conversationId ? { ...item, title } : item));
+      aiChatRef.value?.finishHistoryRename(conversationId);
+    } finally {
+      aiChatRef.value?.resetHistoryRenameLoading(conversationId);
+    }
   }
 
   onMounted(() => {

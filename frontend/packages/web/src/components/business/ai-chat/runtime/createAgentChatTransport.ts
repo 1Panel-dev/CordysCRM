@@ -114,7 +114,7 @@ function getLastUserText(messages: AiChatMessage[]): string {
 }
 
 // AI SDK ChatTransport 需要返回 ReadableStream<UIMessageChunk>。
-// 这里把 CRM 的 session/chunk/error/done 事件转换成 AI SDK 可消费的 UI message stream。
+// 这里把 CRM 的 run/progress/chunk/confirm/error/done 事件转换成 AI SDK 可消费的 UI message stream。
 function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>): ReadableStream<UIMessageChunk> {
   const parser = createThinkingMarkdownParser();
 
@@ -126,12 +126,12 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
       let started = false;
       let finished = false;
 
-      function enqueueStart(): void {
+      function enqueueStart(messageId?: string): void {
         if (started) {
           return;
         }
 
-        controller.enqueue({ type: 'start' });
+        controller.enqueue(messageId ? { type: 'start', messageId } : { type: 'start' });
         started = true;
       }
 
@@ -171,7 +171,7 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
       }
 
       // finish 时一定 flush parser，避免流结束时残留半个标签或最后一段文本。
-      function finish(): void {
+      function finish(messageMetadata?: AiChatMeta) {
         if (finished) {
           return;
         }
@@ -179,7 +179,7 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
         parser.flush().forEach(enqueuePiece);
         closeActivePart();
         enqueueStart();
-        controller.enqueue({ type: 'finish' });
+        controller.enqueue(messageMetadata ? { type: 'finish', messageMetadata } : { type: 'finish' });
         finished = true;
         controller.close();
       }
@@ -191,8 +191,28 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
         while (!result.done) {
           const event = result.value;
 
-          if (event.type === 'chunk') {
+          if (event.type === 'run') {
+            enqueueStart(event.run?.assistantMessageId);
+          } else if (event.type === 'progress') {
+            closeActivePart();
+            enqueueStart();
+            controller.enqueue({
+              type: 'data-progress',
+              id: event.progress?.actionId || `progress_${partIndex}`,
+              data: event.progress ?? {},
+            });
+            partIndex += 1;
+          } else if (event.type === 'chunk') {
             parser.append(event.content ?? '').forEach(enqueuePiece);
+          } else if (event.type === 'confirm') {
+            closeActivePart();
+            enqueueStart();
+            controller.enqueue({
+              type: 'data-confirm',
+              id: event.confirm?.dialogId,
+              data: event.confirm ?? {},
+            });
+            partIndex += 1;
           } else if (event.type === 'error') {
             closeActivePart();
             enqueueStart();
@@ -206,7 +226,9 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
             finish();
             return;
           } else if (event.type === 'done') {
-            finish();
+            finish({
+              tokens: event.data?.total,
+            });
             return;
           }
 

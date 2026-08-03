@@ -5,4 +5,12 @@ export default {
   'aiChat.send': '发送',
   'aiChat.thinking': '思考过程',
   'aiChat.editRestartTip': '编辑后从此处重新开始对话，历史对话不会被删除',
+  'aiChat.tokensUsed': '共消耗 {tokens}',
+  'aiChat.confirmTitle': 'Agent 请求确认',
+  'aiChat.confirmExecute': '确认执行',
+  'aiChat.confirmCancel': '取消/拒绝',
+  'aiChat.confirmWarning': '核对操作内容，需确认后才会执行',
+  'aiChat.writeOperationConfirm': '操作确认',
+  'aiChat.progressInput': '输入',
+  'aiChat.progressOutput': '输出',
 };

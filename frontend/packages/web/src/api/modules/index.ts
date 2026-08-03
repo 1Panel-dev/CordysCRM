@@ -819,7 +819,15 @@ export const {
 
 export const { login, signout, isLogin, getKey, getThirdCallback, getThirdOauthCallback, getOauthState } = loginApi;
 
-export const { streamAgentChat, cancelAgentChat } = aiApi;
+export const {
+  streamAgentChat,
+  cancelAgentChat,
+  confirmAgentChat,
+  getAgentConversationPage,
+  getAgentConversationDetail,
+  deleteAgentConversation,
+  renameAgentConversation,
+} = aiApi;
 
 export const { getSystemVersion, changeLocaleBackEnd } = sysApi;
 

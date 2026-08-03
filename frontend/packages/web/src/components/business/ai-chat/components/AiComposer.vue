@@ -243,7 +243,6 @@
         content: inputValue.value,
         attachments: [...attachments.value],
         options: {
-          model: currentModelName.value,
           mcps: [...selectedMcps.value],
         },
       });
@@ -252,7 +251,6 @@
         content: inputValue.value,
         attachments: [...attachments.value],
         options: {
-          model: currentModelName.value,
           mcps: selectedMcps.value,
         },
       });

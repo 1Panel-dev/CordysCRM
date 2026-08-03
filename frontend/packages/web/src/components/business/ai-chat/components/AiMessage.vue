@@ -73,7 +73,13 @@
           </div>
 
           <template v-for="item in renderableParts" :key="item.key">
-            <component :is="item.renderer" v-if="item.renderer" :part="item.part" :index="item.index" />
+            <component
+              :is="item.renderer"
+              v-if="item.renderer"
+              :part="item.part"
+              :index="item.index"
+              :is-generating="isCurrentGenerating"
+            />
             <div v-else class="ai-chat-block">{{ item.part.type }}</div>
           </template>
           <AiLoadingBlock v-if="showAssistantLoading" />
@@ -82,7 +88,7 @@
 
       <div
         v-if="showActions"
-        class="mt-[8px] flex gap-[12px] text-[var(--text-n4)] opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100"
+        class="mt-[8px] flex items-center gap-[12px] text-[var(--text-n4)] opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100"
         :class="isUser ? 'justify-end' : 'justify-start'"
       >
         <n-tooltip v-for="action in messageActions" :key="action.key" :delay="300">
@@ -96,6 +102,11 @@
           </template>
           {{ action.tooltipContent }}
         </n-tooltip>
+
+        <div v-if="tokenUsageText" class="flex items-center gap-[8px]">
+          <CrmIcon type="iconicon_star1" :size="16" />
+          <span>{{ t('aiChat.tokensUsed', { tokens: tokenUsageText }) }}</span>
+        </div>
       </div>
     </div>
   </article>
@@ -106,12 +117,14 @@
   import { NAvatar, NButton, NInput, NTooltip } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatThousands } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import AiErrorBlock from '../blocks/AiErrorBlock.vue';
   import AiLoadingBlock from '../blocks/AiLoadingBlock.vue';
   import AiMarkdownBlock from '../blocks/AiMarkdownBlock.vue';
+  import AiProgressBlock from '../blocks/AiProgressBlock.vue';
   import AiTextBlock from '../blocks/AiTextBlock.vue';
 
   import useLegacyCopy from '@/hooks/useLegacyCopy';
@@ -141,6 +154,7 @@
     'text': AiMarkdownBlock,
     'reasoning': AiMarkdownBlock,
     'data-error': AiErrorBlock,
+    'data-progress': AiProgressBlock,
   };
 
   const userPartRenderers: Partial<Record<AiChatMessagePart['type'], Component>> = {
@@ -153,6 +167,9 @@
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);
   const canSubmitEdit = computed(() => editContent.value.trim().length > 0 && !runtime.state.loading.value);
   const isGenerating = computed(() => runtime.state.loading.value);
+  const isCurrentGenerating = computed(
+    () => !isUser.value && runtime.state.messages.value.at(-1)?.id === props.message.id && isGenerating.value
+  );
   const copyableText = computed(() =>
     props.message.parts
       .filter((part) => ['text', 'reasoning'].includes(part.type))
@@ -163,6 +180,10 @@
   const canCopy = computed(() => copyableText.value.length > 0);
   const canShowActionArea = computed(() => !isEditing.value && (isUser.value || !isGenerating.value));
 
+  const tokenUsageText = computed(() =>
+    typeof props.message.metadata?.tokens === 'number' ? formatThousands(props.message.metadata.tokens) : ''
+  );
+
   const messageMcps = computed(() => props.message.metadata?.mcps ?? []);
   const messageAttachments = computed(() => props.message.metadata?.attachments ?? []);
 
@@ -170,7 +191,7 @@
 
   const renderableParts = computed(() =>
     props.message.parts
-      .filter((part) => ['text', 'reasoning', 'data-error'].includes(part.type))
+      .filter((part) => ['text', 'reasoning', 'data-error', 'data-progress'].includes(part.type))
       .map((part, index) => {
         const messagePart = { ...part } as AiChatMessagePart;
 
@@ -188,12 +209,14 @@
         return true;
       }
 
+      if (part.type === 'data-progress') {
+        return true;
+      }
+
       return ['text', 'reasoning'].includes(part.type) && 'text' in part && part.text.trim().length > 0;
     });
 
-    return (
-      !isUser.value && runtime.state.messages.value.at(-1)?.id === props.message.id && isGenerating.value && !hasContent
-    );
+    return isCurrentGenerating.value && !hasContent;
   });
 
   const messageClass = computed(() => ({
@@ -263,7 +286,9 @@
       ].filter((action) => action.visible) as AiMessageAction[]
   );
 
-  const showActions = computed(() => canShowActionArea.value && messageActions.value.length > 0);
+  const showActions = computed(
+    () => canShowActionArea.value && (messageActions.value.length > 0 || tokenUsageText.value)
+  );
 
   async function handleActionSelect(key: string) {
     switch (key) {
