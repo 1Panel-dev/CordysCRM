@@ -718,7 +718,7 @@ public class ContractService implements ApprovalResourceHandler {
                 updateRequest.setIds(List.of(contract.getId()));
                 updateRequest.setFieldId(field.getFieldId());
                 updateRequest.setFieldValue(field.getFieldValue());
-                contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.ORDER_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId());
+                contractFieldService.batchUpdate(updateRequest, baseField, List.of(contract), Contract.class, LogModule.CONTRACT_INDEX, extContractMapper::batchUpdate, userId, contract.getOrganizationId());
             });
         }
         ContractSnapshot snapshotCriteria = new ContractSnapshot();
