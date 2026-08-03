@@ -1,0 +1,79 @@
+<template>
+  <div class="ai-chat-block ai-chat-block-progress text-[var(--text-n2)]">
+    <n-collapse v-model:expanded-names="expandedNames" arrow-placement="right">
+      <n-collapse-item :name="partId">
+        <template #header>
+          <div class="flex max-w-full items-center gap-[8px]">
+            <CrmIcon type="iconicon_set_up" :size="16" class="text-[var(--text-n4)]" />
+            <span class="min-w-0 flex-1 truncate">
+              {{ progress.title }}
+            </span>
+          </div>
+        </template>
+        <div v-if="hasDetails" class="space-y-[4px] text-[var(--text-n2)]">
+          <div v-if="progress.details?.input"> {{ t('aiChat.progressInput') }}：{{ progress.details.input }} </div>
+          <div v-if="progress.details?.output"> {{ t('aiChat.progressOutput') }}：{{ progress.details.output }} </div>
+        </div>
+      </n-collapse-item>
+    </n-collapse>
+  </div>
+</template>
+
+<script setup lang="ts">
+  import { computed, ref, watch } from 'vue';
+  import { NCollapse, NCollapseItem } from 'naive-ui';
+
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { AgentChatProgressData } from '@lib/shared/models/ai';
+
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+
+  import type { AiChatDataParts } from '../types';
+  import type { DataUIPart } from 'ai';
+
+  const props = defineProps<{
+    part: DataUIPart<AiChatDataParts>;
+    index?: number;
+    isGenerating?: boolean;
+  }>();
+
+  const { t } = useI18n();
+
+  const progress = computed<AgentChatProgressData>(() => props.part.data as AgentChatProgressData);
+  const partId = computed(() => `${props.part.type}_${props.index ?? 0}`);
+  const expandedNames = ref<string[]>(props.isGenerating ? [partId.value] : []);
+  const hasDetails = computed(() => Boolean(progress.value.details?.input || progress.value.details?.output));
+
+  watch(
+    () => partId.value,
+    (id) => {
+      expandedNames.value = props.isGenerating ? [id] : [];
+    }
+  );
+
+  watch(
+    () => props.isGenerating,
+    (isGenerating) => {
+      expandedNames.value = isGenerating ? [partId.value] : [];
+    }
+  );
+</script>
+
+<style scoped lang="less">
+  .ai-chat-block-progress {
+    width: 100%;
+    :deep(.n-collapse) {
+      width: 100%;
+    }
+    :deep(.n-collapse-item__header .n-collapse-item__header-main) {
+      color: var(--text-n2);
+    }
+    :deep(.n-collapse-item__content-wrapper .n-collapse-item__content-inner) {
+      padding-top: 8px;
+      color: var(--text-n2);
+    }
+    :deep(.n-collapse-item__content-wrapper .n-collapse-item__content-inner *) {
+      color: inherit;
+    }
+  }
+</style>

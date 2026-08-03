@@ -1,5 +1,7 @@
 import { computed, markRaw, ref, shallowRef } from 'vue';
 
+import type { AgentChatConfirmData } from '@lib/shared/models/ai';
+
 import type { AiChatAttachment, AiChatMessage, AiChatMeta, AiChatSubmitPayload } from '../types';
 import type { AiChatRuntime, CreateAiChatRuntimeOptions } from './types';
 import { Chat } from '@ai-sdk/vue';
@@ -9,14 +11,12 @@ function createDefaultAiChatId(): string {
   return `ai_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-// 每次提交时把 UI 选择的模型、MCP、附件等业务上下文挂到 message metadata。
+// 每次提交时把 MCP、附件等业务上下文挂到 message metadata。
 // Transport 会从 metadata 中读取这些信息并转换成后端参数。
-function toMessageMetadata(payload: AiChatSubmitPayload, fallbackModel: string): AiChatMeta {
+function toMessageMetadata(payload: AiChatSubmitPayload): AiChatMeta {
   return {
-    model: payload.options?.model ?? fallbackModel,
     mcps: payload.options?.mcps,
     attachments: payload.attachments,
-    extra: payload.options?.metadata,
   };
 }
 
@@ -43,6 +43,7 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
   const selectedMcps = ref([...(options.initialSelectedMcps ?? [])]);
   const modelName = ref(options.initialModelName ?? '');
   const transport = shallowRef<ChatTransport<AiChatMessage> | undefined>(options.transport);
+  const currentConfirm = ref<AgentChatConfirmData>();
 
   // Chat 负责消息追加、流式合并、停止、重试和编辑后的重新请求。
   // Runtime 只补充 CRM 需要的输入草稿、附件、模型和 MCP 状态。
@@ -52,7 +53,21 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
       messages: options.initialMessages ?? [],
       generateId: createId,
       transport: transport.value,
-      onError: options.onError,
+      onError(error) {
+        currentConfirm.value = undefined;
+        options.onError?.(error);
+      },
+      onData(dataPart) {
+        if (dataPart.type === 'data-confirm') {
+          currentConfirm.value = dataPart.data as AgentChatConfirmData;
+        } else if (dataPart.type === 'data-error') {
+          currentConfirm.value = undefined;
+        }
+      },
+      async onFinish() {
+        currentConfirm.value = undefined;
+        await options.onFinish?.();
+      },
     })
   );
 
@@ -63,6 +78,7 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
   const error = computed(() => chat.value.error);
   const canSubmit = computed(() => !loading.value && (input.value.trim().length > 0 || attachments.value.length > 0));
   const canStop = computed(() => ['submitted', 'streaming'].includes(status.value));
+  const pendingConfirm = computed(() => currentConfirm.value);
 
   function setInput(value: string): void {
     input.value = value;
@@ -96,6 +112,7 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     chat.value.stop();
     chat.value.messages = [];
     chat.value.clearError();
+    currentConfirm.value = undefined;
     input.value = '';
     attachments.value = [];
   }
@@ -108,17 +125,15 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
       return;
     }
 
-    const metadata = toMessageMetadata(
-      {
-        ...payload,
-        attachments: submitAttachments,
-      },
-      modelName.value
-    );
+    const metadata = toMessageMetadata({
+      ...payload,
+      attachments: submitAttachments,
+    });
 
     // 发送后立即清空输入草稿，消息列表由 AI SDK Chat 自己追加 user message。
     input.value = '';
     attachments.value = [];
+    currentConfirm.value = undefined;
 
     await chat.value.sendMessage(
       {
@@ -189,6 +204,11 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     );
   }
 
+  async function confirm(data: AgentChatConfirmData, answers: Record<string, string>): Promise<void> {
+    await options.onConfirm?.(data, answers);
+    currentConfirm.value = undefined;
+  }
+
   const runtime: AiChatRuntime = {
     state: {
       messages,
@@ -202,6 +222,7 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
       error,
       canSubmit,
       canStop,
+      pendingConfirm,
     },
     chat,
     transport,
@@ -214,6 +235,7 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     stop,
     retry,
     edit,
+    confirm,
     appendMessage,
     updateMessage,
     clear,

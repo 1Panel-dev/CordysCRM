@@ -1,3 +1,5 @@
+import type { AgentChatConfirmData } from '@lib/shared/models/ai';
+
 import type { AiChatAttachment, AiChatMcp, AiChatMessage, AiChatSendOptions, AiChatSubmitPayload } from '../types';
 import type { Chat } from '@ai-sdk/vue';
 import type { ChatStatus, ChatTransport } from 'ai';
@@ -21,6 +23,7 @@ export interface AiChatRuntimeState {
   error: ComputedRef<Error | undefined>;
   canSubmit: ComputedRef<boolean>;
   canStop: ComputedRef<boolean>;
+  pendingConfirm: ComputedRef<AgentChatConfirmData | undefined>;
 }
 
 /**
@@ -42,6 +45,8 @@ export interface CreateAiChatRuntimeOptions {
    * 用户点击停止后，除 Chat.stop() 外额外执行的业务取消逻辑。
    */
   onStop?: () => Promise<void> | void;
+  onConfirm?: (data: AgentChatConfirmData, answers: Record<string, string>) => Promise<void> | void;
+  onFinish?: () => Promise<void> | void;
   onError?: (error: Error) => void;
 }
 
@@ -64,6 +69,7 @@ export interface AiChatRuntime {
   stop: () => Promise<void>;
   retry: (messageId?: string) => Promise<void>;
   edit: (messageId: string, content: string, options?: AiChatSendOptions) => Promise<void>;
+  confirm: (data: AgentChatConfirmData, answers: Record<string, string>) => Promise<void>;
   appendMessage: (message: AiChatMessage) => void;
   updateMessage: (messageId: string, patch: (message: AiChatMessage) => AiChatMessage) => void;
   clear: () => void;

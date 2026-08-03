@@ -1,3 +1,5 @@
+import type { AgentChatConfirmData, AgentChatProgressData } from '@lib/shared/models/ai';
+
 import type { UIMessage, UITools } from 'ai';
 
 export interface AiChatError {
@@ -27,14 +29,15 @@ export interface AiChatMcp {
 }
 
 export interface AiChatMeta {
-  model?: string;
   mcps?: AiChatMcp[];
   attachments?: AiChatAttachment[];
-  extra?: Record<string, unknown>;
+  tokens?: number;
 }
 
 export type AiChatDataParts = Record<string, unknown> & {
   error: AiChatError;
+  confirm: AgentChatConfirmData;
+  progress: AgentChatProgressData;
 };
 
 export type AiChatMessage = UIMessage<AiChatMeta, AiChatDataParts, UITools>;
@@ -45,8 +48,6 @@ export type AiChatMessagePart = AiChatMessage['parts'][number];
  * 发送选项。
  */
 export interface AiChatSendOptions {
-  metadata?: Record<string, unknown>;
-  model?: string;
   mcps?: AiChatMcp[];
 }
 

@@ -52,13 +52,14 @@
   const props = defineProps<{
     part: TextUIPart | ReasoningUIPart;
     index?: number;
+    isGenerating?: boolean;
   }>();
 
   const { t } = useI18n();
   const { legacyCopy } = useLegacyCopy();
   const partId = computed(() => `${props.part.type}_${props.index ?? 0}`);
   const markdownRef = ref<HTMLElement | null>(null);
-  const expandedNames = ref<string[]>([partId.value]);
+  const expandedNames = ref<string[]>(props.isGenerating ? [partId.value] : []);
   const isThinkingBlock = computed(() => props.part.type === 'reasoning');
   const mermaidIdPrefix = `ai-mermaid-${Math.random().toString(36).slice(2)}`;
 
@@ -67,7 +68,14 @@
   watch(
     () => partId.value,
     (id) => {
-      expandedNames.value = [id];
+      expandedNames.value = props.isGenerating ? [id] : [];
+    }
+  );
+
+  watch(
+    () => props.isGenerating,
+    (isGenerating) => {
+      expandedNames.value = isGenerating ? [partId.value] : [];
     }
   );
 

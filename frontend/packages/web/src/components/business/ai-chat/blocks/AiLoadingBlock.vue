@@ -3,7 +3,7 @@
     <span
       v-for="index in 3"
       :key="index"
-      class="h-[6px] w-[6px] animate-bounce rounded-full bg-[var(--text-n4)]"
+      class="h-[6px] w-[6px] animate-bounce rounded-full bg-[var(--text-n6)]"
       :style="{ animationDelay: `${(index - 1) * 120}ms` }"
     />
   </div>
