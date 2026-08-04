@@ -26,7 +26,7 @@ public interface CommonMapper {
      * @return 值集合
      */
     List<BaseResourceSubField> getCheckValList(@Param("tableName") String tableName,
-                                 @Param("fieldName") String fieldName, @Param("orgId") String orgId);
+                                               @Param("fieldName") String fieldName, @Param("orgId") String orgId);
 
     /**
      * 校验字段值是否重复
@@ -42,7 +42,7 @@ public interface CommonMapper {
                                 @Param("fieldId") String fieldId, @Param("fieldValue") String fieldValue, @Param("orgId") String orgId);
 
     List<BaseResourceSubField> getCheckFieldValList(@Param("dataTable") String dataTable, @Param("fieldTable") String fieldTable,
-                                      @Param("fieldId") String fieldId, @Param("orgId") String orgId);
+                                                    @Param("fieldId") String fieldId, @Param("orgId") String orgId);
 
     /**
      * 校验业务字段是否重复
@@ -64,7 +64,7 @@ public interface CommonMapper {
      * @param fieldId
      * @return
      */
-    BaseResourceSubField getResourceField(@Param("tableName") String tableName, @Param("resourceId") String resourceId, @Param("fieldId") String fieldId);
+    BaseResourceSubField getResourceField(@Param("tableName") String tableName, @Param("resourceId") String resourceId, @Param("fieldId") String fieldId, @Param("subRowId") int subRowId);
 
     /**
      * 更新自定义字段
@@ -74,6 +74,6 @@ public interface CommonMapper {
      */
     void updateCustomerField(@Param("tableName") String tableName, @Param("field") BaseResourceSubField field);
 
-    int checkIdCount(@Param("id")String id, @Param("tableName")String tableName);
+    int checkIdCount(@Param("id") String id, @Param("tableName") String tableName);
 }
 
