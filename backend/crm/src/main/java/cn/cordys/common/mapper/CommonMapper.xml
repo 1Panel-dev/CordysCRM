@@ -600,7 +600,7 @@
     <select id="getResourceField" resultType="cn.cordys.common.domain.BaseResourceSubField">
         select t.*
         from `${tableName}` t
-        where t.resource_id = #{resourceId} and t.field_id = #{fieldId}
+        where t.resource_id = #{resourceId} and t.field_id = #{fieldId} and t.row_id = #{subRowId}
     </select>
 
     <update id="updateCustomerField">
