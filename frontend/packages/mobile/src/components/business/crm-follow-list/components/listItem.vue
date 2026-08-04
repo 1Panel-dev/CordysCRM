@@ -73,7 +73,7 @@
               color="var(--text-n4)"
               @click.stop="openComment(item)"
             />
-            <div> {{ 0 }}</div>
+            <div>{{ displayCommentCount }}</div>
           </div>
         </div>
       </div>
@@ -87,6 +87,7 @@
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatBadgeCount } from '@lib/shared/method';
   import type { FollowDetailItem, StatusTagKey } from '@lib/shared/models/customer';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -147,23 +148,25 @@
     hasAnyPermission(['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:READ'])
   );
 
+  const displayCommentCount = computed(() => formatBadgeCount(props.item.commentCount));
+
   function changeStatus() {
     emit('change');
   }
 
   function openComment(item: FollowDetailItem) {
-    // todo 资源参数需要完善
-    // router.push({
-    //   name: CommonRouteEnum.FOLLOW_COMMENT,
-    //   query: {
-    //     id: item.id,
-    //     type: props.type,
-    //     formKey: props.formKey,
-    //     sourceId: props.sourceId,
-    //     sourceName: props.sourceName,
-    //     readonly: String(props.readonly || !isOwner(item)),
-    //   },
-    // });
+    router.push({
+      name: CommonRouteEnum.FOLLOW_COMMENT,
+      query: {
+        id: item.id,
+        type: props.type,
+        formKey: props.formKey,
+        sourceId: props.sourceId,
+        sourceName: props.sourceName,
+        commentCount: item.commentCount || 0,
+        readonly: String(props.readonly || !isOwner(item)),
+      },
+    });
   }
 </script>
 

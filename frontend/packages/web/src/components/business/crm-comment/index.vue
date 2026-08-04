@@ -66,6 +66,7 @@
   import { NButton, NDivider } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatBadgeCount } from '@lib/shared/method';
   import type {
     FollowCommentActionValue,
     FollowCommentActiveEditor,
@@ -128,7 +129,10 @@
     return null;
   });
 
-  const displayCount = computed(() => props.commentCount ?? getLocalCommentCount());
+  const displayCount = computed(() => {
+    const count = props.commentCount ?? getLocalCommentCount();
+    return formatBadgeCount(count);
+  });
 
   const showHeaderDivider = computed(() => !expanded.value);
 

@@ -78,7 +78,7 @@
             :comments="getRecordComments(item)"
             :comment-count="getRecordCommentCount(item)"
             :expanded="isCommentExpanded(item.id)"
-            @update:expanded="(expanded) => updateCommentExpanded(item.id, expanded)"
+            @update:expanded="(expanded) => updateCommentExpanded(item, expanded)"
             @create-submit="(value) => emit('commentCreate', item, value)"
             @reply-submit="(value) => emit('commentReply', item, value)"
             @edit-submit="(value) => emit('commentEdit', item, value)"
@@ -103,7 +103,6 @@
   import {
     type FollowCommentActionValue,
     type FollowCommentItem,
-    FollowCommentSourceTypeEnum,
     type FollowCommentSubmitValue,
   } from '@lib/shared/models/follow';
 
@@ -164,17 +163,24 @@
   }
 
   const commentExpandedIds = ref<string[]>([]);
-
-  // TODO xinxinwu: 评论接口接入
-  const mockCommentList: FollowCommentItem[] = [];
+  const commentMap = ref<Record<string, FollowCommentItem[]>>({});
+  const commentCountMap = ref<Record<string, number>>({});
 
   function isCommentExpanded(id: string) {
     return commentExpandedIds.value.includes(id);
   }
 
-  function updateCommentExpanded(id: string, expanded: boolean) {
+  function initRecordCommentState(item: FollowDetailItem) {
+    commentMap.value[item.id] ||= [];
+    commentCountMap.value[item.id] ??= item.commentCount || 0;
+    // TODO xinxinwu: 接口联调时在这里按跟进记录/计划类型请求一级评论分页列表，二级评论由一级列表 replies 返回。
+  }
+
+  function updateCommentExpanded(item: FollowDetailItem, expanded: boolean) {
+    const { id } = item;
     if (expanded && !isCommentExpanded(id)) {
       commentExpandedIds.value.push(id);
+      initRecordCommentState(item);
       return;
     }
     if (!expanded) {
@@ -182,16 +188,8 @@
     }
   }
 
-  function getRecordComments(item: FollowDetailItem) {
-    // TODO xinxinwu: 后端跟进记录列表返回评论列表字段后，确认字段名
-    return (item as FollowDetailItem & { comments?: FollowCommentItem[] }).comments || mockCommentList;
-  }
-
-  function getRecordCommentCount(item: FollowDetailItem) {
-    // TODO xinxinwu: 后端跟进记录列表返回评论数量字段后，确认字段名
-    return (item as FollowDetailItem & { commentCount?: number }).commentCount ?? 4;
-  }
-
+  const getRecordComments = (item: FollowDetailItem) => commentMap.value[item.id] || [];
+  const getRecordCommentCount = (item: FollowDetailItem) => commentCountMap.value[item.id] ?? item.commentCount ?? 0;
   const { openNewPage } = useOpenNewPage();
   function goDetail(key: string, item: FollowDetailItem) {
     if (key === 'clueName') {
