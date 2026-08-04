@@ -65,6 +65,15 @@ const common: AppRouteRecordRaw = {
         depth: 9,
       },
     },
+    {
+      path: 'followComment',
+      name: CommonRouteEnum.FOLLOW_COMMENT,
+      component: () => import('@/components/business/crm-comment/commentPage.vue'),
+      meta: {
+        permissions: ['CUSTOMER_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ'],
+        depth: 9,
+      },
+    },
   ],
 };
 

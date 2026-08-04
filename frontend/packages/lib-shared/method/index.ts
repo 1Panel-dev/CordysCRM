@@ -735,3 +735,16 @@ export function formatThousands(
     maximumFractionDigits: options?.maximumFractionDigits ?? decimalLength,
   });
 }
+/**
+ * 返回数字格式，如果数值大于max，则返回max+
+ * @param count 
+ * @param max 
+ * @returns 99+
+ */
+export function formatBadgeCount(count: number | string | null | undefined, max = 99) {
+  const value = Number(count || 0);
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return value > max ? `${max}+` : value;
+}

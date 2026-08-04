@@ -22,6 +22,7 @@
 
 <script setup lang="ts">
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatBadgeCount } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
@@ -45,7 +46,7 @@
   const { t } = useI18n();
 
   const titleText = computed(() => props.title || t('crmComment.title'));
-  const displayCount = computed(() => (props.count > 99 ? '99+' : props.count));
+  const displayCount = computed(() => formatBadgeCount(props.count));
 </script>
 
 <style scoped lang="less">
