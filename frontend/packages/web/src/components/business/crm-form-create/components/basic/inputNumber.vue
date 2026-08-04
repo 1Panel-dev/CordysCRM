@@ -124,7 +124,7 @@
   }
 
   onBeforeMount(() => {
-    if (props.needInitDetail && props.fieldConfig.defaultValue !== undefined) {
+    if (!props.needInitDetail && props.fieldConfig.defaultValue !== undefined) {
       value.value = value.value === undefined || value.value === null ? props.fieldConfig.defaultValue : value.value;
       emit('change', value.value);
     }

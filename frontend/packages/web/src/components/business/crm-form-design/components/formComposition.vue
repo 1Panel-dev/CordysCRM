@@ -79,6 +79,7 @@
               :field-config="item"
               :path="item.id"
               :form-config="props.formConfig"
+              :disabled="!item.editable"
             />
             <div
               v-if="![FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(item.type)"
