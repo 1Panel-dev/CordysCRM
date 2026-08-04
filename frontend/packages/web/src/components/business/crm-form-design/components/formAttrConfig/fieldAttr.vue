@@ -917,7 +917,10 @@
           :show-button="false"
           :min="0"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue') || !!fieldConfig.resourceFieldId"
-          :fieldConfig="fieldConfig"
+          :fieldConfig="{
+            ...fieldConfig,
+            placeholder: t('common.pleaseInput'),
+          }"
           path=""
           isDefaultValueRender
           ignore-rule
@@ -1158,15 +1161,7 @@
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
         <n-checkbox
-          v-if="
-            ![
-              FieldTypeEnum.DIVIDER,
-              FieldTypeEnum.SERIAL_NUMBER,
-              FieldTypeEnum.SUB_PRICE,
-              FieldTypeEnum.SUB_PRODUCT,
-              FieldTypeEnum.FORMULA,
-            ].includes(fieldConfig.type)
-          "
+          v-if="![FieldTypeEnum.DIVIDER, FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.FORMULA].includes(fieldConfig.type)"
           v-model:checked="fieldConfig.editable"
           :disabled="fieldConfig.disabledProps?.includes('editable') || !!fieldConfig.resourceFieldId"
           @update-checked="

@@ -78,7 +78,13 @@
                 {{ t('common.delete') }}
               </n-tooltip>
             </div>
-            <component :is="getItemComponent(item.type)" :field-config="item" :path="item.id" isSubTableField />
+            <component
+              :is="getItemComponent(item.type)"
+              :field-config="item"
+              :path="item.id"
+              :disabled="props.disabled"
+              isSubTableField
+            />
             <div class="crm-form-design--composition-item-mask"></div>
           </div>
         </template>
@@ -112,6 +118,7 @@
   const props = defineProps<{
     formConfig: FormConfig;
     path: string;
+    disabled?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;
