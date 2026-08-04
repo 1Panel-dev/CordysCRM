@@ -133,12 +133,12 @@ CREATE INDEX idx_user_id ON agent_conversation(user_id ASC);
 
 CREATE TABLE agent_message(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `role` VARCHAR(50) NOT NULL  DEFAULT 'user/assistant' COMMENT '对话角色' ,
+    `role` VARCHAR(50) NOT NULL  COMMENT '对话角色' ,
+    `run_id` VARCHAR(32) NOT NULL   COMMENT '执行ID' ,
     `conversation_id` VARCHAR(32) NOT NULL   COMMENT '对话ID' ,
     `model_name` VARCHAR(255)    COMMENT '模型名称' ,
-    `prompt_tokens` BIGINT    COMMENT '本次调用输入' ,
-    `completion_tokens` BIGINT(255)    COMMENT '本次调用输出' ,
-    `total_tokens` BIGINT(255)    COMMENT '累计调用' ,
+    `input_tokens` BIGINT    COMMENT '本次对话输入' ,
+    `output_tokens` BIGINT(255)    COMMENT '本次对话输出' ,
     `content` MEDIUMTEXT    COMMENT '消息内容' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
@@ -204,6 +204,7 @@ CREATE TABLE agent_term_discovery(
 CREATE TABLE agent_task_execute_log(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '任务ID' ,
+    `run_id` VARCHAR(32) NOT NULL   COMMENT '执行ID' ,
     `execute_time` BIGINT NOT NULL   COMMENT '执行时间' ,
     `execute_reason` VARCHAR(500) NOT NULL   COMMENT '触发原因' ,
     `result` VARCHAR(255) NOT NULL   COMMENT '结果' ,
@@ -216,6 +217,59 @@ CREATE TABLE agent_task_execute_log(
 
 CREATE INDEX idx_task_id ON agent_task_execute_log(task_id ASC);
 CREATE INDEX idx_confirm_user ON agent_task_execute_log(confirm_user ASC);
+
+CREATE TABLE agent_model_usage(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `model_id` VARCHAR(32) NOT NULL   COMMENT '模型ID' ,
+    `run_id` VARCHAR(32) NOT NULL   COMMENT '执行ID' ,
+    `user_id` VARCHAR(32) NOT NULL   COMMENT '用户ID' ,
+    `input_tokens` BIGINT    COMMENT '输入消耗' ,
+    `output_tokens` BIGINT    COMMENT '输出消耗' ,
+    `call_count` BIGINT    COMMENT '调用次数' ,
+    `fallback_count` BIGINT    COMMENT '降级次数' ,
+    `success_count` BIGINT    COMMENT '成功次数' ,
+    `failure_count` BIGINT    COMMENT '失败次数' ,
+    `total_latency_ms` BIGINT    COMMENT '总延迟毫秒' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    PRIMARY KEY (id)
+)  COMMENT = '模型用量'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_model_id ON agent_model_usage(model_id ASC);
+CREATE INDEX idx_run_id ON agent_model_usage(run_id ASC);
+CREATE INDEX idx_user_id ON agent_model_usage(user_id ASC);
+CREATE INDEX idx_org_id ON agent_model_usage(organization_id ASC);
+
+CREATE TABLE agent_trace(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
+    `status` VARCHAR(10)    COMMENT '状态' ,
+    `operator` VARCHAR(32) NOT NULL   COMMENT '操作人' ,
+    `call_time` BIGINT NOT NULL   COMMENT '执行时间' ,
+    `call_ip` VARCHAR(50)    COMMENT '执行IP' ,
+    `run_id` VARCHAR(32) NOT NULL   COMMENT '执行ID' ,
+    `prompt` VARCHAR(5000) NOT NULL   COMMENT '原始输入' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    PRIMARY KEY (id)
+)  COMMENT = 'AI执行日志'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_operator ON agent_trace(operator ASC);
+CREATE INDEX idx_org_id ON agent_trace(organization_id ASC);
+CREATE INDEX idx_run_id ON agent_trace(run_id ASC);
+
+CREATE TABLE agent_trace_event(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `trace` BLOB(255)    COMMENT '响应内容' ,
+    PRIMARY KEY (id)
+)  COMMENT = 'AI执行日志详情表'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
