@@ -21,7 +21,7 @@
       ref="crmListRef"
       :keyword="keyword"
       :list-params="listParams"
-      class="p-[16px]"
+      class="py-[16px]"
       :item-gap="16"
       :close-init-load="!activeFilter"
       :load-list-api="getFollowPLanPage"
@@ -31,6 +31,7 @@
         <listItem
           :item="item"
           type="plan"
+          class="workbench-follow-item"
           :form-key="FormDesignKeyEnum.FOLLOW_PLAN"
           :readonly="props.readonly"
           @click="goDetail(item)"
@@ -44,7 +45,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
+  import { showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';

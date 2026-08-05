@@ -340,10 +340,12 @@
       background-color: var(--text-n9);
     }
   }
-</style>
-
-<style lang="less">
   .follow-view {
     .half-px-border-bottom();
+  }
+  :deep(.workbench-follow-item) {
+    .follow-item-content {
+      padding: 16px 0;
+    }
   }
 </style>

@@ -21,7 +21,7 @@
       ref="crmListRef"
       :keyword="keyword"
       :list-params="listParams"
-      class="p-[16px]"
+      class="py-[16px]"
       :item-gap="16"
       :close-init-load="!activeFilter"
       :load-list-api="getFollowRecordPage"
@@ -31,6 +31,7 @@
         <listItem
           :item="item"
           type="record"
+          class="workbench-follow-item"
           :form-key="FormDesignKeyEnum.FOLLOW_RECORD"
           :readonly="props.readonly"
           @click="goDetail(item)"
@@ -120,5 +121,3 @@
     }
   );
 </script>
-
-<style scoped lang="less"></style>

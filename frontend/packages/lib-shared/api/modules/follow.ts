@@ -113,7 +113,7 @@ export default function useFollowApi(CDR: CordysAxios) {
     return CDR.post({ url: AddFollowPlanUrl, data });
   }
 
-  // 跟进记录评论
+  // 跟进记录评论 todo xinxinwu
   function getFollowRecordCommentList(data: FollowCommentListParams) {
     return CDR.post<CommonList<FollowCommentItem>>({ url: GetFollowRecordCommentListUrl, data });
   }
@@ -130,7 +130,7 @@ export default function useFollowApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DeleteFollowRecordCommentUrl}/${id}` });
   }
 
-  // 跟进计划评论
+  // 跟进计划评论 todo xinxinwu
   function getFollowPlanCommentList(data: FollowCommentListParams) {
     return CDR.post<CommonList<FollowCommentItem>>({ url: GetFollowPlanCommentListUrl, data });
   }

@@ -6,14 +6,14 @@
           :active-editor="getParentCommentEditor(comment)"
           :can-delete="canDelete(comment)"
           :can-edit="canEdit(comment)"
-          :can-reply="canReply(comment)"
+          :can-reply="canOperateComment"
           :comment="comment"
           :submit-loading="props.submitLoading"
-          @reply="emit('reply', $event)"
-          @edit="emit('edit', $event)"
-          @delete="emit('delete', $event)"
-          @reply-submit="emit('replySubmit', $event)"
-          @edit-submit="emit('editSubmit', $event)"
+          @reply="handleReply"
+          @edit="handleEdit"
+          @delete="handleDelete"
+          @reply-submit="handleReplySubmit"
+          @edit-submit="handleEditSubmit"
           @cancel-editor="emit('cancelEditor')"
         />
 
@@ -34,15 +34,15 @@
               :active-editor="props.activeEditor"
               :can-delete="canDelete(reply)"
               :can-edit="canEdit(reply)"
-              :can-reply="canReply(reply)"
+              :can-reply="canOperateComment"
               :comment="reply"
               :submit-loading="props.submitLoading"
               :level="2"
-              @reply="emit('reply', $event)"
-              @edit="emit('edit', $event)"
-              @delete="emit('delete', $event)"
-              @reply-submit="emit('replySubmit', $event)"
-              @edit-submit="emit('editSubmit', $event)"
+              @reply="handleReply"
+              @edit="handleEdit"
+              @delete="handleDelete"
+              @reply-submit="handleReplySubmit"
+              @edit-submit="handleEditSubmit"
               @cancel-editor="emit('cancelEditor')"
             />
             <n-divider class="crm-comment-list__divider crm-comment-list__reply-divider" />
@@ -88,6 +88,7 @@
   import { NButton, NDivider } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
   import type {
     FollowCommentActionValue,
     FollowCommentActiveEditor,
@@ -98,6 +99,9 @@
   import CommentItem from './commentItem.vue';
   import MentionInput from './mentionInput.vue';
 
+  import useUserStore from '@/store/modules/user';
+  import { hasAnyPermission } from '@/utils/permission';
+
   const { t } = useI18n();
 
   const props = withDefaults(
@@ -105,9 +109,6 @@
       comments?: FollowCommentItem[];
       activeEditor?: FollowCommentActiveEditor | null;
       submitLoading?: boolean;
-      canReply?: (comment: FollowCommentItem) => boolean;
-      canEdit?: (comment: FollowCommentItem) => boolean;
-      canDelete?: (comment: FollowCommentItem) => boolean;
     }>(),
     {
       comments: () => [],
@@ -125,6 +126,8 @@
   }>();
 
   const expandedCommentIds = ref<string[]>([]);
+  const userStore = useUserStore();
+  const canOperateComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
 
   function getReplies(comment: FollowCommentItem) {
     return comment.replies || [];
@@ -179,23 +182,56 @@
     return props.activeEditor;
   }
 
-  function canReply(comment: FollowCommentItem) {
-    return props.canReply?.(comment) ?? true;
+  const isCommentOwner = (comment: FollowCommentItem) => comment.createUser === userStore.userInfo.id;
+
+  const canEdit = (comment: FollowCommentItem) => isCommentOwner(comment);
+
+  const canDelete = (comment: FollowCommentItem) => isCommentOwner(comment);
+
+  function handleReply(comment: FollowCommentItem) {
+    if (!canOperateComment.value) {
+      return;
+    }
+    emit('reply', comment);
   }
 
-  function canEdit(comment: FollowCommentItem) {
-    return props.canEdit?.(comment) ?? true;
+  function handleEdit(comment: FollowCommentItem) {
+    if (!canEdit(comment)) {
+      return;
+    }
+    emit('edit', comment);
   }
 
-  function canDelete(comment: FollowCommentItem) {
-    return props.canDelete?.(comment) ?? true;
+  function handleDelete(comment: FollowCommentItem) {
+    if (!canDelete(comment)) {
+      return;
+    }
+    emit('delete', comment);
   }
 
   function handleParentReplySubmit(comment: FollowCommentItem, value: FollowCommentSubmitValue) {
+    if (!canOperateComment.value) {
+      return;
+    }
+
     emit('replySubmit', {
       comment,
       ...value,
     });
+  }
+
+  function handleReplySubmit(value: FollowCommentActionValue) {
+    if (!canOperateComment.value) {
+      return;
+    }
+    emit('replySubmit', value);
+  }
+
+  function handleEditSubmit(value: FollowCommentActionValue) {
+    if (!canEdit(value.comment)) {
+      return;
+    }
+    emit('editSubmit', value);
   }
 </script>
 
