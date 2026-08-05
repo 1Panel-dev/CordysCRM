@@ -922,6 +922,7 @@ public class ClueService {
                 record.setCustomerId(customerId);
                 record.setOpportunityId(opportunityId);
                 record.setContactId(contactId);
+                record.setCommentCount(0L);
             });
             followUpRecordMapper.batchInsert(followUpRecords);
             followUpRecordFieldMapper.batchInsert(followUpRecordFields);
@@ -955,6 +956,7 @@ public class ClueService {
                 plan.setCustomerId(customerId);
                 plan.setOpportunityId(opportunityId);
                 plan.setContactId(contactId);
+                plan.setCommentCount(0L);
             });
             followUpPlanMapper.batchInsert(followUpPlans);
             followUpPlanFieldMapper.batchInsert(followUpPlanFields);
@@ -1349,6 +1351,7 @@ public class ClueService {
             clueRecord.setCustomerId(customerId);
             clueRecord.setClueId(null);
             clueRecord.setType(FollowUpPlanType.CUSTOMER.name());
+            clueRecord.setCommentCount(0L);
             if (StringUtils.isNotBlank(clueRecord.getCustomerId())) {
                 records.add(clueRecord);
                 ClueFollowDTO clueFollowDTO = clueFollowMap.get(customerId);
@@ -1378,6 +1381,7 @@ public class ClueService {
             cluePlan.setCustomerId(clueTransferMap.get(cluePlan.getClueId()));
             cluePlan.setClueId(null);
             cluePlan.setType(FollowUpPlanType.CUSTOMER.name());
+            cluePlan.setCommentCount(0L);
             if (StringUtils.isNotBlank(cluePlan.getCustomerId())) {
                 plans.add(cluePlan);
             }

@@ -45,4 +45,7 @@ public class FollowUpPlan extends BaseModel {
 
     @Schema(description = "是否转为跟进记录")
     private Boolean converted;
+
+    @Schema(description = "评论总数，包含回复")
+    private Long commentCount;
 }

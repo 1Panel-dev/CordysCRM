@@ -39,4 +39,7 @@ public class FollowUpRecord extends BaseModel {
 
     @Schema(description = "联系人")
     private String contactId;
+
+    @Schema(description = "评论总数，包含回复")
+    private Long commentCount;
 }

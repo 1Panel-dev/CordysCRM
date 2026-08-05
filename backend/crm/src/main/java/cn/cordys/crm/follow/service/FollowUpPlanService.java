@@ -100,6 +100,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         followUpPlan.setOrganizationId(orgId);
         followUpPlan.setStatus(FollowUpPlanStatusType.PREPARED.name());
         followUpPlan.setConverted(false);
+        followUpPlan.setCommentCount(0L);
         if (StringUtils.isBlank(request.getOwner())) {
             followUpPlan.setOwner(userId);
         }
@@ -133,7 +134,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
             followUpPlanMapper.update(updateFollowUpPlan);
             baseService.handleUpdateLog(followUpPlan, updateFollowUpPlan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
         }, () -> {
-            throw new GenericException("plan_not_found");
+            throw new GenericException(Translator.get("plan_not_found"));
         });
         return followUpPlan;
     }
@@ -341,7 +342,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
     public void cancelPlan(String id, String operator) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
         if (followUpPlan == null) {
-            throw new GenericException("plan_not_found");
+            throw new GenericException(Translator.get("plan_not_found"));
         }
         //检查跟进计划是否可以取消,如果是已完成，并且已转记录的跟进计划，则不允许取消
         if (followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
@@ -366,7 +367,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
     public void delete(String id) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
         if (followUpPlan == null) {
-            throw new GenericException("plan_not_found");
+            throw new GenericException(Translator.get("plan_not_found"));
         }
         deleteByIds(List.of(id));
 
@@ -385,7 +386,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         //检查跟进计划是否可以更新状态,如果是已完成，并且已转记录的跟进计划，则不允许更新状态
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
         if (followUpPlan == null) {
-            throw new GenericException("plan_not_found");
+            throw new GenericException(Translator.get("plan_not_found"));
         }
         if (followUpPlan.getStatus().equals(FollowUpPlanStatusType.COMPLETED.name()) && followUpPlan.getConverted()) {
             return;
@@ -476,7 +477,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
      */
     public void checkPlanPermission(FollowUpPlan plan, String orgId, String userId, boolean isRead) {
         if (plan == null) {
-            throw new GenericException("plan_not_found");
+            throw new GenericException(Translator.get("plan_not_found"));
         }
         checkRecordPermission(BeanUtils.copyBean(new FollowUpRecord(), plan), orgId, userId, isRead);
     }
