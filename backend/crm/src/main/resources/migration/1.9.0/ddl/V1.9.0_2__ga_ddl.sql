@@ -136,9 +136,9 @@ CREATE TABLE agent_message(
     `role` VARCHAR(50) NOT NULL  COMMENT '对话角色' ,
     `run_id` VARCHAR(32) NOT NULL   COMMENT '执行ID' ,
     `conversation_id` VARCHAR(32) NOT NULL   COMMENT '对话ID' ,
-    `model_name` VARCHAR(255)    COMMENT '模型名称' ,
     `input_tokens` BIGINT    COMMENT '本次对话输入' ,
     `output_tokens` BIGINT(255)    COMMENT '本次对话输出' ,
+    `total_tokens` BIGINT(255)    COMMENT '累计调用' ,
     `content` MEDIUMTEXT    COMMENT '消息内容' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
@@ -152,6 +152,7 @@ CREATE TABLE agent_message(
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_conversation_id ON agent_message(conversation_id ASC);
+CREATE INDEX idx_run_id ON agent_message(run_id ASC);
 
 CREATE TABLE agent_term_catalog(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
@@ -225,6 +226,7 @@ CREATE TABLE agent_model_usage(
     `user_id` VARCHAR(32) NOT NULL   COMMENT '用户ID' ,
     `input_tokens` BIGINT    COMMENT '输入消耗' ,
     `output_tokens` BIGINT    COMMENT '输出消耗' ,
+    `total_tokens` BIGINT    COMMENT '累计调用' ,
     `call_count` BIGINT    COMMENT '调用次数' ,
     `fallback_count` BIGINT    COMMENT '降级次数' ,
     `success_count` BIGINT    COMMENT '成功次数' ,
