@@ -6,7 +6,7 @@
     :positive-text="confirmButtonLabel"
     :negative-text="cancelButtonLabel"
     :ok-loading="submitting"
-    :ok-button-props="{ disabled: !hasSelectedAnswer }"
+    :ok-button-props="{ disabled: !canConfirm }"
     @confirm="handleConfirm"
     @cancel="handleCancel"
   >
@@ -104,10 +104,10 @@
     return singleValue ? [singleValue] : [];
   }
 
-  const hasSelectedAnswer = computed(
+  const canConfirm = computed(
     () =>
       confirmItems.value.length > 0 &&
-      confirmItems.value.every((item, index) => getSelectedLabels(item, index).length > 0)
+      confirmItems.value.every((item, index) => item.options.length === 0 || getSelectedLabels(item, index).length > 0)
   );
 
   function appendButtonLabelToLastAnswer(answers: Record<string, string>, buttonLabel: string): Record<string, string> {
@@ -155,7 +155,7 @@
     }, {});
     const submitAnswers = appendButtonLabelToLastAnswer(answers, confirmButtonLabel.value);
 
-    if (!hasSelectedAnswer.value || Object.keys(submitAnswers).length === 0) {
+    if (!canConfirm.value || Object.keys(submitAnswers).length === 0) {
       return;
     }
 

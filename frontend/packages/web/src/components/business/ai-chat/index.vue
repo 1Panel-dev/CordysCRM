@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+  import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
   import { InputInst, NButton, NEmpty, NInput, NTooltip } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -262,7 +262,7 @@
   const innerRuntime = createAiChatRuntime({
     initialModelName: props.modelName,
   });
-  const runtime = props.runtime ?? innerRuntime;
+  const runtime = computed(() => props.runtime ?? innerRuntime);
 
   watch(keyword, (value) => {
     if (searchTimer) {
@@ -280,7 +280,7 @@
     }
 
     if (!props.runtime) {
-      runtime.clear();
+      runtime.value.clear();
     }
   });
 

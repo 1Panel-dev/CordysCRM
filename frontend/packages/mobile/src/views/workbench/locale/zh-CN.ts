@@ -27,6 +27,7 @@ export default {
   'workbench.duplicateCheck.leadPoolName': '线索池名称',
   'workbench.duplicateCheck.lastFollowUpDate': '最新跟进时间',
   'workbench.agent.select': '选择',
+  'workbench.smart.noModelTip': '暂无可用 AI 模型',
   'workbench.task': '我的待办',
   'workbench.myApproval': '待我审批',
   'workbench.copyToMe': '抄送我的',

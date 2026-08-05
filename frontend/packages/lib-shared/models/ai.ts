@@ -67,7 +67,7 @@ export interface AgentChatDoneData {
   conversationId?: string;
   input?: number;
   assistantMessageId?: string;
-  total?: number; // Tokens 消耗
+  totalTokens?: number; // Tokens 消耗
 }
 
 export interface AgentChatStreamEvent {
@@ -104,14 +104,14 @@ export interface AgentConversationMessage {
   updateUser?: string;
   createTime?: number;
   updateTime?: number;
-  promptTokens?: number;
   content: string;
-  modelId?: string;
-  completionTokens?: number;
-  totalTokens?: number;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  totalTokens?: number | null;
   organizationId?: string;
-  role: 'user' | 'assistant';
+  role: 'USER' | 'ASSISTANT';
   conversationId: string;
+  runId?: string;
 }
 
 export interface AgentConversationDetail {

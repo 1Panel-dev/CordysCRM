@@ -15,7 +15,7 @@
         <CrmIcon name="iconicon_notification" class="mt-[4px]" width="21px" height="21px" @click="goMineMessage" />
       </van-badge>
     </div>
-    <div class="flex h-[calc(100%-60px)] flex-col overflow-auto">
+    <div class="flex flex-1 flex-col overflow-auto">
       <div>
         <van-notice-bar
           v-if="useStore.userInfo.defaultPwd"
@@ -136,6 +136,10 @@
 
       <div v-else="activeWorkbenchTab === WorkbenchHomeTabEnum.SMART" class="flex-1 overflow-auto px-[12px]"> </div>
     </div>
+    <AiMobileEntryComposer v-if="showAiEntryComposer" @submit="goAiChat" />
+    <div v-if="showAiFloatingButton" class="ai-floating-button" @click="goAiChat()">
+      <CrmIcon name="iconicon_bot" width="24px" height="24px" color="var(--primary-8)" />
+    </div>
   </div>
 </template>
 
@@ -150,6 +154,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSegmentTabs from '@/components/pure/crm-segment-tabs/index.vue';
+  import AiMobileEntryComposer from '@/components/business/ai-chat/components/AiMobileEntryComposer.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import followPlanList from '@/views/workbench/follow/followPlanList.vue';
   import followRecordList from '@/views/workbench/follow/followRecordList.vue';
@@ -258,9 +263,24 @@
   }
 
   const hasValidApiKey = computed(() => userStore.apiKeyList.some((key) => !key.isExpire && key.enable));
+  const showAiEntryComposer = computed(() => activeWorkbenchTab.value === WorkbenchHomeTabEnum.SMART);
+  const showAiFloatingButton = computed(() => activeWorkbenchTab.value === WorkbenchHomeTabEnum.DASHBOARD);
 
   function goAgent() {
     router.push({ name: WorkbenchRouteEnum.WORKBENCH_AGENT });
+  }
+
+  function goAiChat(content?: string) {
+    const prompt = content?.trim();
+
+    router.push({
+      name: WorkbenchRouteEnum.WORKBENCH_AI_CHAT,
+      query: prompt
+        ? {
+            prompt,
+          }
+        : undefined,
+    });
   }
 
   function goDuplicateCheck() {
@@ -340,6 +360,23 @@
       background-color: var(--text-n9);
     }
   }
+  .ai-floating-button {
+    position: fixed;
+    right: 20px;
+    bottom: 80px;
+    z-index: 8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary-7);
+    box-shadow: 0 6px 35px 6px #6467671a;
+  }
+</style>
+
+<style lang="less">
   .follow-view {
     .half-px-border-bottom();
   }

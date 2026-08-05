@@ -27,6 +27,7 @@ export default {
   'workbench.duplicateCheck.leadPoolName': 'Lead pool name',
   'workbench.duplicateCheck.lastFollowUpDate': 'Last follow-up time',
   'workbench.agent.select': 'Select',
+  'workbench.smart.noModelTip': 'No available AI model',
   'workbench.task': 'My task',
   'workbench.myApproval': 'My approvals pending',
   'workbench.copyToMe': 'Copied to me',
