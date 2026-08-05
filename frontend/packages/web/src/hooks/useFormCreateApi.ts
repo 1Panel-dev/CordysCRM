@@ -1398,16 +1398,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
     if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(field.type)) {
       defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
-    } else if (getRuleType(field) === 'array') {
-      defaultValue =
-        [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(field.type) &&
-        typeof field.defaultValue === 'string'
-          ? [defaultValue]
-          : defaultValue || [];
     } else if ([FieldTypeEnum.PICTURE, FieldTypeEnum.ATTACHMENT].includes(field.type)) {
       defaultValue = defaultValue || [];
     } else if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(field.type) && field.hasCurrentUser) {
-      field.defaultValue = field.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id;
+      if (field.type === FieldTypeEnum.MEMBER_MULTIPLE) {
+        (field.defaultValue || []).push(field.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id);
+      } else {
+        field.defaultValue = field.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id;
+      }
       field.initialOptions = [
         ...(field.initialOptions || []),
         {
@@ -1420,7 +1418,15 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(field.type) &&
       field.hasCurrentUserDept
     ) {
-      field.defaultValue = field.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId;
+      if (field.type === FieldTypeEnum.DEPARTMENT_MULTIPLE) {
+        (field.defaultValue || []).push(
+          field.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId
+        );
+      } else {
+        field.defaultValue = field.resourceFieldId
+          ? userStore.userInfo.departmentName
+          : userStore.userInfo.departmentId;
+      }
       field.initialOptions = [
         ...(field.initialOptions || []),
         {
@@ -1429,6 +1435,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         },
       ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
       return field.defaultValue;
+    } else if (getRuleType(field) === 'array') {
+      defaultValue =
+        [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(field.type) &&
+        typeof field.defaultValue === 'string'
+          ? [defaultValue]
+          : defaultValue || [];
     }
     return defaultValue;
   }
