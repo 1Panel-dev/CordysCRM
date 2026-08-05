@@ -80,4 +80,8 @@ export default {
   'workbench.dataOverview.copiedToMe': '抄送我的',
   'workbench.smart.composerPlaceholder': '输入指令或提问，例如「帮我跟进今天的高意向线索」',
   'workbench.smart.noModelTip': '请先在企业设置中添加并启用模型',
+  'workbench.smart.AIRead': 'AI解读',
+  'workbench.smart.reBuild': '重新生成',
+  'workbench.smart.AIAction': 'AI 行动建议',
+  'workbench.smart.AIActionApproval': 'AI 行动审核',
 };
