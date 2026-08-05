@@ -161,6 +161,7 @@
     { name: SystemResourceMessageTypeEnum.CLUE, tab: t('menu.clue') },
     { name: SystemResourceMessageTypeEnum.OPPORTUNITY, tab: t('menu.opportunity') },
     { name: SystemResourceMessageTypeEnum.CONTRACT, tab: t('module.contract') },
+    { name: SystemResourceMessageTypeEnum.ORDER, tab: t('module.order') },
     { name: SystemResourceMessageTypeEnum.PRODUCT, tab: t('module.productManagement') },
     { name: SystemResourceMessageTypeEnum.CUSTOM_FORM, tab: t('module.customForm') },
   ]);
@@ -267,6 +268,8 @@
         return t('module.customForm');
       case SystemResourceMessageTypeEnum.PRODUCT:
         return t('module.productManagement');
+      case SystemResourceMessageTypeEnum.ORDER:
+        return t('module.order');
       default:
         return t('menu.opportunity');
     }
