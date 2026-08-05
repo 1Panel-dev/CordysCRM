@@ -106,6 +106,7 @@
         so.contract_id,
         so.number,
         c.`name` AS contractName,
+        cc.name as customerName,
         so.amount,
         so.stage,
         so.`owner`,
@@ -115,6 +116,7 @@
         so.update_time
         FROM sales_order so
         LEFT JOIN contract c ON so.contract_id = c.id
+        LEFT JOIN customer cc ON so.customer_id = cc.id
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user on so.owner = sys_organization_user.user_id
             and (
