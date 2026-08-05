@@ -62,6 +62,7 @@
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
     isDescriptionRender?: boolean; // 是否是描述渲染
+    isDesignRender?: boolean; // 是否是设计渲染
     feedback?: string;
     disabled?: boolean;
   }>();
@@ -107,22 +108,25 @@
     }
   );
 
+  function initOption(val?: any[]) {
+    if ([FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)) {
+      selectedUsers.value = cloneDeep(val as SelectedUsersItem[]);
+    } else if (Array.isArray(val) && val.length) {
+      selectedUsers.value = [
+        val.find((item) => (item as SelectedUsersItem).id === value.value) as SelectedUsersItem,
+      ].filter(Boolean);
+    } else {
+      selectedUsers.value = cloneDeep(val || []);
+    }
+    if (!props.isDesignRender) {
+      selectedUsers.value = selectedUsers.value?.filter((item) => (value.value as string[]).includes(item.id));
+    }
+  }
+
   watch(
     () => props.fieldConfig.initialOptions,
     (val) => {
-      if ([FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)) {
-        selectedUsers.value = cloneDeep(val as SelectedUsersItem[]);
-      } else if (Array.isArray(val) && val.length) {
-        selectedUsers.value = [
-          val.find((item) => (item as SelectedUsersItem).id === value.value) as SelectedUsersItem,
-        ].filter(Boolean);
-      } else {
-        selectedUsers.value = cloneDeep(val || []);
-      }
-      selectedUsers.value = selectedUsers.value?.filter((item) => (value.value as string[]).includes(item.id));
-    },
-    {
-      immediate: true,
+      initOption(val);
     }
   );
 
@@ -153,6 +157,9 @@
         !Array.isArray(props.fieldConfig.defaultValue)
           ? [props.fieldConfig.defaultValue]
           : props.fieldConfig.defaultValue || value.value || [];
+      nextTick(() => {
+        initOption(props.fieldConfig.initialOptions);
+      });
       emit('change', value.value);
     }
   });

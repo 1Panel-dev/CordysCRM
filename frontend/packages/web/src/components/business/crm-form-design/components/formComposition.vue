@@ -80,6 +80,7 @@
               :path="item.id"
               :form-config="props.formConfig"
               :disabled="!item.editable"
+              isDesignRender
             />
             <div
               v-if="![FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(item.type)"
