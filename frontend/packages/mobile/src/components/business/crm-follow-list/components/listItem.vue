@@ -34,7 +34,7 @@
           </van-dropdown-menu>
         </div>
       </div>
-      <div class="flex flex-1 flex-col gap-[12px] rounded-[var(--border-radius-large)] bg-[var(--text-n10)] p-[16px]">
+      <div class="follow-item-content rounded-[var(--border-radius-large)]">
         <div class="flex items-center justify-between gap-[16px]">
           <CrmAvatar :is-word="item.owner !== userStore.userInfo.id" :text="item.ownerName" />
           <div class="flex flex-1 flex-wrap items-center overflow-hidden">
@@ -44,10 +44,7 @@
         <div class="one-line-text rounded-[var(--border-radius-mini)] bg-[var(--text-n9)] p-[12px] text-[12px]">
           {{ item.content }}
         </div>
-        <div
-          v-if="isShowAction || isShowComment"
-          :class="`flex items-center ${isShowAction ? 'justify-between' : 'justify-end'}`"
-        >
+        <div :class="`flex items-center ${isShowAction ? 'justify-between' : 'justify-end'}`">
           <div v-if="isShowAction" class="flex items-center gap-[16px]">
             <CrmTextButton icon="iconicon_delete" color="var(--error-red)" icon-size="16px" @click="emit('delete')" />
             <CrmTextButton
@@ -65,12 +62,13 @@
               /> -->
           </div>
           <!-- 评论入口 -->
-          <div v-if="isShowComment" class="flex items-center gap-[4px] text-[12px] text-[var(--text-n4)]">
+          <div class="mx-[4px] flex items-center text-[12px] text-[var(--text-n4)]">
             <CrmIcon
               name="iconicon_chat"
               width="14px"
               height="14px"
               color="var(--text-n4)"
+              class="mr-[4px]"
               @click.stop="openComment(item)"
             />
             <div>{{ displayCommentCount }}</div>
@@ -144,10 +142,6 @@
 
   const isShowAction = computed(() => !props.readonly && isOwner(props.item));
 
-  const isShowComment = computed(() =>
-    hasAnyPermission(['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:READ'])
-  );
-
   const displayCommentCount = computed(() => formatBadgeCount(props.item.commentCount));
 
   function changeStatus() {
@@ -183,5 +177,14 @@
         }
       }
     }
+  }
+</style>
+
+<style scoped lang="less">
+  .follow-item-content {
+    gap: 12px;
+    padding: 16px;
+    background: var(--text-n10);
+    @apply flex flex-1 flex-col;
   }
 </style>

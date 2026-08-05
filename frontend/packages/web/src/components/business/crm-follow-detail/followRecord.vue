@@ -74,15 +74,11 @@
           </div>
           <div class="crm-follow-record-content" v-html="item.content.replace(/\n/g, '<br />')"></div>
           <CrmComment
+            v-model:expanded="commentExpandedMap[item.id]"
             class="crm-follow-record-comment-input"
-            :comments="getRecordComments(item)"
-            :comment-count="getRecordCommentCount(item)"
-            :expanded="isCommentExpanded(item.id)"
-            @update:expanded="(expanded) => updateCommentExpanded(item, expanded)"
-            @create-submit="(value) => emit('commentCreate', item, value)"
-            @reply-submit="(value) => emit('commentReply', item, value)"
-            @edit-submit="(value) => emit('commentEdit', item, value)"
-            @delete="(comment) => emit('commentDelete', item, comment)"
+            :type="props.type"
+            :source-id="item.id"
+            :initial-count="item.commentCount"
           />
         </div>
       </div>
@@ -100,11 +96,6 @@
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
-  import {
-    type FollowCommentActionValue,
-    type FollowCommentItem,
-    type FollowCommentSubmitValue,
-  } from '@lib/shared/models/follow';
 
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
@@ -133,10 +124,6 @@
   const emit = defineEmits<{
     (e: 'reachBottom'): void;
     (e: 'change', item: FollowDetailItem): void;
-    (e: 'commentCreate', item: FollowDetailItem, value: FollowCommentSubmitValue): void;
-    (e: 'commentReply', item: FollowDetailItem, value: FollowCommentActionValue): void;
-    (e: 'commentEdit', item: FollowDetailItem, value: FollowCommentActionValue): void;
-    (e: 'commentDelete', item: FollowDetailItem, comment: FollowCommentItem): void;
   }>();
 
   const listData = defineModel<FollowDetailItem[]>('data', {
@@ -162,34 +149,8 @@
     return time ? dayjs(time).format('YYYY-MM-DD') : '-';
   }
 
-  const commentExpandedIds = ref<string[]>([]);
-  const commentMap = ref<Record<string, FollowCommentItem[]>>({});
-  const commentCountMap = ref<Record<string, number>>({});
+  const commentExpandedMap = ref<Record<string, boolean>>({});
 
-  function isCommentExpanded(id: string) {
-    return commentExpandedIds.value.includes(id);
-  }
-
-  function initRecordCommentState(item: FollowDetailItem) {
-    commentMap.value[item.id] ||= [];
-    commentCountMap.value[item.id] ??= item.commentCount || 0;
-    // TODO xinxinwu: 接口联调时在这里按跟进记录/计划类型请求一级评论分页列表，二级评论由一级列表 replies 返回。
-  }
-
-  function updateCommentExpanded(item: FollowDetailItem, expanded: boolean) {
-    const { id } = item;
-    if (expanded && !isCommentExpanded(id)) {
-      commentExpandedIds.value.push(id);
-      initRecordCommentState(item);
-      return;
-    }
-    if (!expanded) {
-      commentExpandedIds.value = commentExpandedIds.value.filter((itemId) => itemId !== id);
-    }
-  }
-
-  const getRecordComments = (item: FollowDetailItem) => commentMap.value[item.id] || [];
-  const getRecordCommentCount = (item: FollowDetailItem) => commentCountMap.value[item.id] ?? item.commentCount ?? 0;
   const { openNewPage } = useOpenNewPage();
   function goDetail(key: string, item: FollowDetailItem) {
     if (key === 'clueName') {

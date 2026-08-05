@@ -134,22 +134,13 @@
   .crm-comment-editor {
     display: flex;
     align-items: center;
-    gap: 8px;
+    padding: 12px;
     width: 100%;
-  }
-  .crm-comment-editor-close {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-    width: 24px;
-    height: 34px;
-    border: 0;
-    background: transparent;
-    flex: none;
+    height: 64px;
+    gap: 8px;
   }
   .crm-comment-editor-field {
-    padding: 0;
+    padding: 3px 0;
     min-width: 0;
     border: 1px solid var(--text-n8);
     border-radius: 999px;
@@ -166,10 +157,11 @@
     padding: 0 12px;
   }
   .crm-comment-editor-submit {
-    flex: none;
+    padding: 8px 16px;
     min-width: 56px;
-    height: 34px;
+    height: 40px;
     border: 0;
     background: var(--primary-8);
+    flex: none;
   }
 </style>
