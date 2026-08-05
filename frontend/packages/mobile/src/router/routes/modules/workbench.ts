@@ -50,6 +50,16 @@ const workbench: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'ai-chat',
+      name: WorkbenchRouteEnum.WORKBENCH_AI_CHAT,
+      component: () => import('@/views/workbench/ai-chat/index.vue'),
+      meta: {
+        locale: '',
+        permissions: [],
+        depth: 2,
+      },
+    },
+    {
       path: 'task',
       name: WorkbenchRouteEnum.WORKBENCH_TASK,
       component: () => import('@/views/workbench/task/index.vue'),

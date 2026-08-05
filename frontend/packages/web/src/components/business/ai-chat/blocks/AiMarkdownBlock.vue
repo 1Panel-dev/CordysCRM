@@ -22,11 +22,11 @@
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
   import { NCollapse, NCollapseItem } from 'naive-ui';
 
+  import { renderMarkdown } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import useLegacyCopy from '@/hooks/useLegacyCopy';
 
-  import renderMarkdown from '../utils/markdown';
   import type { ReasoningUIPart, TextUIPart } from 'ai';
   import DOMPurify from 'dompurify';
   import mermaid from 'mermaid';

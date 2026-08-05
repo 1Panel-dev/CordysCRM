@@ -3,6 +3,16 @@
   "version": "1.0.0",
   "description": "Common library",
   "main": "index.ts",
+  "dependencies": {
+    "@ai-sdk/vue": "^2.0.0",
+    "@types/markdown-it": "^14.1.2",
+    "@vscode/markdown-it-katex": "^1.1.2",
+    "ai": "5.0.218",
+    "dompurify": "^3.4.11",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.18.1",
+    "markdown-it": "^14.3.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint-staged": "npx lint-staged"

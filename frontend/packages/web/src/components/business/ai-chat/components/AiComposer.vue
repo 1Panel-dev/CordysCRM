@@ -51,8 +51,11 @@
         </span>
       </div>
 
-      <!-- TODO lmy icon -->
-      <n-button v-if="canStop" type="primary" circle @click="runtime.stop()"> ■ </n-button>
+      <n-button v-if="canStop" circle size="small" type="primary" @click="runtime.stop()">
+        <template #icon>
+          <span class="block h-[8px] w-[8px] rounded-[2px] bg-[var(--text-n10)]" />
+        </template>
+      </n-button>
       <n-button
         v-else
         circle

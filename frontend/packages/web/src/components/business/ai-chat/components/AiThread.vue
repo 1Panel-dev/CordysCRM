@@ -13,8 +13,22 @@
         </div>
 
         <template v-else>
-          <AiMessage v-for="message in messages" :key="message.id" :message="message" />
-          <AiLoadingBlock v-if="showThreadLoading" class="mb-[32px]" />
+          <AiMessage
+            v-for="message in messages"
+            :key="message.id"
+            :message="message"
+            :is-generating="runtime.state.loading.value && message.id === latestMessageId"
+          />
+          <article v-if="showThreadLoading" class="mb-[32px] flex gap-[16px]">
+            <n-avatar round class="bg-[var(--primary-6)]" :size="32">
+              <CrmIcon type="iconicon_bot" :size="20" color="var(--primary-8)" />
+            </n-avatar>
+
+            <div class="w-full min-w-0">
+              <div class="mb-[8px] font-[600]"> CORDYS AI </div>
+              <AiLoadingBlock />
+            </div>
+          </article>
         </template>
       </div>
     </n-scrollbar>
@@ -34,7 +48,7 @@
 
 <script setup lang="ts">
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
-  import { NButton, NEmpty, NScrollbar, ScrollbarInst } from 'naive-ui';
+  import { NAvatar, NButton, NEmpty, NScrollbar, ScrollbarInst } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import AiLoadingBlock from '../blocks/AiLoadingBlock.vue';
@@ -70,6 +84,7 @@
   const shouldStickToBottom = ref(true);
 
   const messages = computed(() => runtime.state.messages.value);
+  const latestMessageId = computed(() => messages.value.at(-1)?.id);
   const showThreadLoading = computed(() => {
     const lastMessage = messages.value.at(-1);
 

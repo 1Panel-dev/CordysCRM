@@ -49,6 +49,7 @@ export enum WorkbenchRouteEnum {
   WORKBENCH = 'workbench',
   WORKBENCH_INDEX = 'workbenchIndex',
   WORKBENCH_AGENT = 'workbenchAgent',
+  WORKBENCH_AI_CHAT = 'workbenchAiChat',
   WORKBENCH_DUPLICATE_CHECK = 'workbenchDuplicateCheck',
   WORKBENCH_DUPLICATE_CHECK_DETAIL = 'workbenchDuplicateCheckDetail',
   WORKBENCH_TASK = 'workbenchTask',

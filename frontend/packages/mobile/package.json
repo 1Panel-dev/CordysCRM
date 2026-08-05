@@ -16,6 +16,7 @@
     "lint:styles": "stylelint 'src/**/*.{vue,html,css,scss,less}' --fix"
   },
   "dependencies": {
+    "ai": "5.0.218",
     "nprogress": "^0.2.0",
     "typescript": "5.9",
     "vant": "^4.8.2",

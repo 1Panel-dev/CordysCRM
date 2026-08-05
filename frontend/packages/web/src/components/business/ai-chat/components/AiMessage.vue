@@ -78,7 +78,7 @@
               v-if="item.renderer"
               :part="item.part"
               :index="item.index"
-              :is-generating="isCurrentGenerating"
+              :is-generating="isGenerating"
             />
             <div v-else class="ai-chat-block">{{ item.part.type }}</div>
           </template>
@@ -116,6 +116,7 @@
   import { computed, ref, watch } from 'vue';
   import { NAvatar, NButton, NInput, NTooltip } from 'naive-ui';
 
+  import { getAiChatMessageText, hasRenderableAiChatContent } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatThousands } from '@lib/shared/method';
 
@@ -135,6 +136,7 @@
 
   const props = defineProps<{
     message: AiChatMessage;
+    isGenerating?: boolean;
   }>();
 
   interface AiMessageAction {
@@ -166,17 +168,8 @@
 
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);
   const canSubmitEdit = computed(() => editContent.value.trim().length > 0 && !runtime.state.loading.value);
-  const isGenerating = computed(() => runtime.state.loading.value);
-  const isCurrentGenerating = computed(
-    () => !isUser.value && runtime.state.messages.value.at(-1)?.id === props.message.id && isGenerating.value
-  );
-  const copyableText = computed(() =>
-    props.message.parts
-      .filter((part) => ['text', 'reasoning'].includes(part.type))
-      .map((part) => ('text' in part ? part.text : ''))
-      .filter(Boolean)
-      .join('\n\n')
-  );
+  const isGenerating = computed(() => Boolean(props.isGenerating));
+  const copyableText = computed(() => getAiChatMessageText(props.message));
   const canCopy = computed(() => copyableText.value.length > 0);
   const canShowActionArea = computed(() => !isEditing.value && (isUser.value || !isGenerating.value));
 
@@ -203,21 +196,9 @@
         };
       })
   );
-  const showAssistantLoading = computed(() => {
-    const hasContent = props.message.parts.some((part) => {
-      if (part.type === 'data-error') {
-        return true;
-      }
-
-      if (part.type === 'data-progress') {
-        return true;
-      }
-
-      return ['text', 'reasoning'].includes(part.type) && 'text' in part && part.text.trim().length > 0;
-    });
-
-    return isCurrentGenerating.value && !hasContent;
-  });
+  const showAssistantLoading = computed(
+    () => !isUser.value && isGenerating.value && !hasRenderableAiChatContent(props.message.parts)
+  );
 
   const messageClass = computed(() => ({
     'flex-row-reverse': isUser.value,
@@ -254,11 +235,7 @@
   }
 
   function startEdit(): void {
-    editContent.value = props.message.parts
-      .filter((part) => part.type === 'text')
-      .map((part) => part.text)
-      .join('\n')
-      .trim();
+    editContent.value = getAiChatMessageText(props.message, '\n').trim();
     isEditing.value = true;
   }
 

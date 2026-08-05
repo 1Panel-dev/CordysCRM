@@ -6,13 +6,20 @@
           <div class="flex max-w-full items-center gap-[8px]">
             <CrmIcon type="iconicon_set_up" :size="16" class="text-[var(--text-n4)]" />
             <span class="min-w-0 flex-1 truncate">
-              {{ progress.title }}
+              {{ progress?.title || t('aiChat.progress') }}
             </span>
           </div>
         </template>
-        <div v-if="hasDetails" class="space-y-[4px] text-[var(--text-n2)]">
-          <div v-if="progress.details?.input"> {{ t('aiChat.progressInput') }}：{{ progress.details.input }} </div>
-          <div v-if="progress.details?.output"> {{ t('aiChat.progressOutput') }}：{{ progress.details.output }} </div>
+        <div v-if="hasDetails" class="space-y-[8px]">
+          <div v-if="progress?.details?.input" class="ai-chat-progress__detail">
+            <div class="ai-chat-progress__label">{{ t('aiChat.progressInput') }}</div>
+            <pre class="ai-chat-progress__content">{{ progress.details.input }}</pre>
+          </div>
+
+          <div v-if="progress?.details?.output" class="ai-chat-progress__detail">
+            <div class="ai-chat-progress__label">{{ t('aiChat.progressOutput') }}</div>
+            <pre class="ai-chat-progress__content">{{ progress.details.output }}</pre>
+          </div>
         </div>
       </n-collapse-item>
     </n-collapse>
@@ -42,7 +49,7 @@
   const progress = computed<AgentChatProgressData>(() => props.part.data as AgentChatProgressData);
   const partId = computed(() => `${props.part.type}_${props.index ?? 0}`);
   const expandedNames = ref<string[]>(props.isGenerating ? [partId.value] : []);
-  const hasDetails = computed(() => Boolean(progress.value.details?.input || progress.value.details?.output));
+  const hasDetails = computed(() => Boolean(progress.value?.details?.input || progress.value?.details?.output));
 
   watch(
     () => partId.value,
@@ -75,5 +82,25 @@
     :deep(.n-collapse-item__content-wrapper .n-collapse-item__content-inner *) {
       color: inherit;
     }
+  }
+  .ai-chat-progress__detail {
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--text-n9);
+  }
+  .ai-chat-progress__label {
+    padding: 6px 8px;
+    font-size: 12px;
+    color: var(--text-n2);
+    background: var(--text-n8);
+  }
+  .ai-chat-progress__content {
+    overflow: auto;
+    margin: 0;
+    padding: 8px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    color: var(--text-n2);
+    word-break: break-word;
   }
 </style>
