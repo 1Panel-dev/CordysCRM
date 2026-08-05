@@ -83,22 +83,6 @@
     }
   );
 
-  watch(
-    () => [props.fieldConfig.numberFormat, props.fieldConfig.precision, props.fieldConfig.showThousandsSeparator],
-    () => {
-      if (props.isDefaultValueRender) {
-        const temp = value.value;
-        value.value = null;
-        nextTick(() => {
-          value.value = temp;
-        });
-      }
-    },
-    {
-      deep: true,
-    }
-  );
-
   function parse(val: string) {
     const nums = val.toString().replace(/,/g, '').trim();
     const numericPattern = /^-?\d+(\.(\d+)?)?$/;
