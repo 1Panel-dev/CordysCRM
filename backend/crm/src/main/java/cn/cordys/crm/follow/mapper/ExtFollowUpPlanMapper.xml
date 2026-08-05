@@ -3,6 +3,13 @@
 
 <mapper namespace="cn.cordys.crm.follow.mapper.ExtFollowUpPlanMapper">
 
+    <update id="updateCommentCount">
+        UPDATE follow_up_plan
+        SET comment_count = #{commentCount}
+        WHERE id = #{id}
+          AND organization_id = #{orgId}
+    </update>
+
     <select id="selectList" resultType="cn.cordys.crm.follow.dto.response.FollowUpPlanListResponse">
         SELECT
         fup.id,
@@ -21,6 +28,7 @@
         fup.method,
         fup.converted,
         fup.status,
+        fup.comment_count,
         if (fup.type = 'CLUE', c.pool_id, cu.pool_id) as poolId
         FROM
         follow_up_plan fup
@@ -162,6 +170,7 @@
         fup.method,
         fup.converted,
         fup.status,
+        fup.comment_count,
         fup.organization_id,
         if (fup.type = 'CLUE', c.pool_id, cu.pool_id) as poolId
         FROM follow_up_plan fup

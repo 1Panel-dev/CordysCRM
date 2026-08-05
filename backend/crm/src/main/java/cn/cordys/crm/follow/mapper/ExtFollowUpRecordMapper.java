@@ -3,7 +3,6 @@ package cn.cordys.crm.follow.mapper;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
-import cn.cordys.crm.follow.dto.CustomerDataDTO;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import cn.cordys.crm.follow.dto.request.RecordHomePageRequest;
 import cn.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
@@ -13,6 +12,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface ExtFollowUpRecordMapper {
+
+    int updateCommentCount(@Param("id") String id, @Param("orgId") String orgId, @Param("commentCount") long commentCount);
 
     List<FollowUpRecordListResponse> selectPoolList(@Param("request") FollowUpRecordPageRequest request, @Param("userId") String userId, @Param("orgId") String orgId, @Param("resourceType") String resourceType, @Param("type") String type);
 

@@ -84,6 +84,9 @@ public class FollowUpRecordListResponse {
     @Schema(description = "跟进方式")
     private String followMethod;
 
+    @Schema(description = "评论总数，包含回复")
+    private Long commentCount;
+
     @Schema(description = "属于公海或者线索池")
     private String poolId;
 

@@ -19,12 +19,9 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
-import cn.cordys.crm.clue.service.PoolClueService;
-import cn.cordys.crm.customer.service.PoolCustomerService;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
-import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import cn.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
@@ -44,7 +41,6 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -95,6 +91,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         followUpRecord.setCreateUser(userId);
         followUpRecord.setId(IDGenerator.nextStr());
         followUpRecord.setOrganizationId(orgId);
+        followUpRecord.setCommentCount(0L);
         if (StringUtils.isBlank(request.getOwner())) {
             followUpRecord.setOwner(userId);
         }

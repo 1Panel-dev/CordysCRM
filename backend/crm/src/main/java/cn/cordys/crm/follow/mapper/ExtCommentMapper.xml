@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.cordys.crm.follow.mapper.ExtCommentMapper">
+
+    <sql id="commentTable">
+        <choose>
+            <when test="targetType == 'PLAN'">follow_up_plan_comment</when>
+            <otherwise>follow_up_record_comment</otherwise>
+        </choose>
+    </sql>
+
+    <sql id="commentColumns">
+        c.id,
+        #{targetType} AS target_type,
+        c.resource_id AS target_id,
+        c.parent_id,
+        c.reply_to_user_id,
+        ru.name AS reply_to_user_name,
+        c.content,
+        c.create_user,
+        u.name AS create_user_name,
+        ue.avatar AS create_user_avatar,
+        c.create_time,
+        c.update_time,
+        0 AS reply_count
+    </sql>
+
+    <select id="selectPage" resultType="cn.cordys.crm.follow.dto.response.CommentResponse">
+        SELECT
+        <include refid="commentColumns"/>
+        FROM
+        <include refid="commentTable"/> c
+        LEFT JOIN sys_user u ON u.id = c.create_user
+        LEFT JOIN sys_user_extend ue ON ue.id = c.create_user
+        LEFT JOIN sys_user ru ON ru.id = c.reply_to_user_id
+        WHERE c.organization_id = #{organizationId}
+          AND c.resource_id = #{targetId}
+        <choose>
+            <when test="parentId == null">
+                AND c.parent_id IS NULL
+            </when>
+            <otherwise>
+                AND c.parent_id = #{parentId}
+            </otherwise>
+        </choose>
+        ORDER BY c.create_time ASC, c.id ASC
+    </select>
+
+    <select id="selectChildren" resultType="cn.cordys.crm.follow.dto.response.CommentResponse">
+        SELECT
+        <include refid="commentColumns"/>
+        FROM
+        <include refid="commentTable"/> c
+        LEFT JOIN sys_user u ON u.id = c.create_user
+        LEFT JOIN sys_user_extend ue ON ue.id = c.create_user
+        LEFT JOIN sys_user ru ON ru.id = c.reply_to_user_id
+        WHERE c.organization_id = #{organizationId}
+          AND c.parent_id IN
+        <foreach collection="parentIds" item="parentId" open="(" separator="," close=")">
+            #{parentId}
+        </foreach>
+        ORDER BY c.create_time ASC, c.id ASC
+    </select>
+
+    <select id="countByResource" resultType="long">
+        SELECT COUNT(1)
+        FROM
+        <include refid="commentTable"/>
+        WHERE resource_id = #{resourceId}
+          AND organization_id = #{organizationId}
+    </select>
+
+</mapper>

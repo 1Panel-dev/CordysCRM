@@ -43,6 +43,12 @@ public class NotificationConstants {
         @Schema(description = "message.system")
         String SYSTEM = "SYSTEM";
 
+        @Schema(description = "message.follow_up_plan")
+        String FOLLOW_UP_PLAN = "FOLLOW_UP_PLAN";
+
+        @Schema(description = "message.follow_up_record")
+        String FOLLOW_UP_RECORD = "FOLLOW_UP_RECORD";
+
     }
 
     public interface Event {
@@ -162,6 +168,18 @@ public class NotificationConstants {
 
 		@Schema(description = "message.approval_cc")
 		String APPROVAL_CC = "APPROVAL_CC";
+
+        @Schema(description = "message.follow_up_plan_comment_added")
+        String FOLLOW_UP_PLAN_COMMENT_ADDED = "FOLLOW_UP_PLAN_COMMENT_ADDED";
+
+        @Schema(description = "message.follow_up_plan_comment_mentioned")
+        String FOLLOW_UP_PLAN_COMMENT_MENTIONED = "FOLLOW_UP_PLAN_COMMENT_MENTIONED";
+
+        @Schema(description = "message.follow_up_record_comment_added")
+        String FOLLOW_UP_RECORD_COMMENT_ADDED = "FOLLOW_UP_RECORD_COMMENT_ADDED";
+
+        @Schema(description = "message.follow_up_record_comment_mentioned")
+        String FOLLOW_UP_RECORD_COMMENT_MENTIONED = "FOLLOW_UP_RECORD_COMMENT_MENTIONED";
     }
 
     public interface RelatedUser {
@@ -314,6 +332,18 @@ public class NotificationConstants {
 
 		@Schema(description = "message.approval_cc_text")
 		String APPROVAL_CC_TEXT = "APPROVAL_CC_TEXT";
+
+        @Schema(description = "message.follow_up_plan_comment_added_text")
+        String FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT = "FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT";
+
+        @Schema(description = "message.follow_up_plan_comment_mentioned_text")
+        String FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT = "FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT";
+
+        @Schema(description = "message.follow_up_record_comment_added_text")
+        String FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT = "FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT";
+
+        @Schema(description = "message.follow_up_record_comment_mentioned_text")
+        String FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT = "FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT";
     }
 
 
