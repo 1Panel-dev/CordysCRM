@@ -1366,6 +1366,7 @@ public class ContractService implements ApprovalResourceHandler {
     public CustomFieldImportEventListener<Contract> getContractEventListener(String currentOrg, String currentUser, List<BaseField> fields, Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap, ImportRequest request) {
         List<StageConfigResponse> stageConfigList = extContractStageConfigMapper.getStageConfigList(currentOrg);
         ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT.getKey(), currentOrg);
+        ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
         long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
         CustomImportAfterDoConsumer<Contract, BaseResourceSubField> afterDo = (contracts, contractFields, contractFieldBlobs) -> {
             List<LogDTO> logs = new ArrayList<>();
@@ -1481,7 +1482,7 @@ public class ContractService implements ApprovalResourceHandler {
                 // 保存表单配置快照
                 List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(response.getModuleFields(), moduleFormConfigDTO, contractFieldService, response.getId());
                 ContractGetResponse contractGetResponse = get(response, resolveFieldValues, moduleFormConfigDTO);
-                saveSnapshot(response, moduleFormConfigDTO, contractGetResponse);
+                saveSnapshot(response, saveModuleFormConfigDTO, contractGetResponse);
             });
         };
 

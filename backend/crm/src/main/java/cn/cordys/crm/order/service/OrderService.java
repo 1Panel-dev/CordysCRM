@@ -1202,6 +1202,7 @@ public class OrderService implements ApprovalResourceHandler {
                     .doRead();
 
             ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.ORDER.getKey(), currentOrg);
+            ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
             List<StageConfigResponse> stageConfigList = extOrderStageConfigMapper.getStageConfigList(currentOrg);
             long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
             CustomImportAfterDoConsumer<Order, BaseResourceSubField> afterDo = (orders, orderFields, orderFieldBlobs) -> {
@@ -1313,7 +1314,7 @@ public class OrderService implements ApprovalResourceHandler {
                     // 保存表单配置快照
                     List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(response.getModuleFields(), moduleFormConfigDTO, orderFieldService, response.getId());
                     OrderGetResponse orderGetResponse = get(response, resolveFieldValues, moduleFormConfigDTO);
-                    saveSnapshot(response, moduleFormConfigDTO, orderGetResponse);
+                    saveSnapshot(response, saveModuleFormConfigDTO, orderGetResponse);
                 });
             };
             CustomFieldImportEventListener<Order> eventListener = new CustomFieldImportEventListener<>(fields, Order.class, currentOrg, currentUser,
