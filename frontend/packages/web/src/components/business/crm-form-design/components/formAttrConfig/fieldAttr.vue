@@ -1788,7 +1788,9 @@
   }
 
   const isShowLinkField = computed(() => {
-    return [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(fieldConfig.value.type);
+    return (
+      [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(fieldConfig.value.type) && !isSubTableField.value
+    );
   });
   const showLinkConfigVisible = ref(false);
   const tempLinks = ref<FieldLinkProp>({
