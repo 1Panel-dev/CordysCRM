@@ -966,6 +966,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                     .doRead();
 
             ModuleFormConfigDTO moduleFormConfigDTO = getBusinessFormConfig(currentOrg);
+            ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
             CustomImportAfterDoConsumer<ContractInvoice, BaseResourceSubField> afterDo = (invoices, invoiceFields, invoiceFieldBlobs) -> {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
@@ -1072,7 +1073,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                     // 保存表单配置快照
                     List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(response.getModuleFields(), moduleFormConfigDTO, invoiceFieldService, response.getId());
                     ContractInvoiceGetResponse contractInvoiceGetResponse = get(response, resolveFieldValues, moduleFormConfigDTO);
-                    saveSnapshot(response, moduleFormConfigDTO, contractInvoiceGetResponse);
+                    saveSnapshot(response, saveModuleFormConfigDTO, contractInvoiceGetResponse);
                 });
             };
             CustomFieldImportEventListener<ContractInvoice> eventListener = new CustomFieldImportEventListener<>(fields, ContractInvoice.class, currentOrg, currentUser,

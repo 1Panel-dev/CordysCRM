@@ -89,6 +89,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     protected boolean atLeastOne = false;
     protected int maxHeadRow;
     protected final Map<Integer, Map<Integer, String>> mergeRowDataMap;
+    protected Map<Integer, String> firstHeadMap = new HashMap<>();
 
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg, String importType) {
         this(fields, sourceTable, fieldTable, currentOrg, null, null, importType);
@@ -105,14 +106,14 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                     if (isInvalidField(f)) {
                         continue;
                     }
-                    this.fieldMap.put(f.getName(), f);
-                    refSubMap.put(f.getName(), subField.getId());
-                    setCheckLimit(f);
+                    this.fieldMap.put(subField.getName() + "_" + f.getName(), f);
+                    refSubMap.put(subField.getName() + "_" + f.getName(), subField.getId());
+                    setCheckLimit(f, f.getName());
                 }
                 continue;
             }
             this.fieldMap.put(field.getName(), field);
-            setCheckLimit(field);
+            setCheckLimit(field, null);
         }
         this.sourceTable = sourceTable;
         this.currentOrg = currentOrg;
@@ -127,6 +128,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
         maxHeadRow = context.readWorkbookHolder().getHeadRowNumber();
         if (context.readRowHolder().getRowIndex() != maxHeadRow - 1) {
+            this.firstHeadMap = headMap;
             return;
         }
         if (headMap == null) {
@@ -140,7 +142,18 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         if (StringUtils.isNotEmpty(errHead)) {
             throw new GenericException(Translator.getWithArgs("illegal_header", errHead));
         }
-        this.headMap = headMap;
+        if (maxHeadRow == 2) {
+            for (Map.Entry<Integer, String> entry : firstHeadMap.entrySet()) {
+                Integer key = entry.getKey();
+                String value = entry.getValue();
+                if (!Strings.CI.equals(headMap.get(key), value)) {
+                    headMap.put(key, value + "_" + headMap.get(key));
+                }
+            }
+            this.headMap = headMap;
+        } else {
+            this.headMap = headMap;
+        }
         this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
                 collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
         cacheUniqueSet();
@@ -334,22 +347,22 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      *
      * @param field 自定义字段
      */
-    private void setCheckLimit(BaseField field) {
+    private void setCheckLimit(BaseField field, String subFieldName) {
         if (field.needRequireCheck()) {
-            requires.add(field.getName());
+            requires.add(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName());
         }
         if (field.needRepeatCheck()) {
-            uniques.put(field.getName(), field);
+            uniques.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), field);
         }
         if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name())) {
-            fieldLenLimit.put(field.getName(), 255);
+            fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), 255);
         }
         if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(), FieldType.RADIO.name(),
                 FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name(), FieldType.INDUSTRY.name())) {
-            fieldLenLimit.put(field.getName(), 255);
+            fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), 255);
         }
         if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
-            fieldLenLimit.put(field.getName(), 3000);
+            fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), 3000);
         }
     }
 

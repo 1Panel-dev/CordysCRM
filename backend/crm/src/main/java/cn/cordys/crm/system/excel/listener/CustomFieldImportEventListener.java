@@ -200,11 +200,11 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 if (val == null) {
                     return;
                 }
-                if (!refSubMap.containsKey(field.getName()) && !isNormalRow(rowIndex) && !isMergeFirstRow(rowIndex)) {
+                if (!refSubMap.containsKey(v) && !isNormalRow(rowIndex) && !isMergeFirstRow(rowIndex)) {
                     // 除合并的首行外, 其余合并行非子表字段都跳过
                     return;
                 }
-                if (businessFieldMap.containsKey(field.getInternalKey()) && !refSubMap.containsKey(field.getName())) {
+                if (businessFieldMap.containsKey(field.getInternalKey()) && !refSubMap.containsKey(v)) {
                     try {
                         setPropertyValue(mergedTmpEntity, businessFieldMap.get(field.getInternalKey()).getBusinessKey(), val);
                     } catch (Exception e) {
@@ -231,8 +231,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                     resourceField.setResourceId(id.get().toString());
                     resourceField.setFieldId(field.idOrBusinessKey());
                     resourceField.setFieldValue(val);
-                    if (refSubMap.containsKey(field.getName())) {
-                        resourceField.setRefSubId(refSubMap.get(field.getName()));
+                    if (refSubMap.containsKey(v)) {
+                        resourceField.setRefSubId(refSubMap.get(v));
                         resourceField.setRowId(String.valueOf(subRowId));
                         resourceField.setBizId(bizId);
                     }
