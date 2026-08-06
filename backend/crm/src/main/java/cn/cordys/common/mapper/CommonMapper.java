@@ -64,7 +64,7 @@ public interface CommonMapper {
      * @param fieldId
      * @return
      */
-    BaseResourceSubField getResourceField(@Param("tableName") String tableName, @Param("resourceId") String resourceId, @Param("fieldId") String fieldId, @Param("subRowId") int subRowId);
+    BaseResourceSubField getResourceField(@Param("tableName") String tableName, @Param("resourceId") String resourceId, @Param("fieldId") String fieldId, @Param("subRowId") Integer subRowId);
 
     /**
      * 更新自定义字段
