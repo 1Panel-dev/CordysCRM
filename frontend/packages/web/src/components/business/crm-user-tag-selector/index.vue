@@ -87,7 +87,7 @@
   }>();
 
   const showSelectDrawer = ref(false);
-  const resolvedMaxTagCount = computed(() => (props.maxTagCount === false ? undefined : props.maxTagCount));
+  const resolvedMaxTagCount = computed(() => (props.maxTagCount === false ? 'responsive' : props.maxTagCount));
   function handleShowSelectDrawer() {
     if (props.disabled) return;
     showSelectDrawer.value = true;
