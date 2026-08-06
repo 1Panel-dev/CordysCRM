@@ -72,7 +72,15 @@
   const { t } = useI18n();
 
   const realAdvancedFields: FormCreateField[] = [];
-  if ([FormDesignKeyEnum.PRICE, FormDesignKeyEnum.CONTRACT, FormDesignKeyEnum.ORDER].includes(props.formKey)) {
+  if (
+    [
+      FormDesignKeyEnum.PRICE,
+      FormDesignKeyEnum.CONTRACT,
+      FormDesignKeyEnum.ORDER,
+      FormDesignKeyEnum.INVOICE,
+      FormDesignKeyEnum.CUSTOM_FORM,
+    ].includes(props.formKey)
+  ) {
     advancedFields.forEach((field) => {
       if (field.type !== FieldTypeEnum.SUB_PRICE) {
         realAdvancedFields.push(field);
