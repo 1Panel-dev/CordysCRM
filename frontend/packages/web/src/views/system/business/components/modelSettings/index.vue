@@ -82,6 +82,10 @@
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const tableRefreshId = ref(0);
 
+  function formatGlobalDailyLimit(value: number | null | undefined): string {
+    return value === null || value === undefined ? t('common.unlimited') : formatThousands(value);
+  }
+
   async function toggleModelStatus(row: AiModelItem, enable: boolean) {
     try {
       await updateAiModelStatus({ id: row.id });
@@ -213,13 +217,13 @@
       title: t('system.business.modelSettings.globalDailyLimitColumn'),
       key: 'globalDailyLimit',
       width: 100,
-      render: (row) => formatThousands(row.globalDailyLimit),
+      render: (row) => formatGlobalDailyLimit(row.globalDailyLimit),
     },
     {
       title: t('system.business.modelSettings.todayUsage'),
-      key: 'userDailyLimit',
+      key: 'dailyTotal',
       width: 100,
-      render: (row) => formatThousands(row.userDailyLimit),
+      render: (row) => formatThousands(row.dailyTotal ?? 0),
     },
     {
       title: t('common.createTime'),

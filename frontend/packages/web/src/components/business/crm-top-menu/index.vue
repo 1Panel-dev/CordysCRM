@@ -19,17 +19,23 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { listenerRouteChange } from '@lib/shared/method/route-listener';
 
+  import useModal from '@/hooks/useModal';
   import usePermission from '@/hooks/usePermission';
   import appClientMenus from '@/router/app-menus';
   import useAppStore from '@/store/modules/app';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const permission = usePermission();
+  const { openModal } = useModal();
 
   const copyRouters = cloneDeep(appClientMenus) as RouteRecordRaw[];
 
   const appStore = useAppStore();
+  const licenseStore = useLicenseStore();
 
   const router = useRouter();
 
@@ -88,6 +94,12 @@
   }
 
   const handleSelected = debounce((route: RouteRecordName | undefined) => {
+    if (route === WorkbenchRouteEnum.WORKBENCH_SMART && !licenseStore.hasLicense()) {
+      openModal(licenseStore.getNoLicenseModalConfig());
+      activeMenu.value = appStore.getCurrentTopMenu?.name as string;
+      return;
+    }
+
     router.push({ name: route });
   }, 150);
 

@@ -69,7 +69,10 @@
   const tabList = ref([...initTabList]);
 
   function handleBeforeLeave(newVal: string | number) {
-    if (newVal === 'pageSettings' && !licenseStore.hasLicense()) {
+    if (
+      ['pageSettings', 'modelSettings', 'termSettings', 'globalTask'].includes(String(newVal)) &&
+      !licenseStore.hasLicense()
+    ) {
       openModal(licenseStore.getNoLicenseModalConfig());
       return false;
     }

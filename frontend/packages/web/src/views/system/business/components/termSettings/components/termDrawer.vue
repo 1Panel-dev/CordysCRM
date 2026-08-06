@@ -18,7 +18,8 @@
           tag
           clearable
           :options="categoryOptions"
-          :placeholder="t('common.pleaseSelect')"
+          :placeholder="t('common.selectOrCreateOption')"
+          :render-label="renderCategoryLabel"
         />
       </n-form-item>
       <n-form-item :label="t('system.business.term.standardTerm')" path="standardTerm">
@@ -60,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, reactive, ref, watch } from 'vue';
+  import { computed, h, reactive, ref, watch } from 'vue';
   import { FormInst, NForm, NFormItem, NInput, NSelect, NSwitch, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -114,6 +115,20 @@
       value: category.id,
     }))
   );
+
+  function renderCategoryLabel(option: SelectOption) {
+    const isExistingOption = props.categories.some((category) => category.id === option.value);
+
+    if (isExistingOption) {
+      return option.label as string;
+    }
+
+    return h('span', { class: 'inline-flex items-center gap-[8px]' }, [
+      h('span', { class: 'text-[var(--text-n4)]' }, t('common.createOption')),
+      h('span', option.label as string),
+    ]);
+  }
+
   const rules: FormRules = {
     catalogId: [
       {

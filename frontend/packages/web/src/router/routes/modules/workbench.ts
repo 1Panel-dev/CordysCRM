@@ -1,3 +1,5 @@
+import useLicenseStore from '@/store/modules/setting/license';
+
 import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
 import { DEFAULT_LAYOUT } from '../base';
@@ -6,7 +8,12 @@ import type { AppRouteRecordRaw } from '../types';
 const workbench: AppRouteRecordRaw = {
   path: '/workbench',
   name: WorkbenchRouteEnum.WORKBENCH,
-  redirect: '/workbench/smart',
+  redirect: () => {
+    const licenseStore = useLicenseStore();
+    return {
+      name: licenseStore.hasLicense() ? WorkbenchRouteEnum.WORKBENCH_SMART : WorkbenchRouteEnum.WORKBENCH_BOARD,
+    };
+  },
   component: DEFAULT_LAYOUT,
   meta: {
     hideChildrenInMenu: true,

@@ -64,6 +64,7 @@
       <div class="flex-1 overflow-y-auto">
         <van-cell-group>
           <van-field
+            ref="renameFieldRef"
             v-model="renameTitle"
             :label="t('aiChat.conversationTitle')"
             :placeholder="t('aiChat.renameConversationPlaceholder')"
@@ -102,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onBeforeUnmount, ref, watch } from 'vue';
+  import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
   import { debounce } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -160,11 +161,14 @@
   const renameSaving = ref(false);
   const renameId = ref('');
   const renameTitle = ref('');
+  const renameFieldRef = ref<{ focus: () => void }>();
 
-  function openRename(item: AgentConversationItem): void {
+  async function openRename(item: AgentConversationItem): Promise<void> {
     renameId.value = item.id;
     renameTitle.value = item.title;
     showRename.value = true;
+    await nextTick();
+    renameFieldRef.value?.focus();
   }
 
   function closeRename(): void {

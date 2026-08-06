@@ -19,6 +19,7 @@ export interface AiModelSaveParams {
 
 export interface AiModelItem extends AiModelSaveParams {
   id: string;
+  dailyTotal: number;
   updateUserName: string;
   createUserName: string;
   createTime: number;

@@ -51,7 +51,7 @@
                   />
                 </template>
                 <div>
-                  <div>{{ t('crmImportButton.importUpdates.tooltip') }}</div>
+                  <div v-if="!props.hideImportUpdatesTooltip">{{ t('crmImportButton.importUpdates.tooltip') }}</div>
                   <div>{{ t('crmImportButton.importUpdates.defaultLogic') }}</div>
                   <div>{{ t('crmImportButton.importUpdates.defaultLogic.emptyValue') }}</div>
                   <div>{{ t('crmImportButton.importUpdates.defaultLogic.workflow') }}</div>
@@ -98,6 +98,7 @@
     title?: string; // 标题
     descriptionTip?: string; // 描述提示内容
     downloadTemplateApi?: () => Promise<any>; // 下载模板Api
+    hideImportUpdatesTooltip?: boolean;
   }>();
 
   const emit = defineEmits<{
