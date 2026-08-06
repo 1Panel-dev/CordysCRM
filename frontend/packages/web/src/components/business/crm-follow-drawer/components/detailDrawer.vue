@@ -89,7 +89,7 @@
 
   const { t } = useI18n();
 
-  const commentExpanded = ref(true);
+  const commentExpanded = ref(false);
   const commentResourceType = computed(() =>
     props.formKey === FormDesignKeyEnum.FOLLOW_RECORD ? 'followRecord' : 'followPlan'
   );
@@ -98,7 +98,7 @@
     () => [showDrawer.value, props.sourceId, props.formKey],
     ([visible]) => {
       if (visible) {
-        commentExpanded.value = true;
+        commentExpanded.value = false;
       }
     },
     {

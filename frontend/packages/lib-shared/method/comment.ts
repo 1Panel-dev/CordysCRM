@@ -11,6 +11,8 @@ export const FOLLOW_COMMENT_OPERATE_PERMISSIONS = [
   'OPPORTUNITY_MANAGEMENT:READ',
 ];
 
+export const FOLLOW_COMMENT_MAX_LENGTH = 512;
+
 export function getLocalCommentCount(comments: FollowCommentItem[] = []) {
   return comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0);
 }
@@ -25,11 +27,11 @@ export function buildSaveCommentParams({
   parentComment?: FollowCommentItem;
 }): SaveFollowCommentParams {
   return {
-    sourceId,
+    resourceId: sourceId,
     parentId: parentComment?.parentId || parentComment?.id,
     replyToUserId: parentComment?.createUser,
     content: value.content,
-    mentionUserIds: value.mentionUserIds,
+    mentionedUserIds: value.mentionUserIds,
   };
 }
 
@@ -43,6 +45,6 @@ export function buildUpdateCommentParams({
   return {
     id: commentId,
     content: value.content,
-    mentionUserIds: value.mentionUserIds,
+    mentionedUserIds: value.mentionUserIds,
   };
 }

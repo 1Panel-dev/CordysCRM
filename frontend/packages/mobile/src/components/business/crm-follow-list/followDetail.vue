@@ -11,9 +11,9 @@
         </div>
       </div>
     </div>
-    <div class="bg-[var(--text-n9)] p-[16px]">
+    <div class="crm-follow-detail-comment bg-[var(--text-n9)] p-[16px]">
       <CrmComment
-        class="mt-0"
+        class="crm-comment--detail"
         :type="commentType"
         :source-id="sourceId"
         :count="commentCount"
@@ -121,7 +121,10 @@
   }
 </script>
 
-<style lang="less" scoped>
+<style scoped lang="less">
+  .crm-follow-detail-comment {
+    @apply box-border flex h-full flex-none basis-full flex-col overflow-hidden;
+  }
   :deep(.crm-page-content) {
     @apply !overflow-auto;
   }

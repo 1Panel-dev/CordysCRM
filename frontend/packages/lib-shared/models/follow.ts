@@ -9,39 +9,40 @@ export interface FollowCommentUser {
 
 export interface FollowCommentItem {
   id: string;
-  sourceId: string;
-  parentId?: string;
+  targetType: string;
+  resourceId: string;
+  parentId: string;
+  replyToUserId: string;
+  replyToUserName: string;
   content: string;
   createUser: string;
   createUserName: string;
-  createUserAvatar?: string;
+  createUserAvatar: string;
   createTime: number;
-  updateTime?: number;
-  replyToUserId?: string;
-  replyToUserName?: string;
-  mentionUsers?: FollowCommentUser[];
-  replies?: FollowCommentItem[];
-  replyCount?: number;
+  updateTime: number;
+  editable: boolean;
+  replyCount: number;
+  replies: FollowCommentItem[];
 }
 
 export interface FollowCommentListParams extends TableQueryParams {
-  sourceId: string;
+  resourceId: string;
 }
 
 // 新增评论接口入参：用于新增一级评论、回复一级评论、回复二级评论
 export interface SaveFollowCommentParams {
-  sourceId: string;
+  resourceId: string;
   parentId?: string;
-  replyToUserId?: string;// 回复二级评论时，用于标记回复XX
+  replyToUserId?: string; // 回复二级评论时，用于标记回复XX
   content: string;
-  mentionUserIds?: string[]; // @成员ids
+  mentionedUserIds?: string[]; // @成员ids
 }
 
 // 编辑评论接口入参
 export interface UpdateFollowCommentParams {
   id: string;
   content: string;
-  mentionUserIds?: string[];
+  mentionedUserIds?: string[];
 }
 
 // 评论输入组件提交值

@@ -26,6 +26,7 @@
     </div>
     <n-spin :show="loading" class="h-full">
       <FollowRecord
+        :key="props.activeType"
         v-model:data="data"
         :virtual-scroll-height="`${props.virtualScrollHeight || '1000px'}`"
         :get-description-fun="getDescriptionFun"

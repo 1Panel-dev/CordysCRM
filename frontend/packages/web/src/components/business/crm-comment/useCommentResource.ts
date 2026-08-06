@@ -95,7 +95,7 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
     try {
       const requestCurrent = refresh ? 1 : current.value;
       const res = await currentApi.value.list({
-        sourceId,
+        resourceId: sourceId,
         current: requestCurrent,
         pageSize,
       });

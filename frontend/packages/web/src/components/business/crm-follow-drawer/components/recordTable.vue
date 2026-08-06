@@ -111,6 +111,7 @@
       :refresh-key="refreshKey"
       :source-name="sourceName"
       :readonly="!isOwner(activeItem)"
+      :detail="activeItem"
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
     />
