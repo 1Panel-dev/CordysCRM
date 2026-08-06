@@ -40,6 +40,7 @@
         v-if="activeEditor?.action === 'create'"
         class="mb-[12px]"
         :loading="props.submitLoading"
+        :submit-text="t('common.confirm')"
         @submit="handleCreateSubmit"
         @cancel="handleCreateCancel"
       />

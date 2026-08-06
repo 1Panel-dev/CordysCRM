@@ -1,7 +1,7 @@
 <template>
   <div class="crm-comment-mention-input">
     <n-mention
-      v-model:value="content"
+      v-model:value="mentionContent"
       type="textarea"
       :autosize="{ minRows: 3, maxRows: 6 }"
       :disabled="props.disabled"
@@ -10,7 +10,7 @@
       :options="mentionOptions"
       :placeholder="placeholder"
       :render-label="renderMentionLabel"
-      :to="false"
+      to="body"
       @search="handleMentionSearch"
       @select="handleMentionSelect"
       @blur="syncMentionUserIds"
@@ -30,6 +30,7 @@
   import { NButton, NCheckbox, NMention } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FOLLOW_COMMENT_MAX_LENGTH } from '@lib/shared/method/comment';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
@@ -76,6 +77,13 @@
 
   const content = defineModel<string>('value', {
     default: '',
+  });
+
+  const mentionContent = computed({
+    get: () => content.value,
+    set: (value: string) => {
+      content.value = value.slice(0, FOLLOW_COMMENT_MAX_LENGTH);
+    },
   });
 
   const loading = ref(false);
@@ -274,7 +282,8 @@
   :deep(.crm-comment-mention-header) {
     @apply flex w-full items-center;
   }
-  :deep(.n-mention-menu) {
+  // 适配 mention 组件宽度
+  :global(.n-mention-menu) {
     width: 200px !important;
     min-width: 200px !important;
     max-width: 200px;

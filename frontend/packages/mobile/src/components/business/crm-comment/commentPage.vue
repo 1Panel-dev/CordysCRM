@@ -1,7 +1,8 @@
 <template>
   <CrmPageWrapper :title="t('crmComment.title')">
-    <div class="h-full bg-[var(--text-n9)]">
+    <div class="crm-comment-page-content bg-[var(--text-n9)]">
       <CrmComment
+        class="crm-comment--standalone"
         :type="commentType"
         :source-id="commentSourceId"
         :count="initialCommentCount"
@@ -35,4 +36,11 @@
   const initialCommentCount = computed(() => getInitialCommentCount());
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+  :deep(.crm-page-content) {
+    @apply !overflow-hidden;
+  }
+  .crm-comment-page-content {
+    @apply flex flex-1 flex-col overflow-hidden;
+  }
+</style>

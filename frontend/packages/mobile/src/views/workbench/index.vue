@@ -167,6 +167,10 @@
 
   import { lastScopedOptions } from './duplicateCheck/config';
 
+  defineOptions({
+    name: WorkbenchRouteEnum.WORKBENCH_INDEX,
+  });
+
   const appStore = useAppStore();
   const userStore = useUserStore();
   const { t } = useI18n();
@@ -374,15 +378,15 @@
     background: var(--primary-7);
     box-shadow: 0 6px 35px 6px #6467671a;
   }
+  :deep(.workbench-follow-item) {
+    .follow-item-content {
+      padding: 16px 0 !important;
+    }
+  }
 </style>
 
 <style lang="less">
   .follow-view {
     .half-px-border-bottom();
-  }
-  :deep(.workbench-follow-item) {
-    .follow-item-content {
-      padding: 16px 0;
-    }
   }
 </style>

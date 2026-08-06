@@ -1,5 +1,12 @@
 <template>
-  <van-popup v-model:show="show" class="crm-comment-mention-user-select" position="right">
+  <van-popup
+    v-model:show="show"
+    class="crm-comment-mention-user-select"
+    position="right"
+    teleport="body"
+    destroy-on-close
+    @closed="emit('closed')"
+  >
     <div class="crm-comment-mention-user-select-page">
       <div class="crm-comment-mention-user-select-header">
         <CrmIcon name="iconicon_chevron_left" width="24px" height="24px" color="var(--text-n1)" @click="handleCancel" />
@@ -32,9 +39,13 @@
             <template #label="{ item }">
               <div class="crm-comment-mention-user-select-option">
                 <span class="crm-comment-mention-user-select-name">{{ item.name }}</span>
-                <span v-if="item.enable === false" class="crm-comment-mention-user-select-disabled">
-                  {{ t('crmComment.disabledUser') }}
-                </span>
+                <CrmTag
+                  v-if="item.enable === false"
+                  :tag="t('crmComment.disabledUser')"
+                  bg-color="var(--text-n8)"
+                  text-color="var(--text-n4)"
+                  class="flex-none"
+                />
               </div>
             </template>
           </CrmSelectList>
@@ -70,6 +81,7 @@
   import type { FollowCommentUser } from '@lib/shared/models/follow';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
 
   import { getUserOptions } from '@/api/modules';
@@ -82,6 +94,7 @@
 
   const emit = defineEmits<{
     (e: 'confirm', users: FollowCommentUser[]): void;
+    (e: 'closed'): void;
   }>();
 
   const { t } = useI18n();
@@ -141,8 +154,7 @@
 
 <style scoped lang="less">
   .crm-comment-mention-user-select {
-    width: 100%;
-    height: 100%;
+    @apply h-full w-full;
   }
   .crm-comment-mention-user-select-page {
     display: flex;
@@ -196,14 +208,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--text-n1);
-  }
-  .crm-comment-mention-user-select-disabled {
-    padding: 1px 4px;
-    font-size: 10px;
-    border-radius: var(--border-radius-mini);
-    color: var(--text-n4);
-    background: var(--text-n8);
-    flex: none;
   }
   .crm-comment-mention-user-select-footer {
     display: flex;

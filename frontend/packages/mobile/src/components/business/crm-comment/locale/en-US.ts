@@ -12,4 +12,5 @@ export default {
   'crmComment.moreReplies': 'More replies ({count})',
   'crmComment.collapseReplies': 'Collapse',
   'crmComment.submit': 'Send',
+  'crmComment.disabledUser': 'Quit',
 };

@@ -45,7 +45,10 @@
               @edit-submit="handleEditSubmit"
               @cancel-editor="emit('cancelEditor')"
             />
-            <n-divider class="crm-comment-list__divider crm-comment-list__reply-divider" />
+            <n-divider
+              v-if="shouldShowReplyDivider(comment)"
+              class="crm-comment-list__divider crm-comment-list__reply-divider"
+            />
           </template>
           <div v-if="shouldShowMoreReplies(comment) || shouldShowCollapseReplies(comment)" class="ml-[40px] p-[16px]">
             <n-button
@@ -163,6 +166,10 @@
 
   function shouldShowCollapseReplies(comment: FollowCommentItem) {
     return getReplies(comment).length > 1 && isExpanded(comment.id);
+  }
+
+  function shouldShowReplyDivider(comment: FollowCommentItem) {
+    return getReplies(comment).length > 1;
   }
 
   function expandReplies(commentId: string) {
