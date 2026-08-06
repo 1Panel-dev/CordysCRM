@@ -32,12 +32,19 @@ export interface AgentTaskItem extends Omit<AgentTaskParams, 'applicableRoles'> 
   updateUserName?: string;
 }
 
+export enum AgentTaskExecutionRecordStatusEnum {
+  RUNNING = 'RUNNING',
+  COMPLETED = 'COMPLETED',
+  STOPPED = 'STOPPED',
+}
+
 export interface AgentTaskExecutionRecordItem {
   id: string;
   executionTime: number;
   taskId: string;
   taskName: string;
   triggerReason: string;
+  status: AgentTaskExecutionRecordStatusEnum;
   result: string;
   confirmUser: string;
   confirmUserName: string;

@@ -14,6 +14,7 @@
     :description-tip="props.descriptionTip"
     :confirm-loading="validateLoading"
     :download-template-api="downloadTemplateApi"
+    :hide-import-updates-tooltip="props.hideImportUpdatesTooltip"
     @validate="validateTemplate"
   />
 
@@ -65,6 +66,7 @@
     poolId?: string | number;
     readonly?: boolean;
     disabledTooltip?: string;
+    hideImportUpdatesTooltip?: boolean;
   }>();
 
   const emit = defineEmits<{

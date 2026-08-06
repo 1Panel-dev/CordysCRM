@@ -9,6 +9,7 @@ import {
   CancelCenterExportUrl,
   CreateAuthUrl,
   DeleteAgentTaskUrl,
+  DeleteAgentTaskExecutionRecordUrl,
   DeleteAiModelUrl,
   DeleteApiKeyUrl,
   DeleteAuthUrl,
@@ -49,6 +50,7 @@ import {
   SavePageConfigUrl,
   SendEmailCodeUrl,
   SwitchAgentTaskUrl,
+  StopAgentTaskExecutionRecordUrl,
   SwitchTermUrl,
   SwitchThirdPartyUrl,
   SyncDEUrl,
@@ -392,6 +394,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<AgentTaskExecutionRecordItem>>({ url: GetAgentTaskExecutionRecordListUrl, data });
   }
 
+  // 全局任务-停止执行记录
+  function stopAgentTaskExecutionRecord(id: string) {
+    return CDR.get({ url: `${StopAgentTaskExecutionRecordUrl}/${id}` });
+  }
+
+  // 全局任务-删除执行记录
+  function deleteAgentTaskExecutionRecord(id: string) {
+    return CDR.get({ url: `${DeleteAgentTaskExecutionRecordUrl}/${id}` });
+  }
+
   // 术语设置-分类列表
   function getTermCategoryList() {
     return CDR.get<TermCategoryItem[]>({ url: GetTermCategoryListUrl });
@@ -527,6 +539,8 @@ export default function useProductApi(CDR: CordysAxios) {
     updateAiModelRouteStrategy,
     getAgentTaskList,
     getAgentTaskExecutionRecordList,
+    stopAgentTaskExecutionRecord,
+    deleteAgentTaskExecutionRecord,
     addAgentTask,
     updateAgentTask,
     switchAgentTask,

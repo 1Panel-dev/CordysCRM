@@ -654,6 +654,8 @@ export const {
   updateAiModelRouteStrategy,
   getAgentTaskList,
   getAgentTaskExecutionRecordList,
+  stopAgentTaskExecutionRecord,
+  deleteAgentTaskExecutionRecord,
   addAgentTask,
   updateAgentTask,
   switchAgentTask,

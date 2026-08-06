@@ -17,6 +17,7 @@
       class="flex items-center gap-[8px] rounded-[30px] bg-[var(--text-n10)] p-[16px] shadow-[0_4px_10px_-1px_#6467671A]"
     >
       <van-field
+        ref="composerFieldRef"
         v-model="composerValue"
         :autosize="{ maxHeight: 140 }"
         type="textarea"
@@ -50,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue';
+  import { computed, nextTick, ref, watch } from 'vue';
 
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -64,6 +65,7 @@
   const { t } = useI18n();
   const runtime = useAiChatRuntime();
 
+  const composerFieldRef = ref<{ focus: () => void }>();
   const inputValue = ref(runtime.state.input.value);
 
   const isEditing = computed(() => Boolean(runtime.state.editingMessageId.value));
@@ -106,6 +108,19 @@
       inputValue.value = value;
     }
   });
+
+  watch(
+    isEditing,
+    async (value) => {
+      if (!value) {
+        return;
+      }
+
+      await nextTick();
+      composerFieldRef.value?.focus();
+    },
+    { flush: 'post' }
+  );
 </script>
 
 <style scoped lang="less">

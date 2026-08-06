@@ -67,6 +67,8 @@ export const SwitchAgentTaskUrl = '/agent-task/switch'; // 全局任务-启用/�
 export const GetAgentTaskDetailUrl = '/agent-task/get'; // 全局任务-获取任务详情
 export const DeleteAgentTaskUrl = '/agent-task/delete'; // 全局任务-删除任务
 export const GetAgentTaskExecutionRecordListUrl = '/agent-task/execution-record/page'; // 全局任务-分页查询执行记录
+export const StopAgentTaskExecutionRecordUrl = '/agent-task/execution-record/stop'; // 全局任务-停止执行记录
+export const DeleteAgentTaskExecutionRecordUrl = '/agent-task/execution-record/delete'; // 全局任务-删除执行记录
 
 // 术语设置
 export const GetTermCategoryListUrl = '/agent-term-catalog/list'; // 术语设置-分类列表

@@ -31,6 +31,7 @@
                   v-if="hasAnyPermission(['SYSTEM_SETTING:ADD'])"
                   :api-type="ImportTypeExcludeFormDesignEnum.TERM_IMPORT"
                   :title="t('system.business.term.term')"
+                  hide-import-updates-tooltip
                   @import-success="handleImportSuccess"
                 />
               </div>
@@ -91,6 +92,7 @@
   import type { TermCategoryItem, TermDiscoveryItem, TermItem } from '@lib/shared/models/system/term';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -266,6 +268,46 @@
         }),
     },
     {
+      title: t('common.creator'),
+      key: 'createUserName',
+      width: 120,
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('common.createTime'),
+      key: 'createTime',
+      width: 150,
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('common.updateUserName'),
+      key: 'updateUserName',
+      width: 120,
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('common.updateTime'),
+      key: 'updateTime',
+      width: 150,
+      sortOrder: false,
+      sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
       title: t('common.operation'),
       key: 'operation',
       width: 110,
@@ -397,7 +439,6 @@
     .ai-discovery-text {
       color: transparent;
       background: var(--ai-discovery-gradient);
-      background-clip: text;
       background-clip: text;
     }
   }
