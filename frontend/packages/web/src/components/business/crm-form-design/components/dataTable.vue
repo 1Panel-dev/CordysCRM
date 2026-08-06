@@ -84,6 +84,7 @@
               :path="item.id"
               :disabled="props.disabled"
               isSubTableField
+              isDesignRender
             />
             <div class="crm-form-design--composition-item-mask"></div>
           </div>
