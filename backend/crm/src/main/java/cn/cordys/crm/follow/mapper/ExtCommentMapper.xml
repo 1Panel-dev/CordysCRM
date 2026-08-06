@@ -44,7 +44,7 @@
                 AND c.parent_id = #{parentId}
             </otherwise>
         </choose>
-        ORDER BY c.create_time ASC, c.id ASC
+        ORDER BY c.create_time DESC, c.id DESC
     </select>
 
     <select id="selectChildren" resultType="cn.cordys.crm.follow.dto.response.CommentResponse">
@@ -60,7 +60,7 @@
         <foreach collection="parentIds" item="parentId" open="(" separator="," close=")">
             #{parentId}
         </foreach>
-        ORDER BY c.create_time ASC, c.id ASC
+        ORDER BY c.create_time DESC, c.id DESC
     </select>
 
     <select id="countByResource" resultType="long">
