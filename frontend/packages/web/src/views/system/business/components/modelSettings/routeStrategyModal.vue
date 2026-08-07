@@ -13,10 +13,20 @@
           {{ t('system.business.modelSettings.defaultModel') }}
           <span class="text-[var(--text-n4)]">{{ t('system.business.modelSettings.defaultModelTip') }}</span>
         </template>
-        <n-select v-model:value="form.defaultModelId" :options="modelOptions" :placeholder="t('common.pleaseSelect')" />
+        <n-select
+          v-model:value="form.defaultModelId"
+          clearable
+          :options="modelOptions"
+          :placeholder="t('common.pleaseSelect')"
+        />
       </n-form-item>
       <n-form-item :label="t('system.business.modelSettings.insightModel')">
-        <n-select v-model:value="form.insightModelId" :options="modelOptions" :placeholder="t('common.pleaseSelect')" />
+        <n-select
+          v-model:value="form.insightModelId"
+          clearable
+          :options="modelOptions"
+          :placeholder="t('common.pleaseSelect')"
+        />
       </n-form-item>
       <n-form-item>
         <template #label>
@@ -26,11 +36,12 @@
         <n-select
           v-model:value="form.classifyModelId"
           :options="modelOptions"
+          clearable
           :placeholder="t('common.pleaseSelect')"
         />
       </n-form-item>
       <div class="flex items-center gap-[8px]">
-        <n-switch v-model:value="form.autoFallback" :rubber-band="false" />
+        <n-switch v-model:value="form.fallback" :rubber-band="false" />
         <div class="text-[var(--text-n1)]">
           {{ t('system.business.modelSettings.autoFallback') }}
         </div>
@@ -40,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, reactive, ref, watch } from 'vue';
+  import { reactive, ref, watch } from 'vue';
   import { NForm, NFormItem, NSelect, NSwitch, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -48,7 +59,7 @@
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
-  import { getAiModelList, getAiModelRouteStrategy, updateAiModelRouteStrategy } from '@/api/modules';
+  import { getAiModelOptions, getAiModelRouteStrategy, updateAiModelRouteStrategy } from '@/api/modules';
 
   import type { SelectOption } from 'naive-ui';
 
@@ -63,24 +74,29 @@
   const loading = ref(false);
   const modelOptions = ref<SelectOption[]>([]);
 
-  const form = reactive<AiModelRouteStrategy>({
-    autoFallback: true,
+  interface RouteStrategyForm {
+    defaultModelId?: string;
+    insightModelId?: string;
+    classifyModelId?: string;
+    fallback: boolean;
+  }
+
+  const form = reactive<RouteStrategyForm>({
+    fallback: true,
   });
 
   async function loadStrategy() {
     try {
       loading.value = true;
-      const [strategy, modelList] = await Promise.all([
-        getAiModelRouteStrategy(),
-        getAiModelList({ current: 1, pageSize: 9999 }),
-      ]);
-      Object.assign(form, strategy);
-      modelOptions.value = modelList.list
-        .filter((model) => model.enable)
-        .map((model) => ({
-          label: model.displayName,
-          value: model.id,
-        }));
+      const [strategy, models] = await Promise.all([getAiModelRouteStrategy(), getAiModelOptions()]);
+      form.defaultModelId = strategy?.chatModels?.[0];
+      form.insightModelId = strategy?.taskModels?.[0];
+      form.classifyModelId = strategy?.chatModels?.[1];
+      form.fallback = strategy?.fallback ?? true;
+      modelOptions.value = models.map((model) => ({
+        label: model.name,
+        value: model.id,
+      }));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -98,10 +114,20 @@
     }
   );
 
+  function getStrategyParams(): AiModelRouteStrategy {
+    return {
+      chatModels: [form.defaultModelId ?? '', form.classifyModelId].filter(
+        (modelId, index) => index === 0 || modelId
+      ) as string[],
+      taskModels: [form.insightModelId].filter(Boolean) as string[],
+      fallback: form.fallback,
+    };
+  }
+
   async function save() {
     try {
       loading.value = true;
-      await updateAiModelRouteStrategy({ ...form });
+      await updateAiModelRouteStrategy(getStrategyParams());
       Message.success(t('common.saveSuccess'));
       showModal.value = false;
     } catch (error) {
