@@ -30,12 +30,12 @@
   import { computed, ref, watch } from 'vue';
   import { NCollapse, NCollapseItem } from 'naive-ui';
 
+  import type { AiChatDataParts } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { AgentChatProgressData } from '@lib/shared/models/ai';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import type { AiChatDataParts } from '../types';
   import type { DataUIPart } from 'ai';
 
   const props = defineProps<{

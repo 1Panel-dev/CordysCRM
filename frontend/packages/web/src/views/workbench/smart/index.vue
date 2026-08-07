@@ -4,7 +4,6 @@
       <AiChatProvider :runtime="composerRuntime">
         <AiComposer
           class="rounded-[4px] !shadow-none"
-          :model-name="currentModelName"
           :mcp-options="mcpOptions"
           submit-mode="emit"
           :placeholder="t('workbench.smart.composerPlaceholder')"
@@ -94,7 +93,6 @@
       :active-history-id="activeHistoryId"
       :history-loading="historyLoading"
       :history-no-more="historyNoMore"
-      :model-name="currentModelName"
       :mcp-options="mcpOptions"
       @new="handleNewConversation"
       @search-history="handleHistorySearch"
@@ -139,9 +137,12 @@
   const showChatDrawer = ref(false);
   const aiChatRef = ref<InstanceType<typeof AiChat>>();
   const chatSessionId = ref('');
-  const currentModelName = 'CORDYS AI'; // TODO lmy 从后端获取name
 
-  const mcpOptions: AiChatMcp[] = [];
+  // TODO lmy 获取后端数据
+  const mcpOptions: AiChatMcp[] = [
+    { id: 'cordys-crm', name: 'codys-crm', permission: 'read' },
+    { id: 'ardot-design-assistant', name: 'mock', permission: 'read' },
+  ];
   const dataOverviewAIRenderString = ref('');
   const AIActionRenderString = ref('');
   const AIActionApprovalRenderString = ref('');
@@ -160,7 +161,6 @@
     renameHistoryConversation,
     clear,
   } = useAgentChatWorkbench({
-    modelName: currentModelName,
     historyPageSize: 50,
     apis: {
       streamAgentChat,
@@ -173,9 +173,7 @@
     },
   });
 
-  const composerRuntime = createAiChatRuntime({
-    initialModelName: currentModelName,
-  });
+  const composerRuntime = createAiChatRuntime();
 
   function createChatSession(): ReturnType<typeof createConversation> {
     const sessionId = `chat_${Date.now()}`;
@@ -189,7 +187,6 @@
     const runtime = createChatSession();
 
     runtime.setSelectedMcps(selectedMcps);
-    runtime.setModelName(currentModelName);
     showChatDrawer.value = true;
     composerRuntime.clear();
 

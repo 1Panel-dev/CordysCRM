@@ -17,14 +17,18 @@
       <div class="ai-chat-message__bubble">
         <template v-if="isEditing">
           <div class="ai-chat-message__edit rounded-[4px] bg-[var(--text-n9)] p-[16px]">
-            <n-input
-              v-model:value="editContent"
-              class="ai-chat-message__edit-input w-full"
-              type="textarea"
-              :bordered="false"
-              :autosize="{ minRows: 1, maxRows: 10 }"
-              :disabled="runtime.state.loading.value"
-              @keydown.enter.exact.prevent="handleEditSubmit"
+            <AiComposer
+              ref="editComposerRef"
+              class="!bg-transparent !p-0 !shadow-none"
+              :initial-content="editContent"
+              :initial-mcps="messageMcps"
+              :mcp-options="messageMcps"
+              :show-attachments="false"
+              :show-footer="false"
+              :sync-runtime="false"
+              submit-mode="emit"
+              @change="handleEditChange"
+              @submit="handleEditSubmit"
             />
             <div class="mt-[16px] flex items-center justify-between">
               <div class="flex min-w-0 items-center gap-[4px] text-[12px] text-[var(--text-n4)]">
@@ -40,7 +44,7 @@
                   ghost
                   :disabled="!canSubmitEdit"
                   :loading="runtime.state.loading.value"
-                  @click="handleEditSubmit"
+                  @click="handleEditButtonClick"
                 >
                   {{ t('aiChat.send') }}
                 </n-button>
@@ -50,32 +54,22 @@
         </template>
 
         <template v-else>
-          <!-- TODO lmy mcp的样式 -->
-          <div v-if="messageMcps.length" class="mb-[6px] flex flex-wrap gap-[4px]">
-            <span
-              v-for="mcp in messageMcps"
-              :key="mcp.id"
-              class="inline-flex max-w-[180px] items-center truncate rounded-[4px] bg-[#eee7ff] px-[6px] py-[2px] text-[12px] text-[#3f2f73]"
-            >
-              {{ mcp.name }}
-            </span>
-          </div>
-
           <!-- TODO lmy 文件的样式 -->
           <div v-if="messageAttachments.length" class="mb-[8px] flex flex-wrap gap-[6px]">
             <div
               v-for="attachment in messageAttachments"
               :key="attachment.id"
-              class="max-w-[220px] overflow-hidden truncate rounded-[4px] border border-[#edf0f2] bg-[#f7f8fa] px-[8px] py-[4px]"
+              class="max-w-[220px] overflow-hidden truncate rounded-[4px] border border-[var(--text-n8)] bg-[var(--text-n9)] px-[8px] py-[4px] text-[var(--text-n1)]"
             >
               {{ attachment.name }}
             </div>
           </div>
 
           <template v-for="item in renderableParts" :key="item.key">
+            <AiTextBlock v-if="isUserTextPart(item.part)" :part="item.part" :mcps="messageMcps" />
             <component
               :is="item.renderer"
-              v-if="item.renderer"
+              v-else-if="item.renderer"
               :part="item.part"
               :index="item.index"
               :is-generating="isGenerating"
@@ -114,9 +108,10 @@
 
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
-  import { NAvatar, NButton, NInput, NTooltip } from 'naive-ui';
+  import { NAvatar, NButton, NTooltip } from 'naive-ui';
 
-  import { getAiChatMessageText, hasRenderableAiChatContent } from '@lib/shared/ai-chat';
+  import type { AiChatMessage, AiChatMessagePart, AiComposerSubmitPayload } from '@lib/shared/ai-chat';
+  import { getAiChatMessageText, hasRenderableAiChatContent, useAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatThousands } from '@lib/shared/method';
 
@@ -127,11 +122,10 @@
   import AiMarkdownBlock from '../blocks/AiMarkdownBlock.vue';
   import AiProgressBlock from '../blocks/AiProgressBlock.vue';
   import AiTextBlock from '../blocks/AiTextBlock.vue';
+  import AiComposer from './AiComposer.vue';
 
   import useLegacyCopy from '@/hooks/useLegacyCopy';
 
-  import { useAiChatRuntime } from '../runtime/useAiChatRuntime';
-  import type { AiChatMessage, AiChatMessagePart } from '../types';
   import type { Component } from 'vue';
 
   const props = defineProps<{
@@ -159,12 +153,9 @@
     'data-progress': AiProgressBlock,
   };
 
-  const userPartRenderers: Partial<Record<AiChatMessagePart['type'], Component>> = {
-    text: AiTextBlock,
-  };
-
   const isEditing = ref(false);
   const editContent = ref('');
+  const editComposerRef = ref<InstanceType<typeof AiComposer> | null>(null);
 
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);
   const canSubmitEdit = computed(() => editContent.value.trim().length > 0 && !runtime.state.loading.value);
@@ -177,10 +168,8 @@
     typeof props.message.metadata?.tokens === 'number' ? formatThousands(props.message.metadata.tokens) : ''
   );
 
-  const messageMcps = computed(() => props.message.metadata?.mcps ?? []);
   const messageAttachments = computed(() => props.message.metadata?.attachments ?? []);
-
-  const partRenderers = computed(() => (isUser.value ? userPartRenderers : assistantPartRenderers));
+  const messageMcps = computed(() => props.message.metadata?.mcps ?? []);
 
   const renderableParts = computed(() =>
     props.message.parts
@@ -192,7 +181,7 @@
           index,
           key: `${messagePart.type}_${index}`,
           part: messagePart,
-          renderer: partRenderers.value[messagePart.type],
+          renderer: isUser.value ? undefined : assistantPartRenderers[messagePart.type],
         };
       })
   );
@@ -212,6 +201,10 @@
 
     return '';
   });
+
+  function isUserTextPart(part: AiChatMessagePart): part is AiChatMessagePart & { type: 'text'; text: string } {
+    return isUser.value && part.type === 'text' && 'text' in part;
+  }
 
   watch(
     () => props.message.id,
@@ -288,15 +281,31 @@
     editContent.value = '';
   }
 
-  async function handleEditSubmit(): Promise<void> {
+  function handleEditChange(payload: AiComposerSubmitPayload): void {
+    editContent.value = payload.content;
+  }
+
+  async function handleEditSubmit(payload?: AiComposerSubmitPayload): Promise<void> {
     if (!canSubmitEdit.value) {
       return;
     }
 
-    const content = editContent.value.trim();
+    const editPayload = payload ?? editComposerRef.value?.getSubmitPayload();
+    const content = (editPayload?.content ?? editContent.value).trim();
+
+    if (!content) {
+      return;
+    }
+
     isEditing.value = false;
     editContent.value = '';
-    await runtime.edit(props.message.id, content);
+    await runtime.edit(props.message.id, content, {
+      mcps: editPayload?.options?.mcps ?? [],
+    });
+  }
+
+  async function handleEditButtonClick(): Promise<void> {
+    await handleEditSubmit();
   }
 </script>
 

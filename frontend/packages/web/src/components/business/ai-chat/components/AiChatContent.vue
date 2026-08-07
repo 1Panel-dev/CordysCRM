@@ -21,11 +21,11 @@
 <script setup lang="ts">
   import { computed } from 'vue';
 
+  import { useAiChatRuntime } from '@lib/shared/ai-chat';
+
   import AiComposer from './AiComposer.vue';
   import AiConfirmModal from './AiConfirmModal.vue';
   import AiThread from './AiThread.vue';
-
-  import { useAiChatRuntime } from '../runtime/useAiChatRuntime';
 
   const runtime = useAiChatRuntime();
   const pendingConfirm = computed(() => runtime.state.pendingConfirm.value);

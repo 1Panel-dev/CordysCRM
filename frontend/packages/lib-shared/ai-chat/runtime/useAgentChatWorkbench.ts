@@ -39,7 +39,6 @@ interface AgentChatWorkbenchApis {
 }
 
 interface UseAgentChatWorkbenchOptions {
-  modelName: string;
   historyPageSize?: number;
   apis: AgentChatWorkbenchApis;
   onError?: (error: Error) => void;
@@ -95,7 +94,6 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   function createRuntime(initialMessages: AiChatMessage[] = []): AiChatRuntime {
     return createAiChatRuntime({
       initialMessages,
-      initialModelName: options.modelName,
       transport: createAgentChatTransport({
         send(context) {
           return options.apis.streamAgentChat(
