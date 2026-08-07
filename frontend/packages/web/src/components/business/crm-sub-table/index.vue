@@ -227,7 +227,6 @@
         newRow[key] = field.resourceFieldId ? null : field.defaultValue ?? null;
       } else if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(field.type)) {
         if (field.hasCurrentUser) {
-          newRow[key] = field.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id;
           field.initialOptions = [
             ...(field.initialOptions || []),
             {
@@ -235,6 +234,14 @@
               name: userStore.userInfo.name,
             },
           ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+          if (field.type === FieldTypeEnum.MEMBER_MULTIPLE) {
+            newRow[key] = [
+              ...field.defaultValue,
+              field.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id,
+            ];
+          } else {
+            newRow[key] = field.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id;
+          }
         } else {
           newRow[key] = field.defaultValue;
         }
@@ -244,7 +251,6 @@
         }
       } else if ([FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(field.type)) {
         if (field.hasCurrentUserDept) {
-          newRow[key] = field.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId;
           field.initialOptions = [
             ...(field.initialOptions || []),
             {
@@ -252,6 +258,14 @@
               name: userStore.userInfo.departmentName,
             },
           ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+          if (field.type === FieldTypeEnum.DEPARTMENT_MULTIPLE) {
+            newRow[key] = [
+              ...field.defaultValue,
+              field.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId,
+            ];
+          } else {
+            newRow[key] = field.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId;
+          }
         } else {
           newRow[key] = field.defaultValue;
         }
