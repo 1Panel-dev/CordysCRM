@@ -7,7 +7,8 @@
 <script setup lang="ts">
   import { computed } from 'vue';
 
-  import type { AiChatDataParts, AiChatError } from '../types';
+  import type { AiChatDataParts, AiChatError } from '@lib/shared/ai-chat';
+
   import type { DataUIPart } from 'ai';
 
   const props = defineProps<{

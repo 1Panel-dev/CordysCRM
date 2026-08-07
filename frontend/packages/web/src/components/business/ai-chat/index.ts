@@ -1,12 +1,11 @@
 export { default as AiErrorBlockComponent } from './blocks/AiErrorBlock.vue';
 export { default as AiMarkdownBlockComponent } from './blocks/AiMarkdownBlock.vue';
+export { default as AiTextBlockComponent } from './blocks/AiTextBlock.vue';
 export { default as AiChatContent } from './components/AiChatContent.vue';
-export { default as AiChatProvider } from './components/AiChatProvider.vue';
 export { default as AiComposer } from './components/AiComposer.vue';
 export { default as AiMessage } from './components/AiMessage.vue';
 export { default as AiThread } from './components/AiThread.vue';
 export { default as AiChat } from './index.vue';
-export { AI_CHAT_RUNTIME_KEY, useAiChatRuntime } from './runtime/useAiChatRuntime';
-export type { AgentChatTransportOptions } from '@lib/shared/ai-chat';
 export type * from '@lib/shared/ai-chat';
+export { AI_CHAT_RUNTIME_KEY, AiChatProvider, useAiChatRuntime } from '@lib/shared/ai-chat';
 export { createAgentChatTransport, createAiChatRuntime } from '@lib/shared/ai-chat';

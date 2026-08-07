@@ -37,7 +37,7 @@ export interface AgentChatConfirmItem {
   prompt: string;
   title: string;
   selectionType: 'SINGLE' | 'MULTIPLE';
-  options: AgentChatConfirmOption[];
+  options?: AgentChatConfirmOption[];
 }
 
 export interface AgentChatConfirmOption {

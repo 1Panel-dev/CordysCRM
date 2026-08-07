@@ -77,8 +77,8 @@
             <template #composer>
               <AiComposer
                 :placeholder="props.placeholder || t('aiChat.inputPlaceholder')"
-                :model-name="props.modelName"
                 :mcp-options="props.mcpOptions"
+                @import-mcp="emit('importMcp')"
               />
             </template>
           </AiChatContent>
@@ -92,6 +92,8 @@
   import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
   import { InputInst, NButton, NEmpty, NInput, NTooltip } from 'naive-ui';
 
+  import type { AiChatMcp, AiChatRuntime } from '@lib/shared/ai-chat';
+  import { AiChatProvider, createAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -100,12 +102,7 @@
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import AiChatContent from './components/AiChatContent.vue';
-  import AiChatProvider from './components/AiChatProvider.vue';
   import AiComposer from './components/AiComposer.vue';
-
-  import createAiChatRuntime from './runtime/createAiChatRuntime.js';
-  import type { AiChatRuntime } from './runtime/types.js';
-  import type { AiChatMcp } from './types.js';
 
   interface AiChatHistoryItem {
     id: string;
@@ -120,7 +117,6 @@
       activeHistoryId?: string;
       historyLoading?: boolean;
       historyNoMore?: boolean;
-      modelName?: string;
       mcpOptions?: AiChatMcp[];
       placeholder?: string;
     }>(),
@@ -129,7 +125,6 @@
       activeHistoryId: '',
       historyLoading: false,
       historyNoMore: true,
-      modelName: '',
       mcpOptions: () => [],
       placeholder: '',
     }
@@ -143,6 +138,7 @@
     (e: 'historyClick', id: string): void;
     (e: 'historyDelete', id: string): void;
     (e: 'historyRename', id: string, title: string): void;
+    (e: 'importMcp'): void;
   }>();
 
   const keyword = ref('');
@@ -259,9 +255,7 @@
     }
   }
 
-  const innerRuntime = createAiChatRuntime({
-    initialModelName: props.modelName,
-  });
+  const innerRuntime = createAiChatRuntime();
   const runtime = computed(() => props.runtime ?? innerRuntime);
 
   watch(keyword, (value) => {

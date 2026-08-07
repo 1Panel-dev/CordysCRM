@@ -25,7 +25,7 @@
         class="flex flex-col gap-[8px]"
       >
         <label
-          v-for="option in item.options"
+          v-for="option in getItemOptions(item)"
           :key="option.label"
           class="flex cursor-pointer gap-[8px] rounded-[4px] border border-[var(--text-n8)] bg-[var(--text-n10)] p-[8px]"
           :class="{ '!border-[var(--primary-8)] !bg-[var(--primary-7)]': singleValues[itemIndex] === option.label }"
@@ -42,7 +42,7 @@
 
       <n-checkbox-group v-else v-model:value="multipleValues[itemIndex]" class="flex flex-col gap-[8px]">
         <label
-          v-for="option in item.options"
+          v-for="option in getItemOptions(item)"
           :key="option.label"
           class="flex cursor-pointer gap-[8px] rounded-[4px] border border-[var(--text-n8)] bg-[var(--text-n10)] p-[8px]"
           :class="{
@@ -66,12 +66,11 @@
   import { computed, ref, watch } from 'vue';
   import { NAlert, NCheckbox, NCheckboxGroup, NRadio, NRadioGroup } from 'naive-ui';
 
+  import { useAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { AgentChatConfirmData, AgentChatConfirmItem } from '@lib/shared/models/ai';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-
-  import { useAiChatRuntime } from '../runtime/useAiChatRuntime';
 
   const props = defineProps<{
     confirm: AgentChatConfirmData;
@@ -94,6 +93,10 @@
     return item.selectionType === 'MULTIPLE';
   }
 
+  function getItemOptions(item: AgentChatConfirmItem) {
+    return item.options ?? [];
+  }
+
   function getSelectedLabels(item: AgentChatConfirmItem, itemIndex: number): string[] {
     if (isMultipleItem(item)) {
       return multipleValues.value[itemIndex] ?? [];
@@ -107,7 +110,9 @@
   const canConfirm = computed(
     () =>
       confirmItems.value.length > 0 &&
-      confirmItems.value.every((item, index) => item.options.length === 0 || getSelectedLabels(item, index).length > 0)
+      confirmItems.value.every(
+        (item, index) => getItemOptions(item).length === 0 || getSelectedLabels(item, index).length > 0
+      )
   );
 
   function appendButtonLabelToLastAnswer(answers: Record<string, string>, buttonLabel: string): Record<string, string> {
@@ -147,7 +152,7 @@
     const answers = confirmItems.value.reduce<Record<string, string>>((result, item, itemIndex) => {
       const selectedLabels = getSelectedLabels(item, itemIndex);
 
-      if (item.prompt && selectedLabels.length > 0) {
+      if (item.prompt && (getItemOptions(item).length === 0 || selectedLabels.length > 0)) {
         result[item.prompt] = selectedLabels.join(', ');
       }
 
@@ -185,7 +190,9 @@
       submitting.value = false;
       closeHandled.value = false;
       showModal.value = true;
-      singleValues.value = confirmItems.value.map((item) => (isMultipleItem(item) ? '' : item.options[0]?.label ?? ''));
+      singleValues.value = confirmItems.value.map((item) =>
+        isMultipleItem(item) ? '' : getItemOptions(item)[0]?.label ?? ''
+      );
       multipleValues.value = confirmItems.value.map(() => []);
     },
     { immediate: true }

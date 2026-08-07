@@ -42,14 +42,13 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
   const input = ref(options.initialInput ?? '');
   const attachments = ref<AiChatAttachment[]>([...(options.initialAttachments ?? [])]);
   const selectedMcps = ref([...(options.initialSelectedMcps ?? [])]);
-  const modelName = ref(options.initialModelName ?? '');
   const transport = shallowRef<ChatTransport<AiChatMessage> | undefined>(options.transport);
   const currentConfirm = ref<AgentChatConfirmData>();
   const editingMessageId = ref('');
   const editingContent = ref('');
 
   // Chat 负责消息追加、流式合并、停止、重试和编辑后的重新请求。
-  // Runtime 只补充 CRM 需要的输入草稿、附件、模型和 MCP 状态。
+  // Runtime 只补充 CRM 需要的输入草稿、附件和 MCP 状态。
   const chat = shallowRef(
     new Chat<AiChatMessage>({
       id: options.id,
@@ -97,10 +96,6 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
 
   function setSelectedMcps(value: typeof selectedMcps.value): void {
     selectedMcps.value = value;
-  }
-
-  function setModelName(value: string): void {
-    modelName.value = value;
   }
 
   function removeAttachment(attachmentId: string): void {
@@ -170,6 +165,7 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     // 发送后立即清空输入草稿，消息列表由 AI SDK Chat 自己追加 user message。
     input.value = '';
     attachments.value = [];
+    selectedMcps.value = [];
     currentConfirm.value = undefined;
 
     await chat.value.sendMessage(
@@ -209,7 +205,7 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     await chat.value.regenerate({ messageId });
   }
 
-  async function edit(messageId: string, content: string): Promise<void> {
+  async function edit(messageId: string, content: string, options: AiChatSubmitPayload['options'] = {}): Promise<void> {
     if (loading.value) {
       return;
     }
@@ -220,7 +216,10 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
       return;
     }
 
-    const { metadata } = targetMessage;
+    const metadata: AiChatMeta = {
+      ...targetMessage.metadata,
+      mcps: options.mcps ?? targetMessage.metadata?.mcps,
+    };
 
     await chat.value.sendMessage(
       {
@@ -264,7 +263,6 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
       input,
       attachments,
       selectedMcps,
-      modelName,
       status,
       loading,
       streaming,
@@ -282,7 +280,6 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     setInput,
     setAttachments,
     setSelectedMcps,
-    setModelName,
     removeAttachment,
     submit,
     stop,

@@ -50,11 +50,11 @@
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
   import { NAvatar, NButton, NEmpty, NScrollbar, ScrollbarInst } from 'naive-ui';
 
+  import { useAiChatRuntime } from '@lib/shared/ai-chat';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import AiLoadingBlock from '../blocks/AiLoadingBlock.vue';
   import AiMessage from './AiMessage.vue';
-
-  import { useAiChatRuntime } from '../runtime/useAiChatRuntime';
 
   const props = withDefaults(
     defineProps<{

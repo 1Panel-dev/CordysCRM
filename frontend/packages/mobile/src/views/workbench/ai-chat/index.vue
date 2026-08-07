@@ -66,7 +66,6 @@
   const router = useRouter();
   const route = useRoute();
 
-  const currentModelName = 'CORDYS AI'; // TODO lmy 从后端获取name
   const showHistory = ref(false);
   const {
     runtime,
@@ -84,7 +83,6 @@
     renameHistoryConversation,
     clear,
   } = useAgentChatWorkbench({
-    modelName: currentModelName,
     historyPageSize: 20,
     apis: {
       streamAgentChat,
