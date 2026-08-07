@@ -76,7 +76,7 @@
   const value = defineModel<string | number | (string | number)[]>('value', {
     default: [],
   });
-  const selectedUsers = ref<SelectedUsersItem[]>(cloneDeep(props.fieldConfig.initialOptions) || []);
+  const selectedUsers = ref<SelectedUsersItem[]>([]);
   const memberTypes = computed(() => {
     if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)) {
       return [
@@ -126,7 +126,9 @@
   watch(
     () => props.fieldConfig.initialOptions,
     (val) => {
-      initOption(val);
+      if (!props.needInitDetail) {
+        initOption(val);
+      }
     }
   );
 
@@ -161,6 +163,12 @@
         initOption(props.fieldConfig.initialOptions);
       });
       emit('change', value.value);
+    } else if (Array.isArray(value.value) && value.value.length) {
+      initOption(props.fieldConfig.initialOptions);
+    } else if (value.value) {
+      initOption(
+        props.fieldConfig.initialOptions?.filter((item) => (item as SelectedUsersItem).id === value.value) || []
+      );
     }
   });
 </script>
