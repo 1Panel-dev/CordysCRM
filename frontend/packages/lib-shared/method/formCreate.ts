@@ -592,12 +592,10 @@ export function transformFieldValue(item: FormCreateField, result: Record<string
   ) {
     // 处理数据源字段，单选传单个值
     result[key] = result[key]?.[0];
-  }
-  if (item.type === FieldTypeEnum.PHONE) {
+  } else if (item.type === FieldTypeEnum.PHONE) {
     // 去空格
     result[key] = result[key]?.replace(/[\s\uFEFF\xA0]+/g, '');
-  }
-  if ([FieldTypeEnum.SELECT, FieldTypeEnum.RADIO].includes(item.type)) {
+  } else if ([FieldTypeEnum.SELECT, FieldTypeEnum.RADIO].includes(item.type)) {
     // 处理单选/下拉选择字段，传value值
     const currentOption = item.options?.find((e) => e.value === result[key]);
     if (currentOption) {
@@ -605,8 +603,7 @@ export function transformFieldValue(item: FormCreateField, result: Record<string
     } else {
       result[key] = '';
     }
-  }
-  if ([FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.CHECKBOX].includes(item.type)) {
+  } else if ([FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.CHECKBOX].includes(item.type)) {
     // 处理多选/复选字段，传value数组
     const currentOptions = item.options?.filter((e) => result[key]?.includes(e.value));
     if (currentOptions) {
@@ -614,5 +611,8 @@ export function transformFieldValue(item: FormCreateField, result: Record<string
     } else {
       result[key] = [];
     }
+  } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+    // 数字字段需要重置一下小数位，确保每次保存按照最新配置的小数位保存
+    result[key] = Number(Number(result[key]).toFixed(item.precision));
   }
 }

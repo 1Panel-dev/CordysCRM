@@ -47,6 +47,7 @@
     :custom-form-id="props.sourceType"
     @saved="handleFormCreateSave"
   />
+  <businessTitleDrawer v-model:visible="businessNameDrawerVisible" sourceId="" @load="() => searchData()" />
 </template>
 
 <script setup lang="ts">
@@ -76,6 +77,7 @@
   import CrmBusinessNamePrefix from '@/components/business/crm-business-name-prefix/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import businessTitleDrawer from '@/views/contract/businessTitle/components/businessTitleDrawer.vue';
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
 
   import { getFieldCustomFormList, getOpportunityStageConfig, getOrderStatusConfig } from '@/api/modules';
@@ -636,12 +638,17 @@
   }
 
   const formCreateVisible = ref(false);
+  const businessNameDrawerVisible = ref(false);
   const realFormKey = computed(() =>
     isCustomForm.value
       ? FormDesignKeyEnum.CUSTOM_FORM
       : fullFormSettingList.find((e) => e.dataSource === props.sourceType)?.formKey
   );
   function handleNewCreate() {
+    if (props.sourceType === FieldDataSourceTypeEnum.BUSINESS_TITLE) {
+      businessNameDrawerVisible.value = true;
+      return;
+    }
     formCreateVisible.value = true;
   }
 

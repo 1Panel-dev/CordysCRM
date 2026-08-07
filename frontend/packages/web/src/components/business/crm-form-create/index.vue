@@ -664,14 +664,15 @@
         result[index][item.businessKey || item.id] = result[index].price_sub
           ? fieldValue?.filter((e) => e !== result[index].price_sub)[0] // 价格表子表格特殊处理，price_sub是行号，这里不填充到fieldValue中
           : fieldValue?.[0];
-      }
-      if (item.type === FieldTypeEnum.PHONE) {
+      } else if (item.type === FieldTypeEnum.PHONE) {
         // 去空格
         result[index][item.businessKey || item.id] = fieldValue?.replace(/[\s\uFEFF\xA0]+/g, '');
-      }
-      if (item.type === FieldTypeEnum.DATE_TIME && typeof fieldValue === 'string') {
+      } else if (item.type === FieldTypeEnum.DATE_TIME && typeof fieldValue === 'string') {
         // 去空格
         result[index][item.businessKey || item.id] = dayjs(fieldValue).valueOf();
+      } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+        // 数字字段需要重置一下小数位，确保每次保存按照最新配置的小数位保存
+        result[index][item.businessKey || item.id] = Number(Number(fieldValue).toFixed(item.precision));
       }
     });
   }
