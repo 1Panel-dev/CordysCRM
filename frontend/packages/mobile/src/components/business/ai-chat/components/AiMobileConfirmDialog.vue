@@ -14,7 +14,13 @@
 
         <van-checkbox-group v-if="isMultipleItem(item)" v-model="multipleValues[itemIndex]">
           <van-cell-group :border="false">
-            <van-cell v-for="option in item.options" :key="option.label" clickable :border="false" class="!px-0">
+            <van-cell
+              v-for="option in getItemOptions(item)"
+              :key="option.label"
+              clickable
+              :border="false"
+              class="!px-0"
+            >
               <van-checkbox :name="option.label" class="ai-mobile-confirm__option">
                 <div class="flex flex-col gap-[2px] text-left">
                   <span>{{ option.label }}</span>
@@ -29,7 +35,13 @@
 
         <van-radio-group v-else v-model="singleValues[itemIndex]">
           <van-cell-group :border="false">
-            <van-cell v-for="option in item.options" :key="option.label" clickable :border="false" class="!px-0">
+            <van-cell
+              v-for="option in getItemOptions(item)"
+              :key="option.label"
+              clickable
+              :border="false"
+              class="!px-0"
+            >
               <van-radio :name="option.label" class="ai-mobile-confirm__option">
                 <div class="flex flex-col gap-[2px] text-left">
                   <span>{{ option.label }}</span>
@@ -70,6 +82,10 @@
 
   function isMultipleItem(item: AgentChatConfirmItem): boolean {
     return item.selectionType === 'MULTIPLE';
+  }
+
+  function getItemOptions(item: AgentChatConfirmItem) {
+    return item.options ?? [];
   }
 
   function getSelectedLabels(item: AgentChatConfirmItem, itemIndex: number): string[] {
@@ -136,7 +152,9 @@
     () => props.confirm,
     () => {
       showDialog.value = true;
-      singleValues.value = confirmItems.value.map((item) => (isMultipleItem(item) ? '' : item.options[0]?.label ?? ''));
+      singleValues.value = confirmItems.value.map((item) =>
+        isMultipleItem(item) ? '' : getItemOptions(item)[0]?.label ?? ''
+      );
       multipleValues.value = confirmItems.value.map(() => []);
     },
     { immediate: true }
