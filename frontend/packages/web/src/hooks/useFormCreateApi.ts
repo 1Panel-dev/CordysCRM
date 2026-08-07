@@ -1462,7 +1462,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         item.defaultValue = undefined;
       }
       const defaultValue = initFormCreateFieldDefaultValue(item);
-      if (!formDetail.value[item.id]) {
+      if (['', null, undefined].includes(formDetail.value[item.id])) {
         formDetail.value[item.id] = defaultValue;
       }
       replaceRule(item);
