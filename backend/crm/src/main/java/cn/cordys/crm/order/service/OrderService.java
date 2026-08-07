@@ -27,6 +27,7 @@ import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.CommonBeanFactory;
@@ -64,6 +65,7 @@ import cn.cordys.crm.system.constants.CirculationTypeEnum;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.SheetKey;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
+import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
@@ -152,6 +154,8 @@ public class OrderService implements ApprovalResourceHandler {
     private BaseMapper<OrderFieldBlob> orderFieldBlobMapper;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private SerialNumGenerator serialNumGenerator;
 
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     public static final Long DEFAULT_POS = 1L;
@@ -1210,8 +1214,13 @@ public class OrderService implements ApprovalResourceHandler {
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                     case ADD -> {
+                        Optional<BaseField> serialOptional = fields.stream().filter(field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.ORDER_NO.getKey())).findAny();
                         for (int i = 0; i < orders.size(); i++) {
                             Order order = orders.get(i);
+                            if (serialOptional.isPresent()) {
+                                List<String> serialNumberRules = ((SerialNumberField) serialOptional.get()).getSerialNumberRules();
+                                order.setNumber(serialNumGenerator.generateByRules(serialNumberRules, currentOrg, FormKey.ORDER.getKey()));
+                            }
                             order.setStage(stageConfigList.getFirst().getId());
                             order.setApprovalStatus(ApprovalStatus.NONE.name());
                             order.setPos(nextPos + i);
