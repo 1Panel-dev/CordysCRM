@@ -19,11 +19,11 @@ ALTER TABLE custom_form_data_field_blob ADD COLUMN row_id VARCHAR(32) NULL COMME
 ALTER TABLE custom_form_data_field_blob ADD COLUMN biz_id VARCHAR(32) NULL COMMENT '唯一业务行ID';
 
 -- add unique index
-CREATE UNIQUE INDEX uk_contract_invoice_field_cell ON contract_field (resource_id, row_id, field_id);
-CREATE UNIQUE INDEX uk_contract_invoice_field_blob_cell ON contract_field_blob (resource_id, row_id, field_id);
+CREATE INDEX idx_contract_invoice_field_cell ON contract_field (resource_id, row_id, field_id);
+CREATE INDEX idx_contract_invoice_field_blob_cell ON contract_field_blob (resource_id, row_id, field_id);
 
-CREATE UNIQUE INDEX uk_custom_form_data_field_cell ON custom_form_data_field (resource_id, row_id, field_id);
-CREATE UNIQUE INDEX uk_custom_form_data_field_blob_cell ON custom_form_data_field_blob (resource_id, row_id, field_id);
+CREATE INDEX idx_custom_form_data_field_cell ON custom_form_data_field (resource_id, row_id, field_id);
+CREATE INDEX idx_custom_form_data_field_blob_cell ON custom_form_data_field_blob (resource_id, row_id, field_id);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
