@@ -29,6 +29,17 @@ CREATE INDEX idx_provider ON agent_model (provider ASC);
 CREATE INDEX idx_org_id ON agent_model (organization_id ASC);
 CREATE INDEX idx_enable ON agent_model (enable ASC);
 
+CREATE TABLE agent_model_strategy(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `chat_models` VARCHAR(1000)    COMMENT '对话或通用模型' ,
+    `task_models` VARCHAR(1000)    COMMENT '任务模型' ,
+    `fallback` TINYINT(1) NOT NULL   COMMENT '是否自动降级' ,
+    PRIMARY KEY (id)
+)  COMMENT = '模型策略'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
 CREATE TABLE agent_task
 (
     `id`                  VARCHAR(32)  NOT NULL COMMENT 'ID',
@@ -209,6 +220,7 @@ CREATE TABLE agent_model_usage(
     `failure_count` BIGINT    COMMENT '失败次数' ,
     `total_latency_ms` BIGINT    COMMENT '总延迟毫秒' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     PRIMARY KEY (id)
 )  COMMENT = '模型用量'
     ENGINE = InnoDB
@@ -228,7 +240,6 @@ CREATE TABLE agent_trace(
     `call_time` BIGINT NOT NULL   COMMENT '执行时间' ,
     `call_ip` VARCHAR(50)    COMMENT '执行IP' ,
     `run_id` VARCHAR(32) NOT NULL   COMMENT '执行ID' ,
-    `prompt` VARCHAR(5000) NOT NULL   COMMENT '原始输入' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
     PRIMARY KEY (id)
 )  COMMENT = 'AI执行日志'
@@ -242,7 +253,8 @@ CREATE INDEX idx_run_id ON agent_trace(run_id ASC);
 
 CREATE TABLE agent_trace_event(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `trace` BLOB(255)    COMMENT '响应内容' ,
+    `prompt` BLOB    COMMENT '原始输入' ,
+    `trace` BLOB    COMMENT '响应内容' ,
     PRIMARY KEY (id)
 )  COMMENT = 'AI执行日志详情表'
     ENGINE = InnoDB
