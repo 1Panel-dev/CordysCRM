@@ -108,7 +108,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                     }
                     this.fieldMap.put(subField.getName() + "_" + f.getName(), f);
                     refSubMap.put(subField.getName() + "_" + f.getName(), subField.getId());
-                    setCheckLimit(f, f.getName());
+                    setCheckLimit(f, subField.getName());
                 }
                 continue;
             }
