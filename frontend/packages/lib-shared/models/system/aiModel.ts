@@ -37,8 +37,8 @@ export interface AiModelOption {
 }
 
 export interface AiModelRouteStrategy {
-  defaultModelId?: string;
-  insightModelId?: string;
-  classifyModelId?: string;
-  autoFallback: boolean;
+  id?: string;
+  chatModels: string[];
+  taskModels: string[];
+  fallback: boolean;
 }
