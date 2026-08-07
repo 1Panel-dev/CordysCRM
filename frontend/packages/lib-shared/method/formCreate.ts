@@ -38,6 +38,9 @@ export const specialBusinessKeyMap: Record<string, string> = {
   paymentPlanId: 'paymentPlanName',
   businessTitleId: 'businessTitleName',
 };
+export const systemFieldKeyMap: Record<string, string> = {
+  stage: 'stageName',
+};
 
 export function getRuleType(item: FormCreateField) {
   if (

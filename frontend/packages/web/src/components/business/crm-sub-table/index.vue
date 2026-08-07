@@ -20,6 +20,7 @@
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import type { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { SpecialColumnEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatTimeValue, getCityPath, getGenerateId, getIndustryPath } from '@lib/shared/method';
@@ -30,6 +31,7 @@
     mergeUniqueOptions,
     normalizeNumber,
     specialBusinessKeyMap,
+    systemFieldKeyMap,
   } from '@lib/shared/method/formCreate';
   import { isNotEmpty } from '@lib/shared/method/is';
 
@@ -44,6 +46,7 @@
   import select from '@/components/business/crm-form-create/components/basic/select.vue';
   import singleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
 
+  import { processStatusMap } from '@/config/process';
   import useUserStore from '@/store/modules/user';
 
   import { FormCreateField } from '../crm-form-create/types';
@@ -307,10 +310,17 @@
       showFields.forEach((sf) => {
         let fieldVal: string | string[] = '';
         if (targetSource) {
-          const sourceFieldVal =
-            sf.businessKey && specialBusinessKeyMap[sf.businessKey]
-              ? targetSource[specialBusinessKeyMap[sf.businessKey]]
-              : targetSource[sf.businessKey || getFieldItemId(sf)];
+          let sourceFieldVal = '';
+          if (getFieldItemId(sf) === 'approvalStatus') {
+            sourceFieldVal = processStatusMap[targetSource[getFieldItemId(sf)] as ProcessStatusEnum].label;
+          } else if (systemFieldKeyMap[getFieldItemId(sf)]) {
+            sourceFieldVal = targetSource[systemFieldKeyMap[getFieldItemId(sf)]];
+          } else {
+            sourceFieldVal =
+              sf.businessKey && specialBusinessKeyMap[sf.businessKey]
+                ? targetSource[specialBusinessKeyMap[sf.businessKey]]
+                : targetSource[sf.businessKey || getFieldItemId(sf)];
+          }
           if (sf.subTableFieldId) {
             // 如果数据源显示字段是数据源的子表格字段，则需要 rowId 定位数据源子表格的行
             const subTableData = targetSource[sf.subTableFieldId];
