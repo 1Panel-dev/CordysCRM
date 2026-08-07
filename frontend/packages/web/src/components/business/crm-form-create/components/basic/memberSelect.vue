@@ -126,9 +126,7 @@
   watch(
     () => props.fieldConfig.initialOptions,
     (val) => {
-      if (!props.needInitDetail) {
-        initOption(val);
-      }
+      initOption(val);
     }
   );
 
