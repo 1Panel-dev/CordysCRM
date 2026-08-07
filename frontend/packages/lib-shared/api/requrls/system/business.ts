@@ -56,8 +56,8 @@ export const AddAiModelUrl = '/agent-model/add'; // 模型设置-添加模型
 export const UpdateAiModelUrl = '/agent-model/update'; // 模型设置-更新模型
 export const DeleteAiModelUrl = '/agent-model/delete'; // 模型设置-删除模型
 export const UpdateAiModelStatusUrl = '/agent-model/switch'; // 模型设置-更新模型状态
-export const GetAiModelRouteStrategyUrl = '/organization/settings/model/route-strategy'; // 模型设置-获取路由策略 TODO lmy
-export const UpdateAiModelRouteStrategyUrl = '/organization/settings/model/route-strategy/update'; // 模型设置-更新路由策略
+export const GetAiModelRouteStrategyUrl = '/agent-model-strategy/get'; // 模型设置-获取路由策略
+export const UpdateAiModelRouteStrategyUrl = '/agent-model-strategy/config'; // 模型设置-更新路由策略
 
 // 全局任务
 export const AddAgentTaskUrl = '/agent-task/add'; // 全局任务-添加任务
