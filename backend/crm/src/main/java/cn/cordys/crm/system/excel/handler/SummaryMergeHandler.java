@@ -85,12 +85,10 @@ public class SummaryMergeHandler {
 						}
 					}
 				}
-				// 将汇总值写入合并后的单元格, 空值不展示
-				if (total.compareTo(BigDecimal.ZERO) != 0) {
-					Cell sumCell = sheet.getRow(start).getCell(colIndex);
-					sumCell.setCellValue(InputNumberField.formatNumber(total, decimalPlaces, showThousandsSeparator, hasPercent));
-					sumCell.setCellStyle(summaryStyle);
-				}
+
+				Cell sumCell = sheet.getRow(start).getCell(colIndex);
+				sumCell.setCellValue(InputNumberField.formatNumber(total, decimalPlaces, showThousandsSeparator, hasPercent));
+				sumCell.setCellStyle(summaryStyle);
 
 				// 只保留第一行, 清空其他行汇总列的单元格值 (不同值合并展示有误)
 				for (int r = start + 1; r <= end; r++) {
@@ -103,6 +101,9 @@ public class SummaryMergeHandler {
 		for (int[] region : mergeRegions) {
 			int start = region[0] + offset;
 			int end = region[1] + offset;
+			if(start >= end) {
+				continue; // 如果起始行和结束行相同，则不需要合并
+			}
 			for (Integer colIndex : mergeColumns) {
 				sheet.addMergedRegionUnsafe(new CellRangeAddress(start, end, colIndex, colIndex));
 			}
