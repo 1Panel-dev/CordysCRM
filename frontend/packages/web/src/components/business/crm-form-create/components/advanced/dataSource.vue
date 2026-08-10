@@ -100,9 +100,11 @@
         multipleValue: multipleValueTypeList.includes(item.leftFieldType),
       }))
       .filter(
-        (e) => e.operator === OperatorEnum.EMPTY || (e.value !== undefined && e.value !== null && e.value !== '')
+        (e) =>
+          e.operator === OperatorEnum.EMPTY ||
+          e.operator === OperatorEnum.NOT_EMPTY ||
+          (e.value !== undefined && e.value !== null && e.value !== '')
       );
-
     return {
       searchMode: props.fieldConfig.combineSearch?.searchMode,
       conditions,
