@@ -357,7 +357,7 @@ public class OpportunityService {
         }, () -> {
             throw new GenericException("opportunity_not_found");
         });
-        return oldOpportunity;
+        return opportunityMapper.selectByPrimaryKey(request.getId());
     }
 
 
