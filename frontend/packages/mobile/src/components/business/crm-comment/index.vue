@@ -392,7 +392,7 @@
     @apply flex min-h-0 flex-1 flex-col overflow-hidden;
   }
   .crm-comment-list-toggle {
-    @apply relative flex items-center;
+    @apply relative flex w-full items-center;
 
     margin: 8px 0 0;
     padding: 0 0 12px 56px;
