@@ -26,7 +26,7 @@
         @select-item="(meta) => selectItem(meta, systemList)"
       />
       <FieldSection
-        v-if="subTableList.length"
+        v-if="subTableList.length && formKey === FormDesignKeyEnum.PRICE"
         v-model:selected-ids="selectedSubTableIds"
         :items="subTableList"
         class="px-0 pt-0"
