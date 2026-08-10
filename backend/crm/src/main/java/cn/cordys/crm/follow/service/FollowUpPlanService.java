@@ -136,7 +136,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         }, () -> {
             throw new GenericException(Translator.get("plan_not_found"));
         });
-        return followUpPlan;
+        return followUpPlanMapper.selectByPrimaryKey(request.getId());
     }
 
     private void updateModuleField(FollowUpPlan followUpPlan, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {

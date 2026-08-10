@@ -168,7 +168,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
             throw new GenericException("record_not_found");
         });
 
-        return followUpRecord;
+        return followUpRecordMapper.selectByPrimaryKey(request.getId());
     }
 
     private void updateModuleField(FollowUpRecord updateFollowUpRecord, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
