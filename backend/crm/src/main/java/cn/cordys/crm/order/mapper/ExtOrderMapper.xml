@@ -553,7 +553,7 @@
     </update>
 
     <update id="updateOrder">
-        update contract
+        update sales_order
         <set>
             <if test="order.name != null and order.name != ''">
                 name = #{order.name},
@@ -570,15 +570,15 @@
             <if test="order.amount != null">
                 amount = #{order.amount},
             </if>
-            <if test="contract.updateTime != null">
-                update_time = #{contract.updateTime},
+            <if test="order.updateTime != null">
+                update_time = #{order.updateTime},
             </if>
-            <if test="contract.updateUser != null and contract.updateUser != ''">
-                update_user = #{contract.updateUser},
+            <if test="order.updateUser != null and order.updateUser != ''">
+                update_user = #{order.updateUser},
             </if>
         </set>
         <where>
-            id = #{contract.id}
+            id = #{order.id}
         </where>
     </update>
 </mapper>
