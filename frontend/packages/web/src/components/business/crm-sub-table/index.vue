@@ -428,6 +428,8 @@
       );
       if (children.length === 0 && val.length > 0) {
         Message.warning(t('crm.subTable.repeatAdd'));
+        row[key] = [];
+        row.price_sub = '';
         isProcessingDataSourceChange.value = false;
         isProcessingDataSourceChangeMap.value[cellId] = false;
         return;
