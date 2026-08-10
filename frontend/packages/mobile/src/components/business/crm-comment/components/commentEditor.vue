@@ -8,8 +8,6 @@
       :maxlength="props.maxlength"
       :placeholder="placeholder"
       :disabled="props.disabled"
-      @focus="emit('focus')"
-      @blur="emit('blur')"
       @keyup.enter="handleSubmit"
     />
 
@@ -62,8 +60,6 @@
   const emit = defineEmits<{
     (e: 'submit', value: FollowCommentSubmitValue): void;
     (e: 'cancel'): void;
-    (e: 'focus'): void;
-    (e: 'blur'): void;
   }>();
 
   const { t } = useI18n();

@@ -64,21 +64,16 @@
         </template>
       </CrmList>
     </div>
-    <Teleport to="body">
+    <div v-if="activeEditor" class="crm-comment-editor-wrapper">
       <CommentEditor
-        v-if="activeEditor"
         v-model:value="editorContent"
-        class="crm-comment-fixed-editor"
         :mode="activeEditor.action"
         :reply-user-name="fixedEditorReplyUserName"
         :loading="submitLoading"
-        :style="editorPositionStyle"
-        @focus="handleEditorFocus"
-        @blur="handleEditorBlur"
         @submit="handleSubmit"
         @cancel="closeEditor"
       />
-    </Teleport>
+    </div>
   </div>
 </template>
 
@@ -132,8 +127,6 @@
   const localCommentCount = ref(props.count || 0);
   const expandedCommentIds = ref<string[]>([]);
   const acceptEmptyCommentList = ref(false);
-  const keyboardOffset = ref(0);
-  let editorFocused = false;
 
   const { submitLoading, loadCommentList, createComment, replyComment, editComment, deleteComment } =
     useCommentResource({
@@ -180,19 +173,7 @@
     return findCommentById(activeEditor.value.commentId)?.createUserName || '';
   });
 
-  const editorPositionStyle = computed(() => ({
-    bottom: keyboardOffset.value ? `${keyboardOffset.value}px` : 'env(safe-area-inset-bottom)',
-  }));
-
-  function resetKeyboardOffset() {
-    editorFocused = false;
-    keyboardOffset.value = 0;
-  }
-
   function setActiveEditor(editor: FollowCommentActiveEditor | null, content = '') {
-    if (!editor) {
-      resetKeyboardOffset();
-    }
     activeEditor.value = editor;
     editorContent.value = content;
     emit('changeEditor', editor);
@@ -223,26 +204,6 @@
 
   function closeEditor() {
     setActiveEditor(null);
-  }
-
-  function updateKeyboardOffset() {
-    if (!editorFocused || !window.visualViewport) {
-      return;
-    }
-
-    const viewport = window.visualViewport;
-    const keyboardHeight = Math.max(window.innerHeight - viewport.height - viewport.offsetTop, 0);
-    // 小于键盘高度阈值的变化通常是浏览器地址栏，不抬升评论输入框。
-    keyboardOffset.value = keyboardHeight > 80 ? keyboardHeight : 0;
-  }
-
-  function handleEditorFocus() {
-    editorFocused = true;
-    updateKeyboardOffset();
-  }
-
-  function handleEditorBlur() {
-    resetKeyboardOffset();
   }
 
   async function reloadComments() {
@@ -371,27 +332,16 @@
       expandedCommentIds.value = [];
     }
   );
-
-  onMounted(() => {
-    window.visualViewport?.addEventListener('resize', updateKeyboardOffset);
-  });
-
-  onBeforeUnmount(() => {
-    window.visualViewport?.removeEventListener('resize', updateKeyboardOffset);
-  });
 </script>
 
 <style scoped lang="less">
-  .crm-comment-body {
-    background: var(--text-n10);
-  }
-  .crm-comment--standalone,
-  .crm-comment--detail {
+  .crm-comment {
     @apply flex min-h-0 flex-col overflow-hidden;
   }
-  .crm-comment--standalone .crm-comment-body,
-  .crm-comment--detail .crm-comment-body {
+  .crm-comment-body {
     @apply flex min-h-0 flex-1 flex-col overflow-hidden;
+
+    background: var(--text-n10);
   }
   .crm-comment-list-toggle {
     @apply relative flex w-full items-center;
@@ -414,15 +364,9 @@
     transform: scaleY(0.5);
     transform-origin: 0 0;
   }
-  .crm-comment-body--editing {
-    padding-bottom: 64px;
-  }
-  .crm-comment-fixed-editor {
-    position: fixed;
-    right: 0;
-    bottom: env(safe-area-inset-bottom);
-    left: 0;
-    z-index: 100;
+  .crm-comment-editor-wrapper {
+    @apply flex-none;
+
     padding: 0 16px;
     background: var(--text-n10);
     box-shadow: 0 -1px 6px rgb(0 0 0 / 4%);
