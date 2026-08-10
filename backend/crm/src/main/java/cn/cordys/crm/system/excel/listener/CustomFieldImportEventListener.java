@@ -216,9 +216,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                     if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
                         BaseResourceSubField baseResourceSubField = new BaseResourceSubField();
                         if (field.isBlob()) {
-                            baseResourceSubField = commonMapper.getResourceField(fieldTableBlob, id.get().toString(), field.idOrBusinessKey(), maxHeadRow > 1 ? subRowId : null);
+                            baseResourceSubField = commonMapper.getResourceField(fieldTableBlob, id.get().toString(), field.idOrBusinessKey(), (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null);
                         } else {
-                            baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey(), maxHeadRow > 1 ? subRowId : null);
+                            baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey(), (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null);
                         }
                         if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
                             resourceField.setId(baseResourceSubField.getId());
