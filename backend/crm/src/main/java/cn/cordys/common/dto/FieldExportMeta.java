@@ -6,22 +6,25 @@ import lombok.Data;
 
 /**
  * 导出字段元数据 (预处理)
+ *
  * @author song-cc-rock
  */
 @Data
 public class FieldExportMeta {
 
-	private String head;
+    private String head;
 
-	private BaseField field;
+    private BaseField field;
 
-	private AbstractModuleFieldResolver<?> resolver;
+    private AbstractModuleFieldResolver<?> resolver;
 
-	private boolean noResource;
+    private boolean noResource;
 
-	private String fieldId;
+    private String fieldId;
 
-	private String businessKey;
+    private String businessKey;
 
-	private String prefixId;
+    private String prefixId;
+
+    private boolean summary = false;
 }

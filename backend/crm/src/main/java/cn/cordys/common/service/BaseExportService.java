@@ -16,6 +16,7 @@ import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.DepartmentField;
@@ -376,6 +377,10 @@ public abstract class BaseExportService {
                 value = subRowMap.get(fieldId);
             }
 
+            if (Strings.CI.equals(field.getType(), FieldType.INPUT_NUMBER.name()) && value == null && meta.isSummary()) {
+                value = 0;
+            }
+
             String internalKey = field.getInternalKey();
             if (StringUtils.isNotBlank(internalKey)) {
                 dataList.add(value == null ? null : transformFieldValue(meta.getResolver(), field, value, null));
@@ -622,9 +627,7 @@ public abstract class BaseExportService {
             int offset = 0;
             for (Pair<Integer, List<List<Object>>> r : results) {
                 List<List<Object>> buildData = r.getRight();
-                if (buildData.size() > 1) {
-                    mergeRegions.add(new int[]{offset, offset + buildData.size() - 1});
-                }
+                mergeRegions.add(new int[]{offset, offset + buildData.size() - 1});
                 offset += buildData.size();
                 mergeRowData.addAll(buildData);
             }
@@ -752,6 +755,7 @@ public abstract class BaseExportService {
             String realHead = head;
             // 子表格汇总字段截取
             if (head.contains(SUM_PREFIX)) {
+                meta.setSummary(true);
                 realHead = head.substring(head.indexOf(SUM_PREFIX) + SUM_PREFIX.length());
             }
             // 表头Key包含下划线, 含有子表格字段, 截取下划线前部分作为前缀ID, 用于取值区分不同子表格 (如果存在同名字段), 后半部分作为实际字段ID
