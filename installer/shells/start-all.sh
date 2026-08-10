@@ -112,6 +112,7 @@ main() {
     fi
 
     start_mcp_after_cordys &
+    start_cockpit_after_cordys &
     sh /shells/start-cordys.sh
 
     log_info "Cordys CRM 环境启动完成！"
