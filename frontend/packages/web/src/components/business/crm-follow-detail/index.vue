@@ -101,6 +101,7 @@
       @delete="handleDelete(activeItem as FollowDetailItem)"
       @edit="handleEdit(activeItem as FollowDetailItem)"
       @convert="(activeItem)=>handleConvert(activeItem as FollowDetailItem)"
+      @detail-init="handleDetailInit"
     />
     />
   </div>
@@ -195,6 +196,15 @@
       }
     },
   });
+
+  function handleDetailInit(detail?: Record<string, any>) {
+    const commentCount = detail?.commentCount;
+    if (!activeItem.value || typeof commentCount !== 'number') {
+      return;
+    }
+
+    activeItem.value.commentCount = commentCount;
+  }
 
   const needInitDetail = ref(false);
   const activePlan = ref();
