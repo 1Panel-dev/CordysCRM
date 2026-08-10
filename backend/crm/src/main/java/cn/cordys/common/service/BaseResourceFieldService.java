@@ -644,6 +644,12 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 }
             }
         }
+        if (field.getResourceFieldId() != null) {
+            String fieldKey = field.getId().replace((field.getResourceFieldId() + REF_UNDERLINE), StringUtils.EMPTY);
+            if (sourceDetailMap.containsKey(fieldKey)) {
+                return sourceDetailMap.get(fieldKey);
+            }
+        }
         return null;
     }
 
