@@ -133,6 +133,14 @@
       mentionUserIds: mentionUsers.value.map((user) => user.id),
     });
   }
+
+  function focus() {
+    fieldRef.value?.focus?.();
+  }
+
+  defineExpose({
+    focus,
+  });
 </script>
 
 <style scoped lang="less">
