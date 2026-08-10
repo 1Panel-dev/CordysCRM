@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue';
 
-import { buildSaveCommentParams, buildUpdateCommentParams } from '@lib/shared/method/comment';
+import { buildSaveCommentParams, buildUpdateCommentParams, getDeletedCommentCount } from '@lib/shared/method/comment';
 import type { CommonList } from '@lib/shared/models/common';
 import type {
   FollowCommentActionValue,
@@ -63,6 +63,7 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
   const loading = ref(false);
   const submitLoading = ref(false);
   const current = ref(1);
+  const pageTotal = ref(0);
   const hasMore = ref(true);
   const initialized = ref(false);
 
@@ -80,6 +81,7 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
   function resetComments() {
     comments.value = [];
     current.value = 1;
+    pageTotal.value = 0;
     hasMore.value = true;
     initialized.value = false;
     syncInitialCount();
@@ -101,9 +103,9 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
       });
 
       comments.value = refresh ? res.list : comments.value.concat(res.list);
-      commentCount.value = res.total;
+      pageTotal.value = res.total;
       current.value = requestCurrent + 1;
-      hasMore.value = comments.value.length < res.total;
+      hasMore.value = comments.value.length < pageTotal.value;
       initialized.value = true;
     } finally {
       loading.value = false;
@@ -131,6 +133,7 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
           value,
         })
       );
+      commentCount.value += 1;
       await loadComments(true);
     } finally {
       submitLoading.value = false;
@@ -152,6 +155,7 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
           parentComment: value.comment,
         })
       );
+      commentCount.value += 1;
       await loadComments(true);
     } finally {
       submitLoading.value = false;
@@ -177,6 +181,7 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
     submitLoading.value = true;
     try {
       await currentApi.value.delete(comment.id);
+      commentCount.value = Math.max(commentCount.value - getDeletedCommentCount(comment), 0);
       await loadComments(true);
     } finally {
       submitLoading.value = false;
@@ -208,6 +213,7 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
     loading,
     submitLoading,
     current,
+    pageTotal,
     hasMore,
     initialized,
     initComments,

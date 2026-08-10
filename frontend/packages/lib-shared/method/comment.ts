@@ -17,6 +17,10 @@ export function getLocalCommentCount(comments: FollowCommentItem[] = []) {
   return comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0);
 }
 
+export function getDeletedCommentCount(comment: FollowCommentItem) {
+  return 1 + (comment.replies?.length || 0);
+}
+
 export function buildSaveCommentParams({
   sourceId,
   value,
