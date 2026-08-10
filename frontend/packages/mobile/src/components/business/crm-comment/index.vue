@@ -66,6 +66,7 @@
     </div>
     <div v-if="activeEditor" class="crm-comment-editor-wrapper">
       <CommentEditor
+        ref="commentEditorRef"
         v-model:value="editorContent"
         :mode="activeEditor.action"
         :reply-user-name="fixedEditorReplyUserName"
@@ -124,6 +125,7 @@
   const editorContent = ref('');
   const comments = ref<FollowCommentItem[]>([]);
   const commentListRef = ref<InstanceType<typeof CrmList>>();
+  const commentEditorRef = ref<InstanceType<typeof CommentEditor>>();
   const localCommentCount = ref(props.count || 0);
   const expandedCommentIds = ref<string[]>([]);
   const acceptEmptyCommentList = ref(false);
@@ -183,6 +185,7 @@
     setActiveEditor({
       action: 'create',
     });
+    focusCommentEditor();
   }
 
   function openReplyEditor(comment: FollowCommentItem) {
@@ -190,6 +193,7 @@
       action: 'reply',
       commentId: comment.id,
     });
+    focusCommentEditor();
   }
 
   function openEditEditor(comment: FollowCommentItem) {
@@ -204,6 +208,12 @@
 
   function closeEditor() {
     setActiveEditor(null);
+  }
+
+  function focusCommentEditor() {
+    nextTick(() => {
+      commentEditorRef.value?.focus();
+    });
   }
 
   async function reloadComments() {
