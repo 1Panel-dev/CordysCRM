@@ -84,7 +84,7 @@
 
 <script setup lang="ts">
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
+  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS, getDeletedCommentCount } from '@lib/shared/method/comment';
   import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
   import type {
     FollowCommentActiveEditor,
@@ -152,7 +152,6 @@
 
   async function handleLoadCommentList(params: TableQueryParams): Promise<CommonList<FollowCommentItem>> {
     const result = await loadCommentList(params);
-    localCommentCount.value = result.total || 0;
     acceptEmptyCommentList.value = (params.current || 1) === 1 && result.list.length === 0;
     return result;
   }
@@ -308,6 +307,7 @@
     }
 
     await deleteComment(comment);
+    localCommentCount.value = Math.max(localCommentCount.value - getDeletedCommentCount(comment), 0);
     await reloadComments();
   }
 
@@ -322,6 +322,7 @@
       }
 
       await createComment(value);
+      localCommentCount.value += 1;
       await reloadComments();
       closeEditor();
       return;
@@ -334,6 +335,7 @@
       }
 
       await replyComment(value, activeComment);
+      localCommentCount.value += 1;
       await reloadComments();
       closeEditor();
       return;
