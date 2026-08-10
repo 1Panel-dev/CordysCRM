@@ -27,6 +27,7 @@
   import {
     formatNumberValue,
     formatNumberValueToString,
+    getDisplayFieldText,
     getFieldItemId,
     mergeUniqueOptions,
     normalizeNumber,
@@ -313,6 +314,8 @@
           let sourceFieldVal = '';
           if (getFieldItemId(sf) === 'approvalStatus') {
             sourceFieldVal = processStatusMap[targetSource[getFieldItemId(sf)] as ProcessStatusEnum].label;
+          } else if (getFieldItemId(sf) === 'invalid') {
+            sourceFieldVal = getDisplayFieldText(sf, targetSource.invalid);
           } else if (systemFieldKeyMap[getFieldItemId(sf)]) {
             sourceFieldVal = targetSource[systemFieldKeyMap[getFieldItemId(sf)]];
           } else {
