@@ -204,6 +204,10 @@
     }
 
     activeItem.value.commentCount = commentCount;
+    const currentItem = data.value.find((item) => item.id === activeItem.value?.id);
+    if (currentItem) {
+      currentItem.commentCount = commentCount;
+    }
   }
 
   const needInitDetail = ref(false);
