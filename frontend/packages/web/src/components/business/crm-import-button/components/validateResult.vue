@@ -98,29 +98,31 @@
       </div>
     </template>
   </CrmModal>
-  <CrmDrawer v-model:show="showMoreFailureCase" :width="680" :footer="false">
+  <CrmDrawer v-model:show="showMoreFailureCase" :width="680" :footer="false" no-padding>
     <template #header>
       <div>
         {{ t('crmImportButton.importErrorData') }}
         <span class="text-[var(--text-n4)]">（{{ validateResultInfo.failCount }}）</span>
       </div>
     </template>
-    <CrmList
-      v-model:data="validateResultInfo.errorMessages"
-      :bordered="false"
-      :item-border="false"
-      virtual-scroll-height="calc(100vh - 82px)"
-      key-field="num"
-      no-hover
-      :item-height="30"
-    >
-      <template #item="{ item }">
-        <div class="flex p-[8px]">
-          <div class="circle"></div>
-          <div class="text-[var(--color-text-2)]">{{ item.errMsg }} </div>
-        </div>
-      </template>
-    </CrmList>
+    <div class="import-error-list">
+      <CrmList
+        v-model:data="validateResultInfo.errorMessages"
+        :bordered="false"
+        :item-border="false"
+        virtual-scroll-height="100%"
+        key-field="num"
+        no-hover
+        :item-height="38"
+      >
+        <template #item="{ item }">
+          <div class="flex p-[8px]">
+            <div class="circle"></div>
+            <div class="text-[var(--color-text-2)]">{{ item.errMsg }} </div>
+          </div>
+        </template>
+      </CrmList>
+    </div>
   </CrmDrawer>
 </template>
 
@@ -245,6 +247,11 @@
     .error-detail-list {
       max-height: 400px;
     }
+  }
+  .import-error-list {
+    padding: 16px;
+    min-height: 0;
+    @apply box-border h-full;
   }
   .circle {
     width: 6px;
