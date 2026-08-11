@@ -6,6 +6,8 @@ export default {
   'aiChat.thinking': '思考过程',
   'aiChat.editRestartTip': '编辑后从此处重新开始对话，历史对话不会被删除',
   'aiChat.tokensUsed': '共消耗 {tokens}',
+  'aiChat.like': '回答有帮助',
+  'aiChat.dislike': '回答没帮助',
   'aiChat.confirmTitle': 'Agent 请求确认',
   'aiChat.confirmExecute': '确认执行',
   'aiChat.confirmCancel': '取消/拒绝',

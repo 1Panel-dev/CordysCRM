@@ -439,6 +439,8 @@ export const {
   streamAgentChat,
   cancelAgentChat,
   confirmAgentChat,
+  likeAgentChat,
+  dislikeAgentChat,
   getAgentConversationPage,
   getAgentConversationDetail,
   deleteAgentConversation,

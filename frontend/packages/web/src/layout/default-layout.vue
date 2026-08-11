@@ -14,6 +14,7 @@
     </n-layout>
   </n-layout>
   <PersonalInfoDrawer v-model:visible="showPersonalInfo" :active-tab-value="personalTab" />
+  <AiChatFloatingEntry />
 </template>
 
 <script setup lang="ts">
@@ -22,6 +23,7 @@
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
 
+  import AiChatFloatingEntry from '@/components/business/ai-chat/components/AiChatFloatingEntry.vue';
   import LayoutHeader from './components/layout-header.vue';
   import LayoutSider from './components/layout-sider.vue';
   import PageContent from './page-content.vue';

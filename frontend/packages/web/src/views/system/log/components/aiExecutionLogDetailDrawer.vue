@@ -4,7 +4,7 @@
     no-padding
     :footer="false"
     :show-mask="false"
-    :title="detail?.taskName || '-'"
+    :title="detail?.name || '-'"
     :width="680"
   >
     <div class="h-full bg-[var(--text-n9)] p-[16px]">
@@ -28,12 +28,7 @@
 
           <div class="detail-section">
             <div class="detail-section-title">{{ t('log.aiResult') }}</div>
-            <div class="detail-section-content">{{ detail?.result || '-' }}</div>
-          </div>
-
-          <div class="detail-section">
-            <div class="detail-section-title">{{ t('common.executionResult') }}</div>
-            <div class="detail-section-content text-[var(--success)]">{{ detail?.executionResult || '-' }}</div>
+            <pre class="detail-section-content">{{ detail?.trace || '-' }}</pre>
           </div>
         </div>
       </CrmCard>
@@ -42,6 +37,8 @@
 </template>
 
 <script setup lang="ts">
+  import dayjs from 'dayjs';
+
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { AiExecutionLogItem } from '@lib/shared/models/system/log';
 
@@ -59,11 +56,9 @@
     required: true,
   });
 
-  const operationTypeLabelMap = computed(() => ({
-    data_write: t('log.operationType.dataWrite'),
-    data_read: t('log.operationType.dataRead'),
-    task_execution: t('log.operationType.taskExecution'),
-    model_call: t('log.operationType.modelCall'),
+  const statusLabelMap = computed(() => ({
+    success: t('common.success'),
+    failed: t('common.fail'),
   }));
 
   const descriptions = computed<Description[]>(() => [
@@ -76,20 +71,21 @@
       value: props.detail?.operatorName || '-',
     },
     {
-      label: 'IP',
-      value: props.detail?.operatorIp || '-',
+      label: t('log.operationIp'),
+      value: props.detail?.callIp || '-',
     },
     {
-      label: t('log.usedModel'),
-      value: props.detail?.modelName || '-',
+      label: t('log.executionTime'),
+      value: props.detail?.callTime ? dayjs(props.detail.callTime).format('YYYY-MM-DD HH:mm:ss') : '-',
     },
     {
       label: t('log.tokenCost'),
-      value: props.detail?.tokenCost?.toLocaleString() || '-',
+      value: props.detail?.totalTokens?.toLocaleString() || '-',
     },
     {
-      label: t('log.operationType'),
-      value: props.detail?.operationType ? operationTypeLabelMap.value[props.detail.operationType] : '-',
+      label: t('common.status'),
+      value: props.detail?.status ? statusLabelMap.value[props.detail.status] : '-',
+      valueSlotName: 'status',
     },
   ]);
 </script>
@@ -106,6 +102,7 @@
   .detail-section-content {
     padding: 16px;
     border-radius: var(--border-radius-small);
+    white-space: pre-wrap;
     background: var(--text-n9);
   }
 </style>

@@ -3,7 +3,7 @@
     <div>
       <slot name="avatar" :message="props.message">
         <n-avatar v-if="props.message.role === 'assistant'" round class="bg-[var(--primary-6)]" :size="32">
-          <CrmIcon type="iconicon_bot" :size="20" color="var(--primary-8)" />
+          <CrmIcon type="iconicon_crmbot" :size="20" color="var(--primary-8)" />
         </n-avatar>
         <CrmAvatar v-else :size="32" class="flex-shrink-0 transition-all" />
       </slot>
@@ -124,6 +124,7 @@
   import AiTextBlock from '../blocks/AiTextBlock.vue';
   import AiComposer from './AiComposer.vue';
 
+  import { dislikeAgentChat, likeAgentChat } from '@/api/modules';
   import useLegacyCopy from '@/hooks/useLegacyCopy';
 
   import type { Component } from 'vue';
@@ -134,7 +135,7 @@
   }>();
 
   interface AiMessageAction {
-    key: 'copy' | 'retry' | 'edit';
+    key: 'copy' | 'retry' | 'edit' | 'like' | 'dislike';
     iconType: string;
     tooltipContent: string;
     visible: boolean;
@@ -163,6 +164,8 @@
   const copyableText = computed(() => getAiChatMessageText(props.message));
   const canCopy = computed(() => copyableText.value.length > 0);
   const canShowActionArea = computed(() => !isEditing.value && (isUser.value || !isGenerating.value));
+  const runId = computed(() => props.message.metadata?.runId);
+  const canFeedback = computed(() => !isUser.value && !isGenerating.value && Boolean(runId.value));
 
   const tokenUsageText = computed(() =>
     typeof props.message.metadata?.tokens === 'number' ? formatThousands(props.message.metadata.tokens) : ''
@@ -227,6 +230,32 @@
     await legacyCopy(copyableText.value);
   }
 
+  async function handleLikeMessage(): Promise<void> {
+    if (!runId.value) {
+      return;
+    }
+
+    try {
+      await likeAgentChat(runId.value);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function handleDislikeMessage(): Promise<void> {
+    if (!runId.value) {
+      return;
+    }
+
+    try {
+      await dislikeAgentChat(runId.value);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   function startEdit(): void {
     editContent.value = getAiChatMessageText(props.message, '\n').trim();
     isEditing.value = true;
@@ -246,6 +275,18 @@
           iconType: 'iconicon_refresh',
           tooltipContent: t('common.retry'),
           visible: canRetry.value,
+        },
+        {
+          key: 'like',
+          iconType: 'iconicon_good',
+          tooltipContent: t('aiChat.like'),
+          visible: canFeedback.value,
+        },
+        {
+          key: 'dislike',
+          iconType: 'iconicon_bad',
+          tooltipContent: t('aiChat.dislike'),
+          visible: canFeedback.value,
         },
         {
           key: 'edit',
@@ -270,6 +311,12 @@
         break;
       case 'edit':
         startEdit();
+        break;
+      case 'like':
+        await handleLikeMessage();
+        break;
+      case 'dislike':
+        await handleDislikeMessage();
         break;
       default:
         break;

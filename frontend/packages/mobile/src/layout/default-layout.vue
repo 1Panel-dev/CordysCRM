@@ -36,6 +36,15 @@
         </van-tabbar-item>
       </template>
     </van-tabbar>
+    <van-floating-bubble
+      v-if="showAiFloatingBubble"
+      v-model:offset="aiFloatingOffset"
+      axis="xy"
+      class="ai-floating-bubble"
+      @click="handleAiFloatingClick"
+    >
+      <CrmIcon name="iconicon_crmbot" width="24px" height="24px" color="var(--primary-8)" />
+    </van-floating-bubble>
   </div>
 </template>
 
@@ -49,13 +58,16 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import useAppStore from '@/store/modules/app';
+  import useLicenseStore from '@/store/modules/setting/license';
+  import showNoLicenseDialog from '@/utils/license';
   import { hasAnyPermission } from '@/utils/permission';
 
-  import { AppRouteEnum } from '@/enums/routeEnum';
+  import { AppRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const router = useRouter();
   const appStore = useAppStore();
+  const licenseStore = useLicenseStore();
 
   function isIOS(): boolean {
     return /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -89,6 +101,7 @@
     appStore.setManualBack(false);
   });
   const active = ref<string>(AppRouteEnum.WORKBENCH_INDEX);
+  const aiFloatingOffset = ref({ x: window.innerWidth - 64, y: window.innerHeight - 154 });
   const menuList = [
     {
       name: AppRouteEnum.WORKBENCH,
@@ -138,6 +151,16 @@
   }
 
   const isModuleRouteIndex = computed(() => router.currentRoute.value.name?.toString().includes('Index'));
+  const showAiFloatingBubble = computed(() => router.currentRoute.value.name !== WorkbenchRouteEnum.WORKBENCH_AI_CHAT);
+
+  function handleAiFloatingClick() {
+    if (!licenseStore.hasLicense()) {
+      showNoLicenseDialog(t);
+      return;
+    }
+
+    router.push({ name: WorkbenchRouteEnum.WORKBENCH_AI_CHAT });
+  }
 
   /**
    * 监听路由变化，切换菜单选中
@@ -203,6 +226,12 @@
     left: 0;
     z-index: 999;
     transition: none;
+  }
+  .ai-floating-bubble {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-7);
+    box-shadow: 0 6px 35px 6px #6467671a;
   }
 </style>
 

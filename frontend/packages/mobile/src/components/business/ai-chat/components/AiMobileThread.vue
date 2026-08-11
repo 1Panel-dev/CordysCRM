@@ -5,7 +5,7 @@
         v-if="messages.length === 0"
         class="flex h-full flex-col items-center justify-center gap-[8px] text-[var(--text-n4)]"
       >
-        <CrmIcon name="iconicon_bot" width="32px" height="32px" color="var(--text-n4)" />
+        <CrmIcon name="iconicon_crmbot" width="32px" height="32px" color="var(--text-n4)" />
         <div>{{ t('aiChat.noConversation') }}</div>
       </div>
 
@@ -20,7 +20,7 @@
           <div
             class="inline-flex h-[40px] w-[40px] flex-none items-center justify-center rounded-[16px] bg-[var(--primary-6)]"
           >
-            <CrmIcon name="iconicon_bot" width="28px" height="28px" color="var(--primary-8)" />
+            <CrmIcon name="iconicon_crmbot" width="28px" height="28px" color="var(--primary-8)" />
           </div>
 
           <div class="min-w-0 flex-1">

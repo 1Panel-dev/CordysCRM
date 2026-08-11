@@ -66,56 +66,19 @@
           </div>
         </CrmCard>
       </div>
-      <!-- 悬浮的 -->
-      <div
-        class="large-box-shadow n-btn-outline-primary fixed bottom-[24px] right-[24px] z-10 flex h-[48px] w-[48px] cursor-pointer items-center justify-center rounded-full border-[0.5px] border-[var(--primary-8)] bg-[var(--primary-7)] text-[var(--primary-8)]"
-        @click="openChatDrawer"
-      >
-        <CrmIcon type="iconicon_bot" :size="24" />
-      </div>
     </div>
   </n-scrollbar>
-
-  <CrmDrawer
-    v-model:show="showChatDrawer"
-    title="CORDYS AI"
-    :width="1200"
-    :footer="false"
-    no-padding
-    body-content-class="h-full"
-  >
-    <AiChat
-      v-if="chatRuntime"
-      ref="aiChatRef"
-      :key="chatSessionId"
-      :runtime="chatRuntime"
-      :history-items="historyItems"
-      :active-history-id="activeHistoryId"
-      :history-loading="historyLoading"
-      :history-no-more="historyNoMore"
-      :mcp-options="mcpOptions"
-      @new="handleNewConversation"
-      @search-history="handleHistorySearch"
-      @history-reach-bottom="loadMoreHistory"
-      @history-click="handleHistoryClick"
-      @history-delete="handleHistoryDelete"
-      @history-rename="handleHistoryRename"
-    />
-  </CrmDrawer>
 </template>
 
 <script setup lang="ts">
   import { onBeforeUnmount, ref } from 'vue';
   import { NButton, NEmpty, NGradientText, NScrollbar } from 'naive-ui';
 
-  import { useAgentChatWorkbench } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
-  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import {
-    AiChat,
     type AiChatMcp,
     AiChatProvider,
     AiComposer,
@@ -123,20 +86,7 @@
     createAiChatRuntime,
   } from '@/components/business/ai-chat';
 
-  import {
-    cancelAgentChat,
-    confirmAgentChat,
-    deleteAgentConversation,
-    getAgentConversationDetail,
-    getAgentConversationPage,
-    renameAgentConversation,
-    streamAgentChat,
-  } from '@/api/modules';
-
   const { t } = useI18n();
-  const showChatDrawer = ref(false);
-  const aiChatRef = ref<InstanceType<typeof AiChat>>();
-  const chatSessionId = ref('');
 
   // TODO lmy 获取后端数据
   const mcpOptions: AiChatMcp[] = [
@@ -146,104 +96,24 @@
   const dataOverviewAIRenderString = ref('');
   const AIActionRenderString = ref('');
   const AIActionApprovalRenderString = ref('');
-  const {
-    runtime: chatRuntime,
-    activeHistoryId,
-    historyItems,
-    historyLoading,
-    historyNoMore,
-    createConversation,
-    loadHistory,
-    loadMoreHistory,
-    searchHistory,
-    openHistoryConversation,
-    deleteHistoryConversation,
-    renameHistoryConversation,
-    clear,
-  } = useAgentChatWorkbench({
-    historyPageSize: 50,
-    apis: {
-      streamAgentChat,
-      cancelAgentChat,
-      confirmAgentChat,
-      getAgentConversationPage,
-      getAgentConversationDetail,
-      deleteAgentConversation,
-      renameAgentConversation,
-    },
-  });
 
   const composerRuntime = createAiChatRuntime();
 
-  function createChatSession(): ReturnType<typeof createConversation> {
-    const sessionId = `chat_${Date.now()}`;
-
-    chatSessionId.value = sessionId;
-    return createConversation();
-  }
-
-  async function handleComposerSubmit(payload: AiComposerSubmitPayload): Promise<void> {
-    const selectedMcps = payload.options?.mcps ?? [];
-    const runtime = createChatSession();
-
-    runtime.setSelectedMcps(selectedMcps);
-    showChatDrawer.value = true;
+  function handleComposerSubmit(payload: AiComposerSubmitPayload): void {
     composerRuntime.clear();
-
-    await runtime.submit({
-      content: payload.content,
-      attachments: payload.attachments,
-      options: {
-        mcps: selectedMcps,
-      },
-    });
-  }
-
-  function openChatDrawer(): void {
-    if (!chatRuntime.value) {
-      createChatSession();
-    }
-
-    showChatDrawer.value = true;
-    loadHistory({ reset: true }).catch(() => undefined);
-  }
-
-  async function handleHistorySearch(keyword: string): Promise<void> {
-    await searchHistory(keyword);
-  }
-
-  function handleNewConversation(): void {
-    chatSessionId.value = `chat_${Date.now()}`;
-    createConversation();
-  }
-
-  async function handleHistoryClick(conversationId: string): Promise<void> {
-    await openHistoryConversation(conversationId);
-    chatSessionId.value = conversationId;
-  }
-
-  async function handleHistoryDelete(conversationId: string): Promise<void> {
-    const deletingActive = activeHistoryId.value === conversationId;
-
-    await deleteHistoryConversation(conversationId);
-
-    if (deletingActive) {
-      chatSessionId.value = `chat_${Date.now()}`;
-    }
-  }
-
-  async function handleHistoryRename(conversationId: string, title: string): Promise<void> {
-    try {
-      await renameHistoryConversation(conversationId, title);
-      aiChatRef.value?.finishHistoryRename(conversationId);
-    } finally {
-      aiChatRef.value?.resetHistoryRenameLoading(conversationId);
-    }
+    window.dispatchEvent(
+      new CustomEvent('crm-ai-chat-floating-open', {
+        detail: {
+          content: payload.content,
+          attachments: payload.attachments,
+          mcps: payload.options?.mcps ?? [],
+        },
+      })
+    );
   }
 
   onBeforeUnmount(() => {
     composerRuntime.clear();
-    clear();
   });
 </script>
 
