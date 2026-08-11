@@ -136,7 +136,7 @@ public class ModuleFieldController {
     public Pager<List<CustomFormDataListResponse>> sourceCustomFormDataPage(@Valid @RequestBody CustomFormDataPageRequest request) {
         ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
         request.setCombineSearch(request.getCombineSearch().convert());
-        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), false);
+        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), true);
     }
 
     @PostMapping("/source/account")

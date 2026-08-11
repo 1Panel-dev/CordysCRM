@@ -42,7 +42,7 @@ public class CustomFormDataController {
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public PagerWithOption<List<CustomFormDataListResponse>> page(@Validated @RequestBody CustomFormDataPageRequest request) {
         ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
-        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), true);
+        return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), false);
     }
 
     @GetMapping("/get/{id}")
@@ -50,6 +50,12 @@ public class CustomFormDataController {
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public CustomFormDataGetResponse get(@PathVariable String id) {
         return customFormDataService.get(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/create-permission/{customFormId}")
+    @Operation(summary = "查询当前用户是否有创建表单数据的权限")
+    public boolean hasCreatePermission(@PathVariable String customFormId) {
+        return customFormDataService.hasCreatePermission(customFormId, SessionUtils.getUserId());
     }
 
     @PostMapping("/add")
