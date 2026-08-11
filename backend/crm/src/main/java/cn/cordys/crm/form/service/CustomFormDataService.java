@@ -103,16 +103,23 @@ public class CustomFormDataService {
     @Resource
     private SqlSessionFactory sqlSessionFactory;
 
-    public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId, boolean checkDataPermission) {
+    public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId, boolean catchPermissionException) {
         String formId = request.getCustomFormId();
-        boolean manageOwn = false;
         CustomFormRoleKey dataScope;
-        if (checkDataPermission) {
-            dataScope = getDataScope(formId, userId);
-            manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
+        if (catchPermissionException) {
+            try {
+                dataScope = getDataScope(formId, userId);
+            } catch (Exception e) {
+                // 数据源分页，没有权限返回空列表
+                log.error(e.getMessage(), e);
+                Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+                return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
+            }
         } else {
-            dataScope = CustomFormRoleKey.VIEW_ALL;
+            dataScope = getDataScope(formId, userId);
         }
+        boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
+
 
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomFormDataListResponse> list = extCustomFormDataMapper.list(request, orgId, userId, manageOwn);
@@ -252,6 +259,8 @@ public class CustomFormDataService {
 
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.ADD)
     public CustomFormData add(CustomFormDataAddRequest request, String userId, String orgId) {
+        checkCreatePermission(getDataScope(request.getCustomFormId(), userId));
+
         CustomFormData data = new CustomFormData();
         data.setId(IDGenerator.nextStr());
         data.setCustomFormId(request.getCustomFormId());
@@ -275,6 +284,15 @@ public class CustomFormDataService {
         baseService.handleAddLogWithSubTable(data, request.getModuleFields(), Translator.get("products_info"), formConfig);
 
         return data;
+    }
+
+    public boolean hasCreatePermission(String formId, String userId) {
+        try {
+            checkCreatePermission(getDataScope(formId, userId));
+            return true;
+        } catch (GenericException e) {
+            return false;
+        }
     }
 
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -399,12 +417,21 @@ public class CustomFormDataService {
         }
     }
 
+    private void checkCreatePermission(CustomFormRoleKey dataScope) {
+        if (dataScope == CustomFormRoleKey.VIEW_ALL) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
     CustomFormRoleKey getDataScope(String formId, String userId) {
         return getDataScope(formId, userId, true);
     }
 
     CustomFormRoleKey getDataScope(String formId, String userId, boolean checkEnable) {
         CustomForm customForm = customFormMapper.selectByPrimaryKey(formId);
+        if (customForm == null) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
         if (customFormService.isFormAdminUser(formId, userId)) {
             // 管理员管理所有数据
             return CustomFormRoleKey.MANAGE_ALL;
@@ -450,11 +477,11 @@ public class CustomFormDataService {
         if (userRoleKeys.contains(CustomFormRoleKey.MANAGE_ALL)) {
             return CustomFormRoleKey.MANAGE_ALL;
         }
-        if (userRoleKeys.contains(CustomFormRoleKey.VIEW_ALL)) {
-            return CustomFormRoleKey.VIEW_ALL;
-        }
         if (userRoleKeys.contains(CustomFormRoleKey.MANAGE_OWN)) {
             return CustomFormRoleKey.MANAGE_OWN;
+        }
+        if (userRoleKeys.contains(CustomFormRoleKey.VIEW_ALL)) {
+            return CustomFormRoleKey.VIEW_ALL;
         }
 
         throw new GenericException(CrmHttpResultCode.FORBIDDEN);
