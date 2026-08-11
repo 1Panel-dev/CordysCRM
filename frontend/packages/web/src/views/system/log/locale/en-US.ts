@@ -4,6 +4,7 @@ export default {
   'log.aiExecutionLog': 'AI Execution Log',
   'log.operationTime': 'Operation time',
   'log.executionTime': 'Execution time',
+  'log.operationIp': 'Operation IP',
   'log.operationType': 'Operation type',
   'log.operationScope': 'Operation scope',
   'log.operationTarget': 'Operation target',

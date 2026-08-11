@@ -47,11 +47,9 @@ export interface OperationLogDetail extends OperationLogItem {
 
 export type AiExecutionLogOperator = 'auto' | string;
 export type AiExecutionLogOperationType = 'data_write' | 'data_read' | 'task_execution' | 'model_call';
-export type AiExecutionLogStatus = 'success' | 'failed' | 'confirming';
+export type AiExecutionLogStatus = 'success' | 'failed';
 
 export interface AiExecutionLogParams extends LoginLogParams {
-  operationType?: AiExecutionLogOperationType | null;
-  modelId?: string | null;
   status?: AiExecutionLogStatus | null;
   keyword?: string;
 }
@@ -60,16 +58,14 @@ export interface AiExecutionLogItem {
   id: string;
   operator: AiExecutionLogOperator;
   operatorName: string;
-  confirmerName?: string;
-  modelId: string;
-  modelName: string;
-  tokenCost: number;
-  operationType: AiExecutionLogOperationType;
+  name: string;
+  runId: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  callTime?: number;
+  callIp?: string;
   status: AiExecutionLogStatus;
-  taskName: string;
-  createTime: number;
-  operatorIp: string;
   prompt: string;
-  result: string;
-  executionResult: string;
+  trace: string;
 }

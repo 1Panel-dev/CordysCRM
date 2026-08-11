@@ -2,6 +2,7 @@ import {
   AgentChatCancelUrl,
   AgentChatConfirmUrl,
   AgentChatStreamUrl,
+  AgentChatUrl,
   AgentConversationDeleteUrl,
   AgentConversationDetailUrl,
   AgentConversationPageUrl,
@@ -299,6 +300,14 @@ export default function useAiApi(CDR: CordysAxios) {
     });
   }
 
+  function likeAgentChat(runId: string) {
+    return CDR.post({ url: `${AgentChatUrl}/${runId}/like` });
+  }
+
+  function dislikeAgentChat(runId: string) {
+    return CDR.post({ url: `${AgentChatUrl}/${runId}/dislike` });
+  }
+
   function getAgentConversationPage(data: AgentConversationQueryRequest) {
     return CDR.post({ url: AgentConversationPageUrl, data });
   }
@@ -322,6 +331,8 @@ export default function useAiApi(CDR: CordysAxios) {
     streamAgentChat,
     cancelAgentChat,
     confirmAgentChat,
+    likeAgentChat,
+    dislikeAgentChat,
     getAgentConversationPage,
     getAgentConversationDetail,
     deleteAgentConversation,

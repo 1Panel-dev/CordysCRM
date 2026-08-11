@@ -65,22 +65,6 @@
           </n-form-item>
         </template>
         <template v-if="activeTab === 'aiExecution'">
-          <n-form-item :label="t('log.operationType')" path="operationType">
-            <n-select
-              v-model:value="form.operationType"
-              :options="aiOperationTypeOptions"
-              :placeholder="t('common.pleaseSelect')"
-              clearable
-            />
-          </n-form-item>
-          <n-form-item :label="t('log.model')" path="modelId">
-            <n-select
-              v-model:value="form.modelId"
-              :options="aiModelOptions"
-              :placeholder="t('common.pleaseSelect')"
-              clearable
-            />
-          </n-form-item>
           <n-form-item :label="t('common.status')" path="status">
             <n-select
               v-model:value="form.status"
@@ -156,7 +140,6 @@
     NInput,
     NScrollbar,
     NSelect,
-    NTag,
   } from 'naive-ui';
   import dayjs from 'dayjs';
 
@@ -167,6 +150,7 @@
   import { getCityPath, getIndustryPath } from '@lib/shared/method';
   import type {
     AiExecutionLogItem,
+    AiExecutionLogParams,
     OperationLogDetail,
     OperationLogItem,
     OperationLogParams,
@@ -174,6 +158,7 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -184,7 +169,7 @@
   import LogDetailItem from './components/logDetailItem.vue';
   import LoginLog from './components/loginLog.vue';
 
-  import { getAiModelOptions, getUserOptions } from '@/api/modules';
+  import { getUserOptions } from '@/api/modules';
   import {
     aiExecutionLogDetail,
     aiExecutionLogList,
@@ -262,8 +247,6 @@
     type: null,
     module: null,
     operator: null,
-    operationType: null,
-    modelId: null,
     status: null,
     keyword: '',
     time: [dayjs().subtract(1, 'M').valueOf(), dayjs().valueOf()],
@@ -292,41 +275,25 @@
     }
   }
 
-  const aiModelOptions = ref<{ label: string; value: string }[]>([]);
-  async function initAiModelOptions() {
-    try {
-      const models = await getAiModelOptions();
-      aiModelOptions.value = models.map((item) => ({
-        label: item.name,
-        value: item.id,
-      }));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-
-  const aiOperationTypeOptions = [
-    { label: t('log.operationType.dataWrite'), value: 'data_write' },
-    { label: t('log.operationType.dataRead'), value: 'data_read' },
-    { label: t('log.operationType.taskExecution'), value: 'task_execution' },
-    { label: t('log.operationType.modelCall'), value: 'model_call' },
-  ];
-
   const aiStatusList = computed(() => [
-    { label: t('common.success'), value: 'success', type: 'success' as const },
-    { label: t('common.fail'), value: 'failed', type: 'error' as const },
-    { label: t('log.status.confirming'), value: 'confirming', type: 'warning' as const },
+    {
+      label: t('common.success'),
+      value: 'success',
+      icon: 'iconicon_check_circle_filled',
+      color: 'text-[var(--success-green)]',
+    },
+    {
+      label: t('common.fail'),
+      value: 'failed',
+      icon: 'iconicon_close_circle_filled',
+      color: 'text-[var(--error-red)]',
+    },
   ]);
 
   const aiStatusOptions = computed(() => aiStatusList.value.map(({ label, value }) => ({ label, value })));
 
   const aiStatusTagMap = computed(() =>
-    Object.fromEntries(aiStatusList.value.map(({ label, type, value }) => [value, { label, type }]))
-  );
-
-  const aiOperationTypeLabelMap = computed(() =>
-    Object.fromEntries(aiOperationTypeOptions.map((item) => [item.value, item.label]))
+    Object.fromEntries(aiStatusList.value.map(({ label, icon, color, value }) => [value, { label, icon, color }]))
   );
 
   function cityFormat(val: string) {
@@ -461,42 +428,16 @@
     {
       title: t('common.operator'),
       key: 'operatorName',
-      width: 170,
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
-      render: (row) => [row.operatorName, row.confirmerName].filter(Boolean).join(' / '),
-    },
-    {
-      title: t('log.usedModel'),
-      key: 'modelName',
-      width: 140,
-    },
-    {
-      title: t('log.tokenCost'),
-      key: 'tokenCost',
-      width: 120,
-      render: (row) => row.tokenCost.toLocaleString(),
-    },
-    {
-      title: t('log.operationType'),
-      key: 'operationType',
-      width: 140,
-      render: (row) => aiOperationTypeLabelMap.value[row.operationType] || '-',
-    },
-    {
-      title: t('common.status'),
-      key: 'status',
-      width: 120,
-      render: (row) => {
-        const status = aiStatusTagMap.value[row.status];
-        return h(NTag, { type: status.type, bordered: false }, { default: () => status.label });
-      },
+      render: (row) => row.operatorName || '-',
     },
     {
       title: t('system.business.globalTask.taskName'),
-      key: 'taskName',
-      minWidth: 180,
+      key: 'name',
+      width: 150,
       ellipsis: {
         tooltip: true,
       },
@@ -506,16 +447,41 @@
           {
             onClick: () => openAiExecutionLogDetail(row),
           },
-          { default: () => row.taskName, trigger: () => row.taskName }
+          { default: () => row.name, trigger: () => row.name }
         ),
     },
     {
+      title: t('common.status'),
+      key: 'status',
+      width: 120,
+      render: (row) => {
+        const status = aiStatusTagMap.value[row.status];
+        return status
+          ? h('div', { class: 'flex items-center gap-[8px]' }, [
+              h(CrmIcon, {
+                type: status.icon,
+                size: 16,
+                class: status.color,
+              }),
+              h('span', { class: 'text-[var(--text-n1)]' }, status.label),
+            ])
+          : '-';
+      },
+    },
+    {
+      title: t('log.tokenCost'),
+      key: 'tokenCost',
+      width: 140,
+      render: (row) => row.totalTokens?.toLocaleString() || '-',
+    },
+    {
       title: t('log.operationTime'),
-      key: 'createTime',
-      width: 180,
+      key: 'callTime',
+      width: 120,
       sortOrder: false,
       sorter: true,
       resizable: false,
+      render: (row) => (row.callTime ? dayjs(row.callTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
     },
   ];
 
@@ -543,7 +509,14 @@
       await loadList();
       crmTableRef.value?.scrollTo({ top: 0 });
     } else if (activeTab.value === 'aiExecution') {
-      setAiExecutionLoadListParams({ ...otherForm, startTime: time[0], endTime: time[1] });
+      const params: AiExecutionLogParams = {
+        operator: otherForm.operator,
+        status: otherForm.status,
+        keyword: otherForm.keyword,
+        startTime: time[0],
+        endTime: time[1],
+      };
+      setAiExecutionLoadListParams(params);
       await loadAiExecutionList();
       aiExecutionTableRef.value?.scrollTo({ top: 0 });
     } else {
@@ -568,7 +541,6 @@
 
   onMounted(() => {
     initModuleOptions();
-    initAiModelOptions();
   });
 </script>
 

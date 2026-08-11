@@ -4,6 +4,7 @@ export default {
   'log.aiExecutionLog': 'AI 执行日志',
   'log.operationTime': '操作时间',
   'log.executionTime': '执行时间',
+  'log.operationIp': '操作 IP',
   'log.operationType': '操作类型',
   'log.operationScope': '操作范围',
   'log.operationTarget': '操作对象',

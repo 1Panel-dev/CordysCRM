@@ -33,6 +33,7 @@ export interface AiChatMeta {
   mcps?: AiChatMcp[];
   attachments?: AiChatAttachment[];
   tokens?: number;
+  runId?: string;
 }
 
 export type AiChatDataParts = Record<string, unknown> & {

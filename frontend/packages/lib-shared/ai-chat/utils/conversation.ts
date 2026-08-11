@@ -255,6 +255,7 @@ export function toAiChatMessage(message: AgentConversationMessage, index: number
     role: normalizeRole(message.role),
     metadata: {
       tokens: message.totalTokens ?? undefined,
+      runId: message.runId,
     },
     parts: toAiChatMessageParts(message),
   };

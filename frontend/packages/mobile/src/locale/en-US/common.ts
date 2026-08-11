@@ -19,6 +19,8 @@ export default {
   'common.more': 'More',
   'common.system': 'System',
   'common.systemNotification': 'System Notification',
+  'common.tip': 'Tip',
+  'common.businessFeatureTip': 'This is an enterprise feature. Click the link to view enterprise edition details',
   'common.signRead': 'Sign Read',
   'common.noData': 'No Data',
   'common.edit': 'Edit',

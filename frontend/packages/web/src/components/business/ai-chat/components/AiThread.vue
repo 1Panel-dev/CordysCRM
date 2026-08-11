@@ -21,7 +21,7 @@
           />
           <article v-if="showThreadLoading" class="mb-[32px] flex gap-[16px]">
             <n-avatar round class="bg-[var(--primary-6)]" :size="32">
-              <CrmIcon type="iconicon_bot" :size="20" color="var(--primary-8)" />
+              <CrmIcon type="iconicon_crmbot" :size="20" color="var(--primary-8)" />
             </n-avatar>
 
             <div class="w-full min-w-0">

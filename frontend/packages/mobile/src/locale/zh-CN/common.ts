@@ -19,6 +19,8 @@ export default {
   'common.more': '更多',
   'common.system': '系统',
   'common.systemNotification': '系统通知',
+  'common.tip': '提示',
+  'common.businessFeatureTip': '当前为企业版功能，可点击链接查看企业版本功能详情',
   'common.signRead': '标为已读',
   'common.noData': '暂无数据',
   'common.edit': '编辑',

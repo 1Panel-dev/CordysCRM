@@ -4,7 +4,7 @@
       v-if="!isUser"
       class="inline-flex h-[40px] w-[40px] flex-none items-center justify-center rounded-[16px] bg-[var(--primary-6)]"
     >
-      <CrmIcon name="iconicon_bot" width="28px" height="28px" color="var(--primary-8)" />
+      <CrmIcon name="iconicon_crmbot" width="28px" height="28px" color="var(--primary-8)" />
     </div>
     <CrmAvatar v-if="isUser" :size="40" :is-word="false" class="rounded-[16px]" />
 
@@ -49,6 +49,22 @@
             @click="handleRetry"
           />
           <CrmIcon
+            v-if="canFeedback"
+            name="iconicon_good"
+            width="16px"
+            height="16px"
+            color="var(--primary-8)"
+            @click="handleFeedbackMessage('like')"
+          />
+          <CrmIcon
+            v-if="canFeedback"
+            name="iconicon_bad"
+            width="16px"
+            height="16px"
+            color="var(--primary-8)"
+            @click="handleFeedbackMessage('dislike')"
+          />
+          <CrmIcon
             v-if="canEdit"
             name="iconicon_edit"
             width="16px"
@@ -88,6 +104,8 @@
   import AiMobileMarkdownBlock from '../blocks/AiMobileMarkdownBlock.vue';
   import AiMobileProgressBlock from '../blocks/AiMobileProgressBlock.vue';
 
+  import { dislikeAgentChat, likeAgentChat } from '@/api/modules';
+
   const props = defineProps<{
     message: AiChatMessage;
     isGenerating?: boolean;
@@ -117,11 +135,15 @@
   const canCopy = computed(() => copyableText.value.length > 0);
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);
   const canEdit = computed(() => props.message.role === 'user' && !runtime.state.loading.value);
+  const runId = computed(() => props.message.metadata?.runId);
+  const canFeedback = computed(() => props.message.role === 'assistant' && !props.isGenerating && Boolean(runId.value));
   const tokenUsageText = computed(() =>
     typeof props.message.metadata?.tokens === 'number' ? formatThousands(props.message.metadata.tokens) : ''
   );
   const showActions = computed(
-    () => !props.isGenerating && (canCopy.value || canRetry.value || canEdit.value || tokenUsageText.value)
+    () =>
+      !props.isGenerating &&
+      (canCopy.value || canRetry.value || canFeedback.value || canEdit.value || tokenUsageText.value)
   );
 
   async function handleCopyMessage() {
@@ -139,6 +161,23 @@
 
   async function handleRetry() {
     await runtime.retry(props.message.id);
+  }
+
+  async function handleFeedbackMessage(type: 'like' | 'dislike') {
+    if (!runId.value) {
+      return;
+    }
+
+    try {
+      if (type === 'like') {
+        await likeAgentChat(runId.value);
+      } else {
+        await dislikeAgentChat(runId.value);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   function handleEdit() {

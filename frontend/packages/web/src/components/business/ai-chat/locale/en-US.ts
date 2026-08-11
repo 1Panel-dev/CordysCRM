@@ -6,6 +6,8 @@ export default {
   'aiChat.thinking': 'Thinking',
   'aiChat.editRestartTip': 'After editing, the conversation restarts from here. Chat history will not be deleted.',
   'aiChat.tokensUsed': '{tokens} used',
+  'aiChat.like': 'Helpful',
+  'aiChat.dislike': 'Not helpful',
   'aiChat.confirmTitle': 'Agent confirmation',
   'aiChat.confirmExecute': 'Confirm execution',
   'aiChat.confirmCancel': 'Cancel/Reject',
