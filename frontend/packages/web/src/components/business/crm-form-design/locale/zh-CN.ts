@@ -186,6 +186,10 @@ export default {
   'crmFormDesign.onlyPlan': '计划',
   'crmFormDesign.calculation': '计算',
   'crmFormDesign.formula': '公式',
+  'crmFormDesign.formulaFormat': '计算结果格式',
+  'crmFormDesign.formulaText': '文本',
+  'crmFormDesign.formulaResultTypeTip':
+    '选择「数值」且计算结果为数字时，可启用数字格式化；选择「文本」，结果原样展示，不做格式转换',
   'crmFormDesign.formulaTooltip': '未设置计算方式，请联系管理员',
   'crmFormDesign.formulaFieldChanged': '字段已变更不存在，请联系管理员更新公式！',
   'crmFormDesign.formulaSetting': '公式设置',

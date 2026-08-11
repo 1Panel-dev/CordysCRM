@@ -161,6 +161,7 @@ export interface FormCreateField {
   price_sub?: string; // 价格表子表格行号标识
   listDisplayFields?: string[]; // 数据源列表展示字段
   refFields?: FormCreateField[]; // 引用字段
+  formulaResultFormat?: 'number' | 'text'; // 计算结果格式
 }
 
 export interface AttachmentInfo {

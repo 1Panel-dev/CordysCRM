@@ -695,7 +695,11 @@ export const formulaDefaultFieldConfig: FormCreateField = {
   mobile: true,
   rules: [],
   formula: '',
-  showThousandsSeparator: true,
+  formulaResultFormat: 'text',
+  decimalPlaces: false,
+  precision: 0,
+  showThousandsSeparator: false,
+  min: -999999999,
 };
 
 export const productTableDefaultFieldConfig: FormCreateField = {

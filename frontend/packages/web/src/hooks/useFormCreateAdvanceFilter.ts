@@ -8,6 +8,13 @@ export default function useFormCreateFilter() {
   const customFieldsFilterConfig = ref<FilterFormItem[]>([]);
   // 获取配置属性
   function getFilterListConfig(res: FormDesignConfigDetailParams, addDefaultKeyAsId = false) {
+    const getFilterDisplayType = (field: FormCreateField) => {
+      if (field.type !== FieldTypeEnum.FORMULA) {
+        return field.type;
+      }
+      return field.formulaResultFormat === 'number' ? FieldTypeEnum.INPUT_NUMBER : FieldTypeEnum.INPUT;
+    };
+
     const getConfigProps = (field: FormCreateField) => {
       if (
         [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX].includes(
@@ -51,6 +58,7 @@ export default function useFormCreateFilter() {
           title: field.name,
           dataIndex: key,
           type: field.type,
+          filterDisplayType: getFilterDisplayType(field),
           ...(addDefaultKeyAsId ? { id: field.id } : {}),
           ...getConfigProps(field),
         } as FilterFormItem);

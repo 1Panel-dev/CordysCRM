@@ -5,7 +5,7 @@
         :is="currentComponent"
         v-model:value="value"
         :path="props.path"
-        :field-config="fieldConfig"
+        :field-config="runtimeFieldConfig"
         :form-config="props.formConfig"
         :is-sub-table-field="props.isSubTableField"
         :is-sub-table-render="props.isSubTableRender"
@@ -28,7 +28,8 @@
 
   import { executeFormFormula } from './formula-runtime/formula-executor';
   import { getFormulaDisplayInfo } from './formula-runtime/formula-executor/formula-display';
-  import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
+  import { getFormulaResultFormatOptions } from './utils';
+  import type { FormCreateField, FormCreateFieldRule } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const { t } = useI18n();
   const { inputNumber, singleText } = basicComponents;
@@ -48,19 +49,26 @@
   }>();
 
   const value = defineModel<any>('value', {
-    default: 0,
+    default: '',
   });
 
+  const formulaResultFormat = computed(() => props.fieldConfig.formulaResultFormat ?? 'text');
+
   const currentComponent = computed(() => {
-    switch (typeof value.value) {
-      case 'string':
-        return singleText;
-      case 'number':
-        return inputNumber;
-      default:
-        return inputNumber;
-    }
+    return formulaResultFormat.value === 'number' && typeof value.value === 'number' ? inputNumber : singleText;
   });
+
+  const runtimeFieldConfig = computed(() => {
+    const valueType: FormCreateFieldRule['type'] = typeof value.value === 'number' ? 'number' : 'string';
+    return {
+      ...props.fieldConfig,
+      rules: props.fieldConfig.rules.map((rule) => (rule.type ? { ...rule, type: valueType } : rule)),
+    };
+  });
+
+  function getEmptyValue() {
+    return formulaResultFormat.value === 'number' ? 0 : '';
+  }
 
   const formulaFormContext = inject(
     'formFieldsProvider',
@@ -90,6 +98,7 @@
   // 根据公式实时计算 todo 等待优化
   const updateValue = debounce(() => {
     const { formula } = props.fieldConfig;
+    const resultFormatOptions = getFormulaResultFormatOptions(props.fieldConfig);
     const result = executeFormFormula({
       formula,
       path: props.path,
@@ -98,7 +107,7 @@
       formulaDataSource: formulaDataSource.value,
       needInitDetail: props.needInitDetail,
       evaluationNow: evaluationNow.value,
-      decimalPlaces: 2,
+      ...resultFormatOptions,
       warn: (msg: string) => {
         // eslint-disable-next-line no-console
         console.warn(msg);
@@ -109,7 +118,10 @@
       return;
     }
 
-    const next = result.normalizedResult;
+    const next =
+      formulaResultFormat.value === 'number' && typeof result.normalizedResult === 'number'
+        ? result.normalizedResult
+        : String(result.normalizedResult);
 
     if (Object.is(next, value.value)) return;
     value.value = next;
@@ -123,7 +135,7 @@
       if (val !== undefined && val !== null) {
         value.value = val;
       } else if (value.value == null) {
-        value.value = 0;
+        value.value = getEmptyValue();
       }
     },
     {
@@ -143,7 +155,7 @@
   watch(
     value,
     (val) => {
-      if (val == null) value.value = 0;
+      if (val == null) value.value = getEmptyValue();
     },
     { immediate: true }
   );

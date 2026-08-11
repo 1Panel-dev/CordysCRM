@@ -59,8 +59,11 @@ export function getRuleType(item: FormCreateField) {
   if (item.type === FieldTypeEnum.DATE_TIME) {
     return 'date';
   }
-  if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.type)) {
+  if (item.type === FieldTypeEnum.INPUT_NUMBER) {
     return 'number';
+  }
+  if (item.type === FieldTypeEnum.FORMULA) {
+    return item.formulaResultFormat === 'number' ? 'number' : 'string';
   }
   return 'string';
 }

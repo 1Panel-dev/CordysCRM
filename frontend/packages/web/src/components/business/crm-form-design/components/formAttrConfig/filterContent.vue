@@ -103,7 +103,7 @@
             />
             <CrmInputNumber
               v-else-if="
-                [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.leftFieldType) ||
+                getLeftFieldDisplayType(item) === FieldTypeEnum.INPUT_NUMBER ||
                 (item.leftFieldType === FieldTypeEnum.INPUT_MULTIPLE &&
                   [OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(item.operator as OperatorEnum))
               "
@@ -338,6 +338,21 @@
 
   const isMatchValue = (matchType?: string) => ['MATCH_VALUE'].includes(matchType || '');
 
+  function getFieldDisplayType(field?: FormCreateField) {
+    if (field?.type === FieldTypeEnum.FORMULA) {
+      return field.formulaResultFormat === 'number' ? FieldTypeEnum.INPUT_NUMBER : FieldTypeEnum.INPUT;
+    }
+    return field?.type;
+  }
+
+  function getLeftField(leftFieldId?: string) {
+    return props.leftFields.find((field) => [field.id, field.businessKey].includes(leftFieldId || ''));
+  }
+
+  function getLeftFieldDisplayType(item: DataSourceFilterItem) {
+    return getFieldDisplayType(getLeftField(item.leftFieldId)) ?? item.leftFieldType;
+  }
+
   function changeMatchTypeDefaultValue(item: DataSourceFilterItem) {
     if (!isMatchValue(item.matchType)) {
       return;
@@ -363,9 +378,10 @@
   // 改变第一列值
   const leftFieldChange = (item: SelectOption, index: number) => {
     const leftFieldType = item.fieldType as FieldTypeEnum;
+    const leftFieldDisplayType = getFieldDisplayType(getLeftField(item.value as string)) ?? leftFieldType;
     // 显式类型注解，避免类型过深
     const currentFormList = formModel.value.conditions;
-    const options = operatorOptionsMap[leftFieldType] || [];
+    const options = operatorOptionsMap[leftFieldDisplayType] || [];
     const optionsValueList = options.map((optionItem: { value: string; label: string }) => optionItem.value);
     currentFormList[index].operator = getDefaultOperator(optionsValueList);
     currentFormList[index].leftFieldType = leftFieldType;
@@ -420,6 +436,7 @@
     if (leftFieldType && isSystemField(leftFieldId)) {
       return [];
     }
+    const leftFieldDisplayType = getFieldDisplayType(getLeftField(leftFieldId));
 
     return fields
       .filter((e) => {
@@ -431,7 +448,7 @@
           !e.resourceFieldId;
         if (leftFieldType) {
           const isCurrentSystemField = Boolean((e as FormCreateField & { isSystemField?: boolean })?.isSystemField);
-          return e.type === leftFieldType && !isCurrentSystemField && baseCondition;
+          return getFieldDisplayType(e) === leftFieldDisplayType && !isCurrentSystemField && baseCondition;
         }
         return baseCondition;
       })
@@ -453,9 +470,10 @@
 
   // 获取操作符号
   function getOperatorOptions(leftFieldId: string | undefined) {
-    const leftField = props.leftFields.find((field) => [field.id, field.businessKey].includes(leftFieldId || ''));
+    const leftField = getLeftField(leftFieldId);
     if (!leftField) return [];
-    return operatorOptionsMap[leftField.type].map((e) => {
+    const displayType = getFieldDisplayType(leftField);
+    return (operatorOptionsMap[displayType as FieldTypeEnum] || []).map((e) => {
       return {
         ...e,
         label: t(e.label),
@@ -501,6 +519,17 @@
     }
     return selectedPropsMap.value.get(leftFieldId) || {};
   }
+
+  onMounted(() => {
+    formModel.value.conditions.forEach((item) => {
+      if (!item.leftFieldId) return;
+      const operatorOptions = getOperatorOptions(item.leftFieldId);
+      if (!operatorOptions.some((option) => option.value === item.operator)) {
+        item.operator = getDefaultOperator(operatorOptions.map((option) => option.value));
+        changeMatchTypeDefaultValue(item);
+      }
+    });
+  });
 
   // 删除筛选项
   function handleDeleteItem(index: number) {

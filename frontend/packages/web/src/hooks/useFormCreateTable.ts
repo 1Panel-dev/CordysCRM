@@ -17,6 +17,7 @@ import {
   multipleValueTypeList,
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
+import { formatFormulaResultValue } from '@/components/business/crm-formula/utils';
 
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import useUserStore from '@/store/modules/user';
@@ -471,8 +472,27 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 150,
               key,
               fieldId: field.id,
+              ellipsis: {
+                tooltip: true,
+              },
               render: (row: any) => formatNumberValueToString(row[key], field),
               sortOrder: false,
+              sorter: sorter && !field.resourceFieldId,
+              filedType: field.type,
+              resourceFieldId: field.resourceFieldId,
+            };
+          }
+          if (field.type === FieldTypeEnum.FORMULA) {
+            return {
+              title: field.name,
+              width: 150,
+              key,
+              fieldId: field.id,
+              render: (row: any) => formatFormulaResultValue(row[key], field, '-'),
+              sortOrder: false,
+              ellipsis: {
+                tooltip: true,
+              },
               sorter: sorter && !field.resourceFieldId,
               filedType: field.type,
               resourceFieldId: field.resourceFieldId,

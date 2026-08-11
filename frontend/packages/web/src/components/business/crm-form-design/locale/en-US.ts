@@ -188,6 +188,10 @@ export default {
   'crmFormDesign.onlyPlan': 'Plan',
   'crmFormDesign.calculation': 'Calculation',
   'crmFormDesign.formula': 'Formula',
+  'crmFormDesign.formulaFormat': 'Result format',
+  'crmFormDesign.formulaText': 'Text',
+  'crmFormDesign.formulaResultTypeTip':
+    'When a number is selected and the result is a number, number formatting can be enabled. Select the text, and the result will be displayed as it is without format conversion',
   'crmFormDesign.formulaTooltip': 'Calculation method not set, please contact the administrator',
   'crmFormDesign.formulaFieldChanged':
     'Formula field has been modified not exist, please contact the administrator to update the formula!',
