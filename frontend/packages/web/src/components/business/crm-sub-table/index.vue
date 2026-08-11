@@ -153,6 +153,12 @@
     switch (field.type) {
       case FieldTypeEnum.INPUT_NUMBER:
         return formatNumberValueToString(value, field);
+      case FieldTypeEnum.FORMULA:
+        if (field.formulaResultFormat === 'number') {
+          const numberValue = typeof value === 'number' ? value : Number(value);
+          return Number.isFinite(numberValue) ? formatNumberValueToString(numberValue, field) : value.toString();
+        }
+        return value || '-';
       case FieldTypeEnum.DATE_TIME:
         return formatTimeValue(value, field.dateType);
       case FieldTypeEnum.LOCATION:

@@ -830,6 +830,72 @@
             {{ formulaConfig.source?.length ? t('crmFormDesign.formulaHasBeenSet') : t('common.setting') }}
           </n-button>
         </div>
+
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            <div class="flex items-center gap-[8px]">
+              {{ t('crmFormDesign.formulaFormat') }}
+              <n-tooltip trigger="hover">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_help_circle"
+                    :size="16"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                  />
+                </template>
+                {{ t('crmFormDesign.formulaResultTypeTip') }}
+              </n-tooltip>
+            </div>
+          </div>
+          <n-radio-group
+            v-model:value="fieldConfig.formulaResultFormat"
+            :disabled="fieldConfig.disabledProps?.includes('formulaResultFormat') || !!fieldConfig.resourceFieldId"
+            name="radiogroup"
+            class="flex"
+          >
+            <n-radio-button value="text" class="flex-1 text-center">
+              {{ t('crmFormDesign.formulaText') }}
+            </n-radio-button>
+            <n-radio-button value="number" class="flex-1 text-center">{{ t('crmFormDesign.number') }}</n-radio-button>
+          </n-radio-group>
+          <n-checkbox
+            v-if="fieldConfig.formulaResultFormat === 'number'"
+            v-model:checked="fieldConfig.decimalPlaces"
+            :disabled="fieldConfig.disabledProps?.includes('decimalPlaces') || !!fieldConfig.resourceFieldId"
+            @update-checked="() => (fieldConfig.precision = 0)"
+          >
+            {{ t('crmFormDesign.saveFloat') }}
+          </n-checkbox>
+          <n-checkbox
+            v-if="fieldConfig.formulaResultFormat === 'number'"
+            v-model:checked="fieldConfig.showThousandsSeparator"
+            :disabled="fieldConfig.disabledProps?.includes('showThousandsSeparator') || !!fieldConfig.resourceFieldId"
+          >
+            {{ t('crmFormDesign.showThousandSeparator') }}
+          </n-checkbox>
+          <div
+            v-if="
+              (fieldConfig.decimalPlaces || fieldConfig.showThousandsSeparator) &&
+              fieldConfig.formulaResultFormat === 'number'
+            "
+            class="flex items-center gap-[8px]"
+          >
+            <CrmInputNumber
+              v-if="fieldConfig.decimalPlaces"
+              v-model:value="fieldConfig.precision"
+              :disabled="fieldConfig.disabledProps?.includes('precision') || !!fieldConfig.resourceFieldId"
+              :min="0"
+              :max="4"
+              class="flex-1"
+            />
+            <div
+              class="flex flex-1 items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] px-[8px] py-[4px]"
+            >
+              <div class="text-[var(--text-n4)]">{{ t('common.preview') }}</div>
+              {{ numberPreview }}
+            </div>
+          </div>
+        </div>
       </template>
       <!-- 公式 End -->
       <!-- 电话 -->
@@ -1031,6 +1097,7 @@
               {{ formulaConfig.source?.length ? t('crmFormDesign.formulaHasBeenSet') : t('common.setting') }}
             </n-button>
           </div>
+
           <n-input
             v-else
             v-model:value="fieldConfig.defaultValue"
@@ -1950,6 +2017,17 @@
     const part5 = digits > 0 ? String(1).padStart(digits, '0') : '';
 
     return `${part1}${part2}202501${part4}${part5}`;
+  });
+
+  function normalizeFormulaResultFormat() {
+    const field = fieldConfig.value;
+    if (field?.type === FieldTypeEnum.FORMULA && field?.formulaResultFormat == null) {
+      field.formulaResultFormat = 'text';
+    }
+  }
+
+  watch(() => [fieldConfig.value?.type, fieldConfig.value?.formulaResultFormat], normalizeFormulaResultFormat, {
+    immediate: true,
   });
 
   watch(

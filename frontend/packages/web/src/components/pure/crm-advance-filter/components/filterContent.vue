@@ -39,7 +39,7 @@
               <n-select
                 v-model:value="item.operator"
                 :disabled="!item.dataIndex || props.readonly"
-                :options="getOperatorOptions(item.type, item.dataIndex as string)"
+                :options="getOperatorOptions(item)"
                 @update:value="operatorChange(item, listIndex)"
               />
             </n-form-item>
@@ -77,7 +77,7 @@
               />
               <CrmInputNumber
                 v-else-if="
-                [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.type) ||
+                getFilterDisplayType(item) === FieldTypeEnum.INPUT_NUMBER ||
                 (item.type === FieldTypeEnum.INPUT_MULTIPLE &&
                   [OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(item.operator as OperatorEnum))
               "
@@ -312,6 +312,10 @@
   // 过滤
   const formRef = ref<FormInst | null>(null);
 
+  function getFilterDisplayType(item: FilterFormItem) {
+    return item.filterDisplayType ?? item.type;
+  }
+
   function valueIsArray(listItem: FilterFormItem) {
     return (
       [
@@ -367,6 +371,18 @@
     return mergedList.find((item) => item.dataIndex === dataIndex);
   };
 
+  // 获取操作符号
+  function getOperatorOptions(item: FilterFormItem) {
+    const listItem = getListItemByDataIndex(item.dataIndex as string);
+    const displayType = listItem?.filterDisplayType ?? getFilterDisplayType(item);
+    return (listItem?.operatorOption?.length ? listItem.operatorOption : operatorOptionsMap[displayType])?.map((e) => {
+      return {
+        ...e,
+        label: t(e.label),
+      };
+    });
+  }
+
   onMounted(() => {
     // 初始化视图回显
     formModel.value.list.forEach((item, index) => {
@@ -377,8 +393,14 @@
           ...listItem,
           ...item,
           type: listItem.type,
+          filterDisplayType: listItem.filterDisplayType,
           ...(listItem.showScope ? { scope: item.scope ?? listItem.scope } : undefined),
         };
+        const operatorOptions = getOperatorOptions(currentListItem);
+        if (!operatorOptions?.some((option) => option.value === currentListItem.operator)) {
+          currentListItem.operator = getDefaultOperator(operatorOptions?.map((option) => option.value) || []);
+          currentListItem.value = valueIsArray(currentListItem) ? [] : undefined;
+        }
         formModel.value.list[index] = currentListItem;
       }
     });
@@ -408,24 +430,13 @@
     if (hasNoOperator) {
       const options = listItem?.operatorOption?.length
         ? listItem.operatorOption
-        : operatorOptionsMap[currentFormList[index].type] || [];
+        : operatorOptionsMap[getFilterDisplayType(currentFormList[index])] || [];
 
       const optionsValueList = options.map((optionItem: { value: string; label: string }) => optionItem.value);
 
       currentFormList[index].operator = getDefaultOperator(optionsValueList);
     }
   };
-
-  // 获取操作符号
-  function getOperatorOptions(type: FieldTypeEnum, dataIndex: string) {
-    const listItem = getListItemByDataIndex(dataIndex);
-    return (listItem?.operatorOption?.length ? listItem.operatorOption : operatorOptionsMap[type])?.map((e) => {
-      return {
-        ...e,
-        label: t(e.label),
-      };
-    });
-  }
 
   // 删除筛选项
   function handleDeleteItem(index: number) {

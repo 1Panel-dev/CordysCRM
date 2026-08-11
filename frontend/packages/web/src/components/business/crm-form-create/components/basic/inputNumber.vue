@@ -45,6 +45,7 @@
   import type { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
+  import { formatFormulaResultValue } from '@/components/business/crm-formula/utils';
 
   import { FormCreateField } from '../../types';
 
@@ -94,13 +95,15 @@
 
   function format(val?: number | null) {
     if (val === null || val === undefined) return '';
-    if (
-      (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) ||
-      props.fieldConfig.type === FieldTypeEnum.FORMULA
-    ) {
-      return props.fieldConfig.precision && props.fieldConfig.precision > 0
-        ? `${val.toLocaleString('en-US').split('.')[0]}.${val.toFixed(props.fieldConfig.precision).split('.')[1]}`
-        : val.toLocaleString('en-US');
+    if (props.fieldConfig.formulaResultFormat === 'number') {
+      return formatFormulaResultValue(val, props.fieldConfig);
+    }
+    if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
+      if (props.fieldConfig.precision && props.fieldConfig.precision > 0) {
+        const [integerPart, decimalPart] = val.toFixed(props.fieldConfig.precision).split('.');
+        return `${integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}.${decimalPart}`;
+      }
+      return val.toLocaleString('en-US');
     }
     return typeof val === 'number'
       ? val.toFixed(props.fieldConfig.precision || 0)
