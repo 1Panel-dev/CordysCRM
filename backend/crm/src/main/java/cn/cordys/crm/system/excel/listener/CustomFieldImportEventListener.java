@@ -115,6 +115,22 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
         if (this.errRows.contains(rowIndex)) {
             // 有错误跳过该行
+
+            // 首行
+            if (isMergeFirstRow(rowIndex)) {
+                try {
+                    createEntity(data);
+                    return;
+                } catch (Exception e) {
+                    throw new GenericException("创建实体类失败");
+                }
+            }
+            // 尾行
+            if (isMergedLastRow(rowIndex)) {
+                dataList.add(mergedTmpEntity);
+                mergedTmpEntity = null;
+            }
+            subRowId++;
             return;
         }
         // build entity by row-data
@@ -160,23 +176,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      */
     private void buildEntityFromRow(Integer rowIndex, Map<Integer, String> rowData) {
         try {
-            if (isNormalRow(rowIndex) || isMergeFirstRow(rowIndex)) {
+            if (isNormalRow(rowIndex) || isMergeFirstRow(rowIndex) && mergedTmpEntity == null) {
                 // 非合并行才创建实体
-                String rowKey = IDGenerator.nextStr();
-                if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
-                    Integer key = headMap.entrySet().stream()
-                            .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID"))
-                            .map(Map.Entry::getKey)
-                            .findFirst()
-                            .orElse(null);
-                    if (key != null && rowData.containsKey(key)) {
-                        rowKey = rowData.get(key);
-                    }
-                }
-
-                mergedTmpEntity = entityClass.getDeclaredConstructor().newInstance();
-                setInternal(mergedTmpEntity, rowKey);
-                subRowId = 1;
+                createEntity(rowData);
             } else {
                 subRowId++;
             }
@@ -270,6 +272,24 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             log.error("导入错误, 原因: {}", e.getMessage());
             throw new GenericException(Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
         }
+    }
+
+    private void createEntity(Map<Integer, String> rowData) throws Exception {
+        String rowKey = IDGenerator.nextStr();
+        if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
+            Integer key = headMap.entrySet().stream()
+                    .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID"))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElse(null);
+            if (key != null && rowData.containsKey(key)) {
+                rowKey = rowData.get(key);
+            }
+        }
+
+        mergedTmpEntity = entityClass.getDeclaredConstructor().newInstance();
+        setInternal(mergedTmpEntity, rowKey);
+        subRowId = 1;
     }
 
     /**
