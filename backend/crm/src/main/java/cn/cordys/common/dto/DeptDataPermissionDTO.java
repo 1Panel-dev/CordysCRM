@@ -32,6 +32,10 @@ public class DeptDataPermissionDTO {
      */
     private Boolean visible = false;
     /**
+     * 没有权限查看
+     */
+    private Boolean invisible = false;
+    /**
      * 可查看的部门Id
      */
     private Set<String> deptIds = new HashSet<>();
