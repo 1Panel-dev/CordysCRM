@@ -193,6 +193,8 @@
       'CUSTOMER_MANAGEMENT:READ',
       'OPPORTUNITY_MANAGEMENT:READ',
     ],
+    FOLLOW_UP_RECORD_COMMENT_ADDED: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ'],
+    FOLLOW_UP_PLAN_COMMENT_ADDED: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ'],
   };
 
   const messageDetailConfig: Record<string, MessageDetailAction> = {
@@ -226,6 +228,14 @@
     },
     FOLLOW_UP_PLAN_COMMENT_MENTIONED: {
       permission: permissionConfig.FOLLOW_UP_PLAN_COMMENT_MENTIONED,
+      action: openFollowPlanDetail,
+    },
+    FOLLOW_UP_RECORD_COMMENT_ADDED: {
+      permission: permissionConfig.FOLLOW_UP_RECORD_COMMENT_ADDED,
+      action: openFollowRecordDetail,
+    },
+    FOLLOW_UP_PLAN_COMMENT_ADDED: {
+      permission: permissionConfig.FOLLOW_UP_PLAN_COMMENT_ADDED,
       action: openFollowPlanDetail,
     },
   };
