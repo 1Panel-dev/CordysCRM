@@ -197,7 +197,6 @@ CREATE TABLE agent_task_execute_log(
     `execute_reason` VARCHAR(500) NOT NULL   COMMENT '触发原因' ,
     `status` VARCHAR(50) NOT NULL   COMMENT '状态' ,
     `result` VARCHAR(255)    COMMENT '结果' ,
-    `confirm_user` VARCHAR(32)    COMMENT '确认用户' ,
     PRIMARY KEY (id)
 )  COMMENT = '执行记录'
     ENGINE = InnoDB
@@ -205,7 +204,6 @@ CREATE TABLE agent_task_execute_log(
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_task_id ON agent_task_execute_log(task_id ASC);
-CREATE INDEX idx_confirm_user ON agent_task_execute_log(confirm_user ASC);
 
 CREATE TABLE agent_model_usage(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
