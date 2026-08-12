@@ -38,7 +38,7 @@ public class FollowUpPlanCommentController {
     @PostMapping("/add")
     @Operation(summary = "添加跟进计划评论")
     public FollowUpPlanComment add(@Validated @RequestBody CommentAddRequest request) {
-        followUpPlanService.checkPlanPermission(request.getResourceId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), false);
+        followUpPlanService.checkPlanPermission(request.getResourceId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
         return commentService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

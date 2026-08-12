@@ -38,7 +38,7 @@ public class FollowUpRecordCommentController {
     @PostMapping("/add")
     @Operation(summary = "添加跟进记录评论")
     public FollowUpRecordComment add(@Validated @RequestBody CommentAddRequest request) {
-        followUpRecordService.checkRecordPermission(request.getResourceId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), false);
+        followUpRecordService.checkRecordPermission(request.getResourceId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
         return commentService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
