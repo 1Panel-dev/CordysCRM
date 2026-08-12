@@ -102,7 +102,11 @@ public class DataScopeService {
         if (CollectionUtils.isEmpty(userDeptRoles)
                 && CollectionUtils.isEmpty(customDeptRoles)) {
             // 如果没有部门权限,则默认只能查看自己的数据
-            deptDataPermission.setSelf(true);
+            if (hasDataScopePermission(dataScopeRoleMap, RoleDataScope.SELF.name(), permission)) {
+                deptDataPermission.setSelf(true);
+            } else {
+                deptDataPermission.setInvisible(true);
+            }
             return deptDataPermission;
         }
 
