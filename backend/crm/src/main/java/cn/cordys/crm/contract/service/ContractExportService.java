@@ -56,7 +56,7 @@ public class ContractExportService extends BaseExportService {
         var result = buildExportMergeResult(taskId, exportParam, dataList,
                 ContractListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        getSystemFieldMap(detail, metas, stageConfigMap), cache));
+                        getSystemFieldMap(detail, metas, stageConfigMap, exportParam.getLocale()), cache));
         result.setQueryCount(queryCount);
         return result;
     }
@@ -93,7 +93,7 @@ public class ContractExportService extends BaseExportService {
                 approvalFlowService);
     }
 
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractListResponse data, List<FieldExportMeta> exportMetas, Map<String, String> stageConfigMap) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractListResponse data, List<FieldExportMeta> exportMetas, Map<String, String> stageConfigMap, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
@@ -105,7 +105,7 @@ public class ContractExportService extends BaseExportService {
         systemFieldMap.put("number", data.getNumber());
 
         if (StringUtils.isNotBlank(data.getApprovalStatus())) {
-            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), Locale.SIMPLIFIED_CHINESE));
+            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
         }
         if (StringUtils.isNotBlank(data.getStage())) {
             systemFieldMap.put("stage", stageConfigMap.get(data.getStage()));
