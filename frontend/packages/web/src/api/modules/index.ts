@@ -83,6 +83,7 @@ export const {
   importCustomForm,
   exportCustomFormAll,
   exportCustomFormSelected,
+  getCustomFormCreatePermission,
 } = customFormApi;
 
 export const {

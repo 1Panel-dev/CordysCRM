@@ -81,7 +81,12 @@
   import businessTitleDrawer from '@/views/contract/businessTitle/components/businessTitleDrawer.vue';
   import ContractStatus from '@/views/contract/contractPaymentPlan/components/contractPaymentStatus.vue';
 
-  import { getFieldCustomFormList, getOpportunityStageConfig, getOrderStatusConfig } from '@/api/modules';
+  import {
+    getCustomFormCreatePermission,
+    getFieldCustomFormList,
+    getOpportunityStageConfig,
+    getOrderStatusConfig,
+  } from '@/api/modules';
   import { contractPaymentPlanStatusOptions } from '@/config/contract';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateSystemColumns from '@/hooks/useFormCreateSystemColumns';
@@ -130,6 +135,7 @@
   const formKey = computed<FormDesignKeyEnum>(
     () => getDataSourceFormKey(props.sourceType, formKeyMap) as FormDesignKeyEnum
   );
+  const hasCustomFormCreatePermission = ref(false);
   const hasCreatePermission = computed(() => {
     if (isCustomForm.value) {
       return hasAnyPermission(['CUSTOM_FORM:ADD']);
@@ -148,6 +154,17 @@
       : t('common.searchByName');
   });
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+
+  async function checkCustomFormCreatePermission() {
+    try {
+      if (isCustomForm.value) {
+        hasCustomFormCreatePermission.value = await getCustomFormCreatePermission(props.sourceType);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   const isDatasourceFormConfig = computed(() => props.sourceType !== FieldDataSourceTypeEnum.BUSINESS_TITLE);
   const { fieldList, initFormConfig } = useFormCreateApi({
@@ -674,6 +691,7 @@
     await initFormConfig();
     emit('initForm', fieldList.value);
     searchData();
+    checkCustomFormCreatePermission();
   });
 
   watch(
