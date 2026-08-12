@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -59,7 +60,7 @@ public class ContractInvoiceExportService extends BaseExportService {
         var result = buildExportMergeResult(taskId, exportParam, dataList,
                 ContractInvoiceListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        getSystemFieldMap(detail, metas), cache));
+                        getSystemFieldMap(detail, metas, exportParam.getLocale()), cache));
         result.setQueryCount(queryCount);
         return result;
     }
@@ -82,7 +83,7 @@ public class ContractInvoiceExportService extends BaseExportService {
         }
     }
 
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractInvoiceListResponse data, List<FieldExportMeta> exportMetas) {
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractInvoiceListResponse data, List<FieldExportMeta> exportMetas, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("contractId", data.getContractName());
         systemFieldMap.put("id", data.getId());
@@ -99,7 +100,7 @@ public class ContractInvoiceExportService extends BaseExportService {
             systemFieldMap.put("taxRate", customFieldResolver.transformToValue(taxRate.getField(), data.getTaxRate().stripTrailingZeros().toPlainString()));
         }
         systemFieldMap.put("businessTitleId", data.getBusinessTitleName());
-        systemFieldMap.put("approvalStatus", data.getApprovalStatus() == null ? null : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+        systemFieldMap.put("approvalStatus", data.getApprovalStatus() == null ? null : Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
 
 
         FieldExportMeta invoiceType = metaMap.values().stream().filter(meta -> Strings.CI.equals(meta.getBusinessKey(), BusinessModuleField.INVOICE_INVOICE_TYPE.getBusinessKey())).findFirst().orElse(null);
