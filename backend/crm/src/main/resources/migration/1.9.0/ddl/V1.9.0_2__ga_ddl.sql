@@ -308,5 +308,13 @@ CREATE TABLE follow_up_record_comment
 CREATE INDEX idx_record_comment_parent_id ON follow_up_record_comment (parent_id);
 CREATE INDEX idx_record_comment_resource_id ON follow_up_record_comment (resource_id);
 
+
+-- 设置非必填
+ALTER TABLE follow_up_plan MODIFY COLUMN `method` varchar(32) NULL COMMENT '跟进方式';
+ALTER TABLE follow_up_plan MODIFY COLUMN estimated_time bigint NULL COMMENT '预计开始时间';
+ALTER TABLE follow_up_record MODIFY COLUMN follow_time bigint NULL COMMENT '跟进时间';
+ALTER TABLE follow_up_record MODIFY COLUMN follow_method varchar(32) NULL COMMENT '跟进方式';
+
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

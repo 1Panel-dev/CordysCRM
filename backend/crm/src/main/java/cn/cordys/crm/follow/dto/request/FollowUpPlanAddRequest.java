@@ -44,7 +44,6 @@ public class FollowUpPlanAddRequest {
     private Long estimatedTime;
 
     @Size(max = 32)
-    @NotBlank
     @Schema(description = "跟进方式", requiredMode = Schema.RequiredMode.REQUIRED)
     private String method;
 
