@@ -29,6 +29,7 @@
     AgentTaskExecutionRecordStatusEnum,
   } from '@lib/shared/models/system/agentTask';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -52,6 +53,21 @@
     [AgentTaskExecutionRecordStatusEnum.RUNNING]: t('common.inProgress'),
     [AgentTaskExecutionRecordStatusEnum.COMPLETED]: t('common.completed'),
     [AgentTaskExecutionRecordStatusEnum.STOPPED]: t('common.stopped'),
+  };
+
+  const statusMetaMap: Record<AgentTaskExecutionRecordStatusEnum, { icon: string; color: string }> = {
+    [AgentTaskExecutionRecordStatusEnum.RUNNING]: {
+      icon: 'iconicon_refresh',
+      color: 'var(--info-blue)',
+    },
+    [AgentTaskExecutionRecordStatusEnum.COMPLETED]: {
+      icon: 'iconicon_check_circle_filled',
+      color: 'var(--success-green)',
+    },
+    [AgentTaskExecutionRecordStatusEnum.STOPPED]: {
+      icon: 'iconicon_minus_circle_filled1',
+      color: 'var(--text-n4)',
+    },
   };
 
   function getActionList(row: AgentTaskExecutionRecordItem) {
@@ -115,7 +131,7 @@
     {
       title: t('system.business.globalTask.executionTime'),
       key: 'executionTime',
-      width: 190,
+      width: 150,
       sortOrder: false,
       sorter: true,
       render: (row) => (row.executionTime ? dayjs(row.executionTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
@@ -123,7 +139,7 @@
     {
       title: t('system.business.globalTask.taskName'),
       key: 'taskName',
-      minWidth: 180,
+      width: 180,
       ellipsis: {
         tooltip: true,
       },
@@ -131,7 +147,7 @@
     {
       title: t('system.business.globalTask.triggerReason'),
       key: 'triggerReason',
-      minWidth: 220,
+      width: 180,
       ellipsis: {
         tooltip: true,
       },
@@ -140,24 +156,29 @@
       title: t('common.status'),
       key: 'status',
       width: 100,
-      render: (row) => statusLabelMap[row.status] || '-',
+      render: (row) => {
+        const meta = statusMetaMap[row.status];
+        if (!meta) {
+          return '-';
+        }
+
+        return h('div', { class: 'flex items-center gap-[8px]' }, [
+          h(CrmIcon, {
+            type: meta.icon,
+            size: 16,
+            color: meta.color,
+          }),
+          h('span', statusLabelMap[row.status]),
+        ]);
+      },
     },
     {
       title: t('system.business.globalTask.result'),
       key: 'result',
-      width: 140,
+      width: 180,
       ellipsis: {
         tooltip: true,
       },
-    },
-    {
-      title: t('system.business.globalTask.confirmer'),
-      key: 'confirmUserName',
-      width: 120,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row) => row.confirmUserName || t('system.business.globalTask.autoExecute'),
     },
     {
       title: t('common.operation'),

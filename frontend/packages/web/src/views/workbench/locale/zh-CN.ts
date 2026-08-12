@@ -84,4 +84,9 @@ export default {
   'workbench.smart.reBuild': '重新生成',
   'workbench.smart.AIAction': 'AI 行动建议',
   'workbench.smart.AIActionApproval': 'AI 行动审核',
+  'workbench.smart.urgent': '紧急',
+  'workbench.smart.important': '重要',
+  'workbench.smart.suggestion': '建议',
+  'workbench.smart.ignore': '忽略',
+  'workbench.smart.reject': '拒绝',
 };

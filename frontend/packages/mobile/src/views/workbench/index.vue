@@ -138,7 +138,7 @@
         </van-cell-group>
       </div>
 
-      <div v-else="activeWorkbenchTab === WorkbenchHomeTabEnum.SMART" class="flex-1 overflow-auto px-[12px]"> </div>
+      <SmartWorkbench v-else-if="activeWorkbenchTab === WorkbenchHomeTabEnum.SMART" />
     </div>
     <AiMobileEntryComposer v-if="showAiEntryComposer" @submit="goAiChat" />
   </div>
@@ -159,6 +159,7 @@
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import followPlanList from '@/views/workbench/follow/followPlanList.vue';
   import followRecordList from '@/views/workbench/follow/followRecordList.vue';
+  import SmartWorkbench from '@/views/workbench/smart/index.vue';
 
   import { getTodoStatistic } from '@/api/modules';
   import useAppStore from '@/store/modules/app';

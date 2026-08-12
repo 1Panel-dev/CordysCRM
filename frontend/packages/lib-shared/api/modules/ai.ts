@@ -1,4 +1,6 @@
 import {
+  AgentActionApprovePageUrl,
+  AgentActionSuggestionPageUrl,
   AgentChatCancelUrl,
   AgentChatConfirmUrl,
   AgentChatStreamUrl,
@@ -7,10 +9,12 @@ import {
   AgentConversationDetailUrl,
   AgentConversationPageUrl,
   AgentConversationRenameUrl,
+  SmartDataOverviewUrl,
 } from '../requrls/ai';
 import { useI18n } from '../../hooks/useI18n';
 import { getToken } from '../../method/auth';
 import type { CordysAxios } from '../http/Axios';
+import type { CommonList, TableQueryParams } from '../../models/common';
 import type {
   AgentChatCancelParams,
   AgentChatConfirmData,
@@ -21,6 +25,8 @@ import type {
   AgentChatStreamOptions,
   AgentChatStreamParams,
   AgentConversationQueryRequest,
+  AgentActionApproveItem,
+  AgentActionSuggestionItem,
 } from '../../models/ai';
 
 interface SseBlock {
@@ -327,6 +333,18 @@ export default function useAiApi(CDR: CordysAxios) {
     });
   }
 
+  function getSmartDataOverview() {
+    return CDR.post<string>({ url: SmartDataOverviewUrl });
+  }
+
+  function getAgentActionSuggestionPage(data: TableQueryParams) {
+    return CDR.post<CommonList<AgentActionSuggestionItem>>({ url: AgentActionSuggestionPageUrl, data });
+  }
+
+  function getAgentActionApprovePage(data: TableQueryParams) {
+    return CDR.post<CommonList<AgentActionApproveItem>>({ url: AgentActionApprovePageUrl, data });
+  }
+
   return {
     streamAgentChat,
     cancelAgentChat,
@@ -337,5 +355,8 @@ export default function useAiApi(CDR: CordysAxios) {
     getAgentConversationDetail,
     deleteAgentConversation,
     renameAgentConversation,
+    getSmartDataOverview,
+    getAgentActionSuggestionPage,
+    getAgentActionApprovePage,
   };
 }

@@ -118,3 +118,28 @@ export interface AgentConversationDetail {
   messages: AgentConversationMessage[];
   conversation: AgentConversationItem;
 }
+
+export interface AgentActionSuggestionItem {
+  id: string;
+  organizationId?: string;
+  createTime?: number;
+  summary?: string;
+  createUser?: string;
+  content?: string;
+  topic?: string;
+  userId?: string;
+  actions?: string;
+  priority?: number;
+}
+
+export interface AgentActionApproveItem {
+  id: string;
+  summary?: string;
+  topic?: string;
+  createUser?: string;
+  type?: string;
+  userId?: string;
+  organizationId?: string;
+  createTime?: number;
+  content?: string;
+}
