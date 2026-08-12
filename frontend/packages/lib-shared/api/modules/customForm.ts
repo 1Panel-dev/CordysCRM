@@ -28,6 +28,7 @@ import {
   ImportCustomFormUrl,
   CustomFormExportAllUrl,
   CustomFormExportSelectedUrl,
+  GetCustomFormCreatePermissionUrl,
 } from '@lib/shared/api/requrls/customForm';
 import type {
   CommonList,
@@ -146,15 +147,15 @@ export default function useCustomFormApi(CDR: CordysAxios) {
   }
 
   function getCustomFormOptions() {
-    return CDR.get<CustomFormItem[]>({ url:GetCustomFormOptionsUrl });
+    return CDR.get<CustomFormItem[]>({ url: GetCustomFormOptionsUrl });
+  }
+
+  function getCustomFormCreatePermission(customFormId: string) {
+    return CDR.get<boolean>({ url: `${GetCustomFormCreatePermissionUrl}/${customFormId}` });
   }
 
   function preCheckImportCustomForm(params: ImportUploadParams) {
-    return CDR.uploadFile<{ data: ValidateInfo }>(
-      { url: PreCheckCustomFormImportUrl  },
-      params,
-      'file'
-    );
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckCustomFormImportUrl }, params, 'file');
   }
 
   function downloadCustomFormTemplate(customFormId?: string) {
@@ -169,11 +170,7 @@ export default function useCustomFormApi(CDR: CordysAxios) {
   }
 
   function importCustomForm(params: ImportUploadParams) {
-    return CDR.uploadFile(
-      { url: ImportCustomFormUrl },
-      params,
-      'file'
-    );
+    return CDR.uploadFile({ url: ImportCustomFormUrl }, params, 'file');
   }
 
   function exportCustomFormAll(data: TableExportParams) {
@@ -213,5 +210,6 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     importCustomForm,
     exportCustomFormAll,
     exportCustomFormSelected,
+    getCustomFormCreatePermission,
   };
 }
