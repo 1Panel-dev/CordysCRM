@@ -13,12 +13,16 @@ export const FOLLOW_COMMENT_OPERATE_PERMISSIONS = [
 
 export const FOLLOW_COMMENT_MAX_LENGTH = 512;
 
+function getCommentReplyCount(comment: FollowCommentItem) {
+  return typeof comment.replyCount === 'number' ? comment.replyCount : (comment.replies?.length || 0);
+}
+
 export function getLocalCommentCount(comments: FollowCommentItem[] = []) {
-  return comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0);
+  return comments.reduce((total, comment) => total + 1 + getCommentReplyCount(comment), 0);
 }
 
 export function getDeletedCommentCount(comment: FollowCommentItem) {
-  return 1 + (comment.replies?.length || 0);
+  return 1 + getCommentReplyCount(comment);
 }
 
 export function buildSaveCommentParams({

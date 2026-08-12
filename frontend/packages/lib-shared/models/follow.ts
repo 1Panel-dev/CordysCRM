@@ -1,4 +1,4 @@
-import type { TableQueryParams } from './common';
+import type { CommonList, TableQueryParams } from './common';
 
 export interface FollowCommentUser {
   id: string;
@@ -27,6 +27,10 @@ export interface FollowCommentItem {
 
 export interface FollowCommentListParams extends TableQueryParams {
   resourceId: string;
+}
+
+export interface FollowCommentPageResult extends CommonList<FollowCommentItem> {
+  commentCount: number; // 用于展示一级和二级评论总数
 }
 
 // 新增评论接口入参：用于新增一级评论、回复一级评论、回复二级评论

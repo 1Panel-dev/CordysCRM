@@ -3,10 +3,11 @@ import { showSuccessToast } from 'vant';
 
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { buildSaveCommentParams, buildUpdateCommentParams } from '@lib/shared/method/comment';
-import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+import type { TableQueryParams } from '@lib/shared/models/common';
 import type {
   FollowCommentItem,
   FollowCommentListParams,
+  FollowCommentPageResult,
   FollowCommentSubmitValue,
   SaveFollowCommentParams,
   UpdateFollowCommentParams,
@@ -28,7 +29,7 @@ import type { Ref } from 'vue';
 export type MobileCommentResourceType = 'record' | 'plan';
 
 interface CommentApiGroup {
-  list: (params: FollowCommentListParams) => Promise<CommonList<FollowCommentItem>>;
+  list: (params: FollowCommentListParams) => Promise<FollowCommentPageResult>;
   add: (params: SaveFollowCommentParams) => Promise<unknown>;
   update: (params: UpdateFollowCommentParams) => Promise<unknown>;
   delete: (id: string) => Promise<unknown>;
@@ -60,7 +61,7 @@ export default function useCommentResource(options: { type: Ref<MobileCommentRes
     loadedComments.value = [];
   });
 
-  async function loadCommentList(params: TableQueryParams): Promise<CommonList<FollowCommentItem>> {
+  async function loadCommentList(params: TableQueryParams): Promise<FollowCommentPageResult> {
     const result = await currentApi.value.list({
       ...params,
       resourceId: options.sourceId.value,

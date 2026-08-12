@@ -2,7 +2,7 @@
   <CommentPanel
     v-model:expanded="expanded"
     :comments="comments"
-    :comment-count="commentCount"
+    :comment-count="count"
     :has-more="hasMore"
     :loading="loading"
     :submit-loading="submitLoading"
@@ -22,24 +22,22 @@
   const props = defineProps<{
     type: CommentResourceType;
     sourceId: string;
-    initialCount?: number;
   }>();
+
+  const count = defineModel<number>('count', {
+    default: 0,
+  });
 
   const expanded = defineModel<boolean>('expanded', {
     default: false,
   });
 
-  const emit = defineEmits<{
-    (e: 'refresh'): void;
-  }>();
-
   const {
     comments,
-    commentCount,
+    commentCount: resourceCommentCount,
     loading,
     submitLoading,
     hasMore,
-    initComments,
     loadComments,
     createComment,
     replyComment,
@@ -48,14 +46,18 @@
   } = useCommentResource({
     type: computed(() => props.type),
     sourceId: computed(() => props.sourceId),
-    initialCount: computed(() => props.initialCount),
+    initialCount: computed(() => count.value),
+  });
+
+  watch(resourceCommentCount, (value) => {
+    count.value = value;
   });
 
   watch(
     () => [expanded.value, props.type, props.sourceId],
     ([isExpanded]) => {
       if (isExpanded) {
-        initComments();
+        loadComments(true);
       }
     },
     {
@@ -65,16 +67,13 @@
 
   async function handleCreateComment(value: Parameters<typeof createComment>[0]) {
     await createComment(value);
-    emit('refresh');
   }
 
   async function handleReplyComment(value: Parameters<typeof replyComment>[0]) {
     await replyComment(value);
-    emit('refresh');
   }
 
   async function handleDeleteComment(comment: Parameters<typeof deleteComment>[0]) {
     await deleteComment(comment);
-    emit('refresh');
   }
 </script>

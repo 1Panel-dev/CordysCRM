@@ -115,6 +115,7 @@
       @delete="handleDelete(sourceId)"
       @edit="handleEdit(activeItem)"
       @detail-init="handleDetailInit"
+      @count-change="handleCommentCountChange"
     />
   </CrmCard>
 </template>
@@ -331,6 +332,12 @@
     }
 
     activeItem.value.commentCount = commentCount;
+  }
+
+  function handleCommentCountChange(commentCount: number) {
+    if (activeItem.value) {
+      activeItem.value.commentCount = commentCount;
+    }
   }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();

@@ -48,10 +48,9 @@
         <n-divider class="!mb-[12px] !mt-[16px] bg-[var(--text-n8)]" />
         <CrmComment
           v-model:expanded="commentExpanded"
+          v-model:count="commentInitialCount"
           :type="commentResourceType"
           :source-id="props.sourceId"
-          :initial-count="commentInitialCount"
-          @refresh="handleCommentRefresh"
         />
       </CrmCard>
     </div>
@@ -88,6 +87,7 @@
     (e: 'edit'): void;
     (e: 'convert', detail?: any): void;
     (e: 'detailInit', detail?: Record<string, any>): void;
+    (e: 'countChange', count: number): void;
   }>();
 
   const { t } = useI18n();
@@ -120,9 +120,9 @@
     emit('detailInit', detail);
   }
 
-  function handleCommentRefresh() {
-    detailRefreshKey.value += 1;
-  }
+  watch(commentInitialCount, (count) => {
+    emit('countChange', count || 0);
+  });
 
   function handleDelete() {
     emit('delete');

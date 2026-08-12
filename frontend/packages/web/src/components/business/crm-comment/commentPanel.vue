@@ -66,7 +66,7 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatBadgeCount } from '@lib/shared/method';
-  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS, getLocalCommentCount } from '@lib/shared/method/comment';
+  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
   import type {
     FollowCommentActionValue,
     FollowCommentActiveEditor,
@@ -123,7 +123,7 @@
   }
 
   const hasComment = computed(() => {
-    return (props.commentCount ?? getLocalCommentCount(props.comments)) > 0;
+    return (props.commentCount || 0) > 0;
   });
 
   function handleCreateCancel() {
@@ -141,8 +141,7 @@
   });
 
   const displayCount = computed(() => {
-    const count = props.commentCount ?? getLocalCommentCount(props.comments);
-    return formatBadgeCount(count);
+    return formatBadgeCount(props.commentCount || 0);
   });
 
   const showHeaderDivider = computed(() => !expanded.value);

@@ -102,6 +102,7 @@
       @edit="handleEdit(activeItem as FollowDetailItem)"
       @convert="(activeItem)=>handleConvert(activeItem as FollowDetailItem)"
       @detail-init="handleDetailInit"
+      @count-change="handleCommentCountChange"
     />
     />
   </div>
@@ -200,6 +201,18 @@
   function handleDetailInit(detail?: Record<string, any>) {
     const commentCount = detail?.commentCount;
     if (!activeItem.value || typeof commentCount !== 'number') {
+      return;
+    }
+
+    activeItem.value.commentCount = commentCount;
+    const currentItem = data.value.find((item) => item.id === activeItem.value?.id);
+    if (currentItem) {
+      currentItem.commentCount = commentCount;
+    }
+  }
+
+  function handleCommentCountChange(commentCount: number) {
+    if (!activeItem.value) {
       return;
     }
 

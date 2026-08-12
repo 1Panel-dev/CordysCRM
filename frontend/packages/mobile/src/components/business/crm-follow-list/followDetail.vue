@@ -13,10 +13,10 @@
     </div>
     <div class="crm-follow-detail-comment bg-[var(--text-n9)] p-[16px]">
       <CrmComment
+        v-model:count="commentCount"
         class="crm-comment--detail"
         :type="commentType"
         :source-id="sourceId"
-        :count="commentCount"
         @change-editor="commentEditing = Boolean($event)"
       />
     </div>
@@ -80,7 +80,12 @@
     needInitDetail: route.query.needInitDetail === 'Y',
   });
 
-  const commentCount = computed(() => detail.value.commentCount || 0);
+  const commentCount = computed({
+    get: () => detail.value.commentCount || 0,
+    set: (value: number) => {
+      detail.value.commentCount = value;
+    },
+  });
 
   onBeforeMount(async () => {
     await initFormConfig();
