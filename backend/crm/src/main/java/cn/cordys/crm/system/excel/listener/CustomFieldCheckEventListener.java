@@ -19,6 +19,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -51,6 +52,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * 唯一校验&&数据库属性值缓存&&Excel列值缓存
      */
     private final Map<String, BaseField> uniques = new HashMap<>();
+    private final Map<String, BigDecimal> numberMax = new HashMap<>();
     private final Map<String, Set<BaseResourceSubField>> uniqueCheckSet = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
     protected final CommonMapper commonMapper;
@@ -90,6 +92,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     protected int maxHeadRow;
     protected final Map<Integer, Map<Integer, String>> mergeRowDataMap;
     protected Map<Integer, String> firstHeadMap = new HashMap<>();
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
 
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg, String importType) {
         this(fields, sourceTable, fieldTable, currentOrg, null, null, importType);
@@ -109,11 +112,13 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                     this.fieldMap.put(subField.getName() + "_" + f.getName(), f);
                     refSubMap.put(subField.getName() + "_" + f.getName(), subField.getId());
                     setCheckLimit(f, subField.getName());
+                    setNumberMax(f, subField.getName());
                 }
                 continue;
             }
             this.fieldMap.put(field.getName(), field);
             setCheckLimit(field, null);
+            setNumberMax(field, null);
         }
         this.sourceTable = sourceTable;
         this.currentOrg = currentOrg;
@@ -234,6 +239,10 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                     rowData.get(k).length() > fieldLenLimit.get(v)) {
                 errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
             }
+            if (numberMax.containsKey(v) && checkNumberMax(rowData.get(k), numberMax.get(v))) {
+                errText.append(v).append(Translator.getWithArgs("exceed.max", numberMax.get(v))).append(";");
+            }
+
         });
         if (StringUtils.isNotEmpty(errText)) {
             ExcelErrData excelErrData = new ExcelErrData(rowIndex,
@@ -324,6 +333,22 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         return false;
     }
 
+
+    /**
+     * 最大值校验
+     *
+     * @param val
+     * @param max
+     * @return
+     */
+    private boolean checkNumberMax(String val, BigDecimal max) {
+        if (StringUtils.isNotBlank(val)) {
+            BigDecimal bigDecimal = new BigDecimal(val);
+            return bigDecimal.compareTo(max) > 0;
+        }
+        return false;
+    }
+
     /**
      * 表头是否非法
      *
@@ -363,6 +388,19 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         }
         if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
             fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), 3000);
+        }
+    }
+
+
+    /**
+     * 设置数字类型最大值
+     *
+     * @param field
+     * @param subFieldName
+     */
+    private void setNumberMax(BaseField field, String subFieldName) {
+        if (Strings.CI.equalsAny(field.getType(), FieldType.INPUT_NUMBER.name(), FieldType.FORMULA.name())) {
+            numberMax.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), MAX_AMOUNT);
         }
     }
 
