@@ -64,4 +64,28 @@ public class PageUtils {
             throw new RuntimeException("保存当前页码数据时发生错误！", e);
         }
     }
+
+    /**
+     * 设置带有评论数量的分页信息
+     *
+     * @param page      分页对象
+     * @param list      数据列表
+     * @param <T>       数据列表的类型
+     * @param commentCount 评论数量
+     *
+     * @return 包含分页信息的自定义分页对象
+     */
+    public static <T> PagerWithCommentCount<T> setPageInfoWithCommentCount(Page<?> page, T list, long commentCount) {
+        try {
+            PagerWithCommentCount<T> pager = new PagerWithCommentCount<>();
+            pager.setList(list);
+            pager.setPageSize(page.getPageSize());
+            pager.setCurrent(page.getPageNum());
+            pager.setTotal(page.getTotal());
+            pager.setCommentCount(commentCount);
+            return pager;
+        } catch (Exception e) {
+            throw new RuntimeException("保存当前页码数据时发生错误！", e);
+        }
+    }
 }

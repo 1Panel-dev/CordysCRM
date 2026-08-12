@@ -1,6 +1,6 @@
 package cn.cordys.crm.follow.controller;
 
-import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.follow.domain.FollowUpPlanComment;
 import cn.cordys.crm.follow.dto.request.CommentAddRequest;
@@ -30,7 +30,7 @@ public class FollowUpPlanCommentController {
 
     @PostMapping("/page")
     @Operation(summary = "分页查询跟进计划顶层评论")
-    public Pager<List<CommentResponse>> page(@Validated @RequestBody CommentPageRequest request) {
+    public PagerWithCommentCount<List<CommentResponse>> page(@Validated @RequestBody CommentPageRequest request) {
         followUpPlanService.checkPlanPermission(request.getResourceId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), true);
         return commentService.page(request, OrganizationContext.getOrganizationId());
     }
