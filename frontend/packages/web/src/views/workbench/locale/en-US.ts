@@ -86,4 +86,9 @@ export default {
   'workbench.smart.reBuild': 'Rebuild',
   'workbench.smart.AIAction': 'AI Action Suggestions',
   'workbench.smart.AIActionApproval': 'AI Action Approval',
+  'workbench.smart.urgent': 'Urgent',
+  'workbench.smart.important': 'Important',
+  'workbench.smart.suggestion': 'Suggestion',
+  'workbench.smart.ignore': 'Ignore',
+  'workbench.smart.reject': 'Reject',
 };

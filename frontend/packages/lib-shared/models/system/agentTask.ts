@@ -46,6 +46,4 @@ export interface AgentTaskExecutionRecordItem {
   triggerReason: string;
   status: AgentTaskExecutionRecordStatusEnum;
   result: string;
-  confirmUser: string;
-  confirmUserName: string;
 }

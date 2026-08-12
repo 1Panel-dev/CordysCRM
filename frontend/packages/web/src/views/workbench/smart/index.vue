@@ -10,36 +10,9 @@
           @submit="handleComposerSubmit"
         />
       </AiChatProvider>
-      <CrmCard no-content-padding hide-footer>
-        <template #header>
-          <div class="text-[14px] font-semibold">{{ t('workbench.dataOverView') }}</div>
-        </template>
-        <template #header-extra>
-          <n-button type="primary" class="mr-[16px]" ghost @click="">{{ t('workbench.smart.reBuild') }}</n-button>
-          <button class="gradient-border-button">
-            <n-gradient-text
-              :style="{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontWeight: 400,
-              }"
-              gradient="linear-gradient(96.9deg, #3370FF 0%, #E22E23 47.65%, #00C261 100%)"
-            >
-              <CrmIcon
-                type="iconicon_star1"
-                :size="16"
-                color="linear-gradient(130.1deg, #FFA200 -30.47%, #E22E23 42.7%, #00C261 113.44%)"
-              />
-              {{ t('workbench.smart.AIRead') }}
-            </n-gradient-text>
-          </button>
-        </template>
-        <div class="p-[16px_24px]">
-          <n-empty v-if="!dataOverviewAIRenderString" :description="t('common.noData')" />
-          <div class="h-full w-full" v-html="dataOverviewAIRenderString"> </div>
-        </div>
-      </CrmCard>
+      <n-spin v-if="dataOverviewAIRenderString" :show="dataOverviewLoading" class="bg-[var(--text-n10)]">
+        <div class="h-full w-full" v-html="dataOverviewAIRenderString"> </div>
+      </n-spin>
       <div class="flex w-full gap-[16px]">
         <CrmCard class="flex-1" no-content-padding hide-footer>
           <template #header>
@@ -48,9 +21,46 @@
               <div class="text-[14px] font-semibold">{{ t('workbench.smart.AIAction') }}</div>
             </div>
           </template>
-          <div class="p-[16px_24px]">
-            <n-empty v-if="!AIActionRenderString" :description="t('common.noData')" />
-            <div class="h-full w-full" v-html="AIActionRenderString"> </div>
+          <div class="px-[24px] pb-[24px]">
+            <n-spin :show="suggestionLoading" class="h-full" content-class="h-full">
+              <n-empty v-if="!suggestionList.length" :description="t('common.noData')" />
+              <n-scrollbar v-else class="h-full" @scroll="suggestionPager.handleReachBottom">
+                <div class="flex flex-col gap-[16px]">
+                  <div v-for="item in suggestionList" :key="item.id" class="smart-workbench-action-item">
+                    <div class="flex items-center justify-between gap-[12px]">
+                      <div class="flex min-w-0 items-center gap-[8px]">
+                        <CrmTag
+                          size="small"
+                          theme="light"
+                          :type="getSuggestionPriorityMeta(item).type"
+                          tooltip-disabled
+                        >
+                          {{ getSuggestionPriorityMeta(item).label }}
+                        </CrmTag>
+                        <n-tooltip trigger="hover" :delay="300">
+                          <template #trigger>
+                            <span class="truncate font-semibold">
+                              {{ item.topic }}
+                            </span>
+                          </template>
+                          {{ item.topic }}
+                        </n-tooltip>
+                      </div>
+                      <CrmIcon class="shrink-0 cursor-pointer text-[var(--text-n2)]" type="iconicon_close" :size="16" />
+                    </div>
+                    <div class="mt-[16px] whitespace-pre-wrap text-[var(--text-n2)]">
+                      {{ item.summary || '-' }}
+                    </div>
+                    <div class="mt-[16px] flex flex-wrap gap-[8px]">
+                      <n-button v-if="item.actions" size="small" type="primary" ghost>
+                        {{ item.actions }}
+                      </n-button>
+                      <n-button size="small" type="primary" ghost>{{ t('workbench.smart.ignore') }}</n-button>
+                    </div>
+                  </div>
+                </div>
+              </n-scrollbar>
+            </n-spin>
           </div>
         </CrmCard>
         <CrmCard class="flex-1" no-content-padding hide-footer>
@@ -61,8 +71,33 @@
             </div>
           </template>
           <div class="p-[16px_24px]">
-            <n-empty v-if="!AIActionApprovalRenderString" :description="t('common.noData')" />
-            <div class="h-full w-full" v-html="AIActionApprovalRenderString"> </div>
+            <n-spin :show="approveLoading" class="h-full" content-class="h-full">
+              <n-empty v-if="!approveList.length" :description="t('common.noData')" />
+              <n-scrollbar v-else class="h-full" @scroll="approvePager.handleReachBottom">
+                <div class="flex flex-col gap-[16px]">
+                  <div v-for="item in approveList" :key="item.id" class="smart-workbench-action-item">
+                    <div class="flex items-center justify-between gap-[12px]">
+                      <div class="flex min-w-0 items-center gap-[8px]">
+                        <CrmTag class="shrink-0" size="small" theme="light" type="warning" tooltip-disabled>
+                          {{ item.type }}
+                        </CrmTag>
+                        <span class="truncate font-semibold">
+                          {{ item.topic }}
+                        </span>
+                      </div>
+                      <CrmIcon class="shrink-0 cursor-pointer text-[var(--text-n2)]" type="iconicon_close" :size="16" />
+                    </div>
+                    <div class="mt-[16px] whitespace-pre-wrap text-[var(--text-n2)]">
+                      {{ item.summary || '-' }}
+                    </div>
+                    <div class="mt-[16px] flex flex-wrap gap-[8px]">
+                      <n-button size="small" type="success" ghost>{{ t('common.confirm') }}</n-button>
+                      <n-button size="small" type="error" ghost>{{ t('workbench.smart.reject') }}</n-button>
+                    </div>
+                  </div>
+                </div>
+              </n-scrollbar>
+            </n-spin>
           </div>
         </CrmCard>
       </div>
@@ -71,13 +106,16 @@
 </template>
 
 <script setup lang="ts">
-  import { onBeforeUnmount, ref } from 'vue';
-  import { NButton, NEmpty, NGradientText, NScrollbar } from 'naive-ui';
+  import { onBeforeUnmount, onMounted, ref } from 'vue';
+  import { NButton, NEmpty, NScrollbar, NSpin, NTooltip } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { AgentActionApproveItem, AgentActionSuggestionItem } from '@lib/shared/models/ai';
+  import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import {
     type AiChatMcp,
     AiChatProvider,
@@ -86,6 +124,8 @@
     createAiChatRuntime,
   } from '@/components/business/ai-chat';
 
+  import { getAgentActionApprovePage, getAgentActionSuggestionPage, getSmartDataOverview } from '@/api/modules';
+
   const { t } = useI18n();
 
   // TODO lmy 获取后端数据
@@ -93,9 +133,6 @@
     { id: 'cordys-crm', name: 'codys-crm', permission: 'read' },
     { id: 'ardot-design-assistant', name: 'mock', permission: 'read' },
   ];
-  const dataOverviewAIRenderString = ref('');
-  const AIActionRenderString = ref('');
-  const AIActionApprovalRenderString = ref('');
 
   const composerRuntime = createAiChatRuntime();
 
@@ -112,26 +149,139 @@
     );
   }
 
+  function decodeContent(content?: string): string {
+    if (!content) {
+      return '';
+    }
+
+    try {
+      return decodeURIComponent(escape(window.atob(content)));
+    } catch {
+      return content;
+    }
+  }
+
+  function getSuggestionPriorityMeta(item: AgentActionSuggestionItem) {
+    if (item.priority && item.priority >= 5) {
+      return {
+        label: t('workbench.smart.urgent'),
+        type: 'error' as const,
+      };
+    }
+
+    if (item.priority && item.priority >= 4) {
+      return {
+        label: t('workbench.smart.important'),
+        type: 'warning' as const,
+      };
+    }
+
+    return {
+      label: t('workbench.smart.suggestion'),
+      type: 'info' as const,
+    };
+  }
+
+  const dataOverviewLoading = ref(false);
+  const dataOverviewAIRenderString = ref('');
+
+  async function loadDataOverview(): Promise<void> {
+    try {
+      dataOverviewLoading.value = true;
+      const res = await getSmartDataOverview();
+      dataOverviewAIRenderString.value = decodeContent(res);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      dataOverviewLoading.value = false;
+    }
+  }
+
+  function createActionPager<T>(
+    list: Ref<T[]>,
+    loading: Ref<boolean>,
+    loader: (params: TableQueryParams) => Promise<CommonList<T>>
+  ) {
+    const pagination = ref({
+      total: 0,
+      current: 1,
+      pageSize: 10,
+    });
+
+    async function load(refresh = true): Promise<void> {
+      if (loading.value) {
+        return;
+      }
+
+      try {
+        loading.value = true;
+
+        if (refresh) {
+          pagination.value.current = 1;
+        }
+
+        const res = await loader({
+          current: pagination.value.current,
+          pageSize: pagination.value.pageSize,
+        });
+
+        list.value = refresh ? res?.list || [] : list.value.concat(res?.list || []);
+        pagination.value.total = res?.total || 0;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    function handleReachBottom(event: Event): void {
+      const el = event.target as HTMLElement;
+
+      if (el.scrollTop + el.clientHeight < el.scrollHeight - 24) {
+        return;
+      }
+
+      const { current, pageSize, total } = pagination.value;
+
+      if (current >= Math.ceil(total / pageSize)) {
+        return;
+      }
+
+      pagination.value.current += 1;
+      load(false);
+    }
+
+    return {
+      load,
+      handleReachBottom,
+    };
+  }
+
+  const suggestionLoading = ref(false);
+  const suggestionList = ref<AgentActionSuggestionItem[]>([]);
+  const suggestionPager = createActionPager(suggestionList, suggestionLoading, getAgentActionSuggestionPage);
+
+  const approveLoading = ref(false);
+  const approveList = ref<AgentActionApproveItem[]>([]);
+  const approvePager = createActionPager(approveList, approveLoading, getAgentActionApprovePage);
+
+  onMounted(() => {
+    loadDataOverview();
+    suggestionPager.load();
+    approvePager.load();
+  });
+
   onBeforeUnmount(() => {
     composerRuntime.clear();
   });
 </script>
 
 <style scoped lang="less">
-  .gradient-border-button {
-    padding: 4px 12px;
-    border: 1px solid transparent;
+  .smart-workbench-action-item {
+    padding: 16px;
+    border: 1px solid var(--text-n8);
     border-radius: 4px;
-    background-clip: padding-box, border-box;
-
-    /* background layer: button fill; border layer: gradient */
-    background-image: linear-gradient(var(--primary-7), var(--primary-7)),
-      linear-gradient(96.9deg, #3370ff 0%, #e22e23 47.65%, #00c261 100%);
-    background-origin: border-box;
-    &:hover {
-      border: 1px solid transparent;
-      background-image: linear-gradient(var(--n-button-color, #ffffff), var(--n-button-color, #ffffff)),
-        linear-gradient(96.9deg, #3370ff 0%, #e22e23 47.65%, #00c261 100%) !important;
-    }
   }
 </style>

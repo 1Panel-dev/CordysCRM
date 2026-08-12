@@ -276,6 +276,30 @@ export const pathMap: PathMapItem[] = [
               tab: 'mailSettings',
             },
           },
+          {
+            key: 'SYSTEM_BUSINESS_MODEL',
+            route: AppRouteEnum.SYSTEM_BUSINESS,
+            locale: 'system.business.tab.modelSettings',
+            routeQuery: {
+              tab: 'modelSettings',
+            },
+          },
+          {
+            key: 'SYSTEM_BUSINESS_TERM',
+            route: AppRouteEnum.SYSTEM_BUSINESS,
+            locale: 'system.business.tab.termSettings',
+            routeQuery: {
+              tab: 'termSettings',
+            },
+          },
+          {
+            key: 'SYSTEM_BUSINESS_GLOBAL_TASK',
+            route: AppRouteEnum.SYSTEM_BUSINESS,
+            locale: 'system.business.tab.globalTask',
+            routeQuery: {
+              tab: 'globalTask',
+            },
+          },
         ],
       },
       {

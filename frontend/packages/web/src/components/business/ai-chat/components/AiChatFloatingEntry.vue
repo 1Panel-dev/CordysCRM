@@ -66,6 +66,11 @@
     mcps?: AiChatMcp[];
   }
 
+  interface FloatingPosition {
+    right: number;
+    bottom: number;
+  }
+
   const FLOATING_SIZE = 40;
   const DEFAULT_GAP = 24;
   const DRAG_THRESHOLD = 4;
@@ -76,7 +81,7 @@
   const showChatDrawer = ref(false);
   const aiChatRef = ref<InstanceType<typeof AiChat>>();
   const chatSessionId = ref('');
-  const position = ref({ x: 0, y: 0 });
+  const position = ref<FloatingPosition>({ right: DEFAULT_GAP, bottom: DEFAULT_GAP });
   const isDragging = ref(false);
   const ignoreNextClick = ref(false);
 
@@ -114,30 +119,28 @@
   });
 
   const floatingStyle = computed(() => ({
-    left: `${position.value.x}px`,
-    top: `${position.value.y}px`,
+    right: `${position.value.right}px`,
+    bottom: `${position.value.bottom}px`,
   }));
 
-  function getDefaultPosition() {
-    return {
-      x: window.innerWidth - FLOATING_SIZE - DEFAULT_GAP,
-      y: window.innerHeight - FLOATING_SIZE - DEFAULT_GAP,
-    };
+  function clampOffset(offset: number, viewportSize: number): number {
+    const maxOffset = Math.max(DEFAULT_GAP, viewportSize - FLOATING_SIZE - DEFAULT_GAP);
+    return Math.min(Math.max(DEFAULT_GAP, offset), maxOffset);
   }
 
-  function normalizePosition(nextPosition = position.value) {
+  function normalizePosition(nextPosition = position.value): FloatingPosition {
     return {
-      x: Math.min(Math.max(DEFAULT_GAP, nextPosition.x), window.innerWidth - FLOATING_SIZE - DEFAULT_GAP),
-      y: Math.min(Math.max(DEFAULT_GAP, nextPosition.y), window.innerHeight - FLOATING_SIZE - DEFAULT_GAP),
+      right: clampOffset(nextPosition.right, window.innerWidth),
+      bottom: clampOffset(nextPosition.bottom, window.innerHeight),
     };
   }
 
   function initPosition(): void {
     try {
-      const savedPosition = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') as { x: number; y: number } | null;
-      position.value = normalizePosition(savedPosition ?? getDefaultPosition());
+      const savedPosition = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') as FloatingPosition | null;
+      position.value = normalizePosition(savedPosition ?? position.value);
     } catch {
-      position.value = normalizePosition(getDefaultPosition());
+      position.value = normalizePosition();
     }
   }
 
@@ -220,8 +223,8 @@
 
       if (isDragging.value) {
         position.value = normalizePosition({
-          x: startPosition.x + deltaX,
-          y: startPosition.y + deltaY,
+          right: startPosition.right - deltaX,
+          bottom: startPosition.bottom - deltaY,
         });
       }
     };
