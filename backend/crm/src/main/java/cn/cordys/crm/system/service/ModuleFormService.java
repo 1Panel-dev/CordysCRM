@@ -529,12 +529,21 @@ public class ModuleFormService {
 
     private OptionMetadata collectOptionMetadata(ModuleFormConfigDTO formConfig) {
         var allFields = flattenFormAllFields(formConfig);
+        var showFields = allFields.stream()
+                .filter(f -> f instanceof DatasourceField sourceField && CollectionUtils.isNotEmpty(sourceField.getShowFields()))
+                .flatMap(f -> ((DatasourceField) f).getShowFields().stream().map(sf -> f.getId() + REF_UNDERLINE + sf))
+                .distinct()
+                .toList();
         var staticOptions = new HashMap<String, List<OptionDTO>>(4);
         var idTypeMap = new HashMap<String, String>(8);
         for (var field : allFields) {
-            putOptionMap(staticOptions, idTypeMap, field, field.getId());
-            if (StringUtils.isNotBlank(field.getBusinessKey())) {
-                putOptionMap(staticOptions, idTypeMap, field, field.getBusinessKey());
+            if (showFields.contains(field.getId())) {
+                putOptionMap(staticOptions, idTypeMap, field, field.getId());
+            } else {
+                putOptionMap(staticOptions, idTypeMap, field, field.getId());
+                if (StringUtils.isNotBlank(field.getBusinessKey())) {
+                    putOptionMap(staticOptions, idTypeMap, field, field.getBusinessKey());
+                }
             }
         }
         return new OptionMetadata(staticOptions, idTypeMap);
