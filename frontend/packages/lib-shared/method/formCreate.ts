@@ -356,7 +356,8 @@ export function transformData({
             fieldOptionMap[subField.id] = originalData?.optionMap?.[subField.id] || [];
           } else {
             subItem[`${subField.id}_original`] = subItem[subField.businessKey || subField.id]; // 备份原始值以供编辑时填充数据源
-            subItem[subField.id] = parseModuleFieldValue(
+            // 优先使用业务 key 去取值，若没有业务 key 则使用字段 id
+            subItem[subField.businessKey || subField.id] = parseModuleFieldValue(
               subField,
               subItem[subField.businessKey || subField.id],
               originalData?.optionMap?.[subField.businessKey || subField.id]
