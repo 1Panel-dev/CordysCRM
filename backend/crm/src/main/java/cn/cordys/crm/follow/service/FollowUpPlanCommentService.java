@@ -4,7 +4,7 @@ import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.follow.constants.FollowUpCommentTargetType;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
@@ -33,7 +33,7 @@ public class FollowUpPlanCommentService extends BaseCommentService<FollowUpPlanC
     private ExtFollowUpPlanMapper extPlanMapper;
 
     @Override
-    public Pager<List<CommentResponse>> page(CommentPageRequest request, String orgId) {
+    public PagerWithCommentCount<List<CommentResponse>> page(CommentPageRequest request, String orgId) {
         return super.page(request, orgId);
     }
 

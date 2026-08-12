@@ -2,7 +2,7 @@ package cn.cordys.crm.follow.service;
 
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
-import cn.cordys.common.pager.Pager;
+import cn.cordys.common.pager.PagerWithCommentCount;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.domain.Clue;
@@ -61,7 +61,7 @@ public abstract class BaseCommentService<C extends Comment> {
 
     protected abstract CommentResourceInfo getResource(String resourceId, String orgId, String userId);
 
-    public Pager<List<CommentResponse>> page(CommentPageRequest request, String orgId) {
+    public PagerWithCommentCount<List<CommentResponse>> page(CommentPageRequest request, String orgId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
 
         List<CommentResponse> comments = extCommentMapper.selectPage(
@@ -76,7 +76,9 @@ public abstract class BaseCommentService<C extends Comment> {
             comment.setReplies(replies);
             comment.setReplyCount(replies.size());
         });
-        return PageUtils.setPageInfo(page, comments);
+
+        long commentCount = extCommentMapper.countByResource(getTargetType().name(), request.getResourceId(), orgId);
+        return PageUtils.setPageInfoWithCommentCount(page, comments, commentCount);
     }
 
     public C add(CommentAddRequest request, String userId, String orgId) {
