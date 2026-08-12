@@ -852,6 +852,7 @@
             :disabled="fieldConfig.disabledProps?.includes('formulaResultFormat') || !!fieldConfig.resourceFieldId"
             name="radiogroup"
             class="flex"
+            @update-value="handleChangeFormulaResultFormat"
           >
             <n-radio-button value="text" class="flex-1 text-center">
               {{ t('crmFormDesign.formulaText') }}
@@ -2024,6 +2025,13 @@
     if (field?.type === FieldTypeEnum.FORMULA && field?.formulaResultFormat == null) {
       field.formulaResultFormat = 'text';
     }
+  }
+
+  function handleChangeFormulaResultFormat(value: 'text' | 'number') {
+    fieldConfig.value.formulaResultFormat = value;
+    fieldConfig.value.decimalPlaces = false;
+    fieldConfig.value.precision = 0;
+    fieldConfig.value.showThousandsSeparator = false;
   }
 
   watch(() => [fieldConfig.value?.type, fieldConfig.value?.formulaResultFormat], normalizeFormulaResultFormat, {
