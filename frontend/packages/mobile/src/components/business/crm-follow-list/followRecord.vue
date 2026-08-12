@@ -89,6 +89,8 @@
     });
   }
 
+  onActivated(loadList);
+
   defineExpose({
     loadList,
   });

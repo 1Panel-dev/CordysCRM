@@ -49,6 +49,7 @@ import type {
 import type {
   FollowCommentItem,
   FollowCommentListParams,
+  FollowCommentPageResult,
   SaveFollowCommentParams,
   UpdateFollowCommentParams,
 } from '@lib/shared/models/follow';
@@ -115,7 +116,7 @@ export default function useFollowApi(CDR: CordysAxios) {
 
   // 跟进记录评论
   function getFollowRecordCommentList(data: FollowCommentListParams) {
-    return CDR.post<CommonList<FollowCommentItem>>({ url: GetFollowRecordCommentListUrl, data });
+    return CDR.post<FollowCommentPageResult>({ url: GetFollowRecordCommentListUrl, data });
   }
 
   function addFollowRecordComment(data: SaveFollowCommentParams) {
@@ -132,7 +133,7 @@ export default function useFollowApi(CDR: CordysAxios) {
 
   // 跟进计划评论
   function getFollowPlanCommentList(data: FollowCommentListParams) {
-    return CDR.post<CommonList<FollowCommentItem>>({ url: GetFollowPlanCommentListUrl, data });
+    return CDR.post<FollowCommentPageResult>({ url: GetFollowPlanCommentListUrl, data });
   }
 
   function addFollowPlanComment(data: SaveFollowCommentParams) {

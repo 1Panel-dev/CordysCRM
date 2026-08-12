@@ -2,10 +2,10 @@
   <CrmPageWrapper :title="t('crmComment.title')">
     <div class="crm-comment-page-content bg-[var(--text-n9)]">
       <CrmComment
+        v-model:count="commentCount"
         class="crm-comment--standalone"
         :type="commentType"
         :source-id="commentSourceId"
-        :count="initialCommentCount"
         :default-reply-count="1"
       />
     </div>
@@ -33,7 +33,11 @@
     return Number.isFinite(count) ? count : 0;
   }
 
-  const initialCommentCount = computed(() => getInitialCommentCount());
+  const commentCount = ref(getInitialCommentCount());
+
+  watch([commentSourceId, commentType], () => {
+    commentCount.value = getInitialCommentCount();
+  });
 </script>
 
 <style scoped lang="less">

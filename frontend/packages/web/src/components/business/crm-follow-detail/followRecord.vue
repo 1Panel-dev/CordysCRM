@@ -75,10 +75,10 @@
           <div class="crm-follow-record-content" v-html="item.content.replace(/\n/g, '<br />')"></div>
           <CrmComment
             v-model:expanded="commentExpandedMap[item.id]"
+            v-model:count="item.commentCount"
             class="crm-follow-record-comment-input"
             :type="props.type"
             :source-id="item.id"
-            :initial-count="item.commentCount"
           />
         </div>
       </div>

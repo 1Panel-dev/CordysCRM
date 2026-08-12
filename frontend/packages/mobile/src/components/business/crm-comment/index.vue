@@ -80,11 +80,12 @@
 
 <script setup lang="ts">
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS, getDeletedCommentCount } from '@lib/shared/method/comment';
-  import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+  import { FOLLOW_COMMENT_OPERATE_PERMISSIONS } from '@lib/shared/method/comment';
+  import type { TableQueryParams } from '@lib/shared/models/common';
   import type {
     FollowCommentActiveEditor,
     FollowCommentItem,
+    FollowCommentPageResult,
     FollowCommentSubmitValue,
   } from '@lib/shared/models/follow';
 
@@ -103,12 +104,10 @@
     defineProps<{
       type: MobileCommentResourceType;
       sourceId: string;
-      count?: number;
       title?: string;
       defaultReplyCount?: number;
     }>(),
     {
-      count: undefined,
       title: '',
       defaultReplyCount: 1,
     }
@@ -126,7 +125,9 @@
   const comments = ref<FollowCommentItem[]>([]);
   const commentListRef = ref<InstanceType<typeof CrmList>>();
   const commentEditorRef = ref<InstanceType<typeof CommentEditor>>();
-  const localCommentCount = ref(props.count || 0);
+  const count = defineModel<number>('count', {
+    default: 0,
+  });
   const expandedCommentIds = ref<string[]>([]);
   const acceptEmptyCommentList = ref(false);
 
@@ -136,7 +137,7 @@
       sourceId: toRef(props, 'sourceId'),
     });
 
-  const commentCount = computed(() => localCommentCount.value);
+  const commentCount = computed(() => count.value);
   const canOperateComment = computed(() => hasAnyPermission(FOLLOW_COMMENT_OPERATE_PERMISSIONS));
 
   const isCommentOwner = (comment: FollowCommentItem) => comment.createUser === userStore.userInfo.id;
@@ -145,8 +146,9 @@
 
   const canDeleteComment = (comment: FollowCommentItem) => isCommentOwner(comment);
 
-  async function handleLoadCommentList(params: TableQueryParams): Promise<CommonList<FollowCommentItem>> {
+  async function handleLoadCommentList(params: TableQueryParams): Promise<FollowCommentPageResult> {
     const result = await loadCommentList(params);
+    count.value = result.commentCount;
     acceptEmptyCommentList.value = (params.current || 1) === 1 && result.list.length === 0;
     return result;
   }
@@ -181,6 +183,12 @@
     emit('changeEditor', editor);
   }
 
+  function focusCommentEditor() {
+    nextTick(() => {
+      commentEditorRef.value?.focus();
+    });
+  }
+
   function openCreateEditor() {
     setActiveEditor({
       action: 'create',
@@ -208,12 +216,6 @@
 
   function closeEditor() {
     setActiveEditor(null);
-  }
-
-  function focusCommentEditor() {
-    nextTick(() => {
-      commentEditorRef.value?.focus();
-    });
   }
 
   async function reloadComments() {
@@ -278,7 +280,6 @@
     }
 
     await deleteComment(comment);
-    localCommentCount.value = Math.max(localCommentCount.value - getDeletedCommentCount(comment), 0);
     await reloadComments();
   }
 
@@ -293,7 +294,6 @@
       }
 
       await createComment(value);
-      localCommentCount.value += 1;
       await reloadComments();
       closeEditor();
       return;
@@ -306,7 +306,6 @@
       }
 
       await replyComment(value, activeComment);
-      localCommentCount.value += 1;
       await reloadComments();
       closeEditor();
       return;
@@ -322,16 +321,6 @@
       closeEditor();
     }
   }
-
-  watch(
-    () => props.count,
-    (count) => {
-      localCommentCount.value = count || 0;
-    },
-    {
-      immediate: true,
-    }
-  );
 
   watch(
     () => [props.type, props.sourceId],

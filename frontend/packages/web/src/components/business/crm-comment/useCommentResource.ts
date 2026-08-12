@@ -1,11 +1,11 @@
 import { computed, ref, watch } from 'vue';
 
-import { buildSaveCommentParams, buildUpdateCommentParams, getDeletedCommentCount } from '@lib/shared/method/comment';
-import type { CommonList } from '@lib/shared/models/common';
+import { buildSaveCommentParams, buildUpdateCommentParams } from '@lib/shared/method/comment';
 import type {
   FollowCommentActionValue,
   FollowCommentItem,
   FollowCommentListParams,
+  FollowCommentPageResult,
   FollowCommentSubmitValue,
   SaveFollowCommentParams,
   UpdateFollowCommentParams,
@@ -27,7 +27,7 @@ import type { Ref } from 'vue';
 export type CommentResourceType = 'followRecord' | 'followPlan';
 
 interface CommentApiGroup {
-  list: (params: FollowCommentListParams) => Promise<CommonList<FollowCommentItem>>;
+  list: (params: FollowCommentListParams) => Promise<FollowCommentPageResult>;
   add: (params: SaveFollowCommentParams) => Promise<unknown>;
   update: (params: UpdateFollowCommentParams) => Promise<unknown>;
   delete: (id: string) => Promise<unknown>;
@@ -103,6 +103,7 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
       });
 
       comments.value = refresh ? res.list : comments.value.concat(res.list);
+      commentCount.value = res.commentCount;
       pageTotal.value = res.total;
       current.value = requestCurrent + 1;
       hasMore.value = comments.value.length < pageTotal.value;
@@ -133,7 +134,6 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
           value,
         })
       );
-      commentCount.value += 1;
       await loadComments(true);
     } finally {
       submitLoading.value = false;
@@ -155,7 +155,6 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
           parentComment: value.comment,
         })
       );
-      commentCount.value += 1;
       await loadComments(true);
     } finally {
       submitLoading.value = false;
@@ -181,7 +180,6 @@ export default function useCommentResource(options: UseCommentResourceOptions) {
     submitLoading.value = true;
     try {
       await currentApi.value.delete(comment.id);
-      commentCount.value = Math.max(commentCount.value - getDeletedCommentCount(comment), 0);
       await loadComments(true);
     } finally {
       submitLoading.value = false;
