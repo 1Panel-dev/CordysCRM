@@ -48,7 +48,6 @@ CREATE TABLE agent_task
     `execution_condition` TEXT(255) COMMENT '执行条件',
     `execution_action`    TEXT(255) COMMENT '执行动作',
     `confirmation_level`  VARCHAR(20)  NOT NULL COMMENT '确认级别',
-    `applicable_roles`    VARCHAR(1000) COMMENT '适用角色',
     `applicable_model`    VARCHAR(32) COMMENT '适用模型',
     `enable`              TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '启用状态',
     `organization_id`     VARCHAR(32)  NOT NULL COMMENT '组织ID',
