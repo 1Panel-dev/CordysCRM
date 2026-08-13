@@ -38,22 +38,19 @@ public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRec
     }
 
     @Override
-    @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.ADD,
-            resourceId = "{#request.targetId}", resourceName = "{#request.content}")
+    @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.UPDATE)
     public FollowUpRecordComment add(CommentAddRequest request, String userId, String orgId) {
         return super.add(request, userId, orgId);
     }
 
     @Override
-    @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.UPDATE,
-            resourceId = "{#request.id}", resourceName = "{#request.content}")
+    @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.UPDATE)
     public FollowUpRecordComment update(CommentUpdateRequest request, String userId, String orgId) {
         return super.update(request, userId, orgId);
     }
 
     @Override
-    @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.DELETE,
-            resourceId = "{#id}", resourceName = "{#id}")
+    @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.UPDATE)
     public void delete(String id, String userId, String orgId) {
         super.delete(id, userId, orgId);
     }
@@ -94,7 +91,7 @@ public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRec
     }
 
     @Override
-    protected CommentResourceInfo getResource(String resourceId, String orgId, String userId) {
+    protected CommentResourceInfo getNoticeResource(String resourceId, String orgId) {
         FollowUpRecord record = recordMapper.selectByPrimaryKey(resourceId);
         if (record == null || !Objects.equals(record.getOrganizationId(), orgId)) {
             throw new GenericException(Translator.get("follow.comment.target_not_found"));
