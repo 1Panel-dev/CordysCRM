@@ -296,9 +296,7 @@
               }
               if (targetField.showFields?.length) {
                 // 无值清空显示字段
-                const showFields = fieldList.value.filter((f) =>
-                  targetField.showFields?.includes(f.id.split('_ref_')[1])
-                );
+                const showFields = fieldList.value.filter((f) => targetField.showFields?.includes(getFieldItemId(f)));
                 showFields.forEach((field) => {
                   formDetail.value[field.id] = '';
                 });
