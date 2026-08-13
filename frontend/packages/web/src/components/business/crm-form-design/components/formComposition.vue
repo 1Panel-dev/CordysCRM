@@ -120,6 +120,7 @@
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getGenerateId } from '@lib/shared/method';
+  import { getFieldItemId } from '@lib/shared/method/formCreate.js';
   import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -322,9 +323,9 @@
           if (res.sumColumns?.includes(newDatasourceShowField.id)) {
             res.sumColumns = res.sumColumns
               ?.filter((id) => id !== newDatasourceShowField.id)
-              .concat(`${d.id}_ref_${newDatasourceShowField.id.split('_ref_')[1]}`); // 如果原来有配置合计字段，复制后替换成新的字段 id
+              .concat(`${d.id}_ref_${getFieldItemId(newDatasourceShowField)}`); // 如果原来有配置合计字段，复制后替换成新的字段 id
           }
-          newDatasourceShowField.id = `${d.id}_ref_${newDatasourceShowField.id.split('_ref_')[1]}`;
+          newDatasourceShowField.id = `${d.id}_ref_${getFieldItemId(newDatasourceShowField)}`;
           newDatasourceShowField.resourceFieldId = d.id;
         }
       });
@@ -371,7 +372,7 @@
       newList = newList.filter(
         (e) =>
           !item.showFields?.some((id) => {
-            return id === e.id || id === e.id.split('_ref_')[1]; // 数据源显示字段 id 是拼接_ref_的
+            return id === e.id || id === getFieldItemId(e); // 数据源显示字段 id 是拼接_ref_的
           })
       );
     }
@@ -379,7 +380,7 @@
       // 删除引用的数据源字段时，同时删除数据源配置的字段 id
       const relatedField = list.value.find((e) => e.id === item.resourceFieldId);
       if (relatedField && relatedField.showFields) {
-        relatedField.showFields = relatedField.showFields.filter((id) => id !== item.id.split('_ref_')[1]); // 数据源显示字段 id 是拼接_ref_的
+        relatedField.showFields = relatedField.showFields.filter((id) => id !== getFieldItemId(item)); // 数据源显示字段 id 是拼接_ref_的
       }
     }
     if (

@@ -90,6 +90,7 @@
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getGenerateId } from '@lib/shared/method';
+  import { getFieldItemId } from '@lib/shared/method/formCreate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import {
@@ -187,7 +188,7 @@
     if (item.resourceFieldId) {
       const resourceField = fieldConfig.value.subFields?.find((field) => field.id === item.resourceFieldId);
       if (resourceField) {
-        resourceField.showFields = resourceField.showFields?.filter((id) => id !== item.id.split('_ref_')[1]); // 数据源显示字段 id 是拼接_ref_的
+        resourceField.showFields = resourceField.showFields?.filter((id) => id !== getFieldItemId(item)); // 数据源显示字段 id 是拼接_ref_的
       }
     }
   }
