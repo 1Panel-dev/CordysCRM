@@ -150,6 +150,16 @@
     },
     { immediate: true }
   );
+
+  watch(
+    () => show.value,
+    (val) => {
+      if (val) {
+        keyword.value = '';
+        search();
+      }
+    }
+  );
 </script>
 
 <style scoped lang="less">

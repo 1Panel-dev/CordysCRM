@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FOLLOW_COMMENT_MAX_LENGTH } from '@lib/shared/method/comment';
+  import { filterMentionUsers, FOLLOW_COMMENT_MAX_LENGTH } from '@lib/shared/method/comment';
   import type { FollowCommentSubmitValue, FollowCommentUser } from '@lib/shared/models/follow';
 
   import MentionUserSelect from './mentionUserSelect.vue';
@@ -46,6 +46,7 @@
       disabled?: boolean;
       submitText?: string;
       maxlength?: number;
+      initialMentionUsers?: FollowCommentUser[];
     }>(),
     {
       mode: 'create',
@@ -95,6 +96,7 @@
 
   function openMentionUserSelect() {
     const input = fieldRef.value?.$el?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea');
+    mentionUsers.value = filterMentionUsers(content.value, mentionUsers.value);
     input?.blur();
     showMentionUserSelect.value = true;
   }
@@ -127,12 +129,21 @@
     if (submitDisabled.value) {
       return;
     }
+    const selectedMentionUsers = filterMentionUsers(content.value, mentionUsers.value);
     emit('submit', {
       content: content.value.trim(),
-      mentionUsers: mentionUsers.value,
-      mentionUserIds: mentionUsers.value.map((user) => user.id),
+      mentionUsers: selectedMentionUsers,
+      mentionUserIds: selectedMentionUsers.map((user) => user.id),
     });
   }
+
+  watch(
+    () => props.initialMentionUsers,
+    (users) => {
+      mentionUsers.value = users ? [...users] : [];
+    },
+    { immediate: true }
+  );
 
   function focus() {
     fieldRef.value?.focus?.();

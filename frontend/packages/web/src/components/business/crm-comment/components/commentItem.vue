@@ -19,6 +19,7 @@
       <MentionInput
         v-if="isEditing"
         v-model:value="editContent"
+        :initial-mention-users="props.comment.mentionUsers"
         :loading="props.submitLoading"
         :submit-text="t('crmComment.save')"
         @submit="handleEditSubmit"
