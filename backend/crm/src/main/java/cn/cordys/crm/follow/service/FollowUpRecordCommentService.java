@@ -71,6 +71,11 @@ public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRec
     }
 
     @Override
+    protected String getCommentMentionTable() {
+        return "follow_up_record_comment_mention";
+    }
+
+    @Override
     protected String getNotificationModule() {
         return NotificationConstants.Module.FOLLOW_UP_RECORD;
     }

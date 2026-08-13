@@ -71,6 +71,11 @@ public class FollowUpPlanCommentService extends BaseCommentService<FollowUpPlanC
     }
 
     @Override
+    protected String getCommentMentionTable() {
+        return "follow_up_plan_comment_mention";
+    }
+
+    @Override
     protected String getNotificationModule() {
         return NotificationConstants.Module.FOLLOW_UP_PLAN;
     }

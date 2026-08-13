@@ -11,10 +11,12 @@ import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.constants.FollowUpCommentTargetType;
 import cn.cordys.crm.follow.domain.Comment;
+import cn.cordys.crm.follow.domain.CommentMention;
 import cn.cordys.crm.follow.dto.request.CommentAddRequest;
 import cn.cordys.crm.follow.dto.request.CommentPageRequest;
 import cn.cordys.crm.follow.dto.request.CommentUpdateRequest;
 import cn.cordys.crm.follow.dto.response.CommentResponse;
+import cn.cordys.crm.follow.dto.response.CommentMentionUserResponse;
 import cn.cordys.crm.follow.mapper.ExtCommentMapper;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
@@ -53,6 +55,8 @@ public abstract class BaseCommentService<C extends Comment> {
 
     protected abstract FollowUpCommentTargetType getTargetType();
 
+    protected abstract String getCommentMentionTable();
+
     protected abstract String getNotificationModule();
 
     protected abstract String getCommentAddedEvent();
@@ -70,6 +74,11 @@ public abstract class BaseCommentService<C extends Comment> {
                 getTargetType().name(), request.getResourceId(), null, orgId);
         List<CommentResponse> children = comments.isEmpty() ? List.of() : extCommentMapper.selectChildren(
                 getTargetType().name(), comments.stream().map(CommentResponse::getId).toList(), orgId);
+
+        List<CommentResponse> allComments = new ArrayList<>(comments.size() + children.size());
+        allComments.addAll(comments);
+        allComments.addAll(children);
+        enrichMentionUsers(allComments, orgId);
 
         Map<String, List<CommentResponse>> childMap = children.stream()
                 .collect(Collectors.groupingBy(CommentResponse::getParentId, LinkedHashMap::new, Collectors.toList()));
@@ -97,6 +106,7 @@ public abstract class BaseCommentService<C extends Comment> {
         comment.setCreateTime(now);
         comment.setUpdateTime(now);
         getCommentMapper().insert(comment);
+        saveMentionUsers(comment.getId(), request.getMentionedUserIds());
         updateCommentCount(request.getResourceId(), orgId);
 
         sendNotifications(request.getResourceId(), request.getReplyToUserId(), request.getMentionedUserIds(), userId, orgId);
@@ -125,6 +135,7 @@ public abstract class BaseCommentService<C extends Comment> {
         comment.setUpdateUser(userId);
         comment.setUpdateTime(System.currentTimeMillis());
         getCommentMapper().update(comment);
+        replaceMentionUsers(comment.getId(), request.getMentionedUserIds());
 
         sendNotifications(comment.getResourceId(), comment.getReplyToUserId(), request.getMentionedUserIds(), userId, orgId);
 
@@ -151,6 +162,7 @@ public abstract class BaseCommentService<C extends Comment> {
         childQuery.eq(Comment::getOrganizationId, orgId);
         ids.addAll(getCommentMapper().selectListByLambda(childQuery).stream().map(Comment::getId).toList());
 
+        deleteMentionUsers(ids);
         getCommentMapper().deleteByIds(ids);
         updateCommentCount(comment.getResourceId(), orgId);
 
@@ -208,6 +220,50 @@ public abstract class BaseCommentService<C extends Comment> {
             userIds.add(replyToUserId);
         }
         return userIds;
+    }
+
+    private void saveMentionUsers(String commentId, List<String> userIds) {
+        List<String> distinctUserIds = userIds == null ? List.of() : userIds.stream()
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        if (distinctUserIds.isEmpty()) {
+            return;
+        }
+        List<CommentMention> mentions = distinctUserIds.stream().map(userId -> {
+            CommentMention mention = new CommentMention();
+            mention.setId(IDGenerator.nextStr());
+            mention.setCommentId(commentId);
+            mention.setUserId(userId);
+            return mention;
+        }).toList();
+        extCommentMapper.batchInsertMentionUsers(getCommentMentionTable(), mentions);
+    }
+
+    private void replaceMentionUsers(String commentId, List<String> userIds) {
+        deleteMentionUsers(List.of(commentId));
+        saveMentionUsers(commentId, userIds);
+    }
+
+    private void deleteMentionUsers(List<String> commentIds) {
+        if (commentIds.isEmpty()) {
+            return;
+        }
+        extCommentMapper.deleteMentionUsers(getCommentMentionTable(), commentIds);
+    }
+
+    private void enrichMentionUsers(List<CommentResponse> comments, String orgId) {
+        if (comments.isEmpty()) {
+            return;
+        }
+        List<CommentMentionUserResponse> mentionUsers = extCommentMapper.selectMentionUsers(
+                getCommentMentionTable(),
+                comments.stream().map(CommentResponse::getId).toList(), orgId);
+        Map<String, List<CommentMentionUserResponse>> mentionUserMap = mentionUsers.stream()
+                .collect(Collectors.groupingBy(CommentMentionUserResponse::getCommentId,
+                        LinkedHashMap::new, Collectors.toList()));
+        comments.forEach(comment -> comment.setMentionUsers(
+                mentionUserMap.getOrDefault(comment.getId(), List.of())));
     }
 
     private void sendNotifications(CommentResourceInfo resourceInfo, String resourceId, List<String> mentionedUserIds,

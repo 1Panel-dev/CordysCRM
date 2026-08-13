@@ -71,4 +71,39 @@
           AND organization_id = #{organizationId}
     </select>
 
+    <select id="selectMentionUsers" resultType="cn.cordys.crm.follow.dto.response.CommentMentionUserResponse">
+        SELECT m.comment_id,
+               u.id,
+               u.name,
+               ue.avatar,
+               COALESCE(ou.enable, FALSE) AS enable
+        FROM ${commentMentionTable} m
+        INNER JOIN sys_user u ON u.id = m.user_id
+        LEFT JOIN sys_user_extend ue ON ue.id = u.id
+        LEFT JOIN sys_organization_user ou
+               ON ou.user_id = u.id
+              AND ou.organization_id = #{organizationId}
+        WHERE m.comment_id IN
+        <foreach collection="commentIds" item="commentId" open="(" separator="," close=")">
+            #{commentId}
+        </foreach>
+    </select>
+
+    <insert id="batchInsertMentionUsers">
+        INSERT INTO ${commentMentionTable}
+        (id, comment_id, user_id)
+        VALUES
+        <foreach collection="mentions" item="mention" separator=",">
+            (#{mention.id}, #{mention.commentId}, #{mention.userId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteMentionUsers">
+        DELETE FROM ${commentMentionTable}
+        WHERE comment_id IN
+        <foreach collection="commentIds" item="commentId" open="(" separator="," close=")">
+            #{commentId}
+        </foreach>
+    </delete>
+
 </mapper>
