@@ -69,6 +69,10 @@ public class FollowUpPlanLogService extends BaseModuleLogService {
                 continue;
             }
 
+            if (Strings.CS.equals(differ.getColumn(), "comment")) {
+                differ.setColumnName(Translator.get("log.comment"));
+                continue;
+            }
 
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_PLAN_OPPORTUNITY.getBusinessKey())) {
                 setOpportunityName(differ);

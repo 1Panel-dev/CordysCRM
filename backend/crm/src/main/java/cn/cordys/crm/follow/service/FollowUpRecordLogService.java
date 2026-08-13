@@ -63,6 +63,11 @@ public class FollowUpRecordLogService extends BaseModuleLogService {
                 continue;
             }
 
+            if (Strings.CS.equals(differ.getColumn(), "comment")) {
+                differ.setColumnName(Translator.get("log.comment"));
+                continue;
+            }
+
             if (Strings.CS.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_OPPORTUNITY.getBusinessKey())) {
                 setOpportunityName(differ);
             }

@@ -1,5 +1,7 @@
 package cn.cordys.crm.follow.service;
 
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithCommentCount;
@@ -59,7 +61,7 @@ public abstract class BaseCommentService<C extends Comment> {
 
     protected abstract void updateResourceCommentCount(String resourceId, String orgId, long commentCount);
 
-    protected abstract CommentResourceInfo getResource(String resourceId, String orgId, String userId);
+    protected abstract CommentResourceInfo getNoticeResource(String resourceId, String orgId);
 
     public PagerWithCommentCount<List<CommentResponse>> page(CommentPageRequest request, String orgId) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -98,28 +100,49 @@ public abstract class BaseCommentService<C extends Comment> {
         updateCommentCount(request.getResourceId(), orgId);
 
         sendNotifications(request.getResourceId(), request.getReplyToUserId(), request.getMentionedUserIds(), userId, orgId);
+
+        // 设置日志上下文
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(comment.getResourceId())
+                        .resourceName(Translator.get("permission.add") + Translator.get("log.comment"))
+                        .modifiedValue(Map.of("comment", comment.getContent()))
+                        .build()
+        );
         return comment;
     }
 
     private void sendNotifications(String resourceId, String replyToUserId, List<String> mentionedUserIds, String userId, String orgId) {
         List<String> noticeMentionedUserIds = mergeNotificationUsers(mentionedUserIds, replyToUserId);
-        CommentResourceInfo resourceInfo = getResource(resourceId, orgId, userId);
+        CommentResourceInfo resourceInfo = getNoticeResource(resourceId, orgId);
         sendNotifications(resourceInfo, resourceId, noticeMentionedUserIds, userId, orgId);
     }
 
     public C update(CommentUpdateRequest request, String userId, String orgId) {
         C comment = getAndCheckOwnComment(request.getId(), userId, orgId);
+        String originContent = comment.getContent();
         comment.setContent(request.getContent());
         comment.setUpdateUser(userId);
         comment.setUpdateTime(System.currentTimeMillis());
         getCommentMapper().update(comment);
 
         sendNotifications(comment.getResourceId(), comment.getReplyToUserId(), request.getMentionedUserIds(), userId, orgId);
+
+        // 设置日志上下文
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(comment.getResourceId())
+                        .resourceName(Translator.get("permission.update") + Translator.get("log.comment"))
+                        .originalValue(Map.of("comment", originContent))
+                        .modifiedValue(Map.of("comment", comment.getContent()))
+                        .build()
+        );
         return comment;
     }
 
     public void delete(String id, String userId, String orgId) {
         C comment = getAndCheckOwnComment(id, userId, orgId);
+        String originContent = comment.getContent();
         List<String> ids = new ArrayList<>();
         ids.add(id);
 
@@ -130,6 +153,15 @@ public abstract class BaseCommentService<C extends Comment> {
 
         getCommentMapper().deleteByIds(ids);
         updateCommentCount(comment.getResourceId(), orgId);
+
+        // 设置日志上下文
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(comment.getResourceId())
+                        .resourceName(Translator.get("permission.delete") + Translator.get("log.comment"))
+                        .originalValue(Map.of("comment", originContent))
+                        .build()
+        );
     }
 
     private void updateCommentCount(String resourceId, String orgId) {
