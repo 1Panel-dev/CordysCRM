@@ -1,6 +1,7 @@
 import type {
   FollowCommentItem,
   FollowCommentSubmitValue,
+  FollowCommentUser,
   SaveFollowCommentParams,
   UpdateFollowCommentParams,
 } from '../models/follow';
@@ -11,7 +12,7 @@ export const FOLLOW_COMMENT_OPERATE_PERMISSIONS = [
   'OPPORTUNITY_MANAGEMENT:READ',
 ];
 
-export const FOLLOW_COMMENT_MAX_LENGTH = 512;
+export const FOLLOW_COMMENT_MAX_LENGTH = 300;
 
 function getCommentReplyCount(comment: FollowCommentItem) {
   return typeof comment.replyCount === 'number' ? comment.replyCount : (comment.replies?.length || 0);
@@ -23,6 +24,17 @@ export function getLocalCommentCount(comments: FollowCommentItem[] = []) {
 
 export function getDeletedCommentCount(comment: FollowCommentItem) {
   return 1 + getCommentReplyCount(comment);
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function filterMentionUsers(content: string, mentionUsers: FollowCommentUser[] = []) {
+  return mentionUsers.filter((user) => {
+    const mentionPattern = new RegExp(`@${escapeRegExp(user.name)}(?=$|[@\\s,，。.!！?？;；:：、])`);
+    return mentionPattern.test(content);
+  });
 }
 
 export function buildSaveCommentParams({
@@ -39,7 +51,7 @@ export function buildSaveCommentParams({
     parentId: parentComment?.parentId || parentComment?.id,
     replyToUserId: parentComment?.createUser,
     content: value.content,
-    mentionedUserIds: value.mentionUserIds,
+    mentionedUserIds: value.mentionUserIds || [],
   };
 }
 
@@ -53,6 +65,6 @@ export function buildUpdateCommentParams({
   return {
     id: commentId,
     content: value.content,
-    mentionedUserIds: value.mentionUserIds,
+    mentionedUserIds: value.mentionUserIds || [],
   };
 }

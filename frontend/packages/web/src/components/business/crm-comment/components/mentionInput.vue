@@ -30,7 +30,8 @@
   import { NButton, NCheckbox, NMention } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FOLLOW_COMMENT_MAX_LENGTH } from '@lib/shared/method/comment';
+  import { filterMentionUsers, FOLLOW_COMMENT_MAX_LENGTH } from '@lib/shared/method/comment';
+  import type { FollowCommentUser } from '@lib/shared/models/follow';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
@@ -39,12 +40,6 @@
   import type { MentionOption as NaiveMentionOption } from 'naive-ui/es/mention/src/interface';
 
   const { t } = useI18n();
-
-  interface MentionUser {
-    id: string;
-    name: string;
-    enable?: boolean;
-  }
 
   interface MentionOption extends NaiveMentionOption {
     id?: string;
@@ -64,6 +59,7 @@
       disabled?: boolean;
       loading?: boolean;
       includeDisabled?: boolean;
+      initialMentionUsers?: FollowCommentUser[];
     }>(),
     {
       includeDisabled: false,
@@ -89,7 +85,7 @@
   const loading = ref(false);
   const includeDisabled = ref(props.includeDisabled);
   const rawUserOptions = ref<MentionOption[]>([]);
-  const selectedMentionUsers = ref<MentionUser[]>([]);
+  const selectedMentionUsers = ref<FollowCommentUser[]>([]);
   const lastKeyword = ref('');
   const userRequestId = ref(0);
   const hasLoadedUsers = ref(false);
@@ -123,7 +119,7 @@
   });
 
   function syncMentionUserIds() {
-    selectedMentionUsers.value = selectedMentionUsers.value.filter((user) => content.value.includes(`@${user.name}`));
+    selectedMentionUsers.value = filterMentionUsers(content.value, selectedMentionUsers.value);
   }
 
   async function loadUsers() {
@@ -139,7 +135,7 @@
       loading.value = true;
       const users = (await getUserOptions({
         ...(needIncludeDisabled ? { includeDisabled: true } : {}),
-      })) as MentionUser[];
+      })) as FollowCommentUser[];
 
       if (currentRequestId !== userRequestId.value) {
         return;
@@ -276,6 +272,14 @@
     lastKeyword.value = keyword;
     loadUsers();
   });
+
+  watch(
+    () => props.initialMentionUsers,
+    (users) => {
+      selectedMentionUsers.value = users ? [...users] : [];
+    },
+    { immediate: true }
+  );
 </script>
 
 <style scoped lang="less">

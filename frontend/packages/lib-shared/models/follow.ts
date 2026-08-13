@@ -14,7 +14,7 @@ export interface FollowCommentItem {
   parentId: string;
   replyToUserId: string;
   replyToUserName: string;
-  content: string;
+  content: string; 
   createUser: string;
   createUserName: string;
   createUserAvatar: string;
@@ -23,6 +23,7 @@ export interface FollowCommentItem {
   editable: boolean;
   replyCount: number;
   replies: FollowCommentItem[];
+  mentionUsers?: FollowCommentUser[];
 }
 
 export interface FollowCommentListParams extends TableQueryParams {
@@ -46,7 +47,7 @@ export interface SaveFollowCommentParams {
 export interface UpdateFollowCommentParams {
   id: string;
   content: string;
-  mentionedUserIds?: string[];
+  mentionedUserIds: string[];
 }
 
 // 评论输入组件提交值

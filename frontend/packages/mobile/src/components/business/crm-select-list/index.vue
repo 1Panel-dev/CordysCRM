@@ -123,6 +123,18 @@
     { immediate: true }
   );
 
+  watch(
+    selectedRows,
+    (rows) => {
+      if (!props.multiple) {
+        return;
+      }
+      // 外部回填的多选项也需要进入缓存，筛选或重新打开选择器时才能保留。
+      selectedMap.value = new Map(rows.map((item) => [item.id, item]));
+    },
+    { immediate: true }
+  );
+
   defineExpose({
     loadList,
     filterListByKeyword,
