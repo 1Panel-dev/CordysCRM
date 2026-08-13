@@ -6,6 +6,7 @@ export const AgentConversationPageUrl = '/agent-conversation/page'; // 分页获
 export const AgentConversationDetailUrl = '/agent-conversation/get'; // 获取对话消息详情
 export const AgentConversationDeleteUrl = '/agent-conversation/delete'; // 删除对话及其全部消息
 export const AgentConversationRenameUrl = '/agent-conversation/rename'; // 重命名历史对话: /{conversationId}
+export const AgentConversationMcpToolsUrl = '/agent-conversation/mcp-tools'; // 获取所有已注册的 MCP 工具列表
 export const SmartDataOverviewUrl = '/smart/data-overview'; // 智慧工作台数据概览
 export const AgentActionSuggestionPageUrl = '/agent-action-suggestion/page'; // AI 行动建议分页查询
 export const AgentActionApprovePageUrl = '/agent-action-approve/page'; // AI 行动审核分页查询

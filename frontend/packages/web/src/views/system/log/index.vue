@@ -5,13 +5,7 @@
     </CrmCard>
 
     <CrmCard hide-footer auto-height class="form-card mb-[16px] min-w-[1000px]">
-      <n-form
-        ref="formRef"
-        label-placement="left"
-        label-width="auto"
-        :model="form"
-        class="grid grid-cols-3 gap-x-[24px]"
-      >
+      <n-form ref="formRef" label-placement="left" label-width="72" :model="form" class="grid grid-cols-3 gap-x-[24px]">
         <n-form-item v-if="activeTab !== 'aiExecution'" :label="t('common.operator')" path="operator">
           <CrmUserSelect
             v-model:value="form.operator"

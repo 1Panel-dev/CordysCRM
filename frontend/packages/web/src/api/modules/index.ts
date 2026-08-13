@@ -835,6 +835,7 @@ export const {
   getAgentConversationDetail,
   deleteAgentConversation,
   renameAgentConversation,
+  getAgentConversationMcpTools,
 } = aiApi;
 
 export const { getSystemVersion, changeLocaleBackEnd } = sysApi;

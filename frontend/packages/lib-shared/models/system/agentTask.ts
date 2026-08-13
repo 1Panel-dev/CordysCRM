@@ -16,14 +16,12 @@ export interface AgentTaskParams {
   executionCondition: string;
   executionAction: string;
   confirmationLevel: AgentTaskConfirmationLevelEnum;
-  applicableRoles: string;
   applicableModel?: string;
   enable: boolean;
 }
 
-export interface AgentTaskItem extends Omit<AgentTaskParams, 'applicableRoles'> {
+export interface AgentTaskItem extends AgentTaskParams {
   id: string;
-  applicableRoles: string | string[];
   createUser?: string;
   updateUser?: string;
   createTime?: number;
@@ -40,10 +38,10 @@ export enum AgentTaskExecutionRecordStatusEnum {
 
 export interface AgentTaskExecutionRecordItem {
   id: string;
-  executionTime: number;
+  executeTime: number;
   taskId: string;
   taskName: string;
-  triggerReason: string;
+  executeReason: string;
   status: AgentTaskExecutionRecordStatusEnum;
   result: string;
 }
