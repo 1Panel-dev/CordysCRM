@@ -22,6 +22,8 @@ public class CommentResponse {
     private boolean editable;
     @Schema(description = "回复数量")
     private long replyCount;
+    @Schema(description = "评论中@过的用户")
+    private List<CommentMentionUserResponse> mentionUsers = List.of();
     @Schema(description = "二层回复；仅顶层评论分页接口返回")
     private List<CommentResponse> replies = List.of();
 }

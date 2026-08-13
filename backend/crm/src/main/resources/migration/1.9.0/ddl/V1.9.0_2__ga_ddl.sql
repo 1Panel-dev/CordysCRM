@@ -284,8 +284,8 @@ CREATE TABLE follow_up_plan_comment
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_plan_comment_parent_id ON follow_up_plan_comment (parent_id);
-CREATE INDEX idx_plan_comment_resource_id ON follow_up_plan_comment (resource_id);
+CREATE INDEX idx_parent_id ON follow_up_plan_comment (parent_id);
+CREATE INDEX idx_resource_id ON follow_up_plan_comment (resource_id);
 
 CREATE TABLE follow_up_record_comment
 (
@@ -305,8 +305,34 @@ CREATE TABLE follow_up_record_comment
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_record_comment_parent_id ON follow_up_record_comment (parent_id);
-CREATE INDEX idx_record_comment_resource_id ON follow_up_record_comment (resource_id);
+CREATE INDEX idx_parent_id ON follow_up_record_comment (parent_id);
+CREATE INDEX idx_resource_id ON follow_up_record_comment (resource_id);
+
+CREATE TABLE follow_up_plan_comment_mention
+(
+    `id`         VARCHAR(32) NOT NULL COMMENT 'ID',
+    `comment_id` VARCHAR(32) NOT NULL COMMENT '跟进计划评论ID',
+    `user_id`    VARCHAR(32) NOT NULL COMMENT '被@用户ID',
+    PRIMARY KEY (`id`)
+) COMMENT = '跟进计划评论@用户关系'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_comment_id ON follow_up_plan_comment_mention (comment_id);
+
+CREATE TABLE follow_up_record_comment_mention
+(
+    `id`         VARCHAR(32) NOT NULL COMMENT 'ID',
+    `comment_id` VARCHAR(32) NOT NULL COMMENT '跟进记录评论ID',
+    `user_id`    VARCHAR(32) NOT NULL COMMENT '被@用户ID',
+    PRIMARY KEY (`id`)
+) COMMENT = '跟进记录评论@用户关系'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_comment_id ON follow_up_record_comment_mention (comment_id);
 
 
 -- 设置非必填
