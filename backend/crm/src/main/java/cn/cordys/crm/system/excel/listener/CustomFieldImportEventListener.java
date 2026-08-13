@@ -130,7 +130,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 dataList.add(mergedTmpEntity);
                 mergedTmpEntity = null;
             }
-            subRowId++;
+            if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
+                subRowId++;
+            }
             return;
         }
         // build entity by row-data
