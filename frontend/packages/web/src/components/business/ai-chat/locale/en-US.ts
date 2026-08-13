@@ -15,5 +15,4 @@ export default {
   'aiChat.writeOperationConfirm': 'Operation confirmation',
   'aiChat.progressInput': 'Input',
   'aiChat.progressOutput': 'Output',
-  'aiChat.importMcp': 'Import MCP',
 };

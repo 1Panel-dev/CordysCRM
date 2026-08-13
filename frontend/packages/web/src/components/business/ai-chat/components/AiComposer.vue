@@ -47,7 +47,9 @@
           v-model:show="mcpDropdownShow"
           trigger="click"
           placement="top-start"
+          class="ai-chat-mcp-dropdown"
           :options="mcpDropdownOptions"
+          :render-label="renderMcpDropdownLabel"
           @select="handleMcpSelect"
         >
           <n-button class="ai-chat-mcp-button" :class="{ 'ai-chat-mcp-button--active': mcpDropdownShow }" text>
@@ -86,7 +88,7 @@
 
 <script setup lang="ts">
   import { computed, h, nextTick, onMounted, ref, watch } from 'vue';
-  import { NButton, NDivider, NDropdown, NUpload } from 'naive-ui';
+  import { NButton, NDivider, NDropdown, NTooltip, NUpload } from 'naive-ui';
 
   import type { AiChatAttachment, AiChatMcp, AiComposerSubmitPayload, AiFileKind } from '@lib/shared/ai-chat';
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
@@ -124,7 +126,6 @@
   const emit = defineEmits<{
     (e: 'submit', payload: AiComposerSubmitPayload): void;
     (e: 'change', payload: AiComposerSubmitPayload): void;
-    (e: 'importMcp'): void;
   }>();
 
   const { t } = useI18n();
@@ -320,11 +321,6 @@
     focusInput();
   }
 
-  function handleImportMcp(): void {
-    mcpDropdownShow.value = false;
-    emit('importMcp');
-  }
-
   function handleMcpSelect(key: string | number): void {
     const mcp = props.mcpOptions.find((item) => item.id === String(key));
 
@@ -333,39 +329,37 @@
     }
   }
 
-  const mcpDropdownOptions = computed<DropdownOption[]>(() => [
-    {
-      key: 'mcp-import',
-      type: 'render',
-      render: () =>
-        h('div', { class: 'ai-chat-mcp-dropdown-header' }, [
-          h(
-            NButton,
-            {
-              text: true,
-              type: 'primary',
-              onClick: handleImportMcp,
-            },
-            {
-              icon: () => h(CrmIcon, { type: 'iconicon_add', size: 16 }),
-              default: () => t('aiChat.importMcp'),
-            }
-          ),
-        ]),
-    },
-    ...(props.mcpOptions.length
-      ? [
-          {
-            type: 'divider',
-            key: 'mcp-divider',
-          },
-        ]
-      : []),
-    ...props.mcpOptions.map((mcp) => ({
+  const mcpDropdownOptions = computed<DropdownOption[]>(() =>
+    props.mcpOptions.map((mcp) => ({
       label: mcp.name,
       key: mcp.id,
-    })),
-  ]);
+      description: mcp.description,
+    }))
+  );
+
+  function renderMcpDropdownLabel(option: DropdownOption) {
+    const description = option.description as string | undefined;
+
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+        disabled: !description,
+        flip: true,
+        placement: 'top',
+        to: 'body',
+        trigger: 'hover',
+      },
+      {
+        trigger: () =>
+          h('div', { class: 'ai-chat-mcp-dropdown-option' }, [
+            h('div', { class: 'ai-chat-mcp-dropdown-option__name' }, option.label as string),
+            description ? h('div', { class: 'ai-chat-mcp-dropdown-option__description' }, description) : null,
+          ]),
+        default: () => description,
+      }
+    );
+  }
 
   function getMatchedMcp(text: string, index: number, mcps: AiChatMcp[]): AiChatMcp | undefined {
     return mcps.find((mcp) => text.startsWith(mcp.name, index));
@@ -633,5 +627,41 @@
     :deep(.n-button__content) {
       gap: 4px;
     }
+  }
+</style>
+
+<style lang="scss">
+  .ai-chat-mcp-dropdown {
+    overflow-y: auto;
+    width: 320px;
+    max-height: 320px;
+    .n-dropdown-option-body {
+      padding: 4px 0 !important;
+      height: auto !important;
+    }
+    .n-dropdown-option-body__label {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+  .ai-chat-mcp-dropdown-option {
+    width: 100%;
+    min-width: 0;
+  }
+  .ai-chat-mcp-dropdown-option__name,
+  .ai-chat-mcp-dropdown-option__description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ai-chat-mcp-dropdown-option__name {
+    font-weight: 600;
+    color: var(--text-n1);
+    line-height: 22px;
+  }
+  .ai-chat-mcp-dropdown-option__description {
+    margin-top: 2px;
+    color: var(--text-n4);
+    line-height: 20px;
   }
 </style>

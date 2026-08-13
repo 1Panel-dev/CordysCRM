@@ -51,6 +51,7 @@
     confirmAgentChat,
     deleteAgentConversation,
     getAgentConversationDetail,
+    getAgentConversationMcpTools,
     getAgentConversationPage,
     renameAgentConversation,
     streamAgentChat,
@@ -85,11 +86,21 @@
   const isDragging = ref(false);
   const ignoreNextClick = ref(false);
 
-  // TODO lmy 获取后端数据
-  const mcpOptions: AiChatMcp[] = [
-    { id: 'cordys-crm', name: 'codys-crm', permission: 'read' },
-    { id: 'ardot-design-assistant', name: 'mock', permission: 'read' },
-  ];
+  const mcpOptions = ref<AiChatMcp[]>([]);
+  async function loadMcpOptions(): Promise<void> {
+    try {
+      const tools = await getAgentConversationMcpTools();
+      mcpOptions.value = (tools ?? []).map((item) => ({
+        id: item.name,
+        name: item.name,
+        description: item.description,
+        permission: 'read',
+      }));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   const {
     runtime: chatRuntime,
@@ -173,6 +184,7 @@
     }
 
     showChatDrawer.value = true;
+    loadMcpOptions();
     loadHistory({ reset: true }).catch(() => undefined);
   }
 
@@ -186,6 +198,7 @@
 
     runtime.setSelectedMcps(selectedMcps);
     showChatDrawer.value = true;
+    loadMcpOptions();
 
     await runtime.submit({
       content: payload.content ?? '',

@@ -130,11 +130,11 @@
   const columns: CrmDataTableColumn<AgentTaskExecutionRecordItem>[] = [
     {
       title: t('system.business.globalTask.executionTime'),
-      key: 'executionTime',
+      key: 'executeTime',
       width: 150,
       sortOrder: false,
       sorter: true,
-      render: (row) => (row.executionTime ? dayjs(row.executionTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
+      render: (row) => (row.executeTime ? dayjs(row.executeTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
     },
     {
       title: t('system.business.globalTask.taskName'),
@@ -146,7 +146,7 @@
     },
     {
       title: t('system.business.globalTask.triggerReason'),
-      key: 'triggerReason',
+      key: 'executeReason',
       width: 180,
       ellipsis: {
         tooltip: true,

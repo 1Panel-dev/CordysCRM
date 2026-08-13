@@ -73,7 +73,6 @@ export default {
   'system.business.globalTask.confirmationNotifyShort': '仅通知',
   'system.business.globalTask.confirmationNotifyType': '不执行操作',
   'system.business.globalTask.confirmationNotifyTip': '仅推送分析结论通知，不修改数据',
-  'system.business.globalTask.applicableRoles': '适用角色',
   'system.business.globalTask.applicableModel': '适用模型',
   'system.business.globalTask.enableTask': '启用该任务',
   'system.business.globalTask.deleteConfirmTitle': '确认删除任务 {name} 吗？',

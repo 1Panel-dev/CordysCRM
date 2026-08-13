@@ -15,5 +15,4 @@ export default {
   'aiChat.writeOperationConfirm': '操作确认',
   'aiChat.progressInput': '输入',
   'aiChat.progressOutput': '输出',
-  'aiChat.importMcp': '导入 MCP',
 };

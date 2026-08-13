@@ -78,7 +78,6 @@
               <AiComposer
                 :placeholder="props.placeholder || t('aiChat.inputPlaceholder')"
                 :mcp-options="props.mcpOptions"
-                @import-mcp="emit('importMcp')"
               />
             </template>
           </AiChatContent>
@@ -138,7 +137,6 @@
     (e: 'historyClick', id: string): void;
     (e: 'historyDelete', id: string): void;
     (e: 'historyRename', id: string, title: string): void;
-    (e: 'importMcp'): void;
   }>();
 
   const keyword = ref('');

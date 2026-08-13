@@ -74,7 +74,6 @@ export default {
   'system.business.globalTask.confirmationNotifyShort': 'Notify Only',
   'system.business.globalTask.confirmationNotifyType': 'No Execution',
   'system.business.globalTask.confirmationNotifyTip': 'Only send analysis notifications without changing data.',
-  'system.business.globalTask.applicableRoles': 'Applicable Roles',
   'system.business.globalTask.applicableModel': 'Applicable Model',
   'system.business.globalTask.enableTask': 'Enable this task',
   'system.business.globalTask.deleteConfirmTitle': 'Delete task {name}?',

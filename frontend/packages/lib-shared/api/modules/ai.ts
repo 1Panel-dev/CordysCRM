@@ -7,6 +7,7 @@ import {
   AgentChatUrl,
   AgentConversationDeleteUrl,
   AgentConversationDetailUrl,
+  AgentConversationMcpToolsUrl,
   AgentConversationPageUrl,
   AgentConversationRenameUrl,
   SmartDataOverviewUrl,
@@ -25,6 +26,7 @@ import type {
   AgentChatStreamOptions,
   AgentChatStreamParams,
   AgentConversationQueryRequest,
+  AgentConversationMcpToolItem,
   AgentActionApproveItem,
   AgentActionSuggestionItem,
 } from '../../models/ai';
@@ -333,6 +335,10 @@ export default function useAiApi(CDR: CordysAxios) {
     });
   }
 
+  function getAgentConversationMcpTools() {
+    return CDR.get<AgentConversationMcpToolItem[]>({ url: AgentConversationMcpToolsUrl });
+  }
+
   function getSmartDataOverview() {
     return CDR.post<string>({ url: SmartDataOverviewUrl });
   }
@@ -355,6 +361,7 @@ export default function useAiApi(CDR: CordysAxios) {
     getAgentConversationDetail,
     deleteAgentConversation,
     renameAgentConversation,
+    getAgentConversationMcpTools,
     getSmartDataOverview,
     getAgentActionSuggestionPage,
     getAgentActionApprovePage,

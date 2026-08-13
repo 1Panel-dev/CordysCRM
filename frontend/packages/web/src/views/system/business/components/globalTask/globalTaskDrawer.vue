@@ -69,18 +69,6 @@
         </n-radio-group>
       </n-form-item>
 
-      <n-form-item :label="t('system.business.globalTask.applicableRoles')" path="applicableRoles">
-        <n-select
-          v-model:value="form.applicableRoles"
-          multiple
-          filterable
-          clearable
-          :loading="roleLoading"
-          :options="roleOptions"
-          :placeholder="t('common.pleaseSelect')"
-        />
-      </n-form-item>
-
       <n-form-item :label="t('system.business.globalTask.applicableModel')" path="applicableModel">
         <n-select
           v-model:value="form.applicableModel"
@@ -127,13 +115,12 @@
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
-  import { addAgentTask, getAiModelOptions, getRoles, updateAgentTask } from '@/api/modules';
+  import { addAgentTask, getAiModelOptions, updateAgentTask } from '@/api/modules';
   import { confirmationLevelOptions, triggerTypeOptions } from '@/config/globalTask';
 
   import type { FormRules, SelectOption } from 'naive-ui';
 
-  type AgentTaskForm = Omit<AgentTaskParams, 'applicableModel' | 'applicableRoles'> & {
-    applicableRoles: string[];
+  type AgentTaskForm = Omit<AgentTaskParams, 'applicableModel'> & {
     applicableModel?: string | null;
   };
 
@@ -155,9 +142,7 @@
 
   const formRef = ref<FormInst | null>(null);
   const saving = ref(false);
-  const roleLoading = ref(false);
   const modelLoading = ref(false);
-  const roleOptions = ref<SelectOption[]>([]);
   const modelOptions = ref<SelectOption[]>([]);
 
   const defaultForm: AgentTaskForm = {
@@ -167,7 +152,6 @@
     executionCondition: '',
     executionAction: '',
     confirmationLevel: AgentTaskConfirmationLevelEnum.ASK,
-    applicableRoles: [],
     applicableModel: null,
     enable: true,
   };
@@ -192,33 +176,12 @@
     ],
   };
 
-  function normalizeApplicableRoles(roles?: string | string[]) {
-    return Array.isArray(roles) ? roles : roles?.split(',').filter(Boolean) ?? [];
-  }
-
   function resetFormState(task?: Partial<AgentTaskItem>) {
     Object.assign(form, {
       ...defaultForm,
       ...(task ?? {}),
-      applicableRoles: normalizeApplicableRoles(task?.applicableRoles),
     });
     formRef.value?.restoreValidation();
-  }
-
-  async function loadRoleOptions() {
-    try {
-      roleLoading.value = true;
-      const roles = await getRoles();
-      roleOptions.value = roles.map((role) => ({
-        label: role.name,
-        value: role.id,
-      }));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      roleLoading.value = false;
-    }
   }
 
   async function loadModelOptions() {
@@ -245,7 +208,7 @@
       }
 
       resetFormState(isEdit.value && props.task ? props.task : undefined);
-      await Promise.all([loadRoleOptions(), loadModelOptions()]);
+      await loadModelOptions();
     }
   );
 
@@ -256,7 +219,6 @@
       saving.value = true;
       const payload: AgentTaskParams = {
         ...form,
-        applicableRoles: form.applicableRoles.join(','),
         applicableModel: form.applicableModel ?? '',
       };
       let refreshId = payload.id;

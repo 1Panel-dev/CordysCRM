@@ -124,15 +124,14 @@
     createAiChatRuntime,
   } from '@/components/business/ai-chat';
 
-  import { getAgentActionApprovePage, getAgentActionSuggestionPage, getSmartDataOverview } from '@/api/modules';
+  import {
+    getAgentActionApprovePage,
+    getAgentActionSuggestionPage,
+    getAgentConversationMcpTools,
+    getSmartDataOverview,
+  } from '@/api/modules';
 
   const { t } = useI18n();
-
-  // TODO lmy 获取后端数据
-  const mcpOptions: AiChatMcp[] = [
-    { id: 'cordys-crm', name: 'codys-crm', permission: 'read' },
-    { id: 'ardot-design-assistant', name: 'mock', permission: 'read' },
-  ];
 
   const composerRuntime = createAiChatRuntime();
 
@@ -195,6 +194,22 @@
       console.log(error);
     } finally {
       dataOverviewLoading.value = false;
+    }
+  }
+
+  const mcpOptions = ref<AiChatMcp[]>([]);
+  async function loadMcpOptions() {
+    try {
+      const tools = await getAgentConversationMcpTools();
+      mcpOptions.value = (tools ?? []).map((item) => ({
+        id: item.name,
+        name: item.name,
+        description: item.description,
+        permission: 'read',
+      }));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     }
   }
 
@@ -268,6 +283,7 @@
   const approvePager = createActionPager(approveList, approveLoading, getAgentActionApprovePage);
 
   onMounted(() => {
+    loadMcpOptions();
     loadDataOverview();
     suggestionPager.load();
     approvePager.load();

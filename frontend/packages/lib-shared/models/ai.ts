@@ -119,6 +119,11 @@ export interface AgentConversationDetail {
   conversation: AgentConversationItem;
 }
 
+export interface AgentConversationMcpToolItem {
+  name: string;
+  description?: string;
+}
+
 export interface AgentActionSuggestionItem {
   id: string;
   organizationId?: string;
