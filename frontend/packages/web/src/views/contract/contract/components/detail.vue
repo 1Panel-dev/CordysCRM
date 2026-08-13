@@ -57,6 +57,7 @@
                 :source-id="props.sourceId"
                 :column="2"
                 :refresh-key="refreshKey"
+                refresh-form-config
                 label-width="auto"
                 value-align="start"
                 tooltip-position="top-start"
