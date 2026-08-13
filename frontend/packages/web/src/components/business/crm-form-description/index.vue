@@ -367,6 +367,7 @@
       fieldPermissions?: ApprovalFieldPermission[]; // 字段权限控制
       otherSaveParams?: Record<string, any>;
       customFormId?: string;
+      refreshFormConfig?: boolean; // 用于更新后刷新表单(快照)配置
     }>(),
     {
       oneLineLabel: true,
@@ -679,6 +680,9 @@
   watch(
     () => props.refreshKey,
     async () => {
+      if (props.refreshFormConfig) {
+        await initFormConfig();
+      }
       await initFormDetail(true);
       emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
     }

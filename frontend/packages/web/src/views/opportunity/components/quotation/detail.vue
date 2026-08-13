@@ -46,6 +46,7 @@
           :source-id="props.sourceId"
           :column="2"
           :refresh-key="refreshKey"
+          refresh-form-config
           :fieldPermissions="fieldPermissions"
           :otherSaveParams="{
             updateType: 'approval',
