@@ -627,3 +627,40 @@ export function transformFieldValue(item: FormCreateField, result: Record<string
     result[key] = Number(Number(result[key]).toFixed(item.precision));
   }
 }
+
+/**
+ * 按公式结果类型格式化展示值。
+ * 数值模式支持小数位和千分位，文本结果不强制转换为数字；
+ * emptyText 用于列表、详情等展示场景的空值占位。
+ */
+export function formatFormulaResultValue(result: any, fieldConfig: FormCreateField, emptyText = '') {
+  if (result === undefined || result === null || result === '') {
+    return emptyText;
+  }
+
+  if (fieldConfig.formulaResultFormat !== 'number') {
+    return String(result);
+  }
+
+  if (typeof result === 'string') {
+    const plainNumberPattern = /^-?(?:\d+|\d*\.\d+)$/;
+    const thousandsNumberPattern = /^-?\d{1,3}(?:,\d{3})+(?:\.\d+)?$/;
+    if (!plainNumberPattern.test(result) && !thousandsNumberPattern.test(result)) {
+      return result;
+    }
+  }
+
+  const num = Number(typeof result === 'string' ? result.replace(/,/g, '') : result);
+  if (Number.isNaN(num)) return String(result);
+
+  const precision = fieldConfig.decimalPlaces ? fieldConfig.precision ?? 0 : 0;
+  if (fieldConfig.showThousandsSeparator) {
+    if (precision > 0) {
+      const [integerPart, decimalPart] = num.toFixed(precision).split('.');
+      return `${integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}.${decimalPart}`;
+    }
+    return num.toLocaleString('en-US');
+  }
+
+  return precision > 0 ? num.toFixed(precision) : num.toString();
+}
