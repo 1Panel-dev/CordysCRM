@@ -92,6 +92,7 @@
   import { formKeyMap } from '../crm-data-source-select/config';
   import { isCustomDataSourceType } from '../crm-data-source-select/utils';
   import { FormulaDataSourceMap } from '../crm-formula/formula-runtime/types';
+  import { formatFormulaResultValue } from '../crm-formula/utils';
   import { safeParseFormula } from '../crm-formula-editor/utils';
   import { getFormConfigApiMap, multipleValueTypeList } from './config';
 
@@ -636,7 +637,10 @@
             ? target?.[specialBusinessKeyMap[field.businessKey]]
             : target?.[field.businessKey || getFieldItemId(field)];
 
-        formDetail.value[field.id] = getDisplayFieldText(field, fieldValue);
+        formDetail.value[field.id] =
+          field.type === FieldTypeEnum.FORMULA
+            ? formatFormulaResultValue(fieldValue, field)
+            : getDisplayFieldText(field, fieldValue);
       });
     }
 
