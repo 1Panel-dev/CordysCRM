@@ -138,6 +138,7 @@ public class ModuleFormService {
     private FieldSourceServiceProvider fieldSourceServiceProvider;
     @Resource
     private ModuleFieldService moduleFieldService;
+    private static final String REF_SYMBOL = "🔗";
 
     /**
      * 获取模块表单配置
@@ -1450,7 +1451,7 @@ public class ModuleFormService {
                         .forEach(f -> {
                             List<String> head = new ArrayList<>();
                             head.add(field.getName());
-                            head.add(f.getName());
+                            head.add(StringUtils.isNotEmpty(f.getResourceFieldId()) ? f.getName() + REF_SYMBOL : f.getName());
                             heads.add(head);
                         });
 
@@ -1540,12 +1541,12 @@ public class ModuleFormService {
         fields.forEach(field -> {
             if (field instanceof SubField subField && CollectionUtils.isNotEmpty(subField.getSubFields())) {
                 subField.getSubFields().forEach(f -> {
-                    if (StringUtils.isNotEmpty(f.getResourceFieldId()) || !f.canImport(f)) {
+                    if (!f.canImport(f)) {
                         return;
                     }
                     List<String> head = new ArrayList<>();
                     head.add(field.getName());
-                    head.add(f.getName());
+                    head.add(StringUtils.isNotEmpty(f.getResourceFieldId()) ? f.getName() + REF_SYMBOL : f.getName());
                     heads.add(head);
                 });
             } else {

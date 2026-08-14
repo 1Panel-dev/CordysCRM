@@ -9,8 +9,11 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.product.service.ProductPriceService;
+import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.ImportType;
+import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -71,6 +74,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      */
     private BaseField serialField;
     private final SerialNumGenerator serialNumGenerator;
+    private final ProductPriceService productPriceService;
     /**
      * 成功条数
      */
@@ -81,6 +85,8 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      */
     private T mergedTmpEntity;
     private int subRowId;
+    private static final String REF_SYMBOL = "🔗";
+    private static final String REF_UNDERLINE = "_ref_";
 
     public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable, String fieldTableBlob,
                                           CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
@@ -89,6 +95,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         this.entityClass = clazz;
         this.operator = operator;
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
+        this.productPriceService = CommonBeanFactory.getBean(ProductPriceService.class);
         this.consumer = consumer;
         this.fieldTableBlob = fieldTableBlob;
         this.batchSize = batchSize > 0 ? batchSize : 2000;
@@ -204,6 +211,32 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 if (val == null) {
                     return;
                 }
+
+                Set<String> commonBizIds = buildPriceShowField(field, val, v, rowData);
+                if (CollectionUtils.isNotEmpty(commonBizIds) && commonBizIds.size() == 1) {
+                    BaseResourceSubField resourceField = new BaseResourceSubField();
+                    if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
+                        BaseResourceSubField baseResourceSubField = new BaseResourceSubField();
+                        baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), "price_sub", (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null);
+                        if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
+                            resourceField.setId(baseResourceSubField.getId());
+                        } else {
+                            resourceField.setId(IDGenerator.nextStr());
+                        }
+                    } else {
+                        resourceField.setId(IDGenerator.nextStr());
+                    }
+                    resourceField.setResourceId(id.get().toString());
+                    resourceField.setFieldId("price_sub");
+                    resourceField.setFieldValue(commonBizIds.stream().findFirst().get());
+                    if (refSubMap.containsKey(v)) {
+                        resourceField.setRefSubId(refSubMap.get(v));
+                        resourceField.setRowId(String.valueOf(subRowId));
+                        resourceField.setBizId(bizId);
+                    }
+                    fields.add(resourceField);
+                }
+
                 if (!refSubMap.containsKey(v) && !isNormalRow(rowIndex) && !isMergeFirstRow(rowIndex)) {
                     // 除合并的首行外, 其余合并行非子表字段都跳过
                     return;
@@ -274,6 +307,60 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             log.error("导入错误, 原因: {}", e.getMessage());
             throw new GenericException(Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
         }
+    }
+
+
+    /**
+     * 处理价格表，子表格显示字段导入
+     *
+     * @param field
+     * @param resourceId 价格表id
+     */
+    private Set<String> buildPriceShowField(BaseField field, Object resourceId, String v, Map<Integer, String> rowData) {
+        Set<String> commonBizIds = null;
+        if (field instanceof DatasourceField datasourceField) {
+            if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.PRICE.name()) && refSubMap.containsKey(v)) {
+                //获取到价格表的子表格所有显示字段的key
+                List<Integer> keys = headMap.entrySet().stream()
+                        .filter(entry -> priceSubRefFieldMap.keySet().stream()
+                                .anyMatch(name -> Objects.equals(entry.getValue(), name + REF_SYMBOL)))
+                        .map(Map.Entry::getKey).toList();
+
+                for (Integer key : keys) {
+                    if (rowData.containsKey(key)) {
+                        String data = rowData.get(key);
+                        BaseField baseField = priceSubRefFieldMap.get(headMap.get(key).replace(REF_SYMBOL, ""));
+                        String fieldId = baseField.getBusinessKey();
+                        if (StringUtils.isBlank(fieldId)) {
+                            fieldId = splitRefId(v, baseField.getId());
+                        }
+                        Object val = convertValue(data, baseField);
+                        Set<String> bizIds = productPriceService.getData(resourceId, fieldId, val);
+                        if (CollectionUtils.isEmpty(bizIds)) {
+                            continue;
+                        }
+                        if (commonBizIds == null) {
+                            // 第一次查询结果
+                            commonBizIds = new HashSet<>(bizIds);
+                        } else {
+                            // 求交集
+                            commonBizIds.retainAll(bizIds);
+                        }
+
+                        if (commonBizIds.isEmpty()) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return commonBizIds;
+    }
+
+
+    private String splitRefId(String v, String fieldId) {
+        int idx = fieldId.indexOf(v + REF_UNDERLINE);
+        return idx >= 0 ? fieldId.substring(idx) : fieldId;
     }
 
     private void createEntity(Map<Integer, String> rowData) throws Exception {
