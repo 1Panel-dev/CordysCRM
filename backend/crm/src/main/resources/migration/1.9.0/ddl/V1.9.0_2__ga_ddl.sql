@@ -73,6 +73,7 @@ CREATE TABLE agent_action_suggestion
     `actions`     VARCHAR(255) COMMENT '行动操作项',
     `create_time` BIGINT      NOT NULL COMMENT '创建时间',
     `create_user` VARCHAR(32) NOT NULL COMMENT '创建人',
+    `status` VARCHAR(10) NOT NULL   COMMENT '状态' ,
     PRIMARY KEY (id)
 ) COMMENT = '行动建议'
     ENGINE = InnoDB
@@ -92,6 +93,7 @@ CREATE TABLE agent_action_approve
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
     `create_time` BIGINT      NOT NULL COMMENT '创建时间',
     `create_user` VARCHAR(32) NOT NULL COMMENT '创建人',
+    `status` VARCHAR(10) NOT NULL   COMMENT '状态' ,
     PRIMARY KEY (id)
 ) COMMENT = '行动审核'
     ENGINE = InnoDB
