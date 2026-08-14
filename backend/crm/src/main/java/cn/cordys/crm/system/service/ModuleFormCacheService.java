@@ -91,6 +91,7 @@ public class ModuleFormCacheService {
 		businessModuleFormConfig.setFields(flattenFields.stream()
 				.peek(moduleFormService::setFieldRefOption)
 				.peek(moduleFormService::setFieldBusinessParam)
+				.peek(moduleFormService::freshInitialOptions)
 				.peek(field -> moduleFormService.reloadPropOfSubRefFields(field, refPriceSubFieldMap))
 				.collect(Collectors.toList())
 		);
