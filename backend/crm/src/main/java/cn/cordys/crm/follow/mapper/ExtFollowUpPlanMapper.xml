@@ -207,6 +207,9 @@
                 <if test="clueDataPermission != null and clueDataPermission.self">
                     AND fup.owner = #{userId}
                 </if>
+                <if test="clueDataPermission != null and clueDataPermission.invisible">
+                    AND 0
+                </if>
                 <if test="clueDataPermission.deptIds != null and clueDataPermission.deptIds.size() > 0">
                     AND (
                         souu.department_id IN
@@ -229,7 +232,9 @@
                 <if test="customerDataPermission != null and customerDataPermission.self">
                     AND fup.owner = #{userId}
                 </if>
-
+                <if test="customerDataPermission != null and customerDataPermission.invisible">
+                    AND 0
+                </if>
                 <if test="customerDataPermission.deptIds != null and customerDataPermission.deptIds.size() > 0">
                     AND (
                         souu.department_id IN
