@@ -46,7 +46,7 @@
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatTimeValue, getCityPath, getIndustryPath } from '@lib/shared/method';
-  import { formatNumberValueToString, normalizeNumber } from '@lib/shared/method/formCreate';
+  import { formatFormulaResultValue, formatNumberValueToString, normalizeNumber } from '@lib/shared/method/formCreate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
@@ -113,6 +113,8 @@
     switch (field.type) {
       case FieldTypeEnum.INPUT_NUMBER:
         return formatNumberValueToString(value, field);
+      case FieldTypeEnum.FORMULA:
+        return formatFormulaResultValue(value, field, '-');
       case FieldTypeEnum.DATE_TIME:
         return formatTimeValue(value, field.dateType);
       case FieldTypeEnum.LOCATION:
