@@ -14,6 +14,7 @@ import cn.cordys.crm.system.service.RoleService;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
@@ -41,14 +42,6 @@ public class DataScopeService {
     private PermissionCache permissionCache;
 
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String viewId, String permission) {
-        if (InternalUserView.isSelf(viewId)) {
-            // 只查看自己的数据
-            DeptDataPermissionDTO dto = new DeptDataPermissionDTO();
-            dto.setViewId(viewId);
-            dto.setSelf(true);
-            return dto;
-        }
-
         if (InternalUserView.isVisible(viewId)) {
             // 查看设置为可见的数据
             DeptDataPermissionDTO dto = new DeptDataPermissionDTO();
@@ -60,6 +53,12 @@ public class DataScopeService {
         // 获取常规数据权限
         DeptDataPermissionDTO deptDataPermission = getDeptDataPermission(userId, orgId, permission);
         deptDataPermission.setViewId(viewId);
+
+        if (InternalUserView.isSelf(viewId) && BooleanUtils.isFalse(deptDataPermission.getInvisible())) {
+            // 只查看自己的数据
+            deptDataPermission.setSelf(true);
+            return deptDataPermission;
+        }
 
         // 数据权限是全部,但是查询条件是部门,则按照部门查询
         if (deptDataPermission.getAll() && InternalUserView.isDepartment(viewId)) {
