@@ -22,6 +22,7 @@ import {
   GetAgentTaskDetailUrl,
   GetAgentTaskExecutionRecordListUrl,
   GetAgentTaskListUrl,
+  GetAiModelDetailUrl,
   GetAiModelListUrl,
   GetAiModelOptionsUrl,
   GetAiModelRouteStrategyUrl,
@@ -324,6 +325,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<AiModelItem>>({ url: GetAiModelListUrl, data });
   }
 
+  // 模型设置-获取模型详情
+  function getAiModelDetail(id: string) {
+    return CDR.get<AiModelItem>({ url: `${GetAiModelDetailUrl}/${id}` });
+  }
+
   // 模型设置-查询可用模型选项
   function getAiModelOptions() {
     return CDR.get<AiModelOption[]>({ url: GetAiModelOptionsUrl });
@@ -530,6 +536,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getPageConfig,
     getTenderConfig,
     getAiModelList,
+    getAiModelDetail,
     getAiModelOptions,
     addAiModel,
     updateAiModel,

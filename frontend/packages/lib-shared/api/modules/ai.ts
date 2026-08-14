@@ -1,4 +1,6 @@
 import {
+  AgentActionApproveConfirmUrl,
+  AgentActionApproveIgnoreUrl,
   AgentActionApprovePageUrl,
   AgentActionSuggestionPageUrl,
   AgentChatCancelUrl,
@@ -351,6 +353,14 @@ export default function useAiApi(CDR: CordysAxios) {
     return CDR.post<CommonList<AgentActionApproveItem>>({ url: AgentActionApprovePageUrl, data });
   }
 
+  function ignoreAgentActionApprove(id: string) {
+    return CDR.post({ url: `${AgentActionApproveIgnoreUrl}/${id}` });
+  }
+
+  function confirmAgentActionApprove(id: string) {
+    return CDR.post({ url: `${AgentActionApproveConfirmUrl}/${id}` });
+  }
+
   return {
     streamAgentChat,
     cancelAgentChat,
@@ -365,5 +375,7 @@ export default function useAiApi(CDR: CordysAxios) {
     getSmartDataOverview,
     getAgentActionSuggestionPage,
     getAgentActionApprovePage,
+    ignoreAgentActionApprove,
+    confirmAgentActionApprove,
   };
 }

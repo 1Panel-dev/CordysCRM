@@ -26,6 +26,7 @@
         <n-input
           v-model:value="form.standardTerm"
           clearable
+          :maxlength="255"
           :placeholder="t('system.business.term.standardTermPlaceholder')"
         />
       </n-form-item>
@@ -33,6 +34,7 @@
         <n-input
           v-model:value="form.alsoCalled"
           clearable
+          :maxlength="255"
           :placeholder="t('system.business.term.synonymsPlaceholder')"
         />
       </n-form-item>
@@ -40,14 +42,25 @@
         <n-input
           v-model:value="form.avoidThese"
           clearable
+          :maxlength="255"
           :placeholder="t('system.business.term.forbiddenWordsPlaceholder')"
         />
       </n-form-item>
       <n-form-item :label="t('system.business.term.scenes')" path="useCase">
-        <n-input v-model:value="form.useCase" clearable :placeholder="t('system.business.term.scenesPlaceholder')" />
+        <n-input
+          v-model:value="form.useCase"
+          clearable
+          :maxlength="255"
+          :placeholder="t('system.business.term.scenesPlaceholder')"
+        />
       </n-form-item>
       <n-form-item :label="t('system.business.term.systemMapping')" path="systemReference">
-        <n-input v-model:value="form.systemReference" clearable :placeholder="t('common.pleaseInput')" />
+        <n-input
+          v-model:value="form.systemReference"
+          clearable
+          :maxlength="255"
+          :placeholder="t('common.pleaseInput')"
+        />
       </n-form-item>
     </n-form>
 

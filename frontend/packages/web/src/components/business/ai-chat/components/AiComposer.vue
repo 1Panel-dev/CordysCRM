@@ -21,8 +21,11 @@
         class="ai-chat-composer__input min-w-0 flex-1"
         contenteditable="true"
         :data-placeholder="props.placeholder || t('aiChat.inputPlaceholder')"
+        @compositionend="handleCompositionEnd"
+        @compositionstart="handleCompositionStart"
         @input="syncEditorValue"
         @keydown="handleKeydown"
+        @paste="handlePaste"
       ></div>
     </div>
 
@@ -143,6 +146,7 @@
   const maxFiles = 10;
 
   const mcpDropdownShow = ref(false);
+  const isComposing = ref(false);
 
   function focusInput(): void {
     nextTick(() => {
@@ -414,7 +418,7 @@
 
     if (value !== inputValue.value) {
       inputValue.value = value;
-      renderEditorValue(value);
+      renderEditorValue(value, runtime.state.selectedMcps.value);
       runtime.setSelectedMcps(getEditorMcps());
     }
   });
@@ -517,6 +521,75 @@
     }
   }
 
+  function handleCompositionStart(): void {
+    isComposing.value = true;
+  }
+
+  function handleCompositionEnd(): void {
+    isComposing.value = false;
+    syncEditorValue();
+  }
+
+  function insertPlainText(text: string): void {
+    if (!text) {
+      return;
+    }
+
+    const range = getEditorRange();
+    const textNode = document.createTextNode(text);
+
+    range.deleteContents();
+    range.insertNode(textNode);
+    setCaretAfter(textNode);
+    syncEditorValue();
+  }
+
+  function handlePaste(event: ClipboardEvent): void {
+    const { clipboardData } = event;
+
+    if (!clipboardData) {
+      return;
+    }
+
+    const files = Array.from(clipboardData.files ?? []);
+    const pastedImages = files.filter((file) => file.type.startsWith('image/'));
+    const plainText = clipboardData.getData('text/plain');
+
+    if (!pastedImages.length && !plainText) {
+      return;
+    }
+
+    event.preventDefault();
+    if (plainText) {
+      insertPlainText(plainText);
+    }
+    pastedImages.forEach((file) => {
+      const { name, type } = file;
+      const fileName = name || 'pasted-image.png';
+      const uploadFile = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        name: fileName,
+        status: 'pending',
+        batchId: null,
+        percentage: 0,
+        thumbnailUrl: null,
+        type,
+        url: null,
+        fullPath: fileName,
+        file,
+      } as Required<UploadFileInfo>;
+
+      if (handleBeforeUpload({ file: uploadFile })) {
+        handleUploadRequest({
+          file: uploadFile,
+          onFinish: () => undefined,
+          onError: () => undefined,
+          onProgress: () => undefined,
+        });
+      }
+    });
+  }
+
   function removeAdjacentMcp(event: KeyboardEvent): boolean {
     // MCP token 是 contenteditable=false，手动接管前后删除，保证按一次删除整个 token。
     if (event.key !== 'Backspace' && event.key !== 'Delete') {
@@ -556,6 +629,10 @@
       return;
     }
 
+    if (isComposing.value || event.isComposing) {
+      return;
+    }
+
     if (event.key !== 'Enter' || event.shiftKey || event.metaKey || event.ctrlKey) {
       return;
     }
@@ -565,7 +642,10 @@
   }
 
   onMounted(() => {
-    renderEditorValue(inputValue.value, props.initialMcps);
+    renderEditorValue(
+      inputValue.value,
+      runtime.state.selectedMcps.value.length ? runtime.state.selectedMcps.value : props.initialMcps
+    );
     emit('change', getSubmitPayload());
   });
 

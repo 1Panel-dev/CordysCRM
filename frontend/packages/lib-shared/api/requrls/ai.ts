@@ -10,3 +10,5 @@ export const AgentConversationMcpToolsUrl = '/mcps'; // 获取 MCP 列表
 export const SmartDataOverviewUrl = '/smart/data-overview'; // 智慧工作台数据概览
 export const AgentActionSuggestionPageUrl = '/agent-action-suggestion/page'; // AI 行动建议分页查询
 export const AgentActionApprovePageUrl = '/agent-action-approve/page'; // AI 行动审核分页查询
+export const AgentActionApproveIgnoreUrl = '/agent-action-approve/ignore'; // 忽略或拒绝审核
+export const AgentActionApproveConfirmUrl = '/agent-action-approve/confirm'; // 确认审核并异步提交执行

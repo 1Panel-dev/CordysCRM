@@ -20,7 +20,6 @@
               <template #trigger>
                 <span>
                   <n-button
-                    v-permission="['SYSTEM_SETTING:UPDATE']"
                     class="n-btn-outline-primary"
                     type="primary"
                     ghost
@@ -47,7 +46,7 @@
 
   <ModelSettingsDrawer v-model:show="drawerVisible" :model="editingModel" @saved="handleModelSaved" />
 
-  <RouteStrategyModal v-model:show="routeModalVisible" />
+  <RouteStrategyModal v-model:show="routeModalVisible" :readonly="!canUpdateModelSettings" />
 </template>
 
 <script setup lang="ts">
@@ -70,7 +69,7 @@
   import ModelSettingsDrawer from './modelSettingsDrawer.vue';
   import RouteStrategyModal from './routeStrategyModal.vue';
 
-  import { deleteAiModel, getAiModelList, updateAiModelStatus } from '@/api/modules';
+  import { deleteAiModel, getAiModelDetail, getAiModelList, updateAiModelStatus } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -81,6 +80,7 @@
   const keyword = ref('');
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const tableRefreshId = ref(0);
+  const canUpdateModelSettings = computed(() => hasAnyPermission(['SYSTEM_SETTING:UPDATE']));
 
   function formatGlobalDailyLimit(value: number | null | undefined): string {
     return value === null || value === undefined ? t('common.unlimited') : formatThousands(value);
@@ -131,9 +131,14 @@
     drawerVisible.value = true;
   }
 
-  function handleEdit(row: AiModelItem) {
-    editingModel.value = row;
-    drawerVisible.value = true;
+  async function handleEdit(row: AiModelItem) {
+    try {
+      editingModel.value = await getAiModelDetail(row.id);
+      drawerVisible.value = true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   function handleActionSelect(row: AiModelItem, actionKey: string) {
