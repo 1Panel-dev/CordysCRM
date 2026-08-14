@@ -165,7 +165,7 @@ public abstract class BaseField {
 
     @JsonIgnore
     public boolean needInitialOptions() {
-        return Strings.CS.equalsAny(type, FieldType.MEMBER.name(), FieldType.DEPARTMENT.name());
+        return Strings.CS.equalsAny(type, FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name());
     }
 
     @JsonIgnore

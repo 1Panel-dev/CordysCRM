@@ -446,9 +446,8 @@ public class ModuleFormService {
                 baseField.setType(field.getType());
                 baseField.setMobile(field.getMobile());
                 baseField.setInternalKey(field.getInternalKey());
-                if (baseField.needInitialOptions()) {
-                    handleInitialOption(baseField);
-                }
+                // 刷新默认值选项
+                freshInitialOptions(baseField);
                 // 文本字段默认值格式 || 流水号前缀固定字符格式
                 if (baseField instanceof SerialNumberField serialField && StringUtils.isEmpty(serialField.getPrefixType())) {
                     serialField.setPrefixType(OPTION_DEFAULT_SOURCE);
@@ -460,6 +459,23 @@ public class ModuleFormService {
             });
         }
         return fieldDTOList;
+    }
+
+    /**
+     * 刷新默认值选项
+     * @param baseField
+     */
+    public void freshInitialOptions(BaseField baseField) {
+        if (baseField.needInitialOptions()) {
+            handleInitialOption(baseField);
+        }
+        if (baseField instanceof SubField subField) {
+            for (BaseField subFieldSubField : subField.getSubFields()) {
+                if (subFieldSubField.needInitialOptions()) {
+                    handleInitialOption(subFieldSubField);
+                }
+            }
+        }
     }
 
     /**
