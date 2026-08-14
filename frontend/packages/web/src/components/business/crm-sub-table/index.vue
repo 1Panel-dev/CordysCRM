@@ -46,6 +46,7 @@
   import memberSelect from '@/components/business/crm-form-create/components/basic/memberSelect.vue';
   import select from '@/components/business/crm-form-create/components/basic/select.vue';
   import singleText from '@/components/business/crm-form-create/components/basic/singleText.vue';
+  import { formatFormulaResultValue } from '@/components/business/crm-formula/utils';
 
   import { processStatusMap } from '@/config/process';
   import useUserStore from '@/store/modules/user';
@@ -345,6 +346,8 @@
         }
         if (Array.isArray(fieldVal)) {
           row[sf.id] = fieldVal.join(',');
+        } else if (sf.type === FieldTypeEnum.FORMULA) {
+          row[sf.id] = formatFormulaResultValue(fieldVal, sf);
         } else if (sf.type === FieldTypeEnum.INPUT_NUMBER && typeof fieldVal === 'number') {
           row[sf.id] = formatNumberValueToString(fieldVal, sf) ?? null;
         } else {
