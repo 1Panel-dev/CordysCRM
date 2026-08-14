@@ -8,6 +8,7 @@ import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.ImportType;
+import cn.cordys.crm.system.dto.field.DatasourceField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.excel.domain.ExcelErrData;
@@ -93,6 +94,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     protected final Map<Integer, Map<Integer, String>> mergeRowDataMap;
     protected Map<Integer, String> firstHeadMap = new HashMap<>();
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
+    protected Map<String, BaseField> priceSubRefFieldMap = new HashMap<>();
 
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg, String importType) {
         this(fields, sourceTable, fieldTable, currentOrg, null, null, importType);
@@ -113,6 +115,28 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                     refSubMap.put(subField.getName() + "_" + f.getName(), subField.getId());
                     setCheckLimit(f, subField.getName());
                     setNumberMax(f, subField.getName());
+                    if (f instanceof DatasourceField priceSource) {
+                        if (Strings.CI.equals(priceSource.getDataSourceType(), "PRICE")) {
+                            Set<String> ids = priceSource.getShowFields().stream()
+                                    .map(subfield -> priceSource.getId() + "_ref_" + subfield)
+                                    .collect(Collectors.toSet());
+
+                            Map<String, BaseField> refFieldMap = priceSource.getRefFields().stream()
+                                    .filter(refField -> ids.contains(refField.getId()) && StringUtils.isNotBlank(refField.getSubTableFieldId()))
+                                    .collect(Collectors.toMap(
+                                            BaseField::getId,
+                                            Function.identity()
+                                    ));
+
+                            Map<String, BaseField> priceSubRefFieldMap = subField.getSubFields().stream()
+                                    .filter(subBasefield -> refFieldMap.containsKey(subBasefield.getId()))
+                                    .collect(Collectors.toMap(
+                                            subBasefield -> subField.getName() + "_" + subBasefield.getName(),
+                                            subBasefield -> refFieldMap.get(subBasefield.getId())
+                                    ));
+                            this.priceSubRefFieldMap.putAll(priceSubRefFieldMap);
+                        }
+                    }
                 }
                 continue;
             }

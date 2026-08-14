@@ -807,4 +807,22 @@ public class ProductPriceService {
         // 3 复制附件实体
         attachmentService.batchCopyOfIdMap(attachmentIdMap, targetId, currentUser);
     }
+
+
+    /**
+     * 获取数据
+     *
+     * @param resourceId
+     * @param fieldId
+     * @param fieldValue
+     * @return
+     */
+    public Set<String> getData(Object resourceId, String fieldId, Object fieldValue) {
+        LambdaQueryWrapper<ProductPriceField> priceFieldLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        priceFieldLambdaQueryWrapper.eq(ProductPriceField::getResourceId, resourceId)
+                .eq(ProductPriceField::getFieldId, fieldId)
+                .eq(ProductPriceField::getFieldValue, fieldValue);
+        List<ProductPriceField> productPriceFields = productPriceFieldMapper.selectListByLambda(priceFieldLambdaQueryWrapper);
+        return productPriceFields.stream().map(ProductPriceField::getBizId).collect(Collectors.toSet());
+    }
 }
