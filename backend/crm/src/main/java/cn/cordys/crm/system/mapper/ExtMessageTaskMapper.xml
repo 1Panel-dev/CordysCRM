@@ -35,5 +35,8 @@
         select * from sys_message_task where organization_id = #{organizationId} and task_type = #{module} and event = #{event} limit 1;
     </select>
 
+    <select id="getMessageByEvent" resultType="cn.cordys.crm.system.domain.MessageTask">
+        select * from sys_message_task where organization_id = #{organizationId} and event = #{event} limit 1;
+    </select>
 
 </mapper> 
