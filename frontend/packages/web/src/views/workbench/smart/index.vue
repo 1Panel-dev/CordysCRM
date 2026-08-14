@@ -85,14 +85,35 @@
                           {{ item.topic }}
                         </span>
                       </div>
-                      <CrmIcon class="shrink-0 cursor-pointer text-[var(--text-n2)]" type="iconicon_close" :size="16" />
+                      <CrmIcon
+                        class="shrink-0 cursor-pointer text-[var(--text-n2)]"
+                        type="iconicon_close"
+                        :size="16"
+                        @click="handleApproveIgnore(item)"
+                      />
                     </div>
                     <div class="mt-[16px] whitespace-pre-wrap text-[var(--text-n2)]">
                       {{ item.summary || '-' }}
                     </div>
                     <div class="mt-[16px] flex flex-wrap gap-[8px]">
-                      <n-button size="small" type="success" ghost>{{ t('common.confirm') }}</n-button>
-                      <n-button size="small" type="error" ghost>{{ t('workbench.smart.reject') }}</n-button>
+                      <n-button
+                        size="small"
+                        type="success"
+                        ghost
+                        :loading="operatingApproveId === item.id"
+                        @click="handleApproveConfirm(item)"
+                      >
+                        {{ t('common.confirm') }}
+                      </n-button>
+                      <n-button
+                        size="small"
+                        type="error"
+                        ghost
+                        :loading="operatingApproveId === item.id"
+                        @click="handleApproveIgnore(item)"
+                      >
+                        {{ t('workbench.smart.reject') }}
+                      </n-button>
                     </div>
                   </div>
                 </div>
@@ -107,7 +128,7 @@
 
 <script setup lang="ts">
   import { onBeforeUnmount, onMounted, ref } from 'vue';
-  import { NButton, NEmpty, NScrollbar, NSpin, NTooltip } from 'naive-ui';
+  import { NButton, NEmpty, NScrollbar, NSpin, NTooltip, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { AgentActionApproveItem, AgentActionSuggestionItem } from '@lib/shared/models/ai';
@@ -125,13 +146,16 @@
   } from '@/components/business/ai-chat';
 
   import {
+    confirmAgentActionApprove,
     getAgentActionApprovePage,
     getAgentActionSuggestionPage,
     getAgentConversationMcpTools,
     getSmartDataOverview,
+    ignoreAgentActionApprove,
   } from '@/api/modules';
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const composerRuntime = createAiChatRuntime();
 
@@ -280,7 +304,31 @@
 
   const approveLoading = ref(false);
   const approveList = ref<AgentActionApproveItem[]>([]);
+  const operatingApproveId = ref('');
   const approvePager = createActionPager(approveList, approveLoading, getAgentActionApprovePage);
+
+  async function handleApproveAction(item: AgentActionApproveItem, action: (id: string) => Promise<unknown>) {
+    if (!item.id || operatingApproveId.value) {
+      return;
+    }
+
+    try {
+      operatingApproveId.value = item.id;
+      await action(item.id);
+      Message.success(t('common.operationSuccess'));
+      await approvePager.load();
+    } finally {
+      operatingApproveId.value = '';
+    }
+  }
+
+  function handleApproveConfirm(item: AgentActionApproveItem) {
+    return handleApproveAction(item, confirmAgentActionApprove);
+  }
+
+  function handleApproveIgnore(item: AgentActionApproveItem) {
+    return handleApproveAction(item, ignoreAgentActionApprove);
+  }
 
   onMounted(() => {
     loadMcpOptions();

@@ -51,6 +51,7 @@ export const GetTitleImgUrl = `${
 
 // 模型设置
 export const GetAiModelListUrl = '/agent-model/page'; // 模型设置-列表查询
+export const GetAiModelDetailUrl = '/agent-model/get'; // 模型设置-获取模型详情
 export const GetAiModelOptionsUrl = '/agent-model/options'; // 模型设置-查询可用模型选项
 export const AddAiModelUrl = '/agent-model/add'; // 模型设置-添加模型
 export const UpdateAiModelUrl = '/agent-model/update'; // 模型设置-更新模型

@@ -11,7 +11,7 @@ import type {
 import createAgentChatTransport from './createAgentChatTransport';
 import createAiChatRuntime from './createAiChatRuntime';
 import type { AiChatRuntime } from './types';
-import type { AiChatMessage } from '../types';
+import type { AiChatAttachment, AiChatMcp, AiChatMessage } from '../types';
 import { toAiChatMessage } from '../utils/conversation';
 
 interface AgentChatWorkbenchApis {
@@ -44,6 +44,12 @@ interface UseAgentChatWorkbenchOptions {
   onError?: (error: Error) => void;
 }
 
+interface ConversationDraft {
+  input: string;
+  attachments: AiChatAttachment[];
+  selectedMcps: AiChatMcp[];
+}
+
 export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOptions) {
   const runtime = ref<AiChatRuntime>();
   const agentConversationId = ref('');
@@ -56,6 +62,47 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   const historyCurrent = ref(1);
   const pendingConfirm = computed(() => runtime.value?.state.pendingConfirm.value);
   const historyPageSize = options.historyPageSize ?? 20;
+  const conversationDrafts = new Map<string, ConversationDraft>();
+
+  const NEW_CONVERSATION_DRAFT_KEY = '__new__';
+  function getCurrentDraftKey(): string {
+    return activeHistoryId.value || agentConversationId.value || NEW_CONVERSATION_DRAFT_KEY;
+  }
+
+  function hasDraft(draft: ConversationDraft): boolean {
+    return Boolean(draft.input.trim() || draft.attachments.length || draft.selectedMcps.length);
+  }
+
+  function saveCurrentDraft(): void {
+    if (!runtime.value) {
+      return;
+    }
+
+    const draft: ConversationDraft = {
+      input: runtime.value.state.input.value,
+      attachments: [...runtime.value.state.attachments.value],
+      selectedMcps: [...runtime.value.state.selectedMcps.value],
+    };
+    const draftKey = getCurrentDraftKey();
+
+    if (hasDraft(draft)) {
+      conversationDrafts.set(draftKey, draft);
+    } else {
+      conversationDrafts.delete(draftKey);
+    }
+  }
+
+  function restoreDraft(draftKey: string): void {
+    const draft = conversationDrafts.get(draftKey);
+
+    runtime.value?.setInput(draft?.input ?? '');
+    runtime.value?.setAttachments(draft?.attachments ?? []);
+    runtime.value?.setSelectedMcps(draft?.selectedMcps ?? []);
+  }
+
+  function clearDraft(draftKey = getCurrentDraftKey()): void {
+    conversationDrafts.delete(draftKey);
+  }
 
   async function loadHistory(loadOptions: { reset?: boolean; keyword?: string } = {}): Promise<void> {
     const reset = loadOptions.reset ?? false;
@@ -132,6 +179,8 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
           return;
         }
 
+        clearDraft(conversationId);
+        clearDraft(NEW_CONVERSATION_DRAFT_KEY);
         await loadHistory({ reset: true });
         activeHistoryId.value = conversationId;
       },
@@ -140,6 +189,12 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   }
 
   function createConversation(initialMessages: AiChatMessage[] = []): AiChatRuntime {
+    if (getCurrentDraftKey() === NEW_CONVERSATION_DRAFT_KEY) {
+      clearDraft(NEW_CONVERSATION_DRAFT_KEY);
+    } else {
+      saveCurrentDraft();
+    }
+
     agentConversationId.value = '';
     agentSessionId.value = '';
     activeHistoryId.value = '';
@@ -149,6 +204,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     } else {
       runtime.value = createRuntime(initialMessages);
     }
+    restoreDraft(NEW_CONVERSATION_DRAFT_KEY);
 
     return runtime.value;
   }
@@ -166,6 +222,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   }
 
   async function openHistoryConversation(conversationId: string): Promise<AiChatRuntime> {
+    saveCurrentDraft();
     const detail = await options.apis.getAgentConversationDetail(conversationId);
     const messages = (detail.messages ?? []).map(toAiChatMessage);
 
@@ -178,16 +235,22 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     } else {
       runtime.value = createRuntime(messages);
     }
+    restoreDraft(conversationId);
 
     return runtime.value;
   }
 
   async function deleteHistoryConversation(conversationId: string): Promise<void> {
     await options.apis.deleteAgentConversation(conversationId);
+    conversationDrafts.delete(conversationId);
     historyItems.value = historyItems.value.filter((item) => item.id !== conversationId);
 
     if (activeHistoryId.value === conversationId) {
-      createConversation();
+      agentConversationId.value = '';
+      agentSessionId.value = '';
+      activeHistoryId.value = '';
+      runtime.value?.reset();
+      restoreDraft(NEW_CONVERSATION_DRAFT_KEY);
     }
   }
 

@@ -5,6 +5,7 @@
     :width="680"
     :positive-text="t('common.save')"
     :ok-loading="loading"
+    :ok-button-props="{ disabled: props.readonly }"
     @confirm="save"
   >
     <n-form label-placement="top">
@@ -16,6 +17,7 @@
         <n-select
           v-model:value="form.defaultModelId"
           clearable
+          :disabled="props.readonly"
           :options="modelOptions"
           :placeholder="t('common.pleaseSelect')"
         />
@@ -24,6 +26,7 @@
         <n-select
           v-model:value="form.insightModelId"
           clearable
+          :disabled="props.readonly"
           :options="modelOptions"
           :placeholder="t('common.pleaseSelect')"
         />
@@ -37,11 +40,12 @@
           v-model:value="form.classifyModelId"
           :options="modelOptions"
           clearable
+          :disabled="props.readonly"
           :placeholder="t('common.pleaseSelect')"
         />
       </n-form-item>
       <div class="flex items-center gap-[8px]">
-        <n-switch v-model:value="form.fallback" :rubber-band="false" />
+        <n-switch v-model:value="form.fallback" :disabled="props.readonly" :rubber-band="false" />
         <div class="text-[var(--text-n1)]">
           {{ t('system.business.modelSettings.autoFallback') }}
         </div>
@@ -67,6 +71,15 @@
     required: true,
     default: false,
   });
+
+  const props = withDefaults(
+    defineProps<{
+      readonly?: boolean;
+    }>(),
+    {
+      readonly: false,
+    }
+  );
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -125,6 +138,10 @@
   }
 
   async function save() {
+    if (props.readonly) {
+      return;
+    }
+
     try {
       loading.value = true;
       await updateAiModelRouteStrategy(getStrategyParams());

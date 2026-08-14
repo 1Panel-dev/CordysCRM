@@ -15,6 +15,7 @@
         <n-input
           v-model:value="form.name"
           clearable
+          :maxlength="255"
           :placeholder="t('system.business.globalTask.taskNamePlaceholder')"
         />
       </n-form-item>

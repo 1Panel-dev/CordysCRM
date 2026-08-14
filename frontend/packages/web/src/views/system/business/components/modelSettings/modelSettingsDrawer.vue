@@ -19,6 +19,7 @@
         <n-input
           v-model:value="form.displayName"
           clearable
+          :maxlength="255"
           :placeholder="t('system.business.modelSettings.modelNamePlaceholder')"
         />
       </n-form-item>
@@ -30,6 +31,7 @@
         <n-input
           v-model:value="form.modelName"
           clearable
+          :maxlength="255"
           :placeholder="t('system.business.modelSettings.modelIdPlaceholder')"
         />
       </n-form-item>
@@ -161,7 +163,7 @@
     modelName: '',
     apiUrl: '',
     apiKey: '',
-    enable: false,
+    enable: true,
     globalDailyLimit: 10000,
     userDailyLimit: 500,
     modelParams: undefined,
