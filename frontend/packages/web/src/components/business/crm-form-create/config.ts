@@ -451,6 +451,7 @@ export const departmentDefaultFieldConfig: FormCreateField = {
   defaultValue: [],
   initialOptions: [],
   multiple: false,
+  hasCurrentUserDept: false,
 };
 
 export const departmentMultipleDefaultFieldConfig: FormCreateField = {
@@ -468,6 +469,7 @@ export const departmentMultipleDefaultFieldConfig: FormCreateField = {
   defaultValue: [],
   initialOptions: [],
   multiple: false,
+  hasCurrentUserDept: false,
 };
 
 export const dividerDefaultFieldConfig: FormCreateField = {

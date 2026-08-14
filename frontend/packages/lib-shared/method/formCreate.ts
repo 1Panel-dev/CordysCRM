@@ -357,11 +357,15 @@ export function transformData({
           } else {
             subItem[`${subField.id}_original`] = subItem[subField.businessKey || subField.id]; // 备份原始值以供编辑时填充数据源
             // 优先使用业务 key 去取值，若没有业务 key 则使用字段 id
-            subItem[subField.businessKey || subField.id] = parseModuleFieldValue(
+            const parseValue = parseModuleFieldValue(
               subField,
               subItem[subField.businessKey || subField.id],
               originalData?.optionMap?.[subField.businessKey || subField.id]
             );
+            if (subField.businessKey) {
+              subItem[subField.businessKey] = parseValue;
+            }
+            subItem[subField.id] = parseValue;
             fieldOptionMap[subField.businessKey || subField.id] =
               originalData?.optionMap?.[subField.businessKey || subField.id] || [];
           }
