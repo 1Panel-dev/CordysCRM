@@ -179,23 +179,26 @@
     openFollowDetail(item, FormDesignKeyEnum.FOLLOW_PLAN);
   }
 
+  const followPermission = ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ'];
+
   const permissionConfig = {
     OPPORTUNITY_QUOTATION_READ: ['OPPORTUNITY_QUOTATION:READ'],
     CONTRACT_READ: ['CONTRACT:READ'],
     CONTRACT_PAYMENT_PLAN_READ: ['CONTRACT_PAYMENT_PLAN:READ'],
-    FOLLOW_UP_RECORD_COMMENT_MENTIONED: [
-      'CLUE_MANAGEMENT:READ',
-      'CUSTOMER_MANAGEMENT:READ',
-      'OPPORTUNITY_MANAGEMENT:READ',
-    ],
-    FOLLOW_UP_PLAN_COMMENT_MENTIONED: [
-      'CLUE_MANAGEMENT:READ',
-      'CUSTOMER_MANAGEMENT:READ',
-      'OPPORTUNITY_MANAGEMENT:READ',
-    ],
-    FOLLOW_UP_RECORD_COMMENT_ADDED: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ'],
-    FOLLOW_UP_PLAN_COMMENT_ADDED: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ'],
   };
+
+  const followCommentDetailConfig = [
+    {
+      operation: 'FOLLOW_UP_RECORD_COMMENT',
+      permission: followPermission,
+      action: openFollowRecordDetail,
+    },
+    {
+      operation: 'FOLLOW_UP_PLAN_COMMENT',
+      permission: followPermission,
+      action: openFollowPlanDetail,
+    },
+  ];
 
   const messageDetailConfig: Record<string, MessageDetailAction> = {
     BUSINESS_QUOTATION_EXPIRED: {
@@ -222,26 +225,17 @@
       permission: permissionConfig.CONTRACT_PAYMENT_PLAN_READ,
       action: openNewPageContractPaymentPlan,
     },
-    FOLLOW_UP_RECORD_COMMENT_MENTIONED: {
-      permission: permissionConfig.FOLLOW_UP_RECORD_COMMENT_MENTIONED,
-      action: openFollowRecordDetail,
-    },
-    FOLLOW_UP_PLAN_COMMENT_MENTIONED: {
-      permission: permissionConfig.FOLLOW_UP_PLAN_COMMENT_MENTIONED,
-      action: openFollowPlanDetail,
-    },
-    FOLLOW_UP_RECORD_COMMENT_ADDED: {
-      permission: permissionConfig.FOLLOW_UP_RECORD_COMMENT_ADDED,
-      action: openFollowRecordDetail,
-    },
-    FOLLOW_UP_PLAN_COMMENT_ADDED: {
-      permission: permissionConfig.FOLLOW_UP_PLAN_COMMENT_ADDED,
-      action: openFollowPlanDetail,
-    },
   };
 
+  function getMessageDetailAction(operation: string) {
+    return (
+      followCommentDetailConfig.find((item) => operation.includes(item.operation)) || messageDetailConfig[operation]
+    );
+  }
+
   function getMessageContentClass(item: MessageCenterItem) {
-    if (messageDetailConfig[item.operation] && hasAnyPermission(messageDetailConfig[item.operation].permission)) {
+    const detailAction = getMessageDetailAction(item.operation);
+    if (detailAction && hasAnyPermission(detailAction.permission)) {
       return 'cursor-pointer text-[var(--primary-8)]';
     }
 
@@ -325,8 +319,9 @@
   }
 
   function goDetail(item: MessageCenterItem) {
-    if (!hasAnyPermission(messageDetailConfig[item.operation]?.permission ?? [])) return;
-    messageDetailConfig[item.operation]?.action?.(item);
+    const detailAction = getMessageDetailAction(item.operation);
+    if (!detailAction || !hasAnyPermission(detailAction.permission)) return;
+    detailAction.action(item);
   }
 
   onBeforeMount(() => {
