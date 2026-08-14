@@ -2,6 +2,7 @@ package cn.cordys.crm.follow.service;
 
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
+import cn.cordys.common.constants.ModuleKey;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithCommentCount;
@@ -19,6 +20,8 @@ import cn.cordys.crm.follow.dto.response.CommentResponse;
 import cn.cordys.crm.follow.dto.response.CommentMentionUserResponse;
 import cn.cordys.crm.follow.mapper.ExtCommentMapper;
 import cn.cordys.crm.opportunity.domain.Opportunity;
+import cn.cordys.crm.system.domain.MessageTask;
+import cn.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -48,6 +51,8 @@ public abstract class BaseCommentService<C extends Comment> {
     private ExtCommentMapper extCommentMapper;
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
+    @Resource
+    private ExtMessageTaskMapper extMessageTaskMapper;
 
     protected abstract BaseMapper<C> getCommentMapper();
 
@@ -57,11 +62,9 @@ public abstract class BaseCommentService<C extends Comment> {
 
     protected abstract String getCommentMentionTable();
 
-    protected abstract String getNotificationModule();
+    protected abstract String getCommentAddedEvent(String resourceId);
 
-    protected abstract String getCommentAddedEvent();
-
-    protected abstract String getCommentMentionedEvent();
+    protected abstract String getCommentMentionedEvent(String resourceId);
 
     protected abstract void updateResourceCommentCount(String resourceId, String orgId, long commentCount);
 
@@ -181,21 +184,26 @@ public abstract class BaseCommentService<C extends Comment> {
         updateResourceCommentCount(resourceId, orgId, commentCount);
     }
 
-    protected CommentResourceInfo buildTargetInfo(String owner, String clueId, String customerId, String opportunityId) {
-        if (StringUtils.isNotBlank(opportunityId)) {
-            Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
-            if (opportunity != null) {
-                return new CommentResourceInfo(owner, opportunity.getName());
+    protected CommentResourceInfo buildTargetInfo(String followType, String owner, String clueId, String customerId, String opportunityId) {
+        if (Strings.CI.equals(followType, ModuleKey.CLUE.name())) {
+            if (StringUtils.isNotBlank(clueId)) {
+                Clue clue = clueMapper.selectByPrimaryKey(clueId);
+                if (clue != null) {
+                    return new CommentResourceInfo(owner, clue.getName());
+                }
             }
-        }
-        if (StringUtils.isNotBlank(clueId)) {
-            Clue clue = clueMapper.selectByPrimaryKey(clueId);
-            if (clue != null) {
-                return new CommentResourceInfo(owner, clue.getName());
+        } else {
+            if (StringUtils.isNotBlank(opportunityId)) {
+                Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
+                if (opportunity != null) {
+                    return new CommentResourceInfo(owner, opportunity.getName());
+                }
             }
+
+            Customer customer = customerMapper.selectByPrimaryKey(customerId);
+            return new CommentResourceInfo(owner, customer == null ? StringUtils.EMPTY : customer.getName());
         }
-        Customer customer = customerMapper.selectByPrimaryKey(customerId);
-        return new CommentResourceInfo(owner, customer == null ? "" : customer.getName());
+        return new CommentResourceInfo(owner, StringUtils.EMPTY);
     }
 
     private C getComment(String id, String orgId) {
@@ -272,16 +280,24 @@ public abstract class BaseCommentService<C extends Comment> {
         resource.put("name", resourceInfo.name());
         resource.put("resourceId", resourceId);
         resource.put("targetType", getTargetType().name());
-        String taskType = getNotificationModule();
 
         Set<String> mentioned = new LinkedHashSet<>(mentionedUserIds);
+        List<String> noticeUsers = new ArrayList<>();
+        String event = null;
+
         if (StringUtils.isNotBlank(resourceInfo.owner()) && !mentioned.contains(resourceInfo.owner())) {
-            commonNoticeSendService.sendNotice(taskType, getCommentAddedEvent(),
-                    resource, operator, orgId, List.of(resourceInfo.owner()), true);
+            noticeUsers.add(resourceInfo.owner());
+            event = getCommentAddedEvent(resourceId);
         }
         if (!mentioned.isEmpty()) {
-            commonNoticeSendService.sendNotice(taskType, getCommentMentionedEvent(),
-                    resource, operator, orgId, new ArrayList<>(mentioned), true);
+            noticeUsers.addAll(mentioned);
+            event = getCommentMentionedEvent(resourceId);
+        }
+
+        if (event != null) {
+            MessageTask messageByEvent = extMessageTaskMapper.getMessageByEvent(event, orgId);
+            commonNoticeSendService.sendNotice(messageByEvent.getTaskType(), event,
+                    resource, operator, orgId, noticeUsers, true);
         }
     }
 

@@ -14,6 +14,8 @@ public interface ExtMessageTaskMapper {
 
     MessageTask getMessageByModuleAndEvent(@Param("module") String taskType, @Param("event") String event, @Param("organizationId") String organizationId);
 
+    MessageTask getMessageByEvent(@Param("event") String event, @Param("organizationId") String organizationId);
+
     void updateMessageTask(@Param("request") MessageTaskBatchRequest messageTaskBatchRequest, @Param("organizationId") String organizationId);
 
 }

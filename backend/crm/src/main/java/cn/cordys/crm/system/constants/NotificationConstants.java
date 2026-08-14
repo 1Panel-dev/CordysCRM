@@ -170,16 +170,40 @@ public class NotificationConstants {
 		String APPROVAL_CC = "APPROVAL_CC";
 
         @Schema(description = "message.follow_up_plan_comment_added")
-        String FOLLOW_UP_PLAN_COMMENT_ADDED = "FOLLOW_UP_PLAN_COMMENT_ADDED";
+        String CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED = "CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED";
 
         @Schema(description = "message.follow_up_plan_comment_mentioned")
-        String FOLLOW_UP_PLAN_COMMENT_MENTIONED = "FOLLOW_UP_PLAN_COMMENT_MENTIONED";
+        String CLUE_FOLLOW_UP_PLAN_COMMENT_MENTIONED = "CLUE_FOLLOW_UP_PLAN_COMMENT_MENTIONED";
 
         @Schema(description = "message.follow_up_record_comment_added")
-        String FOLLOW_UP_RECORD_COMMENT_ADDED = "FOLLOW_UP_RECORD_COMMENT_ADDED";
+        String CLUE_FOLLOW_UP_RECORD_COMMENT_ADDED = "CLUE_FOLLOW_UP_RECORD_COMMENT_ADDED";
 
         @Schema(description = "message.follow_up_record_comment_mentioned")
-        String FOLLOW_UP_RECORD_COMMENT_MENTIONED = "FOLLOW_UP_RECORD_COMMENT_MENTIONED";
+        String CLUE_FOLLOW_UP_RECORD_COMMENT_MENTIONED = "CLUE_FOLLOW_UP_RECORD_COMMENT_MENTIONED";
+
+        @Schema(description = "message.follow_up_plan_comment_added")
+        String OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_ADDED = "OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_ADDED";
+
+        @Schema(description = "message.follow_up_plan_comment_mentioned")
+        String OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_MENTIONED = "OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_MENTIONED";
+
+        @Schema(description = "message.follow_up_record_comment_added")
+        String OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_ADDED = "OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_ADDED";
+
+        @Schema(description = "message.follow_up_record_comment_mentioned")
+        String OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_MENTIONED = "OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_MENTIONED";
+
+        @Schema(description = "message.follow_up_plan_comment_added")
+        String CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED = "CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED";
+
+        @Schema(description = "message.follow_up_plan_comment_mentioned")
+        String CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED = "CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED";
+
+        @Schema(description = "message.follow_up_record_comment_added")
+        String CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED = "CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED";
+
+        @Schema(description = "message.follow_up_record_comment_mentioned")
+        String CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED = "CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED";
     }
 
     public interface RelatedUser {
@@ -334,16 +358,40 @@ public class NotificationConstants {
 		String APPROVAL_CC_TEXT = "APPROVAL_CC_TEXT";
 
         @Schema(description = "message.follow_up_plan_comment_added_text")
-        String FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT = "FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT";
+        String CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT = "CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT";
 
         @Schema(description = "message.follow_up_plan_comment_mentioned_text")
-        String FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT = "FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT";
+        String CLUE_FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT = "CLUE_FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT";
 
         @Schema(description = "message.follow_up_record_comment_added_text")
-        String FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT = "FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT";
+        String CLUE_FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT = "CLUE_FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT";
 
         @Schema(description = "message.follow_up_record_comment_mentioned_text")
-        String FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT = "FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT";
+        String CLUE_FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT = "CLUE_FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT";
+
+        @Schema(description = "message.follow_up_plan_comment_added_text")
+        String OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT = "OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT";
+
+        @Schema(description = "message.follow_up_plan_comment_mentioned_text")
+        String OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT = "OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT";
+
+        @Schema(description = "message.follow_up_record_comment_added_text")
+        String OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT = "OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT";
+
+        @Schema(description = "message.follow_up_record_comment_mentioned_text")
+        String OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT = "OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT";
+
+        @Schema(description = "message.follow_up_plan_comment_added_text")
+        String CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT = "CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED_TEXT";
+
+        @Schema(description = "message.follow_up_plan_comment_mentioned_text")
+        String CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT = "CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED_TEXT";
+
+        @Schema(description = "message.follow_up_record_comment_added_text")
+        String CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT = "CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED_TEXT";
+
+        @Schema(description = "message.follow_up_record_comment_mentioned_text")
+        String CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT = "CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED_TEXT";
     }
 
 

@@ -12,10 +12,20 @@ VALUES
 INSERT INTO sys_message_task
 (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
 VALUES
-    (UUID_SHORT(), 'FOLLOW_UP_PLAN_COMMENT_ADDED', 'FOLLOW_UP_PLAN', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
-    (UUID_SHORT(), 'FOLLOW_UP_PLAN_COMMENT_MENTIONED', 'FOLLOW_UP_PLAN', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
-    (UUID_SHORT(), 'FOLLOW_UP_RECORD_COMMENT_ADDED', 'FOLLOW_UP_RECORD', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
-    (UUID_SHORT(), 'FOLLOW_UP_RECORD_COMMENT_MENTIONED', 'FOLLOW_UP_RECORD', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2);
+    (UUID_SHORT(), 'CUSTOMER_FOLLOW_UP_PLAN_COMMENT_ADDED', 'CUSTOMER', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+    (UUID_SHORT(), 'CUSTOMER_FOLLOW_UP_PLAN_COMMENT_MENTIONED', 'CUSTOMER', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+    (UUID_SHORT(), 'CUSTOMER_FOLLOW_UP_RECORD_COMMENT_ADDED', 'CUSTOMER', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+    (UUID_SHORT(), 'CUSTOMER_FOLLOW_UP_RECORD_COMMENT_MENTIONED', 'CUSTOMER', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+
+    (UUID_SHORT(), 'CLUE_FOLLOW_UP_PLAN_COMMENT_ADDED', 'CLUE', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+    (UUID_SHORT(), 'CLUE_FOLLOW_UP_PLAN_COMMENT_MENTIONED', 'CLUE', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+    (UUID_SHORT(), 'CLUE_FOLLOW_UP_RECORD_COMMENT_ADDED', 'CLUE', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+    (UUID_SHORT(), 'CLUE_FOLLOW_UP_RECORD_COMMENT_MENTIONED', 'CLUE', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+
+    (UUID_SHORT(), 'OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_ADDED', 'OPPORTUNITY', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+    (UUID_SHORT(), 'OPPORTUNITY_FOLLOW_UP_PLAN_COMMENT_MENTIONED', 'OPPORTUNITY', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+    (UUID_SHORT(), 'OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_ADDED', 'OPPORTUNITY', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2),
+    (UUID_SHORT(), 'OPPORTUNITY_FOLLOW_UP_RECORD_COMMENT_MENTIONED', 'OPPORTUNITY', false, true, '100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2);
 
 
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
