@@ -74,7 +74,8 @@ public class OrderExportService extends BaseExportService {
         List<OrderListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
             exportList = extOrderMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
-            return Pair.of(exportList, exportList.size());
+            List<OrderListResponse> orderListResponses = filterExportPermission(exportList, orgId);
+            return Pair.of(orderListResponses, orderListResponses.size());
         } else {
             var request = (OrderPageRequest) exportParam.getPageRequest();
             PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
