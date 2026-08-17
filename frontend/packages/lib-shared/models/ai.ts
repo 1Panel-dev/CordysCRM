@@ -6,6 +6,10 @@ export interface AgentChatStreamParams {
   mcpNames?: string[];
 }
 
+export interface SmartFocusParams {
+  focus: string;
+}
+
 export interface AgentChatStreamOptions {
   signal?: AbortSignal; // 浏览器侧中断连接
   onSession?: (sessionId: string, conversationId?: string) => void;

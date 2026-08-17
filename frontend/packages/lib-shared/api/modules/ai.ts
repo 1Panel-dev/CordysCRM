@@ -2,7 +2,9 @@ import {
   AgentActionApproveConfirmUrl,
   AgentActionApproveIgnoreUrl,
   AgentActionApprovePageUrl,
+  AgentActionSuggestionIgnoreUrl,
   AgentActionSuggestionPageUrl,
+  AgentActionSuggestionSubmitUrl,
   AgentChatCancelUrl,
   AgentChatConfirmUrl,
   AgentChatStreamUrl,
@@ -12,6 +14,9 @@ import {
   AgentConversationMcpToolsUrl,
   AgentConversationPageUrl,
   AgentConversationRenameUrl,
+  SmartAiSummaryRegenerateUrl,
+  SmartAiSummaryUrl,
+  SmartDataOverviewRegenerateUrl,
   SmartDataOverviewUrl,
 } from '../requrls/ai';
 import { useI18n } from '../../hooks/useI18n';
@@ -31,6 +36,7 @@ import type {
   AgentConversationMcpToolItem,
   AgentActionApproveItem,
   AgentActionSuggestionItem,
+  SmartFocusParams,
 } from '../../models/ai';
 
 interface SseBlock {
@@ -345,8 +351,28 @@ export default function useAiApi(CDR: CordysAxios) {
     return CDR.post<string>({ url: SmartDataOverviewUrl });
   }
 
+  function regenerateSmartDataOverview() {
+    return CDR.post<string>({ url: SmartDataOverviewRegenerateUrl });
+  }
+
+  function getSmartAiSummary(data: SmartFocusParams) {
+    return CDR.post<string>({ url: SmartAiSummaryUrl, data });
+  }
+
+  function regenerateSmartAiSummary(data: SmartFocusParams) {
+    return CDR.post<string>({ url: SmartAiSummaryRegenerateUrl, data });
+  }
+
   function getAgentActionSuggestionPage(data: TableQueryParams) {
     return CDR.post<CommonList<AgentActionSuggestionItem>>({ url: AgentActionSuggestionPageUrl, data });
+  }
+
+  function ignoreAgentActionSuggestion(id: string) {
+    return CDR.post({ url: `${AgentActionSuggestionIgnoreUrl}/${id}` });
+  }
+
+  function submitAgentActionSuggestion(id: string, label: string) {
+    return CDR.post({ url: `${AgentActionSuggestionSubmitUrl}/${id}`, params: { label } });
   }
 
   function getAgentActionApprovePage(data: TableQueryParams) {
@@ -373,7 +399,12 @@ export default function useAiApi(CDR: CordysAxios) {
     renameAgentConversation,
     getAgentConversationMcpTools,
     getSmartDataOverview,
+    regenerateSmartDataOverview,
+    getSmartAiSummary,
+    regenerateSmartAiSummary,
     getAgentActionSuggestionPage,
+    ignoreAgentActionSuggestion,
+    submitAgentActionSuggestion,
     getAgentActionApprovePage,
     ignoreAgentActionApprove,
     confirmAgentActionApprove,
