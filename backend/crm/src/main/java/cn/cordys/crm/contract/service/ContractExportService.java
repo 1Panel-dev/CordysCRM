@@ -76,7 +76,8 @@ public class ContractExportService extends BaseExportService {
         List<ContractListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
             exportList = extContractMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
-            return Pair.of(exportList, exportList.size());
+            List<ContractListResponse> contractListResponses = filterExportPermission(exportList, orgId);
+            return Pair.of(contractListResponses, contractListResponses.size());
         } else {
             var request = (ContractPageRequest) exportParam.getPageRequest();
             PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
