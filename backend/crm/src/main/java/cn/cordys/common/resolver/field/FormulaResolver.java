@@ -41,7 +41,7 @@ public class FormulaResolver extends AbstractModuleFieldResolver<FormulaField> {
         try {
             return new BigDecimal(text);
         } catch (NumberFormatException e) {
-            throw new FormulaParseException("无法解析数值类型: " + text);
+            return text;
         }
     }
 }
