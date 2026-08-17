@@ -654,6 +654,12 @@
             <if test="contract.amount != null">
                 amount = #{contract.amount},
             </if>
+            <if test="contract.startTime != null">
+                start_time = #{contract.startTime},
+            </if>
+            <if test="contract.endTime != null">
+                end_time = #{contract.endTime},
+            </if>
             <if test="contract.updateTime != null">
                 update_time = #{contract.updateTime},
             </if>
