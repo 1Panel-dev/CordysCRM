@@ -27,14 +27,10 @@
       />
 
       <div v-else class="crm-comment-item__content">
-        <div class="flex items-center">
-          <template v-if="props.comment.replyToUserName">
-            <div class="text-[var(--text-n4)]">{{ t('crmComment.replyTo') }} {{ props.comment.replyToUserName }}：</div>
-          </template>
-          <div class="text-[var(--text-n1)]">
-            {{ props.comment.content }}
-          </div>
-        </div>
+        <span v-if="props.comment.replyToUserName" class="text-[var(--text-n4)]">
+          {{ t('crmComment.replyTo') }} {{ props.comment.replyToUserName }}：
+        </span>
+        <span class="text-[var(--text-n1)]">{{ props.comment.content }}</span>
       </div>
 
       <div v-if="!isEditing" class="mt-[8px] flex justify-end gap-[8px]">
