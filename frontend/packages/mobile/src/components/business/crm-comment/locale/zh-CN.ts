@@ -12,5 +12,5 @@ export default {
   'crmComment.moreReplies': '更多回复（{count}）',
   'crmComment.collapseReplies': '收起',
   'crmComment.submit': '发送',
-  'crmComment.disabledUser': '离职',
+  'crmComment.disabledUser': '已禁用',
 };
