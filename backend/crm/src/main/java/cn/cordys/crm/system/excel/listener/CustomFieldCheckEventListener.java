@@ -367,8 +367,12 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private boolean checkNumberMax(String val, BigDecimal max) {
         if (StringUtils.isNotBlank(val)) {
-            BigDecimal bigDecimal = new BigDecimal(val);
-            return bigDecimal.compareTo(max) > 0;
+            try {
+                BigDecimal bigDecimal = new BigDecimal(val);
+                return bigDecimal.compareTo(max) > 0;
+            } catch (Exception e) {
+                return false;
+            }
         }
         return false;
     }
