@@ -1,9 +1,13 @@
 package cn.cordys.common.resolver.field;
 
 import cn.cordys.crm.system.dto.field.FormulaField;
+import cn.cordys.crm.system.dto.field.InputNumberField;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.formula.FormulaParseException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * @author jianxing
@@ -30,7 +34,20 @@ public class FormulaResolver extends AbstractModuleFieldResolver<FormulaField> {
             return null;
         }
         try {
-            return new BigDecimal(value);
+            if (Strings.CI.equals(numberField.getFormulaResultFormat(), "number")) {
+                BigDecimal actualDecimal = new BigDecimal(value).stripTrailingZeros();
+                if (BooleanUtils.isTrue(numberField.getDecimalPlaces())) {
+                    actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
+                }
+                String formatActualVal;
+                if (BooleanUtils.isTrue(numberField.getShowThousandsSeparator())) {
+                    formatActualVal = InputNumberField.formatThousands(actualDecimal);
+                } else {
+                    formatActualVal = actualDecimal.toPlainString();
+                }
+                return formatActualVal;
+            }
+            return value;
         } catch (Exception e) {
             return value;
         }
