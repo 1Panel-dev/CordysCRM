@@ -159,6 +159,11 @@
     max_tokens: 2048,
     top_p: 0.9,
   };
+  const emptyModelParams: FormModelParams = {
+    temperature: null,
+    max_tokens: null,
+    top_p: null,
+  };
   const defaultForm: AiModelForm = {
     displayName: '',
     provider: 'OpenAI',
@@ -172,43 +177,33 @@
     ...defaultModelParams,
   };
 
-  function parseModelParams(modelParams?: string): FormModelParams {
-    if (!modelParams) {
-      return { ...defaultModelParams };
-    }
+  function createEditForm(model: Partial<AiModelItem>): AiModelForm {
+    const modelParams = model.modelParams
+      ? ({
+          ...(JSON.parse(model.modelParams) as AiModelParams),
+        } as FormModelParams)
+      : { ...emptyModelParams };
 
-    try {
-      const parsedParams = JSON.parse(modelParams) as AiModelParams;
-      return {
-        temperature:
-          typeof parsedParams.temperature === 'number' ? parsedParams.temperature : defaultModelParams.temperature,
-        max_tokens:
-          typeof parsedParams.max_tokens === 'number' ? parsedParams.max_tokens : defaultModelParams.max_tokens,
-        top_p: typeof parsedParams.top_p === 'number' ? parsedParams.top_p : defaultModelParams.top_p,
-      };
-    } catch {
-      return { ...defaultModelParams };
-    }
-  }
-
-  function createDefaultForm(model?: Partial<AiModelItem>): AiModelForm {
     return {
-      ...defaultForm,
-      id: model?.id,
-      displayName: model?.displayName ?? defaultForm.displayName,
-      provider: model?.provider ?? defaultForm.provider,
-      modelName: model?.modelName ?? defaultForm.modelName,
-      apiUrl: model?.apiUrl ?? defaultForm.apiUrl,
-      apiKey: model?.apiKey ?? defaultForm.apiKey,
-      enable: model?.enable ?? defaultForm.enable,
-      globalDailyLimit: model?.globalDailyLimit ?? defaultForm.globalDailyLimit,
-      userDailyLimit: model?.userDailyLimit ?? defaultForm.userDailyLimit,
-      modelParams: model?.modelParams,
-      ...parseModelParams(model?.modelParams),
+      id: model.id,
+      displayName: model.displayName ?? '',
+      provider: model.provider ?? '',
+      modelName: model.modelName ?? '',
+      apiUrl: model.apiUrl ?? '',
+      apiKey: model.apiKey ?? '',
+      enable: model.enable ?? defaultForm.enable,
+      globalDailyLimit: model.globalDailyLimit,
+      userDailyLimit: model.userDailyLimit,
+      modelParams: model.modelParams,
+      ...modelParams,
     };
   }
 
-  const form = reactive(createDefaultForm());
+  function createForm(model?: Partial<AiModelItem>): AiModelForm {
+    return model ? createEditForm(model) : { ...defaultForm };
+  }
+
+  const form = reactive(createForm());
 
   const rules: FormRules = {
     displayName: [
@@ -228,7 +223,7 @@
   };
 
   function resetFormState(model?: Partial<AiModelItem>) {
-    Object.assign(form, createDefaultForm(model));
+    Object.assign(form, createForm(model));
     formRef.value?.restoreValidation();
   }
 

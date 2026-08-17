@@ -11,8 +11,38 @@
         />
       </AiChatProvider>
       <n-spin v-if="dataOverviewAIRenderString" :show="dataOverviewLoading" class="bg-[var(--text-n10)]">
-        <div class="h-full w-full" v-html="dataOverviewAIRenderString"> </div>
+        <div
+          ref="dataOverviewRef"
+          class="h-full w-full"
+          @click="handleSmartContentClick"
+          v-html="dataOverviewAIRenderString"
+        >
+        </div>
+
+        <n-spin v-if="aiSummaryVisible" :show="aiSummaryLoading" class="bg-[var(--text-n10)] px-[24px] pb-[24px]">
+          <div class="rounded-[4px] bg-[var(--primary-7)] p-[16px] text-[var(--primary-8)]">
+            <div class="flex items-center gap-[8px] font-semibold">
+              <CrmIcon type="iconicon_star1" :size="16" color="var(--primary-8)" />
+              <span>{{ t('workbench.smart.AIRead') }}</span>
+            </div>
+            <div v-if="aiSummaryContent" class="mt-[8px] whitespace-pre-wrap">
+              {{ aiSummaryContent }}
+            </div>
+            <n-empty v-else :description="t('common.noData')" :show-icon="false" class="mt-[8px]" />
+            <n-button
+              class="n-btn-outline-primary mt-[8px] bg-[var(--text-n10)]"
+              size="small"
+              type="primary"
+              ghost
+              :loading="aiSummaryLoading"
+              @click="regenerateAiSummary()"
+            >
+              {{ t('workbench.smart.reInterpret') }}
+            </n-button>
+          </div>
+        </n-spin>
       </n-spin>
+
       <div class="flex w-full gap-[16px]">
         <CrmCard class="flex-1" no-content-padding hide-footer>
           <template #header>
@@ -46,16 +76,36 @@
                           {{ item.topic }}
                         </n-tooltip>
                       </div>
-                      <CrmIcon class="shrink-0 cursor-pointer text-[var(--text-n2)]" type="iconicon_close" :size="16" />
+                      <CrmIcon
+                        class="shrink-0 cursor-pointer text-[var(--text-n2)]"
+                        type="iconicon_close"
+                        :size="16"
+                        @click="handleSuggestionIgnore(item)"
+                      />
                     </div>
                     <div class="mt-[16px] whitespace-pre-wrap text-[var(--text-n2)]">
                       {{ item.summary || '-' }}
                     </div>
                     <div class="mt-[16px] flex flex-wrap gap-[8px]">
-                      <n-button v-if="item.actions" size="small" type="primary" ghost>
+                      <n-button
+                        v-if="item.actions"
+                        size="small"
+                        type="primary"
+                        ghost
+                        :loading="operatingSuggestionId === item.id"
+                        @click="handleSuggestionSubmit(item, item.actions)"
+                      >
                         {{ item.actions }}
                       </n-button>
-                      <n-button size="small" type="primary" ghost>{{ t('workbench.smart.ignore') }}</n-button>
+                      <n-button
+                        size="small"
+                        type="primary"
+                        ghost
+                        :loading="operatingSuggestionId === item.id"
+                        @click="handleSuggestionIgnore(item)"
+                      >
+                        {{ t('workbench.smart.ignore') }}
+                      </n-button>
                     </div>
                   </div>
                 </div>
@@ -70,7 +120,7 @@
               <div class="text-[14px] font-semibold">{{ t('workbench.smart.AIActionApproval') }}</div>
             </div>
           </template>
-          <div class="p-[16px_24px]">
+          <div class="px-[24px] pb-[24px]">
             <n-spin :show="approveLoading" class="h-full" content-class="h-full">
               <n-empty v-if="!approveList.length" :description="t('common.noData')" />
               <n-scrollbar v-else class="h-full" @scroll="approvePager.handleReachBottom">
@@ -127,7 +177,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onBeforeUnmount, onMounted, ref } from 'vue';
+  import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
   import { NButton, NEmpty, NScrollbar, NSpin, NTooltip, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -150,8 +200,13 @@
     getAgentActionApprovePage,
     getAgentActionSuggestionPage,
     getAgentConversationMcpTools,
+    getSmartAiSummary,
     getSmartDataOverview,
     ignoreAgentActionApprove,
+    ignoreAgentActionSuggestion,
+    regenerateSmartAiSummary,
+    regenerateSmartDataOverview,
+    submitAgentActionSuggestion,
   } from '@/api/modules';
 
   const { t } = useI18n();
@@ -207,17 +262,107 @@
 
   const dataOverviewLoading = ref(false);
   const dataOverviewAIRenderString = ref('');
+  const aiSummaryLoading = ref(false);
+  const aiSummaryVisible = ref(true);
+  const aiSummaryContent = ref('');
+  const aiSummaryFocus = ref('');
+  const dataOverviewRef = ref<HTMLElement>();
 
-  async function loadDataOverview(): Promise<void> {
+  function syncAiSummaryButtonActive() {
+    const interpretButton = dataOverviewRef.value?.querySelector<HTMLElement>('[data-overview-action="interpret"]');
+
+    interpretButton?.classList.toggle('bg-[var(--primary-7)]', aiSummaryVisible.value);
+    interpretButton?.classList.toggle('!bg-[var(--text-n10)]', !aiSummaryVisible.value);
+  }
+
+  function syncAiSummaryFocusFromOverview(content: string) {
+    const doc = new DOMParser().parseFromString(content, 'text/html');
+    const interpretButton = doc.querySelector<HTMLElement>('[data-overview-action="interpret"]');
+
+    aiSummaryFocus.value = interpretButton?.dataset.overviewPrompt || '';
+  }
+
+  async function loadDataOverview() {
     try {
       dataOverviewLoading.value = true;
       const res = await getSmartDataOverview();
       dataOverviewAIRenderString.value = decodeContent(res);
+      syncAiSummaryFocusFromOverview(dataOverviewAIRenderString.value);
+      await nextTick();
+      syncAiSummaryButtonActive();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     } finally {
       dataOverviewLoading.value = false;
+    }
+  }
+
+  async function regenerateDataOverview() {
+    try {
+      dataOverviewLoading.value = true;
+      const res = await regenerateSmartDataOverview();
+      dataOverviewAIRenderString.value = decodeContent(res);
+      syncAiSummaryFocusFromOverview(dataOverviewAIRenderString.value);
+      await nextTick();
+      syncAiSummaryButtonActive();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      dataOverviewLoading.value = false;
+    }
+  }
+
+  async function loadAiSummary() {
+    try {
+      aiSummaryLoading.value = true;
+      const res = await getSmartAiSummary({ focus: aiSummaryFocus.value });
+      aiSummaryContent.value = res || '';
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      aiSummaryLoading.value = false;
+    }
+  }
+
+  async function regenerateAiSummary() {
+    try {
+      aiSummaryLoading.value = true;
+      const res = await regenerateSmartAiSummary({ focus: aiSummaryFocus.value });
+      aiSummaryContent.value = res || '';
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      aiSummaryLoading.value = false;
+    }
+  }
+
+  function handleSmartContentClick(event: MouseEvent): void {
+    const actionElement =
+      event.target instanceof HTMLElement ? event.target.closest<HTMLElement>('[data-overview-action]') : null;
+
+    if (!actionElement) {
+      return;
+    }
+
+    const action = actionElement.dataset.overviewAction || '';
+
+    if (!action) {
+      return;
+    }
+
+    event.preventDefault();
+    if (action === 'interpret') {
+      aiSummaryVisible.value = !aiSummaryVisible.value;
+      syncAiSummaryButtonActive();
+      return;
+    }
+
+    if (action === 'regenerate') {
+      regenerateDataOverview();
     }
   }
 
@@ -300,7 +445,31 @@
 
   const suggestionLoading = ref(false);
   const suggestionList = ref<AgentActionSuggestionItem[]>([]);
+  const operatingSuggestionId = ref('');
   const suggestionPager = createActionPager(suggestionList, suggestionLoading, getAgentActionSuggestionPage);
+
+  async function handleSuggestionAction(item: AgentActionSuggestionItem, action: (id: string) => Promise<unknown>) {
+    if (!item.id || operatingSuggestionId.value) {
+      return;
+    }
+
+    try {
+      operatingSuggestionId.value = item.id;
+      await action(item.id);
+      Message.success(t('common.operationSuccess'));
+      await suggestionPager.load();
+    } finally {
+      operatingSuggestionId.value = '';
+    }
+  }
+
+  function handleSuggestionSubmit(item: AgentActionSuggestionItem, label: string) {
+    return handleSuggestionAction(item, (id) => submitAgentActionSuggestion(id, label));
+  }
+
+  function handleSuggestionIgnore(item: AgentActionSuggestionItem) {
+    return handleSuggestionAction(item, ignoreAgentActionSuggestion);
+  }
 
   const approveLoading = ref(false);
   const approveList = ref<AgentActionApproveItem[]>([]);
@@ -330,9 +499,10 @@
     return handleApproveAction(item, ignoreAgentActionApprove);
   }
 
-  onMounted(() => {
+  onMounted(async () => {
     loadMcpOptions();
-    loadDataOverview();
+    await loadDataOverview();
+    loadAiSummary();
     suggestionPager.load();
     approvePager.load();
   });

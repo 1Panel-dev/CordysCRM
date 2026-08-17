@@ -1,7 +1,7 @@
 export interface AiModelParams {
-  temperature?: number;
-  max_tokens?: number;
-  top_p?: number;
+  temperature?: number | null;
+  max_tokens?: number | null;
+  top_p?: number | null;
 }
 
 export interface AiModelSaveParams {
@@ -12,8 +12,8 @@ export interface AiModelSaveParams {
   apiUrl?: string;
   apiKey?: string;
   enable: boolean;
-  globalDailyLimit: number;
-  userDailyLimit: number;
+  globalDailyLimit?: number;
+  userDailyLimit?: number;
   modelParams?: string;
 }
 
