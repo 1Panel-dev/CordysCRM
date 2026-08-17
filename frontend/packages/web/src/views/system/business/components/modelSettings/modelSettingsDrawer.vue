@@ -43,6 +43,7 @@
           v-model:value="form.apiUrl"
           clearable
           :placeholder="t('system.business.modelSettings.apiBaseUrlPlaceholder')"
+          :maxlength="255"
         />
       </n-form-item>
       <n-form-item :label="t('system.business.modelSettings.apiKey')" path="apiKey">
@@ -52,6 +53,7 @@
           show-password-on="click"
           type="password"
           placeholder="sk-..."
+          :maxlength="255"
           :input-props="{ autocomplete: 'new-password', name: 'agent_model_api_key' }"
         />
       </n-form-item>

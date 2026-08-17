@@ -34,7 +34,7 @@
     "katex": "^0.18.1",
     "markdown-it": "^14.3.0",
     "mermaid": "^11.16.0",
-    "naive-ui": "^2.44.1",
+    "naive-ui": "2.44.1",
     "nprogress": "^0.2.0",
     "seemly": "^0.3.10",
     "sortablejs": "^1.15.7",
