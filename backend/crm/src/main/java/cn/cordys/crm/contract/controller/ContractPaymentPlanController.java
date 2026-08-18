@@ -126,6 +126,7 @@ public class ContractPaymentPlanController {
                 .deptDataPermission(deptDataPermission)
                 .selectIds(request.getIds())
                 .selectRequest(request)
+                .formKey(FormKey.CONTRACT_PAYMENT_PLAN.getKey())
                 .build();
         return contractPaymentPlanExportService.exportSelect(exportDTO);
     }
@@ -147,6 +148,7 @@ public class ContractPaymentPlanController {
                 .userId(SessionUtils.getUserId())
                 .deptDataPermission(deptDataPermission)
                 .pageRequest(request)
+                .formKey(FormKey.CONTRACT_PAYMENT_PLAN.getKey())
                 .build();
         return contractPaymentPlanExportService.export(exportDTO);
     }
