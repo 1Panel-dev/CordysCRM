@@ -1052,7 +1052,7 @@ public class ContractInvoiceService implements ApprovalResourceHandler {
                         ids.forEach(id -> {
                             ContractInvoice originDate = originInvoiceMaps.get(id);
                             ContractInvoice modifiedDate = modifiedInvoiceMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
                             LogContextInfo contextInfo = OperationLogContext.getContext();
                             if (contextInfo != null) {
                                 LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CONTRACT_INVOICE, modifiedDate.getName());
