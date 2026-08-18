@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer no-content-padding class="flex-1">
+  <CrmCard hide-footer no-content-padding :special-height="licenseStore.expiredDuring ? 128 : 64">
     <div class="h-full px-[24px] pt-[24px]">
       <CrmTable
         ref="crmTableRef"
@@ -71,11 +71,13 @@
 
   import { deleteAiModel, getAiModelDetail, getAiModelList, updateAiModelStatus } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const Message = useMessage();
   const { openModal } = useModal();
+  const licenseStore = useLicenseStore();
 
   const keyword = ref('');
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
@@ -222,6 +224,9 @@
       title: t('system.business.modelSettings.globalDailyLimitColumn'),
       key: 'globalDailyLimit',
       width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
       render: (row) => formatGlobalDailyLimit(row.globalDailyLimit),
     },
     {

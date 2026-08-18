@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer no-content-padding class="flex-1">
+  <CrmCard hide-footer no-content-padding :special-height="licenseStore.expiredDuring ? 128 : 64">
     <CrmSplitPanel class="h-full" :max="0.5" :min="0.2" :default-size="0.2">
       <template #1>
         <TermCategoryList
@@ -106,6 +106,7 @@
 
   import { deleteTerm, getTermDetail, getTermList, switchTerm } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
@@ -114,6 +115,7 @@
 
   const selectedCategoryId = ref('');
   const termCategoryListRef = ref<InstanceType<typeof TermCategoryList>>();
+  const licenseStore = useLicenseStore();
 
   const tableRefreshId = ref(0);
 
