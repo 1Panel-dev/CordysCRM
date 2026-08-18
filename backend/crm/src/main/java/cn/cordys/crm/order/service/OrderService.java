@@ -1221,6 +1221,7 @@ public class OrderService implements ApprovalResourceHandler {
                                 List<String> serialNumberRules = ((SerialNumberField) serialOptional.get()).getSerialNumberRules();
                                 order.setNumber(serialNumGenerator.generateByRules(serialNumberRules, currentOrg, FormKey.ORDER.getKey()));
                             }
+                            order.setApprovalStatus(ApprovalStatus.NONE.name());
                             order.setStage(stageConfigList.getFirst().getId());
                             order.setApprovalStatus(ApprovalStatus.NONE.name());
                             order.setPos(nextPos + i);

@@ -1380,6 +1380,7 @@ public class ContractService implements ApprovalResourceHandler {
                             List<String> serialNumberRules = ((SerialNumberField) serialOptional.get()).getSerialNumberRules();
                             contract.setNumber(serialNumGenerator.generateByRules(serialNumberRules, currentOrg, FormKey.CONTRACT.getKey()));
                         }
+                        contract.setApprovalStatus(ApprovalStatus.NONE.name());
                         contract.setStage(stageConfigList.getFirst().getId());
                         contract.setPos(nextPos + i);
                         logs.add(new LogDTO(currentOrg, contract.getId(), currentUser, LogType.ADD, LogModule.CONTRACT_INDEX, contract.getName()));
