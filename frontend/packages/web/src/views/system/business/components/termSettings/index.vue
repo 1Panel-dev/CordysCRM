@@ -223,6 +223,8 @@
       title: t('system.business.term.standardTerm'),
       key: 'standardTerm',
       width: 160,
+      columnSelectorDisabled: true,
+      fixed: 'left',
       ellipsis: {
         tooltip: true,
       },
