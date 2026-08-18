@@ -1480,7 +1480,7 @@ public class ModuleFormService {
                     });
                 }
             } else {
-                heads.add(new ArrayList<>(Collections.singletonList(field.getName())));
+                heads.add(new ArrayList<>(Collections.singletonList(StringUtils.isNotEmpty(field.getResourceFieldId()) ? field.getName() + REF_SYMBOL : field.getName())));
             }
         });
         return heads;
