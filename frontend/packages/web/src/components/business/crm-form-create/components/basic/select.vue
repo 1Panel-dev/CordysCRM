@@ -28,6 +28,7 @@
       :placeholder="props.fieldConfig.placeholder"
       :fallback-option="value !== null && value !== undefined && value !== '' ? fallbackOption : false"
       :render-option="renderOption"
+      filterable
       max-tag-count="responsive"
       clearable
     />
