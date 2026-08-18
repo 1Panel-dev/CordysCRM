@@ -174,6 +174,7 @@
       } else {
         await dislikeAgentChat(runId.value);
       }
+      showSuccessToast(t('aiChat.feedbackThanks'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

@@ -108,7 +108,7 @@
 
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
-  import { NAvatar, NButton, NTooltip } from 'naive-ui';
+  import { NAvatar, NButton, NTooltip, useMessage } from 'naive-ui';
 
   import type { AiChatMessage, AiChatMessagePart, AiComposerSubmitPayload } from '@lib/shared/ai-chat';
   import { getAiChatMessageText, hasRenderableAiChatContent, useAiChatRuntime } from '@lib/shared/ai-chat';
@@ -142,6 +142,7 @@
   }
 
   const { t } = useI18n();
+  const Message = useMessage();
   const runtime = useAiChatRuntime();
   const { legacyCopy } = useLegacyCopy();
 
@@ -237,6 +238,7 @@
 
     try {
       await likeAgentChat(runId.value);
+      Message.success(t('aiChat.feedbackThanks'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -250,6 +252,7 @@
 
     try {
       await dislikeAgentChat(runId.value);
+      Message.success(t('aiChat.feedbackThanks'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

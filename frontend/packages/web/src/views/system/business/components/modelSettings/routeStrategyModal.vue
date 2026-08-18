@@ -18,6 +18,7 @@
           v-model:value="form.defaultModelId"
           clearable
           :disabled="props.readonly"
+          :fallback-option="form.defaultModelId ? fallbackModelOption : false"
           :options="modelOptions"
           :placeholder="t('common.pleaseSelect')"
         />
@@ -27,6 +28,7 @@
           v-model:value="form.insightModelId"
           clearable
           :disabled="props.readonly"
+          :fallback-option="form.insightModelId ? fallbackModelOption : false"
           :options="modelOptions"
           :placeholder="t('common.pleaseSelect')"
         />
@@ -41,6 +43,7 @@
           :options="modelOptions"
           clearable
           :disabled="props.readonly"
+          :fallback-option="form.classifyModelId ? fallbackModelOption : false"
           :placeholder="t('common.pleaseSelect')"
         />
       </n-form-item>
@@ -97,6 +100,13 @@
   const form = reactive<RouteStrategyForm>({
     fallback: true,
   });
+
+  function fallbackModelOption(value: string | number): SelectOption {
+    return {
+      label: t('common.optionNotExist'),
+      value,
+    };
+  }
 
   async function loadStrategy() {
     try {

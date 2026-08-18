@@ -8,6 +8,7 @@ export default {
   'aiChat.tokensUsed': '共消耗 {tokens}',
   'aiChat.like': '回答有帮助',
   'aiChat.dislike': '回答没帮助',
+  'aiChat.feedbackThanks': '感谢反馈',
   'aiChat.confirmTitle': 'Agent 请求确认',
   'aiChat.confirmExecute': '确认执行',
   'aiChat.confirmCancel': '取消/拒绝',

@@ -14,6 +14,7 @@ export default {
   'aiChat.confirmCancel': '取消/拒绝',
   'aiChat.thinking': '思考过程',
   'aiChat.tokensUsed': '共消耗 {tokens}',
+  'aiChat.feedbackThanks': '感谢反馈',
   'aiChat.progress': '正在执行',
   'aiChat.progressInput': '输入',
   'aiChat.progressOutput': '输出',
