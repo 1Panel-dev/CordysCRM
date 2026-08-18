@@ -39,7 +39,7 @@
   import GlobalTaskDrawer from './globalTaskDrawer.vue';
 
   import { deleteAgentTask, getAgentTaskDetail, getAgentTaskList, switchAgentTask } from '@/api/modules';
-  import { confirmationLevelOptions, triggerTypeOptions } from '@/config/globalTask';
+  import { confirmationLevelOptions } from '@/config/globalTask';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
