@@ -872,6 +872,16 @@
     ensureDraggable();
   });
 
+  watch(
+    () => isFullScreen.value,
+    (val) => {
+      if (!val) {
+        // 移除表格容器的 currentWidth 样式，避免全屏切换后表格宽度异常
+        tableFullRef.value?.querySelector('.n-scrollbar-container')?.removeAttribute('style');
+      }
+    }
+  );
+
   onMounted(() => {
     ensureDraggable();
   });
