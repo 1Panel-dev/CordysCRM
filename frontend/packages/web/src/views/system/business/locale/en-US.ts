@@ -82,6 +82,7 @@ export default {
   'system.business.term.addTerm': 'New Term',
   'system.business.term.updateTerm': 'Update Term',
   'system.business.term.category': 'Category',
+  'system.business.term.categoryMaxLength': 'Category cannot exceed 255 characters',
   'system.business.term.term': 'Term',
   'system.business.term.standardTerm': 'Standard Term',
   'system.business.term.standardTermPlaceholder': 'Enterprise standard term',

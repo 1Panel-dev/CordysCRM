@@ -81,6 +81,7 @@ export default {
   'system.business.term.addTerm': '新建术语',
   'system.business.term.updateTerm': '更新术语',
   'system.business.term.category': '所属分类',
+  'system.business.term.categoryMaxLength': '所属分类不能超过 255 个字符',
   'system.business.term.term': '术语',
   'system.business.term.standardTerm': '标准术语',
   'system.business.term.standardTermPlaceholder': '企业统一标准用词',

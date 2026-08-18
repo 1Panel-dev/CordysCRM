@@ -149,6 +149,14 @@
         message: t('common.notNull', { value: t('system.business.term.category') }),
         trigger: ['blur', 'change'],
       },
+      {
+        validator: (_rule, value: string) => {
+          const matchedCategory = props.categories.some((category) => category.id === value);
+          return matchedCategory || !value || value.length <= 255;
+        },
+        message: t('system.business.term.categoryMaxLength'),
+        trigger: ['blur', 'change'],
+      },
     ],
     standardTerm: [
       {

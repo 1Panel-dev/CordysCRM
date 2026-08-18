@@ -76,6 +76,7 @@
           filterable
           clearable
           :loading="modelLoading"
+          :fallback-option="form.applicableModel ? fallbackModelOption : false"
           :options="modelOptions"
           :placeholder="t('common.pleaseSelect')"
         />
@@ -158,6 +159,14 @@
   };
 
   const form = reactive<AgentTaskForm>({ ...defaultForm });
+
+  function fallbackModelOption(value: string | number): SelectOption {
+    return {
+      label: t('common.optionNotExist'),
+      value,
+    };
+  }
+
   const isEdit = computed(() => !!props.task?.id);
   const drawerTitle = computed(() =>
     isEdit.value ? t('system.business.globalTask.updateTask') : t('system.business.globalTask.addTask')
