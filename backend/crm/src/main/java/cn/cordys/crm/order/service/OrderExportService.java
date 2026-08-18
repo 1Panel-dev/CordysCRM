@@ -108,6 +108,7 @@ public class OrderExportService extends BaseExportService {
         systemFieldMap.put("number", data.getNumber());
         systemFieldMap.put("customerId", data.getCustomerName());
         systemFieldMap.put("contractId", data.getContractName());
+        systemFieldMap.put("departmentId", data.getDepartmentName());
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("amount", data.getAmount());
         if (StringUtils.isNotBlank(data.getStage())) {

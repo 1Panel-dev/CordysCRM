@@ -108,6 +108,7 @@
         c.`name` AS contractName,
         cc.name as customerName,
         so.amount,
+        so.approval_status,
         so.stage,
         so.`owner`,
         so.create_user,
