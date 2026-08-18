@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer no-content-padding class="flex-1">
+  <CrmCard hide-footer no-content-padding class="flex-1" :special-height="licenseStore.expiredDuring ? 128 : 64">
     <n-tabs v-model:value="activeMenu" placement="left" type="line" class="global-task-tabs h-full">
       <n-tab-pane name="taskList" :tab="t('system.business.globalTask.taskList')">
         <TaskList />
@@ -21,8 +21,11 @@
   import ExecutionRecord from './executionRecord.vue';
   import TaskList from './taskList.vue';
 
+  import useLicenseStore from '@/store/modules/setting/license';
+
   const { t } = useI18n();
   const activeMenu = ref('taskList');
+  const licenseStore = useLicenseStore();
 </script>
 
 <style scoped lang="scss">
