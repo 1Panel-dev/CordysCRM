@@ -850,9 +850,14 @@ public abstract class BaseExportService {
         LocaleContextHolder.setLocale(exportDTO.getLocale());
         ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
         //表头信息
-        List<List<String>> headList = exportDTO.getHeadList().stream()
-                .map(head -> Collections.singletonList(head.getTitle()))
-                .toList();
+        List<List<String>> headList = null;
+        if (StringUtils.isNotBlank(exportDTO.getFormKey())) {
+            headList = getExportMergeHeadList(exportDTO.getHeadList(), exportDTO.getOrgId(), exportDTO.getFormKey());
+        } else {
+            headList = exportDTO.getHeadList().stream()
+                    .map(head -> Collections.singletonList(head.getTitle()))
+                    .toList();
+        }
         // 准备导出文件
         File file = prepareExportFile(exportTask.getFileId(), exportDTO.getFileName(), exportTask.getOrganizationId());
         try (ExcelWriter writer = EasyExcel.write(file)
@@ -921,9 +926,14 @@ public abstract class BaseExportService {
         LocaleContextHolder.setLocale(exportDTO.getLocale());
         ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
         //表头信息
-        List<List<String>> headList = exportDTO.getHeadList().stream()
-                .map(head -> Collections.singletonList(head.getTitle()))
-                .toList();
+        List<List<String>> headList = null;
+        if (StringUtils.isNotBlank(exportDTO.getFormKey())) {
+            headList = getExportMergeHeadList(exportDTO.getHeadList(), exportDTO.getOrgId(), exportDTO.getFormKey());
+        } else {
+            headList = exportDTO.getHeadList().stream()
+                    .map(head -> Collections.singletonList(head.getTitle()))
+                    .toList();
+        }
         //分批查询数据并写入文件
         batchHandleData(exportTask.getFileId(),
                 headList,

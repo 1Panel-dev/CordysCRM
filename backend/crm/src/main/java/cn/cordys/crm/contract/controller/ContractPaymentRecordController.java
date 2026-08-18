@@ -141,7 +141,7 @@ public class ContractPaymentRecordController {
                 .logModule(LogModule.CONTRACT_PAYMENT_RECORD).locale(LocaleContextHolder.getLocale())
                 .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
                 .deptDataPermission(deptDataPermission).selectIds(request.getIds())
-                .selectRequest(request)
+                .selectRequest(request).formKey(FormKey.CONTRACT_PAYMENT_RECORD.getKey())
                 .build();
         return contractPaymentRecordExportService.exportSelect(exportDTO);
     }
@@ -158,6 +158,7 @@ public class ContractPaymentRecordController {
                 .logModule(LogModule.CONTRACT_PAYMENT_RECORD).locale(LocaleContextHolder.getLocale())
                 .orgId(OrganizationContext.getOrganizationId()).userId(SessionUtils.getUserId())
                 .deptDataPermission(deptDataPermission).pageRequest(request)
+                .formKey(FormKey.CONTRACT_PAYMENT_RECORD.getKey())
                 .build();
         return contractPaymentRecordExportService.export(exportDTO);
     }
