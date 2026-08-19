@@ -827,4 +827,17 @@ public class ProductPriceService extends BaseExportService {
         List<ProductPriceField> productPriceFields = productPriceFieldMapper.selectListByLambda(priceFieldLambdaQueryWrapper);
         return productPriceFields.stream().map(ProductPriceField::getBizId).collect(Collectors.toSet());
     }
+
+
+    /**
+     * 匹配bizId
+     *
+     * @param resourceId
+     * @param productName
+     * @return
+     */
+    public Set<String> getBizIdsByResource(Object resourceId, String productName) {
+        List<String> bizIds = extProductPriceMapper.getBizIdsByResource(resourceId.toString(), productName);
+        return CollectionUtils.isNotEmpty(bizIds) ? new HashSet<>(bizIds) : new HashSet<>(0);
+    }
 }

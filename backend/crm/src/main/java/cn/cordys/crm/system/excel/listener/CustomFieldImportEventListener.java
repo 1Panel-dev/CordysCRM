@@ -325,30 +325,40 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                         .filter(entry -> priceSubRefFieldMap.keySet().stream()
                                 .anyMatch(name -> Objects.equals(entry.getValue(), name + REF_SYMBOL)))
                         .map(Map.Entry::getKey).toList();
-
                 for (Integer key : keys) {
                     if (rowData.containsKey(key)) {
                         String data = rowData.get(key);
-                        BaseField baseField = priceSubRefFieldMap.get(headMap.get(key).replace(REF_SYMBOL, ""));
-                        String fieldId = baseField.getBusinessKey();
-                        if (StringUtils.isBlank(fieldId)) {
-                            fieldId = splitRefId(v, baseField.getId());
-                        }
-                        Object val = convertValue(data, baseField);
-                        Set<String> bizIds = productPriceService.getData(resourceId, fieldId, val);
-                        if (CollectionUtils.isEmpty(bizIds)) {
+                        if (StringUtils.isBlank(data)) {
+                            //没数据 匹配下一个字段
                             continue;
                         }
+                        BaseField baseField = priceSubRefFieldMap.get(headMap.get(key).replace(REF_SYMBOL, ""));
+                        Set<String> bizIds = new HashSet<>();
+                        if (baseField instanceof DatasourceField sourceField && Strings.CI.equals(sourceField.getDataSourceType(), "PRODUCT") && Strings.CI.equals(sourceField.getInternalKey(), "priceProduct")) {
+                            bizIds = productPriceService.getBizIdsByResource(resourceId, data);
+                        } else {
+                            Object val = convertValue(data, baseField);
+                            if (val == null) {
+                                //val为空，也继续匹配下一个字段
+                                continue;
+                            }
+                            bizIds = productPriceService.getData(resourceId, baseField.getBusinessKey(), val);
+                        }
+                        if (CollectionUtils.isEmpty(bizIds)) {
+                            commonBizIds = null;
+                            break;
+                        }
                         if (commonBizIds == null) {
-                            // 第一次查询结果
+                            //第一次查询结果
                             commonBizIds = new HashSet<>(bizIds);
                         } else {
-                            // 求交集
+                            //求交集
                             commonBizIds.retainAll(bizIds);
-                        }
-
-                        if (commonBizIds.isEmpty()) {
-                            break;
+                            //交集已经为空，break
+                            if (commonBizIds.isEmpty()) {
+                                commonBizIds = null;
+                                break;
+                            }
                         }
                     }
                 }
@@ -357,11 +367,6 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         return commonBizIds;
     }
 
-
-    private String splitRefId(String v, String fieldId) {
-        int idx = fieldId.indexOf(v + REF_UNDERLINE);
-        return idx >= 0 ? fieldId.substring(idx) : fieldId;
-    }
 
     private void createEntity(Map<Integer, String> rowData) throws Exception {
         String rowKey = IDGenerator.nextStr();
