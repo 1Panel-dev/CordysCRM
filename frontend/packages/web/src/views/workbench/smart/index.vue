@@ -7,6 +7,7 @@
           :mcp-options="mcpOptions"
           submit-mode="emit"
           :placeholder="t('workbench.smart.composerPlaceholder')"
+          @mcp-updated="loadMcpOptions"
           @submit="handleComposerSubmit"
         />
       </AiChatProvider>
@@ -199,7 +200,7 @@
     confirmAgentActionApprove,
     getAgentActionApprovePage,
     getAgentActionSuggestionPage,
-    getAgentConversationMcpTools,
+    getAgentMcpConfigList,
     getSmartAiSummary,
     getSmartDataOverview,
     ignoreAgentActionApprove,
@@ -369,13 +370,7 @@
   const mcpOptions = ref<AiChatMcp[]>([]);
   async function loadMcpOptions() {
     try {
-      const tools = await getAgentConversationMcpTools();
-      mcpOptions.value = (tools ?? []).map((item) => ({
-        id: item.name,
-        name: item.name,
-        description: item.description,
-        permission: 'read',
-      }));
+      mcpOptions.value = await getAgentMcpConfigList();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

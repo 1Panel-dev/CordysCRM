@@ -7,7 +7,9 @@ export interface AiChatError {
 }
 
 // 附件的粗粒度类型，用于决定默认图标、预览方式等
-export type AiFileKind = 'file' | 'image' | 'audio' | 'video';
+export type AiFileKind = 'file' | 'image';
+
+export type AiChatAttachmentStatus = 'uploading' | 'done' | 'error';
 
 // 附件
 export interface AiChatAttachment {
@@ -17,6 +19,7 @@ export interface AiChatAttachment {
   mimeType?: string;
   size?: number;
   kind?: AiFileKind;
+  status?: AiChatAttachmentStatus;
   metadata?: Record<string, unknown>;
 }
 
@@ -25,7 +28,6 @@ export interface AiChatMcp {
   id: string;
   name: string;
   description?: string;
-  permission: 'read' | 'write' | 'delete';
 }
 
 export interface AiChatMeta {

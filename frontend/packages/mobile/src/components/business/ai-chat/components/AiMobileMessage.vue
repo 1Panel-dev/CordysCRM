@@ -8,28 +8,44 @@
     </div>
     <CrmAvatar v-if="isUser" :size="40" :is-word="false" class="rounded-[16px]" />
 
-    <div class="ai-mobile-message__bubble min-w-0" :class="isUser ? 'user-message max-w-[calc(100%-48px)]' : 'flex-1'">
-      <template v-for="item in renderableParts" :key="item.key">
-        <AiMobileMarkdownBlock
-          v-if="item.part.type === 'text' || item.part.type === 'reasoning'"
-          :part="item.part"
-          :index="item.index"
-          :is-generating="isGenerating"
-        />
-        <AiMobileErrorBlock v-else-if="item.part.type === 'data-error'" :part="item.part" />
-        <AiMobileProgressBlock
-          v-else-if="item.part.type === 'data-progress'"
-          :part="item.part"
-          :index="item.index"
-          :is-generating="isGenerating"
-        />
-      </template>
-      <AiMobileLoadingBlock v-if="showAssistantLoading" />
+    <div class="flex min-w-0 flex-col" :class="isUser ? 'max-w-[calc(100%-48px)] items-end' : 'flex-1 items-start'">
+      <AiMobileAttachmentList
+        v-if="messageAttachments.length"
+        class="mb-[8px] w-full"
+        :attachments="messageAttachments"
+      />
+
+      <div
+        v-if="renderableParts.length || showAssistantLoading"
+        class="ai-mobile-message__bubble w-full min-w-0"
+        :class="{ 'user-message': isUser }"
+      >
+        <template v-for="item in renderableParts" :key="item.key">
+          <AiMobileTextBlock v-if="item.part.type === 'text' && isUser" :part="item.part" :mcps="messageMcps" />
+          <AiMobileMarkdownBlock
+            v-else-if="item.part.type === 'text' || item.part.type === 'reasoning'"
+            :part="item.part"
+            :index="item.index"
+            :is-generating="isGenerating"
+          />
+          <AiMobileErrorBlock v-else-if="item.part.type === 'data-error'" :part="item.part" />
+          <AiMobileProgressBlock
+            v-else-if="item.part.type === 'data-progress'"
+            :part="item.part"
+            :index="item.index"
+            :is-generating="isGenerating"
+          />
+        </template>
+        <AiMobileLoadingBlock v-if="showAssistantLoading" />
+      </div>
 
       <div
         v-if="showActions"
         class="ai-mobile-message__actions"
-        :class="{ 'ai-mobile-message__actions--user': isUser }"
+        :class="{
+          'ai-mobile-message__actions--user': isUser,
+          'ai-mobile-message__actions--assistant': props.message.role === 'assistant',
+        }"
       >
         <div class="flex items-center gap-[16px]">
           <CrmIcon
@@ -103,6 +119,8 @@
   import AiMobileLoadingBlock from '../blocks/AiMobileLoadingBlock.vue';
   import AiMobileMarkdownBlock from '../blocks/AiMobileMarkdownBlock.vue';
   import AiMobileProgressBlock from '../blocks/AiMobileProgressBlock.vue';
+  import AiMobileTextBlock from '../blocks/AiMobileTextBlock.vue';
+  import AiMobileAttachmentList from './AiMobileAttachmentList.vue';
 
   import { dislikeAgentChat, likeAgentChat } from '@/api/modules';
 
@@ -140,6 +158,8 @@
   const tokenUsageText = computed(() =>
     typeof props.message.metadata?.tokens === 'number' ? formatThousands(props.message.metadata.tokens) : ''
   );
+  const messageAttachments = computed(() => props.message.metadata?.attachments ?? []);
+  const messageMcps = computed(() => props.message.metadata?.mcps ?? []);
   const showActions = computed(
     () =>
       !props.isGenerating &&
@@ -206,6 +226,9 @@
     border-top: 1px solid var(--text-n8);
     &--user {
       justify-content: flex-end;
+    }
+    &--assistant {
+      width: 100%;
     }
   }
 </style>

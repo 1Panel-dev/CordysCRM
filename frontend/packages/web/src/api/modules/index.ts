@@ -843,7 +843,10 @@ export const {
   getAgentConversationDetail,
   deleteAgentConversation,
   renameAgentConversation,
-  getAgentConversationMcpTools,
+  uploadAgentChatFile,
+  getAgentMcpConfigList,
+  importAgentMcpConfig,
+  deleteAgentMcpConfig,
 } = aiApi;
 
 export const { getSystemVersion, changeLocaleBackEnd } = sysApi;

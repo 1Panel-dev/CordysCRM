@@ -9,13 +9,20 @@
       </slot>
     </div>
 
-    <div class="min-w-0 max-w-[calc(100%-96px)]" :class="{ 'w-full': !isUser || isEditing }">
+    <div
+      class="flex min-w-0 max-w-[calc(100%-96px)] flex-col"
+      :class="{
+        'w-full': !isUser || isEditing,
+        'items-end': isUser && !isEditing,
+        'items-start': !isUser,
+      }"
+    >
       <div v-if="roleText.length" class="mb-[8px] font-[600]">
         {{ roleText }}
       </div>
 
-      <div class="ai-chat-message__bubble">
-        <template v-if="isEditing">
+      <template v-if="isEditing">
+        <div class="ai-chat-message__bubble">
           <div class="ai-chat-message__edit rounded-[4px] bg-[var(--text-n9)] p-[16px]">
             <AiComposer
               ref="editComposerRef"
@@ -51,20 +58,18 @@
               </div>
             </div>
           </div>
-        </template>
+        </div>
+      </template>
 
-        <template v-else>
-          <!-- TODO lmy 文件的样式 -->
-          <div v-if="messageAttachments.length" class="mb-[8px] flex flex-wrap gap-[6px]">
-            <div
-              v-for="attachment in messageAttachments"
-              :key="attachment.id"
-              class="max-w-[220px] overflow-hidden truncate rounded-[4px] border border-[var(--text-n8)] bg-[var(--text-n9)] px-[8px] py-[4px] text-[var(--text-n1)]"
-            >
-              {{ attachment.name }}
-            </div>
-          </div>
+      <template v-else>
+        <AiAttachmentList
+          v-if="messageAttachments.length"
+          class="mb-[8px]"
+          :class="{ 'justify-end': isUser }"
+          :attachments="messageAttachments"
+        />
 
+        <div v-if="renderableParts.length || showAssistantLoading" class="ai-chat-message__bubble">
           <template v-for="item in renderableParts" :key="item.key">
             <AiTextBlock v-if="isUserTextPart(item.part)" :part="item.part" :mcps="messageMcps" />
             <component
@@ -77,8 +82,8 @@
             <div v-else class="ai-chat-block">{{ item.part.type }}</div>
           </template>
           <AiLoadingBlock v-if="showAssistantLoading" />
-        </template>
-      </div>
+        </div>
+      </template>
 
       <div
         v-if="showActions"
@@ -122,6 +127,7 @@
   import AiMarkdownBlock from '../blocks/AiMarkdownBlock.vue';
   import AiProgressBlock from '../blocks/AiProgressBlock.vue';
   import AiTextBlock from '../blocks/AiTextBlock.vue';
+  import AiAttachmentList from './AiAttachmentList.vue';
   import AiComposer from './AiComposer.vue';
 
   import { dislikeAgentChat, likeAgentChat } from '@/api/modules';

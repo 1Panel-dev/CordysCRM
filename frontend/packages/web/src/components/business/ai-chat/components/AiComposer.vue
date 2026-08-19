@@ -1,20 +1,20 @@
 <template>
-  <div class="ai-chat-composer relative flex items-start gap-[12px] bg-[var(--text-n10)] p-[16px]">
+  <div
+    class="ai-chat-composer relative flex items-start gap-[12px] bg-[var(--text-n10)] p-[16px]"
+    @dragenter="handleComposerDragEnter"
+    @dragover="handleComposerDragOver"
+    @dragleave="handleComposerDragLeave"
+    @drop="handleComposerDrop"
+  >
     <div class="flex min-w-0 flex-1 flex-col gap-[6px]" :class="{ 'mb-[28px]': props.showFooter }">
-      <!-- 附件 -->
-      <div v-if="props.showAttachments && attachments?.length" class="flex flex-wrap gap-[6px]">
-        <div
-          v-for="attachment in attachments"
-          :key="attachment.id"
-          class="inline-flex h-[26px] max-w-[220px] items-center gap-[8px] rounded-[4px] border border-[var(--text-n8)] bg-[var(--text-n9)] px-[8px] text-[12px] text-[var(--text-n1)]"
-        >
-          <span class="min-w-0 overflow-hidden truncate">{{ attachment.name }}</span>
-          <span v-if="attachment.size" class="flex-none text-[var(--text-n4)]">
-            {{ formatFileSize(attachment.size) }}
-          </span>
-          <n-button text @click="removeAttachment(attachment.id)"> × </n-button>
-        </div>
-      </div>
+      <AiAttachmentList
+        v-if="props.showAttachments && attachments.length"
+        :attachments="attachments"
+        removable
+        retryable
+        @remove="removeAttachment"
+        @retry="retryAttachment"
+      />
 
       <div
         ref="editorRef"
@@ -25,7 +25,7 @@
         @compositionstart="handleCompositionStart"
         @input="syncEditorValue"
         @keydown="handleKeydown"
-        @paste="handlePaste"
+        @paste="handleEditorPaste"
       ></div>
     </div>
 
@@ -34,17 +34,17 @@
       class="absolute bottom-[16px] left-[16px] right-[16px] flex min-h-[22px] items-center justify-between"
     >
       <div class="flex items-center">
-        <n-upload
-          v-model:file-list="uploadFileList"
-          :custom-request="handleUploadRequest"
-          :max="maxFiles"
-          multiple
-          :show-file-list="false"
-          class="crm-file-input-upload w-fit"
-          @before-upload="handleBeforeUpload"
-        >
+        <input ref="fileInputRef" type="file" class="hidden" multiple @change="handleFileInputChange" />
+        <input
+          ref="mcpImportInputRef"
+          type="file"
+          accept=".json,application/json"
+          class="hidden"
+          @change="handleMcpImportChange"
+        />
+        <n-button text class="ai-chat-tool-button" @click="openFileSelector">
           <CrmIcon type="iconicon_link1" :size="16" />
-        </n-upload>
+        </n-button>
         <n-divider vertical class="!mx-[12px]" />
         <n-dropdown
           v-model:show="mcpDropdownShow"
@@ -53,6 +53,7 @@
           class="ai-chat-mcp-dropdown"
           :options="mcpDropdownOptions"
           :render-label="renderMcpDropdownLabel"
+          :render-option="renderMcpDropdownOption"
           @select="handleMcpSelect"
         >
           <n-button class="ai-chat-mcp-button" :class="{ 'ai-chat-mcp-button--active': mcpDropdownShow }" text>
@@ -86,26 +87,32 @@
         </template>
       </n-button>
     </div>
+
+    <div v-if="showDragMask" class="ai-chat-composer__drag-mask">
+      <CrmIcon type="iconicon_cloud_upload" :size="32" color="var(--primary-8)" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
   import { computed, h, nextTick, onMounted, ref, watch } from 'vue';
-  import { NButton, NDivider, NDropdown, NTooltip, NUpload } from 'naive-ui';
+  import { type DropdownOption, NButton, NDivider, NDropdown, NTooltip, useMessage } from 'naive-ui';
 
   import type { AiChatAttachment, AiChatMcp, AiComposerSubmitPayload, AiFileKind } from '@lib/shared/ai-chat';
-  import { useAiChatRuntime } from '@lib/shared/ai-chat';
+  import { getMatchedMcp, useAiChatRuntime } from '@lib/shared/ai-chat';
+  import { PreviewAttachmentUrl, PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { formatFileSize } from '@lib/shared/method';
+  import { characterLimit } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import AiAttachmentList from './AiAttachmentList.vue';
 
-  import type { DropdownOption, UploadCustomRequestOptions, UploadFileInfo } from 'naive-ui';
+  import { deleteAgentMcpConfig, importAgentMcpConfig, uploadAgentChatFile } from '@/api/modules';
+  import useModal from '@/hooks/useModal';
 
   const props = withDefaults(
     defineProps<{
       placeholder?: string;
-      uploadFile?: (file: File) => AiChatAttachment | Promise<AiChatAttachment>;
       mcpOptions?: AiChatMcp[];
       submitMode?: 'runtime' | 'emit';
       initialContent?: string;
@@ -129,21 +136,27 @@
   const emit = defineEmits<{
     (e: 'submit', payload: AiComposerSubmitPayload): void;
     (e: 'change', payload: AiComposerSubmitPayload): void;
+    (e: 'mcpUpdated'): void;
   }>();
 
   const { t } = useI18n();
+  const Message = useMessage();
+  const { openModal } = useModal();
   const runtime = useAiChatRuntime();
 
   const editorRef = ref<HTMLElement | null>(null);
   const inputValue = ref(props.initialContent || runtime.state.input.value);
 
-  const uploadFileList = ref<UploadFileInfo[]>([]);
   const attachments = computed(() => runtime.state.attachments.value);
   const submitAttachments = computed(() => (props.showAttachments ? attachments.value : []));
+  const hasUnavailableAttachment = computed(() =>
+    submitAttachments.value.some((attachment) => attachment.status === 'uploading' || attachment.status === 'error')
+  );
   const isLoading = computed(() => runtime.state.loading.value);
   const canStop = computed(() => runtime.state.canStop.value);
-  const canSubmit = computed(() => inputValue.value.trim().length > 0 || submitAttachments.value.length > 0);
-  const maxFiles = 10;
+  const canSubmit = computed(
+    () => !hasUnavailableAttachment.value && (inputValue.value.trim().length > 0 || submitAttachments.value.length > 0)
+  );
 
   const mcpDropdownShow = ref(false);
   const isComposing = ref(false);
@@ -213,17 +226,24 @@
     return node instanceof HTMLElement && node.classList.contains('ai-chat-mcp-token');
   }
 
+  function getMcpSubmitText(node: HTMLElement): string {
+    const name = node.dataset.mcpName ?? '';
+    const id = node.dataset.mcpId ?? '';
+
+    return name && id ? `[[${name}:${id}]]` : name;
+  }
+
   function getEditorText(): string {
     const editor = editorRef.value;
     if (!editor) {
       return '';
     }
 
-    // 提交给后端的 content 仍是纯文本；MCP token 用名称参与文本拼接。
+    // 提交给后端的 content 仍是纯文本；MCP token 转成后端可识别的引用格式。
     return Array.from(editor.childNodes)
       .map((node) => {
         if (isMcpNode(node)) {
-          return node.dataset.mcpName ?? '';
+          return getMcpSubmitText(node);
         }
         return node.textContent ?? '';
       })
@@ -333,13 +353,101 @@
     }
   }
 
-  const mcpDropdownOptions = computed<DropdownOption[]>(() =>
-    props.mcpOptions.map((mcp) => ({
+  const mcpImportMaxFileSize = 100 * 1024 * 1024;
+  function validateMcpImportFile(file: File): boolean {
+    if (!file.name.toLowerCase().endsWith('.json')) {
+      Message.warning(t('aiChat.mcpImportOnlyJson'));
+      return false;
+    }
+
+    if (file.size > mcpImportMaxFileSize) {
+      Message.warning(t('aiChat.mcpImportOverSize'));
+      return false;
+    }
+
+    return true;
+  }
+
+  async function handleMcpImportChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+
+    target.value = '';
+    if (!file || !validateMcpImportFile(file)) {
+      return;
+    }
+
+    try {
+      await importAgentMcpConfig(file);
+      Message.success(t('aiChat.mcpImportSuccess'));
+      emit('mcpUpdated');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function handleMcpDelete(event: MouseEvent, option: DropdownOption): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const mcp = props.mcpOptions.find((item) => item.id === String(option.key));
+
+    if (!mcp) {
+      return;
+    }
+
+    openModal({
+      type: 'error',
+      title: t('common.deleteConfirmTitle', { name: characterLimit(mcp.name) }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: t('common.delete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        await deleteAgentMcpConfig(mcp.id);
+        Message.success(t('common.deleteSuccess'));
+        emit('mcpUpdated');
+      },
+    });
+  }
+
+  const mcpImportInputRef = ref<HTMLInputElement | null>(null);
+  function handleImportMcp(event?: MouseEvent): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    if (mcpImportInputRef.value) {
+      mcpImportInputRef.value.value = '';
+      mcpImportInputRef.value.click();
+    }
+  }
+
+  const mcpDropdownOptions = computed<DropdownOption[]>(() => [
+    {
+      key: 'mcp-import',
+      type: 'render',
+      render: () =>
+        h('div', { class: 'px-[12px]' }, [
+          h(
+            NButton,
+            {
+              text: true,
+              type: 'primary',
+              onClick: handleImportMcp,
+            },
+            {
+              icon: () => h(CrmIcon, { type: 'iconicon_add', size: 16 }),
+              default: () => t('aiChat.mcpImport'),
+            }
+          ),
+        ]),
+    },
+    ...props.mcpOptions.map((mcp) => ({
       label: mcp.name,
       key: mcp.id,
       description: mcp.description,
-    }))
-  );
+    })),
+  ]);
 
   function renderMcpDropdownLabel(option: DropdownOption) {
     const description = option.description as string | undefined;
@@ -356,54 +464,70 @@
       },
       {
         trigger: () =>
-          h('div', { class: 'ai-chat-mcp-dropdown-option' }, [
-            h('div', { class: 'ai-chat-mcp-dropdown-option__name' }, option.label as string),
-            description ? h('div', { class: 'ai-chat-mcp-dropdown-option__description' }, description) : null,
+          h('div', { class: 'min-w-0' }, [
+            h('div', { class: 'truncate  leading-[22px]' }, option.label as string),
+            description ? h('div', { class: 'truncate leading-[20px] text-[var(--text-n4)]' }, description) : null,
           ]),
         default: () => description,
       }
     );
   }
 
-  function getMatchedMcp(text: string, index: number, mcps: AiChatMcp[]): AiChatMcp | undefined {
-    return mcps.find((mcp) => text.startsWith(mcp.name, index));
+  function renderMcpDropdownOption({ node, option }: { node: ReturnType<typeof h>; option: DropdownOption }) {
+    if (option.type === 'render') {
+      return node;
+    }
+
+    return h('div', { class: 'flex w-full min-w-0 items-center gap-[8px]' }, [
+      h('div', { class: 'min-w-0 flex-1' }, node),
+      h(
+        NButton,
+        {
+          text: true,
+          class: 'shrink-0 !p-[2px] text-[var(--text-n4)]',
+          onClick: (event: MouseEvent) => handleMcpDelete(event, option),
+        },
+        {
+          default: () => h(CrmIcon, { type: 'iconicon_delete', size: 14 }),
+        }
+      ),
+    ]);
   }
 
   function renderEditorValue(value: string, mcps: AiChatMcp[] = []): void {
-    const editor = editorRef.value;
-    if (!editor) {
+    const editorElement = editorRef.value;
+    if (!editorElement) {
       return;
     }
 
-    const targetEditor = editor;
     const sortedMcps = [...mcps].sort((a, b) => b.name.length - a.name.length);
-    targetEditor.innerHTML = '';
+    editorElement.innerHTML = '';
     let currentText = '';
     let index = 0;
 
-    function appendText(): void {
+    function appendText(target: HTMLElement): void {
       if (!currentText) {
         return;
       }
 
-      targetEditor.appendChild(document.createTextNode(currentText));
+      target.appendChild(document.createTextNode(currentText));
       currentText = '';
     }
 
     while (index < value.length) {
-      const mcp = getMatchedMcp(value, index, sortedMcps);
+      const matchedMcp = getMatchedMcp(value, index, sortedMcps);
 
-      if (mcp) {
-        appendText();
-        targetEditor.appendChild(createMcpNode(mcp));
-        index += mcp.name.length;
+      if (matchedMcp) {
+        appendText(editorElement);
+        editorElement.appendChild(createMcpNode(matchedMcp.mcp));
+        index += matchedMcp.length;
       } else {
         currentText += value[index];
         index += 1;
       }
     }
 
-    appendText();
+    appendText(editorElement);
   }
 
   watch(inputValue, (value) => {
@@ -434,9 +558,11 @@
 
   function removeAttachment(attachmentId: string): void {
     const targetAttachment = attachments.value.find((attachment) => attachment.id === attachmentId);
-    const uploadFileId = targetAttachment?.metadata?.uploadFileId;
+    const previewUrl = targetAttachment?.metadata?.previewUrl;
 
-    uploadFileList.value = uploadFileList.value.filter((file) => file.id !== attachmentId && file.id !== uploadFileId);
+    if (typeof previewUrl === 'string') {
+      URL.revokeObjectURL(previewUrl);
+    }
     runtime.removeAttachment(attachmentId);
   }
 
@@ -445,62 +571,229 @@
       return 'image';
     }
 
-    if (file.type.startsWith('audio/')) {
-      return 'audio';
-    }
-
-    if (file.type.startsWith('video/')) {
-      return 'video';
-    }
-
     return 'file';
   }
 
-  function createLocalAttachment(file: File, uploadFileId: string): AiChatAttachment {
+  function createLocalAttachment(file: File, status: AiChatAttachment['status'] = 'uploading'): AiChatAttachment {
+    const kind = getFileKind(file);
+    const previewUrl = kind === 'image' ? URL.createObjectURL(file) : undefined;
+
     return {
-      id: uploadFileId,
+      id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       name: file.name,
       mimeType: file.type,
       size: file.size,
-      kind: getFileKind(file),
+      kind,
+      status,
+      url: previewUrl,
       metadata: {
         file,
-        uploadFileId,
+        previewUrl,
       },
     };
   }
 
-  function handleBeforeUpload({ file }: { file: UploadFileInfo }): boolean {
-    if (attachments.value.length >= maxFiles) {
+  function updateAttachment(attachmentId: string, attachment: AiChatAttachment): void {
+    runtime.setAttachments(
+      attachments.value.map((item) => {
+        if (item.id !== attachmentId) {
+          return item;
+        }
+
+        return attachment;
+      })
+    );
+  }
+
+  const defaultMaxFileSize = 50 * 1024 * 1024;
+
+  function validateFile(file: File): boolean {
+    if (attachments.value.some((attachment) => attachment.name === file.name)) {
+      Message.warning(t('crm.upload.repeatFileTip'));
       return false;
     }
 
-    return Boolean(file.file);
+    if (file.size > defaultMaxFileSize) {
+      Message.warning(t('crm.upload.overSize', { size: 50, unit: 'MB' }));
+      return false;
+    }
+
+    return true;
   }
 
-  async function handleUploadRequest({ file, onFinish, onError }: UploadCustomRequestOptions): Promise<void> {
-    if (!file.file) {
-      onError();
+  function toUploadedAttachment(file: File, id: string): AiChatAttachment {
+    const kind = getFileKind(file);
+
+    return {
+      id,
+      name: file.name,
+      mimeType: file.type,
+      size: file.size,
+      kind,
+      status: 'done',
+      url: kind === 'image' ? `${PreviewPictureUrl}/${id}` : `${PreviewAttachmentUrl}/${id}`,
+      metadata: {
+        fileId: id,
+      },
+    };
+  }
+
+  async function addSystemFiles(files: File[]): Promise<void> {
+    const validFiles = files.filter((file) => validateFile(file));
+
+    if (!validFiles.length) {
       return;
     }
 
-    try {
-      const uploadedAttachment = props.uploadFile
-        ? await props.uploadFile(file.file)
-        : createLocalAttachment(file.file, file.id);
-      const attachment: AiChatAttachment = {
-        ...uploadedAttachment,
-        metadata: {
-          ...uploadedAttachment.metadata,
-          uploadFileId: file.id,
-        },
-      };
+    const localAttachments = validFiles.map((file) => createLocalAttachment(file, 'uploading'));
 
-      runtime.setAttachments([...attachments.value, attachment]);
-      onFinish();
+    runtime.setAttachments([...attachments.value, ...localAttachments]);
+
+    try {
+      const res = await uploadAgentChatFile(validFiles);
+      const uploadedAttachments = validFiles.map((file, index) => toUploadedAttachment(file, res.data[index]));
+
+      if (uploadedAttachments.some((attachment) => !attachment.id)) {
+        throw new Error('Upload response id is empty');
+      }
+
+      localAttachments.forEach((localAttachment, index) => {
+        const previewUrl = localAttachment.metadata?.previewUrl;
+
+        if (typeof previewUrl === 'string') {
+          URL.revokeObjectURL(previewUrl);
+        }
+        updateAttachment(localAttachment.id, uploadedAttachments[index]);
+      });
     } catch {
-      onError();
+      localAttachments.forEach((localAttachment) => {
+        updateAttachment(localAttachment.id, {
+          ...localAttachment,
+          status: 'error',
+        });
+      });
     }
+  }
+
+  async function addFiles(files: FileList | File[] | null | undefined) {
+    await addSystemFiles(Array.from(files ?? []));
+  }
+
+  function insertPlainText(text: string): void {
+    if (!text) {
+      return;
+    }
+
+    const range = getEditorRange();
+    const textNode = document.createTextNode(text);
+
+    range.deleteContents();
+    range.insertNode(textNode);
+    setCaretAfter(textNode);
+    syncEditorValue();
+  }
+
+  async function handleEditorPaste(event: ClipboardEvent) {
+    const { clipboardData } = event;
+
+    if (!clipboardData) {
+      return;
+    }
+
+    const files = Array.from(clipboardData.items ?? [])
+      .filter((item) => item.kind === 'file')
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => Boolean(file));
+
+    if (props.showAttachments && files.length) {
+      event.preventDefault();
+      await addFiles(files);
+      return;
+    }
+
+    const plainText = clipboardData.getData('text/plain');
+
+    if (plainText) {
+      event.preventDefault();
+      insertPlainText(plainText);
+    }
+  }
+
+  const dragDepth = ref(0);
+  const showDragMask = ref(false);
+  function isFileDrag(event: DragEvent): boolean {
+    return Boolean(props.showAttachments && event.dataTransfer?.types.includes('Files'));
+  }
+
+  function handleComposerDragEnter(event: DragEvent): void {
+    if (!isFileDrag(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    dragDepth.value += 1;
+    showDragMask.value = true;
+  }
+
+  function handleComposerDragOver(event: DragEvent): void {
+    if (!isFileDrag(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'copy';
+    }
+  }
+
+  function handleComposerDragLeave(event: DragEvent): void {
+    if (!isFileDrag(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    dragDepth.value = Math.max(0, dragDepth.value - 1);
+    showDragMask.value = dragDepth.value > 0;
+  }
+
+  async function handleComposerDrop(event: DragEvent): Promise<void> {
+    if (!isFileDrag(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    dragDepth.value = 0;
+    showDragMask.value = false;
+    await addFiles(event.dataTransfer?.files ?? null);
+  }
+
+  function resetFileInput(input: HTMLInputElement | null): void {
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  async function handleFileInputChange(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+
+    await addFiles(input.files);
+    resetFileInput(input);
+  }
+
+  const fileInputRef = ref<HTMLInputElement | null>(null);
+  function openFileSelector(): void {
+    fileInputRef.value?.click();
+  }
+
+  async function retryAttachment(attachment: AiChatAttachment): Promise<void> {
+    const file = attachment.metadata?.file;
+
+    if (!(file instanceof File)) {
+      return;
+    }
+
+    removeAttachment(attachment.id);
+    await addFiles([file]);
   }
 
   /**
@@ -528,66 +821,6 @@
   function handleCompositionEnd(): void {
     isComposing.value = false;
     syncEditorValue();
-  }
-
-  function insertPlainText(text: string): void {
-    if (!text) {
-      return;
-    }
-
-    const range = getEditorRange();
-    const textNode = document.createTextNode(text);
-
-    range.deleteContents();
-    range.insertNode(textNode);
-    setCaretAfter(textNode);
-    syncEditorValue();
-  }
-
-  function handlePaste(event: ClipboardEvent): void {
-    const { clipboardData } = event;
-
-    if (!clipboardData) {
-      return;
-    }
-
-    const files = Array.from(clipboardData.files ?? []);
-    const pastedImages = files.filter((file) => file.type.startsWith('image/'));
-    const plainText = clipboardData.getData('text/plain');
-
-    if (!pastedImages.length && !plainText) {
-      return;
-    }
-
-    event.preventDefault();
-    if (plainText) {
-      insertPlainText(plainText);
-    }
-    pastedImages.forEach((file) => {
-      const { name, type } = file;
-      const fileName = name || 'pasted-image.png';
-      const uploadFile = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-        name: fileName,
-        status: 'pending',
-        batchId: null,
-        percentage: 0,
-        thumbnailUrl: null,
-        type,
-        url: null,
-        fullPath: fileName,
-        file,
-      } as Required<UploadFileInfo>;
-
-      if (handleBeforeUpload({ file: uploadFile })) {
-        handleUploadRequest({
-          file: uploadFile,
-          onFinish: () => undefined,
-          onError: () => undefined,
-          onProgress: () => undefined,
-        });
-      }
-    });
   }
 
   function removeAdjacentMcp(event: KeyboardEvent): boolean {
@@ -690,11 +923,7 @@
     flex: none;
     fill: currentcolor;
   }
-  .crm-file-input-upload {
-    :deep(.n-upload-trigger) {
-      @apply flex cursor-pointer items-center;
-    }
-  }
+  .ai-chat-tool-button,
   .ai-chat-mcp-button {
     padding: 2px 4px;
     height: 26px !important;
@@ -708,12 +937,24 @@
       gap: 4px;
     }
   }
+  .ai-chat-composer__drag-mask {
+    position: absolute;
+    z-index: 5;
+    inset: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px dashed var(--primary-8);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--primary-7) 70%, transparent);
+    pointer-events: none;
+  }
 </style>
 
 <style lang="scss">
   .ai-chat-mcp-dropdown {
     overflow-y: auto;
-    width: 320px;
+    width: 280px;
     max-height: 320px;
     .n-dropdown-option-body {
       padding: 4px 0 !important;
@@ -723,25 +964,5 @@
       width: 100%;
       min-width: 0;
     }
-  }
-  .ai-chat-mcp-dropdown-option {
-    width: 100%;
-    min-width: 0;
-  }
-  .ai-chat-mcp-dropdown-option__name,
-  .ai-chat-mcp-dropdown-option__description {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .ai-chat-mcp-dropdown-option__name {
-    font-weight: 600;
-    color: var(--text-n1);
-    line-height: 22px;
-  }
-  .ai-chat-mcp-dropdown-option__description {
-    margin-top: 2px;
-    color: var(--text-n4);
-    line-height: 20px;
   }
 </style>

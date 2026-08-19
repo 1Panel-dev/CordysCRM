@@ -1,9 +1,9 @@
 <template>
-  <div class="ai-chat-block ai-chat-block-text">
+  <div class="ai-chat-block ai-mobile-text-block">
     <template v-for="segment in textSegments" :key="segment.key">
       <span v-if="segment.type === 'text'">{{ segment.text }}</span>
-      <span v-else class="ai-chat-mcp-token">
-        <CrmIcon type="iconicon_mcp" :size="16" />
+      <span v-else class="ai-mobile-mcp-token">
+        <CrmIcon name="iconicon_mcp" width="16px" height="16px" color="var(--primary-8)" />
         <span class="min-w-0 truncate">{{ segment.mcp.name }}</span>
       </span>
     </template>
@@ -63,10 +63,11 @@
           mcp: matchedMcp.mcp,
         });
         index += matchedMcp.length;
-      } else {
-        currentText += props.part.text[index];
-        index += 1;
+        continue;
       }
+
+      currentText += props.part.text[index];
+      index += 1;
     }
 
     if (currentText) {
@@ -81,9 +82,24 @@
   });
 </script>
 
-<style scoped lang="scss">
-  .ai-chat-block-text {
+<style scoped lang="less">
+  .ai-mobile-text-block {
+    width: 100%;
+    font-size: 14px;
     white-space: pre-wrap;
+    color: var(--text-n1);
     word-break: break-word;
+  }
+  .ai-mobile-mcp-token {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 2px;
+    padding: 0 6px;
+    max-width: 100%;
+    border-radius: 4px;
+    color: var(--primary-8);
+    background: var(--primary-7);
+    gap: 4px;
+    vertical-align: text-bottom;
   }
 </style>
