@@ -247,7 +247,7 @@ public abstract class BaseExportService {
         List<List<String>> exportHeads = getExportMergeHeadList(exportParam.getHeadList(), exportParam.getOrgId(), exportParam.getFormKey());
         List<Integer> mergeColumns = getMergeColumns(exportHeads);
         exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
-        return exportWithMergeStrategy(exportParam, (task) -> batchHandleDataWithMergeStrategy(exportHeads, task, exportParam.getFileName(),
+        return exportWithMergeStrategy(exportParam, (task) -> batchHandleDataWithMergeStrategy(processDuplicateLastLevelHeads(exportHeads), task, exportParam.getFileName(),
                 mergeColumns, exportParam.getPageRequest(),
                 t -> getExportMergeData(task.getId(), exportParam)));
     }
@@ -264,7 +264,7 @@ public abstract class BaseExportService {
         exportParam.setMergeHeads(getMergeHeads(exportParam.getHeadList(), exportParam.getFormKey(), exportParam.getOrgId()));
         return exportWithMergeStrategy(exportParam, (task) -> {
             File file = prepareExportFile(task.getFileId(), exportParam.getFileName(), task.getOrganizationId());
-            try (ExcelWriter writer = EasyExcel.write(file).head(processDuplicateHeads(exportHeads)).excelType(ExcelTypeEnum.XLSX)
+            try (ExcelWriter writer = EasyExcel.write(file).head(processDuplicateLastLevelHeads(exportHeads)).excelType(ExcelTypeEnum.XLSX)
                     .registerWriteHandler(new CustomHeadColWidthStyleStrategy()).build()) {
                 WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
                 setRowAccessWindowSize(writer);
@@ -291,20 +291,24 @@ public abstract class BaseExportService {
         });
     }
 
-    private List<List<String>> processDuplicateHeads(List<List<String>> exportHeads) {
+    public List<List<String>> processDuplicateLastLevelHeads(List<List<String>> exportHeads) {
         Map<String, Integer> countMap = new HashMap<>();
+        List<List<String>> result = new ArrayList<>(exportHeads.size());
         for (List<String> head : exportHeads) {
-            String key = String.join("\u0001", head);
-            int count = countMap.getOrDefault(key, 0);
+            List<String> newHead = new ArrayList<>(head);
+            int lastIndex = newHead.size() - 1;
+            String lastHead = newHead.get(lastIndex);
+            int count = countMap.getOrDefault(lastHead, 0);
             if (count > 0) {
-                // 修改最后一级标题
-                int lastIndex = head.size() - 1;
-                head.set(lastIndex,
-                        head.get(lastIndex) + "\u00A0".repeat(count));
+                newHead.set(
+                        lastIndex,
+                        lastHead + "\u00A0".repeat(count)
+                );
             }
-            countMap.put(key, count + 1);
+            countMap.put(lastHead, count + 1);
+            result.add(newHead);
         }
-        return exportHeads;
+        return result;
     }
 
     /**

@@ -25,6 +25,7 @@ import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
@@ -114,7 +115,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class OrderService implements ApprovalResourceHandler {
+public class OrderService extends BaseExportService implements ApprovalResourceHandler {
 
     @Resource
     private OrderFieldService orderFieldService;
@@ -1128,7 +1129,7 @@ public class OrderService implements ApprovalResourceHandler {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.ORDER.getKey(), currentOrg),
+                .exportMultiSheetTplWithSharedHandler(response, processDuplicateLastLevelHeads(moduleFormService.getCustomImportHeadsNoRef(FormKey.ORDER.getKey(), currentOrg)),
                         Translator.get("order.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
                         new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.ORDER.getKey(), currentOrg)),
                         new CustomHeadColWidthStyleStrategy());
