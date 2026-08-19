@@ -19,7 +19,8 @@ interface AgentChatWorkbenchApis {
     data: {
       message: string;
       conversationId?: string;
-      mcpNames?: string[];
+      mcpIds?: string[];
+      attachments?: string[];
     },
     options: {
       signal?: AbortSignal;
@@ -48,6 +49,16 @@ interface ConversationDraft {
   input: string;
   attachments: AiChatAttachment[];
   selectedMcps: AiChatMcp[];
+}
+
+function getAttachmentIds(attachments: AiChatAttachment[] = []): string[] {
+  return attachments
+    .map((attachment) => {
+      const fileId = attachment.metadata?.fileId;
+
+      return typeof fileId === 'string' ? fileId : attachment.id;
+    })
+    .filter(Boolean);
 }
 
 export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOptions) {
@@ -147,7 +158,8 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
             {
               message: context.content,
               conversationId: agentConversationId.value || undefined,
-              mcpNames: context.metadata?.mcps?.map((mcp) => mcp.name),
+              mcpIds: context.metadata?.mcps?.map((mcp) => mcp.id),
+              attachments: getAttachmentIds(context.metadata?.attachments),
             },
             {
               signal: context.signal,

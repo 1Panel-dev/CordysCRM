@@ -8,4 +8,6 @@ export { AI_CHAT_RUNTIME_KEY, useAiChatRuntime } from './runtime/useAiChatRuntim
 export { default as renderMarkdown } from './utils/markdown';
 export { hasRenderableAiChatContent, toAiChatMessage } from './utils/conversation';
 export { getAiChatMessageText } from './utils/message';
+export { getMatchedMcp, getMcpReferenceText } from './utils/mcp';
+export type { MatchedMcp } from './utils/mcp';
 export type * from './types';

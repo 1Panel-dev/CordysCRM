@@ -11,9 +11,12 @@ import {
   AgentChatUrl,
   AgentConversationDeleteUrl,
   AgentConversationDetailUrl,
-  AgentConversationMcpToolsUrl,
+  AgentChatFileUploadUrl,
   AgentConversationPageUrl,
   AgentConversationRenameUrl,
+  AgentMcpConfigDeleteUrl,
+  AgentMcpConfigImportUrl,
+  AgentMcpConfigListUrl,
   SmartAiSummaryRegenerateUrl,
   SmartAiSummaryUrl,
   SmartDataOverviewRegenerateUrl,
@@ -33,7 +36,7 @@ import type {
   AgentChatStreamOptions,
   AgentChatStreamParams,
   AgentConversationQueryRequest,
-  AgentConversationMcpToolItem,
+  AgentMcpConfigItem,
   AgentActionApproveItem,
   AgentActionSuggestionItem,
   SmartFocusParams,
@@ -343,8 +346,20 @@ export default function useAiApi(CDR: CordysAxios) {
     });
   }
 
-  function getAgentConversationMcpTools() {
-    return CDR.get<AgentConversationMcpToolItem[]>({ url: AgentConversationMcpToolsUrl });
+  function uploadAgentChatFile(files: File[]) {
+    return CDR.uploadFile<{ data: string[] }>({ url: AgentChatFileUploadUrl }, { fileList: files }, 'files', true);
+  }
+
+  function getAgentMcpConfigList() {
+    return CDR.get<AgentMcpConfigItem[]>({ url: AgentMcpConfigListUrl });
+  }
+
+  function importAgentMcpConfig(file: File) {
+    return CDR.uploadFile({ url: AgentMcpConfigImportUrl }, { fileList: [file] }, 'file');
+  }
+
+  function deleteAgentMcpConfig(id: string) {
+    return CDR.get({ url: `${AgentMcpConfigDeleteUrl}/${id}` });
   }
 
   function getSmartDataOverview() {
@@ -397,7 +412,10 @@ export default function useAiApi(CDR: CordysAxios) {
     getAgentConversationDetail,
     deleteAgentConversation,
     renameAgentConversation,
-    getAgentConversationMcpTools,
+    uploadAgentChatFile,
+    getAgentMcpConfigList,
+    importAgentMcpConfig,
+    deleteAgentMcpConfig,
     getSmartDataOverview,
     regenerateSmartDataOverview,
     getSmartAiSummary,

@@ -18,4 +18,8 @@ export default {
   'aiChat.progress': 'Running',
   'aiChat.progressInput': 'Input',
   'aiChat.progressOutput': 'Output',
+  'aiChat.uploadImage': 'Image',
+  'aiChat.uploadFile': 'Attachment',
+  'aiChat.attachmentUploading': 'Uploading',
+  'aiChat.attachmentUploadFailed': 'Upload failed',
 };

@@ -27,6 +27,7 @@
       :history-no-more="historyNoMore"
       :mcp-options="mcpOptions"
       @new="handleNewConversation"
+      @mcp-updated="loadMcpOptions"
       @search-history="handleHistorySearch"
       @history-reach-bottom="loadMoreHistory"
       @history-click="handleHistoryClick"
@@ -51,8 +52,8 @@
     confirmAgentChat,
     deleteAgentConversation,
     getAgentConversationDetail,
-    getAgentConversationMcpTools,
     getAgentConversationPage,
+    getAgentMcpConfigList,
     renameAgentConversation,
     streamAgentChat,
   } from '@/api/modules';
@@ -89,13 +90,7 @@
   const mcpOptions = ref<AiChatMcp[]>([]);
   async function loadMcpOptions(): Promise<void> {
     try {
-      const tools = await getAgentConversationMcpTools();
-      mcpOptions.value = (tools ?? []).map((item) => ({
-        id: item.name,
-        name: item.name,
-        description: item.description,
-        permission: 'read',
-      }));
+      mcpOptions.value = await getAgentMcpConfigList();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

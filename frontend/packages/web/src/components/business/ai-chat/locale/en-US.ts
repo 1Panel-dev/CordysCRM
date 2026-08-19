@@ -16,4 +16,11 @@ export default {
   'aiChat.writeOperationConfirm': 'Operation confirmation',
   'aiChat.progressInput': 'Input',
   'aiChat.progressOutput': 'Output',
+  'aiChat.attachmentUploading': 'Uploading',
+  'aiChat.attachmentUploadFailed': 'Upload failed',
+  'aiChat.mcpImport': 'Import MCP',
+  'aiChat.mcpImportOnlyJson': 'Only JSON files can be imported',
+  'aiChat.mcpImportOverSize': 'The MCP config file cannot exceed 100MB',
+  'aiChat.mcpImportSuccess': 'Imported successfully',
+  'aiChat.mcpImportFailed': 'Import failed',
 };

@@ -1,5 +1,5 @@
 import type { AgentChatProgressData, AgentConversationMessage } from '../../models/ai';
-import type { AiChatMessage, AiChatMessagePart } from '../types';
+import type { AiChatAttachment, AiChatMessage, AiChatMessagePart } from '../types';
 
 type AiChatRole = AiChatMessage['role'];
 type ParsedContentPiece =
@@ -12,6 +12,22 @@ type ParsedContentPiece =
       content: Record<string, unknown>;
       raw: string;
     };
+
+interface HistoryContentItem {
+  type?: string;
+  text?: string;
+  fileId?: string;
+  name?: string;
+  contentType?: string;
+  size?: number;
+}
+
+interface ParsedMessageContent {
+  text: string;
+  attachments: AiChatAttachment[];
+}
+
+const HISTORY_CONTENT_TYPES = new Set(['text', 'image', 'file']);
 
 const THINK_START_TAG = '<think>';
 const THINK_END_TAG = '</think>';
@@ -72,6 +88,59 @@ function isAgentMetadata(value: Record<string, unknown>): boolean {
     keys.every((key) => AGENT_METADATA_KEYS.has(key)) &&
     keys.some((key) => ['conversationId', 'runId', 'totalTokens'].includes(key))
   );
+}
+
+function isHistoryContentItem(value: unknown): value is HistoryContentItem {
+  return Boolean(value) && typeof value === 'object' && HISTORY_CONTENT_TYPES.has(String((value as HistoryContentItem).type));
+}
+
+function parseStructuredMessageContent(content: string): ParsedMessageContent | undefined {
+  if (!content) {
+    return undefined;
+  }
+
+  try {
+    const parsedContent = JSON.parse(content) as unknown;
+    const items = Array.isArray(parsedContent) ? parsedContent.filter(isHistoryContentItem) : [];
+
+    if (!items.length) {
+      return undefined;
+    }
+
+    return {
+      text: items
+        .filter((item) => item.type === 'text' && typeof item.text === 'string')
+        .map((item) => item.text)
+        .join('\n'),
+      attachments: items.map(toHistoryAttachment).filter((item): item is AiChatAttachment => Boolean(item)),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function toHistoryAttachment(item: HistoryContentItem): AiChatAttachment | undefined {
+  if (!item.fileId || !['image', 'file'].includes(item.type ?? '')) {
+    return undefined;
+  }
+
+  return {
+    id: item.fileId,
+    name: item.name || item.fileId,
+    mimeType: item.contentType,
+    size: item.size,
+    kind: item.type === 'image' ? 'image' : 'file',
+    status: 'done',
+    metadata: {
+      fileId: item.fileId,
+    },
+  };
+}
+
+function parseMessageContent(content: AgentConversationMessage['content']): ParsedMessageContent {
+  const structuredContent = parseStructuredMessageContent(content);
+
+  return structuredContent ?? { text: content || '', attachments: [] };
 }
 
 // 从 content 的某个 "{" 开始读取一个完整 JSON 对象。
@@ -203,20 +272,20 @@ function appendThinkingTextParts(parts: AiChatMessagePart[], content: string): v
   }
 }
 
-function toAiChatMessageParts(message: AgentConversationMessage): AiChatMessagePart[] {
+function toAiChatMessageParts(role: AiChatRole, parsedContent: ParsedMessageContent): AiChatMessagePart[] {
   // 用户消息目前只有纯文本，不需要解析 progress、metadata 或 think 标签。
-  if (normalizeRole(message.role) !== 'assistant') {
+  if (role !== 'assistant') {
     return [
       {
         type: 'text',
-        text: message.content || '',
+        text: parsedContent.text,
       } as AiChatMessagePart,
     ];
   }
 
   const parts: AiChatMessagePart[] = [];
 
-  parseEmbeddedJsonContent(message.content || '').forEach((piece, index) => {
+  parseEmbeddedJsonContent(parsedContent.text).forEach((piece, index) => {
     if (piece.type === 'text') {
       appendThinkingTextParts(parts, piece.content);
       return;
@@ -244,20 +313,24 @@ function toAiChatMessageParts(message: AgentConversationMessage): AiChatMessageP
     : [
         {
           type: 'text',
-          text: message.content || '',
+          text: parsedContent.text,
         } as AiChatMessagePart,
       ];
 }
 
 export function toAiChatMessage(message: AgentConversationMessage, index: number): AiChatMessage {
+  const parsedContent = parseMessageContent(message.content);
+  const role = normalizeRole(message.role);
+
   return {
     id: message.id || `history_${index}`,
-    role: normalizeRole(message.role),
+    role,
     metadata: {
       tokens: message.totalTokens ?? undefined,
       runId: message.runId,
+      attachments: parsedContent.attachments,
     },
-    parts: toAiChatMessageParts(message),
+    parts: toAiChatMessageParts(role, parsedContent),
   };
 }
 

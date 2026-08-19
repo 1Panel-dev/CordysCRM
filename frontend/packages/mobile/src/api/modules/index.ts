@@ -455,6 +455,7 @@ export const {
   getAgentConversationDetail,
   deleteAgentConversation,
   renameAgentConversation,
+  uploadAgentChatFile,
 } = aiApi;
 
 export const {
