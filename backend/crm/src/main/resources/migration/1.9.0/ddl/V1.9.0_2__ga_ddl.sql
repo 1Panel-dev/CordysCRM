@@ -1,7 +1,7 @@
 -- set innodb lock wait timeout
 SET SESSION innodb_lock_wait_timeout = 7200;
 
--- agent ddl
+-- agent ddl start
 CREATE TABLE agent_model
 (
     `id`                 VARCHAR(32)   NOT NULL COMMENT 'ID',
@@ -261,6 +261,27 @@ CREATE TABLE agent_trace_event(
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
+CREATE TABLE agent_mcp_config(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '配置名称' ,
+    `description` VARCHAR(1000)    COMMENT '描述' ,
+    `config_json` TEXT(255) NOT NULL   COMMENT 'JSON配置' ,
+    `user_id` VARCHAR(32) NOT NULL   COMMENT '用户ID' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = 'MCP配置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_org_id ON agent_mcp_config(organization_id ASC);
+CREATE INDEX idx_user_id ON agent_mcp_config(user_id ASC);
+
+-- agent ddl end
 
 ALTER TABLE follow_up_plan
     ADD COLUMN comment_count BIGINT NOT NULL DEFAULT 0 COMMENT '评论总数，包含回复';
