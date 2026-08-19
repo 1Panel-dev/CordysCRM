@@ -318,4 +318,17 @@
             id = #{productPrice.id}
         </where>
     </update>
+
+
+    <select id="getBizIdsByResource" resultType="java.lang.String">
+        SELECT
+            ppf.biz_id
+        FROM
+            `product_price_field` ppf
+                INNER JOIN product t ON t.id = ppf.field_value
+        WHERE
+            ppf.resource_id = #{resourceId}
+          AND t.NAME = #{productName}
+          AND field_id = 'product'
+    </select>
 </mapper>
