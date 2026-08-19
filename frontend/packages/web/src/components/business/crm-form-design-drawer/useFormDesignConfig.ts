@@ -143,7 +143,20 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
               } as FormCreateField)
           );
         }
-
+        if (field.refFields?.length) {
+          field.refFields = field.refFields.map((refField) => ({
+            ...refField,
+            defaultValue:
+              [
+                FieldTypeEnum.SELECT,
+                FieldTypeEnum.DEPARTMENT,
+                FieldTypeEnum.DATA_SOURCE,
+                FieldTypeEnum.MEMBER,
+              ].includes(refField.type) && Array.isArray(refField.defaultValue)
+                ? refField.defaultValue[0] || ''
+                : refField.defaultValue,
+          }));
+        }
         return {
           ...field,
           id: field.id,

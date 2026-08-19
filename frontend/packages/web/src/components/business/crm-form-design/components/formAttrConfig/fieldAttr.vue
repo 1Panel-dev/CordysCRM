@@ -1807,6 +1807,7 @@
       if (
         val &&
         fieldConfig.value &&
+        fieldConfig.value.type === FieldTypeEnum.DATA_SOURCE &&
         !dataSourceOptions.value.some((item) => item.value === fieldConfig.value.dataSourceType)
       ) {
         fieldConfig.value.dataSourceType = dataSourceOptions.value[0]?.value as FieldDataSourceTypeEnum;
