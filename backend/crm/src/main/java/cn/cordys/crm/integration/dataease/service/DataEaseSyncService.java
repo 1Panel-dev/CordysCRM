@@ -587,8 +587,9 @@ public class DataEaseSyncService {
             } else {
                 // 同步数据权限系统变量值
                 SysVariableDTO sysVariable = sysVariableMap.get(value.name());
-                Map<String, SysVariableValueDTO> valueMap = dataEaseClient.listSysVariableValue(sysVariable.getId())
-                        .stream().collect(Collectors.toMap(SysVariableValueDTO::getValue, Function.identity()));
+                Map<String, SysVariableValueDTO> valueMap = new HashMap<>();
+                dataEaseClient.listSysVariableValue(sysVariable.getId())
+                        .forEach(sysVariableValue -> valueMap.put(sysVariableValue.getValue(), sysVariableValue));
 
                 variableValueMap.putIfAbsent(sysVariable.getId(), new HashMap<>());
                 Map<String, String> variableValueIdNameMap = variableValueMap.get(sysVariable.getId());
@@ -631,8 +632,9 @@ public class DataEaseSyncService {
             } else {
                 // 同步部门
                 SysVariableDTO sysVariable = sysVariableMap.get(value.name());
-                Map<String, SysVariableValueDTO> valueMap = dataEaseClient.listSysVariableValue(sysVariable.getId())
-                        .stream().collect(Collectors.toMap(SysVariableValueDTO::getValue, Function.identity()));
+                Map<String, SysVariableValueDTO> valueMap = new HashMap<>();
+                dataEaseClient.listSysVariableValue(sysVariable.getId())
+                        .forEach(sysVariableValue -> valueMap.put(sysVariableValue.getValue(), sysVariableValue));
 
                 variableValueMap.putIfAbsent(sysVariable.getId(), new HashMap<>());
                 Map<String, String> variableValueIdNameMap = variableValueMap.get(sysVariable.getId());
