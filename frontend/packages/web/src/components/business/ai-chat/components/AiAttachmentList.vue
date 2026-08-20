@@ -16,7 +16,8 @@
           class="ai-chat-attachment__image"
           object-fit="cover"
           :src="getAttachmentUrl(attachment)"
-          :preview-disabled="attachment.status !== 'done'"
+          preview-disabled
+          @click="handleImagePreview(attachment)"
         />
         <div v-else class="ai-chat-attachment__image-placeholder">
           <CrmIcon type="iconicon_image" :size="24" color="var(--text-n4)" />
@@ -60,17 +61,22 @@
         <CrmIcon type="iconicon_close" :size="14" color="var(--text-n4)" />
       </n-button>
     </div>
+    <n-image-preview v-model:show="previewVisible" :src="previewSrc" />
   </div>
 </template>
 
 <script setup lang="ts">
-  import { NButton, NImage, NSpin, NTooltip } from 'naive-ui';
+  import { ref } from 'vue';
+  import { NButton, NImage, NImagePreview, NSpin, NTooltip } from 'naive-ui';
 
   import type { AiChatAttachment } from '@lib/shared/ai-chat';
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatFileSize } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+
+  import useUserStore from '@/store/modules/user';
 
   const props = withDefaults(
     defineProps<{
@@ -90,13 +96,45 @@
   }>();
 
   const { t } = useI18n();
+  const userStore = useUserStore();
+  const previewVisible = ref(false);
+  const previewSrc = ref('');
 
   function isImageAttachment(attachment: AiChatAttachment): boolean {
     return attachment.kind === 'image';
   }
 
+  function getAttachmentId(attachment: AiChatAttachment): string {
+    const fileId = attachment.metadata?.fileId;
+
+    return typeof fileId === 'string' ? fileId : attachment.id;
+  }
+
   function getAttachmentUrl(attachment: AiChatAttachment): string {
-    return attachment.url || (attachment.metadata?.previewUrl as string | undefined) || '';
+    const localPreviewUrl = attachment.metadata?.previewUrl;
+
+    if (typeof localPreviewUrl === 'string') {
+      return localPreviewUrl;
+    }
+
+    const attachmentId = getAttachmentId(attachment);
+
+    return attachmentId ? `${PreviewPictureUrl}/${attachmentId}?userId=${userStore.userInfo.id}` : '';
+  }
+
+  function handleImagePreview(attachment: AiChatAttachment): void {
+    if (attachment.status !== 'done') {
+      return;
+    }
+
+    const attachmentId = getAttachmentId(attachment);
+
+    if (!attachmentId) {
+      return;
+    }
+
+    previewSrc.value = `${PreviewPictureUrl}/${attachmentId}?userId=${userStore.userInfo.id}`;
+    previewVisible.value = true;
   }
 </script>
 
@@ -131,6 +169,7 @@
     flex: none;
   }
   .ai-chat-attachment__image {
+    cursor: pointer;
     :deep(img) {
       width: 40px;
       height: 40px;

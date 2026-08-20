@@ -6,6 +6,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    AiMobileAttachmentList: typeof import('./src/components/business/ai-chat/components/AiMobileAttachmentList.vue')['default'];
     AiMobileComposer: typeof import('./src/components/business/ai-chat/components/AiMobileComposer.vue')['default'];
     AiMobileConfirmDialog: typeof import('./src/components/business/ai-chat/components/AiMobileConfirmDialog.vue')['default'];
     AiMobileEntryComposer: typeof import('./src/components/business/ai-chat/components/AiMobileEntryComposer.vue')['default'];
@@ -15,6 +16,7 @@ declare module 'vue' {
     AiMobileMarkdownBlock: typeof import('./src/components/business/ai-chat/blocks/AiMobileMarkdownBlock.vue')['default'];
     AiMobileMessage: typeof import('./src/components/business/ai-chat/components/AiMobileMessage.vue')['default'];
     AiMobileProgressBlock: typeof import('./src/components/business/ai-chat/blocks/AiMobileProgressBlock.vue')['default'];
+    AiMobileTextBlock: typeof import('./src/components/business/ai-chat/blocks/AiMobileTextBlock.vue')['default'];
     AiMobileThread: typeof import('./src/components/business/ai-chat/components/AiMobileThread.vue')['default'];
     Checkbox: typeof import('./src/components/business/crm-form-create/components/basic/checkbox.vue')['default'];
     CommentEditor: typeof import('./src/components/business/crm-comment/components/commentEditor.vue')['default'];

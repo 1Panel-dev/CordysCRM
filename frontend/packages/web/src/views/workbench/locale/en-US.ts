@@ -82,6 +82,7 @@ export default {
   'workbench.smart.composerPlaceholder':
     'Enter an instruction or question, for example "Help me follow up on today’s high-intent leads"',
   'workbench.smart.noModelTip': 'Please add and enable a model in enterprise settings first',
+  'workbench.smart.dataOverviewGenerating': 'Generating data overview...',
   'workbench.smart.AIRead': 'AI Read',
   'workbench.smart.reBuild': 'Rebuild',
   'workbench.smart.reInterpret': 'Re-interpret',

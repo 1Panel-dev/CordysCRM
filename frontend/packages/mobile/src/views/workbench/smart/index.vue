@@ -1,12 +1,26 @@
 <template>
   <div class="flex-1">
     <div
-      v-if="dataOverviewAIRenderString"
+      v-if="dataOverviewAIRenderString || dataOverviewLoading"
       class="mb-[16px] bg-[var(--text-n10)]"
       :class="{ 'pb-[16px]': aiSummaryVisible }"
     >
-      <div ref="dataOverviewRef" @click="handleSmartContentClick" v-html="dataOverviewAIRenderString"></div>
-      <div v-if="aiSummaryVisible" class="bg-[var(--primary-7)] px-[20px] py-[8px]">
+      <div
+        v-if="dataOverviewAIRenderString"
+        ref="dataOverviewRef"
+        @click="handleSmartContentClick"
+        v-html="dataOverviewAIRenderString"
+      ></div>
+      <div v-else class="px-[20px] py-[20px]">
+        <div class="flex items-center gap-[8px] font-semibold text-[var(--text-n1)]">
+          <CrmIcon name="iconicon_star1" width="16px" height="16px" color="var(--primary-8)" />
+          {{ t('workbench.dataOverview') }}
+        </div>
+        <div class="mt-[16px] py-[28px] text-center text-[var(--text-n4)]">
+          {{ t('workbench.smart.dataOverviewGenerating') }}
+        </div>
+      </div>
+      <div v-if="dataOverviewAIRenderString && aiSummaryVisible" class="bg-[var(--primary-7)] px-[20px] py-[8px]">
         <div class="flex items-center gap-[8px] font-semibold text-[var(--primary-8)]">
           <CrmIcon name="iconicon_star1" width="16px" height="16px" color="var(--primary-8)" />
           <span>{{ t('workbench.smart.AIRead') }}</span>
@@ -14,12 +28,11 @@
         <div v-if="aiSummaryLoading" class="py-[12px] text-center">
           <van-loading />
         </div>
-        <div
+        <AiMobileMarkdownBlock
           v-else-if="!aiSummaryLoading && aiSummaryContent"
-          class="mt-[8px] whitespace-pre-wrap text-[var(--primary-8)]"
-        >
-          {{ aiSummaryContent }}
-        </div>
+          class="smart-ai-summary-markdown mt-[8px]"
+          :part="aiSummaryPart"
+        />
         <van-empty v-else :description="t('common.noData')" image-size="0" />
         <van-button
           size="mini"
@@ -48,7 +61,7 @@
               : '!bg-[var(--text-n9)] !text-[var(--text-n1)]'
           "
           block
-          @click="activeSmartActionTab = item.value"
+          @click="handleSmartActionTabChange(item.value)"
         >
           {{ item.label }}
         </van-button>
@@ -59,6 +72,7 @@
           ref="suggestionListRef"
           v-show="activeSmartActionTab === SmartActionTabEnum.SUGGESTION"
           v-model="suggestionList"
+          class="!h-auto !overflow-visible"
           :load-list-api="getAgentActionSuggestionPage"
           :item-gap="16"
         >
@@ -116,6 +130,7 @@
           ref="approveListRef"
           v-show="activeSmartActionTab === SmartActionTabEnum.APPROVE"
           v-model="approveList"
+          class="!h-auto !overflow-visible"
           :load-list-api="getAgentActionApprovePage"
           :item-gap="16"
         >
@@ -125,9 +140,9 @@
                 <div class="flex min-w-0 items-center gap-[8px]">
                   <CrmTag
                     class="shrink-0"
-                    :bg-color="stageStyle('info').bgColor"
+                    :bg-color="stageStyle('warning').bgColor"
                     :tag="item.type"
-                    :text-color="stageStyle('info').color"
+                    :text-color="stageStyle('warning').color"
                   />
                   <div class="one-line-text font-semibold">
                     {{ item.topic || '-' }}
@@ -181,6 +196,7 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import AiMobileMarkdownBlock from '@/components/business/ai-chat/blocks/AiMobileMarkdownBlock.vue';
 
   import {
     confirmAgentActionApprove,
@@ -218,6 +234,10 @@
   const aiSummaryLoading = ref(false);
   const aiSummaryVisible = ref(true);
   const aiSummaryContent = ref('');
+  const aiSummaryPart = computed(() => ({
+    type: 'text' as const,
+    text: aiSummaryContent.value,
+  }));
   const aiSummaryFocus = ref('');
   const dataOverviewRef = ref<HTMLElement>();
 
@@ -342,6 +362,17 @@
   const suggestionListRef = ref<InstanceType<typeof CrmList>>();
   const approveListRef = ref<InstanceType<typeof CrmList>>();
 
+  async function handleSmartActionTabChange(tab: SmartActionTabEnum) {
+    activeSmartActionTab.value = tab;
+    await nextTick();
+
+    if (tab === SmartActionTabEnum.SUGGESTION) {
+      await suggestionListRef.value?.loadList(true);
+    } else if (tab === SmartActionTabEnum.APPROVE) {
+      await approveListRef.value?.loadList(true);
+    }
+  }
+
   async function handleSuggestionAction(item: AgentActionSuggestionItem, action: (id: string) => Promise<unknown>) {
     if (!item.id || operatingSuggestionId.value) {
       return;
@@ -430,5 +461,11 @@
     padding: 16px;
     border: 1px solid var(--text-n8);
     border-radius: var(--border-radius-small);
+  }
+  .smart-ai-summary-markdown {
+    color: var(--primary-8) !important;
+    :deep(*) {
+      color: inherit;
+    }
   }
 </style>

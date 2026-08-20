@@ -48,10 +48,12 @@
   import { showImagePreview } from 'vant';
 
   import type { AiChatAttachment } from '@lib/shared/ai-chat';
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatFileSize } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import useUserStore from '@/store/modules/user';
 
   const props = withDefaults(
     defineProps<{
@@ -70,23 +72,42 @@
     (e: 'add'): void;
   }>();
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   function isImageAttachment(attachment: AiChatAttachment): boolean {
     return attachment.kind === 'image';
   }
 
+  function getAttachmentId(attachment: AiChatAttachment): string {
+    const fileId = attachment.metadata?.fileId;
+
+    return typeof fileId === 'string' ? fileId : attachment.id;
+  }
+
   function getAttachmentUrl(attachment: AiChatAttachment): string {
-    return attachment.url || (attachment.metadata?.previewUrl as string | undefined) || '';
+    const localPreviewUrl = attachment.metadata?.previewUrl;
+
+    if (typeof localPreviewUrl === 'string') {
+      return localPreviewUrl;
+    }
+
+    const attachmentId = getAttachmentId(attachment);
+
+    return attachmentId ? `${PreviewPictureUrl}/${attachmentId}?userId=${userStore.userInfo.id}` : '';
   }
 
   function previewImage(attachment: AiChatAttachment): void {
-    const url = getAttachmentUrl(attachment);
-
-    if (!url) {
+    if (attachment.status !== 'done') {
       return;
     }
 
-    showImagePreview([url]);
+    const attachmentId = getAttachmentId(attachment);
+
+    if (!attachmentId) {
+      return;
+    }
+
+    showImagePreview([`${PreviewPictureUrl}/${attachmentId}?userId=${userStore.userInfo.id}`]);
   }
 </script>
 

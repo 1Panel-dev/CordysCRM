@@ -22,6 +22,7 @@
         />
         <CrmList
           v-show="filteredCategories.length > 0"
+          ref="categoryListRef"
           v-model:active-item-key="selectedCategoryId"
           v-model:focus-item-key="focusCategoryId"
           :data="filteredCategories"
@@ -187,6 +188,7 @@
   const tooltipContent = ref('');
   const categoryFormRef = ref<FormInst | null>(null);
   const inputInstRef = ref<InputInst | null>(null);
+  const categoryListRef = ref<InstanceType<typeof CrmList> | null>(null);
 
   function getCategoryMoreActions(item: Record<string, any>) {
     return item.isNew || editingCategoryId.value === item.id ? [] : categoryMoreActions;
@@ -271,6 +273,7 @@
     categoryForm.value.name = '';
     resetValidateStatus();
     nextTick(() => {
+      categoryListRef.value?.scrollTo({ top: Number.MAX_SAFE_INTEGER });
       inputInstRef.value?.focus();
     });
   }

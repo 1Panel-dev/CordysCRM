@@ -24,8 +24,15 @@
         />
       </div>
       <div class="flex items-center gap-[8px] p-[16px]">
-        <input ref="imageInputRef" type="file" accept="image/*" class="hidden" @change="handleFileInputChange" />
-        <input ref="fileInputRef" type="file" class="hidden" @change="handleFileInputChange" />
+        <input
+          ref="imageInputRef"
+          type="file"
+          accept="image/*"
+          multiple
+          class="hidden"
+          @change="handleFileInputChange"
+        />
+        <input ref="fileInputRef" type="file" multiple class="hidden" @change="handleFileInputChange" />
         <van-popover
           v-if="!isEditing"
           v-model:show="showAttachmentPopover"
@@ -77,7 +84,7 @@
   import { computed, nextTick, ref, watch } from 'vue';
   import { showToast } from 'vant';
 
-  import { PreviewAttachmentUrl, PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import type { AiChatAttachment, AiFileKind } from '@lib/shared/ai-chat';
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -179,14 +186,8 @@
     return true;
   }
 
-  async function uploadSystemAttachment(file: File): Promise<AiChatAttachment> {
+  function toUploadedAttachment(file: File, id: string, previewUrl?: string): AiChatAttachment {
     const kind = getFileKind(file);
-    const res = await uploadAgentChatFile([file]);
-    const id = res.data[0];
-
-    if (!id) {
-      throw new Error('Upload response id is empty');
-    }
 
     return {
       id,
@@ -195,37 +196,44 @@
       size: file.size,
       kind,
       status: 'done',
-      url: kind === 'image' ? `${PreviewPictureUrl}/${id}` : `${PreviewAttachmentUrl}/${id}`,
+      url: kind === 'image' ? previewUrl || `${PreviewPictureUrl}/${id}` : undefined,
       metadata: {
         fileId: id,
+        previewUrl: kind === 'image' ? previewUrl : undefined,
       },
     };
   }
 
-  async function addFile(file: File) {
-    if (!validateFile(file)) {
+  async function addFiles(files: FileList | File[] | null | undefined) {
+    const validFiles = Array.from(files ?? []).filter((file) => validateFile(file));
+
+    if (!validFiles.length) {
       return;
     }
 
-    const localAttachment = createLocalAttachment(file);
+    const localAttachments = validFiles.map((file) => createLocalAttachment(file));
 
-    runtime.setAttachments([...attachments.value, localAttachment]);
+    runtime.setAttachments([...attachments.value, ...localAttachments]);
 
     try {
-      const uploadedAttachment = await uploadSystemAttachment(file);
-      const previewUrl = localAttachment.metadata?.previewUrl;
+      const res = await uploadAgentChatFile(validFiles);
+      const uploadedAttachments = validFiles.map((file, index) =>
+        toUploadedAttachment(file, res.data[index], localAttachments[index].metadata?.previewUrl as string | undefined)
+      );
 
-      if (typeof previewUrl === 'string') {
-        URL.revokeObjectURL(previewUrl);
+      if (uploadedAttachments.some((attachment) => !attachment.id)) {
+        throw new Error('Upload response id is empty');
       }
 
-      updateAttachment(localAttachment.id, {
-        ...uploadedAttachment,
+      localAttachments.forEach((localAttachment, index) => {
+        updateAttachment(localAttachment.id, uploadedAttachments[index]);
       });
     } catch {
-      updateAttachment(localAttachment.id, {
-        ...localAttachment,
-        status: 'error',
+      localAttachments.forEach((localAttachment) => {
+        updateAttachment(localAttachment.id, {
+          ...localAttachment,
+          status: 'error',
+        });
       });
     }
   }
@@ -264,11 +272,8 @@
 
   async function handleFileInputChange(event: Event) {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
 
-    if (file) {
-      await addFile(file);
-    }
+    await addFiles(input.files);
     resetFileInput(input);
   }
 

@@ -4,7 +4,8 @@ export interface AgentChatStreamParams {
   message: string;
   conversationId?: string;
   mcpIds?: string[];
-  attachments?: string[];
+  attachmentIds?: string[];
+  picIds?: string[];
 }
 
 export interface SmartFocusParams {

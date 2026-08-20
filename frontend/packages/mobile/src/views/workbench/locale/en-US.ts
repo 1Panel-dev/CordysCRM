@@ -29,6 +29,7 @@ export default {
   'workbench.agent.select': 'Select',
   'workbench.smart.noModelTip': 'No available AI model',
   'workbench.dataOverview': 'Data Overview',
+  'workbench.smart.dataOverviewGenerating': 'Generating data overview...',
   'workbench.smart.AIRead': 'AI Insights',
   'workbench.smart.reAnalyze': 'Re-analyze',
   'workbench.smart.reInterpret': 'Re-interpret',

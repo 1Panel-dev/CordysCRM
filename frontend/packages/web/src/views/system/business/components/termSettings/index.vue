@@ -30,7 +30,9 @@
                 <CrmImportButton
                   v-if="hasAnyPermission(['SYSTEM_SETTING:ADD'])"
                   :api-type="ImportTypeExcludeFormDesignEnum.TERM_IMPORT"
+                  :catalog-id="selectedCategoryId"
                   :title="t('system.business.term.term')"
+                  hide-import-updates
                   hide-import-updates-tooltip
                   @import-success="handleImportSuccess"
                 />

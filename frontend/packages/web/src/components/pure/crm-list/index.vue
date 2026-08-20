@@ -197,6 +197,30 @@
   function handleWheel(event: Event) {
     emit('wheel', event);
   }
+
+  function scrollTo(options: { top?: number; left?: number }) {
+    if (listRef.value?.scrollTo) {
+      listRef.value.scrollTo(options);
+      return;
+    }
+
+    const listContent = listRef.value?.$el.querySelector('.v-vl');
+
+    if (!listContent) {
+      return;
+    }
+
+    if (typeof options.top === 'number') {
+      listContent.scrollTop = options.top;
+    }
+    if (typeof options.left === 'number') {
+      listContent.scrollLeft = options.left;
+    }
+  }
+
+  defineExpose({
+    scrollTo,
+  });
 </script>
 
 <style lang="less">
