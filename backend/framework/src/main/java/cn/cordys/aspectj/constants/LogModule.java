@@ -158,4 +158,10 @@ public class LogModule {
      * 自定义表单数据
      */
     public static final String CUSTOM_FORM_DATA = "CUSTOM_FORM_DATA";
+    /**
+     * Agent配置
+     */
+    public static final String AGENT_MODEL_CONFIG = "AGENT_MODEL_CONFIG";
+    public static final String AGENT_TERM_CONFIG = "AGENT_TERM_CONFIG";
+    public static final String AGENT_TASK_CONFIG = "AGENT_TASK_CONFIG";
 }
