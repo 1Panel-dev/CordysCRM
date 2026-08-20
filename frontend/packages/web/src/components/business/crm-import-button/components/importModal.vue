@@ -39,7 +39,7 @@
               </n-tooltip>
             </div>
           </n-radio>
-          <n-radio key="UPDATE" value="UPDATE">
+          <n-radio v-if="!props.hideImportUpdates" key="UPDATE" value="UPDATE">
             <div class="flex items-center gap-[8px]">
               {{ t('crmImportButton.importUpdates') }}
               <n-tooltip trigger="hover" placement="right">
@@ -98,6 +98,7 @@
     title?: string; // 标题
     descriptionTip?: string; // 描述提示内容
     downloadTemplateApi?: () => Promise<any>; // 下载模板Api
+    hideImportUpdates?: boolean;
     hideImportUpdatesTooltip?: boolean;
   }>();
 

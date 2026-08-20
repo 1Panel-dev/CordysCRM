@@ -165,6 +165,7 @@
     top_p: null,
   };
   const defaultForm: AiModelForm = {
+    id: undefined,
     displayName: '',
     provider: 'OpenAI',
     modelName: '',
@@ -244,8 +245,8 @@
 
   function createModelPayload(): AiModelSaveParams {
     const payload: AiModelSaveParams = {
-      id: form.id || undefined,
       ...form,
+      id: isEdit.value ? form.id : undefined,
       modelParams: JSON.stringify({
         temperature: form.temperature,
         max_tokens: form.max_tokens,
@@ -262,7 +263,7 @@
       const payload = createModelPayload();
       let refreshId = payload.id;
 
-      if (payload.id) {
+      if (isEdit.value) {
         await updateAiModel(payload);
         Message.success(t('common.updateSuccess'));
       } else {

@@ -11,24 +11,40 @@
           @submit="handleComposerSubmit"
         />
       </AiChatProvider>
-      <n-spin v-if="dataOverviewAIRenderString" :show="dataOverviewLoading" class="bg-[var(--text-n10)]">
+      <n-spin
+        v-if="dataOverviewAIRenderString || dataOverviewLoading"
+        :show="dataOverviewLoading && Boolean(dataOverviewAIRenderString)"
+        class="bg-[var(--text-n10)]"
+      >
         <div
+          v-if="dataOverviewAIRenderString"
           ref="dataOverviewRef"
           class="h-full w-full"
           @click="handleSmartContentClick"
           v-html="dataOverviewAIRenderString"
         >
         </div>
+        <div v-else class="px-[24px] py-[24px]">
+          <div class="flex items-center gap-[8px] text-[14px] font-semibold text-[var(--text-n1)]">
+            <CrmIcon type="iconicon_star1" :size="16" color="var(--primary-8)" />
+            {{ t('workbench.dataOverView') }}
+          </div>
+          <div class="mt-[24px] py-[32px] text-center text-[var(--text-n4)]">
+            {{ t('workbench.smart.dataOverviewGenerating') }}
+          </div>
+        </div>
 
-        <n-spin v-if="aiSummaryVisible" :show="aiSummaryLoading" class="bg-[var(--text-n10)] px-[24px] pb-[24px]">
+        <n-spin
+          v-if="dataOverviewAIRenderString && aiSummaryVisible"
+          :show="aiSummaryLoading"
+          class="bg-[var(--text-n10)] px-[24px] pb-[24px]"
+        >
           <div class="rounded-[4px] bg-[var(--primary-7)] p-[16px] text-[var(--primary-8)]">
             <div class="flex items-center gap-[8px] font-semibold">
               <CrmIcon type="iconicon_star1" :size="16" color="var(--primary-8)" />
               <span>{{ t('workbench.smart.AIRead') }}</span>
             </div>
-            <div v-if="aiSummaryContent" class="mt-[8px] whitespace-pre-wrap">
-              {{ aiSummaryContent }}
-            </div>
+            <AiMarkdownBlock v-if="aiSummaryContent" class="smart-ai-summary-markdown mt-[8px]" :part="aiSummaryPart" />
             <n-empty v-else :description="t('common.noData')" :show-icon="false" class="mt-[8px]" />
             <n-button
               class="n-btn-outline-primary mt-[8px] bg-[var(--text-n10)]"
@@ -44,15 +60,15 @@
         </n-spin>
       </n-spin>
 
-      <div class="flex w-full gap-[16px]">
-        <CrmCard class="flex-1" no-content-padding hide-footer>
+      <div class="smart-workbench-action-card flex h-[calc(100vh-88px)] w-full gap-[16px]">
+        <CrmCard class="h-full flex-1 overflow-hidden" no-content-padding hide-footer content-height="100%">
           <template #header>
             <div class="flex items-center gap-[8px]">
               <CrmIcon type="iconicon_star1" :size="16" color="var(--primary-8)" />
               <div class="text-[14px] font-semibold">{{ t('workbench.smart.AIAction') }}</div>
             </div>
           </template>
-          <div class="px-[24px] pb-[24px]">
+          <div class="h-full px-[24px] pb-[24px]">
             <n-spin :show="suggestionLoading" class="h-full" content-class="h-full">
               <n-empty v-if="!suggestionList.length" :description="t('common.noData')" />
               <n-scrollbar v-else class="h-full" @scroll="suggestionPager.handleReachBottom">
@@ -114,14 +130,14 @@
             </n-spin>
           </div>
         </CrmCard>
-        <CrmCard class="flex-1" no-content-padding hide-footer>
+        <CrmCard class="h-full flex-1 overflow-hidden" no-content-padding hide-footer content-height="100%">
           <template #header>
             <div class="flex items-center gap-[8px]">
               <CrmIcon type="iconicon_star1" :size="16" color="var(--primary-8)" />
               <div class="text-[14px] font-semibold">{{ t('workbench.smart.AIActionApproval') }}</div>
             </div>
           </template>
-          <div class="px-[24px] pb-[24px]">
+          <div class="h-full px-[24px] pb-[24px]">
             <n-spin :show="approveLoading" class="h-full" content-class="h-full">
               <n-empty v-if="!approveList.length" :description="t('common.noData')" />
               <n-scrollbar v-else class="h-full" @scroll="approvePager.handleReachBottom">
@@ -178,7 +194,7 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
   import { NButton, NEmpty, NScrollbar, NSpin, NTooltip, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -195,6 +211,7 @@
     type AiComposerSubmitPayload,
     createAiChatRuntime,
   } from '@/components/business/ai-chat';
+  import AiMarkdownBlock from '@/components/business/ai-chat/blocks/AiMarkdownBlock.vue';
 
   import {
     confirmAgentActionApprove,
@@ -266,6 +283,10 @@
   const aiSummaryLoading = ref(false);
   const aiSummaryVisible = ref(true);
   const aiSummaryContent = ref('');
+  const aiSummaryPart = computed(() => ({
+    type: 'text' as const,
+    text: aiSummaryContent.value,
+  }));
   const aiSummaryFocus = ref('');
   const dataOverviewRef = ref<HTMLElement>();
 
@@ -387,6 +408,7 @@
       current: 1,
       pageSize: 10,
     });
+    const hasMore = computed(() => list.value.length < pagination.value.total);
 
     async function load(refresh = true): Promise<void> {
       if (loading.value) {
@@ -398,6 +420,8 @@
 
         if (refresh) {
           pagination.value.current = 1;
+        } else if (!hasMore.value) {
+          return;
         }
 
         const res = await loader({
@@ -407,6 +431,7 @@
 
         list.value = refresh ? res?.list || [] : list.value.concat(res?.list || []);
         pagination.value.total = res?.total || 0;
+        pagination.value.current += 1;
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -416,19 +441,12 @@
     }
 
     function handleReachBottom(event: Event): void {
-      const el = event.target as HTMLElement;
+      const el = event.target instanceof HTMLElement ? event.target : null;
 
-      if (el.scrollTop + el.clientHeight < el.scrollHeight - 24) {
+      if (!el || el.scrollTop + el.clientHeight < el.scrollHeight - 24) {
         return;
       }
 
-      const { current, pageSize, total } = pagination.value;
-
-      if (current >= Math.ceil(total / pageSize)) {
-        return;
-      }
-
-      pagination.value.current += 1;
       load(false);
     }
 
@@ -512,5 +530,14 @@
     padding: 16px;
     border: 1px solid var(--text-n8);
     border-radius: 4px;
+  }
+  .smart-ai-summary-markdown {
+    color: var(--primary-8);
+    :deep(*) {
+      color: inherit;
+    }
+  }
+  .smart-workbench-action-card :deep(.n-card-content) {
+    overflow: hidden;
   }
 </style>

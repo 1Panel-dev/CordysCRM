@@ -29,6 +29,7 @@ export default {
   'workbench.agent.select': '选择',
   'workbench.smart.noModelTip': '暂无可用 AI 模型',
   'workbench.dataOverview': '数据概览',
+  'workbench.smart.dataOverviewGenerating': '正在生成数据概览...',
   'workbench.smart.AIRead': 'AI 解读',
   'workbench.smart.reAnalyze': '重新解读',
   'workbench.smart.reInterpret': '重新解读',

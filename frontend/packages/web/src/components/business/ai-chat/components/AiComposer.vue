@@ -100,7 +100,7 @@
 
   import type { AiChatAttachment, AiChatMcp, AiComposerSubmitPayload, AiFileKind } from '@lib/shared/ai-chat';
   import { getMatchedMcp, useAiChatRuntime } from '@lib/shared/ai-chat';
-  import { PreviewAttachmentUrl, PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
 
@@ -621,7 +621,7 @@
     return true;
   }
 
-  function toUploadedAttachment(file: File, id: string): AiChatAttachment {
+  function toUploadedAttachment(file: File, id: string, previewUrl?: string): AiChatAttachment {
     const kind = getFileKind(file);
 
     return {
@@ -631,9 +631,10 @@
       size: file.size,
       kind,
       status: 'done',
-      url: kind === 'image' ? `${PreviewPictureUrl}/${id}` : `${PreviewAttachmentUrl}/${id}`,
+      url: kind === 'image' ? previewUrl || `${PreviewPictureUrl}/${id}` : undefined,
       metadata: {
         fileId: id,
+        previewUrl: kind === 'image' ? previewUrl : undefined,
       },
     };
   }
@@ -651,18 +652,15 @@
 
     try {
       const res = await uploadAgentChatFile(validFiles);
-      const uploadedAttachments = validFiles.map((file, index) => toUploadedAttachment(file, res.data[index]));
+      const uploadedAttachments = validFiles.map((file, index) =>
+        toUploadedAttachment(file, res.data[index], localAttachments[index].metadata?.previewUrl as string | undefined)
+      );
 
       if (uploadedAttachments.some((attachment) => !attachment.id)) {
         throw new Error('Upload response id is empty');
       }
 
       localAttachments.forEach((localAttachment, index) => {
-        const previewUrl = localAttachment.metadata?.previewUrl;
-
-        if (typeof previewUrl === 'string') {
-          URL.revokeObjectURL(previewUrl);
-        }
         updateAttachment(localAttachment.id, uploadedAttachments[index]);
       });
     } catch {
