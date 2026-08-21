@@ -1,5 +1,5 @@
 <template>
-  <article class="group mb-[32px] flex gap-[16px]" :class="messageClass">
+  <article class="group mb-[32px] flex gap-[16px] overflow-hidden" :class="messageClass">
     <div>
       <slot name="avatar" :message="props.message">
         <n-avatar v-if="props.message.role === 'assistant'" round class="bg-[var(--primary-6)]" :size="32">
@@ -10,7 +10,7 @@
     </div>
 
     <div
-      class="flex min-w-0 max-w-[calc(100%-96px)] flex-col"
+      class="flex min-w-0 max-w-[calc(100%-96px)] flex-col overflow-hidden"
       :class="{
         'w-full': !isUser || isEditing,
         'items-end': isUser && !isEditing,
@@ -69,7 +69,10 @@
           :attachments="messageAttachments"
         />
 
-        <div v-if="renderableParts.length || showAssistantLoading" class="ai-chat-message__bubble">
+        <div
+          v-if="renderableParts.length || showAssistantLoading"
+          class="ai-chat-message__bubble w-full overflow-hidden"
+        >
           <template v-for="item in renderableParts" :key="item.key">
             <AiTextBlock v-if="isUserTextPart(item.part)" :part="item.part" :mcps="messageMcps" />
             <component

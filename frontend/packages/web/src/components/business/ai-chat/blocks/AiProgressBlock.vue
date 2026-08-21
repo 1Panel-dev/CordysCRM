@@ -3,7 +3,7 @@
     <n-collapse v-model:expanded-names="expandedNames" arrow-placement="right">
       <n-collapse-item :name="partId">
         <template #header>
-          <div class="flex max-w-full items-center gap-[8px]">
+          <div class="inline-flex min-w-0 max-w-full items-center gap-[8px]">
             <CrmIcon type="iconicon_set_up" :size="16" class="text-[var(--text-n4)]" />
             <span class="min-w-0 flex-1 truncate">
               {{ progress?.title || t('aiChat.progress') }}
@@ -72,7 +72,13 @@
     :deep(.n-collapse) {
       width: 100%;
     }
+    :deep(.n-collapse-item__header) {
+      min-width: 0;
+    }
     :deep(.n-collapse-item__header .n-collapse-item__header-main) {
+      overflow: hidden;
+      min-width: 0;
+      max-width: 100%;
       color: var(--text-n2);
     }
     :deep(.n-collapse-item__content-wrapper .n-collapse-item__content-inner) {

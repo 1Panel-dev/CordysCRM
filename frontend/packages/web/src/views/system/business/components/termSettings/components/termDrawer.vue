@@ -226,12 +226,11 @@
         refreshId = undefined;
         Message.success(t('common.addSuccess'));
       }
-      const nextCatalogId = form.catalogId;
       emit('saved', refreshId, props.adoptDiscoveryId);
       if (!continueAdd) {
         showDrawer.value = false;
       } else {
-        resetFormState({ catalogId: nextCatalogId });
+        resetFormState();
       }
     } catch (error) {
       // eslint-disable-next-line no-console

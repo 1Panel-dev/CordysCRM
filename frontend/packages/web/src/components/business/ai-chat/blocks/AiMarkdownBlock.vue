@@ -370,7 +370,13 @@
     :deep(.n-collapse) {
       width: 100%;
     }
+    :deep(.n-collapse-item__header) {
+      min-width: 0;
+    }
     :deep(.n-collapse-item__header .n-collapse-item__header-main) {
+      overflow: hidden;
+      min-width: 0;
+      max-width: 100%;
       color: var(--text-n2);
     }
     :deep(.n-collapse-item__content-wrapper .n-collapse-item__content-inner) {
