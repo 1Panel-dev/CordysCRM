@@ -3,7 +3,7 @@
     <div class="flex-1 overflow-hidden">
       <!-- 消息列表区域 -->
       <slot name="thread">
-        <AiThread />
+        <AiThread :scroll-to-bottom-key="props.scrollToBottomKey" />
       </slot>
     </div>
 
@@ -26,6 +26,15 @@
   import AiComposer from './AiComposer.vue';
   import AiConfirmModal from './AiConfirmModal.vue';
   import AiThread from './AiThread.vue';
+
+  const props = withDefaults(
+    defineProps<{
+      scrollToBottomKey?: string | number;
+    }>(),
+    {
+      scrollToBottomKey: '',
+    }
+  );
 
   const runtime = useAiChatRuntime();
   const pendingConfirm = computed(() => runtime.state.pendingConfirm.value);

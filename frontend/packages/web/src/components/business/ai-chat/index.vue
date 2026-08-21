@@ -73,7 +73,7 @@
     <template #2>
       <main class="h-full min-h-0 min-w-0">
         <AiChatProvider :runtime="runtime">
-          <AiChatContent>
+          <AiChatContent :scroll-to-bottom-key="props.activeHistoryId">
             <template #composer>
               <AiComposer
                 :placeholder="props.placeholder || t('aiChat.inputPlaceholder')"

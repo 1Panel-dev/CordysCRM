@@ -63,16 +63,12 @@
        * 用户主动往上看历史时不会被强行拉回底部。
        */
       autoScroll?: boolean;
-      /**
-       * 是否在组件首次挂载后滚到底部。
-       * 历史会话通常不建议默认滚动，新会话或客服场景可显式开启。
-       */
-      initialScrollToBottom?: boolean;
+      scrollToBottomKey?: string | number;
       emptyText?: string;
     }>(),
     {
       autoScroll: true,
-      initialScrollToBottom: false,
+      scrollToBottomKey: '',
       emptyText: '',
     }
   );
@@ -143,11 +139,6 @@
   }
 
   onMounted(async () => {
-    if (props.initialScrollToBottom) {
-      await scrollToBottom();
-      return;
-    }
-
     await nextTick();
     updateStickToBottom();
   });
@@ -170,4 +161,16 @@
 
     scrollToBottom();
   });
+
+  watch(
+    () => props.scrollToBottomKey,
+    async (key) => {
+      if (!key) {
+        return;
+      }
+
+      await scrollToBottom();
+    },
+    { flush: 'post' }
+  );
 </script>
