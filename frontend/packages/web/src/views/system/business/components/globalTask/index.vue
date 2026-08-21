@@ -30,6 +30,10 @@
 
 <style scoped lang="scss">
   .global-task-tabs {
+    :deep(.n-tabs-pane-wrapper),
+    :deep(.n-tab-pane) {
+      min-width: 0;
+    }
     :deep(.n-tabs-tab__label) {
       width: 130px;
     }
