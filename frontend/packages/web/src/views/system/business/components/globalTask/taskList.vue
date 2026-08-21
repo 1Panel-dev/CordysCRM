@@ -132,7 +132,7 @@
       columnSelectorDisabled: true,
       title: t('system.business.globalTask.taskName'),
       key: 'name',
-      width: 160,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -166,7 +166,10 @@
     {
       title: t('system.business.globalTask.confirmationLevel'),
       key: 'confirmationLevel',
-      width: 140,
+      width: 150,
+      ellipsis: {
+        tooltip: true,
+      },
       render: (row) => confirmationLevelLabelMap.value[row.confirmationLevel] || '-',
     },
     {

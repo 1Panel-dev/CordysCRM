@@ -131,15 +131,18 @@
     {
       title: t('system.business.globalTask.executionTime'),
       key: 'executeTime',
-      width: 150,
+      width: 200,
       sortOrder: false,
       sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
       render: (row) => (row.executeTime ? dayjs(row.executeTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
     },
     {
       title: t('system.business.globalTask.taskName'),
       key: 'taskName',
-      width: 180,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -147,7 +150,7 @@
     {
       title: t('system.business.globalTask.triggerReason'),
       key: 'executeReason',
-      width: 180,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -156,6 +159,7 @@
       title: t('common.status'),
       key: 'status',
       width: 100,
+      minWidth: 100,
       render: (row) => {
         const meta = statusMetaMap[row.status];
         if (!meta) {
@@ -175,7 +179,7 @@
     {
       title: t('system.business.globalTask.result'),
       key: 'result',
-      width: 180,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
