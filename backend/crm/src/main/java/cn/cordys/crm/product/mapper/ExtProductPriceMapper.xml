@@ -331,4 +331,14 @@
           AND t.NAME = #{productName}
           AND field_id = 'product'
     </select>
+
+
+    <select id="getPriceData" resultType="cn.cordys.crm.product.domain.ProductPriceField">
+        SELECT DISTINCT biz_id
+        FROM product_price_field
+        WHERE resource_id = #{resourceId}
+          AND field_id = #{fieldId}
+          AND field_value COLLATE utf8mb4_bin = #{fieldValue}
+    </select>
+
 </mapper>

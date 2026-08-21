@@ -29,7 +29,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<DatasourceMultipleField> {
 
@@ -151,80 +153,182 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CUSTOMER.name())) {
             List<Customer> customerList = Objects.requireNonNull(customerService).getCustomerListByNames(names);
-            List<String> ids = customerList.stream().map(Customer::getId).toList();
-            return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(customerList)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = customerList.stream().collect(Collectors.toMap(Customer::getName, Customer::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
         }
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.OPPORTUNITY.name())) {
             List<Opportunity> opportunityList = Objects.requireNonNull(opportunityService).getOpportunityListByNames(names);
-            List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
-            return CollectionUtils.isEmpty(ids) ? names : ids;
+            if (CollectionUtils.isEmpty(opportunityList)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = opportunityList.stream().collect(Collectors.toMap(Opportunity::getName, Opportunity::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
         }
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CLUE.name())) {
             List<Clue> clueList = Objects.requireNonNull(clueService).getClueListByNames(names);
-            List<String> ids = clueList.stream().map(Clue::getId).toList();
-            return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(clueList)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = clueList.stream().collect(Collectors.toMap(Clue::getName, Clue::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
         }
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTACT.name())) {
             List<CustomerContact> contactList = Objects.requireNonNull(contactService).getContactListByNames(names);
-            List<String> ids = contactList.stream().map(CustomerContact::getId).toList();
-            return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(contactList)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = contactList.stream().collect(Collectors.toMap(CustomerContact::getName, CustomerContact::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
         }
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
             List<Product> productList = Objects.requireNonNull(productService).getProductListByNames(names);
-            List<String> ids = productList.stream().map(Product::getId).toList();
-            return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(productList)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = productList.stream().collect(Collectors.toMap(Product::getName, Product::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
         }
 
 		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PRICE.name())) {
 			List<ProductPrice> prices = Objects.requireNonNull(productPriceService).getProductPriceListByNames(names);
-			List<String> ids = prices.stream().map(ProductPrice::getId).toList();
-			return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(prices)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = prices.stream().collect(Collectors.toMap(ProductPrice::getName, ProductPrice::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
 		}
 
 		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.QUOTATION.name())) {
 			List<OpportunityQuotation> quotations = Objects.requireNonNull(opportunityQuotationService).getQuotationListByNames(names);
-			List<String> ids = quotations.stream().map(OpportunityQuotation::getId).toList();
-			return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(quotations)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = quotations.stream().collect(Collectors.toMap(OpportunityQuotation::getName, OpportunityQuotation::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
 		}
 
 		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT_PAYMENT_RECORD.name())) {
 			List<ContractPaymentRecord> records = Objects.requireNonNull(contractPaymentRecordService).getRecordListByNames(names);
-			List<String> ids = records.stream().map(ContractPaymentRecord::getId).toList();
-			return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(records)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = records.stream().collect(Collectors.toMap(ContractPaymentRecord::getName, ContractPaymentRecord::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
 		}
 
 		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PAYMENT_PLAN.name())) {
 			List<ContractPaymentPlan> plans = Objects.requireNonNull(contractPaymentPlanService).getPlanListByNames(names);
-			List<String> ids = plans.stream().map(ContractPaymentPlan::getId).toList();
-			return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(plans)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = plans.stream().collect(Collectors.toMap(ContractPaymentPlan::getName, ContractPaymentPlan::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
 		}
 
 		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
 			List<BusinessTitle> titles = Objects.requireNonNull(businessTitleService).getBusinessTitleListByNames(names);
-			List<String> ids = titles.stream().map(BusinessTitle::getId).toList();
-			return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(titles)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = titles.stream().collect(Collectors.toMap(BusinessTitle::getName, BusinessTitle::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
 		}
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.ORDER.name())) {
             List<Order> orders = Objects.requireNonNull(orderService).getOrderListByNames(names);
-            List<String> ids = orders.stream().map(Order::getId).toList();
-            return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(orders)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = orders.stream().collect(Collectors.toMap(Order::getName, Order::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
         }
 
 		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
 			List<Contract> contracts = Objects.requireNonNull(contractService).getContractListByNames(names);
-			List<String> ids = contracts.stream().map(Contract::getId).toList();
-			return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(contracts)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = contracts.stream().collect(Collectors.toMap(Contract::getName, Contract::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
 		}
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.INVOICE.name())) {
             List<ContractInvoice> invoices = Objects.requireNonNull(invoiceService).getContractInvoiceListByNames(names);
-            List<String> ids = invoices.stream().map(ContractInvoice::getId).toList();
-            return CollectionUtils.isEmpty(ids) ? names : ids;
+            if(CollectionUtils.isEmpty(invoices)) {
+                return StringUtils.EMPTY;
+            }
+            Map<String, String> nameMaps = invoices.stream().collect(Collectors.toMap(ContractInvoice::getName, ContractInvoice::getId));
+            return names.stream()
+                    .filter(name -> name != null && nameMaps.containsKey(name))
+                    .map(nameMaps::get)
+                    .distinct()
+                    .toList();
         }
 
-        List<CustomFormData> contracts = Objects.requireNonNull(customFormDataService).selectByNames(names);
-        List<String> ids = contracts.stream().map(CustomFormData::getId).toList();
-        return CollectionUtils.isEmpty(ids) ? names : ids;
+        List<CustomFormData> customForms = Objects.requireNonNull(customFormDataService).selectByNames(names);
+        if(CollectionUtils.isEmpty(customForms)) {
+            return StringUtils.EMPTY;
+        }
+        Map<String, String> nameMaps = customForms.stream().collect(Collectors.toMap(CustomFormData::getName, CustomFormData::getId));
+        return names.stream()
+                .filter(name -> name != null && nameMaps.containsKey(name))
+                .map(nameMaps::get)
+                .distinct()
+                .toList();
     }
 }

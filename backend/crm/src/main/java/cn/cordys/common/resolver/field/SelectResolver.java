@@ -46,7 +46,7 @@ public class SelectResolver extends AbstractModuleFieldResolver<SelectField> {
     @Override
     public Object textToValue(SelectField field, String text) {
         return field.getOptions().stream()
-                .filter(option -> Strings.CI.equals(option.getLabel(), text))
+                .filter(option -> Strings.CS.equals(option.getLabel(), text))
                 .findFirst()
                 .map(OptionProp::getValue)
                 .orElse(text);

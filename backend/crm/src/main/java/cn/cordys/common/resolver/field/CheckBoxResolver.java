@@ -71,8 +71,9 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
             List<String> values = texts.stream()
                     .filter(item -> item != null && optionMap.containsKey(item))
                     .map(optionMap::get)
+                    .distinct()
                     .collect(Collectors.toList());
-            return CollectionUtils.isEmpty(values) ? texts : values;
+            return CollectionUtils.isEmpty(values) ? StringUtils.EMPTY : values;
         } catch (Exception e) {
             return StringUtils.EMPTY;
         }

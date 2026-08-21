@@ -819,15 +819,10 @@ public class ProductPriceService extends BaseExportService {
      * @param fieldValue
      * @return
      */
-    public Set<String> getData(Object resourceId, String fieldId, Object fieldValue) {
-        LambdaQueryWrapper<ProductPriceField> priceFieldLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        priceFieldLambdaQueryWrapper.eq(ProductPriceField::getResourceId, resourceId)
-                .eq(ProductPriceField::getFieldId, fieldId)
-                .eq(ProductPriceField::getFieldValue, fieldValue);
-        List<ProductPriceField> productPriceFields = productPriceFieldMapper.selectListByLambda(priceFieldLambdaQueryWrapper);
+    public Set<String> getPriceData(Object resourceId, String fieldId, Object fieldValue) {
+        List<ProductPriceField> productPriceFields = extProductPriceMapper.getPriceData(resourceId, fieldId, fieldValue);
         return productPriceFields.stream().map(ProductPriceField::getBizId).collect(Collectors.toSet());
     }
-
 
     /**
      * 匹配bizId
