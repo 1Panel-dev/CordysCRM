@@ -342,7 +342,12 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                                 //val为空，也继续匹配下一个字段
                                 continue;
                             }
-                            bizIds = productPriceService.getPriceData(resourceId, baseField.getBusinessKey(), val);
+                            if (baseField.isBlob()) {
+                                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+                                bizIds = productPriceService.getPriceBlobData(resourceId, baseField.getBusinessKey(), customFieldResolver.convertToString(baseField, val));
+                            } else {
+                                bizIds = productPriceService.getPriceData(resourceId, baseField.getBusinessKey(), val);
+                            }
                         }
                         if (CollectionUtils.isEmpty(bizIds)) {
                             commonBizIds = null;
