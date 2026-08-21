@@ -140,7 +140,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                 }
                 continue;
             }
-            this.fieldMap.put(field.getName(), field);
+            this.fieldMap.put(field.getName() + "_" + field.getName(), field);
             setCheckLimit(field, null);
             setNumberMax(field, null);
         }
@@ -175,9 +175,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             for (Map.Entry<Integer, String> entry : firstHeadMap.entrySet()) {
                 Integer key = entry.getKey();
                 String value = entry.getValue();
-                if (!Strings.CI.equals(headMap.get(key), value)) {
-                    headMap.put(key, value + "_" + headMap.get(key));
-                }
+                headMap.put(key, value + "_" + headMap.get(key));
             }
             this.headMap = headMap;
         } else {
