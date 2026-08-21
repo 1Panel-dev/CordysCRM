@@ -81,7 +81,7 @@
 
   const keyword = ref('');
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  const tableRefreshId = ref(0);
+  const tableItemRefreshId = ref('');
   const canUpdateModelSettings = computed(() => hasAnyPermission(['SYSTEM_SETTING:UPDATE']));
 
   function formatGlobalDailyLimit(value: number | null | undefined): string {
@@ -92,7 +92,7 @@
     try {
       await updateAiModelStatus({ id: row.id });
       Message.success(enable ? t('common.enableSuccess') : t('common.disableSuccess'));
-      tableRefreshId.value += 1;
+      tableItemRefreshId.value = row.id;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -320,10 +320,12 @@
   }
 
   watch(
-    () => tableRefreshId.value,
-    () => {
-      crmTableRef.value?.clearCheckedRowKeys();
-      searchData(keyword.value);
+    () => tableItemRefreshId.value,
+    (id) => {
+      if (id) {
+        searchData(undefined, id);
+        tableItemRefreshId.value = '';
+      }
     }
   );
 
