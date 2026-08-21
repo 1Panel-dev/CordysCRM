@@ -19,7 +19,6 @@
     <AiChat
       v-if="chatRuntime"
       ref="aiChatRef"
-      :key="chatSessionId"
       :runtime="chatRuntime"
       :history-items="historyItems"
       :active-history-id="activeHistoryId"
@@ -82,7 +81,6 @@
   const { openModal } = useModal();
   const showChatDrawer = ref(false);
   const aiChatRef = ref<InstanceType<typeof AiChat>>();
-  const chatSessionId = ref('');
   const position = ref<FloatingPosition>({ right: DEFAULT_GAP, bottom: DEFAULT_GAP });
   const isDragging = ref(false);
   const ignoreNextClick = ref(false);
@@ -155,8 +153,6 @@
   }
 
   function createChatSession(): ReturnType<typeof createConversation> {
-    const sessionId = `chat_${Date.now()}`;
-    chatSessionId.value = sessionId;
     return createConversation();
   }
 
@@ -263,23 +259,15 @@
   }
 
   function handleNewConversation(): void {
-    chatSessionId.value = `chat_${Date.now()}`;
     createConversation();
   }
 
   async function handleHistoryClick(conversationId: string): Promise<void> {
     await openHistoryConversation(conversationId);
-    chatSessionId.value = conversationId;
   }
 
   async function handleHistoryDelete(conversationId: string): Promise<void> {
-    const deletingActive = activeHistoryId.value === conversationId;
-
     await deleteHistoryConversation(conversationId);
-
-    if (deletingActive) {
-      chatSessionId.value = `chat_${Date.now()}`;
-    }
   }
 
   async function handleHistoryRename(conversationId: string, title: string): Promise<void> {
