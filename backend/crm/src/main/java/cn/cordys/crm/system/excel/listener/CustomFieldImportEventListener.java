@@ -342,7 +342,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                                 //val为空，也继续匹配下一个字段
                                 continue;
                             }
-                            bizIds = productPriceService.getData(resourceId, baseField.getBusinessKey(), val);
+                            bizIds = productPriceService.getPriceData(resourceId, baseField.getBusinessKey(), val);
                         }
                         if (CollectionUtils.isEmpty(bizIds)) {
                             commonBizIds = null;

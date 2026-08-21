@@ -39,10 +39,10 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
     private static final ProductService productService;
     private static final ProductPriceService productPriceService;
     private static final OpportunityQuotationService opportunityQuotationService;
-	private static final ContractService contractService;
-	private static final ContractPaymentPlanService contractPaymentPlanService;
-	private static final ContractPaymentRecordService contractPaymentRecordService;
-	private static final BusinessTitleService businessTitleService;
+    private static final ContractService contractService;
+    private static final ContractPaymentPlanService contractPaymentPlanService;
+    private static final ContractPaymentRecordService contractPaymentRecordService;
+    private static final BusinessTitleService businessTitleService;
     private static final OrderService orderService;
     private static final CustomFormDataService customFormDataService;
     private static final ContractInvoiceService invoiceService;
@@ -55,13 +55,13 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         productService = CommonBeanFactory.getBean(ProductService.class);
         productPriceService = CommonBeanFactory.getBean(ProductPriceService.class);
         opportunityQuotationService = CommonBeanFactory.getBean(OpportunityQuotationService.class);
-		contractService = CommonBeanFactory.getBean(ContractService.class);
-		contractPaymentRecordService = CommonBeanFactory.getBean(ContractPaymentRecordService.class);
-		contractPaymentPlanService = CommonBeanFactory.getBean(ContractPaymentPlanService.class);
-		businessTitleService = CommonBeanFactory.getBean(BusinessTitleService.class);
+        contractService = CommonBeanFactory.getBean(ContractService.class);
+        contractPaymentRecordService = CommonBeanFactory.getBean(ContractPaymentRecordService.class);
+        contractPaymentPlanService = CommonBeanFactory.getBean(ContractPaymentPlanService.class);
+        businessTitleService = CommonBeanFactory.getBean(BusinessTitleService.class);
         orderService = CommonBeanFactory.getBean(OrderService.class);
         customFormDataService = CommonBeanFactory.getBean(CustomFormDataService.class);
-        invoiceService =  CommonBeanFactory.getBean(ContractInvoiceService.class);
+        invoiceService = CommonBeanFactory.getBean(ContractInvoiceService.class);
     }
 
     @Override
@@ -104,23 +104,23 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
             return Objects.requireNonNull(opportunityQuotationService).getQuotationName(value);
         }
 
-		if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.PAYMENT_PLAN.name())) {
-			return Objects.requireNonNull(contractPaymentPlanService).getPlanName(value);
-		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.PAYMENT_PLAN.name())) {
+            return Objects.requireNonNull(contractPaymentPlanService).getPlanName(value);
+        }
 
-		if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.CONTRACT_PAYMENT_RECORD.name())) {
-			return Objects.requireNonNull(contractPaymentRecordService).getRecordNameById(value);
-		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.CONTRACT_PAYMENT_RECORD.name())) {
+            return Objects.requireNonNull(contractPaymentRecordService).getRecordNameById(value);
+        }
 
-		if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
-			return Objects.requireNonNull(businessTitleService).getBusinessTitleName(value);
-		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
+            return Objects.requireNonNull(businessTitleService).getBusinessTitleName(value);
+        }
         if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.ORDER.name())) {
             return Objects.requireNonNull(orderService).getOrderName(value);
         }
-		if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
-			return Objects.requireNonNull(contractService).getContractName(value);
-		}
+        if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
+            return Objects.requireNonNull(contractService).getContractName(value);
+        }
         if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.INVOICE.name())) {
             return Objects.requireNonNull(invoiceService).getInvoiceName(value);
         }
@@ -135,62 +135,169 @@ public class DatasourceResolver extends AbstractModuleFieldResolver<DatasourceFi
         }
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CUSTOMER.name())) {
             List<Customer> customerList = Objects.requireNonNull(customerService).getCustomerListByNames(List.of(text));
-            return CollectionUtils.isEmpty(customerList) ? StringUtils.EMPTY : customerList.getFirst().getId();
+            if (CollectionUtils.isEmpty(customerList)) {
+                return StringUtils.EMPTY;
+            }
+            return customerList.stream()
+                    .filter(customer -> Strings.CS.equals(text, customer.getName()))
+                    .map(Customer::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
+
         }
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.OPPORTUNITY.name())) {
             List<Opportunity> opportunityList = Objects.requireNonNull(opportunityService).getOpportunityListByNames(List.of(text));
-            return CollectionUtils.isEmpty(opportunityList) ? StringUtils.EMPTY : opportunityList.getFirst().getId();
+            if (CollectionUtils.isEmpty(opportunityList)) {
+                return StringUtils.EMPTY;
+            }
+            return opportunityList.stream()
+                    .filter(opportunity -> Strings.CS.equals(text, opportunity.getName()))
+                    .map(Opportunity::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
         }
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CLUE.name())) {
             List<Clue> clueList = Objects.requireNonNull(clueService).getClueListByNames(List.of(text));
-            return CollectionUtils.isEmpty(clueList) ? StringUtils.EMPTY : clueList.getFirst().getId();
+            if (CollectionUtils.isEmpty(clueList)) {
+                return StringUtils.EMPTY;
+            }
+            return clueList.stream()
+                    .filter(clue -> Strings.CS.equals(text, clue.getName()))
+                    .map(Clue::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
         }
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTACT.name())) {
             List<CustomerContact> contactList = Objects.requireNonNull(contactService).getContactListByNames(List.of(text));
-            return CollectionUtils.isEmpty(contactList) ? StringUtils.EMPTY : contactList.getFirst().getId();
+            if (CollectionUtils.isEmpty(contactList)) {
+                return StringUtils.EMPTY;
+            }
+            return contactList.stream()
+                    .filter(contact -> Strings.CS.equals(text, contact.getName()))
+                    .map(CustomerContact::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
         }
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PRODUCT.name())) {
             List<Product> productList = Objects.requireNonNull(productService).getProductListByNames(List.of(text));
-            return CollectionUtils.isEmpty(productList) ? StringUtils.EMPTY : productList.getFirst().getId();
+            if (CollectionUtils.isEmpty(productList)) {
+                return StringUtils.EMPTY;
+            }
+            return productList.stream()
+                    .filter(product -> Strings.CS.equals(text, product.getName()))
+                    .map(Product::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
         }
-		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PRICE.name())) {
-			List<ProductPrice> productPrices = Objects.requireNonNull(productPriceService).getProductPriceListByNames(List.of(text));
-			return CollectionUtils.isEmpty(productPrices) ? StringUtils.EMPTY : productPrices.getFirst().getId();
-		}
-		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.QUOTATION.name())) {
-			List<OpportunityQuotation> quotations = Objects.requireNonNull(opportunityQuotationService).getQuotationListByNames(List.of(text));
-			return CollectionUtils.isEmpty(quotations) ? StringUtils.EMPTY : quotations.getFirst().getId();
-		}
-		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
-			List<Contract> contracts = Objects.requireNonNull(contractService).getContractListByNames(List.of(text));
-			return CollectionUtils.isEmpty(contracts) ? StringUtils.EMPTY : contracts.getFirst().getId();
-		}
-		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PAYMENT_PLAN.name())) {
-			List<ContractPaymentPlan> plans = Objects.requireNonNull(contractPaymentPlanService).getPlanListByNames(List.of(text));
-			return CollectionUtils.isEmpty(plans) ? StringUtils.EMPTY : plans.getFirst().getId();
-		}
-		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT_PAYMENT_RECORD.name())) {
-			List<ContractPaymentRecord> records = Objects.requireNonNull(contractPaymentRecordService).getRecordListByNames(List.of(text));
-			return CollectionUtils.isEmpty(records) ? StringUtils.EMPTY : records.getFirst().getId();
-		}
-		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
-			List<BusinessTitle> businessTitles = Objects.requireNonNull(businessTitleService).getBusinessTitleListByNames(List.of(text));
-			return CollectionUtils.isEmpty(businessTitles) ? StringUtils.EMPTY : businessTitles.getFirst().getId();
-		}
+
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PRICE.name())) {
+            List<ProductPrice> productPrices = Objects.requireNonNull(productPriceService).getProductPriceListByNames(List.of(text));
+            if (CollectionUtils.isEmpty(productPrices)) {
+                return StringUtils.EMPTY;
+            }
+            return productPrices.stream()
+                    .filter(price -> Strings.CS.equals(text, price.getName()))
+                    .map(ProductPrice::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
+        }
+
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.QUOTATION.name())) {
+            List<OpportunityQuotation> quotations = Objects.requireNonNull(opportunityQuotationService).getQuotationListByNames(List.of(text));
+            if (CollectionUtils.isEmpty(quotations)) {
+                return StringUtils.EMPTY;
+            }
+            return quotations.stream()
+                    .filter(quotation -> Strings.CS.equals(text, quotation.getName()))
+                    .map(OpportunityQuotation::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
+        }
+
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
+            List<Contract> contracts = Objects.requireNonNull(contractService).getContractListByNames(List.of(text));
+            if (CollectionUtils.isEmpty(contracts)) {
+                return StringUtils.EMPTY;
+            }
+            return contracts.stream()
+                    .filter(contract -> Strings.CS.equals(text, contract.getName()))
+                    .map(Contract::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
+        }
+
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.PAYMENT_PLAN.name())) {
+            List<ContractPaymentPlan> plans = Objects.requireNonNull(contractPaymentPlanService).getPlanListByNames(List.of(text));
+            if (CollectionUtils.isEmpty(plans)) {
+                return StringUtils.EMPTY;
+            }
+            return plans.stream()
+                    .filter(plan -> Strings.CS.equals(text, plan.getName()))
+                    .map(ContractPaymentPlan::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
+        }
+
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT_PAYMENT_RECORD.name())) {
+            List<ContractPaymentRecord> records = Objects.requireNonNull(contractPaymentRecordService).getRecordListByNames(List.of(text));
+            if (CollectionUtils.isEmpty(records)) {
+                return StringUtils.EMPTY;
+            }
+            return records.stream()
+                    .filter(record -> Strings.CS.equals(text, record.getName()))
+                    .map(ContractPaymentRecord::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
+        }
+
+        if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.BUSINESS_TITLE.name())) {
+            List<BusinessTitle> businessTitles = Objects.requireNonNull(businessTitleService).getBusinessTitleListByNames(List.of(text));
+            if (CollectionUtils.isEmpty(businessTitles)) {
+                return StringUtils.EMPTY;
+            }
+            return businessTitles.stream()
+                    .filter(title -> Strings.CS.equals(text, title.getName()))
+                    .map(BusinessTitle::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
+        }
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.ORDER.name())) {
             List<Order> orders = Objects.requireNonNull(orderService).getOrderListByNames(List.of(text));
-            return CollectionUtils.isEmpty(orders) ? StringUtils.EMPTY : orders.getFirst().getId();
+            if (CollectionUtils.isEmpty(orders)) {
+                return StringUtils.EMPTY;
+            }
+            return orders.stream()
+                    .filter(order -> Strings.CS.equals(text, order.getName()))
+                    .map(Order::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
         }
-		if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CONTRACT.name())) {
-			List<Contract> contracts = Objects.requireNonNull(contractService).getContractListByNames(List.of(text));
-			return CollectionUtils.isEmpty(contracts) ? StringUtils.EMPTY : contracts.getFirst().getId();
-		}
+
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.INVOICE.name())) {
             List<ContractInvoice> invoices = Objects.requireNonNull(invoiceService).getContractInvoiceListByNames(List.of(text));
-            return CollectionUtils.isEmpty(invoices) ? StringUtils.EMPTY : invoices.getFirst().getId();
+            if (CollectionUtils.isEmpty(invoices)) {
+                return StringUtils.EMPTY;
+            }
+            return invoices.stream()
+                    .filter(invoice -> Strings.CS.equals(text, invoice.getName()))
+                    .map(ContractInvoice::getId)
+                    .findFirst()
+                    .orElse(StringUtils.EMPTY);
         }
 
         List<CustomFormData> customFormDataList = Objects.requireNonNull(customFormDataService).selectByNames(List.of(text));
-        return CollectionUtils.isEmpty(customFormDataList) ? StringUtils.EMPTY : customFormDataList.getFirst().getId();
+        if (CollectionUtils.isEmpty(customFormDataList)) {
+            return StringUtils.EMPTY;
+        }
+        return customFormDataList.stream()
+                .filter(data -> Strings.CS.equals(text, data.getName()))
+                .map(CustomFormData::getId)
+                .findFirst()
+                .orElse(StringUtils.EMPTY);
     }
 }

@@ -2,6 +2,7 @@ package cn.cordys.crm.product.mapper;
 
 import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.crm.product.domain.ProductPrice;
+import cn.cordys.crm.product.domain.ProductPriceField;
 import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
 import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import org.apache.ibatis.annotations.Param;
@@ -70,4 +71,6 @@ public interface ExtProductPriceMapper {
     void updateProductPrice(@Param("productPrice") ProductPrice productPrice);
 
     List<String> getBizIdsByResource(@Param("resourceId") String resourceId, @Param("productName") String productName);
+
+    List<ProductPriceField> getPriceData(@Param("resourceId") Object resourceId, @Param("fieldId") String fieldId, @Param("fieldValue") Object fieldValue);
 }
