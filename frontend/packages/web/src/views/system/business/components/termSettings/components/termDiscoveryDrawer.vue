@@ -112,7 +112,7 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList } = useTable<TermDiscoveryItem>(getTermDiscoveryList, {
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable<TermDiscoveryItem>(getTermDiscoveryList, {
     columns,
     tableKey: TableKeyEnum.SYSTEM_TERM_DISCOVERY,
     showSetting: false,
@@ -143,6 +143,7 @@
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   async function searchData() {
     try {
+      setLoadListParams();
       await loadList();
       crmTableRef.value?.scrollTo({ top: 0 });
     } catch (error) {

@@ -605,7 +605,7 @@
     );
   }
 
-  const defaultMaxFileSize = 50 * 1024 * 1024;
+  const defaultMaxFileSize = 100 * 1024 * 1024;
 
   function validateFile(file: File): boolean {
     if (attachments.value.some((attachment) => attachment.name === file.name)) {
@@ -614,7 +614,7 @@
     }
 
     if (file.size > defaultMaxFileSize) {
-      Message.warning(t('crm.upload.overSize', { size: 50, unit: 'MB' }));
+      Message.warning(t('crm.upload.overSize', { size: 100, unit: 'MB' }));
       return false;
     }
 

@@ -277,7 +277,7 @@ export const pathMap: PathMapItem[] = [
             },
           },
           {
-            key: 'SYSTEM_BUSINESS_MODEL',
+            key: 'AGENT_MODEL_CONFIG',
             route: AppRouteEnum.SYSTEM_BUSINESS,
             locale: 'system.business.tab.modelSettings',
             routeQuery: {
@@ -285,7 +285,7 @@ export const pathMap: PathMapItem[] = [
             },
           },
           {
-            key: 'SYSTEM_BUSINESS_TERM',
+            key: 'AGENT_TERM_CONFIG',
             route: AppRouteEnum.SYSTEM_BUSINESS,
             locale: 'system.business.tab.termSettings',
             routeQuery: {
@@ -293,7 +293,7 @@ export const pathMap: PathMapItem[] = [
             },
           },
           {
-            key: 'SYSTEM_BUSINESS_GLOBAL_TASK',
+            key: 'AGENT_TASK_CONFIG',
             route: AppRouteEnum.SYSTEM_BUSINESS,
             locale: 'system.business.tab.globalTask',
             routeQuery: {

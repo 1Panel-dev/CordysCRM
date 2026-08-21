@@ -171,7 +171,7 @@
     );
   }
 
-  const defaultMaxFileSize = 50 * 1024 * 1024;
+  const defaultMaxFileSize = 100 * 1024 * 1024;
   function validateFile(file: File): boolean {
     if (attachments.value.some((attachment) => attachment.name === file.name)) {
       showToast(t('formCreate.upload.repeatFileTip'));
@@ -179,7 +179,7 @@
     }
 
     if (file.size > defaultMaxFileSize) {
-      showToast(t('formCreate.advanced.overSize', { size: '50MB' }));
+      showToast(t('formCreate.advanced.overSize', { size: '100MB' }));
       return false;
     }
 
