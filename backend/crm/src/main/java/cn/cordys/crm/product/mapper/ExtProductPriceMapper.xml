@@ -341,4 +341,12 @@
           AND field_value COLLATE utf8mb4_bin = #{fieldValue}
     </select>
 
+
+    <select id="getPriceBlobData" resultType="cn.cordys.crm.product.domain.ProductPriceField">
+        SELECT DISTINCT biz_id
+        FROM product_price_field_blob
+        WHERE resource_id = #{resourceId}
+          AND field_id = #{fieldId}
+          AND  field_value COLLATE utf8mb4_bin = #{fieldValue}
+    </select>
 </mapper>

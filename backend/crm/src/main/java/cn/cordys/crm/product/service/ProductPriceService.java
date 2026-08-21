@@ -824,6 +824,11 @@ public class ProductPriceService extends BaseExportService {
         return productPriceFields.stream().map(ProductPriceField::getBizId).collect(Collectors.toSet());
     }
 
+    public Set<String> getPriceBlobData(Object resourceId, String fieldId, String fieldValue) {
+        List<ProductPriceField> productPriceFields = extProductPriceMapper.getPriceBlobData(resourceId, fieldId, fieldValue);
+        return productPriceFields.stream().map(ProductPriceField::getBizId).collect(Collectors.toSet());
+    }
+
     /**
      * 匹配bizId
      *

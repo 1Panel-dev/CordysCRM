@@ -73,4 +73,6 @@ public interface ExtProductPriceMapper {
     List<String> getBizIdsByResource(@Param("resourceId") String resourceId, @Param("productName") String productName);
 
     List<ProductPriceField> getPriceData(@Param("resourceId") Object resourceId, @Param("fieldId") String fieldId, @Param("fieldValue") Object fieldValue);
+
+    List<ProductPriceField> getPriceBlobData(@Param("resourceId") Object resourceId, @Param("fieldId") String fieldId, @Param("fieldValue") String fieldValue);
 }
