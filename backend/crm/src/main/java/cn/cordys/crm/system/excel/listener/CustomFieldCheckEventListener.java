@@ -72,6 +72,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * 表头字段集合 && 业务字段集合映射
      */
     protected Map<Integer, String> headMap;
+    protected Map<Integer, String> checkHeadMap;
     protected Map<String, BusinessModuleField> businessFieldMap;
     /**
      * 错误行号集合
@@ -171,16 +172,18 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         if (StringUtils.isNotEmpty(errHead)) {
             throw new GenericException(Translator.getWithArgs("illegal_header", errHead));
         }
+        Map<Integer, String> realHeadMap = new HashMap<>();
         if (maxHeadRow == 2) {
             for (Map.Entry<Integer, String> entry : firstHeadMap.entrySet()) {
                 Integer key = entry.getKey();
                 String value = entry.getValue();
-                headMap.put(key, value + "_" + headMap.get(key));
+                realHeadMap.put(key, value + "_" + headMap.get(key));
             }
-            this.headMap = headMap;
+            this.headMap = realHeadMap;
         } else {
-            this.headMap = headMap;
+            this.headMap = realHeadMap;
         }
+        this.checkHeadMap = headMap;
         this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
                 collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
         cacheUniqueSet();
@@ -240,7 +243,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private void validateRowData(Integer rowIndex, Map<Integer, String> rowData, String sourceId) {
         StringBuilder errText = new StringBuilder();
-        headMap.forEach((k, v) -> {
+        checkHeadMap.forEach((k, v) -> {
             if (!isValidateCell(rowIndex, k)) {
                 return;
             }

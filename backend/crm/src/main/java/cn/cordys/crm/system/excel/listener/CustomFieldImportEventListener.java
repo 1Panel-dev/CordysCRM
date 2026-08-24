@@ -200,6 +200,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             }
             String bizId = IDGenerator.nextStr();
             headMap.forEach((k, v) -> {
+                v = v.replace("\u00A0", "").trim();
                 BaseField field = fieldMap.get(v);
                 if (field == null || field.isSerialNumber()) {
                     return;
