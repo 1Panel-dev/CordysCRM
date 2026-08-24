@@ -161,7 +161,7 @@ public class LogModule {
     /**
      * Agent配置
      */
-    public static final String AGENT_MODEL_CONFIG = "SYSTEM_BUSINESS_AGENT_MODEL_CONFIG";
-    public static final String AGENT_TERM_CONFIG = "SYSTEM_BUSINESS_AGENT_TERM_CONFIG";
-    public static final String AGENT_TASK_CONFIG = "SYSTEM_BUSINESS_AGENT_TASK_CONFIG";
+    public static final String AGENT_MODEL_CONFIG = "SYSTEM_BUSINESS_AGENT_MODEL";
+    public static final String AGENT_TERM_CONFIG = "SYSTEM_BUSINESS_AGENT_TERM";
+    public static final String AGENT_TASK_CONFIG = "SYSTEM_BUSINESS_AGENT_TASK";
 }
