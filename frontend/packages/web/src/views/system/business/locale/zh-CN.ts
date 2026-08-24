@@ -90,7 +90,7 @@ export default {
   'system.business.term.forbiddenWords': '禁用词',
   'system.business.term.forbiddenWordsPlaceholder': '用逗号分隔；例如：下单客户，买客户',
   'system.business.term.scenes': '适用场景',
-  'system.business.term.scenesPlaceholder': '用逗号分隔；例如：工作台 AI 生成、报表输出',
+  'system.business.term.scenesPlaceholder': '用逗号分隔；例如：工作台 AI 生成，报表输出',
   'system.business.term.systemMapping': '系统映射',
   'system.business.term.enableTerm': '启用该术语',
   'system.business.term.aiDiscovery': 'AI 自动发现',
