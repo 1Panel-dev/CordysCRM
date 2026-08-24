@@ -193,6 +193,8 @@ CREATE TABLE agent_term_discovery(
 CREATE TABLE agent_task_execute_log(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
     `task_id` VARCHAR(32) NOT NULL   COMMENT '任务ID' ,
+    `task_name` VARCHAR(255) NOT NULL   COMMENT '任务名称快照' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
     `run_id` VARCHAR(100) NOT NULL   COMMENT '执行ID' ,
     `execute_time` BIGINT NOT NULL   COMMENT '执行时间' ,
     `execute_reason` VARCHAR(500) NOT NULL   COMMENT '触发原因' ,
