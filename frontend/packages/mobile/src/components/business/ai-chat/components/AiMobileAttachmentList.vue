@@ -101,6 +101,12 @@
       return;
     }
 
+    const localPreviewUrl = attachment.metadata?.previewUrl;
+    if (typeof localPreviewUrl === 'string') {
+      showImagePreview([localPreviewUrl]);
+      return;
+    }
+
     const attachmentId = getAttachmentId(attachment);
 
     if (!attachmentId) {

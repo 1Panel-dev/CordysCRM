@@ -127,6 +127,13 @@
       return;
     }
 
+    const localPreviewUrl = attachment.metadata?.previewUrl;
+    if (typeof localPreviewUrl === 'string') {
+      previewSrc.value = localPreviewUrl;
+      previewVisible.value = true;
+      return;
+    }
+
     const attachmentId = getAttachmentId(attachment);
 
     if (!attachmentId) {

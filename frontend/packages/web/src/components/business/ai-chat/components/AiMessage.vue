@@ -71,7 +71,8 @@
 
         <div
           v-if="renderableParts.length || showAssistantLoading"
-          class="ai-chat-message__bubble w-full overflow-hidden"
+          class="ai-chat-message__bubble max-w-full overflow-hidden"
+          :class="{ 'w-full': !isUser }"
         >
           <template v-for="item in renderableParts" :key="item.key">
             <AiTextBlock v-if="isUserTextPart(item.part)" :part="item.part" :mcps="messageMcps" />
