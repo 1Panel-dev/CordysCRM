@@ -193,7 +193,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         }
         String sourceId = "";
         Integer key = headMap.entrySet().stream()
-                .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID"))
+                .filter(entry -> Strings.CI.equals(entry.getValue(), "唯一ID_唯一ID"))
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .orElse(null);
