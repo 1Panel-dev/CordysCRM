@@ -74,7 +74,9 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
                         downOffSet.add(index);
                         setExtra(f, index++);
                     } else {
-                        index++;
+                        if (f.canImport(f)) {
+                            index++;
+                        }
                     }
                 }
                 centerCells.add(subField.getName());
