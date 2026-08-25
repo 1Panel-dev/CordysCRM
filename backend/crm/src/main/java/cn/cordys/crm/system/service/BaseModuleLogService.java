@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 public abstract class BaseModuleLogService {
     @Resource
     private BaseMapper<Product> productMapper;
+    @Resource
+    private BaseService baseService;
 
     protected String oldValue;
 
@@ -410,8 +412,6 @@ public abstract class BaseModuleLogService {
     }
 
     protected void setUserFieldName(JsonDifferenceDTO differ) {
-        BaseService baseService = CommonBeanFactory.getBean(BaseService.class);
-        assert baseService != null;
         if (differ.getOldValue() != null) {
             String userName = baseService.getUserName(differ.getOldValue().toString());
             differ.setOldValueName(userName);
