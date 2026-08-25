@@ -17,6 +17,7 @@ import cn.idev.excel.event.AnalysisEventListener;
 import cn.idev.excel.metadata.CellExtra;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
@@ -181,9 +182,20 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             }
             this.headMap = realHeadMap;
         } else {
-            this.headMap = realHeadMap;
+            this.headMap = headMap;
         }
         this.checkHeadMap = headMap;
+        if (MapUtils.isEmpty(firstHeadMap)) {
+            Map<String, BaseField> temp = new HashMap<>();
+            fieldMap.forEach((key, value) -> {
+                int index = key.indexOf("_");
+                String newKey = index > -1 ? key.substring(index + 1) : key;
+                temp.put(newKey, value);
+            });
+            this.fieldMap.clear();
+            this.fieldMap.putAll(temp);
+
+        }
         this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
                 collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
         cacheUniqueSet();
