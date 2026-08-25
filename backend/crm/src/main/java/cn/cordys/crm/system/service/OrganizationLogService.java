@@ -59,40 +59,49 @@ public class OrganizationLogService extends BaseModuleLogService {
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
-        differences = super.handleModuleLogField(differences, orgId, FormKey.OPPORTUNITY.getKey());
 
-        // 构建列名 -> 处理函数映射
-        Map<String, Consumer<JsonDifferenceDTO>> handlers = Map.of(
-                Translator.get("log.roles"), this::handRoleValueName,
-                Translator.get("log.commander"), this::setUserFieldName,
-                Translator.get("log.departmentId"), this::setDepartmentName,
-                Translator.get("log.supervisorId"), this::setSupervisorName,
-                Translator.get("log.enable"), differ -> {
-                    differ.setOldValueName(toText(differ.getOldValueName(), "log.enable.true", "log.enable.false"));
-                    differ.setNewValueName(toText(differ.getNewValueName(), "log.enable.true", "log.enable.false"));
-                },
-                Translator.get("log.gender"), differ -> {
-                    differ.setOldValueName(toText(differ.getOldValueName(), "woman", "man"));
-                    differ.setNewValueName(toText(differ.getNewValueName(), "woman", "man"));
-                },
-                Translator.get("log.employeeType"), differ -> {
-                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
-                    differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
-                },
-                Translator.get("log.onboardingDate"), differ -> {
-                    setFormatDataTimeFieldValueName(differ,new SimpleDateFormat("yyyy-MM-dd"));
-                }
-        );
+        differences.forEach(differ -> {
+            if (Strings.CS.equals(differ.getColumnName(), "roles")) {
+                handRoleValueName(differ);
+            }
 
-        // 流式处理
-        differences.forEach(differ ->
-                handlers.entrySet().stream()
-                        .filter(e -> Strings.CS.equals(differ.getColumnName(), e.getKey()))
-                        .findFirst()
-                        .ifPresent(e -> e.getValue().accept(differ))
-        );
+            if (Strings.CS.equals(differ.getColumnName(), "commander")) {
+                setUserFieldName(differ);
+            }
+
+            if (Strings.CS.equals(differ.getColumnName(), "departmentId")) {
+                setDepartmentName(differ);
+            }
+
+            if (Strings.CS.equals(differ.getColumn(), "supervisorId")) {
+                setSupervisorName(differ);
+            }
+
+            if (Strings.CS.equals(differ.getColumn(), "enable")) {
+                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+            }
+
+            if (Strings.CS.equals(differ.getColumn(), "gender")) {
+                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
+                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
+            }
+
+            if (Strings.CS.equals(differ.getColumn(), "employeeType")) {
+                differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+            }
+
+            if (Strings.CS.equals(differ.getColumn(), "name")) {
+                setName(differ);
+            }
+        });
 
         return differences;
+    }
+
+    private void setName(JsonDifferenceDTO jsonDifferenceDTO) {
+        BaseModuleLogService.translatorDifferInfo(jsonDifferenceDTO);
     }
 
     // 通用 Boolean / Object 转译方法
