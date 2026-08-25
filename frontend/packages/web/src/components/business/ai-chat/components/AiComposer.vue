@@ -155,7 +155,10 @@
   const isLoading = computed(() => runtime.state.loading.value);
   const canStop = computed(() => runtime.state.canStop.value);
   const canSubmit = computed(
-    () => !hasUnavailableAttachment.value && (inputValue.value.trim().length > 0 || submitAttachments.value.length > 0)
+    () =>
+      !isLoading.value &&
+      !hasUnavailableAttachment.value &&
+      (inputValue.value.trim().length > 0 || submitAttachments.value.length > 0)
   );
 
   const mcpDropdownShow = ref(false);

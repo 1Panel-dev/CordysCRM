@@ -91,7 +91,9 @@ function isAgentMetadata(value: Record<string, unknown>): boolean {
 }
 
 function isHistoryContentItem(value: unknown): value is HistoryContentItem {
-  return Boolean(value) && typeof value === 'object' && HISTORY_CONTENT_TYPES.has(String((value as HistoryContentItem).type));
+  return (
+    Boolean(value) && typeof value === 'object' && HISTORY_CONTENT_TYPES.has(String((value as HistoryContentItem).type))
+  );
 }
 
 function parseStructuredMessageContent(content: string): ParsedMessageContent | undefined {
@@ -272,6 +274,34 @@ function appendThinkingTextParts(parts: AiChatMessagePart[], content: string): v
   }
 }
 
+function dedupeProgressParts(parts: AiChatMessagePart[]): AiChatMessagePart[] {
+  const lastProgressIndexMap = new Map<string, number>();
+
+  parts.forEach((part, index) => {
+    if (part.type !== 'data-progress') {
+      return;
+    }
+
+    const progress = part.data as AgentChatProgressData | undefined;
+    const actionId = progress?.actionId || part.id;
+
+    if (actionId) {
+      lastProgressIndexMap.set(actionId, index);
+    }
+  });
+
+  return parts.filter((part, index) => {
+    if (part.type !== 'data-progress') {
+      return true;
+    }
+
+    const progress = part.data as AgentChatProgressData | undefined;
+    const actionId = progress?.actionId || part.id;
+
+    return !actionId || lastProgressIndexMap.get(actionId) === index;
+  });
+}
+
 function toAiChatMessageParts(role: AiChatRole, parsedContent: ParsedMessageContent): AiChatMessagePart[] {
   // 用户消息目前只有纯文本，不需要解析 progress、metadata 或 think 标签。
   if (role !== 'assistant') {
@@ -308,8 +338,10 @@ function toAiChatMessageParts(role: AiChatRole, parsedContent: ParsedMessageCont
   });
 
   // 理论上 assistant content 都能被上面的逻辑拆出 parts；这里兜底避免历史消息空白。
-  return parts.length
-    ? parts
+  const dedupedParts = dedupeProgressParts(parts);
+
+  return dedupedParts.length
+    ? dedupedParts
     : [
         {
           type: 'text',
