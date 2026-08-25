@@ -145,12 +145,17 @@
                   <div v-for="item in approveList" :key="item.id" class="smart-workbench-action-item">
                     <div class="flex items-center justify-between gap-[12px]">
                       <div class="flex min-w-0 items-center gap-[8px]">
-                        <CrmTag class="shrink-0" size="small" theme="light" type="warning" tooltip-disabled>
+                        <CrmTag class="shrink-0" size="small" theme="light" type="warning">
                           {{ item.type }}
                         </CrmTag>
-                        <span class="truncate font-semibold">
+                        <n-tooltip trigger="hover" :delay="300">
+                          <template #trigger>
+                            <span class="truncate font-semibold">
+                              {{ item.topic }}
+                            </span>
+                          </template>
                           {{ item.topic }}
-                        </span>
+                        </n-tooltip>
                       </div>
                       <CrmIcon
                         class="shrink-0 cursor-pointer text-[var(--text-n2)]"
