@@ -45,7 +45,25 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.APPROVAL_FLOW, CommonBeanFactory.getBean(ApprovalFlowLogService.class));
         logServiceMap.put(LogModule.CUSTOM_FORM, CommonBeanFactory.getBean(CustomFormLogService.class));
         logServiceMap.put(LogModule.CUSTOM_FORM_DATA, CommonBeanFactory.getBean(CustomFormDataLogService.class));
+        registerAgentLogService();
 
+    }
+
+    /**
+     * Agent 模块位于可选的 xpack 包中，使用反射注册，避免 CRM 基础模块反向依赖 xpack。
+     */
+    private static void registerAgentLogService() {
+        try {
+            Class<?> serviceClass = Class.forName("cn.cordys.xpack.crm.agent.service.AgentLogService");
+            Object service = CommonBeanFactory.getBean(serviceClass);
+            if (service instanceof BaseModuleLogService agentLogService) {
+                logServiceMap.put(LogModule.AGENT_MODEL_CONFIG, agentLogService);
+                logServiceMap.put(LogModule.AGENT_TERM_CONFIG, agentLogService);
+                logServiceMap.put(LogModule.AGENT_TASK_CONFIG, agentLogService);
+            }
+        } catch (ClassNotFoundException ignored) {
+            // 未安装 xpack 时不影响 CRM 基础模块的日志功能。
+        }
     }
 
     public static BaseModuleLogService getModuleLogService(String type) {
