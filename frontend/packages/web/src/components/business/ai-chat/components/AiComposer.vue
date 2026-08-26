@@ -482,7 +482,19 @@
     }
 
     return h('div', { class: 'flex w-full min-w-0 items-center gap-[8px]' }, [
-      h('div', { class: 'min-w-0 flex-1' }, node),
+      h(
+        NTooltip,
+        {
+          delay: 300,
+          flip: true,
+          placement: 'top',
+          to: 'body',
+        },
+        {
+          trigger: () => h('div', { class: 'min-w-0 flex-1' }, node),
+          default: () => option.label as string,
+        }
+      ),
       h(
         NButton,
         {
