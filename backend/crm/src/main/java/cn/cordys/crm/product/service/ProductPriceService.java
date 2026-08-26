@@ -18,6 +18,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -36,6 +37,7 @@ import cn.cordys.crm.product.dto.response.ProductPriceResponse;
 import cn.cordys.crm.product.mapper.ExtProductPriceMapper;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.constants.SheetKey;
+import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
@@ -112,6 +114,8 @@ public class ProductPriceService extends BaseExportService {
     private AttachmentService attachmentService;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private SerialNumGenerator serialNumGenerator;
 
     public static final int MAX_NAME_SPLIT_LENGTH = 243;
 
@@ -755,6 +759,10 @@ public class ProductPriceService extends BaseExportService {
      */
     private void copyPriceFields(String sourceId, String targetId, String currentOrg, String currentUser) {
 
+        // 表单字段配置 (用于识别流水号字段)
+        Map<String, BaseField> fieldConfigMap = moduleFormService.getAllFields(FormKey.PRICE.getKey(), currentOrg)
+                .stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (prev, next) -> next));
+
         // 1 普通字段
         LambdaQueryWrapper<ProductPriceField> fieldQuery = new LambdaQueryWrapper<>();
         fieldQuery.eq(ProductPriceField::getResourceId, sourceId);
@@ -765,6 +773,16 @@ public class ProductPriceService extends BaseExportService {
                     .peek(field -> {
                         field.setId(IDGenerator.nextStr());
                         field.setResourceId(targetId);
+                        // 流水号字段需要重新生成, 避免复制后与原价格表的流水号重复
+                        BaseField fieldConfig = fieldConfigMap.get(field.getFieldId());
+                        if (fieldConfig instanceof SerialNumberField serialNumberField && field.getFieldValue() != null) {
+                            String formulaPrefix = field.getFieldValue().toString().replace("${" + serialNumberField.getName() + "}", StringUtils.EMPTY);
+                            String newSerialNo = serialNumGenerator.generateByRules(
+                                    serialNumberField.getSerialNumberRules(formulaPrefix), currentOrg, FormKey.PRICE.getKey());
+                            if (StringUtils.isNotBlank(newSerialNo)) {
+                                field.setFieldValue(newSerialNo);
+                            }
+                        }
                     })
                     .toList();
 
