@@ -100,6 +100,7 @@
               class="cursor-pointer"
               :type="action.iconType"
               :size="16"
+              :color="feedbackAction === action.key ? 'var(--primary-8)' : undefined"
               @click="handleActionSelect(action.key)"
             />
           </template>
@@ -168,6 +169,7 @@
   const isEditing = ref(false);
   const editContent = ref('');
   const editComposerRef = ref<InstanceType<typeof AiComposer> | null>(null);
+  const feedbackAction = ref<'like' | 'dislike' | null>(null);
 
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);
   const canSubmitEdit = computed(() => editContent.value.trim().length > 0 && !runtime.state.loading.value);
@@ -225,6 +227,7 @@
     () => {
       isEditing.value = false;
       editContent.value = '';
+      feedbackAction.value = null;
     }
   );
 
@@ -248,6 +251,7 @@
 
     try {
       await likeAgentChat(runId.value);
+      feedbackAction.value = 'like';
       Message.success(t('aiChat.feedbackThanks'));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -262,6 +266,7 @@
 
     try {
       await dislikeAgentChat(runId.value);
+      feedbackAction.value = 'dislike';
       Message.success(t('aiChat.feedbackThanks'));
     } catch (error) {
       // eslint-disable-next-line no-console
