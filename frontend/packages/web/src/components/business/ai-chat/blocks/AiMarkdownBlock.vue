@@ -169,7 +169,7 @@
     :deep(h4),
     :deep(h5),
     :deep(h6) {
-      margin: 18px 0 10px;
+      margin: 24px 0 10px;
       font-weight: 600;
       color: var(--text-n1);
       line-height: 1.35;
@@ -177,12 +177,10 @@
     :deep(h1) {
       padding-bottom: 8px;
       font-size: 24px;
-      border-bottom: 1px solid var(--text-n8);
     }
     :deep(h2) {
       padding-bottom: 6px;
       font-size: 20px;
-      border-bottom: 1px solid var(--text-n8);
     }
     :deep(h3) {
       font-size: 18px;
@@ -345,23 +343,28 @@
     }
     :deep(table) {
       width: 100%;
-      border-collapse: collapse;
       font-size: 14px;
+      border-top: 1px solid var(--text-n9);
+      border-bottom: 1px solid var(--text-n9);
+      background: var(--text-n10);
+      border-collapse: collapse;
     }
     :deep(th),
     :deep(td) {
-      padding: 8px 10px;
-      border: 1px solid var(--text-n8);
+      padding: 0 10px;
+      height: 46px;
+      border-top: 1px solid var(--text-n9);
+      border-bottom: 1px solid var(--text-n9);
       text-align: left;
-      color: var(--text-n2);
     }
     :deep(th) {
-      font-weight: 600;
-      color: var(--text-n1);
-      background: var(--text-n9);
+      font-weight: 500;
+      color: var(--text-n4);
+      background: var(--text-n10);
     }
-    :deep(tr:nth-child(even) td) {
-      background: var(--text-n9);
+    :deep(td) {
+      color: var(--text-n1);
+      background: var(--text-n10);
     }
   }
   .ai-chat-block-markdown--thinking {
