@@ -20,7 +20,7 @@
           {{ t('workbench.smart.dataOverviewGenerating') }}
         </div>
       </div>
-      <div v-if="dataOverviewAIRenderString && aiSummaryVisible" class="bg-[var(--primary-7)] px-[20px] py-[8px]">
+      <div v-if="dataOverviewAIRenderString && aiSummaryVisible" class="bg-[var(--text-n9)] px-[20px] py-[8px]">
         <div class="flex items-center gap-[8px] font-semibold text-[var(--primary-8)]">
           <CrmIcon name="iconicon_star1" width="16px" height="16px" color="var(--primary-8)" />
           <span>{{ t('workbench.smart.AIRead') }}</span>
@@ -463,7 +463,7 @@
     border-radius: var(--border-radius-small);
   }
   .smart-ai-summary-markdown {
-    color: var(--primary-8) !important;
+    color: var(--text-n2) !important;
     :deep(*) {
       color: inherit;
     }

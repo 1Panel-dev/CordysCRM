@@ -39,7 +39,7 @@
           :show="aiSummaryLoading"
           class="bg-[var(--text-n10)] px-[24px] pb-[24px]"
         >
-          <div class="rounded-[4px] bg-[var(--primary-7)] p-[16px] text-[var(--primary-8)]">
+          <div class="rounded-[4px] bg-[var(--text-n9)] p-[16px] text-[var(--primary-8)]">
             <div class="flex items-center gap-[8px] font-semibold">
               <CrmIcon type="iconicon_star1" :size="16" color="var(--primary-8)" />
               <span>{{ t('workbench.smart.AIRead') }}</span>
@@ -537,7 +537,7 @@
     border-radius: 4px;
   }
   .smart-ai-summary-markdown {
-    color: var(--primary-8);
+    color: var(--text-n2);
     :deep(*) {
       color: inherit;
     }

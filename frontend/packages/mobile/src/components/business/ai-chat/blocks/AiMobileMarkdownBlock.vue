@@ -149,18 +149,29 @@
       display: block;
       overflow-x: auto;
       width: 100%;
+      border-top: 1px solid var(--text-n9);
+      border-bottom: 1px solid var(--text-n9);
       white-space: nowrap;
+      background: var(--text-n10);
       border-spacing: 0;
       border-collapse: collapse;
     }
     :deep(th),
     :deep(td) {
-      padding: 6px 8px;
-      border: 1px solid var(--text-n8);
+      padding: 0 10px;
+      height: 46px;
+      border-top: 1px solid var(--text-n9);
+      border-bottom: 1px solid var(--text-n9);
+      text-align: left;
     }
     :deep(th) {
-      font-weight: 600;
-      background: var(--text-n9);
+      font-weight: 500;
+      color: var(--text-n4);
+      background: var(--text-n10);
+    }
+    :deep(td) {
+      color: var(--text-n1);
+      background: var(--text-n10);
     }
     :deep(code:not(.hljs)) {
       padding: 1px 4px;

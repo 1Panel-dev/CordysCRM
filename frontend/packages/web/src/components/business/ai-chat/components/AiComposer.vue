@@ -47,6 +47,7 @@
         </n-button>
         <n-divider vertical class="!mx-[12px]" />
         <n-dropdown
+          :key="mcpDropdownKey"
           v-model:show="mcpDropdownShow"
           trigger="click"
           placement="top-start"
@@ -162,6 +163,8 @@
   );
 
   const mcpDropdownShow = ref(false);
+  const mcpDropdownKey = ref(0);
+  const shouldReopenMcpDropdown = ref(false);
   const isComposing = ref(false);
 
   function focusInput(): void {
@@ -383,6 +386,7 @@
     try {
       await importAgentMcpConfig(file);
       Message.success(t('aiChat.mcpImportSuccess'));
+      shouldReopenMcpDropdown.value = mcpDropdownShow.value;
       emit('mcpUpdated');
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -564,9 +568,17 @@
 
   watch(
     () => props.mcpOptions,
-    () => {
+    async () => {
       if (props.syncRuntime) {
         runtime.setSelectedMcps(getEditorMcps());
+      }
+
+      if (shouldReopenMcpDropdown.value) {
+        shouldReopenMcpDropdown.value = false;
+        mcpDropdownShow.value = false;
+        mcpDropdownKey.value += 1;
+        await nextTick();
+        mcpDropdownShow.value = true;
       }
     }
   );
