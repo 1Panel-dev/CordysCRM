@@ -33,8 +33,7 @@ public class FilterCondition {
     @Schema(description = "期望值，若操作符为 BETWEEN, IN, NOT_IN 时为数组，其他操作符为单个值")
     private Object value;
 
-    @Schema(description = "是否是多选值")
-    @NotNull
+    @Schema(description = "是否是多选值，未传时按单值处理", defaultValue = "false")
     private Boolean multipleValue = false;
 
     @Schema(description = "操作符",
