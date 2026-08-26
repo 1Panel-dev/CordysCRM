@@ -191,6 +191,20 @@ public class ModuleFormService {
         ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
         businessModuleFormConfig.setFormProp(config.getFormProp());
 
+        List<BaseField> fields = config.getFields().stream()
+                .filter(f -> {
+                    if (f instanceof ProductSubField || f instanceof PriceSubField) {
+                        if (StringUtils.isBlank(f.getBusinessKey())) {
+                            // 过滤掉非业务字段的子表格字段
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
+
+        config.setFields(fields);
+
         List<BaseField> flattenFields = flattenFormAllFieldsWithSubId(config);
         // 设置业务字段参数
         businessModuleFormConfig.setFields(flattenFields.stream()
