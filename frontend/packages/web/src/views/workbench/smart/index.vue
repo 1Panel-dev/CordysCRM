@@ -105,14 +105,15 @@
                     </div>
                     <div class="mt-[16px] flex flex-wrap gap-[8px]">
                       <n-button
-                        v-if="item.actions"
+                        v-for="action in splitSuggestionActions(item.actions)"
+                        :key="action"
                         size="small"
                         type="primary"
                         ghost
                         :loading="operatingSuggestionId === item.id"
-                        @click="handleSuggestionSubmit(item, item.actions)"
+                        @click="handleSuggestionSubmit(item, action)"
                       >
-                        {{ item.actions }}
+                        {{ action }}
                       </n-button>
                       <n-button
                         size="small"
@@ -281,6 +282,13 @@
       label: t('workbench.smart.suggestion'),
       type: 'info' as const,
     };
+  }
+
+  function splitSuggestionActions(actions?: string) {
+    return (actions || '')
+      .split(',')
+      .map((action) => action.trim())
+      .filter((action) => action);
   }
 
   const dataOverviewLoading = ref(false);

@@ -103,14 +103,15 @@
               </div>
               <div class="mt-[16px] flex flex-wrap gap-[8px]">
                 <van-button
-                  v-if="item.actions"
+                  v-for="action in splitSuggestionActions(item.actions)"
+                  :key="action"
                   size="small"
                   plain
                   type="primary"
                   :loading="operatingSuggestionId === item.id"
-                  @click="handleSuggestionSubmit(item, item.actions)"
+                  @click="handleSuggestionSubmit(item, action)"
                 >
-                  {{ item.actions }}
+                  {{ action }}
                 </van-button>
                 <van-button
                   size="small"
@@ -372,6 +373,13 @@
     } else if (tab === SmartActionTabEnum.APPROVE) {
       await approveListRef.value?.loadList(true);
     }
+  }
+
+  function splitSuggestionActions(actions?: string) {
+    return (actions || '')
+      .split(',')
+      .map((action) => action.trim())
+      .filter((action) => action);
   }
 
   async function handleSuggestionAction(item: AgentActionSuggestionItem, action: (id: string) => Promise<unknown>) {
