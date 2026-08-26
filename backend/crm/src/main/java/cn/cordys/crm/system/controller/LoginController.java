@@ -109,7 +109,7 @@ public class LoginController {
         SessionUser su = userLoginService.login(request);
 
         // 设置文件访问Cookie
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, su.getSessionId(), httpServletRequest.isSecure());
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, su.getId(), httpServletRequest.isSecure());
         return su;
     }
 
