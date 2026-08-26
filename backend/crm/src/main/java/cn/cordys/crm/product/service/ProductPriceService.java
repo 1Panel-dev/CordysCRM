@@ -783,6 +783,9 @@ public class ProductPriceService extends BaseExportService {
                                 field.setFieldValue(newSerialNo);
                             }
                         }
+                        if (StringUtils.isNotBlank(field.getBizId())) {
+                            field.setBizId(IDGenerator.nextStr());
+                        }
                     })
                     .toList();
 
