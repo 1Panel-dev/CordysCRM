@@ -5,7 +5,13 @@
     </CrmCard>
 
     <CrmCard hide-footer auto-height class="form-card mb-[16px] min-w-[1000px]">
-      <n-form ref="formRef" label-placement="left" label-width="72" :model="form" class="grid grid-cols-3 gap-x-[24px]">
+      <n-form
+        ref="formRef"
+        label-placement="left"
+        :label-width="activeTab === 'aiExecution' ? 100 : 72"
+        :model="form"
+        class="grid grid-cols-3 gap-x-[24px]"
+      >
         <n-form-item v-if="activeTab !== 'aiExecution'" :label="t('common.operator')" path="operator">
           <CrmUserSelect
             v-model:value="form.operator"
@@ -59,7 +65,7 @@
           </n-form-item>
         </template>
         <template v-if="activeTab === 'aiExecution'">
-          <n-form-item :label="t('common.status')" path="status">
+          <n-form-item :label="t('log.aiExecutionLogStatus')" path="status">
             <n-select
               v-model:value="form.status"
               :options="aiStatusOptions"

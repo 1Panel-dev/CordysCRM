@@ -2,6 +2,7 @@ export default {
   'log.operationLog': 'Operation log',
   'log.loginLog': 'Login log',
   'log.aiExecutionLog': 'AI Execution Log',
+  'log.aiExecutionLogStatus': 'Filter: Status',
   'log.operationTime': 'Operation time',
   'log.executionTime': 'Execution time',
   'log.operationIp': 'Operation IP',
