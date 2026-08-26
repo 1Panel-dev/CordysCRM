@@ -52,7 +52,7 @@
           type="textarea"
           rows="1"
           :border="false"
-          :placeholder="placeholder || t('aiChat.inputPlaceholder')"
+          :placeholder="props.placeholder || t('aiChat.inputPlaceholder')"
           class="flex-1 !bg-transparent !p-0"
           @keypress.enter.prevent="handleSubmit"
         />
@@ -82,11 +82,11 @@
 
 <script setup lang="ts">
   import { computed, nextTick, ref, watch } from 'vue';
-  import { showToast } from 'vant';
+  import { type PopoverAction, showToast } from 'vant';
 
-  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
-  import type { AiChatAttachment, AiFileKind } from '@lib/shared/ai-chat';
+  import type { AiChatAttachment, AiComposerSubmitPayload, AiFileKind } from '@lib/shared/ai-chat';
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -94,10 +94,19 @@
 
   import { uploadAgentChatFile } from '@/api/modules';
 
-  import type { PopoverAction } from 'vant';
+  const props = withDefaults(
+    defineProps<{
+      placeholder?: string;
+      submitMode?: 'runtime' | 'emit';
+    }>(),
+    {
+      placeholder: '',
+      submitMode: 'runtime',
+    }
+  );
 
-  defineProps<{
-    placeholder?: string;
+  const emit = defineEmits<{
+    (e: 'submit', payload: AiComposerSubmitPayload): void;
   }>();
 
   const { t } = useI18n();
@@ -121,15 +130,15 @@
       }
     },
   });
+  const hasUnavailableAttachment = computed(() =>
+    attachments.value.some((attachment) => attachment.status === 'uploading' || attachment.status === 'error')
+  );
   const canSubmit = computed(() =>
     isEditing.value
       ? runtime.state.canSubmitEdit.value
       : !runtime.state.loading.value &&
         !hasUnavailableAttachment.value &&
         (inputValue.value.trim().length > 0 || attachments.value.length > 0)
-  );
-  const hasUnavailableAttachment = computed(() =>
-    attachments.value.some((attachment) => attachment.status === 'uploading' || attachment.status === 'error')
   );
   const attachmentActions = computed<PopoverAction[]>(() => [
     { text: t('aiChat.uploadImage'), key: 'image' },
@@ -286,6 +295,8 @@
 
     if (isEditing.value) {
       await runtime.submitEditMessage();
+    } else if (props.submitMode === 'emit') {
+      emit('submit', { content, attachments: [...attachments.value] });
     } else {
       await runtime.submit({ content, attachments: [...attachments.value] });
     }

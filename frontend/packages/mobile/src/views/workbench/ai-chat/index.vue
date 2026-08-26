@@ -51,6 +51,7 @@
   import AiMobileConfirmDialog from '@/components/business/ai-chat/components/AiMobileConfirmDialog.vue';
   import AiMobileHistoryDrawer from '@/components/business/ai-chat/components/AiMobileHistoryDrawer.vue';
   import AiMobileThread from '@/components/business/ai-chat/components/AiMobileThread.vue';
+  import { consumeAiMobileChatInitialPayload } from '@/components/business/ai-chat/utils/initialPayload';
 
   import {
     cancelAgentChat,
@@ -121,14 +122,20 @@
       return;
     }
 
+    const initialPayload = consumeAiMobileChatInitialPayload();
     const prompt = String(route.query.prompt ?? '').trim(); // 从 URL 里取 prompt
 
-    if (!prompt) {
+    if (!initialPayload && !prompt) {
       return;
     }
 
     initialPromptSubmitted = true;
     const chatRuntime = runtime.value ?? createConversation();
+
+    if (initialPayload) {
+      await chatRuntime.submit(initialPayload);
+      return;
+    }
 
     await chatRuntime.submit({ content: prompt });
   }

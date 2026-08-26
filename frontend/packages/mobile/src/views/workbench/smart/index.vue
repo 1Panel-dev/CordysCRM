@@ -136,21 +136,22 @@
         >
           <template #item="{ item }">
             <div class="mobile-smart-action-card">
-              <div class="flex items-center justify-between gap-[12px]">
-                <div class="flex min-w-0 items-center gap-[8px]">
+              <div class="mobile-smart-action-header">
+                <div class="mobile-smart-action-title">
                   <CrmTag
-                    class="shrink-0"
+                    class="mobile-smart-action-tag"
                     :bg-color="stageStyle('warning').bgColor"
+                    :one-line="false"
                     :tag="item.type"
                     :text-color="stageStyle('warning').color"
                   />
-                  <div class="one-line-text font-semibold">
+                  <span class="font-semibold">
                     {{ item.topic || '-' }}
-                  </div>
+                  </span>
                 </div>
                 <CrmIcon
                   name="iconicon_close"
-                  class="shrink-0 text-[var(--text-n2)]"
+                  class="mt-[4px] shrink-0 text-[var(--text-n2)]"
                   width="16px"
                   height="16px"
                   @click="handleApproveIgnore(item)"
@@ -193,8 +194,8 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { AgentActionApproveItem, AgentActionSuggestionItem } from '@lib/shared/models/ai';
 
-  import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import AiMobileMarkdownBlock from '@/components/business/ai-chat/blocks/AiMobileMarkdownBlock.vue';
 
@@ -461,6 +462,25 @@
     padding: 16px;
     border: 1px solid var(--text-n8);
     border-radius: var(--border-radius-small);
+  }
+  .mobile-smart-action-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .mobile-smart-action-title {
+    flex: 1;
+    min-width: 0;
+    line-height: 24px;
+    word-break: break-word;
+  }
+  .mobile-smart-action-tag.van-tag {
+    display: inline-flex;
+    vertical-align: top;
+    margin-right: 8px;
+    max-width: 100%;
+    height: auto;
+    line-height: 18px;
   }
   .smart-ai-summary-markdown {
     color: var(--text-n2) !important;

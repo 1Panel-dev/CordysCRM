@@ -140,13 +140,16 @@
 
       <SmartWorkbench v-else-if="activeWorkbenchTab === WorkbenchHomeTabEnum.SMART" />
     </div>
-    <AiMobileEntryComposer v-if="showAiEntryComposer" @submit="goAiChat" />
+    <AiChatProvider v-if="showAiEntryComposer" :runtime="smartComposerRuntime">
+      <AiMobileComposer submit-mode="emit" @submit="goAiChat" />
+    </AiChatProvider>
   </div>
 </template>
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
 
+  import { AiChatProvider, type AiComposerSubmitPayload, createAiChatRuntime } from '@lib/shared/ai-chat';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ApprovalListTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -155,7 +158,8 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSegmentTabs from '@/components/pure/crm-segment-tabs/index.vue';
-  import AiMobileEntryComposer from '@/components/business/ai-chat/components/AiMobileEntryComposer.vue';
+  import AiMobileComposer from '@/components/business/ai-chat/components/AiMobileComposer.vue';
+  import { setAiMobileChatInitialPayload } from '@/components/business/ai-chat/utils/initialPayload';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import followPlanList from '@/views/workbench/follow/followPlanList.vue';
   import followRecordList from '@/views/workbench/follow/followRecordList.vue';
@@ -286,21 +290,33 @@
 
   const hasValidApiKey = computed(() => userStore.apiKeyList.some((key) => !key.isExpire && key.enable));
   const showAiEntryComposer = computed(() => activeWorkbenchTab.value === WorkbenchHomeTabEnum.SMART);
+  const smartComposerRuntime = createAiChatRuntime();
 
   function goAgent() {
     router.push({ name: WorkbenchRouteEnum.WORKBENCH_AGENT });
   }
 
-  function goAiChat(content?: string) {
-    const prompt = content?.trim();
+  function goAiChat(payload?: AiComposerSubmitPayload) {
+    const prompt = payload?.content?.trim() ?? '';
+    const attachments = payload?.attachments ?? [];
+
+    if (attachments.length) {
+      setAiMobileChatInitialPayload({
+        content: prompt,
+        attachments,
+      });
+    }
+
+    smartComposerRuntime.clear();
 
     router.push({
       name: WorkbenchRouteEnum.WORKBENCH_AI_CHAT,
-      query: prompt
-        ? {
-            prompt,
-          }
-        : undefined,
+      query:
+        prompt && !attachments.length
+          ? {
+              prompt,
+            }
+          : undefined,
     });
   }
 

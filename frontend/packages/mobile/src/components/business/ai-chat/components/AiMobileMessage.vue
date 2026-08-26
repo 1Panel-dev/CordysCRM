@@ -11,13 +11,13 @@
     <div class="flex min-w-0 flex-col" :class="isUser ? 'max-w-[calc(100%-48px)] items-end' : 'flex-1 items-start'">
       <AiMobileAttachmentList
         v-if="messageAttachments.length"
-        class="mb-[8px] w-full"
+        class="mb-[8px] max-w-full"
         :attachments="messageAttachments"
       />
 
       <div
         v-if="renderableParts.length || showAssistantLoading"
-        class="ai-mobile-message__bubble w-full min-w-0"
+        class="ai-mobile-message__bubble min-w-0 max-w-full"
         :class="{ 'user-message': isUser }"
       >
         <template v-for="item in renderableParts" :key="item.key">
