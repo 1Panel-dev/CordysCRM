@@ -31,7 +31,7 @@
       :width="props.iconWidth"
       :height="props.iconHeight"
     />
-    <div class="one-line-text">{{ props.tag }}</div>
+    <div :class="{ 'one-line-text': props.oneLine }">{{ props.tag }}</div>
   </van-tag>
 </template>
 
@@ -52,10 +52,12 @@
       iconWidth?: string;
       iconHeight?: string;
       iconColor?: string;
+      oneLine?: boolean;
     }>(),
     {
       bgColor: 'var(--text-n8)',
       textColor: 'var(--text-n1)',
+      oneLine: true,
     }
   );
 </script>
