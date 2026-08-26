@@ -96,6 +96,7 @@ export default {
   'system.business.term.aiDiscovery': 'AI 自动发现',
   'system.business.term.undefinedTerm': '未定义术语',
   'system.business.term.discoverySource': '发现来源',
+  'system.business.term.discoverySourceUserDialogue': '用户对话',
   'system.business.term.discoveryTime': '发现时间',
   'system.business.term.suggestedMapping': '建议映射',
   'system.business.term.adopt': '采纳',

@@ -97,6 +97,7 @@ export default {
   'system.business.term.aiDiscovery': 'AI Discovery',
   'system.business.term.undefinedTerm': 'Undefined Term',
   'system.business.term.discoverySource': 'Source',
+  'system.business.term.discoverySourceUserDialogue': 'User Dialogue',
   'system.business.term.discoveryTime': 'Discovery Time',
   'system.business.term.suggestedMapping': 'Suggested Mapping',
   'system.business.term.adopt': 'Adopt',

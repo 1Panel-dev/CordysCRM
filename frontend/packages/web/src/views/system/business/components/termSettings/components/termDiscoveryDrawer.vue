@@ -82,6 +82,7 @@
       ellipsis: {
         tooltip: true,
       },
+      render: (row) => (row.source === 'USER_CHAT' ? t('system.business.term.discoverySourceUserDialogue') : '-'),
     },
     {
       title: t('system.business.term.discoveryTime'),
