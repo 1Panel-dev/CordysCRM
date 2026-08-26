@@ -1427,7 +1427,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           id: userStore.userInfo.id,
           name: userStore.userInfo.name,
         },
-      ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+      ].reduce((acc: any[], cur) => {
+        if (!acc.some((item) => item && item.id === cur.id)) acc.push(cur);
+        return acc;
+      }, []);
       return field.defaultValue;
     } else if (
       [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(field.type) &&
@@ -1448,7 +1451,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           id: userStore.userInfo.departmentId,
           name: userStore.userInfo.departmentName,
         },
-      ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+      ].reduce((acc: any[], cur) => {
+        if (!acc.some((item) => item && item.id === cur.id)) acc.push(cur);
+        return acc;
+      }, []);
       return field.defaultValue;
     } else if (getRuleType(field) === 'array') {
       defaultValue =

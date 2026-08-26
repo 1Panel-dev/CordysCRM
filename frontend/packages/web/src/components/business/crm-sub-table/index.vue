@@ -240,16 +240,13 @@
         if (field.hasCurrentUser) {
           field.initialOptions = [
             ...(field.initialOptions || []),
-            {
-              id: userStore.userInfo.id,
-              name: userStore.userInfo.name,
-            },
-          ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+            { id: userStore.userInfo.id, name: userStore.userInfo.name },
+          ].reduce((acc: any[], cur) => {
+            if (!acc.some((item) => item && item.id === cur.id)) acc.push(cur);
+            return acc;
+          }, []);
           if (field.type === FieldTypeEnum.MEMBER_MULTIPLE) {
-            newRow[key] = [
-              ...field.defaultValue,
-              field.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id,
-            ];
+            newRow[key] = [...field.defaultValue];
           } else {
             newRow[key] = field.resourceFieldId ? userStore.userInfo.name : userStore.userInfo.id;
           }
@@ -264,16 +261,13 @@
         if (field.hasCurrentUserDept) {
           field.initialOptions = [
             ...(field.initialOptions || []),
-            {
-              id: userStore.userInfo.departmentId,
-              name: userStore.userInfo.departmentName,
-            },
-          ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
+            { id: userStore.userInfo.departmentId, name: userStore.userInfo.departmentName },
+          ].reduce((acc: any[], cur) => {
+            if (!acc.some((item) => item && item.id === cur.id)) acc.push(cur);
+            return acc;
+          }, []);
           if (field.type === FieldTypeEnum.DEPARTMENT_MULTIPLE) {
-            newRow[key] = [
-              ...field.defaultValue,
-              field.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId,
-            ];
+            newRow[key] = [...field.defaultValue];
           } else {
             newRow[key] = field.resourceFieldId ? userStore.userInfo.departmentName : userStore.userInfo.departmentId;
           }
