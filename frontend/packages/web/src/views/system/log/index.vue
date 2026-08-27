@@ -8,7 +8,7 @@
       <n-form
         ref="formRef"
         label-placement="left"
-        :label-width="activeTab === 'aiExecution' ? 100 : 72"
+        :label-width="72"
         :model="form"
         class="grid grid-cols-3 gap-x-[24px]"
       >
@@ -451,7 +451,7 @@
         ),
     },
     {
-      title: t('common.status'),
+      title: t('log.aiExecutionLogStatus'),
       key: 'status',
       width: 120,
       render: (row) => {

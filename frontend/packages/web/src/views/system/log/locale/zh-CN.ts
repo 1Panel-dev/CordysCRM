@@ -2,7 +2,7 @@ export default {
   'log.operationLog': '操作日志',
   'log.loginLog': '登录日志',
   'log.aiExecutionLog': 'AI 执行日志',
-  'log.aiExecutionLogStatus': '通过状态筛选',
+  'log.aiExecutionLogStatus': '通过状态',
   'log.operationTime': '操作时间',
   'log.executionTime': '执行时间',
   'log.operationIp': '操作 IP',
