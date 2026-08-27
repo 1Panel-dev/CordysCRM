@@ -7,12 +7,22 @@ import { LicenseInfo } from '@lib/shared/models/system/authorizedManagement';
 import { getLicense } from '@/api/modules';
 import type { DialogOptionsConfig } from '@/hooks/useModal';
 
+let licenseValidationPromise: Promise<boolean> | null = null;
+
 const useLicenseStore = defineStore('license', {
-  persist: true,
-  state: (): { licenseInfo: LicenseInfo | null; expiredDuring: boolean; expiredDays: number } => ({
+  persist: {
+    paths: ['licenseInfo', 'expiredDuring', 'expiredDays'],
+  },
+  state: (): {
+    licenseInfo: LicenseInfo | null;
+    expiredDuring: boolean;
+    expiredDays: number;
+    noLicenseFeature: string | null;
+  } => ({
     licenseInfo: null,
     expiredDuring: false,
     expiredDays: 0,
+    noLicenseFeature: null,
   }),
   actions: {
     setLicenseInfo(info: LicenseInfo) {
@@ -71,12 +81,13 @@ const useLicenseStore = defineStore('license', {
       }
     },
     // license校验
-    async getValidateLicense() {
+    async getValidateLicense(): Promise<boolean> {
       try {
         const result = await getLicense();
         // 检查返回结果是否有效，不存在license自身值
         if (!result || !result.status) {
-          return;
+          this.removeLicenseStatus();
+          return true;
         }
         /* if (!result || !result.status || !result.license || !result.license.count) {
           return;
@@ -86,10 +97,31 @@ const useLicenseStore = defineStore('license', {
         if (result) {
           this.getExpirationTime(result.expired);
         }
+        return true;
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
+        return false;
       }
+    },
+    // 请求失败时清空缓存，后续可重新校验
+    async ensureLicenseValidated() {
+      if (!licenseValidationPromise) {
+        licenseValidationPromise = this.getValidateLicense();
+      }
+      const validated = await licenseValidationPromise;
+      if (!validated) {
+        licenseValidationPromise = null;
+      }
+    },
+    resetLicenseValidation() {
+      licenseValidationPromise = null;
+    },
+    setNoLicenseFeature(feature: string) {
+      this.noLicenseFeature = feature;
+    },
+    clearNoLicenseFeature() {
+      this.noLicenseFeature = null;
     },
     getNoLicenseModalConfig(): DialogOptionsConfig {
       const { t } = useI18n();

@@ -91,6 +91,7 @@ const useUserStore = defineStore('user', {
       try {
         const res = await login(params);
         setToken(res.sessionId, res.csrfToken);
+        useLicenseStore().resetLicenseValidation();
         this.setInfo(res);
         const appStore = useAppStore();
         const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
@@ -108,6 +109,7 @@ const useUserStore = defineStore('user', {
       if (!licenseStore.hasLicense()) {
         appStore.resetPageConfig();
       }
+      licenseStore.resetLicenseValidation();
       appStore.disconnectSystemMessageSSE();
       this.destroySystemNotify();
       // 重置用户信息
@@ -147,6 +149,7 @@ const useUserStore = defineStore('user', {
           return false;
         }
         setToken(res.sessionId, res.csrfToken);
+        useLicenseStore().resetLicenseValidation();
         this.setInfo(res);
         const appStore = useAppStore();
         const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds?.[0] ?? '';
@@ -167,6 +170,7 @@ const useUserStore = defineStore('user', {
           return false;
         }
         setToken(res.sessionId, res.csrfToken);
+        useLicenseStore().resetLicenseValidation();
         this.setInfo(res);
         const appStore = useAppStore();
         const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds?.[0] ?? '';

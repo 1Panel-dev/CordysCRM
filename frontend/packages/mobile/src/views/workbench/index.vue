@@ -28,9 +28,9 @@
           <span class="ml-[8px] text-[var(--primary-8)]" @click="changePassword">{{ t('mine.changePassword') }}</span>
         </van-notice-bar>
         <CrmSegmentTabs
-          v-model="activeWorkbenchTab"
+          :model-value="activeWorkbenchTab"
           :options="workbenchTabOptions"
-          @change="handleWorkbenchTabChange"
+          @update:model-value="handleWorkbenchTabChange"
         />
         <van-cell-group
           v-if="activeWorkbenchTab === WorkbenchHomeTabEnum.DASHBOARD"
@@ -224,13 +224,19 @@
     },
   ]);
 
-  function handleWorkbenchTabChange(value: string | number): void {
-    if (value !== WorkbenchHomeTabEnum.SMART || licenseStore.hasLicense()) {
+  function handleWorkbenchTabChange(value: string | number | undefined): void {
+    if (!Object.values(WorkbenchHomeTabEnum).includes(value as WorkbenchHomeTabEnum)) {
       return;
     }
 
-    activeWorkbenchTab.value = WorkbenchHomeTabEnum.DASHBOARD;
-    showNoLicenseDialog(t);
+    const selectedTab = value as WorkbenchHomeTabEnum;
+
+    if (selectedTab === WorkbenchHomeTabEnum.SMART && !licenseStore.hasLicense()) {
+      showNoLicenseDialog(t);
+      return;
+    }
+
+    activeWorkbenchTab.value = selectedTab;
   }
 
   function changePassword() {

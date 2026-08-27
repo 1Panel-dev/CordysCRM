@@ -1,6 +1,7 @@
 import { AxiosCanceler } from '@lib/shared/api/http/axiosCancel';
 import { setRouteEmitter } from '@lib/shared/method/route-listener';
 
+import setupLicenseGuard from './license';
 import setupPermissionGuard from './permission';
 import setupUserLoginInfoGuard from './userLoginInfo';
 import NProgress from 'nprogress';
@@ -23,6 +24,8 @@ export default function createRouteGuard(router: Router) {
   setupPageGuard(router);
   // 设置用户登录校验守卫
   setupUserLoginInfoGuard(router);
+  // 设置企业版功能校验守卫
+  setupLicenseGuard(router);
   // 设置菜单权限守卫
   setupPermissionGuard(router);
 }

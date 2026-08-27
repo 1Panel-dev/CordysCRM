@@ -31,6 +31,8 @@ const workbench: AppRouteRecordRaw = {
         locale: 'menu.workbench.smart',
         permissions: [],
         isTopMenu: true,
+        licenseRequired: true,
+        licenseFallbackRoute: WorkbenchRouteEnum.WORKBENCH_BOARD,
       },
     },
     {
