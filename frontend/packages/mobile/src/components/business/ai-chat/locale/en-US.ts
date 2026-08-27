@@ -13,6 +13,7 @@ export default {
   'aiChat.confirmExecute': 'Confirm',
   'aiChat.confirmCancel': 'Cancel',
   'aiChat.thinking': 'Thinking',
+  'aiChat.thinkingInProgress': 'Thinking',
   'aiChat.tokensUsed': '{tokens} used',
   'aiChat.feedbackThanks': 'Thanks for your feedback',
   'aiChat.progress': 'Running',

@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue';
+  import { computed, ref } from 'vue';
 
   import type { AiChatDataParts } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -47,22 +47,8 @@
   const { t } = useI18n();
   const progress = computed(() => props.part.data as AgentChatProgressData | undefined);
   const partId = computed(() => `${props.part.type}_${props.index ?? 0}`);
-  const activeNames = ref<string[]>(props.isGenerating ? [partId.value] : []);
+  const activeNames = ref<string[]>([]);
   const hasDetails = computed(() => Boolean(progress.value?.details?.input || progress.value?.details?.output));
-
-  watch(
-    () => partId.value,
-    (id) => {
-      activeNames.value = props.isGenerating ? [id] : [];
-    }
-  );
-
-  watch(
-    () => props.isGenerating,
-    (isGenerating) => {
-      activeNames.value = isGenerating ? [partId.value] : [];
-    }
-  );
 </script>
 
 <style scoped lang="less">

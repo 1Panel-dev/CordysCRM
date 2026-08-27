@@ -74,10 +74,17 @@
         />
 
         <div
-          v-if="renderableParts.length || showAssistantLoading"
+          v-if="thoughtParts.length || renderableParts.length || showAssistantLoading"
           class="ai-chat-message__bubble max-w-full overflow-hidden"
           :class="{ 'w-full': !isUser }"
         >
+          <AiThoughtBlock
+            v-if="thoughtParts.length"
+            :items="thoughtParts"
+            :message-id="props.message.id"
+            :is-generating="isGenerating"
+            :duration="props.message.metadata?.duration"
+          />
           <template v-for="item in renderableParts" :key="item.key">
             <AiTextBlock v-if="isUserTextPart(item.part)" :part="item.part" :mcps="messageMcps" />
             <component
@@ -135,8 +142,8 @@
   import AiErrorBlock from '../blocks/AiErrorBlock.vue';
   import AiLoadingBlock from '../blocks/AiLoadingBlock.vue';
   import AiMarkdownBlock from '../blocks/AiMarkdownBlock.vue';
-  import AiProgressBlock from '../blocks/AiProgressBlock.vue';
   import AiTextBlock from '../blocks/AiTextBlock.vue';
+  import AiThoughtBlock from '../blocks/AiThoughtBlock.vue';
   import AiAttachmentList from './AiAttachmentList.vue';
   import AiComposer from './AiComposer.vue';
 
@@ -166,9 +173,7 @@
 
   const assistantPartRenderers: Partial<Record<AiChatMessagePart['type'], Component>> = {
     'text': AiMarkdownBlock,
-    'reasoning': AiMarkdownBlock,
     'data-error': AiErrorBlock,
-    'data-progress': AiProgressBlock,
   };
 
   const isEditing = ref(false);
@@ -218,7 +223,6 @@
 
   const renderableParts = computed(() =>
     props.message.parts
-      .filter((part) => ['text', 'reasoning', 'data-error', 'data-progress'].includes(part.type))
       .map((part, index) => {
         const messagePart = { ...part } as AiChatMessagePart;
 
@@ -229,6 +233,20 @@
           renderer: isUser.value ? undefined : assistantPartRenderers[messagePart.type],
         };
       })
+      .filter((item) => ['text', 'data-error'].includes(item.part.type))
+  );
+  const thoughtParts = computed(() =>
+    props.message.parts
+      .map((part, index) => {
+        const messagePart = { ...part } as AiChatMessagePart;
+
+        return {
+          index,
+          key: `${messagePart.type}_${index}`,
+          part: messagePart,
+        };
+      })
+      .filter((item) => !isUser.value && ['reasoning', 'data-progress'].includes(item.part.type))
   );
   const showAssistantLoading = computed(
     () => !isUser.value && isGenerating.value && !hasRenderableAiChatContent(props.message.parts)

@@ -9,6 +9,7 @@ export default {
   'aiChat.inputPlaceholder': 'Enter an instruction or question',
   'aiChat.send': 'Send',
   'aiChat.thinking': 'Thinking',
+  'aiChat.thinkingInProgress': 'Thinking',
   'aiChat.editRestartTip': 'After editing, the conversation restarts from here. Chat history will not be deleted.',
   'aiChat.tokensUsed': '{tokens} used',
   'aiChat.like': 'Helpful',
