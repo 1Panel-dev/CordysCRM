@@ -43,7 +43,12 @@
       class="ai-floating-bubble"
       @click="handleAiFloatingClick"
     >
-      <CrmIcon name="iconicon_crmbot" width="24px" height="24px" color="var(--primary-8)" />
+      <CrmIcon
+        name="iconicon_crmbot"
+        width="32px"
+        height="32px"
+        color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)"
+      />
     </van-floating-bubble>
   </div>
 </template>
@@ -230,7 +235,7 @@
   .ai-floating-bubble {
     width: 48px;
     height: 48px;
-    background: var(--primary-7);
+    background: var(--text-n10);
     box-shadow: 0 6px 35px 6px #6467671a;
   }
 </style>

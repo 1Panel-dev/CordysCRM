@@ -5,7 +5,7 @@
     @pointerdown="handlePointerDown"
     @click="handleFloatingClick"
   >
-    <CrmIcon type="iconicon_crmbot" :size="24" color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)" />
+    <CrmIcon type="iconicon_crmbot" :size="32" color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)" />
   </div>
 
   <CrmDrawer
@@ -16,6 +16,10 @@
     no-padding
     body-content-class="h-full"
   >
+    <template #titleLeft>
+      <CrmIcon type="iconicon_crmbot" :size="24" color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)" />
+    </template>
+
     <AiChat
       v-if="chatRuntime"
       ref="aiChatRef"

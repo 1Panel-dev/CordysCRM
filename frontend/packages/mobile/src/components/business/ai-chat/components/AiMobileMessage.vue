@@ -1,11 +1,12 @@
 <template>
   <div class="flex w-full items-start gap-[8px] [&+&]:mt-[16px]" :class="{ 'flex-row-reverse': isUser }">
-    <div
+    <CrmIcon
       v-if="!isUser"
-      class="inline-flex h-[40px] w-[40px] flex-none items-center justify-center rounded-[16px] bg-[var(--primary-6)]"
-    >
-      <CrmIcon name="iconicon_crmbot" width="28px" height="28px" color="var(--primary-8)" />
-    </div>
+      name="iconicon_crmbot"
+      width="32px"
+      height="32px"
+      color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)"
+    />
     <CrmAvatar v-if="isUser" :size="40" :is-word="false" class="rounded-[16px]" />
 
     <div class="flex min-w-0 flex-col" :class="isUser ? 'max-w-[calc(100%-48px)] items-end' : 'flex-1 items-start'">

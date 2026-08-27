@@ -20,9 +20,12 @@
             :is-generating="runtime.state.loading.value && message.id === latestMessageId"
           />
           <article v-if="showThreadLoading" class="mb-[32px] flex gap-[16px]">
-            <n-avatar round class="bg-[var(--primary-6)]" :size="32">
-              <CrmIcon type="iconicon_crmbot" :size="20" color="var(--primary-8)" />
-            </n-avatar>
+            <CrmIcon
+              class="shrink-0"
+              type="iconicon_crmbot"
+              :size="32"
+              color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)"
+            />
 
             <div class="w-full min-w-0">
               <div class="mb-[8px] font-[600]"> CORDYS AI </div>
@@ -48,7 +51,7 @@
 
 <script setup lang="ts">
   import { computed, nextTick, onMounted, ref, watch } from 'vue';
-  import { NAvatar, NButton, NEmpty, NScrollbar, ScrollbarInst } from 'naive-ui';
+  import { NButton, NEmpty, NScrollbar, ScrollbarInst } from 'naive-ui';
 
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
 
@@ -141,6 +144,10 @@
   onMounted(async () => {
     await nextTick();
     updateStickToBottom();
+
+    if (props.scrollToBottomKey || messages.value.length > 0) {
+      await scrollToBottom();
+    }
   });
 
   watch(
