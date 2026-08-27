@@ -267,7 +267,8 @@
     const routeItem = item as unknown as AppRouteRecordRaw;
     let name: string | symbol = key;
     if (routeItem.name === WorkbenchRouteEnum.WORKBENCH) {
-      name = licenseStore.hasLicense() ? WorkbenchRouteEnum.WORKBENCH_SMART : WorkbenchRouteEnum.WORKBENCH_BOARD;
+      // name = licenseStore.hasLicense() ? WorkbenchRouteEnum.WORKBENCH_SMART : WorkbenchRouteEnum.WORKBENCH_BOARD;
+      name = WorkbenchRouteEnum.WORKBENCH_BOARD;
     } else if (routeItem.meta?.hideChildrenInMenu) {
       name = getFirstRouterNameByCurrentRoute(routeItem.name as string) || key;
     }

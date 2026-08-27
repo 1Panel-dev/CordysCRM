@@ -1,4 +1,4 @@
-import useLicenseStore from '@/store/modules/setting/license';
+// import useLicenseStore from '@/store/modules/setting/license';
 
 import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
@@ -9,9 +9,10 @@ const workbench: AppRouteRecordRaw = {
   path: '/workbench',
   name: WorkbenchRouteEnum.WORKBENCH,
   redirect: () => {
-    const licenseStore = useLicenseStore();
+    // const licenseStore = useLicenseStore();
     return {
-      name: licenseStore.hasLicense() ? WorkbenchRouteEnum.WORKBENCH_SMART : WorkbenchRouteEnum.WORKBENCH_BOARD,
+      // name: licenseStore.hasLicense() ? WorkbenchRouteEnum.WORKBENCH_SMART : WorkbenchRouteEnum.WORKBENCH_BOARD,
+      name: WorkbenchRouteEnum.WORKBENCH_BOARD,
     };
   },
   component: DEFAULT_LAYOUT,
@@ -23,18 +24,18 @@ const workbench: AppRouteRecordRaw = {
     collapsedLocale: 'menu.workbench',
   },
   children: [
-    {
-      path: 'smart',
-      name: WorkbenchRouteEnum.WORKBENCH_SMART,
-      component: () => import('@/views/workbench/smart/index.vue'),
-      meta: {
-        locale: 'menu.workbench.smart',
-        permissions: [],
-        isTopMenu: true,
-        licenseRequired: true,
-        licenseFallbackRoute: WorkbenchRouteEnum.WORKBENCH_BOARD,
-      },
-    },
+    // {
+    //   path: 'smart',
+    //   name: WorkbenchRouteEnum.WORKBENCH_SMART,
+    //   component: () => import('@/views/workbench/smart/index.vue'),
+    //   meta: {
+    //     locale: 'menu.workbench.smart',
+    //     permissions: [],
+    //     isTopMenu: true,
+    //     licenseRequired: true,
+    //     licenseFallbackRoute: WorkbenchRouteEnum.WORKBENCH_BOARD,
+    //   },
+    // },
     {
       path: 'index',
       name: WorkbenchRouteEnum.WORKBENCH_BOARD,

@@ -1,6 +1,11 @@
 export default {
   'aiChat.newConversation': '新建对话',
   'aiChat.noConversation': '暂无对话',
+  'aiChat.emptyTitle': '你能做什么',
+  'aiChat.emptyCustomerLookup': '快速查询客户信息',
+  'aiChat.emptySalesBrief': '生成销售简报',
+  'aiChat.emptyReceivablesSummary': '汇总本月回款与应收账款',
+  'aiChat.emptyOpportunityStats': '快速统计今日新增商机',
   'aiChat.inputPlaceholder': '输入指令或提问',
   'aiChat.send': '发送',
   'aiChat.thinking': '思考过程',

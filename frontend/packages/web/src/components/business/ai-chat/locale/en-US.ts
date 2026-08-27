@@ -1,6 +1,11 @@
 export default {
   'aiChat.newConversation': 'New conversation',
   'aiChat.noConversation': 'No conversations',
+  'aiChat.emptyTitle': 'What can I do?',
+  'aiChat.emptyCustomerLookup': 'Quickly look up customer information',
+  'aiChat.emptySalesBrief': 'Generate a sales brief',
+  'aiChat.emptyReceivablesSummary': 'Summarize monthly payments and receivables',
+  'aiChat.emptyOpportunityStats': 'Count new opportunities today',
   'aiChat.inputPlaceholder': 'Enter an instruction or question',
   'aiChat.send': 'Send',
   'aiChat.thinking': 'Thinking',

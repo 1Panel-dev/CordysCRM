@@ -74,8 +74,27 @@
       <main class="h-full min-h-0 min-w-0">
         <AiChatProvider :runtime="runtime">
           <AiChatContent :scroll-to-bottom-key="props.activeHistoryId">
+            <template #empty>
+              <div class="flex w-full flex-col items-center">
+                <div class="mb-[40px] text-[24px] font-[600]">
+                  {{ t('aiChat.emptyTitle') }}
+                </div>
+                <div class="grid grid-cols-2 gap-[12px]">
+                  <div
+                    v-for="item in emptySuggestionList"
+                    :key="item.label"
+                    class="flex h-[74px] w-[260px] items-center gap-[8px] rounded-[4px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] px-[16px] text-[16px] font-[600]"
+                  >
+                    <CrmSvgIcon :name="item.icon" width="24px" height="24px" class="shrink-0" />
+                    <span>{{ item.label }}</span>
+                  </div>
+                </div>
+              </div>
+            </template>
+
             <template #composer>
               <AiComposer
+                class="middle-box-shadow mx-[24px] mb-[24px] rounded-[4px] border border-solid border-[var(--text-n8)]"
                 :placeholder="props.placeholder || t('aiChat.inputPlaceholder')"
                 :mcp-options="props.mcpOptions"
                 @mcp-updated="emit('mcpUpdated')"
@@ -101,6 +120,7 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
+  import CrmSvgIcon from '@/components/pure/crm-svg/index.vue';
   import AiChatContent from './components/AiChatContent.vue';
   import AiComposer from './components/AiComposer.vue';
 
@@ -158,6 +178,25 @@
       label: t('common.delete'),
       key: 'delete',
       danger: true,
+    },
+  ];
+
+  const emptySuggestionList = [
+    {
+      icon: 'ai',
+      label: t('aiChat.emptyCustomerLookup'),
+    },
+    {
+      icon: 'ai3',
+      label: t('aiChat.emptySalesBrief'),
+    },
+    {
+      icon: 'ai2',
+      label: t('aiChat.emptyReceivablesSummary'),
+    },
+    {
+      icon: 'ai4',
+      label: t('aiChat.emptyOpportunityStats'),
     },
   ];
 
