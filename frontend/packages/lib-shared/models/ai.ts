@@ -118,6 +118,7 @@ export interface AgentConversationMessage {
   role: 'USER' | 'ASSISTANT';
   conversationId: string;
   runId?: string;
+  helpful?: boolean | null;
 }
 
 export interface AgentConversationDetail {

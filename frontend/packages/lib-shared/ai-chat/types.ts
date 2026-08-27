@@ -36,6 +36,7 @@ export interface AiChatMeta {
   attachments?: AiChatAttachment[];
   tokens?: number;
   runId?: string;
+  helpful?: boolean;
 }
 
 export type AiChatDataParts = Record<string, unknown> & {

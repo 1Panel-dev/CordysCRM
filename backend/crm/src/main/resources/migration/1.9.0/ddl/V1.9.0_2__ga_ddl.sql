@@ -129,6 +129,7 @@ CREATE TABLE agent_message(
     `total_tokens` BIGINT(255)    COMMENT '累计调用' ,
     `content` MEDIUMTEXT    COMMENT '消息内容' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    `helpful` TINYINT(1)    COMMENT '点赞/点踩：1 点赞，0 点踩，NULL 未评价' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,

@@ -103,28 +103,6 @@
                     <div class="mt-[16px] whitespace-pre-wrap text-[var(--text-n2)]">
                       {{ item.summary || '-' }}
                     </div>
-                    <div class="mt-[16px] flex flex-wrap gap-[8px]">
-                      <n-button
-                        v-for="action in splitSuggestionActions(item.actions)"
-                        :key="action"
-                        size="small"
-                        type="primary"
-                        ghost
-                        :loading="operatingSuggestionId === item.id"
-                        @click="handleSuggestionSubmit(item, action)"
-                      >
-                        {{ action }}
-                      </n-button>
-                      <n-button
-                        size="small"
-                        type="primary"
-                        ghost
-                        :loading="operatingSuggestionId === item.id"
-                        @click="handleSuggestionIgnore(item)"
-                      >
-                        {{ t('workbench.smart.ignore') }}
-                      </n-button>
-                    </div>
                   </div>
                 </div>
               </n-scrollbar>
@@ -230,7 +208,6 @@
     ignoreAgentActionSuggestion,
     regenerateSmartAiSummary,
     regenerateSmartDataOverview,
-    submitAgentActionSuggestion,
   } from '@/api/modules';
 
   const { t } = useI18n();
@@ -282,13 +259,6 @@
       label: t('workbench.smart.suggestion'),
       type: 'info' as const,
     };
-  }
-
-  function splitSuggestionActions(actions?: string) {
-    return (actions || '')
-      .split(',')
-      .map((action) => action.trim())
-      .filter((action) => action);
   }
 
   const dataOverviewLoading = ref(false);
@@ -487,10 +457,6 @@
     } finally {
       operatingSuggestionId.value = '';
     }
-  }
-
-  function handleSuggestionSubmit(item: AgentActionSuggestionItem, label: string) {
-    return handleSuggestionAction(item, (id) => submitAgentActionSuggestion(id, label));
   }
 
   function handleSuggestionIgnore(item: AgentActionSuggestionItem) {
