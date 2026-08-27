@@ -44,9 +44,10 @@ export interface CreateAiChatRuntimeOptions {
    */
   transport?: ChatTransport<AiChatMessage>;
   /**
-   * 用户点击停止后，除 Chat.stop() 外额外执行的业务取消逻辑。
+   * 用户点击停止后执行的业务取消逻辑。返回 true 表示已向后端发起取消，
+   * 此时不再主动中断流，交由后端回发终止 error 事件来关闭流并展示错误。
    */
-  onStop?: () => Promise<void> | void;
+  onStop?: () => Promise<boolean | void> | boolean | void;
   onConfirm?: (data: AgentChatConfirmData, answers: Record<string, string>) => Promise<void> | void;
   onFinish?: () => Promise<void> | void;
   onError?: (error: Error) => void;
