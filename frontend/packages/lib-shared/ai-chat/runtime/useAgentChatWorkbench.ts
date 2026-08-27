@@ -189,7 +189,9 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
             conversationId: agentConversationId.value,
             sessionId: agentSessionId.value,
           });
+          return true;
         }
+        return false;
       },
       async onConfirm(data: AgentChatConfirmData, answerMap) {
         if (data.dialogId) {

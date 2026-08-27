@@ -1,4 +1,4 @@
-import { computed, markRaw, ref, shallowRef } from 'vue';
+import { computed, markRaw, ref, shallowRef, watch } from 'vue';
 
 import type { AgentChatConfirmData } from '@lib/shared/models/ai';
 
@@ -188,13 +188,40 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
       return;
     }
 
+    let cancelled = false;
     try {
-      await chat.value.stop();
-      await options.onStop?.();
+      cancelled = Boolean(await options.onStop?.());
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
     }
+
+    // 已向后端发起取消时不主动中断流：由后端回发终止 error 事件关闭流，
+    // 前端据此展示“对话已被手动停止”并复位按钮；否则回退为本地中止防止卡在停止态。
+    if (!cancelled) {
+      await chat.value.stop();
+      return;
+    }
+
+    let stopWatch: (() => void) | undefined;
+    const timeout = window.setTimeout(() => {
+      stopWatch?.();
+      void chat.value.stop();
+    }, 15000);
+
+    function onStatusChange(): void {
+      if (!loading.value) {
+        window.clearTimeout(timeout);
+        stopWatch?.();
+      }
+    }
+
+    stopWatch = watch(
+      status,
+      onStatusChange,
+      { flush: 'sync' }
+    );
+    onStatusChange();
   }
 
   async function retry(messageId?: string): Promise<void> {
