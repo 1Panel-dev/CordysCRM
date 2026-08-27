@@ -17,25 +17,21 @@
       />
 
       <div
-        v-if="renderableParts.length || showAssistantLoading"
+        v-if="thoughtParts.length || renderableParts.length || showAssistantLoading"
         class="ai-mobile-message__bubble min-w-0 max-w-full"
         :class="{ 'user-message': isUser }"
       >
+        <AiMobileThoughtBlock
+          v-if="thoughtParts.length"
+          :items="thoughtParts"
+          :message-id="props.message.id"
+          :is-generating="isGenerating"
+          :duration="props.message.metadata?.duration"
+        />
         <template v-for="item in renderableParts" :key="item.key">
           <AiMobileTextBlock v-if="item.part.type === 'text' && isUser" :part="item.part" :mcps="messageMcps" />
-          <AiMobileMarkdownBlock
-            v-else-if="item.part.type === 'text' || item.part.type === 'reasoning'"
-            :part="item.part"
-            :index="item.index"
-            :is-generating="isGenerating"
-          />
+          <AiMobileMarkdownBlock v-else-if="item.part.type === 'text'" :part="item.part" :index="item.index" />
           <AiMobileErrorBlock v-else-if="item.part.type === 'data-error'" :part="item.part" />
-          <AiMobileProgressBlock
-            v-else-if="item.part.type === 'data-progress'"
-            :part="item.part"
-            :index="item.index"
-            :is-generating="isGenerating"
-          />
         </template>
         <AiMobileLoadingBlock v-if="showAssistantLoading" />
       </div>
@@ -119,8 +115,8 @@
   import AiMobileErrorBlock from '../blocks/AiMobileErrorBlock.vue';
   import AiMobileLoadingBlock from '../blocks/AiMobileLoadingBlock.vue';
   import AiMobileMarkdownBlock from '../blocks/AiMobileMarkdownBlock.vue';
-  import AiMobileProgressBlock from '../blocks/AiMobileProgressBlock.vue';
   import AiMobileTextBlock from '../blocks/AiMobileTextBlock.vue';
+  import AiMobileThoughtBlock from '../blocks/AiMobileThoughtBlock.vue';
   import AiMobileAttachmentList from './AiMobileAttachmentList.vue';
 
   import { dislikeAgentChat, likeAgentChat } from '@/api/modules';
@@ -136,7 +132,6 @@
   const isUser = computed(() => props.message.role === 'user');
   const renderableParts = computed(() =>
     props.message.parts
-      .filter((part) => ['text', 'reasoning', 'data-error', 'data-progress'].includes(part.type))
       .map((part, index) => {
         const messagePart = { ...part } as AiChatMessagePart;
 
@@ -146,6 +141,20 @@
           part: messagePart,
         };
       })
+      .filter((item) => ['text', 'data-error'].includes(item.part.type))
+  );
+  const thoughtParts = computed(() =>
+    props.message.parts
+      .map((part, index) => {
+        const messagePart = { ...part } as AiChatMessagePart;
+
+        return {
+          index,
+          key: `${messagePart.type}_${index}`,
+          part: messagePart,
+        };
+      })
+      .filter((item) => !isUser.value && ['reasoning', 'data-progress'].includes(item.part.type))
   );
   const showAssistantLoading = computed(
     () => props.message.role === 'assistant' && props.isGenerating && !hasRenderableAiChatContent(props.message.parts)

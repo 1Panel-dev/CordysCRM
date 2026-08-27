@@ -113,6 +113,20 @@ function getLastUserText(messages: AiChatMessage[]): string {
   );
 }
 
+function getDuration(startTime?: number, endTime?: number): number | undefined {
+  if (
+    typeof startTime !== 'number' ||
+    typeof endTime !== 'number' ||
+    Number.isNaN(startTime) ||
+    Number.isNaN(endTime) ||
+    endTime < startTime
+  ) {
+    return undefined;
+  }
+
+  return endTime - startTime;
+}
+
 // AI SDK ChatTransport 需要返回 ReadableStream<UIMessageChunk>。
 // 这里把 CRM 的 run/progress/chunk/confirm/error/done 事件转换成 AI SDK 可消费的 UI message stream。
 function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>): ReadableStream<UIMessageChunk> {
@@ -125,6 +139,7 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
       let partIndex = 0;
       let started = false;
       let finished = false;
+      let runStartedAt: number | undefined;
 
       function enqueueStart(messageId?: string): void {
         if (started) {
@@ -192,6 +207,7 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
           const event = result.value;
 
           if (event.type === 'run') {
+            runStartedAt = Date.now();
             enqueueStart(event.run?.assistantMessageId);
           } else if (event.type === 'progress') {
             closeActivePart();
@@ -226,9 +242,12 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
             finish();
             return;
           } else if (event.type === 'done') {
+            const duration = getDuration(runStartedAt, Date.now());
+
             finish({
               tokens: event.data?.totalTokens,
               runId: event.data?.runId,
+              duration,
             });
             return;
           }

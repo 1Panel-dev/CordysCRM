@@ -36,6 +36,7 @@ export interface AiChatMeta {
   attachments?: AiChatAttachment[];
   tokens?: number;
   runId?: string;
+  duration?: number;
   helpful?: boolean;
 }
 

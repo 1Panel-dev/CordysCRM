@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue';
+  import { computed, ref } from 'vue';
   import { NCollapse, NCollapseItem } from 'naive-ui';
 
   import type { AiChatDataParts } from '@lib/shared/ai-chat';
@@ -48,22 +48,8 @@
 
   const progress = computed<AgentChatProgressData>(() => props.part.data as AgentChatProgressData);
   const partId = computed(() => `${props.part.type}_${props.index ?? 0}`);
-  const expandedNames = ref<string[]>(props.isGenerating ? [partId.value] : []);
+  const expandedNames = ref<string[]>([]);
   const hasDetails = computed(() => Boolean(progress.value?.details?.input || progress.value?.details?.output));
-
-  watch(
-    () => partId.value,
-    (id) => {
-      expandedNames.value = props.isGenerating ? [id] : [];
-    }
-  );
-
-  watch(
-    () => props.isGenerating,
-    (isGenerating) => {
-      expandedNames.value = isGenerating ? [partId.value] : [];
-    }
-  );
 </script>
 
 <style scoped lang="less">
@@ -71,6 +57,9 @@
     width: 100%;
     :deep(.n-collapse) {
       width: 100%;
+    }
+    :deep(.n-collapse-item) {
+      margin-left: 0;
     }
     :deep(.n-collapse-item__header) {
       min-width: 0;
