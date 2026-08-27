@@ -3,7 +3,11 @@
     <div class="flex-1 overflow-hidden">
       <!-- 消息列表区域 -->
       <slot name="thread">
-        <AiThread :scroll-to-bottom-key="props.scrollToBottomKey" />
+        <AiThread :scroll-to-bottom-key="props.scrollToBottomKey">
+          <template v-if="slots.empty" #empty>
+            <slot name="empty" />
+          </template>
+        </AiThread>
       </slot>
     </div>
 
@@ -19,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, useSlots } from 'vue';
 
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
 
@@ -37,5 +41,6 @@
   );
 
   const runtime = useAiChatRuntime();
+  const slots = useSlots();
   const pendingConfirm = computed(() => runtime.state.pendingConfirm.value);
 </script>

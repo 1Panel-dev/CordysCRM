@@ -23,7 +23,7 @@
       <MailSettings v-if="activeTab === 'mailSettings'" />
       <ModelSettings v-if="activeTab === 'modelSettings'" />
       <TermSettings v-if="activeTab === 'termSettings'" />
-      <GlobalTask v-if="activeTab === 'globalTask'" />
+      <!-- 全局任务先不上 <GlobalTask v-if="activeTab === 'globalTask'" /> -->
       <!-- TODO license 先放开 <IntegrationList v-if="activeTab === 'syncOrganization' && xPack" /> -->
       <IntegrationList v-if="activeTab === 'syncOrganization'" />
     </div>
@@ -46,7 +46,7 @@
   const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
   const ModelSettings = defineAsyncComponent(() => import('./components/modelSettings/index.vue'));
   const TermSettings = defineAsyncComponent(() => import('./components/termSettings/index.vue'));
-  const GlobalTask = defineAsyncComponent(() => import('./components/globalTask/index.vue'));
+  // const GlobalTask = defineAsyncComponent(() => import('./components/globalTask/index.vue'));
   const { t } = useI18n();
   const { openModal } = useModal();
 
@@ -63,7 +63,7 @@
     { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
     { name: 'modelSettings', tab: t('system.business.tab.modelSettings') },
     { name: 'termSettings', tab: t('system.business.tab.termSettings') },
-    { name: 'globalTask', tab: t('system.business.tab.globalTask') },
+    // { name: 'globalTask', tab: t('system.business.tab.globalTask') },
   ];
 
   const tabList = ref([...initTabList]);

@@ -915,10 +915,15 @@
 <style scoped lang="scss">
   .ai-chat-composer {
     box-shadow: 0 4px 15px 2px #6467671a;
+    transition: border-color 0.2s ease;
+    &:focus-within {
+      border-color: var(--primary-8) !important;
+    }
   }
   .ai-chat-composer__input {
     overflow-y: auto;
     min-width: 0;
+    min-height: 52px;
     max-height: 132px;
     white-space: pre-wrap;
     color: var(--text-n1);

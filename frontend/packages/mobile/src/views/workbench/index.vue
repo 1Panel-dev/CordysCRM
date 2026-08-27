@@ -27,11 +27,11 @@
           <span>{{ t('mine.changePasswordTip') }}</span>
           <span class="ml-[8px] text-[var(--primary-8)]" @click="changePassword">{{ t('mine.changePassword') }}</span>
         </van-notice-bar>
-        <CrmSegmentTabs
+        <!-- <CrmSegmentTabs
           :model-value="activeWorkbenchTab"
           :options="workbenchTabOptions"
           @update:model-value="handleWorkbenchTabChange"
-        />
+        /> -->
         <van-cell-group
           v-if="activeWorkbenchTab === WorkbenchHomeTabEnum.DASHBOARD"
           class="px-[20px] py-[16px]"
@@ -138,18 +138,17 @@
         </van-cell-group>
       </div>
 
-      <SmartWorkbench v-else-if="activeWorkbenchTab === WorkbenchHomeTabEnum.SMART" />
+      <!-- <SmartWorkbench v-else-if="activeWorkbenchTab === WorkbenchHomeTabEnum.SMART" /> -->
     </div>
-    <AiChatProvider v-if="showAiEntryComposer" :runtime="smartComposerRuntime">
+    <!-- <AiChatProvider v-if="showAiEntryComposer" :runtime="smartComposerRuntime">
       <AiMobileComposer submit-mode="emit" @submit="goAiChat" />
-    </AiChatProvider>
+    </AiChatProvider> -->
   </div>
 </template>
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
 
-  import { AiChatProvider, type AiComposerSubmitPayload, createAiChatRuntime } from '@lib/shared/ai-chat';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ApprovalListTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -157,19 +156,16 @@
   import type { TodoStatistic } from '@lib/shared/models/system/process';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmSegmentTabs from '@/components/pure/crm-segment-tabs/index.vue';
-  import AiMobileComposer from '@/components/business/ai-chat/components/AiMobileComposer.vue';
-  import { setAiMobileChatInitialPayload } from '@/components/business/ai-chat/utils/initialPayload';
+  // import CrmSegmentTabs from '@/components/pure/crm-segment-tabs/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import followPlanList from '@/views/workbench/follow/followPlanList.vue';
   import followRecordList from '@/views/workbench/follow/followRecordList.vue';
-  import SmartWorkbench from '@/views/workbench/smart/index.vue';
 
   import { getTodoStatistic } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
-  import useLicenseStore from '@/store/modules/setting/license';
+  // import useLicenseStore from '@/store/modules/setting/license';
   import useUserStore from '@/store/modules/user';
-  import showNoLicenseDialog from '@/utils/license';
+  // import showNoLicenseDialog from '@/utils/license';
 
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
 
@@ -180,7 +176,7 @@
   });
 
   const appStore = useAppStore();
-  const licenseStore = useLicenseStore();
+  // const licenseStore = useLicenseStore();
   const userStore = useUserStore();
   const { t } = useI18n();
   const router = useRouter();
@@ -209,35 +205,36 @@
   }
 
   function getDefaultWorkbenchTab(): WorkbenchHomeTabEnum {
-    return licenseStore.hasLicense() ? WorkbenchHomeTabEnum.SMART : WorkbenchHomeTabEnum.DASHBOARD;
+    // return licenseStore.hasLicense() ? WorkbenchHomeTabEnum.SMART : WorkbenchHomeTabEnum.DASHBOARD;
+    return WorkbenchHomeTabEnum.DASHBOARD;
   }
 
   const activeWorkbenchTab = ref(getDefaultWorkbenchTab());
-  const workbenchTabOptions = computed(() => [
-    {
-      label: t('workbench.smartWorkbench'),
-      value: WorkbenchHomeTabEnum.SMART,
-    },
-    {
-      label: t('workbench.myDashboard'),
-      value: WorkbenchHomeTabEnum.DASHBOARD,
-    },
-  ]);
+  // const workbenchTabOptions = computed(() => [
+  //   {
+  //     label: t('workbench.smartWorkbench'),
+  //     value: WorkbenchHomeTabEnum.SMART,
+  //   },
+  //   {
+  //     label: t('workbench.myDashboard'),
+  //     value: WorkbenchHomeTabEnum.DASHBOARD,
+  //   },
+  // ]);
 
-  function handleWorkbenchTabChange(value: string | number | undefined): void {
-    if (!Object.values(WorkbenchHomeTabEnum).includes(value as WorkbenchHomeTabEnum)) {
-      return;
-    }
+  // function handleWorkbenchTabChange(value: string | number | undefined): void {
+  //   if (!Object.values(WorkbenchHomeTabEnum).includes(value as WorkbenchHomeTabEnum)) {
+  //     return;
+  //   }
 
-    const selectedTab = value as WorkbenchHomeTabEnum;
+  //   const selectedTab = value as WorkbenchHomeTabEnum;
 
-    if (selectedTab === WorkbenchHomeTabEnum.SMART && !licenseStore.hasLicense()) {
-      showNoLicenseDialog(t);
-      return;
-    }
+  //   if (selectedTab === WorkbenchHomeTabEnum.SMART && !licenseStore.hasLicense()) {
+  //     showNoLicenseDialog(t);
+  //     return;
+  //   }
 
-    activeWorkbenchTab.value = selectedTab;
-  }
+  //   activeWorkbenchTab.value = selectedTab;
+  // }
 
   function changePassword() {
     router.push({
@@ -295,36 +292,36 @@
   }
 
   const hasValidApiKey = computed(() => userStore.apiKeyList.some((key) => !key.isExpire && key.enable));
-  const showAiEntryComposer = computed(() => activeWorkbenchTab.value === WorkbenchHomeTabEnum.SMART);
-  const smartComposerRuntime = createAiChatRuntime();
+  // const showAiEntryComposer = computed(() => activeWorkbenchTab.value === WorkbenchHomeTabEnum.SMART);
+  // const smartComposerRuntime = createAiChatRuntime();
 
   function goAgent() {
     router.push({ name: WorkbenchRouteEnum.WORKBENCH_AGENT });
   }
 
-  function goAiChat(payload?: AiComposerSubmitPayload) {
-    const prompt = payload?.content?.trim() ?? '';
-    const attachments = payload?.attachments ?? [];
-
-    if (attachments.length) {
-      setAiMobileChatInitialPayload({
-        content: prompt,
-        attachments,
-      });
-    }
-
-    smartComposerRuntime.clear();
-
-    router.push({
-      name: WorkbenchRouteEnum.WORKBENCH_AI_CHAT,
-      query:
-        prompt && !attachments.length
-          ? {
-              prompt,
-            }
-          : undefined,
-    });
-  }
+  // function goAiChat(payload?: AiComposerSubmitPayload) {
+  //   const prompt = payload?.content?.trim() ?? '';
+  //   const attachments = payload?.attachments ?? [];
+  //
+  //   if (attachments.length) {
+  //     setAiMobileChatInitialPayload({
+  //       content: prompt,
+  //       attachments,
+  //     });
+  //   }
+  //
+  //   smartComposerRuntime.clear();
+  //
+  //   router.push({
+  //     name: WorkbenchRouteEnum.WORKBENCH_AI_CHAT,
+  //     query:
+  //       prompt && !attachments.length
+  //         ? {
+  //             prompt,
+  //           }
+  //         : undefined,
+  //   });
+  // }
 
   function goDuplicateCheck() {
     router.push({ name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK });

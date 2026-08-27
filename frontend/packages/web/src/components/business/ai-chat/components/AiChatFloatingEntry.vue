@@ -1,11 +1,11 @@
 <template>
   <div
-    class="ai-chat-floating-entry large-box-shadow n-btn-outline-primary fixed z-[1000] flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-full bg-[var(--text-n10)]"
+    class="ai-chat-floating-entry large-box-shadow n-btn-outline-primary fixed z-[1000] flex h-[48px] w-[48px] cursor-pointer items-center justify-center rounded-full bg-[var(--text-n10)]"
     :style="floatingStyle"
     @pointerdown="handlePointerDown"
     @click="handleFloatingClick"
   >
-    <CrmIcon type="iconicon_crmbot" :size="32" color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)" />
+    <CrmIcon type="iconicon_crmbot" :size="40" color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)" />
   </div>
 
   <CrmDrawer

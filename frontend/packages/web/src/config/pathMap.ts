@@ -24,13 +24,13 @@ export const pathMap: PathMapItem[] = [
   {
     key: 'WORKBENCH',
     locale: 'menu.workbench',
-    route: AppRouteEnum.WORKBENCH_SMART,
+    route: AppRouteEnum.WORKBENCH_BOARD,
     children: [
-      {
-        key: 'WORKBENCH_SMART',
-        locale: 'menu.workbench.smart',
-        route: AppRouteEnum.WORKBENCH_SMART,
-      },
+      // {
+      //   key: 'WORKBENCH_SMART',
+      //   locale: 'menu.workbench.smart',
+      //   route: AppRouteEnum.WORKBENCH_SMART,
+      // },
       {
         key: 'WORKBENCH_BOARD',
         locale: 'menu.workbench.board',
@@ -292,14 +292,14 @@ export const pathMap: PathMapItem[] = [
               tab: 'termSettings',
             },
           },
-          {
-            key: 'SYSTEM_BUSINESS_AGENT_TASK',
-            route: AppRouteEnum.SYSTEM_BUSINESS,
-            locale: 'system.business.tab.globalTask',
-            routeQuery: {
-              tab: 'globalTask',
-            },
-          },
+          // {
+          //   key: 'SYSTEM_BUSINESS_AGENT_TASK',
+          //   route: AppRouteEnum.SYSTEM_BUSINESS,
+          //   locale: 'system.business.tab.globalTask',
+          //   routeQuery: {
+          //     tab: 'globalTask',
+          //   },
+          // },
         ],
       },
       {
