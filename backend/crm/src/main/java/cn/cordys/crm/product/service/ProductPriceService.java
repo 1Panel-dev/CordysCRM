@@ -769,6 +769,7 @@ public class ProductPriceService extends BaseExportService {
         List<ProductPriceField> sourceFields = productPriceFieldMapper.selectListByLambda(fieldQuery);
 
         if (CollectionUtils.isNotEmpty(sourceFields)) {
+            Map<String, String> bizIdMap = new HashMap<>();
             List<ProductPriceField> targetFields = sourceFields.stream()
                     .peek(field -> {
                         field.setId(IDGenerator.nextStr());
@@ -783,8 +784,15 @@ public class ProductPriceService extends BaseExportService {
                                 field.setFieldValue(newSerialNo);
                             }
                         }
-                        if (StringUtils.isNotBlank(field.getBizId())) {
-                            field.setBizId(IDGenerator.nextStr());
+                        // 同一行的 bizID 保持一致
+                        String originBizId = field.getBizId();
+                        if (StringUtils.isNotBlank(originBizId)) {
+                            if (bizIdMap.containsKey(originBizId)) {
+                                field.setBizId(bizIdMap.get(originBizId));
+                            } else {
+                                field.setBizId(IDGenerator.nextStr());
+                                bizIdMap.put(originBizId, field.getBizId());
+                            }
                         }
                     })
                     .toList();
