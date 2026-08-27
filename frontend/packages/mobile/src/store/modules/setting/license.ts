@@ -74,6 +74,7 @@ const useLicenseStore = defineStore('license', {
         const result = await getLicense();
         // 检查返回结果是否有效，不存在license自身值
         if (!result || !result.status) {
+          this.removeLicenseStatus();
           return;
         }
         /* if (!result || !result.status || !result.license || !result.license.count) {

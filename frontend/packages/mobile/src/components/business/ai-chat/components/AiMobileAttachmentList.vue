@@ -53,6 +53,7 @@
   import { formatFileSize } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+
   import useUserStore from '@/store/modules/user';
 
   const props = withDefaults(

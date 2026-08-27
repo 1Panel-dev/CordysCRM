@@ -81,7 +81,7 @@
 
   const keyword = ref('');
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  const shouldReloadList = ref(false);
+  const tableRefreshId = ref(0);
   const canUpdateModelSettings = computed(() => hasAnyPermission(['SYSTEM_SETTING:UPDATE']));
 
   function formatGlobalDailyLimit(value: number | null | undefined): string {
@@ -92,7 +92,7 @@
     try {
       await updateAiModelStatus({ id: row.id });
       Message.success(enable ? t('common.enableSuccess') : t('common.disableSuccess'));
-      shouldReloadList.value = true;
+      tableRefreshId.value += 1;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -311,16 +311,6 @@
     searchData(keyword.value, refreshId);
   }
 
-  watch(
-    () => shouldReloadList.value,
-    async (shouldReload) => {
-      if (shouldReload) {
-        await loadList();
-        shouldReloadList.value = false;
-      }
-    }
-  );
-
   function removeItemFromList(id: string) {
     propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id) as typeof propsRes.value.data;
     propsRes.value.crmPagination = {
@@ -328,6 +318,14 @@
       itemCount: (propsRes.value.crmPagination?.itemCount ?? 1) - 1,
     };
   }
+
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      crmTableRef.value?.clearCheckedRowKeys();
+      searchData(keyword.value);
+    }
+  );
 
   watch(
     () => tableRemoveRefreshId.value,
