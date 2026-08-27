@@ -2,9 +2,13 @@
   <article class="group mb-[32px] flex gap-[16px] overflow-hidden" :class="messageClass">
     <div>
       <slot name="avatar" :message="props.message">
-        <n-avatar v-if="props.message.role === 'assistant'" round class="bg-[var(--primary-6)]" :size="32">
-          <CrmIcon type="iconicon_crmbot" :size="20" color="var(--primary-8)" />
-        </n-avatar>
+        <CrmIcon
+          v-if="props.message.role === 'assistant'"
+          class="shrink-0"
+          type="iconicon_crmbot"
+          :size="32"
+          color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)"
+        />
         <CrmAvatar v-else :size="32" class="flex-shrink-0 transition-all" />
       </slot>
     </div>
@@ -117,7 +121,7 @@
 
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
-  import { NAvatar, NButton, NTooltip, useMessage } from 'naive-ui';
+  import { NButton, NTooltip, useMessage } from 'naive-ui';
 
   import type { AiChatMessage, AiChatMessagePart, AiComposerSubmitPayload } from '@lib/shared/ai-chat';
   import { getAiChatMessageText, hasRenderableAiChatContent, useAiChatRuntime } from '@lib/shared/ai-chat';

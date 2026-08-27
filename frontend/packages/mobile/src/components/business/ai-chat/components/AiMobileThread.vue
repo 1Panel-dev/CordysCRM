@@ -17,11 +17,12 @@
           :is-generating="runtime.state.loading.value && message.id === latestMessageId"
         />
         <div v-if="showThreadLoading" class="flex w-full items-start gap-[8px] [&+&]:mt-[16px]">
-          <div
-            class="inline-flex h-[40px] w-[40px] flex-none items-center justify-center rounded-[16px] bg-[var(--primary-6)]"
-          >
-            <CrmIcon name="iconicon_crmbot" width="28px" height="28px" color="var(--primary-8)" />
-          </div>
+          <CrmIcon
+            name="iconicon_crmbot"
+            width="32px"
+            height="32px"
+            color="linear-gradient(180deg, #00A6AB 0%, #3370FF 70.19%)"
+          />
 
           <div class="min-w-0 flex-1">
             <AiMobileLoadingBlock />

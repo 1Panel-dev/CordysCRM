@@ -83,14 +83,28 @@
             {{ t('system.business.modelSettings.globalDailyLimit') }}
             <span class="text-[var(--text-n4)]">{{ t('system.business.modelSettings.timesTip') }}</span>
           </template>
-          <CrmInputNumber v-model:value="form.globalDailyLimit" :min="1" :step="100" :precision="0" class="w-full" />
+          <CrmInputNumber
+            v-model:value="form.globalDailyLimit"
+            :min="1"
+            :max="Number.MAX_SAFE_INTEGER"
+            :step="100"
+            :precision="0"
+            class="w-full"
+          />
         </n-form-item>
         <n-form-item path="userDailyLimit">
           <template #label>
             {{ t('system.business.modelSettings.userDailyLimit') }}
             <span class="text-[var(--text-n4)]">{{ t('system.business.modelSettings.timesTip') }}</span>
           </template>
-          <CrmInputNumber v-model:value="form.userDailyLimit" :min="1" :step="10" :precision="0" class="w-full" />
+          <CrmInputNumber
+            v-model:value="form.userDailyLimit"
+            :min="1"
+            :max="Number.MAX_SAFE_INTEGER"
+            :step="10"
+            :precision="0"
+            class="w-full"
+          />
         </n-form-item>
       </div>
     </n-form>
