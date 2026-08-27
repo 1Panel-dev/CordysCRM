@@ -104,6 +104,8 @@
               class="cursor-pointer"
               :type="action.iconType"
               :size="16"
+              :color="actionColor(action.key)"
+              :class="actionClass(action.key)"
               @click="handleActionSelect(action.key)"
             />
           </template>
@@ -185,6 +187,31 @@
   const tokenUsageText = computed(() =>
     typeof props.message.metadata?.tokens === 'number' ? formatThousands(props.message.metadata.tokens) : ''
   );
+  const feedback = ref<boolean | undefined>(props.message.metadata?.helpful);
+
+  function actionClass(key: string): Record<string, boolean> {
+    const isActiveFeedback = key === 'like' || key === 'dislike';
+
+    if (!isActiveFeedback || !canFeedback.value) {
+      return {};
+    }
+
+    const active = key === 'like' ? feedback.value === true : feedback.value === false;
+
+    return {
+      'ai-chat-message__feedback--active': active,
+      'cursor-pointer': !active,
+      'cursor-not-allowed': active,
+    };
+  }
+
+  function actionColor(key: string): string | undefined {
+    if ((key === 'like' && feedback.value === true) || (key === 'dislike' && feedback.value === false)) {
+      return 'var(--primary-8)';
+    }
+
+    return undefined;
+  }
 
   const messageAttachments = computed(() => props.message.metadata?.attachments ?? []);
   const messageMcps = computed(() => props.message.metadata?.mcps ?? []);
@@ -229,6 +256,7 @@
     () => {
       isEditing.value = false;
       editContent.value = '';
+      feedback.value = props.message.metadata?.helpful;
     }
   );
 
@@ -246,12 +274,16 @@
   }
 
   async function handleLikeMessage(): Promise<void> {
-    if (!runId.value) {
+    if (!runId.value || feedback.value === true) {
       return;
     }
 
     try {
       await likeAgentChat(runId.value);
+      feedback.value = true;
+      if (props.message.metadata) {
+        props.message.metadata.helpful = true;
+      }
       Message.success(t('aiChat.feedbackThanks'));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -260,12 +292,16 @@
   }
 
   async function handleDislikeMessage(): Promise<void> {
-    if (!runId.value) {
+    if (!runId.value || feedback.value === false) {
       return;
     }
 
     try {
       await dislikeAgentChat(runId.value);
+      feedback.value = false;
+      if (props.message.metadata) {
+        props.message.metadata.helpful = false;
+      }
       Message.success(t('aiChat.feedbackThanks'));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -396,5 +432,8 @@
       border-radius: 4px;
       background: var(--text-n9);
     }
+  }
+  .ai-chat-message__feedback--active {
+    color: var(--primary-8);
   }
 </style>

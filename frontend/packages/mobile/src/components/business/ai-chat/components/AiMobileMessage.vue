@@ -70,7 +70,7 @@
             name="iconicon_good"
             width="16px"
             height="16px"
-            color="var(--primary-8)"
+            :color="feedback === true ? 'var(--primary-0)' : 'var(--primary-8)'"
             @click="handleFeedbackMessage('like')"
           />
           <CrmIcon
@@ -78,7 +78,7 @@
             name="iconicon_bad"
             width="16px"
             height="16px"
-            color="var(--primary-8)"
+            :color="feedback === false ? 'var(--primary-0)' : 'var(--primary-8)'"
             @click="handleFeedbackMessage('dislike')"
           />
           <CrmIcon
@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { showFailToast, showSuccessToast } from 'vant';
 
   import {
@@ -159,12 +159,20 @@
   const tokenUsageText = computed(() =>
     typeof props.message.metadata?.tokens === 'number' ? formatThousands(props.message.metadata.tokens) : ''
   );
+  const feedback = ref<boolean | undefined>(props.message.metadata?.helpful);
   const messageAttachments = computed(() => props.message.metadata?.attachments ?? []);
   const messageMcps = computed(() => props.message.metadata?.mcps ?? []);
   const showActions = computed(
     () =>
       !props.isGenerating &&
       (canCopy.value || canRetry.value || canFeedback.value || canEdit.value || tokenUsageText.value)
+  );
+
+  watch(
+    () => props.message.id,
+    () => {
+      feedback.value = props.message.metadata?.helpful;
+    }
   );
 
   async function handleCopyMessage() {
@@ -189,11 +197,20 @@
       return;
     }
 
+    const picked = type === 'like';
+    if (feedback.value === picked) {
+      return;
+    }
+
     try {
       if (type === 'like') {
         await likeAgentChat(runId.value);
       } else {
         await dislikeAgentChat(runId.value);
+      }
+      feedback.value = picked;
+      if (props.message.metadata) {
+        props.message.metadata.helpful = picked;
       }
       showSuccessToast(t('aiChat.feedbackThanks'));
     } catch (error) {

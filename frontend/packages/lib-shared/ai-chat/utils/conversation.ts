@@ -360,6 +360,7 @@ export function toAiChatMessage(message: AgentConversationMessage, index: number
     metadata: {
       tokens: message.totalTokens ?? undefined,
       runId: message.runId,
+      helpful: message.helpful ?? undefined,
       attachments: parsedContent.attachments,
     },
     parts: toAiChatMessageParts(role, parsedContent),

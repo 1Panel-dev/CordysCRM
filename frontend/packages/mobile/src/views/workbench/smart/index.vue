@@ -101,28 +101,6 @@
               <div class="mt-[16px] whitespace-pre-wrap text-[var(--text-n2)]">
                 {{ item.summary || '-' }}
               </div>
-              <div class="mt-[16px] flex flex-wrap gap-[8px]">
-                <van-button
-                  v-for="action in splitSuggestionActions(item.actions)"
-                  :key="action"
-                  size="small"
-                  plain
-                  type="primary"
-                  :loading="operatingSuggestionId === item.id"
-                  @click="handleSuggestionSubmit(item, action)"
-                >
-                  {{ action }}
-                </van-button>
-                <van-button
-                  size="small"
-                  plain
-                  type="primary"
-                  :loading="operatingSuggestionId === item.id"
-                  @click="handleSuggestionIgnore(item)"
-                >
-                  {{ t('workbench.smart.ignore') }}
-                </van-button>
-              </div>
             </div>
           </template>
         </CrmList>
@@ -210,7 +188,6 @@
     ignoreAgentActionSuggestion,
     regenerateSmartAiSummary,
     regenerateSmartDataOverview,
-    submitAgentActionSuggestion,
   } from '@/api/modules';
 
   const { t } = useI18n();
@@ -375,13 +352,6 @@
     }
   }
 
-  function splitSuggestionActions(actions?: string) {
-    return (actions || '')
-      .split(',')
-      .map((action) => action.trim())
-      .filter((action) => action);
-  }
-
   async function handleSuggestionAction(item: AgentActionSuggestionItem, action: (id: string) => Promise<unknown>) {
     if (!item.id || operatingSuggestionId.value) {
       return;
@@ -395,10 +365,6 @@
     } finally {
       operatingSuggestionId.value = '';
     }
-  }
-
-  function handleSuggestionSubmit(item: AgentActionSuggestionItem, label: string) {
-    return handleSuggestionAction(item, (id) => submitAgentActionSuggestion(id, label));
   }
 
   function handleSuggestionIgnore(item: AgentActionSuggestionItem) {
