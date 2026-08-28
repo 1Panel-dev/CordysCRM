@@ -1358,7 +1358,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
 
         } catch (Exception e) {
             log.error("contract import error: {}", e.getMessage(), e);
-            throw new GenericException(e.getMessage());
+            throw new GenericException("导入异常，请检查文件数据！");
         }
     }
 
