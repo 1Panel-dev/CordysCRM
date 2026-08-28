@@ -444,7 +444,7 @@ public class ContractPaymentRecordService {
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             log.error("Payment record import error", e);
-            throw new GenericException(e.getMessage());
+            throw new GenericException("导入异常，请检查文件数据！");
         }
     }
 
