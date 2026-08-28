@@ -7,8 +7,10 @@ import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -53,6 +55,8 @@ import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.ModuleService;
 import cn.cordys.security.SessionUtils;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -61,6 +65,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author song-cc-rock
@@ -136,6 +141,10 @@ public class ModuleFieldController {
     public Pager<List<CustomFormDataListResponse>> sourceCustomFormDataPage(@Valid @RequestBody CustomFormDataPageRequest request) {
         ConditionFilterUtils.parseCondition(request, request.getCustomFormId());
         request.setCombineSearch(request.getCombineSearch().convert());
+        if (!PermissionUtils.hasPermission(PermissionConstants.CUSTOM_FORM_READ)) {
+            Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+            return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
+        }
         return customFormDataService.page(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), true);
     }
 
