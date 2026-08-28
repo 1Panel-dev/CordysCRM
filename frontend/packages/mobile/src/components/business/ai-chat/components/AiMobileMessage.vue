@@ -103,7 +103,7 @@
   import {
     type AiChatMessage,
     type AiChatMessagePart,
-    getAiChatMessageText,
+    getAiChatMessageCopyText,
     hasRenderableAiChatContent,
     useAiChatRuntime,
   } from '@lib/shared/ai-chat';
@@ -159,7 +159,7 @@
   const showAssistantLoading = computed(
     () => props.message.role === 'assistant' && props.isGenerating && !hasRenderableAiChatContent(props.message.parts)
   );
-  const copyableText = computed(() => getAiChatMessageText(props.message));
+  const copyableText = computed(() => getAiChatMessageCopyText(props.message));
   const canCopy = computed(() => copyableText.value.length > 0);
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);
   const canEdit = computed(() => props.message.role === 'user' && !runtime.state.loading.value);

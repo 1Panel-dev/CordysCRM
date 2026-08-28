@@ -133,7 +133,12 @@
   import { NButton, NTooltip, useMessage } from 'naive-ui';
 
   import type { AiChatMessage, AiChatMessagePart, AiComposerSubmitPayload } from '@lib/shared/ai-chat';
-  import { getAiChatMessageText, hasRenderableAiChatContent, useAiChatRuntime } from '@lib/shared/ai-chat';
+  import {
+    getAiChatMessageCopyText,
+    getAiChatMessageText,
+    hasRenderableAiChatContent,
+    useAiChatRuntime,
+  } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { formatThousands } from '@lib/shared/method';
 
@@ -183,7 +188,7 @@
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);
   const canSubmitEdit = computed(() => editContent.value.trim().length > 0 && !runtime.state.loading.value);
   const isGenerating = computed(() => Boolean(props.isGenerating));
-  const copyableText = computed(() => getAiChatMessageText(props.message));
+  const copyableText = computed(() => getAiChatMessageCopyText(props.message));
   const canCopy = computed(() => copyableText.value.length > 0);
   const canShowActionArea = computed(() => !isEditing.value && (isUser.value || !isGenerating.value));
   const runId = computed(() => props.message.metadata?.runId);
