@@ -33,7 +33,7 @@
   import { computed, ref, watch } from 'vue';
   import { NCollapse, NCollapseItem } from 'naive-ui';
 
-  import type { AiChatMessagePart } from '@lib/shared/ai-chat';
+  import { type AiChatMessagePart, formatAiChatDuration } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import AiMarkdownBlock from './AiMarkdownBlock.vue';
@@ -56,26 +56,7 @@
   const blockId = computed(() => `thought_${props.messageId}`);
   const expandedNames = ref<string[]>(props.isGenerating ? [blockId.value] : []);
 
-  function formatDuration(duration?: number): string {
-    if (typeof duration !== 'number' || Number.isNaN(duration) || duration < 0) {
-      return '';
-    }
-
-    const totalSeconds = duration / 1000;
-
-    if (totalSeconds < 60) {
-      return `${Number(totalSeconds.toFixed(totalSeconds < 10 ? 1 : 0))}s`;
-    }
-
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = Math.round(totalSeconds % 60)
-      .toString()
-      .padStart(2, '0');
-
-    return `${minutes}:${seconds}`;
-  }
-
-  const durationText = computed(() => formatDuration(props.duration));
+  const durationText = computed(() => formatAiChatDuration(props.duration));
   const titleText = computed(() => {
     if (props.isGenerating) {
       return t('aiChat.thinkingInProgress');

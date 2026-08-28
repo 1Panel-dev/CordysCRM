@@ -17,6 +17,7 @@ declare module 'vue' {
     AiMobileMessage: typeof import('./src/components/business/ai-chat/components/AiMobileMessage.vue')['default'];
     AiMobileProgressBlock: typeof import('./src/components/business/ai-chat/blocks/AiMobileProgressBlock.vue')['default'];
     AiMobileTextBlock: typeof import('./src/components/business/ai-chat/blocks/AiMobileTextBlock.vue')['default'];
+    AiMobileThoughtBlock: typeof import('./src/components/business/ai-chat/blocks/AiMobileThoughtBlock.vue')['default'];
     AiMobileThread: typeof import('./src/components/business/ai-chat/components/AiMobileThread.vue')['default'];
     Checkbox: typeof import('./src/components/business/crm-form-create/components/basic/checkbox.vue')['default'];
     CommentEditor: typeof import('./src/components/business/crm-comment/components/commentEditor.vue')['default'];

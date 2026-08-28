@@ -7,3 +7,9 @@ export function getAiChatMessageText(message: Pick<AiChatMessage, 'parts'>, sepa
     .filter(Boolean)
     .join(separator);
 }
+
+export function getAiChatMessageCopyText(message: Pick<AiChatMessage, 'parts'>, separator = '\n\n'): string {
+  return getAiChatMessageText(message, separator)
+    .replace(/\[\[[^:\]]+:[^\]]+]]/g, '')
+    .trim();
+}
