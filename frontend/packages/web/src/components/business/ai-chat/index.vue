@@ -83,7 +83,8 @@
                   <div
                     v-for="item in emptySuggestionList"
                     :key="item.label"
-                    class="flex h-[74px] w-[260px] items-center gap-[8px] rounded-[4px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] px-[16px] text-[16px] font-[600]"
+                    class="flex h-[74px] w-[260px] cursor-pointer items-center gap-[8px] rounded-[4px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] px-[16px] text-[16px] font-[600] hover:bg-[var(--text-n9)] active:border-[var(--primary-8)] active:bg-[var(--text-n9)] active:text-[var(--primary-8)]"
+                    @click="handleSuggestionClick(item.label)"
                   >
                     <CrmSvgIcon :name="item.icon" width="24px" height="24px" class="shrink-0" />
                     <span>{{ item.label }}</span>
@@ -296,6 +297,10 @@
 
   const innerRuntime = createAiChatRuntime();
   const runtime = computed(() => props.runtime ?? innerRuntime);
+
+  function handleSuggestionClick(label: string): void {
+    runtime.value.setInput(label);
+  }
 
   watch(keyword, (value) => {
     if (searchTimer) {

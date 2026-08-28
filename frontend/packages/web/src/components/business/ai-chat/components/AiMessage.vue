@@ -284,11 +284,13 @@
   }
 
   async function handleCopyMessage(): Promise<void> {
-    if (!canCopy.value) {
+    const text = copyableText.value;
+
+    if (!text.trim()) {
       return;
     }
 
-    await legacyCopy(copyableText.value);
+    await legacyCopy(text);
   }
 
   async function handleLikeMessage(): Promise<void> {

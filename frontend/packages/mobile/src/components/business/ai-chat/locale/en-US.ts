@@ -1,6 +1,11 @@
 export default {
   'aiChat.inputPlaceholder': 'Enter a command or question',
   'aiChat.noConversation': 'No conversations',
+  'aiChat.emptyTitle': 'What can I do?',
+  'aiChat.emptyCustomerLookup': 'Quickly look up customer information',
+  'aiChat.emptySalesBrief': 'Generate a sales brief',
+  'aiChat.emptyReceivablesSummary': 'Summarize monthly payments and receivables',
+  'aiChat.emptyOpportunityStats': 'Quickly count new opportunities today',
   'aiChat.history': 'History',
   'aiChat.renameConversation': 'Rename',
   'aiChat.conversationTitle': 'Title',
