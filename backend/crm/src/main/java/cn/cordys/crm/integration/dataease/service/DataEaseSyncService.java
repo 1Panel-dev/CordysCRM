@@ -24,6 +24,7 @@ import cn.cordys.security.UserDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -56,7 +57,7 @@ public class DataEaseSyncService {
     @Resource
     private DataEaseService dataEaseService;
 
-    @QuartzScheduled(cron = "0 0 0 * * ?")
+    @QuartzScheduled(cron = "0 0 1 * * ?")
     public void syncDataEase() {
         Set<String> orgIds = extOrganizationMapper.selectAllOrganizationIds();
         // 同步角色
@@ -75,7 +76,9 @@ public class DataEaseSyncService {
             log.error("获取DataEase配置失败，组织ID: {}", orgId, e);
             return;
         }
-        if (thirdConfig == null || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(), thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())) {
+        if (thirdConfig == null
+                || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(), thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())
+                || BooleanUtils.isNotTrue(thirdConfig.getDeAutoSync())) {
             return;
         }
         try {
@@ -94,7 +97,7 @@ public class DataEaseSyncService {
         deTempResourceDTO.setCrmOrgId(orgId);
         deTempResourceDTO.setDeOrgId(thirdConfig.getDeOrgID());
 
-        // 手动切到 DE 组织，DE 接口设计不是很好，接口调用会受到页面切组织的影响，后天手动切组织，降低影响
+        // 手动切到 DE 组织，DE 接口设计不是很好，接口调用会受到页面切组织的影响，需要手动切组织，降低影响
         dataEaseClient.switchOrg(deTempResourceDTO.getDeOrgId());
         syncSysVariable(deTempResourceDTO);
 
