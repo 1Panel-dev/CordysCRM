@@ -373,6 +373,9 @@
     :deep(.n-collapse) {
       width: 100%;
     }
+    :deep(.n-collapse-item) {
+      margin-left: 0;
+    }
     :deep(.n-collapse-item__header) {
       min-width: 0;
     }

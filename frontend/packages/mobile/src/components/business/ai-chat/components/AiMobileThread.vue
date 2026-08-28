@@ -3,10 +3,22 @@
     <div ref="threadRef" class="h-full overflow-y-auto px-[12px] py-[14px]" @scroll="handleScroll">
       <div
         v-if="messages.length === 0"
-        class="flex h-full flex-col items-center justify-center gap-[8px] text-[var(--text-n4)]"
+        class="flex h-full flex-col items-center justify-center px-[24px] text-[var(--text-n1)]"
       >
-        <CrmIcon name="iconicon_crmbot" width="32px" height="32px" color="var(--text-n4)" />
-        <div>{{ t('aiChat.noConversation') }}</div>
+        <div class="mb-[32px] text-[24px] font-[600]">
+          {{ t('aiChat.emptyTitle') }}
+        </div>
+        <div class="grid w-full grid-cols-1 gap-[12px]">
+          <div
+            v-for="item in emptySuggestionList"
+            :key="item.label"
+            class="flex min-h-[58px] items-center gap-[8px] rounded-[4px] border border-solid border-[var(--text-n8)] bg-[var(--text-n10)] px-[16px] text-[16px] font-[600] active:bg-[var(--text-n9)]"
+            @click="handleSuggestionClick(item.label)"
+          >
+            <CrmIcon :name="item.icon" width="24px" height="24px" class="shrink-0" />
+            <span>{{ item.label }}</span>
+          </div>
+        </div>
       </div>
 
       <template v-else>
@@ -57,6 +69,24 @@
   const shouldStickToBottom = ref(true);
   const messages = computed(() => runtime.state.messages.value);
   const latestMessageId = computed(() => messages.value.at(-1)?.id);
+  const emptySuggestionList = [
+    {
+      icon: 'icon-ai',
+      label: t('aiChat.emptyCustomerLookup'),
+    },
+    {
+      icon: 'icon-ai3',
+      label: t('aiChat.emptySalesBrief'),
+    },
+    {
+      icon: 'icon-ai2',
+      label: t('aiChat.emptyReceivablesSummary'),
+    },
+    {
+      icon: 'icon-ai4',
+      label: t('aiChat.emptyOpportunityStats'),
+    },
+  ];
   const showThreadLoading = computed(() => {
     const lastMessage = messages.value.at(-1);
 
@@ -81,6 +111,10 @@
 
   function handleScroll(): void {
     shouldStickToBottom.value = isNearBottom();
+  }
+
+  function handleSuggestionClick(label: string): void {
+    runtime.setInput(label);
   }
 
   async function scrollToBottom(): Promise<void> {
