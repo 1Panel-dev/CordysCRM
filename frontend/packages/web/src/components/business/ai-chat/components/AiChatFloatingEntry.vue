@@ -24,10 +24,12 @@
       v-if="chatRuntime"
       ref="aiChatRef"
       :runtime="chatRuntime"
+      :active-runtime-key="activeRuntimeKey"
       :history-items="historyItems"
       :active-history-id="activeHistoryId"
       :history-loading="historyLoading"
       :history-no-more="historyNoMore"
+      :running-history-ids="runningHistoryIds"
       :mcp-options="mcpOptions"
       @new="handleNewConversation"
       @mcp-updated="loadMcpOptions"
@@ -102,9 +104,11 @@
   const {
     runtime: chatRuntime,
     activeHistoryId,
+    activeRuntimeKey,
     historyItems,
     historyLoading,
     historyNoMore,
+    runningHistoryIds,
     createConversation,
     loadHistory,
     loadMoreHistory,

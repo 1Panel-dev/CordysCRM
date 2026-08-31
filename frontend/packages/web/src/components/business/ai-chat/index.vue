@@ -65,6 +65,9 @@
                 {{ item.title }}
               </n-tooltip>
             </template>
+            <template #itemRight="{ item }">
+              <span v-if="isHistoryRunning(item.id)" class="ai-chat-history-loading" />
+            </template>
           </CrmList>
         </div>
       </div>
@@ -72,7 +75,7 @@
 
     <template #2>
       <main class="h-full min-h-0 min-w-0">
-        <AiChatProvider :runtime="runtime">
+        <AiChatProvider :key="props.activeRuntimeKey || 'inner'" :runtime="runtime">
           <AiChatContent :scroll-to-bottom-key="props.activeHistoryId">
             <template #empty>
               <div class="flex w-full flex-col items-center">
@@ -134,18 +137,22 @@
   const props = withDefaults(
     defineProps<{
       runtime?: AiChatRuntime;
+      activeRuntimeKey?: string;
       historyItems?: AiChatHistoryItem[];
       activeHistoryId?: string;
       historyLoading?: boolean;
       historyNoMore?: boolean;
+      runningHistoryIds?: string[];
       mcpOptions?: AiChatMcp[];
       placeholder?: string;
     }>(),
     {
       historyItems: () => [],
+      activeRuntimeKey: '',
       activeHistoryId: '',
       historyLoading: false,
       historyNoMore: true,
+      runningHistoryIds: () => [],
       mcpOptions: () => [],
       placeholder: '',
     }
@@ -203,6 +210,12 @@
 
   function getHistoryMoreActions(item: Record<string, unknown>): ActionsItem[] {
     return editingHistoryId.value === item.id ? [] : historyMoreActions;
+  }
+
+  const runningHistoryIdSet = computed(() => new Set(props.runningHistoryIds));
+
+  function isHistoryRunning(id: unknown): boolean {
+    return runningHistoryIdSet.value.has(String(id));
   }
 
   function handleHistoryClick(item: Record<string, unknown>): void {
@@ -327,3 +340,20 @@
     resetHistoryRenameLoading,
   });
 </script>
+
+<style scoped lang="less">
+  .ai-chat-history-loading {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--text-n7);
+    border-top-color: var(--text-n4);
+    border-radius: 50%;
+    animation: ai-chat-history-loading 0.8s linear infinite;
+  }
+
+  @keyframes ai-chat-history-loading {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

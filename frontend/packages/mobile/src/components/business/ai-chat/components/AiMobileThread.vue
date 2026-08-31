@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, nextTick, ref, watch } from 'vue';
+  import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -62,6 +62,15 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import AiMobileLoadingBlock from '../blocks/AiMobileLoadingBlock.vue';
   import AiMobileMessage from './AiMobileMessage.vue';
+
+  const props = withDefaults(
+    defineProps<{
+      scrollToBottomKey?: string | number;
+    }>(),
+    {
+      scrollToBottomKey: '',
+    }
+  );
 
   const runtime = useAiChatRuntime();
   const { t } = useI18n();
@@ -143,6 +152,26 @@
   watch(showThreadLoading, () => {
     if (shouldStickToBottom.value) {
       scrollToBottom();
+    }
+  });
+
+  watch(
+    () => props.scrollToBottomKey,
+    async (key) => {
+      if (!key) {
+        return;
+      }
+
+      await scrollToBottom();
+    },
+    { flush: 'post' }
+  );
+
+  onMounted(async () => {
+    await nextTick();
+
+    if (props.scrollToBottomKey || messages.value.length > 0) {
+      await scrollToBottom();
     }
   });
 </script>

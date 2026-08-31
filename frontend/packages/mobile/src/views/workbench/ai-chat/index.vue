@@ -12,9 +12,9 @@
       </template>
     </van-nav-bar>
 
-    <AiChatProvider v-if="runtime" :runtime="runtime">
+    <AiChatProvider v-if="runtime" :key="activeRuntimeKey" :runtime="runtime">
       <main class="mt-[48px] min-h-0 flex-1 overflow-hidden">
-        <AiMobileThread />
+        <AiMobileThread :scroll-to-bottom-key="activeHistoryId" />
       </main>
 
       <AiMobileConfirmDialog v-if="pendingConfirm" :confirm="pendingConfirm" />
@@ -27,6 +27,7 @@
         :active-id="activeHistoryId"
         :loading="historyLoading"
         :no-more="historyNoMore"
+        :running-ids="runningHistoryIds"
         @search="searchHistory"
         @reach-bottom="loadMoreHistory"
         @click="openHistoryConversation"
@@ -71,9 +72,11 @@
   const {
     runtime,
     activeHistoryId,
+    activeRuntimeKey,
     historyItems,
     historyLoading,
     historyNoMore,
+    runningHistoryIds,
     pendingConfirm,
     createConversation,
     loadHistory,
