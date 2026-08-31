@@ -201,13 +201,43 @@ function tryReadJsonObject(
 }
 
 // 后端历史 content 形如：普通文本 + progress JSON + <think>...</think> + 正文 + metadata JSON。
+// 代码块围栏：三反引号所在行。围栏内的内容整体按原文保留，
+// 不参与 JSON/progress 解析，避免代码块内的 JSON/花括号被误切或误丢。
+function collectCodeFenceRanges(content: string): Array<{ start: number; end: number }> {
+  const fences: Array<{ start: number; end: number }> = [];
+  const fenceRegex = /^```[^\r\n]*$/gm;
+  let match: RegExpExecArray | null;
+
+  while ((match = fenceRegex.exec(content))) {
+    fences.push({ start: match.index, end: match.index + match[0].length });
+  }
+
+  const ranges: Array<{ start: number; end: number }> = [];
+
+  for (let i = 0; i + 1 < fences.length; i += 2) {
+    ranges.push({ start: fences[i].start, end: fences[i + 1].end });
+  }
+
+  return ranges;
+}
+
 // 这里先按“嵌入 JSON 对象”切成 text/json 片段，后续再分别转换成 UIMessage part。
+// 代码块围栏内的内容整体作为普通文本保留，不参与 JSON 解析。
 function parseEmbeddedJsonContent(content: string): ParsedContentPiece[] {
+  const fenceRanges = collectCodeFenceRanges(content);
   const pieces: ParsedContentPiece[] = [];
   let textStart = 0;
   let index = 0;
 
   while (index < content.length) {
+    const fence = fenceRanges.find((range) => index >= range.start && index < range.end);
+
+    if (fence) {
+      // 跳到代码块结束之后，围栏内原文保留在下一步的 text 片段里。
+      index = fence.end;
+      continue;
+    }
+
     if (content[index] !== '{') {
       index += 1;
       continue;
