@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, shallowReactive } from 'vue';
 
 import type {
   AgentChatConfirmData,
@@ -13,6 +13,7 @@ import createAiChatRuntime from './createAiChatRuntime';
 import type { AiChatRuntime } from './types';
 import type { AiChatAttachment, AiChatMcp, AiChatMessage } from '../types';
 import { toAiChatMessage } from '../utils/conversation';
+import { getAiChatMessageText } from '../utils/message';
 
 interface AgentChatWorkbenchApis {
   streamAgentChat: (
@@ -52,6 +53,14 @@ interface ConversationDraft {
   selectedMcps: AiChatMcp[];
 }
 
+interface ConversationRuntimeEntry {
+  // key 用来标识一次前端会话实例。新会话还没有 conversationId 时，也需要一个稳定 key
+  key: string;
+  conversationId: string;
+  sessionId: string;
+  runtime: AiChatRuntime;
+}
+
 function getAttachmentId(attachment: AiChatAttachment): string {
   const fileId = attachment.metadata?.fileId;
 
@@ -73,22 +82,29 @@ function getPicIds(attachments: AiChatAttachment[] = []): string[] {
 }
 
 export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOptions) {
-  const runtime = ref<AiChatRuntime>();
-  const agentConversationId = ref('');
-  const agentSessionId = ref('');
-  const activeHistoryId = ref('');
+  const activeEntry = ref<ConversationRuntimeEntry>();
+  const runtime = computed(() => activeEntry.value?.runtime);
+  const activeHistoryId = computed(() => activeEntry.value?.conversationId ?? '');
+  const activeRuntimeKey = computed(() => activeEntry.value?.key ?? '');
   const historyItems = ref<AgentConversationItem[]>([]);
   const historyLoading = ref(false);
   const historyNoMore = ref(true);
   const historyKeyword = ref('');
   const historyCurrent = ref(1);
   const pendingConfirm = computed(() => runtime.value?.state.pendingConfirm.value);
+  const loading = computed(() => Boolean(runtime.value?.state.loading.value));
   const historyPageSize = options.historyPageSize ?? 20;
+  // 同一个页面内允许多个会话同时存在：当前会话可以切走，旧会话的 SSE 仍继续输出
+  const runtimeEntries = new Map<string, ConversationRuntimeEntry>();
+  // Map 本身不是响应式的，用版本号通知 computed 重新收集 runtimeEntries。
+  const runtimeEntryVersion = ref(0);
+  // 切换会话时保留未发送的输入、附件和 MCP 选择。
   const conversationDrafts = new Map<string, ConversationDraft>();
+  let newConversationIndex = 0;
 
   const NEW_CONVERSATION_DRAFT_KEY = '__new__';
   function getCurrentDraftKey(): string {
-    return activeHistoryId.value || agentConversationId.value || NEW_CONVERSATION_DRAFT_KEY;
+    return activeHistoryId.value || NEW_CONVERSATION_DRAFT_KEY;
   }
 
   function hasDraft(draft: ConversationDraft): boolean {
@@ -126,6 +142,90 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     conversationDrafts.delete(draftKey);
   }
 
+  function getUniqueRuntimeEntries(): ConversationRuntimeEntry[] {
+    return Array.from(new Set(runtimeEntries.values()));
+  }
+
+  function touchRuntimeEntries(): void {
+    runtimeEntryVersion.value += 1;
+  }
+
+  function setActiveEntry(entry: ConversationRuntimeEntry): void {
+    activeEntry.value = entry;
+  }
+
+  function cacheRuntimeEntry(entry: ConversationRuntimeEntry): void {
+    // 同一个 entry 会同时按临时 key 和 conversationId 缓存：
+    // 1. 临时 key 负责新会话未落库前的 Provider remount。
+    // 2. conversationId 负责点击历史会话时复用正在运行的 runtime。
+    runtimeEntries.set(entry.key, entry);
+
+    if (entry.conversationId) {
+      runtimeEntries.set(entry.conversationId, entry);
+    }
+
+    touchRuntimeEntries();
+  }
+
+  function getRuntimeHistoryTitle(entry: ConversationRuntimeEntry): string {
+    const firstUserMessage = entry.runtime.state.messages.value.find((message) => message.role === 'user');
+    const title = firstUserMessage ? getAiChatMessageText(firstUserMessage, ' ').trim() : '';
+
+    return title || entry.conversationId;
+  }
+
+  function toRuntimeHistoryItem(entry: ConversationRuntimeEntry): AgentConversationItem {
+    return {
+      id: entry.conversationId,
+      title: getRuntimeHistoryTitle(entry),
+    };
+  }
+
+  function getLocalRunningHistoryItems(): AgentConversationItem[] {
+    return getUniqueRuntimeEntries()
+      .filter((entry) => entry.conversationId && entry.runtime.state.loading.value)
+      .map(toRuntimeHistoryItem);
+  }
+
+  const runningHistoryIds = computed(() => {
+    void runtimeEntryVersion.value;
+
+    // 只暴露正在生成中的 conversationId，列表组件不需要知道 runtime 细节。
+    return getUniqueRuntimeEntries()
+      .filter((entry) => entry.conversationId && entry.runtime.state.loading.value)
+      .map((entry) => entry.conversationId);
+  });
+
+  function mergeLocalRunningHistoryItems(list: AgentConversationItem[]): AgentConversationItem[] {
+    const mergedList = [...list];
+
+    getLocalRunningHistoryItems().forEach((item) => {
+      if (!mergedList.some((historyItem) => historyItem.id === item.id)) {
+        mergedList.unshift(item);
+      }
+    });
+
+    return mergedList;
+  }
+
+  function upsertRuntimeHistoryItem(entry: ConversationRuntimeEntry): void {
+    if (!entry.conversationId || !entry.runtime.state.loading.value) {
+      return;
+    }
+
+    // SSE 返回 conversationId 后，历史列表需要立刻出现这一项并显示 loading。
+    const item = toRuntimeHistoryItem(entry);
+
+    if (historyItems.value.some((historyItem) => historyItem.id === item.id)) {
+      historyItems.value = historyItems.value.map((historyItem) =>
+        historyItem.id === item.id ? { ...historyItem, title: historyItem.title || item.title } : historyItem
+      );
+      return;
+    }
+
+    historyItems.value = [item, ...historyItems.value];
+  }
+
   async function loadHistory(loadOptions: { reset?: boolean; keyword?: string } = {}): Promise<void> {
     const reset = loadOptions.reset ?? false;
 
@@ -150,9 +250,13 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
         pageSize: historyPageSize,
         keyword: historyKeyword.value || undefined,
       });
-      const list = res.list ?? [];
+      const list = mergeLocalRunningHistoryItems(res.list ?? []);
 
-      historyItems.value = reset ? list : [...historyItems.value, ...list];
+      historyItems.value = reset
+        ? list
+        : [...historyItems.value, ...list].filter(
+            (item, index, self) => self.findIndex((historyItem) => historyItem.id === item.id) === index
+          );
       historyNoMore.value = historyItems.value.length >= (res.total ?? 0);
       historyCurrent.value += 1;
     } finally {
@@ -160,7 +264,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     }
   }
 
-  function createRuntime(initialMessages: AiChatMessage[] = []): AiChatRuntime {
+  function createRuntime(entry: ConversationRuntimeEntry, initialMessages: AiChatMessage[] = []): AiChatRuntime {
     return createAiChatRuntime({
       initialMessages,
       transport: createAgentChatTransport({
@@ -168,7 +272,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
           return options.apis.streamAgentChat(
             {
               message: context.content,
-              conversationId: agentConversationId.value || undefined,
+              conversationId: entry.conversationId || undefined,
               mcpIds: context.metadata?.mcps?.map((mcp) => mcp.id),
               attachmentIds: getAttachmentIds(context.metadata?.attachments),
               picIds: getPicIds(context.metadata?.attachments),
@@ -176,18 +280,25 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
             {
               signal: context.signal,
               onSession(sessionId, conversationId) {
-                agentConversationId.value = conversationId || agentConversationId.value;
-                agentSessionId.value = sessionId;
+                entry.sessionId = sessionId;
+
+                if (conversationId) {
+                  // 新会话第一次发送后，后端才会返回真实 conversationId。
+                  // 这里把同一个 runtime 重新挂到真实 conversationId 上，后续点击历史会复用它。
+                  entry.conversationId = conversationId;
+                  cacheRuntimeEntry(entry);
+                  upsertRuntimeHistoryItem(entry);
+                }
               },
             }
           );
         },
       }),
       async onStop() {
-        if (agentConversationId.value && agentSessionId.value) {
+        if (entry.conversationId && entry.sessionId) {
           await options.apis.cancelAgentChat({
-            conversationId: agentConversationId.value,
-            sessionId: agentSessionId.value,
+            conversationId: entry.conversationId,
+            sessionId: entry.sessionId,
           });
           return true;
         }
@@ -199,7 +310,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
         }
       },
       async onFinish() {
-        const conversationId = agentConversationId.value;
+        const conversationId = entry.conversationId;
 
         if (!conversationId) {
           return;
@@ -207,8 +318,8 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
 
         clearDraft(conversationId);
         clearDraft(NEW_CONVERSATION_DRAFT_KEY);
+        // 生成结束后刷新历史，拿后端最终标题和排序，同时移除本地临时补位。
         await loadHistory({ reset: true });
-        activeHistoryId.value = conversationId;
       },
       onError: options.onError,
     });
@@ -221,18 +332,19 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       saveCurrentDraft();
     }
 
-    agentConversationId.value = '';
-    agentSessionId.value = '';
-    activeHistoryId.value = '';
+    const entry = shallowReactive<ConversationRuntimeEntry>({
+      // 新会话还没有后端 id，用前端临时 key 区分多次新建。
+      key: `${NEW_CONVERSATION_DRAFT_KEY}_${newConversationIndex}`,
+      conversationId: '',
+      sessionId: '',
+      runtime: undefined as unknown as AiChatRuntime,
+    });
+    newConversationIndex += 1;
+    entry.runtime = createRuntime(entry, initialMessages);
+    cacheRuntimeEntry(entry);
+    setActiveEntry(entry);
 
-    if (runtime.value) {
-      runtime.value.reset(initialMessages);
-    } else {
-      runtime.value = createRuntime(initialMessages);
-    }
-    restoreDraft(NEW_CONVERSATION_DRAFT_KEY);
-
-    return runtime.value;
+    return entry.runtime;
   }
 
   async function loadMoreHistory(): Promise<void> {
@@ -249,34 +361,50 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
 
   async function openHistoryConversation(conversationId: string): Promise<AiChatRuntime> {
     saveCurrentDraft();
+
+    const cachedEntry = runtimeEntries.get(conversationId);
+
+    if (cachedEntry) {
+      // 如果这个历史会话正在本页生成，直接切回原 runtime，避免丢失流式输出。
+      setActiveEntry(cachedEntry);
+      return cachedEntry.runtime;
+    }
+
     const detail = await options.apis.getAgentConversationDetail(conversationId);
     const messages = (detail.messages ?? []).map(toAiChatMessage);
 
-    agentConversationId.value = conversationId;
-    agentSessionId.value = '';
-    activeHistoryId.value = conversationId;
-
-    if (runtime.value) {
-      runtime.value.reset(messages);
-    } else {
-      runtime.value = createRuntime(messages);
-    }
+    const entry = shallowReactive<ConversationRuntimeEntry>({
+      key: conversationId,
+      conversationId,
+      sessionId: '',
+      runtime: undefined as unknown as AiChatRuntime,
+    });
+    entry.runtime = createRuntime(entry, messages);
+    cacheRuntimeEntry(entry);
+    setActiveEntry(entry);
     restoreDraft(conversationId);
 
-    return runtime.value;
+    return entry.runtime;
   }
 
   async function deleteHistoryConversation(conversationId: string): Promise<void> {
     await options.apis.deleteAgentConversation(conversationId);
     conversationDrafts.delete(conversationId);
     historyItems.value = historyItems.value.filter((item) => item.id !== conversationId);
+    const deletedEntry = runtimeEntries.get(conversationId);
+
+    if (deletedEntry) {
+      deletedEntry.runtime.clear();
+      Array.from(runtimeEntries.entries()).forEach(([key, entry]) => {
+        if (entry === deletedEntry) {
+          runtimeEntries.delete(key);
+        }
+      });
+      touchRuntimeEntries();
+    }
 
     if (activeHistoryId.value === conversationId) {
-      agentConversationId.value = '';
-      agentSessionId.value = '';
-      activeHistoryId.value = '';
-      runtime.value?.reset();
-      restoreDraft(NEW_CONVERSATION_DRAFT_KEY);
+      createConversation();
     }
   }
 
@@ -286,16 +414,24 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   }
 
   function clear(): void {
-    runtime.value?.clear();
+    getUniqueRuntimeEntries().forEach((entry) => {
+      entry.runtime.clear();
+    });
+    runtimeEntries.clear();
+    touchRuntimeEntries();
+    activeEntry.value = undefined;
   }
 
   return {
     runtime,
     activeHistoryId,
+    activeRuntimeKey,
     historyItems,
     historyLoading,
     historyNoMore,
+    runningHistoryIds,
     pendingConfirm,
+    loading,
     createConversation,
     loadHistory,
     loadMoreHistory,

@@ -19,26 +19,27 @@
       </div>
 
       <van-list
-        :loading="loading"
+        v-model:loading="listLoading"
         :finished="noMore"
         :finished-text="items.length ? t('common.listFinishedTip') : ''"
         class="flex-1 overflow-y-auto"
-        @load="emit('reachBottom')"
+        @load="handleReachBottom"
       >
         <van-empty v-if="items.length === 0 && !loading" :description="t('aiChat.noConversation')" />
 
         <van-swipe-cell v-for="item in items" :key="item.id">
           <div
-            class="px-[16px] py-[12px]"
+            class="flex items-center gap-[8px] px-[16px] py-[12px]"
             :class="{ '!bg-[var(--primary-7)]': activeId === item.id }"
             @click="handleClick(item.id)"
           >
             <div
-              class="truncate text-[14px] text-[var(--text-n1)]"
+              class="min-w-0 flex-1 truncate text-[14px] text-[var(--text-n1)]"
               :class="{ '!text-[var(--primary-8)]': activeId === item.id }"
             >
               {{ item.title }}
             </div>
+            <span v-if="isHistoryRunning(item.id)" class="ai-mobile-history-loading" />
           </div>
           <template #right>
             <van-button square type="primary" class="h-full" @click="openRename(item)">
@@ -117,12 +118,14 @@
       activeId?: string;
       loading?: boolean;
       noMore?: boolean;
+      runningIds?: string[];
     }>(),
     {
       items: () => [],
       activeId: '',
       loading: false,
       noMore: true,
+      runningIds: () => [],
     }
   );
 
@@ -139,10 +142,24 @@
   const { t } = useI18n();
 
   const keyword = ref('');
+  const listLoading = ref(false);
+
+  function isHistoryRunning(id: string): boolean {
+    return props.runningIds.includes(id);
+  }
 
   const handleSearchChange = debounce(() => {
     emit('search', keyword.value.trim());
   }, 300);
+
+  function handleReachBottom(): void {
+    if (props.loading || props.noMore) {
+      listLoading.value = props.loading;
+      return;
+    }
+
+    emit('reachBottom');
+  }
 
   function handleClick(id: string): void {
     emit('click', id);
@@ -199,6 +216,14 @@
     }
   });
 
+  watch(
+    () => props.loading,
+    (value) => {
+      listLoading.value = value;
+    },
+    { immediate: true }
+  );
+
   onBeforeUnmount(() => {
     handleSearchChange.cancel();
   });
@@ -214,6 +239,20 @@
   .ai-mobile-history-rename__field {
     :deep(.van-field__label) {
       width: 80px;
+    }
+  }
+  .ai-mobile-history-loading {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--text-n7);
+    border-top-color: var(--text-n4);
+    border-radius: 50%;
+    animation: ai-mobile-history-loading 0.8s linear infinite;
+  }
+  @keyframes ai-mobile-history-loading {
+    to {
+      transform: rotate(360deg);
     }
   }
 </style>
