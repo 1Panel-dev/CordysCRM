@@ -248,14 +248,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px solid var(--text-n8);
     &--user {
       justify-content: flex-end;
     }
     &--assistant {
+      margin-top: 8px;
       width: 100%;
+      border-top: 1px solid var(--text-n8);
     }
   }
 </style>

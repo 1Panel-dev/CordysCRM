@@ -32,7 +32,7 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
 
-  import { formatAiChatDuration, type AiChatMessagePart } from '@lib/shared/ai-chat';
+  import { type AiChatMessagePart, formatAiChatDuration } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import AiMobileMarkdownBlock from './AiMobileMarkdownBlock.vue';

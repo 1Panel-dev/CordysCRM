@@ -77,7 +77,8 @@
   const threadRef = ref<HTMLElement | null>(null);
   const shouldStickToBottom = ref(true);
   const messages = computed(() => runtime.state.messages.value);
-  const latestMessageId = computed(() => messages.value.at(-1)?.id);
+  const latestMessage = computed(() => messages.value.at(-1));
+  const latestMessageId = computed(() => latestMessage.value?.id);
   const emptySuggestionList = [
     {
       icon: 'icon-ai',
@@ -142,6 +143,11 @@
   watch(
     () => JSON.stringify(messages.value.map((message) => [message.id, message.parts.length, message.parts.at(-1)])),
     () => {
+      if (latestMessage.value?.role === 'user') {
+        scrollToBottom();
+        return;
+      }
+
       if (shouldStickToBottom.value) {
         scrollToBottom();
       }

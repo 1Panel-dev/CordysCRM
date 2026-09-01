@@ -259,6 +259,9 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
           );
       historyNoMore.value = historyItems.value.length >= (res.total ?? 0);
       historyCurrent.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     } finally {
       historyLoading.value = false;
     }
@@ -370,47 +373,63 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       return cachedEntry.runtime;
     }
 
-    const detail = await options.apis.getAgentConversationDetail(conversationId);
-    const messages = (detail.messages ?? []).map(toAiChatMessage);
+    try {
+      const detail = await options.apis.getAgentConversationDetail(conversationId);
+      const messages = (detail.messages ?? []).map(toAiChatMessage);
 
-    const entry = shallowReactive<ConversationRuntimeEntry>({
-      key: conversationId,
-      conversationId,
-      sessionId: '',
-      runtime: undefined as unknown as AiChatRuntime,
-    });
-    entry.runtime = createRuntime(entry, messages);
-    cacheRuntimeEntry(entry);
-    setActiveEntry(entry);
-    restoreDraft(conversationId);
+      const entry = shallowReactive<ConversationRuntimeEntry>({
+        key: conversationId,
+        conversationId,
+        sessionId: '',
+        runtime: undefined as unknown as AiChatRuntime,
+      });
+      entry.runtime = createRuntime(entry, messages);
+      cacheRuntimeEntry(entry);
+      setActiveEntry(entry);
+      restoreDraft(conversationId);
 
-    return entry.runtime;
+      return entry.runtime;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      return runtime.value ?? createConversation();
+    }
   }
 
   async function deleteHistoryConversation(conversationId: string): Promise<void> {
-    await options.apis.deleteAgentConversation(conversationId);
-    conversationDrafts.delete(conversationId);
-    historyItems.value = historyItems.value.filter((item) => item.id !== conversationId);
-    const deletedEntry = runtimeEntries.get(conversationId);
+    try {
+      await options.apis.deleteAgentConversation(conversationId);
+      conversationDrafts.delete(conversationId);
+      historyItems.value = historyItems.value.filter((item) => item.id !== conversationId);
+      const deletedEntry = runtimeEntries.get(conversationId);
 
-    if (deletedEntry) {
-      deletedEntry.runtime.clear();
-      Array.from(runtimeEntries.entries()).forEach(([key, entry]) => {
-        if (entry === deletedEntry) {
-          runtimeEntries.delete(key);
-        }
-      });
-      touchRuntimeEntries();
-    }
+      if (deletedEntry) {
+        deletedEntry.runtime.clear();
+        Array.from(runtimeEntries.entries()).forEach(([key, entry]) => {
+          if (entry === deletedEntry) {
+            runtimeEntries.delete(key);
+          }
+        });
+        touchRuntimeEntries();
+      }
 
-    if (activeHistoryId.value === conversationId) {
-      createConversation();
+      if (activeHistoryId.value === conversationId) {
+        createConversation();
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     }
   }
 
   async function renameHistoryConversation(conversationId: string, title: string): Promise<void> {
-    await options.apis.renameAgentConversation(conversationId, { title });
-    historyItems.value = historyItems.value.map((item) => (item.id === conversationId ? { ...item, title } : item));
+    try {
+      await options.apis.renameAgentConversation(conversationId, { title });
+      historyItems.value = historyItems.value.map((item) => (item.id === conversationId ? { ...item, title } : item));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   function clear(): void {
