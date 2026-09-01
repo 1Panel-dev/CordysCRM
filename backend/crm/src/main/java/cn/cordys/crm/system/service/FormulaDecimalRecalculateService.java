@@ -30,6 +30,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -57,6 +58,12 @@ public class FormulaDecimalRecalculateService {
     private static final String STATUS_RUNNING = "RUNNING";
     private static final String STATUS_SUCCESS = "SUCCESS";
     private static final String STATUS_ERROR = "ERROR";
+    private static final String CONTRACT_TOTAL_AMOUNT_KEY = "contractTotalAmount";
+    private static final String CONTRACT_PRODUCTS_KEY = "contractProducts";
+    private static final String CONTRACT_PRODUCT_AMOUNT_KEY = "contractProductSumAmount";
+    private static final String ORDER_TOTAL_AMOUNT_KEY = "orderAmount";
+    private static final String ORDER_PRODUCTS_KEY = "orderProducts";
+    private static final String ORDER_PRODUCT_AMOUNT_KEY = "orderProductAmount";
 
     private final Map<String, RecalculateTask> taskMap = new ConcurrentHashMap<>();
 
@@ -168,10 +175,12 @@ public class FormulaDecimalRecalculateService {
             return result;
         }
         for (List<String> batchIds : partition(plan.getContractIds())) {
-            result.merge(recalculateBatch(batchIds, plan.getTask(), id -> recalculateContractResource(id, plan.getContractFormulaFieldMap())));
+            result.merge(recalculateBatch(batchIds, plan.getTask(), id -> recalculateContractResource(id,
+                    plan.getContractFormulaFieldMap(), plan.getContractAmountFieldConfig())));
         }
         for (List<String> batchIds : partition(plan.getOrderIds())) {
-            result.merge(recalculateBatch(batchIds, plan.getTask(), id -> recalculateOrderResource(id, plan.getOrderFormulaFieldMap())));
+            result.merge(recalculateBatch(batchIds, plan.getTask(), id -> recalculateOrderResource(id,
+                    plan.getOrderFormulaFieldMap(), plan.getOrderAmountFieldConfig())));
         }
         return result;
     }
@@ -227,6 +236,8 @@ public class FormulaDecimalRecalculateService {
                         .map(Contract::getId)
                         .toList();
                 plan.setContractFormulaFieldMap(formulaFieldMap);
+                plan.setContractAmountFieldConfig(getAmountFieldConfig(formConfig, CONTRACT_TOTAL_AMOUNT_KEY,
+                        CONTRACT_PRODUCTS_KEY, CONTRACT_PRODUCT_AMOUNT_KEY));
                 plan.setContractIds(contractIds);
             }
         }
@@ -240,6 +251,8 @@ public class FormulaDecimalRecalculateService {
                         .map(Order::getId)
                         .toList();
                 plan.setOrderFormulaFieldMap(formulaFieldMap);
+                plan.setOrderAmountFieldConfig(getAmountFieldConfig(formConfig, ORDER_TOTAL_AMOUNT_KEY,
+                        ORDER_PRODUCTS_KEY, ORDER_PRODUCT_AMOUNT_KEY));
                 plan.setOrderIds(orderIds);
             }
         }
@@ -247,40 +260,46 @@ public class FormulaDecimalRecalculateService {
         return plan;
     }
 
-    private RecalculateResult recalculateContractResource(String contractId, Map<String, FormulaField> formulaFieldMap) {
+    private RecalculateResult recalculateContractResource(String contractId, Map<String, FormulaField> formulaFieldMap,
+                                                          AmountFieldConfig amountFieldConfig) {
         RecalculateResult result = new RecalculateResult();
         result.merge(recalculateContractOriginalFields(contractId, formulaFieldMap));
+        result.addBusinessAmount(recalculateContractAmount(contractId, amountFieldConfig));
 
         List<ContractSnapshot> snapshots = contractSnapshotMapper.selectListByLambda(new LambdaQueryWrapper<ContractSnapshot>()
                 .eq(ContractSnapshot::getContractId, contractId));
         for (ContractSnapshot snapshot : snapshots) {
             boolean propChanged = syncSnapshotProp(snapshot.getContractProp(), formulaFieldMap, snapshot::setContractProp);
-            boolean valueChanged = recalculateSnapshotValue(snapshot.getContractValue(), ContractGetResponse.class, formulaFieldMap,
-                    snapshot::setContractValue);
-            if (propChanged || valueChanged) {
+            SnapshotValueRecalculateResult valueResult = recalculateSnapshotValue(snapshot.getContractValue(), ContractGetResponse.class,
+                    formulaFieldMap, amountFieldConfig, snapshot::setContractValue);
+            if (propChanged || valueResult.isChanged()) {
                 contractSnapshotMapper.update(snapshot);
             }
             result.addSnapshotProp(propChanged);
-            result.addSnapshotValue(valueChanged);
+            result.addSnapshotValue(valueResult.isChanged());
+            result.addSnapshotAmount(valueResult.isAmountChanged());
         }
         return result;
     }
 
-    private RecalculateResult recalculateOrderResource(String orderId, Map<String, FormulaField> formulaFieldMap) {
+    private RecalculateResult recalculateOrderResource(String orderId, Map<String, FormulaField> formulaFieldMap,
+                                                       AmountFieldConfig amountFieldConfig) {
         RecalculateResult result = new RecalculateResult();
         result.merge(recalculateOrderOriginalFields(orderId, formulaFieldMap));
+        result.addBusinessAmount(recalculateOrderAmount(orderId, amountFieldConfig));
 
         List<OrderSnapshot> snapshots = orderSnapshotMapper.selectListByLambda(new LambdaQueryWrapper<OrderSnapshot>()
                 .eq(OrderSnapshot::getOrderId, orderId));
         for (OrderSnapshot snapshot : snapshots) {
             boolean propChanged = syncSnapshotProp(snapshot.getOrderProp(), formulaFieldMap, snapshot::setOrderProp);
-            boolean valueChanged = recalculateSnapshotValue(snapshot.getOrderValue(), OrderGetResponse.class, formulaFieldMap,
-                    snapshot::setOrderValue);
-            if (propChanged || valueChanged) {
+            SnapshotValueRecalculateResult valueResult = recalculateSnapshotValue(snapshot.getOrderValue(), OrderGetResponse.class,
+                    formulaFieldMap, amountFieldConfig, snapshot::setOrderValue);
+            if (propChanged || valueResult.isChanged()) {
                 orderSnapshotMapper.update(snapshot);
             }
             result.addSnapshotProp(propChanged);
-            result.addSnapshotValue(valueChanged);
+            result.addSnapshotValue(valueResult.isChanged());
+            result.addSnapshotAmount(valueResult.isAmountChanged());
         }
         return result;
     }
@@ -323,6 +342,58 @@ public class FormulaDecimalRecalculateService {
             result.originalFields++;
         }
         return result;
+    }
+
+    private boolean recalculateContractAmount(String contractId, AmountFieldConfig amountFieldConfig) {
+        if (!amountFieldConfig.valid()) {
+            return false;
+        }
+        BigDecimal amount = calculateContractAmount(contractId, amountFieldConfig);
+        Contract contract = contractMapper.selectByPrimaryKey(contractId);
+        if (contract == null || !amountChanged(contract.getAmount(), amount)) {
+            return false;
+        }
+        Contract update = new Contract();
+        update.setId(contractId);
+        update.setAmount(amount);
+        contractMapper.update(update);
+        return true;
+    }
+
+    private boolean recalculateOrderAmount(String orderId, AmountFieldConfig amountFieldConfig) {
+        if (!amountFieldConfig.valid()) {
+            return false;
+        }
+        BigDecimal amount = calculateOrderAmount(orderId, amountFieldConfig);
+        Order order = orderMapper.selectByPrimaryKey(orderId);
+        if (order == null || !amountChanged(order.getAmount(), amount)) {
+            return false;
+        }
+        Order update = new Order();
+        update.setId(orderId);
+        update.setAmount(amount);
+        orderMapper.update(update);
+        return true;
+    }
+
+    private BigDecimal calculateContractAmount(String contractId, AmountFieldConfig amountFieldConfig) {
+        List<ContractField> amountFields = contractFieldMapper.selectListByLambda(new LambdaQueryWrapper<ContractField>()
+                .eq(ContractField::getResourceId, contractId)
+                .eq(ContractField::getRefSubId, amountFieldConfig.getSubTableFieldId())
+                .eq(ContractField::getFieldId, amountFieldConfig.getAmountSubFieldId()));
+        return formatBusinessAmount(amountFieldConfig, sumFieldValues(amountFields.stream()
+                .map(ContractField::getFieldValue)
+                .toList()));
+    }
+
+    private BigDecimal calculateOrderAmount(String orderId, AmountFieldConfig amountFieldConfig) {
+        List<OrderField> amountFields = orderFieldMapper.selectListByLambda(new LambdaQueryWrapper<OrderField>()
+                .eq(OrderField::getResourceId, orderId)
+                .eq(OrderField::getRefSubId, amountFieldConfig.getSubTableFieldId())
+                .eq(OrderField::getFieldId, amountFieldConfig.getAmountSubFieldId()));
+        return formatBusinessAmount(amountFieldConfig, sumFieldValues(amountFields.stream()
+                .map(OrderField::getFieldValue)
+                .toList()));
     }
 
     private RecalculateResult recalculateBatch(List<String> resourceIds, RecalculateTask task, Function<String, RecalculateResult> resourceHandler) {
@@ -376,24 +447,30 @@ public class FormulaDecimalRecalculateService {
         return value.toString().replace(",", "");
     }
 
-    private boolean recalculateSnapshotValue(String snapshotValue,
-                                             Class<?> responseClass,
-                                             Map<String, FormulaField> formulaFieldMap,
-                                             Consumer<String> setter) {
+    private SnapshotValueRecalculateResult recalculateSnapshotValue(String snapshotValue,
+                                                                    Class<?> responseClass,
+                                                                    Map<String, FormulaField> formulaFieldMap,
+                                                                    AmountFieldConfig amountFieldConfig,
+                                                                    Consumer<String> setter) {
+        SnapshotValueRecalculateResult result = new SnapshotValueRecalculateResult();
         if (StringUtils.isBlank(snapshotValue)) {
-            return false;
+            return result;
         }
         try {
             Object response = JSON.parseObject(snapshotValue, responseClass);
             List<BaseModuleFieldValue> moduleFields = getModuleFields(response);
-            if (!recalculateModuleFields(moduleFields, formulaFieldMap)) {
-                return false;
+            boolean moduleFieldsChanged = recalculateModuleFields(moduleFields, formulaFieldMap);
+            boolean amountChanged = recalculateSnapshotAmount(response, moduleFields, amountFieldConfig);
+            if (!moduleFieldsChanged && !amountChanged) {
+                return result;
             }
             setter.accept(JSON.toJSONString(response));
-            return true;
+            result.setChanged(true);
+            result.setAmountChanged(amountChanged);
+            return result;
         } catch (Exception e) {
             log.warn("Recalculate snapshot formula value failed", e);
-            return false;
+            return result;
         }
     }
 
@@ -444,6 +521,52 @@ public class FormulaDecimalRecalculateService {
             }
         }
         return changed;
+    }
+
+    private boolean recalculateSnapshotAmount(Object response, List<BaseModuleFieldValue> moduleFields, AmountFieldConfig amountFieldConfig) {
+        if (!amountFieldConfig.valid() || CollectionUtils.isEmpty(moduleFields)) {
+            return false;
+        }
+        BigDecimal amount = calculateSnapshotAmount(moduleFields, amountFieldConfig);
+        if (response instanceof ContractGetResponse contractResponse) {
+            return updateSnapshotAmount(contractResponse.getAmount(), amount, contractResponse::setAmount);
+        }
+        if (response instanceof OrderGetResponse orderResponse) {
+            return updateSnapshotAmount(orderResponse.getAmount(), amount, orderResponse::setAmount);
+        }
+        return false;
+    }
+
+    private BigDecimal calculateSnapshotAmount(List<BaseModuleFieldValue> moduleFields, AmountFieldConfig amountFieldConfig) {
+        return moduleFields.stream()
+                .filter(moduleField -> Strings.CS.equals(moduleField.getFieldId(), amountFieldConfig.getSubTableFieldId()))
+                .findFirst()
+                .map(BaseModuleFieldValue::getFieldValue)
+                .map(value -> sumSnapshotSubTableAmount(value, amountFieldConfig.getAmountSubFieldId()))
+                .map(amount -> formatBusinessAmount(amountFieldConfig, amount))
+                .orElse(BigDecimal.ZERO);
+    }
+
+    private BigDecimal sumSnapshotSubTableAmount(Object subTableValue, String amountSubFieldId) {
+        if (!(subTableValue instanceof List<?> rows)) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal amount = BigDecimal.ZERO;
+        for (Object row : rows) {
+            if (!(row instanceof Map<?, ?> rowMap)) {
+                continue;
+            }
+            amount = amount.add(toBigDecimal(rowMap.get(amountSubFieldId)));
+        }
+        return amount;
+    }
+
+    private boolean updateSnapshotAmount(BigDecimal currentAmount, BigDecimal newAmount, Consumer<BigDecimal> setter) {
+        if (!amountChanged(currentAmount, newAmount)) {
+            return false;
+        }
+        setter.accept(newAmount);
+        return true;
     }
 
     private boolean syncSnapshotProp(String snapshotProp, Map<String, FormulaField> currentFormulaFieldMap, Consumer<String> setter) {
@@ -515,6 +638,77 @@ public class FormulaDecimalRecalculateService {
                 .collect(Collectors.toMap(FormulaField::getId, Function.identity(), (prev, next) -> next, LinkedHashMap::new));
     }
 
+    private AmountFieldConfig getAmountFieldConfig(ModuleFormConfigDTO formConfig,
+                                                   String totalAmountInternalKey,
+                                                   String subTableInternalKey,
+                                                   String amountSubFieldInternalKey) {
+        AmountFieldConfig amountFieldConfig = new AmountFieldConfig();
+        if (formConfig == null || CollectionUtils.isEmpty(formConfig.getFields())) {
+            return amountFieldConfig;
+        }
+        for (BaseField field : formConfig.getFields()) {
+            if (field instanceof FormulaField formulaField
+                    && Strings.CS.equals(formulaField.getInternalKey(), totalAmountInternalKey)) {
+                amountFieldConfig.setTotalAmountField(formulaField);
+                continue;
+            }
+            if (!(field instanceof SubField subField) || !Strings.CS.equals(subField.getInternalKey(), subTableInternalKey)) {
+                continue;
+            }
+            amountFieldConfig.setSubTableFieldId(subField.getId());
+            if (CollectionUtils.isEmpty(subField.getSubFields())) {
+                continue;
+            }
+            subField.getSubFields().stream()
+                    .filter(subTableField -> Strings.CS.equals(subTableField.getInternalKey(), amountSubFieldInternalKey))
+                    .findFirst()
+                    .ifPresent(subTableField -> amountFieldConfig.setAmountSubFieldId(subTableField.getId()));
+        }
+        return amountFieldConfig;
+    }
+
+    private BigDecimal formatBusinessAmount(AmountFieldConfig amountFieldConfig, BigDecimal amount) {
+        Object formattedValue = recalculateValue(amountFieldConfig.getTotalAmountField(), toPlainAmount(amount));
+        return toBigDecimal(formattedValue);
+    }
+
+    private BigDecimal sumFieldValues(List<?> values) {
+        if (CollectionUtils.isEmpty(values)) {
+            return BigDecimal.ZERO;
+        }
+        return values.stream()
+                .map(this::toBigDecimal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value == null || StringUtils.isBlank(value.toString())) {
+            return BigDecimal.ZERO;
+        }
+        try {
+            return new BigDecimal(normalizeNumberText(value));
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    private String toPlainAmount(BigDecimal amount) {
+        if (amount == null) {
+            return BigDecimal.ZERO.toPlainString();
+        }
+        return amount.stripTrailingZeros().toPlainString();
+    }
+
+    private boolean amountChanged(BigDecimal currentAmount, BigDecimal newAmount) {
+        if (currentAmount == null) {
+            return newAmount != null && newAmount.compareTo(BigDecimal.ZERO) != 0;
+        }
+        if (newAmount == null) {
+            return currentAmount.compareTo(BigDecimal.ZERO) != 0;
+        }
+        return currentAmount.compareTo(newAmount) != 0;
+    }
+
     private <T> Set<String> getOrganizationIds(List<T> resources, Function<T, String> organizationGetter) {
         if (CollectionUtils.isEmpty(resources)) {
             return Set.of();
@@ -543,10 +737,31 @@ public class FormulaDecimalRecalculateService {
         private String orgId;
         private List<String> contractIds = List.of();
         private Map<String, FormulaField> contractFormulaFieldMap = Map.of();
+        private AmountFieldConfig contractAmountFieldConfig = new AmountFieldConfig();
         private List<String> orderIds = List.of();
         private Map<String, FormulaField> orderFormulaFieldMap = Map.of();
+        private AmountFieldConfig orderAmountFieldConfig = new AmountFieldConfig();
         private long total;
         private RecalculateTask task;
+    }
+
+    @Data
+    private static class AmountFieldConfig {
+        private FormulaField totalAmountField;
+        private String subTableFieldId;
+        private String amountSubFieldId;
+
+        public boolean valid() {
+            return totalAmountField != null
+                    && StringUtils.isNotBlank(subTableFieldId)
+                    && StringUtils.isNotBlank(amountSubFieldId);
+        }
+    }
+
+    @Data
+    private static class SnapshotValueRecalculateResult {
+        private boolean changed;
+        private boolean amountChanged;
     }
 
     @Data
@@ -571,6 +786,8 @@ public class FormulaDecimalRecalculateService {
         private long originalFields;
         private long snapshotValues;
         private long snapshotProps;
+        private long businessAmounts;
+        private long snapshotAmounts;
         private long failures;
 
         public void addSnapshotValue(boolean changed) {
@@ -585,6 +802,18 @@ public class FormulaDecimalRecalculateService {
             }
         }
 
+        public void addBusinessAmount(boolean changed) {
+            if (changed) {
+                businessAmounts++;
+            }
+        }
+
+        public void addSnapshotAmount(boolean changed) {
+            if (changed) {
+                snapshotAmounts++;
+            }
+        }
+
         public void merge(RecalculateResult other) {
             if (other == null) {
                 return;
@@ -592,6 +821,8 @@ public class FormulaDecimalRecalculateService {
             originalFields += other.originalFields;
             snapshotValues += other.snapshotValues;
             snapshotProps += other.snapshotProps;
+            businessAmounts += other.businessAmounts;
+            snapshotAmounts += other.snapshotAmounts;
             failures += other.failures;
         }
     }
