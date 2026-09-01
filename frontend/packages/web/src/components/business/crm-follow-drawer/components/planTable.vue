@@ -6,6 +6,7 @@
       class="crm-plan-table"
       :columns="tableColumns"
       :not-show-table="activeShowType === 'timeline'"
+      :hiddenBackToTop="activeShowType === 'timeline'"
       :action-config="{ baseAction: [] }"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -532,7 +533,23 @@
     });
   }
 
-  watch([() => activeTab.value, () => tableRefreshId.value, () => activeStatus.value], () => {
+  watch(
+    () => activeTab.value,
+    (viewId) => {
+      if (viewId) {
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId,
+          status: activeStatus.value,
+        });
+        crmTableRef.value?.setColumnSort(viewId);
+      } else {
+        searchData();
+      }
+    }
+  );
+
+  watch([() => tableRefreshId.value, () => activeStatus.value], () => {
     searchData();
   });
 

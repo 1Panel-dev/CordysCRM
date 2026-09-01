@@ -5,6 +5,7 @@
       v-bind="propsRes"
       class="crm-record-table"
       :not-show-table="activeShowType === 'timeline'"
+      :hiddenBackToTop="activeShowType === 'timeline'"
       :action-config="{ baseAction: [] }"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -355,9 +356,27 @@
     });
   }
 
-  watch([() => activeTab.value, () => tableRefreshId.value], () => {
-    searchData();
-  });
+  watch(
+    () => activeTab.value,
+    (viewId) => {
+      if (viewId) {
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId,
+        });
+        crmTableRef.value?.setColumnSort(viewId);
+      } else {
+        searchData();
+      }
+    }
+  );
+
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      searchData();
+    }
+  );
 
   const activeShowType = ref<'table' | 'timeline'>();
   watch(

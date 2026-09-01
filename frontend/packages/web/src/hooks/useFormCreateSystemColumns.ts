@@ -264,6 +264,8 @@ export default async function useFormCreateSystemColumns(
       key: 'phone',
       title: t('common.phoneNumber'),
       width: 120,
+      sortOrder: false,
+      sorter: true,
       ellipsis: {
         tooltip: true,
       },
@@ -294,6 +296,8 @@ export default async function useFormCreateSystemColumns(
       key: 'phone',
       title: t('common.phoneNumber'),
       width: 120,
+      sortOrder: false,
+      sorter: true,
       ellipsis: {
         tooltip: true,
       },

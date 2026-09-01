@@ -225,7 +225,6 @@
 
 <style lang="less">
   .crm-list {
-    width: calc(100% + 5px);
     .crm-container--shadow-y();
     .v-vl-visible-items {
       padding-right: 5px;
