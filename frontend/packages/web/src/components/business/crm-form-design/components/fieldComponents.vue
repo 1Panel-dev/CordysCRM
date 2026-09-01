@@ -79,6 +79,9 @@
       FormDesignKeyEnum.ORDER,
       FormDesignKeyEnum.INVOICE,
       FormDesignKeyEnum.CUSTOM_FORM,
+      FormDesignKeyEnum.BUSINESS,
+      FormDesignKeyEnum.CONTRACT_PAYMENT,
+      FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
     ].includes(props.formKey)
   ) {
     advancedFields.forEach((field) => {
