@@ -83,7 +83,8 @@
   const shouldStickToBottom = ref(true);
 
   const messages = computed(() => runtime.state.messages.value);
-  const latestMessageId = computed(() => messages.value.at(-1)?.id);
+  const latestMessage = computed(() => messages.value.at(-1));
+  const latestMessageId = computed(() => latestMessage.value?.id);
   const showThreadLoading = computed(() => {
     const lastMessage = messages.value.at(-1);
 
@@ -92,16 +93,16 @@
   const showBackToBottom = computed(() => messages.value.length > 0 && !shouldStickToBottom.value);
 
   const latestMessageSnapshot = computed(() => {
-    const latestMessage = messages.value[messages.value.length - 1];
+    const snapshotMessage = messages.value[messages.value.length - 1];
 
-    if (!latestMessage) {
+    if (!snapshotMessage) {
       return '';
     }
 
     return [
-      latestMessage.id,
-      latestMessage.parts.length,
-      latestMessage.parts.map((part, index) => `${index}:${part.type}:${JSON.stringify(part).length}`).join('|'),
+      snapshotMessage.id,
+      snapshotMessage.parts.length,
+      snapshotMessage.parts.map((part, index) => `${index}:${part.type}:${JSON.stringify(part).length}`).join('|'),
     ].join(':');
   });
 
@@ -153,6 +154,11 @@
   watch(
     () => [messages.value.length, latestMessageSnapshot.value],
     () => {
+      if (latestMessage.value?.role === 'user') {
+        scrollToBottom();
+        return;
+      }
+
       if (!props.autoScroll || !shouldStickToBottom.value) {
         return;
       }
