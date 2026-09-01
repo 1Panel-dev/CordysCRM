@@ -1,5 +1,8 @@
 import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { StatusTagKey } from '@lib/shared/models/customer';
+
+const { t } = useI18n();
 
 export const statusMap: Record<
   StatusTagKey,
@@ -40,5 +43,12 @@ export const statusMap: Record<
     color: 'var(--text-n6)',
   },
 };
+
+export const followPlanStatus = computed(() =>
+  Object.values(statusMap).map((e) => ({
+    ...e,
+    label: t(e.label),
+  }))
+);
 
 export default {};

@@ -19,6 +19,7 @@ import {
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 import { formatFormulaResultValue } from '@/components/business/crm-formula/utils';
 
+import { followPlanStatus } from '@/config/follow';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import useUserStore from '@/store/modules/user';
 
@@ -132,14 +133,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
 
   const remoteFilterBusinessKey = ['products'];
 
-  function disableFilterAndSorter(cols: CrmDataTableColumn[]) {
-    return cols.map((c) => ({
-      ...c,
-      filter: false,
-      sorter: false,
-    })) as CrmDataTableColumn[];
-  }
-
   function getFollowColumn(fields: FormCreateField[]): CrmDataTableColumn[] {
     if (props.formKey === FormDesignKeyEnum.FOLLOW_PLAN || props.formKey === FormDesignKeyEnum.FOLLOW_RECORD) {
       const customerField = fields.find((item) => item.businessKey === 'customerId');
@@ -152,6 +145,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           key: 'name',
           render: props.specialRender?.name,
           fixed: 'left',
+          sortOrder: false,
+          sorter: true,
           fieldId: (customerField ?? clueField)?.id,
           filedType: (customerField ?? clueField)?.type,
           columnSelectorDisabled: true,
@@ -164,6 +159,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           title: t('common.status'),
           width: 120,
           key: 'status',
+          filter: true,
+          filterOptions: followPlanStatus.value,
           render: props.specialRender?.status,
         });
       }
@@ -200,7 +197,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               [FormDesignKeyEnum.CLUE_POOL, FormDesignKeyEnum.CUSTOMER_OPEN_SEA].includes(props.formKey)
             ) &&
             e.readable &&
-            !(isFollowModule && ['clueId', 'customerId'].includes(e.businessKey as string))
+            !['clueId', 'customerId'].includes(e.businessKey as string)
         )
         .map((field) => {
           let key = field.businessKey || field.id;
@@ -534,9 +531,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ...(internalColumnMap[props.formKey] || []),
         ...staticColumns,
       ];
-      if (isFollowModule) {
-        columns.value = disableFilterAndSorter(columns.value);
-      }
       if (
         !_readOnly &&
         !props.readonly &&
