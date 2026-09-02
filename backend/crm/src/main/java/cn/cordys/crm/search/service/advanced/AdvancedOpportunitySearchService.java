@@ -18,7 +18,7 @@ import cn.cordys.crm.opportunity.constants.OpportunityStageType;
 import cn.cordys.crm.opportunity.domain.OpportunityRule;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
-import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
+import cn.cordys.crm.opportunity.dto.response.OpportunityStageResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.opportunity.service.OpportunityFieldService;
@@ -144,10 +144,10 @@ public class AdvancedOpportunitySearchService extends BaseSearchService<Opportun
         Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(ownerIds, orgId);
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
-        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        Map<String, StageConfigResponse> endConfigMaps = stageConfigList.stream().filter(config ->
+        List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        Map<String, OpportunityStageResponse> endConfigMaps = stageConfigList.stream().filter(config ->
                 Strings.CI.equals(config.getType(), OpportunityStageType.END.name())
-        ).collect(Collectors.toMap(StageConfigResponse::getId, Function.identity()));
+        ).collect(Collectors.toMap(OpportunityStageResponse::getId, Function.identity()));
 
         // 失败原因
         DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), orgId);

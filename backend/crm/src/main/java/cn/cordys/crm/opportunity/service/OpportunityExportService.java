@@ -9,7 +9,7 @@ import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.utils.OpportunityFieldUtils;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
-import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
+import cn.cordys.crm.opportunity.dto.response.OpportunityStageResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.system.dto.field.base.BaseField;
@@ -67,7 +67,7 @@ public class OpportunityExportService extends BaseExportService {
         return (Map<String, String>) exportParam.getExtraParams()
                 .computeIfAbsent(STAGE_CONFIG_MAP_KEY, key ->
                         extOpportunityStageConfigMapper.getStageConfigList(exportParam.getOrgId())
-                                .stream().collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName)));
+                                .stream().collect(Collectors.toMap(OpportunityStageResponse::getId, OpportunityStageResponse::getName)));
     }
 
     private List<OpportunityListResponse> collectExportList(ExportDTO exportParam) {

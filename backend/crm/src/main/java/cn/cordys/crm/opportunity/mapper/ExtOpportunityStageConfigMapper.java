@@ -3,7 +3,7 @@ package cn.cordys.crm.opportunity.mapper;
 import cn.cordys.common.dto.stage.StageRollBackRequest;
 import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;
 import cn.cordys.crm.opportunity.dto.request.StageUpdateRequest;
-import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
+import cn.cordys.crm.opportunity.dto.response.OpportunityStageResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public interface ExtOpportunityStageConfigMapper {
 
     void moveDownStageConfig(@Param("start") Long start, @Param("orgId") String orgId, @Param("pos") Long pos);
 
-    List<StageConfigResponse> getStageConfigList(@Param("orgId") String orgId);
+    List<OpportunityStageResponse> getStageConfigList(@Param("orgId") String orgId);
 
     void updateRollBack(@Param("request") StageRollBackRequest request, @Param("orgId") String orgId);
 
