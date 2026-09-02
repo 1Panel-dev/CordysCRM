@@ -165,14 +165,17 @@
         {
           label: t('crmFormDesign.option', { i: 1 }),
           value: getGenerateId(),
+          ...([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(newField.type) ? { disabled: false } : {}),
         },
         {
           label: t('crmFormDesign.option', { i: 2 }),
           value: getGenerateId(),
+          ...([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(newField.type) ? { disabled: false } : {}),
         },
         {
           label: t('crmFormDesign.option', { i: 3 }),
           value: getGenerateId(),
+          ...([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(newField.type) ? { disabled: false } : {}),
         },
       ];
       newField.customOptions = [...newField.options];

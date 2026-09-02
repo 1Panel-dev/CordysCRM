@@ -9,6 +9,7 @@ import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 import type { Option } from 'naive-ui/es/transfer/src/interface';
 
 export interface FormCreateFieldOption extends Option {
+  disabled?: boolean;
   [key: string]: any;
 }
 

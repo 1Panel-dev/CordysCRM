@@ -53,6 +53,7 @@
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
     isDescriptionRender?: boolean; // 是否是描述渲染
+    isDesignRender?: boolean; // 是否为表单设计器预览
     disabled?: boolean;
   }>();
   const emit = defineEmits<{
@@ -66,17 +67,20 @@
   });
 
   const options = computed(() => {
+    const enabledOptions = props.fieldConfig.options?.filter((option) => option.disabled !== true) || [];
     if (props.fieldConfig.linkRange) {
-      return props.fieldConfig.options?.filter((option) => props.fieldConfig.linkRange?.includes(option.value)) || [];
+      return enabledOptions.filter((option) => props.fieldConfig.linkRange?.includes(option.value));
     }
-    return props.fieldConfig.options || [];
+    return enabledOptions;
   });
 
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
       if (!props.needInitDetail) {
-        value.value = value.value || val || (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '');
+        value.value = props.isDesignRender
+          ? val || (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '')
+          : value.value || val || (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '');
         emit('change', value.value);
       }
     }
@@ -90,8 +94,10 @@
   );
 
   function fallbackOption(val: string | number) {
+    const option = props.fieldConfig.options?.find((item) => item.value === val);
     return {
-      label: t('common.optionNotExist'),
+      // 禁用选项不在编辑下拉列表中，但历史已选值仍需展示原标签。
+      label: option?.label || t('common.optionNotExist'),
       value: val,
     };
   }

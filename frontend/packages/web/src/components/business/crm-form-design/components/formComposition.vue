@@ -238,14 +238,17 @@
         {
           label: t('crmFormDesign.option', { i: 1 }),
           value: getGenerateId(),
+          ...([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type) ? { disabled: false } : {}),
         },
         {
           label: t('crmFormDesign.option', { i: 2 }),
           value: getGenerateId(),
+          ...([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type) ? { disabled: false } : {}),
         },
         {
           label: t('crmFormDesign.option', { i: 3 }),
           value: getGenerateId(),
+          ...([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type) ? { disabled: false } : {}),
         },
       ];
       res.customOptions = [...res.options];
@@ -275,21 +278,26 @@
     const oldSubFields = isCopySubTable ? cloneDeep(res.subFields || []) : [];
 
     if (
-      [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT].includes(item.type) &&
+      [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(
+        item.type
+      ) &&
       item.options?.length === 0
     ) {
       res.options = [
         {
           label: t('crmFormDesign.option', { i: 1 }),
           value: getGenerateId(),
+          ...([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type) ? { disabled: false } : {}),
         },
         {
           label: t('crmFormDesign.option', { i: 2 }),
           value: getGenerateId(),
+          ...([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type) ? { disabled: false } : {}),
         },
         {
           label: t('crmFormDesign.option', { i: 3 }),
           value: getGenerateId(),
+          ...([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type) ? { disabled: false } : {}),
         },
       ];
       res.customOptions = [...res.options];
