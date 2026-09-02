@@ -190,8 +190,14 @@ public class CustomerController {
     public PagerWithOption<List<OpportunityListResponse>> list(@Validated @RequestBody CustomerOpportunityPageRequest request) {
         ConditionFilterUtils.parseCondition(request, FormKey.OPPORTUNITY.getKey());
         request.setViewId("ALL");
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
+        boolean owner = customerService.checkOwner(request.getCustomerId(),SessionUtils.getUserId());
+        if (!owner) {
+            deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                    OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        } else {
+            deptDataPermission.setAll(true);
+        }
         return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
     }
 
