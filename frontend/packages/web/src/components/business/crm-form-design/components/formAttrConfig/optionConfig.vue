@@ -26,17 +26,32 @@
     :disabled="props.disabled"
   >
     <div class="flex flex-col gap-[8px]">
-      <div v-for="(item, i) in fieldConfig.options" :key="item.value" class="flex items-center gap-[8px]">
-        <n-checkbox v-if="isMultiple" :value="item.value" @click="handleCheckBoxOptionClick(item.value)" />
+      <div
+        v-for="(item, i) in fieldConfig.options"
+        :key="item.value"
+        class="flex items-center gap-[8px]"
+        :class="isOptionDisabled(item) ? 'text-[var(--text-n4)]' : ''"
+      >
+        <n-checkbox
+          v-if="isMultiple"
+          :value="item.value"
+          :disabled="props.disabled || isOptionDisabled(item)"
+          @click="handleCheckBoxOptionClick(item.value)"
+        />
         <n-radio
           v-else
           :value="item.value"
           :default-checked="fieldConfig.defaultValue === item.value"
           class="flex items-center"
-          :disabled="props.disabled"
+          :disabled="props.disabled || isOptionDisabled(item)"
           @click="handleRadioOptionClick(item.value)"
         />
-        <n-input v-model:value="item.label" disabled class="flex-1" />
+        <n-input
+          v-model:value="item.label"
+          disabled
+          class="flex-1"
+          :class="isOptionDisabled(item) ? 'opacity-50' : ''"
+        />
       </div>
     </div>
   </component>
@@ -53,6 +68,7 @@
       draggable=".draggable"
       handle=".handle"
       class="flex flex-col gap-[8px]"
+      @change="syncCustomOptions"
     >
       <div
         v-for="(item, i) in fieldConfig.customOptions"
@@ -69,25 +85,30 @@
           <template #trigger>
             <CrmIcon
               type="iconicon_move"
-              class="handle cursor-move"
-              :class="item.value === 'other' ? 'cursor-not-allowed text-[var(--text-n6)]' : ''"
+              class="handle"
+              :class="item.value === 'other' ? 'cursor-not-allowed text-[var(--text-n6)]' : 'cursor-move'"
             />
           </template>
           {{ t('common.sort') }}
         </n-tooltip>
-        <n-checkbox v-if="isMultiple" :value="item.value" @click="handleCheckBoxOptionClick(item.value)" />
+        <n-checkbox
+          v-if="isMultiple"
+          :value="item.value"
+          :disabled="props.disabled || isOptionDisabled(item)"
+          @click="handleCheckBoxOptionClick(item.value)"
+        />
         <n-radio
           v-else
           :value="item.value"
           :default-checked="fieldConfig.defaultValue === item.value"
           class="flex items-center"
-          :disabled="props.disabled"
+          :disabled="props.disabled || isOptionDisabled(item)"
           @click="handleRadioOptionClick(item.value)"
         />
         <n-input
-          v-model:value="item.label"
+          :value="item.label"
           :maxlength="50"
-          :disabled="props.disabled"
+          :disabled="props.disabled || isOptionDisabled(item)"
           :status="
             fieldConfig.customOptions.some((e) => e.value !== item.value && e.label === item.label)
               ? 'error'
@@ -95,8 +116,23 @@
           "
           class="flex-1"
           clearable
+          @update:value="(value) => handleCustomOptionLabelChange(i, value)"
         ></n-input>
-        <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+        <CrmMoreAction
+          v-if="isDropdownOption && !props.disabled"
+          :options="getOptionActionOptions(item)"
+          placement="bottom-end"
+          size="tiny"
+          @select="(action) => handleOptionAction(action, i)"
+        >
+          <n-button quaternary size="small" class="crm-form-design-option-more-action p-[4px]">
+            <CrmIcon type="iconicon_ellipsis" :size="16" />
+          </n-button>
+        </CrmMoreAction>
+        <n-button v-else-if="isDropdownOption" quaternary size="small" disabled class="p-[4px] text-[var(--text-n1)]">
+          <CrmIcon type="iconicon_ellipsis" :size="16" />
+        </n-button>
+        <n-tooltip v-else :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
           <template #trigger>
             <n-button
               quaternary
@@ -143,8 +179,11 @@
     </div>
     <n-divider vertical class="!m-0" />
     <div
-      class="cursor-pointer text-[var(--primary-8)]"
-      :class="props.disabled ? '!text-[var(--primary-4)]' : ''"
+      :class="
+        props.disabled || hasDisabledCustomOption
+          ? 'cursor-not-allowed text-[var(--primary-4)]'
+          : 'cursor-pointer text-[var(--primary-8)]'
+      "
       @click="handleShowBatchEditModal"
     >
       {{ t('crmFormDesign.batchEdit') }}
@@ -192,6 +231,8 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
+  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import { fullFormSettingList } from '@/components/business/crm-form-create/config';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
 
@@ -215,6 +256,15 @@
       FieldTypeEnum.DEPARTMENT_MULTIPLE,
       FieldTypeEnum.DATA_SOURCE_MULTIPLE,
     ].includes(fieldConfig.value.type)
+  );
+  const isDropdownOption = computed(() =>
+    [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(fieldConfig.value.type)
+  );
+  const hasDisabledCustomOption = computed(
+    () => isDropdownOption.value && fieldConfig.value.customOptions?.some((item) => item.disabled === true)
+  );
+  const enabledCustomOptionCount = computed(
+    () => fieldConfig.value.customOptions?.filter((item) => item.disabled !== true).length || 0
   );
 
   const defaultRefOptions = fullFormSettingList
@@ -280,6 +330,11 @@
     rootOpt.children = await getRefData(rootValue);
   }
 
+  function syncCustomOptions() {
+    if (!isDropdownOption.value || fieldConfig.value.optionSource !== 'custom') return;
+    fieldConfig.value.options = fieldConfig.value.customOptions?.map((option) => ({ ...option })) || [];
+  }
+
   watch(
     () => fieldConfig.value.id,
     async () => {
@@ -315,7 +370,30 @@
     return NRadioGroup;
   });
 
+  function isOptionDisabled(option: { disabled?: boolean }) {
+    return isDropdownOption.value && option.disabled === true;
+  }
+
+  function isOptionDisabledByValue(value: string | number) {
+    const options =
+      fieldConfig.value.optionSource === 'ref' ? fieldConfig.value.options : fieldConfig.value.customOptions;
+    return options?.some((option) => option.value === value && isOptionDisabled(option)) || false;
+  }
+
+  function isDefaultValue(value: string | number) {
+    return isMultiple.value
+      ? Array.isArray(fieldConfig.value.defaultValue) && fieldConfig.value.defaultValue.includes(value)
+      : fieldConfig.value.defaultValue === value;
+  }
+
+  function isLastEnabledOption(option: { disabled?: boolean }) {
+    return isDropdownOption.value && !isOptionDisabled(option) && enabledCustomOptionCount.value <= 1;
+  }
+
   const handleRadioOptionClick = debounce((val: string | number) => {
+    if (props.disabled || isOptionDisabledByValue(val)) {
+      return;
+    }
     if (fieldConfig.value.defaultValue === val) {
       fieldConfig.value.defaultValue = '';
     } else {
@@ -324,6 +402,9 @@
   });
 
   const handleCheckBoxOptionClick = debounce((val: string | number) => {
+    if (props.disabled || isOptionDisabledByValue(val)) {
+      return;
+    }
     if (!Array.isArray(fieldConfig.value.defaultValue)) {
       fieldConfig.value.defaultValue = [];
     }
@@ -343,14 +424,23 @@
       fieldConfig.value.customOptions?.push({
         label: t('crmFormDesign.option', { i: fieldConfig.value.customOptions.length + 1 }),
         value: getGenerateId(),
+        ...(isDropdownOption.value ? { disabled: false } : {}),
       });
     } else {
       fieldConfig.value.customOptions?.splice(fieldConfig.value.customOptions.length - 1, 0, {
         label: t('crmFormDesign.option', { i: fieldConfig.value.customOptions.length }),
         value: getGenerateId(),
+        ...(isDropdownOption.value ? { disabled: false } : {}),
       });
     }
-    fieldConfig.value.options = [...(fieldConfig.value.customOptions || [])];
+    syncCustomOptions();
+  }
+
+  function handleCustomOptionLabelChange(i: number, label: string) {
+    const option = fieldConfig.value.customOptions?.[i];
+    if (!option) return;
+    option.label = label;
+    syncCustomOptions();
   }
 
   function handleAddOtherOption() {
@@ -360,31 +450,109 @@
     fieldConfig.value.customOptions?.push({
       label: t('crmFormDesign.optionOther'),
       value: 'other',
+      ...(isDropdownOption.value ? { disabled: false } : {}),
     });
-    fieldConfig.value.options = [...(fieldConfig.value.customOptions || [])];
+    syncCustomOptions();
   }
 
   function setDefaultValue() {
     if (isMultiple.value) {
       fieldConfig.value.defaultValue = fieldConfig.value.defaultValue?.filter((e: any) =>
-        fieldConfig.value.customOptions?.some((item) => item.value === e)
+        fieldConfig.value.customOptions?.some((item) => item.value === e && !isOptionDisabled(item))
       );
-    } else if (fieldConfig.value.customOptions?.every((e) => e.value !== fieldConfig.value.defaultValue)) {
+    } else if (
+      fieldConfig.value.customOptions?.every(
+        (item) => item.value !== fieldConfig.value.defaultValue || isOptionDisabled(item)
+      )
+    ) {
       fieldConfig.value.defaultValue = '';
     }
   }
 
   function handleOptionDelete(i: number) {
+    const option = fieldConfig.value.customOptions?.[i];
+    if (option && isLastEnabledOption(option)) {
+      return;
+    }
     fieldConfig.value.customOptions?.splice(i, 1);
-    fieldConfig.value.options = [...(fieldConfig.value.customOptions || [])];
+    syncCustomOptions();
     setDefaultValue();
+  }
+
+  function setOptionDisabled(i: number, disabled: boolean) {
+    const option = fieldConfig.value.customOptions?.[i];
+    if (!option) return;
+    if (disabled && !isOptionDisabled(option) && enabledCustomOptionCount.value <= 1) {
+      return;
+    }
+    option.disabled = disabled;
+    syncCustomOptions();
+    setDefaultValue();
+  }
+
+  function handleSetDefaultValue(value: string | number) {
+    if (isOptionDisabledByValue(value)) return;
+    if (isMultiple.value) {
+      if (!Array.isArray(fieldConfig.value.defaultValue)) {
+        fieldConfig.value.defaultValue = [];
+      }
+      if (!fieldConfig.value.defaultValue.includes(value)) {
+        fieldConfig.value.defaultValue.push(value);
+      }
+      return;
+    }
+    fieldConfig.value.defaultValue = value;
+  }
+
+  function getOptionActionOptions(item: { value: string | number; disabled?: boolean }): ActionsItem[] {
+    const options: ActionsItem[] = isOptionDisabled(item)
+      ? [
+          {
+            label: t('common.enable'),
+            key: 'enable',
+          },
+        ]
+      : [
+          {
+            label: t('common.disable'),
+            key: 'disable',
+            disabled: enabledCustomOptionCount.value <= 1,
+          },
+        ];
+
+    if (fieldConfig.value.customOptions && fieldConfig.value.customOptions.length > 1) {
+      options.push({
+        label: t('common.delete'),
+        key: 'delete',
+        danger: true,
+        disabled: isLastEnabledOption(item),
+      });
+    }
+    return options;
+  }
+
+  function handleOptionAction(action: ActionsItem, i: number) {
+    if (props.disabled) return;
+    const { key } = action;
+    if (!key) return;
+    const option = fieldConfig.value.customOptions?.[i];
+    if (!option) return;
+    if (key === 'enable') {
+      setOptionDisabled(i, false);
+    } else if (key === 'disable') {
+      setOptionDisabled(i, true);
+    } else if (key === 'set-default') {
+      handleSetDefaultValue(option.value);
+    } else if (key === 'delete') {
+      handleOptionDelete(i);
+    }
   }
 
   const showModal = ref(false);
   const batchEditValue = ref('');
 
   function handleShowBatchEditModal() {
-    if (props.disabled) {
+    if (props.disabled || hasDisabledCustomOption.value) {
       return;
     }
     showModal.value = true;
@@ -398,14 +566,17 @@
         {
           label: t('crmFormDesign.option', { i: 1 }),
           value: getGenerateId(),
+          ...(isDropdownOption.value ? { disabled: false } : {}),
         },
         {
           label: t('crmFormDesign.option', { i: 2 }),
           value: getGenerateId(),
+          ...(isDropdownOption.value ? { disabled: false } : {}),
         },
         {
           label: t('crmFormDesign.option', { i: 3 }),
           value: getGenerateId(),
+          ...(isDropdownOption.value ? { disabled: false } : {}),
         },
       ];
     } else {
@@ -415,16 +586,26 @@
         .map((e) => ({
           label: e.slice(0, 50),
           value: fieldConfig.value.customOptions?.find((item) => item.label === e)?.value || getGenerateId(),
+          ...(isDropdownOption.value ? { disabled: false } : {}),
         }));
       fieldConfig.value.customOptions = newOptions;
     }
-    fieldConfig.value.options = [...(fieldConfig.value.customOptions || [])];
+    syncCustomOptions();
     setDefaultValue();
     showModal.value = false;
   }
 </script>
 
 <style lang="less">
+  .crm-form-design-option-more-action {
+    border: 0 !important;
+    &:hover,
+    &:focus-visible {
+      color: var(--primary-8) !important;
+      background-color: var(--primary-7) !important;
+    }
+  }
+
   // 没数据的样式
   .form-design-cascader .n-cascader-option.n-cascader-option--disabled:has(.no-data) {
     .n-cascader-option__label {
