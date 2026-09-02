@@ -3,7 +3,7 @@
 
 <mapper namespace="cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper">
 
-    <select id="getStageConfigList" resultType="cn.cordys.crm.opportunity.dto.response.StageConfigResponse">
+    <select id="getStageConfigList" resultType="cn.cordys.crm.opportunity.dto.response.OpportunityStageResponse">
         select id, name, type, rate, afoot_roll_back, end_roll_back, pos
         from opportunity_stage_config
         where organization_id = #{orgId}
