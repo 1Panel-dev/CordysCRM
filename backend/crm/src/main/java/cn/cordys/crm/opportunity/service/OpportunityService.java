@@ -42,7 +42,7 @@ import cn.cordys.crm.opportunity.dto.request.*;
 import cn.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunitySearchStatisticResponse;
-import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
+import cn.cordys.crm.opportunity.dto.response.OpportunityStageResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.product.mapper.ExtProductMapper;
@@ -63,10 +63,7 @@ import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
-import cn.cordys.crm.system.service.DictService;
-import cn.cordys.crm.system.service.LogService;
-import cn.cordys.crm.system.service.ModuleFormCacheService;
-import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.*;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -144,6 +141,8 @@ public class OpportunityService {
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private StageAdvancedConfigService stageAdvancedConfigService;
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
                                                                DeptDataPermissionDTO deptDataPermission, Boolean source) {
@@ -237,10 +236,10 @@ public class OpportunityService {
         Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(ownerIds, orgId);
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
-        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        Map<String, StageConfigResponse> endConfigMaps = stageConfigList.stream().filter(config ->
+        List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        Map<String, OpportunityStageResponse> endConfigMaps = stageConfigList.stream().filter(config ->
                 Strings.CI.equals(config.getType(), OpportunityStageType.END.name())
-        ).collect(Collectors.toMap(StageConfigResponse::getId, Function.identity()));
+        ).collect(Collectors.toMap(OpportunityStageResponse::getId, Function.identity()));
 
         // 失败原因
         DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), orgId);
@@ -284,7 +283,7 @@ public class OpportunityService {
     @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.ADD)
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
         productService.checkProductList(request.getProducts());
-        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
         Long nextPos = getNextPos(orgId, stageConfigList.getFirst().getId());
         Opportunity opportunity = new Opportunity();
         String id = IDGenerator.nextStr();
@@ -529,10 +528,10 @@ public class OpportunityService {
         response.setContactName(contactMap.get(response.getContactId()));
         response.setFollowerName(userNameMap.get(response.getFollower()));
 
-        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(response.getOrganizationId());
-        Map<String, StageConfigResponse> endConfigMaps = stageConfigList.stream().filter(config ->
+        List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(response.getOrganizationId());
+        Map<String, OpportunityStageResponse> endConfigMaps = stageConfigList.stream().filter(config ->
                 Strings.CI.equals(config.getType(), OpportunityStageType.END.name())
-        ).collect(Collectors.toMap(StageConfigResponse::getId, Function.identity()));
+        ).collect(Collectors.toMap(OpportunityStageResponse::getId, Function.identity()));
 
         // 计算保留天数(成功失败阶段不计算)
         response.setReservedDays(endConfigMaps.containsKey(response.getStage()) ?
@@ -638,20 +637,24 @@ public class OpportunityService {
             throw new GenericException(Translator.get("opportunity_not_found"));
         }
 
-        final List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        final List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
 
-        final Optional<StageConfigResponse> successOpt = stageConfigList.stream()
+        final Optional<OpportunityStageResponse> successOpt = stageConfigList.stream()
                 .filter(cfg -> Strings.CI.equals(cfg.getType(), OpportunityStageType.END.name())
                         && Strings.CI.equals(cfg.getRate(), "100"))
                 .findFirst();
 
-        final Optional<StageConfigResponse> failOpt = stageConfigList.stream()
+        final Optional<OpportunityStageResponse> failOpt = stageConfigList.stream()
                 .filter(cfg -> Strings.CI.equals(cfg.getType(), OpportunityStageType.END.name())
                         && Strings.CI.equals(cfg.getRate(), "0"))
                 .findFirst();
 
         final Map<String, String> stageMap = stageConfigList.stream()
-                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+                .collect(Collectors.toMap(OpportunityStageResponse::getId, OpportunityStageResponse::getName));
+
+        if (!stageAdvancedConfigService.checkStage(oldOpportunity.getStage(), request.getStage(), FormKey.OPPORTUNITY.getKey())) {
+            return;
+        }
 
         final Opportunity newOpportunity = new Opportunity();
         newOpportunity.setId(request.getId());
@@ -757,7 +760,7 @@ public class OpportunityService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
-            List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(currentOrg);
+            List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(currentOrg);
 
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
             long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
@@ -941,6 +944,11 @@ public class OpportunityService {
                 extOpportunityMapper.moveDownStageOpportunity(pos, request.getStage(), DEFAULT_POS);
             }
         }
+
+        if (!stageAdvancedConfigService.checkStage(opportunity.getStage(), request.getStage(), FormKey.OPPORTUNITY.getKey())) {
+            return;
+        }
+
         Opportunity dragOpportunity = new Opportunity();
         dragOpportunity.setId(request.getDragNodeId());
         dragOpportunity.setPos(pos);

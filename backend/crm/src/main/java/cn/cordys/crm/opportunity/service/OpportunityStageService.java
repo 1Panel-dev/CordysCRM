@@ -5,28 +5,34 @@ import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
-import cn.cordys.common.dto.stage.StageRollBackRequest;
+import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.dto.stage.*;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.opportunity.constants.OpportunityStageType;
 import cn.cordys.crm.opportunity.domain.OpportunityStageConfig;
 import cn.cordys.crm.opportunity.dto.request.OpportunityStageAddRequest;
 import cn.cordys.crm.opportunity.dto.request.StageUpdateRequest;
-import cn.cordys.crm.opportunity.dto.response.StageConfigListResponse;
-import cn.cordys.crm.opportunity.dto.response.StageConfigResponse;
+import cn.cordys.crm.opportunity.dto.response.OpportunityStageResponse;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
+import cn.cordys.crm.system.domain.StageAdvancedConfig;
+import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
+import cn.cordys.crm.system.service.UserViewService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -39,6 +45,10 @@ public class OpportunityStageService {
     private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
+    @Resource
+    private ExtStageAdvancedConfigMapper extStageAdvancedConfigMapper;
+    @Resource
+    private UserViewService userViewService;
 
     /**
      * 商机阶段配置列表
@@ -46,20 +56,71 @@ public class OpportunityStageService {
      * @param orgId
      * @return
      */
-    public StageConfigListResponse getStageConfigList(String orgId) {
-        StageConfigListResponse stageConfigListResponse = new StageConfigListResponse();
-        List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        buildList(stageConfigList, stageConfigListResponse);
+    public StageConfigsResponse getStageConfigList(String orgId) {
+        StageConfigsResponse stageConfigListResponse = new StageConfigsResponse();
+        List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        List<StageAdvancedConfig> advancedConfigs = extStageAdvancedConfigMapper.selectConfigByType(orgId, FormKey.OPPORTUNITY.getKey());
+        buildList(stageConfigList, stageConfigListResponse, advancedConfigs, orgId);
         return stageConfigListResponse;
     }
 
-    private void buildList(List<StageConfigResponse> stageConfigList, StageConfigListResponse response) {
+    private void buildList(List<OpportunityStageResponse> stageConfigList, StageConfigsResponse response, List<StageAdvancedConfig> advancedConfigs, String orgId) {
         response.setStageConfigList(stageConfigList);
         if (CollectionUtils.isNotEmpty(stageConfigList)) {
             var first = stageConfigList.getFirst();
             response.setEndRollBack(first.getEndRollBack());
             response.setAfootRollBack(first.getAfootRollBack());
             stageConfigList.forEach(sc -> sc.setStageHasData(extOpportunityMapper.countByStage(sc.getId()) > 0));
+            response.setCirculationType(first.getCirculationType());
+        }
+        if (CollectionUtils.isNotEmpty(advancedConfigs)) {
+            Map<String, List<StageAdvancedConfig>> originIdMaps = advancedConfigs.stream().collect(Collectors.groupingBy(StageAdvancedConfig::getOriginId));
+            List<CirculationSetting> configs = new ArrayList<>();
+            List<CirculationFieldValue> allConfigs = new ArrayList<>();
+            originIdMaps.forEach((key, value) -> {
+                CirculationSetting configResponse = new CirculationSetting();
+                List<Target> targetList = new ArrayList<>();
+                configResponse.setOriginId(key);
+                value.forEach(item -> {
+                    Target target = new Target();
+                    target.setTargetId(item.getTargetId());
+                    target.setEnable(item.getEnable());
+                    List<CirculationFieldValue> circulationFieldValues = JSON.parseObject(item.getFieldConfig(), new TypeReference<List<CirculationFieldValue>>() {
+                    });
+                    target.setCirculationFieldValues(circulationFieldValues);
+                    targetList.add(target);
+                    allConfigs.addAll(circulationFieldValues);
+                });
+                configResponse.setTargets(targetList);
+                configResponse.setModuleType(value.getFirst().getModuleType());
+                configs.add(configResponse);
+            });
+
+            Map<String, CirculationSetting> configMap = configs.stream()
+                    .collect(Collectors.toMap(
+                            CirculationSetting::getOriginId,
+                            Function.identity()
+                    ));
+
+            List<CirculationSetting> sortedConfigs = stageConfigList.stream()
+                    .map(stage -> configMap.get(stage.getId()))
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            response.setAdvancedConfigs(sortedConfigs);
+
+            List<FilterCondition> combinedConditions = allConfigs.stream()
+                    .map(config -> {
+                        FilterCondition condition = new FilterCondition();
+                        condition.setName(config.getFieldId());
+                        condition.setValue(config.getFieldValue());
+                        return condition;
+                    })
+                    .collect(Collectors.toList());
+
+            if (CollectionUtils.isNotEmpty(combinedConditions)) {
+                response.setOptionMap(userViewService.buildOptionMap(orgId, FormKey.OPPORTUNITY.getKey(), combinedConditions));
+            }
         }
     }
 
@@ -221,15 +282,15 @@ public class OpportunityStageService {
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void sort(List<String> ids, String orgId) {
-        List<StageConfigResponse> oldStageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        List<String> oldNames = oldStageConfigList.stream().map(StageConfigResponse::getName).toList();
+        List<OpportunityStageResponse> oldStageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        List<String> oldNames = oldStageConfigList.stream().map(OpportunityStageResponse::getName).toList();
 
         for (int i = 0; i < ids.size(); i++) {
             extOpportunityStageConfigMapper.updatePos(ids.get(i), (long) (i + 1));
         }
 
-        List<StageConfigResponse> newStageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
-        List<String> newNames = newStageConfigList.stream().map(StageConfigResponse::getName).toList();
+        List<OpportunityStageResponse> newStageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        List<String> newNames = newStageConfigList.stream().map(OpportunityStageResponse::getName).toList();
 
         Map<String, List<String>> originalVal = new HashMap<>(1);
         originalVal.put("stageSort", oldNames);
