@@ -67,8 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NIcon, NScrollbar, NTooltip, TabPaneProps, useMessage } from 'naive-ui';
-  import { Add } from '@vicons/ionicons5';
+  import { NButton, NScrollbar, NTooltip, TabPaneProps, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit, getGenerateId } from '@lib/shared/method';

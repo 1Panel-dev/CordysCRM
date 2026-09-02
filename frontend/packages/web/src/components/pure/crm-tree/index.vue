@@ -227,6 +227,15 @@
     props.fieldNames
   );
 
+  watch(
+    () => selectedKeys.value,
+    (val) => {
+      if (data.value.some((e) => val.includes(e[props.fieldNames.keyField]))) {
+        editingKey.value = '';
+      }
+    }
+  );
+
   /**
    * 选中节点事件
    */
