@@ -108,7 +108,7 @@ public class OrganizationSettingsController {
     @Operation(summary = "同步DE数据")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
     public void syncDataEase() {
-        dataEaseSyncService.syncDataEase(OrganizationContext.getOrganizationId());
+        dataEaseSyncService.syncDataEase(OrganizationContext.getOrganizationId(), false);
     }
 
     @PostMapping(value = "/de/org/list")
