@@ -424,7 +424,7 @@ class CustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(14)
+    @Order(2)
     void testOpportunityPage() throws Exception {
         CustomerOpportunityPageRequest request = new CustomerOpportunityPageRequest();
         request.setCurrent(1);
