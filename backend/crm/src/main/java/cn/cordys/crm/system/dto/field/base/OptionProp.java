@@ -14,6 +14,8 @@ public class OptionProp {
     private Object value;
     @Schema(description = "文本")
     private String label;
+    @Schema(description = "是否禁用")
+    private Boolean disabled;
 
     public OptionProp(String value, String label) {
         this.value = value;
