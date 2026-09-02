@@ -11,7 +11,7 @@ import java.util.Map;
 public class StageConfigsResponse {
 
     @Schema(description = "订单状态流配置列表")
-    List<StageConfigResponse> stageConfigList;
+    List<? extends StageConfigResponse> stageConfigList;
 
     @Schema(description = "进行中回退设置")
     private Boolean afootRollBack = true;

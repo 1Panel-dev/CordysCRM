@@ -1021,9 +1021,9 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
             ContractStageService contractStageService = CommonBeanFactory.getBean(ContractStageService.class);
             List<StageConfigResponse> stages;
             if (formType != null && (formType.equals(FormKey.ORDER.getKey()))) {
-                stages = orderStageService != null ? orderStageService.getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList() : List.of();
+                stages = orderStageService != null ? (List<StageConfigResponse>) orderStageService.getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList() : List.of();
             } else if (formType != null && formType.equals(FormKey.CONTRACT.getKey())) {
-                stages = contractStageService != null ? contractStageService.getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList() : List.of();
+                stages = contractStageService != null ? (List<StageConfigResponse>) contractStageService.getStageConfigList(OrganizationContext.getOrganizationId()).getStageConfigList() : List.of();
             } else {
                 return String.join(", ", stageIds);
             }

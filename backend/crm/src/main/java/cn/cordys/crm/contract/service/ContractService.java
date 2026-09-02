@@ -1192,6 +1192,10 @@ public class ContractService extends BaseExportService implements ApprovalResour
             }
         }
 
+        if (!stageAdvancedConfigService.checkStage(contract.getStage(), request.getStage(), FormKey.CONTRACT.getKey())) {
+            return;
+        }
+
         contract.setPos(pos);
         contract.setStage(request.getStage());
         contractMapper.updateById(contract);

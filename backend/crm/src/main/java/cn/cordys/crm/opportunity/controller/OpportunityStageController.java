@@ -1,12 +1,15 @@
 package cn.cordys.crm.opportunity.controller;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.stage.StageAdvancedConfigRequest;
+import cn.cordys.common.dto.stage.StageConfigsResponse;
 import cn.cordys.common.dto.stage.StageRollBackRequest;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.opportunity.dto.request.OpportunityStageAddRequest;
 import cn.cordys.crm.opportunity.dto.request.StageUpdateRequest;
-import cn.cordys.crm.opportunity.dto.response.StageConfigListResponse;
 import cn.cordys.crm.opportunity.service.OpportunityStageService;
+import cn.cordys.crm.system.service.StageAdvancedConfigService;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,11 +26,13 @@ import java.util.List;
 public class OpportunityStageController {
     @Resource
     private OpportunityStageService opportunityStageService;
+    @Resource
+    private StageAdvancedConfigService stageAdvancedConfigService;
 
 
     @GetMapping("/get")
     @Operation(summary = "商机阶段配置列表")
-    public StageConfigListResponse getStageConfigList() {
+    public StageConfigsResponse getStageConfigList() {
         return opportunityStageService.getStageConfigList(OrganizationContext.getOrganizationId());
     }
 
@@ -69,6 +74,22 @@ public class OpportunityStageController {
     @RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
     public void sort(@RequestBody List<String> ids) {
         opportunityStageService.sort(ids, OrganizationContext.getOrganizationId());
+    }
+
+
+    @GetMapping("/circulation-type/{type}")
+    @Operation(summary = "基础/高级流转切换")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void circulationType(@PathVariable String type) {
+        stageAdvancedConfigService.switchType(type, FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping("/advanced/config")
+    @Operation(summary = "商机流转配置保存")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void advancedConfigAdd(@RequestBody StageAdvancedConfigRequest request) {
+        stageAdvancedConfigService.saveAdvancedConfig(request, FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
 }
