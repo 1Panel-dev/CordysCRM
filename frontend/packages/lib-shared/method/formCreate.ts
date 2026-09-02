@@ -624,7 +624,8 @@ export function transformFieldValue(item: FormCreateField, result: Record<string
     }
   } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
     // 数字字段需要重置一下小数位，确保每次保存按照最新配置的小数位保存
-    result[key] = Number(Number(result[key]).toFixed(item.precision));
+    result[key] =
+      result[key] !== undefined && result[key] !== null ? Number(Number(result[key]).toFixed(item.precision)) : null;
   }
 }
 
