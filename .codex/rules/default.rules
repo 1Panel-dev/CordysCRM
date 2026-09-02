@@ -1,0 +1,44 @@
+# Cordys CRM 项目级命令策略。
+# 规则仅在仓库被信任后加载；多条规则命中时采用最严格的决定。
+
+# 禁止可能直接丢失本地工作的 Git 命令。
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "禁止使用 git reset --hard，以免覆盖贡献者的未提交修改",
+    match = ["git reset --hard", "git reset --hard HEAD~1"],
+    not_match = ["git reset --soft HEAD~1", "git reset HEAD file.txt"],
+)
+
+prefix_rule(
+    pattern = ["git", "clean"],
+    decision = "forbidden",
+    justification = "禁止使用 git clean，以免永久删除未跟踪文件",
+    match = ["git clean -fd", "git clean -fdx"],
+    not_match = ["git status --short"],
+)
+
+# 以下操作会修改远程仓库或发布制品，必须获得明确批准。
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "prompt",
+    justification = "推送会修改远程仓库，执行前需要确认",
+    match = ["git push", "git push origin feature/example"],
+)
+
+prefix_rule(
+    pattern = [["npm", "pnpm"], "publish"],
+    decision = "prompt",
+    justification = "发布前端包会产生外部影响，执行前需要确认",
+    match = ["npm publish", "pnpm publish"],
+    not_match = ["pnpm build", "pnpm install"],
+)
+
+prefix_rule(
+    pattern = [["./mvnw", ".\\mvnw.cmd", "mvn"], "deploy"],
+    decision = "prompt",
+    justification = "Maven deploy 会发布制品，执行前需要确认",
+    match = ["./mvnw deploy", ".\\mvnw.cmd deploy", "mvn deploy"],
+    not_match = ["./mvnw test", "./mvnw clean package"],
+)
+

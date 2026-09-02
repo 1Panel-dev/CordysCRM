@@ -1,0 +1,14 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+# 项目级 Codex 默认配置。仅在仓库被标记为 trusted 后生效。
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+# 明确项目根目录，并为根目录 AGENTS.md 预留足够读取空间。
+project_root_markers = [".git", "pom.xml"]
+project_doc_max_bytes = 32768
+
+[sandbox_workspace_write]
+# 依赖下载和其他联网命令必须通过显式提权审批。
+network_access = false
+
