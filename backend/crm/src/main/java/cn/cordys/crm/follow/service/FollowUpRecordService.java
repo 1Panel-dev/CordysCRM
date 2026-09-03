@@ -252,7 +252,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
         List<String> contactIds = list.stream().map(FollowUpRecordListResponse::getContactId).toList();
         Map<String, String> contactMap = baseService.getContactMap(contactIds);
-        Map<String, String> contactPhoneMap = baseService.getContactPhone(contactIds);
 
         Map<String, UserResponse> userDeptMap = baseService.getUserDepAndPhoneByUserIds(ownerIds, orgId);
 
@@ -277,7 +276,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
             recordListResponse.setCustomerName(customerMap.get(recordListResponse.getCustomerId()));
             recordListResponse.setOpportunityName(opportunityMap.get(recordListResponse.getOpportunityId()));
             recordListResponse.setClueName(clueMap.get(recordListResponse.getClueId()));
-            recordListResponse.setPhone(contactPhoneMap.get(recordListResponse.getContactId()));
             recordListResponse.setResourceType(recordListResponse.getType());
 
             UserResponse userResponse = userDeptMap.get(recordListResponse.getOwner());
