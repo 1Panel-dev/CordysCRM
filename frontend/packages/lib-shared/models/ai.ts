@@ -48,11 +48,13 @@ export interface AgentChatConfirmItem {
   title: string;
   selectionType: 'SINGLE' | 'MULTIPLE';
   options?: AgentChatConfirmOption[];
+  textInput?: boolean;
 }
 
 export interface AgentChatConfirmOption {
   label: string;
   description?: string;
+  value: string;
 }
 
 export interface AgentChatProgressData {
