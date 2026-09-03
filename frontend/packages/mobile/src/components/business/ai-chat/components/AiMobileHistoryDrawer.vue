@@ -34,12 +34,19 @@
             @click="handleClick(item.id)"
           >
             <div
-              class="min-w-0 flex-1 truncate text-[14px] text-[var(--text-n1)]"
+              class="flex min-w-0 flex-1 items-center gap-[4px] text-[14px] text-[var(--text-n1)]"
               :class="{ '!text-[var(--primary-8)]': activeId === item.id }"
             >
-              {{ item.title }}
+              <CrmIcon
+                v-if="isHistoryRunning(item.id)"
+                name="iconicon_loading"
+                width="16px"
+                height="16px"
+                :color="activeId === item.id ? 'var(--primary-8)' : 'var(--text-n4)'"
+                class="shrink-0 animate-spin"
+              />
+              <span class="min-w-0 flex-1 truncate">{{ item.title }}</span>
             </div>
-            <span v-if="isHistoryRunning(item.id)" class="ai-mobile-history-loading" />
           </div>
           <template #right>
             <van-button square type="primary" class="h-full" @click="openRename(item)">
@@ -239,20 +246,6 @@
   .ai-mobile-history-rename__field {
     :deep(.van-field__label) {
       width: 80px;
-    }
-  }
-  .ai-mobile-history-loading {
-    flex: none;
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--text-n7);
-    border-top-color: var(--text-n4);
-    border-radius: 50%;
-    animation: ai-mobile-history-loading 0.8s linear infinite;
-  }
-  @keyframes ai-mobile-history-loading {
-    to {
-      transform: rotate(360deg);
     }
   }
 </style>

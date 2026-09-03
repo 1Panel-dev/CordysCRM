@@ -56,17 +56,21 @@
               <n-tooltip v-else trigger="hover">
                 <template #trigger>
                   <div
-                    class="one-line-text"
+                    class="flex min-w-0 items-center gap-[4px] overflow-hidden"
                     :class="props.activeHistoryId === item.id ? 'text-[var(--primary-8)]' : ''"
                   >
-                    {{ item.title }}
+                    <CrmIcon
+                      v-if="isHistoryRunning(item.id)"
+                      type="iconicon_loading"
+                      :size="16"
+                      :color="props.activeHistoryId === item.id ? 'var(--primary-8)' : 'var(--text-n4)'"
+                      class="shrink-0 animate-spin"
+                    />
+                    <span class="one-line-text min-w-0">{{ item.title }}</span>
                   </div>
                 </template>
                 {{ item.title }}
               </n-tooltip>
-            </template>
-            <template #itemRight="{ item }">
-              <span v-if="isHistoryRunning(item.id)" class="ai-chat-history-loading" />
             </template>
           </CrmList>
         </div>
@@ -341,19 +345,4 @@
   });
 </script>
 
-<style scoped lang="less">
-  .ai-chat-history-loading {
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--text-n7);
-    border-top-color: var(--text-n4);
-    border-radius: 50%;
-    animation: ai-chat-history-loading 0.8s linear infinite;
-  }
-
-  @keyframes ai-chat-history-loading {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-</style>
+<style scoped lang="less"></style>

@@ -35,6 +35,10 @@
           <AiMobileErrorBlock v-else-if="item.part.type === 'data-error'" :part="item.part" />
         </template>
         <AiMobileLoadingBlock v-if="showAssistantLoading" />
+        <div v-if="showGeneratingStatus" class="mt-[8px] flex items-center gap-[4px] text-[var(--text-n4)]">
+          <span>{{ t('aiChat.generating') }}</span>
+          <CrmIcon name="iconicon_loading" width="16px" height="16px" color="var(--text-n4)" class="animate-spin" />
+        </div>
       </div>
 
       <div
@@ -161,6 +165,7 @@
   const showAssistantLoading = computed(
     () => props.message.role === 'assistant' && props.isGenerating && !hasRenderableAiChatContent(props.message.parts)
   );
+  const showGeneratingStatus = computed(() => props.message.role === 'assistant' && props.isGenerating);
   const thoughtStatus = computed<AiChatThoughtStatus>(() => {
     if (props.isGenerating) {
       return 'thinking';

@@ -98,6 +98,10 @@
             <div v-else class="ai-chat-block">{{ item.part.type }}</div>
           </template>
           <AiLoadingBlock v-if="showAssistantLoading" />
+          <div v-if="showGeneratingStatus" class="mt-[8px] flex items-center gap-[4px] text-[var(--text-n4)]">
+            <span>{{ t('aiChat.generating') }}</span>
+            <CrmIcon type="iconicon_loading" :size="16" color="var(--text-n4)" class="animate-spin" />
+          </div>
         </div>
       </template>
 
@@ -262,6 +266,7 @@
   const showAssistantLoading = computed(
     () => !isUser.value && isGenerating.value && !hasRenderableAiChatContent(props.message.parts)
   );
+  const showGeneratingStatus = computed(() => !isUser.value && isGenerating.value);
   const thoughtStatus = computed<AiChatThoughtStatus>(() => {
     if (isGenerating.value) {
       return 'thinking';
