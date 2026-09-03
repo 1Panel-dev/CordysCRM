@@ -7,6 +7,7 @@ import cn.cordys.common.domain.BaseResourceField;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.formula.FormulaCompletionService;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
@@ -186,6 +187,17 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         } else {
             fieldValueMap = new HashMap<>(8);
         }
+
+        // 公式值由服务端依据实时表单统一计算并覆盖。更新时使用真实流水号，
+        // 新增时仍由原流水号流程替换公式中的占位符。
+        Objects.requireNonNull(CommonBeanFactory.getBean(FormulaCompletionService.class))
+                .complete(
+                        allFields,
+                        fieldValueMap,
+                        !update,
+                        businessKey -> getResourceFieldValue(resource, businessKey),
+                        (businessKey, value) -> setResourceFieldValue(resource, businessKey, value)
+                );
 
         // 校验业务字段，字段值是否重复
         businessFieldRepeatCheck(orgId, resource, update ? List.of(resourceId) : List.of(), allFields);
@@ -828,11 +840,22 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             // 如果为 null，则不更新
             return;
         }
-        if (CollectionUtils.isEmpty(originCustomerFields)) {
-            saveModuleField(resource, orgId, userId, moduleFields, false);
-        } else {
-            updateModuleField(resource, orgId, userId, moduleFields, true);
+        // MCP 只要求修改用户提到的字段。先以库内字段为基础合并本次变更，
+        // 再整体重算公式，避免未出现在工具参数中的依赖值被当成空值。
+        Map<String, BaseModuleFieldValue> merged = new LinkedHashMap<>();
+        if (CollectionUtils.isNotEmpty(originCustomerFields)) {
+            originCustomerFields.stream()
+                    .filter(Objects::nonNull)
+                    .filter(field -> StringUtils.isNotBlank(field.getFieldId()))
+                    .forEach(field -> merged.put(field.getFieldId(), field));
         }
+        moduleFields.stream()
+                .filter(Objects::nonNull)
+                .filter(field -> StringUtils.isNotBlank(field.getFieldId()))
+                .forEach(field -> merged.put(field.getFieldId(), field));
+
+        deleteByResourceId((String) getResourceFieldValue(resource, "id"));
+        saveModuleField(resource, orgId, userId, new ArrayList<>(merged.values()), true);
     }
 
     /**
