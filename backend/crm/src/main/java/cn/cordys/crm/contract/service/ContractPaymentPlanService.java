@@ -18,6 +18,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -47,6 +48,7 @@ import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -54,6 +56,7 @@ import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.idev.excel.FastExcelFactory;
+import cn.idev.excel.enums.CellExtraTypeEnum;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -83,7 +86,7 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ContractPaymentPlanService {
+public class ContractPaymentPlanService extends BaseExportService {
     @Resource
     private BaseMapper<Contract> contractMapper;
     @Resource
@@ -410,7 +413,7 @@ public class ContractPaymentPlanService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), currentOrg),
+                .exportMultiSheetTplWithSharedHandler(response, processDuplicateLastLevelHeads(moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), currentOrg)),
                         Translator.get("payment.plan.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
                         new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), currentOrg)),
                         new CustomHeadColWidthStyleStrategy());
@@ -442,10 +445,45 @@ public class ContractPaymentPlanService {
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "contract_payment_plan", "contract_payment_plan_field", currentOrg, importType);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
-            return ImportResponse.builder().errorMessages(eventListener.getErrList())
-                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+
+            // 1 先读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            // 2 校验数据
+            CustomFieldCheckEventListener eventListener =
+                    new CustomFieldCheckEventListener(
+                            fields,
+                            "contract_payment_plan",
+                            "contract_payment_plan_field",
+                            currentOrg,
+                            mergeCellEventListener.getMergeCellMap(),
+                            mergeCellEventListener.getMergeRowDataMap(),
+                            importType
+                    );
+
+            FastExcelFactory.read(file.getInputStream(), eventListener)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            return ImportResponse.builder()
+                    .errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess())
+                    .failCount(eventListener.getErrList().size())
+                    .build();
+
         } catch (Exception e) {
             log.error("customer import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
@@ -466,6 +504,19 @@ public class ContractPaymentPlanService {
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), currentOrg);
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+            // 1 读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
             CustomImportAfterDoConsumer<ContractPaymentPlan, BaseResourceSubField> afterDo = (paymentPlans, paymentPlanFields, paymentPlanFieldBlobs) -> {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
@@ -567,8 +618,8 @@ public class ContractPaymentPlanService {
                 }
             };
             CustomFieldImportEventListener<ContractPaymentPlan> eventListener = new CustomFieldImportEventListener<>(fields, ContractPaymentPlan.class, currentOrg, currentUser,
-                    "contract_payment_plan_field", "contract_payment_plan_field_blob", afterDo, 2000, null, null, request.getImportType());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+                    "contract_payment_plan_field", "contract_payment_plan_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), request.getImportType());
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
