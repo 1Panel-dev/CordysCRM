@@ -20,6 +20,7 @@ export default {
   'aiChat.thinking': 'Thinking',
   'aiChat.thinkingInProgress': 'Thinking',
   'aiChat.thinkingStopped': 'Stopped',
+  'aiChat.generating': 'Generating',
   'aiChat.tokensUsed': '{tokens} used',
   'aiChat.feedbackThanks': 'Thanks for your feedback',
   'aiChat.progress': 'Running',
