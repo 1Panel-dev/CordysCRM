@@ -101,7 +101,6 @@ public class ContractExportService extends BaseExportService {
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         systemFieldMap.put("customerId", data.getCustomerName());
-        systemFieldMap.put("amount", data.getAmount());
         systemFieldMap.put("alreadyPayAmount", data.getAlreadyPayAmount());
         systemFieldMap.put("number", data.getNumber());
 
@@ -120,28 +119,12 @@ public class ContractExportService extends BaseExportService {
 
         Map<String, FieldExportMeta> metaMap = exportMetas.stream()
                 .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
+        resolveAndPutTimeField(systemFieldMap, metaMap, "amount", data.getAmount());
         resolveAndPutTimeField(systemFieldMap, metaMap, "startTime", data.getStartTime());
         resolveAndPutTimeField(systemFieldMap, metaMap, "endTime", data.getEndTime());
 
         return systemFieldMap;
     }
 
-    /**
-     * 解析合同开始结束时间
-     *
-     * @param sysMap      系统字段值集合
-     * @param metaMap     导出字段信息
-     * @param businessKey 业务Key
-     * @param rawValue    原始值
-     */
-    private void resolveAndPutTimeField(LinkedHashMap<String, Object> sysMap, Map<String, FieldExportMeta> metaMap,
-                                        String businessKey, Long rawValue) {
-        if (rawValue == null) {
-            return;
-        }
-        FieldExportMeta meta = metaMap.get(businessKey);
-        if (meta != null && meta.getField() != null) {
-            sysMap.put(businessKey, transformFieldValue(meta.getResolver(), meta.getField(), rawValue, new HashMap<>()));
-        }
-    }
+
 }
