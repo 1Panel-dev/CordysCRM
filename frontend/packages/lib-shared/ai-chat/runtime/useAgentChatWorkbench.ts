@@ -19,6 +19,7 @@ interface AgentChatWorkbenchApis {
   streamAgentChat: (
     data: {
       message: string;
+      requestId: string;
       conversationId?: string;
       mcpIds?: string[];
       attachmentIds?: string[];
@@ -29,7 +30,11 @@ interface AgentChatWorkbenchApis {
       onSession: (sessionId: string, conversationId?: string) => void;
     }
   ) => AsyncIterable<AgentChatStreamEvent>;
-  cancelAgentChat: (data: { conversationId: string; sessionId: string }) => Promise<unknown>;
+  cancelAgentChat: (data: {
+    conversationId?: string;
+    sessionId?: string;
+    requestId: string;
+  }) => Promise<unknown>;
   confirmAgentChat: (dialogId: string, answers: Record<string, string>) => Promise<unknown>;
   getAgentConversationPage: (data: {
     current: number;
@@ -58,7 +63,13 @@ interface ConversationRuntimeEntry {
   key: string;
   conversationId: string;
   sessionId: string;
+  // 本轮发送的请求级幂等键，用于未产生 runId 前的取消定位与保存兜底
+  requestId: string;
   runtime: AiChatRuntime;
+}
+
+function createChatRequestId(): string {
+  return `req_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
 function getAttachmentId(attachment: AiChatAttachment): string {
@@ -272,9 +283,13 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       initialMessages,
       transport: createAgentChatTransport({
         send(context) {
+          // 每一轮发送分配唯一 requestId，作为未产生 runId 前的取消锚点与保存兜底
+          entry.requestId = createChatRequestId();
+
           return options.apis.streamAgentChat(
             {
               message: context.content,
+              requestId: entry.requestId,
               conversationId: entry.conversationId || undefined,
               mcpIds: context.metadata?.mcps?.map((mcp) => mcp.id),
               attachmentIds: getAttachmentIds(context.metadata?.attachments),
@@ -298,10 +313,12 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
         },
       }),
       async onStop() {
-        if (entry.conversationId && entry.sessionId) {
+        // 有 requestId 即可取消：未产生 runId / conversationId 时也能由后端按 requestId 定位、补停并保存部分块
+        if (entry.requestId) {
           await options.apis.cancelAgentChat({
-            conversationId: entry.conversationId,
-            sessionId: entry.sessionId,
+            conversationId: entry.conversationId || undefined,
+            sessionId: entry.sessionId || undefined,
+            requestId: entry.requestId,
           });
           return true;
         }
@@ -340,6 +357,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       key: `${NEW_CONVERSATION_DRAFT_KEY}_${newConversationIndex}`,
       conversationId: '',
       sessionId: '',
+      requestId: '',
       runtime: undefined as unknown as AiChatRuntime,
     });
     newConversationIndex += 1;
@@ -381,6 +399,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
         key: conversationId,
         conversationId,
         sessionId: '',
+        requestId: '',
         runtime: undefined as unknown as AiChatRuntime,
       });
       entry.runtime = createRuntime(entry, messages);

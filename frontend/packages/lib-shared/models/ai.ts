@@ -3,6 +3,8 @@ import type { CommonList, TableQueryParams } from './common';
 export interface AgentChatStreamParams {
   message: string;
   conversationId?: string;
+  /** 请求级幂等键（本轮唯一）。用于未产生 runId 前定位取消与保存兜底。 */
+  requestId: string;
   mcpIds?: string[];
   attachmentIds?: string[];
   picIds?: string[];
@@ -18,8 +20,10 @@ export interface AgentChatStreamOptions {
 }
 
 export interface AgentChatCancelParams {
-  conversationId: string;
-  sessionId: string;
+  conversationId?: string;
+  sessionId?: string;
+  /** 请求级幂等键（本轮唯一）。runId 未产生时用于按 requestId 取消。 */
+  requestId: string;
 }
 
 export interface AgentChatRunData {
