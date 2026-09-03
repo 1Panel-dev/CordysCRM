@@ -172,10 +172,12 @@
         fup.status,
         fup.comment_count,
         fup.organization_id,
+        ctc.phone,
         if (fup.type = 'CLUE', c.pool_id, cu.pool_id) as poolId
         FROM follow_up_plan fup
         LEFT JOIN clue c ON c.id = fup.clue_id
         LEFT JOIN customer cu ON cu.id = fup.customer_id
+        LEFT JOIN customer_contact ctc on ctc.id = fup.contact_id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -288,7 +290,8 @@
                             and condition.name != 'estimatedTime' and condition.name != 'method'
                             and condition.name != 'status' and condition.name != 'converted'
                             and condition.name != 'createTime' and condition.name != 'createUser'
-                            and condition.name != 'updateUser' and condition.name != 'updateTime'">
+                            and condition.name != 'updateUser' and condition.name != 'updateTime'
+                            and condition.name != 'departmentId' and condition.name != 'phone'">
                             <if test="condition.blob">
                                 LEFT JOIN follow_up_plan_field_blob ${tablePrefix}_${i}
                                 ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -297,12 +300,12 @@
                                 LEFT JOIN follow_up_plan_field ${tablePrefix}_${i}
                                 ON fup.id = ${tablePrefix}_${i}.resource_id AND ${tablePrefix}_${i}.field_id = #{condition.name}
                             </if>
-                            <if test="condition.name == 'departmentId'">
-                                LEFT JOIN sys_organization_user sou ON fup.owner = sou.user_id
-                            </if>
-                            <if test="condition.name == 'phone'">
-                                LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
-                            </if>
+                        </if>
+                        <if test="condition.name == 'departmentId'">
+                            LEFT JOIN sys_organization_user sou ON fup.owner = sou.user_id
+                        </if>
+                        <if test="condition.name == 'phone'">
+                            LEFT JOIN customer_contact cc ON fup.contact_id = cc.id
                         </if>
                     </otherwise>
                 </choose>
@@ -313,7 +316,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'content', 'owner', 'type', 'customerId', 'opportunityId', 'clueId', 'contactId', 'estimatedTime', 'method', 'status', 'converted',
-                'create_user', 'update_user', 'create_time', 'update_time'}">
+                'create_user', 'update_user', 'create_time', 'update_time', 'phone'}">
             <bind name="sortName" value="${sort}.name"/>
             LEFT JOIN follow_up_plan_field sort_table ON fup.id = sort_table.resource_id AND sort_table.field_id = #{sortName}
             LEFT JOIN sys_module_field module_table ON sort_table.field_id = module_table.id
@@ -558,6 +561,9 @@
                     </when>
                     <when test="${sort}.name == 'department_id'">
                         sou.`id` ${sortType}, c.id ASC
+                    </when>
+                    <when test="${sort}.name == 'phone'">
+                        ctc.`phone` ${sortType}, c.id ASC
                     </when>
                     <otherwise>
                         CASE
