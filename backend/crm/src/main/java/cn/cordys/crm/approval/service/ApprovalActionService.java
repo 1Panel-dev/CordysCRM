@@ -44,8 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static cn.cordys.crm.approval.service.ApprovalResourceService.FORM_SERVICE;
-
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
@@ -230,14 +228,14 @@ public class ApprovalActionService {
 			return;
 		}
 
-		if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+		ApprovalResourceHandler handler = ApprovalResourceService.resolveApprovalHandler(formKey);
+		if (handler == null) {
 			return;
 		}
 		ApprovalResourceSnapshot snapshot = extApprovalResourceSnapshotMapper.selectByResourceId(resourceId);
 		if (snapshot == null) {
 			return;
 		}
-		ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
 		handler.revertToSnapshot(resourceId, userId, orgId, snapshot.getSnapshotData());
 		// 回退成功后清理快照
 		approvalResourceSnapshotMapper.deleteByPrimaryKey(snapshot.getId());
@@ -1265,9 +1263,6 @@ public class ApprovalActionService {
 			return;
 		}
 		FormKey formKey = FormKey.ofKey(instance.getType());
-		if (formKey == null) {
-			return;
-		}
 		ApprovalStatus approvalStatus = ApprovalStatus.valueOf(instance.getApprovalStatus());
 		if (approvalStatus != ApprovalStatus.APPROVED && approvalStatus != ApprovalStatus.UNAPPROVED) {
 			return;
@@ -1280,25 +1275,31 @@ public class ApprovalActionService {
 
 		String module;
 		String event;
-		switch (formKey) {
-			case QUOTATION -> {
-				module = NotificationConstants.Module.OPPORTUNITY;
-				event = NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL;
-			}
-			case CONTRACT -> {
-				module = NotificationConstants.Module.CONTRACT;
-				event = NotificationConstants.Event.CONTRACT_APPROVAL;
-			}
-			case ORDER -> {
-				module = NotificationConstants.Module.ORDER;
-				event = NotificationConstants.Event.ORDER_APPROVAL;
-			}
-			case INVOICE -> {
-				module = NotificationConstants.Module.CONTRACT;
-				event = NotificationConstants.Event.INVOICE_APPROVAL;
-			}
-			default -> {
-				return;
+		if (formKey == null) {
+			// 自定义表单（非 FormKey 枚举），统一发送到审批待办通知
+			module = NotificationConstants.Module.APPROVAL;
+			event = NotificationConstants.Event.APPROVAL_TODO;
+		} else {
+			switch (formKey) {
+				case QUOTATION -> {
+					module = NotificationConstants.Module.OPPORTUNITY;
+					event = NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL;
+				}
+				case CONTRACT -> {
+					module = NotificationConstants.Module.CONTRACT;
+					event = NotificationConstants.Event.CONTRACT_APPROVAL;
+				}
+				case ORDER -> {
+					module = NotificationConstants.Module.ORDER;
+					event = NotificationConstants.Event.ORDER_APPROVAL;
+				}
+				case INVOICE -> {
+					module = NotificationConstants.Module.CONTRACT;
+					event = NotificationConstants.Event.INVOICE_APPROVAL;
+				}
+				default -> {
+					return;
+				}
 			}
 		}
 
@@ -1320,7 +1321,8 @@ public class ApprovalActionService {
 	 */
 	private String getLogModuleOfFormKey(FormKey formKey) {
 		if (formKey == null) {
-			return null;
+			// 自定义表单（非 FormKey 枚举）
+			return LogModule.CUSTOM_FORM_DATA;
 		}
 		switch (formKey) {
 			case QUOTATION -> {

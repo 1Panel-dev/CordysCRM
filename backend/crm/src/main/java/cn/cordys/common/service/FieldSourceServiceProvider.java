@@ -108,7 +108,12 @@ public class FieldSourceServiceProvider {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T getServiceOfKey(String key) {
-		return (T) APPROVAL_FORM_SERVICE_MAP.get(key);
+		Object service = APPROVAL_FORM_SERVICE_MAP.get(key);
+		if (service == null && FormKey.ofKey(key) == null) {
+			// 非标准枚举 key（自定义表单 customFormId）路由到自定义表单数据服务
+			service = CommonBeanFactory.getBean(CustomFormDataService.class);
+		}
+		return (T) service;
 	}
 
 	/**
