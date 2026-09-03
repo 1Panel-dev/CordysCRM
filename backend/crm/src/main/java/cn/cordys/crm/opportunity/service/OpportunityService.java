@@ -21,6 +21,7 @@ import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.BaseChartService;
+import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -62,6 +63,7 @@ import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
@@ -71,6 +73,7 @@ import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.idev.excel.FastExcelFactory;
+import cn.idev.excel.enums.CellExtraTypeEnum;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -98,7 +101,7 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class OpportunityService {
+public class OpportunityService extends BaseExportService {
 
     public static final String SUCCESS = "SUCCESS";
     public static final Long DEFAULT_POS = 1L;
@@ -728,7 +731,7 @@ public class OpportunityService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter()
-                .exportMultiSheetTplWithSharedHandler(response, moduleFormService.getCustomImportHeadsNoRef(FormKey.OPPORTUNITY.getKey(), currentOrg),
+                .exportMultiSheetTplWithSharedHandler(response, processDuplicateLastLevelHeads(moduleFormService.getCustomImportHeadsNoRef(FormKey.OPPORTUNITY.getKey(), currentOrg)),
                         Translator.get("opportunity.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
                         new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg)), new CustomHeadColWidthStyleStrategy());
     }
@@ -761,6 +764,19 @@ public class OpportunityService {
             List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(currentOrg);
 
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+            // 1 读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
             ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(currentOrg);
             long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
             CustomImportAfterDoConsumer<Opportunity, BaseResourceSubField> afterDo = (opportunities, opportunityFields, opportunityFieldBlobs) -> {
@@ -868,8 +884,8 @@ public class OpportunityService {
                 }
             };
             CustomFieldImportEventListener<Opportunity> eventListener = new CustomFieldImportEventListener<>(fields, Opportunity.class, currentOrg, currentUser,
-                    "opportunity_field", "opportunity_field_blob", afterDo, 2000, null, null, request.getImportType());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+                    "opportunity_field", "opportunity_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), request.getImportType());
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
@@ -888,10 +904,45 @@ public class OpportunityService {
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "opportunity", "opportunity_field", currentOrg, importType);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
-            return ImportResponse.builder().errorMessages(eventListener.getErrList())
-                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+
+            // 1 先读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            // 2 校验数据
+            CustomFieldCheckEventListener eventListener =
+                    new CustomFieldCheckEventListener(
+                            fields,
+                            "opportunity",
+                            "opportunity_field",
+                            currentOrg,
+                            mergeCellEventListener.getMergeCellMap(),
+                            mergeCellEventListener.getMergeRowDataMap(),
+                            importType
+                    );
+
+            FastExcelFactory.read(file.getInputStream(), eventListener)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            return ImportResponse.builder()
+                    .errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess())
+                    .failCount(eventListener.getErrList().size())
+                    .build();
+
         } catch (Exception e) {
             log.error("opportunity import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
