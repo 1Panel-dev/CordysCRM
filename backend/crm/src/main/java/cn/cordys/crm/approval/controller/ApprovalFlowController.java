@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval.controller;
 
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
@@ -88,6 +89,13 @@ public class ApprovalFlowController {
     @Operation(summary = "根据表单类型获取审批流信息")
     public ApprovalFlowByFormTypeResponse getByFormType(@PathVariable("formType") String formType) {
         return approvalFlowService.getByFormType(formType, OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/form/options")
+    @Operation(summary = "获取已配置审批流的表单选项(含未启用审批流, 包含自定义表单)")
+    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_READ)
+    public List<OptionDTO> getFlowFormOptions() {
+        return approvalFlowService.getFlowFormOptions(OrganizationContext.getOrganizationId());
     }
 
 
