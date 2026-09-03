@@ -4,7 +4,7 @@
 <mapper namespace="cn.cordys.crm.form.mapper.ExtCustomFormDataMapper">
     <select id="list" resultType="cn.cordys.crm.form.dto.response.CustomFormDataListResponse">
         select d.id, d.custom_form_id as customFormId, d.name, d.owner, d.create_user as createUser, d.update_user as updateUser,
-               d.create_time as createTime, d.update_time as updateTime
+               d.create_time as createTime, d.update_time as updateTime, d.approval_status as approvalStatus
         from custom_form_data d
 
         <include refid="fieldConditionJoin">
@@ -51,7 +51,7 @@
 
     <select id="listForExport" resultType="cn.cordys.crm.form.dto.response.CustomFormDataListResponse">
         select d.id, d.custom_form_id as customFormId, d.name, d.owner, d.create_user as createUser, d.update_user as updateUser,
-               d.create_time as createTime, d.update_time as updateTime
+               d.create_time as createTime, d.update_time as updateTime, d.approval_status as approvalStatus
         from custom_form_data d
 
         <include refid="fieldConditionJoin">

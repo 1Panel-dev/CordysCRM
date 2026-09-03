@@ -17,9 +17,18 @@ import java.lang.annotation.Target;
 public @interface HitApproval {
 
 	/**
-	 * 业务表单类型
+	 * 业务表单类型。标准审批表单使用 FormKey 枚举值（如 {@link FormKey#CONTRACT}）。
+	 * 自定义表单不在 FormKey 枚举中，此时依赖 {@link #formKeyExpr()} 在运行时确定表单类型，
+	 * 本字段仅作编译期占位（默认 {@link FormKey#ORDER}，实际以 formKeyExpr 为准）。
 	 */
-	FormKey formKey();
+	FormKey formKey() default FormKey.ORDER;
+
+	/**
+	 * 动态表单类型表达式 (支持SpEL，从方法参数中获取 formKey 字符串)。
+	 * 用于自定义表单等运行时才能确定的表单类型（如 customFormId）。
+	 * 为空时使用 {@link #formKey()} 的枚举 key。
+	 */
+	String formKeyExpr() default "";
 
 	/**
 	 * 执行时机

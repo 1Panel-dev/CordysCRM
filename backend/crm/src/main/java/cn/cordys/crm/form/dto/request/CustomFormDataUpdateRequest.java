@@ -30,4 +30,10 @@ public class CustomFormDataUpdateRequest {
 
     @Schema(description = "模块字段值")
     private List<BaseModuleFieldValue> moduleFields;
+
+    @Schema(description = "更新类型 normal-正常更新 approval-审批回退更新(跳过审批切面)")
+    private String updateType;
+
+    @Schema(description = "变更说明")
+    private String comment;
 }

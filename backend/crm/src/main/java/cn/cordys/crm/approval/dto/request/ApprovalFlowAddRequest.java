@@ -1,7 +1,6 @@
 package cn.cordys.crm.approval.dto.request;
 
 import cn.cordys.common.constants.EnumValue;
-import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
 import cn.cordys.crm.approval.constants.DuplicateApproverRuleEnum;
 import cn.cordys.crm.approval.dto.StatusPermissionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,9 +17,8 @@ public class ApprovalFlowAddRequest {
     @Schema(description = "流程名称")
     private String name;
 
-    @EnumValue(enumClass = ApprovalFormTypeEnum.class)
     @NotBlank(message = "表单类型不能为空")
-    @Schema(description = "表单类型：quotation/contract/invoice/order")
+    @Schema(description = "表单类型：quotation/contract/invoice/order，或自定义表单ID")
     private String formType;
 
     @Schema(description = "新建时执行")
