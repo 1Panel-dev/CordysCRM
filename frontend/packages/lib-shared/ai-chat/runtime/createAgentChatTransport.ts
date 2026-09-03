@@ -248,6 +248,7 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
               tokens: event.data?.totalTokens,
               runId: event.data?.runId,
               duration,
+              finishReason: 'completed',
             });
             return;
           }

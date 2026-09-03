@@ -26,6 +26,7 @@
           :items="thoughtParts"
           :message-id="props.message.id"
           :is-generating="isGenerating"
+          :status="thoughtStatus"
           :duration="props.message.metadata?.duration"
         />
         <template v-for="item in renderableParts" :key="item.key">
@@ -103,6 +104,7 @@
   import {
     type AiChatMessage,
     type AiChatMessagePart,
+    type AiChatThoughtStatus,
     getAiChatMessageCopyText,
     hasRenderableAiChatContent,
     useAiChatRuntime,
@@ -159,6 +161,17 @@
   const showAssistantLoading = computed(
     () => props.message.role === 'assistant' && props.isGenerating && !hasRenderableAiChatContent(props.message.parts)
   );
+  const thoughtStatus = computed<AiChatThoughtStatus>(() => {
+    if (props.isGenerating) {
+      return 'thinking';
+    }
+
+    if (props.message.metadata?.finishReason === 'stopped') {
+      return 'stopped';
+    }
+
+    return 'completed';
+  });
   const copyableText = computed(() => getAiChatMessageCopyText(props.message));
   const canCopy = computed(() => copyableText.value.length > 0);
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);

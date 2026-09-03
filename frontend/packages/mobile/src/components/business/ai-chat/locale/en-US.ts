@@ -19,6 +19,7 @@ export default {
   'aiChat.confirmCancel': 'Cancel',
   'aiChat.thinking': 'Thinking',
   'aiChat.thinkingInProgress': 'Thinking',
+  'aiChat.thinkingStopped': 'Stopped',
   'aiChat.tokensUsed': '{tokens} used',
   'aiChat.feedbackThanks': 'Thanks for your feedback',
   'aiChat.progress': 'Running',

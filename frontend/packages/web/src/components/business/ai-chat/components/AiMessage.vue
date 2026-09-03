@@ -83,6 +83,7 @@
             :items="thoughtParts"
             :message-id="props.message.id"
             :is-generating="isGenerating"
+            :status="thoughtStatus"
             :duration="props.message.metadata?.duration"
           />
           <template v-for="item in renderableParts" :key="item.key">
@@ -132,7 +133,12 @@
   import { computed, ref, watch } from 'vue';
   import { NButton, NTooltip, useMessage } from 'naive-ui';
 
-  import type { AiChatMessage, AiChatMessagePart, AiComposerSubmitPayload } from '@lib/shared/ai-chat';
+  import type {
+    AiChatMessage,
+    AiChatMessagePart,
+    AiChatThoughtStatus,
+    AiComposerSubmitPayload,
+  } from '@lib/shared/ai-chat';
   import {
     getAiChatMessageCopyText,
     getAiChatMessageText,
@@ -256,6 +262,17 @@
   const showAssistantLoading = computed(
     () => !isUser.value && isGenerating.value && !hasRenderableAiChatContent(props.message.parts)
   );
+  const thoughtStatus = computed<AiChatThoughtStatus>(() => {
+    if (isGenerating.value) {
+      return 'thinking';
+    }
+
+    if (props.message.metadata?.finishReason === 'stopped') {
+      return 'stopped';
+    }
+
+    return 'completed';
+  });
 
   const messageClass = computed(() => ({
     'flex-row-reverse': isUser.value,

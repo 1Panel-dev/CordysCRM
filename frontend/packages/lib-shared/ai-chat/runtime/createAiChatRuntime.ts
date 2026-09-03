@@ -183,6 +183,22 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     );
   }
 
+   function markLatestAssistantStopped(): void {
+    const latestAssistantMessage = [...chat.value.messages].reverse().find((message) => message.role === 'assistant');
+
+    if (!latestAssistantMessage) {
+      return;
+    }
+
+    updateMessage(latestAssistantMessage.id, (message) => ({
+      ...message,
+      metadata: {
+        ...message.metadata,
+        finishReason: 'stopped',
+      },
+    }));
+  }
+
   async function stop(): Promise<void> {
     if (!canStop.value) {
       return;
@@ -200,8 +216,11 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     // 前端据此展示“对话已被手动停止”并复位按钮；否则回退为本地中止防止卡在停止态。
     if (!cancelled) {
       await chat.value.stop();
+      markLatestAssistantStopped();
       return;
     }
+
+    markLatestAssistantStopped();
 
     let stopWatch: (() => void) | undefined;
     const timeout = window.setTimeout(() => {
