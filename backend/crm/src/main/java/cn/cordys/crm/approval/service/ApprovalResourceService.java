@@ -43,6 +43,7 @@ import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.SessionUtils;
@@ -110,7 +111,13 @@ public class ApprovalResourceService {
     @PostConstruct
     private void initFormService() {
         for (ApprovalResourceHandler handler : approvalResourceHandlers) {
-            FORM_SERVICE.put(handler.getFormKey(), handler);
+            FormKey formKey = handler.getFormKey();
+            if (formKey == null) {
+                // 自定义表单处理器（不在 FormKey 枚举中），单独持有
+                CUSTOM_FORM_SERVICE = handler;
+            } else {
+                FORM_SERVICE.put(formKey, handler);
+            }
         }
     }
 
@@ -119,6 +126,10 @@ public class ApprovalResourceService {
      */
     public static final Map<String, String> FORM_APPROVAL_TABLE = new HashMap<>(4);
     public static final Map<FormKey, ApprovalResourceHandler> FORM_SERVICE = new HashMap<>(4);
+    /**
+     * 自定义表单处理器（FormKey 枚举之外的表单类型统一由它处理）
+     */
+    public static ApprovalResourceHandler CUSTOM_FORM_SERVICE;
     public static final String NULL_POST_CONFIG = "null";
 
     static {
@@ -126,6 +137,56 @@ public class ApprovalResourceService {
         FORM_APPROVAL_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
         FORM_APPROVAL_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
         FORM_APPROVAL_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
+    }
+
+    /**
+     * 将审批 formType 字符串解析为 FormKey 枚举。
+     * 标准枚举 key（quotation/contract/invoice/order）直接匹配；
+     * 非标准值（自定义表单的 customFormId）返回 null，统一视为自定义表单处理。
+     */
+    public static FormKey resolveApprovalFormKey(String formType) {
+        return FormKey.ofKey(formType);
+    }
+
+    /**
+     * 解析审批资源处理器：标准表单按 FormKey 从 {@link #FORM_SERVICE} 取；
+     * 自定义表单（formKey 为 null）返回自定义表单处理器。
+     */
+    public static ApprovalResourceHandler resolveApprovalHandler(FormKey formKey) {
+        if (formKey == null) {
+            return CUSTOM_FORM_SERVICE;
+        }
+        return FORM_SERVICE.get(formKey);
+    }
+
+    /**
+     * 解析审批资源业务表名：标准表单按 FormKey 映射；自定义表单统一为 custom_form_data。
+     */
+    public static String resolveApprovalTableName(FormKey formKey) {
+        if (formKey == null) {
+            return "custom_form_data";
+        }
+        return FORM_APPROVAL_TABLE.get(formKey.getKey());
+    }
+
+    @Resource
+    private BaseMapper<CustomFormData> customFormDataMapper;
+
+    /**
+     * 根据自定义表单数据ID反查 customFormId（用作审批 formType）。
+     * 用于 DELETE 等无法从方法参数获取 customFormId 的时机。
+     */
+    public String resolveCustomFormIdByResourceId(String resourceId) {
+        if (StringUtils.isBlank(resourceId)) {
+            return null;
+        }
+        try {
+            CustomFormData data = customFormDataMapper.selectByPrimaryKey(resourceId);
+            return data != null ? data.getCustomFormId() : null;
+        } catch (Exception e) {
+            log.warn("反查 customFormId 失败，resourceId={}, error={}", resourceId, e.getMessage());
+            return null;
+        }
     }
 
     public ResourceApprovalResponse resourceDetail(String resourceId) {
@@ -239,10 +300,7 @@ public class ApprovalResourceService {
      * @param orgId          组织ID
      */
     public void updateResourceApprovalStatus(FormKey formKey, String resourceId, String approvalStatus, String userId, String orgId) {
-        if (formKey == null) {
-            throw new GenericException(Translator.get("module.form.illegal"));
-        }
-        String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
+        String tableName = resolveApprovalTableName(formKey);
         if (StringUtils.isBlank(tableName)) {
             throw new GenericException(Translator.get("module.form.illegal"));
         }
@@ -256,7 +314,7 @@ public class ApprovalResourceService {
             extApprovalInstanceMapper.setApproved(tableName, resourceId);
         }
         // 存在快照表, 需要同步刷新审批状态
-        if (formKey.hasSnapshot()) {
+        if (formKey != null && formKey.hasSnapshot()) {
             updateSnapshotApprovalStatus(formKey, resourceId, approvalStatus);
         }
         // 记录审批状态变更日志
@@ -303,7 +361,8 @@ public class ApprovalResourceService {
      */
     private String getLogModuleOfFormKey(FormKey formKey) {
         if (formKey == null) {
-            return null;
+            // 自定义表单（非 FormKey 枚举）
+            return LogModule.CUSTOM_FORM_DATA;
         }
         return switch (formKey) {
             case QUOTATION -> LogModule.OPPORTUNITY_QUOTATION;
@@ -322,10 +381,7 @@ public class ApprovalResourceService {
      * @return 是否审批通过过
      */
     public boolean isResourceApproved(FormKey formKey, String resourceId) {
-        if (formKey == null) {
-            return false;
-        }
-        String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
+        String tableName = resolveApprovalTableName(formKey);
         if (StringUtils.isBlank(tableName)) {
             return false;
         }
@@ -340,10 +396,7 @@ public class ApprovalResourceService {
      * @param resourceId 资源ID
      */
     public String getInstanceResourceName(FormKey formKey, String resourceId) {
-        if (formKey == null) {
-            throw new GenericException(Translator.get("module.form.illegal"));
-        }
-        String tableName = FORM_APPROVAL_TABLE.get(formKey.getKey());
+        String tableName = resolveApprovalTableName(formKey);
         if (StringUtils.isBlank(tableName)) {
             throw new GenericException(Translator.get("module.form.illegal"));
         }
@@ -358,11 +411,11 @@ public class ApprovalResourceService {
      * @param approvalStatus 审批状态
      */
     private void updateSnapshotApprovalStatus(FormKey formKey, String resourceId, String approvalStatus) {
-        if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+        ApprovalResourceHandler handler = resolveApprovalHandler(formKey);
+        if (handler == null) {
             return;
         }
         try {
-            ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
             ResourceSnapshotApprovalParam param = ResourceSnapshotApprovalParam.builder().resourceId(resourceId).approvalStatus(approvalStatus).build();
             handler.updateSnapshotApprovalStatus(param);
         } catch (Exception e) {
@@ -379,7 +432,8 @@ public class ApprovalResourceService {
      * @param snapshotData 编辑前请求参数快照(JSON)
      */
     public void savePreUpdateSnapshot(FormKey formKey, String resourceId, String userId, String snapshotData) {
-        if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+        ApprovalResourceHandler handler = resolveApprovalHandler(formKey);
+        if (handler == null) {
             return;
         }
         if (StringUtils.isBlank(snapshotData)) {
@@ -390,7 +444,8 @@ public class ApprovalResourceService {
             extApprovalResourceSnapshotMapper.deleteByResourceId(resourceId);
             ApprovalResourceSnapshot snapshot = new ApprovalResourceSnapshot();
             snapshot.setId(IDGenerator.nextStr());
-            snapshot.setFormKey(formKey.getKey());
+            // 自定义表单（formKey 为 null）以 customFormId 作为快照 formKey
+            snapshot.setFormKey(formKey != null ? formKey.getKey() : resolveCustomFormIdByResourceId(resourceId));
             snapshot.setResourceId(resourceId);
             snapshot.setSnapshotData(snapshotData);
             snapshot.setCreateTime(System.currentTimeMillis());
@@ -413,7 +468,8 @@ public class ApprovalResourceService {
      * @param postConfig 后置配置
      */
     public void updateApprovalPostField(FormKey formKey, String resourceId, String postConfig, String currentUserId) {
-        if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+        ApprovalResourceHandler handler = resolveApprovalHandler(formKey);
+        if (handler == null) {
             return;
         }
         List<ResourceApprovalFieldUpdateParam> fields = getUpdateFieldOfPostConfig(postConfig);
@@ -422,7 +478,6 @@ public class ApprovalResourceService {
             return;
         }
         try {
-            ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
             ResourceApprovalPostUpdateParam postUpdateParam = ResourceApprovalPostUpdateParam.builder().fields(fields).resourceId(resourceId).operator(currentUserId).build();
             handler.updateApprovalPostField(postUpdateParam);
         } catch (Exception e) {
@@ -466,8 +521,8 @@ public class ApprovalResourceService {
         instance.setCurrentNodeId(firstApprovalNode.getId());
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.EXCEPTION) {
             // 异常节点, 目前只有自动拒绝的场景, 直接驳回
-            updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.UNAPPROVED.name(), currentUserId, currentOrgId);
-            approvalActionService.revertFromSnapshot(FormKey.ofKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
+            updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.UNAPPROVED.name(), currentUserId, currentOrgId);
+            approvalActionService.revertFromSnapshot(resolveApprovalFormKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
             instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
@@ -477,7 +532,7 @@ public class ApprovalResourceService {
         }
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
             // 直接结束
-            updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVED.name(), currentUserId, currentOrgId);
+            updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVED.name(), currentUserId, currentOrgId);
             instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
@@ -494,14 +549,14 @@ public class ApprovalResourceService {
          * 1. 更新业务表审批状态为审批中
          * 2. 插入审批实例, 审批待办任务
          */
-        updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name(), currentUserId, currentOrgId);
+        updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name(), currentUserId, currentOrgId);
         approvalInstanceMapper.insert(instance);
         ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
         approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, null, currentUserId, null, currentOrgId);
     }
 
     private void sendFinishNotice(String currentOrgId, String currentUserId, ApprovalInstance instance) {
-        String resourceName = getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
+        String resourceName = getInstanceResourceName(resolveApprovalFormKey(instance.getType()), instance.getResourceId());
         if (StringUtils.isBlank(resourceName)) {
             return;
         }
@@ -519,14 +574,14 @@ public class ApprovalResourceService {
      */
     public void revoke(ApprovalResourceBaseParam param, String currentUserId, String currentOrgId) {
         // 更新业务资源审批状态
-        updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.REVOKED.name(), currentUserId, currentOrgId);
+        updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.REVOKED.name(), currentUserId, currentOrgId);
         // 更新审批实例状态
         ApprovalInstance instance = instanceService.getLatestInstance(param.getResourceId());
         if (instance == null) {
             throw new GenericException(Translator.get("no.approval.instance"));
         }
         // 撤回时从快照还原业务数据
-        approvalActionService.revertFromSnapshot(FormKey.ofKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
+        approvalActionService.revertFromSnapshot(resolveApprovalFormKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
 
         instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
         instance.setApprovalTime(System.currentTimeMillis());
@@ -572,11 +627,11 @@ public class ApprovalResourceService {
      * @param orgId      组织ID
      */
     public void executeDeleteAction(String formType, String resourceId, String userId, String orgId) {
-        FormKey formKey = FormKey.ofKey(formType);
-        if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
+        FormKey formKey = resolveApprovalFormKey(formType);
+        ApprovalResourceHandler handler = resolveApprovalHandler(formKey);
+        if (handler == null) {
             return;
         }
-        ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
         HitApprovalAspect.executeDeleteSkipApproval(() -> handler.delete(resourceId, userId, orgId));
     }
 
@@ -616,7 +671,7 @@ public class ApprovalResourceService {
             boolean approved = isResourceApproved(formKey, resourceId);
             if (approved) {
                 // 已审批通过过：UPDATE时机，直接提审
-                ApprovalResourceHandler handler = FORM_SERVICE.get(formKey);
+                ApprovalResourceHandler handler = resolveApprovalHandler(formKey);
                 if (handler != null) {
                     String snapshotData = handler.getPreUpdateSnapshotData(resourceId, userId, organizationId);
                     if (StringUtils.isNotBlank(snapshotData)) {
@@ -680,7 +735,8 @@ public class ApprovalResourceService {
 
     public String getFormKeyDisplayName(FormKey formKey) {
         if (formKey == null) {
-            return "";
+            // 自定义表单（非 FormKey 枚举）
+            return Translator.get("module.resource_type.custom_form");
         }
         return switch (formKey) {
             case QUOTATION -> Translator.get("module.resource_type.quotation");
@@ -1136,7 +1192,8 @@ public class ApprovalResourceService {
         }
         FormKey key = FormKey.ofKey(formType);
         if (key == null) {
-            return null;
+            // 非标准枚举值（自定义表单 customFormId）
+            return PermissionConstants.CUSTOM_FORM_READ;
         }
         return switch (key) {
             case QUOTATION -> PermissionConstants.OPPORTUNITY_QUOTATION_READ;
