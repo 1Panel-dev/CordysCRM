@@ -1296,6 +1296,9 @@ public class ApprovalActionService {
 			case INVOICE -> {
 				module = NotificationConstants.Module.CONTRACT;
 				event = NotificationConstants.Event.INVOICE_APPROVAL;
+			} case CUSTOM_FORM -> {
+				module = NotificationConstants.Module.APPROVAL;
+				event = NotificationConstants.Event.APPROVAL_TODO;
 			}
 			default -> {
 				return;

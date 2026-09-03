@@ -87,6 +87,10 @@ public class HitApprovalAspect {
 			return handleDeleteApproval(joinPoint, annotation, method);
 		}
 
+		// 解析动态表单类型 formKey 字符串（自定义表单等运行时确定），并解析为枚举
+		String formKeyStr = resolveFormKeyStr(method, joinPoint.getArgs(), annotation);
+		FormKey enumKey = ApprovalResourceService.resolveApprovalFormKey(formKeyStr);
+
 		// 提前解析通用参数
 		String operator = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.operatorId());
 		if (StringUtils.isBlank(operator)) {
@@ -104,17 +108,17 @@ public class HitApprovalAspect {
 		}
 
 		String resourceId = resolveParamFromArgs(method, joinPoint.getArgs(), annotation.resourceId());
-		ExecuteTimingEnum executeTiming = getExecuteTimingEnum(annotation, resourceId);
+		ExecuteTimingEnum executeTiming = getExecuteTimingEnum(enumKey, annotation.executeType(), resourceId);
 		// 检查是否命中审批流
-		boolean hit = checkHitApprovalFlow(annotation.formKey(), executeTiming, organizationId);
+		boolean hit = checkHitApprovalFlow(formKeyStr, executeTiming, organizationId);
 
 		// UPDATE 前置处理：保存编辑前快照（用于审批驳回/撤回时回退）
 		if (executeTiming == ExecuteTimingEnum.UPDATE && hit) {
-			ApprovalResourceHandler handler = ApprovalResourceService.FORM_SERVICE.get(annotation.formKey());
+			ApprovalResourceHandler handler = ApprovalResourceService.FORM_SERVICE.get(enumKey);
 			if (handler != null) {
 				String snapshotData = handler.getPreUpdateSnapshotData(resourceId, operator, organizationId);
 				if (StringUtils.isNotBlank(snapshotData)) {
-					approvalResourceService.savePreUpdateSnapshot(annotation.formKey(), resourceId, operator, snapshotData);
+					approvalResourceService.savePreUpdateSnapshot(enumKey, resourceId, operator, snapshotData);
 				}
 			}
 		}
@@ -132,7 +136,7 @@ public class HitApprovalAspect {
 
 			if (hit) {
 				if (executeTiming == ExecuteTimingEnum.CREATE) {
-					approvalResourceService.updateResourceApprovalStatus(annotation.formKey(), resourceId, ApprovalStatus.PENDING.name(), operator, organizationId);
+					approvalResourceService.updateResourceApprovalStatus(enumKey, resourceId, ApprovalStatus.PENDING.name(), operator, organizationId);
 				} else {
 					// 命中审批流，直接提审（跳过待提审状态）
 					String updateFields = resolveUpdateFields();
@@ -140,7 +144,7 @@ public class HitApprovalAspect {
 							.orgId(organizationId)
 							.userId(operator)
 							.resourceId(resourceId)
-							.formKey(annotation.formKey().getKey())
+							.formKey(formKeyStr)
 							.executeTimingEnum(ExecuteTimingEnum.UPDATE)
 							.updateFields(updateFields)
 							.comment(comment)
@@ -155,14 +159,28 @@ public class HitApprovalAspect {
 		return retValue;
 	}
 
-	private ExecuteTimingEnum getExecuteTimingEnum(HitApproval annotation, String resourceId) {
-		if (StringUtils.isBlank(resourceId)) {
-			return annotation.executeType();
+	/**
+	 * 解析动态表单类型 formKey 字符串。
+	 * 优先使用 formKeyExpr（SpEL，用于自定义表单 customFormId），为空时回退到 formKey 枚举的 key。
+	 */
+	private String resolveFormKeyStr(Method method, Object[] args, HitApproval annotation) {
+		if (StringUtils.isNotBlank(annotation.formKeyExpr())) {
+			String resolved = resolveParamFromArgs(method, args, annotation.formKeyExpr());
+			if (StringUtils.isNotBlank(resolved)) {
+				return resolved;
+			}
 		}
-		ExecuteTimingEnum executeTiming = annotation.executeType();
-		if (annotation.executeType() == ExecuteTimingEnum.UPDATE) {
+		return annotation.formKey().getKey();
+	}
+
+	private ExecuteTimingEnum getExecuteTimingEnum(FormKey enumKey, ExecuteTimingEnum annotationExecuteType, String resourceId) {
+		if (StringUtils.isBlank(resourceId)) {
+			return annotationExecuteType;
+		}
+		ExecuteTimingEnum executeTiming = annotationExecuteType;
+		if (annotationExecuteType == ExecuteTimingEnum.UPDATE) {
 			// UPDATE 时机：检查资源是否历史上审批通过过，如果没有审批通过过则视为CREATE时机
-			boolean isCreateExecuteTime = !approvalResourceService.isResourceApproved(annotation.formKey(), resourceId);
+			boolean isCreateExecuteTime = !approvalResourceService.isResourceApproved(enumKey, resourceId);
 			if (isCreateExecuteTime) {
 				executeTiming = ExecuteTimingEnum.CREATE;
 			}
@@ -192,8 +210,18 @@ public class HitApprovalAspect {
 			return joinPoint.proceed();
 		}
 
+		// 解析动态表单类型（自定义表单 DELETE 时 formKeyExpr 可能为空，需从资源反查 customFormId）
+		String formKeyStr = resolveFormKeyStr(method, joinPoint.getArgs(), annotation);
+		if (StringUtils.isBlank(formKeyStr) || FormKey.CUSTOM_FORM == ApprovalResourceService.resolveApprovalFormKey(formKeyStr)) {
+			String customFormId = approvalResourceService.resolveCustomFormIdByResourceId(resourceId);
+			if (StringUtils.isNotBlank(customFormId)) {
+				formKeyStr = customFormId;
+			}
+		}
+		FormKey enumKey = ApprovalResourceService.resolveApprovalFormKey(formKeyStr);
+
 		// 检查是否命中审批流
-		boolean hit = checkHitApprovalFlow(annotation.formKey(), annotation.executeType(), organizationId);
+		boolean hit = checkHitApprovalFlow(formKeyStr, annotation.executeType(), organizationId);
 
 		if (!hit) {
 			// 未命中审批流，直接执行删除
@@ -204,10 +232,10 @@ public class HitApprovalAspect {
 				.orgId(organizationId)
 				.userId(operator)
 				.resourceId(resourceId)
-				.formKey(annotation.formKey().getKey())
+				.formKey(formKeyStr)
 				.executeTimingEnum(ExecuteTimingEnum.DELETE)
-				.comment(Translator.getWithArgs("approval.delete.resource", approvalResourceService.getFormKeyDisplayName(annotation.formKey()),
-						approvalResourceService.getInstanceResourceName(annotation.formKey(), resourceId)))
+				.comment(Translator.getWithArgs("approval.delete.resource", approvalResourceService.getFormKeyDisplayName(enumKey),
+						approvalResourceService.getInstanceResourceName(enumKey, resourceId)))
 				.build();
 		approvalResourceService.push(pushParam);
 		return null;
@@ -312,15 +340,15 @@ public class HitApprovalAspect {
 	/**
 	 * 检查是否命中审批流
 	 *
-	 * @param formKey         表单类型
+	 * @param formKey         表单类型（formKey 字符串，可为 customFormId）
 	 * @param executeTiming   执行时机
 	 * @param organizationId  组织ID
 	 * @return 是否命中审批流
 	 */
-	private boolean checkHitApprovalFlow(FormKey formKey, ExecuteTimingEnum executeTiming, String organizationId) {
+	private boolean checkHitApprovalFlow(String formKey, ExecuteTimingEnum executeTiming, String organizationId) {
 		try {
 			// 查询当前组织表单审批流配置
-			ApprovalFlow flow = approvalFlowService.getEnabledFlow(formKey.getKey(), organizationId);
+			ApprovalFlow flow = approvalFlowService.getEnabledFlow(formKey, organizationId);
 
 			if (flow == null) {
 				return false;

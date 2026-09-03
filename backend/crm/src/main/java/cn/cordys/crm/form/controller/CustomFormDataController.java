@@ -76,7 +76,7 @@ public class CustomFormDataController {
     @Operation(summary = "删除表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void delete(@PathVariable String id) {
-        customFormDataService.delete(id, SessionUtils.getUserId());
+        customFormDataService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")

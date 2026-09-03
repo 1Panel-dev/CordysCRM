@@ -7,6 +7,7 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
@@ -15,12 +16,25 @@ import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalResourceUpdateType;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.form.domain.*;
 import cn.cordys.crm.form.dto.request.*;
 import cn.cordys.crm.form.dto.response.CustomFormDataGetResponse;
@@ -70,7 +84,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class CustomFormDataService {
+public class CustomFormDataService implements ApprovalResourceHandler {
 
     @Resource
     private BaseMapper<CustomFormData> customFormDataMapper;
@@ -258,6 +272,7 @@ public class CustomFormDataService {
     }
 
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.ADD)
+    @HitApproval(formKey = FormKey.CUSTOM_FORM, formKeyExpr = "{#request.customFormId}", executeType = ExecuteTimingEnum.CREATE, resourceId = "#{request.id}", operatorId = "{#userId}")
     public CustomFormData add(CustomFormDataAddRequest request, String userId, String orgId) {
         checkCreatePermission(getManageDataScope(request.getCustomFormId(), userId));
 
@@ -271,6 +286,8 @@ public class CustomFormDataService {
         data.setUpdateTime(System.currentTimeMillis());
         data.setCreateUser(userId);
         data.setUpdateUser(userId);
+        data.setApprovalStatus(ApprovalStatus.NONE.name());
+        data.setApproved(false);
 
         CustomFormDataFieldService.setFormKey(request.getCustomFormId());
         try {
@@ -296,6 +313,7 @@ public class CustomFormDataService {
     }
 
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @HitApproval(formKey = FormKey.CUSTOM_FORM, formKeyExpr = "{#request.customFormId}", executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
     public void update(CustomFormDataUpdateRequest request, String userId, String orgId) {
         CustomFormData originData = customFormDataMapper.selectByPrimaryKey(request.getId());
         if (originData == null) {
@@ -337,6 +355,12 @@ public class CustomFormDataService {
 
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId) {
+        delete(id, userId, OrganizationContext.getOrganizationId());
+    }
+
+    @Override
+    @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.DELETE, resourceId = "{#id}")
+    public void delete(String id, String userId, String orgId) {
         CustomFormData data = customFormDataMapper.selectByPrimaryKey(id);
         if (data == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
@@ -350,6 +374,150 @@ public class CustomFormDataService {
 
         // 设置操作对象
         OperationLogContext.setResourceName(data.getName());
+    }
+
+    @HitApproval(formKey = FormKey.CUSTOM_FORM, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        delete(id, userId, orgId);
+    }
+
+    @Override
+    public FormKey getFormKey() {
+        return FormKey.CUSTOM_FORM;
+    }
+
+    /**
+     * ⚠️反射调用: 由审批执行操作统一调用, 勿修改。
+     * 自定义表单无独立快照表，仅需同步主表审批状态，此处为 no-op。
+     */
+    @Override
+    public void updateSnapshotApprovalStatus(ResourceSnapshotApprovalParam param) {
+        // no-op: 自定义表单审批状态持久化在 custom_form_data 主表，由 updateResourceApprovalStatus 统一维护
+    }
+
+    /**
+     * ⚠️反射调用: 由审批执行后置操作统一调用, 勿修改。
+     * 将审批通过的字段值回写到业务主表及自定义字段表。
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
+        String orgId = OrganizationContext.getOrganizationId();
+        CustomFormData customFormData = customFormDataMapper.selectByPrimaryKey(postFieldParam.getResourceId());
+        if (customFormData == null) {
+            return;
+        }
+        String customFormId = customFormData.getCustomFormId();
+        ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(customFormId, orgId);
+        List<BaseField> fields = formConfig.getFields();
+        Map<String, BaseField> fieldConfigMap = fields.stream().collect(Collectors.toMap(BaseField::getId, f -> f));
+        // 保存原始数据用于日志记录
+        CustomFormData originData = BeanUtils.copyBean(new CustomFormData(), customFormData);
+        List<BaseModuleFieldValue> originFields = customFormDataFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
+        List<CustomFormDataField> customFormDataFields = new ArrayList<>();
+        List<CustomFormDataFieldBlob> customFormDataFieldBlobs = new ArrayList<>();
+
+        for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
+            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
+                continue;
+            }
+            BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+            if (fieldConfig.hasBusinessKey()) {
+                // 业务主表字段
+                customFormDataFieldService.setResourceFieldValue(customFormData, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+            } else {
+                // 自定义字段
+                if (fieldConfig.isBlob()) {
+                    customFormDataFieldBlobMapper.deleteByLambda(new LambdaQueryWrapper<CustomFormDataFieldBlob>()
+                            .eq(CustomFormDataFieldBlob::getFieldId, fieldUpdateParam.getFieldId()).eq(CustomFormDataFieldBlob::getResourceId, postFieldParam.getResourceId()));
+                    CustomFormDataFieldBlob field = new CustomFormDataFieldBlob();
+                    field.setId(IDGenerator.nextStr());
+                    field.setResourceId(postFieldParam.getResourceId());
+                    field.setFieldId(fieldUpdateParam.getFieldId());
+                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    customFormDataFieldBlobs.add(field);
+                } else {
+                    customFormDataFieldMapper.deleteByLambda(new LambdaQueryWrapper<CustomFormDataField>()
+                            .eq(CustomFormDataField::getFieldId, fieldUpdateParam.getFieldId()).eq(CustomFormDataField::getResourceId, postFieldParam.getResourceId()));
+                    CustomFormDataField field = new CustomFormDataField();
+                    field.setId(IDGenerator.nextStr());
+                    field.setResourceId(postFieldParam.getResourceId());
+                    field.setFieldId(fieldUpdateParam.getFieldId());
+                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    customFormDataFields.add(field);
+                }
+            }
+        }
+        customFormDataMapper.updateById(customFormData);
+        if (CollectionUtils.isNotEmpty(customFormDataFields)) {
+            customFormDataFieldMapper.batchInsert(customFormDataFields);
+        }
+        if (CollectionUtils.isNotEmpty(customFormDataFieldBlobs)) {
+            customFormDataFieldBlobMapper.batchInsert(customFormDataFieldBlobs);
+        }
+        // 记录审批后置字段更新日志
+        CustomFormDataFieldService.setFormKey(customFormId);
+        try {
+            baseService.handleUpdateLogWithSubTable(originData, customFormData, originFields,
+                    customFormDataFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
+                    postFieldParam.getResourceId(), customFormData.getName(), Translator.get("products_info"), formConfig);
+            // 从 OperationLogContext 中获取日志信息并手动记录
+            LogContextInfo contextInfo = OperationLogContext.getContext();
+            if (contextInfo != null) {
+                LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.CUSTOM_FORM_DATA, customFormData.getName());
+                logDTO.setOriginalValue(contextInfo.getOriginalValue());
+                logDTO.setModifiedValue(contextInfo.getModifiedValue());
+                logService.add(logDTO);
+                OperationLogContext.clear();
+            }
+        } finally {
+            CustomFormDataFieldService.clearFormKey();
+        }
+    }
+
+    /**
+     * 获取编辑前的资源数据快照 (用于审批驳回/撤回时回退)。
+     * 从数据库查询当前完整数据, 组装成更新请求参数格式并返回 JSON。
+     */
+    @Override
+    public String getPreUpdateSnapshotData(String resourceId, String userId, String orgId) {
+        CustomFormData customFormData = customFormDataMapper.selectByPrimaryKey(resourceId);
+        if (customFormData == null) {
+            return null;
+        }
+        List<BaseModuleFieldValue> customFormDataFields = customFormDataFieldService.getModuleFieldValuesByResourceId(resourceId);
+        CustomFormDataUpdateRequest snapshotReq = BeanUtils.copyBean(new CustomFormDataUpdateRequest(), customFormData);
+        snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
+        snapshotReq.setCustomFormId(customFormData.getCustomFormId());
+        snapshotReq.setModuleFields(customFormDataFields);
+        return JSON.toJSONString(snapshotReq);
+    }
+
+    /**
+     * 使用快照数据回退资源 (回退时会记录编辑日志, 但跳过审批)。
+     */
+    @Override
+    public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
+        try {
+            CustomFormDataUpdateRequest request = JSON.parseObject(snapshotData, CustomFormDataUpdateRequest.class);
+            if (request == null) {
+                return;
+            }
+            CommonBeanFactory.getBean(CustomFormDataService.class).update(request, userId, orgId);
+        } catch (Exception e) {
+            log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
+        }
+    }
+
+    /**
+     * 获取字段详情 (⚠️反射调用; 勿修改入参, 返回, 方法名!)
+     *
+     * @param id 自定义表单数据ID
+     * @return 详情
+     */
+    public CustomFormDataGetResponse getFieldValues(String id) {
+        return getSimple(id);
     }
 
     public void batchUpdate(CustomFormDataBatchUpdateRequest request, String userId, String orgId) {
@@ -697,7 +865,7 @@ public class CustomFormDataService {
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             log.error("custom form data import error: {}", e.getMessage());
-            throw new GenericException("导入异常，请检查文件数据！");
+            throw new GenericException(e.getMessage());
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }

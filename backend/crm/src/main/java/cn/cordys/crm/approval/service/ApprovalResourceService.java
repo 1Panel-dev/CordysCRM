@@ -43,6 +43,7 @@ import cn.cordys.crm.system.dto.field.base.SubField;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
+import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.cordys.security.SessionUtils;
@@ -126,6 +127,37 @@ public class ApprovalResourceService {
         FORM_APPROVAL_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
         FORM_APPROVAL_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
         FORM_APPROVAL_TABLE.put(FormKey.ORDER.getKey(), "sales_order");
+        FORM_APPROVAL_TABLE.put(FormKey.CUSTOM_FORM.getKey(), "custom_form_data");
+    }
+
+    /**
+     * 将审批 formType 字符串解析为 FormKey 枚举。
+     * 标准枚举 key（quotation/contract/invoice/order）直接匹配；
+     * 非标准值（自定义表单的 customFormId）统一视为 {@link FormKey#CUSTOM_FORM}。
+     */
+    public static FormKey resolveApprovalFormKey(String formType) {
+        FormKey formKey = FormKey.ofKey(formType);
+        return formKey != null ? formKey : FormKey.CUSTOM_FORM;
+    }
+
+    @Resource
+    private BaseMapper<CustomFormData> customFormDataMapper;
+
+    /**
+     * 根据自定义表单数据ID反查 customFormId（用作审批 formType）。
+     * 用于 DELETE 等无法从方法参数获取 customFormId 的时机。
+     */
+    public String resolveCustomFormIdByResourceId(String resourceId) {
+        if (StringUtils.isBlank(resourceId)) {
+            return null;
+        }
+        try {
+            CustomFormData data = customFormDataMapper.selectByPrimaryKey(resourceId);
+            return data != null ? data.getCustomFormId() : null;
+        } catch (Exception e) {
+            log.warn("反查 customFormId 失败，resourceId={}, error={}", resourceId, e.getMessage());
+            return null;
+        }
     }
 
     public ResourceApprovalResponse resourceDetail(String resourceId) {
@@ -310,6 +342,7 @@ public class ApprovalResourceService {
             case CONTRACT -> LogModule.CONTRACT_INDEX;
             case INVOICE -> LogModule.CONTRACT_INVOICE;
             case ORDER -> LogModule.ORDER_INDEX;
+            case CUSTOM_FORM -> LogModule.CUSTOM_FORM_DATA;
             default -> null;
         };
     }
@@ -466,8 +499,8 @@ public class ApprovalResourceService {
         instance.setCurrentNodeId(firstApprovalNode.getId());
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.EXCEPTION) {
             // 异常节点, 目前只有自动拒绝的场景, 直接驳回
-            updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.UNAPPROVED.name(), currentUserId, currentOrgId);
-            approvalActionService.revertFromSnapshot(FormKey.ofKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
+            updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.UNAPPROVED.name(), currentUserId, currentOrgId);
+            approvalActionService.revertFromSnapshot(resolveApprovalFormKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
             instance.setApprovalStatus(ApprovalStatus.UNAPPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
@@ -477,7 +510,7 @@ public class ApprovalResourceService {
         }
         if (ApprovalNodeTypeEnum.valueOf(firstApprovalNode.getNodeType()) == ApprovalNodeTypeEnum.END) {
             // 直接结束
-            updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVED.name(), currentUserId, currentOrgId);
+            updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVED.name(), currentUserId, currentOrgId);
             instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
             instance.setApprovalTime(System.currentTimeMillis());
             approvalInstanceMapper.insert(instance);
@@ -494,14 +527,14 @@ public class ApprovalResourceService {
          * 1. 更新业务表审批状态为审批中
          * 2. 插入审批实例, 审批待办任务
          */
-        updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name(), currentUserId, currentOrgId);
+        updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.APPROVING.name(), currentUserId, currentOrgId);
         approvalInstanceMapper.insert(instance);
         ApprovalNodeApproverResponse approverNode = (ApprovalNodeApproverResponse) firstApprovalNode;
         approvalActionService.handlerNextNodeApproverTasks(approverNode, instance, null, currentUserId, null, currentOrgId);
     }
 
     private void sendFinishNotice(String currentOrgId, String currentUserId, ApprovalInstance instance) {
-        String resourceName = getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
+        String resourceName = getInstanceResourceName(resolveApprovalFormKey(instance.getType()), instance.getResourceId());
         if (StringUtils.isBlank(resourceName)) {
             return;
         }
@@ -519,14 +552,14 @@ public class ApprovalResourceService {
      */
     public void revoke(ApprovalResourceBaseParam param, String currentUserId, String currentOrgId) {
         // 更新业务资源审批状态
-        updateResourceApprovalStatus(FormKey.ofKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.REVOKED.name(), currentUserId, currentOrgId);
+        updateResourceApprovalStatus(resolveApprovalFormKey(param.getFormKey()), param.getResourceId(), ApprovalStatus.REVOKED.name(), currentUserId, currentOrgId);
         // 更新审批实例状态
         ApprovalInstance instance = instanceService.getLatestInstance(param.getResourceId());
         if (instance == null) {
             throw new GenericException(Translator.get("no.approval.instance"));
         }
         // 撤回时从快照还原业务数据
-        approvalActionService.revertFromSnapshot(FormKey.ofKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
+        approvalActionService.revertFromSnapshot(resolveApprovalFormKey(param.getFormKey()), instance.getExecuteTime(), param.getResourceId(), currentUserId, currentOrgId);
 
         instance.setApprovalStatus(ApprovalStatus.REVOKED.name());
         instance.setApprovalTime(System.currentTimeMillis());
@@ -572,7 +605,7 @@ public class ApprovalResourceService {
      * @param orgId      组织ID
      */
     public void executeDeleteAction(String formType, String resourceId, String userId, String orgId) {
-        FormKey formKey = FormKey.ofKey(formType);
+        FormKey formKey = resolveApprovalFormKey(formType);
         if (formKey == null || !FORM_SERVICE.containsKey(formKey)) {
             return;
         }
@@ -687,6 +720,7 @@ public class ApprovalResourceService {
             case CONTRACT -> Translator.get("module.resource_type.contract");
             case INVOICE -> Translator.get("module.resource_type.invoice");
             case ORDER -> Translator.get("module.resource_type.order");
+            case CUSTOM_FORM -> Translator.get("module.resource_type.custom_form");
             default -> "";
         };
     }
@@ -1136,13 +1170,15 @@ public class ApprovalResourceService {
         }
         FormKey key = FormKey.ofKey(formType);
         if (key == null) {
-            return null;
+            // 非标准枚举值（自定义表单 customFormId）
+            key = FormKey.CUSTOM_FORM;
         }
         return switch (key) {
             case QUOTATION -> PermissionConstants.OPPORTUNITY_QUOTATION_READ;
             case CONTRACT -> PermissionConstants.CONTRACT_READ;
             case INVOICE -> PermissionConstants.CONTRACT_INVOICE_READ;
             case ORDER -> PermissionConstants.ORDER_READ;
+            case CUSTOM_FORM -> PermissionConstants.CUSTOM_FORM_READ;
             default -> null;
         };
     }

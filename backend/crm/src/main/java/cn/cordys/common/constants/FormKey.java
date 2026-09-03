@@ -69,7 +69,11 @@ public enum FormKey {
     /**
      * 订单
      */
-    ORDER("order");
+    ORDER("order"),
+    /**
+     * 自定义表单（审批 formType 为具体 customFormId，本枚举仅用于引擎注册/分支/表名映射）
+     */
+    CUSTOM_FORM("customForm");
 
     private final String key;
 

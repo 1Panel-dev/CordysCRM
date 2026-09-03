@@ -1,6 +1,8 @@
 package cn.cordys.crm.approval.constants;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.ValueEnum;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 表单类型枚举
@@ -14,7 +16,9 @@ public enum ApprovalFormTypeEnum implements ValueEnum<String> {
     /** 发票 */
     INVOICE("INV-APV", "CONTRACT_INVOICE", "invoice"),
     /** 订单 */
-    ORDER("ORD-APV", "ORDER", "order");
+    ORDER("ORD-APV", "ORDER", "order"),
+    /** 自定义表单（审批 formType 为具体 customFormId，本枚举用于权限/编码等通用配置） */
+    CUSTOM_FORM("CFM-APV", "CUSTOM_FORM", "customForm");
 
     private final String prefix;
     private final String permissionId;
@@ -39,6 +43,10 @@ public enum ApprovalFormTypeEnum implements ValueEnum<String> {
             if (type.value.equals(value)) {
                 return type;
             }
+        }
+        // 非标准枚举值视为自定义表单（formType 为具体 customFormId）
+        if (StringUtils.isNotBlank(value) && FormKey.ofKey(value) == null) {
+            return CUSTOM_FORM;
         }
         return null;
     }

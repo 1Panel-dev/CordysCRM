@@ -12,6 +12,7 @@ import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractInvoice;
+import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.system.domain.User;
@@ -45,6 +46,8 @@ public class ApprovalTodoService {
     private BaseMapper<Order> orderMapper;
     @Resource
     private BaseMapper<ContractInvoice> invoiceMapper;
+    @Resource
+    private BaseMapper<CustomFormData> customFormDataMapper;
     @Resource
     private ExtApprovalTaskMapper extApprovalTaskMapper;
 
@@ -237,6 +240,8 @@ public class ApprovalTodoService {
                         .collect(Collectors.toMap(Order::getId, Order::getName, (prev, next) -> prev)));
                 case INVOICE -> resourceNameMap.put(formType, invoiceMapper.selectByIds(distinctIds).stream()
                         .collect(Collectors.toMap(ContractInvoice::getId, ContractInvoice::getName, (prev, next) -> prev)));
+                case CUSTOM_FORM -> resourceNameMap.put(formType, customFormDataMapper.selectByIds(distinctIds).stream()
+                        .collect(Collectors.toMap(CustomFormData::getId, CustomFormData::getName, (prev, next) -> prev)));
             }
         });
         return resourceNameMap;
@@ -258,7 +263,7 @@ public class ApprovalTodoService {
             case "contract" -> ApprovalFormTypeEnum.CONTRACT;
             case "order" -> ApprovalFormTypeEnum.ORDER;
             case "invoice" -> ApprovalFormTypeEnum.INVOICE;
-            default -> null;
+            default -> ApprovalFormTypeEnum.CUSTOM_FORM; // 非标准值视为自定义表单(customFormId)
         };
     }
 
@@ -307,6 +312,13 @@ public class ApprovalTodoService {
         if (!invoiceIds.isEmpty()) {
             resourceIdsByType.put(ApprovalFormTypeEnum.INVOICE, invoiceIds);
         }
+        LambdaQueryWrapper<CustomFormData> customFormWrapper = new LambdaQueryWrapper<>();
+        customFormWrapper.like(CustomFormData::getName, resourceName);
+        List<String> customFormDataIds = customFormDataMapper.selectListByLambda(customFormWrapper).stream()
+                .map(CustomFormData::getId).filter(StringUtils::isNotBlank).toList();
+        if (!customFormDataIds.isEmpty()) {
+            resourceIdsByType.put(ApprovalFormTypeEnum.CUSTOM_FORM, customFormDataIds);
+        }
         if (resourceIdsByType.isEmpty()) {
             return Collections.emptySet();
         }
@@ -314,15 +326,19 @@ public class ApprovalTodoService {
         // 按资源类型与资源ID反查审批实例ID。
         Set<String> instanceIds = new HashSet<>();
         resourceIdsByType.forEach((formType, resourceIds) -> {
-            List<String> aliases = switch (formType) {
-                case QUOTATION -> List.of("quotation", "quote");
-                case CONTRACT -> List.of("contract");
-                case ORDER -> List.of("order");
-                case INVOICE -> List.of("invoice");
-            };
             LambdaQueryWrapper<ApprovalInstance> wrapper = new LambdaQueryWrapper<>();
-            wrapper.in(ApprovalInstance::getType, aliases)
-                    .in(ApprovalInstance::getResourceId, resourceIds);
+            wrapper.in(ApprovalInstance::getResourceId, resourceIds);
+            if (formType != ApprovalFormTypeEnum.CUSTOM_FORM) {
+                // 标准表单类型按 type 别名过滤；自定义表单 type 为 customFormId，直接按 resourceId 匹配
+                List<String> aliases = switch (formType) {
+                    case QUOTATION -> List.of("quotation", "quote");
+                    case CONTRACT -> List.of("contract");
+                    case ORDER -> List.of("order");
+                    case INVOICE -> List.of("invoice");
+                    default -> List.of();
+                };
+                wrapper.in(ApprovalInstance::getType, aliases);
+            }
             instanceIds.addAll(approvalInstanceMapper.selectListByLambda(wrapper).stream()
                     .map(ApprovalInstance::getId)
                     .filter(StringUtils::isNotBlank)

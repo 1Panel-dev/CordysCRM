@@ -22,6 +22,13 @@ public @interface HitApproval {
 	FormKey formKey();
 
 	/**
+	 * 动态表单类型表达式 (支持SpEL，从方法参数中获取 formKey 字符串)。
+	 * 用于自定义表单等运行时才能确定的表单类型（如 customFormId）。
+	 * 为空时使用 {@link #formKey()} 的枚举 key。
+	 */
+	String formKeyExpr() default "";
+
+	/**
 	 * 执行时机
 	 */
 	ExecuteTimingEnum executeType();
