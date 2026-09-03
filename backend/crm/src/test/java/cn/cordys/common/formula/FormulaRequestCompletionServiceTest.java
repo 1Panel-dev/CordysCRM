@@ -48,7 +48,7 @@ class FormulaRequestCompletionServiceTest {
     }
 
     @Test
-    void updateUsesExistingSerialNumberInsteadOfCreatePlaceholder() {
+    void preservesFormulaValueAlreadyCalculatedByFrontend() {
         SerialNumberField quotationNumber = field(
                 new SerialNumberField(), "quotationNumber", "报价编号", "SERIAL_NUMBER");
         quotationNumber.setBusinessKey("number");
@@ -67,7 +67,34 @@ class FormulaRequestCompletionServiceTest {
                 moduleFormService, new FormulaCompletionService(new FormulaEngine()));
         FormulaUpdateRequest request = new FormulaUpdateRequest();
         request.setNumber("BJ0001");
-        request.setName("客户端伪造的公式值");
+        request.setName("前端已计算的公式值");
+        request.setModuleFields(new ArrayList<>());
+
+        service.complete("quotation", request, false);
+
+        assertEquals("前端已计算的公式值", request.getName());
+    }
+
+    @Test
+    void calculatesMissingUpdateFormulaWithExistingSerialNumber() {
+        SerialNumberField quotationNumber = field(
+                new SerialNumberField(), "quotationNumber", "报价编号", "SERIAL_NUMBER");
+        quotationNumber.setBusinessKey("number");
+        InputField quotationName = field(new InputField(), "quotationName", "报价单名称", "INPUT");
+        quotationName.setBusinessKey("name");
+        quotationName.setDefaultValueType("formula");
+        quotationName.setFormula(formula(function("CONCATENATE",
+                literal("Q-", "string"), fieldNode("quotationNumber"))));
+        ModuleFormService moduleFormService = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String formKey, String organizationId) {
+                return List.of(quotationNumber, quotationName);
+            }
+        };
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                moduleFormService, new FormulaCompletionService(new FormulaEngine()));
+        FormulaUpdateRequest request = new FormulaUpdateRequest();
+        request.setNumber("BJ0001");
         request.setModuleFields(new ArrayList<>());
 
         service.complete("quotation", request, false);

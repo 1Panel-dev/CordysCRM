@@ -51,18 +51,8 @@ public class FormulaResultNormalizer {
         if (!Double.isFinite(value)) {
             return value;
         }
-        double normalized = BigDecimal.valueOf(value).round(FORMULA_PRECISION).doubleValue();
-        String text = Double.toString(normalized);
-        int dot = text.indexOf('.');
-        if (dot < 0 || text.contains("E") || text.contains("e")) {
-            return normalized;
-        }
-        int end = Math.min(text.length(), dot + 1 + Math.max(digits, 0));
-        String truncated = text.substring(0, end);
-        if (truncated.endsWith(".")) {
-            truncated = truncated.substring(0, truncated.length() - 1);
-        }
-        return Double.parseDouble(truncated);
+        BigDecimal normalized = BigDecimal.valueOf(value).round(FORMULA_PRECISION);
+        return normalized.setScale(Math.max(digits, 0), RoundingMode.DOWN).doubleValue();
     }
 
     public enum ExpectedType {

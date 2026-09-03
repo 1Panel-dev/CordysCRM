@@ -95,6 +95,36 @@ class FormulaCompletionServiceTest {
     }
 
     @Test
+    void missingOnlyModePreservesExistingFormulaResult() {
+        InputNumberField amount = field(new InputNumberField(), "amount", "金额", "INPUT_NUMBER");
+        FormulaField doubled = numberFormula("doubled", "两倍金额",
+                binary("*", fieldNode("amount"), literal(2, "number")));
+        Map<String, BaseModuleFieldValue> values = new LinkedHashMap<>();
+        values.put("amount", new BaseModuleFieldValue("amount", 6));
+        values.put("doubled", new BaseModuleFieldValue("doubled", 999));
+
+        service.completeMissing(List.of(amount, doubled), values,
+                false, businessKey -> null, (businessKey, value) -> { });
+
+        assertEquals(999, values.get("doubled").getFieldValue());
+    }
+
+    @Test
+    void missingOnlyModeCalculatesMissingFormulaFromPreservedFormulaDependency() {
+        FormulaField doubled = numberFormula("doubled", "两倍金额", literal(10, "number"));
+        FormulaField plusOne = numberFormula("plusOne", "加一金额",
+                binary("+", fieldNode("doubled"), literal(1, "number")));
+        Map<String, BaseModuleFieldValue> values = new LinkedHashMap<>();
+        values.put("doubled", new BaseModuleFieldValue("doubled", 999));
+
+        service.completeMissing(List.of(doubled, plusOne), values,
+                false, businessKey -> null, (businessKey, value) -> { });
+
+        assertEquals(999, values.get("doubled").getFieldValue());
+        assertEquals(1000D, values.get("plusOne").getFieldValue());
+    }
+
+    @Test
     void calculatesFormulaDependenciesInTopologicalOrderAndOverridesSubmittedValues() {
         InputNumberField amount = field(new InputNumberField(), "amount", "金额", "INPUT_NUMBER");
         FormulaField doubled = numberFormula("doubled", "两倍金额",

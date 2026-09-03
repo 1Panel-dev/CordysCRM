@@ -53,7 +53,7 @@ public class FormulaRequestCompletionService {
 
         BeanWrapper requestValues = new BeanWrapperImpl(request);
         Map<String, BaseModuleFieldValue> moduleFieldMap = moduleFieldMap(requestValues);
-        formulaCompletionService.complete(
+        formulaCompletionService.completeMissing(
                 fields,
                 moduleFieldMap,
                 createMode,

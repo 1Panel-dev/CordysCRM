@@ -66,6 +66,33 @@ public class FormulaCompletionService {
             Function<String, Object> businessValueReader,
             BiConsumer<String, Object> businessValueWriter
     ) {
+        return complete(fields, fieldValueMap, createMode, businessValueReader,
+                businessValueWriter, true);
+    }
+
+    /**
+     * 只计算当前没有值的公式字段。用于 HTTP 请求前置补全：前端已经计算的值保持不变，
+     * MCP 等未提交公式值的调用方才由服务端补齐。
+     */
+    public Map<String, Object> completeMissing(
+            List<BaseField> fields,
+            Map<String, BaseModuleFieldValue> fieldValueMap,
+            boolean createMode,
+            Function<String, Object> businessValueReader,
+            BiConsumer<String, Object> businessValueWriter
+    ) {
+        return complete(fields, fieldValueMap, createMode, businessValueReader,
+                businessValueWriter, false);
+    }
+
+    private Map<String, Object> complete(
+            List<BaseField> fields,
+            Map<String, BaseModuleFieldValue> fieldValueMap,
+            boolean createMode,
+            Function<String, Object> businessValueReader,
+            BiConsumer<String, Object> businessValueWriter,
+            boolean overwriteExisting
+    ) {
         Map<String, Object> calculatedValues = new LinkedHashMap<>();
         if (fields == null || fields.isEmpty()) {
             return calculatedValues;
@@ -77,10 +104,10 @@ public class FormulaCompletionService {
         Map<String, Object> runtimeValues = buildRuntimeValues(fields, fieldValueMap, businessValueReader);
 
         calculateSubTableFormulas(fields, runtimeValues, metadata, runtimeFieldMap,
-                calculatedValues, evaluationNow, createMode);
+                calculatedValues, evaluationNow, createMode, overwriteExisting);
         calculateTopLevelFormulas(fields, runtimeValues, metadata, runtimeFieldMap,
                 calculatedValues, evaluationNow, createMode, fieldValueMap,
-                businessValueWriter);
+                businessValueWriter, overwriteExisting);
         return calculatedValues;
     }
 
@@ -92,7 +119,8 @@ public class FormulaCompletionService {
             Map<String, BaseField> runtimeFieldMap,
             Map<String, Object> calculatedValues,
             LocalDateTime evaluationNow,
-            boolean createMode
+            boolean createMode,
+            boolean overwriteExisting
     ) {
         for (BaseField field : fields) {
             if (!(field instanceof SubField subField) || subField.getSubFields() == null) {
@@ -122,6 +150,9 @@ public class FormulaCompletionService {
                 FormulaEvaluationContext baseContext = context(runtimeValues, rowMetadata,
                         rowFieldMap, evaluationNow, createMode);
                 for (FormulaTarget target : sortedTargets) {
+                    if (!overwriteExisting && row.get(target.runtimeId()) != null) {
+                        continue;
+                    }
                     Object rawResult = formulaEngine.evaluate(target.formula(), baseContext.withRow(row));
                     Object normalized = normalizeResult(rawResult, target.field());
                     row.put(target.runtimeId(), normalized);
@@ -140,7 +171,8 @@ public class FormulaCompletionService {
             LocalDateTime evaluationNow,
             boolean createMode,
             Map<String, BaseModuleFieldValue> fieldValueMap,
-            BiConsumer<String, Object> businessValueWriter
+            BiConsumer<String, Object> businessValueWriter,
+            boolean overwriteExisting
     ) {
         List<FormulaTarget> targets = fields.stream()
                 .filter(field -> !(field instanceof SubField))
@@ -150,6 +182,9 @@ public class FormulaCompletionService {
         FormulaEvaluationContext context = context(runtimeValues, metadata,
                 runtimeFieldMap, evaluationNow, createMode);
         for (FormulaTarget target : sortTargets(targets)) {
+            if (!overwriteExisting && runtimeValues.get(target.runtimeId()) != null) {
+                continue;
+            }
             Object rawResult = formulaEngine.evaluate(target.formula(), context);
             Object normalized = normalizeResult(rawResult, target.field());
             runtimeValues.put(target.runtimeId(), normalized);
