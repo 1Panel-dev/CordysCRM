@@ -134,8 +134,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const remoteFilterBusinessKey = ['products'];
 
   function getFollowColumn(fields: FormCreateField[]): CrmDataTableColumn[] {
+    const customerField = fields.find((item) => item.businessKey === 'customerId');
     if (props.formKey === FormDesignKeyEnum.FOLLOW_PLAN || props.formKey === FormDesignKeyEnum.FOLLOW_RECORD) {
-      const customerField = fields.find((item) => item.businessKey === 'customerId');
       const clueField = fields.find((item) => item.businessKey === 'clueId');
 
       const baseColumns: CrmDataTableColumn[] = [
@@ -168,7 +168,18 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       return baseColumns;
     }
 
-    return [];
+    return [
+      {
+        title: customerField?.name,
+        width: 200,
+        key: 'customerId',
+        render: props.specialRender?.customerId,
+        sortOrder: false,
+        sorter: true,
+        filedType: customerField?.type,
+        columnSelectorDisabled: true,
+      },
+    ];
   }
 
   async function initFormConfig(_readOnly?: boolean, operationColumn?: CrmDataTableColumn) {
