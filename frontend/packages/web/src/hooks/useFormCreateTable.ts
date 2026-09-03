@@ -134,8 +134,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const remoteFilterBusinessKey = ['products'];
 
   function getFollowColumn(fields: FormCreateField[]): CrmDataTableColumn[] {
-    const customerField = fields.find((item) => item.businessKey === 'customerId');
     if (props.formKey === FormDesignKeyEnum.FOLLOW_PLAN || props.formKey === FormDesignKeyEnum.FOLLOW_RECORD) {
+      const customerField = fields.find((item) => item.businessKey === 'customerId');
       const clueField = fields.find((item) => item.businessKey === 'clueId');
 
       const baseColumns: CrmDataTableColumn[] = [
@@ -168,18 +168,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       return baseColumns;
     }
 
-    return [
-      {
-        title: customerField?.name,
-        width: 200,
-        key: 'customerId',
-        render: props.specialRender?.customerId,
-        sortOrder: false,
-        sorter: true,
-        filedType: customerField?.type,
-        columnSelectorDisabled: true,
-      },
-    ];
+    return [];
   }
 
   async function initFormConfig(_readOnly?: boolean, operationColumn?: CrmDataTableColumn) {
@@ -208,7 +197,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               [FormDesignKeyEnum.CLUE_POOL, FormDesignKeyEnum.CUSTOMER_OPEN_SEA].includes(props.formKey)
             ) &&
             e.readable &&
-            !['clueId', 'customerId'].includes(e.businessKey as string)
+            !(isFollowModule && ['clueId', 'customerId'].includes(e.businessKey as string))
         )
         .map((field) => {
           let key = field.businessKey || field.id;
