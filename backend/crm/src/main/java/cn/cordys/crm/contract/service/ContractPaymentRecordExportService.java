@@ -3,27 +3,27 @@ package cn.cordys.crm.contract.service;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.ExportDTO;
-import cn.cordys.common.dto.ExportHeadDTO;
+import cn.cordys.common.dto.FieldExportMeta;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentRecordResponse;
 import cn.cordys.crm.contract.mapper.ExtContractPaymentRecordMapper;
-import cn.cordys.crm.system.dto.field.base.BaseField;
-import cn.cordys.crm.system.dto.field.base.OptionProp;
+import cn.cordys.crm.system.excel.domain.MergeResult;
 import cn.cordys.crm.system.service.ModuleFieldExtService;
-import cn.cordys.registry.ExportThreadRegistry;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Strings;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author song-cc-rock
@@ -41,21 +41,33 @@ public class ContractPaymentRecordExportService extends BaseExportService {
     private ExtContractPaymentRecordMapper extContractPaymentRecordMapper;
 
     @Override
-    public List<List<Object>> getExportData(String taskId, ExportDTO exportDTO) throws InterruptedException {
-        // 分页查询数据
-        ContractPaymentRecordPageRequest request = (ContractPaymentRecordPageRequest) exportDTO.getPageRequest();
-        PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
-        List<ContractPaymentRecordResponse> list = extContractPaymentRecordMapper.list(request, exportDTO.getUserId(), exportDTO.getOrgId(), exportDTO.getDeptDataPermission());
-        return expandList(list, taskId, exportDTO);
+    public MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
+        var exportList = collectExportList(exportParam);
+        if (CollectionUtils.isEmpty(exportList)) {
+            return MergeResult.builder().dataList(List.of()).mergeRegions(List.of()).handleCount(0).build();
+        }
+        var dataList = contractPaymentRecordService.buildListExtra(exportList, exportParam.getOrgId());
+        return buildExportMergeResult(taskId, exportParam, dataList,
+                ContractPaymentRecordResponse::getModuleFields,
+                (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
+                        getSystemFieldMap(detail, metas, exportParam.getLocale()), cache));
     }
 
-    /**
-     * 获取系统字段的值
-     *
-     * @param data 详情
-     * @return 字段值映射
-     */
-    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentRecordResponse data) {
+
+    private List<ContractPaymentRecordResponse> collectExportList(ExportDTO exportParam) {
+        var orgId = exportParam.getOrgId();
+        var userId = exportParam.getUserId();
+        var deptDataPermission = exportParam.getDeptDataPermission();
+        if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
+            return extContractPaymentRecordMapper.getListByIds(exportParam.getSelectIds(), userId, orgId, deptDataPermission);
+        }
+        var request = (ContractPaymentRecordPageRequest) exportParam.getPageRequest();
+        PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
+        return extContractPaymentRecordMapper.list(request, orgId, userId, deptDataPermission);
+    }
+
+
+    public LinkedHashMap<String, Object> getSystemFieldMap(ContractPaymentRecordResponse data, List<FieldExportMeta> exportMetas, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
@@ -64,7 +76,10 @@ public class ContractPaymentRecordExportService extends BaseExportService {
         systemFieldMap.put("paymentPlanId", data.getPaymentPlanName());
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
-        systemFieldMap.put("recordAmount", data.getRecordAmount());
+        Map<String, FieldExportMeta> metaMap = exportMetas.stream()
+                .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
+        resolveAndPutTimeField(systemFieldMap, metaMap, "recordAmount", data.getRecordAmount());
+
         systemFieldMap.put("recordEndTime", getInternalDateStr(data.getRecordEndTime(), FormKey.CONTRACT_PAYMENT_RECORD.getKey(),
                 data.getOrganizationId(), BusinessModuleField.CONTRACT_PAYMENT_RECORD_END_TIME.getKey()));
 
@@ -73,75 +88,6 @@ public class ContractPaymentRecordExportService extends BaseExportService {
         systemFieldMap.put("updateUser", data.getUpdateUserName());
         systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
         return systemFieldMap;
-    }
-
-    /**
-     * 获取勾选的回款记录导出数据
-     *
-     * @return 导出数据列表
-     */
-    @Override
-    public List<List<Object>> getSelectExportData(List<String> ids, String taskId, ExportDTO exportDTO) throws InterruptedException {
-        List<ContractPaymentRecordResponse> allList = extContractPaymentRecordMapper.getListByIds(ids, exportDTO.getUserId(), exportDTO.getOrgId(), exportDTO.getDeptDataPermission());
-        return expandList(allList, taskId, exportDTO);
-    }
-
-    /**
-     * 展开列表数据
-     *
-     * @param list      列表数据
-     * @param taskId    任务ID
-     * @param exportDTO 导出参数
-     * @return 导出数据
-     * @throws InterruptedException 异常信息
-     */
-    private List<List<Object>> expandList(List<ContractPaymentRecordResponse> list, String taskId, ExportDTO exportDTO) throws InterruptedException {
-        String orgId = exportDTO.getOrgId();
-        List<ContractPaymentRecordResponse> dataList = contractPaymentRecordService.buildListExtra(list, orgId);
-        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), orgId);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (ContractPaymentRecordResponse response : dataList) {
-            if (ExportThreadRegistry.isInterrupted(taskId)) {
-                throw new InterruptedException("线程已被中断，主动退出");
-            }
-            List<Object> value = buildData(exportDTO.getHeadList(), response, fieldConfigMap);
-            data.add(value);
-        }
-        return data;
-    }
-
-    /**
-     * 构建导出数据
-     *
-     * @param headList       表头集合
-     * @param data           数据详情
-     * @param fieldConfigMap 字段配置
-     * @return 导出数据
-     */
-    private List<Object> buildData(List<ExportHeadDTO> headList, ContractPaymentRecordResponse data, Map<String, BaseField> fieldConfigMap) {
-        LinkedHashMap<String, Object> systemFieldMap = getSystemFieldMap(data);
-        Map<String, Object> moduleFieldMap = getFieldIdValueMap(data.getModuleFields());
-        return transModuleFieldValue(headList, systemFieldMap, moduleFieldMap, new ArrayList<>(), fieldConfigMap);
-    }
-
-    /**
-     * 处理内部选项值
-     *
-     * @param value       选项值
-     * @param formKey     表单Key
-     * @param orgId       组织ID
-     * @param internalKey 字段内部Key
-     * @return 名称
-     */
-    private String processInternalOptions(String value, String formKey, String orgId, String internalKey) {
-        List<OptionProp> options = moduleFieldExtService.getFieldOptions(formKey, orgId, internalKey);
-        for (OptionProp option : options) {
-            if (option.getValue() != null && Strings.CS.equals(option.getValue().toString(), value)) {
-                return option.getLabel();
-            }
-        }
-        return value;
     }
 
     /**
