@@ -104,6 +104,8 @@ export interface AgentConversationItem {
 
 export type AgentConversationPageResult = CommonList<AgentConversationItem>;
 
+export type AgentConversationMessageStatus = 'done' | 'stopped';
+
 export interface AgentConversationMessage {
   id: string;
   createUser?: string;
@@ -119,6 +121,7 @@ export interface AgentConversationMessage {
   conversationId: string;
   runId?: string;
   helpful?: boolean | null;
+  status?: AgentConversationMessageStatus;
 }
 
 export interface AgentConversationDetail {

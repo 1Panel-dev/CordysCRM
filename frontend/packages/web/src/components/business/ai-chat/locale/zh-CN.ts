@@ -10,6 +10,7 @@ export default {
   'aiChat.send': '发送',
   'aiChat.thinking': '思考过程',
   'aiChat.thinkingInProgress': '思考中',
+  'aiChat.thinkingStopped': '已停止',
   'aiChat.editRestartTip': '编辑后从此处重新开始对话，历史对话不会被删除',
   'aiChat.tokensUsed': '共消耗 {tokens}',
   'aiChat.like': '回答有帮助',

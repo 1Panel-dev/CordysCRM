@@ -1,5 +1,5 @@
 import type { AgentChatProgressData, AgentConversationMessage } from '../../models/ai';
-import type { AiChatAttachment, AiChatMessage, AiChatMessagePart } from '../types';
+import type { AiChatAttachment, AiChatFinishReason, AiChatMessage, AiChatMessagePart } from '../types';
 
 type AiChatRole = AiChatMessage['role'];
 type ParsedContentPiece =
@@ -350,6 +350,14 @@ function toAiChatMessageParts(role: AiChatRole, parsedContent: ParsedMessageCont
       ];
 }
 
+function toFinishReason(status?: AgentConversationMessage['status']): AiChatFinishReason | undefined {
+  if (status === 'done') {
+    return 'completed';
+  }
+
+  return status;
+}
+
 export function toAiChatMessage(message: AgentConversationMessage, index: number): AiChatMessage {
   const parsedContent = parseMessageContent(message.content);
   const role = normalizeRole(message.role);
@@ -361,6 +369,7 @@ export function toAiChatMessage(message: AgentConversationMessage, index: number
       tokens: message.totalTokens ?? undefined,
       runId: message.runId,
       helpful: message.helpful ?? undefined,
+      finishReason: toFinishReason(message.status),
       attachments: parsedContent.attachments,
     },
     parts: toAiChatMessageParts(role, parsedContent),

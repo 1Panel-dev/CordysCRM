@@ -10,6 +10,7 @@ export default {
   'aiChat.send': 'Send',
   'aiChat.thinking': 'Thinking',
   'aiChat.thinkingInProgress': 'Thinking',
+  'aiChat.thinkingStopped': 'Stopped',
   'aiChat.editRestartTip': 'After editing, the conversation restarts from here. Chat history will not be deleted.',
   'aiChat.tokensUsed': '{tokens} used',
   'aiChat.like': 'Helpful',
