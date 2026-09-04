@@ -143,7 +143,7 @@ public class ContractPaymentRecordController {
                 .deptDataPermission(deptDataPermission).selectIds(request.getIds())
                 .selectRequest(request).formKey(FormKey.CONTRACT_PAYMENT_RECORD.getKey())
                 .build();
-        return contractPaymentRecordExportService.exportSelectWithMergeStrategy(exportDTO);
+        return contractPaymentRecordExportService.exportSelect(exportDTO);
     }
 
     @PostMapping("/export-all")
@@ -160,7 +160,7 @@ public class ContractPaymentRecordController {
                 .deptDataPermission(deptDataPermission).pageRequest(request)
                 .formKey(FormKey.CONTRACT_PAYMENT_RECORD.getKey())
                 .build();
-        return contractPaymentRecordExportService.exportAllWithMergeStrategy(exportDTO);
+        return contractPaymentRecordExportService.export(exportDTO);
     }
 
 

@@ -128,7 +128,7 @@ public class ContractPaymentPlanController {
                 .selectRequest(request)
                 .formKey(FormKey.CONTRACT_PAYMENT_PLAN.getKey())
                 .build();
-        return contractPaymentPlanExportService.exportSelectWithMergeStrategy(exportDTO);
+        return contractPaymentPlanExportService.exportSelect(exportDTO);
     }
 
     @PostMapping("/export-all")
@@ -150,7 +150,7 @@ public class ContractPaymentPlanController {
                 .pageRequest(request)
                 .formKey(FormKey.CONTRACT_PAYMENT_PLAN.getKey())
                 .build();
-        return contractPaymentPlanExportService.exportAllWithMergeStrategy(exportDTO);
+        return contractPaymentPlanExportService.export(exportDTO);
     }
 
 

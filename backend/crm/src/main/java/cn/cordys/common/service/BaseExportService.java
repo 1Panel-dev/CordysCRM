@@ -1084,16 +1084,4 @@ public abstract class BaseExportService {
             log.warn("Fail to set random access window size, {}", e.getMessage());
         }
     }
-
-
-    public void resolveAndPutTimeField(LinkedHashMap<String, Object> sysMap, Map<String, FieldExportMeta> metaMap,
-                                        String businessKey, Object rawValue) {
-        if (rawValue == null) {
-            return;
-        }
-        FieldExportMeta meta = metaMap.get(businessKey);
-        if (meta != null && meta.getField() != null) {
-            sysMap.put(businessKey, transformFieldValue(meta.getResolver(), meta.getField(), rawValue, new HashMap<>()));
-        }
-    }
 }
