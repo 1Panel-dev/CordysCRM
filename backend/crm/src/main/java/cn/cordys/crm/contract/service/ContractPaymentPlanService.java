@@ -301,7 +301,7 @@ public class ContractPaymentPlanService {
         contractPaymentPlanFieldService.saveModuleField(contractPaymentPlan, orgId, userId, request.getModuleFields(), false);
         contractPaymentPlanMapper.insert(contractPaymentPlan);
         // 日志
-        baseService.handleAddLogWithResourceName(contractPaymentPlan, request.getModuleFields());
+        baseService.handleAddLogWithSubTable(contractPaymentPlan, request.getModuleFields(), Translator.get("products_info"), getFormConfig(orgId));
         return contractPaymentPlan;
     }
 
@@ -329,7 +329,8 @@ public class ContractPaymentPlanService {
 
         contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(request.getId());
 
-        baseService.handleUpdateLog(originContractPaymentPlan, contractPaymentPlan, originContractPaymentPlanFields, request.getModuleFields(), originContractPaymentPlan.getId(), originContractPaymentPlan.getName());
+        baseService.handleUpdateLogWithSubTable(originContractPaymentPlan, contractPaymentPlan, originContractPaymentPlanFields, request.getModuleFields(),
+                originContractPaymentPlan.getId(), originContractPaymentPlan.getName(), Translator.get("products_info"), getFormConfig(orgId));
         return contractPaymentPlan;
     }
 
@@ -466,6 +467,7 @@ public class ContractPaymentPlanService {
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), currentOrg);
+            ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(currentOrg);
             CustomImportAfterDoConsumer<ContractPaymentPlan, BaseResourceSubField> afterDo = (paymentPlans, paymentPlanFields, paymentPlanFieldBlobs) -> {
                 var logs = new ArrayList<LogDTO>();
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
@@ -551,7 +553,8 @@ public class ContractPaymentPlanService {
                         ids.forEach(id -> {
                             ContractPaymentPlan originDate = originPaymentPlanMaps.get(id);
                             ContractPaymentPlan modifiedDate = modifiedPaymentPlanMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id),
+                                    id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
                             LogContextInfo contextInfo = OperationLogContext.getContext();
                             if (contextInfo != null) {
                                 LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CONTRACT_PAYMENT, modifiedDate.getName());

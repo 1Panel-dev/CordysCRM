@@ -155,7 +155,8 @@ public class ContractPaymentRecordService {
         contractPaymentRecordFieldService.saveModuleField(paymentRecord, currentOrg, currentUser, request.getModuleFields(), false);
         contractPaymentRecordMapper.insert(paymentRecord);
         // 日志
-        baseService.handleAddLogWithResourceName(paymentRecord, request.getModuleFields());
+        baseService.handleAddLogWithSubTable(paymentRecord, request.getModuleFields(), Translator.get("products_info"),
+                moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));
         return paymentRecord;
     }
 
@@ -173,7 +174,9 @@ public class ContractPaymentRecordService {
         contractPaymentRecordMapper.update(contractPaymentRecord);
         List<BaseModuleFieldValue> oldFvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(request.getId());
         updateModuleField(contractPaymentRecord, request.getModuleFields(), currentOrg, currentUser);
-        baseService.handleUpdateLog(oldRecord, contractPaymentRecord, oldFvs, request.getModuleFields(), oldRecord.getId(), oldRecord.getName());
+        baseService.handleUpdateLogWithSubTable(oldRecord, contractPaymentRecord, oldFvs, request.getModuleFields(),
+                oldRecord.getId(), oldRecord.getName(), Translator.get("products_info"),
+                moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));
         return contractPaymentRecord;
     }
 
@@ -334,6 +337,7 @@ public class ContractPaymentRecordService {
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
+            ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
 
             CustomImportAfterDoConsumer<ContractPaymentRecord, BaseResourceSubField> afterDo = (records, recordFields, recordFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
@@ -423,7 +427,8 @@ public class ContractPaymentRecordService {
                         ids.forEach(id -> {
                             ContractPaymentRecord originDate = originRecordMaps.get(id);
                             ContractPaymentRecord modifiedDate = modifiedRecordMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id),
+                                    id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
                             LogContextInfo contextInfo = OperationLogContext.getContext();
                             if (contextInfo != null) {
                                 LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CONTRACT_PAYMENT_RECORD, modifiedDate.getName());

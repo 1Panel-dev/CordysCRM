@@ -314,7 +314,7 @@ public class OpportunityService {
         opportunityFieldService.saveModuleField(opportunity, orgId, operatorId, request.getModuleFields(), false);
         opportunityMapper.insert(opportunity);
 
-        baseService.handleAddLogWithResourceName(opportunity, request.getModuleFields());
+        baseService.handleAddLogWithSubTable(opportunity, request.getModuleFields(), Translator.get("products_info"), getFormConfig(orgId));
 
         // 消息通知
         commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
@@ -353,7 +353,8 @@ public class OpportunityService {
                 updateModuleField(updateOpportunity, request.getModuleFields(), orgId, userId);
             }
             extOpportunityMapper.updateIncludeNullById(updateOpportunity);
-            baseService.handleUpdateLog(oldOpportunity, newOpportunity, originCustomerFields, request.getModuleFields(), oldOpportunity.getId(), oldOpportunity.getName());
+            baseService.handleUpdateLogWithSubTable(oldOpportunity, newOpportunity, originCustomerFields, request.getModuleFields(),
+                    oldOpportunity.getId(), oldOpportunity.getName(), Translator.get("products_info"), getFormConfig(orgId));
         }, () -> {
             throw new GenericException("opportunity_not_found");
         });
@@ -760,6 +761,7 @@ public class OpportunityService {
             List<StageConfigResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(currentOrg);
 
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.OPPORTUNITY.getKey(), currentOrg);
+            ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(currentOrg);
             long nextPos = getNextPos(currentOrg, stageConfigList.getFirst().getId());
             CustomImportAfterDoConsumer<Opportunity, BaseResourceSubField> afterDo = (opportunities, opportunityFields, opportunityFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
@@ -850,7 +852,8 @@ public class OpportunityService {
                         ids.forEach(id -> {
                             Opportunity originDate = originOpportunityMaps.get(id);
                             Opportunity modifiedDate = modifiedOpportunityMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id),
+                                    id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
                             LogContextInfo contextInfo = OperationLogContext.getContext();
                             if (contextInfo != null) {
                                 LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.OPPORTUNITY_INDEX, modifiedDate.getName());

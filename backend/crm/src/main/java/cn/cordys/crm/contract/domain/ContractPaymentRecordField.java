@@ -1,6 +1,6 @@
 package cn.cordys.crm.contract.domain;
 
-import cn.cordys.common.domain.BaseResourceField;
+import cn.cordys.common.domain.BaseResourceSubField;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -11,6 +11,6 @@ import lombok.Data;
 
 @Data
 @Table(name = "contract_payment_record_field")
-public class ContractPaymentRecordField extends BaseResourceField {
+public class ContractPaymentRecordField extends BaseResourceSubField {
 
 }
