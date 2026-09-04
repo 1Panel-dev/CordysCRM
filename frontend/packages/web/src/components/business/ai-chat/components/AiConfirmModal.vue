@@ -82,7 +82,7 @@
 
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { AgentChatConfirmData, AgentChatConfirmItem } from '@lib/shared/models/ai';
+  import type { AgentChatConfirmData, AgentChatConfirmItem, AgentChatConfirmRequest } from '@lib/shared/models/ai';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
@@ -148,28 +148,14 @@
       })
   );
 
-  function appendButtonLabelToLastAnswer(answers: Record<string, string>, buttonLabel: string): Record<string, string> {
-    const answerKeys = Object.keys(answers);
-    const lastAnswerKey = answerKeys.at(-1);
-
-    if (!lastAnswerKey) {
-      return answers;
-    }
-
-    return {
-      ...answers,
-      [lastAnswerKey]: [answers[lastAnswerKey], buttonLabel].filter(Boolean).join(', '),
-    };
-  }
-
-  async function submitConfirm(answers: Record<string, string>) {
+  async function submitConfirm(request: AgentChatConfirmRequest) {
     if (submitting.value) {
       return;
     }
 
     try {
       submitting.value = true;
-      await runtime.confirm(props.confirm, answers);
+      await runtime.confirm(props.confirm, request);
       closeHandled.value = true;
       showModal.value = false;
     } catch (error) {
@@ -182,6 +168,11 @@
   }
 
   async function handleConfirm() {
+    if (props.confirm.confirmation) {
+      await submitConfirm({ outcome: 'CONFIRMED', answers: {} });
+      return;
+    }
+
     const answers = confirmItems.value.reduce<Record<string, string>>((result, item, itemIndex) => {
       const answerValues = getAnswerValues(item, itemIndex);
 
@@ -191,30 +182,16 @@
 
       return result;
     }, {});
-    const submitAnswers = appendButtonLabelToLastAnswer(answers, confirmButtonLabel.value);
 
-    if (!canConfirm.value || Object.keys(submitAnswers).length === 0) {
+    if (!canConfirm.value || Object.keys(answers).length === 0) {
       return;
     }
 
-    await submitConfirm(submitAnswers);
+    await submitConfirm({ outcome: 'ANSWERED', answers });
   }
 
   async function handleCancel() {
-    const answers = confirmItems.value.reduce<Record<string, string>>((result, item) => {
-      if (item.prompt) {
-        result[item.prompt] = '';
-      }
-
-      return result;
-    }, {});
-    const submitAnswers = appendButtonLabelToLastAnswer(answers, cancelButtonLabel.value);
-
-    if (Object.keys(submitAnswers).length === 0) {
-      return;
-    }
-
-    await submitConfirm(submitAnswers);
+    await submitConfirm({ outcome: 'CANCELLED', answers: {} });
   }
 
   watch(
