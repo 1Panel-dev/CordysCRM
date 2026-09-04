@@ -116,6 +116,7 @@
             v-model:show="showDislikePopover"
             trigger="manual"
             placement="bottom"
+            @clickoutside="closeDislikePopover"
           >
             <template #trigger>
               <n-tooltip :delay="300">
@@ -325,6 +326,11 @@
     }
   }
 
+  function closeDislikePopover(): void {
+    showDislikePopover.value = false;
+    selectedDislikeReasons.value = [];
+  }
+
   const messageAttachments = computed(() => props.message.metadata?.attachments ?? []);
   const messageMcps = computed(() => props.message.metadata?.mcps ?? []);
 
@@ -394,8 +400,7 @@
       isEditing.value = false;
       editContent.value = '';
       feedback.value = props.message.metadata?.helpful;
-      selectedDislikeReasons.value = [];
-      showDislikePopover.value = false;
+      closeDislikePopover();
     }
   );
 
@@ -456,7 +461,7 @@
       if (feedback.value === false) {
         await cancelAgentChatFeedback(runId.value);
         setFeedback(undefined);
-        showDislikePopover.value = false;
+        closeDislikePopover();
         return;
       }
 
@@ -481,7 +486,7 @@
       submittingDislike.value = true;
       await dislikeAgentChat(runId.value, { reason: selectedDislikeReasons.value.join(', ') });
       setFeedback(false);
-      showDislikePopover.value = false;
+      closeDislikePopover();
       Message.success(t('aiChat.feedbackSubmitted'));
     } catch (error) {
       // eslint-disable-next-line no-console
