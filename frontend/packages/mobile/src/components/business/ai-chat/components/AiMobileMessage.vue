@@ -68,19 +68,19 @@
           />
           <CrmIcon
             v-if="canFeedback"
-            name="iconicon_good"
+            :name="feedback === true ? 'iconicon_good_one' : 'iconicon_good'"
             width="16px"
             height="16px"
-            :color="feedback === true ? 'var(--primary-0)' : 'var(--primary-8)'"
-            @click="handleFeedbackMessage('like')"
+            color="var(--primary-8)"
+            @click="handleLikeMessage"
           />
           <CrmIcon
             v-if="canFeedback"
-            name="iconicon_bad"
+            :name="feedback === false ? 'iconicon_bad_one' : 'iconicon_bad'"
             width="16px"
             height="16px"
-            :color="feedback === false ? 'var(--primary-0)' : 'var(--primary-8)'"
-            @click="handleFeedbackMessage('dislike')"
+            color="var(--primary-8)"
+            @click="handleDislikeClick"
           />
           <CrmIcon
             v-if="canEdit"
@@ -98,6 +98,34 @@
         </div>
       </div>
     </div>
+
+    <van-action-sheet v-model:show="showDislikePopup" :title="t('aiChat.feedbackReasonTitle')">
+      <div class="px-[16px] pb-[16px]">
+        <div class="mb-[16px] flex flex-wrap gap-[8px]">
+          <button
+            v-for="reason in feedbackReasonOptions"
+            :key="reason.value"
+            class="h-[32px] min-w-[72px] cursor-pointer rounded-[3px] border border-[var(--text-n7)] bg-[var(--text-n10)] px-[7px] text-[var(--text-n1)]"
+            :class="{
+              '!border-[var(--primary-8)] !text-[var(--primary-8)]': selectedDislikeReasons.includes(reason.value),
+            }"
+            type="button"
+            @click="toggleDislikeReason(reason.value)"
+          >
+            {{ reason.label }}
+          </button>
+        </div>
+        <van-button
+          block
+          type="primary"
+          :disabled="selectedDislikeReasons.length === 0"
+          :loading="submittingDislike"
+          @click="submitDislikeMessage"
+        >
+          {{ t('aiChat.feedbackSubmit') }}
+        </van-button>
+      </div>
+    </van-action-sheet>
   </div>
 </template>
 
@@ -125,7 +153,7 @@
   import AiMobileThoughtBlock from '../blocks/AiMobileThoughtBlock.vue';
   import AiMobileAttachmentList from './AiMobileAttachmentList.vue';
 
-  import { dislikeAgentChat, likeAgentChat } from '@/api/modules';
+  import { cancelAgentChatFeedback, dislikeAgentChat, likeAgentChat } from '@/api/modules';
 
   const props = defineProps<{
     message: AiChatMessage;
@@ -182,25 +210,75 @@
   const canRetry = computed(() => props.message.role === 'assistant' && !runtime.state.loading.value);
   const canEdit = computed(() => props.message.role === 'user' && !runtime.state.loading.value);
   const runId = computed(() => props.message.metadata?.runId);
-  const canFeedback = computed(() => props.message.role === 'assistant' && !props.isGenerating && Boolean(runId.value));
   const tokenUsageText = computed(() =>
     typeof props.message.metadata?.tokens === 'number' ? formatThousands(props.message.metadata.tokens) : ''
   );
-  const feedback = ref<boolean | undefined>(props.message.metadata?.helpful);
   const messageAttachments = computed(() => props.message.metadata?.attachments ?? []);
   const messageMcps = computed(() => props.message.metadata?.mcps ?? []);
+
+  const canFeedback = computed(() => props.message.role === 'assistant' && !props.isGenerating && Boolean(runId.value));
+  const feedback = ref<boolean | undefined>(props.message.metadata?.helpful);
+  const showDislikePopup = ref(false);
+  const selectedDislikeReasons = ref<string[]>([]);
+  const submittingDislike = ref(false);
+
+  const feedbackReasonOptions = computed(() => [
+    {
+      label: t('aiChat.feedbackReasonUnderstanding'),
+      value: t('aiChat.feedbackReasonUnderstanding'),
+    },
+    {
+      label: t('aiChat.feedbackReasonContext'),
+      value: t('aiChat.feedbackReasonContext'),
+    },
+    {
+      label: t('aiChat.feedbackReasonUnclear'),
+      value: t('aiChat.feedbackReasonUnclear'),
+    },
+    {
+      label: t('aiChat.feedbackReasonCode'),
+      value: t('aiChat.feedbackReasonCode'),
+    },
+    {
+      label: t('aiChat.feedbackReasonUnprofessional'),
+      value: t('aiChat.feedbackReasonUnprofessional'),
+    },
+    {
+      label: t('aiChat.feedbackReasonCodeFormat'),
+      value: t('aiChat.feedbackReasonCodeFormat'),
+    },
+    {
+      label: t('aiChat.feedbackReasonOther'),
+      value: t('aiChat.feedbackReasonOther'),
+    },
+  ]);
   const showActions = computed(
     () =>
       !props.isGenerating &&
       (canCopy.value || canRetry.value || canFeedback.value || canEdit.value || tokenUsageText.value)
   );
 
+  function setFeedback(value: boolean | undefined): void {
+    feedback.value = value;
+    if (props.message.metadata) {
+      props.message.metadata.helpful = value;
+    }
+  }
+
   watch(
     () => props.message.id,
     () => {
       feedback.value = props.message.metadata?.helpful;
+      selectedDislikeReasons.value = [];
+      showDislikePopup.value = false;
     }
   );
+
+  watch(showDislikePopup, (value) => {
+    if (value) {
+      selectedDislikeReasons.value = [];
+    }
+  });
 
   async function handleCopyMessage() {
     if (!copyableText.value) {
@@ -219,30 +297,74 @@
     await runtime.retry(props.message.id);
   }
 
-  async function handleFeedbackMessage(type: 'like' | 'dislike') {
+  async function handleLikeMessage() {
     if (!runId.value) {
       return;
     }
 
-    const picked = type === 'like';
-    if (feedback.value === picked) {
-      return;
-    }
-
     try {
-      if (type === 'like') {
-        await likeAgentChat(runId.value);
-      } else {
-        await dislikeAgentChat(runId.value);
+      if (feedback.value === true) {
+        await cancelAgentChatFeedback(runId.value);
+        setFeedback(undefined);
+        return;
       }
-      feedback.value = picked;
-      if (props.message.metadata) {
-        props.message.metadata.helpful = picked;
-      }
+
+      await likeAgentChat(runId.value);
+      setFeedback(true);
       showSuccessToast(t('aiChat.feedbackThanks'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    }
+  }
+
+  async function handleDislikeClick(): Promise<void> {
+    if (!runId.value) {
+      return;
+    }
+
+    try {
+      if (feedback.value === false) {
+        await cancelAgentChatFeedback(runId.value);
+        setFeedback(undefined);
+        showDislikePopup.value = false;
+        return;
+      }
+
+      showDislikePopup.value = true;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function toggleDislikeReason(reason: string): void {
+    selectedDislikeReasons.value = selectedDislikeReasons.value.includes(reason)
+      ? selectedDislikeReasons.value.filter((item) => item !== reason)
+      : [...selectedDislikeReasons.value, reason];
+  }
+
+  async function submitDislikeMessage(): Promise<void> {
+    if (
+      !runId.value ||
+      feedback.value === false ||
+      selectedDislikeReasons.value.length === 0 ||
+      submittingDislike.value
+    ) {
+      return;
+    }
+
+    try {
+      submittingDislike.value = true;
+      await dislikeAgentChat(runId.value, { reason: selectedDislikeReasons.value.join(', ') });
+      setFeedback(false);
+      showDislikePopup.value = false;
+      showSuccessToast(t('aiChat.feedbackSubmitted'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      submittingDislike.value = false;
     }
   }
 
@@ -275,5 +397,8 @@
       width: 100%;
       border-top: 1px solid var(--text-n8);
     }
+  }
+  :deep(.van-action-sheet__header) {
+    font-size: 18px;
   }
 </style>
