@@ -67,6 +67,13 @@
             and o.owner = #{userId}
         </if>
 
+        <if test="dataPermission != null and dataPermission.collaborationIds.size() > 0">
+            and o.owner not in
+            <foreach collection="dataPermission.collaborationIds" item="collaborationId" open="(" close=")" separator=",">
+                #{collaborationId}
+            </foreach>
+        </if>
+
         <if test="!source and request.keyword != null and request.keyword != ''">
             and (
             o.name like concat('%', #{request.keyword},'%')

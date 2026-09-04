@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author jianxing
@@ -154,5 +155,17 @@ public class CustomerCollaborationService {
         example.setUserId(userId);
         example.setCustomerId(customerId);
         return customerCollaborationMapper.countByExample(example) > 0;
+    }
+
+
+    /**
+     * 获取客户所有协作人id
+     * @param customerId
+     */
+    public Set<String> getCollaborations(String customerId) {
+        CustomerCollaboration example = new CustomerCollaboration();
+        example.setCustomerId(customerId);
+        List<CustomerCollaboration> collaborations = customerCollaborationMapper.select(example);
+        return collaborations.stream().map(CustomerCollaboration::getUserId).collect(Collectors.toSet());
     }
 }
