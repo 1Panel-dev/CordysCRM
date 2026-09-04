@@ -28,6 +28,8 @@ public class ContractPaymentPlanLogService extends BaseModuleLogService {
                 setContractFieldName(differ);
             } else if (Strings.CS.equals(differ.getColumn(), "planStatus")) {
                 setPlanStatusFieldName(differ);
+            } else if (differ.getColumn() != null && differ.getColumn().contains("-")) {
+                differ.setColumnName(differ.getColumn());
             }
         }
         return differences;
