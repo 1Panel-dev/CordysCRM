@@ -54,8 +54,8 @@ public class FollowUpPlanCommentService extends BaseCommentService<FollowUpPlanC
 
     @Override
     @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.UPDATE)
-    public void delete(String id, String userId, String orgId) {
-        super.delete(id, userId, orgId);
+    public FollowUpPlanComment delete(String id, String userId, String orgId) {
+        return super.delete(id, userId, orgId);
     }
 
     @Override

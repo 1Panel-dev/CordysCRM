@@ -154,7 +154,7 @@ public abstract class BaseCommentService<C extends Comment> {
         return comment;
     }
 
-    public void delete(String id, String userId, String orgId) {
+    public C delete(String id, String userId, String orgId) {
         C comment = getAndCheckOwnComment(id, userId, orgId);
         String originContent = comment.getContent();
         List<String> ids = new ArrayList<>();
@@ -177,6 +177,7 @@ public abstract class BaseCommentService<C extends Comment> {
                         .originalValue(Map.of("comment", originContent))
                         .build()
         );
+        return comment;
     }
 
     private void updateCommentCount(String resourceId, String orgId) {
@@ -296,6 +297,9 @@ public abstract class BaseCommentService<C extends Comment> {
 
         if (event != null) {
             MessageTask messageByEvent = extMessageTaskMapper.getMessageByEvent(event, orgId);
+            if (messageByEvent == null) {
+                return;
+            }
             commonNoticeSendService.sendNotice(messageByEvent.getTaskType(), event,
                     resource, operator, orgId, noticeUsers, true);
         }

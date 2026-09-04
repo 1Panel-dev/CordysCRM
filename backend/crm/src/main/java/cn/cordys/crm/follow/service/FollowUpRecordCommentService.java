@@ -55,8 +55,8 @@ public class FollowUpRecordCommentService extends BaseCommentService<FollowUpRec
 
     @Override
     @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.UPDATE)
-    public void delete(String id, String userId, String orgId) {
-        super.delete(id, userId, orgId);
+    public FollowUpRecordComment delete(String id, String userId, String orgId) {
+        return super.delete(id, userId, orgId);
     }
 
     @Override
