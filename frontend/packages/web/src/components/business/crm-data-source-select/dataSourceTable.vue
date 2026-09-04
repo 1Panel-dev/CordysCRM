@@ -38,6 +38,7 @@
         />
       </template>
     </CrmTable>
+    table
   </div>
   <CrmFormCreateDrawer
     v-if="realFormKey"

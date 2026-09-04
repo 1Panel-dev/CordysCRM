@@ -21,20 +21,22 @@
     @confirm="handleDataSourceConfirm"
     @cancel="handleDataSourceCancel"
   >
-    <dataSourceTable
-      v-model:selected-keys="selectedKeys"
-      v-model:selected-rows="selectedRows"
-      :multiple="props.multiple"
-      :source-type="props.dataSourceType"
-      :disabled-selection="props.disabledSelection ? props.disabledSelection : undefined"
-      :filter-params="filterParams"
-      :fullscreen-target-ref="fullscreenTargetRef"
-      :fieldConfig="props.fieldConfig"
-      :isSubTableRender="props.hideChildTag"
-      :dataSourceTitle="dataSourceTitle"
-      @init-form="handleFormInit"
-      @toggle-full-screen="(val) => (fullScreenModal = val)"
-    />
+    <Suspense>
+      <dataSourceTable
+        v-model:selected-keys="selectedKeys"
+        v-model:selected-rows="selectedRows"
+        :multiple="props.multiple"
+        :source-type="props.dataSourceType"
+        :disabled-selection="props.disabledSelection ? props.disabledSelection : undefined"
+        :filter-params="filterParams"
+        :fullscreen-target-ref="fullscreenTargetRef"
+        :fieldConfig="props.fieldConfig"
+        :isSubTableRender="props.hideChildTag"
+        :dataSourceTitle="dataSourceTitle"
+        @init-form="handleFormInit"
+        @toggle-full-screen="(val) => (fullScreenModal = val)"
+      />
+    </Suspense>
   </CrmModal>
 </template>
 
@@ -233,7 +235,9 @@
   watch(
     () => dataSourcesModalVisible.value,
     (v) => {
-      initCustomDataSourceForms();
+      if (isCustomDataSourceType(props.fieldConfig?.dataSourceType)) {
+        initCustomDataSourceForms();
+      }
       if (v) {
         setFullWrapperFullScreenRef();
       } else {
