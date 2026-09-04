@@ -179,11 +179,7 @@
     </div>
     <n-divider vertical class="!m-0" />
     <div
-      :class="
-        props.disabled || hasDisabledCustomOption
-          ? 'cursor-not-allowed text-[var(--primary-4)]'
-          : 'cursor-pointer text-[var(--primary-8)]'
-      "
+      :class="props.disabled ? 'cursor-not-allowed text-[var(--primary-4)]' : 'cursor-pointer text-[var(--primary-8)]'"
       @click="handleShowBatchEditModal"
     >
       {{ t('crmFormDesign.batchEdit') }}
@@ -259,9 +255,6 @@
   );
   const isDropdownOption = computed(() =>
     [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(fieldConfig.value.type)
-  );
-  const hasDisabledCustomOption = computed(
-    () => isDropdownOption.value && fieldConfig.value.customOptions?.some((item) => item.disabled === true)
   );
   const enabledCustomOptionCount = computed(
     () => fieldConfig.value.customOptions?.filter((item) => item.disabled !== true).length || 0
@@ -552,7 +545,7 @@
   const batchEditValue = ref('');
 
   function handleShowBatchEditModal() {
-    if (props.disabled || hasDisabledCustomOption.value) {
+    if (props.disabled) {
       return;
     }
     showModal.value = true;
@@ -580,14 +573,21 @@
         },
       ];
     } else {
+      const customOptions = fieldConfig.value.customOptions || [];
+      const customOptionMap = new Map(customOptions.map((item) => [item.label.trim().slice(0, 50), item]));
       const newOptions = resArr
         .map((e) => e.trim())
         .filter((e) => e)
-        .map((e) => ({
-          label: e.slice(0, 50),
-          value: fieldConfig.value.customOptions?.find((item) => item.label === e)?.value || getGenerateId(),
-          ...(isDropdownOption.value ? { disabled: false } : {}),
-        }));
+        .map((e, index) => {
+          const label = e.slice(0, 50);
+          const previousOption = customOptionMap.get(label) || customOptions[index];
+
+          return {
+            label,
+            value: previousOption?.value || getGenerateId(),
+            ...(isDropdownOption.value ? { disabled: previousOption?.disabled ?? false } : {}),
+          };
+        });
       fieldConfig.value.customOptions = newOptions;
     }
     syncCustomOptions();
