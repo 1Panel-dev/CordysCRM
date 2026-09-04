@@ -29,6 +29,7 @@ import type { CommonList, TableQueryParams } from '../../models/common';
 import type {
   AgentChatCancelParams,
   AgentChatConfirmData,
+  AgentChatConfirmRequest,
   AgentChatDoneData,
   AgentChatProgressData,
   AgentChatRunData,
@@ -312,10 +313,10 @@ export default function useAiApi(CDR: CordysAxios) {
     await CDR.post({ url: AgentChatCancelUrl, data });
   }
 
-  async function confirmAgentChat(dialogId: string, answers: Record<string, string>) {
+  async function confirmAgentChat(dialogId: string, request: AgentChatConfirmRequest) {
     await CDR.post({
       url: `${AgentChatConfirmUrl}/${dialogId}`,
-      data: answers,
+      data: request,
     });
   }
 

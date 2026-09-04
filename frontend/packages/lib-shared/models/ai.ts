@@ -39,8 +39,14 @@ export interface AgentChatConfirmData {
   orgId?: string;
   sessionId?: string;
   userId?: string;
+  confirmation?: boolean;
   items: AgentChatConfirmItem[];
   createdAt?: number;
+}
+
+export interface AgentChatConfirmRequest {
+  outcome: 'ANSWERED' | 'CONFIRMED' | 'CANCELLED';
+  answers: Record<string, string>;
 }
 
 export interface AgentChatConfirmItem {

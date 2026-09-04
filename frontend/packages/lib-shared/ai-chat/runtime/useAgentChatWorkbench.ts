@@ -2,6 +2,7 @@ import { computed, ref, shallowReactive } from 'vue';
 
 import type {
   AgentChatConfirmData,
+  AgentChatConfirmRequest,
   AgentChatStreamEvent,
   AgentConversationDetail,
   AgentConversationItem,
@@ -35,7 +36,7 @@ interface AgentChatWorkbenchApis {
     sessionId?: string;
     requestId: string;
   }) => Promise<unknown>;
-  confirmAgentChat: (dialogId: string, answers: Record<string, string>) => Promise<unknown>;
+  confirmAgentChat: (dialogId: string, request: AgentChatConfirmRequest) => Promise<unknown>;
   getAgentConversationPage: (data: {
     current: number;
     pageSize: number;
@@ -324,9 +325,9 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
         }
         return false;
       },
-      async onConfirm(data: AgentChatConfirmData, answerMap) {
+      async onConfirm(data: AgentChatConfirmData, request) {
         if (data.dialogId) {
-          await options.apis.confirmAgentChat(data.dialogId, answerMap);
+          await options.apis.confirmAgentChat(data.dialogId, request);
         }
       },
       async onFinish() {

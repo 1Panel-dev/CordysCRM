@@ -71,7 +71,7 @@
 
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { AgentChatConfirmData, AgentChatConfirmItem } from '@lib/shared/models/ai';
+  import type { AgentChatConfirmData, AgentChatConfirmItem, AgentChatConfirmRequest } from '@lib/shared/models/ai';
 
   const props = defineProps<{
     confirm: AgentChatConfirmData;
@@ -121,46 +121,33 @@
     return getSelectedValues(item, itemIndex);
   }
 
-  function appendButtonLabelToLastAnswer(answers: Record<string, string>, buttonLabel: string): Record<string, string> {
-    const answerKeys = Object.keys(answers);
-    const lastAnswerKey = answerKeys.at(-1);
-
-    if (!lastAnswerKey) {
-      return answers;
-    }
-
-    return {
-      ...answers,
-      [lastAnswerKey]: [answers[lastAnswerKey], buttonLabel].filter(Boolean).join(', '),
-    };
-  }
-
   async function submitConfirm(action: string): Promise<boolean> {
     if (submitting.value) {
       return false;
     }
 
-    const answers = confirmItems.value.reduce<Record<string, string>>((result, item, itemIndex) => {
-      const answerValues = getAnswerValues(item, itemIndex);
+    const outcome: AgentChatConfirmRequest['outcome'] =
+      action !== 'confirm' ? 'CANCELLED' : props.confirm.confirmation ? 'CONFIRMED' : 'ANSWERED';
+    const answers =
+      outcome === 'ANSWERED'
+        ? confirmItems.value.reduce<Record<string, string>>((result, item, itemIndex) => {
+            const answerValues = getAnswerValues(item, itemIndex);
 
-      if (item.prompt && (action !== 'confirm' || getItemOptions(item).length === 0 || answerValues.length > 0)) {
-        result[item.prompt] = action === 'confirm' ? answerValues.join(', ') : '';
-      }
+            if (item.prompt && (getItemOptions(item).length === 0 || answerValues.length > 0)) {
+              result[item.prompt] = answerValues.join(', ');
+            }
 
-      return result;
-    }, {});
-    const submitAnswers = appendButtonLabelToLastAnswer(
-      answers,
-      action === 'confirm' ? t('aiChat.confirmExecute') : t('aiChat.confirmCancel')
-    );
+            return result;
+          }, {})
+        : {};
 
-    if (Object.keys(submitAnswers).length === 0) {
+    if (outcome === 'ANSWERED' && Object.keys(answers).length === 0) {
       return true;
     }
 
     try {
       submitting.value = true;
-      await runtime.confirm(props.confirm, submitAnswers);
+      await runtime.confirm(props.confirm, { outcome, answers });
       return true;
     } finally {
       submitting.value = false;

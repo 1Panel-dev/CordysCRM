@@ -1,6 +1,6 @@
 import { computed, markRaw, ref, shallowRef, watch } from 'vue';
 
-import type { AgentChatConfirmData } from '@lib/shared/models/ai';
+import type { AgentChatConfirmData, AgentChatConfirmRequest } from '@lib/shared/models/ai';
 
 import type { AiChatAttachment, AiChatMessage, AiChatMeta, AiChatSubmitPayload } from '../types';
 import type { AiChatRuntime, CreateAiChatRuntimeOptions } from './types';
@@ -298,8 +298,8 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     await edit(messageId, content);
   }
 
-  async function confirm(data: AgentChatConfirmData, answers: Record<string, string>): Promise<void> {
-    await options.onConfirm?.(data, answers);
+  async function confirm(data: AgentChatConfirmData, request: AgentChatConfirmRequest): Promise<void> {
+    await options.onConfirm?.(data, request);
     currentConfirm.value = undefined;
   }
 
