@@ -50,7 +50,7 @@ public class FollowUpRecordCommentController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除跟进记录评论")
-    public void delete(@PathVariable String id) {
-        commentService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public FollowUpRecordComment delete(@PathVariable String id) {
+        return commentService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

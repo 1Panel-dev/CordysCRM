@@ -51,8 +51,8 @@ public class FollowUpPlanCommentController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除跟进计划评论")
-    public void delete(@PathVariable String id) {
+    public FollowUpPlanComment delete(@PathVariable String id) {
         // 方法里校验了权限
-        commentService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return commentService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
