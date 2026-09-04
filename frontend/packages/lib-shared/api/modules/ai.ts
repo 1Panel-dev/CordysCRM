@@ -323,8 +323,12 @@ export default function useAiApi(CDR: CordysAxios) {
     return CDR.post({ url: `${AgentChatUrl}/${runId}/like` });
   }
 
-  function dislikeAgentChat(runId: string) {
-    return CDR.post({ url: `${AgentChatUrl}/${runId}/dislike` });
+  function dislikeAgentChat(runId: string, data?: { reason: string }) {
+    return CDR.post({ url: `${AgentChatUrl}/${runId}/dislike`, data });
+  }
+
+  function cancelAgentChatFeedback(runId: string) {
+    return CDR.post({ url: `${AgentChatUrl}/${runId}/feedback/cancel` });
   }
 
   function getAgentConversationPage(data: AgentConversationQueryRequest) {
@@ -408,6 +412,7 @@ export default function useAiApi(CDR: CordysAxios) {
     confirmAgentChat,
     likeAgentChat,
     dislikeAgentChat,
+    cancelAgentChatFeedback,
     getAgentConversationPage,
     getAgentConversationDetail,
     deleteAgentConversation,
