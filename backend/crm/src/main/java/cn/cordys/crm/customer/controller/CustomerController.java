@@ -25,6 +25,7 @@ import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.request.*;
 import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
+import cn.cordys.crm.customer.service.CustomerCollaborationService;
 import cn.cordys.crm.customer.service.CustomerExportService;
 import cn.cordys.crm.customer.service.CustomerService;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
@@ -49,6 +50,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -58,6 +60,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author jianxing
@@ -88,6 +91,8 @@ public class CustomerController {
     private ContractInvoiceService contractInvoiceService;
     @Resource
     private OrderService orderService;
+    @Resource
+    private CustomerCollaborationService customerCollaborationService;
 
     @GetMapping("/module/form")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ}, logical = Logical.OR)
@@ -196,7 +201,10 @@ public class CustomerController {
             deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                     OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         } else {
-            deptDataPermission.setAll(true);
+            Set<String> ids = customerCollaborationService.getCollaborations(request.getCustomerId());
+            if(CollectionUtils.isNotEmpty(ids)) {
+                deptDataPermission.setCollaborationIds(ids);
+            }
         }
         return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, false);
     }
