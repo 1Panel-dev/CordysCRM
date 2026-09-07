@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -32,9 +33,10 @@ public class SerialNumberField extends BaseField {
 	 * @return 流水号规则
 	 */
 	public List<String> getSerialNumberRules(String formulaPrefix) {
-		if (Strings.CI.equals(this.prefixType, SerialNumberField.FORMULA) && StringUtils.isNotEmpty(formulaPrefix)) {
-			this.serialNumberRules.set(0 ,formulaPrefix);
+		List<String> rules = new ArrayList<>(this.serialNumberRules);
+		if (Strings.CI.equals(this.prefixType, SerialNumberField.FORMULA)) {
+			rules.set(0, StringUtils.defaultString(formulaPrefix));
 		}
-		return this.serialNumberRules;
+		return rules;
 	}
 }

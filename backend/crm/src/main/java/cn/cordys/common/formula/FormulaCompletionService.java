@@ -131,6 +131,7 @@ public class FormulaCompletionService {
                 continue;
             }
             List<FormulaTarget> targets = subField.getSubFields().stream()
+                    .filter(sub -> createMode || !sub.isSerialNumber())
                     .map(sub -> formulaTarget(sub, runtimeFieldId(sub)))
                     .filter(java.util.Objects::nonNull)
                     .toList();
@@ -176,6 +177,7 @@ public class FormulaCompletionService {
     ) {
         List<FormulaTarget> targets = fields.stream()
                 .filter(field -> !(field instanceof SubField))
+                .filter(field -> createMode || !field.isSerialNumber())
                 .map(field -> formulaTarget(field, field.getId()))
                 .filter(java.util.Objects::nonNull)
                 .toList();
@@ -277,6 +279,10 @@ public class FormulaCompletionService {
     }
 
     private String formulaOf(BaseField field) {
+        if (field instanceof cn.cordys.crm.system.dto.field.SerialNumberField serialField
+                && Strings.CI.equals(serialField.getPrefixType(), "formula")) {
+            return serialField.getFormula();
+        }
         if (field instanceof FormulaField formulaField) {
             return formulaField.getFormula();
         }

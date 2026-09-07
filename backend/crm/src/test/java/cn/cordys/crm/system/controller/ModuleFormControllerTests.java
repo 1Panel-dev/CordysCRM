@@ -44,8 +44,8 @@ public class ModuleFormControllerTests extends BaseTest {
         request.setFormKey("none-key");
         request.setFields(List.of());
         request.setFormProp(new FormProp());
-        MvcResult mvcResult = this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError()).andReturn();
-        assert mvcResult.getResponse().getContentAsString().contains(Translator.get("module.form.not_exist"));
+        MvcResult mvcResult = this.requestPost("/module/form/save", request).andExpect(status().is4xxClientError()).andReturn();
+        assert mvcResult.getResponse().getContentAsString().contains(Translator.get("http_result_not_found"));
         request.setFormKey(FormKey.CLUE.getKey());
         request.setFields(fields);
         this.requestPostWithOk("/module/form/save", request);

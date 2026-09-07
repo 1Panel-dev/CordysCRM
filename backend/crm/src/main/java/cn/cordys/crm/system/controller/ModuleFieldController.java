@@ -7,6 +7,8 @@ import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.JSON;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.pager.PagerWithOption;
@@ -65,6 +67,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -270,7 +274,73 @@ public class ModuleFieldController {
     @PostMapping("/resolve/business")
     @Operation(summary = "解析业务ID")
     public List<OptionDTO> resolveBusinessId(@Valid @RequestBody FieldResolveRequest request) {
-        return moduleFormService.getSourceOptionsByKeywords(request.getSourceType(), request.getKeywords());
+        String source = request.getSourceType();
+        List<String> keywords = request.getKeywords();
+        if (source == null || !source.matches("[A-Za-z0-9_-]{1,128}") || keywords == null
+                || keywords.isEmpty() || keywords.size() > 100
+                || keywords.stream().anyMatch(value -> value == null || value.isBlank())) {
+            throw new GenericException("来源或解析关键字无效，单次最多 100 个");
+        }
+        Map<String, OptionDTO> matches = new LinkedHashMap<>();
+        if ("MEMBER".equals(source) || "DEPARTMENT".equals(source)) {
+            List<? extends BaseTreeNode> roots = "MEMBER".equals(source)
+                    ? getDeptUserTree(false) : getDeptTree();
+            collectSourceTree(roots, "MEMBER".equals(source), keywords, matches);
+            return new ArrayList<>(matches.values());
+        }
+        // 兼容旧解析协议，但复用页面的组织、角色、数据范围和上下架过滤，不能直查业务表。
+        for (String identity : List.of("id", "name")) {
+            for (int page = 1; page <= 100; page++) {
+                String body = JSON.toJSONString(Map.of("current", page, "pageSize", 100,
+                        "viewId", InternalUserView.ALL.name(), "customFormId", source,
+                        "filters", List.of(Map.of("name", identity, "operator", "IN", "value", keywords,
+                                "type", "INPUT", "multipleValue", false))));
+                Pager<?> response = resolveSourcePage(source, body);
+                if (response == null || !(response.getList() instanceof List<?> rows)) {
+                    throw new GenericException("数据源候选响应不完整");
+                }
+                for (OptionDTO option : JSON.parseArray(JSON.toJSONString(rows), OptionDTO.class)) {
+                    if (option.getId() != null && (keywords.contains(option.getIdAsString())
+                            || keywords.contains(option.getName()))) {
+                        matches.put(option.getIdAsString(), option);
+                    }
+                }
+                if ((long) page * 100 >= response.getTotal()) break;
+                // ponytail: 每个精确条件最多一万候选，超过上限拒绝；更大规模需专用权限化唯一查询。
+                if (rows.isEmpty() || page == 100) throw new GenericException("候选未完整读取，请缩小解析范围");
+            }
+        }
+        return new ArrayList<>(matches.values());
+    }
+
+    private Pager<?> resolveSourcePage(String source, String body) {
+        return switch (source) {
+            case "CUSTOMER" -> sourceCustomerPage(JSON.parseObject(body, CustomerPageRequest.class));
+            case "CLUE" -> sourceCluePage(JSON.parseObject(body, CluePageRequest.class));
+            case "CONTACT" -> sourceContactPage(JSON.parseObject(body, CustomerContactPageRequest.class));
+            case "OPPORTUNITY" -> sourceOpportunityPage(JSON.parseObject(body, OpportunityPageRequest.class));
+            case "PRODUCT" -> sourceProductPage(JSON.parseObject(body, ProductPageRequest.class));
+            case "PRICE" -> sourceProductPage(JSON.parseObject(body, ProductPricePageRequest.class));
+            case "QUOTATION" -> sourceOpportunityQuotationPage(JSON.parseObject(body, OpportunityQuotationPageRequest.class));
+            case "CONTRACT" -> sourceContractPage(JSON.parseObject(body, ContractPageRequest.class));
+            case "PAYMENT_PLAN" -> sourcePlanPage(JSON.parseObject(body, ContractPaymentPlanPageRequest.class));
+            case "CONTRACT_PAYMENT_RECORD" -> sourceRecordPage(JSON.parseObject(body, ContractPaymentRecordPageRequest.class));
+            case "ORDER" -> list(JSON.parseObject(body, OrderPageRequest.class));
+            case "INVOICE" -> list(JSON.parseObject(body, ContractInvoicePageRequest.class));
+            case "BUSINESS_TITLE" -> sourceBusinessTitlePage(JSON.parseObject(body, BusinessTitlePageRequest.class));
+            default -> sourceCustomFormDataPage(JSON.parseObject(body, CustomFormDataPageRequest.class));
+        };
+    }
+
+    private void collectSourceTree(List<? extends BaseTreeNode> nodes, boolean members, List<String> keywords,
+                                   Map<String, OptionDTO> matches) {
+        for (BaseTreeNode node : nodes) {
+            boolean selectable = !members || node instanceof DeptUserTreeNode user && "USER".equals(user.getNodeType());
+            if (selectable && (keywords.contains(node.getId()) || keywords.contains(node.getName()))) {
+                matches.put(node.getId(), new OptionDTO(node.getId(), node.getName()));
+            }
+            if (node.getChildren() != null) collectSourceTree(node.getChildren(), members, keywords, matches);
+        }
     }
 
     @GetMapping("/display/{formKey}")

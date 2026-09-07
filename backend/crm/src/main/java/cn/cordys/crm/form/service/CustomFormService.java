@@ -77,20 +77,24 @@ public class CustomFormService {
     @Value("classpath:form/form.json")
     private org.springframework.core.io.Resource formResource;
 
-    public List<OptionDTO> getOptions() {
-        LambdaQueryWrapper<CustomForm> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomForm::getEnable, true);
-        return customFormMapper.selectListByLambda(wrapper).stream()
+    public List<OptionDTO> getOptions(String userId, String orgId) {
+        return list(userId, orgId).stream()
+                .filter(form -> BooleanUtils.isTrue(form.getEnable()))
                 .map(form -> new OptionDTO(form.getId(), form.getName()))
                 .toList();
     }
 
-    public List<CustomFormListResponse> list(String userId) {
+    public List<CustomFormListResponse> list(String userId, String orgId) {
+        if (StringUtils.isBlank(userId) || StringUtils.isBlank(orgId)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        LambdaQueryWrapper<CustomForm> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CustomForm::getOrganizationId, orgId);
         List<CustomForm> customForms;
         Set<String> adminFormIds;
         Set<String> hasCreatePermissionFormIds;
         if (Strings.CS.equals(InternalUser.ADMIN.getValue(), userId)) {
-            customForms = customFormMapper.selectAll(null);
+            customForms = customFormMapper.selectListByLambda(wrapper);
             adminFormIds = customForms.stream().map(CustomForm::getId).collect(Collectors.toSet());
             hasCreatePermissionFormIds = adminFormIds;
         } else {
@@ -109,9 +113,11 @@ public class CustomFormService {
             accessibleFormIds.addAll(adminFormIds);
             accessibleFormIds.addAll(memberFormIds);
 
-            customForms = customFormMapper.selectByIds(accessibleFormIds.stream().toList());
+            wrapper.in(CustomForm::getId, accessibleFormIds.stream().toList());
+            customForms = customFormMapper.selectListByLambda(wrapper);
 
             hasCreatePermissionFormIds = getCreatePermissionFormIds(customForms, roleMap);
+            hasCreatePermissionFormIds.addAll(adminFormIds);
 
             // 非管理员只能看到启用的表单
             customForms = customForms.stream()
@@ -149,7 +155,7 @@ public class CustomFormService {
     }
 
     public CustomFormGetResponse get(String id, String userId, String orgId) {
-        checkFormAccess(id, userId);
+        checkFormAccess(id, userId, orgId);
 
         CustomForm form = customFormMapper.selectByPrimaryKey(id);
         ModuleForm moduleForm = moduleFormMapper.selectByPrimaryKey(id);
@@ -166,7 +172,7 @@ public class CustomFormService {
             resp.setFormProp(businessFormConfig.getFormProp());
         }
 
-        resp.setIsAdmin(isFormAdminUser(form.getId(), userId));
+        resp.setIsAdmin(isFormAdminUser(form.getId(), userId, orgId));
         return resp;
     }
 
@@ -179,8 +185,8 @@ public class CustomFormService {
                 .orElseGet(() -> new OptionDTO(userId, null));
     }
 
-    public List<OptionDTO> getAdmins(String formId, String userId) {
-        checkFormAccess(formId, userId);
+    public List<OptionDTO> getAdmins(String formId, String userId, String orgId) {
+        checkFormAccess(formId, userId, orgId);
         return getAdminOptions(formId);
     }
 
@@ -206,7 +212,6 @@ public class CustomFormService {
 
     @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.ADD, resourceName = "{#request.name}")
     public CustomForm create(CustomFormAddRequest request, String userId, String orgId) {
-        checkNameUnique(request.getName(), null);
         String formId = IDGenerator.nextStr();
 
         // 保存 custom_form
@@ -285,7 +290,7 @@ public class CustomFormService {
 
     @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void update(CustomFormUpdateRequest request, String userId, String orgId) {
-        checkFormAdmin(request.getId(), userId);
+        checkFormAdmin(request.getId(), userId, orgId);
         CustomForm originForm = customFormMapper.selectByPrimaryKey(request.getId());
         ModuleForm originModuleForm = moduleFormMapper.selectByPrimaryKey(request.getId());
         if (originForm == null || originModuleForm == null) {
@@ -324,8 +329,8 @@ public class CustomFormService {
     }
 
     @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE, resourceId = "{#id}")
-    public void updateEnable(String id, String userId, boolean enable) {
-        checkFormAdmin(id, userId);
+    public void updateEnable(String id, String userId, String orgId, boolean enable) {
+        checkFormAdmin(id, userId, orgId);
 
         CustomForm form = customFormMapper.selectByPrimaryKey(id);
         if (form == null) {
@@ -348,9 +353,8 @@ public class CustomFormService {
     }
 
     @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id, String userId) {
-        checkFormAdmin(id, userId);
-
+    public void delete(String id, String userId, String orgId) {
+        checkFormAdmin(id, userId, orgId);
         CustomForm form = customFormMapper.selectByPrimaryKey(id);
         if (form == null) {
             throw new GenericException(Translator.get("custom.form.not.exist"));
@@ -367,6 +371,9 @@ public class CustomFormService {
 
         // 删除表单数据（多表联删，一次扫描）
         extCustomFormDataMapper.deleteFormDataByCustomFormId(id);
+
+        // 业务表单与 Schema 同事务清理，同时驱逐组织内两层表单缓存。
+        moduleFormCacheService.delete(id, orgId);
 
         // 删除表单
         customFormMapper.deleteByIds(List.of(id));
@@ -392,8 +399,8 @@ public class CustomFormService {
     }
 
     @OperationLog(module = LogModule.CUSTOM_FORM, type = LogType.UPDATE, resourceId = "{#request.customFormId}")
-    public void setAdmins(CustomFormAdminBatchRequest request, String userId) {
-        checkFormAdmin(request.getCustomFormId(), userId);
+    public void setAdmins(CustomFormAdminBatchRequest request, String userId, String orgId) {
+        checkFormAdmin(request.getCustomFormId(), userId, orgId);
 
         List<String> originUserIds = getAdminOptions(request.getCustomFormId()).stream().map(OptionDTO::getIdAsString).toList();
 
@@ -427,7 +434,8 @@ public class CustomFormService {
         }
     }
 
-    private void checkFormAccess(String formId, String userId) {
+    private void checkFormAccess(String formId, String userId, String orgId) {
+        checkCurrentOrganization(formId, orgId);
         if (InternalUser.ADMIN.getValue().equals(userId)) {
             return;
         }
@@ -457,13 +465,14 @@ public class CustomFormService {
         throw new GenericException(CrmHttpResultCode.FORBIDDEN);
     }
 
-    private void checkFormAdmin(String formId, String userId) {
-        if (!isFormAdminUser(formId, userId)) {
+    void checkFormAdmin(String formId, String userId, String orgId) {
+        if (!isFormAdminUser(formId, userId, orgId)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
     }
 
-    public Boolean isFormAdminUser(String formId, String userId) {
+    public Boolean isFormAdminUser(String formId, String userId, String orgId) {
+        checkCurrentOrganization(formId, orgId);
         if (InternalUser.ADMIN.getValue().equals(userId)) {
             return true;
         }
@@ -471,6 +480,13 @@ public class CustomFormService {
         example.setCustomFormId(formId);
         example.setUserId(userId);
         return customFormAdminMapper.countByExample(example) > 0;
+    }
+
+    private void checkCurrentOrganization(String formId, String orgId) {
+        CustomForm form = customFormMapper.selectByPrimaryKey(formId);
+        if (form == null || !StringUtils.equals(form.getOrganizationId(), orgId)) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
     }
 
     Set<String> getAdminFormIds(String userId) {
@@ -492,19 +508,6 @@ public class CustomFormService {
             return roles;
         }
         return List.of();
-    }
-
-    private void checkNameUnique(String name, String excludeFormId) {
-        LambdaQueryWrapper<CustomForm> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomForm::getName, name);
-        List<CustomForm> existForms = customFormMapper.selectListByLambda(wrapper);
-        if (CollectionUtils.isNotEmpty(existForms)) {
-            boolean conflict = existForms.stream()
-                    .anyMatch(f -> excludeFormId == null || !excludeFormId.equals(f.getId()));
-            if (conflict) {
-                throw new GenericException(Translator.get("custom.form.name.duplicate"));
-            }
-        }
     }
 
     private void checkAddExist(CustomForm customForm) {
