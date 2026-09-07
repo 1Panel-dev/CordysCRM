@@ -64,7 +64,7 @@ public class ContractPaymentPlanExportService extends BaseExportService {
         }
         var request = (ContractPaymentPlanPageRequest) exportParam.getPageRequest();
         PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
-        return extContractPaymentPlanMapper.list(request, orgId, userId, deptDataPermission);
+        return extContractPaymentPlanMapper.list(request, userId, orgId, deptDataPermission);
     }
 
 
