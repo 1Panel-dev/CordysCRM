@@ -45,5 +45,8 @@ ALTER TABLE contract_payment_record_field_blob ADD COLUMN biz_id VARCHAR(32) NUL
 
 CREATE INDEX idx_contract_payment_record_field_blob_cell ON contract_payment_record_field_blob (resource_id, row_id, field_id);
 
+
+CREATE INDEX idx_create_time ON sys_operation_log (create_time);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
