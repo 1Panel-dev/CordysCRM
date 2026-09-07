@@ -2,6 +2,8 @@ import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { RequestEnum } from '@lib/shared/enums/httpEnum';
 import { ApprovalTypeEnum, ApproverTypeEnum, ProcessStatusEnum } from '@lib/shared/enums/process';
 import { useI18n } from '@lib/shared/hooks/useI18n';
+import type { LabelValueOption } from '@lib/shared/models/common';
+import type { CustomFormItem } from '@lib/shared/models/customForm';
 import { ApprovalWebhookConfig, BasicFormParams, MoreSettingsParams } from '@lib/shared/models/system/process';
 
 import { StatusInfo } from '@/components/business/crm-approval/components/crm-approval-status.vue';
@@ -203,6 +205,16 @@ export const businessTypeOptions = [
     value: FormDesignKeyEnum.ORDER,
   },
 ];
+
+export function createApprovalBusinessTypeOptions(customForms: CustomFormItem[] = []): LabelValueOption[] {
+  return [
+    ...businessTypeOptions,
+    ...customForms.map((item) => ({
+      label: item.name,
+      value: item.id,
+    })),
+  ];
+}
 
 const approvalTypeOptionConfigs: Array<{
   label: string;

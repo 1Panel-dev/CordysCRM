@@ -775,6 +775,7 @@ export default async function useFormCreateSystemColumns(
     [FormDesignKeyEnum.ORDER]: orderInternalColumns,
     [FormDesignKeyEnum.CONTRACT_ORDER]: orderInternalColumns,
     [FormDesignKeyEnum.CUSTOMER_ORDER]: orderInternalColumns,
+    [FormDesignKeyEnum.CUSTOM_FORM]: approvalStatusColumn,
   };
 
   const staticColumns: CrmDataTableColumn[] = [

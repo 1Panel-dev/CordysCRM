@@ -35,7 +35,6 @@
 <script setup lang="ts">
   import { NButton, NPopover, NScrollbar, NSpin } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { ApprovalPopoverDetail, ApproverItem } from '@lib/shared/models/system/process';
@@ -45,16 +44,10 @@
 
   import { getResourceApprovingDetail } from '@/api/modules';
 
-  export type ApprovalPopoverFormKeyType =
-    | FormDesignKeyEnum.CONTRACT
-    | FormDesignKeyEnum.INVOICE
-    | FormDesignKeyEnum.OPPORTUNITY_QUOTATION
-    | FormDesignKeyEnum.ORDER;
-
   const props = withDefaults(
     defineProps<{
       status: ProcessStatusEnum;
-      formKey: ApprovalPopoverFormKeyType;
+      formKey: string;
       sourceId?: string;
       title?: string;
       showMore?: boolean;

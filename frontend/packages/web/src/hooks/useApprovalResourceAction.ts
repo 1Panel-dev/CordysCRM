@@ -1,6 +1,6 @@
+import { type MaybeRef, unref } from 'vue';
 import { useMessage } from 'naive-ui';
 
-import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import { reviewResource, revokeResource } from '@/api/modules';
@@ -12,7 +12,7 @@ interface ApprovalResourceActionHandlers {
 }
 
 interface UseApprovalResourceActionOptions {
-  formKey: FormDesignKeyEnum;
+  formKey: MaybeRef<string>;
   preventDuplicateByResourceId?: boolean;
 }
 
@@ -41,7 +41,7 @@ export default function useApprovalResourceAction(options: UseApprovalResourceAc
       reviewLoading.value = true;
       await reviewResource({
         resourceId,
-        formKey: options.formKey,
+        formKey: unref(options.formKey),
       });
       Message.success(t('common.reviewSuccess'));
       await callback?.onSuccess?.(resourceId);
@@ -64,7 +64,7 @@ export default function useApprovalResourceAction(options: UseApprovalResourceAc
       revokeLoading.value = true;
       await revokeResource({
         resourceId,
-        formKey: options.formKey,
+        formKey: unref(options.formKey),
       });
       Message.success(t('common.revokeSuccess'));
       await callback?.onSuccess?.(resourceId);
