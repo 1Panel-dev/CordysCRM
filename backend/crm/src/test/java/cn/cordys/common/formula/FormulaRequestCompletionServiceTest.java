@@ -48,7 +48,7 @@ class FormulaRequestCompletionServiceTest {
     }
 
     @Test
-    void preservesFormulaValueAlreadyCalculatedByFrontend() {
+    void 服务端公式覆盖客户端提交的旧结果() {
         SerialNumberField quotationNumber = field(
                 new SerialNumberField(), "quotationNumber", "报价编号", "SERIAL_NUMBER");
         quotationNumber.setBusinessKey("number");
@@ -72,7 +72,7 @@ class FormulaRequestCompletionServiceTest {
 
         service.complete("quotation", request, false);
 
-        assertEquals("前端已计算的公式值", request.getName());
+        assertEquals("Q-BJ0001", request.getName());
     }
 
     @Test

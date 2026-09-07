@@ -3,19 +3,16 @@ package cn.cordys.crm.form.service;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
 import cn.cordys.aspectj.dto.LogDTO;
-import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.BaseTreeNode;
 import cn.cordys.common.dto.DeptUserTreeNode;
 import cn.cordys.common.dto.RoleUserTreeNode;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.Pager;
-import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.CustomForm;
-import cn.cordys.crm.form.domain.CustomFormAdmin;
 import cn.cordys.crm.form.domain.CustomFormRole;
 import cn.cordys.crm.form.domain.CustomFormRoleUser;
 import cn.cordys.crm.form.dto.request.CustomFormRoleUserBatchRequest;
@@ -54,8 +51,6 @@ public class CustomFormRoleService {
     @Resource
     private BaseMapper<CustomFormRoleUser> customFormRoleUserMapper;
     @Resource
-    private BaseMapper<CustomFormAdmin> customFormAdminMapper;
-    @Resource
     private ExtDepartmentMapper extDepartmentMapper;
     @Resource
     private ExtUserRoleMapper extUserRoleMapper;
@@ -71,9 +66,11 @@ public class CustomFormRoleService {
     private BaseMapper<CustomForm> customFormMapper;
     @Resource
     private LogService logService;
+    @Resource
+    private CustomFormService customFormService;
 
-    public List<CustomFormRoleListResponse> listByFormId(String customFormId, String userId) {
-        checkFormAdmin(customFormId, userId);
+    public List<CustomFormRoleListResponse> listByFormId(String customFormId, String userId, String orgId) {
+        customFormService.checkFormAdmin(customFormId, userId, orgId);
 
         LambdaQueryWrapper<CustomFormRole> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CustomFormRole::getCustomFormId, customFormId);
@@ -95,7 +92,7 @@ public class CustomFormRoleService {
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
         }
-        checkFormAdmin(role.getCustomFormId(), userId);
+        customFormService.checkFormAdmin(role.getCustomFormId(), userId, orgId);
 
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomFormRoleUserListResponse> roleUsers = extCustomFormRoleUserMapper.listByRoleId(orgId, request);
@@ -144,7 +141,7 @@ public class CustomFormRoleService {
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
         }
-        checkFormAdmin(role.getCustomFormId(), userId);
+        customFormService.checkFormAdmin(role.getCustomFormId(), userId, orgId);
 
         List<String> resolvedUserIds = resolveUserIds(request);
         if (CollectionUtils.isEmpty(resolvedUserIds)) {
@@ -197,7 +194,7 @@ public class CustomFormRoleService {
         if (role == null) {
             throw new GenericException(Translator.get("custom.form.role.not.exist"));
         }
-        checkFormAdmin(role.getCustomFormId(), userId);
+        customFormService.checkFormAdmin(role.getCustomFormId(), userId, orgId);
 
         if (CollectionUtils.isEmpty(request.getUserIds())) {
             return;
@@ -233,15 +230,4 @@ public class CustomFormRoleService {
         return new ArrayList<>(userSet);
     }
 
-    private void checkFormAdmin(String formId, String userId) {
-        if (Objects.equals(InternalUser.ADMIN.getValue(), userId)) {
-            return;
-        }
-
-        LambdaQueryWrapper<CustomFormAdmin> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomFormAdmin::getCustomFormId, formId).eq(CustomFormAdmin::getUserId, userId);
-        if (customFormAdminMapper.selectListByLambda(wrapper).isEmpty()) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
-    }
 }
