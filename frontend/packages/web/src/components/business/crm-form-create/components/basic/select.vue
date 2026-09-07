@@ -117,10 +117,11 @@
 
   onBeforeMount(() => {
     if (!props.needInitDetail) {
-      value.value =
-        value.value ||
-        props.fieldConfig.defaultValue ||
-        (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '');
+      if (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE) {
+        value.value = (value.value as Array<any>).length ? value.value : props.fieldConfig.defaultValue || [];
+      } else {
+        value.value = value.value || props.fieldConfig.defaultValue;
+      }
       emit('change', value.value);
     }
   });
