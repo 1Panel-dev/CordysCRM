@@ -948,7 +948,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.ORDER_SNAPSHOT]: (data) => updateOrder(data, data.approvalTaskId),
   [FormDesignKeyEnum.CONTRACT_ORDER]: async () => ({}),
   [FormDesignKeyEnum.CUSTOMER_ORDER]: async () => ({}),
-  [FormDesignKeyEnum.CUSTOM_FORM]: updateCustomFormData,
+  [FormDesignKeyEnum.CUSTOM_FORM]: (data) => updateCustomFormData(data, data.approvalTaskId),
 };
 
 export const getFormDetailApiMap: Partial<

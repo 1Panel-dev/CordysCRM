@@ -168,6 +168,7 @@
 
   const { reviewAction, shouldConfirmUpdateChange, initApprovalReviewConfig } = useFormReviewAction({
     formKey,
+    approvalFormKey: customFormId,
     isEdit: computed(() => props.isEdit),
     approvalStatus: computed(() => detail.value?.approvalStatus),
     detail,

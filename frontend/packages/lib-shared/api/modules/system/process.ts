@@ -5,6 +5,7 @@ import {
   UpdateApprovalProcessUrl,
   DeleteApprovalProcessUrl,
   ApprovalProcessDetailUrl,
+  ApprovalFlowFormOptionsUrl,
   ToggleApprovalProcessUrl,
   ApprovalProcessPageUrl,
   GetApprovalConfigDetailUrl,
@@ -46,6 +47,7 @@ import {
   type TodoStatistic,
 } from '@lib/shared/models/system/process';
 import type { CommonList } from '@lib/shared/models/common';
+import type { OptionDTO } from '@lib/shared/models/system/business';
 import type { TableQueryParams } from '@lib/shared/models/common';
 
 export default function useProcessApi(CDR: CordysAxios) {
@@ -80,6 +82,10 @@ export default function useProcessApi(CDR: CordysAxios) {
   // 切换审批流
   function toggleApprovalProcess(id: string, enable: boolean) {
     return CDR.get({ url: `${ToggleApprovalProcessUrl}/${id}`, params: { enable } });
+  }
+  // 获取审批流表单选项
+  function getApprovalFlowFormOptions() {
+    return CDR.get<OptionDTO[]>({ url: ApprovalFlowFormOptionsUrl });
   }
   // 获取对应资源审批状态详情用于（列表小卡片）
   function getResourceApprovingDetail(sourceId: string) {
@@ -179,6 +185,7 @@ export default function useProcessApi(CDR: CordysAxios) {
     approvalProcessDetail,
     deleteApprovalProcess,
     toggleApprovalProcess,
+    getApprovalFlowFormOptions,
     getApprovalConfigDetail,
     getResourceApprovingDetail,
     reviewResource,

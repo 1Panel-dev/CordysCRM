@@ -236,7 +236,7 @@
 
   const props = defineProps<{
     sourceId: string;
-    formKey: FormDesignKeyEnum;
+    formKey: FormDesignKeyEnum | string;
     refreshKey?: number;
     layout?: 'horizontal' | 'vertical';
     approvalStatus: ProcessStatusEnum;
@@ -416,13 +416,6 @@
       );
     }
   });
-  const moduleKeyMap: Partial<Record<FormDesignKeyEnum, string>> = {
-    [FormDesignKeyEnum.CONTACT]: 'CONTRACT_INDEX',
-    [FormDesignKeyEnum.INVOICE]: 'CONTRACT_INVOICE',
-    [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: 'OPPORTUNITY_QUOTATION',
-    [FormDesignKeyEnum.ORDER]: 'ORDER_INDEX',
-  };
-
   const noApproval = ref(false);
   async function initApprovalDetail() {
     try {
@@ -454,7 +447,6 @@
         attachmentIds: fileList.value.map((e) => e.id),
         approverId: currentTaskNode.value.approverId,
         comment: approvalOpinion.value,
-        module: moduleKeyMap[props.formKey]!,
       });
       message.success(t('common.approved'));
       initApprovalDetail();
@@ -508,7 +500,6 @@
                 attachmentIds: fileList.value.map((e) => e.id),
                 approverId: currentTaskNode.value.approverId,
                 comment: approvalOpinion.value,
-                module: moduleKeyMap[props.formKey]!,
               });
               message.success(t('common.rejected'));
               initApprovalDetail();
@@ -553,7 +544,6 @@
                   comment: addSignForm.value.reason,
                   attachmentIds: addSignForm.value.fileList.map((e) => e.id),
                   type: addSignForm.value.type,
-                  module: moduleKeyMap[props.formKey]!,
                   signApprover: addSignForm.value.reviewer?.[0] || '',
                 });
                 addSignModalVisible.value = false;
@@ -615,7 +605,6 @@
                   approverId: currentTaskNode.value?.approverId || '',
                   comment: fallbackForm.value.reason,
                   attachmentIds: fallbackForm.value.fileList.map((e) => e.id),
-                  module: moduleKeyMap[props.formKey]!,
                   returnToNodeId: fallbackForm.value.node || '',
                 });
                 fallbackModalVisible.value = false;

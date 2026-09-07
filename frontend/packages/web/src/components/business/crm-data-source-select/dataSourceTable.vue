@@ -71,9 +71,7 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import CrmApprovalPopover, {
-    ApprovalPopoverFormKeyType,
-  } from '@/components/business/crm-approval/components/crm-approval-popover.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmBusinessNamePrefix from '@/components/business/crm-business-name-prefix/index.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
@@ -206,7 +204,7 @@
       approvalStatus: (row: QuotationItem) =>
         h(CrmApprovalPopover, {
           status: row.approvalStatus,
-          formKey: formKey.value as ApprovalPopoverFormKeyType,
+          formKey: formKey.value,
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           showMore: false,
         }),
@@ -229,7 +227,7 @@
       approvalStatus: (row: ContractItem) =>
         h(CrmApprovalPopover, {
           status: row.approvalStatus,
-          formKey: formKey.value as ApprovalPopoverFormKeyType,
+          formKey: formKey.value,
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           showMore: false,
         }),
@@ -265,7 +263,7 @@
       approvalStatus: (row: ContractItem) =>
         h(CrmApprovalPopover, {
           status: row.approvalStatus,
-          formKey: formKey.value as ApprovalPopoverFormKeyType,
+          formKey: formKey.value,
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           showMore: false,
         }),
@@ -277,7 +275,7 @@
       approvalStatus: (row: ContractItem) =>
         h(CrmApprovalPopover, {
           status: row.approvalStatus,
-          formKey: formKey.value as ApprovalPopoverFormKeyType,
+          formKey: formKey.value,
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           showMore: false,
         }),
