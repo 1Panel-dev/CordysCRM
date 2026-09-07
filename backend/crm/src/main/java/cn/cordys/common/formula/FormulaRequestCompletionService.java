@@ -42,28 +42,28 @@ public class FormulaRequestCompletionService {
      * 根据请求类型补全公式字段。更新时使用已提交的真实流水号值，不生成新增占位符。
      */
     public void complete(String formKey, Object request, boolean createMode) {
+        completeAuthoritative(formKey, request, createMode, OrganizationContext.getOrganizationId());
+    }
+
+    /** 动态表单在服务层权限检查后，使用完整记录与实时公式重新计算。 */
+    public void completeAuthoritative(String formKey, Object request, boolean createMode, String orgId) {
         if (request == null) {
             return;
         }
         List<BaseField> fields = moduleFormService.getAllFields(
-                formKey, OrganizationContext.getOrganizationId());
+                formKey, orgId);
         if (fields == null || fields.isEmpty()) {
             return;
         }
 
         BeanWrapper requestValues = new BeanWrapperImpl(request);
         Map<String, BaseModuleFieldValue> moduleFieldMap = moduleFieldMap(requestValues);
-        formulaCompletionService.completeMissing(
-                fields,
-                moduleFieldMap,
-                createMode,
-                readableValue(requestValues),
-                (businessKey, value) -> {
-                    if (requestValues.isWritableProperty(businessKey)) {
-                        requestValues.setPropertyValue(businessKey, value);
-                    }
-                }
-        );
+        java.util.function.BiConsumer<String, Object> writer = (businessKey, value) -> {
+            if (requestValues.isWritableProperty(businessKey)) {
+                requestValues.setPropertyValue(businessKey, value);
+            }
+        };
+        formulaCompletionService.complete(fields, moduleFieldMap, createMode, readableValue(requestValues), writer);
         writeModuleFields(requestValues, moduleFieldMap);
     }
 

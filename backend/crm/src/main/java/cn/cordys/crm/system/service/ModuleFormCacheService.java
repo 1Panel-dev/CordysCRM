@@ -1,6 +1,7 @@
 package cn.cordys.crm.system.service;
 
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.JSON;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
@@ -27,6 +28,26 @@ public class ModuleFormCacheService {
     private ModuleFormService moduleFormService;
 	@Resource
 	private ModuleFieldService moduleFieldService;
+    @Resource
+    private org.springframework.cache.CacheManager cacheManager;
+
+    public void delete(String formKey, String orgId) {
+        moduleFormService.deleteForm(formKey, orgId);
+        Runnable invalidate = () -> {
+            for (String cacheName : List.of("form_cache", "field_cache")) {
+                org.springframework.cache.Cache cache = cacheManager.getCache(cacheName);
+                if (cache != null) cache.evict(orgId + ":" + formKey);
+            }
+        };
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                    new org.springframework.transaction.support.TransactionSynchronization() {
+                        @Override public void afterCommit() { invalidate.run(); }
+                    });
+        } else {
+            invalidate.run();
+        }
+    }
 
     /**
      * 保存表单配置并更新缓存
@@ -78,7 +99,9 @@ public class ModuleFormCacheService {
      * @return 表单配置
      */
     public ModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
-        ModuleFormConfigDTO config = Objects.requireNonNull(CommonBeanFactory.getBean(this.getClass())).getConfig(formKey, organizationId);
+        ModuleFormConfigDTO cached = Objects.requireNonNull(CommonBeanFactory.getBean(this.getClass())).getConfig(formKey, organizationId);
+        // 业务化配置会改写引用字段，不能污染跨请求共享的缓存对象。
+        ModuleFormConfigDTO config = JSON.parseObject(JSON.toJSONString(cached), ModuleFormConfigDTO.class);
         ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
         businessModuleFormConfig.setFormProp(config.getFormProp());
 

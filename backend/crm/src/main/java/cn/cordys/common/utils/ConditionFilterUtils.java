@@ -359,6 +359,9 @@ public class ConditionFilterUtils {
      */
     private static void replaceCurrentUser(List<FilterCondition> validConditions) {
         for (FilterCondition validCondition : validConditions) {
+            if (!Strings.CS.equalsAny(validCondition.getType(), FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name())) {
+                continue;
+            }
             Object value = validCondition.getCombineValue();
             if (value instanceof List arrayValues) {
                 for (int i = 0; i < arrayValues.size(); i++) {

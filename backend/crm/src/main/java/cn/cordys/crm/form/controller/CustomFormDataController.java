@@ -55,7 +55,7 @@ public class CustomFormDataController {
     @GetMapping("/create-permission/{customFormId}")
     @Operation(summary = "查询当前用户是否有创建表单数据的权限")
     public boolean hasCreatePermission(@PathVariable String customFormId) {
-        return customFormDataService.hasCreatePermission(customFormId, SessionUtils.getUserId());
+        return customFormDataService.hasCreatePermission(customFormId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
@@ -76,7 +76,7 @@ public class CustomFormDataController {
     @Operation(summary = "删除表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void delete(@PathVariable String id) {
-        customFormDataService.delete(id, SessionUtils.getUserId());
+        customFormDataService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")

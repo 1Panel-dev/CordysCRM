@@ -24,6 +24,19 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
         if (value != null && !(value instanceof Number)) {
             throwValidateException(numberField.getName());
         }
+        if (value == null) return;
+        try {
+            BigDecimal number = new BigDecimal(value.toString()).stripTrailingZeros();
+            if (checkIllegalDecimal(number)
+                    || numberField.getMin() != null && number.compareTo(BigDecimal.valueOf(numberField.getMin())) < 0
+                    || numberField.getMax() != null && number.compareTo(BigDecimal.valueOf(numberField.getMax())) > 0
+                    || numberField.getDecimalPlaces() != null
+                    && number.scale() > (Boolean.TRUE.equals(numberField.getDecimalPlaces()) ? numberField.getPrecision() : 0)) {
+                throwValidateException(numberField.getName());
+            }
+        } catch (NumberFormatException e) {
+            throwValidateException(numberField.getName());
+        }
     }
 
     @Override
