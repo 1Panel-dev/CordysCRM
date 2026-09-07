@@ -916,6 +916,7 @@ export const {
   approvalProcessDetail,
   deleteApprovalProcess,
   toggleApprovalProcess,
+  getApprovalFlowFormOptions,
   getApprovalConfigDetail,
   getResourceApprovingDetail,
   reviewResource,

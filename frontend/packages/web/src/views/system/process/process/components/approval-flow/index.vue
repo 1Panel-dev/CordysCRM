@@ -71,6 +71,7 @@
 
   import { ApprovalTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { LabelValueOption } from '@lib/shared/models/common';
   import type {
     ApprovalActionNode,
     ApprovalConditionBranch,
@@ -109,6 +110,7 @@
     needDetail?: boolean;
     readonly?: boolean;
     optionMap?: Record<string, any[]>;
+    businessTypeOptions?: LabelValueOption[];
   }>();
 
   const emit = defineEmits<{
@@ -171,12 +173,15 @@
     return node.type === 'action' && node.actionType === 'approval';
   }
 
-  function resolveOptionLabel(value: string, options: Array<{ value: string; label: string }>): string {
+  function resolveOptionLabel(value: string, options: LabelValueOption[]): string {
     return options.find((item) => item.value === value)?.label ?? '';
   }
 
   function resolveStartNodeDescription(timing: ApprovalFlowTiming) {
-    const businessTypeLabel = resolveOptionLabel(basicConfig.value.formType, businessTypeOptions);
+    const businessTypeLabel = resolveOptionLabel(
+      basicConfig.value.formType,
+      props.businessTypeOptions ?? businessTypeOptions
+    );
     const executionTimingLabel = flowTimingConfig.find((item) => item.value === timing)?.label ?? '';
 
     return executionTimingLabel ? `${businessTypeLabel}(${executionTimingLabel})` : businessTypeLabel;

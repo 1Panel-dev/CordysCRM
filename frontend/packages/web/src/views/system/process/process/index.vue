@@ -3,6 +3,7 @@
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
+      :columns="columns"
       class="crm-process-list-table"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -23,6 +24,7 @@
       v-model:visible="showProcessDrawer"
       :sourceId="activeSourceId"
       :is-detail="isDetail"
+      :business-type-options="approvalBusinessTypeOptions"
       @refresh="initData"
       @cancel="handleCancel"
     />
@@ -35,6 +37,7 @@
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
+  import type { LabelValueOption } from '@lib/shared/models/common';
   import { ApprovalProcessItem } from '@lib/shared/models/system/process';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -52,10 +55,11 @@
     approvalProcessDetail,
     deleteApprovalProcess,
     getApprovalProcessList,
+    getCustomFormList,
     toggleApprovalProcess,
     updateApprovalProcess,
   } from '@/api/modules';
-  import { businessTypeOptions } from '@/config/process';
+  import { createApprovalBusinessTypeOptions } from '@/config/process';
   import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -68,11 +72,24 @@
   const keyword = ref('');
   const tableRefreshId = ref(0);
   const activeSourceId = ref();
+  const approvalBusinessTypeOptions = ref<LabelValueOption[]>(createApprovalBusinessTypeOptions());
 
   const showProcessDrawer = ref(false);
   const isDetail = ref(false);
+
+  async function loadApprovalBusinessTypeOptions() {
+    try {
+      approvalBusinessTypeOptions.value = createApprovalBusinessTypeOptions(await getCustomFormList());
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      approvalBusinessTypeOptions.value = createApprovalBusinessTypeOptions();
+    }
+  }
+
   // 添加
-  function handleAdd() {
+  async function handleAdd() {
+    await loadApprovalBusinessTypeOptions();
     showProcessDrawer.value = true;
     isDetail.value = false;
   }
@@ -110,9 +127,10 @@
     });
   }
 
-  function handleActionSelect(row: ApprovalProcessItem, actionKey: string) {
+  async function handleActionSelect(row: ApprovalProcessItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
+        await loadApprovalBusinessTypeOptions();
         activeSourceId.value = row.id;
         showProcessDrawer.value = true;
         isDetail.value = false;
@@ -153,7 +171,7 @@
     }
   }
 
-  const columns: CrmDataTableColumn[] = [
+  const columns = computed<CrmDataTableColumn[]>(() => [
     {
       title: t('crmTable.order'),
       width: 50,
@@ -180,10 +198,10 @@
       key: 'formType',
       width: 200,
       filter: true,
-      filterOptions: businessTypeOptions,
+      filterOptions: approvalBusinessTypeOptions.value,
       render: (row: ApprovalProcessItem) =>
         h(CrmNameTooltip, {
-          text: businessTypeOptions.find((item) => item.value === row.formType)?.label ?? '',
+          text: approvalBusinessTypeOptions.value.find((item) => item.value === row.formType)?.label ?? '',
         }),
     },
     {
@@ -222,7 +240,8 @@
                     CrmTableButton,
                     {
                       class: 'inline-block max-w-full',
-                      onClick: () => {
+                      onClick: async () => {
+                        await loadApprovalBusinessTypeOptions();
                         activeSourceId.value = row.id;
                         showProcessDrawer.value = true;
                         isDetail.value = true;
@@ -355,12 +374,12 @@
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
-  ];
+  ]);
 
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getApprovalProcessList, {
     tableKey: TableKeyEnum.PROCESS,
     showSetting: true,
-    columns,
+    columns: columns.value,
     containerClass: '.crm-process-list-table',
   });
 
@@ -385,7 +404,8 @@
     }
   );
 
-  onBeforeMount(() => {
+  onBeforeMount(async () => {
+    await loadApprovalBusinessTypeOptions();
     initData();
   });
 </script>
