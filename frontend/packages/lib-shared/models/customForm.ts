@@ -1,4 +1,5 @@
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
+import type { ProcessStatusEnum } from '@lib/shared/enums/process';
 import type { FormConfig } from '@lib/shared/models/system/module';
 import type { RoleMemberRoleItem } from '@lib/shared/models/system/role';
 import type { ModuleField, TableQueryParams } from '@lib/shared/models/common';
@@ -87,6 +88,9 @@ export interface CustomFormPageItem {
   updateUserName: string;
   moduleFields: ModuleField[];
   isAdmin: boolean;
+  approvalStatus?: ProcessStatusEnum;
+  approved?: boolean;
+  firstApproved?: boolean;
 }
 
 export interface BatchUpdateCustomFormDataParams {
@@ -111,4 +115,8 @@ export interface CustomFormDataDetail {
   updateUserName: string;
   moduleFields: ModuleField[];
   optionMap: Record<string, any>;
+  isAdmin?: boolean;
+  approvalStatus?: ProcessStatusEnum;
+  approved?: boolean;
+  firstApproved?: boolean;
 }

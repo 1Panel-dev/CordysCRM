@@ -24,6 +24,7 @@ export interface GetFormReviewActionParams {
 
 interface UseFormReviewActionOptions {
   formKey: Ref<FormDesignKeyEnum>;
+  approvalFormKey?: Ref<string | undefined>;
   isEdit: Ref<boolean | undefined>;
   approvalStatus: Ref<ProcessStatusEnum | undefined>;
   detail?: Ref<Record<string, any> | undefined>;
@@ -44,6 +45,7 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
     FormDesignKeyEnum.CONTRACT,
     FormDesignKeyEnum.ORDER,
     FormDesignKeyEnum.INVOICE,
+    FormDesignKeyEnum.CUSTOM_FORM,
   ];
 
   function canShowByExecuteTiming(params: GetFormReviewActionParams) {
@@ -98,6 +100,9 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
   }
 
   const isApprovalForm = computed(() => approvalFormKeys.includes(options.formKey.value));
+  const approvalFormKey = computed(() =>
+    options.formKey.value === FormDesignKeyEnum.CUSTOM_FORM ? options.approvalFormKey?.value : options.formKey.value
+  );
 
   const reviewAction = computed(() =>
     getFormReviewAction({
@@ -134,7 +139,14 @@ export default function useFormReviewAction(options: UseFormReviewActionOptions)
     }
 
     try {
-      const result = await loadApprovalConfig(options.formKey.value);
+      if (!approvalFormKey.value) {
+        enabledApproval.value = false;
+        createExecute.value = false;
+        updateExecute.value = false;
+        return;
+      }
+
+      const result = await loadApprovalConfig(approvalFormKey.value);
       enabledApproval.value = Boolean(result?.enable);
       createExecute.value = Boolean(result?.createExecute);
       updateExecute.value = Boolean(result?.updateExecute);

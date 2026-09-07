@@ -4,7 +4,7 @@
       <n-form-item require-mark-placement="left" path="formType" :label="t('process.process.basic.businessType')">
         <n-select
           v-model:value="form.formType"
-          :options="businessTypeOptions"
+          :options="selectBusinessTypeOptions"
           :disabled="props.needDetail"
           :placeholder="t('common.pleaseSelect')"
         />
@@ -88,25 +88,34 @@
   import { NCheckbox, NForm, NFormItem, NInput, NSelect, NTooltip } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { LabelValueOption } from '@lib/shared/models/common';
   import { BasicFormParams } from '@lib/shared/models/system/process';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import { businessTypeOptions, defaultBasicForm, executionTimingList } from '@/config/process';
 
-  import type { FormInst } from 'naive-ui';
+  import type { FormInst, SelectOption } from 'naive-ui';
 
   const { t } = useI18n();
-  const props = defineProps<{
-    needDetail?: boolean;
-    readonly?: boolean;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      needDetail?: boolean;
+      readonly?: boolean;
+      businessTypeOptions?: LabelValueOption[];
+    }>(),
+    {
+      businessTypeOptions: () => businessTypeOptions,
+    }
+  );
 
   const form = defineModel<BasicFormParams>('basicConfig', {
     default: () => ({
       ...defaultBasicForm,
     }),
   });
+
+  const selectBusinessTypeOptions = computed(() => props.businessTypeOptions as SelectOption[]);
 
   const formRef = ref<FormInst | null>(null);
 

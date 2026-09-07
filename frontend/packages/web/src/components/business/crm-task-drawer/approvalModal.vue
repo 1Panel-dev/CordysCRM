@@ -69,7 +69,6 @@
     approvalItem?: ApprovalTodoItem;
     approvalItemKeys?: string[];
     approvalType: 'approve' | 'reject';
-    module: 'WORKBENCH' | 'CONTRACT_INDEX' | 'ORDER_INDEX' | 'OPPORTUNITY_QUOTATION' | 'CONTRACT_INVOICE';
     resourceType: string;
   }>();
   const emit = defineEmits<{
@@ -119,7 +118,6 @@
           attachmentIds: fileList.value.map((e) => e.id),
           approverId: props.approvalItem.approvalId,
           comment: approvalForm.value.reason,
-          module: props.module,
         });
       } else {
         await agreeApproval({
@@ -129,7 +127,6 @@
           attachmentIds: fileList.value.map((e) => e.id),
           approverId: props.approvalItem.approvalId,
           comment: approvalForm.value.reason,
-          module: props.module,
         });
       }
       message.success(props.approvalType === 'approve' ? t('taskDrawer.approved') : t('taskDrawer.rejected'));

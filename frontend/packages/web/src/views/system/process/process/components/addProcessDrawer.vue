@@ -43,6 +43,7 @@
         v-model:basicConfig="form.basicConfig"
         :need-detail="!!props.sourceId"
         :readonly="isDetail"
+        :business-type-options="props.businessTypeOptions"
       />
       <ApprovalFlowDesign
         v-show="activeTab === 'process'"
@@ -51,6 +52,7 @@
         :need-detail="!!props.sourceId"
         :readonly="isDetail"
         :option-map="detailOptionMap"
+        :business-type-options="props.businessTypeOptions"
         @change="markUnsaved"
         @switch-more-setting="activeTab = 'moreSetting'"
       />
@@ -71,6 +73,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { LabelValueOption } from '@lib/shared/models/common';
   import { ApprovalProcessForm, BasicFormParams, MoreSettingsParams } from '@lib/shared/models/system/process';
 
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
@@ -80,15 +83,21 @@
   import moreSetting from './moreSetting.vue';
 
   import { addApprovalProcess, approvalProcessDetail, updateApprovalProcess } from '@/api/modules';
-  import { defaultBasicForm, defaultMoreConfig } from '@/config/process';
+  import { createApprovalBusinessTypeOptions, defaultBasicForm, defaultMoreConfig } from '@/config/process';
   import { clearApprovalConfigCache } from '@/hooks/useApprovalConfigCache';
   import useModal from '@/hooks/useModal';
 
-  const props = defineProps<{
-    sourceId?: string;
-    readonly?: boolean;
-    isDetail?: boolean;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      sourceId?: string;
+      readonly?: boolean;
+      isDetail?: boolean;
+      businessTypeOptions?: LabelValueOption[];
+    }>(),
+    {
+      businessTypeOptions: () => createApprovalBusinessTypeOptions(),
+    }
+  );
 
   const emit = defineEmits<{
     (e: 'cancel'): void;

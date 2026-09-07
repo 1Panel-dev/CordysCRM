@@ -69,6 +69,7 @@
     :initial-source-name="initialSourceName"
     :custom-form-id="props.formKey"
     @saved="handleFormCreateSaved"
+    @review="handleFormReview"
   />
   <detail
     v-model:visible="showOverviewDrawer"
@@ -76,7 +77,8 @@
     :customFormId="props.formKey"
     :refreshId="refreshKey"
     @edit="handleEdit"
-    @refresh="removeItemFromList(activeSourceId)"
+    @refresh="searchData(undefined, activeSourceId)"
+    @delete="removeItemFromList(activeSourceId)"
   />
 
   <CrmTableExportModal
@@ -95,6 +97,7 @@
   import { type DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
@@ -106,6 +109,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import type { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmApprovalPopover from '@/components/business/crm-approval/components/crm-approval-popover.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
@@ -115,6 +119,8 @@
 
   import { batchDeleteCustomFormData, deleteCustomFormData } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useApprovalOperation from '@/hooks/useApprovalOperation';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -142,7 +148,7 @@
   const isAdvancedSearchMode = ref(false);
   const advancedOriginalForm = ref<FilterForm | undefined>();
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
-  const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
+  const handleSearchData = ref<null | ((val?: string, refreshId?: string) => void)>(null);
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const tableRefreshId = ref(0);
   const tableRemoveRefreshId = ref('');
@@ -159,31 +165,53 @@
   }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  const operationGroupList = [
-    {
+  function handleEdit(id: string) {
+    activeSourceId.value = id;
+    needInitDetail.value = true;
+    formCreateDrawerVisible.value = true;
+  }
+
+  const customFormId = computed(() => props.formKey);
+  const customFormActionMap: Record<string, ActionsItem> = {
+    edit: {
       label: t('common.edit'),
       key: 'edit',
       permission: [],
     },
-    {
+    delete: {
       label: t('common.delete'),
       key: 'delete',
       permission: [],
     },
-  ];
+  };
+  const { initApprovalPermission, resolveRowOperation, enableApproval, deleteExecute } =
+    useApprovalOperation<CustomFormPageItem>({
+      formType: customFormId,
+      dataActionMap: customFormActionMap,
+      specialActionFilter: (row, actionKeys) => {
+        if (row.isAdmin) {
+          return actionKeys;
+        }
 
+        return actionKeys.filter((key) => !['edit', 'delete'].includes(key));
+      },
+      shouldUseRolePermissionOnly: () => true,
+    });
+  const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
+    formKey: customFormId,
+  });
   // 删除
   function handleDelete(row: CustomFormPageItem) {
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('common.deleteConfirmContent'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           await deleteCustomFormData(row.id);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
           tableRemoveRefreshId.value = row.id;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -192,14 +220,7 @@
       },
     });
   }
-
-  function handleEdit(id: string) {
-    activeSourceId.value = id;
-    needInitDetail.value = true;
-    formCreateDrawerVisible.value = true;
-  }
-
-  async function handleActionSelect(row: any, actionKey: string) {
+  async function handleActionSelect(row: CustomFormPageItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
         handleEdit(row.id);
@@ -207,28 +228,43 @@
       case 'delete':
         handleDelete(row);
         break;
+      case 'review':
+        reviewByResourceId(row.id, {
+          onSuccess: () => handleSearchData.value?.(undefined, row.id),
+        });
+        break;
+      case 'revoke':
+        revokeByResourceId(row.id, {
+          onSuccess: () => handleSearchData.value?.(undefined, row.id),
+        });
+        break;
       default:
         break;
     }
   }
 
   const showOverviewDrawer = ref(false);
-  const customFormId = computed(() => props.formKey);
   const operationColumn = computed<CrmDataTableColumn | undefined>(() => {
     if (props.readonly) {
       return undefined;
     }
     return {
       key: 'operation',
-      width: 120,
+      width: 180,
       fixed: 'right',
-      render: (row: CustomFormPageItem) =>
-        row.isAdmin
-          ? h(CrmOperationButton, {
-              groupList: row.isAdmin ? operationGroupList : [],
-              onSelect: (key: string) => handleActionSelect(row, key),
-            })
-          : '-',
+      render: (row: CustomFormPageItem) => {
+        const actions = resolveRowOperation(row);
+
+        if (!actions.groupList.length && !actions.moreList.length) {
+          return '-';
+        }
+
+        return h(CrmOperationButton, {
+          groupList: actions.groupList,
+          moreList: actions.moreList,
+          onSelect: (key: string) => handleActionSelect(row, key),
+        });
+      },
     };
   });
 
@@ -252,6 +288,22 @@
           { trigger: () => row.name, default: () => row.name }
         );
       },
+      approvalStatus: (row: CustomFormPageItem) => {
+        if (!row.approvalStatus) {
+          return '-';
+        }
+
+        return h(CrmApprovalPopover, {
+          status: row.approvalStatus,
+          formKey: customFormId.value,
+          sourceId: row.id,
+          disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
+          onMore: () => {
+            activeSourceId.value = row.id;
+            showOverviewDrawer.value = true;
+          },
+        });
+      },
     },
     permission: [],
     containerClass: '.crm-customForm-table',
@@ -260,7 +312,13 @@
 
   const { propsRes, propsEvent, loadList, setLoadListParams, tableQueryParams, setAdvanceFilter } = useTableRes;
 
-  const formColumns = computed(() => columns.value);
+  const formColumns = computed(() => {
+    if (enableApproval.value) {
+      return columns.value;
+    }
+
+    return columns.value.filter((column) => column.key !== 'approvalStatus');
+  });
   function searchData(val?: string, refreshId?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, customFormId: customFormId.value });
     loadList(false, refreshId, customFormId.value);
@@ -343,13 +401,13 @@
       type: 'error',
       title: t('common.batchDeleteTitle', { count: checkedRowKeys.value.length }),
       content: t('common.deleteConfirmContent'),
-      positiveText: t('common.confirmDelete'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           tableRefreshId.value += 1;
           await batchDeleteCustomFormData(checkedRowKeys.value as string[]);
-          Message.success(t('common.deleteSuccess'));
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -384,6 +442,18 @@
     }
   }
 
+  function handleFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: () => {
+        if (needInitDetail.value) {
+          searchData(undefined, res?.id);
+        } else {
+          searchData();
+        }
+      },
+    });
+  }
+
   function removeItemFromList(id: string) {
     propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
     propsRes.value.crmPagination = {
@@ -413,6 +483,7 @@
     checkedRowKeys.value = [];
     keyword.value = '';
     propsRes.value.tableKey = val;
+    await initApprovalPermission();
     await initFormConfig(props.readonly, operationColumn.value);
     tableAdvanceFilterRef.value?.clearFilter();
     setLoadListParams({ customFormId: val });

@@ -194,7 +194,7 @@
       const res = await lisApiMap[listType as ApprovalListTypeEnum]({
         current: pageNation.value.current,
         pageSize: 20,
-        resourceType: resourceType as ApprovalResourceTypeEnum,
+        resourceType,
         ...props.loadParams,
         keyword: keyword !== undefined ? keyword : props.loadParams?.keyword || '',
       });
