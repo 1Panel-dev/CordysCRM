@@ -55,7 +55,7 @@ public class FormulaDefinitionParser {
 
     private List<FormulaNode> parseArgs(Object rawArgs) {
         if (!(rawArgs instanceof List<?> values)) {
-            return List.of();
+            return List.of(new FormulaNode.Invalid("function args must be an array"));
         }
         List<FormulaNode> result = new ArrayList<>(values.size());
         for (Object value : values) {

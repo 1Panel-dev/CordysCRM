@@ -47,6 +47,58 @@ public class FormulaEngine {
         return evaluate(definitionParser.parse(formulaJson), context);
     }
 
+    /** 写入前检查整棵树，包括惰性分支；合法空结果不等同于非法定义。 */
+    public void validateDefinition(String formulaJson, Set<String> fieldIds) {
+        validateNode(definitionParser.parse(formulaJson), fieldIds);
+    }
+
+    private void validateNode(FormulaNode node, Set<String> fieldIds) {
+        switch (node) {
+            case FormulaNode.Invalid ignored -> throw new FormulaEvaluationException("INVALID_IR");
+            case FormulaNode.Field field -> {
+                if (!fieldIds.contains(field.fieldId())) throw new FormulaEvaluationException("UNKNOWN_FIELD");
+            }
+            case FormulaNode.Binary binary -> {
+                if (!Set.of("+", "-", "*", "/").contains(binary.operator())) {
+                    throw new FormulaEvaluationException("UNKNOWN_OPERATOR");
+                }
+                validateNode(binary.left(), fieldIds);
+                validateNode(binary.right(), fieldIds);
+            }
+            case FormulaNode.Compare compare -> {
+                if (!Set.of("=", "<>", ">", ">=", "<", "<=").contains(compare.operator())) {
+                    throw new FormulaEvaluationException("UNKNOWN_OPERATOR");
+                }
+                validateNode(compare.left(), fieldIds);
+                validateNode(compare.right(), fieldIds);
+            }
+            case FormulaNode.Function function -> {
+                int count = function.args().size();
+                boolean valid = switch (function.name()) {
+                    case "SUM", "CONCATENATE", "AND" -> count > 0;
+                    case "DAYS", "TEXT" -> count == 2;
+                    case "IF" -> count == 2 || count == 3;
+                    case "IFS" -> count >= 2 && count % 2 == 0;
+                    case "TODAY", "NOW" -> count == 0;
+                    default -> false;
+                };
+                if (!valid) throw new FormulaEvaluationException("INVALID_FUNCTION");
+                function.args().forEach(arg -> validateNode(arg, fieldIds));
+            }
+            case FormulaNode.Literal literal -> {
+                boolean valid = switch (literal.valueType()) {
+                    case "number" -> literal.value() instanceof Number number && Double.isFinite(number.doubleValue());
+                    case "string" -> literal.value() instanceof String;
+                    case "boolean" -> literal.value() instanceof Boolean;
+                    default -> false;
+                };
+                if (!valid) {
+                    throw new FormulaEvaluationException("INVALID_LITERAL");
+                }
+            }
+        }
+    }
+
     public Object evaluate(FormulaNode node, FormulaEvaluationContext context) {
         return switch (node) {
             case FormulaNode.Literal literal -> evaluateLiteral(literal);

@@ -665,6 +665,9 @@
     if (!editor.value) return;
     const tokens = tokenizeFromEditor(editor.value);
     const ast = parseTokensToAST(tokens);
+    // 保存时同步校验，避免防抖尚未执行时提交无效 IR。
+    formulaDiagnostics.value = diagnoseFormula(tokens, ast);
+    if (formulaDiagnostics.value.length > 0) return;
 
     const fieldMap: Record<string, string> = {};
     flatAllFields(props.formFields).forEach((item) => {

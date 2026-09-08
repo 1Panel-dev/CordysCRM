@@ -19,6 +19,42 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class FormulaRequestCompletionServiceTest {
 
     @Test
+    void 更新合并旧输入并保留真实编号且不改变统一响应() {
+        SerialNumberField serial = field(new SerialNumberField(), "serial", "编号", "SERIAL_NUMBER");
+        serial.setBusinessKey("number");
+        InputField input = field(new InputField(), "input", "输入", "INPUT");
+        InputField name = field(new InputField(), "name", "名称", "INPUT");
+        name.setBusinessKey("name");
+        name.setDefaultValueType("formula");
+        name.setFormula(formula(function("CONCATENATE", fieldNode("serial"), fieldNode("input"))));
+        ModuleFormService forms = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String key, String org) {
+                return List.of(serial, input, name);
+            }
+        };
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                forms, new FormulaCompletionService(new FormulaEngine()));
+        FormulaUpdateRequest request = new FormulaUpdateRequest();
+        request.setNumber("伪造编号");
+        request.setName("伪造结果");
+        service.completeUpdate("quotation", request, Map.of("number", "Q1",
+                "moduleFields", List.of(new BaseModuleFieldValue("input", "旧值"))));
+        assertEquals("Q1旧值", request.getName());
+        assertEquals("Q1", request.getNumber());
+        assertEquals("旧值", request.getModuleFields().getFirst().getFieldValue());
+        request.setModuleFields(List.of(new BaseModuleFieldValue("input", "新值")));
+        service.completeUpdate("quotation", request, Map.of("number", "Q1",
+                "moduleFields", List.of(new BaseModuleFieldValue("input", "旧值"))));
+        assertEquals("Q1新值", request.getName());
+        // 计算只改变请求内字段，不扩展主工程统一响应。
+        Map<String, Object> response = JSON.parseToMap(JSON.toJSONString(
+                cn.cordys.common.response.handler.ResultHolder.success(Map.of("id", "record-1"))));
+        org.junit.jupiter.api.Assertions.assertFalse(response.containsKey("metadata"));
+        assertEquals(Map.of("id", "record-1"), response.get("data"));
+    }
+
+    @Test
     void fillsBusinessFormulaBeforeRequestValidationWithoutAdditionalRequestArguments() {
         SerialNumberField quotationNumber = field(
                 new SerialNumberField(), "quotationNumber", "报价编号", "SERIAL_NUMBER");
@@ -163,6 +199,7 @@ class FormulaRequestCompletionServiceTest {
         field.setId(id);
         field.setName(name);
         field.setType(type);
+        field.setReadable(true);
         return field;
     }
 

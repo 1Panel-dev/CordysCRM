@@ -392,7 +392,25 @@ public class CustomFormDataService {
         CustomFormDataFieldService.setFormKey(request.getCustomFormId());
         try {
             BaseField field = customFormDataFieldService.getAndCheckField(request.getFieldId(), orgId);
-            customFormDataFieldService.batchUpdate(request, field, dataList, CustomFormData.class, LogModule.CUSTOM_FORM_DATA, extCustomFormDataMapper::batchUpdate, userId, orgId);
+            if (field.needRepeatCheck() && dataList.size() > 1
+                    && request.getFieldValue() != null
+                    && StringUtils.isNotBlank(request.getFieldValue().toString())) {
+                throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
+            }
+            // 复用单条更新的权限、完整旧值读取和公式计算；外层事务保证任一失败全部回滚。
+            for (CustomFormData data : dataList) {
+                CustomFormDataUpdateRequest updateRequest = new CustomFormDataUpdateRequest();
+                updateRequest.setId(data.getId());
+                updateRequest.setCustomFormId(request.getCustomFormId());
+                if (StringUtils.isNotBlank(field.getBusinessKey())) {
+                    new org.springframework.beans.BeanWrapperImpl(updateRequest)
+                            .setPropertyValue(field.getBusinessKey(), request.getFieldValue());
+                } else {
+                    updateRequest.setModuleFields(List.of(new BaseModuleFieldValue(
+                            field.getId(), request.getFieldValue())));
+                }
+                update(updateRequest, userId, orgId);
+            }
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }
