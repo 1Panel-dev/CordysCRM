@@ -484,6 +484,7 @@ export const {
   getProcessedApprovalList,
   getInitiatedApprovalList,
   getCcApprovalList,
+  getApprovalFlowFormOptions,
   getApprovalConfigDetail,
   agreeApproval,
   rejectApproval,
