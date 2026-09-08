@@ -55,14 +55,14 @@
     v-model:show="showApprovalPopup"
     :approving-item="approvingItem"
     :is-rejecting="isRejecting"
-    :resource-type="route.query.formKey?.toString().replace('Snapshot', '') || ''"
+    :resource-type="approvalFormKey"
     @refresh="router.back()"
   />
   <FallbackPopup
     v-model:show="showFallbackPopup"
     :approving-item="approvingItem"
     :is-rejecting="isRejecting"
-    :resource-type="route.query.formKey?.toString().replace('Snapshot', '') || ''"
+    :resource-type="approvalFormKey"
     :approval-config="approvalConfig"
     :fallbackOptions="fallbackOptions"
     @refresh="refresh"
@@ -71,7 +71,7 @@
     v-model:show="showAddSignPopup"
     :approving-item="approvingItem"
     :is-rejecting="isRejecting"
-    :resource-type="route.query.formKey?.toString().replace('Snapshot', '') || ''"
+    :resource-type="approvalFormKey"
     :approval-config="approvalConfig"
     :fallbackOptions="fallbackOptions"
     @refresh="refresh"
@@ -149,14 +149,22 @@
   const route = useRoute();
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
+  const routeFormKey = computed(() => route.query.formKey?.toString() as FormDesignKeyEnum);
+  const customFormId = computed(() => route.query.customFormId?.toString());
+  const approvalFormKey = computed(() =>
+    routeFormKey.value === FormDesignKeyEnum.CUSTOM_FORM
+      ? customFormId.value || ''
+      : routeFormKey.value.replace('Snapshot', '')
+  );
 
   const { sourceName, descriptions, detail, initFormConfig, initFormDescription } = useFormCreateApi({
-    formKey: route.query.formKey as FormDesignKeyEnum,
+    formKey: routeFormKey.value,
     sourceId,
     needInitDetail: true,
     otherSaveParams: {
       approvalTaskId: route.query.taskId,
     },
+    customFormId,
   });
 
   const approvalInfo = ref<ApprovalDetail>();
@@ -164,8 +172,8 @@
 
   async function initApprovalConfig() {
     try {
-      if (route.query.formKey) {
-        approvalConfig.value = await getApprovalConfigDetail(route.query.formKey?.toString().replace('Snapshot', ''));
+      if (approvalFormKey.value) {
+        approvalConfig.value = await getApprovalConfigDetail(approvalFormKey.value);
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -404,7 +412,7 @@
             try {
               await revokeResource({
                 resourceId: route.query.id?.toString() || '',
-                formKey: route.query.formKey?.toString().replace('Snapshot', '') || '',
+                formKey: approvalFormKey.value,
               });
               showSuccessToast(t('workbench.cancelApprovalApplySuccess'));
               await sleep(300);

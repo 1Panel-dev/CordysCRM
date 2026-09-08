@@ -49,7 +49,7 @@
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.resourceId, item.approvalFlowId, item.approvalTaskId)"
+                  @click="emit('openDetail', item.resourceId, item.resourceType, item.approvalTaskId)"
                 >
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
@@ -60,7 +60,7 @@
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.resourceId, item.approvalFlowId, item.approvalTaskId)"
+                  @click="emit('openDetail', item.resourceId, item.resourceType, item.approvalTaskId)"
                 >
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>

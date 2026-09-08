@@ -13,7 +13,7 @@
               <van-button
                 round
                 size="small"
-                class="!border-none !px-[16px] !py-[4px] !text-[14px]"
+                class="shrink-0 !border-none !px-[16px] !py-[4px] !text-[14px]"
                 :class="
                   resourceType === item.name
                     ? '!bg-[var(--primary-7)] !text-[var(--primary-8)]'
@@ -21,15 +21,11 @@
                 "
                 @click="
                   () => {
-                    resourceType = item.name;
-                    selectedKeys = [];
-                    setLocalStorage('resourceType', item.name);
-                    initStatistic();
-                    initApprovalConfig();
+                    changeResourceType(item.name);
                   }
                 "
               >
-                <div class="flex items-center gap-[4px]">
+                <div class="flex items-center gap-[4px] whitespace-nowrap">
                   {{ item.tab }}
                   <div v-if="activeName === ApprovalListTypeEnum.PENDING">
                     {{ item.count > 99 ? '99+' : item.count }}
@@ -41,6 +37,7 @@
         </van-tab>
       </van-tabs>
       <CrmList
+        v-if="approvalFormOptionsReady"
         ref="crmListRef"
         :list-params="listParams"
         class="bg-[var(--text-n9)] p-[16px]"
@@ -135,15 +132,15 @@
         </van-button>
       </div>
     </div>
+    <ApprovalPopup
+      v-model:show="showApprovalPopup"
+      :approving-item="approvingItem"
+      :is-rejecting="isRejecting"
+      :resource-type="resourceType"
+      :selected-keys="selectedKeys"
+      @refresh="refreshTaskList(true)"
+    />
   </CrmPageWrapper>
-  <ApprovalPopup
-    v-model:show="showApprovalPopup"
-    :approving-item="approvingItem"
-    :is-rejecting="isRejecting"
-    :resource-type="resourceType"
-    :selected-keys="selectedKeys"
-    @refresh="refreshTaskList(true)"
-  />
 </template>
 
 <script setup lang="ts">
@@ -158,11 +155,13 @@
   import {
     getApprovalConfigDetail,
     getCcApprovalList,
+    getApprovalFlowFormOptions,
     getInitiatedApprovalList,
     getPendingApprovalList,
     getProcessedApprovalList,
     getTodoStatistic,
   } from '@/api/modules';
+  import type { OptionDTO } from '@lib/shared/models/system/business';
   import type { ApprovalProcessDetail, ApprovalTodoItem, TodoStatistic } from '@lib/shared/models/system/process';
   import {
     ApprovalListTypeEnum,
@@ -207,32 +206,20 @@
   ];
 
   const keyword = ref('');
-  const resourceType = ref(ApprovalResourceTypeEnum.QUOTATION);
+  const resourceType = ref('');
   const statistic = ref<TodoStatistic>();
-  const resourceTypes = computed(() => {
-    return [
-      {
-        name: ApprovalResourceTypeEnum.QUOTATION,
-        tab: t('formCreate.quotation'),
-        count: statistic.value?.quotation || 0,
-      },
-      {
-        name: ApprovalResourceTypeEnum.CONTRACT,
-        tab: t('formCreate.contract'),
-        count: statistic.value?.contract || 0,
-      },
-      {
-        name: ApprovalResourceTypeEnum.ORDER,
-        tab: t('formCreate.order'),
-        count: statistic.value?.order || 0,
-      },
-      {
-        name: ApprovalResourceTypeEnum.INVOICE,
-        tab: t('formCreate.invoice'),
-        count: statistic.value?.invoice || 0,
-      },
-    ];
-  });
+  const approvalFormOptions = ref<OptionDTO[]>([]);
+  const approvalFormOptionsReady = ref(false);
+  function getStatisticCount(type: string) {
+    return statistic.value?.[type] ?? statistic.value?.[type.toLowerCase()] ?? 0;
+  }
+  const resourceTypes = computed(() =>
+    approvalFormOptions.value.map((item) => ({
+      name: String(item.id),
+      tab: item.name,
+      count: getStatisticCount(String(item.id)),
+    }))
+  );
   const selectedKeys = ref<string[]>([]);
 
   const lisApiMap = {
@@ -256,6 +243,24 @@
     }
   }
 
+  async function initApprovalFormOptions() {
+    try {
+      approvalFormOptions.value = await getApprovalFlowFormOptions();
+      const storageResourceType = localStorage.getItem('resourceType') || '';
+      const currentResourceType = resourceType.value || storageResourceType;
+      resourceType.value = resourceTypes.value.some((item) => item.name === currentResourceType)
+        ? currentResourceType
+        : resourceTypes.value[0]?.name || '';
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      approvalFormOptions.value = [];
+      resourceType.value = '';
+    } finally {
+      approvalFormOptionsReady.value = true;
+    }
+  }
+
   function getResourcePermission(item: ApprovalTodoItem) {
     switch (item.resourceType) {
       case ApprovalResourceTypeEnum.CONTRACT:
@@ -267,7 +272,7 @@
       case ApprovalResourceTypeEnum.QUOTATION:
         return hasAnyPermission(['OPPORTUNITY_QUOTATION:READ']);
       default:
-        return false;
+        return true;
     }
   }
 
@@ -275,6 +280,10 @@
 
   async function initApprovalConfig() {
     try {
+      if (!resourceType.value) {
+        approvalConfig.value = undefined;
+        return;
+      }
       approvalConfig.value = await getApprovalConfigDetail(resourceType.value);
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -352,6 +361,18 @@
     selectedKeys.value = [];
   }
 
+  function changeResourceType(type: string) {
+    if (resourceType.value === type) {
+      return;
+    }
+    resourceType.value = type;
+    selectedKeys.value = [];
+    setLocalStorage('resourceType', type);
+    refreshTaskList();
+    initStatistic();
+    initApprovalConfig();
+  }
+
   function changeResourceTab() {
     refreshTaskList();
     initStatistic();
@@ -360,13 +381,15 @@
       localStorage.setItem('activeTaskType', activeName.value);
     });
   }
-  const formKeyMap = {
-    [ApprovalResourceTypeEnum.ALL]: '',
+  const formKeyMap: Partial<Record<string, FormDesignKeyEnum>> = {
     [ApprovalResourceTypeEnum.QUOTATION]: FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT,
     [ApprovalResourceTypeEnum.CONTRACT]: FormDesignKeyEnum.CONTRACT_SNAPSHOT,
     [ApprovalResourceTypeEnum.ORDER]: FormDesignKeyEnum.ORDER_SNAPSHOT,
     [ApprovalResourceTypeEnum.INVOICE]: FormDesignKeyEnum.INVOICE_SNAPSHOT,
   };
+  function getDetailFormKey(type: string) {
+    return formKeyMap[type] || FormDesignKeyEnum.CUSTOM_FORM;
+  }
   function goDetail(item: ApprovalTodoItem) {
     if (item.resourceNotFound) {
       return;
@@ -375,7 +398,8 @@
       name: WorkbenchRouteEnum.WORKBENCH_APPROVAL,
       query: {
         id: item.resourceId,
-        formKey: formKeyMap[item.resourceType],
+        formKey: getDetailFormKey(item.resourceType),
+        customFormId: formKeyMap[item.resourceType] ? undefined : item.resourceType,
         taskId: item.approvalTaskId,
         approvalStatus: item.approvalOperation,
       },
@@ -418,18 +442,10 @@
     showApprovalPopup.value = true;
   }
 
-  watch(
-    () => resourceType.value,
-    () => {
-      refreshTaskList();
-    }
-  );
-
-  onBeforeMount(() => {
+  onBeforeMount(async () => {
+    activeName.value = (localStorage.getItem('activeTaskType') as ApprovalListTypeEnum) || ApprovalListTypeEnum.PENDING;
+    await initApprovalFormOptions();
     initStatistic();
-    activeName.value = localStorage.getItem('activeTaskType') || ApprovalListTypeEnum.PENDING;
-    resourceType.value =
-      (localStorage.getItem('resourceType') as ApprovalResourceTypeEnum) || ApprovalResourceTypeEnum.QUOTATION;
     initApprovalConfig();
   });
 </script>
@@ -466,8 +482,16 @@
     @apply flex;
 
     gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
     padding: 8px 4px;
     background-color: var(--text-n10);
     .half-px-border-bottom();
+
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 </style>
