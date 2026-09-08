@@ -73,6 +73,8 @@ import {
   UpdateQuotationUrl,
   UpdateQuotationViewUrl,
   VoidQuotationUrl,
+  SaveOpportunityStageAdvancedConfigUrl,
+  SwitchOpportunityCirculationTypeUrl,
 } from '@lib/shared/api/requrls/opportunity';
 import type {
   ChartResponseDataItem,
@@ -117,10 +119,12 @@ import type {
   UpdateOpportunityStageParams,
   UpdateOpportunityStageRollbackParams,
   UpdateQuotationParams,
+  SaveCirculationConfigParams,
 } from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 import { ValidateInfo } from '@lib/shared/models/system/org';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
+import type { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 商机列表
@@ -474,6 +478,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DownloadQuotationUrl}/${id}` });
   }
 
+  // 保存高级流转配置
+  function saveOptAdvanceConfig(data: SaveCirculationConfigParams) {
+    return CDR.post({ url: SaveOpportunityStageAdvancedConfigUrl, data });
+  }
+
+  // 切换流转配置
+  function switchOptCirculationType(type: CirculationTypeEnum) {
+    return CDR.get({ url: `${SwitchOpportunityCirculationTypeUrl}/${type}` });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -548,5 +562,7 @@ export default function useProductApi(CDR: CordysAxios) {
     batchVoided,
     batchUpdateQuotation,
     downloadQuotation,
+    saveOptAdvanceConfig,
+    switchOptCirculationType,
   };
 }

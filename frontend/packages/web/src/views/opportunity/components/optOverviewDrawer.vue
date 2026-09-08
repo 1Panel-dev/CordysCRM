@@ -31,6 +31,7 @@
     <div class="h-full bg-[var(--text-n9)] p-[16px]">
       <CrmWorkflowCard
         v-model:stage="currentStatus"
+        :formKey="FormDesignKeyEnum.BUSINESS"
         :show-confirm-status="true"
         class="mb-[16px]"
         :stageConfig="stageConfig"
