@@ -23,9 +23,12 @@ public class FormulaRequestBodyAdvice extends RequestBodyAdviceAdapter {
     private static final Map<String, FormulaRequest> PATH_REQUESTS = pathRequests();
 
     private final FormulaRequestCompletionService completionService;
+    private final FormulaRecordSnapshotService snapshotService;
 
-    public FormulaRequestBodyAdvice(FormulaRequestCompletionService completionService) {
+    public FormulaRequestBodyAdvice(FormulaRequestCompletionService completionService,
+            FormulaRecordSnapshotService snapshotService) {
         this.completionService = completionService;
+        this.snapshotService = snapshotService;
     }
 
     @Override
@@ -47,7 +50,12 @@ public class FormulaRequestBodyAdvice extends RequestBodyAdviceAdapter {
     ) {
         FormulaRequest request = resolveRequest(inputMessage);
         if (request != null) {
-            completionService.complete(request.formKey(), body, request.createMode());
+            if (request.createMode()) {
+                completionService.complete(request.formKey(), body, true);
+            } else {
+                Map<String, Object> baseline = snapshotService.loadForUpdate(request.formKey(), body, parameter);
+                completionService.completeUpdate(request.formKey(), body, baseline);
+            }
         }
         return body;
     }

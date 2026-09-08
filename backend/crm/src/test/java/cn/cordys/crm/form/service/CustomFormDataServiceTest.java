@@ -39,6 +39,44 @@ import static org.mockito.Mockito.when;
 
 class CustomFormDataServiceTest {
 
+    @Test
+    @SuppressWarnings("unchecked")
+    void batchUpdateRoutesEachRecordThroughFormulaAwareUpdate() {
+        BaseMapper<CustomFormData> mapper = mock(BaseMapper.class);
+        CustomFormDataFieldService fields = mock(CustomFormDataFieldService.class);
+        CustomFormDataService service = org.mockito.Mockito.spy(serviceWithManageAllPermission());
+        ReflectionTestUtils.setField(service, "customFormDataMapper", mapper);
+        ReflectionTestUtils.setField(service, "customFormDataFieldService", fields);
+        CustomFormData first = new CustomFormData();
+        first.setId("one");
+        first.setCustomFormId("form-1");
+        first.setOrganizationId("org-1");
+        CustomFormData second = new CustomFormData();
+        second.setId("two");
+        second.setCustomFormId("form-1");
+        second.setOrganizationId("org-1");
+        when(mapper.selectByIds(anyList())).thenReturn(List.of(first, second));
+        InputField field = new InputField();
+        field.setId("note");
+        field.setType("INPUT");
+        when(fields.getAndCheckField("note", "org-1")).thenReturn(field);
+        java.util.List<CustomFormDataUpdateRequest> updates = new java.util.ArrayList<>();
+        org.mockito.Mockito.doAnswer(invocation -> {
+            updates.add(invocation.getArgument(0));
+            return null;
+        }).when(service).update(org.mockito.ArgumentMatchers.any(), anyString(), anyString());
+        CustomFormDataBatchUpdateRequest request = new CustomFormDataBatchUpdateRequest();
+        request.setCustomFormId("form-1");
+        request.setIds(List.of("one", "two"));
+        request.setFieldId("note");
+        request.setFieldValue("new");
+
+        service.batchUpdate(request, "user-1", "org-1");
+
+        assertEquals(List.of("one", "two"), updates.stream().map(CustomFormDataUpdateRequest::getId).toList());
+        updates.forEach(update -> assertEquals("new", valueOf(update, "note")));
+    }
+
     private MessageSource originalMessageSource;
 
     @BeforeEach

@@ -153,7 +153,11 @@ export function normalizeFormulaNumber(n: number): number {
 export function keepDecimal(value: number, digits = 2) {
   if (!Number.isFinite(value)) return value;
   const normalized = normalizeFormulaNumber(value);
-  const str = normalized.toString();
+  // 极小数会使用科学计数法；直接截字符串会把 1.234e-7 错算为 1.23。
+  const str = normalized.toLocaleString('en-US', {
+    useGrouping: false,
+    maximumSignificantDigits: 15,
+  });
   const dotIdx = str.indexOf('.');
   if (dotIdx === -1) return normalized;
   return Number(str.substring(0, dotIdx + 1 + digits));

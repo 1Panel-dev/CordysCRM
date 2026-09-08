@@ -28,6 +28,20 @@ import java.util.function.Function;
 @Service
 public class FormulaCompletionService {
 
+    /** 未接入统一求值的批量/导入入口不能接受公式结果，也不能省略后继续落库。 */
+    public static void requireNonFormulaWrite(List<BaseField> fields) {
+        if (fields == null) return;
+        for (BaseField field : fields) {
+            if (BaseField.includeFormula(field)
+                    || field instanceof cn.cordys.crm.system.dto.field.SerialNumberField serial
+                    && "formula".equalsIgnoreCase(serial.getPrefixType())) {
+                throw new cn.cordys.common.exception.GenericException(
+                        cn.cordys.common.util.Translator.get("formula.write_path.unsupported"));
+            }
+            if (field instanceof SubField sub) requireNonFormulaWrite(sub.getSubFields());
+        }
+    }
+
     @FunctionalInterface
     interface DisplayValueResolver {
         Object resolve(BaseField field, Object rawValue);
@@ -100,6 +114,33 @@ public class FormulaCompletionService {
 
         LocalDateTime evaluationNow = LocalDateTime.now(clock);
         Map<String, BaseField> runtimeFieldMap = buildRuntimeFieldMap(fields);
+        // 必须在写任何结果前验证所有定义，不能让错误分支或悬空引用变成空值。
+        for (BaseField field : fields) {
+            String formula = formulaOf(field);
+            if (StringUtils.isNotBlank(formula)) {
+                formulaEngine.validateDefinition(formula, runtimeFieldMap.keySet());
+            }
+            if (field instanceof SubField subField && subField.getSubFields() != null) {
+                Set<String> rowIds = new HashSet<>(runtimeFieldMap.keySet());
+                subField.getSubFields().forEach(sub -> rowIds.add(runtimeFieldId(sub)));
+                for (BaseField sub : subField.getSubFields()) {
+                    String subFormula = formulaOf(sub);
+                    if (StringUtils.isNotBlank(subFormula)) {
+                        formulaEngine.validateDefinition(subFormula, rowIds);
+                        Set<String> localIds = new HashSet<>();
+                        subField.getSubFields().forEach(child -> localIds.add(runtimeFieldId(child)));
+                        for (String reference : formulaEngine.referencedFieldIds(subFormula)) {
+                            BaseField dependency = runtimeFieldMap.get(reference);
+                            if (!localIds.contains(reference) && dependency != null
+                                    && StringUtils.isNotBlank(formulaOf(dependency))) {
+                                // 当前分组拓扑只支持行内依赖；跨层计算字段会读到旧值，必须拒绝。
+                                throw new FormulaEvaluationException("UNSUPPORTED_CROSS_SCOPE_DEPENDENCY");
+                            }
+                        }
+                    }
+                }
+            }
+        }
         Map<String, FormulaFieldMetadata> metadata = buildMetadata(runtimeFieldMap);
         Map<String, Object> runtimeValues = buildRuntimeValues(fields, fieldValueMap, businessValueReader);
 
@@ -213,7 +254,12 @@ public class FormulaCompletionService {
                     BaseField field = runtimeFieldMap.get(fieldId);
                     return field == null ? rawValue : displayValueResolver.resolve(field, rawValue);
                 },
-                (code, message) -> log.warn("Formula evaluation warning: code={}, detail={}", code, message),
+                (code, message) -> {
+                    if ("INVALID_IR".equals(code) || "UNKNOWN_FUNCTION".equals(code)) {
+                        throw new FormulaEvaluationException(code);
+                    }
+                    log.warn("Formula evaluation warning: code={}, detail={}", code, message);
+                },
                 createMode);
     }
 
@@ -357,11 +403,16 @@ public class FormulaCompletionService {
             return rawValue;
         }
         try {
+            if (field instanceof cn.cordys.crm.system.dto.field.DatasourceField source) {
+                return java.util.Objects.requireNonNull(cn.cordys.common.util.CommonBeanFactory
+                        .getBean(FormulaReferenceValueService.class)).resolve(source, rawValue);
+            }
             AbstractModuleFieldResolver resolver = ModuleFieldResolverFactory.getResolver(field.getType());
+            if (!"".equals(rawValue)) resolver.validate(field, rawValue);
             String storedValue = resolver.convertToString(field, rawValue);
             return resolver.transformToValue(field, storedValue);
         } catch (RuntimeException e) {
-            return rawValue;
+            throw new FormulaEvaluationException("DISPLAY_VALUE_RESOLUTION_FAILED", e);
         }
     }
 

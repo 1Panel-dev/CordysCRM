@@ -10,7 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FormulaRequestBodyAdviceTest {
 
     private final RecordingCompletionService completionService = new RecordingCompletionService();
-    private final FormulaRequestBodyAdvice advice = new FormulaRequestBodyAdvice(completionService);
+    private final FormulaRecordSnapshotService snapshots = org.mockito.Mockito.mock(FormulaRecordSnapshotService.class);
+    private final FormulaRequestBodyAdvice advice = new FormulaRequestBodyAdvice(completionService, snapshots);
 
     @Test
     void completesQuotationAddAfterDeserialization() {
@@ -70,6 +71,11 @@ class FormulaRequestBodyAdviceTest {
             this.formKey = formKey;
             this.body = request;
             this.createMode = createMode;
+        }
+
+        @Override
+        public void completeUpdate(String formKey, Object request, java.util.Map<String, Object> baseline) {
+            complete(formKey, request, false);
         }
     }
 }

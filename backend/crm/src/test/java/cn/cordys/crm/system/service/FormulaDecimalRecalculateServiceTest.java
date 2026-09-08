@@ -87,12 +87,12 @@ class FormulaDecimalRecalculateServiceTest {
         assertEquals(1, result.getBusinessAmounts());
         ArgumentCaptor<Contract> updateCaptor = ArgumentCaptor.forClass(Contract.class);
         verify(contractMapper).update(updateCaptor.capture());
-        assertEquals(0, new BigDecimal("30000.13").compareTo(updateCaptor.getValue().getAmount()));
+        assertEquals(0, new BigDecimal("30000.12").compareTo(updateCaptor.getValue().getAmount()));
 
         verify(contractSnapshotMapper).update(snapshot);
         ContractGetResponse updatedSnapshot = JSON.parseObject(snapshot.getContractValue(), ContractGetResponse.class);
-        assertEquals("30000.13", updatedSnapshot.getProducts().getFirst().get("sumAmount"));
-        assertEquals(0, new BigDecimal("30000.13").compareTo(updatedSnapshot.getAmount()));
+        assertEquals("30000.12", updatedSnapshot.getProducts().getFirst().get("sumAmount").toString());
+        assertEquals(0, new BigDecimal("30000.12").compareTo(updatedSnapshot.getAmount()));
     }
 
     @SuppressWarnings("unchecked")

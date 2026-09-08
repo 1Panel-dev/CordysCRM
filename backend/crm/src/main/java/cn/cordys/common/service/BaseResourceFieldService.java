@@ -362,6 +362,9 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                                 String userId,
                                 String orgId) {
 
+        cn.cordys.common.formula.FormulaCompletionService.requireNonFormulaWrite(
+                CommonBeanFactory.getBean(ModuleFormService.class).getAllFields(getFormKey(), orgId));
+
         if (field.needRepeatCheck() && request.getIds().size() > 1 && isNotBlank(request.getFieldValue())) {
             // 如果字段唯一，则校验不能同时修改多条
             throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
