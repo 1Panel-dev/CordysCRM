@@ -66,6 +66,7 @@
   import type {
     CirculationFieldValueItem,
     OpportunityStageConfig,
+    UpdateOpportunityStageParams,
     UpdateStageParams,
   } from '@lib/shared/models/opportunity';
 
@@ -73,7 +74,7 @@
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
-  import { changeContractStatus, updateOrderStage } from '@/api/modules';
+  import { changeContractStatus, updateOpportunityStage, updateOrderStage } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import cloneDeep from 'lodash-es/cloneDeep';
@@ -150,6 +151,8 @@
             } else {
               field.initialOptions = [];
             }
+          } else if (field.type === FieldTypeEnum.DATE_TIME && cf.dateDefaultType === 'current') {
+            formDetail.value[field.id] = new Date();
           }
           return {
             ...field,
@@ -159,6 +162,7 @@
                 : formDetail.value[field.id],
             fieldWidth: 1,
             rules,
+            disabled: field.type === FieldTypeEnum.DATE_TIME && cf.dateDefaultType === 'current',
           };
         }
         return null;
@@ -244,9 +248,12 @@
     show.value = false;
   }
 
-  const updateApiMap: Partial<Record<FormDesignKeyEnum, (data: UpdateStageParams) => Promise<any>>> = {
+  const updateApiMap: Partial<
+    Record<FormDesignKeyEnum, (data: UpdateStageParams | UpdateOpportunityStageParams) => Promise<any>>
+  > = {
     [FormDesignKeyEnum.CONTRACT]: changeContractStatus,
     [FormDesignKeyEnum.ORDER]: updateOrderStage,
+    [FormDesignKeyEnum.BUSINESS]: updateOpportunityStage,
   };
 
   const okLoading = ref(false);
