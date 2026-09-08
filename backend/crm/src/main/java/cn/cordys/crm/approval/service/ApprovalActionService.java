@@ -20,6 +20,7 @@ import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalResourceSnapshotMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.system.constants.NotificationConstants;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
@@ -85,6 +86,8 @@ public class ApprovalActionService {
 	private BaseMapper<ApprovalResourceSnapshot> approvalResourceSnapshotMapper;
 	@Resource
 	private ExtApprovalResourceSnapshotMapper extApprovalResourceSnapshotMapper;
+	@Resource
+	private BaseMapper<CustomForm> customFormMapper;
 
 	public static final Long DEFAULT_SIGN_SORT_STEP = 100L;
     @Resource
@@ -1349,7 +1352,15 @@ public class ApprovalActionService {
 		if (resourceService != null) {
 			List<String> approvers = tasks.stream().map(ApprovalTask::getApproverId).toList();
 			Map<String, Object> paramMap = new HashMap<>(2);
-			paramMap.put("type", Translator.get(instance.getType(), Locale.SIMPLIFIED_CHINESE));
+			String formName = Translator.get(instance.getType(), Locale.SIMPLIFIED_CHINESE, instance.getType());
+			if (Strings.CS.equals(formName, instance.getType())) {
+				// 自定义表单
+				CustomForm customForm = customFormMapper.selectByPrimaryKey(instance.getType());
+				if (customForm != null) {
+					formName = customForm.getName();
+				}
+			}
+			paramMap.put("type", formName);
 			paramMap.put("name", resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId()));
 			commonNoticeSendService.sendNotice(NotificationConstants.Module.APPROVAL, NotificationConstants.Event.APPROVAL_TODO, paramMap, instance.getSubmitterId(), currentOrgId, approvers, true);
 		}

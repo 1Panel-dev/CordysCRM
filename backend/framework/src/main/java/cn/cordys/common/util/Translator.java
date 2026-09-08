@@ -47,6 +47,18 @@ public class Translator {
      *
      * @return 翻译后的消息
      */
+    public static String get(String key, Locale locale, String defaultMessage) {
+        return messageSource.getMessage(key, null, defaultMessage, locale);
+    }
+
+    /**
+     * 根据给定的消息键和指定的语言环境获取翻译内容。
+     *
+     * @param key    消息键
+     * @param locale 指定的语言环境
+     *
+     * @return 翻译后的消息
+     */
     public static String get(String key, Locale locale) {
         return messageSource.getMessage(key, null, locale);
     }
