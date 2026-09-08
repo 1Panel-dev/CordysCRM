@@ -79,6 +79,16 @@ public class ResourcePermissionService {
         }
     }
 
+
+    public boolean hasApprovalTaskPermission(String resourceId, String userId) {
+        // 从HTTP请求中获取待办任务ID
+        String approvalTaskId = resolveApprovalTaskId();
+        if (StringUtils.isNotBlank(approvalTaskId) && isTaskOwner(approvalTaskId, resourceId, userId)) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * 校验当前用户是否是指定待办任务的所有人，且该任务关联的资源与请求资源一致
      */

@@ -15,6 +15,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
@@ -116,6 +117,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     private BaseMapper<CustomFormDataFieldBlob> customFormDataFieldBlobMapper;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private ResourcePermissionService resourcePermissionService;
 
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId, boolean catchPermissionException) {
         String formId = request.getCustomFormId();
@@ -149,6 +152,9 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     }
 
     private boolean isAdminUser(CustomFormRoleKey dataScope, String userId, String owner) {
+        if (dataScope == null) {
+            return false;
+        }
         return dataScope == CustomFormRoleKey.MANAGE_ALL ||
                 (dataScope == CustomFormRoleKey.MANAGE_OWN && StringUtils.equals(owner, userId));
     }
@@ -193,9 +199,14 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (data == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
-        CustomFormRoleKey dataScope = getDataScope(data.getCustomFormId(), userId);
-        if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(data.getCreateUser(), userId)) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        CustomFormRoleKey dataScope = null;
+        // 先校验是否是审批资源
+        if (!resourcePermissionService.hasApprovalTaskPermission(id, userId)) {
+            // 获取并校验权限
+            dataScope = getDataScope(data.getCustomFormId(), userId);
+            if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(data.getCreateUser(), userId)) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
         }
 
         CustomFormDataGetResponse resp = BeanUtils.copyBean(new CustomFormDataGetResponse(), data);

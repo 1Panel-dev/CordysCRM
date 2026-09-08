@@ -93,7 +93,6 @@ public class ApprovalFlowController {
 
     @GetMapping("/form/options")
     @Operation(summary = "获取已配置审批流的表单选项(含未启用审批流, 包含自定义表单)")
-    @RequiresPermissions(PermissionConstants.PROCESS_SETTING_READ)
     public List<OptionDTO> getFlowFormOptions() {
         return approvalFlowService.getFlowFormOptions(OrganizationContext.getOrganizationId());
     }
