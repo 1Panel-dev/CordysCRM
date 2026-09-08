@@ -138,7 +138,6 @@
         approverId: props.approvingItem.approvalId || '',
         comment: fallbackForm.value.reason,
         attachmentIds: fallbackForm.value.fileList,
-        module: 'WORKBENCH',
         returnToNodeId: fallbackForm.value.node || '',
       });
       showToast({

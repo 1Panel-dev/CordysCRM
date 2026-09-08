@@ -22,6 +22,8 @@ import type { FormConfig } from '@lib/shared/models/system/module';
 
 import type { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
 
+import { getDatasourceFieldConfig } from '@/api/modules';
+
 import {
   createFormApi,
   getFormConfigApiMap,
@@ -39,6 +41,7 @@ export interface FormCreateApiProps {
   linkFormInfo?: Ref<Record<string, any> | undefined>; // 关联表单信息
   linkFormKey?: Ref<FormDesignKeyEnum | undefined>; // 关联表单key
   linkScenario?: Ref<FormLinkScenarioEnum | undefined>; // 关联表单场景
+  customFormId?: Ref<string | undefined>;
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -762,10 +765,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function initFormConfig() {
     try {
       loading.value = true;
-      const res = await getFormConfigApiMap[props.formKey](
-        props.sourceId?.value ?? '',
-        props.otherSaveParams?.approvalTaskId
-      );
+      const isCustomFormApprovalDetail =
+        props.formKey === FormDesignKeyEnum.CUSTOM_FORM && Boolean(props.otherSaveParams?.approvalTaskId);
+      const api = isCustomFormApprovalDetail ? getDatasourceFieldConfig : getFormConfigApiMap[props.formKey];
+      const res =
+        props.formKey === FormDesignKeyEnum.CUSTOM_FORM
+          ? await api(props.customFormId?.value ?? '')
+          : await api(props.sourceId?.value ?? '', props.otherSaveParams?.approvalTaskId);
       formConfig.value = res.formProp;
       fieldList.value = res.fields.map((item) => {
         const { defaultValue, initialOptions } = specialFormFieldInit(item);
