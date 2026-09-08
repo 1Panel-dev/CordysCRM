@@ -157,7 +157,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @return 字段值集合
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
-        List<BaseModuleFieldValue> fieldValues = getResourceFieldMap(List.of(resourceId), true, true).get(resourceId);
+        List<BaseModuleFieldValue> fieldValues = getResourceFieldMap(List.of(resourceId), true).get(resourceId);
         return fieldValues == null ? new ArrayList<>(0) : fieldValues;
     }
 
@@ -413,13 +413,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @return 字段集合
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
-        return getResourceFieldMap(resourceIds, withBlob, false);
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob, boolean strict) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return new HashMap<>(2);
         }
@@ -438,9 +432,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 if (resourceField.getFieldValue() != null) {
                     BaseField fieldConfig = fieldConfigMap.get(resourceField.getFieldId());
                     if (fieldConfig == null) {
-                        if (strict) {
-                            throw new GenericException("持久化字段缺少表单配置: " + resourceField.getFieldId());
-                        }
                         return;
                     }
                     // 获取字段解析器
@@ -451,16 +442,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         objectValue = customFieldResolver.convertToValue(fieldConfig, resourceField.getFieldValue().toString());
                         resourceField.setFieldValue(objectValue);
                     } catch (Exception e) {
-                        if (strict) {
-                            throw new GenericException("字段值解析失败: " + resourceField.getFieldId(), e);
-                        }
                         log.error("Convert field value error: {}", e.getMessage());
                     }
 
                     if (objectValue == null) {
-                        if (strict) {
-                            throw new GenericException("字段值解析结果为空: " + resourceField.getFieldId());
-                        }
                         return;
                     }
                     String resourceId = resourceField.getResourceId();
@@ -490,7 +475,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             // 提前获取大文本字段值
             List<V> resourceFieldBlobs = getResourceFieldBlob(resourceIds);
             // 处理子表格字段值
-            setResourceSubFieldValue(resourceMap, fieldConfigMap, ListUtils.union(resourceFields, resourceFieldBlobs), strict);
+            setResourceSubFieldValue(resourceMap, fieldConfigMap, ListUtils.union(resourceFields, resourceFieldBlobs));
             if (!withBlob) {
                 return resourceMap;
             }
@@ -502,16 +487,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 if (resourceFieldBlob != null && resourceFieldBlob.getFieldValue() != null) {
                     BaseField fieldConfig = fieldConfigMap.get(resourceFieldBlob.getFieldId());
                     if (fieldConfig == null) {
-                        if (strict) {
-                            throw new GenericException("持久化字段缺少表单配置: " + resourceFieldBlob.getFieldId());
-                        }
                         return;
                     }
                     AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
                     Object objectValue = customFieldResolver.convertToValue(fieldConfig, resourceFieldBlob.getFieldValue().toString());
-                    if (objectValue == null && strict) {
-                        throw new GenericException("字段值解析结果为空: " + resourceFieldBlob.getFieldId());
-                    }
 
                     String resourceId = resourceFieldBlob.getResourceId();
                     resourceMap.putIfAbsent(resourceId, new ArrayList<>());
@@ -520,12 +499,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             });
             return resourceMap;
         } catch (Exception e) {
-            if (strict) {
-                if (e instanceof RuntimeException runtimeException) {
-                    throw runtimeException;
-                }
-                throw new GenericException("读取资源字段失败", e);
-            }
             log.error(e.getMessage(), e);
             return new HashMap<>(2);
         } finally {
@@ -956,19 +929,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void setResourceSubFieldValue(Map<String, List<BaseModuleFieldValue>> resourceMap, Map<String, BaseField> fieldConfigMap,
-                                          List<? extends BaseResourceField> resourceFields, boolean strict) {
+                                          List<? extends BaseResourceField> resourceFields) {
         Map<String, BaseField> subFieldMap = fieldConfigMap.values().stream().filter(f -> f instanceof SubField).collect(Collectors.toMap(BaseField::getId, Function.identity()));
-        if (strict) {
-            resourceFields.stream()
-                    .filter(resource -> resource instanceof BaseResourceSubField subResource
-                            && StringUtils.isNotEmpty(subResource.getRefSubId())
-                            && !subFieldMap.containsKey(subResource.getRefSubId()))
-                    .findFirst()
-                    .ifPresent(resource -> {
-                        BaseResourceSubField subResource = (BaseResourceSubField) resource;
-                        throw new GenericException("持久化子表字段缺少表单配置: " + subResource.getRefSubId());
-                    });
-        }
         if (!subFieldMap.isEmpty()) {
             Set<String> refSubSet = subFieldMap.keySet();
             List<BaseField> subFields = subFieldMap.values().stream().map(subField -> ((SubField) subField).getSubFields()).flatMap(List::stream).toList();
@@ -1000,9 +962,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         }
                         BaseField fieldConfig = subFieldConfigMap.get(resource.getFieldId());
                         if (fieldConfig == null) {
-                            if (strict) {
-                                throw new GenericException("持久化子字段缺少表单配置: " + resource.getFieldId());
-                            }
                             return;
                         }
                         AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
@@ -1011,13 +970,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                             objectValue = customFieldResolver.convertToValue(fieldConfig, resource.getFieldValue().toString());
                             rowMap.put(subResource.getFieldId(), objectValue);
                         } catch (Exception e) {
-                            if (strict) {
-                                throw new GenericException("子字段值解析失败: " + resource.getFieldId(), e);
-                            }
                             log.error("Convert sub field value error: {}", e.getMessage());
-                        }
-                        if (objectValue == null && strict) {
-                            throw new GenericException("子字段值解析结果为空: " + resource.getFieldId());
                         }
                         if (objectValue == null || !SourceDetailResolveContext.getSourceMap().containsKey(objectValue.toString())) {
                             return;
