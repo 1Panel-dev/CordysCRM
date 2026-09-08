@@ -98,6 +98,8 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
     private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999");
     protected Map<String, BaseField> priceSubRefFieldMap = new HashMap<>();
 
+    private final List<String> subFields = new ArrayList<>();
+
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg, String importType) {
         this(fields, sourceTable, fieldTable, currentOrg, null, null, importType);
     }
@@ -255,29 +257,46 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private void validateRowData(Integer rowIndex, Map<Integer, String> rowData, String sourceId) {
         StringBuilder errText = new StringBuilder();
-        checkHeadMap.forEach((k, v) -> {
+        headMap.forEach((k, v) -> {
             if (!isValidateCell(rowIndex, k)) {
                 return;
             }
             if (Strings.CI.equals("唯一ID", v) && Strings.CI.equals(importType, ImportType.UPDATE.name()) && StringUtils.isBlank(sourceId)) {
-                errText.append(v).append(Translator.get("cannot_be_null")).append(";");
+                errText.append(checkHeadMap.get(k)).append(Translator.get("cannot_be_null")).append(";");
             }
             if (Strings.CI.equals("唯一ID", v) && Strings.CI.equals(importType, ImportType.UPDATE.name()) && StringUtils.isNotBlank(sourceId)) {
-                checkId(v, sourceId, errText);
+                checkId(checkHeadMap.get(k), sourceId, errText);
             }
 
             if (requires.contains(v) && StringUtils.isEmpty(rowData.get(k))) {
-                errText.append(v).append(Translator.get("cannot_be_null")).append(";");
+                if (subFields.contains(v)) {
+                    errText.append(v).append(Translator.get("cannot_be_null")).append(";");
+                } else {
+                    errText.append(checkHeadMap.get(k)).append(Translator.get("cannot_be_null")).append(";");
+                }
+
             }
             if (uniques.containsKey(v) && !checkFieldValUnique(rowData.get(k), uniques.get(v), sourceId)) {
-                errText.append(v).append(Translator.get("cell.not.unique")).append(";");
+                if (subFields.contains(v)) {
+                    errText.append(v).append(Translator.get("cell.not.unique")).append(";");
+                } else {
+                    errText.append(checkHeadMap.get(k)).append(Translator.get("cell.not.unique")).append(";");
+                }
             }
             if (fieldLenLimit.containsKey(v) && StringUtils.isNotEmpty(rowData.get(k)) &&
                     rowData.get(k).length() > fieldLenLimit.get(v)) {
-                errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
+                if (subFields.contains(v)) {
+                    errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
+                } else {
+                    errText.append(checkHeadMap.get(k)).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
+                }
             }
             if (numberMax.containsKey(v) && checkNumberMax(rowData.get(k), numberMax.get(v))) {
-                errText.append(v).append(Translator.getWithArgs("exceed.max", numberMax.get(v))).append(";");
+                if (subFields.contains(v)) {
+                    errText.append(v).append(Translator.getWithArgs("exceed.max", numberMax.get(v))).append(";");
+                } else {
+                    errText.append(checkHeadMap.get(k)).append(Translator.getWithArgs("exceed.max", numberMax.get(v))).append(";");
+                }
             }
 
         });
@@ -415,20 +434,23 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private void setCheckLimit(BaseField field, String subFieldName) {
         if (field.needRequireCheck()) {
-            requires.add(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName());
+            requires.add(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName() + "_" + field.getName());
         }
         if (field.needRepeatCheck()) {
-            uniques.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), field);
+            uniques.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName() + "_" + field.getName(), field);
         }
         if (Strings.CS.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name())) {
-            fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), 255);
+            fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName() + "_" + field.getName(), 255);
         }
         if (Strings.CS.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(), FieldType.RADIO.name(),
                 FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name(), FieldType.INDUSTRY.name())) {
-            fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), 255);
+            fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName() + "_" + field.getName(), 255);
         }
         if (Strings.CS.equals(field.getType(), FieldType.TEXTAREA.name())) {
-            fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), 3000);
+            fieldLenLimit.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName() + "_" + field.getName(), 3000);
+        }
+        if (StringUtils.isNotEmpty(subFieldName)) {
+            subFields.add(subFieldName + "_" + field.getName());
         }
     }
 
