@@ -271,6 +271,8 @@ export const {
   batchVoided,
   batchUpdateQuotation,
   downloadQuotation,
+  saveOptAdvanceConfig,
+  switchOptCirculationType,
 } = opportunityApi;
 
 export const {

@@ -37,6 +37,8 @@ export const GetOpportunityStageConfigUrl = '/opportunity/stage/get'; // 获取�
 export const DeleteOpportunityStageUrl = '/opportunity/stage/delete'; // 删除商机阶段
 export const GenerateOpportunityChartUrl = '/opportunity/chart'; // 生成商机视图
 export const GetQuotationTabUrl = '/opportunity/quotation/tab'; // 报价tab显隐
+export const SaveOpportunityStageAdvancedConfigUrl = '/opportunity/stage/advanced/config'; // 商机高级流转配置
+export const SwitchOpportunityCirculationTypeUrl = '/opportunity/stage/circulation-type'; // 商机基础/高级流转配置切换
 
 // 商机视图
 export const GetBusinessViewDetailUrl = '/opportunity/view/detail';
@@ -74,7 +76,6 @@ export const BatchVoidedUrl = '/opportunity/quotation/batch/voided';
 export const BatchUpdateQuotationUrl = '/opportunity/quotation/batch/update';
 export const GetQuotationSnapshotFormConfigUrl = '/opportunity/quotation/module/form/snapshot';
 export const DownloadQuotationUrl = '/opportunity/quotation/download';
-
 
 // 导入
 export const PreCheckOptImportUrl = '/opportunity/import/pre-check';
