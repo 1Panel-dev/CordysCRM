@@ -84,8 +84,8 @@ export interface UpdateStageBaseParams {
   name: string;
 }
 
-export interface UpdateOpportunityStageParams {
-  rate: string;
+export interface UpdateOpportunityStageParams extends UpdateStageParams {
+  rate?: string;
 }
 
 export interface UpdateOpportunityStageRollbackParams {
@@ -199,6 +199,7 @@ export interface CirculationFieldValueItem {
   fieldValue: any;
   required: boolean;
   valueType: CirculationValueTypeEnum;
+  dateDefaultType?: 'custom' | 'current';
   // 前端渲染使用
   fieldProps?: FormCreateField;
 }

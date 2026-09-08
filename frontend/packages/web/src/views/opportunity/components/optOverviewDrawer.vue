@@ -34,6 +34,7 @@
     <template #rightTop>
       <CrmWorkflowCard
         v-model:stage="currentStatus"
+        :formKey="FormDesignKeyEnum.BUSINESS"
         :show-confirm-status="true"
         class="mb-[16px]"
         :stageConfig="stageConfig"

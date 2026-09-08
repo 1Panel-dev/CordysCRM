@@ -53,35 +53,8 @@
               </CrmBatchForm>
             </div>
           </div>
-          <div v-if="props.type === FormDesignKeyEnum.BUSINESS" class="bg-[var(--text-n10)] p-[24px]">
-            <div class="mb-[16px] mt-[24px]">
-              {{ textConfig.rollbackTitle }}
-            </div>
-            <div
-              v-for="item in textConfig.switches"
-              :key="item.key"
-              :class="[item.key === 'completedStageRollback' ? 'mt-[16px]' : '', 'flex items-center gap-[8px]']"
-            >
-              <n-switch v-model:value="form[item.key]" @update-value="handleSwitchChange" />
-              {{ item.label }}
-              <n-tooltip trigger="hover" placement="right">
-                <template #trigger>
-                  <CrmIcon
-                    type="iconicon_help_circle"
-                    :size="16"
-                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
-                  />
-                </template>
-                {{ item.tip }}
-              </n-tooltip>
-            </div>
-          </div>
         </n-tab-pane>
-        <n-tab-pane
-          v-if="props.type !== FormDesignKeyEnum.BUSINESS"
-          name="flowConfiguration"
-          :tab="t('crmStatusConfigDrawer.flowConfiguration')"
-        >
+        <n-tab-pane name="flowConfiguration" :tab="t('crmStatusConfigDrawer.flowConfiguration')">
           <div class="bg-[var(--text-n10)] p-[24px]">
             <div class="flex items-center justify-between">
               <n-tabs
@@ -144,7 +117,13 @@
       </n-tabs>
     </div>
   </CrmDrawer>
-  <CrmModal v-model:show="flowSettingVisible" :mask-closable="false" @cancel="handleCancel" @confirm="handleConfirm">
+  <CrmModal
+    v-model:show="flowSettingVisible"
+    :mask-closable="false"
+    size="large"
+    @cancel="handleCancel"
+    @confirm="handleConfirm"
+  >
     <template #title>
       <div class="flex items-center gap-[8px]">
         {{ t('crmStatusConfigDrawer.flowSetting') }}
@@ -205,20 +184,37 @@
               class="block flex-1 overflow-hidden"
             >
               <template v-if="item.fieldProps">
-                <n-date-picker
+                <n-input-group
                   v-if="[FieldTypeEnum.TIME_RANGE_PICKER, FieldTypeEnum.DATE_TIME].includes(item.fieldProps.type)"
-                  v-model:value="item.fieldValue"
-                  type="datetime"
-                  clearable
-                  :disabled="item.valueType === CirculationValueTypeEnum.FIELD_VALUE"
-                  class="w-full"
-                  :default-time="undefined"
-                  :placeholder="
-                    item.valueType === CirculationValueTypeEnum.FIELD_VALUE
-                      ? t('crmStatusConfigDrawer.fieldDefaultValueTip')
-                      : t('common.pleaseInput')
-                  "
-                />
+                >
+                  <n-select
+                    v-if="item.valueType === CirculationValueTypeEnum.FIXED_VALUE"
+                    v-model:value="item.dateDefaultType"
+                    :options="[
+                      {
+                        label: t('crmFormDesign.custom'),
+                        value: 'custom',
+                      },
+                      {
+                        label: t('crmFormDesign.currentTime'),
+                        value: 'current',
+                      },
+                    ]"
+                    class="w-[150px]"
+                    @update-value="() => item.fieldValue === ''"
+                  />
+                  <n-date-picker
+                    v-model:value="item.fieldValue"
+                    type="datetime"
+                    clearable
+                    :disabled="
+                      item.valueType === CirculationValueTypeEnum.FIELD_VALUE || item.dateDefaultType === 'current'
+                    "
+                    class="w-full"
+                    :default-time="undefined"
+                    :placeholder="getDatePickerPlaceholder(item)"
+                  />
+                </n-input-group>
                 <CrmInputNumber
                   v-else-if="[FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA].includes(item.fieldProps.type)"
                   v-model:value="item.fieldValue"
@@ -410,6 +406,7 @@
     NFormItem,
     NIcon,
     NInput,
+    NInputGroup,
     NSelect,
     NSwitch,
     NTabPane,
@@ -421,7 +418,7 @@
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { CirculationTypeEnum, CirculationValueTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
@@ -566,7 +563,7 @@
       form.value.advancedConfigs = arr.map((e) => ({
         ...e,
         originId: e.id!,
-        targets: form.value.advancedConfigs.find((ac) => ac.originId === e.id)?.targets || [
+        targets: form.value.advancedConfigs?.find((ac) => ac.originId === e.id)?.targets || [
           {
             targetId: e.id!,
             circulationFieldValues: [],
@@ -896,9 +893,20 @@
         fieldValue: undefined,
         valueType: CirculationValueTypeEnum.FIELD_VALUE,
         required: false,
+        dateDefaultType: 'custom',
       };
       tempForm.value.circulationFieldValues.push(item);
     });
+  }
+
+  function getDatePickerPlaceholder(item: CirculationFieldValueItem) {
+    if (item.valueType === CirculationValueTypeEnum.FIELD_VALUE) {
+      return t('crmStatusConfigDrawer.fieldDefaultValueTip');
+    }
+    if (item.dateDefaultType === 'current') {
+      return t('crmFormDesign.currentTime');
+    }
+    return t('common.pleaseInput');
   }
 </script>
 

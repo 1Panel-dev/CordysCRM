@@ -15,10 +15,12 @@ import {
   getOrderStatusConfig,
   saveAdvanceConfig,
   saveContractAdvanceConfig,
+  saveOptAdvanceConfig,
   sortContractStatus,
   sortOpportunityStage,
   sortOrderStatus,
   switchContractCirculationType,
+  switchOptCirculationType,
   switchOrderCirculationType,
   updateContractStatus,
   updateContractStatusRollback,
@@ -270,7 +272,7 @@ export function useStatusStrategyConfig(): Record<StatusBizType, StatusStrategyC
 }
 
 export const flowApiMap = {
-  [FormDesignKeyEnum.BUSINESS]: { switch: () => ({}), save: () => ({}) },
+  [FormDesignKeyEnum.BUSINESS]: { switch: switchOptCirculationType, save: saveOptAdvanceConfig },
   [FormDesignKeyEnum.ORDER]: {
     switch: switchOrderCirculationType,
     save: saveAdvanceConfig,
