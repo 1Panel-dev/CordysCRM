@@ -2,7 +2,6 @@ package cn.cordys.crm.approval.controller;
 
 import cn.cordys.common.pager.Pager;
 import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
-import cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
 import cn.cordys.crm.approval.service.ApprovalTodoService;
 import cn.cordys.security.SessionUtils;
@@ -13,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/approval-todo")
@@ -47,8 +47,8 @@ public class ApprovalTodoController {
     }
 
     @GetMapping("/pending/count")
-    @Operation(summary = "审核代办-待我审批统计")
-    public ApprovalTodoCountResponse pendingCount() {
+    @Operation(summary = "审核代办-待我审批统计", description = "返回值：key 与 getFlowFormOptions 保持一致（标准表单为 quotation/contract/order/invoice，自定义表单为 customFormId），value 为对应待审批数量")
+    public Map<String, Integer> pendingCount() {
         return approvalTodoService.getPendingCount(SessionUtils.getUserId());
     }
 }
