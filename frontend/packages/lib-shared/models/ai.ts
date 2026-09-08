@@ -112,6 +112,7 @@ export interface AgentConversationItem {
   organizationId?: string;
   userId?: string;
   title: string;
+  localPending?: boolean;
 }
 
 export type AgentConversationPageResult = CommonList<AgentConversationItem>;

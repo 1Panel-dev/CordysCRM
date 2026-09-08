@@ -27,7 +27,7 @@
       >
         <van-empty v-if="items.length === 0 && !loading" :description="t('aiChat.noConversation')" />
 
-        <van-swipe-cell v-for="item in items" :key="item.id">
+        <van-swipe-cell v-for="item in items" :key="item.id" :disabled="item.localPending">
           <div
             class="flex items-center gap-[8px] px-[16px] py-[12px]"
             :class="{ '!bg-[var(--primary-7)]': activeId === item.id }"
@@ -48,7 +48,7 @@
               <span class="min-w-0 flex-1 truncate">{{ item.title }}</span>
             </div>
           </div>
-          <template #right>
+          <template v-if="!item.localPending" #right>
             <van-button square type="primary" class="h-full" @click="openRename(item)">
               {{ t('aiChat.renameConversation') }}
             </van-button>
