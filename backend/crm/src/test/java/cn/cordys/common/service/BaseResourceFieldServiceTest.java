@@ -1,7 +1,6 @@
 package cn.cordys.common.service;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
-import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.domain.CustomFormData;
@@ -21,9 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -99,7 +96,7 @@ class BaseResourceFieldServiceTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void singleResourceReadIsStrictWhileListReadRemainsTolerant() {
+    void singleResourceReadRemainsTolerant() {
         BaseMapper<CustomFormDataField> fieldMapper = mock(BaseMapper.class);
         BaseMapper<CustomFormDataFieldBlob> blobMapper = mock(BaseMapper.class);
         ModuleFormService moduleFormService = mock(ModuleFormService.class);
@@ -122,22 +119,19 @@ class BaseResourceFieldServiceTest {
 
         when(moduleFormService.getFlattenFormFields("form-1", "org-1"))
                 .thenReturn(List.of());
-        assertThrows(GenericException.class,
-                () -> service.getModuleFieldValuesByResourceId("record-1"));
-        assertDoesNotThrow(() -> service.getResourceFieldMap(List.of("record-1"), true));
+        assertEquals(List.of(), service.getModuleFieldValuesByResourceId("record-1"));
+        assertEquals(0, service.getResourceFieldMap(List.of("record-1"), true).size());
 
         InputNumberField numberField = new InputNumberField();
         numberField.setId("number-field");
         numberField.setType("INPUT_NUMBER");
         when(moduleFormService.getFlattenFormFields("form-1", "org-1"))
                 .thenReturn(List.of(numberField));
-        assertThrows(GenericException.class,
-                () -> service.getModuleFieldValuesByResourceId("record-1"));
+        assertEquals(List.of(), service.getModuleFieldValuesByResourceId("record-1"));
 
         when(fieldMapper.selectListByLambda(any())).thenReturn(List.of());
         when(blobMapper.selectListByLambda(any()))
                 .thenThrow(new IllegalStateException("blob read failed"));
-        assertThrows(IllegalStateException.class,
-                () -> service.getModuleFieldValuesByResourceId("record-1"));
+        assertEquals(List.of(), service.getModuleFieldValuesByResourceId("record-1"));
     }
 }
