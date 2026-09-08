@@ -136,6 +136,7 @@
     id: string;
     title: string;
     active?: boolean;
+    localPending?: boolean;
   }
 
   const props = withDefaults(
@@ -212,14 +213,14 @@
     },
   ];
 
-  function getHistoryMoreActions(item: Record<string, unknown>): ActionsItem[] {
-    return editingHistoryId.value === item.id ? [] : historyMoreActions;
-  }
-
   const runningHistoryIdSet = computed(() => new Set(props.runningHistoryIds));
 
   function isHistoryRunning(id: unknown): boolean {
     return runningHistoryIdSet.value.has(String(id));
+  }
+
+  function getHistoryMoreActions(item: Record<string, unknown>): ActionsItem[] {
+    return editingHistoryId.value === item.id || item.localPending ? [] : historyMoreActions;
   }
 
   function handleHistoryClick(item: Record<string, unknown>): void {

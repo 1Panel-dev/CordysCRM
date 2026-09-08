@@ -31,11 +31,7 @@ interface AgentChatWorkbenchApis {
       onSession: (sessionId: string, conversationId?: string) => void;
     }
   ) => AsyncIterable<AgentChatStreamEvent>;
-  cancelAgentChat: (data: {
-    conversationId?: string;
-    sessionId?: string;
-    requestId: string;
-  }) => Promise<unknown>;
+  cancelAgentChat: (data: { conversationId?: string; sessionId?: string; requestId: string }) => Promise<unknown>;
   confirmAgentChat: (dialogId: string, request: AgentChatConfirmRequest) => Promise<unknown>;
   getAgentConversationPage: (data: {
     current: number;
@@ -190,6 +186,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     return {
       id: entry.conversationId,
       title: getRuntimeHistoryTitle(entry),
+      localPending: true,
     };
   }
 
@@ -218,6 +215,23 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     });
 
     return mergedList;
+  }
+
+  function mergeHistoryItems(
+    currentList: AgentConversationItem[],
+    nextList: AgentConversationItem[]
+  ): AgentConversationItem[] {
+    return [...currentList, ...nextList].reduce<AgentConversationItem[]>((result, item) => {
+      const index = result.findIndex((historyItem) => historyItem.id === item.id);
+
+      if (index === -1) {
+        result.push(item);
+      } else if (result[index].localPending && !item.localPending) {
+        result[index] = item;
+      }
+
+      return result;
+    }, []);
   }
 
   function upsertRuntimeHistoryItem(entry: ConversationRuntimeEntry): void {
@@ -264,11 +278,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       });
       const list = mergeLocalRunningHistoryItems(res.list ?? []);
 
-      historyItems.value = reset
-        ? list
-        : [...historyItems.value, ...list].filter(
-            (item, index, self) => self.findIndex((historyItem) => historyItem.id === item.id) === index
-          );
+      historyItems.value = reset ? list : mergeHistoryItems(historyItems.value, list);
       historyNoMore.value = historyItems.value.length >= (res.total ?? 0);
       historyCurrent.value += 1;
     } catch (error) {
