@@ -11,6 +11,7 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.formula.FormulaRequestCompletionService;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -82,6 +83,8 @@ public class CustomFormDataService {
     private BaseMapper<CustomFormRoleUser> customFormRoleUserMapper;
     @Resource
     private CustomFormDataFieldService customFormDataFieldService;
+    @Resource
+    private FormulaRequestCompletionService formulaRequestCompletionService;
     @Resource
     private CustomFormService customFormService;
     @Resource
@@ -261,11 +264,18 @@ public class CustomFormDataService {
     public CustomFormData add(CustomFormDataAddRequest request, String userId, String orgId) {
         checkCreatePermission(getManageDataScope(request.getCustomFormId(), userId));
 
+        if (StringUtils.isBlank(request.getOwner())) {
+            request.setOwner(userId);
+        }
+        formulaRequestCompletionService.completeAuthoritative(
+                request.getCustomFormId(), request, true);
+        validateCalculatedName(request.getName());
+
         CustomFormData data = new CustomFormData();
         data.setId(IDGenerator.nextStr());
         data.setCustomFormId(request.getCustomFormId());
         data.setName(request.getName());
-        data.setOwner(StringUtils.isNotBlank(request.getOwner()) ? request.getOwner() : userId);
+        data.setOwner(request.getOwner());
         data.setOrganizationId(orgId);
         data.setCreateTime(System.currentTimeMillis());
         data.setUpdateTime(System.currentTimeMillis());
@@ -301,9 +311,24 @@ public class CustomFormDataService {
         if (originData == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
+        validateCustomFormId(originData.getCustomFormId(), request.getCustomFormId());
 
         CustomFormRoleKey dataScope = getManageDataScope(originData.getCustomFormId(), userId);
         checkWritePermission(dataScope, originData.getCreateUser(), userId);
+
+        if (request.getName() == null) {
+            request.setName(originData.getName());
+        }
+        if (request.getOwner() == null) {
+            request.setOwner(originData.getOwner());
+        }
+        List<BaseModuleFieldValue> originFields = customFormDataFieldService
+                .getModuleFieldValuesByResourceIdStrict(request.getId());
+        request.setModuleFields(mergeModuleFields(
+                originFields, request.getModuleFields()));
+        formulaRequestCompletionService.completeAuthoritative(
+                originData.getCustomFormId(), request, false);
+        validateCalculatedName(request.getName());
 
         CustomFormData updateData = new CustomFormData();
         updateData.setId(request.getId());
@@ -318,7 +343,6 @@ public class CustomFormDataService {
         try {
             ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(originData.getCustomFormId(), orgId);
             if (request.getModuleFields() != null) {
-                List<BaseModuleFieldValue> originFields = customFormDataFieldService.getModuleFieldValuesByResourceId(request.getId());
                 // 过滤掉引用字段（显示字段），这些字段不需要参与日志对比
                 List<BaseModuleFieldValue> logOriginFields = filterRefFields(originFields);
                 List<BaseModuleFieldValue> logModifiedFields = filterRefFields(request.getModuleFields());
@@ -332,6 +356,63 @@ public class CustomFormDataService {
             }
         } finally {
             CustomFormDataFieldService.clearFormKey();
+        }
+    }
+
+    static void validateCustomFormId(String actualFormId, String requestedFormId) {
+        if (!Objects.equals(actualFormId, requestedFormId)) {
+            throw new GenericException(
+                    CrmHttpResultCode.VALIDATE_FAILED,
+                    Translator.get("custom.form.data.form.not.match"));
+        }
+    }
+
+    static List<BaseModuleFieldValue> mergeModuleFields(
+            List<BaseModuleFieldValue> originFields,
+            List<BaseModuleFieldValue> requestedFields
+    ) {
+        Map<String, BaseModuleFieldValue> merged = new LinkedHashMap<>();
+        putModuleFields(merged, originFields);
+        putModuleFields(merged, requestedFields);
+        return new ArrayList<>(merged.values());
+    }
+
+    private static void putModuleFields(
+            Map<String, BaseModuleFieldValue> target,
+            List<BaseModuleFieldValue> values
+    ) {
+        if (values == null) {
+            return;
+        }
+        for (BaseModuleFieldValue value : values) {
+            if (value == null || StringUtils.isBlank(value.getFieldId())) {
+                throw new GenericException(
+                        CrmHttpResultCode.VALIDATE_FAILED,
+                        Translator.get("custom.form.data.field.id.not.blank"));
+            }
+            target.put(value.getFieldId(), new BaseModuleFieldValue(
+                    value.getFieldId(), deepCopyFieldValue(value.getFieldValue())));
+        }
+    }
+
+    private static Object deepCopyFieldValue(Object value) {
+        if (value == null) {
+            return null;
+        }
+        return cn.cordys.common.util.JSON.parseObject(
+                cn.cordys.common.util.JSON.toJSONString(value));
+    }
+
+    static void validateCalculatedName(String name) {
+        if (StringUtils.isBlank(name)) {
+            throw new GenericException(
+                    CrmHttpResultCode.VALIDATE_FAILED,
+                    Translator.get("custom.form.data.name.not.blank"));
+        }
+        if (name.length() > 255) {
+            throw new GenericException(
+                    CrmHttpResultCode.VALIDATE_FAILED,
+                    Translator.get("custom.form.data.name.length.exceed"));
         }
     }
 

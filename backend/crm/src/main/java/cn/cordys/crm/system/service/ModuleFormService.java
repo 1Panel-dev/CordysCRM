@@ -420,6 +420,9 @@ public class ModuleFormService {
         example.setFormKey(formKey);
         example.setOrganizationId(orgId);
         ModuleForm moduleForm = moduleFormMapper.selectOne(example);
+        if (moduleForm == null) {
+            throw new GenericException(Translator.get("module.form.not_exist"));
+        }
         List<BaseField> allFields = getAllFields(moduleForm.getId());
 
         // 提前加载价格表子表格字段作为引用集合

@@ -47,7 +47,8 @@ public class FormulaRequestBodyAdvice extends RequestBodyAdviceAdapter {
     ) {
         FormulaRequest request = resolveRequest(inputMessage);
         if (request != null) {
-            completionService.complete(request.formKey(), body, request.createMode());
+            completionService.completeAuthoritative(
+                    request.formKey(), body, request.createMode());
         }
         return body;
     }

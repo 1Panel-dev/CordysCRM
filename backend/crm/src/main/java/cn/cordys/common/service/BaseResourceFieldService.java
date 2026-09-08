@@ -162,6 +162,16 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
+     * 读取整量更新所需的完整旧值。解码或 Schema 对齐失败时直接抛错，
+     * 避免调用方把容错返回的空集合当成真实旧值后全量覆盖。
+     */
+    public List<BaseModuleFieldValue> getModuleFieldValuesByResourceIdStrict(String resourceId) {
+        List<BaseModuleFieldValue> fieldValues = getResourceFieldMap(
+                List.of(resourceId), true, true).get(resourceId);
+        return fieldValues == null ? new ArrayList<>(0) : fieldValues;
+    }
+
+    /**
      * 保存字段值
      *
      * @param resource          资源
@@ -415,6 +425,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
+        return getResourceFieldMap(resourceIds, withBlob, false);
+    }
+
+    private Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(
+            List<String> resourceIds,
+            boolean withBlob,
+            boolean failOnReadError
+    ) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return new HashMap<>(2);
         }
@@ -444,6 +462,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         resourceField.setFieldValue(objectValue);
                     } catch (Exception e) {
                         log.error("Convert field value error: {}", e.getMessage());
+                        if (failOnReadError) {
+                            throw new IllegalStateException(
+                                    "解析完整旧字段值失败: " + resourceField.getFieldId(), e);
+                        }
                     }
 
                     if (objectValue == null) {
@@ -501,6 +523,12 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             return resourceMap;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            if (failOnReadError) {
+                if (e instanceof RuntimeException runtimeException) {
+                    throw runtimeException;
+                }
+                throw new IllegalStateException("读取完整资源字段失败", e);
+            }
             return new HashMap<>(2);
         } finally {
             SourceDetailResolveContext.end();

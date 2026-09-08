@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * 在 Jakarta Bean Validation 之前补全写请求中的公式字段。
+ * 使用当前组织的实时表单补全或权威重算写请求中的公式字段。
  *
  * <p>公式始终取服务端当前组织的实时表单，而不是信任客户端随请求传入的表单快照。
  * 请求 DTO 只需沿用既有业务属性和 {@code moduleFields}，不增加任何给 AI 生成的参数。</p>
@@ -35,13 +36,24 @@ public class FormulaRequestCompletionService {
     }
 
     public void complete(String formKey, Object request) {
-        complete(formKey, request, true);
+        completeAuthoritative(formKey, request, true);
     }
 
     /**
      * 根据请求类型补全公式字段。更新时使用已提交的真实流水号值，不生成新增占位符。
      */
     public void complete(String formKey, Object request, boolean createMode) {
+        completeAuthoritative(formKey, request, createMode);
+    }
+
+    /**
+     * 不信任请求中已有的公式结果，按实时表单权威覆盖全部公式字段。
+     */
+    public void completeAuthoritative(
+            String formKey,
+            Object request,
+            boolean createMode
+    ) {
         if (request == null) {
             return;
         }
@@ -53,18 +65,21 @@ public class FormulaRequestCompletionService {
 
         BeanWrapper requestValues = new BeanWrapperImpl(request);
         Map<String, BaseModuleFieldValue> moduleFieldMap = moduleFieldMap(requestValues);
-        formulaCompletionService.completeMissing(
-                fields,
-                moduleFieldMap,
-                createMode,
+        formulaCompletionService.complete(
+                fields, moduleFieldMap, createMode,
                 readableValue(requestValues),
-                (businessKey, value) -> {
-                    if (requestValues.isWritableProperty(businessKey)) {
-                        requestValues.setPropertyValue(businessKey, value);
-                    }
-                }
-        );
+                businessValueWriter(requestValues));
         writeModuleFields(requestValues, moduleFieldMap);
+    }
+
+    private BiConsumer<String, Object> businessValueWriter(
+            BeanWrapper requestValues
+    ) {
+        return (businessKey, value) -> {
+            if (requestValues.isWritableProperty(businessKey)) {
+                requestValues.setPropertyValue(businessKey, value);
+            }
+        };
     }
 
     private Function<String, Object> readableValue(BeanWrapper requestValues) {

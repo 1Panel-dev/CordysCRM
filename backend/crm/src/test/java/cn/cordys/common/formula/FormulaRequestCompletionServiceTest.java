@@ -2,8 +2,12 @@ package cn.cordys.common.formula;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.util.JSON;
+import cn.cordys.crm.form.dto.request.CustomFormDataAddRequest;
+import cn.cordys.crm.form.dto.request.CustomFormDataUpdateRequest;
 import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationAddRequest;
+import cn.cordys.crm.system.dto.field.FormulaField;
 import cn.cordys.crm.system.dto.field.InputField;
+import cn.cordys.crm.system.dto.field.InputNumberField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.service.ModuleFormService;
@@ -16,6 +20,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 class FormulaRequestCompletionServiceTest {
 
     @Test
@@ -48,7 +53,7 @@ class FormulaRequestCompletionServiceTest {
     }
 
     @Test
-    void preservesFormulaValueAlreadyCalculatedByFrontend() {
+    void overwritesFormulaValueAlreadyCalculatedByFrontend() {
         SerialNumberField quotationNumber = field(
                 new SerialNumberField(), "quotationNumber", "报价编号", "SERIAL_NUMBER");
         quotationNumber.setBusinessKey("number");
@@ -72,7 +77,7 @@ class FormulaRequestCompletionServiceTest {
 
         service.complete("quotation", request, false);
 
-        assertEquals("前端已计算的公式值", request.getName());
+        assertEquals("Q-BJ0001", request.getName());
     }
 
     @Test
@@ -126,6 +131,111 @@ class FormulaRequestCompletionServiceTest {
         service.complete("quotation", request, false);
 
         assertEquals("Q-", request.getName());
+    }
+
+    @Test
+    void calculatesFormulaForDynamicCustomFormUpdate() {
+        InputNumberField amount = field(
+                new InputNumberField(), "amount", "金额", "INPUT_NUMBER");
+        FormulaField total = field(
+                new FormulaField(), "total", "合计", "FORMULA");
+        total.setFormulaResultFormat("number");
+        total.setFormula(formula(Map.of(
+                "type", "binary",
+                "operator", "*",
+                "left", fieldNode("amount"),
+                "right", literal(2, "number"))));
+        ModuleFormService moduleFormService = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String formKey, String organizationId) {
+                assertEquals("custom-form-1", formKey);
+                return List.of(amount, total);
+            }
+        };
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                moduleFormService, new FormulaCompletionService(new FormulaEngine()));
+        CustomFormDataUpdateRequest request = new CustomFormDataUpdateRequest();
+        request.setCustomFormId("custom-form-1");
+        request.setModuleFields(new ArrayList<>(List.of(
+                new BaseModuleFieldValue("amount", 7))));
+
+        service.complete("custom-form-1", request, false);
+
+        assertEquals(14D, request.getModuleFields().stream()
+                .filter(value -> "total".equals(value.getFieldId()))
+                .findFirst()
+                .orElseThrow()
+                .getFieldValue());
+    }
+
+    @Test
+    void calculatesFormulaForDynamicCustomFormAdd() {
+        InputNumberField amount = field(
+                new InputNumberField(), "amount", "金额", "INPUT_NUMBER");
+        FormulaField total = field(
+                new FormulaField(), "total", "合计", "FORMULA");
+        total.setFormulaResultFormat("number");
+        total.setFormula(formula(Map.of(
+                "type", "binary",
+                "operator", "*",
+                "left", fieldNode("amount"),
+                "right", literal(2, "number"))));
+        ModuleFormService moduleFormService = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String formKey, String organizationId) {
+                assertEquals("custom-form-1", formKey);
+                return List.of(amount, total);
+            }
+        };
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                moduleFormService, new FormulaCompletionService(new FormulaEngine()));
+        CustomFormDataAddRequest request = new CustomFormDataAddRequest();
+        request.setCustomFormId("custom-form-1");
+        request.setModuleFields(new ArrayList<>(List.of(
+                new BaseModuleFieldValue("amount", 7))));
+
+        service.complete("custom-form-1", request, true);
+
+        assertEquals(14D, request.getModuleFields().stream()
+                .filter(value -> "total".equals(value.getFieldId()))
+                .findFirst()
+                .orElseThrow()
+                .getFieldValue());
+    }
+
+    @Test
+    void overwritesDynamicCustomFormFormulaAlreadyCalculatedByFrontend() {
+        InputNumberField amount = field(
+                new InputNumberField(), "amount", "金额", "INPUT_NUMBER");
+        FormulaField total = field(
+                new FormulaField(), "total", "合计", "FORMULA");
+        total.setFormulaResultFormat("number");
+        total.setFormula(formula(Map.of(
+                "type", "binary",
+                "operator", "*",
+                "left", fieldNode("amount"),
+                "right", literal(2, "number"))));
+        ModuleFormService moduleFormService = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String formKey, String organizationId) {
+                return List.of(amount, total);
+            }
+        };
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                moduleFormService, new FormulaCompletionService(new FormulaEngine()));
+        CustomFormDataUpdateRequest request = new CustomFormDataUpdateRequest();
+        request.setCustomFormId("custom-form-1");
+        request.setModuleFields(new ArrayList<>(List.of(
+                new BaseModuleFieldValue("amount", 7),
+                new BaseModuleFieldValue("total", 99))));
+
+        service.complete("custom-form-1", request, false);
+
+        assertEquals(14D, request.getModuleFields().stream()
+                .filter(value -> "total".equals(value.getFieldId()))
+                .findFirst()
+                .orElseThrow()
+                .getFieldValue());
     }
 
     public static class FormulaUpdateRequest {
