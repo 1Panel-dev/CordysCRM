@@ -130,7 +130,6 @@
         comment: addSignForm.value.reason,
         attachmentIds: addSignForm.value.fileList,
         type: addSignForm.value.type,
-        module: 'WORKBENCH',
         signApprover: addSignForm.value.reviewer,
       });
       showToast({

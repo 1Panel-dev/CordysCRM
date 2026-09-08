@@ -1293,7 +1293,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function initFormConfig() {
     try {
       loading.value = true;
-      const api = props.isDatasource ? getDatasourceFieldConfig : getFormConfigApiMap[props.formKey.value];
+      const isCustomFormApprovalDetail =
+        props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM && Boolean(props.otherSaveParams?.value?.approvalTaskId);
+      const api =
+        props.isDatasource || isCustomFormApprovalDetail
+          ? getDatasourceFieldConfig
+          : getFormConfigApiMap[props.formKey.value];
       if (props.formKey.value === FormDesignKeyEnum.CUSTOM_FORM) {
         const res = await api(props.customFormId?.value ?? '');
         moduleFormConfig.value = cloneDeep(res);
