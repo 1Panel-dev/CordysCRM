@@ -219,6 +219,9 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
         }
         atLeastOne = true;
         Integer rowIndex = context.readRowHolder().getRowIndex();
+        if (key != null && mergeRowDataMap != null && mergeRowDataMap.containsKey(rowIndex) && mergeRowDataMap.get(rowIndex).containsKey(key)) {
+            sourceId = mergeRowDataMap.get(rowIndex).get(key);
+        }
         validateRowData(rowIndex, data, sourceId);
     }
 
@@ -234,16 +237,21 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private void cacheUniqueSet() {
         if (!uniques.isEmpty()) {
-            uniques.values().forEach(field -> {
-                if (businessFieldMap.containsKey(field.getInternalKey()) && !refSubMap.containsKey(field.getName())) {
-                    // 子表格字段不走业务唯一性校验
-                    BusinessModuleField businessModuleField = businessFieldMap.get(field.getInternalKey());
-                    String fieldName = businessModuleField.getBusinessKey();
-                    List<BaseResourceSubField> valList = commonMapper.getCheckValList(sourceTable, fieldName, currentOrg);
-                    uniqueCheckSet.put(field.getName(), new HashSet<>(valList.stream().distinct().toList()));
+            uniques.forEach((k, v) -> {
+                if (refSubMap.containsKey(k)) {
+                    List<BaseResourceSubField> valList = commonMapper.getCheckFieldValList(sourceTable, fieldTable, v.getId(), currentOrg);
+                    uniqueCheckSet.put(k, new HashSet<>(valList));
                 } else {
-                    List<BaseResourceSubField> valList = commonMapper.getCheckFieldValList(sourceTable, fieldTable, field.getId(), currentOrg);
-                    uniqueCheckSet.put(field.getName(), new HashSet<>(valList));
+                    if (businessFieldMap.containsKey(v.getInternalKey())) {
+                        // 子表格字段不走业务唯一性校验
+                        BusinessModuleField businessModuleField = businessFieldMap.get(v.getInternalKey());
+                        String fieldName = businessModuleField.getBusinessKey();
+                        List<BaseResourceSubField> valList = commonMapper.getCheckValList(sourceTable, fieldName, currentOrg);
+                        uniqueCheckSet.put(v.getName(), new HashSet<>(valList.stream().distinct().toList()));
+                    } else {
+                        List<BaseResourceSubField> valList = commonMapper.getCheckFieldValList(sourceTable, fieldTable, v.getId(), currentOrg);
+                        uniqueCheckSet.put(v.getName(), new HashSet<>(valList));
+                    }
                 }
             });
         }
@@ -276,7 +284,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                 }
 
             }
-            if (uniques.containsKey(v) && !checkFieldValUnique(rowData.get(k), uniques.get(v), sourceId)) {
+            if (uniques.containsKey(v) && !checkFieldValUnique(rowData.get(k), uniques.get(v), sourceId, v)) {
                 if (subFields.contains(v)) {
                     errText.append(v).append(Translator.get("cell.not.unique")).append(";");
                 } else {
@@ -355,7 +363,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * @param field 字段
      * @return 是否唯一
      */
-    private boolean checkFieldValUnique(String val, BaseField field, String sourceId) {
+    private boolean checkFieldValUnique(String val, BaseField field, String sourceId, String v) {
         if (StringUtils.isEmpty(val)) {
             return true;
         }
@@ -366,7 +374,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             return false;
         }
         // 数据库唯一性校验
-        if (Strings.CI.equals(importType, ImportType.ADD.name())) {
+        if (Strings.CI.equals(importType, ImportType.ADD.name()) && !refSubMap.containsKey(v)) {
             Set<BaseResourceSubField> uniqueCheck = uniqueCheckSet.get(field.getName());
             BaseResourceSubField result = uniqueCheck.stream()
                     .filter(item -> item.getFieldValue() != null && Strings.CI.equals(val, item.getFieldValue().toString()))
@@ -379,14 +387,24 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             if (StringUtils.isBlank(sourceId)) {
                 return true;
             }
-            Set<BaseResourceSubField> uniqueCheck = uniqueCheckSet.get(field.getName());
-            BaseResourceSubField result = uniqueCheck.stream()
-                    .filter(item -> !Strings.CI.equals(item.getResourceId(), sourceId) && item.getFieldValue() != null && Strings.CS.equals(val, item.getFieldValue().toString()))
-                    .findFirst()
-                    .orElse(null);
-            return result == null;
+            Set<BaseResourceSubField> uniqueCheck;
+            if (refSubMap.containsKey(v)) {
+                uniqueCheck = uniqueCheckSet.get(v);
+                BaseResourceSubField result = uniqueCheck.stream()
+                        .filter(item -> Strings.CI.equals(item.getResourceId(), sourceId) && item.getFieldValue() != null && Strings.CS.equals(val, item.getFieldValue().toString()))
+                        .findFirst()
+                        .orElse(null);
+                return result == null;
+            } else {
+                uniqueCheck = uniqueCheckSet.get(field.getName());
+                BaseResourceSubField result = uniqueCheck.stream()
+                        .filter(item -> !Strings.CI.equals(item.getResourceId(), sourceId) && item.getFieldValue() != null && Strings.CS.equals(val, item.getFieldValue().toString()))
+                        .findFirst()
+                        .orElse(null);
+                return result == null;
+            }
         }
-        return false;
+        return true;
     }
 
 
