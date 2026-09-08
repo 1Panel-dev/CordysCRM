@@ -50,6 +50,10 @@ public class CustomFormDataLogService extends BaseModuleLogService {
             } else if (column != null && column.contains("-")) {
                 differ.setColumnName(column);
             }
+
+            if (Strings.CI.equals(column, "approvalStatus")) {
+                setApprovalName(differ);
+            }
         }
         return differences;
     }

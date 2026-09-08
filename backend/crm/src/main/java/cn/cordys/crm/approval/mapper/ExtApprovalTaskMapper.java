@@ -2,8 +2,8 @@ package cn.cordys.crm.approval.mapper;
 
 import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
-import cn.cordys.crm.approval.dto.response.ApprovalTodoCountResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
+import cn.cordys.crm.approval.dto.response.ApprovalTodoTypeCount;
 import org.apache.ibatis.annotations.Param;
 
 
@@ -37,10 +37,10 @@ public interface ExtApprovalTaskMapper {
                                                            @Param("keyword") String keyword);
 
     /**
-     * 统计待我审批数量（总数 + 各资源类型）。
+     * 统计待我审批任务按资源类型分组（含自定义表单类型），用于在应用侧汇总各类型数量。
      */
-    ApprovalTodoCountResponse countPendingByApprover(@Param("approverId") String approverId,
-                                                     @Param("pendingStatus") String pendingStatus);
+    java.util.List<ApprovalTodoTypeCount> countPendingGroupByType(@Param("approverId") String approverId,
+                                                                  @Param("pendingStatus") String pendingStatus);
 
     void updateTaskById(@Param("approvalTask") ApprovalTask approvalTask);
 
