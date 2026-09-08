@@ -281,7 +281,7 @@
       } else if (
         [FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.PICTURE].includes(field.type)
       ) {
-        newRow[key] = [];
+        newRow[key] = field.defaultValue || [];
       } else {
         newRow[key] = field.resourceFieldId ? '' : field.defaultValue ?? '';
       }
