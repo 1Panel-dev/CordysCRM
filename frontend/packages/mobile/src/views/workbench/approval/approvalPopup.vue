@@ -127,7 +127,6 @@
           attachmentIds: approvalForm.value.fileList,
           approverId: props.approvingItem?.approvalId!,
           comment: approvalForm.value.reason,
-          module: 'WORKBENCH',
         });
       } else {
         await agreeApproval({
@@ -137,7 +136,6 @@
           attachmentIds: approvalForm.value.fileList,
           approverId: props.approvingItem?.approvalId!,
           comment: approvalForm.value.reason,
-          module: 'WORKBENCH',
         });
       }
       showToast({

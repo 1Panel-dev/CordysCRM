@@ -63,7 +63,9 @@
   async function loadList(refresh = false) {
     if (props.closeInitLoad) return;
     try {
-      list.value = [];
+      if (refresh) {
+        list.value = [];
+      }
       if (!props.loadListApi) {
         list.value = props.transform ? list.value.map((e: any) => props.transform!(e)) : list.value;
         originData.value = list.value;
@@ -102,7 +104,7 @@
       }
       finished.value = props.noPageNation || data.total <= currentPage.value * 20;
       error.value = false;
-      originData.value = cloneDeep(dataList);
+      originData.value = cloneDeep(list.value);
     } catch (_error: any) {
       // eslint-disable-next-line no-console
       console.log(_error);
