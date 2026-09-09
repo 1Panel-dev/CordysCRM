@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * 在 Jakarta Bean Validation 之前补全写请求中的公式字段。
+ * 显式调用的公式请求适配器，仅由 MCP 专用预计算入口使用，不参与 CRM 普通写入生命周期。
  *
  * <p>公式始终取服务端当前组织的实时表单，而不是信任客户端随请求传入的表单快照。
  * 请求 DTO 只需沿用既有业务属性和 {@code moduleFields}，不增加任何给 AI 生成的参数。</p>
@@ -37,6 +37,36 @@ public class FormulaRequestCompletionService {
         this.formulaCompletionService = formulaCompletionService;
     }
 
+    /** MCP 专用预计算：只修改请求副本，不读写业务记录，不挂接 CRM 保存生命周期。 */
+    public Map<String, Object> prepare(String formKey, Map<String, Object> values) {
+        Map<String, Object> result = cn.cordys.common.util.JSON.parseToMap(
+                cn.cordys.common.util.JSON.toJSONString(values));
+        Map<String, BaseModuleFieldValue> moduleFields = new LinkedHashMap<>();
+        if (result.get("moduleFields") instanceof List<?> list) {
+            for (Object item : list) {
+                BaseModuleFieldValue value = cn.cordys.common.util.JSON.parseObject(
+                        cn.cordys.common.util.JSON.toJSONString(item), BaseModuleFieldValue.class);
+                if (value == null || value.getFieldId() == null) {
+                    throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED);
+                }
+                moduleFields.put(value.getFieldId(), value);
+            }
+        }
+        List<BaseField> fields = moduleFormService.getAllFields(formKey, OrganizationContext.getOrganizationId());
+        if (fields == null || fields.isEmpty()) throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED);
+        try {
+            formulaCompletionService.complete(fields, moduleFields, result.get("id") == null,
+                    result::get, result::put);
+        } catch (FormulaEvaluationException e) {
+            GenericException error = new GenericException(CrmHttpResultCode.VALIDATE_FAILED,
+                    Translator.get("formula.calculation.failed"));
+            error.initCause(e);
+            throw error;
+        }
+        result.put("moduleFields", new ArrayList<>(moduleFields.values()));
+        return result;
+    }
+
     public void complete(String formKey, Object request) {
         complete(formKey, request, true);
     }
@@ -48,7 +78,7 @@ public class FormulaRequestCompletionService {
         completeAuthoritative(formKey, request, createMode, OrganizationContext.getOrganizationId());
     }
 
-    /** 动态表单在服务层权限检查后，使用完整记录与实时公式重新计算。 */
+    /** 显式计算适配方法；不由业务保存服务自动调用。 */
     public void completeAuthoritative(String formKey, Object request, boolean createMode, String orgId) {
         completeWithBaseline(formKey, request, createMode, orgId, Map.of());
     }

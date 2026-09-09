@@ -26,13 +26,7 @@ public class FormulaResolver extends AbstractModuleFieldResolver<FormulaField> {
 
     @Override
     public Object convertToValue(FormulaField numberField, String value) {
-        if (value == null || !Strings.CI.equals(numberField.getFormulaResultFormat(), "number")) return value;
-        // 读持久化原值不应用显示精度，也不注入千分位。
-        try {
-            return new BigDecimal(value.replace(",", ""));
-        } catch (NumberFormatException e) {
-            return value; // 数值模式允许公式返回合法文本。
-        }
+        return transformToValue(numberField, value);
     }
 
     @Override
@@ -43,8 +37,9 @@ public class FormulaResolver extends AbstractModuleFieldResolver<FormulaField> {
         try {
             if (Strings.CI.equals(numberField.getFormulaResultFormat(), "number")) {
                 BigDecimal actualDecimal = new BigDecimal(value).stripTrailingZeros();
-                actualDecimal = actualDecimal.setScale(BooleanUtils.isTrue(numberField.getDecimalPlaces())
-                        ? numberField.getPrecision() : 0, RoundingMode.DOWN);
+                if (BooleanUtils.isTrue(numberField.getDecimalPlaces())) {
+                    actualDecimal = actualDecimal.setScale(numberField.getPrecision(), RoundingMode.HALF_UP);
+                }
                 String formatActualVal;
                 if (BooleanUtils.isTrue(numberField.getShowThousandsSeparator())) {
                     formatActualVal = InputNumberField.formatThousands(actualDecimal);

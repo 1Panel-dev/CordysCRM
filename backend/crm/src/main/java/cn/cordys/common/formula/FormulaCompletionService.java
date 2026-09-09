@@ -22,25 +22,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * 在业务保存前根据实时表单补全公式字段。调用方只提供当前资源和字段值，公式及类型均来自表单定义。
+ * 为 MCP 专用预计算提供表单公式求值，不接入 CRM 普通业务保存生命周期。
  */
 @Slf4j
 @Service
 public class FormulaCompletionService {
-
-    /** 未接入统一求值的批量/导入入口不能接受公式结果，也不能省略后继续落库。 */
-    public static void requireNonFormulaWrite(List<BaseField> fields) {
-        if (fields == null) return;
-        for (BaseField field : fields) {
-            if (BaseField.includeFormula(field)
-                    || field instanceof cn.cordys.crm.system.dto.field.SerialNumberField serial
-                    && "formula".equalsIgnoreCase(serial.getPrefixType())) {
-                throw new cn.cordys.common.exception.GenericException(
-                        cn.cordys.common.util.Translator.get("formula.write_path.unsupported"));
-            }
-            if (field instanceof SubField sub) requireNonFormulaWrite(sub.getSubFields());
-        }
-    }
 
     @FunctionalInterface
     interface DisplayValueResolver {
@@ -85,8 +71,8 @@ public class FormulaCompletionService {
     }
 
     /**
-     * 只计算当前没有值的公式字段。用于 HTTP 请求前置补全：前端已经计算的值保持不变，
-     * MCP 等未提交公式值的调用方才由服务端补齐。
+     * 仅补齐空值的显式求值变体，不挂接 HTTP 或业务保存入口。
+     * MCP 专用预计算使用 complete，按完整输入重新计算。
      */
     public Map<String, Object> completeMissing(
             List<BaseField> fields,

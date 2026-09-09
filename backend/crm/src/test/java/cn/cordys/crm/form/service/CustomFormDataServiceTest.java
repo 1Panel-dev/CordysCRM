@@ -2,7 +2,6 @@ package cn.cordys.crm.form.service;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
-import cn.cordys.common.formula.FormulaRequestCompletionService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.CustomForm;
@@ -41,12 +40,14 @@ class CustomFormDataServiceTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void batchUpdateRoutesEachRecordThroughFormulaAwareUpdate() {
+    void batchUpdateKeepsOriginalBatchPathWithoutFormulaCalculation() {
         BaseMapper<CustomFormData> mapper = mock(BaseMapper.class);
         CustomFormDataFieldService fields = mock(CustomFormDataFieldService.class);
         CustomFormDataService service = org.mockito.Mockito.spy(serviceWithManageAllPermission());
         ReflectionTestUtils.setField(service, "customFormDataMapper", mapper);
         ReflectionTestUtils.setField(service, "customFormDataFieldService", fields);
+        ReflectionTestUtils.setField(service, "extCustomFormDataMapper",
+                mock(cn.cordys.crm.form.mapper.ExtCustomFormDataMapper.class));
         CustomFormData first = new CustomFormData();
         first.setId("one");
         first.setCustomFormId("form-1");
@@ -73,8 +74,11 @@ class CustomFormDataServiceTest {
 
         service.batchUpdate(request, "user-1", "org-1");
 
-        assertEquals(List.of("one", "two"), updates.stream().map(CustomFormDataUpdateRequest::getId).toList());
-        updates.forEach(update -> assertEquals("new", valueOf(update, "note")));
+        assertEquals(List.of(), updates);
+        verify(fields).batchUpdate(org.mockito.ArgumentMatchers.eq(request), org.mockito.ArgumentMatchers.eq(field),
+                org.mockito.ArgumentMatchers.eq(List.of(first, second)), org.mockito.ArgumentMatchers.eq(CustomFormData.class),
+                anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("user-1"),
+                org.mockito.ArgumentMatchers.eq("org-1"));
     }
 
     private MessageSource originalMessageSource;
@@ -95,14 +99,12 @@ class CustomFormDataServiceTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void updatePreservesPartialFieldsAndSerialNumberAfterOwnerTransfer() {
+    void updateKeepsReplacementContractAfterOwnerTransferWithoutFormulaCalculation() {
         BaseMapper<CustomFormData> dataMapper = mock(BaseMapper.class);
         CustomFormDataFieldService fieldService = mock(
                 CustomFormDataFieldService.class);
         ModuleFormCacheService formCacheService = mock(
                 ModuleFormCacheService.class);
-        FormulaRequestCompletionService formulaService = mock(
-                FormulaRequestCompletionService.class);
         BaseService baseService = mock(BaseService.class);
         CustomFormDataService service = serviceWithPermission(CustomFormRoleKey.MANAGE_OWN);
         ReflectionTestUtils.setField(service, "customFormDataMapper", dataMapper);
@@ -110,8 +112,6 @@ class CustomFormDataServiceTest {
                 service, "customFormDataFieldService", fieldService);
         ReflectionTestUtils.setField(
                 service, "moduleFormCacheService", formCacheService);
-        ReflectionTestUtils.setField(
-                service, "formulaRequestCompletionService", formulaService);
         ReflectionTestUtils.setField(service, "baseService", baseService);
 
         CustomFormData persisted = new CustomFormData();
@@ -161,14 +161,10 @@ class CustomFormDataServiceTest {
 
         service.update(request, "user-1", "org-1");
 
-        assertEquals(5, request.getModuleFields().size());
+        assertEquals(3, request.getModuleFields().size());
         assertEquals("新备注", valueOf(request, "note-field"));
-        assertEquals("SN-0001", valueOf(request, "serial-field"));
-        assertEquals("旧长文本", valueOf(request, "description-field"));
-        assertEquals(List.of(Map.of("id", "row-1")), valueOf(request, "kept-items-field"));
+        assertEquals("伪造编号", valueOf(request, "serial-field"));
         assertEquals(List.of(), valueOf(request, "cleared-items-field"));
-        verify(formulaService).completeAuthoritative(
-                "form-1", request, false, "org-1");
         verify(fieldService).saveModuleField(
                 org.mockito.ArgumentMatchers.any(),
                 org.mockito.ArgumentMatchers.eq("org-1"),
@@ -278,7 +274,7 @@ class CustomFormDataServiceTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void updateStopsBeforeAnyWriteWhenStrictFieldReadFails() {
+    void updateWithoutModuleFieldsDoesNotReadOrRewriteThemAndReadFailureStopsReplacement() {
         BaseMapper<CustomFormData> dataMapper = mock(BaseMapper.class);
         CustomFormDataFieldService fieldService = mock(CustomFormDataFieldService.class);
         ModuleFormCacheService formCacheService = mock(ModuleFormCacheService.class);
@@ -296,15 +292,19 @@ class CustomFormDataServiceTest {
                 .thenReturn(config);
         when(fieldService.getModuleFieldValuesByResourceId("record-1"))
                 .thenThrow(new GenericException("严格读取失败"));
+        ReflectionTestUtils.setField(service, "baseService", mock(BaseService.class));
 
         CustomFormDataUpdateRequest request = new CustomFormDataUpdateRequest();
         request.setId("record-1");
         request.setCustomFormId("form-1");
         request.setName("新名称");
 
+        service.update(request, "user-1", "org-1");
+        verify(fieldService, never()).getModuleFieldValuesByResourceId(anyString());
+        org.junit.jupiter.api.Assertions.assertNull(request.getModuleFields());
+        request.setModuleFields(List.of(new BaseModuleFieldValue("note", "新备注")));
         assertThrows(GenericException.class,
                 () -> service.update(request, "user-1", "org-1"));
-        verify(dataMapper, never()).update(org.mockito.ArgumentMatchers.any());
         verify(fieldService, never()).deleteByResourceId(anyString());
         verify(fieldService, never()).saveModuleField(
                 org.mockito.ArgumentMatchers.any(), anyString(), anyString(), anyList(), anyBoolean());
