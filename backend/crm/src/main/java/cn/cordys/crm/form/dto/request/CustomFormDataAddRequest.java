@@ -15,6 +15,7 @@ public class CustomFormDataAddRequest {
     @Schema(description = "自定义表单ID")
     private String customFormId;
 
+    @NotBlank
     @Size(max = 255)
     @Schema(description = "名称")
     private String name;

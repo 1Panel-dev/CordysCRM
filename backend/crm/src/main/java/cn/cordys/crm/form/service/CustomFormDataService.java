@@ -102,8 +102,6 @@ public class CustomFormDataService {
     private BaseMapper<CustomFormDataFieldBlob> customFormDataFieldBlobMapper;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
-    @Resource
-    private cn.cordys.common.formula.FormulaRequestCompletionService formulaRequestCompletionService;
 
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId, boolean catchPermissionException) {
         String formId = request.getCustomFormId();
@@ -263,9 +261,6 @@ public class CustomFormDataService {
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.ADD)
     public CustomFormData add(CustomFormDataAddRequest request, String userId, String orgId) {
         checkCreatePermission(getManageDataScope(request.getCustomFormId(), userId, orgId));
-        if (StringUtils.isBlank(request.getOwner())) request.setOwner(userId);
-        formulaRequestCompletionService.completeAuthoritative(request.getCustomFormId(), request, true, orgId);
-        checkNameAfterFormula(request.getName());
 
         CustomFormData data = new CustomFormData();
         data.setId(IDGenerator.nextStr());
@@ -325,32 +320,14 @@ public class CustomFormDataService {
         updateData.setOwner(request.getOwner());
         updateData.setUpdateTime(System.currentTimeMillis());
         updateData.setUpdateUser(userId);
+        customFormDataMapper.update(updateData);
 
 
         CustomFormDataFieldService.setFormKey(originData.getCustomFormId());
         try {
             ModuleFormConfigDTO formConfig = moduleFormCacheService.getBusinessFormConfig(originData.getCustomFormId(), orgId);
-            List<BaseModuleFieldValue> originFields = customFormDataFieldService.getModuleFieldValuesByResourceId(request.getId());
-            if (request.getModuleFields() == null) {
-                request.setModuleFields(new ArrayList<>(originFields));
-            } else {
-                // 更新基于旧完整值按字段 ID 覆盖；流水号始终保留持久化值。
-                Set<String> serialIds = formConfig.getFields().stream().filter(BaseField::isSerialNumber)
-                        .map(BaseField::getId).collect(Collectors.toSet());
-                Map<String, BaseModuleFieldValue> values = originFields.stream()
-                        .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, Function.identity(),
-                                (left, right) -> left, LinkedHashMap::new));
-                request.getModuleFields().stream()
-                        .filter(value -> !serialIds.contains(value.getFieldId()))
-                        .forEach(value -> values.put(value.getFieldId(), value));
-                request.setModuleFields(new ArrayList<>(values.values()));
-            }
-            formulaRequestCompletionService.completeAuthoritative(originData.getCustomFormId(), request, false, orgId);
-            checkNameAfterFormula(request.getName());
-            updateData.setName(request.getName());
-            updateData.setOwner(request.getOwner());
-            customFormDataMapper.update(updateData);
             if (request.getModuleFields() != null) {
+                List<BaseModuleFieldValue> originFields = customFormDataFieldService.getModuleFieldValuesByResourceId(request.getId());
                 // 过滤掉引用字段（显示字段），这些字段不需要参与日志对比
                 List<BaseModuleFieldValue> logOriginFields = filterRefFields(originFields);
                 List<BaseModuleFieldValue> logModifiedFields = filterRefFields(request.getModuleFields());
@@ -392,25 +369,7 @@ public class CustomFormDataService {
         CustomFormDataFieldService.setFormKey(request.getCustomFormId());
         try {
             BaseField field = customFormDataFieldService.getAndCheckField(request.getFieldId(), orgId);
-            if (field.needRepeatCheck() && dataList.size() > 1
-                    && request.getFieldValue() != null
-                    && StringUtils.isNotBlank(request.getFieldValue().toString())) {
-                throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
-            }
-            // 复用单条更新的权限、完整旧值读取和公式计算；外层事务保证任一失败全部回滚。
-            for (CustomFormData data : dataList) {
-                CustomFormDataUpdateRequest updateRequest = new CustomFormDataUpdateRequest();
-                updateRequest.setId(data.getId());
-                updateRequest.setCustomFormId(request.getCustomFormId());
-                if (StringUtils.isNotBlank(field.getBusinessKey())) {
-                    new org.springframework.beans.BeanWrapperImpl(updateRequest)
-                            .setPropertyValue(field.getBusinessKey(), request.getFieldValue());
-                } else {
-                    updateRequest.setModuleFields(List.of(new BaseModuleFieldValue(
-                            field.getId(), request.getFieldValue())));
-                }
-                update(updateRequest, userId, orgId);
-            }
+            customFormDataFieldService.batchUpdate(request, field, dataList, CustomFormData.class, LogModule.CUSTOM_FORM_DATA, extCustomFormDataMapper::batchUpdate, userId, orgId);
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }
@@ -460,13 +419,6 @@ public class CustomFormDataService {
         if (CollectionUtils.isEmpty(ids) || CollectionUtils.isEmpty(records)
                 || !new HashSet<>(ids).equals(records.stream().map(CustomFormData::getId).collect(Collectors.toSet()))) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
-        }
-    }
-
-    private void checkNameAfterFormula(String name) {
-        // 名称可能由表单公式生成，必须在权限与公式补全之后检查，不能在反序列化阶段拒绝。
-        if (StringUtils.isBlank(name) || name.length() > 255) {
-            throw new GenericException("名称不能为空且不能超过255个字符");
         }
     }
 

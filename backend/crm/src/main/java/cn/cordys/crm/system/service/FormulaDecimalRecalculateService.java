@@ -479,9 +479,7 @@ public class FormulaDecimalRecalculateService {
             return value;
         }
         AbstractModuleFieldResolver resolver = ModuleFieldResolverFactory.getResolver(FieldType.FORMULA.name());
-        Object formatted = resolver.transformToValue(formulaField, normalizeNumberText(value));
-        // 历史修复写回的是持久化值，千分位仅用于展示。
-        return resolver.convertToValue(formulaField, String.valueOf(formatted));
+        return resolver.transformToValue(formulaField, normalizeNumberText(value));
     }
 
     private String normalizeNumberText(Object value) {

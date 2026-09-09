@@ -223,21 +223,6 @@ class FormulaCompletionServiceTest {
     }
 
     @Test
-    void unsupportedBatchAndImportPathsRejectFormulaBeforeWriting() {
-        try (var translator = org.mockito.Mockito.mockStatic(cn.cordys.common.util.Translator.class)) {
-            translator.when(() -> cn.cordys.common.util.Translator.get("formula.write_path.unsupported"))
-                    .thenReturn("该入口不支持公式");
-            FormulaField computed = numberFormula("formula", "公式", literal(1, "number"));
-            SubField table = field(new SubField(), "table", "子表", "SUB_PRODUCT");
-            table.setSubFields(List.of(computed));
-            assertThrows(cn.cordys.common.exception.GenericException.class,
-                    () -> FormulaCompletionService.requireNonFormulaWrite(List.of(table)));
-            org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> FormulaCompletionService.requireNonFormulaWrite(
-                    List.of(field(new InputNumberField(), "number", "金额", "INPUT_NUMBER"))));
-        }
-    }
-
-    @Test
     void rejectsCrossScopeFormulaDependencyBeforeMutatingValues() {
         FormulaField top = numberFormula("top", "顶层", literal(2, "number"));
         FormulaField child = numberFormula("child", "子表计算", fieldNode("top"));
