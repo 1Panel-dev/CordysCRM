@@ -155,7 +155,7 @@ public class ClueController {
     }
 
     @PostMapping("/to-pool")
-    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE, resourceId = "{#request.id}", formType = FormKeyConstants.CLUE)
+    @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_RECYCLE, resourceId = "{#request.id}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "移入线索池")
     public BatchAffectResponse toPool(@Validated @RequestBody PoolReasonRequest request) {
         return clueService.toPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
