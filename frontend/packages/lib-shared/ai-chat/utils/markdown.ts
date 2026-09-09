@@ -48,6 +48,89 @@ function normalizeMathDelimiters(content: string): string {
   });
 }
 
+// 流式输出时代码块可能还没闭合。临时补一个结束 fence，让后续渲染和 normalize 都按代码块保护它。
+function normalizeUnclosedCodeFence(content: string): string {
+  const fenceMatches = content.match(/^```/gm);
+
+  if (!fenceMatches || fenceMatches.length % 2 === 0) {
+    return content;
+  }
+
+  return `${content}\n\`\`\``;
+}
+
+// AI 偶尔会漏掉 Markdown 块级语法后的空格，比如 `##标题`、`-列表`。
+// 这里只修行首标记，且跳过代码块和行内代码，尽量避免误改正文和示例代码。
+function normalizeLooseMarkdownSyntax(content: string): string {
+  const pattern = /(```[\s\S]*?```|`[^`]*`)|(^|\n)([^\n]*)/g;
+
+  return content.replace(pattern, (match, codeBlock, lineBreak = '', line = '') => {
+    if (codeBlock) {
+      return codeBlock;
+    }
+
+    const normalizedLine = line
+      .replace(/^(\s{0,3}#{1,6})([^\s#])/u, '$1 $2')
+      .replace(/^(\s{0,3}>+)([^\s>])/u, '$1 $2')
+      .replace(/^(\s*)([-+])([^\s\-\+\[])/u, '$1$2 $3')
+      .replace(/^(\s*)(\d{1,3}[.)])([^\s\d])/u, '$1$2 $3')
+      .replace(/^(\s*)-\s*\[([xX ])\]([^\s])/u, '$1- [$2] $3');
+
+    return `${lineBreak}${normalizedLine}`;
+  });
+}
+
+function isTableRow(line: string): boolean {
+  return /^\s*\|.*\|[ \t]*$/u.test(line);
+}
+
+function isTableDivider(line: string): boolean {
+  return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/u.test(line);
+}
+
+function isTableBlockStart(lines: string[], index: number): boolean {
+  return isTableRow(lines[index]) && index + 1 < lines.length && isTableDivider(lines[index + 1]);
+}
+
+// Markdown 表格粘在段落后面时容易被当成普通文本。只给标准表格块前后补空行，代码块内不处理。
+function normalizeTableSpacing(content: string): string {
+  const lines = content.split('\n');
+  const result: string[] = [];
+  let inFence = false;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+
+    if (/^```/u.test(line)) {
+      inFence = !inFence;
+      result.push(line);
+      continue;
+    }
+
+    if (!inFence && isTableBlockStart(lines, index)) {
+      if (result.length > 0 && result[result.length - 1].trim()) {
+        result.push('');
+      }
+
+      while (index < lines.length && isTableRow(lines[index])) {
+        result.push(lines[index]);
+        index += 1;
+      }
+
+      if (index < lines.length && lines[index].trim()) {
+        result.push('');
+      }
+
+      index -= 1;
+      continue;
+    }
+
+    result.push(line);
+  }
+
+  return result.join('\n');
+}
+
 // highlight.js 只负责高亮片段；外层 pre/header/copy 按当前聊天 UI 的结构拼出来。
 function renderCodeBlock(code: string, language?: string): string {
   const normalizedLanguage = normalizeLanguage(language);
@@ -126,7 +209,9 @@ markdown.renderer.rules.fence = (tokens, idx, options, env, self) => {
  */
 export default function renderMarkdown(content: string, options: RenderMarkdownOptions = {}): string {
   // KaTeX 会尝试识别 `$...$`，金额场景里的 `$100` 需要先转义掉。
-  const normalizedContent = normalizeMathDelimiters(content.replace(/\$(?=\d)/g, '\\$'));
+  const normalizedContent = normalizeMathDelimiters(
+    normalizeTableSpacing(normalizeLooseMarkdownSyntax(normalizeUnclosedCodeFence(content))).replace(/\$(?=\d)/g, '\\$')
+  );
 
   // 复制按钮文字来自 i18n，但按钮 HTML 是 Markdown 渲染出来的，所以这里用占位按钮再统一替换文案。
   const html = markdown
