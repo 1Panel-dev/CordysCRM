@@ -92,7 +92,6 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                                           CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
                                           Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap, String importType) {
         super(fields, EntityTableMapper.generateTableName(clazz), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap, importType);
-        cn.cordys.common.formula.FormulaCompletionService.requireNonFormulaWrite(fields);
         this.entityClass = clazz;
         this.operator = operator;
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
