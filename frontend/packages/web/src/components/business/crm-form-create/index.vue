@@ -525,6 +525,33 @@
                   ):
                     line[currentKey] = subData[`${childLinkField.id}_original`];
                     break;
+                  case [FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(currentChildField.type):
+                    line[currentKey] = subData[`${childLinkField.id}_original`];
+                    currentChildField.initialOptions = mergeUniqueOptions(currentChildField.initialOptions || [], [
+                      {
+                        id: subData[`${childLinkField.id}_original`],
+                        name: currentSource.optionMap[key]?.find(
+                          (opt: any) => opt.id === subData[`${childLinkField.id}_original`]
+                        )?.name,
+                        isFormLinkFilled: true, // 用于区分是表单联动填充的选项还是其他途径的选项，主要用于数据源显示字段的回显
+                      },
+                    ]);
+                    break;
+                  case [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(
+                    currentChildField.type
+                  ):
+                    line[currentKey] = Array.isArray(subData[`${childLinkField.id}_original`])
+                      ? subData[`${childLinkField.id}_original`]
+                      : [subData[`${childLinkField.id}_original`]];
+                    currentChildField.initialOptions = mergeUniqueOptions(
+                      currentChildField.initialOptions || [],
+                      Array.from(subData[`${childLinkField.id}_original`] || []).map((e) => ({
+                        id: e,
+                        name: currentSource.optionMap[key]?.find((opt: any) => opt.id === e)?.name,
+                        isFormLinkFilled: true, // 用于区分是表单联动填充的选项还是其他途径的选项，主要用于数据源显示字段的回显
+                      }))
+                    );
+                    break;
                   default:
                     line[currentKey] = subData[key] === '-' ? '' : subData[key];
                     break;

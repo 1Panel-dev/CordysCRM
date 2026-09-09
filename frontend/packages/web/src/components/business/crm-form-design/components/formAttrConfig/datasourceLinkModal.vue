@@ -392,6 +392,8 @@
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
             FieldTypeEnum.MEMBER,
             FieldTypeEnum.MEMBER_MULTIPLE,
+            FieldTypeEnum.DEPARTMENT,
+            FieldTypeEnum.DEPARTMENT_MULTIPLE,
             FieldTypeEnum.LOCATION,
           ].includes(e.type)
         )
@@ -436,6 +438,16 @@
         [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(f.type)
       );
     }
+    if (currentField?.type === FieldTypeEnum.DEPARTMENT) {
+      // 单选部门不能填充多选部门
+      return linkFieldOptions.value.filter((f) => f.type === FieldTypeEnum.DEPARTMENT);
+    }
+    if (currentField?.type === FieldTypeEnum.DEPARTMENT_MULTIPLE) {
+      // 多选部门不能填充单选部门
+      return linkFieldOptions.value.filter((f) =>
+        [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(f.type)
+      );
+    }
     if (currentField?.type === FieldTypeEnum.LOCATION) {
       return linkFieldOptions.value.filter((f) => f.type === FieldTypeEnum.LOCATION);
     }
@@ -453,6 +465,8 @@
             FieldTypeEnum.LOCATION,
             FieldTypeEnum.MEMBER,
             FieldTypeEnum.MEMBER_MULTIPLE,
+            FieldTypeEnum.DEPARTMENT,
+            FieldTypeEnum.DEPARTMENT_MULTIPLE,
           ].includes(f.type) &&
           f.id !== props.fieldConfig.id &&
           (f.id === currentFieldId || !alreadySelectedFields.includes(f.id)) &&
@@ -470,7 +484,7 @@
       { class: 'flex items-center gap-[4px]' },
       {
         default: () => [
-          h(CrmIcon, { type: (option as any).icon, class: 'mr-[4px] text-[var(--text-n4)]', size: 14 }),
+          h(CrmIcon, { type: (option as any).icon || '', class: 'mr-[4px] text-[var(--text-n4)]', size: 14 }),
           option.label,
         ],
       }
@@ -489,7 +503,7 @@
       { class: 'flex items-center gap-[4px]' },
       {
         default: () => [
-          h(CrmIcon, { type: (option.option as any).icon, class: 'mr-[4px] text-[var(--text-n4)]', size: 14 }),
+          h(CrmIcon, { type: (option.option as any).icon || '', class: 'mr-[4px] text-[var(--text-n4)]', size: 14 }),
           (option.option as Option).label,
         ],
       }
@@ -637,6 +651,34 @@
     if (linkAllAcceptTypes.includes(currentField.type)) {
       return linkParentField?.subFields
         ?.filter((f) => !hiddenCondition(f))
+        .map((f) => ({ label: f.name, value: f.id, icon: getFieldIcon(f.type) }));
+    }
+    if (currentField?.type === FieldTypeEnum.MEMBER) {
+      // 单选成员不能填充多选成员
+      return linkParentField?.subFields
+        ?.filter((f) => f.type === FieldTypeEnum.MEMBER)
+        .filter((f) => !hiddenCondition(f))
+        .map((f) => ({ label: f.name, value: f.id, icon: getFieldIcon(f.type) }));
+    }
+    if (currentField?.type === FieldTypeEnum.MEMBER_MULTIPLE) {
+      // 多选成员不能填充单选成员
+      return linkParentField?.subFields
+        ?.filter((f) => [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(f.type))
+        .filter((f) => !hiddenCondition(f))
+        .map((f) => ({ label: f.name, value: f.id, icon: getFieldIcon(f.type) }));
+    }
+    if (currentField?.type === FieldTypeEnum.DEPARTMENT) {
+      // 单选部门不能填充多选部门
+      return linkParentField?.subFields
+        ?.filter((f) => f.type === FieldTypeEnum.DEPARTMENT)
+        .filter((f) => !hiddenCondition(f))
+        .map((f) => ({ label: f.name, value: f.id, icon: getFieldIcon(f.type) }));
+    }
+    if (currentField?.type === FieldTypeEnum.DEPARTMENT_MULTIPLE) {
+      // 多选部门不能填充单选部门
+      return linkParentField?.subFields
+        ?.filter((f) => [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(f.type))
+        .filter((f) => !hiddenCondition(f))
         .map((f) => ({ label: f.name, value: f.id, icon: getFieldIcon(f.type) }));
     }
     return [];
