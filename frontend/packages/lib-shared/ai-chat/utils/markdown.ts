@@ -187,6 +187,22 @@ markdown.renderer.rules.link_open = (tokens, idx, options, env, self) => {
   return defaultLinkOpen(tokens, idx, options, env, self);
 };
 
+const defaultTableOpen =
+  markdown.renderer.rules.table_open ??
+  (((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options)) as RenderRule);
+
+const defaultTableClose =
+  markdown.renderer.rules.table_close ??
+  (((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options)) as RenderRule);
+
+markdown.renderer.rules.table_open = (tokens, idx, options, env, self) => {
+  return `<div class="ai-table-wrapper">${defaultTableOpen(tokens, idx, options, env, self)}`;
+};
+
+markdown.renderer.rules.table_close = (tokens, idx, options, env, self) => {
+  return `${defaultTableClose(tokens, idx, options, env, self)}</div>`;
+};
+
 const defaultFence =
   markdown.renderer.rules.fence ??
   (((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options)) as RenderRule);
