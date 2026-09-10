@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, nextTick, onMounted, ref, watch } from 'vue';
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
   import { NCollapse, NCollapseItem } from 'naive-ui';
 
   import { renderMarkdown } from '@lib/shared/ai-chat';
@@ -27,6 +27,7 @@
 
   import useLegacyCopy from '@/hooks/useLegacyCopy';
 
+  import { disposeAiChartBlock, initializeAiCharts, renderAiChartBlock } from './utils/aiChart';
   import type { ReasoningUIPart, TextUIPart } from 'ai';
   import DOMPurify from 'dompurify';
   import mermaid from 'mermaid';
@@ -64,6 +65,7 @@
   const mermaidIdPrefix = `ai-mermaid-${Math.random().toString(36).slice(2)}`;
 
   initializeMermaid();
+  initializeAiCharts();
 
   watch(
     () => partId.value,
@@ -84,6 +86,27 @@
       copyText: t('common.copy'),
     })
   );
+
+  async function renderAiCharts(): Promise<void> {
+    await nextTick();
+
+    const markdownElement = markdownRef.value;
+    if (!markdownElement) {
+      return;
+    }
+
+    const chartBlocks = markdownElement.querySelectorAll<HTMLElement>('[data-ai-chart]');
+
+    chartBlocks.forEach((block) => {
+      renderAiChartBlock(block, t('crmViewSelect.counts'));
+    });
+  }
+
+  function disposeAiCharts(): void {
+    markdownRef.value?.querySelectorAll<HTMLElement>('.ai-chart__render').forEach((item) => {
+      disposeAiChartBlock(item);
+    });
+  }
 
   async function renderMermaid(): Promise<void> {
     await nextTick();
@@ -118,6 +141,10 @@
     });
   }
 
+  async function renderDynamicBlocks(): Promise<void> {
+    await Promise.all([renderMermaid(), renderAiCharts()]);
+  }
+
   async function handleMarkdownClick(event: MouseEvent): Promise<void> {
     if (!(event.target instanceof HTMLElement)) {
       return;
@@ -136,12 +163,13 @@
     }
   }
 
-  onMounted(renderMermaid);
+  onMounted(renderDynamicBlocks);
+  onBeforeUnmount(disposeAiCharts);
 
   watch(
     () => html.value,
     () => {
-      renderMermaid().catch(() => undefined);
+      renderDynamicBlocks().catch(() => undefined);
     },
     { flush: 'post' }
   );
@@ -158,6 +186,7 @@
     :deep(table),
     :deep(ul),
     :deep(.ai-code-block),
+    :deep(.ai-chart),
     :deep(.ai-mermaid) {
       margin: 0 0 12px;
     }
@@ -303,12 +332,23 @@
       overflow-y: hidden;
       padding: 2px 0;
     }
+    :deep(.ai-chart),
     :deep(.ai-mermaid) {
       overflow: auto;
       padding: 12px;
       border: 1px solid var(--text-n8);
       border-radius: 6px;
       background: var(--text-n10);
+    }
+    :deep(.ai-chart) {
+      min-width: 280px;
+      height: 360px;
+    }
+    :deep(.ai-chart__source) {
+      display: none;
+    }
+    :deep(.ai-chart__render) {
+      height: 100%;
     }
     :deep(.ai-mermaid__source) {
       display: none;
@@ -322,6 +362,17 @@
       height: auto;
     }
     :deep(.ai-mermaid--error .ai-mermaid__source) {
+      display: block;
+      margin: 0;
+      padding: 0;
+      white-space: pre-wrap;
+      color: var(--error-red);
+      background: transparent;
+    }
+    :deep(.ai-chart--error) {
+      height: auto;
+    }
+    :deep(.ai-chart--error .ai-chart__source) {
       display: block;
       margin: 0;
       padding: 0;
