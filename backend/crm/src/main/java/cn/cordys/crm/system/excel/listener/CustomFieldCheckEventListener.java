@@ -184,20 +184,14 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
             }
             this.headMap = realHeadMap;
         } else {
-            this.headMap = headMap;
+            for (Map.Entry<Integer, String> entry : headMap.entrySet()) {
+                Integer key = entry.getKey();
+                String value = entry.getValue();
+                realHeadMap.put(key, value + "_" + value);
+            }
+            this.headMap = realHeadMap;
         }
         this.checkHeadMap = headMap;
-        if (MapUtils.isEmpty(firstHeadMap)) {
-            Map<String, BaseField> temp = new HashMap<>();
-            fieldMap.forEach((key, value) -> {
-                int index = key.indexOf("_");
-                String newKey = index > -1 ? key.substring(index + 1) : key;
-                temp.put(newKey, value);
-            });
-            this.fieldMap.clear();
-            this.fieldMap.putAll(temp);
-
-        }
         this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
                 collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
         cacheUniqueSet();
@@ -481,7 +475,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private void setNumberMax(BaseField field, String subFieldName) {
         if (Strings.CI.equalsAny(field.getType(), FieldType.INPUT_NUMBER.name(), FieldType.FORMULA.name())) {
-            numberMax.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName(), MAX_AMOUNT);
+            numberMax.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName() + "_" + field.getName(), MAX_AMOUNT);
         }
     }
 
