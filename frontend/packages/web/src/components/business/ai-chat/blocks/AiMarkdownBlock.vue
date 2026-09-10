@@ -183,10 +183,10 @@
     :deep(hr),
     :deep(ol),
     :deep(pre),
-    :deep(table),
     :deep(ul),
     :deep(.ai-code-block),
     :deep(.ai-chart),
+    :deep(.ai-table-wrapper),
     :deep(.ai-mermaid) {
       margin: 0 0 12px;
     }
@@ -226,14 +226,14 @@
     }
 
     // 列表
-    :deep(ul),
-    :deep(ol) {
+    :deep(ul) {
       padding-left: 24px;
     }
     :deep(ul) {
       list-style: disc;
     }
     :deep(ol) {
+      padding-left: 4em;
       list-style: decimal;
     }
     :deep(ul ul),
@@ -392,6 +392,11 @@
       border: 0;
       background: var(--text-n8);
     }
+    :deep(.ai-table-wrapper) {
+      overflow-x: auto;
+      width: 100%;
+      max-width: 100%;
+    }
     :deep(table) {
       width: 100%;
       font-size: 14px;
@@ -400,6 +405,10 @@
       background: var(--text-n10);
       border-collapse: collapse;
     }
+    :deep(.ai-table-wrapper table) {
+      width: max-content;
+      min-width: 100%;
+    }
     :deep(th),
     :deep(td) {
       padding: 0 10px;
@@ -407,15 +416,21 @@
       border-top: 1px solid var(--text-n9);
       border-bottom: 1px solid var(--text-n9);
       text-align: left;
+      vertical-align: middle;
     }
     :deep(th) {
       font-weight: 500;
+      white-space: nowrap;
       color: var(--text-n4);
       background: var(--text-n10);
     }
     :deep(td) {
+      max-width: 320px;
+      overflow-wrap: anywhere;
+      white-space: normal;
       color: var(--text-n1);
       background: var(--text-n10);
+      word-break: break-word;
     }
   }
   .ai-chat-block-markdown--thinking {
