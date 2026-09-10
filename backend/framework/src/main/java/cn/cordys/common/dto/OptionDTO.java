@@ -1,5 +1,6 @@
 package cn.cordys.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class OptionDTO implements Serializable {
     /**
      * 获取字符串类型的ID（用于内部逻辑）
      */
+    @JsonIgnore
     public String getIdAsString() {
         return id == null ? null : String.valueOf(id);
     }

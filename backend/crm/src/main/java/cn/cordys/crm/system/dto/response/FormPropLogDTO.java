@@ -2,6 +2,7 @@ package cn.cordys.crm.system.dto.response;
 
 import cn.cordys.crm.system.dto.form.base.BtnContentProp;
 import cn.cordys.crm.system.dto.form.base.LinkField;
+import cn.cordys.crm.system.dto.form.FormDetailTab;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -28,4 +29,6 @@ public class FormPropLogDTO {
     private List<BtnContentProp> optBtnContent;
     @Schema(description = "联动配置(组合KEY: 业务KEY+场景字段KEY)")
     private Map<String, List<LinkField>> linkProp;
+    @Schema(description = "表单详情标签页配置")
+    private List<FormDetailTab> detailTabs;
 }
