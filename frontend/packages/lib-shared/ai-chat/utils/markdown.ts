@@ -26,6 +26,12 @@ function normalizeLanguage(language = ''): string {
   return language.trim().split(/\s+/)[0].toLowerCase();
 }
 
+function isMermaidAiChart(content: string): boolean {
+  const normalizedContent = content.trimStart();
+
+  return normalizedContent.startsWith('xychart-beta') || normalizedContent.startsWith('pie');
+}
+
 // 兼容 AI 常见的 LaTeX 写法：把 \(...\) / \[...\] 转成 KaTeX 插件能识别的 $...$ / $$...$$。
 // 代码块和行内代码里的内容不处理，避免误改示例代码。
 function normalizeMathDelimiters(content: string): string {
@@ -195,6 +201,15 @@ markdown.renderer.rules.fence = (tokens, idx, options, env, self) => {
     return defaultFence(tokens, idx, options, env, self);
   }
 
+  if (isMermaidAiChart(token.content)) {
+    return [
+      '<div class="ai-chart" data-ai-chart>',
+      `<pre class="ai-chart__source">${escapeHtml(token.content)}</pre>`,
+      '<div class="ai-chart__render"></div>',
+      '</div>',
+    ].join('');
+  }
+
   return [
     '<div class="ai-mermaid" data-ai-mermaid>',
     `<pre class="ai-mermaid__source">${escapeHtml(token.content)}</pre>`,
@@ -254,6 +269,7 @@ export default function renderMarkdown(content: string, options: RenderMarkdownO
     ADD_ATTR: [
       'aria-hidden',
       'checked',
+      'data-ai-chart',
       'data-ai-code-copy',
       'data-ai-mermaid',
       'disabled',
