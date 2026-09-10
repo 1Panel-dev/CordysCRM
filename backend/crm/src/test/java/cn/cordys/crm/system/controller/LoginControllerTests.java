@@ -5,6 +5,8 @@ import cn.cordys.common.util.rsa.RsaKey;
 import cn.cordys.common.util.rsa.RsaUtils;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.security.SessionConstants;
+import com.jayway.jsonpath.JsonPath;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.MethodOrderer;
@@ -20,6 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -61,5 +64,15 @@ public class LoginControllerTests {
         // 验证返回结果
         String contentAsString = mvcResult.getResponse().getContentAsString();
         log.info(contentAsString);
+
+        String sessionId = JsonPath.read(contentAsString, "$.data.sessionId");
+        String csrfToken = JsonPath.read(contentAsString, "$.data.csrfToken");
+        // 2. 仅携带前端保存的会话请求头，/is-login 应补发文件访问 Cookie
+        mockMvc.perform(MockMvcRequestBuilders.get("/is-login")
+                        .header(SessionConstants.HEADER_TOKEN, sessionId)
+                        .header(SessionConstants.CSRF_TOKEN, csrfToken)
+                        .header("Organization-Id", "100001"))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("F_A_TOKEN"));
     }
 }
