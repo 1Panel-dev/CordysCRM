@@ -234,6 +234,12 @@
             </when>
             <otherwise>
                 <choose>
+                    <when test="condition.name == 'id'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="ct.id"/>
+                        </include>
+                    </when>
                     <when test="condition.name == 'name'">
                         <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                             <property name="condition" value="condition"/>
