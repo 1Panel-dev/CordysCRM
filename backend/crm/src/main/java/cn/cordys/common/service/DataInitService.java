@@ -90,6 +90,7 @@ public class DataInitService {
 			initOneTime(contractInvoiceService::handleOldApprovalData, "handler.contract.invoice.approval.status");
 			initOneTime(opportunityQuotationService::handleOldApprovalData, "handler.quotation.approval.status");
 			initOneTime(orderService::handleOldApprovalData, "handler.order.approval.status");
+			initOneTime(moduleFormService::initInternalDetailTabs, "init.internal.detail.tabs");
 		} finally {
             lock.unlock();
         }
