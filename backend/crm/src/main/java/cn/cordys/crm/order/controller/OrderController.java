@@ -35,6 +35,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -97,6 +98,13 @@ public class OrderController {
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
         orderService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/batch/delete")
+    @CsBatchPermission(value = PermissionConstants.ORDER_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.ORDER)
+    @Operation(summary = "批量删除订单")
+    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
+        orderService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/snapshot/{id}")

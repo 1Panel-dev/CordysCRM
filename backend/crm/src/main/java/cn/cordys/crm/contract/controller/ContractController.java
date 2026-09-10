@@ -38,6 +38,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -106,6 +107,13 @@ public class ContractController {
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
         contractService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/batch/delete")
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CONTRACT)
+    @Operation(summary = "批量删除合同")
+    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
+        contractService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/snapshot/{id}")
