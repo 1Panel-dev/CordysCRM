@@ -452,7 +452,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      */
     private void setCheckLimit(BaseField field, String subFieldName) {
         if (field.needRequireCheck() && StringUtils.isBlank(subFieldName)) {
-            requires.add(field.getName());
+            requires.add(field.getName() + "_" + field.getName());
         }
         if (field.needRepeatCheck()) {
             uniques.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName() + "_" + field.getName(), field);
