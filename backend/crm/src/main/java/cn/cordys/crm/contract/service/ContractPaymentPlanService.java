@@ -626,7 +626,7 @@ public class ContractPaymentPlanService extends BaseExportService {
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             log.error("customer import error: {}", e.getMessage());
-            throw new GenericException("导入异常，请检查文件数据！");
+            throw new GenericException("导入异常，请检查文件数据！" + e);
         }
 
     }
