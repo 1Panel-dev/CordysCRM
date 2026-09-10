@@ -194,7 +194,7 @@
   import billboard from './billboard/index.vue';
   import DetailDrawer from './detail.vue';
 
-  import { deleteOrder, getOrderStatistic, getOrderStatusConfig } from '@/api/modules';
+  import { batchDeleteOrder, deleteOrder, getOrderStatistic, getOrderStatusConfig } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
@@ -274,6 +274,11 @@
             key: 'batchEdit',
             permission: ['ORDER:UPDATE'],
           },
+          {
+            label: t('common.batchDelete'),
+            key: 'batchDelete',
+            permission: ['ORDER:DELETE'],
+          },
         ],
   }));
 
@@ -284,6 +289,7 @@
     initEditFormConfig();
     showEditModal.value = true;
   }
+
   function handleRefresh() {
     checkedRowKeys.value = [];
     tableRefreshId.value += 1;
@@ -296,20 +302,6 @@
 
   function handleExportCreateSuccess() {
     checkedRowKeys.value = [];
-  }
-
-  function handleBatchAction(item: ActionsItem) {
-    switch (item.key) {
-      case 'exportChecked':
-        isExportAll.value = false;
-        showExportModal.value = true;
-        break;
-      case 'batchEdit':
-        handleBatchEdit();
-        break;
-      default:
-        break;
-    }
   }
 
   const formCreateDrawerVisible = ref(false);
@@ -396,6 +388,43 @@
 
   const exportApprovalTip = computed(() => getApprovalActionTip(['ORDER:EXPORT'], 'common.exportApprovalTip'));
   const batchEditApprovalTip = computed(() => getApprovalActionTip(['ORDER:UPDATE'], 'common.batchEditApprovalTip'));
+
+  function handleBatchDelete() {
+    openModal({
+      type: 'error',
+      title: t('common.batchDeleteTitle', { count: checkedRowKeys.value.length }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await batchDeleteOrder(checkedRowKeys.value);
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          handleRefresh();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  function handleBatchAction(item: ActionsItem) {
+    switch (item.key) {
+      case 'exportChecked':
+        isExportAll.value = false;
+        showExportModal.value = true;
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
+        break;
+      case 'batchDelete':
+        handleBatchDelete();
+        break;
+      default:
+        break;
+    }
+  }
 
   function showDetail(row: OrderItem) {
     if (row && !hasApprovalScopedPermission(row, ['ORDER:READ'])) {
@@ -596,7 +625,7 @@
     },
     containerClass: `.crm-order-table-${props.formKey}`,
     orderStage: stageConfig.value?.stageConfigList || [],
-    permission: ['ORDER:UPDATE'],
+    permission: ['ORDER:UPDATE', 'ORDER:DELETE'],
     enableApproval,
   });
   const {

@@ -8,6 +8,7 @@ import {
   ContractAddUrl,
   ContractUpdateUrl,
   ContractDeleteUrl,
+  ContractBatchDeleteUrl,
   GetContractDetailUrl,
   GetContractFormConfigUrl,
   GetContractTabUrl,
@@ -204,6 +205,11 @@ export default function useContractApi(CDR: CordysAxios) {
   // 删除合同
   function deleteContract(id: string) {
     return CDR.get({ url: `${ContractDeleteUrl}/${id}` });
+  }
+
+  // 批量删除合同
+  function batchDeleteContract(data: (string | number)[]) {
+    return CDR.post({ url: ContractBatchDeleteUrl, data });
   }
 
   // 合同详情
@@ -855,6 +861,7 @@ export default function useContractApi(CDR: CordysAxios) {
     addContract,
     updateContract,
     deleteContract,
+    batchDeleteContract,
     changeContractStatus,
     getContractFormConfig,
     getContractFormSnapshotConfig,

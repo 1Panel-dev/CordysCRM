@@ -495,6 +495,51 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         delete(id, userId, orgId);
     }
 
+    public void batchDelete(List<String> ids, String userId, String orgId) {
+        List<Order> orders = orderMapper.selectByIds(ids);
+
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.ORDER.getValue(),
+                orders,
+                PermissionConstants.ORDER_DELETE,
+                orgId,
+                Order::getId,
+                Order::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return;
+        }
+
+        List<Order> permittedOrders = orders.stream()
+                .filter(order -> permittedIds.contains(order.getId()))
+                .toList();
+        Map<String, String> nameMap = permittedOrders.stream()
+                .collect(Collectors.toMap(Order::getId, Order::getName));
+
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApproval(
+                permittedIds, FormKey.ORDER, orgId, userId, nameMap);
+        List<String> deleteIds = approvalIds.isEmpty()
+                ? permittedIds
+                : permittedIds.stream().filter(id -> !approvalIds.contains(id)).toList();
+        if (CollectionUtils.isEmpty(deleteIds)) {
+            return;
+        }
+
+        orderFieldService.deleteByResourceIds(deleteIds);
+        orderMapper.deleteByIds(deleteIds);
+        LambdaQueryWrapper<OrderSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(OrderSnapshot::getOrderId, deleteIds);
+        snapshotBaseMapper.deleteByLambda(wrapper);
+
+        List<LogDTO> logs = permittedOrders.stream()
+                .filter(order -> deleteIds.contains(order.getId()))
+                .map(order -> new LogDTO(orgId, order.getId(), userId, LogType.DELETE,
+                        LogModule.ORDER_INDEX, order.getName()))
+                .toList();
+        logService.batchAdd(logs);
+    }
+
 
     @Override
     public FormKey getFormKey() {

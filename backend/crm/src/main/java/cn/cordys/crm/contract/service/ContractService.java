@@ -483,6 +483,52 @@ public class ContractService extends BaseExportService implements ApprovalResour
         delete(id, userId, orgId);
     }
 
+    public void batchDelete(List<String> ids, String userId, String orgId) {
+        List<Contract> contracts = contractMapper.selectByIds(ids);
+
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CONTRACT.getValue(),
+                contracts,
+                PermissionConstants.CONTRACT_DELETE,
+                orgId,
+                Contract::getId,
+                Contract::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return;
+        }
+
+        permittedIds.forEach(this::checkContractRelated);
+        List<Contract> permittedContracts = contracts.stream()
+                .filter(contract -> permittedIds.contains(contract.getId()))
+                .toList();
+        Map<String, String> nameMap = permittedContracts.stream()
+                .collect(Collectors.toMap(Contract::getId, Contract::getName));
+
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApproval(
+                permittedIds, FormKey.CONTRACT, orgId, userId, nameMap);
+        List<String> deleteIds = approvalIds.isEmpty()
+                ? permittedIds
+                : permittedIds.stream().filter(id -> !approvalIds.contains(id)).toList();
+        if (CollectionUtils.isEmpty(deleteIds)) {
+            return;
+        }
+
+        contractFieldService.deleteByResourceIds(deleteIds);
+        contractMapper.deleteByIds(deleteIds);
+        LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(ContractSnapshot::getContractId, deleteIds);
+        snapshotBaseMapper.deleteByLambda(wrapper);
+
+        List<LogDTO> logs = permittedContracts.stream()
+                .filter(contract -> deleteIds.contains(contract.getId()))
+                .map(contract -> new LogDTO(orgId, contract.getId(), userId, LogType.DELETE,
+                        LogModule.CONTRACT_INDEX, contract.getName()))
+                .toList();
+        logService.batchAdd(logs);
+    }
+
 
     /**
      * 删除合同

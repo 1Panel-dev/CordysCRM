@@ -3,6 +3,7 @@ export const ContractPageUrl = '/contract/page'; // 合同列表
 export const ContractAddUrl = '/contract/add'; // 添加合同
 export const ContractUpdateUrl = '/contract/update'; // 更新合同
 export const ContractDeleteUrl = '/contract/delete'; // 删除合同
+export const ContractBatchDeleteUrl = '/contract/batch/delete'; // 批量删除合同
 export const GetContractDetailUrl = '/contract/get'; // 获取合同详情
 export const GetContractDetailSnapshotUrl = '/contract/get/snapshot'; // 获取合同详情快照
 export const GetContractFormConfigUrl = '/contract/module/form'; // 合同表单配置
