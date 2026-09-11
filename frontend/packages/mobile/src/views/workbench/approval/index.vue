@@ -1,23 +1,47 @@
 <template>
   <CrmPageWrapper :title="sourceName || ''">
-    <div class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
-      <CrmDescription :description="renderDescriptions">
-        <template #approvalStatus>
-          <ApprovalStatus v-if="approvalInfo" :status="approvalInfo?.approvalStatus" />
+    <van-tabs v-model:active="activeName" border class="approval-tabs">
+      <van-tab v-for="tab of tabList" :key="tab.name" :name="tab.name">
+        <template #title>
+          <div class="text-[16px]" :class="activeName === tab.name ? 'text-[var(--primary-8)]' : ''">
+            {{ tab.title }}
+          </div>
         </template>
-        <template #quotationStatus="{ item }">
-          <CrmTag :tag="item.value ? t('common.voided') : t('common.normal')" />
-        </template>
-      </CrmDescription>
-    </div>
-    <template #footer>
-      <div
-        v-if="
-          approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
-          (isApprover || canCancelApply || canCancelApproval)
-        "
-        class="flex justify-between gap-[16px]"
-      >
+        <div v-if="tab.name === 'detail'" class="relative h-full overflow-auto bg-[var(--text-n9)] py-[16px]">
+          <CrmDescription :description="renderDescriptions">
+            <template #approvalStatus>
+              <ApprovalStatus v-if="approvalInfo" :status="approvalInfo?.approvalStatus" />
+            </template>
+            <template #quotationStatus="{ item }">
+              <CrmTag :tag="item.value ? t('common.voided') : t('common.normal')" />
+            </template>
+          </CrmDescription>
+        </div>
+        <div v-else class="flex h-full bg-[var(--text-n9)] p-[16px]">
+          <CrmApprovalLine
+            :nodes="approvalInfo?.nodes || []"
+            :submitter="{
+              submitAvatar: approvalInfo?.submitAvatar,
+              submitter: approvalInfo?.submitter,
+              submitTime: approvalInfo?.submitTime,
+              submitterId: approvalInfo?.submitterId,
+              comment: approvalInfo?.comment,
+            }"
+            :currentApprovalNode="currentApprovalNode"
+            :currentApprovalNodeIndex="currentApprovalNodeIndex"
+            :finally-result="approvalInfo?.approvalStatus"
+          />
+        </div>
+      </van-tab>
+    </van-tabs>
+    <template
+      v-if="
+        approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
+        (isApprover || canCancelApply || canCancelApproval)
+      "
+      #footer
+    >
+      <div class="flex justify-between gap-[16px]">
         <van-button v-if="canShowMore" plain type="primary" block @click="showMore = true">
           {{ t('common.more') }}
         </van-button>
@@ -142,7 +166,8 @@
   import { showConfirmDialog, showSuccessToast, type PickerOption } from 'vant';
   import { sleep } from '@lib/shared/method/index.js';
   import router from '@/router/index.js';
-  import ApprovalStatus from './approvalStatus.vue';
+  import ApprovalStatus from '@/components/business/crm-approval/crm-approval-status.vue';
+  import CrmApprovalLine from '@/components/business/crm-approval/crm-approval-line.vue';
 
   const { t } = useI18n();
   const userStore = useUserStore();
@@ -158,6 +183,18 @@
       approvalTaskId: route.query.taskId,
     },
   });
+
+  const tabList = [
+    {
+      name: 'detail',
+      title: t('common.detail'),
+    },
+    {
+      name: 'record',
+      title: t('workbench.approval.record'),
+    },
+  ];
+  const activeName = ref(tabList[0].name);
 
   const approvalInfo = ref<ApprovalDetail>();
   const approvalConfig = ref<ApprovalProcessDetail>(); // 审批配置详情
@@ -464,4 +501,14 @@
     initApprovalDetail();
   });
 </script>
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .approval-tabs {
+    @apply h-full;
+    :deep(.van-tabs__content) {
+      height: calc(100% - var(--van-tabs-line-height));
+      .van-tab__panel {
+        @apply h-full;
+      }
+    }
+  }
+</style>

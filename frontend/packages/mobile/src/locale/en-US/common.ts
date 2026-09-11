@@ -112,4 +112,9 @@ export default {
   'common.department': 'Department',
   'common.alreadyPayAmount': 'Amount received',
   'common.status': 'Status',
+  'common.OR_APPROVAL': 'OR approval',
+  'common.COUNTERSIGNATURE': 'Countersignature',
+  'common.AND_APPROVAL': 'AND approval',
+  'common.SEQUENTIAL_APPROVAL': 'Sequential Approval',
+  'common.copyTo': 'Copy to',
 };
