@@ -70,6 +70,7 @@ public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMu
         }
 
         try {
+            text = text.replaceAll("，", ",");
             List<String> texts = parseFakeJsonArray(text);
             if (CollectionUtils.isEmpty(texts)) {
                 return StringUtils.EMPTY;
