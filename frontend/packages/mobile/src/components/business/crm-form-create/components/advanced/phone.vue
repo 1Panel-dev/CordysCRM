@@ -23,6 +23,7 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    needInitDetail?: boolean; // 判断是否编辑情况
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string): void;
@@ -51,7 +52,10 @@
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
-      value.value = val;
+      if (!props.needInitDetail) {
+        value.value = val || value.value;
+        emit('change', value.value);
+      }
     },
     {
       immediate: true,
