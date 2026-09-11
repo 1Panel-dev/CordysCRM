@@ -53,6 +53,7 @@ declare module 'vue' {
     Detail: typeof import('./src/components/business/crm-contact-list/detail.vue')['default'];
     Divider: typeof import('./src/components/business/crm-form-create/components/basic/divider.vue')['default'];
     File: typeof import('./src/components/business/crm-form-create/components/advanced/file.vue')['default'];
+    FileList: typeof import('./src/components/business/crm-file-list-pop/fileList.vue')['default'];
     FollowDetail: typeof import('./src/components/business/crm-follow-list/followDetail.vue')['default'];
     FollowPlan: typeof import('./src/components/business/crm-follow-list/followPlan.vue')['default'];
     FollowRecord: typeof import('./src/components/business/crm-follow-list/followRecord.vue')['default'];
@@ -73,7 +74,6 @@ declare module 'vue' {
     SingleText: typeof import('./src/components/business/crm-form-create/components/basic/singleText.vue')['default'];
     Textarea: typeof import('./src/components/business/crm-form-create/components/basic/textarea.vue')['default'];
     Upload: typeof import('./src/components/business/crm-form-create/components/advanced/upload.vue')['default'];
-    VanActionSheet: typeof import('vant/es')['ActionSheet'];
     VanBadge: typeof import('vant/es')['Badge'];
     VanButton: typeof import('vant/es')['Button'];
     VanCascader: typeof import('vant/es')['Cascader'];
@@ -106,6 +106,8 @@ declare module 'vue' {
     VanRadio: typeof import('vant/es')['Radio'];
     VanRadioGroup: typeof import('vant/es')['RadioGroup'];
     VanSearch: typeof import('vant/es')['Search'];
+    VanStep: typeof import('vant/es')['Step'];
+    VanSteps: typeof import('vant/es')['Steps'];
     VanSwipeCell: typeof import('vant/es')['SwipeCell'];
     VanTab: typeof import('vant/es')['Tab'];
     VanTabbar: typeof import('vant/es')['Tabbar'];
