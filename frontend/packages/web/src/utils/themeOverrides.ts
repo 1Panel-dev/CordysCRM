@@ -1,8 +1,7 @@
+import { getLessVariableValue } from '@lib/shared/method/dom';
+
 import type { GlobalThemeOverrides } from 'naive-ui';
 
-function getLessVariableValue(variableName: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
-}
 /**
  * @returns GlobalThemeOverrides 主题全局配置
  * 注 如果需要定义相关组件的颜色配置，需要使用getLessVariableValue包裹

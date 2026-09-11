@@ -3,7 +3,7 @@
     round
     :width="props.size"
     :height="props.size"
-    :src="props.isWord ? 'no-res' : userStore.userInfo?.avatar || 'no-res'"
+    :src="innerAvatar || (props.isWord ? 'no-res' : userStore.userInfo?.avatar) || 'no-res'"
   >
     <template #error>
       <div
@@ -32,18 +32,22 @@
 
   const props = withDefaults(
     defineProps<{
+      avatar?: string;
       isWord?: boolean;
       size?: number;
       text?: string;
+      isUser?: boolean;
     }>(),
     {
       isWord: true,
       size: 40,
+      isUser: false,
     }
   );
 
   const userStore = useUserStore();
 
+  const innerAvatar = computed(() => (props.isUser ? userStore.userInfo.avatar : props.avatar));
   const fontSize = computed(() => Math.floor(props.size * 0.42)); // 比例调节
   const defaultUserAvatarSize = computed(() => Math.floor(props.size * 0.5)); // 比例调节
 

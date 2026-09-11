@@ -171,5 +171,3 @@ export function setFavicon(url: string) {
   // 添加新的 favicon
   head?.appendChild(link);
 }
-
-export default {};

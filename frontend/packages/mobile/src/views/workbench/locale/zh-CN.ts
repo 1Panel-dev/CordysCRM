@@ -91,4 +91,5 @@ export default {
   'workbench.record.all': '所有记录',
   'workbench.record.depart': '部门记录',
   'workbench.record.personal': '我的记录',
+  'workbench.approval.record': '审批记录',
 };

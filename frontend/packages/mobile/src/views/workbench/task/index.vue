@@ -153,7 +153,7 @@
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import ApprovalPopup from '../approval/approvalPopup.vue';
-  import ApprovalStatus from '../approval/approvalStatus.vue';
+  import ApprovalStatus from '@/components/business/crm-approval/crm-approval-status.vue';
 
   import {
     getApprovalConfigDetail,
