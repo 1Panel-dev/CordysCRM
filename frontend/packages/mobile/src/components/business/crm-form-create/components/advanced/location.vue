@@ -47,6 +47,7 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    needInitDetail?: boolean; // 判断是否编辑情况
   }>();
 
   const value = defineModel<string>('value', {
