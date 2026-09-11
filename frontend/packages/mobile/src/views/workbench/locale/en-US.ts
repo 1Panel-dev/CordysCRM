@@ -87,4 +87,5 @@ export default {
   'workbench.cancelApprovalSuccess': 'Withdrawn',
   'workbench.approvalStatus': 'Approval status',
   'workbench.quotationStatus': 'Status',
+  'workbench.approval.record': 'Approval Record',
 };

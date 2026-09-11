@@ -193,3 +193,11 @@ export function removeStyles(element: HTMLElement | Element | null, stylesToRemo
     element.setAttribute('style', updatedStyleString);
   }
 }
+
+/**
+ * 获取 less 变量对应 HEX 颜色值
+ * @param variableName  less 变量名称
+ */
+export function getLessVariableValue(variableName: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+}
