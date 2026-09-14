@@ -6,7 +6,7 @@
     class="crm-contract-table"
     :not-show-table="activeShowType === 'billboard'"
     :not-show-table-filter="isAdvancedSearchMode"
-    :action-config="actionConfig"
+    :action-config="props.readonly ? undefined : actionConfig"
     :fullscreen-target-ref="props.fullscreenTargetRef"
     :hiddenBackToTop="activeShowType === 'billboard'"
     :customTotal="activeShowType === 'billboard'"
@@ -19,11 +19,11 @@
   >
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
-        <n-button v-permission="['CONTRACT:ADD']" type="primary" @click="handleNewClick">
+        <n-button v-if="!props.readonly" v-permission="['CONTRACT:ADD']" type="primary" @click="handleNewClick">
           {{ t('contract.new') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['CONTRACT:IMPORT'])"
+          v-if="hasAnyPermission(['CONTRACT:IMPORT']) && !props.readonly"
           :api-type="FormDesignKeyEnum.CONTRACT"
           :title="t('module.contract')"
           @import-success="() => searchData()"
@@ -232,6 +232,7 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -244,6 +245,10 @@
 
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
+    readonly?: boolean;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
   const emit = defineEmits<{
     (
@@ -615,6 +620,9 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CONTRACT,
+    readonly: props.readonly,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     operationColumn: {
       key: 'operation',
       width: 180,
@@ -722,6 +730,8 @@
     setLoadListParams,
     setAdvanceFilter,
   } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
   const billboardRef = ref<InstanceType<typeof billboard>>();
 
   function handleFlowSuccess() {

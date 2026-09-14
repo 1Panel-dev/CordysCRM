@@ -1,56 +1,64 @@
 <template>
-  <CrmOverviewDrawer
-    ref="crmOverviewDrawerRef"
-    v-model:show="show"
-    v-model:active-tab="activeTab"
-    :tab-list="tabList"
-    :button-list="buttonList"
-    :title="sourceName"
-    :form-key="FormDesignKeyEnum.CUSTOMER"
-    :source-id="props.sourceId"
-    :formViewSize="formViewSize"
-    show-tab-setting
-    @button-pop-update="handleTransferPopUpdate"
-    @button-select="handleButtonSelect"
-    @saved="handleSaved"
-  >
-    <template #transferPopContent>
-      <TransferForm
-        ref="transferFormRef"
-        v-model:form="transferForm"
-        :module-type="ModuleConfigEnum.CUSTOMER_MANAGEMENT"
-      />
+  <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
+    <template #titleRight>
+      <CrmOperationButton
+        :group-list="buttonList"
+        :not-show-divider="true"
+        @pop-update="handleTransferPopUpdate"
+        @select="handleButtonSelect"
+      >
+        <template #transferPopContent>
+          <TransferForm
+            ref="transferFormRef"
+            v-model:form="transferForm"
+            :module-type="ModuleConfigEnum.CUSTOMER_MANAGEMENT"
+          />
+        </template>
+      </CrmOperationButton>
     </template>
-    <template #left>
-      <div class="h-full overflow-hidden">
-        <CrmFormDescription
-          ref="descriptionRef"
-          :form-key="FormDesignKeyEnum.CUSTOMER"
-          :source-id="props.sourceId"
-          :refresh-key="refreshKey"
-          class="p-[16px_24px]"
-          :column="layout === 'vertical' ? 3 : undefined"
-          :label-width="layout === 'vertical' ? 'auto' : undefined"
-          :value-align="layout === 'vertical' ? 'start' : undefined"
-          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
-          @init="handleDescriptionInit"
-        />
-      </div>
-    </template>
-    <template #right>
-      <div class="h-full pt-[16px]">
-        <ContactTable
-          v-if="activeTab === 'contact'"
-          :refresh-key="refreshKey"
-          :source-id="props.sourceId"
-          :initial-source-name="sourceName"
-          :readonly="collaborationType === 'READ_ONLY' || props.readonly"
-          :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
-        />
+    <div class="h-full bg-[var(--text-n9)] p-[16px]">
+      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="displayTabList" type="line">
+          <template #suffix>
+            <CrmTabSetting
+              v-if="formConfig"
+              :tab-list="enabledSystemDetailTabList"
+              :setting-key="`${FormDesignKeyEnum.CUSTOMER}-settingKey`"
+              :tab-config-version="systemTabConfigVersion"
+              @init="initTabList"
+            />
+          </template>
+        </CrmTab>
+      </CrmCard>
+      <CrmCard contentHeight="100%" hide-footer :special-height="64" no-content-padding>
+        <div v-show="activeTab === 'customer'" class="h-full overflow-hidden">
+          <CrmFormDescription
+            ref="descriptionRef"
+            :form-key="FormDesignKeyEnum.CUSTOMER"
+            :source-id="props.sourceId"
+            :refresh-key="refreshKey"
+            class="p-[24px]"
+            :column="2"
+            label-width="auto"
+            value-align="start"
+            tooltip-position="top-start"
+            :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
+            @init="handleDescriptionInit"
+          />
+        </div>
+        <div v-if="activeTab === 'contact'" class="h-full px-[24px] pt-[24px]">
+          <ContactTable
+            :refresh-key="refreshKey"
+            :source-id="props.sourceId"
+            :initial-source-name="sourceName"
+            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+            :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
+          />
+        </div>
         <FollowDetail
-          v-else-if="['followRecord', 'followPlan'].includes(activeTab) && show"
-          :active-type="(activeTab as 'followRecord'| 'followPlan')"
-          wrapper-class="h-[calc(100vh-162px)]"
+          v-if="['followRecord', 'followPlan'].includes(activeTab) && show"
+          :active-type="(activeTab as 'followRecord' | 'followPlan')"
+          wrapper-class="h-full"
           virtual-scroll-height="calc(100vh - 254px)"
           :follow-api-key="FormDesignKeyEnum.CUSTOMER"
           :source-id="props.sourceId"
@@ -64,18 +72,20 @@
           "
           :parentFormKey="FormDesignKeyEnum.CUSTOMER"
         />
-        <CrmHeaderTable
-          v-else-if="activeTab === 'headRecord'"
-          :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
-          :source-id="props.sourceId"
-          :load-list-api="getCustomerHeaderList"
-        />
-        <customerRelation
-          v-else-if="activeTab === 'relation'"
-          :source-id="props.sourceId"
-          :readonly="collaborationType === 'READ_ONLY' || props.readonly"
-        />
-        <CrmCard v-else-if="activeTab === 'opportunityInfo'" no-content-bottom-padding hide-footer>
+        <div v-if="activeTab === 'headRecord'" class="h-full px-[24px] pt-[24px]">
+          <CrmHeaderTable
+            :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
+            :source-id="props.sourceId"
+            :load-list-api="getCustomerHeaderList"
+          />
+        </div>
+        <div v-if="activeTab === 'relation'" class="h-full px-[24px] pt-[24px]">
+          <customerRelation
+            :source-id="props.sourceId"
+            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+          />
+        </div>
+        <div v-if="activeTab === 'opportunityInfo'" class="h-full px-[24px] pt-[24px]">
           <opportunityTable
             :source-id="props.sourceId"
             :customer-name="sourceName"
@@ -83,33 +93,23 @@
             :form-key="FormDesignKeyEnum.CUSTOMER_OPPORTUNITY"
             :readonly="collaborationType === 'READ_ONLY' || props.readonly"
           />
-        </CrmCard>
-        <collaborator
-          v-else-if="activeTab === 'collaborator'"
-          :source-id="props.sourceId"
-          :readonly="collaborationType === 'READ_ONLY' || props.readonly"
-        />
-        <ContractTimeline
-          v-else-if="activeTab === 'contract'"
-          :form-key="FormDesignKeyEnum.CONTRACT"
-          :source-id="props.sourceId"
-        />
-        <ContractTimeline
-          v-else-if="activeTab === 'contractPayment'"
-          :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
-          :source-id="props.sourceId"
-        />
-        <ContractTimeline
-          v-else-if="activeTab === 'contractPaymentRecord'"
-          :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
-          :source-id="props.sourceId"
-        />
-        <ContractTimeline
-          v-else-if="activeTab === 'invoice'"
-          :form-key="FormDesignKeyEnum.INVOICE"
-          :source-id="props.sourceId"
-        />
-        <CrmCard v-else-if="activeTab === 'order'" hide-footer no-content-bottom-padding>
+        </div>
+        <div v-if="activeTab === 'collaborator'" class="h-full px-[24px] pt-[24px]">
+          <collaborator :source-id="props.sourceId" :readonly="collaborationType === 'READ_ONLY' || props.readonly" />
+        </div>
+        <div v-if="activeTab === 'contract'" class="h-full p-[24px]">
+          <ContractTimeline :form-key="FormDesignKeyEnum.CONTRACT" :source-id="props.sourceId" />
+        </div>
+        <div v-if="activeTab === 'contractPayment'" class="h-full p-[24px]">
+          <ContractTimeline :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT" :source-id="props.sourceId" />
+        </div>
+        <div v-if="activeTab === 'contractPaymentRecord'" class="h-full p-[24px]">
+          <ContractTimeline :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD" :source-id="props.sourceId" />
+        </div>
+        <div v-if="activeTab === 'invoice'" class="h-full p-[24px]">
+          <ContractTimeline :form-key="FormDesignKeyEnum.INVOICE" :source-id="props.sourceId" />
+        </div>
+        <div v-if="activeTab === 'order'" class="h-full px-[24px] pt-[24px]">
           <OrderTable
             :formKey="FormDesignKeyEnum.CUSTOMER_ORDER"
             :sourceId="props.sourceId"
@@ -117,8 +117,8 @@
             :readonly="collaborationType === 'READ_ONLY' || props.readonly"
             @open-contract-drawer="handleOpenContractDrawer"
           />
-        </CrmCard>
-      </div>
+        </div>
+      </CrmCard>
       <CrmMoveModal
         v-model:show="showMoveModal"
         :reason-key="ReasonTypeEnum.CUSTOMER_POOL_RS"
@@ -132,8 +132,15 @@
         :sourceId="activeSourceId"
         @showCustomerDrawer="handleOpenCustomerDrawer"
       />
-    </template>
-  </CrmOverviewDrawer>
+    </div>
+    <CrmFormCreateDrawer
+      v-model:visible="formCreateDrawerVisible"
+      :form-key="FormDesignKeyEnum.CUSTOMER"
+      :source-id="props.sourceId"
+      need-init-detail
+      @saved="handleSaved"
+    />
+  </CrmDrawer>
 </template>
 
 <script setup lang="ts">
@@ -146,12 +153,16 @@
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
   import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
-  import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import collaborator from './collaborator.vue';
@@ -162,6 +173,7 @@
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
   import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
+  import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -185,10 +197,8 @@
     required: true,
   });
 
-  const crmOverviewDrawerRef = ref<InstanceType<typeof CrmOverviewDrawer>>();
-  const layout = computed(() => crmOverviewDrawerRef.value?.layout);
-
   const refreshKey = ref(0);
+  const formConfig = ref<FormConfig>();
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
   const sourceName = ref('');
@@ -241,8 +251,8 @@
     ];
   });
 
-  const activeTab = ref('contact');
-  const tabList = computed<TabContentItem[]>(() => {
+  const activeTab = ref('customer');
+  const staticTabList = computed<TabContentItem[]>(() => {
     const fullList = [
       {
         name: 'followRecord',
@@ -317,8 +327,32 @@
     }
     return fullList;
   });
+  const { enabledSystemDetailTabList, systemTabConfigVersion } = useFormDetailTabs(formConfig, staticTabList);
+  const settingTabList = ref<TabContentItem[]>([]);
+  const displayTabList = computed<TabContentItem[]>(() => [
+    {
+      name: 'customer',
+      tab: t('crmFormDesign.customer'),
+      enable: true,
+    },
+    ...settingTabList.value,
+  ]);
+
+  function initTabList(list: TabContentItem[]) {
+    settingTabList.value = list;
+  }
+
+  watch(
+    () => displayTabList.value,
+    (list) => {
+      if (!list.some((item) => item.name === activeTab.value)) {
+        activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
 
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
+  const formCreateDrawerVisible = ref(false);
   const transferForm = ref<any>({
     owner: null,
     belongToPublicPool: null,
@@ -386,7 +420,9 @@
   }
 
   function handleButtonSelect(key: string) {
-    if (key === 'delete') {
+    if (key === 'edit') {
+      formCreateDrawerVisible.value = true;
+    } else if (key === 'delete') {
       handleDelete();
     } else if (key === 'pop-transfer') {
       transfer();
@@ -409,6 +445,7 @@
   ) {
     collaborationType.value = _collaborationType;
     sourceName.value = _sourceName || '';
+    formConfig.value = config;
     formViewSize.value = config?.viewSize || 'large';
   }
 

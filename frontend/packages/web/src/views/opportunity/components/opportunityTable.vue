@@ -212,6 +212,7 @@
   import { batchDeleteOpt, deleteOpt, getOpportunityStageConfig, getOptStatistic, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, getOptHomeConditions } from '@/config/opportunity';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -240,6 +241,9 @@
     hiddenAdvanceFilter?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
     hiddenTotal?: boolean;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
   const emit = defineEmits<{
     (
@@ -627,6 +631,8 @@
   await initStageConfig();
   const { useTableRes, customFieldsFilterConfig, reasonOptions, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     excludeFieldIds: ['customerId'],
     containerClass: `.crm-opportunity-table-${props.formKey}`,
     operationColumn: props.readonly
@@ -724,6 +730,8 @@
     filterItem,
     advanceFilter,
   } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
 
   const exportParams = computed(() => {
     return {

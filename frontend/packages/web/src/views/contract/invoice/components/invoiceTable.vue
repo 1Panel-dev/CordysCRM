@@ -6,7 +6,7 @@
     :fullscreen-target-ref="props.fullscreenTargetRef"
     :class="`crm-contract-payment-table-${FormDesignKeyEnum.INVOICE}`"
     :not-show-table-filter="isAdvancedSearchMode"
-    :action-config="actionConfig"
+    :action-config="props.readonly ? undefined : actionConfig"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
@@ -26,7 +26,7 @@
           {{ t('invoice.new') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['CONTRACT_INVOICE:IMPORT']) && !props.isContractTab"
+          v-if="hasAnyPermission(['CONTRACT_INVOICE:IMPORT']) && !props.isContractTab && !props.readonly"
           :api-type="FormDesignKeyEnum.INVOICE"
           :title="t('module.invoice')"
           @import-success="() => searchData()"
@@ -132,6 +132,7 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -146,6 +147,9 @@
     sourceId?: string; // 合同详情下
     sourceName?: string;
     readonly?: boolean;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'openBusinessTitleDrawer', params: { id: string }): void;
@@ -398,6 +402,9 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.isContractTab ? FormDesignKeyEnum.CONTRACT_INVOICE : FormDesignKeyEnum.INVOICE,
+    readonly: props.readonly,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     operationColumn: {
       key: 'operation',
       width: computed(() => getOperationWidth(enableApproval.value)) as unknown as number,
@@ -481,6 +488,8 @@
     enableApproval,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)
