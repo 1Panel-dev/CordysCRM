@@ -29,11 +29,13 @@
         fup.converted,
         fup.status,
         fup.comment_count,
+        ctc.phone,
         if (fup.type = 'CLUE', c.pool_id, cu.pool_id) as poolId
         FROM
         follow_up_plan fup
         LEFT JOIN clue c ON c.id = fup.clue_id
         LEFT JOIN customer cu ON cu.id = fup.customer_id
+        LEFT JOIN customer_contact ctc on ctc.id = fup.contact_id
         WHERE fup.organization_id =#{orgId}
           AND (c.transition_type is null or c.transition_type != 'CUSTOMER')
         <if test="resourceType == 'CUSTOMER'">

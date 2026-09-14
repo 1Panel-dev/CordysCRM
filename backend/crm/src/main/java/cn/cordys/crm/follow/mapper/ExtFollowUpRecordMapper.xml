@@ -70,9 +70,11 @@
         fur.create_user,
         fur.update_user,
         fur.follow_method,
-        fur.comment_count
+        fur.comment_count,
+        ctc.phone
         FROM
         follow_up_record fur
+        LEFT JOIN customer_contact ctc on ctc.id = fur.contact_id
         <where>
             <if test="resourceType == 'CUSTOMER'">
                 AND fur.customer_id = #{request.sourceId}
