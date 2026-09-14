@@ -44,6 +44,10 @@
             and cpp.owner = #{userId}
         </if>
 
+        <if test="dataPermission != null and dataPermission.invisible">
+            AND 0
+        </if>
+
         <if test="request.contractId != null and request.contractId != ''">
             and cpp.contract_id = #{request.contractId}
         </if>

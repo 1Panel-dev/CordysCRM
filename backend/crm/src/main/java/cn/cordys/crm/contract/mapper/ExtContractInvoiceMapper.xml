@@ -65,6 +65,10 @@
             and ci.owner = #{userId}
         </if>
 
+        <if test="dataPermission != null and dataPermission.invisible">
+            AND 0
+        </if>
+
         <if test="request.keyword != null and request.keyword != ''">
             and (
             ci.name like concat('%', #{request.keyword},'%')

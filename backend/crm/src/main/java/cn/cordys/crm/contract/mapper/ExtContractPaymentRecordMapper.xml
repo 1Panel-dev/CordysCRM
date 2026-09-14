@@ -47,6 +47,10 @@
             and cpr.contract_id = #{request.contractId}
         </if>
 
+        <if test="dataPermission != null and dataPermission.invisible">
+            AND 0
+        </if>
+
         <if test="request.customerId != null and request.customerId != ''">
             and c.customer_id = #{request.customerId}
         </if>

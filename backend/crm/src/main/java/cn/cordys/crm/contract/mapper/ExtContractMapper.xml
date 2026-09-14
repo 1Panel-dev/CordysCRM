@@ -69,6 +69,10 @@
             and ct.owner = #{userId}
         </if>
 
+        <if test="dataPermission != null and dataPermission.invisible">
+            AND 0
+        </if>
+
         <if test="!source and request.keyword != null and request.keyword != ''">
             and (
             ct.name like concat('%', #{request.keyword},'%')

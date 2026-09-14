@@ -253,6 +253,10 @@ public class ModuleFieldController {
 	@PostMapping("/source/business-title")
 	@Operation(summary = "分页获取工商抬头信息")
 	public Pager<List<BusinessTitleListResponse>> sourceBusinessTitlePage(@Valid @RequestBody BusinessTitlePageRequest request) {
+        if (!PermissionUtils.hasPermission(PermissionConstants.CONTRACT_BUSINESS_TITLE_READ)) {
+            Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+            return PageUtils.setPageInfo(page, List.of());
+        }
 		return businessTitleService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
