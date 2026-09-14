@@ -2,6 +2,7 @@ import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddApiKeyUrl,
   AddAiModelUrl,
+  AddPersonalAiModelUrl,
   AddAgentTaskUrl,
   AddTermCategoryUrl,
   AddTermUrl,
@@ -13,6 +14,7 @@ import {
   DeleteAiModelUrl,
   DeleteApiKeyUrl,
   DeleteAuthUrl,
+  DeletePersonalAiModelUrl,
   DeleteTermCategoryUrl,
   DeleteTermUrl,
   DisableApiKeyUrl,
@@ -35,6 +37,8 @@ import {
   GetDETokenUrl,
   GetExportCenterListUrl,
   GetPageConfigUrl,
+  GetPersonalAiModelDetailUrl,
+  GetPersonalAiModelListUrl,
   GetPersonalFollowUrl,
   GetPersonalUrl,
   GetTenderConfigUrl,
@@ -67,6 +71,8 @@ import {
   UpdateAuthUrl,
   UpdateConfigEmailUrl,
   UpdateConfigSynchronizationUrl,
+  UpdatePersonalAiModelStatusUrl,
+  UpdatePersonalAiModelUrl,
   UpdatePersonalUrl,
   UpdateTermCategoryUrl,
   UpdateTermUrl,
@@ -305,6 +311,36 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: AddApiKeyUrl });
   }
 
+  // 个人中心模型-列表查询
+  function getPersonalAiModelList(data: TableQueryParams) {
+    return CDR.post<CommonList<AiModelItem>>({ url: GetPersonalAiModelListUrl, data });
+  }
+
+  // 个人中心模型-获取模型详情
+  function getPersonalAiModelDetail(id: string) {
+    return CDR.get<AiModelItem>({ url: `${GetPersonalAiModelDetailUrl}/${id}` });
+  }
+
+  // 个人中心模型-添加模型
+  function addPersonalAiModel(data: AiModelSaveParams) {
+    return CDR.post({ url: AddPersonalAiModelUrl, data });
+  }
+
+  // 个人中心模型-更新模型
+  function updatePersonalAiModel(data: AiModelSaveParams) {
+    return CDR.post({ url: UpdatePersonalAiModelUrl, data });
+  }
+
+  // 个人中心模型-更新模型状态
+  function updatePersonalAiModelStatus(data: AiModelStatusParams) {
+    return CDR.get({ url: `${UpdatePersonalAiModelStatusUrl}/${data.id}` });
+  }
+
+  // 个人中心模型-删除模型
+  function deletePersonalAiModel(id: string) {
+    return CDR.get({ url: `${DeletePersonalAiModelUrl}/${id}` });
+  }
+
   // 保存界面配置
   function savePageConfig(data: SavePageConfigParams) {
     return CDR.uploadFile({ url: SavePageConfigUrl }, data, 'files');
@@ -532,6 +568,12 @@ export default function useProductApi(CDR: CordysAxios) {
     disableApiKey,
     deleteApiKey,
     addApiKey,
+    getPersonalAiModelList,
+    getPersonalAiModelDetail,
+    addPersonalAiModel,
+    updatePersonalAiModel,
+    updatePersonalAiModelStatus,
+    deletePersonalAiModel,
     savePageConfig,
     getPageConfig,
     getTenderConfig,

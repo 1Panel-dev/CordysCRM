@@ -7,6 +7,7 @@ export const AgentConversationDetailUrl = '/agent-conversation/get'; // 获取�
 export const AgentConversationDeleteUrl = '/agent-conversation/delete'; // 删除对话及其全部消息
 export const AgentConversationRenameUrl = '/agent-conversation/rename'; // 重命名历史对话: /{conversationId}
 export const AgentChatFileUploadUrl = '/agent/chat/file/upload'; // 上传对话文件
+export const AgentModelOptionsUrl = '/agent/model/options'; // 查询对话可用模型及上次选择
 export const AgentMcpConfigListUrl = '/agent-mcp-config/list'; // 查询当前用户 MCP 配置列表
 export const AgentMcpConfigImportUrl = '/agent-mcp-config/import'; // 导入 MCP 配置文件
 export const AgentMcpConfigDeleteUrl = '/agent-mcp-config/delete'; // 删除 MCP 配置

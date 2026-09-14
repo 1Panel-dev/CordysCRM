@@ -22,6 +22,7 @@ interface AgentChatWorkbenchApis {
       message: string;
       requestId: string;
       conversationId?: string;
+      modelId?: string;
       mcpIds?: string[];
       attachmentIds?: string[];
       picIds?: string[];
@@ -302,6 +303,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
               message: context.content,
               requestId: entry.requestId,
               conversationId: entry.conversationId || undefined,
+              modelId: context.metadata?.model?.id,
               mcpIds: context.metadata?.mcps?.map((mcp) => mcp.id),
               attachmentIds: getAttachmentIds(context.metadata?.attachments),
               picIds: getPicIds(context.metadata?.attachments),

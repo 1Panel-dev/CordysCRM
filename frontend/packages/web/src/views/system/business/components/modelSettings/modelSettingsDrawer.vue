@@ -130,7 +130,8 @@
 
   import { addAiModel, updateAiModel } from '@/api/modules';
 
-  import type { FormRules, SelectOption } from 'naive-ui';
+  import { DEFAULT_MODEL_PROVIDER, getModelProviderOptions } from './modelProviderOptions';
+  import type { FormRules } from 'naive-ui';
 
   const props = defineProps<{
     model?: AiModelItem | null;
@@ -152,14 +153,7 @@
   const drawerTitle = computed(() =>
     isEdit.value ? t('system.business.modelSettings.updateModel') : t('system.business.modelSettings.addModel')
   );
-  const providerOptions = computed<SelectOption[]>(() => [
-    { label: 'OpenAI', value: 'OpenAI' },
-    { label: 'DeepSeek', value: 'DeepSeek' },
-    { label: t('system.business.modelSettings.providerAliyun'), value: '阿里云' },
-    { label: 'Anthropic', value: 'Anthropic' },
-    { label: t('system.business.modelSettings.providerTencent'), value: '腾讯云' },
-    { label: t('system.business.modelSettings.providerCustom'), value: '自定义' },
-  ]);
+  const providerOptions = computed(() => getModelProviderOptions(t));
 
   const formRef = ref<FormInst | null>(null);
   const saving = ref(false);
@@ -181,7 +175,7 @@
   const defaultForm: AiModelForm = {
     id: undefined,
     displayName: '',
-    provider: 'OpenAI',
+    provider: DEFAULT_MODEL_PROVIDER,
     modelName: '',
     apiUrl: '',
     apiKey: '',

@@ -41,4 +41,7 @@ export default {
   'aiChat.mcpImportOverSize': 'The MCP config file cannot exceed 100MB',
   'aiChat.mcpImportSuccess': 'Imported successfully',
   'aiChat.mcpImportFailed': 'Import failed',
+  'aiChat.personalModel': 'Personal model',
+  'aiChat.systemModel': 'System model',
+  'aiChat.noModel': 'No models',
 };

@@ -10,7 +10,14 @@
   >
     <n-scrollbar>
       <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="searchData()" />
+        <CrmTab
+          v-model:active-tab="activeTab"
+          no-content
+          :tab-list="tabList"
+          type="line"
+          :before-leave="beforeLeavePersonalTab"
+          @change="searchData()"
+        />
       </CrmCard>
       <CrmCard v-if="activeTab === PersonalEnum.INFO" hide-footer :special-height="64">
         <div class="flex font-medium text-[var(--text-n1)]">
@@ -89,6 +96,7 @@
         />
       </CrmCard>
       <apiKey v-if="activeTab === PersonalEnum.API_KEY" />
+      <PersonalAiModel v-if="activeTab === PersonalEnum.MODEL && licenseStore.hasLicense()" />
     </n-scrollbar>
   </CrmDrawer>
   <EditPersonalInfoModal v-model:show="showEditPersonalModal" :integration="currentInfo" @init-sync="searchData()" />
@@ -113,6 +121,7 @@
   import apiKey from './apiKey.vue';
   import EditPasswordModal from '@/views/system/business/components/editPasswordModal.vue';
   import EditPersonalInfoModal from '@/views/system/business/components/editPersonalInfoModal.vue';
+  import PersonalAiModel from '@/views/system/business/components/personalAiModel.vue';
 
   import { getPersonalInfo } from '@/api/modules';
   import { defaultUserInfo } from '@/config/business';
@@ -167,6 +176,10 @@
             },
           ]
         : []),
+      {
+        name: PersonalEnum.MODEL,
+        tab: t('log.model'),
+      },
     ];
   });
 
@@ -185,10 +198,29 @@
     showEditPasswordModal.value = true;
   }
 
+  function beforeLeavePersonalTab(newVal: string | number) {
+    if (newVal !== PersonalEnum.MODEL || licenseStore.hasLicense()) {
+      return true;
+    }
+
+    openModal(licenseStore.getNoLicenseModalConfig());
+    return false;
+  }
+
+  function ensureInitialTabLicense() {
+    if (activeTab.value !== PersonalEnum.MODEL || licenseStore.hasLicense()) {
+      return;
+    }
+
+    openModal(licenseStore.getNoLicenseModalConfig());
+    activeTab.value = PersonalEnum.INFO;
+  }
+
   watch(
     () => visible.value,
     (val) => {
       if (val) {
+        ensureInitialTabLicense();
         searchData();
       }
     }
