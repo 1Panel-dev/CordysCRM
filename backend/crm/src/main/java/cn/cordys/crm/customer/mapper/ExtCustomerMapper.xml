@@ -232,6 +232,10 @@
             and (c.owner = #{userId} or cc.id is not null)
         </if>
 
+        <if test="dataPermission != null and dataPermission.invisible">
+            AND 0
+        </if>
+
         <if test="request.keyword != null and request.keyword != ''">
             and c.name like concat('%', #{request.keyword},'%')
         </if>

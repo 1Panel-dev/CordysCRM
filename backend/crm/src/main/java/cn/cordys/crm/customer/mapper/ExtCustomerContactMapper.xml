@@ -46,6 +46,10 @@
             and cc.owner = #{userId}
         </if>
 
+        <if test="dataPermission != null and dataPermission.invisible">
+            AND 0
+        </if>
+
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>
