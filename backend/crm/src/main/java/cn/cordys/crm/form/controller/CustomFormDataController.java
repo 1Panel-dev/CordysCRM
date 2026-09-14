@@ -69,7 +69,7 @@ public class CustomFormDataController {
     @Operation(summary = "更新表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void update(@Validated @RequestBody CustomFormDataUpdateRequest request) {
-        customFormDataService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        customFormDataService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), true);
     }
 
     @GetMapping("/delete/{id}")
