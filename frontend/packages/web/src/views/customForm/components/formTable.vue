@@ -115,6 +115,7 @@
 
   import { batchDeleteCustomFormData, deleteCustomFormData } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -126,6 +127,9 @@
     formKey: string;
     formKeyName: string;
     readonly?: boolean;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -234,6 +238,8 @@
 
   const { useTableRes, customFieldsFilterConfig, initFormConfig, columns, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOM_FORM,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     customFormId,
     disabledSelection: (row: CustomFormPageItem) => {
       return !row.isAdmin || props.readonly;
@@ -259,6 +265,8 @@
   });
 
   const { propsRes, propsEvent, loadList, setLoadListParams, tableQueryParams, setAdvanceFilter } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
 
   const formColumns = computed(() => columns.value);
   function searchData(val?: string, refreshId?: string) {

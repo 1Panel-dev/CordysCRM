@@ -168,6 +168,7 @@
 
   import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -191,6 +192,9 @@
     readonly?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
     hiddenTotal?: boolean;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -512,6 +516,8 @@
   });
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     disabledSelection: (row: any) => {
       return row.collaborationType === 'READ_ONLY';
     },
@@ -623,6 +629,8 @@
     readonly: props.readonly,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
   const tableColumns = computed(() => {
     if (activeTab.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
       return propsRes.value.columns

@@ -186,6 +186,23 @@ export interface FormConfigLinkScenarioItem {
 }
 export type FormConfigLinkProp = Partial<Record<FormDesignKeyEnum, FormConfigLinkScenarioItem[]>>;
 export type FormViewSize = 'small' | 'medium' | 'large';
+export type FormDetailTabOrigin = 'SYSTEM' | 'CUSTOM'; // 标签配置来源：系统历史标签或用户手动新增标签。
+export type FormDetailTabRelatedFormType = 'SYSTEM' | 'CUSTOM'; // 关联表单类型：内置系统表单或自定义表单。
+
+export interface FormDetailTabConfig {
+  id: string;
+  origin: FormDetailTabOrigin;  // 历史系统标签与用户新增标签，用于控制清空范围。
+  systemTabKey?: string;  // 系统历史标签标识，用于和原生详情标签建立映射。
+  name: string;  // 详情页中展示的标签名称。
+  relatedFormType?: FormDetailTabRelatedFormType; // 关联表单所属类型，系统表单还是自定义表单配置查询。
+  // 关联表单标识：系统表单使用 formKey，自定义表单使用 customFormId。
+  relatedFormId?: string;
+  // 关联表单中指向当前表单的数据源字段 ID，作为列表查询过滤条件。
+  relatedFieldId?: string;
+  // 是否在当前表单详情页展示该标签。
+  enable: boolean;
+}
+
 export interface FormConfig {
   layout: number;
   labelPos: 'left' | 'top';
@@ -194,6 +211,7 @@ export interface FormConfig {
   optBtnPos: FormFooterDirection;
   viewSize?: FormViewSize;
   linkProp?: FormConfigLinkProp;
+  detailTabs?: FormDetailTabConfig[];
 }
 
 export interface SaveFormDesignConfigParams {
