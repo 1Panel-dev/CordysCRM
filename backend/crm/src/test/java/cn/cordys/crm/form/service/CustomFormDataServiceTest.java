@@ -29,9 +29,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -66,7 +64,7 @@ class CustomFormDataServiceTest {
         org.mockito.Mockito.doAnswer(invocation -> {
             updates.add(invocation.getArgument(0));
             return null;
-        }).when(service).update(org.mockito.ArgumentMatchers.any(), anyString(), anyString());
+        }).when(service).update(org.mockito.ArgumentMatchers.any(), anyString(), anyString(), eq(true));
         CustomFormDataBatchUpdateRequest request = new CustomFormDataBatchUpdateRequest();
         request.setCustomFormId("form-1");
         request.setIds(List.of("one", "two"));
@@ -160,7 +158,7 @@ class CustomFormDataServiceTest {
                 new BaseModuleFieldValue("note-field", "新备注"),
                 new BaseModuleFieldValue("cleared-items-field", List.of())));
 
-        service.update(request, "user-1", "org-1");
+        service.update(request, "user-1", "org-1", true);
 
         assertEquals(3, request.getModuleFields().size());
         assertEquals("新备注", valueOf(request, "note-field"));
@@ -272,7 +270,7 @@ class CustomFormDataServiceTest {
         request.setName("新名称");
 
         assertThrows(GenericException.class,
-                () -> service.update(request, "user-1", "org-1"));
+                () -> service.update(request, "user-1", "org-1", true));
         verify(fieldService, never()).getModuleFieldValuesByResourceId(anyString());
     }
 
@@ -303,12 +301,12 @@ class CustomFormDataServiceTest {
         request.setCustomFormId("form-1");
         request.setName("新名称");
 
-        service.update(request, "user-1", "org-1");
+        service.update(request, "user-1", "org-1", true);
         verify(fieldService, never()).getModuleFieldValuesByResourceId(anyString());
         org.junit.jupiter.api.Assertions.assertNull(request.getModuleFields());
         request.setModuleFields(List.of(new BaseModuleFieldValue("note", "新备注")));
         assertThrows(GenericException.class,
-                () -> service.update(request, "user-1", "org-1"));
+                () -> service.update(request, "user-1", "org-1", true));
         verify(fieldService, never()).deleteByResourceId(anyString());
         verify(fieldService, never()).saveModuleField(
                 org.mockito.ArgumentMatchers.any(), anyString(), anyString(), anyList(), anyBoolean());
