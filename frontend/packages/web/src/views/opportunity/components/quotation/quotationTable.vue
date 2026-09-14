@@ -135,6 +135,7 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -156,6 +157,9 @@
     readonly?: boolean;
     openseaHiddenColumns?: string[];
     refreshKey?: number;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
 
   const route = useRoute();
@@ -479,8 +483,10 @@
 
   await initApprovalPermission();
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     containerClass: `.crm-quotation-table-${props.formKey}`,
     operationColumn: props.readonly
       ? undefined
@@ -576,6 +582,8 @@
     };
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
 
   const isAdvancedSearchMode = ref(false);
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();

@@ -1,50 +1,58 @@
 <template>
-  <CrmOverviewDrawer
-    ref="crmOverviewDrawerRef"
-    v-model:show="show"
-    v-model:active-tab="activeTab"
-    :tab-list="tabList"
-    :button-list="buttonList"
-    :button-more-list="buttonMoreList"
-    :source-id="sourceId"
-    :title="sourceName"
-    :form-key="FormDesignKeyEnum.CLUE"
-    :show-tab-setting="false"
-    :formViewSize="formViewSize"
-    @button-pop-update="handleTransferPopUpdate"
-    @button-select="handleSelect"
-    @saved="
-      (res) => {
-        refreshKey += 1;
-        emit('saved', res);
-      }
-    "
-  >
-    <template #left>
-      <div class="h-full overflow-hidden">
-        <CrmFormDescription
-          :refresh-key="refreshKey"
-          :form-key="FormDesignKeyEnum.CLUE"
-          :source-id="sourceId"
-          class="p-[16px_24px]"
-          :column="layout === 'vertical' ? 3 : undefined"
-          :label-width="layout === 'vertical' ? 'auto' : undefined"
-          :value-align="layout === 'vertical' ? 'start' : undefined"
-          :readonly="!hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])"
-          @init="handleDescriptionInit"
-          @open-customer-detail="emit('openCustomerDrawer', $event)"
-        />
-      </div>
+  <CrmDrawer v-model:show="show" resizable no-padding :footer="false" :title="sourceName" :view-size="formViewSize">
+    <template #titleRight>
+      <CrmOperationButton
+        :group-list="buttonList"
+        :more-list="buttonMoreList"
+        :not-show-divider="true"
+        @pop-update="handleTransferPopUpdate"
+        @select="handleSelect"
+      >
+        <template #more>
+          <n-button type="primary" ghost class="n-btn-outline-primary">
+            {{ t('common.more') }}
+            <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
+          </n-button>
+        </template>
+        <template #transferPopContent>
+          <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
+        </template>
+      </CrmOperationButton>
     </template>
-    <template #transferPopContent>
-      <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
-    </template>
-    <template #right>
-      <div class="h-full pt-[16px]">
+    <div class="h-full bg-[var(--text-n9)] p-[16px]">
+      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
+          <template #suffix>
+            <CrmTabSetting
+              v-if="formConfig"
+              :tab-list="enabledSystemDetailTabList"
+              :setting-key="`${FormDesignKeyEnum.CLUE}-settingKey`"
+              :tab-config-version="systemTabConfigVersion"
+              @init="initTabList"
+            />
+          </template>
+        </CrmTab>
+      </CrmCard>
+      <CrmCard contentHeight="100%" hide-footer :special-height="64" no-content-padding>
+        <div v-show="activeTab === 'clue'" class="h-full overflow-hidden">
+          <CrmFormDescription
+            :refresh-key="refreshKey"
+            :form-key="FormDesignKeyEnum.CLUE"
+            :source-id="sourceId"
+            class="p-[24px]"
+            :column="2"
+            label-width="auto"
+            value-align="start"
+            tooltip-position="top-start"
+            :readonly="!hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])"
+            @init="handleDescriptionInit"
+            @open-customer-detail="emit('openCustomerDrawer', $event)"
+          />
+        </div>
         <FollowDetail
           v-if="['followRecord', 'followPlan'].includes(activeTab)"
-          :active-type="(activeTab as 'followRecord'| 'followPlan')"
-          wrapper-class="h-[calc(100vh-162px)]"
+          :active-type="(activeTab as 'followRecord' | 'followPlan')"
+          wrapper-class="h-full"
           virtual-scroll-height="calc(100vh - 254px)"
           :follow-api-key="FormDesignKeyEnum.CLUE"
           :initial-source-name="sourceName"
@@ -53,16 +61,23 @@
           :show-action="showAction"
           :parentFormKey="FormDesignKeyEnum.CLUE"
         />
-
-        <CrmHeaderTable
-          v-if="activeTab === 'headRecord'"
-          :form-key="FormDesignKeyEnum.CLUE_POOL"
-          :source-id="sourceId"
-          :load-list-api="getClueHeaderList"
-        />
-      </div>
-    </template>
-  </CrmOverviewDrawer>
+        <div v-if="activeTab === 'headRecord'" class="h-full px-[24px] pt-[24px]">
+          <CrmHeaderTable
+            :form-key="FormDesignKeyEnum.CLUE_POOL"
+            :source-id="sourceId"
+            :load-list-api="getClueHeaderList"
+          />
+        </div>
+      </CrmCard>
+    </div>
+    <CrmFormCreateDrawer
+      v-model:visible="formCreateDrawerVisible"
+      :form-key="FormDesignKeyEnum.CLUE"
+      :source-id="sourceId"
+      need-init-detail
+      @saved="handleSaved"
+    />
+  </CrmDrawer>
   <CrmMoveModal
     v-model:show="showMoveModal"
     :reason-key="ReasonTypeEnum.CLUE_POOL_RS"
@@ -80,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-  import { useMessage } from 'naive-ui';
+  import { NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -90,18 +105,25 @@
   import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
+  import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
   import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
-  import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import convertClueModal from './convertClueModal.vue';
 
   import { batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
+  import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -124,12 +146,11 @@
   const { t } = useI18n();
   const Message = useMessage();
 
-  const crmOverviewDrawerRef = ref<InstanceType<typeof CrmOverviewDrawer>>();
-  const layout = computed(() => crmOverviewDrawerRef.value?.layout);
-
   const sourceId = computed(() => props.detail?.id ?? '');
   const sourceName = ref('');
   const refreshKey = ref(0);
+  const formConfig = ref<FormConfig>();
+  const formCreateDrawerVisible = ref(false);
 
   const transferForm = ref<TransferParams>({
     ...defaultTransferForm,
@@ -211,6 +232,9 @@
 
   function handleSelect(key: string) {
     switch (key) {
+      case 'edit':
+        formCreateDrawerVisible.value = true;
+        break;
       case 'pop-transfer':
         handleTransfer();
         break;
@@ -297,8 +321,8 @@
   });
 
   // tab
-  const activeTab = ref('followRecord');
-  const tabList: TabContentItem[] = [
+  const activeTab = ref('clue');
+  const staticTabList: TabContentItem[] = [
     {
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
@@ -315,6 +339,29 @@
       enable: true,
     },
   ];
+  const { enabledSystemDetailTabList, systemTabConfigVersion } = useFormDetailTabs(formConfig, staticTabList);
+  const settingTabList = ref<TabContentItem[]>([]);
+  const tabList = computed<TabContentItem[]>(() => [
+    {
+      name: 'clue',
+      tab: t('crmFormDesign.clue'),
+      enable: true,
+    },
+    ...settingTabList.value,
+  ]);
+
+  function initTabList(list: TabContentItem[]) {
+    settingTabList.value = list;
+  }
+
+  watch(
+    () => tabList.value,
+    (list) => {
+      if (!list.some((item) => item.name === activeTab.value)) {
+        activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
 
   function handleMovedSuccess() {
     show.value = false;
@@ -322,6 +369,11 @@
   }
 
   const formViewSize = ref<FormViewSize>('large');
+  function handleSaved(res: any) {
+    refreshKey.value += 1;
+    emit('saved', res);
+  }
+
   function handleDescriptionInit(
     _collaborationType?: CollaborationType,
     _sourceName?: string,
@@ -329,6 +381,7 @@
     config?: FormConfig
   ) {
     sourceName.value = _sourceName || '';
+    formConfig.value = config;
     formViewSize.value = config?.viewSize || 'large';
   }
 </script>

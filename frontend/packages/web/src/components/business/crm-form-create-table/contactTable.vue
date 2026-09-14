@@ -191,6 +191,7 @@
     enableCustomerContact,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -213,6 +214,9 @@
     specialHeight?: number;
     hiddenAdvanceFilter?: boolean;
     hiddenTotal?: boolean;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -391,6 +395,8 @@
   });
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     showPagination: !props.sourceId,
     readonly: props.readonly,
     containerClass: '.crm-contact-table',
@@ -429,6 +435,8 @@
   });
 
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter, tableQueryParams } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
   const backupData = ref<CustomerContractListItem[]>([]);
 
   const filterConfigList = computed(() => [
