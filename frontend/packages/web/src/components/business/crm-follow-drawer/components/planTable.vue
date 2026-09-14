@@ -10,8 +10,8 @@
       :action-config="{ baseAction: [] }"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
-      @sorter-change="propsEvent.sorterChange"
-      @filter-change="propsEvent.filterChange"
+      @sorter-change="handleSorterChange"
+      @filter-change="handleFilterChange"
     >
       <template #actionLeft>
         <div class="flex gap-[12px]">
@@ -50,9 +50,10 @@
       </template>
       <template v-if="activeShowType === 'timeline'" #other>
         <div class="flex-1">
+          <n-spin v-if="timelineLoading && !timelineData.length" class="flex justify-center py-[32px]" />
           <FollowRecord
-            v-model:data="propsRes.data"
-            :loading="propsRes.loading"
+            v-else
+            v-model:data="timelineData"
             :virtual-scroll-height="isFullScreen ? 'calc(100vh - 143px)' : 'calc(100vh - 289px)'"
             :get-description-fun="getDescriptionFun"
             key-field="id"
@@ -60,7 +61,7 @@
             type="followPlan"
             :get-disabled-fun="() => true"
             :empty-text="t('crmFollowRecord.noFollowPlan')"
-            @reach-bottom="handleReachBottom"
+            @reach-bottom="handleTimelineReachBottom"
             @change="changePlanStatus"
           >
             <template #titleLeft="{ item }">
@@ -146,12 +147,14 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NTabPane, NTabs, useMessage } from 'naive-ui';
+  import { NButton, NSpin, NTabPane, NTabs, useMessage } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum, FormLinkScenarioEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { transformData } from '@lib/shared/method/formCreate';
+  import type { FilterConditionItem, SortParams } from '@lib/shared/models/common';
 
   import { EQUAL, NOT_EQUAL } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -166,6 +169,7 @@
   import { descriptionList, statusTabList } from '@/components/business/crm-follow-detail/config';
   import FollowRecord from '@/components/business/crm-follow-detail/followRecord.vue';
   import StatusTagSelect from '@/components/business/crm-follow-detail/statusTagSelect.vue';
+  import { getFormListApiMap } from '@/components/business/crm-form-create/config';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
@@ -405,7 +409,11 @@
     }
   }
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const {
+    useTableRes,
+    customFieldsFilterConfig,
+    fieldList: tableFieldList,
+  } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.FOLLOW_PLAN,
     containerClass: '.crm-plan-table',
     hiddenRefresh: true,
@@ -464,7 +472,91 @@
       },
     },
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  const timelineData = ref<any[]>([]);
+  const timelineLoading = ref(false);
+  const timelinePagination = reactive({ current: 0, total: 0, pageSize: 0 });
+  let timelineRequestId = 0;
+  let useTableResultAsTimelineFirstPage = false;
+  let hasTableLoadedOnce = false;
+  const activeShowType = ref<'table' | 'timeline'>();
+
+  function syncTimelineWithTableResult() {
+    timelineRequestId += 1;
+    timelineData.value = propsRes.value.data.map((item) => ({ ...item }));
+    timelinePagination.current = propsRes.value.crmPagination?.page ?? 1;
+    timelinePagination.total = propsRes.value.crmPagination?.itemCount ?? 0;
+    timelinePagination.pageSize = propsRes.value.crmPagination?.pageSize ?? 0;
+    timelineLoading.value = false;
+    useTableResultAsTimelineFirstPage = false;
+  }
+
+  async function loadTimelineData(reset = false) {
+    if (!reset && timelineLoading.value) {
+      return;
+    }
+
+    const requestId = ++timelineRequestId;
+    const current = reset ? 1 : timelinePagination.current + 1;
+    if (reset) {
+      timelineData.value = [];
+      timelinePagination.current = 0;
+      timelinePagination.total = 0;
+      timelinePagination.pageSize = 0;
+    }
+
+    timelineLoading.value = true;
+    try {
+      const response = await getFormListApiMap[FormDesignKeyEnum.FOLLOW_PLAN]!({
+        ...tableQueryParams.value,
+        current,
+        pageSize: tableQueryParams.value.pageSize ?? propsRes.value.crmPagination?.pageSize,
+      });
+      if (requestId !== timelineRequestId) {
+        return;
+      }
+
+      const data = response.list.map((item: any) => {
+        if (item.updateTime) item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss');
+        if (item.createTime) item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss');
+        return transformData({ item, originalData: response, fields: tableFieldList.value });
+      });
+      timelineData.value = reset
+        ? data
+        : [
+            ...timelineData.value,
+            ...data.filter((item) => !timelineData.value.some((dataItem) => dataItem.id === item.id)),
+          ];
+      timelinePagination.current = response.current;
+      timelinePagination.total = response.total;
+      timelinePagination.pageSize = response.pageSize;
+    } finally {
+      if (requestId === timelineRequestId) {
+        timelineLoading.value = false;
+      }
+    }
+  }
+
+  function refreshTimeline() {
+    if (activeShowType.value === 'timeline') {
+      useTableResultAsTimelineFirstPage = true;
+      timelineLoading.value = true;
+      if (!propsRes.value.loading) {
+        syncTimelineWithTableResult();
+      }
+    }
+  }
+
+  function handleTimelineReachBottom() {
+    if (
+      !timelineLoading.value &&
+      timelinePagination.pageSize > 0 &&
+      timelinePagination.total > timelinePagination.current * timelinePagination.pageSize
+    ) {
+      loadTimelineData();
+    }
+  }
   const tableColumns = computed(() =>
     propsRes.value.columns.map((column) =>
       column.key === 'operation'
@@ -484,22 +576,24 @@
   const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);
   const isAdvancedSearchMode = ref(false);
   const advancedOriginalForm = ref<FilterForm | undefined>();
-  function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
+  async function handleAdvSearch(filter: FilterResult, isAdvancedMode: boolean, originalForm?: FilterForm) {
     keyword.value = '';
     advancedOriginalForm.value = originalForm;
     isAdvancedSearchMode.value = isAdvancedMode;
     setAdvanceFilter(filter);
-    loadList();
+    await loadList();
+    refreshTimeline();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
-  function searchData(_keyword?: string) {
+  async function searchData(_keyword?: string) {
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
       viewId: activeTab.value,
       status: activeStatus.value,
     });
-    loadList();
+    await loadList();
+    refreshTimeline();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 
@@ -519,11 +613,11 @@
   }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  function handleGeneratedChart(res: FilterResult, form: FilterForm) {
+  async function handleGeneratedChart(res: FilterResult, form: FilterForm) {
     advancedOriginalForm.value = form;
     setAdvanceFilter(res);
     tableAdvanceFilterRef.value?.setAdvancedFilter(res, true);
-    searchData();
+    await searchData();
   }
 
   function searchByKeyword(val: string) {
@@ -535,7 +629,7 @@
 
   watch(
     () => activeTab.value,
-    (viewId) => {
+    async (viewId) => {
       if (viewId) {
         setLoadListParams({
           keyword: keyword.value,
@@ -544,26 +638,49 @@
         });
         crmTableRef.value?.setColumnSort(viewId);
       } else {
-        searchData();
+        await searchData();
       }
     }
   );
 
-  watch([() => tableRefreshId.value, () => activeStatus.value], () => {
-    searchData();
+  watch([() => tableRefreshId.value, () => activeStatus.value], async () => {
+    await searchData();
   });
 
-  const activeShowType = ref<'table' | 'timeline'>();
+  watch(
+    () => propsRes.value.loading,
+    (loading, previousLoading) => {
+      if (!loading && previousLoading) {
+        hasTableLoadedOnce = true;
+        if (useTableResultAsTimelineFirstPage && activeShowType.value === 'timeline') {
+          syncTimelineWithTableResult();
+        }
+      }
+    }
+  );
+
   watch(
     () => activeShowType.value,
     async (val) => {
       if (val) {
         await setItem(`plan-active-show-type`, activeShowType.value as 'table' | 'timeline');
       }
+      if (val === 'timeline') {
+        if (useTableResultAsTimelineFirstPage) {
+          timelineLoading.value = true;
+          if (hasTableLoadedOnce && !propsRes.value.loading) {
+            syncTimelineWithTableResult();
+          }
+          return;
+        }
+        await loadTimelineData(true);
+      }
     }
   );
   onMounted(async () => {
-    activeShowType.value = (await getItem<'timeline' | 'table'>(`plan-active-show-type`)) ?? 'table';
+    const showType = (await getItem<'timeline' | 'table'>(`plan-active-show-type`)) ?? 'table';
+    useTableResultAsTimelineFirstPage = showType === 'timeline';
+    activeShowType.value = showType;
   });
 
   function getDescriptionFun(item: any) {
@@ -590,15 +707,14 @@
     })) || []) as Description[];
   }
 
-  function handleReachBottom() {
-    if (
-      propsRes.value.crmPagination?.itemCount &&
-      propsRes.value.crmPagination?.page &&
-      propsRes.value.crmPagination?.pageSize &&
-      propsRes.value.crmPagination.itemCount > propsRes.value.crmPagination.page * propsRes.value.crmPagination.pageSize
-    ) {
-      propsEvent.value.pageChange(propsRes.value.crmPagination.page + 1);
-    }
+  async function handleSorterChange(sortObj: SortParams) {
+    await propsEvent.value.sorterChange(sortObj);
+    await refreshTimeline();
+  }
+
+  async function handleFilterChange(filters: FilterConditionItem[]) {
+    await propsEvent.value.filterChange(filters);
+    await refreshTimeline();
   }
 
   async function updatePlan() {

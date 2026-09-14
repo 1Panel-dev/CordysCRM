@@ -63,11 +63,11 @@ public class DataEaseSyncService {
         // 同步角色
         for (String orgId : orgIds) {
             log.info("定时同步DataEase数据，组织ID: {}", orgId);
-            syncDataEase(orgId);
+            syncDataEase(orgId, true);
         }
     }
 
-    public void syncDataEase(String orgId) {
+    public void syncDataEase(String orgId, boolean isAuto) {
         LocaleContextHolder.setLocale(Locale.SIMPLIFIED_CHINESE);
         DeThirdConfigRequest thirdConfig;
         try {
@@ -77,8 +77,10 @@ public class DataEaseSyncService {
             return;
         }
         if (thirdConfig == null
-                || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(), thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())
-                || BooleanUtils.isNotTrue(thirdConfig.getDeAutoSync())) {
+                || StringUtils.isAnyBlank(thirdConfig.getDeAccessKey(), thirdConfig.getDeSecretKey(), thirdConfig.getDeOrgID(), thirdConfig.getRedirectUrl())) {
+            return;
+        }
+        if (isAuto && BooleanUtils.isNotTrue(thirdConfig.getDeAutoSync())) {
             return;
         }
         try {

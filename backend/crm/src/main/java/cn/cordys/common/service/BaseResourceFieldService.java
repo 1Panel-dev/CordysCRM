@@ -413,7 +413,6 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @return 字段集合
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return new HashMap<>(2);
@@ -854,7 +853,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
 
         String resourceId = (String) getResourceFieldValue(resource, "id");
-        List<T> resourceFields = getResourceField(List.of(resourceId));
+        List<BaseResourceField> resourceFields = new ArrayList<>(getResourceField(List.of(resourceId)));
+        resourceFields.addAll(getResourceFieldBlob(List.of(resourceId)));
         Map<String, BaseModuleFieldValue> moduleFieldValueMap = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, t -> t));
 
         // 校验业务字段，字段值是否重复
@@ -894,10 +894,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 }
             }
         });
-        Map<String, T> resourceMap = resourceFields.stream().collect(Collectors.toMap(BaseResourceField::getFieldId, Function.identity()));
+        Set<String> existingFieldIds = resourceFields.stream().map(BaseResourceField::getFieldId).collect(Collectors.toSet());
         Map<String, BaseField> allbaseFieldMap = allFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity()));
         List<BaseModuleFieldValue> addlist = moduleFieldValues.stream().filter(moduleField ->
-                allbaseFieldMap.containsKey(moduleField.getFieldId()) && !resourceMap.containsKey(moduleField.getFieldId())
+                allbaseFieldMap.containsKey(moduleField.getFieldId()) && !existingFieldIds.contains(moduleField.getFieldId())
         ).toList();
 
         saveModuleField(resource, orgId, userId, addlist, update);

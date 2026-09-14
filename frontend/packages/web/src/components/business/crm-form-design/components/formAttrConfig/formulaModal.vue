@@ -42,6 +42,7 @@
 
   function saveCalculateFormula() {
     const result = crmFormulaEditorRef.value?.getCalculateFormula();
+    if (result === undefined) return;
     emit('save', result);
   }
 

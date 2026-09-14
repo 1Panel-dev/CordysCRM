@@ -494,7 +494,7 @@ public class ProductPriceService extends BaseExportService {
 
         } catch (Exception e) {
             log.error("价格表导入失败, 原因: {}", e.getMessage(), e);
-            throw new GenericException("导入异常，请检查文件数据！");
+            throw new GenericException("导入异常，请检查文件数据！" + e);
         }
     }
 

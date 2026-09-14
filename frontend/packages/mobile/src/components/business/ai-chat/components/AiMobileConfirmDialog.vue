@@ -12,16 +12,24 @@
       <div v-for="(item, itemIndex) in confirmItems" :key="`${item.prompt}_${itemIndex}`" class="[&+&]:mt-[12px]">
         <div v-if="item.prompt" class="mb-[4px] font-semibold text-[var(--text-n1)]">{{ item.prompt }}</div>
 
-        <van-checkbox-group v-if="isMultipleItem(item)" v-model="multipleValues[itemIndex]">
+        <van-field
+          v-if="item.textInput"
+          v-model="textValues[itemIndex]"
+          :placeholder="t('common.pleaseInput')"
+          clearable
+          class="ai-mobile-confirm__input"
+        />
+
+        <van-checkbox-group v-else-if="isMultipleItem(item)" v-model="multipleValues[itemIndex]">
           <van-cell-group :border="false">
             <van-cell
               v-for="option in getItemOptions(item)"
-              :key="option.label"
+              :key="option.value"
               clickable
               :border="false"
               class="!px-0"
             >
-              <van-checkbox :name="option.label" class="ai-mobile-confirm__option">
+              <van-checkbox :name="option.value" class="ai-mobile-confirm__option">
                 <div class="flex flex-col gap-[2px] text-left">
                   <span>{{ option.label }}</span>
                   <small v-if="option.description" class="text-[12px] text-[var(--text-n4)]">
@@ -37,12 +45,12 @@
           <van-cell-group :border="false">
             <van-cell
               v-for="option in getItemOptions(item)"
-              :key="option.label"
+              :key="option.value"
               clickable
               :border="false"
               class="!px-0"
             >
-              <van-radio :name="option.label" class="ai-mobile-confirm__option">
+              <van-radio :name="option.value" class="ai-mobile-confirm__option">
                 <div class="flex flex-col gap-[2px] text-left">
                   <span>{{ option.label }}</span>
                   <small v-if="option.description" class="text-[12px] text-[var(--text-n4)]">
@@ -63,7 +71,7 @@
 
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { AgentChatConfirmData, AgentChatConfirmItem } from '@lib/shared/models/ai';
+  import type { AgentChatConfirmData, AgentChatConfirmItem, AgentChatConfirmRequest } from '@lib/shared/models/ai';
 
   const props = defineProps<{
     confirm: AgentChatConfirmData;
@@ -77,6 +85,7 @@
 
   const singleValues = ref<string[]>([]);
   const multipleValues = ref<string[][]>([]);
+  const textValues = ref<string[]>([]);
 
   const confirmItems = computed(() => props.confirm.items ?? []);
 
@@ -88,7 +97,7 @@
     return item.options ?? [];
   }
 
-  function getSelectedLabels(item: AgentChatConfirmItem, itemIndex: number): string[] {
+  function getSelectedValues(item: AgentChatConfirmItem, itemIndex: number): string[] {
     if (isMultipleItem(item)) {
       return multipleValues.value[itemIndex] ?? [];
     }
@@ -98,18 +107,18 @@
     return singleValue ? [singleValue] : [];
   }
 
-  function appendButtonLabelToLastAnswer(answers: Record<string, string>, buttonLabel: string): Record<string, string> {
-    const answerKeys = Object.keys(answers);
-    const lastAnswerKey = answerKeys.at(-1);
+  function getAnswerValues(item: AgentChatConfirmItem, itemIndex: number): string[] {
+    const textValue = textValues.value[itemIndex]?.trim();
 
-    if (!lastAnswerKey) {
-      return answers;
+    if (item.textInput && textValue) {
+      return [textValue];
     }
 
-    return {
-      ...answers,
-      [lastAnswerKey]: [answers[lastAnswerKey], buttonLabel].filter(Boolean).join(', '),
-    };
+    if (item.textInput) {
+      return [];
+    }
+
+    return getSelectedValues(item, itemIndex);
   }
 
   async function submitConfirm(action: string): Promise<boolean> {
@@ -117,27 +126,28 @@
       return false;
     }
 
-    const answers = confirmItems.value.reduce<Record<string, string>>((result, item, itemIndex) => {
-      const selectedLabels = getSelectedLabels(item, itemIndex);
+    const outcome: AgentChatConfirmRequest['outcome'] =
+      action !== 'confirm' ? 'CANCELLED' : props.confirm.confirmation ? 'CONFIRMED' : 'ANSWERED';
+    const answers =
+      outcome === 'ANSWERED'
+        ? confirmItems.value.reduce<Record<string, string>>((result, item, itemIndex) => {
+            const answerValues = getAnswerValues(item, itemIndex);
 
-      if (item.prompt) {
-        result[item.prompt] = action === 'confirm' ? selectedLabels.join(', ') : '';
-      }
+            if (item.prompt && (getItemOptions(item).length === 0 || answerValues.length > 0)) {
+              result[item.prompt] = answerValues.join(', ');
+            }
 
-      return result;
-    }, {});
-    const submitAnswers = appendButtonLabelToLastAnswer(
-      answers,
-      action === 'confirm' ? t('aiChat.confirmExecute') : t('aiChat.confirmCancel')
-    );
+            return result;
+          }, {})
+        : {};
 
-    if (Object.keys(submitAnswers).length === 0) {
+    if (outcome === 'ANSWERED' && Object.keys(answers).length === 0) {
       return true;
     }
 
     try {
       submitting.value = true;
-      await runtime.confirm(props.confirm, submitAnswers);
+      await runtime.confirm(props.confirm, { outcome, answers });
       return true;
     } finally {
       submitting.value = false;
@@ -153,9 +163,10 @@
     () => {
       showDialog.value = true;
       singleValues.value = confirmItems.value.map((item) =>
-        isMultipleItem(item) ? '' : getItemOptions(item)[0]?.label ?? ''
+        isMultipleItem(item) || item.textInput ? '' : getItemOptions(item)[0]?.value ?? ''
       );
       multipleValues.value = confirmItems.value.map(() => []);
+      textValues.value = confirmItems.value.map(() => '');
     },
     { immediate: true }
   );
@@ -172,6 +183,16 @@
       text-align: left;
       color: var(--text-n1);
       flex: 1;
+    }
+  }
+  .ai-mobile-confirm__input {
+    padding: 8px 0;
+    :deep(.van-field__control) {
+      padding: 8px 10px;
+      border: 1px solid var(--text-n8);
+      border-radius: 4px;
+      color: var(--text-n1);
+      background: var(--text-n10);
     }
   }
 </style>

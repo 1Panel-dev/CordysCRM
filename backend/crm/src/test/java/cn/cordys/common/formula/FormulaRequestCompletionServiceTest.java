@@ -1,0 +1,231 @@
+package cn.cordys.common.formula;
+
+import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.util.JSON;
+import cn.cordys.crm.opportunity.dto.request.OpportunityQuotationAddRequest;
+import cn.cordys.crm.system.dto.field.InputField;
+import cn.cordys.crm.system.dto.field.SerialNumberField;
+import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.service.ModuleFormService;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+class FormulaRequestCompletionServiceTest {
+
+    @Test
+    void 更新合并旧输入并保留真实编号且不改变统一响应() {
+        SerialNumberField serial = field(new SerialNumberField(), "serial", "编号", "SERIAL_NUMBER");
+        serial.setBusinessKey("number");
+        InputField input = field(new InputField(), "input", "输入", "INPUT");
+        InputField name = field(new InputField(), "name", "名称", "INPUT");
+        name.setBusinessKey("name");
+        name.setDefaultValueType("formula");
+        name.setFormula(formula(function("CONCATENATE", fieldNode("serial"), fieldNode("input"))));
+        ModuleFormService forms = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String key, String org) {
+                return List.of(serial, input, name);
+            }
+        };
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                forms, new FormulaCompletionService(new FormulaEngine()));
+        FormulaUpdateRequest request = new FormulaUpdateRequest();
+        request.setNumber("伪造编号");
+        request.setName("伪造结果");
+        service.completeUpdate("quotation", request, Map.of("number", "Q1",
+                "moduleFields", List.of(new BaseModuleFieldValue("input", "旧值"))));
+        assertEquals("Q1旧值", request.getName());
+        assertEquals("Q1", request.getNumber());
+        assertEquals("旧值", request.getModuleFields().getFirst().getFieldValue());
+        request.setModuleFields(List.of(new BaseModuleFieldValue("input", "新值")));
+        service.completeUpdate("quotation", request, Map.of("number", "Q1",
+                "moduleFields", List.of(new BaseModuleFieldValue("input", "旧值"))));
+        assertEquals("Q1新值", request.getName());
+        // 计算只改变请求内字段，不扩展主工程统一响应。
+        Map<String, Object> response = JSON.parseToMap(JSON.toJSONString(
+                cn.cordys.common.response.handler.ResultHolder.success(Map.of("id", "record-1"))));
+        org.junit.jupiter.api.Assertions.assertFalse(response.containsKey("metadata"));
+        assertEquals(Map.of("id", "record-1"), response.get("data"));
+    }
+
+    @Test
+    void fillsBusinessFormulaBeforeRequestValidationWithoutAdditionalRequestArguments() {
+        SerialNumberField quotationNumber = field(
+                new SerialNumberField(), "quotationNumber", "报价编号", "SERIAL_NUMBER");
+        quotationNumber.setBusinessKey("no");
+        InputField quotationName = field(new InputField(), "quotationName", "报价单名称", "INPUT");
+        quotationName.setBusinessKey("name");
+        quotationName.setDefaultValueType("formula");
+        quotationName.setFormula(formula(function("CONCATENATE",
+                literal("Q-", "string"), fieldNode("quotationNumber"))));
+        ModuleFormService moduleFormService = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String formKey, String organizationId) {
+                assertEquals("quotation", formKey);
+                return List.of(quotationNumber, quotationName);
+            }
+        };
+        FormulaCompletionService completionService = new FormulaCompletionService(new FormulaEngine());
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                moduleFormService, completionService);
+
+        OpportunityQuotationAddRequest request = new OpportunityQuotationAddRequest();
+        request.setModuleFields(new ArrayList<>());
+        service.complete("quotation", request);
+
+        assertEquals("Q-${报价编号}", request.getName());
+        assertNotNull(request.getModuleFields());
+    }
+
+    @Test
+    void 服务端公式覆盖客户端提交的旧结果() {
+        SerialNumberField quotationNumber = field(
+                new SerialNumberField(), "quotationNumber", "报价编号", "SERIAL_NUMBER");
+        quotationNumber.setBusinessKey("number");
+        InputField quotationName = field(new InputField(), "quotationName", "报价单名称", "INPUT");
+        quotationName.setBusinessKey("name");
+        quotationName.setDefaultValueType("formula");
+        quotationName.setFormula(formula(function("CONCATENATE",
+                literal("Q-", "string"), fieldNode("quotationNumber"))));
+        ModuleFormService moduleFormService = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String formKey, String organizationId) {
+                return List.of(quotationNumber, quotationName);
+            }
+        };
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                moduleFormService, new FormulaCompletionService(new FormulaEngine()));
+        FormulaUpdateRequest request = new FormulaUpdateRequest();
+        request.setNumber("BJ0001");
+        request.setName("前端已计算的公式值");
+        request.setModuleFields(new ArrayList<>());
+
+        service.complete("quotation", request, false);
+
+        assertEquals("Q-BJ0001", request.getName());
+    }
+
+    @Test
+    void calculatesMissingUpdateFormulaWithExistingSerialNumber() {
+        SerialNumberField quotationNumber = field(
+                new SerialNumberField(), "quotationNumber", "报价编号", "SERIAL_NUMBER");
+        quotationNumber.setBusinessKey("number");
+        InputField quotationName = field(new InputField(), "quotationName", "报价单名称", "INPUT");
+        quotationName.setBusinessKey("name");
+        quotationName.setDefaultValueType("formula");
+        quotationName.setFormula(formula(function("CONCATENATE",
+                literal("Q-", "string"), fieldNode("quotationNumber"))));
+        ModuleFormService moduleFormService = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String formKey, String organizationId) {
+                return List.of(quotationNumber, quotationName);
+            }
+        };
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                moduleFormService, new FormulaCompletionService(new FormulaEngine()));
+        FormulaUpdateRequest request = new FormulaUpdateRequest();
+        request.setNumber("BJ0001");
+        request.setModuleFields(new ArrayList<>());
+
+        service.complete("quotation", request, false);
+
+        assertEquals("Q-BJ0001", request.getName());
+    }
+
+    @Test
+    void updateDoesNotInventSerialNumberWhenCurrentValueIsMissing() {
+        SerialNumberField quotationNumber = field(
+                new SerialNumberField(), "quotationNumber", "报价编号", "SERIAL_NUMBER");
+        quotationNumber.setBusinessKey("number");
+        InputField quotationName = field(new InputField(), "quotationName", "报价单名称", "INPUT");
+        quotationName.setBusinessKey("name");
+        quotationName.setDefaultValueType("formula");
+        quotationName.setFormula(formula(function("CONCATENATE",
+                literal("Q-", "string"), fieldNode("quotationNumber"))));
+        ModuleFormService moduleFormService = new ModuleFormService() {
+            @Override
+            public List<BaseField> getAllFields(String formKey, String organizationId) {
+                return List.of(quotationNumber, quotationName);
+            }
+        };
+        FormulaRequestCompletionService service = new FormulaRequestCompletionService(
+                moduleFormService, new FormulaCompletionService(new FormulaEngine()));
+        FormulaUpdateRequest request = new FormulaUpdateRequest();
+        request.setModuleFields(new ArrayList<>());
+
+        service.complete("quotation", request, false);
+
+        assertEquals("Q-", request.getName());
+    }
+
+    public static class FormulaUpdateRequest {
+
+        private String name;
+        private String number;
+        private List<BaseModuleFieldValue> moduleFields;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getNumber() {
+            return number;
+        }
+
+        public void setNumber(String number) {
+            this.number = number;
+        }
+
+        public List<BaseModuleFieldValue> getModuleFields() {
+            return moduleFields;
+        }
+
+        public void setModuleFields(List<BaseModuleFieldValue> moduleFields) {
+            this.moduleFields = moduleFields;
+        }
+    }
+
+    private <T extends BaseField> T field(T field, String id, String name, String type) {
+        field.setId(id);
+        field.setName(name);
+        field.setType(type);
+        field.setReadable(true);
+        return field;
+    }
+
+    private String formula(Map<String, Object> ir) {
+        return JSON.toJSONString(Map.of(
+                "source", "test",
+                "display", "test",
+                "fields", List.of(),
+                "ir", ir
+        ));
+    }
+
+    private Map<String, Object> fieldNode(String fieldId) {
+        return Map.of("type", "field", "fieldId", fieldId);
+    }
+
+    private Map<String, Object> literal(Object value, String valueType) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("type", "literal");
+        result.put("value", value);
+        result.put("valueType", valueType);
+        return result;
+    }
+
+    @SafeVarargs
+    private Map<String, Object> function(String name, Map<String, Object>... args) {
+        return Map.of("type", "function", "name", name, "args", List.of(args));
+    }
+}

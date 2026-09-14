@@ -33,6 +33,10 @@ public class ContractPaymentRecordLogService extends BaseModuleLogService {
                 setPlanFieldName(differ);
                 continue;
             }
+
+            if (differ.getColumn() != null && differ.getColumn().contains("-")) {
+                differ.setColumnName(differ.getColumn());
+            }
         }
         return differences;
     }

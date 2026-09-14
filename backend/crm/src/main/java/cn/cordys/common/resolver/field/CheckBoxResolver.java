@@ -61,6 +61,7 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
             return StringUtils.EMPTY;
         }
         try {
+            text = text.replaceAll("，", ",");
             List<String> texts = parseFakeJsonArray(text);
             if (CollectionUtils.isEmpty(texts)) {
                 return StringUtils.EMPTY;

@@ -32,7 +32,7 @@ public class CustomFormRoleController {
     @Operation(summary = "获取表单角色列表")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public List<CustomFormRoleListResponse> listByFormId(@PathVariable String customFormId) {
-        return customFormRoleService.listByFormId(customFormId, SessionUtils.getUserId());
+        return customFormRoleService.listByFormId(customFormId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/users")

@@ -237,6 +237,12 @@ public class BaseFollowUpService {
                 permission = isRead ? PermissionConstants.OPPORTUNITY_MANAGEMENT_READ : PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE;
                 Opportunity opportunity = opportunityMapper.selectByPrimaryKey(record.getOpportunityId());
                 if (opportunity != null) {
+                    if (StringUtils.isNotBlank(opportunity.getCustomerId())) {
+                        Customer relateCustomer = customerMapper.selectByPrimaryKey(opportunity.getCustomerId());
+                        if (relateCustomer != null && Strings.CI.equals(relateCustomer.getOwner(), userId)) {
+                            return;
+                        }
+                    }
                     checkPermission(orgId, userId, permission, opportunity.getOwner());
                     return;
                 }

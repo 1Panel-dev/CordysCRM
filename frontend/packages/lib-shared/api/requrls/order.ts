@@ -3,6 +3,7 @@ export const UpdateOrderUrl = '/order/update';
 export const BatchUpdateOrderUrl = '/order/batch/update';
 export const UpdateOrderStageUrl = '/order/update/stage';
 export const DeleteOrderUrl = '/order/delete';
+export const BatchDeleteOrderUrl = '/order/batch/delete';
 export const GetOrderDetailUrl = '/order/get';
 export const OrderPageUrl = '/order/page';
 export const OrderDetailSnapshotUrl = '/order/get/snapshot';

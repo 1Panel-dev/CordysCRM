@@ -200,7 +200,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
             }
             String bizId = IDGenerator.nextStr();
             headMap.forEach((k, v) -> {
-                v = v.replace("\u00A0", "").trim();
+                v = v.replaceAll("\u00A0", "").trim();
                 BaseField field = fieldMap.get(v);
                 if (field == null || field.isSerialNumber()) {
                     return;
@@ -322,9 +322,10 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
         if (field instanceof DatasourceField datasourceField) {
             if (Strings.CI.equals(datasourceField.getDataSourceType(), FieldSourceType.PRICE.name()) && refSubMap.containsKey(v)) {
                 //获取到价格表的子表格所有显示字段的key
+                String subName = v.split("_")[0];
                 List<Integer> keys = headMap.entrySet().stream()
                         .filter(entry -> priceSubRefFieldMap.keySet().stream()
-                                .anyMatch(name -> Objects.equals(entry.getValue(), name + REF_SYMBOL)))
+                                .anyMatch(name -> Objects.equals(entry.getValue().replaceAll("\u00A0", "").trim(), name + REF_SYMBOL) && (entry.getValue().contains(subName))))
                         .map(Map.Entry::getKey).toList();
                 for (Integer key : keys) {
                     if (rowData.containsKey(key)) {
@@ -333,7 +334,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                             //没数据 匹配下一个字段
                             continue;
                         }
-                        BaseField baseField = priceSubRefFieldMap.get(headMap.get(key).replace(REF_SYMBOL, ""));
+                        BaseField baseField = priceSubRefFieldMap.get(headMap.get(key).replace(REF_SYMBOL, "").replaceAll("\u00A0", ""));
                         Set<String> bizIds = new HashSet<>();
                         if (baseField instanceof DatasourceField sourceField && Strings.CI.equals(sourceField.getDataSourceType(), "PRODUCT") && Strings.CI.equals(sourceField.getInternalKey(), "priceProduct")) {
                             bizIds = productPriceService.getBizIdsByResource(resourceId, data);

@@ -33,7 +33,7 @@
   import { computed, ref, watch } from 'vue';
   import { NCollapse, NCollapseItem } from 'naive-ui';
 
-  import { type AiChatMessagePart, formatAiChatDuration } from '@lib/shared/ai-chat';
+  import { type AiChatMessagePart, type AiChatThoughtStatus, formatAiChatDuration } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import AiMarkdownBlock from './AiMarkdownBlock.vue';
@@ -49,6 +49,7 @@
     items: AiThoughtItem[];
     messageId: string;
     isGenerating?: boolean;
+    status?: AiChatThoughtStatus;
     duration?: number;
   }>();
 
@@ -58,8 +59,12 @@
 
   const durationText = computed(() => formatAiChatDuration(props.duration));
   const titleText = computed(() => {
-    if (props.isGenerating) {
+    if (props.status === 'thinking' || props.isGenerating) {
       return t('aiChat.thinkingInProgress');
+    }
+
+    if (props.status === 'stopped') {
+      return t('aiChat.thinkingStopped');
     }
 
     return [t('common.completed'), durationText.value].filter(Boolean).join(' ');

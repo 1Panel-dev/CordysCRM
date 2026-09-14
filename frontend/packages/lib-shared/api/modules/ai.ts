@@ -29,6 +29,7 @@ import type { CommonList, TableQueryParams } from '../../models/common';
 import type {
   AgentChatCancelParams,
   AgentChatConfirmData,
+  AgentChatConfirmRequest,
   AgentChatDoneData,
   AgentChatProgressData,
   AgentChatRunData,
@@ -312,10 +313,10 @@ export default function useAiApi(CDR: CordysAxios) {
     await CDR.post({ url: AgentChatCancelUrl, data });
   }
 
-  async function confirmAgentChat(dialogId: string, answers: Record<string, string>) {
+  async function confirmAgentChat(dialogId: string, request: AgentChatConfirmRequest) {
     await CDR.post({
       url: `${AgentChatConfirmUrl}/${dialogId}`,
-      data: answers,
+      data: request,
     });
   }
 
@@ -323,8 +324,12 @@ export default function useAiApi(CDR: CordysAxios) {
     return CDR.post({ url: `${AgentChatUrl}/${runId}/like` });
   }
 
-  function dislikeAgentChat(runId: string) {
-    return CDR.post({ url: `${AgentChatUrl}/${runId}/dislike` });
+  function dislikeAgentChat(runId: string, data?: { reason: string }) {
+    return CDR.post({ url: `${AgentChatUrl}/${runId}/dislike`, data });
+  }
+
+  function cancelAgentChatFeedback(runId: string) {
+    return CDR.post({ url: `${AgentChatUrl}/${runId}/feedback/cancel` });
   }
 
   function getAgentConversationPage(data: AgentConversationQueryRequest) {
@@ -408,6 +413,7 @@ export default function useAiApi(CDR: CordysAxios) {
     confirmAgentChat,
     likeAgentChat,
     dislikeAgentChat,
+    cancelAgentChatFeedback,
     getAgentConversationPage,
     getAgentConversationDetail,
     deleteAgentConversation,

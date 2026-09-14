@@ -18,6 +18,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
@@ -47,6 +48,7 @@ import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
+import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFieldExtService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
@@ -55,6 +57,7 @@ import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import cn.idev.excel.FastExcelFactory;
+import cn.idev.excel.enums.CellExtraTypeEnum;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
@@ -84,7 +87,7 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ContractPaymentRecordService {
+public class ContractPaymentRecordService extends BaseExportService {
 
     @Resource
     private BaseService baseService;
@@ -155,7 +158,8 @@ public class ContractPaymentRecordService {
         contractPaymentRecordFieldService.saveModuleField(paymentRecord, currentOrg, currentUser, request.getModuleFields(), false);
         contractPaymentRecordMapper.insert(paymentRecord);
         // 日志
-        baseService.handleAddLogWithResourceName(paymentRecord, request.getModuleFields());
+        baseService.handleAddLogWithSubTable(paymentRecord, request.getModuleFields(), Translator.get("products_info"),
+                moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));
         return paymentRecord;
     }
 
@@ -173,7 +177,9 @@ public class ContractPaymentRecordService {
         contractPaymentRecordMapper.update(contractPaymentRecord);
         List<BaseModuleFieldValue> oldFvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(request.getId());
         updateModuleField(contractPaymentRecord, request.getModuleFields(), currentOrg, currentUser);
-        baseService.handleUpdateLog(oldRecord, contractPaymentRecord, oldFvs, request.getModuleFields(), oldRecord.getId(), oldRecord.getName());
+        baseService.handleUpdateLogWithSubTable(oldRecord, contractPaymentRecord, oldFvs, request.getModuleFields(),
+                oldRecord.getId(), oldRecord.getName(), Translator.get("products_info"),
+                moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));
         return contractPaymentRecord;
     }
 
@@ -282,7 +288,7 @@ public class ContractPaymentRecordService {
      */
     public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
         new EasyExcelExporter().exportMultiSheetTplWithSharedHandler(response,
-                moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg),
+                processDuplicateLastLevelHeads(moduleFormService.getCustomImportHeadsNoRef(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg)),
                 Translator.get("payment.record.import_tpl.name"), Translator.get(SheetKey.DATA), Translator.get(SheetKey.COMMENT),
                 new CustomTemplateWriteHandler(moduleFormService.getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg)),
                 new CustomHeadColWidthStyleStrategy());
@@ -312,10 +318,45 @@ public class ContractPaymentRecordService {
     private ImportResponse checkImportExcel(MultipartFile file, String importType, String currentOrg) {
         try {
             List<BaseField> fields = moduleFormService.getAllCustomImportFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
-            CustomFieldCheckEventListener eventListener = new CustomFieldCheckEventListener(fields, "contract_payment_record", "contract_payment_record_field", currentOrg, importType);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
-            return ImportResponse.builder().errorMessages(eventListener.getErrList())
-                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+
+            // 1 先读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            // 2 校验数据
+            CustomFieldCheckEventListener eventListener =
+                    new CustomFieldCheckEventListener(
+                            fields,
+                            "contract_payment_record",
+                            "contract_payment_record_field",
+                            currentOrg,
+                            mergeCellEventListener.getMergeCellMap(),
+                            mergeCellEventListener.getMergeRowDataMap(),
+                            importType
+                    );
+
+            FastExcelFactory.read(file.getInputStream(), eventListener)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            return ImportResponse.builder()
+                    .errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess())
+                    .failCount(eventListener.getErrList().size())
+                    .build();
+
         } catch (Exception e) {
             log.error("Payment record import pre-check error", e);
             throw new GenericException(e.getMessage());
@@ -334,6 +375,20 @@ public class ContractPaymentRecordService {
     public ImportResponse realImport(MultipartFile file, ImportRequest request, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
+            boolean supportSubHead = moduleFormService.supportSubHead(fields);
+            int headRowNumber = supportSubHead ? 2 : 1;
+            // 1 读取合并单元格信息
+            CustomFieldMergeCellEventListener mergeCellEventListener =
+                    new CustomFieldMergeCellEventListener();
+
+            FastExcelFactory.read(file.getInputStream(), mergeCellEventListener)
+                    .extraRead(CellExtraTypeEnum.MERGE)
+                    .headRowNumber(headRowNumber)
+                    .ignoreEmptyRow(true)
+                    .sheet()
+                    .doRead();
+
+            ModuleFormConfigDTO moduleFormConfigDTO = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg);
 
             CustomImportAfterDoConsumer<ContractPaymentRecord, BaseResourceSubField> afterDo = (records, recordFields, recordFieldBlobs) -> {
                 List<LogDTO> logs = new ArrayList<>();
@@ -423,7 +478,8 @@ public class ContractPaymentRecordService {
                         ids.forEach(id -> {
                             ContractPaymentRecord originDate = originRecordMaps.get(id);
                             ContractPaymentRecord modifiedDate = modifiedRecordMaps.get(id);
-                            baseService.handleUpdateLog(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id), id, modifiedDate.getName());
+                            baseService.handleUpdateLogWithSubTable(originDate, modifiedDate, originFieldValueMap.get(id), modifiedFieldValueMap.get(id),
+                                    id, modifiedDate.getName(), Translator.get("products_info"), moduleFormConfigDTO);
                             LogContextInfo contextInfo = OperationLogContext.getContext();
                             if (contextInfo != null) {
                                 LogDTO logDTO = new LogDTO(currentOrg, id, currentUser, LogType.UPDATE, LogModule.CONTRACT_PAYMENT_RECORD, modifiedDate.getName());
@@ -438,13 +494,13 @@ public class ContractPaymentRecordService {
                 }
             };
             CustomFieldImportEventListener<ContractPaymentRecord> eventListener = new CustomFieldImportEventListener<>(fields, ContractPaymentRecord.class, currentOrg, currentUser,
-                    "contract_payment_record_field", "contract_payment_record_field_blob", afterDo, 2000, null, null, request.getImportType());
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
+                    "contract_payment_record_field", "contract_payment_record_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), request.getImportType());
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             log.error("Payment record import error", e);
-            throw new GenericException("导入异常，请检查文件数据！");
+            throw new GenericException("导入异常，请检查文件数据！" + e);
         }
     }
 

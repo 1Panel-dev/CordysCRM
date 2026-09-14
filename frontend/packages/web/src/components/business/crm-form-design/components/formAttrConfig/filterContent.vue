@@ -493,7 +493,9 @@
         )
       ) {
         currentFieldProps.selectProps = {
-          options: field.options,
+          options: Array.isArray(field.options)
+            ? field.options.map(({ disabled: _disabled, ...option }: Record<string, any>) => option)
+            : [],
           multiple: true,
         } as Partial<SelectProps>;
       }

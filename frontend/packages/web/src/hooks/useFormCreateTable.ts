@@ -197,7 +197,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               [FormDesignKeyEnum.CLUE_POOL, FormDesignKeyEnum.CUSTOMER_OPEN_SEA].includes(props.formKey)
             ) &&
             e.readable &&
-            !['clueId', 'customerId'].includes(e.businessKey as string)
+            !(isFollowModule && ['clueId', 'customerId'].includes(e.businessKey as string))
         )
         .map((field) => {
           let key = field.businessKey || field.id;

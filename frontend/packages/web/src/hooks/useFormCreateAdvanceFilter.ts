@@ -23,7 +23,7 @@ export default function useFormCreateFilter() {
       ) {
         return {
           selectProps: {
-            options: field.options,
+            options: field.options?.map(({ disabled: _disabled, ...option }) => option),
             multiple: true,
           },
         };

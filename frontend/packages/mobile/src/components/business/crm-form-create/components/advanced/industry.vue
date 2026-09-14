@@ -35,6 +35,7 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
+    needInitDetail?: boolean; // 判断是否编辑情况
   }>();
 
   const value = defineModel<string>('value', {
@@ -62,7 +63,10 @@
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
-      value.value = val;
+      if (!props.needInitDetail) {
+        value.value = val || value.value;
+        emit('change', value.value);
+      }
     },
     {
       immediate: true,

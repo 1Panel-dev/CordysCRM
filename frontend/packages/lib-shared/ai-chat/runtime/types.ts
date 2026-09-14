@@ -1,4 +1,4 @@
-import type { AgentChatConfirmData } from '@lib/shared/models/ai';
+import type { AgentChatConfirmData, AgentChatConfirmRequest } from '@lib/shared/models/ai';
 
 import type { AiChatAttachment, AiChatMcp, AiChatMessage, AiChatSendOptions, AiChatSubmitPayload } from '../types';
 import type { Chat } from '@ai-sdk/vue';
@@ -48,7 +48,7 @@ export interface CreateAiChatRuntimeOptions {
    * 此时不再主动中断流，交由后端回发终止 error 事件来关闭流并展示错误。
    */
   onStop?: () => Promise<boolean | void> | boolean | void;
-  onConfirm?: (data: AgentChatConfirmData, answers: Record<string, string>) => Promise<void> | void;
+  onConfirm?: (data: AgentChatConfirmData, request: AgentChatConfirmRequest) => Promise<void> | void;
   onFinish?: () => Promise<void> | void;
   onError?: (error: Error) => void;
 }
@@ -75,7 +75,7 @@ export interface AiChatRuntime {
   cancelEditMessage: () => void;
   setEditingContent: (value: string) => void;
   submitEditMessage: () => Promise<void>;
-  confirm: (data: AgentChatConfirmData, answers: Record<string, string>) => Promise<void>;
+  confirm: (data: AgentChatConfirmData, request: AgentChatConfirmRequest) => Promise<void>;
   appendMessage: (message: AiChatMessage) => void;
   updateMessage: (messageId: string, patch: (message: AiChatMessage) => AiChatMessage) => void;
   reset: (messages?: AiChatMessage[]) => void;

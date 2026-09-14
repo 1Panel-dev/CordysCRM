@@ -32,13 +32,13 @@ public class CustomFormController {
     @Operation(summary = "自定义表单列表")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public List<CustomFormListResponse> list() {
-        return customFormService.list(SessionUtils.getUserId());
+        return customFormService.list(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/option")
     @Operation(summary = "自定义表单选项(开启的)")
     public List<OptionDTO> getOptions() {
-        return customFormService.getOptions();
+        return customFormService.getOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
@@ -66,34 +66,34 @@ public class CustomFormController {
     @Operation(summary = "删除自定义表单")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void delete(@PathVariable String id) {
-        customFormService.delete(id, SessionUtils.getUserId());
+        customFormService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/enable/{id}")
     @Operation(summary = "启用自定义表单")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void enable(@PathVariable String id) {
-        customFormService.updateEnable(id, SessionUtils.getUserId(), true);
+        customFormService.updateEnable(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), true);
     }
 
     @GetMapping("/disable/{id}")
     @Operation(summary = "禁用自定义表单")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void disable(@PathVariable String id) {
-        customFormService.updateEnable(id, SessionUtils.getUserId(), false);
+        customFormService.updateEnable(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), false);
     }
 
     @PostMapping("/admin/set")
     @Operation(summary = "设置表单管理员")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public void setAdmins(@Validated @RequestBody CustomFormAdminBatchRequest request) {
-        customFormService.setAdmins(request, SessionUtils.getUserId());
+        customFormService.setAdmins(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/admin/get/{customFormId}")
     @Operation(summary = "查询表单管理员")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
     public List<OptionDTO> getAdmins(@PathVariable String customFormId) {
-        return customFormService.getAdmins(customFormId, SessionUtils.getUserId());
+        return customFormService.getAdmins(customFormId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

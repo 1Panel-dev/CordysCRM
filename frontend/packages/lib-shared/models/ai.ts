@@ -3,6 +3,8 @@ import type { CommonList, TableQueryParams } from './common';
 export interface AgentChatStreamParams {
   message: string;
   conversationId?: string;
+  /** 请求级幂等键（本轮唯一）。用于未产生 runId 前定位取消与保存兜底。 */
+  requestId: string;
   mcpIds?: string[];
   attachmentIds?: string[];
   picIds?: string[];
@@ -18,8 +20,10 @@ export interface AgentChatStreamOptions {
 }
 
 export interface AgentChatCancelParams {
-  conversationId: string;
-  sessionId: string;
+  conversationId?: string;
+  sessionId?: string;
+  /** 请求级幂等键（本轮唯一）。runId 未产生时用于按 requestId 取消。 */
+  requestId: string;
 }
 
 export interface AgentChatRunData {
@@ -35,8 +39,14 @@ export interface AgentChatConfirmData {
   orgId?: string;
   sessionId?: string;
   userId?: string;
+  confirmation?: boolean;
   items: AgentChatConfirmItem[];
   createdAt?: number;
+}
+
+export interface AgentChatConfirmRequest {
+  outcome: 'ANSWERED' | 'CONFIRMED' | 'CANCELLED';
+  answers: Record<string, string>;
 }
 
 export interface AgentChatConfirmItem {
@@ -44,11 +54,13 @@ export interface AgentChatConfirmItem {
   title: string;
   selectionType: 'SINGLE' | 'MULTIPLE';
   options?: AgentChatConfirmOption[];
+  textInput?: boolean;
 }
 
 export interface AgentChatConfirmOption {
   label: string;
   description?: string;
+  value: string;
 }
 
 export interface AgentChatProgressData {
@@ -100,9 +112,12 @@ export interface AgentConversationItem {
   organizationId?: string;
   userId?: string;
   title: string;
+  localPending?: boolean;
 }
 
 export type AgentConversationPageResult = CommonList<AgentConversationItem>;
+
+export type AgentConversationMessageStatus = 'done' | 'stopped';
 
 export interface AgentConversationMessage {
   id: string;
@@ -119,6 +134,7 @@ export interface AgentConversationMessage {
   conversationId: string;
   runId?: string;
   helpful?: boolean | null;
+  status?: AgentConversationMessageStatus;
 }
 
 export interface AgentConversationDetail {

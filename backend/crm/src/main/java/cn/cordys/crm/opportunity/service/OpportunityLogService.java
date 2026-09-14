@@ -85,6 +85,10 @@ public class OpportunityLogService extends BaseModuleLogService {
                     differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
                 }
             }
+
+            if (differ.getColumn() != null && differ.getColumn().contains("-")) {
+                differ.setColumnName(differ.getColumn());
+            }
         }
         return differences;
     }

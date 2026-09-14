@@ -145,8 +145,8 @@
   const isOwner = (item: FollowDetailItem) => item.owner === userStore.userInfo.id;
 
   function getShowTime(item: FollowDetailItem) {
-    const time = 'estimatedTime' in item ? item.estimatedTime : item.followTime;
-    return time ? dayjs(time).format('YYYY-MM-DD') : '-';
+    const time = (item as CustomerFollowPlanListItem).estimatedTime ?? item.followTime;
+    return time && dayjs(time).isValid() ? dayjs(time).format('YYYY-MM-DD') : '-';
   }
 
   const commentExpandedMap = ref<Record<string, boolean>>({});

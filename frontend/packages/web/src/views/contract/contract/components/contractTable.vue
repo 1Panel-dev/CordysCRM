@@ -222,6 +222,7 @@
 
   import {
     batchApproveContract,
+    batchDeleteContract,
     changeContractStatus,
     deleteContract,
     getContractStatistic,
@@ -322,24 +323,6 @@
     tableRefreshId.value += 1;
   }
 
-  function handleBatchAction(item: ActionsItem) {
-    switch (item.key) {
-      case 'exportChecked':
-        isExportAll.value = false;
-        showExportModal.value = true;
-        break;
-      case 'approval':
-        showApprovalModal.value = true;
-        batchOperationName.value = t('common.batchApproval');
-        break;
-      case 'batchEdit':
-        handleBatchEdit();
-        break;
-      default:
-        break;
-    }
-  }
-
   const showDetailDrawer = ref(false);
 
   function handleEdit(id: string) {
@@ -428,6 +411,47 @@
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: FormDesignKeyEnum.CONTRACT,
   });
+
+  function handleBatchDelete() {
+    openModal({
+      type: 'error',
+      title: t('common.batchDeleteTitle', { count: checkedRowKeys.value.length }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: deleteExecute.value ? t('crm.approval.confirmAndSubmitReview') : t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await batchDeleteContract(checkedRowKeys.value);
+          Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          handleRefresh();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  function handleBatchAction(item: ActionsItem) {
+    switch (item.key) {
+      case 'exportChecked':
+        isExportAll.value = false;
+        showExportModal.value = true;
+        break;
+      case 'approval':
+        showApprovalModal.value = true;
+        batchOperationName.value = t('common.batchApproval');
+        break;
+      case 'batchEdit':
+        handleBatchEdit();
+        break;
+      case 'batchDelete':
+        handleBatchDelete();
+        break;
+      default:
+        break;
+    }
+  }
 
   function handleDelete(row: ContractItem) {
     openModal({
@@ -683,7 +707,7 @@
           },
         }),
     },
-    permission: ['CONTRACT:EXPORT', 'CONTRACT:UPDATE'],
+    permission: ['CONTRACT:EXPORT', 'CONTRACT:UPDATE', 'CONTRACT:DELETE'],
     containerClass: '.crm-contract-table',
     contractStage: stageConfig.value?.stageConfigList || [],
     enableApproval,
@@ -770,6 +794,11 @@
           label: t('common.batchEdit'),
           key: 'batchEdit',
           permission: ['CONTRACT:UPDATE'],
+        },
+        {
+          label: t('common.batchDelete'),
+          key: 'batchDelete',
+          permission: ['CONTRACT:DELETE'],
         },
       ],
     };

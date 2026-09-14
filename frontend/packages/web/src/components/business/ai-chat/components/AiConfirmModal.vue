@@ -19,18 +19,28 @@
         {{ item.prompt }}
       </div>
 
+      <n-input
+        v-if="item.textInput"
+        v-model:value="textValues[itemIndex]"
+        class="mb-[8px]"
+        :placeholder="t('common.pleaseInput')"
+        clearable
+      />
+
       <n-radio-group
-        v-if="!isMultipleItem(item)"
+        v-if="!item.textInput && !isMultipleItem(item)"
         v-model:value="singleValues[itemIndex]"
         class="flex flex-col gap-[8px]"
       >
         <label
           v-for="option in getItemOptions(item)"
-          :key="option.label"
+          :key="option.value"
           class="flex cursor-pointer gap-[8px] rounded-[4px] border border-[var(--text-n8)] bg-[var(--text-n10)] p-[8px]"
-          :class="{ '!border-[var(--primary-8)] !bg-[var(--primary-7)]': singleValues[itemIndex] === option.label }"
+          :class="{
+            '!border-[var(--primary-8)] !bg-[var(--primary-7)]': singleValues[itemIndex] === option.value,
+          }"
         >
-          <n-radio :value="option.label" />
+          <n-radio :value="option.value" />
           <span class="flex min-w-0 flex-col gap-[4px]">
             <span>{{ option.label }}</span>
             <span v-if="option.description" class="text-[var(--text-n4)]">
@@ -40,16 +50,20 @@
         </label>
       </n-radio-group>
 
-      <n-checkbox-group v-else v-model:value="multipleValues[itemIndex]" class="flex flex-col gap-[8px]">
+      <n-checkbox-group
+        v-else-if="!item.textInput"
+        v-model:value="multipleValues[itemIndex]"
+        class="flex flex-col gap-[8px]"
+      >
         <label
           v-for="option in getItemOptions(item)"
-          :key="option.label"
+          :key="option.value"
           class="flex cursor-pointer gap-[8px] rounded-[4px] border border-[var(--text-n8)] bg-[var(--text-n10)] p-[8px]"
           :class="{
-            '!border-[var(--primary-8)] !bg-[var(--primary-7)]': multipleValues[itemIndex]?.includes(option.label),
+            '!border-[var(--primary-8)] !bg-[var(--primary-7)]': multipleValues[itemIndex]?.includes(option.value),
           }"
         >
-          <n-checkbox :value="option.label" />
+          <n-checkbox :value="option.value" />
           <span class="flex min-w-0 flex-col gap-[4px]">
             <span>{{ option.label }}</span>
             <span v-if="option.description" class="text-[var(--text-n4)]">
@@ -64,11 +78,11 @@
 
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
-  import { NAlert, NCheckbox, NCheckboxGroup, NRadio, NRadioGroup } from 'naive-ui';
+  import { NAlert, NCheckbox, NCheckboxGroup, NInput, NRadio, NRadioGroup } from 'naive-ui';
 
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { AgentChatConfirmData, AgentChatConfirmItem } from '@lib/shared/models/ai';
+  import type { AgentChatConfirmData, AgentChatConfirmItem, AgentChatConfirmRequest } from '@lib/shared/models/ai';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
@@ -84,6 +98,7 @@
   const closeHandled = ref(false);
   const singleValues = ref<string[]>([]);
   const multipleValues = ref<string[][]>([]);
+  const textValues = ref<string[]>([]);
 
   const confirmItems = computed(() => props.confirm.items ?? []);
   const confirmButtonLabel = computed(() => t('aiChat.confirmExecute'));
@@ -97,7 +112,7 @@
     return item.options ?? [];
   }
 
-  function getSelectedLabels(item: AgentChatConfirmItem, itemIndex: number): string[] {
+  function getSelectedValues(item: AgentChatConfirmItem, itemIndex: number): string[] {
     if (isMultipleItem(item)) {
       return multipleValues.value[itemIndex] ?? [];
     }
@@ -107,36 +122,40 @@
     return singleValue ? [singleValue] : [];
   }
 
+  function getAnswerValues(item: AgentChatConfirmItem, itemIndex: number): string[] {
+    const textValue = textValues.value[itemIndex]?.trim();
+
+    if (item.textInput && textValue) {
+      return [textValue];
+    }
+
+    if (item.textInput) {
+      return [];
+    }
+
+    return getSelectedValues(item, itemIndex);
+  }
+
   const canConfirm = computed(
     () =>
       confirmItems.value.length > 0 &&
-      confirmItems.value.every(
-        (item, index) => getItemOptions(item).length === 0 || getSelectedLabels(item, index).length > 0
-      )
+      confirmItems.value.every((item, index) => {
+        if (item.textInput) {
+          return true;
+        }
+
+        return getItemOptions(item).length === 0 || getSelectedValues(item, index).length > 0;
+      })
   );
 
-  function appendButtonLabelToLastAnswer(answers: Record<string, string>, buttonLabel: string): Record<string, string> {
-    const answerKeys = Object.keys(answers);
-    const lastAnswerKey = answerKeys.at(-1);
-
-    if (!lastAnswerKey) {
-      return answers;
-    }
-
-    return {
-      ...answers,
-      [lastAnswerKey]: [answers[lastAnswerKey], buttonLabel].filter(Boolean).join(', '),
-    };
-  }
-
-  async function submitConfirm(answers: Record<string, string>) {
+  async function submitConfirm(request: AgentChatConfirmRequest) {
     if (submitting.value) {
       return;
     }
 
     try {
       submitting.value = true;
-      await runtime.confirm(props.confirm, answers);
+      await runtime.confirm(props.confirm, request);
       closeHandled.value = true;
       showModal.value = false;
     } catch (error) {
@@ -149,39 +168,30 @@
   }
 
   async function handleConfirm() {
-    const answers = confirmItems.value.reduce<Record<string, string>>((result, item, itemIndex) => {
-      const selectedLabels = getSelectedLabels(item, itemIndex);
+    if (props.confirm.confirmation) {
+      await submitConfirm({ outcome: 'CONFIRMED', answers: {} });
+      return;
+    }
 
-      if (item.prompt && (getItemOptions(item).length === 0 || selectedLabels.length > 0)) {
-        result[item.prompt] = selectedLabels.join(', ');
+    const answers = confirmItems.value.reduce<Record<string, string>>((result, item, itemIndex) => {
+      const answerValues = getAnswerValues(item, itemIndex);
+
+      if (item.prompt && (getItemOptions(item).length === 0 || answerValues.length > 0)) {
+        result[item.prompt] = answerValues.join(', ');
       }
 
       return result;
     }, {});
-    const submitAnswers = appendButtonLabelToLastAnswer(answers, confirmButtonLabel.value);
 
-    if (!canConfirm.value || Object.keys(submitAnswers).length === 0) {
+    if (!canConfirm.value || Object.keys(answers).length === 0) {
       return;
     }
 
-    await submitConfirm(submitAnswers);
+    await submitConfirm({ outcome: 'ANSWERED', answers });
   }
 
   async function handleCancel() {
-    const answers = confirmItems.value.reduce<Record<string, string>>((result, item) => {
-      if (item.prompt) {
-        result[item.prompt] = '';
-      }
-
-      return result;
-    }, {});
-    const submitAnswers = appendButtonLabelToLastAnswer(answers, cancelButtonLabel.value);
-
-    if (Object.keys(submitAnswers).length === 0) {
-      return;
-    }
-
-    await submitConfirm(submitAnswers);
+    await submitConfirm({ outcome: 'CANCELLED', answers: {} });
   }
 
   watch(
@@ -191,9 +201,10 @@
       closeHandled.value = false;
       showModal.value = true;
       singleValues.value = confirmItems.value.map((item) =>
-        isMultipleItem(item) ? '' : getItemOptions(item)[0]?.label ?? ''
+        isMultipleItem(item) || item.textInput ? '' : getItemOptions(item)[0]?.value ?? ''
       );
       multipleValues.value = confirmItems.value.map(() => []);
+      textValues.value = confirmItems.value.map(() => '');
     },
     { immediate: true }
   );

@@ -441,6 +441,7 @@ export const {
   confirmAgentChat,
   likeAgentChat,
   dislikeAgentChat,
+  cancelAgentChatFeedback,
   getSmartDataOverview,
   regenerateSmartDataOverview,
   getSmartAiSummary,

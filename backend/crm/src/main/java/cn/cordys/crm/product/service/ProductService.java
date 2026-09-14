@@ -404,7 +404,8 @@ public class ProductService {
                         products.forEach(product -> {
                             product.setPos(initPos.getAndAdd(ServiceUtils.POS_STEP));
                             logs.add(new LogDTO(currentOrg, product.getId(), currentUser, LogType.ADD, LogModule.PRODUCT_MANAGEMENT, product.getName()));
-                        });productBaseMapper.batchInsert(products);
+                        });
+                        productBaseMapper.batchInsert(products);
                         productFieldMapper.batchInsert(productFields.stream().map(field -> BeanUtils.copyBean(new ProductField(), field)).toList());
                         productFieldBlobMapper.batchInsert(productFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ProductFieldBlob(), field)).toList());
                         // record logs
@@ -501,7 +502,7 @@ public class ProductService {
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             log.error("product import error: {}", e.getMessage());
-            throw new GenericException("导入异常，请检查文件数据！");
+            throw new GenericException("导入异常，请检查文件数据！" + e);
         }
     }
 

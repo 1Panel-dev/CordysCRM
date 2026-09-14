@@ -39,4 +39,9 @@ public class DeptDataPermissionDTO {
      * 可查看的部门Id
      */
     private Set<String> deptIds = new HashSet<>();
+
+    /**
+     * 写作人id集合
+     */
+    private Set<String> collaborationIds = new HashSet<>();
 }

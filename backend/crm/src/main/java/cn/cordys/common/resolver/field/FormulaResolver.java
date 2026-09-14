@@ -3,6 +3,7 @@ package cn.cordys.common.resolver.field;
 import cn.cordys.crm.system.dto.field.FormulaField;
 import cn.cordys.crm.system.dto.field.InputNumberField;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.poi.ss.formula.FormulaParseException;
 
@@ -56,6 +57,9 @@ public class FormulaResolver extends AbstractModuleFieldResolver<FormulaField> {
     @Override
     public Object textToValue(FormulaField field, String text) {
         try {
+            if (BooleanUtils.isTrue(field.getShowThousandsSeparator())) {
+                text = text.replace(",", StringUtils.EMPTY).replace("，", StringUtils.EMPTY);
+            }
             return new BigDecimal(text);
         } catch (NumberFormatException e) {
             return text;

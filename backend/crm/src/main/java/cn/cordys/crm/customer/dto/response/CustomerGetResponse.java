@@ -67,6 +67,9 @@ public class CustomerGetResponse {
     @Schema(description = "最新跟进日期")
     private Long followTime;
 
+    @Schema(description = "公海ID")
+    private String poolId;
+
     @Schema(description = "默认回收公海名称")
     private String recyclePoolName;
 

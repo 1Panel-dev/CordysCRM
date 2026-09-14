@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -110,7 +111,6 @@ public class OrderExportService extends BaseExportService {
         systemFieldMap.put("contractId", data.getContractName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
         systemFieldMap.put("owner", data.getOwnerName());
-        systemFieldMap.put("amount", data.getAmount());
         if (StringUtils.isNotBlank(data.getStage())) {
             systemFieldMap.put("stage", stageConfigMap.get(data.getStage()));
         }
@@ -121,6 +121,10 @@ public class OrderExportService extends BaseExportService {
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
         systemFieldMap.put("updateUser", data.getUpdateUserName());
         systemFieldMap.put("updateTime", TimeUtils.getDateTimeStr(data.getUpdateTime()));
+
+        Map<String, FieldExportMeta> metaMap = exportMetas.stream()
+                .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
+        resolveAndPutTimeField(systemFieldMap, metaMap, "amount", data.getAmount());
         return systemFieldMap;
     }
 }

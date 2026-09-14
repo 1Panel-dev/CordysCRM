@@ -314,9 +314,23 @@ public class ModuleFormService {
         queryWrapper.eq(ModuleForm::getFormKey, forKey).eq(ModuleForm::getOrganizationId, currentOrgId);
         List<ModuleForm> forms = moduleFormMapper.selectListByLambda(queryWrapper);
         if (CollectionUtils.isEmpty(forms)) {
-            throw new GenericException(Translator.get("module.form.not_exist"));
+            throw new GenericException(cn.cordys.common.response.result.CrmHttpResultCode.NOT_FOUND);
         }
         return forms.getFirst();
+    }
+
+    /** 删除已通过业务权限校验的表单定义及其字段属性。 */
+    public void deleteForm(String formKey, String orgId) {
+        ModuleForm form = getModuleFormByKey(formKey, orgId);
+        LambdaQueryWrapper<ModuleField> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ModuleField::getFormId, form.getId());
+        List<String> ids = moduleFieldMapper.selectListByLambda(wrapper).stream().map(ModuleField::getId).toList();
+        if (!ids.isEmpty()) {
+            extModuleFieldMapper.deletePropByIds(ids);
+            extModuleFieldMapper.deleteByIds(ids);
+        }
+        moduleFormBlobMapper.deleteByPrimaryKey(form.getId());
+        moduleFormMapper.deleteByPrimaryKey(form.getId());
     }
 
     /**
@@ -785,17 +799,6 @@ public class ModuleFormService {
             attachmentMapResult.put(entry.getKey(), fieldAttachments);
         }
         return attachmentMapResult;
-    }
-
-    public List<OptionDTO> getSourceOptionsByKeywords(String type, List<String> nameList) {
-        if (CollectionUtils.isEmpty(nameList)) {
-            return new ArrayList<>();
-        }
-        String tableName = TYPE_SOURCE_MAP.get(type);
-        if (StringUtils.isBlank(tableName)) {
-            extModuleFieldMapper.getCustomFormOptionsByKeywords(nameList);
-        }
-        return extModuleFieldMapper.getSourceOptionsByKeywords(tableName, nameList);
     }
 
     /**

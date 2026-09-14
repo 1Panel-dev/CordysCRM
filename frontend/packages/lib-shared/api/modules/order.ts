@@ -3,6 +3,7 @@ import {
   AddOrderUrl,
   AddOrderViewUrl,
   BatchUpdateOrderUrl,
+  BatchDeleteOrderUrl,
   DeleteOrderUrl,
   UpdateOrderStageUrl,
   DeleteOrderViewUrl,
@@ -100,6 +101,11 @@ export default function useOrderApi(CDR: CordysAxios) {
   // 删除订单
   function deleteOrder(id: string) {
     return CDR.get({ url: `${DeleteOrderUrl}/${id}` });
+  }
+
+  // 批量删除订单
+  function batchDeleteOrder(data: (string | number)[]) {
+    return CDR.post({ url: BatchDeleteOrderUrl, data });
   }
 
   // 获取表单配置
@@ -249,6 +255,7 @@ export default function useOrderApi(CDR: CordysAxios) {
     updateOrder,
     batchUpdateOrder,
     deleteOrder,
+    batchDeleteOrder,
     getOrderList,
     getOrderInContractList,
     getOrderTab,

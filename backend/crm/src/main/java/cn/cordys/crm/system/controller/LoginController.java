@@ -44,7 +44,16 @@ public class LoginController {
      */
     @GetMapping(value = "/is-login")
     @Operation(summary = "是否登录")
-    public SessionUser isLogin() {
+    public SessionUser isLogin(HttpServletRequest httpServletRequest,
+                               HttpServletResponse httpServletResponse) {
+        SessionUser sessionUser = refreshSessionUser();
+        if (sessionUser != null) {
+            FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getId(), httpServletRequest.isSecure());
+        }
+        return sessionUser;
+    }
+
+    private SessionUser refreshSessionUser() {
         SessionUser user = SessionUtils.getUser();
         if (user != null) {
             // 检查当前组织的手机认证配置
@@ -66,7 +75,7 @@ public class LoginController {
     @GetMapping(value = "/get-auth")
     @Operation(summary = "用户信息")
     public SessionUser getAutUser() {
-        return isLogin();
+        return refreshSessionUser();
     }
     /**
      * 获取 RSA 公钥。

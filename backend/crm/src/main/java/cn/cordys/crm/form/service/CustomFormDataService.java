@@ -125,7 +125,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         CustomFormRoleKey dataScope;
         if (catchPermissionException) {
             try {
-                dataScope = getDataScope(formId, userId);
+                dataScope = getDataScope(formId, userId, orgId);
             } catch (Exception e) {
                 // 数据源分页，没有权限返回空列表
                 log.error(e.getMessage(), e);
@@ -133,7 +133,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                 return PageUtils.setPageInfoWithOption(page, List.of(), Map.of());
             }
         } else {
-            dataScope = getDataScope(formId, userId);
+            dataScope = getDataScope(formId, userId, orgId);
         }
         boolean manageOwn = dataScope == CustomFormRoleKey.MANAGE_OWN;
 
@@ -199,12 +199,14 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (data == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
+
         CustomFormRoleKey dataScope = null;
         // 先校验是否是审批资源
         if (!resourcePermissionService.hasApprovalTaskPermission(id, userId)) {
+            checkCurrentOrganization(data, orgId);
             // 获取并校验权限
-            dataScope = getDataScope(data.getCustomFormId(), userId);
-            if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(data.getCreateUser(), userId)) {
+            dataScope = getDataScope(data.getCustomFormId(), userId, orgId);
+            if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(data.getOwner(), userId)) {
                 throw new GenericException(CrmHttpResultCode.FORBIDDEN);
             }
         }
@@ -285,7 +287,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.ADD)
     @HitApproval(formKeyExpr = "{#request.customFormId}", executeType = ExecuteTimingEnum.CREATE, resourceId = "#{request.id}", operatorId = "{#userId}")
     public CustomFormData add(CustomFormDataAddRequest request, String userId, String orgId) {
-        checkCreatePermission(getManageDataScope(request.getCustomFormId(), userId));
+        checkCreatePermission(getManageDataScope(request.getCustomFormId(), userId, orgId));
 
         CustomFormData data = new CustomFormData();
         data.setId(IDGenerator.nextStr());
@@ -314,9 +316,9 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         return data;
     }
 
-    public boolean hasCreatePermission(String formId, String userId) {
+    public boolean hasCreatePermission(String formId, String userId, String orgId) {
         try {
-            checkCreatePermission(getManageDataScope(formId, userId));
+            checkCreatePermission(getManageDataScope(formId, userId, orgId));
             return true;
         } catch (GenericException e) {
             return false;
@@ -330,9 +332,17 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (originData == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
+        checkCurrentOrganization(originData, orgId);
 
-        CustomFormRoleKey dataScope = getManageDataScope(originData.getCustomFormId(), userId);
-        checkWritePermission(dataScope, originData.getCreateUser(), userId);
+        CustomFormRoleKey dataScope = getManageDataScope(originData.getCustomFormId(), userId, orgId);
+        checkWritePermission(dataScope, originData.getOwner(), userId);
+
+        if (StringUtils.isNotBlank(request.getCustomFormId())
+                && !StringUtils.equals(request.getCustomFormId(), originData.getCustomFormId())) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+        if (request.getName() == null) request.setName(originData.getName());
+        if (request.getOwner() == null) request.setOwner(originData.getOwner());
 
         CustomFormData updateData = new CustomFormData();
         updateData.setId(request.getId());
@@ -376,9 +386,10 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (data == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
+        checkCurrentOrganization(data, orgId);
 
-        CustomFormRoleKey dataScope = getManageDataScope(data.getCustomFormId(), userId);
-        checkWritePermission(dataScope, data.getCreateUser(), userId);
+        CustomFormRoleKey dataScope = getManageDataScope(data.getCustomFormId(), userId, orgId);
+        checkWritePermission(dataScope, data.getOwner(), userId);
 
         customFormDataFieldService.deleteByResourceId(id);
         customFormDataMapper.deleteByPrimaryKey(id);
@@ -534,10 +545,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
     public void batchUpdate(CustomFormDataBatchUpdateRequest request, String userId, String orgId) {
         List<CustomFormData> dataList = customFormDataMapper.selectByIds(request.getIds());
-        if (CollectionUtils.isEmpty(dataList)) {
-            return;
-        }
-        checkBatchPermission(userId, dataList, request.getCustomFormId());
+        checkCompleteBatch(request.getIds(), dataList);
+        checkBatchPermission(userId, dataList, request.getCustomFormId(), orgId);
         CustomFormDataFieldService.setFormKey(request.getCustomFormId());
         try {
             BaseField field = customFormDataFieldService.getAndCheckField(request.getFieldId(), orgId);
@@ -547,8 +556,9 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         }
     }
 
-    private void checkBatchPermission(String userId, List<CustomFormData> dataList, String formId) {
-        CustomFormRoleKey dataScope = getManageDataScope(formId, userId);
+    private void checkBatchPermission(String userId, List<CustomFormData> dataList, String formId, String orgId) {
+        dataList.forEach(data -> checkCurrentOrganization(data, orgId));
+        CustomFormRoleKey dataScope = getManageDataScope(formId, userId, orgId);
         if (dataScope == CustomFormRoleKey.VIEW_ALL) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
@@ -566,12 +576,10 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
         List<CustomFormData> dataList = customFormDataMapper.selectByIds(ids);
-        if (CollectionUtils.isEmpty(dataList)) {
-            return;
-        }
+        checkCompleteBatch(ids, dataList);
 
         String formId = dataList.getFirst().getCustomFormId();
-        checkBatchPermission(userId, dataList, formId);
+        checkBatchPermission(userId, dataList, formId, orgId);
 
         List<String> deletableIds = dataList.stream()
                 .map(CustomFormData::getId)
@@ -588,11 +596,18 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         logService.batchAdd(logs);
     }
 
-    private void checkWritePermission(CustomFormRoleKey dataScope, String dataCreateUser, String currentUserId) {
+    private void checkCompleteBatch(List<String> ids, List<CustomFormData> records) {
+        if (CollectionUtils.isEmpty(ids) || CollectionUtils.isEmpty(records)
+                || !new HashSet<>(ids).equals(records.stream().map(CustomFormData::getId).collect(Collectors.toSet()))) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
+    }
+
+    private void checkWritePermission(CustomFormRoleKey dataScope, String owner, String currentUserId) {
         if (dataScope == CustomFormRoleKey.VIEW_ALL) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
-        if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(dataCreateUser, currentUserId)) {
+        if (dataScope == CustomFormRoleKey.MANAGE_OWN && !StringUtils.equals(owner, currentUserId)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
     }
@@ -603,20 +618,26 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         }
     }
 
-    CustomFormRoleKey getDataScope(String formId, String userId) {
-        return getDataScope(formId, userId, true, false);
-    }
-
-    CustomFormRoleKey getManageDataScope(String formId, String userId) {
-        return getDataScope(formId, userId, true, true);
-    }
-
-    CustomFormRoleKey getDataScope(String formId, String userId, boolean checkEnable, boolean checkManage) {
-        CustomForm customForm = customFormMapper.selectByPrimaryKey(formId);
-        if (customForm == null) {
+    private void checkCurrentOrganization(CustomFormData data, String orgId) {
+        if (!StringUtils.equals(data.getOrganizationId(), orgId)) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
-        if (customFormService.isFormAdminUser(formId, userId)) {
+    }
+
+    CustomFormRoleKey getDataScope(String formId, String userId, String orgId) {
+        return getDataScope(formId, userId, orgId, true, false);
+    }
+
+    CustomFormRoleKey getManageDataScope(String formId, String userId, String orgId) {
+        return getDataScope(formId, userId, orgId, true, true);
+    }
+
+    CustomFormRoleKey getDataScope(String formId, String userId, String orgId, boolean checkEnable, boolean checkManage) {
+        CustomForm customForm = customFormMapper.selectByPrimaryKey(formId);
+        if (customForm == null || !StringUtils.equals(customForm.getOrganizationId(), orgId)) {
+            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
+        }
+        if (customFormService.isFormAdminUser(formId, userId, orgId)) {
             // 管理员管理所有数据
             return CustomFormRoleKey.MANAGE_ALL;
         }
@@ -877,7 +898,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             log.error("custom form data import error: {}", e.getMessage());
-            throw new GenericException(e.getMessage());
+            throw new GenericException("导入异常，请检查文件数据！" + e);
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }

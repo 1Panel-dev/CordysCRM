@@ -47,34 +47,6 @@
         </foreach>
     </select>
 
-    <select id="getSourceOptionsByKeywords" resultType="cn.cordys.common.dto.OptionDTO">
-        select id,name from ${tableName} where id in
-        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
-            #{keyword}
-        </foreach>
-        or name in
-        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
-            #{keyword}
-        </foreach>
-        <if test="tableName == 'clue'">
-            and (transition_id IS NULL OR  transition_id = '') and in_shared_pool is false
-        </if>
-        <if test="tableName == 'customer'">
-            and in_shared_pool is false
-        </if>
-    </select>
-
-    <select id="getCustomFormOptionsByKeywords" resultType="cn.cordys.common.dto.OptionDTO">
-        select id,name from custom_form_data where id in
-        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
-            #{keyword}
-        </foreach>
-        or name in
-        <foreach collection="keywords" item="keyword" open="(" separator="," close=")">
-            #{keyword}
-        </foreach>
-    </select>
-
     <select id="getSourceOptionsByName" resultType="cn.cordys.common.dto.OptionDTO">
         select id, name from ${tableName} where organization_id = #{orgId}
         <if test="keyword != null and keyword != ''">

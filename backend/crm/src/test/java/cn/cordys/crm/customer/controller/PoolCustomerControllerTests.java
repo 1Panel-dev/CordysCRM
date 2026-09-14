@@ -17,6 +17,7 @@ import cn.cordys.crm.customer.dto.request.CustomerExportRequest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.customer.dto.request.PoolCustomerAssignRequest;
 import cn.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
+import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
@@ -152,7 +153,9 @@ public class PoolCustomerControllerTests extends BaseTest {
     @Test
     @Order(6)
     void getDetail() throws Exception {
-        this.requestGetWithOk(GET_DETAIL + testDataId);
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(GET_DETAIL + testDataId);
+        CustomerGetResponse response = getResultData(mvcResult, CustomerGetResponse.class);
+        Assertions.assertEquals(testPoolId, response.getPoolId());
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ, GET_DETAIL + testDataId);
     }
 

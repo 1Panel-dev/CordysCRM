@@ -91,10 +91,10 @@ public class ContractInvoiceExportService extends BaseExportService {
         systemFieldMap.put("owner", data.getOwnerName());
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
-        systemFieldMap.put("amount", data.getAmount());
 
         Map<String, FieldExportMeta> metaMap = exportMetas.stream()
                 .collect(Collectors.toMap(FieldExportMeta::getBusinessKey, Function.identity(), (a, b) -> a));
+        resolveAndPutTimeField(systemFieldMap, metaMap, "amount", data.getAmount());
         FieldExportMeta taxRate = metaMap.values().stream().filter(meta -> Strings.CI.equals(meta.getBusinessKey(), BusinessModuleField.INVOICE_TAX_RATE.getBusinessKey())).findFirst().orElse(null);
         if (taxRate != null && taxRate.getField() != null && data.getTaxRate() != null) {
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(taxRate.getField().getType());

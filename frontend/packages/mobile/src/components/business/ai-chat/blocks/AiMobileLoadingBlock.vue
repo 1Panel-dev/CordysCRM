@@ -1,42 +1,29 @@
 <template>
-  <div class="ai-chat-block ai-mobile-loading">
-    <span />
-    <span />
-    <span />
+  <div class="ai-chat-block py-[4px]">
+    <span class="ai-mobile-loading-text">{{ t('aiChat.thinkingInProgress') }}</span>
   </div>
 </template>
 
+<script setup lang="ts">
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
+  const { t } = useI18n();
+</script>
+
 <style scoped lang="less">
-  .ai-mobile-loading {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 0;
-    span {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--primary-8);
-      animation: ai-mobile-loading 1.2s infinite ease-in-out;
-      &:nth-child(2) {
-        animation-delay: 0.16s;
-      }
-      &:nth-child(3) {
-        animation-delay: 0.32s;
-      }
-    }
+  .ai-mobile-loading-text {
+    color: transparent;
+    background: linear-gradient(90.26deg, #4d4d4d 0%, rgb(50 53 53 / 20%) 2.97%, #d6d6d6 5.62%);
+    background-size: 1000% 100%;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: ai-mobile-loading-text 2.6s linear infinite;
   }
 
-  @keyframes ai-mobile-loading {
-    0%,
-    80%,
-    100% {
-      opacity: 0.35;
-      transform: scale(0.8);
-    }
-    40% {
-      opacity: 1;
-      transform: scale(1);
+  @keyframes ai-mobile-loading-text {
+    to {
+      background-position: -100% 0;
     }
   }
 </style>
