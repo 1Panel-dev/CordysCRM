@@ -7,7 +7,7 @@
         {{ t('common.custom') }}
       </div>
     </div>
-    <div class="flex justify-between gap-[16px]">
+    <div class="flex justify-start gap-[16px]">
       <div
         v-for="item in displayQuickAccessList"
         :key="item.key"
