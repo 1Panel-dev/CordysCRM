@@ -1,37 +1,34 @@
 <template>
-  <CrmOverviewDrawer
-    ref="crmOverviewDrawerRef"
-    v-model:show="showOptOverviewDrawer"
-    v-model:active-tab="activeTab"
-    :tab-list="tabList"
-    show-tab-setting
-    :button-list="buttonList"
-    :title="titleName"
-    :subtitle="subTitleName"
-    :form-key="FormDesignKeyEnum.BUSINESS"
-    :source-id="sourceId"
-    :formViewSize="formViewSize"
-    @button-pop-update="handleTransferPopUpdate"
-    @button-select="handleSelect"
-    @saved="refreshList"
-  >
-    <template #left>
-      <div class="h-full overflow-hidden">
-        <CrmFormDescription
-          :form-key="FormDesignKeyEnum.BUSINESS"
-          :source-id="sourceId"
-          :refresh-key="refreshKey"
-          class="p-[16px_24px]"
-          :column="layout === 'vertical' ? 3 : undefined"
-          :label-width="layout === 'vertical' ? 'auto' : undefined"
-          :value-align="layout === 'vertical' ? 'start' : undefined"
-          :readonly="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
-          @init="handleDescriptionInit"
-          @open-customer-detail="emit('openCustomerDrawer', $event)"
-        />
-      </div>
+  <CrmDrawer v-model:show="showOptOverviewDrawer" resizable no-padding :footer="false" :view-size="formViewSize">
+    <template #title>
+      <n-tooltip trigger="hover" :delay="300" :disabled="!titleName">
+        <template #trigger>
+          <div class="flex gap-[4px] overflow-hidden">
+            <div class="one-line-text flex-1 text-[var(--text-n1)]">{{ titleName }}</div>
+            <div v-if="subTitleName" class="flex text-[var(--text-n4)]">
+              (
+              <div class="one-line-text max-w-[300px]">{{ subTitleName }}</div>
+              )
+            </div>
+          </div>
+        </template>
+        {{ `${titleName}${subTitleName ? `(${subTitleName})` : ''}` }}
+      </n-tooltip>
     </template>
-    <template #rightTop>
+    <template #titleRight>
+      <CrmButtonGroup
+        class="gap-[12px]"
+        :list="buttonList"
+        not-show-divider
+        @pop-update="handleTransferPopUpdate"
+        @select="handleSelect"
+      >
+        <template #transferPopContent>
+          <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
+        </template>
+      </CrmButtonGroup>
+    </template>
+    <div class="h-full bg-[var(--text-n9)] p-[16px]">
       <CrmWorkflowCard
         v-model:stage="currentStatus"
         :formKey="FormDesignKeyEnum.BUSINESS"
@@ -46,48 +43,78 @@
         :update-api="updateOptStage"
         @load-detail="refreshList"
       />
-    </template>
-    <template #right>
-      <FollowDetail
-        v-if="['followRecord', 'followPlan'].includes(activeTab)"
-        class="mt-[16px]"
-        :refresh-key="refreshKey"
-        :active-type="(activeTab as 'followRecord'| 'followPlan')"
-        wrapper-class="h-[calc(100vh-290px)]"
-        virtual-scroll-height="calc(100vh - 382px)"
-        :follow-api-key="FormDesignKeyEnum.BUSINESS"
-        :source-id="sourceId"
-        :initial-source-name="initialSourceName"
-        :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
-        :show-action="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
-        :parentFormKey="FormDesignKeyEnum.BUSINESS"
-      />
-
-      <ContactTable
-        v-if="activeTab === 'contact'"
-        :form-key="FormDesignKeyEnum.BUSINESS_CONTACT"
-        :refresh-key="refreshKey"
-        readonly
-        :source-id="sourceId"
-      />
-      <CrmCard v-else-if="activeTab === 'quotation'" no-content-bottom-padding hide-footer>
-        <quotationTable
-          :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
-          :source-id="sourceId"
-          :refresh-key="refreshKey"
-          :source-name="titleName"
-        />
+      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
+          <template #suffix>
+            <CrmTabSetting
+              v-if="formConfig"
+              :tab-list="enabledSystemDetailTabList"
+              :setting-key="`${FormDesignKeyEnum.BUSINESS}-settingKey`"
+              :tab-config-version="systemTabConfigVersion"
+              @init="initTabList"
+            />
+          </template>
+        </CrmTab>
       </CrmCard>
-    </template>
-
-    <template #transferPopContent>
-      <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
-    </template>
-  </CrmOverviewDrawer>
+      <CrmCard contentHeight="100%" hide-footer :special-height="170" no-content-padding>
+        <div v-show="activeTab === 'opportunity'" class="h-full overflow-hidden">
+          <CrmFormDescription
+            :form-key="FormDesignKeyEnum.BUSINESS"
+            :source-id="sourceId"
+            :refresh-key="refreshKey"
+            class="p-[24px]"
+            :column="2"
+            label-width="auto"
+            value-align="start"
+            tooltip-position="top-start"
+            :readonly="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+            @init="handleDescriptionInit"
+            @open-customer-detail="emit('openCustomerDrawer', $event)"
+          />
+        </div>
+        <FollowDetail
+          v-if="['followRecord', 'followPlan'].includes(activeTab)"
+          :refresh-key="refreshKey"
+          :active-type="(activeTab as 'followRecord' | 'followPlan')"
+          wrapper-class="h-full"
+          virtual-scroll-height="calc(100vh - 382px)"
+          :follow-api-key="FormDesignKeyEnum.BUSINESS"
+          :source-id="sourceId"
+          :initial-source-name="initialSourceName"
+          :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+          :show-action="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+          :parentFormKey="FormDesignKeyEnum.BUSINESS"
+        />
+        <div v-if="activeTab === 'contact'" class="h-full px-[24px] pt-[24px]">
+          <ContactTable
+            :form-key="FormDesignKeyEnum.BUSINESS_CONTACT"
+            :refresh-key="refreshKey"
+            readonly
+            :source-id="sourceId"
+          />
+        </div>
+        <div v-if="activeTab === 'quotation'" class="h-full px-[24px] pt-[24px]">
+          <quotationTable
+            :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
+            :source-id="sourceId"
+            :refresh-key="refreshKey"
+            :source-name="titleName"
+          />
+        </div>
+      </CrmCard>
+    </div>
+    <CrmFormCreateDrawer
+      v-model:visible="formCreateDrawerVisible"
+      :form-key="FormDesignKeyEnum.BUSINESS"
+      :source-id="sourceId"
+      need-init-detail
+      @saved="refreshList"
+    />
+  </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { useMessage } from 'naive-ui';
+  import { NTooltip, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -96,12 +123,16 @@
   import type { OpportunityItem, OpportunityStageConfig } from '@lib/shared/models/opportunity';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
+  import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
-  import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
+  import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
@@ -109,6 +140,7 @@
 
   import { deleteOpt, getOpportunityStageConfig, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
+  import useFormDetailTabs from '@/hooks/useFormDetailTabs';
   import useModal from '@/hooks/useModal';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
@@ -131,9 +163,6 @@
     required: true,
   });
 
-  const crmOverviewDrawerRef = ref<InstanceType<typeof CrmOverviewDrawer>>();
-  const layout = computed(() => crmOverviewDrawerRef.value?.layout);
-
   const transferForm = ref<TransferParams>({
     owner: null,
     ids: [],
@@ -153,7 +182,6 @@
   const refreshKey = ref(0);
   const lastFailureReason = ref('');
   const currentStatus = ref<string>(stageConfig.value?.stageConfigList[0]?.id || '');
-  const isNotFail = computed(() => currentStatus.value !== stageConfig.value?.stageConfigList.slice(-1)[0]?.id);
   const isSuccess = computed(
     () =>
       currentStatus.value === stageConfig.value?.stageConfigList.find((e) => e.type === 'END' && e.rate === '100')?.id
@@ -220,8 +248,9 @@
     return [...editAction, ...transferAction, ...deleteAction];
   });
 
-  const activeTab = ref('followRecord');
-  const tabList: TabContentItem[] = [
+  const formConfig = ref<FormConfig>();
+  const activeTab = ref('opportunity');
+  const staticTabList: TabContentItem[] = [
     {
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
@@ -245,10 +274,34 @@
       permission: ['OPPORTUNITY_QUOTATION:READ'],
     },
   ];
+  const { enabledSystemDetailTabList, systemTabConfigVersion } = useFormDetailTabs(formConfig, staticTabList);
+  const settingTabList = ref<TabContentItem[]>([]);
+  const tabList = computed<TabContentItem[]>(() => [
+    {
+      name: 'opportunity',
+      tab: t('crmFormDesign.opportunity'),
+      enable: true,
+    },
+    ...settingTabList.value,
+  ]);
+
+  function initTabList(list: TabContentItem[]) {
+    settingTabList.value = list;
+  }
+
+  watch(
+    () => tabList.value,
+    (list) => {
+      if (!list.some((item) => item.name === activeTab.value)) {
+        activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
 
   const titleName = ref('');
   const subTitleName = ref('');
   const initialSourceName = ref('');
+  const formCreateDrawerVisible = ref(false);
 
   // 转移
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
@@ -311,6 +364,9 @@
 
   function handleSelect(key: string, done?: () => void) {
     switch (key) {
+      case 'edit':
+        formCreateDrawerVisible.value = true;
+        break;
       case 'pop-transfer':
         handleTransfer(done);
         break;
@@ -334,6 +390,7 @@
     detail?: Record<string, any>,
     config?: FormConfig
   ) {
+    formConfig.value = config;
     if (detail) {
       const { customerName, customerId, name, stage, failureReason } = detail;
       // 商机阶段

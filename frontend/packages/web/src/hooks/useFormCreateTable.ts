@@ -77,6 +77,8 @@ export interface FormCreateTableProps {
   hiddenRefresh?: boolean;
   enableApproval?: Ref<boolean>;
   customFormId?: Ref<string | undefined>; // 自定义表单id
+  tableKey?: TableKeyEnum | string; // 覆盖默认列缓存 key，用于隔离嵌入式表格的列配置
+  hideOperationColumn?: boolean; // 不生成操作列，不影响 readonly 在既有列表中的行为
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -565,9 +567,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         columnSelectorDisabled: true,
         render: (row: any, rowIndex: number) => rowIndex + 1,
       });
-      if (!_readOnly && !props.readonly && operationColumn) {
+      if (!_readOnly && !props.readonly && !props.hideOperationColumn && operationColumn) {
         columns.value.push(operationColumn);
-      } else if (!_readOnly && !props.readonly && props.operationColumn) {
+      } else if (!_readOnly && !props.readonly && !props.hideOperationColumn && props.operationColumn) {
         columns.value.push(props.operationColumn);
       }
       customFieldsFilterConfig.value = getFilterListConfig(res);
@@ -585,8 +587,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     getFormListApiMap[props.formKey],
     {
       tableKey:
-        props.formKey === FormDesignKeyEnum.CUSTOM_FORM ? props.customFormId?.value : tableKeyMap[props.formKey],
-      showSetting: !!tableKeyMap[props.formKey],
+        props.tableKey ||
+        (props.formKey === FormDesignKeyEnum.CUSTOM_FORM ? props.customFormId?.value : tableKeyMap[props.formKey]),
+      showSetting: !!props.tableKey || !!tableKeyMap[props.formKey],
       showPagination,
       columns: columns.value,
       permission: props.permission,

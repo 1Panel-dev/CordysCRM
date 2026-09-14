@@ -7,7 +7,7 @@
     :not-show-table="activeShowType === 'billboard'"
     :not-show-table-filter="isAdvancedSearchMode"
     :fullscreen-target-ref="props.fullscreenTargetRef"
-    :action-config="actionConfig"
+    :action-config="props.readonly ? undefined : actionConfig"
     :hiddenBackToTop="activeShowType === 'billboard'"
     :customTotal="activeShowType === 'billboard'"
     @page-change="propsEvent.pageChange"
@@ -199,6 +199,7 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -227,6 +228,9 @@
     sourceName?: string;
     readonly?: boolean;
     formKey: FormDesignKeyEnum.ORDER | FormDesignKeyEnum.CONTRACT_ORDER | FormDesignKeyEnum.CUSTOMER_ORDER;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
@@ -506,6 +510,9 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
+    readonly: props.readonly,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',
@@ -609,6 +616,8 @@
     setLoadListParams,
     setAdvanceFilter,
   } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
 
   const exportParams = computed(() => ({
     ...tableQueryParams.value,
