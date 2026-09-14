@@ -278,6 +278,7 @@ public class ContractController {
 
     @PostMapping("/sort")
     @Operation(summary = "合同阶段看板拖拽排序")
+    @CsPermission(value = PermissionConstants.CONTRACT_UPDATE, resourceId = "{#request.dragNodeId}", formType = FormKeyConstants.CONTRACT)
     public void sortModule(@Validated @RequestBody StageSortRequest request) {
         contractService.sort(request, SessionUtils.getUserId());
     }

@@ -166,6 +166,7 @@ public class OrderController {
 
     @PostMapping("/sort")
     @Operation(summary = "订单看板拖拽排序")
+    @CsPermission(value = PermissionConstants.ORDER_UPDATE, resourceId = "{#request.dragNodeId}", formType = FormKeyConstants.ORDER)
     public void sortModule(@Validated @RequestBody StageSortRequest request) {
         orderService.sort(request, SessionUtils.getUserId());
     }

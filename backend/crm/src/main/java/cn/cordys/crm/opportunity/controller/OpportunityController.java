@@ -230,6 +230,7 @@ public class OpportunityController {
 
     @PostMapping("/sort")
     @Operation(summary = "商机阶段看板拖拽排序")
+    @CsPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, resourceId = "{#request.dragNodeId}", formType = FormKeyConstants.OPPORTUNITY)
     public void sortModule(@Validated @RequestBody StageSortRequest request) {
         opportunityService.sort(request, SessionUtils.getUserId());
     }
