@@ -2,6 +2,7 @@ package cn.cordys.crm.form.service;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.CustomForm;
@@ -220,6 +221,9 @@ class CustomFormDataServiceTest {
         BaseMapper<CustomFormData> dataMapper = mock(BaseMapper.class);
         CustomFormDataService service = serviceWithPermission(CustomFormRoleKey.MANAGE_OWN);
         ReflectionTestUtils.setField(service, "customFormDataMapper", dataMapper);
+
+        ResourcePermissionService resourcePermissionService = mock(ResourcePermissionService.class);
+        ReflectionTestUtils.setField(service, "resourcePermissionService", resourcePermissionService);
 
         CustomFormData transferred = record("record-1", "form-1", "org-1", "owner-2");
         transferred.setCreateUser("owner-1");
