@@ -176,6 +176,7 @@
   import { batchDeleteClue, batchTransferClue, deleteClue } from '@/api/modules';
   import { baseFilterConfigList, getLeadHomeConditions } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -206,6 +207,9 @@
     readonly?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
     hiddenTotal?: boolean;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -514,6 +518,8 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.tableFormKey,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     containerClass: '.crm-clue-table',
     operationColumn: props.readonly
       ? undefined
@@ -617,6 +623,8 @@
     readonly: props.readonly,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
 
   const exportParams = computed(() => {
     return {

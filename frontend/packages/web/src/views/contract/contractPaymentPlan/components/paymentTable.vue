@@ -6,7 +6,7 @@
     :fullscreen-target-ref="props.fullscreenTargetRef"
     :class="`crm-contract-payment-table-${props.formKey}`"
     :not-show-table-filter="isAdvancedSearchMode"
-    :action-config="actionConfig"
+    :action-config="props.readonly ? undefined : actionConfig"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
@@ -26,7 +26,7 @@
           {{ t('contract.newPlan') }}
         </n-button>
         <CrmImportButton
-          v-if="hasAnyPermission(['CONTRACT_PAYMENT_PLAN:IMPORT']) && !props.isContractTab"
+          v-if="hasAnyPermission(['CONTRACT_PAYMENT_PLAN:IMPORT']) && !props.isContractTab && !props.readonly"
           :api-type="FormDesignKeyEnum.CONTRACT_PAYMENT"
           :title="t('module.paymentPlan')"
           @import-success="() => searchData()"
@@ -127,6 +127,7 @@
   import { deletePaymentPlan, updatePaymentPlan } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractPaymentPlanStatusOptions } from '@/config/contract';
+  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -150,6 +151,9 @@
     sourceName?: string;
     readonly?: boolean;
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT;
+    detailTabFilter?: DetailTabFilter;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
@@ -353,6 +357,9 @@
 
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
+    readonly: props.readonly,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     excludeFieldIds: ['contractId'],
     operationColumn: {
       key: 'operation',
@@ -413,6 +420,8 @@
     containerClass: `.crm-contract-payment-table-${props.formKey}`,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { applyDetailTabFilter } = useDetailTabTableFilter();
+  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
 
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)

@@ -30,7 +30,7 @@
             </div>
             <n-switch
               v-model:value="element.enable"
-              :disabled="cachedData.filter((e) => e.enable).length <= 1 && element.enable"
+              :disabled="element.disabled || (cachedData.filter((e) => e.enable).length <= 1 && element.enable)"
               size="small"
               :rubber-band="false"
               @update:value="handleChange"
@@ -60,6 +60,7 @@
   const props = defineProps<{
     tabList: TabContentItem[];
     settingKey: string;
+    tabConfigVersion?: string;
   }>();
 
   const emit = defineEmits<{
@@ -77,9 +78,11 @@
       const newTabsMap = {
         tabList: list,
         backupTabList: list,
+        tabConfigVersion: props.tabConfigVersion,
       };
       if (tabsMap) {
-        const isEqual = isArraysEqualWithOrder(tabsMap.backupTabList, list);
+        const isEqual =
+          isArraysEqualWithOrder(tabsMap.backupTabList, list) && tabsMap.tabConfigVersion === props.tabConfigVersion;
         if (!isEqual) {
           await setItem(props.settingKey, newTabsMap, true);
         }
@@ -96,11 +99,11 @@
     const { getItem } = useLocalForage();
     try {
       const tabsMap = await getItem<ContentTabsMap>(props.settingKey, true);
-      return tabsMap ? tabsMap.tabList : [];
+      return tabsMap;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
-      return [];
+      return undefined;
     }
   }
 
@@ -110,39 +113,61 @@
   );
   async function loadTab() {
     try {
-      const localTabs = await getTabsFromLocal();
+      const tabsMap = await getTabsFromLocal();
+      const localTabs = tabsMap?.tabList || [];
       const currentTabMap = new Map(newTabList.value.map((tab) => [tab.name, tab]));
+      const shouldReset =
+        tabsMap?.tabConfigVersion !== undefined && tabsMap.tabConfigVersion !== props.tabConfigVersion;
+
+      if (shouldReset) {
+        cachedData.value = newTabList.value.map((tab) => ({ ...tab, enable: true }));
+        await saveTabsToLocal(cachedData.value);
+        emit('init', enableTabs.value);
+        return;
+      }
 
       if (localTabs.length > 0) {
         // 使用本地存储的顺序，但只包含当前仍然存在的标签页
         const mergedTabs = localTabs
           .filter((tab) => currentTabMap.has(tab.name)) // 过滤掉已删除的标签页
-          .map((localTab) => ({
-            ...currentTabMap.get(localTab.name)!,
-            enable: localTab.enable, // 保留启用状态
-          }));
+          .map((localTab) => {
+            const currentTab = currentTabMap.get(localTab.name)!;
+            return {
+              ...currentTab,
+              enable: localTab.enable,
+            };
+          });
 
         // 添加新增的标签页（在本地存储中不存在的）
         const existingNames = new Set(mergedTabs.map((tab) => tab.name));
         const newTabs = newTabList.value
           .filter((tab) => !existingNames.has(tab.name))
-          .map((tab) => ({ ...tab, enable: true }));
+          .map((tab) => ({ ...tab, enable: tab.enable }));
 
         const finalTabs = [...mergedTabs, ...newTabs];
         cachedData.value = finalTabs;
 
         // 如果有新增标签页或顺序变化，更新本地存储
-        if (newTabs.length > 0 || !isArraysEqualWithOrder(localTabs, mergedTabs)) {
+        if (
+          newTabs.length > 0 ||
+          !isArraysEqualWithOrder(localTabs, mergedTabs) ||
+          tabsMap?.tabConfigVersion !== props.tabConfigVersion
+        ) {
           await saveTabsToLocal(finalTabs);
         }
       } else {
         // 没有本地存储，使用默认设置
         await saveTabsToLocal(cachedData.value);
       }
+      emit('init', enableTabs.value);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
-      cachedData.value = newTabList.value.map((tab) => ({ ...tab, enable: true }));
+      cachedData.value = newTabList.value.map((tab) => ({
+        ...tab,
+        enable: tab.enable,
+      }));
+      emit('init', enableTabs.value);
     }
   }
 
@@ -166,7 +191,6 @@
 
   onBeforeMount(async () => {
     await loadTab();
-    emit('init', enableTabs.value);
   });
 
   watch(

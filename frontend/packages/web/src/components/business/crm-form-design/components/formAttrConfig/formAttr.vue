@@ -127,6 +127,28 @@
         </n-radio-button>
       </n-radio-group>
     </div>
+    <div class="crm-form-design-config-item">
+      <div class="flex items-center justify-between">
+        <div class="crm-form-design-config-item-title mb-0">{{ t('crmFormDesign.detailTabs') }}</div>
+        <CrmPopConfirm
+          :title="t('crmFormDesign.detailTabsClearTip')"
+          :content="t('crmFormDesign.detailTabsClearTipContent')"
+          icon-type="warning"
+          :positive-text="t('common.confirm')"
+          :negative-text="t('common.cancel')"
+          trigger="click"
+          :disabled="!hasCustomDetailTabs"
+          @confirm="handleClearCustomDetailTabs"
+        >
+          <n-button text type="primary" :disabled="!hasCustomDetailTabs">
+            {{ t('common.clear') }}
+          </n-button>
+        </CrmPopConfirm>
+      </div>
+      <n-button class="mt-[8px] w-full" @click="detailTabModalVisible = true">
+        {{ formConfig.detailTabs?.length ? t('crmFormDesign.detailTabsConfigured') : t('common.setting') }}
+      </n-button>
+    </div>
     <!-- 表单联动 -->
     <div
       v-if="
@@ -170,6 +192,13 @@
     :form-key="currentFormLinkKey"
     @save="handleLinkConfigSave"
   />
+  <formDetailTabModal
+    v-model:visible="detailTabModalVisible"
+    :tabs="formConfig.detailTabs"
+    :current-form-type="currentDetailTabFormType"
+    :current-form-id="currentDetailTabFormId"
+    @save="handleDetailTabsSave"
+  />
 </template>
 
 <script setup lang="ts">
@@ -177,10 +206,17 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FormConfig, FormConfigLinkScenarioItem } from '@lib/shared/models/system/module';
+  import {
+    FormConfig,
+    FormConfigLinkScenarioItem,
+    FormDetailTabConfig,
+    FormDetailTabRelatedFormType,
+  } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import formDetailTabModal from './formDetailTabModal.vue';
   import formLinkDrawer from './formLinkDrawer.vue';
 
   const props = defineProps<{
@@ -196,6 +232,13 @@
   const formConfig = defineModel<FormConfig>('formConfig', {
     required: true,
   });
+  const customFormSourceId = inject<Readonly<Ref<string>>>('customFormSourceId', ref(''));
+  const currentDetailTabFormType = computed<FormDetailTabRelatedFormType>(() =>
+    props.formKey === FormDesignKeyEnum.CUSTOM_FORM ? 'CUSTOM' : 'SYSTEM'
+  );
+  const currentDetailTabFormId = computed(() =>
+    props.formKey === FormDesignKeyEnum.CUSTOM_FORM ? customFormSourceId.value : props.formKey
+  );
 
   function handleLayoutChange(layout: number) {
     list.value.forEach((item) => {
@@ -280,7 +323,9 @@
     ];
   });
   const linkConfigVisible = ref(false);
+  const detailTabModalVisible = ref(false);
   const currentFormLinkKey = ref<FormDesignKeyEnum>(formKeyOptions.value[0]?.value);
+  const hasCustomDetailTabs = computed(() => formConfig.value.detailTabs?.some((item) => item.origin === 'CUSTOM'));
 
   function showLinkConfig(key: FormDesignKeyEnum) {
     currentFormLinkKey.value = key;
@@ -295,6 +340,14 @@
         [formKey]: value,
       };
     }
+  }
+
+  function handleDetailTabsSave(value: FormDetailTabConfig[]) {
+    formConfig.value.detailTabs = value;
+  }
+
+  function handleClearCustomDetailTabs() {
+    formConfig.value.detailTabs = formConfig.value.detailTabs?.filter((item) => item.origin === 'SYSTEM') || [];
   }
 
   function getSettingScenarioCount(items?: FormConfigLinkScenarioItem[]) {
