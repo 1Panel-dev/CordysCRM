@@ -149,6 +149,7 @@ public class DatasourceMultipleResolver extends AbstractModuleFieldResolver<Data
         if (StringUtils.isBlank(text) || Strings.CS.equals(text, EMPTY_ARRAY_STRING)) {
             return StringUtils.EMPTY;
         }
+        text = text.replaceAll("，", ",");
         List<String> names = parseFakeJsonArray(text);
 
         if (Strings.CI.equals(field.getDataSourceType(), FieldSourceType.CUSTOMER.name())) {
