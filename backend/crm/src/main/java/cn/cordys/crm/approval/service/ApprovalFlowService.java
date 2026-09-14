@@ -1042,11 +1042,38 @@ public class ApprovalFlowService {
     private List<Permission> getPermissionsByFormType(String formType) {
         List<PermissionDefinitionItem> permissionSetting = roleService.getPermissionSetting();
         String permissionId = Objects.requireNonNull(ApprovalFormTypeEnum.getByValue(formType)).getPermissionId();
+        if (Strings.CI.equals(permissionId, ApprovalFormTypeEnum.CUSTOM_FORM.getPermissionId())) {
+            // 自定义表单的审批权限
+            return getCustomFormDataApprovalPermission();
+        }
         List<Permission> permissions = findPermissionsByPermissionId(permissionSetting, permissionId);
+
         if (permissions == null) {
             return List.of();
         }
-        return permissions;
+        // 审批权限排除导入
+        return permissions.stream()
+                .filter(permission -> !permission.getId().contains("IMPORT"))
+                .collect(Collectors.toList());
+    }
+
+    private List<Permission> getCustomFormDataApprovalPermission() {
+        Permission readPermission = new Permission();
+        readPermission.setId("CUSTOM_FORM_DATA:READ");
+        readPermission.setName(Translator.get("permission.read"));
+
+        Permission updatePermission = new Permission();
+        updatePermission.setId("CUSTOM_FORM_DATA:UPDATE");
+        updatePermission.setName(Translator.get("permission.update"));
+
+        Permission deletePermission = new Permission();
+        deletePermission.setId("CUSTOM_FORM_DATA:DELETE");
+        deletePermission.setName(Translator.get("permission.delete"));
+
+        Permission exportPermission = new Permission();
+        exportPermission.setId("CUSTOM_FORM_DATA:EXPORT");
+        exportPermission.setName(Translator.get("permission.export"));
+        return List.of(readPermission, updatePermission, deletePermission, exportPermission);
     }
 
     /**
@@ -1082,6 +1109,11 @@ public class ApprovalFlowService {
                 StatusPermissionDTO item = savedPermissionMap.get(key);
                 if (item != null) {
                     updatedPermissions.add(item);
+                    // 审批中编辑和删除权限 enable 设置为 false
+                    if (Strings.CS.equals(approvalStatus, ApprovalStatus.APPROVING.name())
+                            && (permission.getIdAsString().endsWith(":UPDATE") || permission.getIdAsString().endsWith(":DELETE"))) {
+                        item.setEnabled(false);
+                    }
                 } else {
                     // 添加缺失的权限，默认不启用
                     StatusPermissionDTO newItem = new StatusPermissionDTO();
@@ -1089,11 +1121,6 @@ public class ApprovalFlowService {
                     newItem.setPermission(permission.getIdAsString());
                     newItem.setEnabled(false);
                     updatedPermissions.add(newItem);
-                }
-                // 审批中编辑和删除权限 enable 设置为 false
-                if (Strings.CS.equals(approvalStatus, ApprovalStatus.APPROVING.name())
-                        && (permission.getIdAsString().endsWith(":UPDATE") || permission.getIdAsString().endsWith(":DELETE"))) {
-                    item.setEnabled(false);
                 }
             }
         }
