@@ -43,7 +43,7 @@
       </div>
       <n-button
         v-if="notifyItem?.status === SystemMessageStatusEnum.UNREAD"
-        class="!bg-[var(--primary-8)]"
+        class="system-notify-button"
         type="primary"
         @click="setMessageRead"
       >
@@ -139,5 +139,19 @@
 <style lang="less">
   .n-notification-main__content {
     padding-right: 8px !important;
+  }
+</style>
+
+<style scoped lang="less">
+  .system-notify-button {
+    --n-color: var(--primary-8) !important;
+    --n-color-hover: var(--primary-1) !important;
+    --n-color-pressed: var(--primary-0) !important;
+    --n-color-focus: var(--primary-8) !important;
+    --n-border: 1px solid var(--primary-8) !important;
+    --n-border-hover: 1px solid var(--primary-1) !important;
+    --n-border-pressed: 1px solid var(--primary-0) !important;
+    --n-border-focus: 1px solid var(--primary-8) !important;
+    --n-ripple-color: var(--primary-8) !important;
   }
 </style>
