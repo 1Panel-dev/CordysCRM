@@ -62,6 +62,7 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
         if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
             return StringUtils.EMPTY;
         }
+        text = text.replaceAll("，", ",");
         List<String> names = parseFakeJsonArray(text);
         List<String> ids = Objects.requireNonNull(extUserMapper).selectUserIdsByNames(names);
         if (CollectionUtils.isNotEmpty(ids)) {

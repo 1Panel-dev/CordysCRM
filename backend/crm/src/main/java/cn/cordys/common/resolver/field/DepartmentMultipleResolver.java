@@ -56,6 +56,7 @@ public class DepartmentMultipleResolver extends AbstractModuleFieldResolver<Depa
         if (StringUtils.isBlank(text) || Strings.CS.equals(text, "[]")) {
             return StringUtils.EMPTY;
         }
+        text = text.replaceAll("，", ",");
         List<String> names = parseFakeJsonArray(text);
         List<String> ids = Objects.requireNonNull(extDepartmentMapper).getIdsByNames(names);
         if (CollectionUtils.isNotEmpty(ids)) {
