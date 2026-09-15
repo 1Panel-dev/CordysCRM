@@ -499,10 +499,16 @@
     }
   }
 
-  function handleFormCreateSaved(res?: any) {
-    refreshKey.value += 1;
+  function refreshOpenedDetail() {
+    if (showOverviewDrawer.value) {
+      refreshKey.value += 1;
+    }
+  }
+
+  function handleFormCreateSaved(res: any) {
+    refreshOpenedDetail();
     if (needInitDetail.value) {
-      searchData(undefined);
+      searchData(undefined, res?.id);
     } else {
       searchData();
     }
@@ -511,11 +517,7 @@
   function handleFormReview(res: any) {
     reviewByFormResult(res, {
       onSuccess: () => {
-        if (needInitDetail.value) {
-          searchData(undefined, res?.id);
-        } else {
-          searchData();
-        }
+        handleFormCreateSaved(res);
       },
     });
   }
