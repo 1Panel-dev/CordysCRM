@@ -32,6 +32,7 @@ export interface UseApprovalOperationOptions<Row extends Record<string, any>> {
   };
   specialActionFilter?: (row: Row, actionKeys: string[]) => string[];
   shouldUseRolePermissionOnly?: (row: Row) => boolean; // 应该回退成“只按角色权限”处理，例如报价单作废状态下，但是审批状态还是审批中，此刻按照角色权限处理只展示删除
+  ignoreRolePermissionCheck?: boolean; // 仅按审批状态权限判断，不再叠加系统角色权限。例如自定义表单数据。
 }
 
 function buildStatusPermissionMap(statusPermissions: StatusPermissions[]) {
@@ -79,6 +80,10 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
   function getDataActionMap(row: Row) {
     return typeof options.dataActionMap === 'function' ? options.dataActionMap(row) : options.dataActionMap;
+  }
+
+  function hasRolePermission(permissions: string[]) {
+    return options.ignoreRolePermissionCheck || hasAnyPermission(permissions);
   }
 
   function isApplicant(row: Row) {
@@ -187,7 +192,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
           return false;
         }
 
-        return !action.permission?.length || hasAnyPermission(action.permission);
+        return !action.permission?.length || hasRolePermission(action.permission);
       });
     }
 
@@ -198,7 +203,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
 
       return (
         action.permission.some((permissionId) => currentStatusPermissions.has(permissionId)) &&
-        hasAnyPermission(action.permission)
+        hasRolePermission(action.permission)
       );
     });
   }
@@ -211,7 +216,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
         return false;
       }
 
-      return !action.permission?.length || hasAnyPermission(action.permission);
+      return !action.permission?.length || hasRolePermission(action.permission);
     });
   }
 
@@ -261,7 +266,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   }
 
   function getApprovalActionTip(permissions: string[], tipKey: string) {
-    if (!enableApproval.value || !approvalPermissionsDetail.value || !hasAnyPermission(permissions)) {
+    if (!enableApproval.value || !approvalPermissionsDetail.value || !hasRolePermission(permissions)) {
       return '';
     }
 
@@ -282,19 +287,19 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
       return false;
     }
 
-    const hasRolePermission = hasAnyPermission(permissions);
+    const hasCurrentRolePermission = hasRolePermission(permissions);
 
     if (!enableApproval.value || shouldUseRolePermissionOnly?.(row)) {
-      return hasRolePermission;
+      return hasCurrentRolePermission;
     }
 
     const currentStatusPermissions = statusPermissionMap.value.get(getApprovalStatus(row));
 
     if (!currentStatusPermissions) {
-      return hasRolePermission;
+      return hasCurrentRolePermission;
     }
 
-    return hasStatusPermissions(row, permissions) && hasRolePermission;
+    return hasStatusPermissions(row, permissions) && hasCurrentRolePermission;
   }
 
   function splitActions(actions: ActionsItem[]) {

@@ -5,7 +5,7 @@
     v-bind="propsRes"
     class="crm-customForm-table"
     :not-show-table-filter="isAdvancedSearchMode"
-    :action-config="props.readonly ? undefined : actionConfig"
+    :action-config="actionConfig"
     :columns="formColumns"
     :table-key="customFormId"
     @row-key-change="handleRowKeyChange"
@@ -28,7 +28,7 @@
           @import-success="() => searchData()"
         />
         <n-button
-          v-if="!props.readonly"
+          v-if="canExportCustomFormData"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -44,7 +44,7 @@
         ref="tableAdvanceFilterRef"
         v-model:keyword="keyword"
         :custom-fields-config-list="customFieldsFilterConfig"
-        :filter-config-list="baseFilterConfigList"
+        :filter-config-list="customFormFilterConfigList"
         @adv-search="handleAdvSearch"
         @keyword-search="searchData"
       />
@@ -56,6 +56,7 @@
     v-model:field-list="editFieldList"
     :ids="checkedRowKeys"
     :form-key="FormDesignKeyEnum.CUSTOM_FORM"
+    :show-approval-tip="batchEditApprovalTip"
     :otherSaveParams="{
       customFormId: props.formKey,
     }"
@@ -86,6 +87,7 @@
     :params="exportParams"
     :export-columns="exportColumns"
     :is-export-all="isExportAll"
+    :show-approval-tip="exportApprovalTip"
     type="customForm"
     :custom-form-id="props.formKey"
     :custom-form-type-string="formKeyName"
@@ -96,7 +98,7 @@
 <script setup lang="ts">
   import { type DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -106,6 +108,7 @@
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { type FilterForm, FilterFormItem, type FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import type { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -119,6 +122,7 @@
 
   import { batchDeleteCustomFormData, deleteCustomFormData } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
@@ -171,35 +175,57 @@
     formCreateDrawerVisible.value = true;
   }
 
+  const CUSTOM_FORM_DATA_PERMISSIONS = {
+    read: 'CUSTOM_FORM_DATA:READ',
+    update: 'CUSTOM_FORM_DATA:UPDATE',
+    delete: 'CUSTOM_FORM_DATA:DELETE',
+    export: 'CUSTOM_FORM_DATA:EXPORT',
+  } as const;
+
   const customFormId = computed(() => props.formKey);
   const customFormActionMap: Record<string, ActionsItem> = {
     edit: {
       label: t('common.edit'),
       key: 'edit',
-      permission: [],
+      permission: [CUSTOM_FORM_DATA_PERMISSIONS.update],
     },
     delete: {
       label: t('common.delete'),
       key: 'delete',
-      permission: [],
+      permission: [CUSTOM_FORM_DATA_PERMISSIONS.delete],
     },
   };
-  const { initApprovalPermission, resolveRowOperation, enableApproval, deleteExecute } =
-    useApprovalOperation<CustomFormPageItem>({
-      formType: customFormId,
-      dataActionMap: customFormActionMap,
-      specialActionFilter: (row, actionKeys) => {
-        if (row.isAdmin) {
-          return actionKeys;
-        }
+  const {
+    initApprovalPermission,
+    resolveRowOperation,
+    enableApproval,
+    deleteExecute,
+    hasApprovalScopedPermission,
+    getApprovalActionTip,
+    getAllowedStatuses,
+  } = useApprovalOperation<CustomFormPageItem>({
+    formType: customFormId,
+    dataActionMap: customFormActionMap,
+    specialActionFilter: (row, actionKeys) => {
+      if (row.isAdmin) {
+        return actionKeys;
+      }
 
-        return actionKeys.filter((key) => !['edit', 'delete'].includes(key));
-      },
-      shouldUseRolePermissionOnly: () => true,
-    });
+      return actionKeys.filter((key) => !['edit', 'delete'].includes(key));
+    },
+    ignoreRolePermissionCheck: true,
+  });
   const { reviewByFormResult, reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: customFormId,
   });
+
+  function clearCustomFormDataActionPermission(actions: ActionsItem[]) {
+    return actions.map((action) => ({
+      ...action,
+      permission: [],
+    }));
+  }
+
   // 删除
   function handleDelete(row: CustomFormPageItem) {
     openModal({
@@ -245,23 +271,22 @@
 
   const showOverviewDrawer = ref(false);
   const operationColumn = computed<CrmDataTableColumn | undefined>(() => {
-    if (props.readonly) {
-      return undefined;
-    }
     return {
       key: 'operation',
       width: 180,
       fixed: 'right',
       render: (row: CustomFormPageItem) => {
         const actions = resolveRowOperation(row);
+        const groupList = clearCustomFormDataActionPermission(actions.groupList);
+        const moreList = clearCustomFormDataActionPermission(actions.moreList);
 
-        if (!actions.groupList.length && !actions.moreList.length) {
+        if (!groupList.length && !moreList.length) {
           return '-';
         }
 
         return h(CrmOperationButton, {
-          groupList: actions.groupList,
-          moreList: actions.moreList,
+          groupList,
+          moreList,
           onSelect: (key: string) => handleActionSelect(row, key),
         });
       },
@@ -272,21 +297,27 @@
     formKey: FormDesignKeyEnum.CUSTOM_FORM,
     customFormId,
     disabledSelection: (row: CustomFormPageItem) => {
-      return !row.isAdmin || props.readonly;
+      return (
+        (!row.isAdmin || !hasApprovalScopedPermission(row, [CUSTOM_FORM_DATA_PERMISSIONS.update])) &&
+        (!row.isAdmin || !hasApprovalScopedPermission(row, [CUSTOM_FORM_DATA_PERMISSIONS.delete])) &&
+        !hasApprovalScopedPermission(row, [CUSTOM_FORM_DATA_PERMISSIONS.export])
+      );
     },
     operationColumn: operationColumn.value,
     specialRender: {
       name: (row: CustomFormPageItem) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              activeSourceId.value = row.id;
-              showOverviewDrawer.value = true;
-            },
-          },
-          { trigger: () => row.name, default: () => row.name }
-        );
+        return hasApprovalScopedPermission(row, [CUSTOM_FORM_DATA_PERMISSIONS.read])
+          ? h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  activeSourceId.value = row.id;
+                  showOverviewDrawer.value = true;
+                },
+              },
+              { trigger: () => row.name, default: () => row.name }
+            )
+          : h(CrmNameTooltip, { text: row.name });
       },
       approvalStatus: (row: CustomFormPageItem) => {
         if (!row.approvalStatus) {
@@ -297,6 +328,7 @@
           status: row.approvalStatus,
           formKey: customFormId.value,
           sourceId: row.id,
+          showMore: hasApprovalScopedPermission(row, [CUSTOM_FORM_DATA_PERMISSIONS.read]),
           disabled: row.approvalStatus !== ProcessStatusEnum.UNAPPROVED,
           onMore: () => {
             activeSourceId.value = row.id;
@@ -307,18 +339,23 @@
     },
     permission: [],
     containerClass: '.crm-customForm-table',
-    readonly: props.readonly,
+    enableApproval,
   });
 
   const { propsRes, propsEvent, loadList, setLoadListParams, tableQueryParams, setAdvanceFilter } = useTableRes;
 
-  const formColumns = computed(() => {
-    if (enableApproval.value) {
-      return columns.value;
-    }
-
-    return columns.value.filter((column) => column.key !== 'approvalStatus');
-  });
+  const formColumns = computed(() => columns.value);
+  const customFormFilterConfigList = computed<FilterFormItem[]>(() => [
+    {
+      title: t('common.approvalStatus'),
+      dataIndex: 'approvalStatus',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      selectProps: {
+        options: processStatusOptions,
+      },
+    },
+    ...baseFilterConfigList,
+  ]);
   function searchData(val?: string, refreshId?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, customFormId: customFormId.value });
     loadList(false, refreshId, customFormId.value);
@@ -349,25 +386,54 @@
     };
   });
 
-  const actionConfig: BatchActionConfig = {
+  const exportApprovalTip = computed(() =>
+    getApprovalActionTip([CUSTOM_FORM_DATA_PERMISSIONS.export], 'common.exportApprovalTip')
+  );
+  const batchEditApprovalTip = computed(() =>
+    getApprovalActionTip([CUSTOM_FORM_DATA_PERMISSIONS.update], 'common.batchEditApprovalTip')
+  );
+  // CUSTOM_FORM_DATA:* 只用于审批状态权限，不在角色权限树中，批量按钮需要绕开通用 permission 过滤。
+  const canExportCustomFormData = computed(() =>
+    enableApproval.value ? getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.export]).length > 0 : !props.readonly
+  );
+  const canUpdateCustomFormData = computed(() =>
+    enableApproval.value ? getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.update]).length > 0 : !props.readonly
+  );
+  const canDeleteCustomFormData = computed(() =>
+    enableApproval.value ? getAllowedStatuses([CUSTOM_FORM_DATA_PERMISSIONS.delete]).length > 0 : !props.readonly
+  );
+
+  const actionConfig = computed<BatchActionConfig>(() => ({
     baseAction: [
-      {
-        label: t('common.exportChecked'),
-        key: 'exportChecked',
-        permission: [],
-      },
-      {
-        label: t('common.batchEdit'),
-        key: 'batchEdit',
-        permission: [],
-      },
-      {
-        label: t('common.batchDelete'),
-        key: 'batchDelete',
-        permission: [],
-      },
+      ...(canExportCustomFormData.value
+        ? [
+            {
+              label: t('common.exportChecked'),
+              key: 'exportChecked',
+              permission: [],
+            },
+          ]
+        : []),
+      ...(canUpdateCustomFormData.value
+        ? [
+            {
+              label: t('common.batchEdit'),
+              key: 'batchEdit',
+              permission: [],
+            },
+          ]
+        : []),
+      ...(canDeleteCustomFormData.value
+        ? [
+            {
+              label: t('common.batchDelete'),
+              key: 'batchDelete',
+              permission: [],
+            },
+          ]
+        : []),
     ],
-  };
+  }));
 
   const selectedRows = ref<InternalRowData[]>([]);
   function handleRowKeyChange(keys: DataTableRowKey[], _rows: InternalRowData[]) {

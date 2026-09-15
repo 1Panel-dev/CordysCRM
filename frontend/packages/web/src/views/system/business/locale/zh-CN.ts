@@ -23,7 +23,6 @@ export default {
   'system.business.modelSettings.apiBaseUrl': 'API Base URL',
   'system.business.modelSettings.apiBaseUrlPlaceholder': '示例：https://api.openai.com/v1',
   'system.business.modelSettings.apiKey': 'API Key',
-  'system.business.modelSettings.aiParams': 'AI 参数设置',
   'system.business.modelSettings.callLimit': '调用限制',
   'system.business.modelSettings.globalDailyLimit': '全局每日调用上限',
   'system.business.modelSettings.userDailyLimit': '单用户每日调用上限',
