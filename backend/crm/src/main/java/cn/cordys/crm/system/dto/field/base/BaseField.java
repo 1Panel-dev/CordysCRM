@@ -136,21 +136,15 @@ public abstract class BaseField {
         return Strings.CS.equals(type, FieldType.SERIAL_NUMBER.name());
     }
 
-	@JsonIgnore
-	public static boolean includeFormula(BaseField field) {
-		if (Strings.CS.equals(field.getType(), FieldType.INPUT.name())) {
-            if (field instanceof InputField inputField) {
-                if (Strings.CI.equals(inputField.getDefaultValueType(), "formula")) {
-                    return StringUtils.isNotEmpty(inputField.getFormula());
-                }
-            }
-
-		}
-		if (Strings.CS.equals(field.getType(), FieldType.FORMULA.name())) {
-			return StringUtils.isNotEmpty(((FormulaField) field).getFormula());
-		}
-		return false;
-	}
+    @JsonIgnore
+    public boolean includeFormula() {
+        if (Strings.CS.equals(type, FieldType.INPUT.name()) && this instanceof InputField inputField) {
+            return Strings.CI.equals(inputField.getDefaultValueType(), "formula")
+                    && StringUtils.isNotEmpty(inputField.getFormula());
+        }
+        return Strings.CS.equals(type, FieldType.FORMULA.name()) && this instanceof FormulaField formulaField
+                && StringUtils.isNotEmpty(formulaField.getFormula());
+    }
 
 	@JsonIgnore
 	public boolean isSubField() {
