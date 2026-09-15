@@ -1,11 +1,11 @@
 <template>
   <CrmCard hide-footer no-content-padding :special-height="64">
-    <div class="flex h-[calc(100vh-168px)] min-h-0 flex-col overflow-hidden p-[24px]">
+    <div class="flex min-h-0 flex-col overflow-hidden p-[24px]">
       <n-button class="self-start" type="primary" @click="openAddModal">
         {{ t('system.business.modelSettings.addModel') }}
       </n-button>
 
-      <n-spin class="mt-[16px] min-h-0 w-full flex-1" content-class="h-full" :show="loading && modelList.length === 0">
+      <n-spin class="mt-[16px] min-h-0 w-full" content-class="h-full" :show="loading && modelList.length === 0">
         <div ref="modelListScrollRef" class="model-list-scroll" @scroll="handleModelListScroll">
           <div class="model-list-content">
             <div v-for="item of modelList" :key="item.id" class="model-item">
@@ -111,6 +111,7 @@
   import { FormInst, NButton, NForm, NFormItem, NInput, NSelect, NSpin, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import type { AiModelItem, AiModelSaveParams } from '@lib/shared/models/system/aiModel';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -304,7 +305,7 @@
   function handleDeleteModel(item: AiModelItem) {
     openModal({
       type: 'error',
-      title: t('system.business.modelSettings.deleteConfirmTitle', { name: item.displayName }),
+      title: t('system.business.modelSettings.deleteConfirmTitle', { name: characterLimit(item.displayName) }),
       content: t('system.business.modelSettings.deleteConfirmContent'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
@@ -359,14 +360,18 @@
 
 <style scoped lang="less">
   .model-list-scroll {
-    @apply h-full min-h-0 overflow-y-auto;
+    @apply min-h-0 overflow-y-auto;
+
+    max-height: calc(100vh - 260px);
+
     .crm-scroll-bar();
   }
   .model-list-content {
-    @apply grid min-h-full;
+    @apply grid;
 
     gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(318px, 2fr));
+    align-items: start;
+    grid-template-columns: repeat(auto-fill, minmax(318px, 360px));
     padding: 16px;
     border-radius: 8px;
     background-color: var(--text-n9);

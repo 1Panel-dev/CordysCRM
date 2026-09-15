@@ -7,12 +7,12 @@ import { getAgentModelOptions } from '@/api/modules';
 const modelOptions = ref<AiChatModel[]>([]);
 const selectedModel = ref<AiChatModel | null>(null);
 const loading = ref(false);
-const loaded = ref(false);
 let loadingPromise: Promise<void> | undefined;
 
 async function doLoadModelOptions(): Promise<void> {
   try {
     loading.value = true;
+    const currentSelectedModelId = selectedModel.value?.id;
     const result = await getAgentModelOptions();
     let defaultOption: AiChatModel | null = null;
 
@@ -29,8 +29,8 @@ async function doLoadModelOptions(): Promise<void> {
 
       return option;
     });
-    selectedModel.value = defaultOption ?? modelOptions.value[0] ?? null;
-    loaded.value = true;
+    const currentOption = modelOptions.value.find((model) => model.id === currentSelectedModelId) ?? null;
+    selectedModel.value = currentOption ?? defaultOption ?? modelOptions.value[0] ?? null;
   } catch (error) {
     // eslint-disable-next-line no-console
     console.log(error);
@@ -40,10 +40,6 @@ async function doLoadModelOptions(): Promise<void> {
 }
 
 async function loadModelOptions(): Promise<void> {
-  if (loaded.value) {
-    return;
-  }
-
   if (loadingPromise) {
     return loadingPromise;
   }
