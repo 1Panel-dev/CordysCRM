@@ -23,13 +23,20 @@ export const processDefaultStatusPermissionMap: Partial<
     [ProcessStatusEnum.PENDING]: ['READ', 'UPDATE', 'DELETE', 'STAGE', 'PAYMENT'],
   },
   [FormDesignKeyEnum.ORDER]: {
-    [ProcessStatusEnum.APPROVED]: ['READ', 'DOWNLOAD'],
+    [ProcessStatusEnum.APPROVED]: ['READ', 'DOWNLOAD', 'EXPORT'],
     [ProcessStatusEnum.APPROVING]: ['READ'],
     [ProcessStatusEnum.UNAPPROVED]: ['READ', 'UPDATE', 'DELETE'],
     [ProcessStatusEnum.REVOKED]: ['READ', 'UPDATE', 'DELETE'],
     [ProcessStatusEnum.PENDING]: ['READ', 'UPDATE', 'DELETE'],
   },
   [FormDesignKeyEnum.INVOICE]: {
+    [ProcessStatusEnum.APPROVED]: ['READ', 'EXPORT'],
+    [ProcessStatusEnum.APPROVING]: ['READ'],
+    [ProcessStatusEnum.UNAPPROVED]: ['READ', 'UPDATE', 'DELETE'],
+    [ProcessStatusEnum.REVOKED]: ['READ', 'UPDATE', 'DELETE'],
+    [ProcessStatusEnum.PENDING]: ['READ', 'UPDATE', 'DELETE'],
+  },
+  [FormDesignKeyEnum.CUSTOM_FORM]: {
     [ProcessStatusEnum.APPROVED]: ['READ', 'EXPORT'],
     [ProcessStatusEnum.APPROVING]: ['READ'],
     [ProcessStatusEnum.UNAPPROVED]: ['READ', 'UPDATE', 'DELETE'],
