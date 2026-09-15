@@ -1,13 +1,16 @@
 package cn.cordys.common.service;
 
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.domain.CustomFormDataField;
 import cn.cordys.crm.form.domain.CustomFormDataFieldBlob;
 import cn.cordys.crm.form.service.CustomFormDataFieldService;
+import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.InputNumberField;
+import cn.cordys.crm.system.dto.field.ProductSubField;
 import cn.cordys.crm.system.dto.field.TextAreaField;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.mybatis.BaseMapper;
@@ -18,9 +21,12 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -133,5 +139,65 @@ class BaseResourceFieldServiceTest {
         when(blobMapper.selectListByLambda(any()))
                 .thenThrow(new IllegalStateException("blob read failed"));
         assertEquals(List.of(), service.getModuleFieldValuesByResourceId("record-1"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void emptySubtableRowIsPersistedAndSparseRowsRemainReadable() {
+        BaseMapper<CustomFormDataField> fieldMapper = mock(BaseMapper.class);
+        BaseMapper<CustomFormDataFieldBlob> blobMapper = mock(BaseMapper.class);
+        ModuleFormService moduleFormService = mock(ModuleFormService.class);
+        DefaultUidGenerator uidGenerator = mock(DefaultUidGenerator.class);
+        ApplicationContext context = mock(ApplicationContext.class);
+        CustomFormDataFieldService service = new CustomFormDataFieldService();
+        ReflectionTestUtils.setField(service, "customFormDataFieldMapper", fieldMapper);
+        ReflectionTestUtils.setField(service, "customFormDataFieldBlobMapper", blobMapper);
+
+        when(context.getBean(ModuleFormService.class)).thenReturn(moduleFormService);
+        when(context.getBean(DefaultUidGenerator.class)).thenReturn(uidGenerator);
+        when(uidGenerator.getUID()).thenReturn(100L, 101L, 102L);
+        new CommonBeanFactory().setApplicationContext(context);
+        OrganizationContext.setOrganizationId("org-1");
+        CustomFormDataFieldService.setFormKey("form-1");
+
+        InputField childField = new InputField();
+        childField.setId("child-field");
+        childField.setType("INPUT");
+        ProductSubField subtable = new ProductSubField();
+        subtable.setId("subtable-field");
+        subtable.setType("SUB_PRODUCT");
+        subtable.setSubFields(List.of(childField));
+
+        List<Map<String, Object>> rows = List.of(
+                Map.of("id", "row-1"),
+                Map.of("id", "row-2", "child-field", "保留值")
+        );
+        List<CustomFormDataField> savedFields = new ArrayList<>();
+        service.saveSubFieldValue(
+                "record-1",
+                subtable,
+                new BaseModuleFieldValue("subtable-field", rows),
+                savedFields,
+                new ArrayList<>()
+        );
+
+        assertEquals(2, savedFields.size());
+        assertEquals("id", savedFields.get(0).getFieldId());
+        assertEquals("1", savedFields.get(0).getRowId());
+        assertEquals("row-1", savedFields.get(0).getBizId());
+        assertEquals("2", savedFields.get(1).getRowId());
+
+        when(fieldMapper.selectListByLambda(any())).thenReturn(List.of(savedFields.get(1)));
+        when(blobMapper.selectListByLambda(any())).thenReturn(List.of());
+        when(moduleFormService.getFlattenFormFields("form-1", "org-1"))
+                .thenReturn(List.of(subtable, childField));
+
+        List<BaseModuleFieldValue> values = service.getModuleFieldValuesByResourceId("record-1");
+        assertEquals(1, values.size());
+        List<Map<String, Object>> restoredRows = (List<Map<String, Object>>) values.get(0).getFieldValue();
+        assertEquals(2, restoredRows.size());
+        assertNotNull(restoredRows.get(0).get("id"));
+        assertEquals("row-2", restoredRows.get(1).get("id"));
+        assertEquals("保留值", restoredRows.get(1).get("child-field"));
     }
 }

@@ -197,7 +197,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         allFields.stream()
                 .filter(field -> {
                     BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
-                    return (fieldValue != null && fieldValue.valid()) || field.isSerialNumber() || field.isSubField() || field.includeFormula(field);
+                    return (fieldValue != null && fieldValue.valid()) || field.isSerialNumber() || field.isSubField() || field.includeFormula();
                 })
                 .sorted(Comparator.comparing((BaseField f) -> !f.isSerialNumber()).thenComparing(f -> f.getPos() != null ? f.getPos() : Long.MAX_VALUE))
                 .forEach(field -> {
@@ -282,6 +282,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         for (Map<String, Object> subValue : subValues) {
             // 子表行数据, 如果存在ID, 则使用旧ID作为bizId, 不存在则生成一个唯一ID, 保证行数据关联正确
             String bizId = subValue.containsKey("id") ? subValue.get("id").toString() : IDGenerator.nextStr();
+            int fieldSize = fields.size();
+            int blobSize = fieldBlobs.size();
             for (Map.Entry<String, Object> kv : subValue.entrySet()) {
                 if (Strings.CS.equals(kv.getKey(), PRICE_SUB_ROW_KEY) && kv.getValue() != null) {
                     T t = supplyNewResource(this::newResourceField, resourceId, kv.getKey(), kv.getValue().toString());
@@ -314,6 +316,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     setResourceFieldValue(t, "bizId", bizId);
                     fields.add(t);
                 }
+            }
+            if (fields.size() == fieldSize && fieldBlobs.size() == blobSize) {
+                // 空行也保存行标记，避免后续行号断档
+                T rowMarker = supplyNewResource(this::newResourceField, resourceId, ROW_BIZ_ID, bizId);
+                setResourceFieldValue(rowMarker, "rowId", String.valueOf(rowId));
+                setResourceFieldValue(rowMarker, "refSubId", subField.getId());
+                setResourceFieldValue(rowMarker, "bizId", bizId);
+                fields.add(rowMarker);
             }
             rowId++;
         }
@@ -413,6 +423,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      *
      * @return 字段集合
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return new HashMap<>(2);
@@ -949,13 +960,19 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         BaseResourceSubField subResource = (BaseResourceSubField) resource;
                         subFieldValueMap.putIfAbsent(subResource.getRefSubId(), new ArrayList<>());
                         int rowIndex = Integer.parseInt(subResource.getRowId()) - 1;
-                        if (subFieldValueMap.get(subResource.getRefSubId()).size() <= rowIndex) {
-                            Map<String, Object> initRowMap = new HashMap<>(8) {{
-                                put(ROW_BIZ_ID, subResource.getBizId());
-                            }};
-                            subFieldValueMap.get(subResource.getRefSubId()).add(initRowMap);
+                        List<Map<String, Object>> subFieldValues = subFieldValueMap.get(subResource.getRefSubId());
+                        // 兼容历史空行未入库形成的行号断档
+                        while (subFieldValues.size() < rowIndex) {
+                            Map<String, Object> emptyRow = new HashMap<>(1);
+                            emptyRow.put(ROW_BIZ_ID, IDGenerator.nextStr());
+                            subFieldValues.add(emptyRow);
                         }
-                        Map<String, Object> rowMap = subFieldValueMap.get(subResource.getRefSubId()).get(rowIndex);
+                        if (subFieldValues.size() == rowIndex) {
+                            Map<String, Object> initRowMap = new HashMap<>(8);
+                            initRowMap.put(ROW_BIZ_ID, subResource.getBizId());
+                            subFieldValues.add(initRowMap);
+                        }
+                        Map<String, Object> rowMap = subFieldValues.get(rowIndex);
                         if (Strings.CS.equals(resource.getFieldId(), PRICE_SUB_ROW_KEY)) {
                             rowMap.put(subResource.getFieldId(), resource.getFieldValue());
                             return;
@@ -1176,7 +1193,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         }
 
         // 公式字段
-        if (field.includeFormula(field)) {
+        if (field.includeFormula()) {
             if (StringUtils.isNotEmpty(field.getBusinessKey())) {
                 // 业务字段直接替换, 公式字段的业务字段不入库.
                 Object serialNo = getResourceFieldValue(resource, field.getBusinessKey());
