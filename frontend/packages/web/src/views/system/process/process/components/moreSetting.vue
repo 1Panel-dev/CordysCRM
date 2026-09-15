@@ -105,6 +105,7 @@
 <script setup lang="ts">
   import { DataTableColumn, NCheckbox, NDataTable, NForm, NFormItem, NRadio, NRadioGroup, NTooltip } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { MoreSettingsParams, PermissionItem, StatusPermissions } from '@lib/shared/models/system/process';
@@ -277,7 +278,11 @@
   });
 
   function createApprovalAuthorityRows(formType: string, data: PermissionItem[]): ApprovalAuthorityRow[] {
-    const moduleDefaultConfig = processDefaultStatusPermissionMap[formType] || {};
+    const isCustomFormDataPermission = data.some((item) => item.id.startsWith('CUSTOM_FORM_DATA:'));
+    const moduleDefaultConfig =
+      processDefaultStatusPermissionMap[formType] ||
+      (isCustomFormDataPermission ? processDefaultStatusPermissionMap[FormDesignKeyEnum.CUSTOM_FORM] : {}) ||
+      {};
 
     return processStatusOptions
       .filter((item) => item.value !== ProcessStatusEnum.NONE)
