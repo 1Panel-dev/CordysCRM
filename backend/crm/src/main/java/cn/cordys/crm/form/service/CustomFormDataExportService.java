@@ -3,6 +3,7 @@ package cn.cordys.crm.form.service;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.util.TimeUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.form.domain.CustomFormRoleKey;
 import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
 import cn.cordys.crm.form.dto.request.CustomFormExportSelectRequest;
@@ -13,11 +14,13 @@ import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -41,7 +44,7 @@ public class CustomFormDataExportService extends BaseExportService {
         return buildExportMergeResult(taskId, exportParam, dataList,
                 CustomFormDataListResponse::getModuleFields,
                 (detail, fieldParam, metas, cache) -> buildDataWithSub(detail.getModuleFields(), fieldParam, metas,
-                        getSystemFieldMap(detail), cache));
+                        getSystemFieldMap(detail, exportParam.getLocale()), cache));
     }
 
 
@@ -62,11 +65,14 @@ public class CustomFormDataExportService extends BaseExportService {
         }
     }
 
-    private LinkedHashMap<String, Object> getSystemFieldMap(CustomFormDataListResponse data) {
+    private LinkedHashMap<String, Object> getSystemFieldMap(CustomFormDataListResponse data, Locale locale) {
         LinkedHashMap<String, Object> systemFieldMap = new LinkedHashMap<>();
         systemFieldMap.put("name", data.getName());
         systemFieldMap.put("id", data.getId());
         systemFieldMap.put("owner", data.getOwnerName());
+        if (StringUtils.isNotBlank(data.getApprovalStatus())) {
+            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase(), locale));
+        }
         systemFieldMap.put("createUser", data.getCreateUserName());
         systemFieldMap.put("createTime", TimeUtils.getDateTimeStr(data.getCreateTime()));
         systemFieldMap.put("updateUser", data.getUpdateUserName());
