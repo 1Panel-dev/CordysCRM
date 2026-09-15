@@ -16,6 +16,7 @@ function createDefaultAiChatId(): string {
 // Transport 会从 metadata 中读取这些信息并转换成后端参数。
 function toMessageMetadata(payload: AiChatSubmitPayload): AiChatMeta {
   return {
+    model: payload.options?.model,
     mcps: payload.options?.mcps,
     attachments: payload.attachments,
   };
@@ -264,6 +265,7 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
 
     const metadata: AiChatMeta = {
       ...targetMessage.metadata,
+      model: options.model ?? targetMessage.metadata?.model,
       mcps: options.mcps ?? targetMessage.metadata?.mcps,
     };
 

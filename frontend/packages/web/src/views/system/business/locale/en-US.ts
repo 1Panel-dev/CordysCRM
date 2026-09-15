@@ -243,6 +243,11 @@ export default {
   'system.personal.info': 'Personal information',
   'system.personal.plan': 'My plan',
   'system.personal.apiKey': 'API Keys',
+  'system.personal.model.update': 'Edit Model',
+  'system.personal.model.provider': 'Provider',
+  'system.personal.model.nameUnique': 'Model name must be unique',
+  'system.personal.model.closeTip':
+    'After disabling, this model will not appear in the Cordys AI model dropdown. Proceed with caution',
   'system.personal.maxTip': 'Up to 5 API Key',
   'system.personal.apiKeyTip': 'Use API Key to access Cordys CRM API',
   'system.personal.validTime': 'Validity',

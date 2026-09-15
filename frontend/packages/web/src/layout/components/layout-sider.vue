@@ -190,7 +190,7 @@
       type: 'divider',
     },
     {
-      label: t('module.personal.info'),
+      label: t('system.personal.info.title'),
       key: AppRouteEnum.PERSONAL_INFO,
       icon: renderIcon('iconicon_set_up'),
     },

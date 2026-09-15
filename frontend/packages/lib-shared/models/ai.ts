@@ -5,9 +5,17 @@ export interface AgentChatStreamParams {
   conversationId?: string;
   /** 请求级幂等键（本轮唯一）。用于未产生 runId 前定位取消与保存兜底。 */
   requestId: string;
+  modelId?: string;
   mcpIds?: string[];
   attachmentIds?: string[];
   picIds?: string[];
+}
+
+export interface AgentModelOption {
+  id: string;
+  name: string;
+  scope: 'SYSTEM' | 'USER';
+  defaultModel: boolean;
 }
 
 export interface SmartFocusParams {

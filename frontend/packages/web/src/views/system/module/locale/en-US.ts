@@ -82,7 +82,6 @@ export default {
   'module.capacitySet.notIncludedOperatorDisabled': 'Please select filter conditions first',
   'module.capacitySet.value': 'Value',
   'module.capacitySet.condition': 'Condition',
-  'module.personal.info': 'Personal information',
   'module.personal.plan': 'My plan',
   'module.personal.myExport': 'My export',
   'module.logout': 'Exit',

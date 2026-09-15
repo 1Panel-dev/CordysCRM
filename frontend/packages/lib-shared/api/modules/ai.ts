@@ -14,6 +14,7 @@ import {
   AgentChatFileUploadUrl,
   AgentConversationPageUrl,
   AgentConversationRenameUrl,
+  AgentModelOptionsUrl,
   AgentMcpConfigDeleteUrl,
   AgentMcpConfigImportUrl,
   AgentMcpConfigListUrl,
@@ -37,6 +38,7 @@ import type {
   AgentChatStreamOptions,
   AgentChatStreamParams,
   AgentConversationQueryRequest,
+  AgentModelOption,
   AgentMcpConfigItem,
   AgentActionApproveItem,
   AgentActionSuggestionItem,
@@ -359,6 +361,10 @@ export default function useAiApi(CDR: CordysAxios) {
     return CDR.get<AgentMcpConfigItem[]>({ url: AgentMcpConfigListUrl });
   }
 
+  function getAgentModelOptions() {
+    return CDR.get<AgentModelOption[]>({ url: AgentModelOptionsUrl });
+  }
+
   function importAgentMcpConfig(file: File) {
     return CDR.uploadFile({ url: AgentMcpConfigImportUrl }, { fileList: [file] }, 'file');
   }
@@ -419,6 +425,7 @@ export default function useAiApi(CDR: CordysAxios) {
     deleteAgentConversation,
     renameAgentConversation,
     uploadAgentChatFile,
+    getAgentModelOptions,
     getAgentMcpConfigList,
     importAgentMcpConfig,
     deleteAgentMcpConfig,

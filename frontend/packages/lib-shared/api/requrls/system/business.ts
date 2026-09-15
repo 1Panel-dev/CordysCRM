@@ -41,6 +41,14 @@ export const DisableApiKeyUrl = '/user/api/key/disable'; // 关闭 ApiKey
 export const DeleteApiKeyUrl = '/user/api/key/delete'; // 删除 ApiKey
 export const AddApiKeyUrl = '/user/api/key/add'; // 新增 ApiKey
 
+// 个人中心模型
+export const GetPersonalAiModelListUrl = '/user-model/page'; // 个人中心模型-列表查询
+export const GetPersonalAiModelDetailUrl = '/user-model/get'; // 个人中心模型-获取模型详情
+export const AddPersonalAiModelUrl = '/user-model/add'; // 个人中心模型-添加模型
+export const UpdatePersonalAiModelUrl = '/user-model/update'; // 个人中心模型-更新模型
+export const DeletePersonalAiModelUrl = '/user-model/delete'; // 个人中心模型-删除模型
+export const UpdatePersonalAiModelStatusUrl = '/user-model/switch'; // 个人中心模型-更新模型状态
+
 // 界面设置
 export const SavePageConfigUrl = '/ui/display/save'; // 保存界面配置
 export const GetPageConfigUrl = '/ui/display/info'; // 获取界面配置

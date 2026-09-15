@@ -32,8 +32,16 @@ export interface AiChatMcp {
   description?: string;
 }
 
+export type AiChatModelSource = 'personal' | 'system';
+
+export interface AiChatModel {
+  id: string;
+  name: string;
+  source: AiChatModelSource;
+}
+
 export interface AiChatMeta {
-  model?: string;
+  model?: AiChatModel;
   mcps?: AiChatMcp[];
   attachments?: AiChatAttachment[];
   tokens?: number;
@@ -57,6 +65,7 @@ export type AiChatMessagePart = AiChatMessage['parts'][number];
  * 发送选项。
  */
 export interface AiChatSendOptions {
+  model?: AiChatModel;
   mcps?: AiChatMcp[];
 }
 
