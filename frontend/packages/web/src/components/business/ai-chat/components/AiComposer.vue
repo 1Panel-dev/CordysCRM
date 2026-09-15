@@ -81,7 +81,7 @@
             </n-button>
           </template>
 
-          <div class="max-h-[320px] w-[220px]">
+          <div class="max-h-[320px] w-[260px]">
             <div class="mb-[8px]">
               <n-radio-group v-model:value="activeModelSource" class="flex" name="aiChatModelSource" size="small">
                 <n-radio-button
