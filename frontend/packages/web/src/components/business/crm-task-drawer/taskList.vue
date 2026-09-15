@@ -20,7 +20,7 @@
                   !item.resourceNotFound &&
                   (props.activeTaskType.includes('pending') || getResourcePermission(item))
                 ) {
-                  emit('openDetail', item.resourceId, item.resourceType, item.approvalTaskId);
+                  emit('openDetail', item.resourceId, getEffectiveResourceType(item), item.approvalTaskId);
                 }
               }
             "
@@ -49,7 +49,7 @@
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.resourceId, item.resourceType, item.approvalTaskId)"
+                  @click="emit('openDetail', item.resourceId, getEffectiveResourceType(item), item.approvalTaskId)"
                 >
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
@@ -60,7 +60,7 @@
                   text
                   size="small"
                   class="text-[14px]"
-                  @click="emit('openDetail', item.resourceId, item.resourceType, item.approvalTaskId)"
+                  @click="emit('openDetail', item.resourceId, getEffectiveResourceType(item), item.approvalTaskId)"
                 >
                   {{ item.resourceName }}
                   <template #trigger> {{ item.resourceName }} </template>
@@ -110,7 +110,7 @@
     :approval-type="approvalType"
     :approval-item="approvalItem"
     :approval-item-keys="selectedKeys"
-    :resourceType="approvalItem?.resourceType || ''"
+    :resourceType="approvalItem ? getEffectiveResourceType(approvalItem) : ''"
     module="WORKBENCH"
     @approval-cancel="handleApproveCancel"
     @approval-success="handleApproveSuccess"
@@ -182,6 +182,16 @@
     [ApprovalListTypeEnum.INITIATED]: getInitiatedApprovalList,
     [ApprovalListTypeEnum.COPIED]: getCcApprovalList,
   };
+
+  function getTaskListType() {
+    return props.activeTaskType.split('-')[0];
+  }
+
+  function getActiveResourceType() {
+    const separatorIndex = props.activeTaskType.indexOf('-');
+    return separatorIndex === -1 ? '' : props.activeTaskType.slice(separatorIndex + 1);
+  }
+
   async function loadTaskList(refresh = true, keyword?: string) {
     try {
       loading.value = true;
@@ -190,7 +200,8 @@
         pageNation.value.current = 1;
         list.value = [];
       }
-      const [listType, resourceType] = props.activeTaskType.split('-');
+      const listType = getTaskListType();
+      const resourceType = getActiveResourceType();
       const res = await lisApiMap[listType as ApprovalListTypeEnum]({
         current: pageNation.value.current,
         pageSize: 20,
@@ -307,6 +318,17 @@
     }
   }
 
+  const standardResourceTypes = [
+    ApprovalResourceTypeEnum.CONTRACT,
+    ApprovalResourceTypeEnum.INVOICE,
+    ApprovalResourceTypeEnum.ORDER,
+    ApprovalResourceTypeEnum.QUOTATION,
+  ] as string[];
+
+  function getEffectiveResourceType(item: ApprovalTodoItem) {
+    return standardResourceTypes.includes(item.resourceType) ? item.resourceType : getActiveResourceType();
+  }
+
   function getResourcePermission(item: ApprovalTodoItem) {
     switch (item.resourceType) {
       case ApprovalResourceTypeEnum.CONTRACT:
@@ -318,7 +340,7 @@
       case ApprovalResourceTypeEnum.QUOTATION:
         return hasAnyPermission(['OPPORTUNITY_QUOTATION:READ']);
       default:
-        return false;
+        return Boolean(getActiveResourceType());
     }
   }
 

@@ -93,7 +93,7 @@
     v-model:show="approvalVisible"
     :approval-type="approvalType"
     :approval-item-keys="selectedKeys"
-    :resource-type="resourceType"
+    :resource-type="activeResourceType"
     @approval-success="handleApproveSuccess"
   />
   <ContractDetailDrawer
@@ -128,13 +128,25 @@
     :source-id="activeResourceId"
     :customFormId="resourceType"
     :approvalTaskId="approvalTaskId"
+    :refreshId="customFormRefreshKey"
+    @edit="handleCustomFormEdit"
     @refresh="handleApproveSuccess"
+  />
+  <CrmFormCreateDrawer
+    v-model:visible="customFormEditVisible"
+    :form-key="FormDesignKeyEnum.CUSTOM_FORM"
+    :source-id="activeResourceId"
+    :need-init-detail="true"
+    :custom-form-id="resourceType"
+    @saved="handleCustomFormSaved"
+    @review="handleCustomFormReview"
   />
 </template>
 
 <script setup lang="ts">
   import { NButton, NCheckbox, NCollapse, NCollapseItem } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { type ApprovalListTypeEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { OptionDTO } from '@lib/shared/models/system/business';
@@ -143,6 +155,7 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import approvalModal from './approvalModal.vue';
   import taskList from './taskList.vue';
   import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
@@ -152,6 +165,7 @@
   import OrderDetailDrawer from '@/views/order/order/components/detail.vue';
 
   import { getApprovalConfigDetail, getApprovalFlowFormOptions, getTodoStatistic } from '@/api/modules';
+  import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useOpenNewPage from '@/hooks/useOpenNewPage.js';
 
   import { ContractRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum.js';
@@ -170,6 +184,11 @@
 
   const keyword = ref('');
   const activeTaskType = ref<string>('');
+
+  function getTaskResourceType(taskType: string) {
+    const separatorIndex = taskType.indexOf('-');
+    return separatorIndex === -1 ? '' : taskType.slice(separatorIndex + 1);
+  }
 
   const statistic = ref<Record<string, any>>({
     total: 0,
@@ -223,7 +242,7 @@
       if (e.name === 'pending') {
         e.count = statistic.value.total;
         e.children = e.children.map((child) => {
-          const [_, resourceType] = child.name.split('-');
+          const resourceType = getTaskResourceType(child.name);
           return {
             ...child,
             count: getStatisticCount(resourceType),
@@ -235,10 +254,11 @@
   });
 
   const activeModuleTitle = computed(() => {
-    const [_, resourceType] = activeTaskType.value.split('-');
+    const resourceType = getTaskResourceType(activeTaskType.value);
     const module = moduleItems.value.find((item) => item.name === resourceType);
     return module ? module.title : '';
   });
+  const activeResourceType = computed(() => getTaskResourceType(activeTaskType.value));
   const allSelect = ref<boolean>(false);
   const selectedKeys = ref<string[]>([]);
   const listTotal = ref(0);
@@ -284,7 +304,7 @@
     try {
       approvalFormOptions.value = await getApprovalFlowFormOptions();
       const targetListType = props.type || 'pending';
-      const [_, resourceType] = activeTaskType.value.split('-');
+      const resourceType = getTaskResourceType(activeTaskType.value);
 
       if (!resourceType || !moduleItems.value.some((item) => item.name === resourceType)) {
         activeTaskType.value = moduleItems.value.length ? `${targetListType}-${moduleItems.value[0].name}` : '';
@@ -383,8 +403,14 @@
   const orderDetailVisible = ref(false);
   const invoiceDetailVisible = ref(false);
   const customFormDetailVisible = ref(false);
+  const customFormEditVisible = ref(false);
+  const customFormRefreshKey = ref(0);
   const approvalTaskId = ref('');
   const resourceType = ref('');
+  const { reviewByFormResult } = useApprovalResourceAction({
+    formKey: resourceType,
+  });
+
   function handleOpenDetail(resourceId: string, _resourceType: string, _approvalTaskId: string) {
     activeResourceId.value = resourceId;
     approvalTaskId.value = _approvalTaskId;
@@ -413,6 +439,26 @@
     taskListRef.value?.loadTaskList(true);
     allSelect.value = false;
     selectedKeys.value = [];
+  }
+
+  function refreshCustomFormDetail() {
+    customFormRefreshKey.value += 1;
+    handleApproveSuccess();
+  }
+
+  function handleCustomFormEdit(sourceId: string) {
+    activeResourceId.value = sourceId;
+    customFormEditVisible.value = true;
+  }
+
+  function handleCustomFormSaved() {
+    refreshCustomFormDetail();
+  }
+
+  function handleCustomFormReview(res: any) {
+    reviewByFormResult(res, {
+      onSuccess: refreshCustomFormDetail,
+    });
   }
 
   function handleOpenCustomerDetail(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
