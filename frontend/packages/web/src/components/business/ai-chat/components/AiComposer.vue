@@ -93,33 +93,35 @@
                 />
               </n-radio-group>
             </div>
-            <div class="max-h-[250px] overflow-y-auto">
-              <n-tooltip
-                v-for="model in activeModelOptions"
-                :key="model.id"
-                :delay="300"
-                trigger="hover"
-                placement="top"
-              >
-                <template #trigger>
-                  <button
-                    type="button"
-                    class="block h-[28px] w-full cursor-pointer overflow-hidden truncate rounded-[3px] border-0 bg-transparent px-[8px] text-left hover:bg-[var(--primary-7)] hover:text-[var(--primary-8)]"
-                    :class="{ 'bg-[var(--primary-7)] text-[var(--primary-8)]': selectedModel?.id === model.id }"
-                    @click="handleModelSelect(model)"
-                  >
-                    {{ model.name }}
-                  </button>
-                </template>
-                {{ model.name }}
-              </n-tooltip>
-              <n-empty
-                v-if="activeModelOptions.length === 0"
-                :show-icon="false"
-                :description="t('aiChat.noModel')"
-                class="py-[12px]"
-              />
-            </div>
+            <n-spin :show="modelOptionsLoading">
+              <n-scrollbar class="max-h-[250px]">
+                <n-tooltip
+                  v-for="model in activeModelOptions"
+                  :key="model.id"
+                  :delay="300"
+                  trigger="hover"
+                  placement="top"
+                >
+                  <template #trigger>
+                    <button
+                      type="button"
+                      class="block h-[28px] w-full cursor-pointer overflow-hidden truncate rounded-[3px] border-0 bg-transparent px-[8px] text-left hover:bg-[var(--primary-7)] hover:text-[var(--primary-8)]"
+                      :class="{ 'bg-[var(--primary-7)] text-[var(--primary-8)]': selectedModel?.id === model.id }"
+                      @click="handleModelSelect(model)"
+                    >
+                      {{ model.name }}
+                    </button>
+                  </template>
+                  {{ model.name }}
+                </n-tooltip>
+                <n-empty
+                  v-if="!modelOptionsLoading && activeModelOptions.length === 0"
+                  :show-icon="false"
+                  :description="t('aiChat.noModel')"
+                  class="py-[12px]"
+                />
+              </n-scrollbar>
+            </n-spin>
           </div>
         </n-popover>
       </div>
@@ -161,6 +163,8 @@
     NPopover,
     NRadioButton,
     NRadioGroup,
+    NScrollbar,
+    NSpin,
     NTooltip,
     useMessage,
   } from 'naive-ui';
@@ -181,8 +185,10 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import AiAttachmentList from './AiAttachmentList.vue';
 
-  import { deleteAgentMcpConfig, getAgentModelOptions, importAgentMcpConfig, uploadAgentChatFile } from '@/api/modules';
+  import { deleteAgentMcpConfig, importAgentMcpConfig, uploadAgentChatFile } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+
+  import useAiModelOptions from '../composables/useAiModelOptions';
 
   const props = withDefaults(
     defineProps<{
@@ -217,6 +223,7 @@
   const Message = useMessage();
   const { openModal } = useModal();
   const runtime = useAiChatRuntime();
+  const { modelOptions, selectedModel, loading: modelOptionsLoading, selectModel } = useAiModelOptions();
 
   const editorRef = ref<HTMLElement | null>(null);
   const inputValue = ref(props.initialContent || runtime.state.input.value);
@@ -252,35 +259,6 @@
       value: 'system',
     },
   ]);
-
-  const modelOptions = ref<AiChatModel[]>([]);
-  const selectedModel = ref<AiChatModel | null>(null);
-
-  async function loadModelOptions(): Promise<void> {
-    try {
-      const result = await getAgentModelOptions();
-      let defaultOption: AiChatModel | null = null;
-
-      modelOptions.value = result.map((model) => {
-        const option: AiChatModel = {
-          id: model.id,
-          name: model.name,
-          source: model.scope === 'USER' ? 'personal' : 'system',
-        };
-
-        if (model.defaultModel) {
-          defaultOption = option;
-        }
-
-        return option;
-      });
-      selectedModel.value = defaultOption ?? modelOptions.value[0] ?? null;
-      activeModelSource.value = selectedModel.value?.source ?? 'personal';
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
 
   const activeModelOptions = computed(() =>
     modelOptions.value.filter((model) => model.source === activeModelSource.value)
@@ -386,21 +364,21 @@
     return props.mcpOptions.filter((mcp) => ids.has(mcp.id));
   }
 
-  function getSubmitPayload(): AiComposerSubmitPayload {
+  function getSubmitPayload(model: AiChatModel | null = selectedModel.value): AiComposerSubmitPayload {
     return {
       content: inputValue.value,
       attachments: [...submitAttachments.value],
       options: {
-        model: selectedModel.value ?? undefined,
+        model: model ?? undefined,
         mcps: getEditorMcps(),
       },
     };
   }
 
   function handleModelSelect(model: AiChatModel): void {
-    selectedModel.value = model;
+    selectModel(model);
     modelPopoverShow.value = false;
-    emit('change', getSubmitPayload());
+    emit('change', getSubmitPayload(model));
   }
 
   function syncEditorValue(): void {
@@ -707,6 +685,14 @@
         mcpDropdownShow.value = true;
       }
     }
+  );
+
+  watch(
+    () => selectedModel.value,
+    (model) => {
+      activeModelSource.value = model?.source ?? 'personal';
+    },
+    { immediate: true }
   );
 
   function removeAttachment(attachmentId: string): void {
@@ -1026,7 +1012,6 @@
   }
 
   onMounted(() => {
-    loadModelOptions();
     renderEditorValue(
       inputValue.value,
       runtime.state.selectedMcps.value.length ? runtime.state.selectedMcps.value : props.initialMcps
