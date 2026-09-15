@@ -59,4 +59,7 @@ public class CustomFormDataGetResponse {
 
     @Schema(description = "审批状态")
     private String approvalStatus;
+
+    @Schema(description = "是否审批通过过")
+    private Boolean approved;
 }
