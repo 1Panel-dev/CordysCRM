@@ -11,7 +11,6 @@ import cn.cordys.crm.system.dto.request.NotificationRequest;
 import cn.cordys.crm.system.dto.response.NotificationDTO;
 import cn.cordys.crm.system.mapper.ExtNotificationMapper;
 import cn.cordys.crm.system.notice.dto.NoticeRedisMessage;
-import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,8 +30,6 @@ public class NotificationService {
     private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
     private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
     private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
-    @Resource
-    private BaseMapper<Notification> notificationMapper;
     @Resource
     private ExtNotificationMapper extNotificationMapper;
     @Resource
@@ -105,12 +102,17 @@ public class NotificationService {
         record.setId(id);
         record.setStatus(NotificationConstants.Status.READ.name());
         record.setReceiver(userId);
+        record.setOrganizationId(orgId);
+        //仅允许接收人本人更新自己所属组织的通知，非本人或非本组织更新行数为 0
+        Integer update = extNotificationMapper.updateByIdAndReceiver(record);
+        if (update == null || update == 0) {
+            return 0;
+        }
         //删除缓存中的公告提示
         stringRedisTemplate.opsForZSet().remove(USER_ANNOUNCE_PREFIX + userId, id);
         stringRedisTemplate.delete(ANNOUNCE_PREFIX + id);
         stringRedisTemplate.opsForZSet().remove(USER_PREFIX + userId, id);
         stringRedisTemplate.delete(MSG_PREFIX + id);
-        Integer update = notificationMapper.update(record);
         //检查当前用户是否还有有已读信息，没有更新用户状态
         Integer unRead = getUnRead(orgId, userId);
         if (unRead == 0) {

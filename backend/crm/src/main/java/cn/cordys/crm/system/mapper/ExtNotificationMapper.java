@@ -18,6 +18,8 @@ public interface ExtNotificationMapper {
 
     int updateByReceiver(@Param("request") Notification request);
 
+    int updateByIdAndReceiver(@Param("request") Notification request);
+
     int countByReceiver(@Param("request") Notification request);
 
     List<NotificationDTO> selectByAnyOne(@Param("request") Notification request);

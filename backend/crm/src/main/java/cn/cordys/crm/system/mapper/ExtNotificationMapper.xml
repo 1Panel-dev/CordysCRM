@@ -65,6 +65,14 @@
         AND sys_notification.organization_id = #{request.organizationId}
     </update>
 
+    <!-- 单条已读：必须同时匹配接收人与组织，避免他人冒领或跨组织更新 -->
+    <update id="updateByIdAndReceiver" parameterType="cn.cordys.crm.system.domain.Notification">
+        UPDATE sys_notification SET status = #{request.status}
+        WHERE sys_notification.id = #{request.id}
+        AND sys_notification.receiver = #{request.receiver}
+        AND sys_notification.organization_id = #{request.organizationId}
+    </update>
+
     <select id="countByReceiver" parameterType="cn.cordys.crm.system.domain.Notification"
             resultType="java.lang.Integer">
         SELECT COUNT(*) FROM sys_notification WHERE sys_notification.organization_id = #{request.organizationId}

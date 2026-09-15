@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.controller;
 
+import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.response.handler.ResultHolder;
@@ -13,6 +14,7 @@ import cn.cordys.crm.system.dto.response.NotificationDTO;
 import cn.cordys.crm.system.mapper.ExtNotificationMapper;
 import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -87,9 +89,12 @@ public class NotificationControllerTests extends BaseTest {
         notification.setStatus(NotificationConstants.Status.UNREAD.name());
         notification.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         List<NotificationDTO> notifications = extNotificationMapper.selectByAnyOne(notification);
-        this.requestGetWithOkAndReturn(NOTIFICATION_READ + notifications.getFirst().getId());
+        NotificationDTO notificationDTO = notifications.stream()
+                .filter(item -> Strings.CS.equals(item.getReceiver(), InternalUser.ADMIN.getValue()))
+                .findFirst()
+                .get();
+        this.requestGetWithOkAndReturn(NOTIFICATION_READ + notificationDTO.getId());
         notification.setStatus(NotificationConstants.Status.READ.name());
-        extNotificationMapper.updateByReceiver(notification);
         List<NotificationDTO> readNotifications = extNotificationMapper.selectByAnyOne(notification);
         Assertions.assertFalse(readNotifications.isEmpty());
 
