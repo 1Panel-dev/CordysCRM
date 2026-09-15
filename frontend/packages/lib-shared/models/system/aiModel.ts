@@ -1,9 +1,3 @@
-export interface AiModelParams {
-  temperature?: number | null;
-  max_tokens?: number | null;
-  top_p?: number | null;
-}
-
 export interface AiModelSaveParams {
   id?: string;
   displayName: string;

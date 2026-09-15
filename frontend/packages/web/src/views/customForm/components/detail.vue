@@ -46,7 +46,7 @@
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
-            :readonly="!isAdmin"
+            :readonly="!canUpdateDetail"
             :fieldPermissions="fieldPermissions"
             :otherSaveParams="{
               updateType: 'approval',
@@ -105,39 +105,51 @@
   const { openModal } = useModal();
   const Message = useMessage();
   const title = ref('');
-  const isAdmin = ref(false);
   const formViewSize = ref<FormViewSize>('large');
   const detailInfo = ref<Record<string, any>>();
   const approvalFormKey = computed(() => props.customFormId || '');
+  const CUSTOM_FORM_DATA_PERMISSIONS = {
+    update: 'CUSTOM_FORM_DATA:UPDATE',
+    delete: 'CUSTOM_FORM_DATA:DELETE',
+  } as const;
   const customFormActionMap: Record<string, ActionsItem> = {
     edit: {
       label: t('common.edit'),
       key: 'edit',
-      permission: [],
+      permission: [CUSTOM_FORM_DATA_PERMISSIONS.update],
     },
     delete: {
       label: t('common.delete'),
       key: 'delete',
-      permission: [],
+      permission: [CUSTOM_FORM_DATA_PERMISSIONS.delete],
       danger: true,
     },
   };
-  const { initApprovalPermission, resolveRowOperation, deleteExecute } = useApprovalOperation<Record<string, any>>({
-    formType: approvalFormKey,
-    dataActionMap: customFormActionMap,
-    isDetail: true,
-    specialActionFilter: (row, actionKeys) => {
-      if (row.isAdmin) {
-        return actionKeys;
-      }
+  const { initApprovalPermission, resolveRowOperation, deleteExecute, hasApprovalScopedPermission } =
+    useApprovalOperation<Record<string, any>>({
+      formType: approvalFormKey,
+      dataActionMap: customFormActionMap,
+      isDetail: true,
+      specialActionFilter: (row, actionKeys) => {
+        if (row.isAdmin) {
+          return actionKeys;
+        }
 
-      return actionKeys.filter((key) => !['edit', 'delete'].includes(key));
-    },
-    shouldUseRolePermissionOnly: () => true,
-  });
+        return actionKeys.filter((key) => !['edit', 'delete'].includes(key));
+      },
+      ignoreRolePermissionCheck: true,
+    });
   const { reviewByResourceId, revokeByResourceId } = useApprovalResourceAction({
     formKey: approvalFormKey,
   });
+
+  function clearCustomFormDataActionPermission(actions: ActionsItem[]) {
+    return actions.map((action) => ({
+      ...action,
+      permission: [],
+    }));
+  }
+
   const detailActions = computed<{
     groupList: ActionsItem[];
     moreList: ActionsItem[];
@@ -149,21 +161,28 @@
     const detailAction = resolveRowOperation(detailInfo.value);
     return {
       ...detailAction,
-      groupList: detailAction.groupList.map((e) => ({
+      groupList: clearCustomFormDataActionPermission(detailAction.groupList).map((e) => ({
         ...e,
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
       })),
+      moreList: clearCustomFormDataActionPermission(detailAction.moreList),
     };
   });
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     title.value = name || '';
-    isAdmin.value = !!detail?.isAdmin;
     detailInfo.value = detail;
     formViewSize.value = config?.viewSize || 'large';
   }
+
+  const canUpdateDetail = computed(() =>
+    detailInfo.value
+      ? Boolean(detailInfo.value.isAdmin) &&
+        hasApprovalScopedPermission(detailInfo.value, [CUSTOM_FORM_DATA_PERMISSIONS.update])
+      : false
+  );
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
   async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {

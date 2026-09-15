@@ -59,22 +59,6 @@
       </n-form-item>
 
       <div class="mb-[16px] mt-[8px] font-semibold">
-        {{ t('system.business.modelSettings.aiParams') }}
-      </div>
-      <div class="grid grid-cols-3 gap-x-[16px]">
-        <n-form-item path="temperature">
-          <template #label> temperature<span class="text-[var(--text-n4)]">（0~1）</span> </template>
-          <CrmInputNumber v-model:value="form.temperature" :min="0" :max="1" :step="0.1" class="w-full" />
-        </n-form-item>
-        <n-form-item label="max_tokens" path="max_tokens">
-          <CrmInputNumber v-model:value="form.max_tokens" :min="1" :step="1" :precision="0" class="w-full" />
-        </n-form-item>
-        <n-form-item label="top_p" path="top_p">
-          <CrmInputNumber v-model:value="form.top_p" :min="0" :max="1" :step="0.1" class="w-full" />
-        </n-form-item>
-      </div>
-
-      <div class="mb-[16px] mt-[8px] font-semibold">
         {{ t('system.business.modelSettings.callLimit') }}
       </div>
       <div class="grid grid-cols-2 gap-x-[16px]">
@@ -123,7 +107,7 @@
   import { FormInst, NForm, NFormItem, NInput, NSelect, NSwitch, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { type AiModelItem, type AiModelParams, type AiModelSaveParams } from '@lib/shared/models/system/aiModel';
+  import { type AiModelItem, type AiModelSaveParams } from '@lib/shared/models/system/aiModel';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
@@ -158,20 +142,8 @@
   const formRef = ref<FormInst | null>(null);
   const saving = ref(false);
 
-  type FormModelParams = Required<AiModelParams>;
+  type AiModelForm = AiModelSaveParams;
 
-  type AiModelForm = AiModelSaveParams & FormModelParams;
-
-  const defaultModelParams: FormModelParams = {
-    temperature: 0.7,
-    max_tokens: 2048,
-    top_p: 0.9,
-  };
-  const emptyModelParams: FormModelParams = {
-    temperature: null,
-    max_tokens: null,
-    top_p: null,
-  };
   const defaultForm: AiModelForm = {
     id: undefined,
     displayName: '',
@@ -182,17 +154,9 @@
     enable: true,
     globalDailyLimit: 10000,
     userDailyLimit: 500,
-    modelParams: undefined,
-    ...defaultModelParams,
   };
 
   function createEditForm(model: Partial<AiModelItem>): AiModelForm {
-    const modelParams = model.modelParams
-      ? ({
-          ...(JSON.parse(model.modelParams) as AiModelParams),
-        } as FormModelParams)
-      : { ...emptyModelParams };
-
     return {
       id: model.id,
       displayName: model.displayName ?? '',
@@ -204,7 +168,6 @@
       globalDailyLimit: model.globalDailyLimit,
       userDailyLimit: model.userDailyLimit,
       modelParams: model.modelParams,
-      ...modelParams,
     };
   }
 
@@ -255,11 +218,6 @@
     const payload: AiModelSaveParams = {
       ...form,
       id: isEdit.value ? form.id : undefined,
-      modelParams: JSON.stringify({
-        temperature: form.temperature,
-        max_tokens: form.max_tokens,
-        top_p: form.top_p,
-      }),
     };
     return payload;
   }
