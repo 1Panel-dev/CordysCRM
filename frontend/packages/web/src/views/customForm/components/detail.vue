@@ -34,7 +34,7 @@
         :refresh-key="props.refreshId"
         :approval-status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE"
         @saveApproval="handleSaveApproval"
-        @refresh="emit('refresh')"
+        @refresh="handleSavedRefresh"
       >
         <template #left="{ fieldPermissions, taskNode }">
           <CrmFormDescription
@@ -42,7 +42,7 @@
             :form-key="FormDesignKeyEnum.CUSTOM_FORM"
             :source-id="props.sourceId"
             :column="3"
-            :refresh-key="props.refreshId"
+            :refresh-key="detailRefreshKey"
             label-width="auto"
             value-align="start"
             tooltip-position="top-start"
@@ -107,6 +107,8 @@
   const title = ref('');
   const formViewSize = ref<FormViewSize>('large');
   const detailInfo = ref<Record<string, any>>();
+  const refreshKey = ref(0);
+  const detailRefreshKey = computed(() => (props.refreshId ?? 0) + refreshKey.value * 1000000);
   const approvalFormKey = computed(() => props.customFormId || '');
   const CUSTOM_FORM_DATA_PERMISSIONS = {
     update: 'CUSTOM_FORM_DATA:UPDATE',
@@ -185,13 +187,22 @@
   );
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+  function handleSavedRefresh() {
+    refreshKey.value += 1;
+    emit('refresh');
+  }
+
   async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
     if (hasFieldPermission) {
-      formDescriptionRef.value?.handleFormChange(callback);
+      formDescriptionRef.value?.handleFormChange(async () => {
+        await callback();
+        handleSavedRefresh();
+      });
       return;
     }
 
     await callback();
+    handleSavedRefresh();
   }
 
   // 删除
@@ -226,12 +237,12 @@
         break;
       case 'review':
         reviewByResourceId(props.sourceId, {
-          onSuccess: () => emit('refresh'),
+          onSuccess: handleSavedRefresh,
         });
         break;
       case 'revoke':
         revokeByResourceId(props.sourceId, {
-          onSuccess: () => emit('refresh'),
+          onSuccess: handleSavedRefresh,
         });
         break;
       default:
