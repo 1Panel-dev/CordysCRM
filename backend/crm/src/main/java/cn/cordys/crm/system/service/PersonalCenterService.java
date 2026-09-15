@@ -174,13 +174,19 @@ public class PersonalCenterService {
         user.setEmail(personalInfoRequest.getEmail());
         userBaseMapper.update(user);
 
-        UserResponse userDetail = getUserDetail(userId, orgId);
+        Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("phone", oldUser.getPhone());
+        originalVal.put("email", oldUser.getEmail());
+        Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("phone", personalInfoRequest.getPhone());
+        modifiedVal.put("email", personalInfoRequest.getEmail());
 
+        UserResponse userDetail = getUserDetail(userId, orgId);
         //添加日志上下文
         OperationLogContext.setContext(LogContextInfo.builder()
-                .originalValue(oldUser)
+                .originalValue(originalVal)
                 .resourceName(oldUser.getName())
-                .modifiedValue(userDetail)
+                .modifiedValue(modifiedVal)
                 .resourceId(userId)
                 .build());
 

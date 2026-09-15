@@ -95,6 +95,13 @@ public class OrganizationLogService extends BaseModuleLogService {
             if (Strings.CS.equals(differ.getColumn(), "name")) {
                 setName(differ);
             }
+
+            if (Strings.CS.equals(differ.getColumn(), "phone")) {
+                setName(differ);
+            }
+            if (Strings.CS.equals(differ.getColumn(), "email")) {
+                setName(differ);
+            }
         });
 
         return differences;
