@@ -65,6 +65,8 @@
   import useModal from '@/hooks/useModal';
   import useLicenseStore from '@/store/modules/setting/license';
 
+  import useAiModelOptions from '../composables/useAiModelOptions';
+
   const AI_CHAT_FLOATING_OPEN_EVENT = 'crm-ai-chat-floating-open';
 
   interface AiChatFloatingOpenPayload {
@@ -100,6 +102,8 @@
       console.log(error);
     }
   }
+
+  const { selectedModel, loadModelOptions } = useAiModelOptions();
 
   const {
     runtime: chatRuntime,
@@ -184,6 +188,7 @@
 
     showChatDrawer.value = true;
     loadMcpOptions();
+    loadModelOptions();
     loadHistory({ reset: true }).catch(() => undefined);
   }
 
@@ -198,11 +203,13 @@
     runtime.setSelectedMcps(selectedMcps);
     showChatDrawer.value = true;
     loadMcpOptions();
+    await loadModelOptions();
 
     await runtime.submit({
       content: payload.content ?? '',
       attachments: payload.attachments,
       options: {
+        model: selectedModel.value ?? undefined,
         mcps: selectedMcps,
       },
     });
