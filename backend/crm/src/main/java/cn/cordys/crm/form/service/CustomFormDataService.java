@@ -328,7 +328,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
     @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.UPDATE, resourceId = "{#request.id}")
     @HitApproval(formKeyExpr = "{#request.customFormId}", executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
-    public void update(CustomFormDataUpdateRequest request, String userId, String orgId, boolean checkPermission) {
+    public CustomFormData update(CustomFormDataUpdateRequest request, String userId, String orgId, boolean checkPermission) {
         CustomFormData originData = customFormDataMapper.selectByPrimaryKey(request.getId());
         if (originData == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
@@ -369,6 +369,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }
+
+        return customFormDataMapper.selectByPrimaryKey(request.getId());
     }
 
     private void checkUpdatePermission(CustomFormDataUpdateRequest request, String userId, String orgId, CustomFormData originData) {
