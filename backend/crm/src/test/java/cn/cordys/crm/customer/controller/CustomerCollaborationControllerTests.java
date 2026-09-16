@@ -119,25 +119,27 @@ class CustomerCollaborationControllerTests extends BaseTest {
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, customerId);
     }
 
-    @Test
-    @Order(10)
-    void delete() throws Exception {
-        this.requestGetWithOk(DEFAULT_DELETE, addCustomerCollaboration.getId());
-        CustomerCollaboration customerCollaboration = customerCollaborationMapper.selectByPrimaryKey(addCustomerCollaboration.getId());
-        Assertions.assertNull(customerCollaboration);
-        // 校验权限
-        requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE),
-                DEFAULT_DELETE, addCustomerCollaboration.getId());
+    private CustomerCollaboration newCollaboration() {
+        CustomerCollaboration collaboration = BeanUtils.copyBean(new CustomerCollaboration(), addCustomerCollaboration);
+        collaboration.setId(UUID.randomUUID().toString().replace("-", ""));
+        customerCollaborationMapper.insert(collaboration);
+        return collaboration;
     }
 
     @Test
     @Order(10)
+    void delete() throws Exception {
+        var collaboration = newCollaboration();
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, DEFAULT_DELETE, collaboration.getId());
+        Assertions.assertNull(customerCollaborationMapper.selectByPrimaryKey(collaboration.getId()));
+    }
+
+    @Test
+    @Order(11)
     void batchDelete() throws Exception {
-        this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of(addCustomerCollaboration.getId()));
-        CustomerCollaboration customerCollaboration = customerCollaborationMapper.selectByPrimaryKey(addCustomerCollaboration.getId());
-        Assertions.assertNull(customerCollaboration);
-        // 校验权限
-        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE),
-                DEFAULT_BATCH_DELETE, List.of(addCustomerCollaboration.getId()));
+        var collaboration = newCollaboration();
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE,
+                DEFAULT_BATCH_DELETE, List.of(collaboration.getId()));
+        Assertions.assertNull(customerCollaborationMapper.selectByPrimaryKey(collaboration.getId()));
     }
 }

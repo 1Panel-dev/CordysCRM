@@ -2,7 +2,6 @@ package cn.cordys.crm.customer.controller;
 
 import cn.cordys.common.constants.FormKeyConstants;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.permission.CsBatchPermission;
 import cn.cordys.common.permission.CsPermission;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.domain.CustomerCollaboration;
@@ -45,14 +44,14 @@ public class CustomerCollaborationController {
     }
 
     @PostMapping("/update")
-    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CUSTOMER)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "更新客户协作人")
     public CustomerCollaboration update(@Validated @RequestBody CustomerCollaborationUpdateRequest request) {
         return customerCollaborationService.update(request, SessionUtils.getUserId());
     }
 
     @GetMapping("/delete/{id}")
-    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#id}", formType = FormKeyConstants.CUSTOMER)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "删除客户协作人")
     public void delete(@PathVariable String id) {
         customerCollaborationService.delete(id);
@@ -60,7 +59,7 @@ public class CustomerCollaborationController {
 
     @PostMapping("/batch/delete")
     @Operation(summary = "批量删除客户协作人")
-    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#ids}", formType = FormKeyConstants.CUSTOMER)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     public void batchDelete(@RequestBody List<String> ids) {
         customerCollaborationService.batchDelete(ids);
     }

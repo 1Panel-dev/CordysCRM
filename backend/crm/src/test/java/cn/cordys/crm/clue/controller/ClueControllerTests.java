@@ -4,7 +4,6 @@ import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.constants.InternalUserView;
 import cn.cordys.common.constants.PermissionConstants;
-import cn.cordys.common.dto.ExportHeadDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.util.BeanUtils;
@@ -299,27 +298,21 @@ class ClueControllerTests extends BaseTest {
     @Test
     @Order(10)
     void testDelete() throws Exception {
-        this.requestGetWithOk(DEFAULT_DELETE, addClue.getId());
+        requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_DELETE, DEFAULT_DELETE, addClue.getId());
         Assertions.assertNull(clueMapper.selectByPrimaryKey(addClue.getId()));
 
         List<ClueField> fields = getClueFields(addClue.getId());
-        Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
-
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_DELETE, DEFAULT_DELETE, addClue.getId());
+        Assertions.assertTrue(CollectionUtils.isEmpty(fields));
     }
 
     @Test
     @Order(11)
     void testBatchDelete() throws Exception {
-        this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of(anotherClue.getId()));
+        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE, List.of(anotherClue.getId()));
         Assertions.assertNull(clueMapper.selectByPrimaryKey(anotherClue.getId()));
 
         List<ClueField> fields = getClueFields(anotherClue.getId());
-        Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
-
-        // 校验权限
-        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE, List.of(anotherClue.getId()));
+        Assertions.assertTrue(CollectionUtils.isEmpty(fields));
     }
 
     @Test
@@ -355,12 +348,24 @@ class ClueControllerTests extends BaseTest {
 
     @Test
     @Order(13)
+    @Sql(scripts = {"/dml/init_clue_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/dml/cleanup_clue_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void testBatchToPool() throws Exception {
+        ClueAddRequest addRequest = new ClueAddRequest();
+        addRequest.setName("pool-permission-test");
+        addRequest.setOwner(InternalUser.ADMIN.getValue());
+        addRequest.setContact("test");
+        addRequest.setPhone("11111111146611");
+        Clue resource = getResultData(requestPostWithOkAndReturn(DEFAULT_ADD, addRequest), Clue.class);
         BatchPoolReasonRequest reasonRequest = new BatchPoolReasonRequest();
-        reasonRequest.setIds(batchIds);
-        this.requestPostWithOk(BATCH_TO_POOL, reasonRequest);
-        // 校验权限
+        reasonRequest.setIds(List.of(resource.getId()));
+        reasonRequest.setPoolId("test_pool_id");
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_RECYCLE, BATCH_TO_POOL, reasonRequest);
+        Assertions.assertTrue(clueMapper.selectByPrimaryKey(resource.getId()).getInSharedPool());
     }
 
     private List<ClueField> getClueFields(String clueId) {

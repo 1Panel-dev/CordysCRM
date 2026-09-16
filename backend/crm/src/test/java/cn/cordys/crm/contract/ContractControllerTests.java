@@ -214,11 +214,9 @@ public class ContractControllerTests extends BaseTest {
     @Test
     @Order(10)
     void testDelete() throws Exception {
-        this.requestGetWithOk(DEFAULT_DELETE, addContract.getId());
+        requestGetPermissionTest(PermissionConstants.CONTRACT_DELETE, DEFAULT_DELETE, addContract.getId());
         Contract contract = contractMapper.selectByPrimaryKey(addContract.getId());
         Assertions.assertNull(contract);
 
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.CONTRACT_DELETE, DEFAULT_DELETE, "nonexistent-id");
     }
 }

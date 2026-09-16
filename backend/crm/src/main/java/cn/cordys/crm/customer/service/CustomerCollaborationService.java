@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class CustomerCollaborationService {
     @Resource
+    private CustomerAssociationPermissionService associationPermissionService;
+    @Resource
     private BaseMapper<CustomerCollaboration> customerCollaborationMapper;
     @Resource
     private BaseService baseService;
@@ -121,6 +123,7 @@ public class CustomerCollaborationService {
     }
 
     public CustomerCollaboration update(CustomerCollaborationUpdateRequest request, String userId) {
+        associationPermissionService.checkCollaborations(List.of(request.getId()));
         CustomerCollaboration customerCollaboration = BeanUtils.copyBean(new CustomerCollaboration(), request);
         customerCollaboration.setUpdateTime(System.currentTimeMillis());
         customerCollaboration.setUpdateUser(userId);
@@ -129,10 +132,12 @@ public class CustomerCollaborationService {
     }
 
     public void delete(String id) {
+        associationPermissionService.checkCollaborations(List.of(id));
         customerCollaborationMapper.deleteByPrimaryKey(id);
     }
 
     public void batchDelete(List<String> ids) {
+        associationPermissionService.checkCollaborations(ids);
         customerCollaborationMapper.deleteByIds(ids);
     }
 
