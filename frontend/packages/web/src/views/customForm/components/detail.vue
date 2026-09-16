@@ -253,7 +253,7 @@
   watch(
     () => props.customFormId,
     () => {
-      initApprovalPermission();
+      initApprovalPermission(true);
     },
     {
       immediate: true,

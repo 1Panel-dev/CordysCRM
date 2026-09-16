@@ -22,7 +22,11 @@ export function clearApprovalConfigCache(formKey?: ApprovalConfigKey) {
   approvalConfigPendingMap.clear();
 }
 
-export function loadApprovalConfig(formKey: ApprovalConfigKey) {
+export function loadApprovalConfig(formKey: ApprovalConfigKey, forceRefresh = false) {
+  if (forceRefresh) {
+    approvalConfigCache.delete(formKey);
+  }
+
   // 已加载过的配置直接返回；审批流配置低频变化，变更时由 clearApprovalConfigCache 主动失效。
   if (approvalConfigCache.has(formKey)) {
     return Promise.resolve(approvalConfigCache.get(formKey) ?? null);
@@ -37,11 +41,15 @@ export function loadApprovalConfig(formKey: ApprovalConfigKey) {
   const request = getApprovalConfigDetail(formKey)
     .then((result) => {
       const config = result ?? null;
-      approvalConfigCache.set(formKey, config);
+      if (approvalConfigPendingMap.get(formKey) === request) {
+        approvalConfigCache.set(formKey, config);
+      }
       return config;
     })
     .finally(() => {
-      approvalConfigPendingMap.delete(formKey);
+      if (approvalConfigPendingMap.get(formKey) === request) {
+        approvalConfigPendingMap.delete(formKey);
+      }
     });
 
   approvalConfigPendingMap.set(formKey, request);
