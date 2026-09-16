@@ -265,7 +265,6 @@ public class FormulaDecimalRecalculateService {
         RecalculateResult result = new RecalculateResult();
         result.merge(recalculateContractOriginalFields(contractId, formulaFieldMap));
         result.addBusinessAmount(recalculateContractAmount(contractId, amountFieldConfig));
-
         List<ContractSnapshot> snapshots = contractSnapshotMapper.selectListByLambda(new LambdaQueryWrapper<ContractSnapshot>()
                 .eq(ContractSnapshot::getContractId, contractId));
         for (ContractSnapshot snapshot : snapshots) {

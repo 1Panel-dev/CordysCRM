@@ -41,6 +41,8 @@ import cn.cordys.crm.system.dto.RuleConditionDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
+import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
+import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -85,6 +87,7 @@ import java.util.stream.Stream;
 public class PoolCustomerService {
 
     public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
+    private static final String AUTO_UNFREEZE_REASON = "冻结到期，自动解冻";
     @Resource
     private BaseMapper<Customer> customerMapper;
     @Resource
@@ -232,6 +235,7 @@ public class PoolCustomerService {
      * @param currentOrgId 当前组织ID
      */
     public void pick(PoolCustomerPickRequest request, String currentUser, String currentOrgId) {
+        validateNotFrozen(request.getCustomerId());
         CustomerPool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(1, currentUser, currentOrgId);
         var pickRuleWrapper = new LambdaQueryWrapper<CustomerPoolPickRule>();
@@ -252,6 +256,7 @@ public class PoolCustomerService {
      * @param assignUserId 分配用户ID
      */
     public void assign(String id, String assignUserId, String currentOrgId, String currentUser) {
+        validateNotFrozen(id);
         validateCapacity(1, assignUserId, currentOrgId);
         ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false);
     }
@@ -280,6 +285,7 @@ public class PoolCustomerService {
      * @param currentOrgId 当前组织ID
      */
     public void batchPick(PoolBatchPickRequest request, String currentUser, String currentOrgId) {
+        request.getBatchIds().forEach(this::validateNotFrozen);
         CustomerPool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
         var pickRuleWrapper = new LambdaQueryWrapper<CustomerPoolPickRule>();
@@ -301,6 +307,7 @@ public class PoolCustomerService {
      * @param currentOrgId 当前组织ID
      */
     public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId, String currentUser) {
+        request.getBatchIds().forEach(this::validateNotFrozen);
         validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
         request.getBatchIds().forEach(id -> ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
     }
@@ -322,6 +329,46 @@ public class PoolCustomerService {
                 )
                 .toList();
         logService.batchAdd(logs);
+    }
+
+    public void freeze(PoolFreezeRequest request, String userId, String orgId) {
+        Customer customer = getPoolCustomer(request.getId(), orgId);
+        long now = System.currentTimeMillis();
+        if (isFrozen(customer, now)) {
+            throw new GenericException(Translator.getWithArgs("pool.resource.already_frozen", customer.getName()));
+        }
+        unfreezeExpired(customer, now);
+
+        Long unfreezeTime = request.isPermanentFreeze()
+                ? null : now + request.getFreezeDays() * DAY_MILLIS;
+        if (extCustomerMapper.freeze(customer.getId(), orgId, request.getReason(), unfreezeTime) == 0) {
+            throw new GenericException(Translator.getWithArgs("pool.resource.already_frozen", customer.getName()));
+        }
+        addFreezeLog(customer, orgId, userId, LogType.FREEZE, request.getReason());
+    }
+
+    public void unfreeze(PoolUnfreezeRequest request, String userId, String orgId) {
+        Customer customer = getPoolCustomer(request.getId(), orgId);
+        long now = System.currentTimeMillis();
+        if (!isFrozen(customer, now)) {
+            if (unfreezeExpired(customer, now)) {
+                return;
+            }
+            throw new GenericException(Translator.getWithArgs("pool.resource.not_frozen", customer.getName()));
+        }
+        if (extCustomerMapper.unfreeze(customer.getId(), orgId, now, false) == 0) {
+            Customer current = customerMapper.selectByPrimaryKey(customer.getId());
+            if (current != null && unfreezeExpired(current, System.currentTimeMillis())) {
+                return;
+            }
+            throw new GenericException(Translator.getWithArgs("pool.resource.not_frozen", customer.getName()));
+        }
+        addFreezeLog(customer, orgId, userId, LogType.UNFREEZE, request.getReason());
+    }
+
+    public void unfreezeExpired() {
+        long now = System.currentTimeMillis();
+        extCustomerMapper.selectExpiredFrozen(now).forEach(customer -> unfreezeExpired(customer, now));
     }
 
     /**
@@ -403,6 +450,7 @@ public class PoolCustomerService {
         if (!customer.getInSharedPool()) {
             throw new GenericException(Translator.getWithArgs("customer.pool.occupied", customer.getName()));
         }
+        validateNotFrozen(customer);
 
         if (!isPoolAdmin && pickRule != null) {
             if (pickRule.getLimitNew()) {
@@ -448,7 +496,13 @@ public class PoolCustomerService {
         customer.setCollectionTime(now);
         customer.setUpdateUser(ownerId);
         customer.setUpdateTime(now);
-        extCustomerMapper.updateIncludeNullById(customer);
+        if (extCustomerMapper.updateIncludeNullById(customer) == 0) {
+            Customer current = customerMapper.selectByPrimaryKey(customerId);
+            if (current != null && Boolean.TRUE.equals(current.getInSharedPool())) {
+                validateNotFrozen(current);
+            }
+            throw new GenericException(Translator.getWithArgs("customer.pool.occupied", customer.getName()));
+        }
 
         // 只更新最近一次销售负责人的联系人（联系人为空的）
         String recentOwner = extCustomerOwnerMapper.getRecentOwner(customerId);
@@ -498,6 +552,57 @@ public class PoolCustomerService {
             throw new GenericException(Translator.get("customer.not.exist"));
         }
         return customer.getPoolId();
+    }
+
+    private Customer getPoolCustomer(String id, String orgId) {
+        Customer customer = customerMapper.selectByPrimaryKey(id);
+        if (customer == null || !Objects.equals(customer.getOrganizationId(), orgId)) {
+            throw new GenericException(Translator.get("customer.not.exist"));
+        }
+        if (!Boolean.TRUE.equals(customer.getInSharedPool())) {
+            throw new GenericException(Translator.getWithArgs("customer.pool.occupied", customer.getName()));
+        }
+        return customer;
+    }
+
+    private void validateNotFrozen(String id) {
+        Customer customer = customerMapper.selectByPrimaryKey(id);
+        if (customer == null) {
+            throw new IllegalArgumentException(Translator.get("customer.not.exist"));
+        }
+        validateNotFrozen(customer);
+    }
+
+    private void validateNotFrozen(Customer customer) {
+        long now = System.currentTimeMillis();
+        if (isFrozen(customer, now)) {
+            throw new GenericException(Translator.getWithArgs("pool.resource.frozen", customer.getName()));
+        }
+        unfreezeExpired(customer, now);
+    }
+
+    private boolean isFrozen(Customer customer, long now) {
+        return Boolean.TRUE.equals(customer.getFrozen())
+                && (customer.getUnfreezeTime() == null || customer.getUnfreezeTime() > now);
+    }
+
+    private boolean unfreezeExpired(Customer customer, long now) {
+        if (!Boolean.TRUE.equals(customer.getFrozen()) || customer.getUnfreezeTime() == null
+                || customer.getUnfreezeTime() > now) {
+            return false;
+        }
+        if (extCustomerMapper.unfreeze(customer.getId(), customer.getOrganizationId(), now, true) == 0) {
+            return false;
+        }
+        addFreezeLog(customer, customer.getOrganizationId(), InternalUser.ADMIN.getValue(),
+                LogType.UNFREEZE, AUTO_UNFREEZE_REASON);
+        return true;
+    }
+
+    private void addFreezeLog(Customer customer, String orgId, String userId, String type, String reason) {
+        LogDTO log = new LogDTO(orgId, customer.getId(), userId, type, LogModule.CUSTOMER_POOL, customer.getName());
+        log.setDetail(StringUtils.trimToNull(reason));
+        logService.add(log);
     }
 
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
@@ -599,6 +704,7 @@ public class PoolCustomerService {
                         customers.forEach(customer -> {
                             customer.setInSharedPool(true);
                             customer.setPoolId(request.getPoolId());
+                            customer.setFrozen(false);
                             logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD, LogModule.CUSTOMER_POOL, customer.getName()));
                         });
                         customerMapper.batchInsert(customers);

@@ -207,6 +207,9 @@
             "name": "permission.customer_management.pool.assign"
           },
           {
+            "id": "CUSTOMER_MANAGEMENT_POOL:FREEZE"
+          },
+          {
             "id": "CUSTOMER_MANAGEMENT_POOL:DELETE"
           },
           {
@@ -295,6 +298,9 @@
           {
             "id": "CLUE_MANAGEMENT_POOL:ASSIGN",
             "name": "permission.customer_management.pool.assign"
+          },
+          {
+            "id": "CLUE_MANAGEMENT_POOL:FREEZE"
           },
           {
             "id": "CLUE_MANAGEMENT_POOL:DELETE"
