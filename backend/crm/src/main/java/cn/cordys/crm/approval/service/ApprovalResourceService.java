@@ -654,7 +654,7 @@ public class ApprovalResourceService {
         }
 
         // 检查是否命中审批流
-        if (!checkHitApprovalFlowEditTrigger(formKey, organizationId)) {
+        if (!checkHitApprovalFlowEditTrigger(formKey.getKey(), organizationId)) {
             return;
         }
 
@@ -750,22 +750,123 @@ public class ApprovalResourceService {
     /**
      * 检查是否命中审批流触发时机
      *
-     * @param formKey        表单类型
+     * @param formType       表单类型（标准枚举 key 或自定义表单 customFormId）
      * @param organizationId 组织ID
      * @return 是否命中审批流
      */
-    private boolean checkHitApprovalFlowEditTrigger(FormKey formKey, String organizationId) {
+    private boolean checkHitApprovalFlowEditTrigger(String formType, String organizationId) {
         try {
             // 查询当前组织表单审批流配置
-            ApprovalFlow flow = approvalFlowService.getEnabledFlow(formKey.getKey(), organizationId);
+            ApprovalFlow flow = approvalFlowService.getEnabledFlow(formType, organizationId);
             if (flow == null) {
                 return false;
             }
             return flow.getUpdateExecute();
         } catch (Exception e) {
-            log.error("检查是否命中审批流失败, formKey:{}, error:{}", formKey, e.getMessage(), e);
+            log.error("检查是否命中审批流失败, formType:{}, error:{}", formType, e.getMessage(), e);
             return false;
         }
+    }
+
+    /**
+     * 批量编辑触发审批流（自定义表单）
+     * 自定义表单的审批 formType 为具体的 customFormId，不在 FormKey 枚举中，
+     * 故提供此字符串版入口，逻辑与 {@link #batchEditTriggerApproval} 一致。
+     *
+     * @param resourceIds    资源ID集合
+     * @param fieldId        字段ID
+     * @param formType       表单类型（customFormId）
+     * @param organizationId 组织ID
+     * @param userId         操作人ID
+     * @param fieldName      字段显示名称
+     * @param fieldValue     字段值
+     */
+    public void batchEditTriggerApprovalForCustomForm(List<String> resourceIds, String fieldId, String formType,
+                                                      String organizationId, String userId, String fieldName, Object fieldValue) {
+        if (CollectionUtils.isEmpty(resourceIds) || StringUtils.isBlank(formType) || StringUtils.isBlank(organizationId)) {
+            return;
+        }
+
+        // 检查是否命中审批流
+        if (!checkHitApprovalFlowEditTrigger(formType, organizationId)) {
+            return;
+        }
+
+        String valueName = fieldValue instanceof List ? JSON.toJSONString(fieldValue) : fieldValue.toString();
+        for (BaseField field : moduleFormCacheService.getConfig(formType, organizationId).getFields()) {
+            if (Strings.CS.equals(field.getId(), fieldId) || Strings.CS.equals(field.getBusinessKey(), fieldId)) {
+                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+                // 将数据库中的字符串值,转换为对应的对象值
+                valueName = customFieldResolver.transformToValue(field, valueName).toString();
+            }
+        }
+
+        for (String resourceId : resourceIds) {
+            boolean approved = isResourceApproved(null, resourceId);
+            if (approved) {
+                // 已审批通过过：UPDATE时机，直接提审
+                ApprovalResourceHandler handler = resolveApprovalHandler(null);
+                if (handler != null) {
+                    String snapshotData = handler.getPreUpdateSnapshotData(resourceId, userId, organizationId);
+                    if (StringUtils.isNotBlank(snapshotData)) {
+                        savePreUpdateSnapshot(null, resourceId, userId, snapshotData);
+                    }
+                }
+                ApprovalPushParam pushParam = ApprovalPushParam.builder()
+                        .orgId(organizationId)
+                        .userId(userId)
+                        .resourceId(resourceId)
+                        .formKey(formType)
+                        .executeTimingEnum(ExecuteTimingEnum.UPDATE)
+                        .updateFields(JSON.toJSONString(List.of(fieldId)))
+                        .comment(Translator.getWithArgs("approval.update.field", fieldName, valueName))
+                        .build();
+                push(pushParam);
+            } else {
+                // 未审批通过过：CREATE时机，设为待提审
+                updateResourceApprovalStatus(null, resourceId, ApprovalStatus.PENDING.name(), userId, organizationId);
+            }
+        }
+    }
+
+    /**
+     * 批量删除触发审批流（自定义表单）
+     * 自定义表单的审批 formType 为具体的 customFormId，不在 FormKey 枚举中，
+     * 故提供此字符串版入口，逻辑与 {@link #batchDeleteTriggerApproval} 一致。
+     *
+     * @param resourceIds    资源ID集合
+     * @param formType       表单类型（customFormId）
+     * @param organizationId 组织ID
+     * @param userId         操作人ID
+     * @param resourceNameMap 资源ID -> 资源名称映射
+     * @return 命中审批流的资源ID集合
+     */
+    public List<String> batchDeleteTriggerApprovalForCustomForm(List<String> resourceIds, String formType,
+                                                                String organizationId, String userId, Map<String, String> resourceNameMap) {
+        if (CollectionUtils.isEmpty(resourceIds) || StringUtils.isBlank(formType) || StringUtils.isBlank(organizationId)) {
+            return Collections.emptyList();
+        }
+
+        // 检查是否命中删除审批流
+        ApprovalFlow flow = approvalFlowService.getEnabledFlow(formType, organizationId);
+        if (flow == null || !Boolean.TRUE.equals(flow.getDeleteExecute())) {
+            return Collections.emptyList();
+        }
+
+        List<String> approvalResourceIds = new ArrayList<>();
+        for (String resourceId : resourceIds) {
+            ApprovalPushParam pushParam = ApprovalPushParam.builder()
+                    .orgId(organizationId)
+                    .userId(userId)
+                    .resourceId(resourceId)
+                    .formKey(formType)
+                    .executeTimingEnum(ExecuteTimingEnum.DELETE)
+                    .comment(Translator.getWithArgs("approval.delete.resource", getFormKeyDisplayName(null), resourceNameMap.get(resourceId)))
+                    .build();
+            push(pushParam);
+            approvalResourceIds.add(resourceId);
+        }
+        return approvalResourceIds;
     }
 
 

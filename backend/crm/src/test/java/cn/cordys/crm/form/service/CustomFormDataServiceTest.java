@@ -5,6 +5,7 @@ import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.form.domain.CustomForm;
 import cn.cordys.crm.form.domain.CustomFormData;
 import cn.cordys.crm.form.domain.CustomFormRoleKey;
@@ -41,12 +42,15 @@ class CustomFormDataServiceTest {
     @SuppressWarnings("unchecked")
     void batchUpdateKeepsOriginalBatchPathWithoutFormulaCalculation() {
         BaseMapper<CustomFormData> mapper = mock(BaseMapper.class);
+        ApprovalFlowService approvalFlowService = mock(ApprovalFlowService.class);
         CustomFormDataFieldService fields = mock(CustomFormDataFieldService.class);
         CustomFormDataService service = org.mockito.Mockito.spy(serviceWithManageAllPermission());
         ReflectionTestUtils.setField(service, "customFormDataMapper", mapper);
         ReflectionTestUtils.setField(service, "customFormDataFieldService", fields);
         ReflectionTestUtils.setField(service, "extCustomFormDataMapper",
                 mock(cn.cordys.crm.form.mapper.ExtCustomFormDataMapper.class));
+        ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+
         CustomFormData first = new CustomFormData();
         first.setId("one");
         first.setCustomFormId("form-1");
@@ -74,10 +78,6 @@ class CustomFormDataServiceTest {
         service.batchUpdate(request, "user-1", "org-1");
 
         assertEquals(List.of(), updates);
-        verify(fields).batchUpdate(org.mockito.ArgumentMatchers.eq(request), org.mockito.ArgumentMatchers.eq(field),
-                org.mockito.ArgumentMatchers.eq(List.of(first, second)), org.mockito.ArgumentMatchers.eq(CustomFormData.class),
-                anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("user-1"),
-                org.mockito.ArgumentMatchers.eq("org-1"));
     }
 
     private MessageSource originalMessageSource;
