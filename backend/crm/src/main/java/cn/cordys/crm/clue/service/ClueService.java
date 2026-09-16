@@ -449,6 +449,7 @@ public class ClueService {
         clue.setId(IDGenerator.nextStr());
         clue.setStage(ClueStatus.NEW.name());
         clue.setInSharedPool(false);
+        clue.setFrozen(false);
 
         //保存自定义字段
         clueFieldService.saveModuleField(clue, orgId, userId, request.getModuleFields(), false);
@@ -1174,6 +1175,7 @@ public class ClueService {
                             clue.setCollectionTime(clue.getCreateTime());
                             clue.setStage(ClueStatus.NEW.name());
                             clue.setInSharedPool(false);
+                            clue.setFrozen(false);
                             logs.add(new LogDTO(currentOrg, clue.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX, clue.getName()));
                         });
                         clueMapper.batchInsert(clues);

@@ -19,10 +19,13 @@ import cn.cordys.crm.customer.dto.request.PoolCustomerAssignRequest;
 import cn.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import cn.cordys.crm.customer.dto.response.CustomerGetResponse;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
+import cn.cordys.crm.customer.service.PoolCustomerService;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchRequest;
+import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
+import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.service.ExportTaskCenterService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -56,6 +59,8 @@ public class PoolCustomerControllerTests extends BaseTest {
     public static final String BATCH_PICK = "/batch-pick";
     public static final String BATCH_ASSIGN = "/batch-assign";
     public static final String BATCH_DELETE = "/batch-delete";
+    public static final String FREEZE = "/freeze";
+    public static final String UNFREEZE = "/unfreeze";
     protected static final String EXPORT_ALL = "/export-all";
     protected static final String EXPORT_SELECT = "/export-select";
     public static String testDataId;
@@ -75,6 +80,8 @@ public class PoolCustomerControllerTests extends BaseTest {
     private BaseMapper<ExportTask> exportTaskBaseMapper;
     @Resource
     private ExportTaskCenterService exportTaskCenterService;
+    @Resource
+    private PoolCustomerService poolCustomerService;
 
     @Override
     protected String getBasePath() {
@@ -200,13 +207,50 @@ public class PoolCustomerControllerTests extends BaseTest {
 
     @Test
     @Order(7)
+    void freezeAndUnfreeze() throws Exception {
+        PoolFreezeRequest freezeRequest = new PoolFreezeRequest();
+        freezeRequest.setId(testDataId);
+        freezeRequest.setFreezeDays(0);
+        freezeRequest.setReason("客户要求暂停联系");
+        this.requestPostWithOk(FREEZE, freezeRequest);
+
+        Customer frozenCustomer = customerMapper.selectByPrimaryKey(testDataId);
+        Assertions.assertTrue(frozenCustomer.getFrozen());
+        Assertions.assertEquals(freezeRequest.getReason(), frozenCustomer.getFreezeReason());
+        Assertions.assertNull(frozenCustomer.getUnfreezeTime());
+
+        PoolCustomerPickRequest pickRequest = new PoolCustomerPickRequest();
+        pickRequest.setCustomerId(testDataId);
+        pickRequest.setPoolId(testPoolId);
+        MvcResult result = this.requestPost(PICK, pickRequest).andExpect(status().is5xxServerError()).andReturn();
+        Assertions.assertTrue(result.getResponse().getContentAsString().contains(Translator.getWithArgs("pool.resource.frozen", frozenCustomer.getName())));
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_FREEZE, FREEZE, freezeRequest);
+
+        PoolUnfreezeRequest unfreezeRequest = new PoolUnfreezeRequest();
+        unfreezeRequest.setId(testDataId);
+        unfreezeRequest.setReason("客户同意恢复联系");
+        this.requestPostWithOk(UNFREEZE, unfreezeRequest);
+        Assertions.assertFalse(customerMapper.selectByPrimaryKey(testDataId).getFrozen());
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_FREEZE, UNFREEZE, unfreezeRequest);
+
+        Customer expiredCustomer = customerMapper.selectByPrimaryKey(testDataId);
+        expiredCustomer.setFrozen(true);
+        expiredCustomer.setFreezeReason("临时冻结");
+        expiredCustomer.setUnfreezeTime(System.currentTimeMillis() - 1);
+        customerMapper.updateById(expiredCustomer);
+        poolCustomerService.unfreezeExpired();
+        Assertions.assertFalse(customerMapper.selectByPrimaryKey(testDataId).getFrozen());
+    }
+
+    @Test
+    @Order(8)
     void deleteSuccess() throws Exception {
         this.requestGetWithOk(DELETE + testDataId);
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE, DELETE + testDataId);
     }
 
     @Test
-    @Order(8)
+    @Order(9)
     void batchPickFailWithOverDailyOrPreOwnerLimit() throws Exception {
         Customer customer = createCustomer();
         customer.setOwner("admin");
@@ -225,7 +269,7 @@ public class PoolCustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(9)
+    @Order(10)
     void batchAssignFailWithNotExit() throws Exception {
         PoolBatchAssignRequest request = new PoolBatchAssignRequest();
         request.setBatchIds(List.of("aaa"));
@@ -236,7 +280,7 @@ public class PoolCustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(10)
+    @Order(11)
     void batchDeleteSuccess() throws Exception {
         Customer customer = createCustomer();
         customerMapper.insert(customer);
@@ -247,7 +291,7 @@ public class PoolCustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(11)
+    @Order(12)
     void cleanup() {
         customerPoolMapper.deleteByLambda(new LambdaQueryWrapper<CustomerPool>().eq(CustomerPool::getId, testPoolId));
     }

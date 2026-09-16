@@ -229,6 +229,7 @@ class ClueControllerTests extends BaseTest {
 
         clueList.forEach(clueListResponse -> {
             Clue clue = clueMap.get(clueListResponse.getId());
+            clue.setFrozen(Boolean.TRUE.equals(clue.getFrozen()));
             Clue responseClue = BeanUtils.copyBean(new Clue(), clueListResponse);
             responseClue.setOrganizationId(DEFAULT_ORGANIZATION_ID);
             responseClue.setInSharedPool(false);

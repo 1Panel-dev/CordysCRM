@@ -458,6 +458,7 @@ public class CustomerService {
         customer.setOrganizationId(orgId);
         customer.setId(IDGenerator.nextStr());
         customer.setInSharedPool(false);
+        customer.setFrozen(false);
 
         //保存自定义字段
         customerFieldService.saveModuleField(customer, orgId, userId, request.getModuleFields(), false);
@@ -793,6 +794,7 @@ public class CustomerService {
                         customers.forEach(customer -> {
                             customer.setCollectionTime(customer.getCreateTime());
                             customer.setInSharedPool(false);
+                            customer.setFrozen(false);
                             logs.add(new LogDTO(currentOrg, customer.getId(), currentUser, LogType.ADD, LogModule.CUSTOMER_INDEX, customer.getName()));
                         });
                         customerMapper.batchInsert(customers);
