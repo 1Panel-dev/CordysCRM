@@ -38,7 +38,7 @@
       :load-list-api="getCluePoolList"
     >
       <template #item="{ item }">
-        <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
+        <CrmListCommonItem :item="item" :actions="actions" resource-type="lead" @click="goDetail"></CrmListCommonItem>
       </template>
     </CrmList>
   </div>

@@ -34,6 +34,7 @@ import {
   ExportClueSelectedUrl,
   FixedClueViewUrl,
   FixedPoolLeadViewUrl,
+  FreezeClueUrl,
   GenerateLeadChartUrl,
   GenerateLeadPoolChartUrl,
   GetAdvancedCluePoolListUrl,
@@ -74,6 +75,7 @@ import {
   UpdateClueUrl,
   UpdateClueViewUrl,
   UpdatePoolLeadViewUrl,
+  UnfreezeClueUrl,
 } from '@lib/shared/api/requrls/clue';
 import type {
   AssignClueParams,
@@ -85,8 +87,10 @@ import type {
   CluePoolTableParams,
   ClueTransitionCustomerParams,
   ConvertClueParams,
+  FreezeClueParams,
   PickClueParams,
   SaveClueParams,
+  UnfreezeClueParams,
   UpdateClueParams,
 } from '@lib/shared/models/clue';
 import type {
@@ -296,6 +300,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: AssignClueUrl, data });
   }
 
+  // 冻结线索池线索
+  function freezeClue(data: FreezeClueParams) {
+    return CDR.post({ url: FreezeClueUrl, data });
+  }
+
+  // 解冻线索池线索
+  function unfreezeClue(data: UnfreezeClueParams) {
+    return CDR.post({ url: UnfreezeClueUrl, data });
+  }
+
   // 获取当前用户线索池选项
   function getPoolOptions() {
     return CDR.get<CluePoolItem[]>({ url: GetPoolOptionsUrl });
@@ -403,11 +417,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function preCheckImportPoolLead(params: ImportUploadParams) {
-    return CDR.uploadFile<{ data: ValidateInfo }>(
-      { url: PreCheckPoolLeadImportUrl },
-      params,
-      'file'
-    );
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckPoolLeadImportUrl }, params, 'file');
   }
 
   function downloadPoolLeadTemplate() {
@@ -421,11 +431,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function importPoolLead(params: ImportUploadParams) {
-    return CDR.uploadFile(
-      { url: ImportPoolLeadUrl },
-      params,
-      'file'
-    );
+    return CDR.uploadFile({ url: ImportPoolLeadUrl }, params, 'file');
   }
 
   function getAdvancedSearchClueList(data: CustomerTableParams) {
@@ -519,6 +525,8 @@ export default function useProductApi(CDR: CordysAxios) {
     batchDeleteCluePool,
     batchAssignClue,
     assignClue,
+    freezeClue,
+    unfreezeClue,
     getPoolOptions,
     deleteCluePool,
     getCluePoolFollowRecordList,

@@ -36,7 +36,12 @@
       :item-gap="16"
     >
       <template #item="{ item }">
-        <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
+        <CrmListCommonItem
+          :item="item"
+          :actions="actions"
+          resource-type="customer"
+          @click="goDetail"
+        ></CrmListCommonItem>
       </template>
     </CrmList>
   </div>

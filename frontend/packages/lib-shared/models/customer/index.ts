@@ -11,6 +11,17 @@ export interface UpdateCustomerParams extends SaveCustomerParams {
   id: string;
 }
 
+export interface FreezeOpenSeaCustomerParams {
+  id: string;
+  freezeDays: number;
+  reason: string;
+}
+
+export interface UnfreezeOpenSeaCustomerParams {
+  id: string;
+  reason: string;
+}
+
 export interface CustomerTableParams extends TableQueryParams {
   viewId: CustomerSearchTypeEnum; // 搜索类型(ALL/SELF/DEPARTMENT/CUSTOMER_COLLABORATION)
 }
@@ -219,6 +230,9 @@ export interface CustomerOpenSeaListItem {
   updateUserName: string;
   pickRule: PickRule;
   recycleRule: RecycleRule;
+  frozen: boolean;
+  freezeReason: string;
+  unfreezeTime: number;
 }
 
 export type FollowDetailItemType<T> = T;

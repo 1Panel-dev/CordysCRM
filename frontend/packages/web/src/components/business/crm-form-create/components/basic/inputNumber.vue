@@ -41,7 +41,6 @@
 <script setup lang="ts">
   import { NDivider, NFormItem } from 'naive-ui';
 
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import type { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';

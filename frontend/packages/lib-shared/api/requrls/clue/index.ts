@@ -56,6 +56,8 @@ export const ExportCluePoolAllUrl = '/pool/lead/export-all'; // 导出全部线�
 export const ExportCluePoolSelectedUrl = '/pool/lead/export-select'; // 导出选中线索池线索
 export const BatchUpdateCluePoolUrl = '/pool/lead/batch-update'; // 批量更新线索池线索
 export const GenerateLeadPoolChartUrl = '/pool/lead/chart'; // 生成线索池图表
+export const FreezeClueUrl = '/pool/lead/freeze'; // 冻结线索池线索
+export const UnfreezeClueUrl = '/pool/lead/unfreeze'; // 解冻线索池线索
 
 // 线索池跟进记录
 export const GetCluePoolFollowRecordListUrl = '/lead/follow/record/pool/page'; // 获取跟进记录列表
