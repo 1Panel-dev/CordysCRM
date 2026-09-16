@@ -36,6 +36,8 @@ import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
 import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
 import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.form.domain.*;
 import cn.cordys.crm.form.dto.request.*;
 import cn.cordys.crm.form.dto.response.CustomFormDataGetResponse;
@@ -87,6 +89,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CustomFormDataService implements ApprovalResourceHandler {
 
+    /**
+     * 自定义表单数据的批量编辑/删除审批权限标识（与 ApprovalFlowService.getCustomFormDataApprovalPermission 保持一致）
+     */
+    private static final String CUSTOM_FORM_DATA_UPDATE_PERMISSION = "CUSTOM_FORM_DATA:UPDATE";
+    private static final String CUSTOM_FORM_DATA_DELETE_PERMISSION = "CUSTOM_FORM_DATA:DELETE";
+
     @Resource
     private BaseMapper<CustomFormData> customFormDataMapper;
     @Resource
@@ -119,6 +127,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     private SqlSessionFactory sqlSessionFactory;
     @Resource
     private ResourcePermissionService resourcePermissionService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     public PagerWithOption<List<CustomFormDataListResponse>> page(CustomFormDataPageRequest request, String userId, String orgId, boolean catchPermissionException) {
         String formId = request.getCustomFormId();
@@ -411,7 +421,6 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (data == null) {
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
-        checkWritePermission(userId, orgId, data);
 
         customFormDataFieldService.deleteByResourceId(id);
         customFormDataMapper.deleteByPrimaryKey(id);
@@ -422,6 +431,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
     @HitApproval(executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
     public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        CustomFormData data = customFormDataMapper.selectByPrimaryKey(id);
+        checkWritePermission(userId, orgId, data);
         delete(id, userId, orgId);
     }
 
@@ -570,12 +581,39 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
     public void batchUpdate(CustomFormDataBatchUpdateRequest request, String userId, String orgId) {
         List<CustomFormData> dataList = customFormDataMapper.selectByIds(request.getIds());
-        checkCompleteBatch(request.getIds(), dataList);
         checkBatchPermission(userId, dataList, request.getCustomFormId(), orgId);
+
+        // 校验状态权限，过滤出有权限操作的资源（参考 ContractService.batchUpdate）
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                request.getCustomFormId(),
+                dataList,
+                CUSTOM_FORM_DATA_UPDATE_PERMISSION,
+                orgId,
+                CustomFormData::getId,
+                CustomFormData::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return;
+        }
+
         CustomFormDataFieldService.setFormKey(request.getCustomFormId());
         try {
             BaseField field = customFormDataFieldService.getAndCheckField(request.getFieldId(), orgId);
-            customFormDataFieldService.batchUpdate(request, field, dataList, CustomFormData.class, LogModule.CUSTOM_FORM_DATA, extCustomFormDataMapper::batchUpdate, userId, orgId);
+            // 批量编辑触发审批流：历史上审批通过过的资源进入审批（UPDATE），未通过过的设为待提审（CREATE）
+            ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+            approvalResourceService.batchEditTriggerApprovalForCustomForm(
+                    permittedIds, request.getFieldId(), request.getCustomFormId(), orgId, userId, field.getName(), request.getFieldValue());
+
+            List<CustomFormData> permittedDataList = dataList.stream()
+                    .filter(data -> permittedIds.contains(data.getId()))
+                    .toList();
+            CustomFormDataBatchUpdateRequest filteredRequest = new CustomFormDataBatchUpdateRequest();
+            filteredRequest.setCustomFormId(request.getCustomFormId());
+            filteredRequest.setIds(permittedIds);
+            filteredRequest.setFieldId(request.getFieldId());
+            filteredRequest.setFieldValue(request.getFieldValue());
+            customFormDataFieldService.batchUpdate(filteredRequest, field, permittedDataList, CustomFormData.class,
+                    LogModule.CUSTOM_FORM_DATA, extCustomFormDataMapper::batchUpdate, userId, orgId);
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }
@@ -601,31 +639,50 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
         List<CustomFormData> dataList = customFormDataMapper.selectByIds(ids);
-        checkCompleteBatch(ids, dataList);
 
         String formId = dataList.getFirst().getCustomFormId();
         checkBatchPermission(userId, dataList, formId, orgId);
 
-        List<String> deletableIds = dataList.stream()
-                .map(CustomFormData::getId)
+        // 校验状态权限，过滤出有权限操作的资源（参考 ContractService.batchDelete）
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                formId,
+                dataList,
+                CUSTOM_FORM_DATA_DELETE_PERMISSION,
+                orgId,
+                CustomFormData::getId,
+                CustomFormData::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return;
+        }
+
+        List<CustomFormData> permittedDataList = dataList.stream()
+                .filter(data -> permittedIds.contains(data.getId()))
                 .toList();
+        Map<String, String> nameMap = permittedDataList.stream()
+                .collect(Collectors.toMap(CustomFormData::getId, CustomFormData::getName));
 
-        customFormDataFieldService.deleteByResourceIds(deletableIds);
-        customFormDataMapper.deleteByIds(deletableIds);
+        // 批量删除触发审批流：命中删除审批流的资源进入审批，不执行物理删除
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApprovalForCustomForm(
+                permittedIds, formId, orgId, userId, nameMap);
+        List<String> deleteIds = approvalIds.isEmpty()
+                ? permittedIds
+                : permittedIds.stream().filter(id -> !approvalIds.contains(id)).toList();
+        if (CollectionUtils.isEmpty(deleteIds)) {
+            return;
+        }
 
-        List<LogDTO> logs = dataList.stream()
+        customFormDataFieldService.deleteByResourceIds(deleteIds);
+        customFormDataMapper.deleteByIds(deleteIds);
+
+        List<LogDTO> logs = permittedDataList.stream()
+                .filter(data -> deleteIds.contains(data.getId()))
                 .map(data ->
                         new LogDTO(orgId, data.getId(), userId, LogType.DELETE, LogModule.CUSTOM_FORM_DATA, data.getName())
                 )
                 .toList();
         logService.batchAdd(logs);
-    }
-
-    private void checkCompleteBatch(List<String> ids, List<CustomFormData> records) {
-        if (CollectionUtils.isEmpty(ids) || CollectionUtils.isEmpty(records)
-                || !new HashSet<>(ids).equals(records.stream().map(CustomFormData::getId).collect(Collectors.toSet()))) {
-            throw new GenericException(CrmHttpResultCode.NOT_FOUND);
-        }
     }
 
     private void checkWritePermission(CustomFormRoleKey dataScope, String owner, String currentUserId) {
