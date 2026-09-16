@@ -48,6 +48,7 @@ import cn.cordys.crm.system.domain.ModuleForm;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import cn.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import cn.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
@@ -429,6 +430,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         OperationLogContext.setResourceName(data.getName());
     }
 
+    @OperationLog(module = LogModule.CUSTOM_FORM_DATA, type = LogType.DELETE, resourceId = "{#id}")
     @HitApproval(executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
     public void deleteWithApprovalCheck(String id, String userId, String orgId) {
         CustomFormData data = customFormDataMapper.selectByPrimaryKey(id);
@@ -579,7 +581,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         return getSimple(id);
     }
 
-    public void batchUpdate(CustomFormDataBatchUpdateRequest request, String userId, String orgId) {
+    public BatchAffectReasonResponse batchUpdate(CustomFormDataBatchUpdateRequest request, String userId, String orgId) {
         List<CustomFormData> dataList = customFormDataMapper.selectByIds(request.getIds());
         checkBatchPermission(userId, dataList, request.getCustomFormId(), orgId);
 
@@ -593,7 +595,10 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                 CustomFormData::getApprovalStatus
         );
         if (CollectionUtils.isEmpty(permittedIds)) {
-            return;
+            return BatchAffectReasonResponse.builder()
+                    .success(0).fail(dataList.size()).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission"))
+                    .build();
         }
 
         CustomFormDataFieldService.setFormKey(request.getCustomFormId());
@@ -617,6 +622,13 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         } finally {
             CustomFormDataFieldService.clearFormKey();
         }
+
+        return BatchAffectReasonResponse.builder()
+                .success(permittedIds.size())
+                .fail(dataList.size() - permittedIds.size())
+                .skip(0)
+                .errorMessages(Translator.get("batch.update.reason"))
+                .build();
     }
 
     private void checkBatchPermission(String userId, List<CustomFormData> dataList, String formId, String orgId) {
