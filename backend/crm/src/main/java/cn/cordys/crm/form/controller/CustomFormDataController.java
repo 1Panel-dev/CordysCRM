@@ -14,6 +14,7 @@ import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
 import cn.cordys.crm.form.service.CustomFormDataExportService;
 import cn.cordys.crm.form.service.CustomFormDataService;
 import cn.cordys.crm.system.constants.ExportConstants;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -82,8 +83,8 @@ public class CustomFormDataController {
     @PostMapping("/batch/update")
     @Operation(summary = "批量更新表单数据")
     @CsPermission(PermissionConstants.CUSTOM_FORM_READ)
-    public void batchUpdate(@Validated @RequestBody CustomFormDataBatchUpdateRequest request) {
-        customFormDataService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody CustomFormDataBatchUpdateRequest request) {
+        return customFormDataService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/delete")
