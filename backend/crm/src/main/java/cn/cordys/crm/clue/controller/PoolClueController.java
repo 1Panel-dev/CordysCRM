@@ -23,8 +23,6 @@ import cn.cordys.crm.customer.dto.request.PoolClueChartAnalysisRequest;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
-import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
-import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.security.SessionUtils;
@@ -88,24 +86,6 @@ public class PoolClueController {
         String poolId = poolClueService.getPoolIdByClueId(request.getClueId());
         poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         poolClueService.assign(request.getClueId(), request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-    }
-
-    @PostMapping("/freeze")
-    @Operation(summary = "冻结线索")
-    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_FREEZE)
-    public void freeze(@Validated @RequestBody PoolFreezeRequest request) {
-        String poolId = poolClueService.getPoolIdByClueId(request.getId());
-        poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        poolClueService.freeze(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-    @PostMapping("/unfreeze")
-    @Operation(summary = "解冻线索")
-    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_FREEZE)
-    public void unfreeze(@Validated @RequestBody PoolUnfreezeRequest request) {
-        String poolId = poolClueService.getPoolIdByClueId(request.getId());
-        poolClueService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        poolClueService.unfreeze(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
