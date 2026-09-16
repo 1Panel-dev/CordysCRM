@@ -182,7 +182,7 @@ public class CustomerContactController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中联系人")
-    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
+    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTACT)
     public String customerContactExportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
@@ -224,7 +224,7 @@ public class CustomerContactController {
     }
 
     @PostMapping("/batch/update")
-    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
+    @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTACT)
     @Operation(summary = "批量更新客户联系人")
     public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
         customerContactService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

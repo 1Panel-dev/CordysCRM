@@ -8,6 +8,7 @@ import cn.cordys.crm.approval.domain.ApprovalInstance;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.mybatis.BaseMapper;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.collections.CollectionUtils;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,22 @@ public class ResourcePermissionService {
     private BaseMapper<ApprovalTask> approvalTaskMapper;
     @Resource
     private BaseMapper<ApprovalInstance> approvalInstanceMapper;
+
+    @Resource
+    private List<ResourceAccessContextProvider> contextProviders;
+    private Map<String, ResourceAccessContextProvider> providersByFormType = Map.of();
+
+    @PostConstruct
+    void initializeProviders() {
+        Map<String, ResourceAccessContextProvider> registry = new HashMap<>();
+        for (ResourceAccessContextProvider provider : contextProviders) {
+            String formType = provider.getFormType();
+            if (StringUtils.isBlank(formType) || registry.putIfAbsent(formType, provider) != null) {
+                throw new IllegalStateException("Invalid or duplicate resource permission provider: " + formType);
+            }
+        }
+        providersByFormType = Map.copyOf(registry);
+    }
 
     /**
      * 仅校验角色权限位
@@ -72,7 +90,8 @@ public class ResourcePermissionService {
 
         ResourceAccessContextProvider provider = getProvider(formType);
         ResourceAccessContext context = provider != null ? provider.getAccessContext(resourceId, orgId) : null;
-        boolean permitted = checkRoleAndDataAndStatusPermission(permission, formType, userId, orgId, context);
+        boolean permitted = checkRoleAndDataAndStatusPermission(permission, formType, userId, orgId, context,
+                provider == null || provider.requiresOwner());
 
         if (!permitted) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -134,12 +153,20 @@ public class ResourcePermissionService {
 
         if (StringUtils.isNotBlank(formType) && CollectionUtils.isNotEmpty(resourceIds)) {
             ResourceAccessContextProvider provider = getProvider(formType);
-            if (provider == null) {
+            if (!provider.requiresBatchOwner()) {
+                var existingIds = provider.batchGetResourceIds(resourceIds, orgId);
+                if (existingIds == null || resourceIds.stream()
+                        .anyMatch(id -> StringUtils.isBlank(id) || !existingIds.contains(id))) {
+                    throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+                }
                 return;
             }
             Map<String, String> ownerMap = provider.batchGetOwnerIds(resourceIds, orgId);
-            List<String> ownerIds = ownerMap.values().stream()
-                    .filter(StringUtils::isNotBlank)
+            if (ownerMap == null || resourceIds.stream()
+                    .anyMatch(id -> StringUtils.isBlank(id) || StringUtils.isBlank(ownerMap.get(id)))) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            }
+            List<String> ownerIds = resourceIds.stream().map(ownerMap::get)
                     .distinct()
                     .toList();
             if (!ownerIds.isEmpty()) {
@@ -152,8 +179,14 @@ public class ResourcePermissionService {
      * 校验角色权限位 + 数据权限 + 审批状态权限：(1 && 2 && 3)
      */
     private boolean checkRoleAndDataAndStatusPermission(String permission, String formType,
-                                                        String userId, String orgId, ResourceAccessContext context) {
+                                                        String userId, String orgId, ResourceAccessContext context,
+                                                        boolean requiresOwner) {
 
+        // 资源必须存在；只有明确声明为组织共享的资源才允许没有负责人。
+        if (StringUtils.isNotBlank(formType)
+                && (context == null || (requiresOwner && StringUtils.isBlank(context.getOwnerId())))) {
+            return false;
+        }
         String ownerId = context != null ? context.getOwnerId() : null;
         String approvalStatus = context != null ? context.getApprovalStatus() : null;
 
@@ -163,7 +196,7 @@ public class ResourcePermissionService {
         }
 
         // Check 2: 角色的数据权限
-        if (ownerId != null && !dataScopeService.hasDataPermission(userId, orgId, ownerId, permission)) {
+        if (requiresOwner && ownerId != null && !dataScopeService.hasDataPermission(userId, orgId, ownerId, permission)) {
             return false;
         }
 
@@ -208,14 +241,10 @@ public class ResourcePermissionService {
         if (StringUtils.isBlank(formType)) {
             return null;
         }
-        Map<String, ResourceAccessContextProvider> providers = cn.cordys.common.util.CommonBeanFactory
-                .getBeansOfType(ResourceAccessContextProvider.class);
-        if (providers == null) {
-            return null;
+        ResourceAccessContextProvider provider = providersByFormType.get(formType);
+        if (provider == null) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
         }
-        return providers.values().stream()
-                .filter(p -> formType.equals(p.getFormType()))
-                .findFirst()
-                .orElse(null);
+        return provider;
     }
 }

@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class CustomerRelationService {
     @Resource
+    private CustomerAssociationPermissionService associationPermissionService;
+    @Resource
     private BaseMapper<CustomerRelation> customerRelationMapper;
     @Resource
     private ExtCustomerMapper extCustomerMapper;
@@ -187,6 +189,7 @@ public class CustomerRelationService {
     }
 
     public void delete(String id) {
+        associationPermissionService.checkRelation(id);
         customerRelationMapper.deleteByPrimaryKey(id);
     }
 }

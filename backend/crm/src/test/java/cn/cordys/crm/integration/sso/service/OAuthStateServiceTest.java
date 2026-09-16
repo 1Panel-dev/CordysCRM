@@ -1,8 +1,12 @@
 package cn.cordys.crm.integration.sso.service;
 
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.integration.sso.constants.OAuthStateFlow;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.mock.web.MockHttpSession;
 
 import java.security.SecureRandom;
@@ -13,6 +17,7 @@ import java.time.ZoneOffset;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 /**
  * OAuth state 安全机制的单元测试，覆盖随机性、流程绑定、有效期和一次性消费约束。
@@ -20,6 +25,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class OAuthStateServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-07-16T00:00:00Z");
+    private MockedStatic<Translator> translator;
+
+    @BeforeEach
+    void setUp() {
+        translator = mockStatic(Translator.class);
+        translator.when(() -> Translator.get("oauth.state.invalid"))
+                .thenReturn("Invalid OAuth state");
+    }
+
+    @AfterEach
+    void tearDown() {
+        translator.close();
+    }
 
     @Test
     void generatedStateIsHighEntropyAndCanOnlyBeConsumedOnce() {

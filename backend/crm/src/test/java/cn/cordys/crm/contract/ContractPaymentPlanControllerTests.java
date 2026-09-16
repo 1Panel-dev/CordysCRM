@@ -139,10 +139,8 @@ class ContractPaymentPlanControllerTests extends BaseTest {
     @Test
     @Order(10)
     void delete() throws Exception {
-        this.requestGetWithOk(DEFAULT_DELETE, addContractPaymentPlan.getId());
+        requestGetPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_DELETE, DEFAULT_DELETE, addContractPaymentPlan.getId());
         ContractPaymentPlan contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(addContractPaymentPlan.getId());
         Assertions.assertNull(contractPaymentPlan);
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.CONTRACT_PAYMENT_PLAN_DELETE, DEFAULT_DELETE, "1111");
     }
 }

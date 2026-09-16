@@ -26,7 +26,7 @@ public class OpportunityResourceAccessContextProvider implements ResourceAccessC
     @Override
     public ResourceAccessContext getAccessContext(String resourceId, String orgId) {
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(resourceId);
-        if (opportunity == null) {
+        if (opportunity == null || orgId == null || !orgId.equals(opportunity.getOrganizationId())) {
             return null;
         }
         ResourceAccessContext context = new ResourceAccessContext();
@@ -40,6 +40,7 @@ public class OpportunityResourceAccessContextProvider implements ResourceAccessC
             return Map.of();
         }
         return opportunityMapper.selectByIds(resourceIds).stream()
+                .filter(opportunity -> orgId != null && orgId.equals(opportunity.getOrganizationId()))
                 .filter(opportunity -> opportunity.getOwner() != null)
                 .collect(Collectors.toMap(Opportunity::getId, Opportunity::getOwner, (a, b) -> a));
     }

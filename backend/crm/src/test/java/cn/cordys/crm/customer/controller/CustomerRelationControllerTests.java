@@ -54,12 +54,16 @@ class CustomerRelationControllerTests extends BaseTest {
     @Test
     @Order(0)
     void testListEmpty() throws Exception {
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, "111");
+        CustomerAddRequest request = new CustomerAddRequest();
+        request.setName("empty-relation-test");
+        request.setOwner(InternalUser.ADMIN.getValue());
+        var customer = customerService.add(request, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, customer.getId());
         List<CustomerRelationListResponse> list = getResultDataArray(mvcResult, CustomerRelationListResponse.class);
         Assertions.assertTrue(CollectionUtils.isEmpty(list));
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, "111");
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, customer.getId());
     }
 
     @Test
@@ -133,12 +137,10 @@ class CustomerRelationControllerTests extends BaseTest {
     @Test
     @Order(9)
     void delete() throws Exception {
-        requestGetWithOk(DELETE, addCustomerRelation.getId());
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, DELETE, addCustomerRelation.getId());
 
         Assertions.assertNull(customerRelationBaseMapper.selectByPrimaryKey(addCustomerRelation.getId()));
 
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, DELETE, addCustomerRelation.getId());
     }
 
     @Test

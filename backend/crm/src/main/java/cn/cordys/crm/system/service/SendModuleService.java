@@ -27,9 +27,13 @@ public class SendModuleService {
      * @return 已开启的模块列表
      */
     public List<String> getNoticeModules() {
+        return getNoticeModules(OrganizationContext.getOrganizationId());
+    }
+
+    public List<String> getNoticeModules(String organizationId) {
         List<String> enabledModules = moduleMapper.selectListByLambda(
                         new LambdaQueryWrapper<Module>()
-                                .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
+                                .eq(Module::getOrganizationId, organizationId)
                                 .eq(Module::getEnable, true)
                 ).stream()
                 .map(Module::getModuleKey).distinct()

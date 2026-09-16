@@ -130,6 +130,10 @@ public class OpportunityControllerTests extends BaseTest {
         OpportunityTransferRequest request = new OpportunityTransferRequest();
         request.setIds(List.of("1234"));
         request.setOwner("12345");
+        this.requestPost(BATCH_TRANSFER, request)
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isForbidden());
+        request.setIds(List.of(addOpportunity.getId()));
+        request.setOwner(InternalUser.ADMIN.getValue());
         this.requestPostWithOk(BATCH_TRANSFER, request);
     }
 
@@ -177,7 +181,16 @@ public class OpportunityControllerTests extends BaseTest {
     @Test
     @Order(6)
     void testBatchDelete() throws Exception {
-        this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of("123"));
+        this.requestPost(DEFAULT_BATCH_DELETE, List.of("123"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isForbidden());
+        Opportunity opportunity = cn.cordys.common.util.BeanUtils.copyBean(new Opportunity(), addOpportunity);
+        opportunity.setId(UUID.randomUUID().toString().replace("-", ""));
+        opportunity.setName("batch-delete-test");
+        opportunity.setOwner(InternalUser.ADMIN.getValue());
+        opportunity.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        opportunityMapper.insert(opportunity);
+        this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of(opportunity.getId()));
+        Assertions.assertNull(opportunityMapper.selectByPrimaryKey(opportunity.getId()));
     }
 
 

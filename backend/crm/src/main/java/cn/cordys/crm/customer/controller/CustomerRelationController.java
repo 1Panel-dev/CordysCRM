@@ -51,7 +51,7 @@ public class CustomerRelationController {
     }
 
     @GetMapping("/delete/{id}")
-    @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#id}", formType = FormKeyConstants.CUSTOMER)
+    @CsPermission(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "删除客户关系")
     public void delete(@PathVariable String id) {
         customerRelationService.delete(id);
