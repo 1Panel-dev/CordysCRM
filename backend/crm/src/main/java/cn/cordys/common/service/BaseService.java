@@ -577,6 +577,9 @@ public class BaseService {
                 .map(BaseModuleFieldValue::getFieldId)
                 .distinct()
                 .toList());
+        if (CollectionUtils.isEmpty(fields)) {
+            return new HashMap<>();
+        }
         List<OptionDTO> fieldOptions = extModuleFieldMapper.getSourceOptionsByIds("sys_module_field", fieldIds);
         Map<String, String> nameMap = fieldOptions.stream()
                 .collect(Collectors.toMap(OptionDTO::getIdAsString, OptionDTO::getName));
