@@ -774,9 +774,8 @@ public class ApprovalFlowLogService extends BaseModuleLogService {
         }
         String[] parts = permission.split(":");
         if (parts.length >= 2) {
-            String moduleKey = "permission." + parts[0].toLowerCase() + ".name";
             String permissionKey = "permission." + parts[1].toLowerCase();
-            return Translator.get(moduleKey, parts[0]) + ":" + Translator.get(permissionKey, parts[1]);
+            return Translator.get(permissionKey, parts[1]);
         }
         return Translator.get("permission." + permission.toLowerCase(), permission);
     }
