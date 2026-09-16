@@ -396,11 +396,6 @@ public class CustomFormDataService implements ApprovalResourceHandler {
 
     private void checkUpdatePermission(CustomFormDataUpdateRequest request, String userId, String orgId, CustomFormData originData) {
         checkWritePermission(userId, orgId, originData);
-
-        if (StringUtils.isNotBlank(request.getCustomFormId())
-                && !StringUtils.equals(request.getCustomFormId(), originData.getCustomFormId())) {
-            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
-        }
     }
 
     private void checkWritePermission(String userId, String orgId, CustomFormData originData) {
@@ -549,7 +544,6 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         List<BaseModuleFieldValue> customFormDataFields = customFormDataFieldService.getModuleFieldValuesByResourceId(resourceId);
         CustomFormDataUpdateRequest snapshotReq = BeanUtils.copyBean(new CustomFormDataUpdateRequest(), customFormData);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
-        snapshotReq.setCustomFormId(customFormData.getCustomFormId());
         snapshotReq.setModuleFields(customFormDataFields);
         return JSON.toJSONString(snapshotReq);
     }
