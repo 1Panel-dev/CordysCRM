@@ -141,10 +141,15 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomFormDataListResponse> list = extCustomFormDataMapper.list(request, orgId, userId, manageOwn);
         CustomFormDataFieldService.setFormKey(formId);
+        List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(CustomFormDataListResponse::getId).toList();
+        Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
         try {
             list = buildList(list, formId, orgId);
             Map<String, List<OptionDTO>> optionMap = buildOptionMap(formId, orgId, list);
-            list.forEach(item -> item.setIsAdmin(isAdminUser(dataScope, userId, item.getOwner())));
+            list.forEach(item -> {
+                item.setIsAdmin(isAdminUser(dataScope, userId, item.getOwner()));
+                item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
+            });
             return PageUtils.setPageInfoWithOption(page, list, optionMap);
         } finally {
             CustomFormDataFieldService.clearFormKey();
@@ -235,6 +240,11 @@ public class CustomFormDataService implements ApprovalResourceHandler {
             resp.setModuleFields(moduleFields);
         } finally {
             CustomFormDataFieldService.clearFormKey();
+        }
+
+        if (Strings.CI.equals(resp.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+            Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(resp.getId()), orgId);
+            resp.setFirstApproved(firstNodeApproved.get(resp.getId()));
         }
 
         return resp;
