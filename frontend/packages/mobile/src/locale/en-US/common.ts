@@ -117,4 +117,7 @@ export default {
   'common.AND_APPROVAL': 'AND approval',
   'common.SEQUENTIAL_APPROVAL': 'Sequential Approval',
   'common.copyTo': 'Copy to',
+  'common.freeze': 'Freeze',
+  'common.frozen': 'Frozen',
+  'common.unfreezeTime': 'Unfreeze Time',
 };
