@@ -47,7 +47,7 @@
               approvalInfo?.approvalStatus === ProcessStatusEnum.APPROVING &&
               (isApprover || canCancelApply || canCancelApproval)
             "
-            class="sticky bottom-0 border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[16px]"
+            class="sticky bottom-0 flex max-h-full flex-col border-t border-[var(--text-n8)] bg-[var(--text-n10)] p-[16px]"
           >
             <template v-if="isApprover">
               <div class="flex items-center gap-[4px]">
@@ -60,8 +60,9 @@
                 v-model:file-list="fileList"
                 :required="approvalConfig?.requireComment"
                 :name="t('crm.approval.opinion')"
+                class="min-h-0 flex-1"
               />
-              <div class="mt-[12px] flex gap-[12px]">
+              <div class="mt-[12px] flex shrink-0 gap-[12px]">
                 <n-button type="primary" class="flex-1" :loading="approvalLoading" @click="handleApprove">
                   {{ t('common.approve') }}
                 </n-button>

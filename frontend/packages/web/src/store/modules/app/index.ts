@@ -62,6 +62,19 @@ const defaultPlatformResource = {
   enable: false,
 };
 
+function normalizeTodoStatistic(statistic: AppState['todoStatistic']): AppState['todoStatistic'] {
+  const total = Object.entries(statistic).reduce((sum, [key, value]) => {
+    if (key === 'total' || typeof value !== 'number') {
+      return sum;
+    }
+    return sum + value;
+  }, 0);
+  return {
+    ...statistic,
+    total,
+  };
+}
+
 const defaultModuleConfig = [
   {
     moduleKey: ModuleConfigEnum.DASHBOARD,
@@ -466,7 +479,7 @@ const useAppStore = defineStore('app', {
     async initTodoStatistic() {
       try {
         const res = await getTodoStatistic();
-        this.todoStatistic = res;
+        this.todoStatistic = normalizeTodoStatistic(res);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
