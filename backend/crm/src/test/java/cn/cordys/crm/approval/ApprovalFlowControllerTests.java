@@ -624,7 +624,7 @@ class ApprovalFlowControllerTests extends BaseTest {
                 List.of("2"),
                 ApproverDirectionEnum.TOP_DOWN
         );
-        Assertions.assertEquals(List.of("amd_root_head", "amd_parent_head"),
+        Assertions.assertEquals(List.of("amd_child_head", "amd_parent_head"),
                 topDownApprovers.stream().map(User::getId).toList());
     }
 
