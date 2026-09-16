@@ -71,6 +71,7 @@ public class PermissionConstants {
     public static final String CUSTOMER_MANAGEMENT_POOL_DELETE = "CUSTOMER_MANAGEMENT_POOL:DELETE";
     public static final String CUSTOMER_MANAGEMENT_POOL_PICK = "CUSTOMER_MANAGEMENT_POOL:PICK";
     public static final String CUSTOMER_MANAGEMENT_POOL_ASSIGN = "CUSTOMER_MANAGEMENT_POOL:ASSIGN";
+    public static final String CUSTOMER_MANAGEMENT_POOL_FREEZE = "CUSTOMER_MANAGEMENT_POOL:FREEZE";
     public static final String CUSTOMER_MANAGEMENT_POOL_EXPORT = "CUSTOMER_MANAGEMENT_POOL:EXPORT";
     public static final String CUSTOMER_MANAGEMENT_POOL_IMPORT = "CUSTOMER_MANAGEMENT_POOL:IMPORT";
     /*------ end: CUSTOMER_MANAGEMENT_POOL ------*/
@@ -126,6 +127,7 @@ public class PermissionConstants {
     public static final String CLUE_MANAGEMENT_POOL_DELETE = "CLUE_MANAGEMENT_POOL:DELETE";
     public static final String CLUE_MANAGEMENT_POOL_PICK = "CLUE_MANAGEMENT_POOL:PICK";
     public static final String CLUE_MANAGEMENT_POOL_ASSIGN = "CLUE_MANAGEMENT_POOL:ASSIGN";
+    public static final String CLUE_MANAGEMENT_POOL_FREEZE = "CLUE_MANAGEMENT_POOL:FREEZE";
     public static final String CLUE_MANAGEMENT_POOL_UPDATE = "CLUE_MANAGEMENT_POOL:UPDATE";
     public static final String CLUE_MANAGEMENT_POOL_IMPORT = "CLUE_MANAGEMENT_POOL:IMPORT";
     public static final String CLUE_MANAGEMENT_POOL_EXPORT = "CLUE_MANAGEMENT_POOL:EXPORT";
@@ -264,4 +266,3 @@ public class PermissionConstants {
     public static final String CUSTOM_FORM_ADD = "CUSTOM_FORM:ADD";
     /*------ end: CUSTOM_FORM ------*/
 }
-

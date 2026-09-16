@@ -91,6 +91,16 @@ public final class LogType {
      */
     public static final String UNARCHIVE = "UNARCHIVE";
 
+    /**
+     * 冻结
+     */
+    public static final String FREEZE = "FREEZE";
+
+    /**
+     * 解冻
+     */
+    public static final String UNFREEZE = "UNFREEZE";
+
 
     /**
      * 下载

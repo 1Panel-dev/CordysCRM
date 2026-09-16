@@ -99,7 +99,7 @@ public interface ExtClueMapper {
      *
      * @param clue 线索
      */
-    void updateIncludeNullById(@Param("clue") Clue clue);
+    int updateIncludeNullById(@Param("clue") Clue clue);
 
     /**
      * 检查字段值是否唯一
@@ -128,6 +128,14 @@ public interface ExtClueMapper {
      * @param clue
      */
     void updateClue(@Param("clue") Clue clue);
+
+    int freeze(@Param("id") String id, @Param("orgId") String orgId, @Param("reason") String reason,
+               @Param("unfreezeTime") Long unfreezeTime);
+
+    int unfreeze(@Param("id") String id, @Param("orgId") String orgId, @Param("now") long now,
+                 @Param("expiredOnly") boolean expiredOnly);
+
+    List<Clue> selectExpiredFrozen(@Param("now") long now);
 
 
 }
