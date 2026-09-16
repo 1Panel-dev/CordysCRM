@@ -7,6 +7,8 @@ import {
   AgentActionSuggestionSubmitUrl,
   AgentChatCancelUrl,
   AgentChatConfirmUrl,
+  AgentChatReconnectUrl,
+  AgentChatStatusUrl,
   AgentChatStreamUrl,
   AgentChatUrl,
   AgentConversationDeleteUrl,
@@ -33,7 +35,11 @@ import type {
   AgentChatConfirmRequest,
   AgentChatDoneData,
   AgentChatProgressData,
+  AgentChatReconnectData,
+  AgentChatReconnectParams,
   AgentChatRunData,
+  AgentChatStatusParams,
+  AgentChatStatusResult,
   AgentChatStreamEvent,
   AgentChatStreamOptions,
   AgentChatStreamParams,
@@ -128,7 +134,27 @@ function getErrorMessage(data: string): string {
   }
 }
 
+function getSseSequence(block: SseBlock): number | undefined {
+  if (!block.id) {
+    return undefined;
+  }
+
+  const sequence = Number(block.id);
+
+  return Number.isFinite(sequence) ? sequence : undefined;
+}
+
 function toStreamEvent(block: SseBlock, options: AgentChatStreamOptions): AgentChatStreamEvent | undefined {
+  const sequence = getSseSequence(block);
+
+  if (block.event === 'reconnect') {
+    return {
+      type: 'reconnect',
+      reconnect: JSON.parse(block.data) as AgentChatReconnectData,
+      raw: block,
+    };
+  }
+
   if (block.event === 'run') {
     const run = JSON.parse(block.data) as AgentChatRunData;
 
@@ -136,6 +162,7 @@ function toStreamEvent(block: SseBlock, options: AgentChatStreamOptions): AgentC
 
     return {
       type: 'run',
+      sequence,
       run,
       raw: block,
     };
@@ -146,7 +173,7 @@ function toStreamEvent(block: SseBlock, options: AgentChatStreamOptions): AgentC
 
     return {
       type: 'progress',
-      conversationId: block.id,
+      sequence,
       progress,
       raw: block,
     };
@@ -155,8 +182,8 @@ function toStreamEvent(block: SseBlock, options: AgentChatStreamOptions): AgentC
   if (block.event === 'chunk') {
     return {
       type: 'chunk',
+      sequence,
       content: block.data,
-      conversationId: block.id,
       raw: block,
     };
   }
@@ -166,7 +193,8 @@ function toStreamEvent(block: SseBlock, options: AgentChatStreamOptions): AgentC
 
     return {
       type: 'confirm',
-      conversationId: block.id,
+      sequence,
+      conversationId: confirm.conversationId,
       sessionId: confirm.sessionId,
       confirm,
       raw: block,
@@ -176,8 +204,8 @@ function toStreamEvent(block: SseBlock, options: AgentChatStreamOptions): AgentC
   if (block.event === 'error') {
     return {
       type: 'error',
+      sequence,
       errorMessage: getErrorMessage(block.data),
-      conversationId: block.id,
       raw: block,
     };
   }
@@ -185,6 +213,7 @@ function toStreamEvent(block: SseBlock, options: AgentChatStreamOptions): AgentC
   if (block.event === 'done') {
     return {
       type: 'done',
+      sequence,
       data: JSON.parse(block.data) as AgentChatDoneData,
       raw: block,
     };
@@ -311,8 +340,49 @@ export default function useAiApi(CDR: CordysAxios) {
     }
   }
 
+  async function* reconnectAgentChat(
+    params: AgentChatReconnectParams,
+    options: AgentChatStreamOptions = {}
+  ): AsyncIterable<AgentChatStreamEvent> {
+    let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+
+    try {
+      const response = await fetch(getApiUrl(AgentChatReconnectUrl), {
+        method: 'POST',
+        headers: getAgentHeaders(),
+        credentials: 'include',
+        body: JSON.stringify(params),
+        signal: options.signal,
+      });
+
+      if (!response.ok) {
+        const { t } = useI18n();
+
+        throw new Error((await response.text()) || `${t('common.operationFailed')}：${response.status}`);
+      }
+
+      if (!response.body) {
+        throw new Error(useI18n().t('common.operationFailed'));
+      }
+
+      reader = response.body.getReader();
+
+      yield* readAgentStream(reader, options, () => undefined);
+    } catch (error) {
+      if (!options.signal?.aborted) {
+        throw error;
+      }
+    } finally {
+      reader?.releaseLock();
+    }
+  }
+
   async function cancelAgentChat(data: AgentChatCancelParams) {
     await CDR.post({ url: AgentChatCancelUrl, data });
+  }
+
+  async function getAgentChatStatus(data: AgentChatStatusParams) {
+    return CDR.post<AgentChatStatusResult>({ url: AgentChatStatusUrl, data });
   }
 
   async function confirmAgentChat(dialogId: string, request: AgentChatConfirmRequest) {
@@ -415,6 +485,8 @@ export default function useAiApi(CDR: CordysAxios) {
 
   return {
     streamAgentChat,
+    reconnectAgentChat,
+    getAgentChatStatus,
     cancelAgentChat,
     confirmAgentChat,
     likeAgentChat,

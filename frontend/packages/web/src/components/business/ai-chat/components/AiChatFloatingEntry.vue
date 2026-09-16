@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
   import type { AiChatAttachment, AiChatMcp } from '@lib/shared/ai-chat';
   import { useAgentChatWorkbench } from '@lib/shared/ai-chat';
@@ -56,9 +56,11 @@
     cancelAgentChat,
     confirmAgentChat,
     deleteAgentConversation,
+    getAgentChatStatus,
     getAgentConversationDetail,
     getAgentConversationPage,
     getAgentMcpConfigList,
+    reconnectAgentChat,
     renameAgentConversation,
     streamAgentChat,
   } from '@/api/modules';
@@ -120,11 +122,15 @@
     openHistoryConversation,
     deleteHistoryConversation,
     renameHistoryConversation,
+    disconnectActiveConversation,
+    resumeActiveConversation,
     clear,
   } = useAgentChatWorkbench({
     historyPageSize: 50,
     apis: {
       streamAgentChat,
+      reconnectAgentChat,
+      getAgentChatStatus,
       cancelAgentChat,
       confirmAgentChat,
       getAgentConversationPage,
@@ -187,6 +193,7 @@
     }
 
     showChatDrawer.value = true;
+    resumeActiveConversation().catch(() => undefined);
     loadMcpOptions();
     loadModelOptions();
     loadHistory({ reset: true }).catch(() => undefined);
@@ -298,6 +305,12 @@
     position.value = normalizePosition();
     savePosition();
   }
+
+  watch(showChatDrawer, (visible) => {
+    if (!visible) {
+      disconnectActiveConversation().catch(() => undefined);
+    }
+  });
 
   onMounted(() => {
     initPosition();

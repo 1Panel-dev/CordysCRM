@@ -60,7 +60,9 @@
     deleteAgentConversation,
     getAgentConversationDetail,
     getAgentConversationPage,
+    getAgentChatStatus,
     renameAgentConversation,
+    reconnectAgentChat,
     streamAgentChat,
   } from '@/api/modules';
 
@@ -90,6 +92,8 @@
     historyPageSize: 20,
     apis: {
       streamAgentChat,
+      reconnectAgentChat,
+      getAgentChatStatus,
       cancelAgentChat,
       confirmAgentChat,
       getAgentConversationPage,

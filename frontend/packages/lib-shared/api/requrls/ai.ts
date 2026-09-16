@@ -1,4 +1,6 @@
 export const AgentChatStreamUrl = '/agent/chat/stream'; // Agent 对话流式响应
+export const AgentChatReconnectUrl = '/agent/chat/reconnect'; // Agent 恢复流式响应
+export const AgentChatStatusUrl = '/agent/chat/status'; // Agent 批量查询生成状态
 export const AgentChatCancelUrl = '/agent/chat/cancel'; // Agent 取消流式响应
 export const AgentChatUrl = '/agent/chat'; // Agent 对话
 export const AgentChatConfirmUrl = '/agent/confirm'; // Agent 确认判断问题

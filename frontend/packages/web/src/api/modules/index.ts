@@ -833,6 +833,8 @@ export const { login, signout, isLogin, getKey, getThirdCallback, getThirdOauthC
 
 export const {
   streamAgentChat,
+  reconnectAgentChat,
+  getAgentChatStatus,
   cancelAgentChat,
   confirmAgentChat,
   likeAgentChat,

@@ -48,12 +48,10 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
   const editingMessageId = ref('');
   const editingContent = ref('');
 
-  // Chat 负责消息追加、流式合并、停止、重试和编辑后的重新请求。
-  // Runtime 只补充 CRM 需要的输入草稿、附件和 MCP 状态。
-  const chat = shallowRef(
-    new Chat<AiChatMessage>({
+  function createChatInstance(messages: AiChatMessage[] = []): Chat<AiChatMessage> {
+    return new Chat<AiChatMessage>({
       id: options.id,
-      messages: options.initialMessages ?? [],
+      messages,
       generateId: createId,
       transport: transport.value,
       onError(error) {
@@ -67,12 +65,16 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
           currentConfirm.value = undefined;
         }
       },
-      async onFinish() {
+      async onFinish(event) {
         currentConfirm.value = undefined;
-        await options.onFinish?.();
+        await options.onFinish?.(event);
       },
-    })
-  );
+    });
+  }
+
+  // Chat 负责消息追加、流式合并、停止、重试和编辑后的重新请求。
+  // Runtime 只补充 CRM 需要的输入草稿、附件和 MCP 状态。
+  const chat = shallowRef(createChatInstance(options.initialMessages ?? []));
 
   const messages = computed(() => chat.value.messages);
   const status = computed(() => chat.value.status);
@@ -244,6 +246,25 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     onStatusChange();
   }
 
+  async function disconnectStream(): Promise<void> {
+    if (!canStop.value) {
+      return;
+    }
+
+    await chat.value.stop();
+  }
+
+  async function resumeStream(): Promise<void> {
+    if (loading.value) {
+      await chat.value.stop();
+      const currentMessages = [...chat.value.messages];
+
+      chat.value = createChatInstance(currentMessages);
+    }
+
+    await chat.value.resumeStream();
+  }
+
   async function retry(messageId?: string): Promise<void> {
     if (loading.value) {
       return;
@@ -330,6 +351,8 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     setSelectedMcps,
     removeAttachment,
     submit,
+    disconnectStream,
+    resumeStream,
     stop,
     retry,
     edit,

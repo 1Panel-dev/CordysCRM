@@ -32,6 +32,18 @@ interface AgentChatWorkbenchApis {
       onSession: (sessionId: string, conversationId?: string) => void;
     }
   ) => AsyncIterable<AgentChatStreamEvent>;
+  reconnectAgentChat: (
+    data: {
+      conversationId: string;
+      requestId: string;
+      lastSequence: number;
+    },
+    options: {
+      signal?: AbortSignal;
+      onSession?: (sessionId: string, conversationId?: string) => void;
+    }
+  ) => AsyncIterable<AgentChatStreamEvent>;
+  getAgentChatStatus: (data: { requestIds: string[] }) => Promise<Record<string, boolean>>;
   cancelAgentChat: (data: { conversationId?: string; sessionId?: string; requestId: string }) => Promise<unknown>;
   confirmAgentChat: (dialogId: string, request: AgentChatConfirmRequest) => Promise<unknown>;
   getAgentConversationPage: (data: {
@@ -63,6 +75,11 @@ interface ConversationRuntimeEntry {
   sessionId: string;
   // 本轮发送的请求级幂等键，用于未产生 runId 前的取消定位与保存兜底
   requestId: string;
+  lastSequence: number;
+  streamStatus: 'idle' | 'streaming' | 'disconnected' | 'done' | 'error' | 'cancelled';
+  pendingDisconnectAfterRun: boolean;
+  reconnecting: boolean;
+  reconnectVersion: number;
   runtime: AiChatRuntime;
 }
 
@@ -103,13 +120,16 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   const pendingConfirm = computed(() => runtime.value?.state.pendingConfirm.value);
   const loading = computed(() => Boolean(runtime.value?.state.loading.value));
   const historyPageSize = options.historyPageSize ?? 20;
-  // 同一个页面内允许多个会话同时存在：当前会话可以切走，旧会话的 SSE 仍继续输出
+  // 同一个页面内允许多个会话同时存在；切走运行中会话时只断开前端 SSE，后端任务继续跑。
   const runtimeEntries = new Map<string, ConversationRuntimeEntry>();
   // Map 本身不是响应式的，用版本号通知 computed 重新收集 runtimeEntries。
   const runtimeEntryVersion = ref(0);
   // 切换会话时保留未发送的输入、附件和 MCP 选择。
   const conversationDrafts = new Map<string, ConversationDraft>();
   let newConversationIndex = 0;
+  let runningStatusPollTimer: number | undefined;
+  let runningStatusPolling = false;
+  let historyRefreshTimer: number | undefined;
 
   const NEW_CONVERSATION_DRAFT_KEY = '__new__';
   function getCurrentDraftKey(): string {
@@ -157,10 +177,115 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
 
   function touchRuntimeEntries(): void {
     runtimeEntryVersion.value += 1;
+    refreshRunningStatusPoller();
   }
 
   function setActiveEntry(entry: ConversationRuntimeEntry): void {
     activeEntry.value = entry;
+  }
+
+  function isEntryRunning(entry: ConversationRuntimeEntry): boolean {
+    return ['streaming', 'disconnected'].includes(entry.streamStatus);
+  }
+
+  function updateEntrySequence(entry: ConversationRuntimeEntry, event: AgentChatStreamEvent): void {
+    if (typeof event.sequence === 'number' && event.sequence > entry.lastSequence) {
+      entry.lastSequence = event.sequence;
+    }
+  }
+
+  function getDisconnectedRunningEntries(): ConversationRuntimeEntry[] {
+    return getUniqueRuntimeEntries().filter(
+      (entry) => entry.requestId && entry.conversationId && entry.streamStatus === 'disconnected'
+    );
+  }
+
+  async function pollDisconnectedRunningEntries(): Promise<void> {
+    if (runningStatusPolling) {
+      return;
+    }
+
+    const entries = getDisconnectedRunningEntries();
+
+    if (!entries.length) {
+      refreshRunningStatusPoller();
+      return;
+    }
+
+    runningStatusPolling = true;
+
+    try {
+      const statusMap = await options.apis.getAgentChatStatus({
+        requestIds: entries.map((entry) => entry.requestId),
+      });
+      let hasFinishedEntry = false;
+
+      entries.forEach((entry) => {
+        // true 表示已输出并入库；false 或缺省表示仍未确认完成，切回时还有 reconnect 兜底。
+        if (statusMap[entry.requestId] === true) {
+          entry.streamStatus = 'done';
+          entry.lastSequence = 0;
+          hasFinishedEntry = true;
+        }
+      });
+
+      if (hasFinishedEntry) {
+        touchRuntimeEntries();
+        scheduleHistoryRefresh();
+      }
+    } catch (error) {
+      // 状态轮询只影响左侧 loading 展示，失败时保留现状，切回时由 reconnect 兜底。
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      runningStatusPolling = false;
+      refreshRunningStatusPoller();
+    }
+  }
+
+  function refreshRunningStatusPoller(): void {
+    const shouldPoll = getDisconnectedRunningEntries().length > 0;
+
+    if (!shouldPoll && runningStatusPollTimer) {
+      window.clearInterval(runningStatusPollTimer);
+      runningStatusPollTimer = undefined;
+      return;
+    }
+
+    if (shouldPoll && !runningStatusPollTimer) {
+      runningStatusPollTimer = window.setInterval(() => {
+        void pollDisconnectedRunningEntries();
+      }, 8000);
+      void pollDisconnectedRunningEntries();
+    }
+  }
+
+  async function disconnectEntryStream(entry?: ConversationRuntimeEntry): Promise<void> {
+    if (!entry || !['streaming', 'disconnected'].includes(entry.streamStatus)) {
+      return;
+    }
+
+    if (!entry.conversationId) {
+      entry.pendingDisconnectAfterRun = true;
+      entry.reconnecting = false;
+      entry.reconnectVersion += 1;
+      return;
+    }
+
+    entry.streamStatus = 'disconnected';
+    entry.reconnecting = false;
+    entry.reconnectVersion += 1;
+    touchRuntimeEntries();
+
+    await entry.runtime.disconnectStream();
+  }
+
+  async function switchActiveEntry(entry: ConversationRuntimeEntry): Promise<void> {
+    if (activeEntry.value && activeEntry.value !== entry) {
+      void disconnectEntryStream(activeEntry.value);
+    }
+
+    setActiveEntry(entry);
   }
 
   function cacheRuntimeEntry(entry: ConversationRuntimeEntry): void {
@@ -193,7 +318,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
 
   function getLocalRunningHistoryItems(): AgentConversationItem[] {
     return getUniqueRuntimeEntries()
-      .filter((entry) => entry.conversationId && entry.runtime.state.loading.value)
+      .filter((entry) => entry.conversationId && isEntryRunning(entry))
       .map(toRuntimeHistoryItem);
   }
 
@@ -202,7 +327,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
 
     // 只暴露正在生成中的 conversationId，列表组件不需要知道 runtime 细节。
     return getUniqueRuntimeEntries()
-      .filter((entry) => entry.conversationId && entry.runtime.state.loading.value)
+      .filter((entry) => entry.conversationId && isEntryRunning(entry))
       .map((entry) => entry.conversationId);
   });
 
@@ -236,7 +361,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   }
 
   function upsertRuntimeHistoryItem(entry: ConversationRuntimeEntry): void {
-    if (!entry.conversationId || !entry.runtime.state.loading.value) {
+    if (!entry.conversationId || !isEntryRunning(entry)) {
       return;
     }
 
@@ -290,13 +415,53 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     }
   }
 
+  function scheduleHistoryRefresh(): void {
+    if (historyRefreshTimer) {
+      window.clearTimeout(historyRefreshTimer);
+    }
+
+    historyRefreshTimer = window.setTimeout(() => {
+      historyRefreshTimer = undefined;
+      void loadHistory({ reset: true });
+    }, 400);
+  }
+
   function createRuntime(entry: ConversationRuntimeEntry, initialMessages: AiChatMessage[] = []): AiChatRuntime {
+    async function loadConversationDetailToRuntime(): Promise<void> {
+      if (!entry.conversationId) {
+        return;
+      }
+
+      const detail = await options.apis.getAgentConversationDetail(entry.conversationId);
+      const messages = (detail.messages ?? []).map(toAiChatMessage);
+
+      entry.runtime.reset(messages);
+      restoreDraft(entry.conversationId);
+    }
+
     return createAiChatRuntime({
       initialMessages,
       transport: createAgentChatTransport({
+        onEvent(event) {
+          updateEntrySequence(entry, event);
+
+          if (event.type === 'done') {
+            entry.streamStatus = 'done';
+            touchRuntimeEntries();
+          } else if (event.type === 'error') {
+            entry.streamStatus = 'error';
+            touchRuntimeEntries();
+          }
+        },
         send(context) {
           // 每一轮发送分配唯一 requestId，作为未产生 runId 前的取消锚点与保存兜底
           entry.requestId = createChatRequestId();
+          entry.lastSequence = 0;
+          entry.streamStatus = 'streaming';
+          entry.pendingDisconnectAfterRun = false;
+          entry.reconnecting = false;
+          entry.reconnectVersion += 1;
+          touchRuntimeEntries();
 
           return options.apis.streamAgentChat(
             {
@@ -319,15 +484,49 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
                   entry.conversationId = conversationId;
                   cacheRuntimeEntry(entry);
                   upsertRuntimeHistoryItem(entry);
+
+                  if (entry.pendingDisconnectAfterRun && activeEntry.value !== entry) {
+                    entry.pendingDisconnectAfterRun = false;
+                    void disconnectEntryStream(entry);
+                  }
                 }
               },
             }
           );
         },
+        reconnect() {
+          return options.apis.reconnectAgentChat(
+            {
+              conversationId: entry.conversationId,
+              requestId: entry.requestId,
+              lastSequence: entry.lastSequence,
+            },
+            {
+              onSession(sessionId, conversationId) {
+                entry.sessionId = sessionId;
+
+                if (conversationId) {
+                  entry.conversationId = conversationId;
+                  cacheRuntimeEntry(entry);
+                  upsertRuntimeHistoryItem(entry);
+                }
+              },
+            }
+          );
+        },
+        async onReconnectFinished() {
+          entry.streamStatus = 'done';
+          entry.reconnecting = false;
+          touchRuntimeEntries();
+          await loadConversationDetailToRuntime();
+          scheduleHistoryRefresh();
+        },
       }),
       async onStop() {
         // 有 requestId 即可取消：未产生 runId / conversationId 时也能由后端按 requestId 定位、补停并保存部分块
         if (entry.requestId) {
+          entry.streamStatus = 'cancelled';
+          touchRuntimeEntries();
           await options.apis.cancelAgentChat({
             conversationId: entry.conversationId || undefined,
             sessionId: entry.sessionId || undefined,
@@ -342,23 +541,37 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
           await options.apis.confirmAgentChat(data.dialogId, request);
         }
       },
-      async onFinish() {
+      async onFinish(event) {
+        entry.reconnecting = false;
+
+        if (event?.isAbort && (entry.streamStatus === 'disconnected' || entry.reconnecting)) {
+          touchRuntimeEntries();
+          return;
+        }
+
         const conversationId = entry.conversationId;
 
         if (!conversationId) {
           return;
         }
 
+        if (!['error', 'cancelled'].includes(entry.streamStatus)) {
+          entry.streamStatus = 'done';
+          touchRuntimeEntries();
+        }
+
         clearDraft(conversationId);
         clearDraft(NEW_CONVERSATION_DRAFT_KEY);
         // 生成结束后刷新历史，拿后端最终标题和排序，同时移除本地临时补位。
-        await loadHistory({ reset: true });
+        scheduleHistoryRefresh();
       },
       onError: options.onError,
     });
   }
 
   function createConversation(initialMessages: AiChatMessage[] = []): AiChatRuntime {
+    void disconnectEntryStream(activeEntry.value);
+
     if (getCurrentDraftKey() === NEW_CONVERSATION_DRAFT_KEY) {
       clearDraft(NEW_CONVERSATION_DRAFT_KEY);
     } else {
@@ -371,6 +584,11 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       conversationId: '',
       sessionId: '',
       requestId: '',
+      lastSequence: 0,
+      streamStatus: 'idle',
+      pendingDisconnectAfterRun: false,
+      reconnecting: false,
+      reconnectVersion: 0,
       runtime: undefined as unknown as AiChatRuntime,
     });
     newConversationIndex += 1;
@@ -393,18 +611,62 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     await loadHistory({ reset: true, keyword });
   }
 
+  async function reconnectRuntimeEntry(entry: ConversationRuntimeEntry): Promise<void> {
+    if (!entry.conversationId || !entry.requestId || entry.reconnecting || entry.streamStatus === 'streaming') {
+      return;
+    }
+
+    const reconnectVersion = entry.reconnectVersion + 1;
+    entry.reconnectVersion = reconnectVersion;
+    entry.reconnecting = true;
+    entry.streamStatus = 'streaming';
+    touchRuntimeEntries();
+
+    try {
+      await entry.runtime.resumeStream();
+    } catch (error) {
+      if (entry.reconnectVersion === reconnectVersion) {
+        entry.streamStatus = 'disconnected';
+      }
+      options.onError?.(error instanceof Error ? error : new Error(String(error)));
+    } finally {
+      if (entry.reconnectVersion === reconnectVersion) {
+        entry.reconnecting = false;
+        touchRuntimeEntries();
+      }
+    }
+  }
+
+  async function loadHistoryConversationIntoEntry(entry: ConversationRuntimeEntry): Promise<void> {
+    const detail = await options.apis.getAgentConversationDetail(entry.conversationId);
+    const messages = (detail.messages ?? []).map(toAiChatMessage);
+
+    entry.runtime.reset(messages);
+    entry.streamStatus = 'done';
+    entry.lastSequence = 0;
+    touchRuntimeEntries();
+    restoreDraft(entry.conversationId);
+  }
+
   async function openHistoryConversation(conversationId: string): Promise<AiChatRuntime> {
     saveCurrentDraft();
 
     const cachedEntry = runtimeEntries.get(conversationId);
 
     if (cachedEntry) {
-      // 如果这个历史会话正在本页生成，直接切回原 runtime，避免丢失流式输出。
-      setActiveEntry(cachedEntry);
+      await switchActiveEntry(cachedEntry);
+
+      if (cachedEntry.streamStatus === 'disconnected') {
+        void reconnectRuntimeEntry(cachedEntry);
+      } else if (!isEntryRunning(cachedEntry) && cachedEntry.streamStatus !== 'idle') {
+        await loadHistoryConversationIntoEntry(cachedEntry);
+      }
+
       return cachedEntry.runtime;
     }
 
     try {
+      void disconnectEntryStream(activeEntry.value);
       const detail = await options.apis.getAgentConversationDetail(conversationId);
       const messages = (detail.messages ?? []).map(toAiChatMessage);
 
@@ -413,6 +675,11 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
         conversationId,
         sessionId: '',
         requestId: '',
+        lastSequence: 0,
+        streamStatus: 'done',
+        pendingDisconnectAfterRun: false,
+        reconnecting: false,
+        reconnectVersion: 0,
         runtime: undefined as unknown as AiChatRuntime,
       });
       entry.runtime = createRuntime(entry, messages);
@@ -465,12 +732,40 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   }
 
   function clear(): void {
+    if (runningStatusPollTimer) {
+      window.clearInterval(runningStatusPollTimer);
+      runningStatusPollTimer = undefined;
+    }
+
+    if (historyRefreshTimer) {
+      window.clearTimeout(historyRefreshTimer);
+      historyRefreshTimer = undefined;
+    }
+
     getUniqueRuntimeEntries().forEach((entry) => {
       entry.runtime.clear();
     });
     runtimeEntries.clear();
     touchRuntimeEntries();
     activeEntry.value = undefined;
+  }
+
+  async function disconnectActiveConversation(): Promise<void> {
+    await disconnectEntryStream(activeEntry.value);
+  }
+
+  async function resumeActiveConversation(): Promise<void> {
+    const entry = activeEntry.value;
+
+    if (!entry) {
+      return;
+    }
+
+    if (entry.streamStatus === 'disconnected') {
+      void reconnectRuntimeEntry(entry);
+    } else if (entry.streamStatus === 'done' && entry.conversationId && entry.requestId) {
+      await loadHistoryConversationIntoEntry(entry);
+    }
   }
 
   return {
@@ -490,6 +785,8 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     openHistoryConversation,
     deleteHistoryConversation,
     renameHistoryConversation,
+    disconnectActiveConversation,
+    resumeActiveConversation,
     clear,
   };
 }
