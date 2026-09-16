@@ -2,6 +2,7 @@ package cn.cordys.common.permission;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 资源访问上下文提供者
@@ -14,6 +15,27 @@ public interface ResourceAccessContextProvider {
      * 返回此提供者处理的表单类型，如 "order"、"contract"
      */
     String getFormType();
+
+    /**
+     * 是否按负责人校验数据范围。无负责人、按组织共享的资源可显式关闭。
+     */
+    default boolean requiresOwner() {
+        return true;
+    }
+
+    /**
+     * 批量操作是否校验负责人数据范围，默认沿用单条资源策略。
+     */
+    default boolean requiresBatchOwner() {
+        return requiresOwner();
+    }
+
+    /**
+     * 返回当前组织中存在的资源ID；组织共享资源应覆盖此方法。
+     */
+    default Set<String> batchGetResourceIds(List<String> resourceIds, String orgId) {
+        return batchGetOwnerIds(resourceIds, orgId).keySet();
+    }
 
     /**
      * 获取资源访问上下文

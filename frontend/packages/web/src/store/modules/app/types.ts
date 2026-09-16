@@ -1,5 +1,6 @@
 import { UploadFileInfo } from 'naive-ui';
 
+import type { SseConnection } from '@lib/shared/method/sse';
 import type { SystemVersion } from '@lib/shared/models/common';
 import { ThirdPartyResource } from '@lib/shared/models/system/business';
 import type { ModuleNavBaseInfoItem, ModuleNavTopItem } from '@lib/shared/models/system/module';
@@ -74,7 +75,7 @@ export interface AppState {
   topMenus: RouteRecordRaw[];
   currentTopMenu: RouteRecordRaw;
   messageInfo: MessageInfo; // 消息通知和公告
-  eventSource: null | EventSource; // 事件流资源
+  eventSource: null | SseConnection; // 事件流资源
   menuIconStatus: Record<string, boolean>;
   restoreMenuTimeStamp: number; // 恢复菜单激活状态，用于跳转拦截导致的菜单激活状态与路由不一致
   versionInfo: SystemVersion; // 版本信息
