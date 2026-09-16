@@ -57,6 +57,9 @@ export interface CluePoolListItem extends ClueListItem {
   followTime: number; // 最新跟进日期
   poolId: string;
   recyclePoolName: string; // 默认回收公海名称
+  frozen: boolean;
+  freezeReason: string;
+  unfreezeTime: number;
 }
 
 export interface PickClueParams {
@@ -80,6 +83,17 @@ export interface AssignClueParams {
 export interface BatchAssignClueParams {
   batchIds: (string | number)[];
   assignUserId: string;
+}
+
+export interface FreezeClueParams {
+  id: string;
+  freezeDays: number;
+  reason: string;
+}
+
+export interface UnfreezeClueParams {
+  id: string;
+  reason: string;
 }
 
 export interface ConvertClueParams {

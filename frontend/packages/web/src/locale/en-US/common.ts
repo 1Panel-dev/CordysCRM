@@ -373,4 +373,18 @@ export default {
     'This is the Enterprise Edition feature; click the link to view details of the Enterprise Edition features.',
   'common.uniqueID': 'ID',
   'common.emptyPoolImportTip': 'Please add {name}, and then to import operation',
+  'common.freeze': 'Freeze',
+  'common.frozen': 'Frozen',
+  'common.customTime': 'Custom Time',
+  'common.freezeForever': 'Freeze Forever',
+  'common.freezeTime': 'Freeze Time',
+  'common.freezeReason': 'Freeze Reason',
+  'common.unfreezeReason': 'Unfreeze Reason',
+  'common.autoUnfreezeTime': 'Auto Unfreeze Time: {time}',
+  'common.unfreezeTime': 'Unfreeze Time',
+  'common.freezeTip':
+    'During the freeze period, the {type} cannot be claimed or assigned. It will be automatically unfrozen and an operation log will be written upon expiration.',
+  'common.unfreeze': 'Unfreeze',
+  'common.unfreezeTip':
+    'After unfreezing, the {type} will immediately resume its claimable status, and this operation will be logged.',
 };

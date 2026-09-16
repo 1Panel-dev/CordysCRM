@@ -114,6 +114,16 @@
     :form-key="FormDesignKeyEnum.CLUE_POOL"
     @refresh="handleRefresh"
   />
+  <CrmFreezeModal
+    v-if="activeRow && poolId"
+    v-model:show="freezeModalShow"
+    :type="freezeType"
+    :resource-name="activeRow.name"
+    :resource-id="activeRow.id"
+    :pool-id="poolId"
+    resource-type="lead"
+    @success="handleItemRefresh"
+  />
 </template>
 
 <script setup lang="ts">
@@ -139,6 +149,8 @@
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
+  import CrmFreezeTag from '@/components/business/crm-freeze-modal/freezeTag.vue';
+  import CrmFreezeModal from '@/components/business/crm-freeze-modal/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
@@ -436,6 +448,10 @@
     }
   }
 
+  const freezeModalShow = ref(false);
+  const freezeType = ref<'freeze' | 'unfreeze'>('freeze');
+  const activeRow = ref();
+
   function handleActionSelect(row: CluePoolListItem, actionKey: string) {
     switch (actionKey) {
       case 'pop-claim':
@@ -446,6 +462,16 @@
         break;
       case 'delete':
         handleDelete(row);
+        break;
+      case 'freeze':
+        activeRow.value = row;
+        freezeType.value = 'freeze';
+        freezeModalShow.value = true;
+        break;
+      case 'unfreeze':
+        activeRow.value = row;
+        freezeType.value = 'unfreeze';
+        freezeModalShow.value = true;
         break;
       default:
         break;
@@ -499,6 +525,11 @@
                     popSlotContent: 'distributePopContent',
                   },
                   {
+                    label: t(row.frozen ? 'common.unfreeze' : 'common.freeze'),
+                    key: row.frozen ? 'unfreeze' : 'freeze',
+                    permission: [row.frozen ? 'CLUE_MANAGEMENT_POOL:UNFREEZE' : 'CLUE_MANAGEMENT_POOL:FREEZE'],
+                  },
+                  {
                     label: t('common.delete'),
                     key: 'delete',
                     permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
@@ -522,19 +553,32 @@
         },
     specialRender: {
       name: (row: CluePoolListItem) => {
-        return props.isLimitShowDetail && row.hasPermission === false
-          ? h(CrmNameTooltip, { text: row.name })
-          : h(
-              CrmTableButton,
-              {
-                onClick: () => {
-                  activeClue.value = row;
-                  poolId.value = row.poolId ?? poolId.value;
-                  showOverviewDrawer.value = true;
+        const nameNode =
+          props.isLimitShowDetail && row.hasPermission === false
+            ? h(CrmNameTooltip, { text: row.name })
+            : h(
+                CrmTableButton,
+                {
+                  onClick: () => {
+                    activeClue.value = row;
+                    poolId.value = row.poolId ?? poolId.value;
+                    showOverviewDrawer.value = true;
+                  },
                 },
-              },
-              { default: () => row.name, trigger: () => row.name }
-            );
+                { default: () => row.name, trigger: () => row.name }
+              );
+
+        return h('div', { class: 'flex items-center gap-[12px]' }, [
+          nameNode,
+          row.frozen
+            ? h(CrmFreezeTag, {
+                resourceType: 'lead',
+                freezeType: row.unfreezeTime ? 'custom' : 'freezeForever',
+                unfreezeTime: row.unfreezeTime,
+                freezeReason: row.freezeReason,
+              })
+            : null,
+        ]);
       },
     },
     permission: ['CLUE_MANAGEMENT_POOL:PICK', 'CLUE_MANAGEMENT_POOL:ASSIGN', 'CLUE_MANAGEMENT_POOL:DELETE'],
@@ -587,6 +631,10 @@
     if (!refreshId) {
       crmTableRef.value?.scrollTo({ top: 0 });
     }
+  }
+
+  function handleItemRefresh(id: string) {
+    searchData(undefined, undefined, id);
   }
 
   function handlePoolChange(e: string) {
