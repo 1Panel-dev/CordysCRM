@@ -39,7 +39,7 @@
     <span v-if="valueStatus === 'error'" class="text-[var(--error-red)]">
       {{ t('common.notNull', { value: props.name }) }}
     </span>
-    <n-scrollbar :content-style="{ maxHeight: '400px' }" class="mt-[8px]">
+    <n-scrollbar class="mt-[8px] min-h-0 flex-1">
       <CrmFileList
         v-if="fileList.length > 0"
         :files="fileList as unknown as AttachmentInfo[]"
