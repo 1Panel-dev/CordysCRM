@@ -54,6 +54,7 @@ const AGENT_METADATA_KEYS = new Set([
   'modelName',
   'orgId',
   'outputTokens',
+  'requestId',
   'runId',
   'successCount',
   'successRate',
@@ -86,7 +87,7 @@ function isAgentMetadata(value: Record<string, unknown>): boolean {
   return (
     keys.length > 0 &&
     keys.every((key) => AGENT_METADATA_KEYS.has(key)) &&
-    keys.some((key) => ['conversationId', 'runId', 'totalTokens'].includes(key))
+    keys.some((key) => ['conversationId', 'requestId', 'runId', 'totalTokens'].includes(key))
   );
 }
 

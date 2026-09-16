@@ -24,6 +24,9 @@ export interface AgentChatTransportOptions {
     signal?: AbortSignal;
     metadata?: AiChatMeta;
   }) => AsyncIterable<AgentChatStreamEvent>;
+  reconnect?: (context: { signal?: AbortSignal }) => AsyncIterable<AgentChatStreamEvent>;
+  onEvent?: (event: AgentChatStreamEvent) => void;
+  onReconnectFinished?: () => void | Promise<void>;
 }
 
 // 流式文本可能把 <think> 标签切成几段，这里先保留可疑尾巴，等下一段再判断。
@@ -129,7 +132,10 @@ function getDuration(startTime?: number, endTime?: number): number | undefined {
 
 // AI SDK ChatTransport 需要返回 ReadableStream<UIMessageChunk>。
 // 这里把 CRM 的 run/progress/chunk/confirm/error/done 事件转换成 AI SDK 可消费的 UI message stream。
-function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>): ReadableStream<UIMessageChunk> {
+function createReadableAgentUiStream(
+  events: AsyncIterable<AgentChatStreamEvent>,
+  options: Pick<AgentChatTransportOptions, 'onEvent'> = {}
+): ReadableStream<UIMessageChunk> {
   const parser = createThinkingMarkdownParser();
 
   return new ReadableStream<UIMessageChunk>({
@@ -206,6 +212,8 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
         while (!result.done) {
           const event = result.value;
 
+          options.onEvent?.(event);
+
           if (event.type === 'run') {
             runStartedAt = Date.now();
             enqueueStart(event.run?.assistantMessageId);
@@ -269,6 +277,34 @@ function createReadableAgentUiStream(events: AsyncIterable<AgentChatStreamEvent>
   });
 }
 
+async function readFirstEvent(
+  events: AsyncIterable<AgentChatStreamEvent>
+): Promise<{
+  first?: AgentChatStreamEvent;
+  rest: AsyncIterable<AgentChatStreamEvent>;
+  close: () => Promise<void>;
+}> {
+  const iterator = events[Symbol.asyncIterator]();
+  const result = await iterator.next();
+
+  async function* readRest(): AsyncIterable<AgentChatStreamEvent> {
+    let next = await iterator.next();
+
+    while (!next.done) {
+      yield next.value;
+      next = await iterator.next();
+    }
+  }
+
+  return {
+    first: result.done ? undefined : result.value,
+    rest: readRest(),
+    async close() {
+      await iterator.return?.();
+    },
+  };
+}
+
 export default function createAgentChatTransport(options: AgentChatTransportOptions): ChatTransport<AiChatMessage> {
   return {
     async sendMessages({ messages, abortSignal, metadata }) {
@@ -278,11 +314,42 @@ export default function createAgentChatTransport(options: AgentChatTransportOpti
           content: getLastUserText(messages),
           signal: abortSignal,
           metadata: metadata as AiChatMeta | undefined,
-        })
+        }),
+        options
       );
     },
     async reconnectToStream() {
-      return null;
+      if (!options.reconnect) {
+        return null;
+      }
+
+      const { first, rest, close } = await readFirstEvent(options.reconnect({}));
+
+      if (!first) {
+        await close();
+        return null;
+      }
+
+      options.onEvent?.(first);
+
+      if (first.type === 'reconnect') {
+        if (first.reconnect?.finished) {
+          await options.onReconnectFinished?.();
+          await close();
+          return null;
+        }
+
+        return createReadableAgentUiStream(rest, options);
+      }
+
+      const firstEvent = first;
+
+      async function* readFromFirst(): AsyncIterable<AgentChatStreamEvent> {
+        yield firstEvent;
+        yield* rest;
+      }
+
+      return createReadableAgentUiStream(readFromFirst(), options);
     },
   };
 }

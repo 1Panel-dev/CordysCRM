@@ -11,6 +11,18 @@ export interface AgentChatStreamParams {
   picIds?: string[];
 }
 
+export interface AgentChatReconnectParams {
+  conversationId: string;
+  requestId: string;
+  lastSequence: number;
+}
+
+export interface AgentChatStatusParams {
+  requestIds: string[];
+}
+
+export type AgentChatStatusResult = Record<string, boolean>;
+
 export interface AgentModelOption {
   id: string;
   name: string;
@@ -96,11 +108,17 @@ export interface AgentChatDoneData {
   totalTokens?: number; // Tokens 消耗
 }
 
+export interface AgentChatReconnectData {
+  finished: boolean;
+}
+
 export interface AgentChatStreamEvent {
-  type: 'run' | 'progress' | 'chunk' | 'confirm' | 'error' | 'done';
+  type: 'reconnect' | 'run' | 'progress' | 'chunk' | 'confirm' | 'error' | 'done';
+  sequence?: number;
   content?: string;
   conversationId?: string;
   sessionId?: string;
+  reconnect?: AgentChatReconnectData;
   run?: AgentChatRunData;
   progress?: AgentChatProgressData;
   confirm?: AgentChatConfirmData;

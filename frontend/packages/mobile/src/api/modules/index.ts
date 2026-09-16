@@ -437,6 +437,8 @@ export const { getAgentOptions } = agentApi;
 
 export const {
   streamAgentChat,
+  reconnectAgentChat,
+  getAgentChatStatus,
   cancelAgentChat,
   confirmAgentChat,
   likeAgentChat,

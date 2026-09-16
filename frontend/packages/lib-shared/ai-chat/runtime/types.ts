@@ -49,7 +49,7 @@ export interface CreateAiChatRuntimeOptions {
    */
   onStop?: () => Promise<boolean | void> | boolean | void;
   onConfirm?: (data: AgentChatConfirmData, request: AgentChatConfirmRequest) => Promise<void> | void;
-  onFinish?: () => Promise<void> | void;
+  onFinish?: (event?: { isAbort?: boolean; isDisconnect?: boolean; isError?: boolean }) => Promise<void> | void;
   onError?: (error: Error) => void;
 }
 
@@ -68,6 +68,8 @@ export interface AiChatRuntime {
   setSelectedMcps: (value: AiChatMcp[]) => void;
   removeAttachment: (attachmentId: string) => void;
   submit: (payload?: AiChatSubmitPayload) => Promise<void>;
+  disconnectStream: () => Promise<void>;
+  resumeStream: () => Promise<void>;
   stop: () => Promise<void>;
   retry: (messageId?: string) => Promise<void>;
   edit: (messageId: string, content: string, options?: AiChatSendOptions) => Promise<void>;
