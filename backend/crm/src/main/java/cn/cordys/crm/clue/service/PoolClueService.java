@@ -36,6 +36,8 @@ import cn.cordys.crm.system.dto.RuleConditionDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
+import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
+import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -56,6 +58,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -78,6 +81,7 @@ import java.util.stream.Stream;
 public class PoolClueService {
 
     public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
+    private static final String AUTO_UNFREEZE_REASON = "冻结到期，自动解冻";
     @Resource
     private BaseMapper<Clue> clueMapper;
     @Resource
@@ -214,6 +218,7 @@ public class PoolClueService {
      * @param currentOrgId 当前组织ID
      */
     public void pick(PoolCluePickRequest request, String currentUser, String currentOrgId) {
+        validateNotFrozen(request.getClueId());
         CluePool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(1, currentUser, currentOrgId);
         LambdaQueryWrapper<CluePoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
@@ -235,6 +240,7 @@ public class PoolClueService {
      */
     @OperationLog(module = LogModule.CLUE_POOL_INDEX, type = LogType.ASSIGN, resourceId = "{#request.clueId}")
     public void assign(String id, String assignUserId, String currentOrgId, String currentUser) {
+        validateNotFrozen(id);
         validateCapacity(1, assignUserId, currentOrgId);
         ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false);
     }
@@ -263,6 +269,7 @@ public class PoolClueService {
      * @param currentOrgId 当前组织ID
      */
     public void batchPick(PoolBatchPickRequest request, String currentUser, String currentOrgId) {
+        request.getBatchIds().forEach(this::validateNotFrozen);
         CluePool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
         LambdaQueryWrapper<CluePoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
@@ -284,6 +291,7 @@ public class PoolClueService {
      * @param currentOrgId 当前组织ID
      */
     public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId, String currentUser) {
+        request.getBatchIds().forEach(this::validateNotFrozen);
         validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
         request.getBatchIds().forEach(id -> ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
     }
@@ -305,6 +313,46 @@ public class PoolClueService {
                 )
                 .toList();
         logService.batchAdd(logs);
+    }
+
+    public void freeze(PoolFreezeRequest request, String userId, String orgId) {
+        Clue clue = getPoolClue(request.getId(), orgId);
+        long now = System.currentTimeMillis();
+        if (isFrozen(clue, now)) {
+            throw new GenericException(Translator.getWithArgs("pool.resource.already_frozen", clue.getName()));
+        }
+        unfreezeExpired(clue, now);
+
+        Long unfreezeTime = Boolean.TRUE.equals(request.getPermanent())
+                ? null : now + request.getFreezeDays() * DAY_MILLIS;
+        if (extClueMapper.freeze(clue.getId(), orgId, request.getReason(), unfreezeTime) == 0) {
+            throw new GenericException(Translator.getWithArgs("pool.resource.already_frozen", clue.getName()));
+        }
+        addFreezeLog(clue, orgId, userId, LogType.FREEZE, request.getReason());
+    }
+
+    public void unfreeze(PoolUnfreezeRequest request, String userId, String orgId) {
+        Clue clue = getPoolClue(request.getId(), orgId);
+        long now = System.currentTimeMillis();
+        if (!isFrozen(clue, now)) {
+            if (unfreezeExpired(clue, now)) {
+                return;
+            }
+            throw new GenericException(Translator.getWithArgs("pool.resource.not_frozen", clue.getName()));
+        }
+        if (extClueMapper.unfreeze(clue.getId(), orgId, now, false) == 0) {
+            Clue current = clueMapper.selectByPrimaryKey(clue.getId());
+            if (current != null && unfreezeExpired(current, System.currentTimeMillis())) {
+                return;
+            }
+            throw new GenericException(Translator.getWithArgs("pool.resource.not_frozen", clue.getName()));
+        }
+        addFreezeLog(clue, orgId, userId, LogType.UNFREEZE, request.getReason());
+    }
+
+    public void unfreezeExpired() {
+        long now = System.currentTimeMillis();
+        extClueMapper.selectExpiredFrozen(now).forEach(clue -> unfreezeExpired(clue, now));
     }
 
     /**
@@ -371,6 +419,7 @@ public class PoolClueService {
         if (!clue.getInSharedPool()) {
             throw new GenericException(Translator.getWithArgs("clue.pool.occupied", clue.getName()));
         }
+        validateNotFrozen(clue);
         if (!isPoolAdmin && pickRule != null && pickRule.getLimitNew()) {
             LocalDateTime joinPoolTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(clue.getUpdateTime()), ZoneId.systemDefault());
             LocalDateTime releaseDate = joinPoolTime.plusDays(pickRule.getNewPickInterval());
@@ -402,7 +451,13 @@ public class PoolClueService {
         clue.setStage(ClueStatus.FOLLOWING.name());
         clue.setUpdateUser(ownerId);
         clue.setUpdateTime(System.currentTimeMillis());
-        extClueMapper.updateIncludeNullById(clue);
+        if (extClueMapper.updateIncludeNullById(clue) == 0) {
+            Clue current = clueMapper.selectByPrimaryKey(clueId);
+            if (current != null && Boolean.TRUE.equals(current.getInSharedPool())) {
+                validateNotFrozen(current);
+            }
+            throw new GenericException(Translator.getWithArgs("clue.pool.occupied", clue.getName()));
+        }
 
         // 日志
         LogDTO logDTO = new LogDTO(currentOrgId, clue.getId(), operateUserId, logType, LogModule.CLUE_POOL_INDEX, clue.getName());
@@ -446,6 +501,57 @@ public class PoolClueService {
             throw new GenericException(Translator.get("clue.not.exist"));
         }
         return clue.getPoolId();
+    }
+
+    private Clue getPoolClue(String id, String orgId) {
+        Clue clue = clueMapper.selectByPrimaryKey(id);
+        if (clue == null || !Objects.equals(clue.getOrganizationId(), orgId)) {
+            throw new GenericException(Translator.get("clue.not.exist"));
+        }
+        if (!Boolean.TRUE.equals(clue.getInSharedPool())) {
+            throw new GenericException(Translator.getWithArgs("clue.pool.occupied", clue.getName()));
+        }
+        return clue;
+    }
+
+    private void validateNotFrozen(String id) {
+        Clue clue = clueMapper.selectByPrimaryKey(id);
+        if (clue == null) {
+            throw new IllegalArgumentException(Translator.get("clue.not.exist"));
+        }
+        validateNotFrozen(clue);
+    }
+
+    private void validateNotFrozen(Clue clue) {
+        long now = System.currentTimeMillis();
+        if (isFrozen(clue, now)) {
+            throw new GenericException(Translator.getWithArgs("pool.resource.frozen", clue.getName()));
+        }
+        unfreezeExpired(clue, now);
+    }
+
+    private boolean isFrozen(Clue clue, long now) {
+        return Boolean.TRUE.equals(clue.getFrozen())
+                && (clue.getUnfreezeTime() == null || clue.getUnfreezeTime() > now);
+    }
+
+    private boolean unfreezeExpired(Clue clue, long now) {
+        if (!Boolean.TRUE.equals(clue.getFrozen()) || clue.getUnfreezeTime() == null
+                || clue.getUnfreezeTime() > now) {
+            return false;
+        }
+        if (extClueMapper.unfreeze(clue.getId(), clue.getOrganizationId(), now, true) == 0) {
+            return false;
+        }
+        addFreezeLog(clue, clue.getOrganizationId(), InternalUser.ADMIN.getValue(),
+                LogType.UNFREEZE, AUTO_UNFREEZE_REASON);
+        return true;
+    }
+
+    private void addFreezeLog(Clue clue, String orgId, String userId, String type, String reason) {
+        LogDTO log = new LogDTO(orgId, clue.getId(), userId, type, LogModule.CLUE_POOL_INDEX, clue.getName());
+        log.setDetail(StringUtils.trimToNull(reason));
+        logService.add(log);
     }
 
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {

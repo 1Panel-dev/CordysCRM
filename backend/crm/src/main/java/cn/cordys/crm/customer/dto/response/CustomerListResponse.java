@@ -82,6 +82,15 @@ public class CustomerListResponse {
     @Schema(description = "失败原因ID")
     private String reasonName;
 
+    @Schema(description = "是否冻结")
+    private Boolean frozen;
+
+    @Schema(description = "冻结原因")
+    private String freezeReason;
+
+    @Schema(description = "自动解冻时间，永久冻结时为空")
+    private Long unfreezeTime;
+
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 

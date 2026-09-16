@@ -97,6 +97,15 @@ public class ClueGetResponse {
     @Schema(description = "失败原因ID")
     private String reasonName;
 
+    @Schema(description = "是否冻结")
+    private Boolean frozen;
+
+    @Schema(description = "冻结原因")
+    private String freezeReason;
+
+    @Schema(description = "自动解冻时间，永久冻结时为空")
+    private Long unfreezeTime;
+
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 
@@ -108,4 +117,9 @@ public class ClueGetResponse {
      */
     @Schema(description = "附件集合")
     private Map<String, List<Attachment>> attachmentMap;
+
+    public Boolean getFrozen() {
+        return Boolean.TRUE.equals(frozen)
+                && (unfreezeTime == null || unfreezeTime > System.currentTimeMillis());
+    }
 }
