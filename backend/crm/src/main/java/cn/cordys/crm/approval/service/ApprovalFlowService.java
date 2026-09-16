@@ -1793,7 +1793,9 @@ public class ApprovalFlowService {
             return List.of();
         }
 
-        List<String> resultIds = getLevelUserIds(allCommanderIds, approvalLevel, direction);
+        // 部门层级是终点：从提交人部门向上取到指定部门为止
+        int levelCount = direction == ApproverDirectionEnum.TOP_DOWN ? allCommanderIds.size() - approvalLevel + 1 : approvalLevel;
+        List<String> resultIds = getLevelUserIds(allCommanderIds, levelCount, ApproverDirectionEnum.BOTTOM_UP);
 
         return resolveMemberApprovers(orgId, resultIds);
     }
