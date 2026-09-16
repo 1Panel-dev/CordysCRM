@@ -15,19 +15,15 @@ import cn.cordys.crm.clue.dto.request.PoolClueAssignRequest;
 import cn.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import cn.cordys.crm.clue.service.CluePoolService;
-import cn.cordys.crm.clue.service.PoolClueService;
 import cn.cordys.crm.system.domain.ExportTask;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
-import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
-import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.service.ExportTaskCenterService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -53,8 +49,6 @@ public class PoolClueControllerTests extends BaseTest {
     public static final String BATCH_PICK = "/batch-pick";
     public static final String BATCH_ASSIGN = "/batch-assign";
     public static final String BATCH_DELETE = "/batch-delete";
-    public static final String FREEZE = "/freeze";
-    public static final String UNFREEZE = "/unfreeze";
 
     public static String testDataId;
     public static String testPoolId;
@@ -75,8 +69,6 @@ public class PoolClueControllerTests extends BaseTest {
     private ExportTaskCenterService exportTaskCenterService;
     @Resource
     private CluePoolService cluePoolService;
-    @Resource
-    private PoolClueService poolClueService;
 
     @Override
     protected String getBasePath() {
@@ -168,50 +160,13 @@ public class PoolClueControllerTests extends BaseTest {
 
     @Test
     @Order(7)
-    void freezeAndUnfreeze() throws Exception {
-        PoolFreezeRequest freezeRequest = new PoolFreezeRequest();
-        freezeRequest.setId(testDataId);
-        freezeRequest.setFreezeDays(7);
-        freezeRequest.setReason("线索要求暂停联系");
-        this.requestPostWithOk(FREEZE, freezeRequest);
-
-        Clue frozenClue = clueMapper.selectByPrimaryKey(testDataId);
-        Assertions.assertTrue(frozenClue.getFrozen());
-        Assertions.assertEquals(freezeRequest.getReason(), frozenClue.getFreezeReason());
-        Assertions.assertNotNull(frozenClue.getUnfreezeTime());
-
-        PoolCluePickRequest pickRequest = new PoolCluePickRequest();
-        pickRequest.setClueId(testDataId);
-        pickRequest.setPoolId(testPoolId);
-        MvcResult result = this.requestPost(PICK, pickRequest).andExpect(status().is5xxServerError()).andReturn();
-        Assertions.assertTrue(result.getResponse().getContentAsString().contains(Translator.getWithArgs("pool.resource.frozen", frozenClue.getName())));
-        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_FREEZE, FREEZE, freezeRequest);
-
-        PoolUnfreezeRequest unfreezeRequest = new PoolUnfreezeRequest();
-        unfreezeRequest.setId(testDataId);
-        unfreezeRequest.setReason("恢复联系");
-        this.requestPostWithOk(UNFREEZE, unfreezeRequest);
-        Assertions.assertFalse(clueMapper.selectByPrimaryKey(testDataId).getFrozen());
-        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_FREEZE, UNFREEZE, unfreezeRequest);
-
-        Clue expiredClue = clueMapper.selectByPrimaryKey(testDataId);
-        expiredClue.setFrozen(true);
-        expiredClue.setFreezeReason("临时冻结");
-        expiredClue.setUnfreezeTime(System.currentTimeMillis() - 1);
-        clueMapper.updateById(expiredClue);
-        poolClueService.unfreezeExpired();
-        Assertions.assertFalse(clueMapper.selectByPrimaryKey(testDataId).getFrozen());
-    }
-
-    @Test
-    @Order(8)
     void deleteSuccess() throws Exception {
         this.requestGetWithOk(DELETE + testDataId);
         requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE, DELETE + testDataId);
     }
 
     @Test
-    @Order(9)
+    @Order(8)
     void batchPickFailWithOverDailyOrPreOwnerLimit() throws Exception {
         Clue clue = createClue();
         clue.setOwner("admin");
@@ -232,7 +187,7 @@ public class PoolClueControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(10)
+    @Order(9)
     void batchAssignFailWithNotExit() throws Exception {
         PoolBatchAssignRequest request = new PoolBatchAssignRequest();
         request.setBatchIds(List.of("aaa"));
@@ -245,7 +200,7 @@ public class PoolClueControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(11)
+    @Order(10)
     void batchDeleteSuccess() throws Exception {
         Clue clue = createClue();
         clueMapper.insert(clue);
@@ -254,7 +209,7 @@ public class PoolClueControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(12)
+    @Order(11)
     void cleanup() {
         cluePoolMapper.deleteByLambda(new LambdaQueryWrapper<CluePool>().eq(CluePool::getId, testPoolId));
     }

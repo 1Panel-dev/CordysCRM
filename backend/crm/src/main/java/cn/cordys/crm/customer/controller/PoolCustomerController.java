@@ -24,8 +24,6 @@ import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import cn.cordys.crm.system.dto.request.PoolBatchRequest;
-import cn.cordys.crm.system.dto.request.PoolFreezeRequest;
-import cn.cordys.crm.system.dto.request.PoolUnfreezeRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.security.SessionUtils;
@@ -88,24 +86,6 @@ public class PoolCustomerController {
         String poolId = poolCustomerService.getPoolIdByCustomerId(request.getCustomerId());
         poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         poolCustomerService.assign(request.getCustomerId(), request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-    }
-
-    @PostMapping("/freeze")
-    @Operation(summary = "冻结客户")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_FREEZE)
-    public void freeze(@Validated @RequestBody PoolFreezeRequest request) {
-        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getId());
-        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        poolCustomerService.freeze(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
-    @PostMapping("/unfreeze")
-    @Operation(summary = "解冻客户")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_FREEZE)
-    public void unfreeze(@Validated @RequestBody PoolUnfreezeRequest request) {
-        String poolId = poolCustomerService.getPoolIdByCustomerId(request.getId());
-        poolCustomerService.checkPoolMember(poolId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        poolCustomerService.unfreeze(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")

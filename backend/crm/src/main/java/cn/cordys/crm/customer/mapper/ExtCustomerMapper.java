@@ -86,7 +86,7 @@ public interface ExtCustomerMapper {
      *
      * @param customer 客户
      */
-    int updateIncludeNullById(@Param("customer") Customer customer);
+    void updateIncludeNullById(@Param("customer") Customer customer);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
@@ -96,12 +96,4 @@ public interface ExtCustomerMapper {
                             @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     void updateCustomer(@Param("customer")Customer customer);
-
-    int freeze(@Param("id") String id, @Param("orgId") String orgId, @Param("reason") String reason,
-               @Param("unfreezeTime") Long unfreezeTime);
-
-    int unfreeze(@Param("id") String id, @Param("orgId") String orgId, @Param("now") long now,
-                 @Param("expiredOnly") boolean expiredOnly);
-
-    List<Customer> selectExpiredFrozen(@Param("now") long now);
 }

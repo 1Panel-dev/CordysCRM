@@ -2,11 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="cn.cordys.crm.customer.mapper.ExtCustomerMapper">
-    <sql id="freezeColumns">
-        IF(c.frozen AND (c.unfreeze_time IS NULL OR c.unfreeze_time &gt; UNIX_TIMESTAMP(CURRENT_TIMESTAMP(3)) * 1000), TRUE, FALSE) AS frozen,
-        c.freeze_reason, c.unfreeze_time
-    </sql>
-
     <update id="batchTransfer">
         update customer
         set owner = #{request.owner},
@@ -20,7 +15,7 @@
 
     <select id="list" resultType="cn.cordys.crm.customer.dto.response.CustomerListResponse">
         select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
-               c.follower, c.follow_time, c.reason_id, <include refid="freezeColumns"/>
+               c.follower, c.follow_time, c.reason_id
                 <if test="dataPermission != null and dataPermission.visible">
                     ,cc.collaboration_type
                 </if>
@@ -203,7 +198,7 @@
 
     <select id="sourceList" resultType="cn.cordys.crm.customer.dto.response.CustomerListResponse">
         select distinct c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
-        c.follower, c.follow_time, c.reason_id, <include refid="freezeColumns"/>
+        c.follower, c.follow_time, c.reason_id
         from customer c left join customer_collaboration cc on c.id = cc.customer_id and cc.user_id = #{userId}
 
         <include refid="fieldConditionJoin">
@@ -604,7 +599,7 @@
 
     <select id="getListByIds" resultType="cn.cordys.crm.customer.dto.response.CustomerListResponse">
         select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
-               c.follower, c.follow_time, c.in_shared_pool, c.organization_id, c.reason_id, <include refid="freezeColumns"/>
+               c.follower, c.follow_time, c.in_shared_pool, c.organization_id, c.reason_id
         from customer c
         where c.id in
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
@@ -648,7 +643,7 @@
 
     <select id="customerPoolList" resultType="cn.cordys.crm.search.response.advanced.AdvancedCustomerPoolResponse">
         select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
-        c.follower, c.follow_time, c.reason_id, <include refid="freezeColumns"/>
+        c.follower, c.follow_time, c.reason_id
         from customer c
 
         <include refid="fieldConditionJoin">
@@ -690,7 +685,7 @@
         </include>
     </select>
     <select id="globalPoolSearchList" resultType="cn.cordys.crm.search.response.global.GlobalCustomerPoolResponse">
-        select c.id, c.`name`, c.pool_id, cp.name as poolName, c.follow_time, <include refid="freezeColumns"/>
+        select c.id, c.`name`, c.pool_id, cp.name as poolName, c.follow_time
         from customer c inner join customer_pool cp on c.pool_id = cp.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.combineSearch.conditions"/>
@@ -753,8 +748,7 @@
     <update id="updateIncludeNullById" parameterType="cn.cordys.crm.customer.domain.Customer">
         update customer set pool_id = #{customer.poolId}, in_shared_pool = #{customer.inSharedPool}, owner = #{customer.owner},
                 collection_time = #{customer.collectionTime}, update_time = #{customer.updateTime}
-        where id = #{customer.id} and in_shared_pool is true
-          and (frozen is false or frozen is null)
+        where id = #{customer.id}
     </update>
 
     <update id="batchUpdate">
@@ -827,31 +821,4 @@
             id = #{customer.id}
         </where>
     </update>
-
-    <update id="freeze">
-        update customer
-        set frozen = true, freeze_reason = #{reason}, unfreeze_time = #{unfreezeTime}
-        where id = #{id} and organization_id = #{orgId} and in_shared_pool is true
-          and (frozen is false or frozen is null)
-    </update>
-
-    <update id="unfreeze">
-        update customer
-        set frozen = false, freeze_reason = null, unfreeze_time = null
-        where id = #{id} and organization_id = #{orgId} and frozen is true
-        <choose>
-            <when test="expiredOnly">
-                and unfreeze_time is not null and unfreeze_time &lt;= #{now}
-            </when>
-            <otherwise>
-                and (unfreeze_time is null or unfreeze_time &gt; #{now})
-            </otherwise>
-        </choose>
-    </update>
-
-    <select id="selectExpiredFrozen" resultType="cn.cordys.crm.customer.domain.Customer">
-        select id, name, organization_id, frozen, unfreeze_time
-        from customer
-        where frozen is true and unfreeze_time is not null and unfreeze_time &lt;= #{now}
-    </select>
 </mapper>
