@@ -42,4 +42,13 @@ public class Customer extends BaseModel {
 
     @Schema(description = "公海原因ID")
     private String reasonId;
+
+    @Schema(description = "是否冻结")
+    private Boolean frozen;
+
+    @Schema(description = "冻结原因")
+    private String freezeReason;
+
+    @Schema(description = "自动解冻时间，永久冻结时为空")
+    private Long unfreezeTime;
 }
