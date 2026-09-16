@@ -12,6 +12,7 @@ public class FormKeyConstants {
 	public static final String ORDER = "order";
 	public static final String CLUE = "clue";
 	public static final String CUSTOMER = "customer";
+	public static final String CONTACT = "contact";
 	public static final String CONTRACT = "contract";
 	public static final String CONTRACT_INVOICE = "contractInvoice";
 	public static final String CONTRACT_PAYMENT_PLAN = "contractPaymentPlan";

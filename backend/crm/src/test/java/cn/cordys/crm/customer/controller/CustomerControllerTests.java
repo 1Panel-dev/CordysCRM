@@ -363,27 +363,21 @@ class CustomerControllerTests extends BaseTest {
     @Test
     @Order(10)
     void testDelete() throws Exception {
-        this.requestGetWithOk(DEFAULT_DELETE, addCustomer.getId());
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_DELETE, addCustomer.getId());
         Assertions.assertNull(customerMapper.selectByPrimaryKey(addCustomer.getId()));
 
         List<CustomerField> fields = getCustomerFields(addCustomer.getId());
-        Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
-
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_DELETE, addCustomer.getId());
+        Assertions.assertTrue(CollectionUtils.isEmpty(fields));
     }
 
     @Test
     @Order(11)
     void testBatchDelete() throws Exception {
-        this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of(anotherCustomer.getId()));
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE, List.of(anotherCustomer.getId()));
         Assertions.assertNull(customerMapper.selectByPrimaryKey(anotherCustomer.getId()));
 
         List<CustomerField> fields = getCustomerFields(anotherCustomer.getId());
-        Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
-
-        // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE, List.of(anotherCustomer.getId()));
+        Assertions.assertTrue(CollectionUtils.isEmpty(fields));
     }
 
     @Test
@@ -410,17 +404,26 @@ class CustomerControllerTests extends BaseTest {
         BatchPoolReasonRequest reasonRequest = new BatchPoolReasonRequest();
         reasonRequest.setIds(batchIds);
         this.requestPostWithOk(BATCH_TO_POOL, reasonRequest);
-
-        // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE, BATCH_TO_POOL, reasonRequest);
     }
 
     @Test
     @Order(13)
+    @Sql(scripts = {"/dml/init_customer_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/dml/cleanup_customer_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     void testBatchToPool() throws Exception {
+        CustomerAddRequest addRequest = new CustomerAddRequest();
+        addRequest.setName("pool-permission-test");
+        addRequest.setOwner(InternalUser.ADMIN.getValue());
+        Customer resource = getResultData(requestPostWithOkAndReturn(DEFAULT_ADD, addRequest), Customer.class);
         BatchPoolReasonRequest reasonRequest = new BatchPoolReasonRequest();
-        reasonRequest.setIds(batchIds);
-        this.requestPostWithOk(BATCH_TO_POOL, reasonRequest);
+        reasonRequest.setIds(List.of(resource.getId()));
+        reasonRequest.setPoolId("test_pool_id");
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE, BATCH_TO_POOL, reasonRequest);
+        Assertions.assertTrue(customerMapper.selectByPrimaryKey(resource.getId()).getInSharedPool());
     }
 
     @Test

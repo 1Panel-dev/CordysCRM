@@ -26,7 +26,7 @@ public class CustomerResourceAccessContextProvider implements ResourceAccessCont
     @Override
     public ResourceAccessContext getAccessContext(String resourceId, String orgId) {
         var customer = customerMapper.selectByPrimaryKey(resourceId);
-        if (customer == null) {
+        if (customer == null || orgId == null || !orgId.equals(customer.getOrganizationId())) {
             return null;
         }
         var context = new ResourceAccessContext();
@@ -40,6 +40,7 @@ public class CustomerResourceAccessContextProvider implements ResourceAccessCont
             return Map.of();
         }
         return customerMapper.selectByIds(resourceIds).stream()
+                .filter(customer -> orgId != null && orgId.equals(customer.getOrganizationId()))
                 .filter(customer -> customer.getOwner() != null)
                 .collect(Collectors.toMap(Customer::getId, Customer::getOwner, (a, b) -> a));
     }

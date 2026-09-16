@@ -20,7 +20,7 @@ public class CustomerContactResourceAccessContextProvider implements ResourceAcc
 
     @Override
     public String getFormType() {
-        return FormKey.CUSTOMER.getKey();
+        return FormKey.CONTACT.getKey();
     }
 
     @Override

@@ -20,6 +20,7 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseService;
@@ -69,6 +70,7 @@ import cn.cordys.crm.system.service.*;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
+import cn.cordys.security.SessionUtils;
 import cn.idev.excel.FastExcelFactory;
 import cn.idev.excel.enums.CellExtraTypeEnum;
 import com.github.pagehelper.Page;
@@ -636,12 +638,27 @@ public class OpportunityService extends BaseExportService {
      */
     @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void updateStage(OpportunityStageRequest request, String orgId) {
+        String userId = SessionUtils.getUserId();
+        if (StringUtils.isBlank(userId) || StringUtils.isBlank(orgId)
+                || !PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
         final Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         if (oldOpportunity == null) {
             throw new GenericException(Translator.get("opportunity_not_found"));
         }
 
+        // 使用实际商机的组织和负责人校验，避免依赖资源 provider 的选择结果。
+        if (!orgId.equals(oldOpportunity.getOrganizationId()) || StringUtils.isBlank(oldOpportunity.getOwner())
+                || !dataScopeService.hasDataPermission(userId, orgId, oldOpportunity.getOwner(),
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+
         final List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
+        if (stageConfigList.stream().noneMatch(cfg -> Objects.equals(cfg.getId(), request.getStage()))) {
+            throw new GenericException(Translator.get("opportunity_stage_not_exist"));
+        }
 
         final Optional<OpportunityStageResponse> successOpt = stageConfigList.stream()
                 .filter(cfg -> Strings.CI.equals(cfg.getType(), OpportunityStageType.END.name())

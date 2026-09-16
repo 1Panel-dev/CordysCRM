@@ -2,13 +2,15 @@ import { cloneDeep } from 'lodash-es';
 import dayjs from 'dayjs';
 import JSEncrypt from 'jsencrypt';
 
+import { getLocalStorage } from '@lib/shared/method/local-storage';
+
 import { isObject } from './is';
+import { createAuthenticatedSSE, type SseConnection } from './sse';
 import { CHINA_PCD, COUNTRIES_TREE } from '@cordys/web/src/components/business/crm-city-select/config';
 import type {
   FormCreateField,
   FormCreateFieldDateType,
 } from '@cordys/web/src/components/business/crm-form-create/types';
-import { getLocalStorage } from '@lib/shared/method/local-storage';
 import industryOptions from '@cordys/web/src/components/pure/crm-industry-select/config';
 
 /**
@@ -102,9 +104,9 @@ export function getUrlParameterWidthRegExp(name: string) {
  * 建立 SSE 连接
  * @param url 连接地址
  * @param host 连接主机
- * @returns EventSource 实例
+ * @returns SSE 连接
  */
-export const apiSSE = (url: string, host?: string): EventSource => {
+export const apiSSE = (url: string, host?: string): SseConnection => {
   let protocol = 'http://';
 
   // 判断是否使用 HTTPS
@@ -115,18 +117,16 @@ export const apiSSE = (url: string, host?: string): EventSource => {
   // 解析 URL，自动适配 host
   const uri = protocol + (host?.split('://')[1] || window.location.host) + url;
 
-  return new EventSource(uri, {
-    withCredentials: true,
-  });
+  return createAuthenticatedSSE(uri);
 };
 
 /**
  * 获取 SSE 连接
  * @param sseUrl，自定义 SSE 地址
  * @param host 自定义主机
- * @returns EventSource 实例
+ * @returns SSE 连接
  */
-export function getSSE(sseUrl: string, params: Record<string, string>, host?: string): EventSource {
+export function getSSE(sseUrl: string, params: Record<string, string>, host?: string): SseConnection {
   const queryString = new URLSearchParams(params).toString();
   return apiSSE(`${sseUrl}?${queryString}`, host);
 }
