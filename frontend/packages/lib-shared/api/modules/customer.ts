@@ -54,6 +54,7 @@ import {
   FixedAccountPoolViewUrl,
   FixedContactViewUrl,
   FixedCustomerViewUrl,
+  FreezeOpenSeaCustomerUrl,
   GenerateCustomerChartUrl,
   generateCustomerContactChartUrl,
   generateCustomerPoolChartUrl,
@@ -119,6 +120,7 @@ import {
   UpdateCustomerRelationItemUrl,
   UpdateCustomerUrl,
   UpdateCustomerViewUrl,
+  UnfreezeOpenSeaCustomerUrl,
   GetAccountContractListUrl,
   GetAccountContractStatisticUrl,
   GetAccountPaymentListUrl,
@@ -164,6 +166,7 @@ import type {
   CustomerOptionsItem,
   CustomerTabHidden,
   CustomerTableParams,
+  FreezeOpenSeaCustomerParams,
   FollowDetailItem,
   MergeAccountParams,
   MoveToPublicPoolParams,
@@ -186,6 +189,7 @@ import type {
   UpdateCustomerParams,
   UpdateCustomerRelationItemParams,
   UpdateFollowPlanStatusParams,
+  UnfreezeOpenSeaCustomerParams,
 } from '@lib/shared/models/customer';
 import type { OrderItem } from '@lib/shared/models/order';
 import type { CluePoolItem, FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
@@ -457,6 +461,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: AssignOpenSeaCustomerUrl, data });
   }
 
+  // 冻结公海客户
+  function freezeOpenSeaCustomer(data: FreezeOpenSeaCustomerParams) {
+    return CDR.post({ url: FreezeOpenSeaCustomerUrl, data });
+  }
+
+  // 解冻公海客户
+  function unfreezeOpenSeaCustomer(data: UnfreezeOpenSeaCustomerParams) {
+    return CDR.post({ url: UnfreezeOpenSeaCustomerUrl, data });
+  }
+
   // 获取公海选项
   function getOpenSeaOptions() {
     return CDR.get<CluePoolItem[]>({ url: GetOpenSeaOptionsUrl });
@@ -723,11 +737,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function preCheckImportPoolAccount(params: ImportUploadParams) {
-    return CDR.uploadFile<{ data: ValidateInfo }>(
-      { url: PreCheckPoolAccountImportUrl },
-      params,
-      'file'
-    );
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckPoolAccountImportUrl }, params, 'file');
   }
 
   function downloadPoolAccountTemplate() {
@@ -741,11 +751,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   function importPoolAccount(params: ImportUploadParams) {
-    return CDR.uploadFile(
-      { url: ImportPoolAccountUrl },
-      params,
-      'file'
-    );
+    return CDR.uploadFile({ url: ImportPoolAccountUrl }, params, 'file');
   }
 
   // 联系人导入
@@ -883,6 +889,8 @@ export default function useProductApi(CDR: CordysAxios) {
     batchDeleteOpenSeaCustomer,
     batchAssignOpenSeaCustomer,
     assignOpenSeaCustomer,
+    freezeOpenSeaCustomer,
+    unfreezeOpenSeaCustomer,
     getOpenSeaOptions,
     getOpenSeaCustomer,
     deleteOpenSeaCustomer,

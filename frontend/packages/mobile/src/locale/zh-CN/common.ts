@@ -118,4 +118,7 @@ export default {
   'common.AND_APPROVAL': '会签',
   'common.SEQUENTIAL_APPROVAL': '依次审批',
   'common.copyTo': '抄送人',
+  'common.frozen': '已冻结',
+  'common.freezeForever': '永久冻结',
+  'common.unfreezeTime': '解冻时间',
 };
