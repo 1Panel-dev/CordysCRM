@@ -66,6 +66,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   const createExecute = ref(false);
   const updateExecute = ref(false);
   const deleteExecute = ref(false);
+  let approvalPermissionRequestToken = 0;
 
   function getApprovalStatus(row: Row) {
     if (!row) {
@@ -350,9 +351,13 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return splitActions(resolveRowActions(row));
   }
 
-  async function initApprovalPermission() {
+  async function initApprovalPermission(forceRefresh = false) {
+    const requestToken = ++approvalPermissionRequestToken;
     try {
-      const result = await loadApprovalConfig(unref(options.formType));
+      const result = await loadApprovalConfig(unref(options.formType), forceRefresh);
+      if (requestToken !== approvalPermissionRequestToken) {
+        return;
+      }
 
       if (result) {
         approvalPermissionsDetail.value = result;
@@ -367,11 +372,18 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
         createExecute.value = false;
         updateExecute.value = false;
         deleteExecute.value = false;
+        statusPermissionMap.value = new Map();
       }
     } catch (error) {
+      if (requestToken !== approvalPermissionRequestToken) {
+        return;
+      }
+      approvalPermissionsDetail.value = null;
+      enableApproval.value = false;
       createExecute.value = false;
       updateExecute.value = false;
       deleteExecute.value = false;
+      statusPermissionMap.value = new Map();
       // eslint-disable-next-line no-console
       console.log(error);
     }

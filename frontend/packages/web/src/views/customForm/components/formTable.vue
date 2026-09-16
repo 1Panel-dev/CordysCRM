@@ -471,9 +471,9 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          tableRefreshId.value += 1;
           await batchDeleteCustomFormData(checkedRowKeys.value as string[]);
           Message.success(deleteExecute.value ? t('common.reviewSuccess') : t('common.deleteSuccess'));
+          tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -523,6 +523,10 @@
   }
 
   function removeItemFromList(id: string) {
+    if (deleteExecute.value) {
+      searchData();
+      return;
+    }
     propsRes.value.data = propsRes.value.data.filter((item) => item.id !== id);
     propsRes.value.crmPagination = {
       ...propsRes.value.crmPagination,
@@ -551,7 +555,7 @@
     checkedRowKeys.value = [];
     keyword.value = '';
     propsRes.value.tableKey = val;
-    await initApprovalPermission();
+    await initApprovalPermission(true);
     await initFormConfig(props.readonly, operationColumn.value);
     tableAdvanceFilterRef.value?.clearFilter();
     setLoadListParams({ customFormId: val });

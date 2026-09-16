@@ -242,6 +242,12 @@
     layout?: 'horizontal' | 'vertical';
     approvalStatus: ProcessStatusEnum;
   }>();
+  const approvalStandardFormKeys = new Set<string>([
+    FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
+    FormDesignKeyEnum.CONTRACT,
+    FormDesignKeyEnum.ORDER,
+    FormDesignKeyEnum.INVOICE,
+  ]);
   const emit = defineEmits<{
     (
       e: 'descriptionInit',
@@ -542,6 +548,7 @@
                   nodeId: currentApprovalNode.value.nodeId,
                   instanceId: approvalInfo.value?.id || '',
                   approverId: currentTaskNode.value?.approverId || '',
+                  customFormId: approvalStandardFormKeys.has(props.formKey) ? undefined : props.formKey,
                   comment: addSignForm.value.reason,
                   attachmentIds: addSignForm.value.fileList.map((e) => e.id),
                   type: addSignForm.value.type,

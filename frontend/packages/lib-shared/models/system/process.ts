@@ -263,6 +263,7 @@ export interface ApprovalOperationParams {
   nodeId: string;
   instanceId: string;
   approverId: string;
+  customFormId?: string;
   comment?: string;
   attachmentIds: string[];
 }
