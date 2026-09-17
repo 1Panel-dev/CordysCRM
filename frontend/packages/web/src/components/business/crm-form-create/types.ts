@@ -175,6 +175,7 @@ export interface AttachmentInfo {
   type: string;
   createUser: string;
   createTime: number;
+  file?: File;
 }
 
 export interface FormDetail {

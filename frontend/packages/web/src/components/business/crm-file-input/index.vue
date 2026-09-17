@@ -13,9 +13,7 @@
             :show-file-list="false"
             :max="10"
             directory-dnd
-            @change="({ file, fileList }) => handleFileChange(file as CrmFileItem, fileList as CrmFileItem[])"
             @before-upload="({ file, fileList }) => beforeUpload(file as CrmFileItem, fileList as CrmFileItem[])"
-            @update-file-list="handleFileListChange"
           >
             <CrmIcon type="iconicon_link1" :size="16" class="text-[var(--text-n4)]" />
           </n-upload>
@@ -106,20 +104,6 @@
   });
   const valueStatus = ref();
 
-  function handleFileChange(file: CrmFileItem, fs: Array<CrmFileItem>) {
-    const lastFileList = fs.map((e: any) => {
-      return {
-        ...e,
-        url: URL.createObjectURL(e.file),
-        size: e.file.size,
-      };
-    });
-    file.local = true;
-    file.url = URL.createObjectURL(file.file as Blob);
-    file.size = file.file?.size;
-    emit('change', value.value, lastFileList);
-  }
-
   // 判断文件大小
   function isFileSizeValid(file: UploadFileInfo, maxSize: number, sizeUnit: string, isLimit: boolean): boolean {
     if (isLimit && file.file?.size) {
@@ -171,6 +155,7 @@
 
   function handleDeleteFile(fileId: string) {
     fileList.value = fileList.value.filter((file: UploadFileInfo) => file.id !== fileId);
+    emit('change', value.value, fileList.value);
   }
 
   async function customRequest({ file, onFinish, onError, onProgress }: UploadCustomRequestOptions) {
@@ -223,10 +208,6 @@
     }
     valueStatus.value = '';
     return true;
-  }
-
-  function handleFileListChange(files: UploadFileInfo[]) {
-    emit('change', value.value, files);
   }
 
   defineExpose({

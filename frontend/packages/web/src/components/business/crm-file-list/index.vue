@@ -6,7 +6,7 @@
         <div class="flex flex-1 flex-col gap-[2px]">
           <span class="text-[var(--text-n2)]">{{ file.name }}</span>
           <div class="flex items-center gap-[8px] text-[12px] text-[var(--text-n4)]">
-            {{ `${(file.size / 1024).toFixed(2)} KB` }}
+            {{ `${((file.size || file.file?.size || 0) / 1024).toFixed(2)} KB` }}
             {{
               t('crm.fileListModal.uploadAt', {
                 name: file.createUser,
