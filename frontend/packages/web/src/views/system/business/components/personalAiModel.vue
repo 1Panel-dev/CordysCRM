@@ -371,7 +371,7 @@
 
     gap: 16px;
     align-items: start;
-    grid-template-columns: repeat(auto-fill, minmax(318px, 360px));
+    grid-template-columns: repeat(auto-fill, minmax(318px, 2fr));
     padding: 16px;
     border-radius: 8px;
     background-color: var(--text-n9);
