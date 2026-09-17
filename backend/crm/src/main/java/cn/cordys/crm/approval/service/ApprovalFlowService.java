@@ -1815,9 +1815,9 @@ public class ApprovalFlowService {
         }
         List<String> levelUserIds;
         if (direction == ApproverDirectionEnum.TOP_DOWN) {
-            List<String> topDownUserIds = new ArrayList<>(bottomUpUserIds);
-            Collections.reverse(topDownUserIds);
-            levelUserIds = topDownUserIds.subList(0, approvalLevel);
+            // 方向只决定选取范围，审批顺序仍从提交人侧向上
+            int startIndex = bottomUpUserIds.size() - approvalLevel;
+            levelUserIds = bottomUpUserIds.subList(startIndex, bottomUpUserIds.size());
         } else {
             levelUserIds = bottomUpUserIds.subList(0, approvalLevel);
         }
