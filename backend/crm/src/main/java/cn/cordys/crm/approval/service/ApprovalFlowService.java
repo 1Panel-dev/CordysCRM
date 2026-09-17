@@ -166,21 +166,30 @@ public class ApprovalFlowService {
         return response;
     }
 
+
+    public <T> List<String> filterResourcesWithPermission(
+            String formType, List<T> resources, String permission, String organizationId,
+            java.util.function.Function<T, String> idGetter,
+            java.util.function.Function<T, String> statusGetter) {
+        return filterResourcesWithPermission(formType, resources, permission, organizationId, idGetter, statusGetter, permission);
+    }
+
     /**
      * 批量检查资源的操作权限
      *
      * @param formType       表单类型
      * @param resources      资源列表
-     * @param permission     权限标识
+     * @param statusPermission     状态权限
      * @param organizationId 组织ID
      * @param idGetter       获取资源ID的函数
      * @param statusGetter   获取审批状态的函数
+     * @param rolePermission   角色权限
      * @return 有权限的资源ID列表
      */
     public <T> List<String> filterResourcesWithPermission(
-            String formType, List<T> resources, String permission, String organizationId,
+            String formType, List<T> resources, String statusPermission, String organizationId,
             java.util.function.Function<T, String> idGetter,
-            java.util.function.Function<T, String> statusGetter) {
+            java.util.function.Function<T, String> statusGetter, String rolePermission) {
         if (CollectionUtils.isEmpty(resources)) {
             return List.of();
         }
@@ -207,14 +216,14 @@ public class ApprovalFlowService {
         // 构建需要权限的状态集合：(审批状态, 权限) -> 是否需要权限
         Map<String, Boolean> permissionRequiredMap = new HashMap<>(statusPermissions.size());
         for (StatusPermissionDTO sp : statusPermissions) {
-            if (permission.equals(sp.getPermission())) {
+            if (statusPermission.equals(sp.getPermission())) {
                 permissionRequiredMap.put(sp.getApprovalStatus(), sp.getEnabled());
             }
         }
         // 没有开启审核时创建的数据，状态为NONE，也应该能被修改
         permissionRequiredMap.put(ApprovalStatus.NONE.name(), true);
         // 检查用户是否有该权限
-        boolean hasPermission = PermissionUtils.hasPermission(permission);
+        boolean hasPermission = PermissionUtils.hasPermission(rolePermission);
 
         // 过滤出有权限的资源
         return resources.stream()
