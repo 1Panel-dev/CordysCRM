@@ -8,6 +8,7 @@ import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
@@ -592,7 +593,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                 CUSTOM_FORM_DATA_UPDATE_PERMISSION,
                 orgId,
                 CustomFormData::getId,
-                CustomFormData::getApprovalStatus
+                CustomFormData::getApprovalStatus,
+                PermissionConstants.CUSTOM_FORM_READ
         );
         if (CollectionUtils.isEmpty(permittedIds)) {
             return BatchAffectReasonResponse.builder()
@@ -662,7 +664,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                 CUSTOM_FORM_DATA_DELETE_PERMISSION,
                 orgId,
                 CustomFormData::getId,
-                CustomFormData::getApprovalStatus
+                CustomFormData::getApprovalStatus,
+                PermissionConstants.CUSTOM_FORM_READ
         );
         if (CollectionUtils.isEmpty(permittedIds)) {
             return;
