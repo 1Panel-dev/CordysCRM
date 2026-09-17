@@ -33,6 +33,7 @@
       </template>
       <template #view>
         <CrmViewSelect
+          v-if="!props.detailTabResourceId"
           v-model:active-tab="activeTab"
           :type="FormDesignKeyEnum.FOLLOW_RECORD"
           :custom-fields-config-list="filterConfigList"
@@ -127,6 +128,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -150,6 +152,15 @@
   import useModal from '@/hooks/useModal';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
   import useUserStore from '@/store/modules/user';
+
+  const props = defineProps<{
+    readonly?: boolean;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
+  }>();
 
   const { t } = useI18n();
   const userStore = useUserStore();
@@ -275,6 +286,12 @@
     formKey: FormDesignKeyEnum.FOLLOW_RECORD,
     containerClass: '.crm-record-table',
     hiddenRefresh: true,
+    readonly: props.readonly,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     operationColumn: {
       key: 'operation',
       width: 140,
@@ -303,7 +320,6 @@
     },
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);
   const isAdvancedSearchMode = ref(false);
@@ -320,7 +336,7 @@
   function searchData(_keyword?: string) {
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
-      viewId: activeTab.value,
+      ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
     });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
@@ -388,6 +404,11 @@
     }
   );
   onMounted(async () => {
+    if (props.detailTabResourceId) {
+      activeShowType.value = 'table';
+      searchData();
+      return;
+    }
     activeShowType.value = (await getItem<'timeline' | 'table'>(`record-active-show-type`)) ?? 'table';
   });
 

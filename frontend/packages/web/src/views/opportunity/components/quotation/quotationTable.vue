@@ -39,7 +39,7 @@
 
     <template #view>
       <CrmViewSelect
-        v-if="!props.sourceId"
+        v-if="!props.sourceId && !props.detailTabResourceId"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -108,7 +108,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { BatchOperationResult, QuotationItem } from '@lib/shared/models/opportunity';
-  import { CluePoolItem } from '@lib/shared/models/system/module';
+  import { CluePoolItem, FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -135,7 +135,6 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
-  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -157,7 +156,9 @@
     readonly?: boolean;
     openseaHiddenColumns?: string[];
     refreshKey?: number;
-    detailTabFilter?: DetailTabFilter;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
@@ -486,6 +487,9 @@
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     tableKey: props.tableKey,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     containerClass: `.crm-quotation-table-${props.formKey}`,
     operationColumn: props.readonly
@@ -582,9 +586,6 @@
     };
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-  const { applyDetailTabFilter } = useDetailTabTableFilter();
-  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
-
   const isAdvancedSearchMode = ref(false);
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 
@@ -635,7 +636,7 @@
   function searchData(_keyword?: string, refreshId?: string) {
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
-      viewId: props.sourceId ? 'ALL' : activeTab.value,
+      ...(props.detailTabResourceId ? {} : { viewId: props.sourceId ? 'ALL' : activeTab.value }),
       opportunityId: props.sourceId,
     });
     loadList(false, refreshId);
@@ -726,6 +727,10 @@
   });
 
   onMounted(() => {
+    if (props.detailTabResourceId) {
+      searchData();
+      return;
+    }
     if (route.query.id && !props.sourceId) {
       activeSourceId.value = route.query.id as string;
       showDetailDrawer.value = true;

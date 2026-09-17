@@ -36,21 +36,20 @@
         :update-api="updateContractStage"
         @load-detail="handleSaved()"
       />
-      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+      <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
           <template #suffix>
             <CrmTabSetting
-              v-if="detailTabConfig"
-              :tab-list="enabledSystemDetailTabList"
+              v-if="showDetailTabs"
+              :tab-list="enabledDetailTabList"
               :setting-key="`${FormDesignKeyEnum.CONTRACT}-settingKey`"
-              :tab-config-version="systemTabConfigVersion"
               @init="initTabList"
             />
           </template>
         </CrmTab>
       </CrmCard>
 
-      <CrmCard contentHeight="100%" hide-footer :special-height="170" no-content-padding>
+      <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 170 : 90" no-content-padding>
         <!-- 需要用到 detailInfo 所以这里不用 v-if -->
         <div v-show="activeTab === 'contract'" class="h-full">
           <CrmApprovalDetail
@@ -120,6 +119,11 @@
             @open-customer-drawer="emit('showCustomerDrawer', $event)"
           />
         </div>
+        <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
+          <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
+            <component :is="item.table.component" v-bind="item.table.props" />
+          </div>
+        </template>
       </CrmCard>
     </div>
     <CrmFormCreateDrawer
@@ -185,7 +189,9 @@
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
+  import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -220,27 +226,44 @@
       tab: t('module.paymentPlan'),
       enable: true,
       permission: ['CONTRACT_PAYMENT_PLAN:READ'],
+      internalKey: 'CONTRACT_PAYMENT_PLAN',
     },
     {
       name: 'paymentRecord',
       tab: t('module.paymentRecord'),
       enable: true,
       permission: ['CONTRACT_PAYMENT_RECORD:READ'],
+      internalKey: 'CONTRACT_PAYMENT_RECORD',
     },
     {
       name: 'invoice',
       tab: t('module.invoice'),
       enable: true,
       permission: ['CONTRACT_INVOICE:READ'],
+      internalKey: 'CONTRACT_INVOICE',
     },
     {
       name: 'order',
       tab: t('module.order'),
       enable: true,
       permission: ['ORDER:READ'],
+      internalKey: 'CONTRACT_ORDER',
     },
   ];
-  const { enabledSystemDetailTabList, systemTabConfigVersion } = useFormDetailTabs(detailTabConfig, staticTabList);
+  const { availableDetailTabIds } = useFormDetailTabAvailability(detailTabConfig, FormDesignKeyEnum.CONTRACT);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
+    detailTabConfig,
+    staticTabList,
+    availableDetailTabIds
+  );
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const { getDetailTabTable } = useFormDetailTabTable();
+  const customDetailTabTableList = computed(() =>
+    customDetailTabList.value.flatMap((tab) => {
+      const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.CONTRACT);
+      return table ? [{ tab, table }] : [];
+    })
+  );
   const settingTabList = ref<TabContentItem[]>([]);
   const tabList = computed(() => [
     {
@@ -521,6 +544,7 @@
   }
 
   async function initDetailTabConfig() {
+    // TODO: 确认 CONTRACT_SNAPSHOT 是否同步 detailTabs；若同步可移除此处额外的普通表单配置请求。
     try {
       const config = await getContractFormConfig();
       detailTabConfig.value = config.formProp;
