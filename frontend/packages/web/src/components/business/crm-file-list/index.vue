@@ -1,10 +1,15 @@
 <template>
   <div class="flex flex-col gap-[8px]">
     <div v-for="file in props.files" :key="file.id" class="crm-file-item">
-      <div class="flex flex-1 items-center gap-[12px]">
-        <CrmFileIcon :type="file.type" :size="32" />
-        <div class="flex flex-1 flex-col gap-[2px]">
-          <span class="text-[var(--text-n2)]">{{ file.name }}</span>
+      <div class="flex min-w-0 flex-1 items-center gap-[12px]">
+        <CrmFileIcon :type="file.type" :size="32" class="shrink-0" />
+        <div class="flex min-w-0 flex-1 flex-col gap-[2px]">
+          <n-tooltip trigger="hover" :delay="300">
+            <template #trigger>
+              <span class="truncate text-[var(--text-n2)]">{{ file.name }}</span>
+            </template>
+            {{ file.name }}
+          </n-tooltip>
           <div class="flex items-center gap-[8px] text-[12px] text-[var(--text-n4)]">
             {{ `${((file.size || file.file?.size || 0) / 1024).toFixed(2)} KB` }}
             {{
@@ -43,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDivider, NImagePreview, useMessage } from 'naive-ui';
+  import { NButton, NDivider, NImagePreview, NTooltip, useMessage } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { PreviewAttachmentUrl } from '@lib/shared/api/requrls/system/module';
