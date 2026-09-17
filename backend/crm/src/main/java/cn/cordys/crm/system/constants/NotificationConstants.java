@@ -166,6 +166,9 @@ public class NotificationConstants {
 		@Schema(description = "message.approval_todo")
 		String APPROVAL_TODO = "APPROVAL_TODO";
 
+        @Schema(description = "message.custom_form_data_approval")
+        String CUSTOM_FORM_DATA_APPROVAL = "CUSTOM_FORM_DATA_APPROVAL";
+
 		@Schema(description = "message.approval_cc")
 		String APPROVAL_CC = "APPROVAL_CC";
 
@@ -353,6 +356,9 @@ public class NotificationConstants {
 
 		@Schema(description = "message.approval_todo_text")
 		String APPROVAL_TODO_TEXT = "APPROVAL_TODO_TEXT";
+
+        @Schema(description = "message.approval_result_text")
+        String CUSTOM_FORM_DATA_APPROVAL_TEXT = "CUSTOM_FORM_DATA_APPROVAL_TEXT";
 
 		@Schema(description = "message.approval_cc_text")
 		String APPROVAL_CC_TEXT = "APPROVAL_CC_TEXT";
