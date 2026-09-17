@@ -369,6 +369,10 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         updateData.setOwner(request.getOwner());
         updateData.setUpdateTime(System.currentTimeMillis());
         updateData.setUpdateUser(userId);
+        // 保留不可更改的字段
+        updateData.setCreateUser(originData.getCreateUser());
+        updateData.setCreateTime(originData.getCreateTime());
+        updateData.setApprovalStatus(originData.getApprovalStatus());
         customFormDataMapper.update(updateData);
 
 
