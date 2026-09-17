@@ -311,6 +311,10 @@ public class FormulaCompletionService {
     }
 
     private String formulaOf(BaseField field) {
+        // 数据源引用字段属于关联记录，只展示其已计算结果，不在当前记录中重新计算。
+        if (StringUtils.isNotBlank(field.getResourceFieldId())) {
+            return null;
+        }
         if (field instanceof cn.cordys.crm.system.dto.field.SerialNumberField serialField
                 && Strings.CI.equals(serialField.getPrefixType(), "formula")) {
             return serialField.getFormula();

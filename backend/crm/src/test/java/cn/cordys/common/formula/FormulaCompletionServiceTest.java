@@ -179,6 +179,24 @@ class FormulaCompletionServiceTest {
     }
 
     @Test
+    void ignoresDataSourceReferenceFormulaDuringLocalCompletion() {
+        InputNumberField amount = field(new InputNumberField(), "customerAmount", "客户金额", "INPUT_NUMBER");
+        FormulaField localFormula = numberFormula("customerTotal", "客户计算",
+                binary("*", fieldNode("customerAmount"), literal(2, "number")));
+        FormulaField referenceFormula = numberFormula("contract_ref_contractFormula", "合同计算",
+                fieldNode("contractAmount"));
+        referenceFormula.setResourceFieldId("contract");
+        Map<String, BaseModuleFieldValue> values = new LinkedHashMap<>();
+        values.put("customerAmount", new BaseModuleFieldValue("customerAmount", 6));
+
+        Map<String, Object> calculated = service.complete(List.of(amount, localFormula, referenceFormula), values,
+                true, businessKey -> null, (businessKey, value) -> { });
+
+        assertEquals(Map.of("customerTotal", 12D), calculated);
+        assertEquals(12D, values.get("customerTotal").getFieldValue());
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void calculatesSubTableRowsBeforeMainTableAggregation() {
         InputNumberField price = field(new InputNumberField(), "priceId", "单价", "INPUT_NUMBER");
