@@ -1274,7 +1274,15 @@ public class ApprovalActionService {
 				? Translator.get("contract.approval_status.approved")
 				: Translator.get("contract.approval_status.unapproved");
 
-		String type = Translator.get(instance.getType());
+		String type = Translator.get(instance.getType(), instance.getType());
+
+		if (Strings.CS.equals(type, instance.getType())) {
+			// 自定义表单
+			CustomForm customForm = customFormMapper.selectByPrimaryKey(instance.getType());
+			if (customForm != null) {
+				type = customForm.getName();
+			}
+		}
 
 		String module;
 		String event;
