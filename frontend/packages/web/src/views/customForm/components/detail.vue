@@ -9,7 +9,7 @@
     :view-size="formViewSize"
   >
     <template #titleLeft>
-      <CrmApprovalStatus :status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE" />
+      <CrmApprovalStatus :status="currentApprovalStatus" />
     </template>
     <template #titleRight>
       <CrmOperationButton
@@ -32,7 +32,7 @@
         :form-key="props.customFormId"
         :source-id="props.sourceId"
         :refresh-key="props.refreshId"
-        :approval-status="detailInfo?.approvalStatus ?? ProcessStatusEnum.NONE"
+        :approval-status="currentApprovalStatus"
         @saveApproval="handleSaveApproval"
         @refresh="handleSavedRefresh"
       >
@@ -107,6 +107,9 @@
   const title = ref('');
   const formViewSize = ref<FormViewSize>('large');
   const detailInfo = ref<Record<string, any>>();
+  const isCurrentDetail = (detail?: Record<string, any>) => !detail?.id || detail.id === props.sourceId;
+  const currentDetailInfo = computed(() => (isCurrentDetail(detailInfo.value) ? detailInfo.value : undefined));
+  const currentApprovalStatus = computed(() => currentDetailInfo.value?.approvalStatus ?? ProcessStatusEnum.NONE);
   const refreshKey = ref(0);
   const detailRefreshKey = computed(() => (props.refreshId ?? 0) + refreshKey.value * 1000000);
   const approvalFormKey = computed(() => props.customFormId || '');
@@ -156,11 +159,11 @@
     groupList: ActionsItem[];
     moreList: ActionsItem[];
   }>(() => {
-    if (!detailInfo.value) {
+    if (!currentDetailInfo.value) {
       return { groupList: [], moreList: [] };
     }
 
-    const detailAction = resolveRowOperation(detailInfo.value);
+    const detailAction = resolveRowOperation(currentDetailInfo.value);
     return {
       ...detailAction,
       groupList: clearCustomFormDataActionPermission(detailAction.groupList).map((e) => ({
@@ -174,15 +177,19 @@
   });
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
+    if (!isCurrentDetail(detail)) {
+      return;
+    }
+
     title.value = name || '';
     detailInfo.value = detail;
     formViewSize.value = config?.viewSize || 'large';
   }
 
   const canUpdateDetail = computed(() =>
-    detailInfo.value
-      ? Boolean(detailInfo.value.isAdmin) &&
-        hasApprovalScopedPermission(detailInfo.value, [CUSTOM_FORM_DATA_PERMISSIONS.update])
+    currentDetailInfo.value
+      ? Boolean(currentDetailInfo.value.isAdmin) &&
+        hasApprovalScopedPermission(currentDetailInfo.value, [CUSTOM_FORM_DATA_PERMISSIONS.update])
       : false
   );
 
