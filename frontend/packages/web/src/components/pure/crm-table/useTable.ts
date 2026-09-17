@@ -14,19 +14,25 @@ import useViewStore from '@/store/modules/view';
 import type { CrmTableDataItem, CrmTableProps, PaginationType } from './type';
 import type { PaginationProps } from 'naive-ui';
 
+type UseTableProps<T> = Partial<CrmTableProps<T>> & {
+  // 每次分页请求都必须携带的上下文参数，不受搜索、筛选等交互参数覆盖。
+  contextQueryParams?: TableQueryParams;
+};
+
 const tableStore = useTableStore();
 const appStore = useAppStore();
 const viewStore = useViewStore();
 
 export default function useTable<T>(
   loadListFunc?: (v?: TableQueryParams | any) => Promise<CommonList<CrmTableDataItem<T>> | CrmTableDataItem<T>>,
-  props?: Partial<CrmTableProps<T>>,
+  props?: UseTableProps<T>,
   // 数据处理的回调函数
   dataTransform?: (
     item: CrmTableDataItem<T>,
     originalData?: CommonList<CrmTableDataItem<T>>
   ) => CrmTableDataItem<T> | any
 ) {
+  const { contextQueryParams, ...tableProps } = props || {};
   const defaultProps: CrmTableProps<T> = {
     bordered: false,
     loading: false, // 加载效果
@@ -35,7 +41,7 @@ export default function useTable<T>(
     tableRowKey: 'id', // 表格行的key
     showPagination: true, // 是否显示分页
     containerClass: '',
-    ...props,
+    ...tableProps,
     crmPagination: {
       page: 1,
       itemCount: 0,
@@ -164,6 +170,7 @@ export default function useTable<T>(
         combineSearch: advanceFilter,
         ...loadListParams.value,
         filters: filterItem.value,
+        ...contextQueryParams,
       };
       let refreshPage = 0;
       if (refreshId !== undefined) {

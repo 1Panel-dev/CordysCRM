@@ -44,37 +44,56 @@
         :update-api="updateOrderStage"
         @load-detail="handleSaved()"
       />
-      <CrmCard contentHeight="100%" hide-footer :special-height="122" no-content-padding>
-        <CrmApprovalDetail
-          :form-key="FormDesignKeyEnum.ORDER"
-          :source-id="props.sourceId"
-          :refresh-key="approvalDetailRefreshKey"
-          :approval-status="detailInfo?.approvalStatus"
-          @saveApproval="handleSaveApproval"
-        >
-          <template #left="{ fieldPermissions, taskNode }">
-            <CrmFormDescription
-              ref="formDescriptionRef"
-              :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
-              :source-id="props.sourceId"
-              :column="2"
-              :refresh-key="refreshKey"
-              refresh-form-config
-              :fieldPermissions="fieldPermissions"
-              :otherSaveParams="{
-                updateType: 'approval',
-                approvalTaskId: props.approvalTaskId || taskNode?.taskId,
-              }"
-              label-width="auto"
-              value-align="start"
-              tooltip-position="top-start"
-              :readonly="!hasAnyPermission(['ORDER:UPDATE'])"
-              @init="handleInit"
-              @open-contract-detail="handleOpenContractDrawer"
-              @open-customer-detail="handleOpenCustomerDrawer"
+      <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
+          <template #suffix>
+            <CrmTabSetting
+              v-if="showDetailTabs"
+              :tab-list="enabledDetailTabList"
+              :setting-key="`${FormDesignKeyEnum.ORDER}-settingKey`"
+              @init="initTabList"
             />
           </template>
-        </CrmApprovalDetail>
+        </CrmTab>
+      </CrmCard>
+      <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 186 : 106" no-content-padding>
+        <div v-show="activeTab === 'order'" class="h-full">
+          <CrmApprovalDetail
+            :form-key="FormDesignKeyEnum.ORDER"
+            :source-id="props.sourceId"
+            :refresh-key="approvalDetailRefreshKey"
+            :approval-status="detailInfo?.approvalStatus"
+            @saveApproval="handleSaveApproval"
+          >
+            <template #left="{ fieldPermissions, taskNode }">
+              <CrmFormDescription
+                ref="formDescriptionRef"
+                :form-key="FormDesignKeyEnum.ORDER_SNAPSHOT"
+                :source-id="props.sourceId"
+                :column="2"
+                :refresh-key="refreshKey"
+                refresh-form-config
+                :fieldPermissions="fieldPermissions"
+                :otherSaveParams="{
+                  updateType: 'approval',
+                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
+                }"
+                label-width="auto"
+                value-align="start"
+                tooltip-position="top-start"
+                :readonly="!hasAnyPermission(['ORDER:UPDATE'])"
+                @init="handleInit"
+                @open-contract-detail="handleOpenContractDrawer"
+                @open-customer-detail="handleOpenCustomerDrawer"
+              />
+            </template>
+          </CrmApprovalDetail>
+        </div>
+        <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
+          <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
+            <component :is="item.table.component" v-bind="item.table.props" />
+          </div>
+        </template>
       </CrmCard>
     </div>
 
@@ -118,19 +137,31 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
+  import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
   import ContractDetailDrawer from '@/views/contract/contract/components/detail.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
-  import { deleteOrder, getOpenSeaOptions, getOrderStatusConfig, updateOrderStage } from '@/api/modules';
+  import {
+    deleteOrder,
+    getOpenSeaOptions,
+    getOrderFormConfig,
+    getOrderStatusConfig,
+    updateOrderStage,
+  } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
+  import useFormDetailTabs from '@/hooks/useFormDetailTabs';
+  import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
   import { hasAnyPermission } from '@/utils/permission';
@@ -156,6 +187,8 @@
   const { openModal } = useModal();
   const { t } = useI18n();
   const detailInfo = ref();
+  const formConfig = ref<FormConfig>();
+  const detailTabConfig = ref<FormConfig>();
   const { openNewPage } = useOpenNewPage();
 
   const stageConfig = ref<OpportunityStageConfig>();
@@ -168,11 +201,23 @@
     }
   }
 
+  async function initDetailTabConfig() {
+    // TODO: 确认 ORDER_SNAPSHOT 是否同步 detailTabs；若同步可移除此处额外的普通表单配置请求。
+    try {
+      const config = await getOrderFormConfig();
+      detailTabConfig.value = config.formProp;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   watch(
     () => visible.value,
     (val) => {
       if (val) {
         initStageConfig();
+        initDetailTabConfig();
       }
     }
   );
@@ -181,11 +226,47 @@
   const formViewSize = ref<FormViewSize>('large');
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     detailInfo.value = detail;
+    formConfig.value = config;
     formViewSize.value = config?.viewSize || 'large';
     if (detail) {
       currentStatus.value = detail.stage;
     }
   }
+
+  const activeTab = ref('order');
+  const { availableDetailTabIds } = useFormDetailTabAvailability(detailTabConfig, FormDesignKeyEnum.ORDER);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(detailTabConfig, [], availableDetailTabIds);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const { getDetailTabTable } = useFormDetailTabTable();
+  const customDetailTabTableList = computed(() =>
+    customDetailTabList.value.flatMap((tab) => {
+      const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.ORDER);
+      return table ? [{ tab, table }] : [];
+    })
+  );
+  const settingTabList = ref<TabContentItem[]>([]);
+  const tabList = computed<TabContentItem[]>(() => [
+    {
+      name: 'order',
+      tab: t('module.order'),
+      enable: true,
+      permission: ['ORDER:READ'],
+    },
+    ...settingTabList.value,
+  ]);
+
+  function initTabList(list: TabContentItem[]) {
+    settingTabList.value = list;
+  }
+
+  watch(
+    () => tabList.value,
+    (list) => {
+      if (!list.some((item) => item.name === activeTab.value)) {
+        activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
 
   const refreshKey = ref(0);
   const approvalDetailRefreshKey = ref(0);

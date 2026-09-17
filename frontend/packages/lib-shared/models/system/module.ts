@@ -3,6 +3,8 @@ import type { ModuleField, TableQueryParams } from '../common';
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 import { MemberSelectTypeEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 
+import type { OptionDTO } from './business';
+
 export interface ModuleNavCommon {
   id?: string;
   createUser?: string;
@@ -186,22 +188,28 @@ export interface FormConfigLinkScenarioItem {
 }
 export type FormConfigLinkProp = Partial<Record<FormDesignKeyEnum, FormConfigLinkScenarioItem[]>>;
 export type FormViewSize = 'small' | 'medium' | 'large';
-export type FormDetailTabOrigin = 'SYSTEM' | 'CUSTOM'; // 标签配置来源：系统历史标签或用户手动新增标签。
-export type FormDetailTabRelatedFormType = 'SYSTEM' | 'CUSTOM'; // 关联表单类型：内置系统表单或自定义表单。
-
 export interface FormDetailTabConfig {
-  id: string;
-  origin: FormDetailTabOrigin;  // 历史系统标签与用户新增标签，用于控制清空范围。
-  systemTabKey?: string;  // 系统历史标签标识，用于和原生详情标签建立映射。
-  name: string;  // 详情页中展示的标签名称。
-  relatedFormType?: FormDetailTabRelatedFormType; // 关联表单所属类型，系统表单还是自定义表单配置查询。
-  // 关联表单标识：系统表单使用 formKey，自定义表单使用 customFormId。
-  relatedFormId?: string;
-  // 关联表单中指向当前表单的数据源字段 ID，作为列表查询过滤条件。
-  relatedFieldId?: string;
-  // 是否在当前表单详情页展示该标签。
-  enable: boolean;
+  id: string; // 详情标签配置 ID，用于保存后稳定标识标签及隔离列表缓存。
+  name: string; // 详情页中展示的标签名称。
+  relatedForm?: OptionDTO; // 关联表单，id 用于查询对应表单配置，name 用于回显。
+  relatedField?: OptionDTO; // 关联表单中指向当前表单的数据源字段，id 用作列表筛选条件。
+  enable: boolean; // 是否在当前表单详情页展示该标签。
+  internalKey?: string; // 系统历史标签的稳定标识；为空时表示用户新增的关联标签。
 }
+
+export interface FormDetailTabOption {
+  id: string; // 内置标签或关联表单的标识。
+  name: string; // 内置标签或关联表单的名称。
+  sourceTypeFields: OptionDTO[]; // 关联表单中，数据源指向当前表单的字段候选项。
+  internalKey?: string; // 内置标签标识；关联表单候选项为空。
+}
+
+export interface FormDetailTabQuery {
+  relatedFormId: string; // 关联表单 ID，用于查询自定义关联标签的数据。
+  relatedFieldId: string; // 关联字段 ID，用于筛选当前详情记录关联的数据。
+}
+
+export interface FormDetailTabPageQuery extends TableQueryParams, FormDetailTabQuery {}
 
 export interface FormConfig {
   layout: number;

@@ -32,34 +32,57 @@
         </template>
       </CrmOperationButton>
     </template>
-    <CrmApprovalDetail
-      :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
-      :source-id="props.sourceId"
-      :refresh-key="approvalDetailRefreshKey"
-      :approval-status="detailInfo?.approvalStatus"
-      @saveApproval="handleSaveApproval"
-    >
-      <template #left="{ fieldPermissions, taskNode }">
-        <CrmFormDescription
-          ref="formDescriptionRef"
-          :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
-          :source-id="props.sourceId"
-          :column="2"
-          :refresh-key="refreshKey"
-          refresh-form-config
-          :fieldPermissions="fieldPermissions"
-          :otherSaveParams="{
-            updateType: 'approval',
-            approvalTaskId: props.approvalTaskId || taskNode?.taskId,
-          }"
-          label-width="auto"
-          value-align="start"
-          tooltip-position="top-start"
-          :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_QUOTATION:UPDATE'])"
-          @init="handleInit"
-        />
-      </template>
-    </CrmApprovalDetail>
+    <div class="h-full bg-[var(--text-n9)] p-[16px]">
+      <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
+          <template #suffix>
+            <CrmTabSetting
+              v-if="showDetailTabs"
+              :tab-list="enabledDetailTabList"
+              :setting-key="`${FormDesignKeyEnum.OPPORTUNITY_QUOTATION}-settingKey`"
+              @init="initTabList"
+            />
+          </template>
+        </CrmTab>
+      </CrmCard>
+      <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
+        <div v-show="activeTab === 'quotation'" class="h-full">
+          <CrmApprovalDetail
+            :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION"
+            :source-id="props.sourceId"
+            :refresh-key="approvalDetailRefreshKey"
+            :approval-status="detailInfo?.approvalStatus"
+            @saveApproval="handleSaveApproval"
+          >
+            <template #left="{ fieldPermissions, taskNode }">
+              <CrmFormDescription
+                ref="formDescriptionRef"
+                :form-key="FormDesignKeyEnum.OPPORTUNITY_QUOTATION_SNAPSHOT"
+                :source-id="props.sourceId"
+                :column="2"
+                :refresh-key="refreshKey"
+                refresh-form-config
+                :fieldPermissions="fieldPermissions"
+                :otherSaveParams="{
+                  updateType: 'approval',
+                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
+                }"
+                label-width="auto"
+                value-align="start"
+                tooltip-position="top-start"
+                :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_QUOTATION:UPDATE'])"
+                @init="handleInit"
+              />
+            </template>
+          </CrmApprovalDetail>
+        </div>
+        <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
+          <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
+            <component :is="item.table.component" v-bind="item.table.props" />
+          </div>
+        </template>
+      </CrmCard>
+    </div>
   </CrmDrawer>
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
@@ -84,19 +107,26 @@
   import { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
+  import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
+  import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
   import { deleteQuotation, voidQuotation } from '@/api/modules';
   import { quotationDataActionMap } from '@/config/opportunity';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
+  import useFormDetailTabs from '@/hooks/useFormDetailTabs';
+  import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import useOpenNewPage from '@/hooks/useOpenNewPage';
 
@@ -127,13 +157,51 @@
   const approvalDetailRefreshKey = ref(0);
   const title = ref('');
   const detailInfo = ref();
+  const formConfig = ref<FormConfig>();
   const formViewSize = ref<FormViewSize>('large');
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     title.value = name || '';
     detailInfo.value = detail ?? {};
+    formConfig.value = config;
     formViewSize.value = config?.viewSize || 'large';
   }
+
+  const activeTab = ref('quotation');
+  // TODO: 确认 OPPORTUNITY_QUOTATION_SNAPSHOT 是否同步 detailTabs；若不同步需改为单独读取普通报价表单配置。
+  const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.OPPORTUNITY_QUOTATION);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(formConfig, [], availableDetailTabIds);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const { getDetailTabTable } = useFormDetailTabTable();
+  const customDetailTabTableList = computed(() =>
+    customDetailTabList.value.flatMap((tab) => {
+      const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.OPPORTUNITY_QUOTATION);
+      return table ? [{ tab, table }] : [];
+    })
+  );
+  const settingTabList = ref<TabContentItem[]>([]);
+  const tabList = computed<TabContentItem[]>(() => [
+    {
+      name: 'quotation',
+      tab: t('opportunity.quotation'),
+      enable: true,
+      permission: ['OPPORTUNITY_QUOTATION:READ'],
+    },
+    ...settingTabList.value,
+  ]);
+
+  function initTabList(list: TabContentItem[]) {
+    settingTabList.value = list;
+  }
+
+  watch(
+    () => tabList.value,
+    (list) => {
+      if (!list.some((item) => item.name === activeTab.value)) {
+        activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
 
   function handleDownload() {
     openNewPage(FullPageEnum.FULL_PAGE_EXPORT_QUOTATION, { id: props.sourceId });
