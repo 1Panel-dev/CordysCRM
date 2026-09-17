@@ -1528,7 +1528,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         ...props.otherSaveParams?.value,
         ...extraParams,
         moduleFields: [],
-        customFormId: customFormConfig.value?.id,
+        customFormId: customFormConfig.value?.id ?? props.customFormId?.value,
         id: props.sourceId?.value,
       };
       fieldList.value.forEach((item) => {
