@@ -534,6 +534,22 @@
   });
   const addSignFormRef = ref<FormInst>();
 
+  function resetAddSignForm() {
+    addSignForm.value = {
+      type: 'BEFORE',
+      reviewer: undefined,
+      reason: '',
+      fileList: [],
+    };
+    addSignFormRef.value?.restoreValidation();
+  }
+
+  watch(addSignModalVisible, (visible) => {
+    if (!visible) {
+      resetAddSignForm();
+    }
+  });
+
   function handleAddSign() {
     addSignFormRef.value?.validate(async (errors) => {
       if (!errors && currentApprovalNode.value && currentTaskNode.value) {
@@ -556,12 +572,6 @@
                 });
                 addSignModalVisible.value = false;
                 message.success(t('crm.approval.addSignSuccess'));
-                addSignForm.value = {
-                  type: 'BEFORE',
-                  reviewer: undefined,
-                  reason: '',
-                  fileList: [],
-                };
                 initApprovalDetail();
                 emit('refresh');
               } catch (error) {
@@ -597,6 +607,21 @@
   });
   const fallbackFormRef = ref<FormInst>();
 
+  function resetFallbackForm() {
+    fallbackForm.value = {
+      node: undefined,
+      reason: '',
+      fileList: [],
+    };
+    fallbackFormRef.value?.restoreValidation();
+  }
+
+  watch(fallbackModalVisible, (visible) => {
+    if (!visible) {
+      resetFallbackForm();
+    }
+  });
+
   function handleFallback() {
     fallbackFormRef.value?.validate(async (errors) => {
       if (!errors && currentApprovalNode.value && currentTaskNode.value) {
@@ -618,11 +643,6 @@
                 fallbackModalVisible.value = false;
                 message.success(t('crm.approval.fallbackSuccess'));
                 initApprovalDetail();
-                fallbackForm.value = {
-                  node: undefined,
-                  reason: '',
-                  fileList: [],
-                };
                 emit('refresh');
               } catch (error) {
                 // eslint-disable-next-line no-console
