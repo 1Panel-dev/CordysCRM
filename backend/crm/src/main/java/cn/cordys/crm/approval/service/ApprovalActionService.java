@@ -1003,7 +1003,15 @@ public class ApprovalActionService {
 		ApprovalResourceService resourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
 		if (resourceService != null) {
 			List<String> ccUserIds = ccTasks.stream().map(ApprovalTask::getApproverId).toList();
-			String type = Translator.get(instance.getType());
+			String type = Translator.get(instance.getType(), instance.getType());
+			if (Strings.CS.equals(type, instance.getType())) {
+				// 自定义表单
+				CustomForm customForm = customFormMapper.selectByPrimaryKey(instance.getType());
+				if (customForm != null) {
+					type = customForm.getName();
+				}
+			}
+
 			String name = resourceService.getInstanceResourceName(FormKey.ofKey(instance.getType()), instance.getResourceId());
 			String state = Translator.get("contract.approval_status." + instance.getApprovalStatus().toLowerCase());
 			Map<String, Object> paramMap = new HashMap<>(3);
