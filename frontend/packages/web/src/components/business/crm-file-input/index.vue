@@ -27,6 +27,7 @@
       :maxlength="300"
       :autosize="{
         minRows: 3,
+        maxRows: 8,
       }"
       :status="valueStatus"
       class="crm-file-input"
