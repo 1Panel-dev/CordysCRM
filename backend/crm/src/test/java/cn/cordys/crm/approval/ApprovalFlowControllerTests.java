@@ -644,6 +644,23 @@ class ApprovalFlowControllerTests extends BaseTest {
         Assertions.assertEquals(List.of("amd2_parent_head"), approvers.stream().map(User::getId).toList());
     }
 
+    @Test
+    @Order(13)
+    void testResolveMultipleSuperiorApproversShouldKeepBottomUpOrder() {
+        prepareMultipleSuperiorData();
+
+        List<User> approvers = approvalFlowService.resolveApprovers(
+                "ams_submit_user",
+                DEFAULT_ORGANIZATION_ID,
+                ApproverTypeEnum.MULTIPLE_SUPERIOR,
+                List.of("2"),
+                ApproverDirectionEnum.TOP_DOWN
+        );
+
+        Assertions.assertEquals(List.of("ams_direct_superior", "ams_upper_superior"),
+                approvers.stream().map(User::getId).toList());
+    }
+
     private void prepareMultipleDeptHeadData() {
         insertDepartment("amd_root", "审批测试根部门", "0");
         insertDepartment("amd_parent", "审批测试父部门", "amd_root");
@@ -681,6 +698,17 @@ class ApprovalFlowControllerTests extends BaseTest {
         insertDepartmentCommander("amd2_root-cmd", "amd2_root", "amd2_root_head");
     }
 
+    private void prepareMultipleSuperiorData() {
+        insertDepartment("ams_dept", "多级上级测试部门", "0");
+        insertUser("ams_submit_user", "多级上级提交人");
+        insertUser("ams_direct_superior", "直属上级");
+        insertUser("ams_upper_superior", "上级的上级");
+
+        insertOrganizationUser("ams_submit_org", "ams_submit_user", "ams_dept", "ams_direct_superior");
+        insertOrganizationUser("ams_direct_org", "ams_direct_superior", "ams_dept", "ams_upper_superior");
+        insertOrganizationUser("ams_upper_org", "ams_upper_superior", "ams_dept");
+    }
+
     private void insertDepartment(String id, String name, String parentId) {
         Department department = new Department();
         department.setId(id);
@@ -704,11 +732,16 @@ class ApprovalFlowControllerTests extends BaseTest {
     }
 
     private void insertOrganizationUser(String id, String userId, String departmentId) {
+        insertOrganizationUser(id, userId, departmentId, null);
+    }
+
+    private void insertOrganizationUser(String id, String userId, String departmentId, String supervisorId) {
         OrganizationUser organizationUser = new OrganizationUser();
         organizationUser.setId(id);
         organizationUser.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         organizationUser.setDepartmentId(departmentId);
         organizationUser.setUserId(userId);
+        organizationUser.setSupervisorId(supervisorId);
         organizationUser.setEnable(true);
         setAuditFields(organizationUser);
         organizationUserMapper.insert(organizationUser);
