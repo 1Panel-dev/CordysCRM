@@ -30,8 +30,8 @@ public class WeComDepartmentService {
      * @param accessToken 访问令牌
      * @return 部门列表
      */
-    public List<ThirdDepartment> getDepartmentList(String accessToken) {
-        String url = urlTransfer(WeComApiPaths.DEPARTMENT_LIST, accessToken, null);
+    public List<ThirdDepartment> getDepartmentList(String accessToken, String wecomDepartmentId) {
+        String url = urlTransfer(WeComApiPaths.DEPARTMENT_LIST, accessToken, wecomDepartmentId);
         WeComDepartmentListResponse response = fetchDepartmentList(url);
 
         if (response.getErrCode() != 0) {
@@ -87,6 +87,7 @@ public class WeComDepartmentService {
                             .email(weComUser.getEmail())
                             .mobile(weComUser.getMobile())
                             .position(weComUser.getPosition())
+                            .status(weComUser.getStatus() == 1 ? true : false)
                             .isLeaderInDept(weComUser.getIsLeaderInDept().indexOf(Integer.parseInt(departmentId.toString())) > 0)
                             .build())
                     .collect(Collectors.toList());

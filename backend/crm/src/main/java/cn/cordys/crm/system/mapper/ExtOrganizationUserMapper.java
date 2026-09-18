@@ -3,6 +3,7 @@ package cn.cordys.crm.system.mapper;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.dto.DepartmentSourceUserDTO;
 import cn.cordys.crm.system.dto.request.UserBatchEditRequest;
 import cn.cordys.crm.system.dto.request.UserBatchEnableRequest;
 import cn.cordys.crm.system.dto.request.UserBatchRequest;
@@ -55,9 +56,11 @@ public interface ExtOrganizationUserMapper {
 
     void updateById(@Param("organizationUser") OrganizationUser organizationUser);
 
-    void disableUser(@Param("organizationUser") OrganizationUser organizationUser);
+    void disableUser(@Param("organizationUser") DepartmentSourceUserDTO organizationUser);
 
     void updateUserByUserId(@Param("userId") String userId, @Param("time") long time, @Param("operatorId") String operatorId);
 
     String getDepartmentByUserId(@Param("userId") String userId);
+
+    List<DepartmentSourceUserDTO> getUserBySourceId(@Param("orgId") String orgId, @Param("ids") List<String> ids);
 }

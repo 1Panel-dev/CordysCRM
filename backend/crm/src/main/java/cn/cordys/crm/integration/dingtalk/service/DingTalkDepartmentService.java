@@ -13,6 +13,7 @@ import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdOrgDataDTO;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -31,8 +32,8 @@ public class DingTalkDepartmentService {
     private final AtomicInteger apiRequestCount = new AtomicInteger(0);
 
 
-    public ThirdOrgDataDTO convertToThirdOrgDataDTO(String accessToken) {
-        DingTalkOrgDataResponse response = getOrganizationAndUsers(accessToken);
+    public ThirdOrgDataDTO convertToThirdOrgDataDTO(String accessToken, String dingTalkDepartmentId, Boolean needUsers) {
+        DingTalkOrgDataResponse response = getOrganizationAndUsers(accessToken, dingTalkDepartmentId, needUsers);
         ThirdOrgDataDTO thirdOrgDataDTO = new ThirdOrgDataDTO();
         thirdOrgDataDTO.setDepartments(Optional.ofNullable(response.getDepartments())
                 .orElse(Collections.emptyList())
@@ -66,6 +67,7 @@ public class DingTalkDepartmentService {
                 .isLeaderInDept(dingTalkUser.getLeader())
                 .avatar(dingTalkUser.getAvatar())
                 .position(dingTalkUser.getTitle())
+                .status(true)
                 .gender(1)
                 .build();
     }
@@ -94,11 +96,10 @@ public class DingTalkDepartmentService {
      * 获取所有钉钉组织架构和用户
      *
      * @param accessToken 访问令牌
-     *
      * @return 组织架构和用户数据响应
      */
-    public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken) {
-        List<Long> allDepartmentIds = getAllSubDepartmentIds(accessToken); // 从根部门(ID=1)开始
+    public DingTalkOrgDataResponse getOrganizationAndUsers(String accessToken, String dingTalkDepartmentId, Boolean needUsers) {
+        List<Long> allDepartmentIds = getAllSubDepartmentIds(accessToken, dingTalkDepartmentId); // 从根部门(ID=1)开始
         DingTalkOrgDataResponse response = new DingTalkOrgDataResponse();
 
         try {
@@ -131,17 +132,19 @@ public class DingTalkDepartmentService {
                 // 获取部门详情
                 getDepartmentDetail(accessToken, deptId).ifPresent(departments::add);
 
-                // 获取部门用户
-                List<DingTalkUser> users = getUsersByDepartment(accessToken, deptId);
-                List<DingTalkUser> filteredUsers = new ArrayList<>();
-                for (DingTalkUser user : users) {
-                    //用户dept_id_list 获取第一个部门ID进行匹配(主部门)
-                    if (user.getDeptIdList() != null && !user.getDeptIdList().isEmpty()
-                            && user.getDeptIdList().getFirst().equals(deptId)) {
-                        filteredUsers.add(user);
+                if (needUsers) {
+                    // 获取部门用户
+                    List<DingTalkUser> users = getUsersByDepartment(accessToken, deptId);
+                    List<DingTalkUser> filteredUsers = new ArrayList<>();
+                    for (DingTalkUser user : users) {
+                        //用户dept_id_list 获取第一个部门ID进行匹配(主部门)
+                        if (user.getDeptIdList() != null && !user.getDeptIdList().isEmpty()
+                                && user.getDeptIdList().getFirst().equals(deptId)) {
+                            filteredUsers.add(user);
+                        }
                     }
+                    usersByDept.put(deptId, filteredUsers);
                 }
-                usersByDept.put(deptId, filteredUsers);
             }
 
             response.setDepartments(departments);
@@ -160,13 +163,12 @@ public class DingTalkDepartmentService {
      * 使用队列方式获取所有子部门ID（避免递归，更好的限流控制）
      *
      * @param accessToken 访问令牌
-     *
      * @return 部门ID列表
      */
-    private List<Long> getAllSubDepartmentIds(String accessToken) {
+    private List<Long> getAllSubDepartmentIds(String accessToken, String dingTalkDepartmentId) {
         List<Long> departmentIds = new ArrayList<>();
         Queue<Long> deptQueue = new LinkedList<>();
-        deptQueue.offer(1L);
+        deptQueue.offer(StringUtils.isNotBlank(dingTalkDepartmentId) ? Long.valueOf(dingTalkDepartmentId) : 1L);
 
         while (!deptQueue.isEmpty()) {
             Long currentDeptId = deptQueue.poll();
@@ -220,7 +222,6 @@ public class DingTalkDepartmentService {
      * 根据请求进度动态计算延迟时间
      *
      * @param requestIndex 请求索引
-     *
      * @return 延迟时间（毫秒）
      */
     private long calculateDelay(int requestIndex) {
@@ -237,7 +238,6 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
-     *
      * @return 部门详情Optional
      */
     private Optional<DingTalkDepartment> getDepartmentDetail(String accessToken, Long deptId) {
@@ -271,7 +271,6 @@ public class DingTalkDepartmentService {
      *
      * @param accessToken 访问令牌
      * @param deptId      部门ID
-     *
      * @return 用户列表
      */
     private List<DingTalkUser> getUsersByDepartment(String accessToken, Long deptId) {

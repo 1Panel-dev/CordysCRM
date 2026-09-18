@@ -24,13 +24,10 @@ import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.search.mapper.ExtUserSearchConfigMapper;
 import cn.cordys.crm.system.domain.*;
+import cn.cordys.crm.system.dto.DepartmentSourceUserDTO;
 import cn.cordys.crm.system.dto.convert.UserRoleConvert;
 import cn.cordys.crm.system.dto.request.*;
-import cn.cordys.crm.system.dto.response.UserImportDTO;
-import cn.cordys.crm.system.dto.response.UserImportResponse;
-import cn.cordys.crm.system.dto.response.EnableOptionDTO;
-import cn.cordys.crm.system.dto.response.UserPageResponse;
-import cn.cordys.crm.system.dto.response.UserResponse;
+import cn.cordys.crm.system.dto.response.*;
 import cn.cordys.crm.system.excel.domain.UserExcelData;
 import cn.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import cn.cordys.crm.system.excel.handler.UserTemplateWriteHandler;
@@ -574,7 +571,7 @@ public class OrganizationUserService {
         departmentCommanderMapper.batchInsert(departmentCommanders);
     }
 
-    public void disableUsers(List<OrganizationUser> userList) {
+    public void disableUsers(List<DepartmentSourceUserDTO> userList) {
         try {
             userList.forEach(user -> SessionUtils.kickOutUser(user.getUserId()));
         } catch (Exception e) {
@@ -1001,5 +998,10 @@ public class OrganizationUserService {
 
     public List<EnableOptionDTO> getAdminUserOptions(String organizationId, Boolean includeDisabled) {
         return extUserRoleMapper.selectUserOptionByRoleId(organizationId, InternalRole.ORG_ADMIN.getValue(), includeDisabled);
+    }
+
+    public Map<String, List<DepartmentSourceUserDTO>> getuserBySourceId(String orgId, Set<String> departmentSourceId) {
+        List<DepartmentSourceUserDTO> list = extOrganizationUserMapper.getUserBySourceId(orgId, departmentSourceId.stream().toList());
+        return list.stream().collect(Collectors.groupingBy(DepartmentSourceUserDTO::getResourceId));
     }
 }

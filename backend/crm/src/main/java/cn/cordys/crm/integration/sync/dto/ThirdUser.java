@@ -47,4 +47,9 @@ public class ThirdUser {
      */
     private String avatar;
 
+    /**
+     * 成员状态
+     */
+    private Boolean status;
+
 }
