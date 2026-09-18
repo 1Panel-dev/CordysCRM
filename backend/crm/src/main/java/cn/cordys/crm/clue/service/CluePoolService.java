@@ -320,8 +320,8 @@ public class CluePoolService {
         LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Clue::getPoolId, id)
                 .eq(Clue::getInSharedPool, true);
-        List<Clue> relations = clueMapper.selectListByLambda(wrapper);
-        return CollectionUtils.isNotEmpty(relations);
+        return clueMapper.selectListByLambda(wrapper).stream()
+                .anyMatch(clue -> StringUtils.isEmpty(clue.getTransitionId()));
     }
 
     /**
