@@ -90,9 +90,9 @@
               </n-tooltip>
             </span>
             <ApprovalLevelExamplePopover
-              v-if="approverLevelConfig.exampleItems"
-              :items="approverLevelConfig.exampleItems"
-              :tip="approverLevelConfig.exampleTip"
+              v-if="nodeConfig.approverType"
+              :type="nodeConfig.approverType"
+              :direction="approverDirection"
             />
           </template>
 
@@ -302,11 +302,7 @@
             </n-tooltip>
           </span>
 
-          <ApprovalLevelExamplePopover
-            v-if="ccLevelConfig.exampleItems"
-            :items="ccLevelConfig.exampleItems"
-            :tip="ccLevelConfig.exampleTip"
-          />
+          <ApprovalLevelExamplePopover v-if="nodeConfig.ccType" :type="nodeConfig.ccType" :direction="ccDirection" />
         </template>
 
         <div class="flex w-full gap-[8px]">
@@ -448,48 +444,6 @@
     {
       name: 'sameSubmitter',
       tab: t('process.process.flow.exceptionHandling.sameSubmitter'),
-    },
-  ];
-
-  const directSupervisorExampleItems = [
-    {
-      level: t('process.process.flow.approverLevel.third'),
-      name: t('process.process.flow.levelExample.supervisorD'),
-    },
-    {
-      level: t('process.process.flow.approverLevel.second'),
-      name: t('process.process.flow.levelExample.supervisorC'),
-    },
-    {
-      level: t('process.process.flow.approverLevel.first'),
-      name: t('process.process.flow.levelExample.supervisorB'),
-    },
-    {
-      level: t('process.process.flow.levelExample.applicant'),
-      name: t('process.process.flow.levelExample.employeeA'),
-    },
-  ];
-
-  const departmentLeaderExampleItems = [
-    {
-      level: t('process.process.flow.departmentLevel.fourth'),
-      name: t('process.process.flow.levelExample.departmentD'),
-    },
-    {
-      level: t('process.process.flow.departmentLevel.third'),
-      name: t('process.process.flow.levelExample.departmentC'),
-    },
-    {
-      level: t('process.process.flow.departmentLevel.second'),
-      name: t('process.process.flow.levelExample.departmentB'),
-    },
-    {
-      level: t('process.process.flow.departmentLevel.first'),
-      name: t('process.process.flow.levelExample.departmentA'),
-    },
-    {
-      level: t('process.process.flow.levelExample.applicant'),
-      name: t('process.process.flow.levelExample.departmentApplicant'),
     },
   ];
 
@@ -702,8 +656,6 @@
       label: isEndpoint ? t('process.process.flow.specifiedEndpoint') : t('process.process.flow.specifiedLevel'),
       tooltip: getApproverLevelTooltip(type),
       options: isDepartmentLevel ? departmentLevelOptions : approverLevelOptions,
-      exampleItems: isDepartmentLevel ? departmentLeaderExampleItems : directSupervisorExampleItems,
-      exampleTip: isDepartmentLevel ? t('process.process.flow.levelExample.departmentTip') : undefined,
     };
   }
 
