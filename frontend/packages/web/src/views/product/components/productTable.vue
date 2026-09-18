@@ -91,6 +91,7 @@
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem, type TableDraggedParams } from '@lib/shared/models/common';
   import type { ProductListItem } from '@lib/shared/models/product';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -106,7 +107,6 @@
   import DetailDrawer from './detail.vue';
 
   import { batchDeleteProduct, deleteProduct, dragSortProduct } from '@/api/modules';
-  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -116,10 +116,9 @@
   const props = defineProps<{
     readonly?: boolean;
     hiddenAdvanceFilter?: boolean;
-    detailTabFilter?: {
-      fieldId: string;
-      sourceId: string;
-    };
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
@@ -278,6 +277,9 @@
     formKey: FormDesignKeyEnum.PRODUCT,
     readonly: props.readonly,
     tableKey: props.tableKey,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     containerClass: '.crm-product-table',
     operationColumn: {
@@ -307,9 +309,6 @@
     permission: ['PRODUCT_MANAGEMENT:UPDATE', 'PRODUCT_MANAGEMENT:DELETE'],
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-  const { applyDetailTabFilter } = useDetailTabTableFilter();
-  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
-
   const exportParams = computed(() => {
     return {
       ...tableQueryParams.value,

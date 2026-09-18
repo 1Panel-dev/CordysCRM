@@ -61,7 +61,7 @@
         @keyword-search="searchData"
       />
       <n-tabs
-        v-if="!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter"
+        v-if="!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter && !props.detailTabResourceId"
         v-model:value="activeShowType"
         type="segment"
         size="large"
@@ -77,7 +77,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.isContractTab && !props.isCustomerTab"
+        v-if="!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter && !props.detailTabResourceId"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.ORDER"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -175,6 +175,7 @@
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import { OpportunityStageConfig } from '@lib/shared/models/opportunity';
   import { OrderItem } from '@lib/shared/models/order';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -199,7 +200,6 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
-  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -228,7 +228,9 @@
     sourceName?: string;
     readonly?: boolean;
     formKey: FormDesignKeyEnum.ORDER | FormDesignKeyEnum.CONTRACT_ORDER | FormDesignKeyEnum.CUSTOMER_ORDER;
-    detailTabFilter?: DetailTabFilter;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
@@ -541,6 +543,9 @@
     formKey: props.formKey,
     readonly: props.readonly,
     tableKey: props.tableKey,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     excludeFieldIds: ['contractId'],
     operationColumn: {
@@ -645,9 +650,6 @@
     setLoadListParams,
     setAdvanceFilter,
   } = useTableRes;
-  const { applyDetailTabFilter } = useDetailTabTableFilter();
-  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
-
   const exportParams = computed(() => ({
     ...tableQueryParams.value,
     ids: checkedRowKeys.value,
@@ -756,10 +758,10 @@
   }
 
   function searchData(val?: string, refreshId?: string) {
-    if (!activeTab.value && !props.isContractTab && !props.isCustomerTab) return;
+    if (!activeTab.value && !props.isContractTab && !props.isCustomerTab && !props.detailTabResourceId) return;
     setLoadListParams({
       keyword: val ?? keyword.value,
-      viewId: activeTab.value,
+      ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
       ...(props.formKey === FormDesignKeyEnum.CONTRACT_ORDER ? { contractId: props.sourceId } : {}),
       ...(props.formKey === FormDesignKeyEnum.CUSTOMER_ORDER ? { customerId: props.sourceId } : {}),
     });
@@ -875,6 +877,11 @@
   );
 
   onMounted(async () => {
+    if (props.detailTabResourceId) {
+      activeShowType.value = 'table';
+      searchData();
+      return;
+    }
     if (!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter) {
       activeShowType.value = (await getItem<'billboard' | 'table'>('order-active-show-type')) ?? 'table';
     } else {

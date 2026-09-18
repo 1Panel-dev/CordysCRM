@@ -1,43 +1,41 @@
 <template>
-  <CrmDrawer v-model:show="show" :title="sourceName" :width="800" :footer="false" :view-size="formViewSize">
-    <template #titleRight>
+  <CrmDrawer v-model:show="visible" resizable no-padding :footer="false" :title="title" :view-size="formViewSize">
+    <template v-if="!props.readonly" #titleRight>
       <n-button
-        v-permission="['PRICE:UPDATE']"
+        v-permission="['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']"
         type="primary"
         ghost
-        class="n-btn-outline-primary ml-[12px]"
-        @click="handleEdit"
+        class="n-btn-outline-primary"
+        @click="emit('edit', props.sourceId)"
       >
         {{ t('common.edit') }}
       </n-button>
     </template>
-    <div class="h-full bg-[var(--text-n9)] p-[16px]">
+    <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
       <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
           <template #suffix>
             <CrmTabSetting
-              v-if="showDetailTabs"
               :tab-list="enabledDetailTabList"
-              :setting-key="`${FormDesignKeyEnum.PRICE}-settingKey`"
+              :setting-key="`${FormDesignKeyEnum.CONTACT}-settingKey`"
               @init="initTabList"
             />
           </template>
         </CrmTab>
       </CrmCard>
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
-        <CrmFormDescription
-          v-show="activeTab === 'price'"
-          ref="descriptionRef"
-          :form-key="FormDesignKeyEnum.PRICE"
-          :source-id="props.id"
-          :column="3"
-          label-width="auto"
-          value-align="start"
-          tooltip-position="top-start"
-          :readonly="!hasAnyPermission(['PRICE:UPDATE'])"
-          class="p-[24px]"
-          @init="handleDescriptionInit"
-        />
+        <div v-show="activeTab === 'contact'" class="h-full p-[24px]">
+          <CrmFormDescription
+            :form-key="FormDesignKeyEnum.CONTACT"
+            :source-id="props.sourceId"
+            :column="2"
+            label-width="auto"
+            value-align="start"
+            tooltip-position="top-start"
+            :readonly="props.readonly || !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])"
+            @init="handleInit"
+          />
+        </div>
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" />
@@ -48,12 +46,12 @@
   </CrmDrawer>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
   import { NButton } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { CollaborationType } from '@lib/shared/models/customer';
+  import type { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -69,50 +67,46 @@
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
-    id: string;
+    sourceId: string;
+    readonly?: boolean;
   }>();
   const emit = defineEmits<{
-    (e: 'edit', id: string): void;
+    (e: 'edit', sourceId: string): void;
   }>();
 
-  const { t } = useI18n();
-
-  const show = defineModel<boolean>('show', {
-    default: false,
+  const visible = defineModel<boolean>('visible', {
+    required: true,
   });
 
-  const sourceName = ref<string>('');
+  const { t } = useI18n();
+  const title = ref('');
   const formConfig = ref<FormConfig>();
-  const formViewSize = ref<FormViewSize>('medium');
-  function handleDescriptionInit(
-    _collaborationType?: CollaborationType,
-    _sourceName?: string,
-    detail?: Record<string, any>,
-    config?: FormConfig
-  ) {
-    sourceName.value = _sourceName || '';
+  const formViewSize = ref<FormViewSize>('large');
+
+  function handleInit(type?: CollaborationType, name?: string, _detail?: Record<string, any>, config?: FormConfig) {
+    title.value = name || '';
     formConfig.value = config;
-    formViewSize.value = config?.viewSize || 'medium';
+    formViewSize.value = config?.viewSize || 'large';
   }
 
-  const activeTab = ref('price');
-  const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.PRICE);
+  const activeTab = ref('contact');
+  const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.CONTACT);
   const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(formConfig, [], availableDetailTabIds);
   const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
   const { getDetailTabTable } = useFormDetailTabTable();
   const customDetailTabTableList = computed(() =>
     customDetailTabList.value.flatMap((tab) => {
-      const table = getDetailTabTable(tab.detailTab, props.id, FormDesignKeyEnum.PRICE);
+      const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.CONTACT);
       return table ? [{ tab, table }] : [];
     })
   );
   const settingTabList = ref<TabContentItem[]>([]);
   const tabList = computed<TabContentItem[]>(() => [
     {
-      name: 'price',
-      tab: t('crmFormCreate.drawer.price'),
+      name: 'contact',
+      tab: t('crmFormDesign.contact'),
       enable: true,
-      permission: ['PRICE:READ'],
+      permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
     },
     ...settingTabList.value,
   ]);
@@ -129,11 +123,4 @@
       }
     }
   );
-
-  function handleEdit() {
-    emit('edit', props.id);
-    show.value = false;
-  }
 </script>
-
-<style lang="less" scoped></style>

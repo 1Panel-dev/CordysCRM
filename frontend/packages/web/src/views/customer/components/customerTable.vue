@@ -66,7 +66,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.hiddenAdvanceFilter"
+        v-if="!props.hiddenAdvanceFilter && !props.detailTabResourceId"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CUSTOMER"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -144,6 +144,7 @@
   import useLocale from '@lib/shared/locale/useLocale';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -168,7 +169,6 @@
 
   import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -192,7 +192,9 @@
     readonly?: boolean;
     isLimitShowDetail?: boolean; // 是否根据权限限查看详情
     hiddenTotal?: boolean;
-    detailTabFilter?: DetailTabFilter;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
@@ -517,6 +519,9 @@
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     tableKey: props.tableKey,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     disabledSelection: (row: any) => {
       return row.collaborationType === 'READ_ONLY';
@@ -629,8 +634,6 @@
     readonly: props.readonly,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-  const { applyDetailTabFilter } = useDetailTabTableFilter();
-  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
   const tableColumns = computed(() => {
     if (activeTab.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
       return propsRes.value.columns
@@ -709,7 +712,10 @@
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
 
   function searchData(val?: string, refreshId?: string) {
-    setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
+    setLoadListParams({
+      keyword: val ?? keyword.value,
+      ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
+    });
     loadList(false, refreshId);
     if (!refreshId) {
       crmTableRef.value?.scrollTo({ top: 0 });
@@ -755,7 +761,10 @@
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: getChartViewId() ?? activeTab.value });
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: getChartViewId() ?? activeTab.value,
+        });
         initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
       }
@@ -785,6 +794,16 @@
         removeItemFromList(val);
       }
     }
+  );
+
+  watch(
+    () => props.detailTabResourceId,
+    (resourceId) => {
+      if (resourceId) {
+        searchData();
+      }
+    },
+    { immediate: true, flush: 'post' }
   );
 
   onMounted(() => {

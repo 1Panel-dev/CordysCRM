@@ -43,20 +43,19 @@
         :update-api="updateOptStage"
         @load-detail="refreshList"
       />
-      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+      <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
           <template #suffix>
             <CrmTabSetting
-              v-if="formConfig"
-              :tab-list="enabledSystemDetailTabList"
+              v-if="showDetailTabs"
+              :tab-list="enabledDetailTabList"
               :setting-key="`${FormDesignKeyEnum.BUSINESS}-settingKey`"
-              :tab-config-version="systemTabConfigVersion"
               @init="initTabList"
             />
           </template>
         </CrmTab>
       </CrmCard>
-      <CrmCard contentHeight="100%" hide-footer :special-height="170" no-content-padding>
+      <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 170 : 90" no-content-padding>
         <div v-show="activeTab === 'opportunity'" class="h-full overflow-hidden">
           <CrmFormDescription
             :form-key="FormDesignKeyEnum.BUSINESS"
@@ -101,6 +100,11 @@
             :source-name="titleName"
           />
         </div>
+        <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
+          <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
+            <component :is="item.table.component" v-bind="item.table.props" />
+          </div>
+        </template>
       </CrmCard>
     </div>
     <CrmFormCreateDrawer
@@ -140,7 +144,9 @@
 
   import { deleteOpt, getOpportunityStageConfig, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
+  import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
+  import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
@@ -255,26 +261,43 @@
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
       enable: true,
+      internalKey: 'OPPORTUNITY_FOLLOW_RECORD',
     },
     {
       name: 'followPlan',
       tab: t('common.plan'),
       enable: true,
+      internalKey: 'OPPORTUNITY_FOLLOW_PLAN',
     },
     {
       name: 'contact',
       tab: t('opportunity.contactInfo'),
       enable: true,
       permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
+      internalKey: 'OPPORTUNITY_CONTACT',
     },
     {
       name: 'quotation',
       tab: t('opportunity.quotation'),
       enable: true,
       permission: ['OPPORTUNITY_QUOTATION:READ'],
+      internalKey: 'OPPORTUNITY_QUOTATION',
     },
   ];
-  const { enabledSystemDetailTabList, systemTabConfigVersion } = useFormDetailTabs(formConfig, staticTabList);
+  const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.BUSINESS);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
+    formConfig,
+    staticTabList,
+    availableDetailTabIds
+  );
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const { getDetailTabTable } = useFormDetailTabTable();
+  const customDetailTabTableList = computed(() =>
+    customDetailTabList.value.flatMap((tab) => {
+      const table = getDetailTabTable(tab.detailTab, props.detail?.id, FormDesignKeyEnum.BUSINESS);
+      return table ? [{ tab, table }] : [];
+    })
+  );
   const settingTabList = ref<TabContentItem[]>([]);
   const tabList = computed<TabContentItem[]>(() => [
     {

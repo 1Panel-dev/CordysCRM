@@ -30,6 +30,8 @@ import {
   GetFieldDeptTreeUrl,
   GetFieldDeptUerTreeUrl,
   GetFieldOpportunityListUrl,
+  GetFormDetailTabOptionsUrl,
+  GetFormDetailTabPageUrl,
   GetFieldProductListUrl,
   GetFormDesignConfigUrl,
   GetModuleMaskSearchConfigUrl,
@@ -78,7 +80,7 @@ import {
   GetFieldCustomFormListUrl,
   GetFieldConfigUrl,
 } from '@lib/shared/api/requrls/system/module';
-import { QuotationItem } from '@lib/shared/models/opportunity';
+import type { QuotationItem } from '@lib/shared/models/opportunity';
 import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 import type { ClueListItem } from '@lib/shared/models/clue';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
@@ -94,6 +96,8 @@ import type {
   DefaultSearchSetFormModel,
   FormDesignConfigDetailParams,
   FormDesignDataSourceTableQueryParams,
+  FormDetailTabOption,
+  FormDetailTabPageQuery,
   GetRefDataSourceFieldParams,
   ModuleNavBaseInfoItem,
   ModuleNavTopItem,
@@ -111,7 +115,12 @@ import type {
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 import type { Result } from '@lib/shared/types/axios';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-import type { BusinessTitleItem, ContractItem, PaymentPlanItem, PaymentRecordItem } from '@lib/shared/models/contract';
+import type {
+  BusinessTitleItem,
+  ContractItem,
+  PaymentPlanItem,
+  PaymentRecordItem,
+} from '@lib/shared/models/contract';
 import type { OrderItem } from '@lib/shared/models/order';
 import { CustomFormPageItem, type CustomFormDetail } from '@lib/shared/models/customForm';
 
@@ -262,6 +271,16 @@ export default function useProductApi(CDR: CordysAxios) {
       { url: `${GetFormDesignConfigUrl}/${id}` },
       { ignoreCancelToken: true }
     );
+  }
+
+  // 获取当前表单可配置的内置标签及关联表单候选项。
+  function getFormDetailTabOptions(formKey: string) {
+    return CDR.get<FormDetailTabOption[]>({ url: `${GetFormDetailTabOptionsUrl}/${formKey}` });
+  }
+
+  // 系统表单传 FormDesignKeyEnum，自定义表单传 customFormId。
+  function getFormDetailTabPage<T = any>(formKey: string, resourceId: string, data: FormDetailTabPageQuery) {
+    return CDR.post<CommonList<T>>({ url: `${GetFormDetailTabPageUrl}/${formKey}/${resourceId}/page`, data });
   }
 
   function getFieldDeptUerTree(params?: { includeDisabled?: boolean }) {
@@ -461,6 +480,8 @@ export default function useProductApi(CDR: CordysAxios) {
     noPickCustomerPool,
     saveFormDesignConfig,
     getFormDesignConfig,
+    getFormDetailTabOptions,
+    getFormDetailTabPage,
     getFieldDeptUerTree,
     getFieldDeptTree,
     getFieldClueList,

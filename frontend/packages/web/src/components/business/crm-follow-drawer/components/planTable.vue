@@ -39,6 +39,7 @@
       </template>
       <template #view>
         <CrmViewSelect
+          v-if="!props.detailTabResourceId"
           v-model:active-tab="activeTab"
           :type="FormDesignKeyEnum.FOLLOW_PLAN"
           :custom-fields-config-list="filterConfigList"
@@ -155,6 +156,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
   import type { FilterConditionItem, SortParams } from '@lib/shared/models/common';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import { EQUAL, NOT_EQUAL } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -183,6 +185,15 @@
   import useModal from '@/hooks/useModal';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
   import useUserStore from '@/store/modules/user';
+
+  const props = defineProps<{
+    readonly?: boolean;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
+  }>();
 
   const { t } = useI18n();
   const userStore = useUserStore();
@@ -417,6 +428,12 @@
     formKey: FormDesignKeyEnum.FOLLOW_PLAN,
     containerClass: '.crm-plan-table',
     hiddenRefresh: true,
+    readonly: props.readonly,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     operationColumn: {
       key: 'operation',
       width: 140,
@@ -589,7 +606,7 @@
   async function searchData(_keyword?: string) {
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
-      viewId: activeTab.value,
+      ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
       status: activeStatus.value,
     });
     await loadList();
@@ -678,6 +695,11 @@
     }
   );
   onMounted(async () => {
+    if (props.detailTabResourceId) {
+      activeShowType.value = 'table';
+      searchData();
+      return;
+    }
     const showType = (await getItem<'timeline' | 'table'>(`plan-active-show-type`)) ?? 'table';
     useTableResultAsTimelineFirstPage = showType === 'timeline';
     activeShowType.value = showType;

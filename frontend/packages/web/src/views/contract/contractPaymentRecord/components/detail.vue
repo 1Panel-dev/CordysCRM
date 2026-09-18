@@ -29,8 +29,20 @@
       </n-button>
     </template>
     <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
-      <CrmCard hide-footer>
-        <div class="flex-1">
+      <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
+          <template #suffix>
+            <CrmTabSetting
+              v-if="showDetailTabs"
+              :tab-list="enabledDetailTabList"
+              :setting-key="`${FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD}-settingKey`"
+              @init="initTabList"
+            />
+          </template>
+        </CrmTab>
+      </CrmCard>
+      <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
+        <div v-show="activeTab === 'paymentRecord'" class="h-full p-[24px]">
           <CrmFormDescription
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD"
             :source-id="props.sourceId"
@@ -44,6 +56,12 @@
             @open-contract-detail="emit('openContractDrawer', $event)"
           />
         </div>
+
+        <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
+          <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
+            <component :is="item.table.component" v-bind="item.table.props" />
+          </div>
+        </template>
       </CrmCard>
     </div>
 
@@ -69,10 +87,16 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
+  import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
   import { deletePaymentRecord } from '@/api/modules';
+  import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
+  import useFormDetailTabs from '@/hooks/useFormDetailTabs';
+  import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -95,13 +119,50 @@
   const { t } = useI18n();
   const detailInfo = ref();
   const title = ref('');
+  const formConfig = ref<FormConfig>();
   const formViewSize = ref<FormViewSize>('large');
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     detailInfo.value = detail;
     title.value = name || '';
+    formConfig.value = config;
     formViewSize.value = config?.viewSize || 'large';
   }
+
+  const activeTab = ref('paymentRecord');
+  const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(formConfig, [], availableDetailTabIds);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const { getDetailTabTable } = useFormDetailTabTable();
+  const customDetailTabTableList = computed(() =>
+    customDetailTabList.value.flatMap((tab) => {
+      const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD);
+      return table ? [{ tab, table }] : [];
+    })
+  );
+  const settingTabList = ref<TabContentItem[]>([]);
+  const tabList = computed<TabContentItem[]>(() => [
+    {
+      name: 'paymentRecord',
+      tab: t('module.paymentRecord'),
+      enable: true,
+      permission: ['CONTRACT_PAYMENT_RECORD:READ'],
+    },
+    ...settingTabList.value,
+  ]);
+
+  function initTabList(list: TabContentItem[]) {
+    settingTabList.value = list;
+  }
+
+  watch(
+    () => tabList.value,
+    (list) => {
+      if (!list.some((item) => item.name === activeTab.value)) {
+        activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
 
   const refreshKey = ref(0);
   function handleSaved() {

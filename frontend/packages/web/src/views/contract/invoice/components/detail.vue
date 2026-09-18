@@ -30,8 +30,20 @@
       </CrmOperationButton>
     </template>
     <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
-      <CrmCard no-content-padding auto-height hide-footer>
-        <div class="flex-1">
+      <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
+          <template #suffix>
+            <CrmTabSetting
+              v-if="showDetailTabs"
+              :tab-list="enabledDetailTabList"
+              :setting-key="`${FormDesignKeyEnum.INVOICE}-settingKey`"
+              @init="initTabList"
+            />
+          </template>
+        </CrmTab>
+      </CrmCard>
+      <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
+        <div v-show="activeTab === 'invoice'" class="h-full">
           <CrmApprovalDetail
             :form-key="FormDesignKeyEnum.INVOICE"
             :source-id="props.sourceId"
@@ -63,6 +75,11 @@
             </template>
           </CrmApprovalDetail>
         </div>
+        <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
+          <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
+            <component :is="item.table.component" v-bind="item.table.props" />
+          </div>
+        </template>
       </CrmCard>
     </div>
 
@@ -91,16 +108,22 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
+  import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
-  import { deleteInvoiced } from '@/api/modules';
+  import { deleteInvoiced, getInvoicedFormConfig } from '@/api/modules';
   import { deleteInvoiceContentMap } from '@/config/contract';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
+  import useFormDetailTabs from '@/hooks/useFormDetailTabs';
+  import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -125,12 +148,48 @@
   const { t } = useI18n();
 
   const detailInfo = ref();
+  const detailTabConfig = ref<FormConfig>();
   const formViewSize = ref<FormViewSize>('large');
 
   function handleInit(type?: CollaborationType, name?: string, detail?: Record<string, any>, config?: FormConfig) {
     detailInfo.value = detail;
     formViewSize.value = config?.viewSize || 'large';
   }
+
+  const activeTab = ref('invoice');
+  const { availableDetailTabIds } = useFormDetailTabAvailability(detailTabConfig, FormDesignKeyEnum.INVOICE);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(detailTabConfig, [], availableDetailTabIds);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const { getDetailTabTable } = useFormDetailTabTable();
+  const customDetailTabTableList = computed(() =>
+    customDetailTabList.value.flatMap((tab) => {
+      const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.INVOICE);
+      return table ? [{ tab, table }] : [];
+    })
+  );
+  const settingTabList = ref<TabContentItem[]>([]);
+  const tabList = computed<TabContentItem[]>(() => [
+    {
+      name: 'invoice',
+      tab: t('module.invoice'),
+      enable: true,
+      permission: ['CONTRACT_INVOICE:READ'],
+    },
+    ...settingTabList.value,
+  ]);
+
+  function initTabList(list: TabContentItem[]) {
+    settingTabList.value = list;
+  }
+
+  watch(
+    () => tabList.value,
+    (list) => {
+      if (!list.some((item) => item.name === activeTab.value)) {
+        activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
 
   const invoiceDetailDataActionMap = {
     edit: {
@@ -279,11 +338,23 @@
     }
   }
 
+  async function initDetailTabConfig() {
+    // TODO: 确认 INVOICE_SNAPSHOT 是否同步 detailTabs；若同步可移除此处额外的普通表单配置请求。
+    try {
+      const config = await getInvoicedFormConfig();
+      detailTabConfig.value = config.formProp;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   watch(
     () => visible.value,
     (val) => {
       if (val) {
         initApprovalPermission();
+        initDetailTabConfig();
       } else {
         detailInfo.value = {};
       }
