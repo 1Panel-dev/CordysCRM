@@ -60,6 +60,7 @@
     </template>
     <template #view>
       <CrmViewSelect
+        v-if="!props.detailTabResourceId"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CONTRACT"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -194,6 +195,7 @@
     OpportunityStageConfig,
     type StageConfigItem,
   } from '@lib/shared/models/opportunity';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import { COMMON_SELECTION_OPERATORS } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -232,7 +234,6 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
-  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useLocalForage from '@/hooks/useLocalForage';
@@ -246,7 +247,9 @@
   const props = defineProps<{
     fullscreenTargetRef?: HTMLElement | null;
     readonly?: boolean;
-    detailTabFilter?: DetailTabFilter;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
@@ -622,6 +625,9 @@
     formKey: FormDesignKeyEnum.CONTRACT,
     readonly: props.readonly,
     tableKey: props.tableKey,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     operationColumn: {
       key: 'operation',
@@ -730,8 +736,6 @@
     setLoadListParams,
     setAdvanceFilter,
   } = useTableRes;
-  const { applyDetailTabFilter } = useDetailTabTableFilter();
-  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
   const billboardRef = ref<InstanceType<typeof billboard>>();
 
   function handleFlowSuccess() {
@@ -887,8 +891,11 @@
   }
 
   function searchData(val?: string, refreshId?: string) {
-    if (!activeTab.value) return;
-    setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
+    if (!activeTab.value && !props.detailTabResourceId) return;
+    setLoadListParams({
+      keyword: val ?? keyword.value,
+      ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
+    });
     if (activeShowType.value === 'billboard') {
       billboardRef.value?.refresh();
       getStatistic(val);
@@ -1012,6 +1019,11 @@
   );
 
   onMounted(async () => {
+    if (props.detailTabResourceId) {
+      activeShowType.value = 'table';
+      searchData();
+      return;
+    }
     activeShowType.value = (await getItem<'billboard' | 'table'>('contract-active-show-type')) ?? 'table';
     if (route.query.id) {
       activeSourceId.value = route.query.id as string;

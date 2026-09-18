@@ -69,7 +69,7 @@
       </template>
       <template #view>
         <CrmViewSelect
-          v-if="props.formKey === FormDesignKeyEnum.CONTACT"
+          v-if="props.formKey === FormDesignKeyEnum.CONTACT && !props.detailTabResourceId"
           v-model:active-tab="activeTab"
           :type="FormDesignKeyEnum.CONTACT"
           :custom-fields-config-list="customFieldsFilterConfig"
@@ -88,6 +88,13 @@
       :need-init-detail="needInitDetail"
       :initial-source-name="props.initialSourceName"
       @saved="handleFormCreateSaved"
+    />
+    <ContactDetailDrawer
+      v-if="detailDrawerVisible"
+      v-model:visible="detailDrawerVisible"
+      :source-id="activeContactId"
+      :readonly="props.readonly"
+      @edit="handleDetailEdit"
     />
     <!-- 停用 -->
     <CrmModal
@@ -167,6 +174,7 @@
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { CustomerContractListItem } from '@lib/shared/models/customer';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -177,12 +185,14 @@
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmBatchEditModal from '@/components/business/crm-batch-edit-modal/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
+  import ContactDetailDrawer from '@/views/customer/components/contactDetailDrawer.vue';
 
   import {
     checkOpportunity,
@@ -191,7 +201,6 @@
     enableCustomerContact,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -214,7 +223,9 @@
     specialHeight?: number;
     hiddenAdvanceFilter?: boolean;
     hiddenTotal?: boolean;
-    detailTabFilter?: DetailTabFilter;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
@@ -230,6 +241,7 @@
 
   const keyword = ref('');
   const formCreateDrawerVisible = ref(false);
+  const detailDrawerVisible = ref(false);
   const activeContactId = ref('');
   const activeContactName = ref('');
   const needInitDetail = ref(false);
@@ -386,6 +398,21 @@
         break;
     }
   }
+
+  function showDetail(row: CustomerContractListItem) {
+    if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:READ'])) {
+      return;
+    }
+    activeContactId.value = row.id;
+    detailDrawerVisible.value = true;
+  }
+
+  function handleDetailEdit(id: string) {
+    activeContactId.value = id;
+    needInitDetail.value = true;
+    detailDrawerVisible.value = false;
+    formCreateDrawerVisible.value = true;
+  }
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
   const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
 
@@ -396,6 +423,9 @@
   const { useTableRes, customFieldsFilterConfig, fieldList } = await useFormCreateTable({
     formKey: props.formKey,
     tableKey: props.tableKey,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     showPagination: !props.sourceId,
     readonly: props.readonly,
@@ -428,15 +458,19 @@
         return h(CrmNameTooltip, { text: row.customerName });
       },
       name: (row: CustomerContractListItem) => {
-        return h(CrmNameTooltip, { text: row.name });
+        return h(
+          CrmTableButton,
+          {
+            onClick: () => showDetail(row),
+          },
+          { default: () => row.name, trigger: () => row.name }
+        );
       },
       owner: (row: CustomerContractListItem) => row.ownerName ?? '-',
     },
   });
 
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter, tableQueryParams } = useTableRes;
-  const { applyDetailTabFilter } = useDetailTabTableFilter();
-  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
   const backupData = ref<CustomerContractListItem[]>([]);
 
   const filterConfigList = computed(() => [
@@ -520,7 +554,10 @@
         backupData.value = cloneDeep(propsRes.value.data);
       }
     } else {
-      setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
+      setLoadListParams({
+        keyword: val ?? keyword.value,
+        ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
+      });
       await loadList(false, refreshId);
       backupData.value = cloneDeep(propsRes.value.data);
     }
@@ -636,6 +673,10 @@
         customFieldsFilterConfig: customFieldsFilterConfig.value as FilterFormItem[],
       });
     }
+    if (props.detailTabResourceId) {
+      searchData();
+      return;
+    }
     if (!props.sourceId) return;
     searchData();
   });
@@ -652,7 +693,10 @@
     () => activeTab.value,
     (val) => {
       if (val) {
-        setLoadListParams({ keyword: keyword.value, viewId: getChartViewId() ?? activeTab.value });
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: getChartViewId() ?? activeTab.value,
+        });
         initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
       }

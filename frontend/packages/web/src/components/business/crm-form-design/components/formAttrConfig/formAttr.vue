@@ -195,7 +195,6 @@
   <formDetailTabModal
     v-model:visible="detailTabModalVisible"
     :tabs="formConfig.detailTabs"
-    :current-form-type="currentDetailTabFormType"
     :current-form-id="currentDetailTabFormId"
     @save="handleDetailTabsSave"
   />
@@ -206,12 +205,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import {
-    FormConfig,
-    FormConfigLinkScenarioItem,
-    FormDetailTabConfig,
-    FormDetailTabRelatedFormType,
-  } from '@lib/shared/models/system/module';
+  import { FormConfig, FormConfigLinkScenarioItem, FormDetailTabConfig } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
@@ -233,9 +227,6 @@
     required: true,
   });
   const customFormSourceId = inject<Readonly<Ref<string>>>('customFormSourceId', ref(''));
-  const currentDetailTabFormType = computed<FormDetailTabRelatedFormType>(() =>
-    props.formKey === FormDesignKeyEnum.CUSTOM_FORM ? 'CUSTOM' : 'SYSTEM'
-  );
   const currentDetailTabFormId = computed(() =>
     props.formKey === FormDesignKeyEnum.CUSTOM_FORM ? customFormSourceId.value : props.formKey
   );
@@ -325,7 +316,7 @@
   const linkConfigVisible = ref(false);
   const detailTabModalVisible = ref(false);
   const currentFormLinkKey = ref<FormDesignKeyEnum>(formKeyOptions.value[0]?.value);
-  const hasCustomDetailTabs = computed(() => formConfig.value.detailTabs?.some((item) => item.origin === 'CUSTOM'));
+  const hasCustomDetailTabs = computed(() => formConfig.value.detailTabs?.some((item) => !item.internalKey));
 
   function showLinkConfig(key: FormDesignKeyEnum) {
     currentFormLinkKey.value = key;
@@ -347,7 +338,7 @@
   }
 
   function handleClearCustomDetailTabs() {
-    formConfig.value.detailTabs = formConfig.value.detailTabs?.filter((item) => item.origin === 'SYSTEM') || [];
+    formConfig.value.detailTabs = formConfig.value.detailTabs?.filter((item) => item.internalKey) || [];
   }
 
   function getSettingScenarioCount(items?: FormConfigLinkScenarioItem[]) {

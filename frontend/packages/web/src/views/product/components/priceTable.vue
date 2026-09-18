@@ -86,6 +86,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem, TableDraggedParams } from '@lib/shared/models/common';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -101,7 +102,6 @@
 
   import { copyProductPrice, deleteProductPrice, dragSortProductPrice } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -111,10 +111,9 @@
   const props = defineProps<{
     readonly?: boolean;
     hiddenAdvanceFilter?: boolean;
-    detailTabFilter?: {
-      fieldId: string;
-      sourceId: string;
-    };
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
@@ -217,6 +216,9 @@
     formKey: FormDesignKeyEnum.PRICE,
     readonly: props.readonly,
     tableKey: props.tableKey,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     excludeFieldIds: ['customerId'],
     containerClass: 'crm-price-table',
@@ -263,9 +265,6 @@
     permission: ['PRICE:UPDATE', 'PRICE:DELETE'],
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-  const { applyDetailTabFilter } = useDetailTabTableFilter();
-  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
-
   function filterChange(val: any) {
     propsEvent.value.filterChange(val);
   }

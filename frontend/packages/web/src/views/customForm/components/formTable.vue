@@ -5,9 +5,9 @@
     v-bind="propsRes"
     class="crm-customForm-table"
     :not-show-table-filter="isAdvancedSearchMode"
-    :action-config="actionConfig"
+    :action-config="props.readonly ? undefined : actionConfig"
     :columns="formColumns"
-    :table-key="customFormId"
+    :table-key="currentTableKey"
     @row-key-change="handleRowKeyChange"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
@@ -104,6 +104,7 @@
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { CustomFormPageItem } from '@lib/shared/models/customForm.js';
+  import type { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { type FilterForm, FilterFormItem, type FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -125,7 +126,6 @@
   import { processStatusOptions } from '@/config/process';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
-  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -137,7 +137,9 @@
     formKey: string;
     formKeyName: string;
     readonly?: boolean;
-    detailTabFilter?: DetailTabFilter;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
@@ -274,6 +276,8 @@
   }
 
   const showOverviewDrawer = ref(false);
+  // 关联详情 Tab 使用独立列缓存，避免继承普通自定义表格的操作列配置。
+  const currentTableKey = computed(() => props.tableKey || customFormId.value);
   const operationColumn = computed<CrmDataTableColumn | undefined>(() => {
     return {
       key: 'operation',
@@ -300,6 +304,9 @@
   const { useTableRes, customFieldsFilterConfig, initFormConfig, columns, fieldList } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOM_FORM,
     tableKey: props.tableKey,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     customFormId,
     disabledSelection: (row: CustomFormPageItem) => {
@@ -349,9 +356,6 @@
   });
 
   const { propsRes, propsEvent, loadList, setLoadListParams, tableQueryParams, setAdvanceFilter } = useTableRes;
-  const { applyDetailTabFilter } = useDetailTabTableFilter();
-  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
-
   const formColumns = computed(() => columns.value);
   const customFormFilterConfigList = computed<FilterFormItem[]>(() => [
     {
@@ -365,7 +369,10 @@
     ...baseFilterConfigList,
   ]);
   function searchData(val?: string, refreshId?: string) {
-    setLoadListParams({ keyword: val ?? keyword.value, customFormId: customFormId.value });
+    setLoadListParams({
+      keyword: val ?? keyword.value,
+      customFormId: customFormId.value,
+    });
     loadList(false, refreshId, customFormId.value);
     if (!refreshId) {
       crmTableRef.value?.scrollTo({ top: 0 });
@@ -562,7 +569,7 @@
   async function init(val: string) {
     checkedRowKeys.value = [];
     keyword.value = '';
-    propsRes.value.tableKey = val;
+    propsRes.value.tableKey = currentTableKey.value;
     await initApprovalPermission(true);
     await initFormConfig(props.readonly, operationColumn.value);
     tableAdvanceFilterRef.value?.clearFilter();

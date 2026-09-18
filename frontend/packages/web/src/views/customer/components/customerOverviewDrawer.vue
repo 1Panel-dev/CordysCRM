@@ -3,6 +3,7 @@
     <template #titleRight>
       <CrmOperationButton
         :group-list="buttonList"
+        class="gap-[12px]"
         :not-show-divider="true"
         @pop-update="handleTransferPopUpdate"
         @select="handleButtonSelect"
@@ -17,20 +18,19 @@
       </CrmOperationButton>
     </template>
     <div class="h-full bg-[var(--text-n9)] p-[16px]">
-      <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+      <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
         <CrmTab v-model:active-tab="activeTab" no-content :tab-list="displayTabList" type="line">
           <template #suffix>
             <CrmTabSetting
-              v-if="formConfig"
-              :tab-list="enabledSystemDetailTabList"
+              v-if="showDetailTabs"
+              :tab-list="enabledDetailTabList"
               :setting-key="`${FormDesignKeyEnum.CUSTOMER}-settingKey`"
-              :tab-config-version="systemTabConfigVersion"
               @init="initTabList"
             />
           </template>
         </CrmTab>
       </CrmCard>
-      <CrmCard contentHeight="100%" hide-footer :special-height="64" no-content-padding>
+      <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 64 : 0" no-content-padding>
         <div v-show="activeTab === 'customer'" class="h-full overflow-hidden">
           <CrmFormDescription
             ref="descriptionRef"
@@ -118,6 +118,11 @@
             @open-contract-drawer="handleOpenContractDrawer"
           />
         </div>
+        <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
+          <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
+            <component :is="item.table.component" v-bind="item.table.props" />
+          </div>
+        </template>
       </CrmCard>
       <CrmMoveModal
         v-model:show="showMoveModal"
@@ -173,7 +178,9 @@
   import OrderTable from '@/views/order/order/components/orderTable.vue';
 
   import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
+  import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
   import useFormDetailTabs from '@/hooks/useFormDetailTabs';
+  import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -258,68 +265,80 @@
         name: 'followRecord',
         tab: t('crmFollowRecord.followRecord'),
         enable: true,
+        internalKey: 'CUSTOMER_FOLLOW_RECORD',
       },
       {
         name: 'contact',
         tab: t('opportunity.contactInfo'),
         enable: true,
         permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
+        internalKey: 'CUSTOMER_CONTACT',
       },
       {
         name: 'followPlan',
         tab: t('common.plan'),
         enable: true,
+        internalKey: 'CUSTOMER_FOLLOW_PLAN',
       },
       {
         name: 'headRecord',
         tab: t('common.headRecord'),
         enable: true,
+        internalKey: 'CUSTOMER_OWNER_RECORD',
       },
       {
         name: 'relation',
         tab: t('customer.relation'),
         enable: true,
+        internalKey: 'CUSTOMER_RELATION',
       },
       {
         name: 'opportunityInfo',
         tab: t('customer.opportunityInfo'),
         enable: true,
         permission: ['OPPORTUNITY_MANAGEMENT:READ'],
+        internalKey: 'CUSTOMER_OPPORTUNITY',
       },
       {
         name: 'collaborator',
         tab: t('customer.collaborator'),
         enable: true,
+        internalKey: 'CUSTOMER_COLLABORATION',
       },
       {
         name: 'contract',
         tab: t('module.contract'),
         enable: true,
         permission: ['CONTRACT:READ'],
+        internalKey: 'CUSTOMER_CONTRACT',
       },
       {
         name: 'contractPayment',
         tab: t('module.paymentPlan'),
         enable: true,
         permission: ['CONTRACT_PAYMENT_PLAN:READ'],
+        internalKey: 'CUSTOMER_PAYMENT_PLAN',
       },
       {
         name: 'contractPaymentRecord',
         tab: t('module.paymentRecord'),
         enable: true,
         permission: ['CONTRACT_PAYMENT_RECORD:READ'],
+        internalKey: 'CUSTOMER_PAYMENT_RECORD',
       },
       {
         name: 'invoice',
         tab: t('module.invoice'),
         enable: true,
         permission: ['CONTRACT_INVOICE:READ'],
+        internalKey: 'CUSTOMER_INVOICE',
       },
       {
         name: 'order',
         tab: t('module.order'),
         enable: true,
         permission: ['ORDER:READ'],
+        internalKey: 'CUSTOMER_ORDER',
       },
     ];
     if (collaborationType.value) {
@@ -327,7 +346,20 @@
     }
     return fullList;
   });
-  const { enabledSystemDetailTabList, systemTabConfigVersion } = useFormDetailTabs(formConfig, staticTabList);
+  const { availableDetailTabIds } = useFormDetailTabAvailability(formConfig, FormDesignKeyEnum.CUSTOMER);
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(
+    formConfig,
+    staticTabList,
+    availableDetailTabIds
+  );
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const { getDetailTabTable } = useFormDetailTabTable();
+  const customDetailTabTableList = computed(() =>
+    customDetailTabList.value.flatMap((tab) => {
+      const table = getDetailTabTable(tab.detailTab, props.sourceId, FormDesignKeyEnum.CUSTOMER);
+      return table ? [{ tab, table }] : [];
+    })
+  );
   const settingTabList = ref<TabContentItem[]>([]);
   const displayTabList = computed<TabContentItem[]>(() => [
     {

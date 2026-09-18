@@ -55,7 +55,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.isContractTab"
+        v-if="!props.isContractTab && !props.detailTabResourceId"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CONTRACT_PAYMENT"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -106,6 +106,7 @@
   import useLocale from '@lib/shared/locale/useLocale';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { PaymentPlanItem } from '@lib/shared/models/contract';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import { COMMON_SELECTION_OPERATORS } from '@/components/pure/crm-advance-filter/index';
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -127,7 +128,6 @@
   import { deletePaymentPlan, updatePaymentPlan } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { contractPaymentPlanStatusOptions } from '@/config/contract';
-  import useDetailTabTableFilter, { type DetailTabFilter } from '@/hooks/useDetailTabTableFilter';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -151,7 +151,9 @@
     sourceName?: string;
     readonly?: boolean;
     formKey: FormDesignKeyEnum.CONTRACT_PAYMENT | FormDesignKeyEnum.CONTRACT_CONTRACT_PAYMENT;
-    detailTabFilter?: DetailTabFilter;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
   }>();
@@ -359,6 +361,9 @@
     formKey: props.formKey,
     readonly: props.readonly,
     tableKey: props.tableKey,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
     hideOperationColumn: props.hideOperationColumn,
     excludeFieldIds: ['contractId'],
     operationColumn: {
@@ -420,9 +425,6 @@
     containerClass: `.crm-contract-payment-table-${props.formKey}`,
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-  const { applyDetailTabFilter } = useDetailTabTableFilter();
-  applyDetailTabFilter(props.detailTabFilter, fieldList, setAdvanceFilter);
-
   const exportColumns = computed<ExportTableColumnItem[]>(() =>
     getExportColumns(propsRes.value.columns, customFieldsFilterConfig.value as FilterFormItem[], fieldList.value, true)
   );
@@ -452,7 +454,7 @@
   function searchData(val?: string, refreshId?: string) {
     setLoadListParams({
       keyword: val ?? keyword.value,
-      viewId: props.isContractTab ? 'ALL' : activeTab.value,
+      ...(props.detailTabResourceId ? {} : { viewId: props.isContractTab ? 'ALL' : activeTab.value }),
       contractId: props.sourceId,
     });
     loadList(false, refreshId);
@@ -532,7 +534,11 @@
     (val) => {
       if (val) {
         checkedRowKeys.value = [];
-        setLoadListParams({ keyword: keyword.value, viewId: activeTab.value, contractId: props.sourceId });
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: activeTab.value,
+          contractId: props.sourceId,
+        });
         // initTableViewChartParams(viewChartCallBack);
         crmTableRef.value?.setColumnSort(val);
       }
@@ -540,6 +546,10 @@
   );
 
   onMounted(async () => {
+    if (props.detailTabResourceId) {
+      searchData();
+      return;
+    }
     if (route.query.id && !props.isContractTab) {
       activeSourceId.value = route.query.id as string;
       showDetailDrawer.value = true;

@@ -33,6 +33,7 @@
       </template>
       <template #view>
         <CrmViewSelect
+          v-if="!props.detailTabResourceId"
           v-model:active-tab="activeTab"
           :type="FormDesignKeyEnum.FOLLOW_RECORD"
           :custom-fields-config-list="filterConfigList"
@@ -130,6 +131,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { transformData } from '@lib/shared/method/formCreate';
   import type { FilterConditionItem, SortParams } from '@lib/shared/models/common';
+  import { FormDetailTabQuery } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterForm, FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -154,6 +156,15 @@
   import useModal from '@/hooks/useModal';
   import useOpenDetailPage from '@/hooks/useOpenDetailPage';
   import useUserStore from '@/store/modules/user';
+
+  const props = defineProps<{
+    readonly?: boolean;
+    detailTabResourceId?: string;
+    detailTabQuery?: FormDetailTabQuery;
+    detailTabPageFormId?: string;
+    tableKey?: string;
+    hideOperationColumn?: boolean;
+  }>();
 
   const { t } = useI18n();
   const userStore = useUserStore();
@@ -279,6 +290,12 @@
     formKey: FormDesignKeyEnum.FOLLOW_RECORD,
     containerClass: '.crm-record-table',
     hiddenRefresh: true,
+    readonly: props.readonly,
+    detailTabResourceId: props.detailTabResourceId,
+    detailTabPageFormId: props.detailTabPageFormId,
+    detailTabQuery: props.detailTabQuery,
+    tableKey: props.tableKey,
+    hideOperationColumn: props.hideOperationColumn,
     operationColumn: {
       key: 'operation',
       width: 140,
@@ -391,7 +408,6 @@
       loadTimelineData();
     }
   }
-
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const isFullScreen = computed(() => crmTableRef.value?.isFullScreen);
   const isAdvancedSearchMode = ref(false);
@@ -409,7 +425,7 @@
   async function searchData(_keyword?: string) {
     setLoadListParams({
       keyword: _keyword ?? keyword.value,
-      viewId: activeTab.value,
+      ...(props.detailTabResourceId ? {} : { viewId: activeTab.value }),
     });
     await loadList();
     refreshTimeline();
@@ -499,6 +515,11 @@
     }
   );
   onMounted(async () => {
+    if (props.detailTabResourceId) {
+      activeShowType.value = 'table';
+      searchData();
+      return;
+    }
     const showType = (await getItem<'timeline' | 'table'>(`record-active-show-type`)) ?? 'table';
     useTableResultAsTimelineFirstPage = showType === 'timeline';
     activeShowType.value = showType;

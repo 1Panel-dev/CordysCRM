@@ -28,36 +28,58 @@
       </CrmOperationButton>
     </template>
     <div class="h-full bg-[var(--text-n9)] px-[16px] pt-[16px]">
-      <CrmApprovalDetail
-        :form-key="props.customFormId"
-        :source-id="props.sourceId"
-        :refresh-key="props.refreshId"
-        :approval-status="currentApprovalStatus"
-        @saveApproval="handleSaveApproval"
-        @refresh="handleSavedRefresh"
-      >
-        <template #left="{ fieldPermissions, taskNode }">
-          <CrmFormDescription
-            ref="formDescriptionRef"
-            :form-key="FormDesignKeyEnum.CUSTOM_FORM"
+      <CrmCard v-if="showDetailTabs" no-content-padding hide-footer auto-height class="mb-[16px]">
+        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line">
+          <template #suffix>
+            <CrmTabSetting
+              v-if="showDetailTabs"
+              :tab-list="enabledDetailTabList"
+              :setting-key="`${props.customFormId}-settingKey`"
+              @init="initTabList"
+            />
+          </template>
+        </CrmTab>
+      </CrmCard>
+      <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
+        <div v-show="activeTab === 'customForm'" class="h-full p-[24px]">
+          <CrmApprovalDetail
+            :form-key="props.customFormId"
             :source-id="props.sourceId"
-            :column="3"
             :refresh-key="detailRefreshKey"
-            label-width="auto"
-            value-align="start"
-            tooltip-position="top-start"
-            :readonly="!canUpdateDetail"
-            :fieldPermissions="fieldPermissions"
-            :otherSaveParams="{
-              updateType: 'approval',
-              approvalTaskId: props.approvalTaskId || taskNode?.taskId,
-              customFormId: props.customFormId,
-            }"
-            :customFormId="props.customFormId"
-            @init="handleInit"
-          />
+            :approval-status="currentApprovalStatus"
+            @saveApproval="handleSaveApproval"
+            @refresh="handleSavedRefresh"
+          >
+            <template #left="{ fieldPermissions, taskNode }">
+              <CrmFormDescription
+                ref="formDescriptionRef"
+                :form-key="FormDesignKeyEnum.CUSTOM_FORM"
+                :source-id="props.sourceId"
+                :column="3"
+                :refresh-key="detailRefreshKey"
+                refresh-form-config
+                label-width="auto"
+                value-align="start"
+                tooltip-position="top-start"
+                :readonly="!canUpdateDetail"
+                :fieldPermissions="fieldPermissions"
+                :otherSaveParams="{
+                  updateType: 'approval',
+                  approvalTaskId: props.approvalTaskId || taskNode?.taskId,
+                  customFormId: props.customFormId,
+                }"
+                :customFormId="props.customFormId"
+                @init="handleInit"
+              />
+            </template>
+          </CrmApprovalDetail>
+        </div>
+        <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
+          <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
+            <component :is="item.table.component" v-bind="item.table.props" />
+          </div>
         </template>
-      </CrmApprovalDetail>
+      </CrmCard>
     </div>
   </CrmDrawer>
 </template>
@@ -72,17 +94,24 @@
   import type { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig, FormViewSize } from '@lib/shared/models/system/module';
 
+  import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmApprovalDetail from '@/components/business/crm-approval/components/crm-approval-detail.vue';
   import CrmApprovalStatus from '@/components/business/crm-approval/components/crm-approval-status.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
+  import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
   import { deleteCustomFormData } from '@/api/modules';
   import useApprovalOperation from '@/hooks/useApprovalOperation';
   import useApprovalResourceAction from '@/hooks/useApprovalResourceAction';
+  import useFormDetailTabAvailability from '@/hooks/useFormDetailTabAvailability';
+  import useFormDetailTabs from '@/hooks/useFormDetailTabs';
+  import useFormDetailTabTable from '@/hooks/useFormDetailTabTable';
   import useModal from '@/hooks/useModal';
 
   const props = defineProps<{
@@ -105,6 +134,7 @@
   const { openModal } = useModal();
   const Message = useMessage();
   const title = ref('');
+  const formConfig = ref<FormConfig>();
   const formViewSize = ref<FormViewSize>('large');
   const detailInfo = ref<Record<string, any>>();
   const isCurrentDetail = (detail?: Record<string, any>) => !detail?.id || detail.id === props.sourceId;
@@ -183,6 +213,7 @@
 
     title.value = name || '';
     detailInfo.value = detail;
+    formConfig.value = config;
     formViewSize.value = config?.viewSize || 'large';
   }
 
@@ -212,6 +243,49 @@
     handleSavedRefresh();
   }
 
+  const activeTab = ref('customForm');
+  const { availableDetailTabIds } = useFormDetailTabAvailability(
+    formConfig,
+    computed(() => props.customFormId)
+  );
+  const { customDetailTabList, enabledDetailTabList } = useFormDetailTabs(formConfig, [], availableDetailTabIds);
+  const showDetailTabs = computed(() => enabledDetailTabList.value.length > 0);
+  const { getDetailTabTable } = useFormDetailTabTable();
+  const customDetailTabTableList = computed(() =>
+    customDetailTabList.value.flatMap((tab) => {
+      const table = getDetailTabTable(tab.detailTab, props.sourceId, props.customFormId);
+      return table ? [{ tab, table }] : [];
+    })
+  );
+  const settingTabList = ref<TabContentItem[]>([]);
+  const tabList = computed<TabContentItem[]>(() => [
+    {
+      name: 'customForm',
+      tab: title.value,
+      enable: true,
+      permission: ['CUSTOM_FORM:READ'],
+    },
+    ...settingTabList.value,
+  ]);
+
+  function initTabList(list: TabContentItem[]) {
+    settingTabList.value = list;
+  }
+
+  watch([() => visible.value, () => props.sourceId, () => props.customFormId, () => props.refreshId], ([isVisible]) => {
+    if (isVisible) {
+      refreshKey.value += 1;
+    }
+  });
+
+  watch(
+    () => tabList.value,
+    (list) => {
+      if (!list.some((item) => item.name === activeTab.value)) {
+        activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
   // 删除
   function handleDelete() {
     openModal({

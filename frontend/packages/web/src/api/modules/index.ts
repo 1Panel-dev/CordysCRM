@@ -759,6 +759,8 @@ export const {
   downloadAttachment,
   getCustomerPoolPage,
   getFormDesignConfig,
+  getFormDetailTabOptions,
+  getFormDetailTabPage,
   getFieldDeptUerTree,
   getFieldContactList,
   getFieldProductList,

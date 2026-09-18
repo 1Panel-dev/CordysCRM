@@ -3,98 +3,137 @@ import { type Component, defineAsyncComponent } from 'vue';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import type { FormDetailTabConfig } from '@lib/shared/models/system/module';
 
-import type { DetailTabFilter } from './useDetailTabTableFilter';
-
-const systemTableComponentMap: Partial<Record<FormDesignKeyEnum, Component>> = {
-  [FormDesignKeyEnum.CUSTOMER]: defineAsyncComponent(() => import('@/views/customer/components/customerTable.vue')),
-  [FormDesignKeyEnum.CONTACT]: defineAsyncComponent(
-    () => import('@/components/business/crm-form-create-table/contactTable.vue')
-  ),
-  [FormDesignKeyEnum.BUSINESS]: defineAsyncComponent(
-    () => import('@/views/opportunity/components/opportunityTable.vue')
-  ),
-  [FormDesignKeyEnum.CLUE]: defineAsyncComponent(() => import('@/views/clueManagement/clue/components/clueTable.vue')),
-  [FormDesignKeyEnum.CONTRACT]: defineAsyncComponent(
-    () => import('@/views/contract/contract/components/contractTable.vue')
-  ),
-  [FormDesignKeyEnum.CONTRACT_PAYMENT]: defineAsyncComponent(
-    () => import('@/views/contract/contractPaymentPlan/components/paymentTable.vue')
-  ),
-  [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: defineAsyncComponent(
-    () => import('@/views/contract/contractPaymentRecord/components/paymentTable.vue')
-  ),
-  [FormDesignKeyEnum.INVOICE]: defineAsyncComponent(
-    () => import('@/views/contract/invoice/components/invoiceTable.vue')
-  ),
-  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: defineAsyncComponent(
-    () => import('@/views/opportunity/components/quotation/quotationTable.vue')
-  ),
-  [FormDesignKeyEnum.ORDER]: defineAsyncComponent(() => import('@/views/order/order/components/orderTable.vue')),
-  [FormDesignKeyEnum.PRODUCT]: defineAsyncComponent(() => import('@/views/product/components/productTable.vue')),
-  [FormDesignKeyEnum.PRICE]: defineAsyncComponent(() => import('@/views/product/components/priceTable.vue')),
+type SystemDetailTabTableConfig = {
+  component: Component;
+  permission: string[];
+  props?: Record<string, unknown>;
 };
 
-const systemTablePropsMap: Partial<Record<FormDesignKeyEnum, Record<string, unknown>>> = {
-  [FormDesignKeyEnum.CUSTOMER]: { formKey: FormDesignKeyEnum.CUSTOMER },
-  [FormDesignKeyEnum.CONTACT]: { formKey: FormDesignKeyEnum.CONTACT },
-  [FormDesignKeyEnum.BUSINESS]: { formKey: FormDesignKeyEnum.BUSINESS },
-  [FormDesignKeyEnum.CLUE]: { tableFormKey: FormDesignKeyEnum.CLUE },
-  [FormDesignKeyEnum.CONTRACT_PAYMENT]: { formKey: FormDesignKeyEnum.CONTRACT_PAYMENT },
-  [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: { formKey: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD },
-  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: { formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION },
-  [FormDesignKeyEnum.ORDER]: { formKey: FormDesignKeyEnum.ORDER },
+export const systemDetailTabTableConfigMap: Partial<Record<FormDesignKeyEnum, SystemDetailTabTableConfig>> = {
+  [FormDesignKeyEnum.CUSTOMER]: {
+    component: defineAsyncComponent(() => import('@/views/customer/components/customerTable.vue')),
+    permission: ['CUSTOMER_MANAGEMENT:READ'],
+    props: { formKey: FormDesignKeyEnum.CUSTOMER },
+  },
+  [FormDesignKeyEnum.CONTACT]: {
+    component: defineAsyncComponent(() => import('@/components/business/crm-form-create-table/contactTable.vue')),
+    permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
+    props: { formKey: FormDesignKeyEnum.CONTACT },
+  },
+  [FormDesignKeyEnum.BUSINESS]: {
+    component: defineAsyncComponent(() => import('@/views/opportunity/components/opportunityTable.vue')),
+    permission: ['OPPORTUNITY_MANAGEMENT:READ'],
+    props: { formKey: FormDesignKeyEnum.BUSINESS },
+  },
+  [FormDesignKeyEnum.CLUE]: {
+    component: defineAsyncComponent(() => import('@/views/clueManagement/clue/components/clueTable.vue')),
+    permission: ['CLUE_MANAGEMENT:READ'],
+    props: { tableFormKey: FormDesignKeyEnum.CLUE },
+  },
+  [FormDesignKeyEnum.FOLLOW_RECORD]: {
+    component: defineAsyncComponent(() => import('@/components/business/crm-follow-drawer/components/recordTable.vue')),
+    permission: [],
+  },
+  [FormDesignKeyEnum.FOLLOW_PLAN]: {
+    component: defineAsyncComponent(() => import('@/components/business/crm-follow-drawer/components/planTable.vue')),
+    permission: [],
+  },
+  // 详情标签候选接口中，客户跟进模块使用 record、plan 作为关联表单 ID。
+  [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: {
+    component: defineAsyncComponent(() => import('@/components/business/crm-follow-drawer/components/recordTable.vue')),
+    permission: [],
+  },
+  [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: {
+    component: defineAsyncComponent(() => import('@/components/business/crm-follow-drawer/components/planTable.vue')),
+    permission: [],
+  },
+  [FormDesignKeyEnum.CONTRACT]: {
+    component: defineAsyncComponent(() => import('@/views/contract/contract/components/contractTable.vue')),
+    permission: ['CONTRACT:READ'],
+  },
+  [FormDesignKeyEnum.CONTRACT_PAYMENT]: {
+    component: defineAsyncComponent(() => import('@/views/contract/contractPaymentPlan/components/paymentTable.vue')),
+    permission: ['CONTRACT_PAYMENT_PLAN:READ'],
+    props: { formKey: FormDesignKeyEnum.CONTRACT_PAYMENT },
+  },
+  [FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD]: {
+    component: defineAsyncComponent(() => import('@/views/contract/contractPaymentRecord/components/paymentTable.vue')),
+    permission: ['CONTRACT_PAYMENT_RECORD:READ'],
+    props: { formKey: FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD },
+  },
+  [FormDesignKeyEnum.INVOICE]: {
+    component: defineAsyncComponent(() => import('@/views/contract/invoice/components/invoiceTable.vue')),
+    permission: ['CONTRACT_INVOICE:READ'],
+  },
+  [FormDesignKeyEnum.OPPORTUNITY_QUOTATION]: {
+    component: defineAsyncComponent(() => import('@/views/opportunity/components/quotation/quotationTable.vue')),
+    permission: ['OPPORTUNITY_QUOTATION:READ'],
+    props: { formKey: FormDesignKeyEnum.OPPORTUNITY_QUOTATION },
+  },
+  [FormDesignKeyEnum.ORDER]: {
+    component: defineAsyncComponent(() => import('@/views/order/order/components/orderTable.vue')),
+    permission: ['ORDER:READ'],
+    props: { formKey: FormDesignKeyEnum.ORDER },
+  },
+  [FormDesignKeyEnum.PRODUCT]: {
+    component: defineAsyncComponent(() => import('@/views/product/components/productTable.vue')),
+    permission: ['PRODUCT_MANAGEMENT:READ'],
+  },
+  [FormDesignKeyEnum.PRICE]: {
+    component: defineAsyncComponent(() => import('@/views/product/components/priceTable.vue')),
+    permission: ['PRICE:READ'],
+  },
 };
 
 const CustomFormTable = defineAsyncComponent(() => import('@/views/customForm/components/formTable.vue'));
 
 export interface FormDetailTabTable {
   component: Component;
-  filter: DetailTabFilter;
   props: Record<string, unknown>;
 }
 
 export default function useFormDetailTabTable() {
-  function getDetailTabTable(detailTab?: FormDetailTabConfig, sourceId?: string): FormDetailTabTable | undefined {
-    if (!detailTab?.relatedFormId || !detailTab.relatedFieldId || !sourceId) {
+  function getDetailTabTable(
+    detailTab?: FormDetailTabConfig,
+    resourceId?: string,
+    pageFormId?: string
+  ): FormDetailTabTable | undefined {
+    const relatedFormId = detailTab?.relatedForm?.id;
+    const relatedFieldId = detailTab?.relatedField?.id;
+    if (!relatedFormId || !relatedFieldId || !resourceId || !pageFormId) {
       return undefined;
     }
 
-    const filter = {
-      fieldId: detailTab.relatedFieldId,
-      sourceId,
-    };
     const commonProps = {
       readonly: true,
       hideOperationColumn: true,
-      hiddenAdvanceFilter: true,
-      detailTabFilter: filter,
-      tableKey: `form-detail-tab:${detailTab.id}`,
+      detailTabResourceId: resourceId,
+      detailTabPageFormId: pageFormId,
+      detailTabQuery: {
+        relatedFormId,
+        relatedFieldId,
+      },
+      // 关联表单与关联字段的组合在当前表单内唯一，用于隔离各关联列表的列配置缓存。
+      tableKey: `form-detail-tab:${relatedFormId}:${relatedFieldId}`,
     };
 
-    if (detailTab.relatedFormType === 'CUSTOM') {
+    const config = systemDetailTabTableConfigMap[relatedFormId as FormDesignKeyEnum];
+    if (config) {
       return {
-        component: CustomFormTable,
-        filter,
+        component: config.component,
         props: {
           ...commonProps,
-          formKey: detailTab.relatedFormId,
-          formKeyName: detailTab.name,
+          ...config.props,
         },
       };
     }
 
-    const formKey = detailTab.relatedFormId as FormDesignKeyEnum;
-    const component = systemTableComponentMap[formKey];
-    if (!component) {
-      return undefined;
-    }
-
     return {
-      component,
-      filter,
+      component: CustomFormTable,
       props: {
         ...commonProps,
-        ...systemTablePropsMap[formKey],
+        formKey: relatedFormId,
+        formKeyName: detailTab.relatedForm!.name,
       },
     };
   }
