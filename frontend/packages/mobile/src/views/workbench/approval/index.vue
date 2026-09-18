@@ -423,6 +423,9 @@
       options.push({
         text: t('workbench.preNode', { index: currentApprovalNodeIndex.value - i }),
         value: approvalInfo.value?.nodes[i].nodeId || '',
+        taskId: approvalInfo.value?.nodes[i].nodeId.includes('-SN')
+          ? approvalInfo.value?.nodes[i].taskNodes[0].taskId
+          : undefined,
       });
     }
     return options;

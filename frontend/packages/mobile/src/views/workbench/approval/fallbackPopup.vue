@@ -103,7 +103,7 @@
 
   const props = defineProps<{
     approvingItem?: Partial<ApprovalTodoItem>;
-    fallbackOptions: PickerOption[];
+    fallbackOptions: (PickerOption & { taskId?: string })[];
     approvalConfig?: ApprovalProcessDetail;
   }>();
   const emit = defineEmits<{
@@ -131,6 +131,7 @@
         return;
       }
       loading.value = true;
+      const returnToOption = props.fallbackOptions.find((option) => option.value === fallbackForm.value.node);
       await backApproval({
         id: props.approvingItem.approvalTaskId || '',
         nodeId: props.approvingItem.approvalNodeId || '',
@@ -139,6 +140,7 @@
         comment: fallbackForm.value.reason,
         attachmentIds: fallbackForm.value.fileList,
         returnToNodeId: fallbackForm.value.node || '',
+        returnToTaskId: returnToOption?.taskId,
       });
       showToast({
         type: 'success',

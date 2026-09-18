@@ -631,6 +631,7 @@
             if (!errors && currentApprovalNode.value && currentTaskNode.value) {
               try {
                 fallbackLoading.value = true;
+                const returnToNode = approvalInfo.value?.nodes.find((node) => node.nodeId === fallbackForm.value.node);
                 await backApproval({
                   id: currentTaskNode.value.taskId,
                   nodeId: currentApprovalNode.value.nodeId,
@@ -639,6 +640,7 @@
                   comment: fallbackForm.value.reason,
                   attachmentIds: fallbackForm.value.fileList.map((e) => e.id),
                   returnToNodeId: fallbackForm.value.node || '',
+                  returnToTaskId: returnToNode?.nodeId.includes('-SN') ? returnToNode.taskNodes[0]?.taskId : undefined,
                 });
                 fallbackModalVisible.value = false;
                 message.success(t('crm.approval.fallbackSuccess'));

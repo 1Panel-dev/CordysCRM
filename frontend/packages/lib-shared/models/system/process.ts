@@ -270,6 +270,7 @@ export interface ApprovalOperationParams {
 
 export interface ApprovalBackParams extends ApprovalOperationParams {
   returnToNodeId: string;
+  returnToTaskId?: string;
 }
 
 export interface ApprovalAddSignParams extends ApprovalOperationParams {
