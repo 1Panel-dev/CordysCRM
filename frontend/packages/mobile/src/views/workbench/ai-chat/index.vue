@@ -12,14 +12,16 @@
       </template>
     </van-nav-bar>
 
+    <AiMobileModelSelector />
+
     <AiChatProvider v-if="runtime" :key="activeRuntimeKey" :runtime="runtime">
-      <main class="mt-[48px] min-h-0 flex-1 overflow-hidden">
+      <main class="mt-[90px] min-h-0 flex-1 overflow-hidden">
         <AiMobileThread :scroll-to-bottom-key="activeHistoryId" />
       </main>
 
       <AiMobileConfirmDialog v-if="pendingConfirm" :confirm="pendingConfirm" />
 
-      <AiMobileComposer />
+      <AiMobileComposer :model="selectedModel" />
 
       <AiMobileHistoryDrawer
         v-model:show="showHistory"
@@ -51,7 +53,9 @@
   import AiMobileComposer from '@/components/business/ai-chat/components/AiMobileComposer.vue';
   import AiMobileConfirmDialog from '@/components/business/ai-chat/components/AiMobileConfirmDialog.vue';
   import AiMobileHistoryDrawer from '@/components/business/ai-chat/components/AiMobileHistoryDrawer.vue';
+  import AiMobileModelSelector from '@/components/business/ai-chat/components/AiMobileModelSelector.vue';
   import AiMobileThread from '@/components/business/ai-chat/components/AiMobileThread.vue';
+  import useAiModelOptions from '@/components/business/ai-chat/composables/useAiModelOptions';
   import { consumeAiMobileChatInitialPayload } from '@/components/business/ai-chat/utils/initialPayload';
 
   import {
@@ -69,6 +73,7 @@
   const { t } = useI18n();
   const router = useRouter();
   const route = useRoute();
+  const { selectedModel, loadModelOptions } = useAiModelOptions();
 
   const showHistory = ref(false);
   const {
@@ -140,15 +145,19 @@
     const chatRuntime = runtime.value ?? createConversation();
 
     if (initialPayload) {
-      await chatRuntime.submit(initialPayload);
+      await chatRuntime.submit({
+        ...initialPayload,
+        options: { model: selectedModel.value ?? undefined },
+      });
       return;
     }
 
-    await chatRuntime.submit({ content: prompt });
+    await chatRuntime.submit({ content: prompt, options: { model: selectedModel.value ?? undefined } });
   }
 
   onMounted(async () => {
     createConversation();
+    await loadModelOptions();
     await loadHistory({ reset: true });
     await submitInitialPrompt();
   });

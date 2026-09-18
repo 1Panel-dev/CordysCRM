@@ -1,5 +1,9 @@
 export default {
   'aiChat.inputPlaceholder': '输入指令或提问',
+  'aiChat.model': '模型',
+  'aiChat.personalModel': '个人模型',
+  'aiChat.systemModel': '系统模型',
+  'aiChat.noModel': '暂无模型',
   'aiChat.noConversation': '暂无对话',
   'aiChat.emptyTitle': '你能做什么',
   'aiChat.emptyCustomerLookup': '快速查询客户信息',

@@ -1,6 +1,6 @@
 <template>
   <div class="relative h-full">
-    <div ref="threadRef" class="h-full overflow-y-auto px-[12px] py-[14px]" @scroll="handleScroll">
+    <div ref="threadRef" class="h-full overflow-y-auto px-[12px] pb-[14px]" @scroll="handleScroll">
       <div
         v-if="messages.length === 0"
         class="flex h-full flex-col items-center justify-center px-[24px] text-[var(--text-n1)]"

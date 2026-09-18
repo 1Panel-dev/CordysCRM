@@ -84,7 +84,7 @@
   import { computed, nextTick, ref, watch } from 'vue';
   import { type PopoverAction, showToast } from 'vant';
 
-  import type { AiChatAttachment, AiComposerSubmitPayload, AiFileKind } from '@lib/shared/ai-chat';
+  import type { AiChatAttachment, AiChatModel, AiComposerSubmitPayload, AiFileKind } from '@lib/shared/ai-chat';
   import { useAiChatRuntime } from '@lib/shared/ai-chat';
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -98,10 +98,12 @@
     defineProps<{
       placeholder?: string;
       submitMode?: 'runtime' | 'emit';
+      model?: AiChatModel | null;
     }>(),
     {
       placeholder: '',
       submitMode: 'runtime',
+      model: null,
     }
   );
 
@@ -288,6 +290,11 @@
 
   async function handleSubmit(): Promise<void> {
     const content = composerValue.value.trim();
+    const submitPayload: AiComposerSubmitPayload = {
+      content,
+      attachments: [...attachments.value],
+      options: { model: props.model ?? undefined },
+    };
 
     if ((!content && !attachments.value.length) || runtime.state.loading.value) {
       return;
@@ -296,9 +303,9 @@
     if (isEditing.value) {
       await runtime.submitEditMessage();
     } else if (props.submitMode === 'emit') {
-      emit('submit', { content, attachments: [...attachments.value] });
+      emit('submit', submitPayload);
     } else {
-      await runtime.submit({ content, attachments: [...attachments.value] });
+      await runtime.submit(submitPayload);
     }
   }
 
