@@ -140,6 +140,19 @@ export const processStatusOptions = Object.entries(processStatusMap)
     value: key,
   }));
 
+export const approvalAuthorityStatusOrder: ProcessStatusEnum[] = [
+  ProcessStatusEnum.PENDING,
+  ProcessStatusEnum.APPROVING,
+  ProcessStatusEnum.REVOKED,
+  ProcessStatusEnum.UNAPPROVED,
+  ProcessStatusEnum.APPROVED,
+];
+
+export const approvalAuthorityStatusOptions = approvalAuthorityStatusOrder.map((status) => ({
+  label: processStatusMap[status].label,
+  value: status,
+}));
+
 export const defaultBasicForm: BasicFormParams = {
   formType: FormDesignKeyEnum.OPPORTUNITY_QUOTATION,
   name: '',
