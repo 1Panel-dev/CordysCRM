@@ -459,6 +459,7 @@ export const {
   deleteAgentConversation,
   renameAgentConversation,
   uploadAgentChatFile,
+  getAgentModelOptions,
 } = aiApi;
 
 export const {

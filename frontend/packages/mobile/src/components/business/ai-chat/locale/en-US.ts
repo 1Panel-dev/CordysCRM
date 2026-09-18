@@ -1,5 +1,9 @@
 export default {
   'aiChat.inputPlaceholder': 'Enter a command or question',
+  'aiChat.model': 'Model',
+  'aiChat.personalModel': 'Personal',
+  'aiChat.systemModel': 'System',
+  'aiChat.noModel': 'No models',
   'aiChat.noConversation': 'No conversations',
   'aiChat.emptyTitle': 'What can I do?',
   'aiChat.emptyCustomerLookup': 'Quickly look up customer information',

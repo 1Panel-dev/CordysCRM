@@ -1,4 +1,6 @@
 export { default as AiChatProvider } from './AiChatProvider.vue';
+export { default as createAiModelOptions } from './composables/createAiModelOptions';
+export type { GetAgentModelOptions } from './composables/createAiModelOptions';
 export type { AgentChatTransportOptions } from './runtime/createAgentChatTransport';
 export { default as createAgentChatTransport } from './runtime/createAgentChatTransport';
 export { default as createAiChatRuntime } from './runtime/createAiChatRuntime';
