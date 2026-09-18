@@ -34,7 +34,14 @@
       class="absolute bottom-[16px] left-[16px] right-[16px] flex min-h-[22px] items-center justify-between"
     >
       <div class="flex items-center">
-        <input ref="fileInputRef" type="file" class="hidden" multiple @change="handleFileInputChange" />
+        <input
+          ref="fileInputRef"
+          type="file"
+          class="hidden"
+          multiple
+          :accept="agentChatFileAccept"
+          @change="handleFileInputChange"
+        />
         <input
           ref="mcpImportInputRef"
           type="file"
@@ -744,7 +751,63 @@
     );
   }
 
-  const defaultMaxFileSize = 100 * 1024 * 1024;
+  const agentChatMaxFileSize = 10 * 1024 * 1024;
+  const agentChatImageTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+  const agentChatAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/vnd.wave'];
+  const agentChatDocumentTypes = [
+    'application/pdf',
+    'application/rtf',
+    'application/json',
+    'application/xml',
+    'application/xhtml+xml',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.oasis.opendocument.text',
+    'application/vnd.oasis.opendocument.spreadsheet',
+    'application/vnd.oasis.opendocument.presentation',
+  ];
+  const agentChatAllowedMimeTypes = new Set([
+    ...agentChatImageTypes,
+    ...agentChatAudioTypes,
+    ...agentChatDocumentTypes,
+  ]);
+  const agentChatAllowedExtensions = [
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.webp',
+    '.gif',
+    '.mp3',
+    '.wav',
+    '.pdf',
+    '.rtf',
+    '.json',
+    '.xml',
+    '.xhtml',
+    '.doc',
+    '.docx',
+    '.xls',
+    '.xlsx',
+    '.ppt',
+    '.pptx',
+    '.odt',
+    '.ods',
+    '.odp',
+  ];
+  const agentChatFileAccept = [...agentChatAllowedMimeTypes, ...agentChatAllowedExtensions].join(',');
+
+  function isAllowedAgentChatFile(file: File): boolean {
+    const fileName = file.name.toLowerCase();
+
+    return (
+      agentChatAllowedMimeTypes.has(file.type) ||
+      agentChatAllowedExtensions.some((extension) => fileName.endsWith(extension))
+    );
+  }
 
   function validateFile(file: File): boolean {
     if (attachments.value.some((attachment) => attachment.name === file.name)) {
@@ -752,8 +815,13 @@
       return false;
     }
 
-    if (file.size > defaultMaxFileSize) {
-      Message.warning(t('crm.upload.overSize', { size: 100, unit: 'MB' }));
+    if (!isAllowedAgentChatFile(file)) {
+      Message.warning(t('aiChat.attachmentUnsupportedType'));
+      return false;
+    }
+
+    if (file.size > agentChatMaxFileSize) {
+      Message.warning(t('crm.upload.overSize', { size: 10, unit: 'MB' }));
       return false;
     }
 

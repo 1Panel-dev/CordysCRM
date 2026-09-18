@@ -36,6 +36,8 @@ export default {
   'aiChat.progressOutput': 'Output',
   'aiChat.attachmentUploading': 'Uploading',
   'aiChat.attachmentUploadFailed': 'Upload failed',
+  'aiChat.attachmentUnsupportedType':
+    'Only images, audio, PDF, RTF, JSON, XML, XHTML, and Office documents are supported',
   'aiChat.mcpImport': 'Import MCP',
   'aiChat.mcpImportOnlyJson': 'Only JSON files can be imported',
   'aiChat.mcpImportOverSize': 'The MCP config file cannot exceed 100MB',
