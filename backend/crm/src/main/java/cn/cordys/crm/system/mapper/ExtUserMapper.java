@@ -3,11 +3,11 @@ package cn.cordys.crm.system.mapper;
 
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.UserDeptDTO;
-import cn.cordys.crm.system.domain.OrganizationUser;
 import cn.cordys.crm.system.domain.User;
+import cn.cordys.crm.system.dto.DepartmentSourceUserDTO;
 import cn.cordys.crm.system.dto.convert.UserRoleConvert;
-import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.dto.response.EnableOptionDTO;
+import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.security.UserDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -58,7 +58,7 @@ public interface ExtUserMapper {
 
     List<UserDeptDTO> getUserDeptByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 
-    void updateUserInfo(@Param("user") OrganizationUser user);
+    void updateUserInfo(@Param("user") DepartmentSourceUserDTO user);
 
     List<String> getOrgUserResourceIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 }

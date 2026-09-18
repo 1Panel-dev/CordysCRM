@@ -93,13 +93,25 @@ public class LarkDepartmentService {
         return allUsers;
     }
 
-    public List<ThirdDepartment> getDepartmentList(String tenantAccessToken) {
-        List<ThirdDepartment> thirdDepartments = getAllSubDepartments(tenantAccessToken, "0").stream()
+    public List<ThirdDepartment> getDepartmentList(String tenantAccessToken, String departmentId) {
+        departmentId = StringUtils.isNotBlank(departmentId) ? departmentId : "0";
+        List<ThirdDepartment> thirdDepartments = getAllSubDepartments(tenantAccessToken, departmentId).stream()
                 .map(this::toThirdDepartment)
                 .collect(Collectors.toList());
         thirdDepartments.add(buildRootDepartment(getTenantInfo(tenantAccessToken)));
         return thirdDepartments;
     }
+
+
+    public List<ThirdDepartment> getDepartmentListById(String tenantAccessToken, String departmentId, List<ThirdDepartment> allDepartmentList) {
+        List<ThirdDepartment> thirdDepartments = getAllSubDepartments(tenantAccessToken, departmentId).stream()
+                .map(this::toThirdDepartment)
+                .collect(Collectors.toList());
+        ThirdDepartment thirdDepartment = allDepartmentList.stream().filter(department -> Strings.CI.equals(department.getId(), departmentId)).findFirst().orElse(new ThirdDepartment());
+        thirdDepartments.add(thirdDepartment);
+        return thirdDepartments;
+    }
+
 
     public Map<String, List<ThirdUser>> getDepartmentUserList(String tenantAccessToken, List<String> departmentIds) {
         return departmentIds.stream().collect(Collectors.toMap(Function.identity(), departmentId ->
@@ -164,6 +176,7 @@ public class LarkDepartmentService {
                 .mobile(formatMobile(larkUser.getMobile()))
                 .position(larkUser.getWorkStation())
                 .gender(larkUser.getGender())
+                .status(larkUser.getStatus().getIsActivated())
                 .avatar(Optional.ofNullable(larkUser.getAvatar())
                         .map(LarkUser.LarkUserAvatar::getAvatar240)
                         .filter(StringUtils::isNotBlank)

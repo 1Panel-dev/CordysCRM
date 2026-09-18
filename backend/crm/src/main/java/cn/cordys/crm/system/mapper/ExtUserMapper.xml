@@ -306,7 +306,7 @@
     </update>
 
 
-    <update id="updateUserInfo" parameterType="cn.cordys.crm.system.domain.OrganizationUser">
+    <update id="updateUserInfo" parameterType="cn.cordys.crm.system.dto.DepartmentSourceUserDTO">
         update sys_user
         set email = #{user.id}
         where id = #{user.userId}

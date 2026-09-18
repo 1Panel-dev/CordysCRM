@@ -2,16 +2,13 @@ package cn.cordys.crm.system.domain;
 
 import cn.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Table;
 import lombok.Data;
 
-import java.io.Serial;
-
 @Data
+@Table(name = "schedule")
 public class Schedule extends BaseModel {
-    @Serial
-    private static final long serialVersionUID = 1L;
-    @Schema(description = "id")
-    private String id;
+
     @Schema(description = "Qrtz UUID")
     private String key;
     @Schema(description = "组织ID")
@@ -28,12 +25,6 @@ public class Schedule extends BaseModel {
     private Boolean enable;
     @Schema(description = "资源ID")
     private String resourceId;
-    @Schema(description = "创建人")
-    private String createUser;
-    @Schema(description = "创建时间")
-    private Long createTime;
-    @Schema(description = "更新时间")
-    private Long updateTime;
     @Schema(description = "名称")
     private String name;
     @Schema(description = "配置")

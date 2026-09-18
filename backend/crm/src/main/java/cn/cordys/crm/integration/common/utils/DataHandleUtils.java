@@ -11,6 +11,7 @@ import cn.cordys.crm.approval.service.ApprovalActionService;
 import cn.cordys.crm.integration.sync.dto.ThirdDepartment;
 import cn.cordys.crm.integration.sync.dto.ThirdUser;
 import cn.cordys.crm.system.domain.*;
+import cn.cordys.crm.system.dto.DepartmentSourceUserDTO;
 import cn.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import cn.cordys.crm.system.service.DepartmentService;
 import cn.cordys.crm.system.service.MessageNotificationService;
@@ -69,7 +70,7 @@ public class DataHandleUtils {
      * @param operatorId       操作人ID
      */
     public void handleAddData(List<ThirdDepartment> thirdDepartments, String operatorId, String orgId, String type) {
-        this.thirdDepartmentTree = ThirdDepartment.buildDepartmentTree(internalDepartment.getId(), thirdDepartments);
+        this.thirdDepartmentTree = ThirdDepartment.buildDepartmentTree(internalDepartment, thirdDepartments, type);
         //更新待办任务的审批人
         extApprovalTaskMapper.updateApprover(InternalUser.ADMIN.getValue());
         organizationUserService.deleteUser(orgId);
@@ -201,23 +202,29 @@ public class DataHandleUtils {
      * @param operatorId       操作人ID
      */
     public void handleUpdateData(List<ThirdDepartment> thirdDepartments, String operatorId) {
-        // 获取用户列表
-        List<OrganizationUser> userList = organizationUserService.getUserByOrgId(orgId);
+        List<DepartmentSourceUserDTO> disableUserList = new ArrayList<>();
 
-        // 微信全量用户
-        List<ThirdUser> thirdUserList = departmentUserMap.values().stream()
-                .flatMap(List::stream)
-                .toList();
+        Map<String, List<DepartmentSourceUserDTO>> userMap = organizationUserService.getuserBySourceId(orgId, departmentUserMap.keySet());
+        departmentUserMap.forEach((k, v) -> {
+            if (userMap.containsKey(k)) {
+                // 系统 当前部门下的用户
+                List<DepartmentSourceUserDTO> userList = userMap.get(k);
+                List<DepartmentSourceUserDTO> disableUser = userList.stream()
+                        .filter(user -> v.stream()
+                                .noneMatch(thirdUser -> Strings.CI.equalsAny(thirdUser.getUserId(), user.getResourceUserId())))
+                        .collect(Collectors.toList());
 
-        // 需要禁用的用户（企业微信不存在而系统存在的用户）
-        List<OrganizationUser> disableUserList = userList.stream()
-                .filter(user -> thirdUserList.stream()
-                        .noneMatch(thirdUser -> Strings.CI.equalsAny(thirdUser.getUserId(), user.getResourceUserId())))
-                .collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(disableUser)) {
+                    disableUserList.addAll(disableUser);
+                }
+            }
+        });
 
-        List<String> userIds = disableUserList.stream().map(OrganizationUser::getUserId).toList();
-        approvalActionService.refreshApprovingTasksForDisabledUser(userIds, orgId);
-        organizationUserService.disableUsers(disableUserList);
+        if (CollectionUtils.isNotEmpty(disableUserList)) {
+            List<String> userIds = disableUserList.stream().map(DepartmentSourceUserDTO::getUserId).toList();
+            approvalActionService.refreshApprovingTasksForDisabledUser(userIds, orgId);
+            organizationUserService.disableUsers(disableUserList);
+        }
 
         // 当前系统数据
         List<Department> currentDepartmentList = departmentService.getDepartmentByOrgId(orgId);
@@ -392,7 +399,7 @@ public class DataHandleUtils {
         orgUser.setOrganizationId(orgId);
         orgUser.setUserId(userId);
         orgUser.setResourceUserId(thirdUser.getUserId());
-        orgUser.setEnable(true);
+        orgUser.setEnable(thirdUser.getStatus());
         orgUser.setPosition(thirdUser.getPosition());
         orgUser.setCreateTime(timestamp);
         orgUser.setCreateUser(operatorId);
@@ -452,6 +459,7 @@ public class DataHandleUtils {
         updateOrgUser.setId(orgUser.getId());
         updateOrgUser.setDepartmentId(departmentId);
         updateOrgUser.setPosition(thirdUser.getPosition());
+        updateOrgUser.setEnable(thirdUser.getStatus());
         updateOrgUser.setUpdateTime(timestamp);
         updateOrgUser.setUpdateUser(operatorId);
         updateOrganizationUsers.add(updateOrgUser);
@@ -523,26 +531,12 @@ public class DataHandleUtils {
 
     private void updateExistingDepartment(Department existingDept, ThirdDepartment thirdDepartment,
                                           List<Department> currentDepartmentList, String operatorId, long timestamp) {
-        Department parentDep = currentDepartmentList.stream()
-                .filter(dept -> Strings.CI.equalsAny(dept.getId(), existingDept.getParentId()))
-                .findFirst()
-                .orElse(null);
-
-        Department crmParentDep = currentDepartmentList.stream()
-                .filter(dept -> Strings.CI.equalsAny(dept.getId(), thirdDepartment.getCrmParentId()))
-                .findFirst()
-                .orElse(null);
-
         Department updateDept = new Department();
         updateDept.setId(existingDept.getId());
         updateDept.setName(thirdDepartment.getName());
         updateDept.setUpdateTime(timestamp);
         updateDept.setUpdateUser(operatorId);
-        if (crmParentDep != null) {
-            updateDept.setParentId(crmParentDep.getId());
-        } else {
-            updateDept.setParentId(parentDep == null ? thirdDepartment.getCrmParentId() : parentDep.getId());
-        }
+        updateDept.setParentId(thirdDepartment.getCrmParentId());
         updateDepartments.add(updateDept);
     }
 

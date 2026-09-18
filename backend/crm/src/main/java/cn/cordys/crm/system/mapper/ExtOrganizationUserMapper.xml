@@ -514,7 +514,7 @@
     </update>
 
 
-    <update id="disableUser" parameterType="cn.cordys.crm.system.domain.OrganizationUser">
+    <update id="disableUser" parameterType="cn.cordys.crm.system.dto.DepartmentSourceUserDTO">
         update sys_organization_user
         set enable = 0
         where id = #{organizationUser.id}
@@ -534,4 +534,26 @@
         from sys_organization_user
         where user_id = #{userId} limit 1
     </select>
+
+
+    <select id="getUserBySourceId" resultType="cn.cordys.crm.system.dto.DepartmentSourceUserDTO">
+        select 
+            sou.id, 
+            sou.user_id as userId, 
+            sou.resource_user_id as resourceUserId, 
+            sou.department_id as departmentId, 
+            sou.enable, 
+            sd.resource_id as resourceId
+        from sys_organization_user sou
+        left join sys_department sd on sd.id = sou.department_id
+        where sou.organization_id = #{orgId}
+        <if test="ids != null and ids.size() > 0">
+            and sd.resource_id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+
 </mapper>

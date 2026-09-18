@@ -6,13 +6,17 @@ import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.NumGenerator;
 import cn.cordys.crm.system.domain.Schedule;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
 import org.quartz.TriggerKey;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * 定时任务服务类，负责调度任务的创建、编辑、删除及相关操作。
@@ -46,7 +50,6 @@ public class ScheduleService {
      * 获取下一个任务编号。
      *
      * @param organizationId 项目 ID
-     *
      * @return 下一个任务编号
      */
     public long getNextNum(String organizationId) {
@@ -57,7 +60,6 @@ public class ScheduleService {
      * 根据任务 ID 获取定时任务。
      *
      * @param scheduleId 定时任务 ID
-     *
      * @return 定时任务对象
      */
     public Schedule getSchedule(String scheduleId) {
@@ -68,7 +70,6 @@ public class ScheduleService {
      * 编辑定时任务信息。
      *
      * @param schedule 要更新的定时任务对象
-     *
      * @return 更新的记录数
      */
     public int editSchedule(Schedule schedule) {
@@ -114,5 +115,19 @@ public class ScheduleService {
                 throw new GenericException("定时任务关闭异常: " + e.getMessage());
             }
         }
+    }
+
+
+    public Schedule getScheduleByResource(String resourceType, String resourceId, String name) {
+        LambdaQueryWrapper<Schedule> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Schedule::getResourceId, resourceId);
+        wrapper.eq(Schedule::getJob, name);
+        wrapper.eq(Schedule::getResourceType, resourceType);
+        wrapper.eq(Schedule::getName, "组织架构同步定时任务");
+        List<Schedule> schedules = scheduleMapper.selectListByLambda(wrapper);
+        if (CollectionUtils.isNotEmpty(schedules)) {
+            return schedules.getFirst();
+        }
+        return null;
     }
 }
