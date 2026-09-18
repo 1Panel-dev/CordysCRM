@@ -111,7 +111,7 @@
   import { MoreSettingsParams, PermissionItem, StatusPermissions } from '@lib/shared/models/system/process';
 
   import { getApprovalPermissions } from '@/api/modules';
-  import { defaultMoreConfig, processStatusOptions } from '@/config/process';
+  import { approvalAuthorityStatusOptions, defaultMoreConfig } from '@/config/process';
   import {
     matchPermissionBySuffix,
     processDefaultStatusPermissionMap,
@@ -284,28 +284,23 @@
       (isCustomFormDataPermission ? processDefaultStatusPermissionMap[FormDesignKeyEnum.CUSTOM_FORM] : {}) ||
       {};
 
-    return processStatusOptions
-      .filter((item) => item.value !== ProcessStatusEnum.NONE)
-      .map((item) => {
-        const enabledSuffixList = moduleDefaultConfig[item.value as ProcessStatusEnum] || [];
-        return {
-          status: item.value as ProcessStatusEnum,
-          statusLabel: item.label,
-          permissions: data.reduce((acc, permissionItem: PermissionItem) => {
-            acc[permissionItem.id] = enabledSuffixList.some((suffix) =>
-              matchPermissionBySuffix(permissionItem.id, suffix)
-            );
-            return acc;
-          }, {} as Record<string, boolean>),
-        };
-      });
+    return approvalAuthorityStatusOptions.map((item) => {
+      const enabledSuffixList = moduleDefaultConfig[item.value] || [];
+      return {
+        status: item.value,
+        statusLabel: item.label,
+        permissions: data.reduce((acc, permissionItem: PermissionItem) => {
+          acc[permissionItem.id] = enabledSuffixList.some((suffix) =>
+            matchPermissionBySuffix(permissionItem.id, suffix)
+          );
+          return acc;
+        }, {} as Record<string, boolean>),
+      };
+    });
   }
 
-  function aggregateStatusPermissions(flatData: StatusPermissions[]): ApprovalAuthorityRow[] {
+  function aggregateStatusPermissions(flatData: StatusPermissions[], data: PermissionItem[]): ApprovalAuthorityRow[] {
     const statusMap = new Map<ProcessStatusEnum, Record<string, boolean>>();
-    const processStatusOptionsMap = new Map(
-      processStatusOptions.filter((e) => e.value !== ProcessStatusEnum.NONE).map((item) => [item.value, item])
-    );
 
     flatData.forEach((item) => {
       if (!statusMap.has(item.approvalStatus)) {
@@ -314,10 +309,13 @@
       statusMap.get(item.approvalStatus)![item.permission] = item.enabled;
     });
 
-    return Array.from(statusMap.entries()).map(([status, permissions]) => ({
-      status,
-      statusLabel: processStatusOptionsMap.get(status)?.label ?? '-',
-      permissions,
+    return approvalAuthorityStatusOptions.map((item) => ({
+      status: item.value,
+      statusLabel: item.label,
+      permissions: data.reduce((acc, permissionItem: PermissionItem) => {
+        acc[permissionItem.id] = Boolean(statusMap.get(item.value)?.[permissionItem.id]);
+        return acc;
+      }, {} as Record<string, boolean>),
     }));
   }
 
@@ -326,7 +324,7 @@
       const result = await getApprovalPermissions(props.formType);
       permission.value = result.permissions.filter((e) => !e.id.includes(':ADD') && !e.id.includes(':APPROVAL'));
       if (props.needDetail) {
-        permissionData.value = aggregateStatusPermissions(form.value.statusPermissions);
+        permissionData.value = aggregateStatusPermissions(form.value.statusPermissions, permission.value);
       } else {
         permissionData.value = createApprovalAuthorityRows(props.formType, permission.value);
       }
