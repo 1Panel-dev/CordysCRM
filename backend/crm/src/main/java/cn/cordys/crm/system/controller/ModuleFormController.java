@@ -4,6 +4,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import cn.cordys.crm.system.dto.response.RelatedFormDTO;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.security.SessionUtils;
@@ -14,6 +15,8 @@ import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author song-cc-rock
@@ -40,5 +43,12 @@ public class ModuleFormController {
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
     public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
         return moduleFormService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/related/{formKey}")
+    @Operation(summary = "获取详情页内置标签及包含当前表单数据源的关联表单")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE, PermissionConstants.PROCESS_SETTING_READ}, logical = Logical.OR)
+    public List<RelatedFormDTO> getRelatedForms(@PathVariable String formKey) {
+        return moduleFormService.getRelatedForms(formKey, OrganizationContext.getOrganizationId());
     }
 }

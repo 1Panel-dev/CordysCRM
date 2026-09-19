@@ -28,4 +28,7 @@ public class FormProp {
     private List<BtnContentProp> optBtnContent;
     @Schema(description = "联动配置")
     private Map<String, List<LinkScenario>> linkProp;
+
+    @Schema(description = "表单详情标签页配置")
+    private List<FormDetailTab> detailTabs;
 }

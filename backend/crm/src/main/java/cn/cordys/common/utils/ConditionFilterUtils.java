@@ -377,7 +377,7 @@ public class ConditionFilterUtils {
 
     public static List<FilterCondition> getValidConditions(List<FilterCondition> conditions) {
         if (CollectionUtils.isEmpty(conditions)) {
-            return List.of();
+            return new ArrayList<>(0);
         }
         return conditions.stream().filter(FilterCondition::valid).collect(Collectors.toList());
     }
