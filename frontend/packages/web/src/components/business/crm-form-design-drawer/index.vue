@@ -74,8 +74,9 @@
 
   const formKey = computed(() => props.formKey);
   const formDesignRef = ref<InstanceType<typeof CrmFormDesign>>();
-  const { loading, fieldList, formConfig, unsaved, checkRepeat, buildSavePayload, initFormConfig } =
-    useFormDesignConfig({ formKey });
+  const { loading, fieldList, formConfig, unsaved, validate, buildSavePayload, initFormConfig } = useFormDesignConfig({
+    formKey,
+  });
 
   function showUnsavedLeaveTip() {
     openModal({
@@ -101,7 +102,7 @@
   }
 
   async function handleSave() {
-    const result = checkRepeat();
+    const result = validate();
     if (result !== true) {
       formDesignRef.value?.setActiveField(result);
       return;

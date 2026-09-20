@@ -166,6 +166,7 @@ module.exports = defineConfig([
     '*.json',
     'src/**/*.json',
     '**/dist',
+    'config/**/*.ts',
     '**/postcss.config.js',
     '**/*.md',
     'src/assets/icon-font/iconfont.js',

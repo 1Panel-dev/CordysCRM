@@ -238,6 +238,9 @@
     if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
       return CrmFormCreateComponents.advancedComponents.dataTable;
     }
+    if (item.type === FieldTypeEnum.STATISTIC) {
+      return CrmFormCreateComponents.advancedComponents.statistics;
+    }
   }
 
   function applyDatasourceFieldLink(

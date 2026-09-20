@@ -120,6 +120,31 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
     return true;
   }
 
+  function checkRequired() {
+    let pass: boolean | FormCreateField = true;
+    for (let i = 0; i < fieldList.value.length; i++) {
+      const field = fieldList.value[i];
+      if (field.type === FieldTypeEnum.STATISTIC && field.statisticType !== 'COUNT' && !field.statisticFieldId) {
+        message.error(t('crmFormDesign.requiredFieldAttrNotEmpty'));
+        pass = field;
+        break;
+      }
+    }
+    return pass;
+  }
+
+  function validate() {
+    const hasEmpty = checkRequired();
+    if (hasEmpty !== true) {
+      return hasEmpty;
+    }
+    const hasRepeat = checkRepeat();
+    if (hasRepeat !== true) {
+      return hasRepeat;
+    }
+    return true;
+  }
+
   function buildSavePayload(): FormDesignSavePayload {
     return {
       formKey: options.formKey.value,
@@ -229,5 +254,6 @@ export function useFormDesignConfig(options: { formKey: Ref<FormDesignKeyEnum> }
     buildSavePayload,
     setFormConfigDetail,
     initFormConfig,
+    validate,
   };
 }

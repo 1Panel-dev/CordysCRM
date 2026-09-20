@@ -13,4 +13,6 @@ export default {
   'crmFormCreate.advanced.limitCount': ', maximum limit is {count}',
   'crmFormCreate.advanced.selectIndustry': 'Please select industry',
   'crmFormCreate.dataSourceLinkOptionsFailed': 'Failed to parse data source linkage options',
+  'crmFormCreate.reCalculation': 'Recalculate',
+  'crmFormCreate.reCalculationTip': 'This will recalculate the field value and other related fields for this record',
 };

@@ -396,4 +396,5 @@ export default {
   'common.freezeTip': '冻结期间该{type}不可被领取、分配，到期后自动解冻并写入操作日志',
   'common.unfreeze': '解冻',
   'common.unfreezeTip': '解冻后该{type}立即恢复可领取状态，本次操作会写入操作日志',
+  'common.refreshSuccess': '刷新成功',
 };

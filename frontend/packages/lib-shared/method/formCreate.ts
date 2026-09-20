@@ -238,7 +238,7 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
     }
   } else if (item.type === FieldTypeEnum.INDUSTRY) {
     value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
-  } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+  } else if (item.type === FieldTypeEnum.INPUT_NUMBER || item.type === FieldTypeEnum.STATISTIC) {
     value = formatNumberValueToString(fieldValue as unknown as number, item);
     if (value.includes('NaN') || value.includes('%%')) {
       value = fieldValue.toString();
@@ -277,7 +277,7 @@ export function parseFormDetailValue(item: FormCreateField, form: FormDetail, so
     if (item.type === FieldTypeEnum.DATE_TIME) {
       return formatTimeValue(name || form[item.businessKey], item.dateType);
     }
-    if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+    if (item.type === FieldTypeEnum.INPUT_NUMBER || item.type === FieldTypeEnum.STATISTIC) {
       return formatNumberValueToString(name || form[item.businessKey], item);
     }
     if (item.type === FieldTypeEnum.ATTACHMENT) {

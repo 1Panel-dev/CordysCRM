@@ -84,6 +84,7 @@ export const {
   exportCustomFormAll,
   exportCustomFormSelected,
   getCustomFormCreatePermission,
+  refreshStatistic,
 } = customFormApi;
 
 export const {
