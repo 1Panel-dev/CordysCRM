@@ -44,4 +44,7 @@ export default {
   'aiChat.uploadFile': '附件',
   'aiChat.attachmentUploading': '上传中',
   'aiChat.attachmentUploadFailed': '上传失败',
+  'aiChat.attachmentUnsupportedType': '暂不支持旧版 XLS/PPT、音视频、压缩包，以及扫描版 PDF 的 OCR',
+  'aiChat.attachmentMaxCount': '最多上传 {count} 个文件',
+  'aiChat.attachmentMaxTotalSize': '文件总大小不能超过 {size} MB',
 };

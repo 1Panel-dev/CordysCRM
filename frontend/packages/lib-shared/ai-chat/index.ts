@@ -10,6 +10,13 @@ export { AI_CHAT_RUNTIME_KEY, useAiChatRuntime } from './runtime/useAiChatRuntim
 export { formatAiChatDuration } from './utils/duration';
 export { default as renderMarkdown } from './utils/markdown';
 export { hasRenderableAiChatContent, toAiChatMessage } from './utils/conversation';
+export {
+  agentChatAttachmentLimits,
+  agentChatImageMimeTypes,
+  getAgentChatFileKind,
+  validateAgentChatFiles,
+} from './utils/file';
+export type { AgentChatAttachmentValidationError } from './utils/file';
 export { getAiChatMessageCopyText, getAiChatMessageText } from './utils/message';
 export { getMatchedMcp, getMcpReferenceText } from './utils/mcp';
 export type { MatchedMcp } from './utils/mcp';
