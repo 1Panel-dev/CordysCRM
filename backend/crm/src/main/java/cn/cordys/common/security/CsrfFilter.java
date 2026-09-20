@@ -119,7 +119,7 @@ public class CsrfFilter extends AnonymousFilter {
         }
 
         // 解密 CSRF token
-        csrfToken = CodingUtils.aesDecrypt(csrfToken, SessionUser.secret, CodingUtils.generateIv());
+        csrfToken = CodingUtils.aesDecrypt(csrfToken, SessionUser.secret, CodingUtils.generateLegacyIv());
 
         String[] signatureArray = StringUtils.split(StringUtils.trimToNull(csrfToken), "|");
         if (signatureArray.length != 4) {

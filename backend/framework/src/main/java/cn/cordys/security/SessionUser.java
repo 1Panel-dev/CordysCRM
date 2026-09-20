@@ -69,7 +69,8 @@ public class SessionUser extends UserDTO implements Serializable {
 
         try {
             // 使用 AES 加密生成 CSRF Token
-            sessionUser.csrfToken = CodingUtils.aesEncrypt(StringUtils.join(infos, "|"), secret, CodingUtils.generateIv());
+            sessionUser.csrfToken = CodingUtils.aesEncrypt(
+                    StringUtils.join(infos, "|"), secret, CodingUtils.generateLegacyIv());
         } catch (Exception e) {
             // 异常处理：加密失败时可以记录日志或者返回默认值
             sessionUser.csrfToken = StringUtils.EMPTY;

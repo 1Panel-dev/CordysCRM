@@ -22,7 +22,7 @@ public class EncryptUtils extends CodingUtils {
         if (o == null) {
             return null;
         }
-        return aesEncrypt(o.toString(), secretKey, generateIv());
+        return aesEncrypt(o.toString(), secretKey, generateLegacyIv());
     }
 
     /**
@@ -36,7 +36,7 @@ public class EncryptUtils extends CodingUtils {
         if (o == null) {
             return null;
         }
-        return aesDecrypt(o.toString(), secretKey, generateIv());
+        return aesDecrypt(o.toString(), secretKey, generateLegacyIv());
     }
 
     /**
@@ -58,7 +58,7 @@ public class EncryptUtils extends CodingUtils {
                 .peek(element -> {
                     Object fieldValue = BeanUtils.getFieldValueByName(attrName, element);
                     if (fieldValue != null) {
-                        String decryptedValue = aesDecrypt(fieldValue.toString(), secretKey, generateIv());
+                        String decryptedValue = aesDecrypt(fieldValue.toString(), secretKey, generateLegacyIv());
                         BeanUtils.setFieldValueByName(element, attrName, decryptedValue, String.class);
                     }
                 })

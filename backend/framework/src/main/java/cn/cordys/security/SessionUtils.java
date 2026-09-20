@@ -124,25 +124,33 @@ public class SessionUtils {
     }
     
     /**
-     * 检查指定用户是否有活跃的 Session (用于 F_A_TOKEN 等独立于 Shiro Session 的访问令牌校验)。
-     * <p>
-     * 通过 Spring Session 的 principal 索引反查, 避免直接依赖 Shiro SessionId (后者会随 Redis TTL 到期)。
-     * </p>
+     * 检查指定 Session 是否存在且已经完成用户认证。
      *
-     * @param userId 用户 ID (UserDTO.id)
+     * @param sessionId Session ID
      *
-     * @return 是否有至少一个未过期的 Session
+     * @return 是否为有效的已认证 Session
      */
-    public static boolean hasActiveSession(String userId) {
-        if (userId == null) {
+    public static boolean hasAuthenticatedSession(String sessionId) {
+        if (sessionId == null) {
             return false;
         }
         RedisIndexedSessionRepository repo = CommonBeanFactory.getBean(RedisIndexedSessionRepository.class);
         if (repo == null) {
             return false;
         }
-        // indexed 模式下 findByPrincipalName 只返回未过期、仍在 principal 索引里的 Session
-        Map<String, ?> sessions = repo.findByPrincipalName(userId);
-        return MapUtils.isNotEmpty(sessions);
+
+        return isAuthenticatedSession(sessionId, repo.findById(sessionId));
+    }
+
+    static boolean isAuthenticatedSession(String sessionId, org.springframework.session.Session session) {
+        if (session == null) {
+            return false;
+        }
+
+        Object principal = session.getAttribute(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME);
+        Object user = session.getAttribute(ATTR_USER);
+        return user instanceof SessionUser sessionUser
+                && Strings.CS.equals(sessionId, sessionUser.getSessionId())
+                && Strings.CS.equals(sessionUser.getId(), principal == null ? null : principal.toString());
     }
 }
