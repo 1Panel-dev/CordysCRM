@@ -22,6 +22,7 @@ import cn.cordys.crm.integration.tender.dto.TenderDetailDTO;
 import cn.cordys.crm.system.constants.OrganizationConfigConstants;
 import cn.cordys.crm.system.domain.OrganizationConfig;
 import cn.cordys.crm.system.domain.OrganizationConfigDetail;
+import cn.cordys.crm.system.job.SyncUserScheduleJob;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import cn.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import cn.cordys.mybatis.BaseMapper;
@@ -33,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import cn.cordys.common.schedule.ScheduleService;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -57,6 +59,9 @@ public class IntegrationConfigService {
 
     @Resource
     private TokenService tokenService;
+
+    @Resource
+    private ScheduleService scheduleService;
 
     /**
      * 获取同步的组织配置
@@ -252,6 +257,9 @@ public class IntegrationConfigService {
                 .originalValue(oldLog)
                 .modifiedValue(newLog)
                 .build());
+
+        //删除同步定时任务
+        scheduleService.deleteSchedule(organizationId, SyncUserScheduleJob.class.getName());
     }
 
     /**

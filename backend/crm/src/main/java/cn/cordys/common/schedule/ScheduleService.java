@@ -129,4 +129,14 @@ public class ScheduleService {
         }
         return null;
     }
+
+
+    public void deleteSchedule(String key, String job) {
+        LambdaQueryWrapper<Schedule> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Schedule::getResourceId, key);
+        wrapper.eq(Schedule::getJob, job);
+        wrapper.eq(Schedule::getName, "组织架构同步定时任务");
+        removeJob(key, job);
+        scheduleMapper.deleteByLambda(wrapper);
+    }
 }
