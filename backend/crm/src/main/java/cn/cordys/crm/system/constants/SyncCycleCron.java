@@ -6,7 +6,6 @@ import java.util.Arrays;
 
 @Getter
 public enum SyncCycleCron {
-    test("0 * * * * ?"),
     HOUR("0 0 * * * ?"),
     SIX_HOUR("0 0 0/6 * * ?"),
     TWELVE_HOUR("0 0 0/12 * * ?"),
