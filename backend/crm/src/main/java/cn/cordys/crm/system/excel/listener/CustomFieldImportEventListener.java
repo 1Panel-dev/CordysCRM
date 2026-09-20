@@ -205,7 +205,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 if (field == null || field.isSerialNumber()) {
                     return;
                 }
-                if (Strings.CI.equals(importType, ImportType.UPDATE.name()) && !field.getEditable() && !Strings.CI.equals(field.getType(), FieldType.FORMULA.name())) {
+                if (Strings.CI.equals(importType, ImportType.UPDATE.name()) && !field.getEditable() && !Strings.CI.equalsAny(field.getType(), FieldType.FORMULA.name(), FieldType.STATISTIC.name())) {
                     return;
                 }
                 Object val = convertValue(rowData.get(k), field);
