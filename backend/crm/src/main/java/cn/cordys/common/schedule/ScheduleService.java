@@ -122,7 +122,6 @@ public class ScheduleService {
         LambdaQueryWrapper<Schedule> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Schedule::getResourceId, resourceId);
         wrapper.eq(Schedule::getJob, name);
-        wrapper.eq(Schedule::getResourceType, resourceType);
         wrapper.eq(Schedule::getName, "组织架构同步定时任务");
         List<Schedule> schedules = scheduleMapper.selectListByLambda(wrapper);
         if (CollectionUtils.isNotEmpty(schedules)) {
