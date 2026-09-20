@@ -20,13 +20,9 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-
 @Component
 @Slf4j
 class AppListener implements ApplicationRunner {
-    private static final String LEGACY_DEFAULT_SECRET = "9a9rdqPlTqhpZzkq";
-
     @Resource
     private DefaultUidGenerator uidGenerator;
 
@@ -61,7 +57,6 @@ class AppListener implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         log.info("===== 开始初始化配置 =====");
-        validateSecret(secretInstance);
         SessionUser.secret = secretInstance;
         SqlInjectionChecker.setDangerousPattern(configuredPattern);
 
@@ -88,17 +83,6 @@ class AppListener implements ApplicationRunner {
 
         log.info("===== 完成初始化配置 =====");
     }
-
-    static void validateSecret(String secret) {
-        if (StringUtils.isBlank(secret) || LEGACY_DEFAULT_SECRET.equals(secret)) {
-            throw new IllegalStateException("cordys.secret.key 必须配置为随机值，不能使用空值或默认值");
-        }
-        int keyLength = secret.getBytes(StandardCharsets.UTF_8).length;
-        if (keyLength != 16 && keyLength != 24 && keyLength != 32) {
-            throw new IllegalStateException("cordys.secret.key 必须是 16、24 或 32 字节的 AES 密钥");
-        }
-    }
-
 
     /**
      * 初始化 RSA 配置。
