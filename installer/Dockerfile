@@ -14,7 +14,6 @@ RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY installer/cockpit/tsconfig.json ./
 COPY installer/cockpit/src ./src
 COPY installer/cockpit/skills ./skills
-COPY installer/cockpit/public ./public
 RUN npm run build && npm prune --omit=dev --ignore-scripts
 
 
@@ -49,7 +48,6 @@ COPY --from=cockpit-build /cockpit/package.json /app/cockpit/
 COPY --from=cockpit-build /cockpit/node_modules /app/cockpit/node_modules
 COPY --from=cockpit-build /cockpit/dist /app/cockpit/dist
 COPY --from=cockpit-build /cockpit/skills /app/cockpit/skills
-COPY --from=cockpit-build /cockpit/public /app/cockpit/public
 RUN apk add --no-cache libstdc++ && node --version
 
 ENV JAVA_CLASSPATH=/app:/app/lib/*
