@@ -107,6 +107,8 @@ public class OpportunityService extends BaseExportService {
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
     @Resource
+    private StatisticFieldService statisticFieldService;
+    @Resource
     private BaseService baseService;
     @Resource
     private OpportunityFieldService opportunityFieldService;
@@ -318,6 +320,10 @@ public class OpportunityService extends BaseExportService {
         opportunityFieldService.saveModuleField(opportunity, orgId, operatorId, request.getModuleFields(), false);
         opportunityMapper.insert(opportunity);
 
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.OPPORTUNITY.getKey(), opportunity.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.OPPORTUNITY.getKey(), opportunity.getId(), orgId);
         baseService.handleAddLogWithSubTable(opportunity, request.getModuleFields(), Translator.get("products_info"), getFormConfig(orgId));
 
         // 消息通知
@@ -357,6 +363,8 @@ public class OpportunityService extends BaseExportService {
                 updateModuleField(updateOpportunity, request.getModuleFields(), orgId, userId);
             }
             extOpportunityMapper.updateIncludeNullById(updateOpportunity);
+            // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+            statisticFieldService.refreshByRelatedDataChange(FormKey.OPPORTUNITY.getKey(), request.getId(), orgId);
             baseService.handleUpdateLogWithSubTable(oldOpportunity, newOpportunity, originCustomerFields, request.getModuleFields(),
                     oldOpportunity.getId(), oldOpportunity.getName(), Translator.get("products_info"), getFormConfig(orgId));
         }, () -> {

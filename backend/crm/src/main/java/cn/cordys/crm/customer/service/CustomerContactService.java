@@ -54,6 +54,7 @@ import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -90,6 +91,8 @@ import java.util.stream.Collectors;
 public class CustomerContactService {
     @Resource
     private BaseMapper<CustomerContact> customerContactMapper;
+    @Resource
+    private StatisticFieldService statisticFieldService;
     @Resource
     private ExtCustomerMapper extCustomerMapper;
     @Resource
@@ -315,6 +318,10 @@ public class CustomerContactService {
 
         customerContactMapper.insert(customerContact);
 
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.CONTACT.getKey(), customerContact.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTACT.getKey(), customerContact.getId(), orgId);
         baseService.handleAddLogWithResourceName(customerContact, request.getModuleFields());
 
         // 添加联系人通知
@@ -351,6 +358,8 @@ public class CustomerContactService {
         }
 
         customerContactMapper.update(customerContact);
+        // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTACT.getKey(), request.getId(), orgId);
 
         customerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
         baseService.handleUpdateLog(originCustomerContact, customerContact, originCustomerFields, request.getModuleFields(), originCustomerContact.getId(), originCustomerContact.getName());

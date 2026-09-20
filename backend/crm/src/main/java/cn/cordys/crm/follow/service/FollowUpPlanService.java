@@ -37,6 +37,7 @@ import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -58,6 +59,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
     @Resource
     private BaseMapper<FollowUpPlan> followUpPlanMapper;
+    @Resource
+    private StatisticFieldService statisticFieldService;
     @Resource
     private FollowUpPlanFieldService followUpPlanFieldService;
     @Resource
@@ -107,6 +110,10 @@ public class FollowUpPlanService extends BaseFollowUpService {
         //保存自定义字段
         followUpPlanFieldService.saveModuleField(followUpPlan, orgId, userId, request.getModuleFields(), false);
         followUpPlanMapper.insert(followUpPlan);
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.FOLLOW_PLAN.getKey(), followUpPlan.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.FOLLOW_PLAN.getKey(), followUpPlan.getId(), orgId);
         return followUpPlan;
     }
 
@@ -132,6 +139,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
             //更新模块字段
             updateModuleField(updateFollowUpPlan, request.getModuleFields(), orgId, userId);
             followUpPlanMapper.update(updateFollowUpPlan);
+            // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+            statisticFieldService.refreshByRelatedDataChange(FormKey.FOLLOW_PLAN.getKey(), request.getId(), orgId);
             baseService.handleUpdateLog(followUpPlan, updateFollowUpPlan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
         }, () -> {
             throw new GenericException(Translator.get("plan_not_found"));

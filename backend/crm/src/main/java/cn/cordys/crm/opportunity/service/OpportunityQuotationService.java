@@ -54,6 +54,7 @@ import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -85,6 +86,8 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
 
     @Resource
     private OpportunityQuotationFieldService opportunityQuotationFieldService;
+    @Resource
+    private StatisticFieldService statisticFieldService;
     @Resource
     private BaseService baseService;
     @Resource
@@ -158,6 +161,10 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         opportunityQuotationFieldService.saveModuleField(opportunityQuotation, orgId, userId, moduleFields, false);
         opportunityQuotationMapper.insert(opportunityQuotation);
 
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.QUOTATION.getKey(), opportunityQuotation.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.QUOTATION.getKey(), opportunityQuotation.getId(), orgId);
         // 保存表单配置快照
         List<BaseModuleFieldValue> resolveFieldValues = moduleFormService.resolveSnapshotFields(moduleFields, moduleFormConfigDTO, opportunityQuotationFieldService, opportunityQuotation.getId());
         OpportunityQuotationGetResponse response = getOpportunityQuotationGetResponse(opportunityQuotation, resolveFieldValues, moduleFormConfigDTO);
@@ -794,6 +801,8 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
         moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
         updateFields(moduleFields, opportunityQuotation, orgId, userId);
         opportunityQuotationMapper.update(opportunityQuotation);
+        // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.QUOTATION.getKey(), request.getId(), orgId);
 
         //删除快照
         LambdaQueryWrapper<OpportunityQuotationSnapshot> delWrapper = new LambdaQueryWrapper<>();

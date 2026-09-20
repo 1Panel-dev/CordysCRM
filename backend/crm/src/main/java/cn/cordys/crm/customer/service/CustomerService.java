@@ -105,6 +105,8 @@ public class CustomerService {
     @Resource
     private BaseMapper<Customer> customerMapper;
     @Resource
+    private StatisticFieldService statisticFieldService;
+    @Resource
     private ExtCustomerMapper extCustomerMapper;
     @Resource
     private BaseService baseService;
@@ -465,6 +467,10 @@ public class CustomerService {
 
         customerMapper.insert(customer);
 
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.CUSTOMER.getKey(), customer.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CUSTOMER.getKey(), customer.getId(), orgId);
         baseService.handleAddLogWithResourceName(customer, request.getModuleFields());
         // 通知
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
@@ -509,6 +515,8 @@ public class CustomerService {
         }
 
         customerMapper.update(customer);
+        // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CUSTOMER.getKey(), request.getId(), orgId);
 
         customer = customerMapper.selectByPrimaryKey(request.getId());
         baseService.handleUpdateLog(originCustomer, customer, originCustomerFields, request.getModuleFields(), originCustomer.getId(), originCustomer.getName());

@@ -18,7 +18,7 @@
         </div>
         <div v-else class="h-[22px]"></div>
         <CrmPopConfirm
-          v-if="!props.isDesignRender"
+          v-if="!props.isDesignRender && props.sourceId"
           v-model:show="popShow"
           :title="t('crmFormCreate.reCalculation')"
           icon-type="warning"
@@ -70,6 +70,7 @@
     fieldConfig: FormCreateField;
     formConfig?: FormConfig;
     path: string;
+    sourceId?: string; // 资源ID, 新建时没有(记录还没落库, 统计值无处可算), 刷新按钮也不展示
     needInitDetail?: boolean; // 判断是否编辑情况
     isSubTableField?: boolean; // 是否是子表字段
     isSubTableRender?: boolean; // 是否是子表渲染
@@ -88,8 +89,11 @@
 
   const popShow = ref(false);
   async function handleReCalculation() {
+    if (!props.sourceId) {
+      return;
+    }
     try {
-      value.value = await refreshStatistic(props.fieldConfig.id);
+      value.value = await refreshStatistic(props.sourceId, props.fieldConfig.id);
       Message.success(t('common.refreshSuccess'));
       popShow.value = false;
     } catch (error) {

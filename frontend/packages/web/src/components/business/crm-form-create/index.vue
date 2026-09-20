@@ -22,6 +22,7 @@
               :field-config="item.resourceFieldId ? { ...item, rules: [] } : item"
               :form-detail="formDetail"
               :origin-form-detail="originFormDetail"
+              :source-id="item.type === FieldTypeEnum.STATISTIC ? props.sourceId : undefined"
               :path="item.id"
               :need-init-detail="needInitDetail"
               :form-config="formConfig"
