@@ -26,6 +26,7 @@
       :member-types="props.memberTypes"
       :disabled-node-types="props.disabledNodeTypes"
       :base-params="props.baseParams"
+      :fetch-org-api="props.fetchOrgApi"
       :fetch-org-params="props.fetchOrgParams"
       :fetch-role-params="props.fetchRoleParams"
       :fetch-member-params="props.fetchMemberParams"
@@ -59,6 +60,7 @@
     okText?: string;
     memberTypes?: Option[];
     disabled?: boolean;
+    fetchOrgApi?: (params?: Record<string, any>) => Promise<any[]>; // 自定义组织架构接口
     fetchOrgParams?: Record<string, any>; // 组织架构入参
     fetchRoleParams?: Record<string, any>; // 角色入参
     fetchMemberParams?: Record<string, any>; // 成员入参

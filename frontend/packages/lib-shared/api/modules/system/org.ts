@@ -25,7 +25,9 @@ import {
   resetUserPasswordUrl,
   setCommanderUrl,
   sortDepartmentUrl,
-  syncOrgUrl,
+  syncOrgOperationUrl,
+  syncScheduleConfigUrl,
+  syncThirdOrgUrl,
   updateUserNameUrl,
   updateUserUrl,
 } from '@lib/shared/api/requrls/system/org';
@@ -36,6 +38,9 @@ import type {
   MemberItem,
   MemberParams,
   SetCommanderParams,
+  SyncUserScheduleConfigRequest,
+  SyncUserScheduleConfigResponse,
+  ThirdDepartmentNode,
   UpdateDepartmentItemParams,
   UserTableQueryParams,
   ValidateInfo,
@@ -119,8 +124,23 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 用户(员工)- 同步组织架构
-  function syncOrg(type: string) {
-    return CDR.get({ url: `${syncOrgUrl}/${type}` });
+  function syncOrg(type: string, syncScope: string[] = []) {
+    return CDR.post({ url: syncOrgOperationUrl, data: { type, syncScope } });
+  }
+
+  // 用户(员工)-获取第三方组织架构
+  function getSyncThirdOrg(type: string) {
+    return CDR.get<ThirdDepartmentNode[]>({ url: `${syncThirdOrgUrl}/${type}` });
+  }
+
+  // 用户(员工)-获取同步组织架构定时任务配置
+  function getSyncScheduleConfig(type: string) {
+    return CDR.get<SyncUserScheduleConfigResponse>({ url: `${syncScheduleConfigUrl}/${type}` });
+  }
+
+  // 用户(员工)-保存同步组织架构定时任务配置
+  function saveSyncScheduleConfig(data: SyncUserScheduleConfigRequest) {
+    return CDR.post({ url: syncScheduleConfigUrl, data });
   }
 
   // 用户(员工)-批量编辑
@@ -177,6 +197,9 @@ export default function useProductApi(CDR: CordysAxios) {
 
   return {
     getDepartmentTree,
+    getSyncThirdOrg,
+    getSyncScheduleConfig,
+    saveSyncScheduleConfig,
     addDepartment,
     renameDepartment,
     setCommander,
