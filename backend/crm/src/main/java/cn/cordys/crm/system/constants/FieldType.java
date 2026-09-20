@@ -101,6 +101,10 @@ public enum FieldType {
 	 */
 	FORMULA,
 	/**
+	 * 统计
+	 */
+	STATISTIC,
+	/**
 	 * 子表-产品, 子表-价格
 	 */
 	SUB_PRODUCT,

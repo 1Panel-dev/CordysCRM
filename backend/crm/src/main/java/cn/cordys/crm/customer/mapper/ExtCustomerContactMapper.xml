@@ -152,7 +152,7 @@
                     </when>
                     <otherwise>
                         CASE
-                        WHEN module_table.type = 'INPUT_NUMBER' OR module_table.type = 'FORMULA'
+                        WHEN module_table.type = 'INPUT_NUMBER' OR module_table.type = 'FORMULA' OR module_table.type = 'STATISTIC'
                         THEN sort_table.field_value+0
                         END ${sortType},
                         sort_table.field_value ${sortType},

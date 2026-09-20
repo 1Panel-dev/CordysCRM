@@ -52,10 +52,7 @@ import cn.cordys.crm.system.dto.request.FieldRepeatCheckRequest;
 import cn.cordys.crm.system.dto.request.FieldResolveRequest;
 import cn.cordys.crm.system.dto.response.FieldRepeatCheckResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import cn.cordys.crm.system.service.ModuleFieldService;
-import cn.cordys.crm.system.service.ModuleFormCacheService;
-import cn.cordys.crm.system.service.ModuleFormService;
-import cn.cordys.crm.system.service.ModuleService;
+import cn.cordys.crm.system.service.*;
 import cn.cordys.security.SessionUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -117,6 +114,8 @@ public class ModuleFieldController {
     private CustomFormDataService customFormDataService;
 	@Resource
 	private ContractInvoiceService contractInvoiceService;
+    @Resource
+	private StatisticFieldService statisticFieldService;
 
     @GetMapping("/dept/tree")
     @Operation(summary = "获取部门树")
@@ -365,4 +364,9 @@ public class ModuleFieldController {
 		return moduleFieldService.getSourceRefDetail(request);
 	}
 
+    @PostMapping("/statistic/refresh/{fieldId}")
+    @Operation(summary = "手动刷新表单数据上的统计字段")
+    public void refreshStatisticField(@PathVariable String fieldId) {
+        statisticFieldService.refreshField(fieldId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }

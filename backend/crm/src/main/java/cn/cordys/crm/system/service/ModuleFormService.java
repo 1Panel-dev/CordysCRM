@@ -32,6 +32,9 @@ import cn.cordys.crm.form.service.CustomFormDataFieldService;
 import cn.cordys.crm.system.constants.FieldSourceType;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.constants.InternalDetailTab;
+import cn.cordys.crm.system.constants.StatisticDataScope;
+import cn.cordys.crm.system.constants.StatisticType;
+import cn.cordys.crm.system.constants.StatisticUpdateScope;
 import cn.cordys.crm.system.domain.*;
 import cn.cordys.crm.system.dto.TransformSourceApplyDTO;
 import cn.cordys.crm.system.dto.field.*;
@@ -267,7 +270,7 @@ public class ModuleFormService {
 
         if (saveParam.getFields() != null) {
             // 字段合规校验
-            preCheckForFieldSave(saveParam.getFormKey(), saveParam.getFields());
+            preCheckForFieldSave(saveParam.getFormKey(), saveParam.getFields(), currentOrgId);
 
             // 处理字段 (删除&&新增)
             LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
@@ -283,6 +286,12 @@ public class ModuleFormService {
             if (CollectionUtils.isNotEmpty(saveParam.getFields())) {
                 saveFields(saveParam.getFields(), form.getId(), currentUserId);
             }
+
+            // TODO 统计字段刷新: 字段配置保存后按每个统计字段的 updateScope 刷新存量数据
+            //  (NONE 跳过 / ALL 全量 / CONDITION 按 updateScopeCondition 过滤), 统计字段被删除时同法清理旧值。
+            // statisticFieldService.refreshOnConfigSave(saveParam.getFormKey(),
+            //         saveParam.getFields().stream().filter(StatisticField.class::isInstance)
+            //                 .map(StatisticField.class::cast).toList(), currentOrgId);
         }
 
         // 返回表单配置
@@ -2009,8 +2018,12 @@ public class ModuleFormService {
 
     /**
      * 字段保存预检查
+     *
+     * @param formKey 表单Key
+     * @param fields  字段集合
+     * @param orgId   组织ID
      */
-    public void preCheckForFieldSave(String formKey, List<BaseField> fields) {
+    public void preCheckForFieldSave(String formKey, List<BaseField> fields, String orgId) {
         boolean businessDeleted = BusinessModuleField.isBusinessDeleted(formKey, fields);
         if (businessDeleted) {
             throw new GenericException(Translator.get("module.form.business_field.deleted"));
@@ -2030,6 +2043,117 @@ public class ModuleFormService {
             BaseField field = repeatOptional.get();
             throw new GenericException(Translator.getWithArgs("module.form.fields.option.repeat", field.getName()));
         }
+        // 统计字段需要跨表单解析目标字段, 放在本地校验之后, 避免为非法配置做多余的查询。
+        checkStatisticFields(formKey, fields, orgId);
+    }
+
+    /**
+     * 统计字段配置校验。
+     *
+     * <p>统计字段是跨表单的聚合配置, 目标表单、关联字段与被统计字段三者必须自洽。
+     * 目标表单与关联字段的合法组合由 {@link #getRelatedForms} 定义, 这里复用同一份解析结果做服务端
+     * 校验, 避免前端提交未建立数据源关联的组合。</p>
+     *
+     * @param formKey 当前表单Key
+     * @param fields  待保存的字段集合
+     * @param orgId   组织ID
+     */
+    private void checkStatisticFields(String formKey, List<BaseField> fields, String orgId) {
+        List<StatisticField> statisticFields = fields.stream()
+                .filter(StatisticField.class::isInstance)
+                .map(StatisticField.class::cast)
+                .toList();
+        if (CollectionUtils.isEmpty(statisticFields)) {
+            return;
+        }
+
+        Map<String, RelatedFormDTO> relatedFormMap = getRelatedForms(formKey, orgId).stream()
+                .collect(Collectors.toMap(RelatedFormDTO::getId, Function.identity(), (p, n) -> p));
+
+        for (StatisticField statisticField : statisticFields) {
+            checkStatisticField(statisticField, orgId, relatedFormMap);
+        }
+    }
+
+    /**
+     * 校验单个统计字段的配置自洽性。
+     *
+     * @param field          统计字段
+     * @param orgId          组织ID
+     * @param relatedFormMap 当前表单的关联表单, key 为目标表单Key
+     */
+    private void checkStatisticField(StatisticField field, String orgId,
+                                      Map<String, RelatedFormDTO> relatedFormMap) {
+        String name = field.getName();
+
+        // 统计类型决定聚合方式, 非法值会让统计任务无法执行, 必须尽早拦截。
+        boolean validType = Arrays.stream(StatisticType.values())
+                .anyMatch(type -> type.name().equals(field.getStatisticType()));
+        if (!validType) {
+            throw new GenericException(Translator.getWithArgs("module.form.statistic.type.invalid", name));
+        }
+
+        if (StringUtils.isBlank(field.getTargetFormId())) {
+            throw new GenericException(Translator.getWithArgs("module.form.statistic.target.required", name));
+        }
+        if (StringUtils.isBlank(field.getRelatedFieldId())) {
+            throw new GenericException(Translator.getWithArgs("module.form.statistic.related.field.required", name));
+        }
+
+        RelatedFormDTO targetForm = relatedFormMap.get(field.getTargetFormId());
+        if (targetForm == null) {
+            throw new GenericException(Translator.getWithArgs("module.form.statistic.target.invalid", name));
+        }
+        boolean relatedFieldMatched = targetForm.getSourceTypeFields().stream()
+                .anyMatch(option -> option.getId().equals(field.getRelatedFieldId()));
+        if (!relatedFieldMatched) {
+            throw new GenericException(Translator.getWithArgs("module.form.statistic.related.field.invalid", name));
+        }
+
+        // COUNT 只统计关联数据条数, 无需被统计字段; SUM / AVG 必须指定可聚合的数值类字段。
+        if (field.needStatisticField()) {
+            if (StringUtils.isBlank(field.getStatisticFieldId())) {
+                throw new GenericException(Translator.getWithArgs("module.form.statistic.field.required", name));
+            }
+            if (!isStatisticableField(field.getStatisticFieldId(), field.getTargetFormId(), orgId)) {
+                throw new GenericException(Translator.getWithArgs("module.form.statistic.field.invalid", name));
+            }
+        }
+
+        if (Strings.CS.equals(field.getDataScope(), StatisticDataScope.CONDITION.name())
+                && MapUtils.isEmpty(field.getCombineSearch())) {
+            throw new GenericException(Translator.getWithArgs("module.form.statistic.data.scope.required", name));
+        }
+        if (Strings.CS.equals(field.getUpdateScope(), StatisticUpdateScope.CONDITION.name())
+                && MapUtils.isEmpty(field.getUpdateScopeCondition())) {
+            throw new GenericException(Translator.getWithArgs("module.form.statistic.update.scope.required", name));
+        }
+    }
+
+    /**
+     * 被统计字段是否可聚合: 存在于目标表单, 且为子表格之外的数值、计算、统计字段。
+     *
+     * @param statisticFieldId 被统计字段ID
+     * @param targetFormId     目标表单Key
+     * @param orgId            组织ID
+     * @return 是否可聚合
+     */
+    private boolean isStatisticableField(String statisticFieldId, String targetFormId, String orgId) {
+        ModuleForm example = new ModuleForm();
+        example.setFormKey(targetFormId);
+        example.setOrganizationId(orgId);
+        ModuleForm targetForm = moduleFormMapper.selectOne(example);
+        if (targetForm == null) {
+            return false;
+        }
+
+        return getAllFields(targetForm.getId()).stream()
+                // 子表格字段与数据源显示字段不作为统计口径。
+                .filter(field -> StringUtils.isBlank(field.getSubTableFieldId())
+                        && StringUtils.isBlank(field.getResourceFieldId()))
+                .anyMatch(field -> field.getId().equals(statisticFieldId)
+                        && Strings.CS.equalsAny(field.getType(), FieldType.INPUT_NUMBER.name(),
+                        FieldType.FORMULA.name(), FieldType.STATISTIC.name()));
     }
 
     /**

@@ -474,7 +474,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
      * @param subFieldName
      */
     private void setNumberMax(BaseField field, String subFieldName) {
-        if (Strings.CI.equalsAny(field.getType(), FieldType.INPUT_NUMBER.name(), FieldType.FORMULA.name())) {
+        if (Strings.CI.equalsAny(field.getType(), FieldType.INPUT_NUMBER.name(), FieldType.FORMULA.name(), FieldType.STATISTIC.name())) {
             numberMax.put(StringUtils.isNotEmpty(subFieldName) ? subFieldName + "_" + field.getName() : field.getName() + "_" + field.getName(), MAX_AMOUNT);
         }
     }

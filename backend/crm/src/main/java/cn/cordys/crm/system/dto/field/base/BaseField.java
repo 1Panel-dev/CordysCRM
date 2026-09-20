@@ -46,6 +46,7 @@ import java.util.Set;
         @JsonSubTypes.Type(value = ProductSubField.class, name = "SUB_PRODUCT"),
         @JsonSubTypes.Type(value = PriceSubField.class, name = "SUB_PRICE"),
         @JsonSubTypes.Type(value = FormulaField.class, name = "FORMULA"),
+        @JsonSubTypes.Type(value = StatisticField.class, name = "STATISTIC"),
 })
 public abstract class BaseField {
 

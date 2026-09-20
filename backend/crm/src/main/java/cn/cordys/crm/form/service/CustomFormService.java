@@ -256,7 +256,7 @@ public class CustomFormService {
         moduleFormBlobMapper.insert(formBlob);
 
         // 校验字段
-        moduleFormService.preCheckForFieldSave(formId, request.getFields());
+        moduleFormService.preCheckForFieldSave(formId, request.getFields(), orgId);
 
         // 保存字段
         moduleFormService.saveFields(request.getFields(), form.getId(), userId);
