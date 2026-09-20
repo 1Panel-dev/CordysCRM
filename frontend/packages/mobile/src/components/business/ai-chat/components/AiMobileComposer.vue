@@ -27,7 +27,7 @@
         <input
           ref="imageInputRef"
           type="file"
-          accept="image/*"
+          :accept="agentChatImageAccept"
           multiple
           class="hidden"
           @change="handleFileInputChange"
@@ -82,10 +82,21 @@
 
 <script setup lang="ts">
   import { computed, nextTick, ref, watch } from 'vue';
-  import { type PopoverAction, showToast } from 'vant';
+  import { type PopoverAction, showFailToast } from 'vant';
 
-  import type { AiChatAttachment, AiChatModel, AiComposerSubmitPayload, AiFileKind } from '@lib/shared/ai-chat';
-  import { useAiChatRuntime } from '@lib/shared/ai-chat';
+  import type {
+    AgentChatAttachmentValidationError,
+    AiChatAttachment,
+    AiChatModel,
+    AiComposerSubmitPayload,
+  } from '@lib/shared/ai-chat';
+  import {
+    agentChatAttachmentLimits,
+    agentChatImageMimeTypes,
+    getAgentChatFileKind,
+    useAiChatRuntime,
+    validateAgentChatFiles,
+  } from '@lib/shared/ai-chat';
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -119,6 +130,7 @@
   const fileInputRef = ref<HTMLInputElement | null>(null);
   const inputValue = ref(runtime.state.input.value);
   const showAttachmentPopover = ref(false);
+  const agentChatImageAccept = agentChatImageMimeTypes.join(',');
 
   const isEditing = computed(() => Boolean(runtime.state.editingMessageId.value));
   const attachments = computed(() => runtime.state.attachments.value);
@@ -147,12 +159,8 @@
     { text: t('aiChat.uploadFile'), key: 'file' },
   ]);
 
-  function getFileKind(file: File): AiFileKind {
-    return file.type.startsWith('image/') ? 'image' : 'file';
-  }
-
   function createLocalAttachment(file: File, status: AiChatAttachment['status'] = 'uploading'): AiChatAttachment {
-    const kind = getFileKind(file);
+    const kind = getAgentChatFileKind(file);
     const previewUrl = kind === 'image' ? URL.createObjectURL(file) : undefined;
 
     return {
@@ -182,23 +190,20 @@
     );
   }
 
-  const defaultMaxFileSize = 100 * 1024 * 1024;
-  function validateFile(file: File): boolean {
-    if (attachments.value.some((attachment) => attachment.name === file.name)) {
-      showToast(t('formCreate.upload.repeatFileTip'));
-      return false;
-    }
+  function showAttachmentValidationToast(error: AgentChatAttachmentValidationError): void {
+    const messages: Record<AgentChatAttachmentValidationError, string> = {
+      'duplicate': t('formCreate.upload.repeatFileTip'),
+      'max-count': t('aiChat.attachmentMaxCount', { count: agentChatAttachmentLimits.maxCount }),
+      'max-file-size': t('formCreate.advanced.overSize', { size: 10 }),
+      'max-total-size': t('aiChat.attachmentMaxTotalSize', { size: 20 }),
+      'unsupported-type': t('aiChat.attachmentUnsupportedType'),
+    };
 
-    if (file.size > defaultMaxFileSize) {
-      showToast(t('formCreate.advanced.overSize', { size: '100MB' }));
-      return false;
-    }
-
-    return true;
+    showFailToast(messages[error]);
   }
 
   function toUploadedAttachment(file: File, id: string, previewUrl?: string): AiChatAttachment {
-    const kind = getFileKind(file);
+    const kind = getAgentChatFileKind(file);
 
     return {
       id,
@@ -216,7 +221,13 @@
   }
 
   async function addFiles(files: FileList | File[] | null | undefined) {
-    const validFiles = Array.from(files ?? []).filter((file) => validateFile(file));
+    const validationResults = validateAgentChatFiles(Array.from(files ?? []), attachments.value);
+    const validFiles = validationResults.filter((result) => result.valid).map((result) => result.file);
+    const validationError = validationResults.find((result) => !result.valid)?.error;
+
+    if (validationError) {
+      showAttachmentValidationToast(validationError);
+    }
 
     if (!validFiles.length) {
       return;

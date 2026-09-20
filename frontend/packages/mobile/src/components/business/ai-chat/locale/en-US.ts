@@ -44,4 +44,7 @@ export default {
   'aiChat.uploadFile': 'Attachment',
   'aiChat.attachmentUploading': 'Uploading',
   'aiChat.attachmentUploadFailed': 'Upload failed',
+  'aiChat.attachmentUnsupportedType': 'Legacy XLS/PPT, audio/video, archives, and scanned PDF OCR are not supported.',
+  'aiChat.attachmentMaxCount': 'Upload up to {count} files',
+  'aiChat.attachmentMaxTotalSize': 'Total file size cannot exceed {size} MB',
 };
