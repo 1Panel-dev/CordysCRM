@@ -48,7 +48,7 @@ public class LoginController {
                                HttpServletResponse httpServletResponse) {
         SessionUser sessionUser = refreshSessionUser();
         if (sessionUser != null) {
-            FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getId(), httpServletRequest.isSecure());
+            FileAccessTokenUtils.setAccessCookie(httpServletResponse, sessionUser.getSessionId(), httpServletRequest.isSecure());
         }
         return sessionUser;
     }
@@ -118,7 +118,7 @@ public class LoginController {
         SessionUser su = userLoginService.login(request);
 
         // 设置文件访问Cookie
-        FileAccessTokenUtils.setAccessCookie(httpServletResponse, su.getId(), httpServletRequest.isSecure());
+        FileAccessTokenUtils.setAccessCookie(httpServletResponse, su.getSessionId(), httpServletRequest.isSecure());
         return su;
     }
 

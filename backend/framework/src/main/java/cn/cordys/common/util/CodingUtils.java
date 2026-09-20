@@ -13,6 +13,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 /**
  * 加密解密工具类，提供 MD5、BASE64 和 AES 加密解密操作。
@@ -25,8 +26,10 @@ public class CodingUtils {
     /**
      * 加密偏移量，AES 加密的初始化向量。
      */
-    private static final String GCM_IV = "1Av7hf9PgHusUHRm";
+    private static final String LEGACY_GCM_IV = "1Av7hf9PgHusUHRm";
+    private static final int GCM_IV_LENGTH = 12;
     private static final int GCM_TAG_LENGTH = 128; // GCM 标签长度（以位为单位）
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /**
      * MD5加密（默认UTF-8字符集）
@@ -183,7 +186,18 @@ public class CodingUtils {
      * @return 随机生成的IV
      */
     public static byte[] generateIv() {
-        return GCM_IV.getBytes();
+        byte[] iv = new byte[GCM_IV_LENGTH];
+        SECURE_RANDOM.nextBytes(iv);
+        return iv;
+    }
+
+    /**
+     * 获取兼容历史密文的固定 IV。
+     *
+     * @return 历史固定 IV
+     */
+    public static byte[] generateLegacyIv() {
+        return LEGACY_GCM_IV.getBytes(StandardCharsets.UTF_8);
     }
 
     /**

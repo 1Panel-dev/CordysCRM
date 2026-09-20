@@ -46,6 +46,20 @@ copy_conf "/installer/conf/cordys-crm.properties" "/opt/cordys/conf/cordys-crm.p
 copy_conf "/installer/conf/mysql/my.cnf"           "/opt/cordys/conf/mysql/my.cnf"        "MySQL"
 copy_conf "/installer/conf/redis/redis.conf"       "/opt/cordys/conf/redis/redis.conf"    "Redis"
 
+# 新安装生成随机密钥，升级时替换历史默认密钥，并保留用户已配置的密钥
+secret_file="/opt/cordys/conf/cordys-crm.properties"
+legacy_secret="9a9rdqPlTqhpZzkq"
+current_secret=$(grep '^cordys.secret.key=' "$secret_file" | head -n 1 | cut -d'=' -f2- | tr -d '\r')
+if [ -z "$current_secret" ] || [ "$current_secret" = "$legacy_secret" ]; then
+  generated_secret=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
+  if grep -q '^cordys.secret.key=' "$secret_file"; then
+    sed -i "s|^cordys.secret.key=.*$|cordys.secret.key=${generated_secret}|" "$secret_file"
+  else
+    printf '\ncordys.secret.key=%s\n' "$generated_secret" >> "$secret_file"
+  fi
+  log "已生成随机 cordys.secret.key"
+fi
+
 # 仅在目录存在时再设置权限
 if [ -d "/opt/cordys" ]; then
   log "设置目录权限: /opt/cordys"
