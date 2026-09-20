@@ -434,6 +434,7 @@ public class ThirdDepartmentService {
             s.setValue(cron);
             s.setEnable(request.isEnable());
             s.setConfig(JSON.toJSONString(request.getSyncScope()));
+            s.setResourceType(request.getResourceType());
             s.setUpdateUser(userId);
             scheduleService.editSchedule(s);
             scheduleService.addOrUpdateCronJob(s, SyncUserScheduleJob.getJobKey(orgId), SyncUserScheduleJob.getTriggerKey(orgId), SyncUserScheduleJob.class);

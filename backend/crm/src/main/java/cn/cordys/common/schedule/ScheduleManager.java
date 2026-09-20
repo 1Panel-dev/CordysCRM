@@ -48,7 +48,6 @@ public class ScheduleManager {
      * @param cls                任务类
      * @param repeatIntervalTime 任务重复间隔时间（单位：小时）
      * @param jobDataMap         任务数据
-     *
      * @throws SchedulerException 如果调度失败
      */
     public void addSimpleJob(JobKey jobKey, TriggerKey triggerKey, Class<? extends Job> cls, int repeatIntervalTime, JobDataMap jobDataMap)
@@ -181,7 +180,6 @@ public class ScheduleManager {
      * @param jobClass   任务类
      * @param cron       Cron 表达式
      * @param jobDataMap 任务数据
-     *
      * @throws SchedulerException 如果添加或更新任务失败
      */
     public void addOrUpdateCronJob(JobKey jobKey, TriggerKey triggerKey, Class jobClass, String cron, JobDataMap jobDataMap)
@@ -202,7 +200,6 @@ public class ScheduleManager {
      * @param triggerKey 触发器标识
      * @param jobClass   任务类
      * @param cron       Cron 表达式
-     *
      * @throws SchedulerException 如果添加或更新任务失败
      */
     public void addOrUpdateCronJob(JobKey jobKey, TriggerKey triggerKey, Class jobClass, String cron) throws SchedulerException {
@@ -215,7 +212,6 @@ public class ScheduleManager {
      * @param schedule   定时任务调度对象
      * @param expression Cron 或时间表达式
      * @param userId     执行任务的用户 ID
-     *
      * @return JobDataMap 对象
      */
     public JobDataMap getDefaultJobDataMap(Schedule schedule, String expression, String userId) {
@@ -225,6 +221,7 @@ public class ScheduleManager {
         jobDataMap.put("userId", userId);
         jobDataMap.put("config", schedule.getConfig());
         jobDataMap.put("organizationId", schedule.getOrganizationId());
+        jobDataMap.put("resourceType", schedule.getResourceType());
         return jobDataMap;
     }
 }

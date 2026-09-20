@@ -10,13 +10,13 @@ public enum SyncCycleCron {
     SIX_HOUR("0 0 0/6 * * ?"),
     TWELVE_HOUR("0 0 0/12 * * ?"),
     DAY("0 0 1 * * ?"),
-    MONDAY("0 0 1 * * MON"),
-    TUESDAY("0 0 1 * * TUE"),
-    WEDNESDAY("0 0 1 * * WED"),
-    THURSDAY("0 0 1 * * THU"),
-    FRIDAY("0 0 1 * * FRI"),
-    SATURDAY("0 0 1 * * SAT"),
-    SUNDAY("0 0 1 * * SUN");
+    MONDAY("0 0 1 ? * MON"),
+    TUESDAY("0 0 1 ? * TUE"),
+    WEDNESDAY("0 0 1 ? * WED"),
+    THURSDAY("0 0 1 ? * THU"),
+    FRIDAY("0 0 1 ? * FRI"),
+    SATURDAY("0 0 1 ? * SAT"),
+    SUNDAY("0 0 1 ? * SUN");
 
     private final String cron;
 
