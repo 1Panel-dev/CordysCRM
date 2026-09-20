@@ -709,7 +709,7 @@
   const popShow = ref<Record<string, boolean>>({});
   async function handleReCalculation(fieldId: string, value: Description) {
     try {
-      const res = await refreshStatistic(fieldId);
+      const res = await refreshStatistic(props.sourceId, fieldId);
       value.value = res !== null ? res.toString() : '';
       popShow.value[fieldId] = false;
       Message.success(t('common.refreshSuccess'));

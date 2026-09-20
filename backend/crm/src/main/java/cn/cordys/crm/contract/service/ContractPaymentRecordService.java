@@ -53,6 +53,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFieldExtService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -93,6 +94,8 @@ public class ContractPaymentRecordService extends BaseExportService {
     private BaseService baseService;
     @Resource
     private LogService logService;
+    @Resource
+    private StatisticFieldService statisticFieldService;
     @Resource
     private PermissionCache permissionCache;
     @Resource
@@ -157,6 +160,10 @@ public class ContractPaymentRecordService extends BaseExportService {
         // 保存自定义字段值&回款记录
         contractPaymentRecordFieldService.saveModuleField(paymentRecord, currentOrg, currentUser, request.getModuleFields(), false);
         contractPaymentRecordMapper.insert(paymentRecord);
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), paymentRecord.getId(), currentOrg);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), paymentRecord.getId(), currentOrg);
         // 日志
         baseService.handleAddLogWithSubTable(paymentRecord, request.getModuleFields(), Translator.get("products_info"),
                 moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));
@@ -177,6 +184,8 @@ public class ContractPaymentRecordService extends BaseExportService {
         contractPaymentRecordMapper.update(contractPaymentRecord);
         List<BaseModuleFieldValue> oldFvs = contractPaymentRecordFieldService.getModuleFieldValuesByResourceId(request.getId());
         updateModuleField(contractPaymentRecord, request.getModuleFields(), currentOrg, currentUser);
+        // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), request.getId(), currentOrg);
         baseService.handleUpdateLogWithSubTable(oldRecord, contractPaymentRecord, oldFvs, request.getModuleFields(),
                 oldRecord.getId(), oldRecord.getName(), Translator.get("products_info"),
                 moduleFormCacheService.getBusinessFormConfig(FormKey.CONTRACT_PAYMENT_RECORD.getKey(), currentOrg));

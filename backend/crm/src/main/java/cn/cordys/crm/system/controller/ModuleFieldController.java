@@ -63,6 +63,7 @@ import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -364,9 +365,21 @@ public class ModuleFieldController {
 		return moduleFieldService.getSourceRefDetail(request);
 	}
 
-    @PostMapping("/statistic/refresh/{fieldId}")
-    @Operation(summary = "手动刷新表单数据上的统计字段")
-    public void refreshStatisticField(@PathVariable String fieldId) {
-        statisticFieldService.refreshField(fieldId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    /**
+     * 手动刷新某条数据上的某个统计字段。
+     *
+     * <p>两个参数缺一不可: resourceId 定位值算给哪条记录, fieldId 定位是哪个统计字段。
+     * 只给 fieldId 的话刷新范围就成了「整张表单的存量数据」, 那是保存配置时才做的事 ——
+     * 用户在详情页点刷新, 想要的是眼前这一条立刻变准。</p>
+     *
+     * <p>路径按「先记录后字段」排: 资源ID是业务对象, 字段ID只是它身上的一个属性, 从粗到细。</p>
+     *
+     * @return 重算后的值, null 表示空结果(页面上显示「-」)。前端拿它直接更新显示,
+     *         免得刷新完还要再查一遍详情。
+     */
+    @PostMapping("/statistic/refresh/{resourceId}/{fieldId}")
+    @Operation(summary = "手动刷新单条数据上的统计字段")
+    public BigDecimal refreshStatisticField(@PathVariable String resourceId, @PathVariable String fieldId) {
+        return statisticFieldService.refreshField(fieldId, resourceId, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

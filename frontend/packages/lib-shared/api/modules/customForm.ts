@@ -155,8 +155,8 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.get<boolean>({ url: `${GetCustomFormCreatePermissionUrl}/${customFormId}` });
   }
 
-  function refreshStatistic(fieldId: string) {
-    return CDR.post<number>({ url: `${RefreshStatisticUrl}/${fieldId}` });
+  function refreshStatistic(resourceId: string, fieldId: string) {
+    return CDR.post<number>({ url: `${RefreshStatisticUrl}/${resourceId}/${fieldId}` });
   }
 
   function preCheckImportCustomForm(params: ImportUploadParams) {

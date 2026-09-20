@@ -79,6 +79,7 @@ import cn.cordys.crm.system.service.DictService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -117,6 +118,8 @@ public class ClueService {
 
     @Resource
     private BaseMapper<Clue> clueMapper;
+    @Resource
+    private StatisticFieldService statisticFieldService;
     @Resource
     private BaseMapper<Customer> customerMapper;
     @Resource
@@ -455,6 +458,10 @@ public class ClueService {
         clueFieldService.saveModuleField(clue, orgId, userId, request.getModuleFields(), false);
 
         clueMapper.insert(clue);
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.CLUE.getKey(), clue.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CLUE.getKey(), clue.getId(), orgId);
         baseService.handleAddLogWithResourceName(clue, request.getModuleFields());
 
         // 消息通知
@@ -496,6 +503,8 @@ public class ClueService {
 
         clueMapper.update(clue);
         clue = clueMapper.selectByPrimaryKey(request.getId());
+        // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CLUE.getKey(), request.getId(), orgId);
         baseService.handleUpdateLog(originClue, clue, originCustomerFields, request.getModuleFields(), originClue.getId(), originClue.getName());
         return clueMapper.selectByPrimaryKey(clue.getId());
     }

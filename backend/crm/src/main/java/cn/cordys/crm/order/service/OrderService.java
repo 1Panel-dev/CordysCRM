@@ -84,6 +84,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StageAdvancedConfigService;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -119,6 +120,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
     @Resource
     private OrderFieldService orderFieldService;
+    @Resource
+    private StatisticFieldService statisticFieldService;
     @Resource
     private BaseMapper<Order> orderMapper;
     @Resource
@@ -200,6 +203,10 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         orderFieldService.saveModuleField(order, orgId, operatorId, moduleFields, false);
         orderMapper.insert(order);
 
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.ORDER.getKey(), order.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.ORDER.getKey(), order.getId(), orgId);
         baseService.handleAddLogWithSubTable(order, moduleFields, Translator.get("products_info"), moduleFormConfigDTO);
 
         // 保存表单配置快照
@@ -409,6 +416,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             setAmount(request.getAmount(), order);
             updateFields(moduleFields, order, orgId, userId);
             orderMapper.update(order);
+            // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+            statisticFieldService.refreshByRelatedDataChange(FormKey.ORDER.getKey(), request.getId(), orgId);
             //删除快照
             LambdaQueryWrapper<OrderSnapshot> delWrapper = new LambdaQueryWrapper<>();
             delWrapper.eq(OrderSnapshot::getOrderId, request.getId());

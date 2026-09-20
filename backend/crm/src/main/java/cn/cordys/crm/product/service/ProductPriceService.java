@@ -93,6 +93,8 @@ public class ProductPriceService extends BaseExportService {
     @Resource
     private ModuleFieldExtService moduleFieldExtService;
     @Resource
+    private StatisticFieldService statisticFieldService;
+    @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private BaseMapper<ProductPrice> productPriceMapper;
@@ -159,6 +161,10 @@ public class ProductPriceService extends BaseExportService {
         request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         productPriceFieldService.saveModuleField(productPrice, currentOrg, currentUser, request.getModuleFields(), false);
         productPriceMapper.insert(productPrice);
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.PRICE.getKey(), productPrice.getId(), currentOrg);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.PRICE.getKey(), productPrice.getId(), currentOrg);
         // 处理日志上下文
         ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
         baseService.handleAddLogWithSubTable(productPrice, request.getModuleFields(), Translator.get("products_info"), priceFormConfig);
@@ -187,6 +193,8 @@ public class ProductPriceService extends BaseExportService {
         request.getModuleFields().add(new BaseModuleFieldValue("products", request.getProducts()));
         updateFields(request.getModuleFields(), productPrice, currentOrg, currentUser);
         productPriceMapper.update(productPrice);
+        // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.PRICE.getKey(), request.getId(), currentOrg);
         // 处理日志上下文
         ModuleFormConfigDTO priceFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRICE.getKey(), currentOrg);
         baseService.handleUpdateLogWithSubTable(oldPrice, productPrice, originFields, request.getModuleFields(), request.getId(), productPrice.getName(), Translator.get("products_info"), priceFormConfig);

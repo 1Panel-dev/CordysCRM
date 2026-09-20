@@ -52,6 +52,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -91,6 +92,8 @@ public class ContractPaymentPlanService extends BaseExportService {
     private BaseMapper<Contract> contractMapper;
     @Resource
     private BaseMapper<ContractPaymentPlan> contractPaymentPlanMapper;
+    @Resource
+    private StatisticFieldService statisticFieldService;
     @Resource
     private ExtContractPaymentPlanMapper extContractPaymentPlanMapper;
     @Resource
@@ -303,6 +306,10 @@ public class ContractPaymentPlanService extends BaseExportService {
         // 保存自定义字段
         contractPaymentPlanFieldService.saveModuleField(contractPaymentPlan, orgId, userId, request.getModuleFields(), false);
         contractPaymentPlanMapper.insert(contractPaymentPlan);
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), contractPaymentPlan.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), contractPaymentPlan.getId(), orgId);
         // 日志
         baseService.handleAddLogWithSubTable(contractPaymentPlan, request.getModuleFields(), Translator.get("products_info"), getFormConfig(orgId));
         return contractPaymentPlan;
@@ -329,6 +336,8 @@ public class ContractPaymentPlanService extends BaseExportService {
         }
 
         contractPaymentPlanMapper.update(contractPaymentPlan);
+        // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTRACT_PAYMENT_PLAN.getKey(), request.getId(), orgId);
 
         contractPaymentPlan = contractPaymentPlanMapper.selectByPrimaryKey(request.getId());
 

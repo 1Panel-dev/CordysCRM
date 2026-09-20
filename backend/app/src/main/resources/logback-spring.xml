@@ -166,6 +166,7 @@
         <appender-ref ref="infoAsyncAppender"/>
         <appender-ref ref="warnAsyncAppender"/>
         <appender-ref ref="errorAsyncAppender"/>
+        <appender-ref ref="console"/>
     </logger>
 
     <!-- cn.cordys.Application 单独 INFO 输出 -->

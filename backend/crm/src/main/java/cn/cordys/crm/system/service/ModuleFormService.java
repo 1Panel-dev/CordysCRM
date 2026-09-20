@@ -66,6 +66,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -147,6 +149,12 @@ public class ModuleFormService {
     private FieldSourceServiceProvider fieldSourceServiceProvider;
     @Resource
     private ModuleFieldService moduleFieldService;
+    /**
+     * 统计字段刷新需要读取表单配置, 延迟注入避免与表单数据读写形成构造期循环依赖。
+     */
+    @Lazy
+    @Resource
+    private StatisticFieldService statisticFieldService;
     private static final String REF_SYMBOL = "🔗";
 
     /**
@@ -276,6 +284,12 @@ public class ModuleFormService {
             LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
             fieldWrapper.eq(ModuleField::getFormId, form.getId());
             List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
+
+            // 统计字段刷新要对比新旧配置, 旧配置必须在下面删除字段之前取出。
+            // 只有新旧任一侧存在统计字段时才读完整字段属性, 避免普通保存多出两次查询。
+            boolean statisticFieldInvolved = hasStatisticField(fields, saveParam.getFields());
+            List<BaseField> originFields = statisticFieldInvolved ? getAllFields(form.getId()) : List.of();
+
             // 重置流水号
             resetSerial(fields, saveParam.getFields(), saveParam.getFormKey(), currentOrgId);
             if (CollectionUtils.isNotEmpty(fields)) {
@@ -287,11 +301,11 @@ public class ModuleFormService {
                 saveFields(saveParam.getFields(), form.getId(), currentUserId);
             }
 
-            // TODO 统计字段刷新: 字段配置保存后按每个统计字段的 updateScope 刷新存量数据
-            //  (NONE 跳过 / ALL 全量 / CONDITION 按 updateScopeCondition 过滤), 统计字段被删除时同法清理旧值。
-            // statisticFieldService.refreshOnConfigSave(saveParam.getFormKey(),
-            //         saveParam.getFields().stream().filter(StatisticField.class::isInstance)
-            //                 .map(StatisticField.class::cast).toList(), currentOrgId);
+            // 统计字段刷新: 由 StatisticFieldService 对比新旧配置, 配置没改就不刷新。
+            // 必须在事务提交后触发, 否则异步线程读到的是尚未提交的旧配置。
+            if (statisticFieldInvolved) {
+                triggerStatisticRefresh(saveParam.getFormKey(), originFields, saveParam.getFields(), currentOrgId);
+            }
         }
 
         // 返回表单配置
@@ -2017,6 +2031,50 @@ public class ModuleFormService {
     }
 
     /**
+     * 新旧字段配置中是否涉及统计字段。
+     *
+     * <p>统计字段是跨表单聚合配置, 只有涉及统计字段的保存才需要读取完整字段属性做新旧对比,
+     * 普通字段的保存不应因此多出查询。</p>
+     *
+     * @param originFields  保存前的字段主表记录
+     * @param currentFields 保存后的字段配置
+     * @return 是否涉及统计字段
+     */
+    private boolean hasStatisticField(List<ModuleField> originFields, List<BaseField> currentFields) {
+        boolean inOrigin = originFields.stream()
+                .anyMatch(field -> Strings.CS.equals(field.getType(), FieldType.STATISTIC.name()));
+        boolean inCurrent = currentFields.stream().anyMatch(StatisticField.class::isInstance);
+        return inOrigin || inCurrent;
+    }
+
+    /**
+     * 触发统计字段异步刷新。
+     *
+     * <p>保存表单配置本身处于事务中, 而刷新是异步任务; 直接调用会让异步线程可能先于事务提交执行,
+     * 读到尚未提交的旧配置。因此登记到事务提交之后再触发, 无事务上下文时退化为同步调用。</p>
+     *
+     * @param formKey       表单Key
+     * @param originFields  保存前的字段配置
+     * @param currentFields 保存后的字段配置
+     * @param orgId         组织ID
+     */
+    private void triggerStatisticRefresh(String formKey, List<BaseField> originFields,
+                                         List<BaseField> currentFields, String orgId) {
+        Runnable trigger = () ->
+                statisticFieldService.refreshOnConfigSave(formKey, originFields, currentFields, orgId);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    trigger.run();
+                }
+            });
+        } else {
+            trigger.run();
+        }
+    }
+
+    /**
      * 字段保存预检查
      *
      * @param formKey 表单Key
@@ -2067,6 +2125,11 @@ public class ModuleFormService {
             return;
         }
 
+        // TODO 自定义表单暂不支持添加统计字段: 其字段配置模型与数据权限链路尚未适配统计聚合, 后续版本放开。
+        if (FormKey.ofKey(formKey) == null) {
+            throw new GenericException(Translator.get("module.form.statistic.custom.form.unsupported"));
+        }
+
         Map<String, RelatedFormDTO> relatedFormMap = getRelatedForms(formKey, orgId).stream()
                 .collect(Collectors.toMap(RelatedFormDTO::getId, Function.identity(), (p, n) -> p));
 
@@ -2095,6 +2158,10 @@ public class ModuleFormService {
 
         if (StringUtils.isBlank(field.getTargetFormId())) {
             throw new GenericException(Translator.getWithArgs("module.form.statistic.target.required", name));
+        }
+        // TODO 自定义表单暂不支持作为被统计的目标表单, 目标表单目前只允许标准模块表单, 后续版本放开。
+        if (FormKey.ofKey(field.getTargetFormId()) == null) {
+            throw new GenericException(Translator.getWithArgs("module.form.statistic.target.custom.form.unsupported", name));
         }
         if (StringUtils.isBlank(field.getRelatedFieldId())) {
             throw new GenericException(Translator.getWithArgs("module.form.statistic.related.field.required", name));

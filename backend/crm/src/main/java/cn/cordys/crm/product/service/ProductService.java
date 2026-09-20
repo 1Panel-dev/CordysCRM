@@ -44,6 +44,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -79,6 +80,8 @@ public class ProductService {
 
     @Resource
     private BaseMapper<Product> productBaseMapper;
+    @Resource
+    private StatisticFieldService statisticFieldService;
     @Resource
     private ExtProductMapper extProductMapper;
     @Resource
@@ -211,6 +214,10 @@ public class ProductService {
 
         productBaseMapper.insert(product);
 
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.PRODUCT.getKey(), product.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.PRODUCT.getKey(), product.getId(), orgId);
         // 添加日志上下文
         baseService.handleAddLogWithResourceName(product, request.getModuleFields());
         return product;
@@ -233,6 +240,8 @@ public class ProductService {
         // 更新模块字段
         updateModuleField(product, request.getModuleFields(), orgId, userId);
         productBaseMapper.update(product);
+        // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.PRODUCT.getKey(), request.getId(), orgId);
 
         //添加日志
         baseService.handleUpdateLog(oldProduct, product, originCustomerFields, request.getModuleFields(), request.getId(), product.getName());

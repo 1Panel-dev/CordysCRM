@@ -117,6 +117,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
     @Resource
     private ContractFieldService contractFieldService;
     @Resource
+    private StatisticFieldService statisticFieldService;
+    @Resource
     private BaseMapper<Contract> contractMapper;
     @Resource
     private BaseService baseService;
@@ -214,6 +216,10 @@ public class ContractService extends BaseExportService implements ApprovalResour
         contractFieldService.saveModuleField(contract, orgId, operatorId, moduleFields, false);
         contractMapper.insert(contract);
 
+        // 统计字段: 本条记录刚建好, 先按各统计字段的空值口径把值行落一次
+        statisticFieldService.refreshDataStatisticFields(FormKey.CONTRACT.getKey(), contract.getId(), orgId);
+        // 统计字段: 新数据可能关联到了别的表单记录, 被关联记录的统计值要跟着重算
+        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTRACT.getKey(), contract.getId(), orgId);
         baseService.handleAddLogWithSubTable(contract, moduleFields, Translator.get("products_info"), moduleFormConfigDTO);
 
         // 保存表单配置快照
@@ -421,6 +427,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
             moduleFields.add(new BaseModuleFieldValue("products", request.getProducts()));
             updateFields(moduleFields, contract, orgId, userId);
             contractMapper.update(contract);
+            // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
+            statisticFieldService.refreshByRelatedDataChange(FormKey.CONTRACT.getKey(), request.getId(), orgId);
             //删除快照
             LambdaQueryWrapper<ContractSnapshot> delWrapper = new LambdaQueryWrapper<>();
             delWrapper.eq(ContractSnapshot::getContractId, request.getId());
