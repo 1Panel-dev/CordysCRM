@@ -736,6 +736,39 @@ export const priceTableDefaultFieldConfig: FormCreateField = {
   fixedColumn: 1,
 };
 
+export const statisticsDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.STATISTIC,
+  icon: 'iconicon_statistics',
+  name: 'crmFormDesign.statistics',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: false,
+  mobile: true,
+  rules: [],
+  targetFormId: '',
+  relatedFieldId: '',
+  statisticType: 'SUM',
+  dataScope: 'ALL',
+  emptyResultMode: '-',
+  avgEmptyValueMode: 'DEFAULT_ZERO',
+  updateScope: 'NONE',
+  numberFormat: 'number',
+  decimalPlaces: false,
+  precision: 0,
+  showThousandsSeparator: false,
+  combineSearch: {
+    searchMode: 'OR', // 默认搜索模式
+    conditions: [],
+  },
+  updateScopeCondition: {
+    searchMode: 'OR', // 默认搜索模式
+    conditions: [],
+  },
+};
+
 export const advancedFields: FormCreateField[] = [
   pictureDefaultFieldConfig,
   locationDefaultFieldConfig,
@@ -749,6 +782,7 @@ export const advancedFields: FormCreateField[] = [
   formulaDefaultFieldConfig,
   productTableDefaultFieldConfig,
   priceTableDefaultFieldConfig,
+  statisticsDefaultFieldConfig,
 ];
 
 export function getFieldIcon(type: FieldTypeEnum) {

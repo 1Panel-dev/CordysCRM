@@ -58,6 +58,8 @@
     formFields: FormCreateField[];
     formKey: FormDesignKeyEnum;
     customDataSourceForms: CustomFormItem[];
+    isStatistic?: boolean;
+    combineSearchFieldKey?: keyof FormCreateField;
   }>();
 
   const emit = defineEmits<{
@@ -70,9 +72,11 @@
   };
 
   const formModel = ref<DataSourceFilterCombine>(
-    cloneDeep(props.fieldConfig.combineSearch) || cloneDeep(defaultFormModel)
+    cloneDeep(props.fieldConfig[props.combineSearchFieldKey || 'combineSearch']) || cloneDeep(defaultFormModel)
   );
-  const dataSourceType = computed(() => props.fieldConfig.dataSourceType);
+  const dataSourceType = computed(() =>
+    props.isStatistic ? props.fieldConfig.targetFormId : props.fieldConfig.dataSourceType
+  );
   const isCustomForm = computed(() => isCustomDataSourceType(dataSourceType.value));
   const formKey = computed<FormDesignKeyEnum>(
     () => getDataSourceFormKey(dataSourceType.value, dataSourceFilterFormKeyMap, FormDesignKeyEnum.CUSTOMER)!
@@ -219,18 +223,21 @@
       if (val) {
         await initFormConfig();
         await initStageOptions();
-        formModel.value.conditions = cloneDeep(props.fieldConfig.combineSearch?.conditions) || [
-          {
-            leftFieldId: undefined,
-            leftFieldType: FieldTypeEnum.INPUT,
-            operator: undefined,
-            matchType: 'MATCH_FIELD',
-            rightFieldId: undefined,
-            rightFieldCustom: false,
-            rightFieldCustomValue: '',
-            rightFieldType: FieldTypeEnum.INPUT, // 默认右侧字段类型为输入框
-          },
-        ];
+        formModel.value.conditions = props.fieldConfig[props.combineSearchFieldKey || 'combineSearch']?.conditions
+          .length
+          ? cloneDeep(props.fieldConfig[props.combineSearchFieldKey || 'combineSearch']?.conditions)
+          : [
+              {
+                leftFieldId: undefined,
+                leftFieldType: FieldTypeEnum.INPUT,
+                operator: undefined,
+                matchType: 'MATCH_FIELD',
+                rightFieldId: undefined,
+                rightFieldCustom: false,
+                rightFieldCustomValue: '',
+                rightFieldType: FieldTypeEnum.INPUT, // 默认右侧字段类型为输入框
+              },
+            ];
       }
     },
     {

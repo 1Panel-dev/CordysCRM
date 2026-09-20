@@ -286,6 +286,32 @@
           />
         </div>
       </template>
+      <template #[FieldTypeEnum.STATISTIC]="{ item }">
+        <div class="field-line flex w-full flex-wrap items-center">
+          <div class="pr-[16px] text-[var(--text-n2)]">
+            {{ item.label }}
+          </div>
+          <div class="flex items-center gap-[8px]">
+            {{ item.value || '-' }}
+            <CrmPopConfirm
+              v-model:show="popShow[item.fieldInfo.id]"
+              :title="t('crmFormCreate.reCalculation')"
+              icon-type="warning"
+              :content="t('crmFormCreate.reCalculationTip')"
+              :positive-text="t('common.confirm')"
+              trigger="click"
+              :negative-text="t('common.cancel')"
+              placement="bottom-end"
+              @confirm="handleReCalculation(item.fieldInfo.id, item)"
+            >
+              <n-button type="warning" quaternary>
+                <template #icon><CrmIcon type="iconicon_error_circle_filled" /></template>
+                {{ t('crmFormCreate.reCalculation') }}
+              </n-button>
+            </CrmPopConfirm>
+          </div>
+        </div>
+      </template>
     </CrmDescription>
   </n-spin>
   <CrmFileListModal
@@ -314,6 +340,7 @@
   import type { ApprovalFieldPermission } from '@lib/shared/models/system/process';
 
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
+  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import CrmFileListModal from '@/components/business/crm-file-list-modal/index.vue';
@@ -325,6 +352,7 @@
   import CrmSingleText from '../crm-form-create/components/basic/singleText.vue';
   import CrmTextarea from '../crm-form-create/components/basic/textarea.vue';
 
+  import { refreshStatistic } from '@/api/modules/index.js';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
@@ -677,6 +705,19 @@
     handleFormChange();
   }
 
+  const popShow = ref<Record<string, boolean>>({});
+  async function handleReCalculation(fieldId: string, value: Description) {
+    try {
+      const res = await refreshStatistic(fieldId);
+      value.value = res !== null ? res.toString() : '';
+      popShow.value[fieldId] = false;
+      Message.success(t('common.refreshSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   watch(
     () => props.refreshKey,
     async () => {
@@ -691,6 +732,11 @@
   onBeforeMount(async () => {
     await initFormConfig();
     await initFormDetail(true);
+    descriptions.value.forEach((e) => {
+      if (e.fieldInfo.type === FieldTypeEnum.STATISTIC) {
+        popShow.value[e.fieldInfo.id] = false;
+      }
+    });
     emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
     isInit.value = true;
   });

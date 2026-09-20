@@ -13,4 +13,6 @@ export default {
   'crmFormCreate.advanced.limitCount': '，最大限制 {count} 个',
   'crmFormCreate.advanced.selectIndustry': '请选择行业',
   'crmFormCreate.dataSourceLinkOptionsFailed': '数据源联动选项解析失败',
+  'crmFormCreate.reCalculation': '重新计算',
+  'crmFormCreate.reCalculationTip': '会重新计算该字段值和本条数据相关的其他字段',
 };

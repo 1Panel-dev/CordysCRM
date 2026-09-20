@@ -1,5 +1,22 @@
 <template>
+  <CrmInputNumber
+    v-if="props.pureInput"
+    v-model:value="value"
+    :max="1000000000"
+    :min="-1000000000"
+    :placeholder="''"
+    :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
+    :parse="parse"
+    :format="format"
+    :precision="props.fieldConfig.precision"
+    clearable
+    class="w-full"
+    @update-value="($event:number | null) => emit('change', $event)"
+  >
+    <template v-if="props.fieldConfig.numberFormat === 'percent'" #suffix> % </template>
+  </CrmInputNumber>
   <n-form-item
+    v-else
     :label="props.fieldConfig.name"
     :path="props.path"
     :rule="formItemRules"
@@ -59,6 +76,7 @@
     isDescriptionRender?: boolean; // 是否是描述渲染
     ignoreRule?: boolean;
     disabled?: boolean;
+    pureInput?: boolean; // 是否是纯输入框，主要用于公式计算结果渲染
   }>();
   const emit = defineEmits<{
     (e: 'change', value: number | null): void;

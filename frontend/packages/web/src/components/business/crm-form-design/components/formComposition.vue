@@ -220,6 +220,9 @@
     if ([FieldTypeEnum.SUB_PRODUCT, FieldTypeEnum.SUB_PRICE].includes(type)) {
       return dataTable;
     }
+    if (type === FieldTypeEnum.STATISTIC) {
+      return CrmFormCreateComponents.advancedComponents.statistics;
+    }
   }
 
   function addItem(item: FormCreateField) {

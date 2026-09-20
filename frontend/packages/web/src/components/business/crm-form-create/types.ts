@@ -1,5 +1,10 @@
 import type { OperatorEnum } from '@lib/shared/enums/commonEnum';
-import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import type {
+  FieldDataSourceTypeEnum,
+  FieldRuleEnum,
+  FieldTypeEnum,
+  FormDesignKeyEnum,
+} from '@lib/shared/enums/formDesignEnum';
 import type { ModuleField } from '@lib/shared/models/common';
 import type { CollaborationType } from '@lib/shared/models/customer';
 import { SelectedUsersItem } from '@lib/shared/models/system/module';
@@ -67,6 +72,12 @@ export interface DataSourceLinkField {
 export interface DataSourceSubFieldLinkField extends DataSourceLinkField {
   childLinks: DataSourceSubFieldLinkField[]; // 子表格联动配置
 }
+
+export type StatisticType = 'SUM' | 'AVG' | 'COUNT';
+export type StatisticRange = 'ALL' | 'CONDITION';
+export type StatisticWhenNull = '-' | '0';
+export type StatisticFieldWhenNull = 'SKIP' | 'DEFAULT_ZERO';
+export type StatisticUpdateRange = 'NONE' | 'ALL' | 'CONDITION';
 
 export interface FormCreateField {
   // 基础属性
@@ -163,6 +174,16 @@ export interface FormCreateField {
   listDisplayFields?: string[]; // 数据源列表展示字段
   refFields?: FormCreateField[]; // 引用字段
   formulaResultFormat?: 'number' | 'text'; // 计算结果格式
+  // 统计(包含数字格式属性)
+  targetFormId?: FormDesignKeyEnum | string; // 目标表单
+  relatedFieldId?: string; // 目标表单的关联当前表单的数据源字段id
+  statisticType?: StatisticType; // 统计类型
+  statisticFieldId?: string; // 目标字段
+  dataScope?: StatisticRange; // 统计范围
+  avgEmptyValueMode?: StatisticFieldWhenNull; // 平均值字段为空时
+  emptyResultMode?: StatisticWhenNull; // 结果为空时
+  updateScope?: StatisticUpdateRange; // 更新范围
+  updateScopeCondition?: DataSourceFilterCombine; // 更新范围数据过滤条件
 }
 
 export interface AttachmentInfo {

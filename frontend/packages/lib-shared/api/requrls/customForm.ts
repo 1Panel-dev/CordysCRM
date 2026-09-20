@@ -16,6 +16,7 @@ export const EnableCustomFormUrl = '/custom-form/enable'; // 开启表单模板
 export const DisableCustomFormUrl = '/custom-form/disable'; // 关闭表单模板
 export const GetCustomFormOptionsUrl = '/custom-form/option'; // 自定义表单选项列表
 export const GetCustomFormCreatePermissionUrl = '/custom-form/data/create-permission'; // 获取自定义表单创建权限
+export const RefreshStatisticUrl = '/field/statistic/refresh'; // 重新计算统计字段
 
 // 表单数据
 export const AddCustomFormDataUrl = '/custom-form/data/add'; // 添加自定义表单数据

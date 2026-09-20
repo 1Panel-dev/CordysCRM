@@ -52,6 +52,7 @@
             FieldTypeEnum.SUB_PRODUCT,
             FieldTypeEnum.RADIO,
             FieldTypeEnum.CHECKBOX,
+            FieldTypeEnum.STATISTIC,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -931,6 +932,7 @@
             FieldTypeEnum.FORMULA,
             FieldTypeEnum.SUB_PRICE,
             FieldTypeEnum.SUB_PRODUCT,
+            FieldTypeEnum.STATISTIC,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -1210,6 +1212,197 @@
         </n-checkbox-group>
       </div>
       <!-- 校验规则 End -->
+      <!-- 统计 -->
+      <template v-if="fieldConfig.type === FieldTypeEnum.STATISTIC">
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.statisticsTargetForm') }}
+          </div>
+          <n-select
+            v-model:value="fieldConfig.targetFormId"
+            :options="statisticTargetFormOptions"
+            filterable
+            :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+            @update-value="handleStatisticTargetFormChange"
+          />
+        </div>
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.statisticsType') }}
+          </div>
+          <n-select
+            v-model:value="fieldConfig.statisticType"
+            :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+            :options="statisticTypeOptions"
+            :render-label="renderStatisticOption"
+            :render-tag="renderStatisticTag"
+            :show-checkmark="false"
+          />
+        </div>
+        <div v-if="fieldConfig.statisticType !== 'COUNT'" class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            <div>
+              <span class="text-[var(--error-red)]">*</span>
+              {{ t('crmFormDesign.statisticsField') }}
+            </div>
+          </div>
+          <n-select
+            v-model:value="fieldConfig.statisticFieldId"
+            :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+            :options="statisticFieldOptions"
+            :status="!fieldConfig.statisticFieldId ? 'error' : undefined"
+          />
+          <div v-if="!fieldConfig.statisticFieldId" class="text-[12px] text-[var(--error-red)]">
+            {{ t('common.notNull', { value: t('crmFormDesign.statisticsField') }) }}
+          </div>
+        </div>
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            <span>{{ t('crmFormDesign.statisticsRange') }}</span>
+            <n-button
+              type="primary"
+              text
+              :disabled="!fieldConfig.dataScope || !!fieldConfig.resourceFieldId"
+              @click="handleClearStatisticRange"
+            >
+              {{ t('common.clear') }}
+            </n-button>
+          </div>
+          <n-radio-group
+            v-model:value="fieldConfig.dataScope"
+            name="radiogroup"
+            class="flex"
+            :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+          >
+            <n-radio-button value="ALL" class="flex-1 text-center">
+              {{ t('common.all') }}
+            </n-radio-button>
+            <n-radio-button value="CONDITION" class="flex-1 text-center">
+              {{ t('crmFormDesign.statisticsRangeConditions') }}
+            </n-radio-button>
+          </n-radio-group>
+          <div v-if="fieldConfig.dataScope === 'CONDITION'" class="flex">
+            <n-button
+              type="default"
+              class="outline--secondary flex-1"
+              :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+              @click="handleStatisticRangeFilterShow"
+            >
+              {{
+                fieldConfig.combineSearch?.conditions?.length
+                  ? t('crmFormDesign.formulaHasBeenSet')
+                  : t('crmFormDesign.dataSourceFilterSetting')
+              }}
+            </n-button>
+          </div>
+        </div>
+        <div v-if="fieldConfig.statisticType === 'AVG'" class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.statisticsFieldEmpty') }}
+          </div>
+          <n-radio-group
+            v-model:value="fieldConfig.avgEmptyValueMode"
+            name="radiogroup"
+            class="flex"
+            :disabled="!!fieldConfig.resourceFieldId"
+          >
+            <n-radio-button value="SKIP" class="flex-1 text-center">
+              {{ t('crmFormDesign.notCalculation') }}
+            </n-radio-button>
+            <n-radio-button value="DEFAULT_ZERO" class="flex-1 text-center">
+              {{ t('crmFormDesign.statisticsDefaultZero') }}
+            </n-radio-button>
+          </n-radio-group>
+        </div>
+        <div v-else class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.statisticsOnEmpty') }}
+          </div>
+          <n-radio-group
+            v-model:value="fieldConfig.emptyResultMode"
+            name="radiogroup"
+            class="flex"
+            :disabled="!!fieldConfig.resourceFieldId"
+          >
+            <n-radio-button value="-" class="flex-1 text-center">
+              {{ t('crmFormDesign.statisticsDefaultEmpty') }}
+            </n-radio-button>
+            <n-radio-button value="0" class="flex-1 text-center">
+              {{ t('crmFormDesign.statisticsDefaultZero') }}
+            </n-radio-button>
+          </n-radio-group>
+        </div>
+        <div v-if="fieldConfig.statisticType !== 'COUNT'" class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.format') }}</div>
+          <n-radio-group
+            v-model:value="fieldConfig.numberFormat"
+            :disabled="fieldConfig.disabledProps?.includes('numberFormat') || !!fieldConfig.resourceFieldId"
+            name="radiogroup"
+            class="flex"
+          >
+            <n-radio-button value="number" class="flex-1 text-center">{{ t('crmFormDesign.number') }}</n-radio-button>
+            <n-radio-button value="percent" class="flex-1 text-center">{{ t('crmFormDesign.percent') }}</n-radio-button>
+          </n-radio-group>
+          <n-checkbox
+            v-model:checked="fieldConfig.decimalPlaces"
+            :disabled="fieldConfig.disabledProps?.includes('decimalPlaces') || !!fieldConfig.resourceFieldId"
+            @update-checked="() => (fieldConfig.precision = 0)"
+          >
+            {{ t('crmFormDesign.saveFloat') }}
+          </n-checkbox>
+          <n-checkbox
+            v-if="fieldConfig.numberFormat === 'number'"
+            v-model:checked="fieldConfig.showThousandsSeparator"
+            :disabled="fieldConfig.disabledProps?.includes('showThousandsSeparator') || !!fieldConfig.resourceFieldId"
+          >
+            {{ t('crmFormDesign.showThousandSeparator') }}
+          </n-checkbox>
+          <div
+            v-if="fieldConfig.decimalPlaces || fieldConfig.showThousandsSeparator"
+            class="flex items-center gap-[8px]"
+          >
+            <CrmInputNumber
+              v-if="fieldConfig.decimalPlaces"
+              v-model:value="fieldConfig.precision"
+              :disabled="fieldConfig.disabledProps?.includes('precision') || !!fieldConfig.resourceFieldId"
+              :min="0"
+              :max="4"
+              class="flex-1"
+            />
+            <div
+              class="flex flex-1 items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] px-[8px] py-[4px]"
+            >
+              <div class="text-[var(--text-n4)]">{{ t('common.preview') }}</div>
+              {{ numberPreview }}
+            </div>
+          </div>
+        </div>
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.statisticsUpdateRange') }}
+          </div>
+          <n-select
+            v-model:value="fieldConfig.updateScope"
+            :disabled="!!fieldConfig.resourceFieldId"
+            :options="statisticUpdateRangeOptions"
+          />
+          <div v-if="fieldConfig.updateScope === 'CONDITION'" class="flex">
+            <n-button
+              type="default"
+              class="outline--secondary flex-1"
+              :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+              @click="() => (showStatisticUpdateRangeFilter = true)"
+            >
+              {{
+                fieldConfig.updateScopeCondition?.conditions?.length
+                  ? t('crmFormDesign.formulaHasBeenSet')
+                  : t('crmFormDesign.dataSourceFilterSetting')
+              }}
+            </n-button>
+          </div>
+        </div>
+      </template>
+      <!-- 统计 End -->
       <!-- 字段权限 -->
       <div class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
@@ -1229,7 +1422,14 @@
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
         <n-checkbox
-          v-if="![FieldTypeEnum.DIVIDER, FieldTypeEnum.SERIAL_NUMBER, FieldTypeEnum.FORMULA].includes(fieldConfig.type)"
+          v-if="
+            ![
+              FieldTypeEnum.DIVIDER,
+              FieldTypeEnum.SERIAL_NUMBER,
+              FieldTypeEnum.FORMULA,
+              FieldTypeEnum.STATISTIC,
+            ].includes(fieldConfig.type)
+          "
           v-model:checked="fieldConfig.editable"
           :disabled="fieldConfig.disabledProps?.includes('editable') || !!fieldConfig.resourceFieldId"
           @update-checked="
@@ -1400,6 +1600,28 @@
     :custom-data-source-forms="customDataSourceForms"
     @save="handleDataSourceFilterSave"
   />
+  <FilterModal
+    v-if="fieldConfig?.targetFormId"
+    v-model:visible="showStatisticRangeFilter"
+    :field-config="fieldConfig"
+    :form-fields="list.filter((field) => !field.resourceFieldId)"
+    :form-key="props.formKey"
+    :custom-data-source-forms="[]"
+    combineSearchFieldKey="combineSearch"
+    isStatistic
+    @save="handleStatisticRangeFilterSave"
+  />
+  <FilterModal
+    v-if="fieldConfig"
+    v-model:visible="showStatisticUpdateRangeFilter"
+    :field-config="fieldConfig"
+    :form-fields="list.filter((field) => !field.resourceFieldId)"
+    :form-key="props.formKey"
+    :custom-data-source-forms="[]"
+    combineSearchFieldKey="updateScopeCondition"
+    isStatistic
+    @save="handleStatisticUpdateRangeFilterSave"
+  />
   <DataSourceDisplayFieldModal
     v-if="fieldConfig"
     v-model:show="showDataSourceDisplayFieldModal"
@@ -1470,8 +1692,13 @@
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import { formKeyMap } from '@/components/business/crm-data-source-select/config.js';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
-  import { type DataSourceOption } from '@/components/business/crm-data-source-select/utils';
+  import {
+    type DataSourceOption,
+    getDataSourceFormKey,
+    isCustomDataSourceType,
+  } from '@/components/business/crm-data-source-select/utils';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import CrmFormCreateInputNumber from '@/components/business/crm-form-create/components/basic/inputNumber.vue';
   import CrmTextArea from '@/components/business/crm-form-create/components/basic/textarea.vue';
@@ -1501,9 +1728,8 @@
   import optionConfig from './optionConfig.vue';
   import subTableFields from './subTableFields.vue';
 
-  import { getCustomFormOptions } from '@/api/modules';
+  import { getBusinessTitleModuleForm, getCustomFormOptions, getFieldDisplayList } from '@/api/modules';
 
-  // import useUserStore from '@/store/modules/user';
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
   const props = defineProps<{
@@ -1512,7 +1738,6 @@
   }>();
 
   const { t } = useI18n();
-  // const userStore = useUserStore();
 
   const fieldConfig = defineModel<FormCreateField>('field', {
     default: null,
@@ -1787,6 +2012,105 @@
     return [...systemOptions.filter((item) => item.formKey !== props.formKey), ...customOptions];
   });
 
+  const statisticTargetFormOptions = computed<DataSourceOption[]>(() => {
+    if (
+      [FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.INVOICE, FormDesignKeyEnum.ORDER].includes(props.formKey)
+    ) {
+      return fullFormSettingList
+        .filter((i) => i.dataSource && i.formKey === FormDesignKeyEnum.CONTRACT)
+        .map((item) => ({
+          ...item,
+          value: item.formKey,
+        }));
+    }
+    if (props.formKey === FormDesignKeyEnum.BUSINESS) {
+      return fullFormSettingList
+        .filter((i) => i.dataSource && i.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION)
+        .map((item) => ({
+          ...item,
+          value: item.formKey,
+        }));
+    }
+    if (props.formKey === FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD) {
+      return fullFormSettingList
+        .filter(
+          (i) =>
+            i.dataSource &&
+            i.formKey &&
+            [FormDesignKeyEnum.CONTRACT, FormDesignKeyEnum.CONTRACT_PAYMENT].includes(i.formKey)
+        )
+        .map((item) => ({
+          ...item,
+          value: item.formKey,
+        }));
+    }
+    if (props.formKey === FormDesignKeyEnum.CONTRACT) {
+      return fullFormSettingList
+        .filter(
+          (i) =>
+            i.dataSource &&
+            i.formKey &&
+            [
+              FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+              FormDesignKeyEnum.CONTRACT_PAYMENT,
+              FormDesignKeyEnum.ORDER,
+              FormDesignKeyEnum.INVOICE,
+            ].includes(i.formKey)
+        )
+        .map((item) => ({
+          ...item,
+          value: item.formKey,
+        }));
+    }
+    if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
+      return fullFormSettingList
+        .filter(
+          (i) =>
+            i.dataSource &&
+            i.formKey &&
+            [
+              FormDesignKeyEnum.BUSINESS,
+              FormDesignKeyEnum.CONTRACT,
+              FormDesignKeyEnum.ORDER,
+              FormDesignKeyEnum.INVOICE,
+            ].includes(i.formKey)
+        )
+        .map((item) => ({
+          ...item,
+          value: item.formKey,
+        }));
+    }
+    return [];
+  });
+
+  const isStatisticTargetCustomForm = computed(() => isCustomDataSourceType(fieldConfig.value.targetFormId));
+  const statisticFieldOptions = ref<SelectOption[]>([]);
+
+  async function initTargetFormFields() {
+    try {
+      let res;
+      if (isStatisticTargetCustomForm.value) {
+        res = await getFieldDisplayList(fieldConfig.value.targetFormId as string);
+      } else if (fieldConfig.value.targetFormId === FieldDataSourceTypeEnum.BUSINESS_TITLE) {
+        res = await getBusinessTitleModuleForm();
+      } else {
+        res = await getFieldDisplayList(fieldConfig.value.targetFormId as FormDesignKeyEnum);
+      }
+      statisticFieldOptions.value = res.fields
+        .filter((e) => [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.FORMULA, FieldTypeEnum.STATISTIC].includes(e.type))
+        .map((field) => ({
+          label: field.name,
+          value: field.id,
+        }));
+      fieldConfig.value.relatedFieldId = res.fields.find(
+        (e) => e.businessKey && getDataSourceFormKey(e.dataSourceType, formKeyMap) === props.formKey
+      )?.id;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   watch(
     () => dataSourceOptions.value,
     (options) => {
@@ -1796,6 +2120,13 @@
         !options.some((item) => item.value === fieldConfig.value.dataSourceType)
       ) {
         fieldConfig.value.dataSourceType = options[0]?.value as FieldDataSourceTypeEnum;
+      }
+      if (
+        customFormInit.value &&
+        fieldConfig.value &&
+        !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId)
+      ) {
+        fieldConfig.value.targetFormId = statisticTargetFormOptions.value[0]?.value as FieldDataSourceTypeEnum;
       }
     },
     { immediate: true }
@@ -1811,6 +2142,16 @@
         !dataSourceOptions.value.some((item) => item.value === fieldConfig.value.dataSourceType)
       ) {
         fieldConfig.value.dataSourceType = dataSourceOptions.value[0]?.value as FieldDataSourceTypeEnum;
+      }
+      if (
+        customFormInit.value &&
+        fieldConfig.value &&
+        !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId)
+      ) {
+        fieldConfig.value.targetFormId = statisticTargetFormOptions.value[0]?.value as FieldDataSourceTypeEnum;
+      }
+      if (fieldConfig.value?.type === FieldTypeEnum.STATISTIC) {
+        initTargetFormFields();
       }
     }
   );
@@ -2103,6 +2444,100 @@
       value: val,
     };
   }
+
+  const statisticTypeOptions = [
+    {
+      label: t('crmFormDesign.statisticsSUM'),
+      value: 'SUM',
+    },
+    {
+      label: t('crmFormDesign.statisticsCOUNT'),
+      value: 'COUNT',
+    },
+    {
+      label: t('crmFormDesign.statisticsAVG'),
+      value: 'AVG',
+    },
+  ];
+
+  function renderStatisticOption(option: SelectOption) {
+    return h(
+      'div',
+      { class: 'flex items-center justify-between' },
+      {
+        default: () => [option.label || '', h('div', { class: 'text-[var(--text-n4)]' }, option.value || '')],
+      }
+    );
+  }
+
+  function renderStatisticTag({ option }: { option: SelectOption }) {
+    return h(
+      'div',
+      { class: 'flex items-center' },
+      {
+        default: () => [option.label || '', h('div', { class: 'text-[var(--text-n4)]' }, `(${option.value})`)],
+      }
+    );
+  }
+
+  function handleStatisticTargetFormChange() {
+    fieldConfig.value.statisticFieldId = '';
+    fieldConfig.value.combineSearch = {
+      searchMode: 'OR', // 默认搜索模式
+      conditions: [],
+    };
+    fieldConfig.value.updateScopeCondition = {
+      searchMode: 'OR', // 默认搜索模式
+      conditions: [],
+    };
+    nextTick(() => {
+      initTargetFormFields();
+    });
+  }
+
+  function handleClearStatisticRange() {
+    fieldConfig.value.combineSearch = {
+      searchMode: 'OR', // 默认搜索模式
+      conditions: [],
+    };
+  }
+
+  const showStatisticRangeFilter = ref(false);
+
+  function handleStatisticRangeFilterShow() {
+    showStatisticRangeFilter.value = true;
+  }
+
+  function handleStatisticRangeFilterSave(res: DataSourceFilterCombine) {
+    fieldConfig.value.combineSearch = res;
+    showStatisticRangeFilter.value = false;
+  }
+
+  const showStatisticUpdateRangeFilter = ref(false);
+
+  function handleStatisticUpdateRangeFilterSave(res: DataSourceFilterCombine) {
+    fieldConfig.value.updateScopeCondition = res;
+    showStatisticUpdateRangeFilter.value = false;
+  }
+
+  const statisticUpdateRangeOptions = [
+    {
+      label: t('crmFormDesign.existingDataNotCalculation'),
+      value: 'NONE',
+    },
+    {
+      label: () =>
+        h('div', { class: 'flex items-center' }, [
+          t('crmFormDesign.allCalculation'),
+          h('span', { class: 'text-[var(--text-n4)] ml-2' }, t('crmFormDesign.allCalculationTip')),
+        ]),
+      value: 'ALL',
+    },
+    {
+      label: t('crmFormDesign.calculationByRange'),
+      value: 'CONDITION',
+    },
+  ];
 </script>
 
 <style lang="less" scoped>

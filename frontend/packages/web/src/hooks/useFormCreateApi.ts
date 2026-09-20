@@ -641,6 +641,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         fieldInfo: item,
         tooltipPosition: 'top-end',
       });
+    } else if (item.type === FieldTypeEnum.STATISTIC) {
+      descriptions.value.push({
+        label: item.name,
+        value: parseFormDetailValue(item, form),
+        slotName: FieldTypeEnum.STATISTIC,
+        fieldInfo: item,
+        tooltipPosition: 'top-end',
+      });
     } else {
       descriptions.value.push({
         label: item.name,
@@ -1414,7 +1422,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       return defaultValue;
     }
     if (
-      [FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(field.type) ||
+      [FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.STATISTIC].includes(field.type) ||
       (field.type === FieldTypeEnum.FORMULA && field.formulaResultFormat === 'number')
     ) {
       defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);

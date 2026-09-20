@@ -29,6 +29,7 @@ import {
   CustomFormExportAllUrl,
   CustomFormExportSelectedUrl,
   GetCustomFormCreatePermissionUrl,
+  RefreshStatisticUrl,
 } from '@lib/shared/api/requrls/customForm';
 import type {
   CommonList,
@@ -154,6 +155,10 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     return CDR.get<boolean>({ url: `${GetCustomFormCreatePermissionUrl}/${customFormId}` });
   }
 
+  function refreshStatistic(fieldId: string) {
+    return CDR.post<number>({ url: `${RefreshStatisticUrl}/${fieldId}` });
+  }
+
   function preCheckImportCustomForm(params: ImportUploadParams) {
     return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckCustomFormImportUrl }, params, 'file');
   }
@@ -211,5 +216,6 @@ export default function useCustomFormApi(CDR: CordysAxios) {
     exportCustomFormAll,
     exportCustomFormSelected,
     getCustomFormCreatePermission,
+    refreshStatistic,
   };
 }
