@@ -2,7 +2,7 @@
 set -e
 
 APP_DIR=/app/cockpit
-ENTRYPOINT="$APP_DIR/dist/http/server.js"
+ENTRYPOINT="$APP_DIR/bundle/http/server.mjs"
 
 if ! command -v node >/dev/null 2>&1; then
   echo "Node.js runtime not found"
