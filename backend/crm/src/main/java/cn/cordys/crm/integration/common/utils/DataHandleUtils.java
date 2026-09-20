@@ -254,7 +254,7 @@ public class DataHandleUtils {
 
         if (CollectionUtils.isNotEmpty(thirdDepartment.getChildren())) {
             thirdDepartment.getChildren().stream()
-                    .sorted(Comparator.comparing(ThirdDepartment::getOrder).reversed())
+                    .sorted(Comparator.comparing(ThirdDepartment::getOrder, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                     .forEach(department ->
                             handleTreeUpdateData(department, operatorId, currentDepartmentList, currentUserList, currentCommander)
                     );
