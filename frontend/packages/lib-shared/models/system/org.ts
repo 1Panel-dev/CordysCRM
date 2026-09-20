@@ -107,3 +107,43 @@ export interface DEToken {
   url: string;
   token: string;
 }
+
+export type SyncWeekday = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
+export type SyncCycle = 'HOUR' | 'SIX_HOUR' | 'TWELVE_HOUR' | 'DAY' | SyncWeekday;
+
+export type SyncFrequency = 'HOUR' | 'SIX_HOUR' | 'TWELVE_HOUR' | 'DAY' | 'WEEKLY';
+
+export interface ThirdDepartmentNode {
+  id: string;
+  name: string;
+  parentId?: string;
+  isRoot?: boolean;
+  order?: number;
+  crmId?: string;
+  crmParentId?: string;
+  children?: ThirdDepartmentNode[];
+}
+
+export interface SyncUserScheduleConfigRequest {
+  enable: boolean;
+  syncCycle: SyncCycle;
+  syncScope: string[];
+  resourceType: string;
+}
+
+export interface SyncUserScheduleConfigResponse {
+  enable?: boolean;
+  syncCycle?: SyncCycle;
+  syncConfig?: string[];
+  resourceType?: string;
+  nextTriggerTime?: number;
+}
+
+export interface SyncUserScheduleForm {
+  enable: boolean;
+  syncFrequency: SyncFrequency;
+  syncWeekday: SyncWeekday;
+  syncScope: 'ALL' | 'DEPARTMENT';
+  syncDepartmentIds: string[];
+}

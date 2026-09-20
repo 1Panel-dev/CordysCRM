@@ -88,6 +88,7 @@
       loading: boolean;
       apiTypeKey: MemberApiTypeEnum; // 要配置对应的key
       fetchOrgParams?: Record<string, any>; // 组织架构入参
+      fetchOrgApi?: (params?: Record<string, any>) => Promise<any[]>; // 自定义组织架构接口
       fetchRoleParams?: Record<string, any>; // 角色入参
       fetchMemberParams?: Record<string, any>; // 成员入参
       baseParams?: Record<string, any>; // 基础公共入参
@@ -192,7 +193,9 @@
         case MemberSelectTypeEnum.ORG:
         case MemberSelectTypeEnum.ONLY_ORG:
           params = { ...params, ...props.fetchOrgParams };
-          departmentOptions.value = await getDataFunc(props.apiTypeKey, value, params);
+          departmentOptions.value = props.fetchOrgApi
+            ? await props.fetchOrgApi(params)
+            : await getDataFunc(props.apiTypeKey, value, params);
           break;
         case MemberSelectTypeEnum.ROLE:
           params = { ...params, ...props.fetchRoleParams };

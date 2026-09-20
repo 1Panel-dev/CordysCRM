@@ -793,6 +793,7 @@ export const {
 export const {
   addUser,
   syncOrg,
+  getSyncThirdOrg,
   updateUser,
   deleteUser,
   getUserList,
@@ -809,6 +810,8 @@ export const {
   renameDepartment,
   deleteDepartment,
   getDepartmentTree,
+  getSyncScheduleConfig,
+  saveSyncScheduleConfig,
   resetUserPassword,
   updateOrgUserName,
   importUserPreCheck,
