@@ -1,5 +1,7 @@
 <template>
+  <span v-if="!processStatusMap[props.status] || processStatusMap[props.status].label === '-'">-</span>
   <CrmTag
+    v-else
     plain
     :tag="processStatusMap[props.status].label"
     :text-color="processStatusMap[props.status].color"
