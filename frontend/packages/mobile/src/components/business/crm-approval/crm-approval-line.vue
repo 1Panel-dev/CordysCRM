@@ -25,7 +25,7 @@
           <div class="one-line-text">{{ props.submitter.submitter }}</div>
         </div>
         <div v-if="props.submitter.comment" class="mt-[8px] bg-[var(--text-n9)] p-[8px]">
-          <div class="text-[var(--text-n4)]">{{ props.submitter.comment }}</div>
+          <div class="break-words text-[var(--text-n4)]">{{ props.submitter.comment }}</div>
         </div>
       </van-step>
       <van-step v-for="(node, index) in props.nodes" :key="node.nodeId">
@@ -52,7 +52,9 @@
                   </div>
                   <CrmTag
                     v-if="!node.endNode && node.taskNodes?.length > 1"
-                    name="info"
+                    bgColor="var(--info-blue)"
+                    textColor="var(--info-blue)"
+                    plain
                     theme="outline"
                     :tag="MultiApproverModeMap[node.multiApproverMode]"
                   />
@@ -127,9 +129,9 @@
                         ProcessStatusEnum.AUTO_UNAPPROVED,
                       ].includes(task.approvalStatus) && task.comment
                     "
-                    class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]"
+                    class="flex w-full gap-[8px] overflow-hidden bg-[var(--text-n9)] p-[8px]"
                   >
-                    <div class="text-[var(--text-n4)]">{{ task.comment }}</div>
+                    <div class="w-full break-words text-[var(--text-n4)]">{{ task.comment }}</div>
                   </div>
                   <CrmFileList
                     v-if="task.attachments?.length > 0"
@@ -186,7 +188,7 @@
         <CrmIcon name="iconicon_info_circle_filled" color="var(--warning-yellow)" width="16px" height="16px" />
         <div>{{ t('crm.approval.fallbackReason') }}</div>
       </div>
-      <div class="w-full text-[var(--text-n4)]">{{ activeBackNode.backReason }}</div>
+      <div class="w-full break-words text-[var(--text-n4)]">{{ activeBackNode.backReason }}</div>
       <div class="min-h-[200px] w-full overflow-y-auto">
         <CrmFileList
           v-if="activeBackNode.backAttachments?.length > 0"
@@ -206,7 +208,7 @@
         <CrmIcon name="iconicon_info_circle_filled" color="var(--warning-yellow)" width="16px" height="16px" />
         <div>{{ t('crm.approval.addSign') }}</div>
       </div>
-      <div class="w-full text-[var(--text-n4)]">{{ activeSignNode.signComment }}</div>
+      <div class="w-full break-words text-[var(--text-n4)]">{{ activeSignNode.signComment }}</div>
       <div class="min-h-[200px] w-full overflow-y-auto">
         <CrmFileList
           v-if="activeSignNode.signAttachments?.length > 0"
