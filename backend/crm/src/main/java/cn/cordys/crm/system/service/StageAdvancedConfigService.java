@@ -50,6 +50,7 @@ public class StageAdvancedConfigService {
     static {
         STAGE_CONFIG_TABLE.put(FormKey.ORDER.getKey(), "sales_order_stage_config");
         STAGE_CONFIG_TABLE.put(FormKey.CONTRACT.getKey(), "contract_stage_config");
+        STAGE_CONFIG_TABLE.put(FormKey.OPPORTUNITY.getKey(), "opportunity_stage_config");
     }
 
 
