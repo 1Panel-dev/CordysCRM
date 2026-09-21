@@ -70,14 +70,14 @@ public class ContractInvoiceController {
     }
 
     @GetMapping("/get/snapshot/{id}")
-    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_INVOICE)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_READ, resourceId = "{#id}", formType = FormKeyConstants.INVOICE)
     @Operation(summary = "获取详情快照")
     public ContractInvoiceGetResponse getSnapshot(@PathVariable("id") String id) {
         return contractInvoiceService.getSnapshot(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
-    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_INVOICE)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_READ, resourceId = "{#id}", formType = FormKeyConstants.INVOICE)
     @Operation(summary = "详情")
     public ContractInvoiceGetResponse get(@PathVariable("id") String id) {
         return contractInvoiceService.get(id, OrganizationContext.getOrganizationId());
@@ -91,21 +91,21 @@ public class ContractInvoiceController {
     }
 
     @PostMapping("/update")
-    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.CONTRACT_INVOICE)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_UPDATE, resourceId = "{#request.id}", formType = FormKeyConstants.INVOICE)
     @Operation(summary = "更新")
     public ContractInvoice update(@Validated @RequestBody ContractInvoiceUpdateRequest request) {
         return contractInvoiceService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
-    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_INVOICE)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_DELETE, resourceId = "{#id}", formType = FormKeyConstants.INVOICE)
     @Operation(summary = "删除")
     public void delete(@PathVariable("id") String id) {
         contractInvoiceService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/module/form/snapshot/{id}")
-    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_READ, resourceId = "{#id}", formType = FormKeyConstants.CONTRACT_INVOICE)
+    @CsPermission(value = PermissionConstants.CONTRACT_INVOICE_READ, resourceId = "{#id}", formType = FormKeyConstants.INVOICE)
     @Operation(summary = "获取表单快照配置")
     public ModuleFormConfigDTO getFormSnapshot(@PathVariable("id") String id) {
         return contractInvoiceService.getFormSnapshot(id, OrganizationContext.getOrganizationId());
@@ -120,7 +120,7 @@ public class ContractInvoiceController {
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中发票")
-    @CsBatchPermission(value = PermissionConstants.CONTRACT_INVOICE_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.CONTRACT_INVOICE)
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_INVOICE_EXPORT, resourceId = "{#request.ids}", formType = FormKeyConstants.INVOICE)
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), PermissionConstants.CONTRACT_INVOICE_READ);
@@ -163,7 +163,7 @@ public class ContractInvoiceController {
     }
 
     @PostMapping("/batch/delete")
-    @CsBatchPermission(value = PermissionConstants.CONTRACT_INVOICE_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.CONTRACT_INVOICE)
+    @CsBatchPermission(value = PermissionConstants.CONTRACT_INVOICE_DELETE, resourceId = "{#ids}", formType = FormKeyConstants.INVOICE)
     @Operation(summary = "批量删除客户")
     public void batchDelete(@RequestBody @NotNull List<String> ids) {
         contractInvoiceService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

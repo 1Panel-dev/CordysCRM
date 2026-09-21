@@ -14,7 +14,6 @@ public class FormKeyConstants {
 	public static final String CUSTOMER = "customer";
 	public static final String CONTACT = "contact";
 	public static final String CONTRACT = "contract";
-	public static final String CONTRACT_INVOICE = "contractInvoice";
 	public static final String INVOICE = "invoice";
 	public static final String CONTRACT_PAYMENT_PLAN = "contractPaymentPlan";
 	public static final String CONTRACT_PAYMENT_RECORD = "contractPaymentRecord";
