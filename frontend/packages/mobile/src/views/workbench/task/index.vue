@@ -76,7 +76,7 @@
                 <div class="flex w-[32px] items-center">
                   <CrmAvatar :text="item.applicant" :size="32" />
                 </div>
-                <div class="flex w-full flex-col gap-[2px]">
+                <div class="flex w-[calc(100%-40px)] flex-col gap-[2px]">
                   <div class="flex items-center justify-between">
                     <div class="one-line-text flex-1">{{ item.applicant }}</div>
                     <div class="flex items-center gap-[8px]">

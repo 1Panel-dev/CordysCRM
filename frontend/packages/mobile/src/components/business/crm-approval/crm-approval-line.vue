@@ -1,6 +1,6 @@
 <template>
-  <div class="flex h-full w-full overflow-auto">
-    <van-steps active="none" :icon-size="20" class="w-full gap-[4px]" direction="vertical">
+  <div class="flex h-full w-full">
+    <van-steps active="none" :icon-size="20" class="w-full gap-[4px] !overflow-y-auto" direction="vertical">
       <van-step>
         <template #inactive-icon>
           <div class="timeline-icon-wrapper bg-[var(--primary-8)]">
@@ -104,8 +104,10 @@
                       <CrmTag
                         v-if="task.sign"
                         :tag="t('common.COUNTERSIGNATURE')"
-                        name="info"
                         theme="outline"
+                        bgColor="var(--info-blue)"
+                        textColor="var(--info-blue)"
+                        plain
                         tooltipDisabled
                         @click="handleSignNodeClick(task)"
                       />
@@ -147,19 +149,20 @@
                     <div>{{ t('common.copyTo') }}</div>
                   </div>
                 </template>
-                <template #right-icon="{ collapsed }">
+                <template #right-icon>
                   <div class="flex items-center gap-[16px]">
                     <div class="text-[var(--text-n4)]">
                       {{ t('crm.approval.copyToTip', { count: node.ccNodes.length }) }}
                     </div>
                     <CrmIcon
-                      :name="collapsed ? 'iconicon_chevron_right' : 'iconicon_chevron_down'"
+                      :name="expandedCCNodes.length > 0 ? 'iconicon_chevron_right' : 'iconicon_chevron_down'"
                       width="16px"
                       height="16px"
+                      color="var(--van-cell-right-icon-color)"
                     />
                   </div>
                 </template>
-                <div class="flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
+                <div class="mt-[12px] flex flex-wrap gap-[8px] bg-[var(--text-n9)] p-[8px]">
                   <div v-for="cc in node.ccNodes" :key="cc.ccUserId" class="flex items-center gap-[8px]">
                     <div class="h-[24px] w-[24px]">
                       <CrmAvatar :avatar="cc.ccUserAvatar" :word="cc.ccUserName" :is-user="false" :size="24" />
