@@ -176,7 +176,7 @@ public class LarkDepartmentService {
                 .mobile(formatMobile(larkUser.getMobile()))
                 .position(larkUser.getWorkStation())
                 .gender(larkUser.getGender())
-                .status(larkUser.getStatus().getIsActivated())
+                .status(larkUser.getStatus().getIsActivated() && !larkUser.getStatus().getIsFrozen())
                 .avatar(Optional.ofNullable(larkUser.getAvatar())
                         .map(LarkUser.LarkUserAvatar::getAvatar240)
                         .filter(StringUtils::isNotBlank)
