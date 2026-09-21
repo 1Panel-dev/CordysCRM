@@ -680,6 +680,8 @@ public class ModuleFormService {
                 context.formNameMap().get(relatedForm.getFormKey())));
         tab.setRelatedField(relatedField == null ? null : new OptionDTO(relatedField.getId(), relatedField.getName()));
         tab.setInternalKey(internalTab.name());
+        // 如果没有改过，则是默认的需要翻译的名字
+        tab.setName(Translator.get(tab.getName(), tab.getName()));
         return tab;
     }
 
@@ -713,7 +715,7 @@ public class ModuleFormService {
                 continue;
             }
             FormDetailTab tab = new FormDetailTab();
-            tab.setName(Translator.get(internalTab.getLabelKey()));
+            tab.setName(internalTab.getLabelKey());
             tab.setEnable(true);
             tab.setInternalKey(internalTab.name());
             FormDetailTab resolved = resolveInternalDetailTab(tab, internalTab, false, context);
