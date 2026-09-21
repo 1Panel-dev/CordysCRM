@@ -71,6 +71,7 @@
                 @init="handleInit"
                 @open-contract-detail="emit('openContractDrawer', $event)"
                 @open-customer-detail="emit('openCustomerDrawer', $event)"
+                @refresh="emit('refresh')"
               />
             </template>
           </CrmApprovalDetail>

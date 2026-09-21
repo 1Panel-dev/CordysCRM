@@ -51,6 +51,7 @@
             :readonly="!hasAnyPermission(['CONTRACT_PAYMENT_PLAN:UPDATE'])"
             @init="handleInit"
             @open-contract-detail="emit('openContractDrawer', $event)"
+            @refresh="emit('refresh')"
           />
         </div>
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">

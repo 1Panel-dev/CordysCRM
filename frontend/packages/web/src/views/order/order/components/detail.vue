@@ -85,6 +85,7 @@
                 @init="handleInit"
                 @open-contract-detail="handleOpenContractDrawer"
                 @open-customer-detail="handleOpenCustomerDrawer"
+                @refresh="emit('refresh')"
               />
             </template>
           </CrmApprovalDetail>

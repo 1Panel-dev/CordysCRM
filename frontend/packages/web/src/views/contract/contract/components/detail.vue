@@ -81,6 +81,7 @@
                 @openOpportunityDetail="openOpportunityDetail"
                 @openQuotationDetail="openQuotationDetail"
                 @init="handleInit"
+                @refresh="emit('refresh')"
               />
             </template>
           </CrmApprovalDetail>

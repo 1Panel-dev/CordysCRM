@@ -72,6 +72,7 @@
                 tooltip-position="top-start"
                 :readonly="!hasApprovalScopedPermission(detailInfo, ['OPPORTUNITY_QUOTATION:UPDATE'])"
                 @init="handleInit"
+                @refresh="emit('refresh')"
               />
             </template>
           </CrmApprovalDetail>
