@@ -354,7 +354,7 @@ export default {
   'common.normal': 'Normal',
   'common.approved': 'Approved',
   'common.autoApproved': 'Auto approved',
-  'common.rejected': 'UNAPPROVED',
+  'common.rejected': 'Unapproved',
   'common.autoRejected': 'Auto rejected',
   'common.reviewing': 'Approving',
   'common.approver': 'Approver',
