@@ -681,32 +681,34 @@ public class OpportunityService extends BaseExportService {
         final Map<String, String> stageMap = stageConfigList.stream()
                 .collect(Collectors.toMap(OpportunityStageResponse::getId, OpportunityStageResponse::getName));
 
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("stage", stageMap.get(oldOpportunity.getStage()));
+
         if (!stageAdvancedConfigService.checkStage(oldOpportunity.getStage(), request.getStage(), FormKey.OPPORTUNITY.getKey())) {
             return;
         }
 
-        final Opportunity newOpportunity = new Opportunity();
-        newOpportunity.setId(request.getId());
-        newOpportunity.setLastStage(oldOpportunity.getStage());
-        newOpportunity.setStage(request.getStage());
+
+        oldOpportunity.setLastStage(oldOpportunity.getStage());
+        oldOpportunity.setStage(request.getStage());
 
         final boolean isSuccessStage = successOpt.map(cfg -> Strings.CI.equals(request.getStage(), cfg.getId())).orElse(false);
         final boolean isFailStage = failOpt.map(cfg -> Strings.CI.equals(request.getStage(), cfg.getId())).orElse(false);
 
         if (isSuccessStage || isFailStage) {
-            newOpportunity.setActualEndTime(System.currentTimeMillis());
+            oldOpportunity.setActualEndTime(System.currentTimeMillis());
         }
         if (isFailStage) {
-            newOpportunity.setFailureReason(request.getFailureReason());
+            oldOpportunity.setFailureReason(request.getFailureReason());
         }
 
         final Long nextPos = getNextPos(oldOpportunity.getOrganizationId(), request.getStage());
-        newOpportunity.setPos(nextPos);
+        oldOpportunity.setPos(nextPos);
 
-        opportunityMapper.update(newOpportunity);
+        opportunityMapper.update(oldOpportunity);
 
-        final Map<String, String> originalVal = new HashMap<>(1);
-        originalVal.put("stage", stageMap.get(oldOpportunity.getStage()));
+        updateField(oldOpportunity, request.getFields(), userId);
+
         final Map<String, String> modifiedVal = new HashMap<>(1);
         modifiedVal.put("stage", stageMap.get(request.getStage()));
 
@@ -717,6 +719,21 @@ public class OpportunityService extends BaseExportService {
                         .modifiedValue(modifiedVal)
                         .build()
         );
+    }
+
+    private void updateField(Opportunity opportunity, List<BaseModuleFieldValue> requestFields, String userId) {
+        if (CollectionUtils.isNotEmpty(requestFields)) {
+            ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), opportunity.getOrganizationId());
+            List<BaseField> fields = businessFormConfig.getFields();
+            requestFields.forEach(field -> {
+                BaseField baseField = fields.stream().filter(customField -> customField.getId().equals(field.getFieldId())).findFirst().orElse(null);
+                ResourceBatchEditRequest updateRequest = new ResourceBatchEditRequest();
+                updateRequest.setIds(List.of(opportunity.getId()));
+                updateRequest.setFieldId(field.getFieldId());
+                updateRequest.setFieldValue(field.getFieldValue());
+                opportunityFieldService.batchUpdate(updateRequest, baseField, List.of(opportunity), Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, opportunity.getOrganizationId());
+            });
+        }
     }
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
@@ -1036,6 +1053,7 @@ public class OpportunityService extends BaseExportService {
         dragOpportunity.setUpdateUser(userId);
         dragOpportunity.setUpdateTime(System.currentTimeMillis());
         opportunityMapper.updateById(dragOpportunity);
+        updateField(dragOpportunity, request.getFields(), userId);
     }
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
