@@ -3,11 +3,11 @@
     <n-tooltip v-if="descriptionItems.length" trigger="hover" :delay="300">
       <template #trigger>
         <div ref="descriptionWrapRef" class="relative min-w-0 overflow-hidden">
-          <div class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+          <div class="mr-[24px] min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
             <span
               v-for="item in visibleDescriptionItems"
               :key="item.id"
-              class="mr-[8px] inline-flex align-middle text-[var(--text-n2)] last:mr-0"
+              class="mr-[8px] inline-block max-w-full overflow-hidden text-ellipsis whitespace-nowrap align-middle text-[var(--text-n2)] last:mr-0"
             >
               {{ item.name }}
             </span>
@@ -83,13 +83,17 @@
 
   // 逐个累加完整名称宽度，并给右侧 “+N” 预留空间。
   function getVisibleCount(itemElements: Element[], availableWidth: number) {
+    if (availableWidth <= 0) {
+      return 0;
+    }
+
     let usedWidth = 0;
     for (let index = 0; index < itemElements.length; index += 1) {
       const hiddenCount = itemElements.length - index - 1;
       const reservedWidth = hiddenCount > 0 ? `+${hiddenCount}`.length * 8 + 4 : 0;
       const itemWidth = getItemWidth(itemElements[index]);
       if (usedWidth + itemWidth + reservedWidth > availableWidth) {
-        return index;
+        return index === 0 ? 1 : index;
       }
 
       usedWidth += itemWidth;
