@@ -95,7 +95,7 @@
                           <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
                           <div>{{ t('crm.approval.fallbackReason') }}</div>
                         </div>
-                        <n-scrollbar class="mb-[8px] max-h-[20vh]">
+                        <n-scrollbar class="mb-[8px] h-auto max-h-[20vh]">
                           <div class="w-full text-[var(--text-n4)]">{{ node.backReason }}</div>
                         </n-scrollbar>
                         <n-scrollbar :content-style="{ maxHeight: 'calc(100% - 20vh)' }" class="flex-1">
