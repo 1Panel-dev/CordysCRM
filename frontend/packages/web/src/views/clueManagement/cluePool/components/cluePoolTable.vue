@@ -500,41 +500,46 @@
             h(
               CrmOperationButton,
               {
-                groupList: [
-                  {
-                    label: t('common.claim'),
-                    key: 'claim',
-                    permission: ['CLUE_MANAGEMENT_POOL:PICK'],
-                    popConfirmProps: {
-                      loading: claimLoading.value,
-                      title: t('clue.claimTip', { name: characterLimit(row.name) }),
-                      positiveText: t('common.claim'),
-                      iconType: 'primary',
+                groupList: (
+                  [
+                    {
+                      label: t('common.claim'),
+                      key: 'claim',
+                      permission: ['CLUE_MANAGEMENT_POOL:PICK'],
+                      popConfirmProps: {
+                        loading: claimLoading.value,
+                        title: t('clue.claimTip', { name: characterLimit(row.name) }),
+                        positiveText: t('common.claim'),
+                        iconType: 'primary',
+                      },
                     },
-                  },
-                  {
-                    label: t('common.distribute'),
-                    key: 'distribute',
-                    permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
-                    popConfirmProps: {
-                      loading: distributeLoading.value,
-                      title: t('common.distribute'),
-                      positiveText: t('common.confirm'),
-                      iconType: 'primary',
+                    {
+                      label: t('common.distribute'),
+                      key: 'distribute',
+                      permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
+                      popConfirmProps: {
+                        loading: distributeLoading.value,
+                        title: t('common.distribute'),
+                        positiveText: t('common.confirm'),
+                        iconType: 'primary',
+                      },
+                      popSlotContent: 'distributePopContent',
                     },
-                    popSlotContent: 'distributePopContent',
-                  },
-                  {
-                    label: t(row.frozen ? 'common.unfreeze' : 'common.freeze'),
-                    key: row.frozen ? 'unfreeze' : 'freeze',
-                    permission: [row.frozen ? 'CLUE_MANAGEMENT_POOL:UNFREEZE' : 'CLUE_MANAGEMENT_POOL:FREEZE'],
-                  },
-                  {
-                    label: t('common.delete'),
-                    key: 'delete',
-                    permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
-                  },
-                ],
+                    {
+                      label: t(row.frozen ? 'common.unfreeze' : 'common.freeze'),
+                      key: row.frozen ? 'unfreeze' : 'freeze',
+                      permission: ['CLUE_MANAGEMENT_POOL:FREEZE'],
+                    },
+                    {
+                      label: t('common.delete'),
+                      key: 'delete',
+                      permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
+                    },
+                  ] as ActionsItem[]
+                ).filter(
+                  (item) =>
+                    item.key && !(row.frozen ? ['freeze', 'claim', 'distribute'] : ['unfreeze']).includes(item.key)
+                ),
                 onSelect: (key: string) => handleActionSelect(row, key),
                 onCancel: () => {
                   distributeForm.value = { ...defaultTransferForm };

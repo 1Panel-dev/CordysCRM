@@ -7,7 +7,7 @@
       <div class="mr-auto flex items-center gap-[8px]">
         <CrmIcon type="iconicon_info_circle_filled" color="var(--warning-yellow)" :size="16" />
         <div class="font-semibold">
-          {{ `${props.resourceType === 'customer' ? t('menu.customer') : t('menu.lead')}${t('common.frozen')}` }}
+          {{ `${props.resourceType === 'customer' ? t('menu.customer') : t('menu.clue')}${t('common.frozen')}` }}
         </div>
       </div>
       <div class="freeze-reason">{{ props.freezeReason }}</div>

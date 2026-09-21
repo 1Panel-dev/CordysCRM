@@ -117,11 +117,11 @@
   }
 
   async function confirmHandler() {
-    formRef.value?.validate(async (errors) => {
-      if (!errors) {
-        try {
-          loading.value = true;
-          if (props.type === 'freeze') {
+    if (props.type === 'freeze') {
+      formRef.value?.validate(async (errors) => {
+        if (!errors) {
+          try {
+            loading.value = true;
             const data = {
               id: props.resourceId,
               freezeDays: form.value.freezeType === 'freezeForever' ? 0 : form.value.time,
@@ -132,26 +132,38 @@
             } else {
               await freezeClue(data);
             }
-          } else {
-            const data = { id: props.resourceId, reason: form.value.reason };
-            if (props.resourceType === 'customer') {
-              await unfreezeOpenSeaCustomer(data);
-            } else {
-              await unfreezeClue(data);
-            }
+            Message.success(t('common.operationSuccess'));
+            resetForm();
+            show.value = false;
+            emit('success', props.resourceId);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(error);
+          } finally {
+            loading.value = false;
           }
-          Message.success(t('common.operationSuccess'));
-          resetForm();
-          show.value = false;
-          emit('success', props.resourceId);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
-        } finally {
-          loading.value = false;
         }
+      });
+    } else {
+      try {
+        loading.value = true;
+        const data = { id: props.resourceId, reason: form.value.reason };
+        if (props.resourceType === 'customer') {
+          await unfreezeOpenSeaCustomer(data);
+        } else {
+          await unfreezeClue(data);
+        }
+        Message.success(t('common.operationSuccess'));
+        resetForm();
+        show.value = false;
+        emit('success', props.resourceId);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      } finally {
+        loading.value = false;
       }
-    });
+    }
   }
 </script>
 
