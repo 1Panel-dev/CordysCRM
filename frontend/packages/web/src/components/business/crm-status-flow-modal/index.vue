@@ -74,7 +74,7 @@
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
-  import { changeContractStatus, updateOpportunityStage, updateOrderStage } from '@/api/modules';
+  import { changeContractStatus, updateOptStage, updateOrderStage } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import cloneDeep from 'lodash-es/cloneDeep';
@@ -253,7 +253,7 @@
   > = {
     [FormDesignKeyEnum.CONTRACT]: changeContractStatus,
     [FormDesignKeyEnum.ORDER]: updateOrderStage,
-    [FormDesignKeyEnum.BUSINESS]: updateOpportunityStage,
+    [FormDesignKeyEnum.BUSINESS]: updateOptStage,
   };
 
   const okLoading = ref(false);
