@@ -26,6 +26,9 @@ declare module 'vue' {
     CommentItem: typeof import('./src/components/business/crm-comment/components/commentItem.vue')['default'];
     CommentPage: typeof import('./src/components/business/crm-comment/commentPage.vue')['default'];
     CrmActionButtons: typeof import('./src/components/business/crm-action-buttons/index.vue')['default'];
+    CrmApprovalAvatar: typeof import('./src/components/business/crm-approval/crm-approval-avatar.vue')['default'];
+    CrmApprovalLine: typeof import('./src/components/business/crm-approval/crm-approval-line.vue')['default'];
+    CrmApprovalStatus: typeof import('./src/components/business/crm-approval/crm-approval-status.vue')['default'];
     CrmAvatar: typeof import('./src/components/business/crm-avatar/index.vue')['default'];
     CrmComment: typeof import('./src/components/business/crm-comment/index.vue')['default'];
     CrmContactList: typeof import('./src/components/business/crm-contact-list/index.vue')['default'];

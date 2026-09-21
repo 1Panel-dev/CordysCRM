@@ -83,9 +83,12 @@
                       content-class="relative"
                     >
                       <template #trigger>
-                        <CrmTag type="info" theme="outline" tooltipDisabled @click.stop>
-                          {{ t('common.COUNTERSIGNATURE') }}
-                        </CrmTag>
+                        <CrmIcon
+                          type="iconicon_info_circle_filled"
+                          color="var(--warning-yellow)"
+                          :size="16"
+                          @click.stop
+                        />
                       </template>
                       <div class="flex h-full max-w-[400px] flex-col items-center gap-[8px] overflow-hidden">
                         <div class="mr-auto flex items-center gap-[8px]">
