@@ -261,6 +261,13 @@ public class ApprovalInstanceService {
 					node.setApprovalStatus(node.getTaskNodes().getFirst().getApprovalStatus());
 				}
 			}
+			if (node.isBackNode() && (ApprovalStatus.APPROVED.name().equals(node.getApprovalStatus())
+					|| ApprovalStatus.AUTO_APPROVED.name().equals(node.getApprovalStatus()))) {
+				// 退回节点重新通过后仅保留历史记录，不再展示旧退回信息
+				node.setBackNode(false);
+				node.setBackReason(null);
+				node.setBackAttachments(Collections.emptyList());
+			}
 			ApprovalNode approvalNode;
 			if (node.getNodeId().contains(SIGN_SPILT)) {
 				approvalNode = approvalNodeMap.get(node.getNodeId().split(SIGN_SPILT)[0]);
