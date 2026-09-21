@@ -68,19 +68,45 @@ interface ConversationDraft {
   selectedMcps: AiChatMcp[];
 }
 
+type ConversationStreamStatus =
+  | 'idle'
+  | 'streaming'
+  | 'disconnected'
+  | 'reconnecting'
+  | 'done'
+  | 'error'
+  | 'cancelled';
+
+interface ConversationStreamSession {
+  // 本轮发送的请求级幂等键，用于未产生 runId 前的取消定位与保存兜底
+  requestId: string;
+  lastSequence: number;
+  status: ConversationStreamStatus;
+  pendingDisconnectAfterRun: boolean;
+  reconnectVersion: number;
+  activeReconnectVersion?: number;
+  reconnectAbortController?: AbortController;
+}
+
 interface ConversationRuntimeEntry {
   // key 用来标识一次前端会话实例。新会话还没有 conversationId 时，也需要一个稳定 key
   key: string;
   conversationId: string;
   sessionId: string;
-  // 本轮发送的请求级幂等键，用于未产生 runId 前的取消定位与保存兜底
-  requestId: string;
-  lastSequence: number;
-  streamStatus: 'idle' | 'streaming' | 'disconnected' | 'done' | 'error' | 'cancelled';
-  pendingDisconnectAfterRun: boolean;
-  reconnecting: boolean;
-  reconnectVersion: number;
+  streamSession: ConversationStreamSession;
   runtime: AiChatRuntime;
+}
+
+function createStreamSession(status: ConversationStreamStatus = 'idle'): ConversationStreamSession {
+  return {
+    requestId: '',
+    lastSequence: 0,
+    status,
+    pendingDisconnectAfterRun: false,
+    reconnectVersion: 0,
+    activeReconnectVersion: undefined,
+    reconnectAbortController: undefined,
+  };
 }
 
 function createChatRequestId(): string {
@@ -185,18 +211,36 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   }
 
   function isEntryRunning(entry: ConversationRuntimeEntry): boolean {
-    return ['streaming', 'disconnected'].includes(entry.streamStatus);
+    return ['streaming', 'disconnected', 'reconnecting'].includes(entry.streamSession.status);
   }
 
   function updateEntrySequence(entry: ConversationRuntimeEntry, event: AgentChatStreamEvent): void {
-    if (typeof event.sequence === 'number' && event.sequence > entry.lastSequence) {
-      entry.lastSequence = event.sequence;
+    if (typeof event.sequence === 'number' && event.sequence > entry.streamSession.lastSequence) {
+      entry.streamSession.lastSequence = event.sequence;
     }
+  }
+
+  function abortEntryReconnect(entry: ConversationRuntimeEntry): void {
+    entry.streamSession.reconnectAbortController?.abort();
+    entry.streamSession.reconnectAbortController = undefined;
+    entry.streamSession.activeReconnectVersion = undefined;
+  }
+
+  function getReconnectMessageId(entry: ConversationRuntimeEntry): string | undefined {
+    const latestAssistantMessage = [...entry.runtime.state.messages.value]
+      .reverse()
+      .find((message) => message.role === 'assistant');
+
+    if (latestAssistantMessage?.metadata?.finishReason) {
+      return undefined;
+    }
+
+    return latestAssistantMessage?.id;
   }
 
   function getDisconnectedRunningEntries(): ConversationRuntimeEntry[] {
     return getUniqueRuntimeEntries().filter(
-      (entry) => entry.requestId && entry.conversationId && entry.streamStatus === 'disconnected'
+      (entry) => entry.streamSession.requestId && entry.conversationId && entry.streamSession.status === 'disconnected'
     );
   }
 
@@ -216,15 +260,15 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
 
     try {
       const statusMap = await options.apis.getAgentChatStatus({
-        requestIds: entries.map((entry) => entry.requestId),
+        requestIds: entries.map((entry) => entry.streamSession.requestId),
       });
       let hasFinishedEntry = false;
 
       entries.forEach((entry) => {
         // true 表示已输出并入库；false 或缺省表示仍未确认完成，切回时还有 reconnect 兜底。
-        if (statusMap[entry.requestId] === true) {
-          entry.streamStatus = 'done';
-          entry.lastSequence = 0;
+        if (statusMap[entry.streamSession.requestId] === true) {
+          entry.streamSession.status = 'done';
+          entry.streamSession.lastSequence = 0;
           hasFinishedEntry = true;
         }
       });
@@ -261,20 +305,20 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   }
 
   async function disconnectEntryStream(entry?: ConversationRuntimeEntry): Promise<void> {
-    if (!entry || !['streaming', 'disconnected'].includes(entry.streamStatus)) {
+    if (!entry || !['streaming', 'disconnected', 'reconnecting'].includes(entry.streamSession.status)) {
       return;
     }
+
+    abortEntryReconnect(entry);
 
     if (!entry.conversationId) {
-      entry.pendingDisconnectAfterRun = true;
-      entry.reconnecting = false;
-      entry.reconnectVersion += 1;
+      entry.streamSession.pendingDisconnectAfterRun = true;
+      entry.streamSession.reconnectVersion += 1;
       return;
     }
 
-    entry.streamStatus = 'disconnected';
-    entry.reconnecting = false;
-    entry.reconnectVersion += 1;
+    entry.streamSession.status = 'disconnected';
+    entry.streamSession.reconnectVersion += 1;
     touchRuntimeEntries();
 
     await entry.runtime.disconnectStream();
@@ -446,27 +490,26 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
           updateEntrySequence(entry, event);
 
           if (event.type === 'done') {
-            entry.streamStatus = 'done';
+            entry.streamSession.status = 'done';
             touchRuntimeEntries();
           } else if (event.type === 'error') {
-            entry.streamStatus = 'error';
+            entry.streamSession.status = 'error';
             touchRuntimeEntries();
           }
         },
         send(context) {
           // 每一轮发送分配唯一 requestId，作为未产生 runId 前的取消锚点与保存兜底
-          entry.requestId = createChatRequestId();
-          entry.lastSequence = 0;
-          entry.streamStatus = 'streaming';
-          entry.pendingDisconnectAfterRun = false;
-          entry.reconnecting = false;
-          entry.reconnectVersion += 1;
+          entry.streamSession.requestId = createChatRequestId();
+          entry.streamSession.lastSequence = 0;
+          entry.streamSession.status = 'streaming';
+          entry.streamSession.pendingDisconnectAfterRun = false;
+          entry.streamSession.reconnectVersion += 1;
           touchRuntimeEntries();
 
           return options.apis.streamAgentChat(
             {
               message: context.content,
-              requestId: entry.requestId,
+              requestId: entry.streamSession.requestId,
               conversationId: entry.conversationId || undefined,
               modelId: context.metadata?.model?.id,
               mcpIds: context.metadata?.mcps?.map((mcp) => mcp.id),
@@ -485,8 +528,8 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
                   cacheRuntimeEntry(entry);
                   upsertRuntimeHistoryItem(entry);
 
-                  if (entry.pendingDisconnectAfterRun && activeEntry.value !== entry) {
-                    entry.pendingDisconnectAfterRun = false;
+                  if (entry.streamSession.pendingDisconnectAfterRun && activeEntry.value !== entry) {
+                    entry.streamSession.pendingDisconnectAfterRun = false;
                     void disconnectEntryStream(entry);
                   }
                 }
@@ -495,11 +538,13 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
           );
         },
         reconnect() {
+          const lastSequence = entry.streamSession.lastSequence;
+
           return options.apis.reconnectAgentChat(
             {
               conversationId: entry.conversationId,
-              requestId: entry.requestId,
-              lastSequence: entry.lastSequence,
+              requestId: entry.streamSession.requestId,
+              lastSequence,
             },
             {
               onSession(sessionId, conversationId) {
@@ -514,9 +559,19 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
             }
           );
         },
+        getReconnectContext() {
+          const reconnectVersion = entry.streamSession.activeReconnectVersion;
+
+          return {
+            messageId: getReconnectMessageId(entry),
+            signal: entry.streamSession.reconnectAbortController?.signal,
+            isActive: () =>
+              Boolean(reconnectVersion && entry.streamSession.activeReconnectVersion === reconnectVersion),
+          };
+        },
         async onReconnectFinished() {
-          entry.streamStatus = 'done';
-          entry.reconnecting = false;
+          entry.streamSession.status = 'done';
+          abortEntryReconnect(entry);
           touchRuntimeEntries();
           await loadConversationDetailToRuntime();
           scheduleHistoryRefresh();
@@ -524,13 +579,13 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       }),
       async onStop() {
         // 有 requestId 即可取消：未产生 runId / conversationId 时也能由后端按 requestId 定位、补停并保存部分块
-        if (entry.requestId) {
-          entry.streamStatus = 'cancelled';
+        if (entry.streamSession.requestId) {
+          entry.streamSession.status = 'cancelled';
           touchRuntimeEntries();
           await options.apis.cancelAgentChat({
             conversationId: entry.conversationId || undefined,
             sessionId: entry.sessionId || undefined,
-            requestId: entry.requestId,
+            requestId: entry.streamSession.requestId,
           });
           return true;
         }
@@ -542,9 +597,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
         }
       },
       async onFinish(event) {
-        entry.reconnecting = false;
-
-        if (event?.isAbort && (entry.streamStatus === 'disconnected' || entry.reconnecting)) {
+        if (event?.isAbort && ['disconnected', 'reconnecting'].includes(entry.streamSession.status)) {
           touchRuntimeEntries();
           return;
         }
@@ -555,8 +608,8 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
           return;
         }
 
-        if (!['error', 'cancelled'].includes(entry.streamStatus)) {
-          entry.streamStatus = 'done';
+        if (!['error', 'cancelled'].includes(entry.streamSession.status)) {
+          entry.streamSession.status = 'done';
           touchRuntimeEntries();
         }
 
@@ -583,12 +636,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       key: `${NEW_CONVERSATION_DRAFT_KEY}_${newConversationIndex}`,
       conversationId: '',
       sessionId: '',
-      requestId: '',
-      lastSequence: 0,
-      streamStatus: 'idle',
-      pendingDisconnectAfterRun: false,
-      reconnecting: false,
-      reconnectVersion: 0,
+      streamSession: createStreamSession('idle'),
       runtime: undefined as unknown as AiChatRuntime,
     });
     newConversationIndex += 1;
@@ -612,38 +660,51 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
   }
 
   async function reconnectRuntimeEntry(entry: ConversationRuntimeEntry): Promise<void> {
-    if (!entry.conversationId || !entry.requestId || entry.reconnecting || entry.streamStatus === 'streaming') {
+    if (
+      !entry.conversationId ||
+      !entry.streamSession.requestId ||
+      entry.streamSession.status === 'streaming'
+    ) {
       return;
     }
 
-    const reconnectVersion = entry.reconnectVersion + 1;
-    entry.reconnectVersion = reconnectVersion;
-    entry.reconnecting = true;
-    entry.streamStatus = 'streaming';
+    abortEntryReconnect(entry);
+    const reconnectVersion = entry.streamSession.reconnectVersion + 1;
+    const reconnectAbortController = new AbortController();
+
+    entry.streamSession.reconnectVersion = reconnectVersion;
+    entry.streamSession.activeReconnectVersion = reconnectVersion;
+    entry.streamSession.reconnectAbortController = reconnectAbortController;
+    entry.streamSession.status = 'reconnecting';
     touchRuntimeEntries();
 
     try {
       await entry.runtime.resumeStream();
     } catch (error) {
-      if (entry.reconnectVersion === reconnectVersion) {
-        entry.streamStatus = 'disconnected';
+      if (entry.streamSession.reconnectVersion !== reconnectVersion) {
+        return;
       }
+
+      entry.streamSession.status = 'disconnected';
       options.onError?.(error instanceof Error ? error : new Error(String(error)));
     } finally {
-      if (entry.reconnectVersion === reconnectVersion) {
-        entry.reconnecting = false;
+      if (entry.streamSession.reconnectVersion === reconnectVersion) {
+        if (entry.streamSession.reconnectAbortController === reconnectAbortController) {
+          abortEntryReconnect(entry);
+        }
         touchRuntimeEntries();
       }
     }
   }
 
   async function loadHistoryConversationIntoEntry(entry: ConversationRuntimeEntry): Promise<void> {
+    abortEntryReconnect(entry);
     const detail = await options.apis.getAgentConversationDetail(entry.conversationId);
     const messages = (detail.messages ?? []).map(toAiChatMessage);
 
     entry.runtime.reset(messages);
-    entry.streamStatus = 'done';
-    entry.lastSequence = 0;
+    entry.streamSession.status = 'done';
+    entry.streamSession.lastSequence = 0;
     touchRuntimeEntries();
     restoreDraft(entry.conversationId);
   }
@@ -656,9 +717,9 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     if (cachedEntry) {
       await switchActiveEntry(cachedEntry);
 
-      if (cachedEntry.streamStatus === 'disconnected') {
+      if (cachedEntry.streamSession.status === 'disconnected') {
         void reconnectRuntimeEntry(cachedEntry);
-      } else if (!isEntryRunning(cachedEntry) && cachedEntry.streamStatus !== 'idle') {
+      } else if (!isEntryRunning(cachedEntry) && cachedEntry.streamSession.status !== 'idle') {
         await loadHistoryConversationIntoEntry(cachedEntry);
       }
 
@@ -674,12 +735,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
         key: conversationId,
         conversationId,
         sessionId: '',
-        requestId: '',
-        lastSequence: 0,
-        streamStatus: 'done',
-        pendingDisconnectAfterRun: false,
-        reconnecting: false,
-        reconnectVersion: 0,
+        streamSession: createStreamSession('done'),
         runtime: undefined as unknown as AiChatRuntime,
       });
       entry.runtime = createRuntime(entry, messages);
@@ -703,6 +759,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       const deletedEntry = runtimeEntries.get(conversationId);
 
       if (deletedEntry) {
+        abortEntryReconnect(deletedEntry);
         deletedEntry.runtime.clear();
         Array.from(runtimeEntries.entries()).forEach(([key, entry]) => {
           if (entry === deletedEntry) {
@@ -743,6 +800,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
     }
 
     getUniqueRuntimeEntries().forEach((entry) => {
+      abortEntryReconnect(entry);
       entry.runtime.clear();
     });
     runtimeEntries.clear();
@@ -761,9 +819,9 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
       return;
     }
 
-    if (entry.streamStatus === 'disconnected') {
+    if (entry.streamSession.status === 'disconnected') {
       void reconnectRuntimeEntry(entry);
-    } else if (entry.streamStatus === 'done' && entry.conversationId && entry.requestId) {
+    } else if (entry.streamSession.status === 'done' && entry.conversationId && entry.streamSession.requestId) {
       await loadHistoryConversationIntoEntry(entry);
     }
   }

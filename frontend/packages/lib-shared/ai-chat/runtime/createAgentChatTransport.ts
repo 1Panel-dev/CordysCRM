@@ -25,6 +25,11 @@ export interface AgentChatTransportOptions {
     metadata?: AiChatMeta;
   }) => AsyncIterable<AgentChatStreamEvent>;
   reconnect?: (context: { signal?: AbortSignal }) => AsyncIterable<AgentChatStreamEvent>;
+  getReconnectContext?: () => {
+    messageId?: string;
+    signal?: AbortSignal;
+    isActive?: () => boolean;
+  };
   onEvent?: (event: AgentChatStreamEvent) => void;
   onReconnectFinished?: () => void | Promise<void>;
 }
@@ -134,7 +139,12 @@ function getDuration(startTime?: number, endTime?: number): number | undefined {
 // 这里把 CRM 的 run/progress/chunk/confirm/error/done 事件转换成 AI SDK 可消费的 UI message stream。
 function createReadableAgentUiStream(
   events: AsyncIterable<AgentChatStreamEvent>,
-  options: Pick<AgentChatTransportOptions, 'onEvent'> = {}
+  options: Pick<AgentChatTransportOptions, 'onEvent'> = {},
+  streamContext: {
+    messageId?: string;
+    signal?: AbortSignal;
+    isActive?: () => boolean;
+  } = {}
 ): ReadableStream<UIMessageChunk> {
   const parser = createThinkingMarkdownParser();
 
@@ -147,12 +157,18 @@ function createReadableAgentUiStream(
       let finished = false;
       let runStartedAt: number | undefined;
 
+      function isStreamActive(): boolean {
+        return streamContext.isActive?.() !== false;
+      }
+
       function enqueueStart(messageId?: string): void {
         if (started) {
           return;
         }
 
-        controller.enqueue(messageId ? { type: 'start', messageId } : { type: 'start' });
+        const targetMessageId = messageId || streamContext.messageId;
+
+        controller.enqueue(targetMessageId ? { type: 'start', messageId: targetMessageId } : { type: 'start' });
         started = true;
       }
 
@@ -210,6 +226,12 @@ function createReadableAgentUiStream(
         let result = await iterator.next();
 
         while (!result.done) {
+          if (!isStreamActive()) {
+            await iterator.return?.();
+            controller.close();
+            return;
+          }
+
           const event = result.value;
 
           options.onEvent?.(event);
@@ -263,6 +285,11 @@ function createReadableAgentUiStream(
 
           // eslint-disable-next-line no-await-in-loop
           result = await iterator.next();
+        }
+
+        if (!isStreamActive()) {
+          controller.close();
+          return;
         }
 
         finish();
@@ -323,9 +350,15 @@ export default function createAgentChatTransport(options: AgentChatTransportOpti
         return null;
       }
 
-      const { first, rest, close } = await readFirstEvent(options.reconnect({}));
+      const reconnectContext = options.getReconnectContext?.() ?? {};
+      const { first, rest, close } = await readFirstEvent(options.reconnect({ signal: reconnectContext.signal }));
 
       if (!first) {
+        await close();
+        return null;
+      }
+
+      if (reconnectContext.isActive?.() === false) {
         await close();
         return null;
       }
@@ -339,7 +372,7 @@ export default function createAgentChatTransport(options: AgentChatTransportOpti
           return null;
         }
 
-        return createReadableAgentUiStream(rest, options);
+        return createReadableAgentUiStream(rest, options, reconnectContext);
       }
 
       const firstEvent = first;
@@ -349,7 +382,7 @@ export default function createAgentChatTransport(options: AgentChatTransportOpti
         yield* rest;
       }
 
-      return createReadableAgentUiStream(readFromFirst(), options);
+      return createReadableAgentUiStream(readFromFirst(), options, reconnectContext);
     },
   };
 }
