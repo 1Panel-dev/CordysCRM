@@ -1232,7 +1232,7 @@
           </div>
           <n-select
             v-model:value="fieldConfig.statisticType"
-            :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+            :disabled="!!fieldConfig.resourceFieldId"
             :options="statisticTypeOptions"
             :render-label="renderStatisticOption"
             :render-tag="renderStatisticTag"
@@ -1260,6 +1260,7 @@
           <div class="crm-form-design-config-item-title">
             <span>{{ t('crmFormDesign.statisticsRange') }}</span>
             <n-button
+              v-if="fieldConfig.combineSearch?.conditions.length"
               type="primary"
               text
               :disabled="!fieldConfig.dataScope || !!fieldConfig.resourceFieldId"
@@ -1272,7 +1273,7 @@
             v-model:value="fieldConfig.dataScope"
             name="radiogroup"
             class="flex"
-            :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+            :disabled="!!fieldConfig.resourceFieldId"
           >
             <n-radio-button value="ALL" class="flex-1 text-center">
               {{ t('common.all') }}
@@ -1285,7 +1286,7 @@
             <n-button
               type="default"
               class="outline--secondary flex-1"
-              :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+              :disabled="!!fieldConfig.resourceFieldId"
               @click="handleStatisticRangeFilterShow"
             >
               {{
@@ -1314,7 +1315,7 @@
             </n-radio-button>
           </n-radio-group>
         </div>
-        <div v-else class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item">
           <div class="crm-form-design-config-item-title">
             {{ t('crmFormDesign.statisticsOnEmpty') }}
           </div>
@@ -2020,7 +2021,7 @@
         .filter((i) => i.dataSource && i.formKey === FormDesignKeyEnum.CONTRACT)
         .map((item) => ({
           ...item,
-          value: item.formKey,
+          value: item.dataSource,
         }));
     }
     if (props.formKey === FormDesignKeyEnum.BUSINESS) {
@@ -2028,7 +2029,7 @@
         .filter((i) => i.dataSource && i.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION)
         .map((item) => ({
           ...item,
-          value: item.formKey,
+          value: item.dataSource,
         }));
     }
     if (props.formKey === FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD) {
@@ -2041,7 +2042,7 @@
         )
         .map((item) => ({
           ...item,
-          value: item.formKey,
+          value: item.dataSource,
         }));
     }
     if (props.formKey === FormDesignKeyEnum.CONTRACT) {
@@ -2059,7 +2060,7 @@
         )
         .map((item) => ({
           ...item,
-          value: item.formKey,
+          value: item.dataSource,
         }));
     }
     if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
@@ -2077,7 +2078,7 @@
         )
         .map((item) => ({
           ...item,
-          value: item.formKey,
+          value: item.dataSource,
         }));
     }
     return [];
