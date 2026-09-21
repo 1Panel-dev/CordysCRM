@@ -889,6 +889,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                         dataList.forEach(data -> {
                             data.setCustomFormId(request.getCustomFormId());
                             data.setOrganizationId(orgId);
+                            data.setApprovalStatus(ApprovalStatus.NONE.name());
                             if (StringUtils.isBlank(data.getOwner())) {
                                 data.setOwner(userId);
                             }
