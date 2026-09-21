@@ -4,9 +4,16 @@ import cn.cordys.crm.approval.constants.ApprovalAddSignType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
+import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.domain.ApprovalNode;
+import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
 import cn.cordys.crm.approval.domain.ApprovalRecord;
+import cn.cordys.crm.approval.domain.ApprovalReturnBackRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.dto.ApprovalRecordNode;
 import cn.cordys.crm.approval.dto.ApprovalTaskNode;
+import cn.cordys.crm.system.domain.Attachment;
+import cn.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -15,9 +22,59 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ApprovalInstanceServiceTest {
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void approvedReturnedNodeDoesNotExposePreviousBackInfo() {
+		ApprovalInstanceService service = new ApprovalInstanceService();
+		ApprovalFlowService flowService = mock(ApprovalFlowService.class);
+		BaseMapper<ApprovalNodeApprover> approverNodeMapper = mock(BaseMapper.class);
+		BaseMapper<ApprovalNode> nodeMapper = mock(BaseMapper.class);
+		ReflectionTestUtils.setField(service, "approvalFlowService", flowService);
+		ReflectionTestUtils.setField(service, "approvalNodeApproverMapper", approverNodeMapper);
+		ReflectionTestUtils.setField(service, "approvalNodeMapper", nodeMapper);
+
+		ApprovalInstance instance = new ApprovalInstance();
+		instance.setId("instance-1");
+		instance.setCurrentNodeId("NODE001");
+		instance.setApprovalStatus(ApprovalStatus.APPROVED.name());
+		ApprovalTask task = task("task-1", ApprovalTaskType.NL, ApprovalStatus.APPROVED, 1);
+		task.setInstanceId(instance.getId());
+		task.setNodeId("NODE001");
+		task.setCreateTime(1L);
+		ApprovalRecord record = new ApprovalRecord();
+		record.setId("record-1");
+		record.setTaskId(task.getId());
+		record.setNodeId(task.getNodeId());
+		record.setNodeRound(task.getNodeRound());
+		record.setCreateTime(2L);
+		ApprovalReturnBackRecord backRecord = new ApprovalReturnBackRecord();
+		backRecord.setId("back-1");
+		backRecord.setReturnToNodeId(task.getNodeId());
+		backRecord.setReturnReason("之前的退回原因");
+		Attachment attachment = new Attachment();
+
+		when(flowService.getCurrentNodeApproverList(instance, task.getNodeId(), "org-1")).thenReturn(List.of(task.getApproverId()));
+		when(approverNodeMapper.selectByIds(anyList())).thenReturn(List.of());
+		when(nodeMapper.selectByIds(anyList())).thenReturn(List.of());
+		when(nodeMapper.selectOne(any())).thenReturn(null);
+
+		List<ApprovalRecordNode> nodes = ReflectionTestUtils.invokeMethod(service, "buildApprovalRecordNodeList", instance,
+				List.of(task), List.of(record), List.of(), List.of(backRecord), Map.of(backRecord.getId(), List.of(attachment)), Map.of(), "org-1");
+
+		ApprovalRecordNode node = nodes.getFirst();
+		assertFalse(node.isBackNode());
+		assertNull(node.getBackReason());
+		assertEquals(List.of(), node.getBackAttachments());
+	}
 
 	@Test
 	void approvingTaskDoesNotExposePreviousApprovalTime() {
