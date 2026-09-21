@@ -380,7 +380,7 @@
       {
         label: t('common.unfreeze'),
         key: 'unfreeze',
-        permission: ['CUSTOMER_MANAGEMENT_POOL:UNFREEZE'],
+        permission: ['CUSTOMER_MANAGEMENT_POOL:FREEZE'],
       },
       {
         label: t('common.delete'),
@@ -551,7 +551,10 @@
             h(
               CrmOperationButton,
               {
-                groupList: operationGroupList.value.filter((item) => item.key !== (row.frozen ? 'freeze' : 'unfreeze')),
+                groupList: operationGroupList.value.filter(
+                  (item) =>
+                    item.key && !(row.frozen ? ['freeze', 'claim', 'distribute'] : ['unfreeze']).includes(item.key)
+                ),
                 onSelect: (key: string) => handleActionSelect(row, key),
                 onCancel: () => {
                   distributeForm.value.owner = null;
