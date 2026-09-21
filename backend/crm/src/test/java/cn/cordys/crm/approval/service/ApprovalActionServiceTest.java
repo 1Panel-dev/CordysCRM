@@ -13,6 +13,7 @@ import cn.cordys.crm.approval.dto.request.ApprovalReturnBackRequest;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
 import cn.cordys.mybatis.BaseMapper;
+import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +41,7 @@ class ApprovalActionServiceTest {
 	private BaseMapper<ApprovalAddSignTask> addSignTaskMapper;
 	private ExtApprovalInstanceMapper extInstanceMapper;
 	private ExtApprovalTaskMapper extTaskMapper;
+	private ApprovalFlowService approvalFlowService;
 
 	@BeforeAll
 	static void initIdGenerator() {
@@ -66,11 +68,32 @@ class ApprovalActionServiceTest {
 		addSignTaskMapper = mock(BaseMapper.class);
 		extInstanceMapper = mock(ExtApprovalInstanceMapper.class);
 		extTaskMapper = mock(ExtApprovalTaskMapper.class);
+		approvalFlowService = mock(ApprovalFlowService.class);
 		ReflectionTestUtils.setField(service, "approvalInstanceMapper", instanceMapper);
 		ReflectionTestUtils.setField(service, "approvalTaskMapper", taskMapper);
 		ReflectionTestUtils.setField(service, "approvalAddSignTaskMapper", addSignTaskMapper);
 		ReflectionTestUtils.setField(service, "extApprovalInstanceMapper", extInstanceMapper);
 		ReflectionTestUtils.setField(service, "extApprovalTaskMapper", extTaskMapper);
+		ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+	}
+
+	@Test
+	void sequentialApprovalReentryIgnoresApprovedTasksFromExpiredRound() {
+		ApprovalInstance instance = new ApprovalInstance();
+		instance.setId("instance-1");
+		when(instanceMapper.selectByPrimaryKey("instance-1")).thenReturn(instance);
+		when(approvalFlowService.getCurrentNodeApproverList(instance, "NODE001", "org-1"))
+				.thenReturn(List.of("approver-1", "approver-2"));
+		when(extInstanceMapper.getNodeRound("instance-1", "NODE001")).thenReturn(0);
+
+		ApprovalTask expiredTask = task("expired", ApprovalTaskType.NL, ApprovalStatus.APPROVED, -1);
+		ApprovalTask currentTask = task("current", ApprovalTaskType.NL, ApprovalStatus.APPROVED, 0);
+		when(taskMapper.selectListByLambda(any())).thenAnswer(invocation -> {
+			LambdaQueryWrapper<ApprovalTask> wrapper = invocation.getArgument(0);
+			return wrapper.getParams().containsValue(0) ? List.of(currentTask) : List.of(expiredTask, currentTask);
+		});
+
+		assertEquals("approver-2", service.getMultiSeqAfterOne("NODE001", "instance-1", "org-1", 0));
 	}
 
 	@Test
