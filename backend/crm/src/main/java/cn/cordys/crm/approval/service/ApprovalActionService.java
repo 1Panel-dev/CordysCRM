@@ -791,6 +791,7 @@ public class ApprovalActionService {
 		LambdaQueryWrapper<ApprovalTask> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(ApprovalTask::getNodeId, nodeId)
 				.eq(ApprovalTask::getInstanceId, instanceId)
+				.eq(ApprovalTask::getNodeRound, extApprovalInstanceMapper.getNodeRound(instanceId, nodeId))
 				.eq(ApprovalTask::getType, ApprovalTaskType.NL.name())
 				.eq(ApprovalTask::getStatus, ApprovalStatus.APPROVED.name());
 		List<ApprovalTask> approvedTask = approvalTaskMapper.selectListByLambda(queryWrapper);
