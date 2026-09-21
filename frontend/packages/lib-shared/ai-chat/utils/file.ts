@@ -12,7 +12,7 @@ export const agentChatAttachmentLimits = {
 export const agentChatImageMimeTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 export const agentChatImageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
 
-// 明确支持的扩展名仅用于避免浏览器 MIME 误判导致误拦截；未知扩展名仍放行给后端按内容识别。
+// 明确支持的扩展名用于避免浏览器 MIME 误判导致误拦截；未知扩展名会按 UTF-8 文本尝试识别。
 const documentExtensions = [
   '.doc',
   '.docx',
@@ -27,6 +27,36 @@ const documentExtensions = [
   '.epub',
 ];
 const textExtensions = ['.txt', '.md', '.csv', '.json', '.xml', '.html', '.htm'];
+const documentMimeTypes = [
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.oasis.opendocument.text',
+  'application/vnd.oasis.opendocument.spreadsheet',
+  'application/vnd.oasis.opendocument.presentation',
+  'application/vnd.oasis.opendocument.graphics',
+  'application/rtf',
+  'text/rtf',
+  'application/epub+zip',
+];
+const textMimeTypes = [
+  'application/json',
+  'application/xml',
+  'application/xhtml+xml',
+  'text/csv',
+  'text/html',
+  'text/markdown',
+  'text/plain',
+  'text/xml',
+];
+export const agentChatAttachmentAccept = [
+  ...agentChatImageMimeTypes,
+  ...agentChatImageExtensions,
+  ...documentExtensions,
+  ...textExtensions,
+].join(',');
 
 // 产品明确暂不支持的类型，前端可以直接拦截，减少无效上传。
 const unsupportedExtensions = [
@@ -70,7 +100,10 @@ const unsupportedMimeTypes = [
 
 const imageMimeTypeSet = new Set(agentChatImageMimeTypes);
 const imageExtensionSet = new Set(agentChatImageExtensions);
-const supportedExtensionSet = new Set([...agentChatImageExtensions, ...documentExtensions, ...textExtensions]);
+const documentExtensionSet = new Set(documentExtensions);
+const textExtensionSet = new Set(textExtensions);
+const documentMimeTypeSet = new Set(documentMimeTypes);
+const textMimeTypeSet = new Set(textMimeTypes);
 const unsupportedMimeTypeSet = new Set(unsupportedMimeTypes);
 const unsupportedExtensionSet = new Set(unsupportedExtensions);
 
@@ -103,7 +136,11 @@ export function getAgentChatFileKind(file: Pick<File, 'name' | 'type'>): AiFileK
   return isAgentChatImageFile(file) ? 'image' : 'file';
 }
 
-function isExplicitlyUnsupported(file: File): boolean {
+function isSupportedExtension(extension: string): boolean {
+  return imageExtensionSet.has(extension) || documentExtensionSet.has(extension) || textExtensionSet.has(extension);
+}
+
+function isClearlyUnsupportedFile(file: File): boolean {
   const extension = getAgentChatFileExtension(file.name);
 
   // 旧版 Office、音视频和压缩包是明确不支持项，无需等待后端识别。
@@ -111,27 +148,56 @@ function isExplicitlyUnsupported(file: File): boolean {
     return true;
   }
 
-  // 图片只允许 Pi 可作为原生图片输入的几类格式。
-  if (file.type.startsWith('image/') && !imageMimeTypeSet.has(file.type)) {
-    return true;
+  // 明确支持的扩展名优先放行，避免 CSV 被识别成 Excel、或 docx/xlsx/pptx/epub 被识别成 zip 时误拦截。
+  if (isSupportedExtension(extension)) {
+    return false;
   }
 
-  // 有些浏览器会把 CSV 识别成 Excel，或把 docx/xlsx/pptx/epub 识别成 zip；支持扩展名优先放行。
-  if (supportedExtensionSet.has(extension)) {
-    return false;
+  // 图片只允许模型可作为原生图片输入的几类格式。
+  if (file.type.startsWith('image/') && !imageMimeTypeSet.has(file.type)) {
+    return true;
   }
 
   return unsupportedMimeTypeSet.has(file.type);
 }
 
-function isSupportedAgentChatFile(file: File): boolean {
-  return !isExplicitlyUnsupported(file);
+function isKnownSupportedFile(file: File): boolean {
+  const extension = getAgentChatFileExtension(file.name);
+
+  return (
+    imageExtensionSet.has(extension) ||
+    documentExtensionSet.has(extension) ||
+    imageMimeTypeSet.has(file.type) ||
+    documentMimeTypeSet.has(file.type)
+  );
 }
 
-export function validateAgentChatFiles(
+async function isUtf8TextFile(file: File): Promise<boolean> {
+  try {
+    const content = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer());
+
+    return !content.includes('\u0000');
+  } catch {
+    return false;
+  }
+}
+
+async function isSupportedAgentChatFile(file: File): Promise<boolean> {
+  if (isClearlyUnsupportedFile(file)) {
+    return false;
+  }
+
+  if (isKnownSupportedFile(file)) {
+    return true;
+  }
+
+  return isUtf8TextFile(file);
+}
+
+export async function validateAgentChatFiles(
   files: File[],
   attachments: Pick<AiChatAttachment, 'name' | 'size'>[]
-): AgentChatFileValidationResult[] {
+): Promise<AgentChatFileValidationResult[]> {
   // 同一次选择可能包含多个文件，逐个累计能尽量保留前面仍满足限制的文件。
   const selectedFiles: File[] = [];
   let totalSize = attachments.reduce((sum, attachment) => sum + (attachment.size ?? 0), 0);
@@ -162,7 +228,7 @@ export function validateAgentChatFiles(
       continue;
     }
 
-    if (!isSupportedAgentChatFile(file)) {
+    if (!(await isSupportedAgentChatFile(file))) {
       results.push({ file, valid: false, error: 'unsupported-type' });
       continue;
     }

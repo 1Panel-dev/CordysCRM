@@ -11,6 +11,7 @@ export { formatAiChatDuration } from './utils/duration';
 export { default as renderMarkdown } from './utils/markdown';
 export { hasRenderableAiChatContent, toAiChatMessage } from './utils/conversation';
 export {
+  agentChatAttachmentAccept,
   agentChatAttachmentLimits,
   agentChatImageMimeTypes,
   getAgentChatFileKind,

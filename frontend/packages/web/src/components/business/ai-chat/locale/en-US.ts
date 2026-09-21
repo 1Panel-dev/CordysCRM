@@ -36,7 +36,7 @@ export default {
   'aiChat.progressOutput': 'Output',
   'aiChat.attachmentUploading': 'Uploading',
   'aiChat.attachmentUploadFailed': 'Upload failed',
-  'aiChat.attachmentUnsupportedType': 'Legacy XLS/PPT, audio/video, archives, and scanned PDF OCR are not supported.',
+  'aiChat.attachmentUnsupportedType': 'Only images, Office/PDF/OpenDocument/EPUB/RTF, and UTF-8 text are supported.',
   'aiChat.attachmentMaxCount': 'Upload up to {count} files',
   'aiChat.attachmentMaxTotalSize': 'Total file size cannot exceed {size} MB',
   'aiChat.mcpImport': 'Import MCP',

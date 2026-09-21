@@ -34,7 +34,14 @@
       class="absolute bottom-[16px] left-[16px] right-[16px] flex min-h-[22px] items-center justify-between"
     >
       <div class="flex items-center">
-        <input ref="fileInputRef" type="file" class="hidden" multiple @change="handleFileInputChange" />
+        <input
+          ref="fileInputRef"
+          type="file"
+          :accept="agentChatAttachmentAccept"
+          class="hidden"
+          multiple
+          @change="handleFileInputChange"
+        />
         <input
           ref="mcpImportInputRef"
           type="file"
@@ -178,6 +185,7 @@
     AiComposerSubmitPayload,
   } from '@lib/shared/ai-chat';
   import {
+    agentChatAttachmentAccept,
     agentChatAttachmentLimits,
     getAgentChatFileKind,
     getMatchedMcp,
@@ -773,7 +781,7 @@
   }
 
   async function addSystemFiles(files: File[]): Promise<void> {
-    const validationResults = validateAgentChatFiles(files, attachments.value);
+    const validationResults = await validateAgentChatFiles(files, attachments.value);
     const validFiles = validationResults.filter((result) => result.valid).map((result) => result.file);
     const validationError = validationResults.find((result) => !result.valid)?.error;
 

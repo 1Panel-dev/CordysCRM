@@ -36,7 +36,7 @@ export default {
   'aiChat.progressOutput': '输出',
   'aiChat.attachmentUploading': '上传中',
   'aiChat.attachmentUploadFailed': '上传失败',
-  'aiChat.attachmentUnsupportedType': '暂不支持旧版 XLS/PPT、音视频、压缩包，以及扫描版 PDF 的 OCR',
+  'aiChat.attachmentUnsupportedType': '仅支持图片、Office/PDF/OpenDocument/EPUB/RTF 和 UTF-8 文本',
   'aiChat.attachmentMaxCount': '最多上传 {count} 个文件',
   'aiChat.attachmentMaxTotalSize': '文件总大小不能超过 {size} MB',
   'aiChat.mcpImport': '导入 MCP',
