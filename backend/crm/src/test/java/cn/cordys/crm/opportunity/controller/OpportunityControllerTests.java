@@ -205,9 +205,9 @@ public class OpportunityControllerTests extends BaseTest {
     void testUpdateStage() throws Exception {
         OpportunityStageRequest request = new OpportunityStageRequest();
         request.setId(addOpportunity.getId());
-        request.setStage("SUCCESS");
+        request.setStage("CREATE");
         this.requestPostWithOk(UPDATE_STAGE, request);
-        request.setStage("FAIL");
+        request.setStage("SUCCESS");
         request.setFailureReason("test_fail");
         this.requestPostWithOk(UPDATE_STAGE, request);
     }
