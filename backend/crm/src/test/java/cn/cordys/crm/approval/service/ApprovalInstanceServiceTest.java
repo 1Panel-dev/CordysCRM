@@ -4,7 +4,9 @@ import cn.cordys.crm.approval.constants.ApprovalAddSignType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
+import cn.cordys.crm.approval.domain.ApprovalRecord;
 import cn.cordys.crm.approval.domain.ApprovalTask;
+import cn.cordys.crm.approval.dto.ApprovalTaskNode;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -13,8 +15,26 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ApprovalInstanceServiceTest {
+
+	@Test
+	void approvingTaskDoesNotExposePreviousApprovalTime() {
+		ApprovalTask task = task("task-1", ApprovalTaskType.NL, ApprovalStatus.APPROVING, 1);
+		ApprovalRecord record = new ApprovalRecord();
+		record.setId("record-1");
+		record.setCreateTime(123L);
+
+		ApprovalTaskNode result = ReflectionTestUtils.invokeMethod(new ApprovalInstanceService(), "buildTaskNode", task,
+				Map.of(task.getId(), record), Map.of(), Map.of(), Map.of());
+
+		assertNull(result.getApprovalTime());
+		task.setStatus(ApprovalStatus.APPROVED.name());
+		result = ReflectionTestUtils.invokeMethod(new ApprovalInstanceService(), "buildTaskNode", task,
+				Map.of(task.getId(), record), Map.of(), Map.of(), Map.of());
+		assertEquals(123L, result.getApprovalTime());
+	}
 
 	@Test
 	void returnedSignChainKeepsOrderAndResetsFollowingTasks() {
@@ -47,6 +67,7 @@ class ApprovalInstanceServiceTest {
 	private ApprovalTask task(String id, ApprovalTaskType type, ApprovalStatus status, int round) {
 		ApprovalTask task = new ApprovalTask();
 		task.setId(id);
+		task.setApproverId(id + "-approver");
 		task.setType(type.name());
 		task.setStatus(status.name());
 		task.setNodeRound(round);
