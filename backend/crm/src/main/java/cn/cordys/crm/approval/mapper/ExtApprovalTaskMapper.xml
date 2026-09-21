@@ -40,6 +40,7 @@
         AND at.status = #{pendingStatus}
         AND at.type != 'CC'
         AND ai.approval_status not in ('APPROVED','UNAPPROVED')
+        AND ai.current_node_id = at.node_id
         <if test="resourceType != null and resourceType != ''">
             AND ai.type = #{resourceType}
         </if>
