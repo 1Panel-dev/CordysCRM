@@ -137,6 +137,31 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     chat.value.messages = chat.value.messages.map((message) => (message.id === messageId ? patch(message) : message));
   }
 
+  function getRetryMetadata(messageId?: string): AiChatMeta | undefined {
+    const messages = chat.value.messages;
+    const targetIndex = messageId ? messages.findIndex((message) => message.id === messageId) : messages.length - 1;
+
+    if (targetIndex < 0) {
+      return undefined;
+    }
+
+    const targetMessage = messages[targetIndex];
+
+    if (targetMessage.role === 'user') {
+      return targetMessage.metadata;
+    }
+
+    for (let index = targetIndex - 1; index >= 0; index -= 1) {
+      const message = messages[index];
+
+      if (message.role === 'user') {
+        return message.metadata;
+      }
+    }
+
+    return undefined;
+  }
+
   function reset(nextMessages: AiChatMessage[] = []): void {
     chat.value.stop();
     chat.value.messages = nextMessages;
@@ -270,7 +295,10 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
       return;
     }
 
-    await chat.value.regenerate({ messageId });
+    await chat.value.regenerate({
+      messageId,
+      metadata: getRetryMetadata(messageId),
+    });
   }
 
   async function edit(messageId: string, content: string, options: AiChatSubmitPayload['options'] = {}): Promise<void> {

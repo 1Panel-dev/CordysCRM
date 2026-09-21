@@ -32,7 +32,14 @@
           class="hidden"
           @change="handleFileInputChange"
         />
-        <input ref="fileInputRef" type="file" multiple class="hidden" @change="handleFileInputChange" />
+        <input
+          ref="fileInputRef"
+          type="file"
+          :accept="agentChatAttachmentAccept"
+          multiple
+          class="hidden"
+          @change="handleFileInputChange"
+        />
         <van-popover
           v-if="!isEditing"
           v-model:show="showAttachmentPopover"
@@ -91,6 +98,7 @@
     AiComposerSubmitPayload,
   } from '@lib/shared/ai-chat';
   import {
+    agentChatAttachmentAccept,
     agentChatAttachmentLimits,
     agentChatImageMimeTypes,
     getAgentChatFileKind,
@@ -221,7 +229,7 @@
   }
 
   async function addFiles(files: FileList | File[] | null | undefined) {
-    const validationResults = validateAgentChatFiles(Array.from(files ?? []), attachments.value);
+    const validationResults = await validateAgentChatFiles(Array.from(files ?? []), attachments.value);
     const validFiles = validationResults.filter((result) => result.valid).map((result) => result.file);
     const validationError = validationResults.find((result) => !result.valid)?.error;
 
