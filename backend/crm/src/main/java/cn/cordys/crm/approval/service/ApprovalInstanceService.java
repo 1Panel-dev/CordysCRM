@@ -654,7 +654,8 @@ public class ApprovalInstanceService {
 	 */
 	private ApprovalTaskNode buildTaskNode(ApprovalTask task, Map<String, ApprovalRecord> taskRecordMap, Map<String, ApprovalAddSignTask> addSignTaskMapOfTask,
 										   Map<String, List<Attachment>> attachmentsMap, Map<String, UserSimple> simpleUserMap) {
-		ApprovalRecord record = ApprovalStatus.PENDING.name().equals(task.getStatus()) ? null : taskRecordMap.get(task.getId());
+		boolean taskUnfinished = ApprovalStatus.PENDING.name().equals(task.getStatus()) || ApprovalStatus.APPROVING.name().equals(task.getStatus());
+		ApprovalRecord record = taskUnfinished ? null : taskRecordMap.get(task.getId());
 		ApprovalTaskNode taskNode = ApprovalTaskNode.builder().taskId(task.getId())
 				.sign(ApprovalTaskType.valueOf(task.getType()) == ApprovalTaskType.SN)
 				.approverId(task.getApproverId()).approvalStatus(task.getStatus()).build();
