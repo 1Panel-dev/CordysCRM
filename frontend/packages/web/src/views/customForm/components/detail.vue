@@ -70,6 +70,7 @@
                 }"
                 :customFormId="props.customFormId"
                 @init="handleInit"
+                @refresh="emit('refresh')"
               />
             </template>
           </CrmApprovalDetail>

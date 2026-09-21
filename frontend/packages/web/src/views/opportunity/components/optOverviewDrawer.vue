@@ -69,6 +69,7 @@
             :readonly="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
             @init="handleDescriptionInit"
             @open-customer-detail="emit('openCustomerDrawer', $event)"
+            @refresh="emit('refresh')"
           />
         </div>
         <FollowDetail

@@ -54,6 +54,7 @@
             :readonly="!hasAnyPermission(['CONTRACT_PAYMENT_RECORD:UPDATE'])"
             @init="handleInit"
             @open-contract-detail="emit('openContractDrawer', $event)"
+            @refresh="emit('refresh')"
           />
         </div>
 

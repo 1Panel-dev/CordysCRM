@@ -44,6 +44,7 @@
             tooltip-position="top-start"
             :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
             @init="handleDescriptionInit"
+            @refresh="emit('refresh')"
           />
         </div>
         <div v-if="activeTab === 'contact'" class="h-full px-[24px] pt-[24px]">
@@ -194,6 +195,7 @@
     (e: 'saved'): void;
     (e: 'deleted'): void;
     (e: 'transfer'): void;
+    (e: 'refresh'): void;
   }>();
 
   const { t } = useI18n();

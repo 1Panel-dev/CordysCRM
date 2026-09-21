@@ -91,6 +91,7 @@
     @saved="searchData(undefined, activeSourceId)"
     @deleted="removeItemFromList(activeSourceId)"
     @transfer="searchData"
+    @refresh="searchData(undefined, activeSourceId)"
   />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"

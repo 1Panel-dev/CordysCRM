@@ -415,6 +415,7 @@
     (e: 'openContractPaymentPlanDetail', params: { id: string }): void;
     (e: 'openOpportunityDetail', params: { id: string }): void;
     (e: 'openQuotationDetail', params: { id: string }): void;
+    (e: 'refresh', params: { id: string }): void;
   }>();
 
   const { t } = useI18n();
@@ -712,6 +713,7 @@
       value.value = res !== null ? res.toString() : '';
       popShow.value[fieldId] = false;
       Message.success(t('common.refreshSuccess'));
+      emit('refresh', { id: fieldId });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
