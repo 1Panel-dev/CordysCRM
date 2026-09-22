@@ -715,10 +715,11 @@ public class ModuleFormService {
                 continue;
             }
             FormDetailTab tab = new FormDetailTab();
-            tab.setName(internalTab.getLabelKey());
             tab.setEnable(true);
             tab.setInternalKey(internalTab.name());
             FormDetailTab resolved = resolveInternalDetailTab(tab, internalTab, false, context);
+            // 这里初始化国际化的key
+            tab.setName(internalTab.getLabelKey());
             if (resolved != null) {
                 tabs.add(tab);
             }
@@ -2706,6 +2707,8 @@ public class ModuleFormService {
      * 关联表单和字段。已有合法标签会被保留，缺失的内置标签按枚举顺序补回。</p>
      */
     public void initInternalDetailTabs() {
+        LocaleContextHolder.setLocale(Locale.US);
+
         List<String> internalFormKeys = Arrays.stream(InternalDetailTab.values())
                 .map(InternalDetailTab::getFormKey)
                 .distinct()
