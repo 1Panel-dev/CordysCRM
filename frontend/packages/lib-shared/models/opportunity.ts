@@ -140,6 +140,7 @@ export interface QuotationItem {
   id: string;
   name: string;
   approved?: boolean;
+  submitterId?: string;
   approvalStatus: ProcessStatusEnum;
   invalid: boolean;
   opportunityId: string;

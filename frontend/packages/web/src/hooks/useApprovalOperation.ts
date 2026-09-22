@@ -96,6 +96,10 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
     return isCreator || isOwner;
   }
 
+  function canCurrentUserRevoke(row: Row) {
+    return row.owner === userStore.userInfo.id || row.submitterId === userStore.userInfo.id;
+  }
+
   function shouldUseRolePermissionOnly(row?: Row) {
     if (!row) {
       return false;
@@ -104,7 +108,7 @@ export default function useApprovalOperation<Row extends Record<string, any>>(
   }
 
   function canRevokeWhileApproving(row: Row) {
-    if (!isApplicant(row)) {
+    if (!canCurrentUserRevoke(row)) {
       return false;
     }
 

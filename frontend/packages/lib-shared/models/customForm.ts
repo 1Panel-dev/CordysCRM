@@ -91,6 +91,7 @@ export interface CustomFormPageItem {
   approvalStatus?: ProcessStatusEnum;
   approved?: boolean;
   firstApproved?: boolean;
+  submitterId?: string;
 }
 
 export interface BatchUpdateCustomFormDataParams {
@@ -119,4 +120,5 @@ export interface CustomFormDataDetail {
   approvalStatus?: ProcessStatusEnum;
   approved?: boolean;
   firstApproved?: boolean;
+  submitterId?: string;
 }

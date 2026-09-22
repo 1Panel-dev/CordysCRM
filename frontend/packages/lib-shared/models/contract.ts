@@ -13,6 +13,7 @@ export interface ContractItem {
   amount: number;
   alreadyPayAmount: number;
   approved?: boolean;
+  submitterId?: string;
   approvalStatus: ProcessStatusEnum;
   stage: string;
   stageName: string;
@@ -210,6 +211,7 @@ export interface ContractInvoiceItem {
   id: string;
   contractId: string;
   approved?: boolean;
+  submitterId?: string;
   name: string;
   no: string;
   owner: string;
