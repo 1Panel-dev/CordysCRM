@@ -12,4 +12,7 @@ public class CirculationFieldValue extends BaseModuleFieldValue {
 
     @Schema(description = "默认值类型")
     private String valueType;
+
+    @Schema(description = "默认值类型为日期时的默认值类型")
+    private String dateDefaultType;
 }
