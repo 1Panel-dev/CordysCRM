@@ -546,7 +546,14 @@ public class ModuleFormService {
                             ? null : relatedFormMap.remove(tab.getRelatedFormKey());
                     List<OptionDTO> fields = relatedForm == null ? List.of() : relatedForm.getSourceTypeFields();
                     String id = tab.getRelatedFormKey() == null ? tab.name() : tab.getRelatedFormKey();
-                    internalForms.add(new RelatedFormDTO(id, Translator.get(tab.getLabelKey()),
+                    // 关联表单下拉项的名称必须使用表单名称；动态关联表单缺失时用标准表单翻译兜底，
+                    // 只有没有关联表单的独立内置标签才使用标签默认名称。
+                    String name = relatedForm != null
+                            ? relatedForm.getName()
+                            : tab.getRelatedFormKey() == null
+                            ? Translator.get(tab.getLabelKey())
+                            : Translator.get(tab.getRelatedFormKey(), tab.getRelatedFormKey());
+                    internalForms.add(new RelatedFormDTO(id, name,
                             fields, tab.name()));
                 });
         return internalForms;
