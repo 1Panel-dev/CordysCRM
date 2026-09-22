@@ -7,11 +7,13 @@ import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.FormKey;
+import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.stage.CirculationSetting;
 import cn.cordys.common.dto.stage.StageAdvancedConfigRequest;
 import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.dto.stage.Target;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
@@ -46,6 +48,12 @@ public class StageAdvancedConfigService {
     private LogService logService;
 
     public static final Map<String, String> STAGE_CONFIG_TABLE = new HashMap<>(2);
+
+    /**
+     * 商机完结阶段的赢率取值: 100 为成功, 0 为失败。用以区分同为 END 类型的两个完结阶段。
+     */
+    private static final String SUCCESS_RATE = "100";
+    private static final String FAIL_RATE = "0";
 
     static {
         STAGE_CONFIG_TABLE.put(FormKey.ORDER.getKey(), "sales_order_stage_config");
@@ -173,7 +181,7 @@ public class StageAdvancedConfigService {
         }
 
         if (Strings.CI.equals(originConfig.getCirculationType(), CirculationTypeEnum.NORMAL.name())) {
-            return handleNormal(originConfig, targetConfig);
+            return handleNormal(originConfig, targetConfig, moduleType);
         }
 
         if (Strings.CI.equals(originConfig.getCirculationType(), CirculationTypeEnum.ADVANCED.name())) {
@@ -193,7 +201,7 @@ public class StageAdvancedConfigService {
     }
 
 
-    private boolean handleNormal(StageConfigResponse originConfig, StageConfigResponse targetConfig) {
+    private boolean handleNormal(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
         // 基础流转
         if (originConfig.getEndRollBack() && originConfig.getAfootRollBack()) {
             // 进行中&完结 同时开启 任意流转
@@ -227,8 +235,11 @@ public class StageAdvancedConfigService {
 
         if (originConfig.getAfootRollBack()) {
             // 只开启进行中回退
-            // 源阶段为 END 时，不允许任何切换
+            // 源阶段为 END 时，默认不允许任何切换；商机有反签权限时例外，见 isOpportunityResignSuccessToFail
             if (Strings.CI.equals(OpportunityStageType.END.name(), originConfig.getType())) {
+                if (isOpportunityResignSuccessToFail(originConfig, targetConfig, moduleType)) {
+                    return true;
+                }
                 throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
             }
 
@@ -238,5 +249,23 @@ public class StageAdvancedConfigService {
         }
 
         throw new GenericException("[" + originConfig.getName() + "] 不允许流转至 [" + targetConfig.getName() + "]");
+    }
+
+    /**
+     * 商机「反签」: 完结阶段之间唯一合法的一步 —— 成功(赢率100) 流转到 失败(赢率0)。
+     *
+     * <p>只配置了进行中回退时, 完结阶段本不允许任何切换; 有反签权限时才放开这一步, 且方向固定:
+     * 失败不能回到成功, 完结阶段也不能退回进行中。反签权限已在校验入口统一把关, 这里只判方向和配置。</p>
+     *
+     * <p>仅对商机状态流生效, 订单/合同没有赢率概念, 流转口径不受影响。</p>
+     */
+    private boolean isOpportunityResignSuccessToFail(StageConfigResponse originConfig, StageConfigResponse targetConfig, String moduleType) {
+        if (!Strings.CI.equals(FormKey.OPPORTUNITY.getKey(), moduleType)
+                || !Strings.CI.equals(OpportunityStageType.END.name(), targetConfig.getType())) {
+            return false;
+        }
+        String tableName = STAGE_CONFIG_TABLE.get(moduleType);
+        return SUCCESS_RATE.equals(extStageAdvancedConfigMapper.getStageRate(tableName, originConfig.getId()))
+                && FAIL_RATE.equals(extStageAdvancedConfigMapper.getStageRate(tableName, targetConfig.getId()));
     }
 }

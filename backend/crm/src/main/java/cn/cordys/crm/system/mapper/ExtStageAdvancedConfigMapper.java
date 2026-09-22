@@ -15,5 +15,11 @@ public interface ExtStageAdvancedConfigMapper {
 
     StageConfigResponse getStageConfig(@Param("sourceTable")String sourceTable, @Param("id")String id);
 
+    /**
+     * 取阶段配置的赢率, 用于区分商机的「成功」(100) 与「失败」(0)。
+     * 赢率列只有商机阶段表(opportunity_stage_config)才有, 只能对商机状态流调用。
+     */
+    String getStageRate(@Param("sourceTable") String sourceTable, @Param("id") String id);
+
     StageAdvancedConfig getConfigByOriginAndTarget(@Param("originId")String originId, @Param("targetId")String targetId,@Param("moduleType")String moduleType);
 }
