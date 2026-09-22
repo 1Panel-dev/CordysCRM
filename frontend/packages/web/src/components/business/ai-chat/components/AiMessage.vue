@@ -218,6 +218,7 @@
   import { cancelAgentChatFeedback, dislikeAgentChat, likeAgentChat } from '@/api/modules';
   import useLegacyCopy from '@/hooks/useLegacyCopy';
 
+  import useAiModelOptions from '../composables/useAiModelOptions';
   import type { Component } from 'vue';
 
   const props = defineProps<{
@@ -235,6 +236,7 @@
   const { t } = useI18n();
   const Message = useMessage();
   const runtime = useAiChatRuntime();
+  const { selectedModel } = useAiModelOptions();
   const { legacyCopy } = useLegacyCopy();
 
   const isUser = computed(() => props.message.role === 'user');
@@ -412,7 +414,7 @@
 
   // 重试
   async function handleRetry(): Promise<void> {
-    await runtime.retry(props.message.id);
+    await runtime.retry(props.message.id, { model: selectedModel.value ?? undefined });
   }
 
   async function handleCopyMessage(): Promise<void> {

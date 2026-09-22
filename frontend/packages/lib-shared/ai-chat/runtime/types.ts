@@ -71,7 +71,7 @@ export interface AiChatRuntime {
   disconnectStream: () => Promise<void>;
   resumeStream: () => Promise<void>;
   stop: () => Promise<void>;
-  retry: (messageId?: string) => Promise<void>;
+  retry: (messageId?: string, options?: AiChatSendOptions) => Promise<void>;
   edit: (messageId: string, content: string, options?: AiChatSendOptions) => Promise<void>;
   startEditMessage: (messageId: string) => void;
   cancelEditMessage: () => void;
