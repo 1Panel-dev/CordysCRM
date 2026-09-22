@@ -33,6 +33,12 @@
         where id = #{id}
     </select>
 
+    <select id="getStageRate" resultType="java.lang.String">
+        select rate
+        from ${sourceTable}
+        where id = #{id}
+    </select>
+
 
     <select id="getConfigByOriginAndTarget" resultType="cn.cordys.crm.system.domain.StageAdvancedConfig">
         select id, enable, field_config
