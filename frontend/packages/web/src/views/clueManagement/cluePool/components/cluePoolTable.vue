@@ -573,15 +573,19 @@
                 { default: () => row.name, trigger: () => row.name }
               );
 
-        return h('div', { class: 'flex items-center gap-[12px]' }, [
-          nameNode,
+        return h('div', { class: 'flex max-w-full items-center gap-[12px]' }, [
+          h('div', { class: 'min-w-0 flex-1 overflow-hidden' }, [nameNode]),
           row.frozen
-            ? h(CrmFreezeTag, {
-                resourceType: 'lead',
-                freezeType: row.unfreezeTime ? 'custom' : 'freezeForever',
-                unfreezeTime: row.unfreezeTime,
-                freezeReason: row.freezeReason,
-              })
+            ? h(
+                'div',
+                { class: 'flex-shrink-0' },
+                h(CrmFreezeTag, {
+                  resourceType: 'lead',
+                  freezeType: row.unfreezeTime ? 'custom' : 'freezeForever',
+                  unfreezeTime: row.unfreezeTime,
+                  freezeReason: row.freezeReason,
+                })
+              )
             : null,
         ]);
       },

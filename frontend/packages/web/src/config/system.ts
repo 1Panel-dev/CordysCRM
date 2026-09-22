@@ -74,6 +74,14 @@ export const logTypeOption = [
     value: OperationTypeEnum.DOWNLOAD,
     label: 'common.download',
   },
+  {
+    value: OperationTypeEnum.FREEZE,
+    label: 'common.freeze',
+  },
+  {
+    value: OperationTypeEnum.UNFREEZE,
+    label: 'common.unfreeze',
+  },
 ];
 
 export const defaultNavList: ActionItem[] = [

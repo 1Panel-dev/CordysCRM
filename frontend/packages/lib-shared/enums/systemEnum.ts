@@ -59,6 +59,8 @@ export enum OperationTypeEnum {
   VOIDED = 'VOIDED', // 作废
   CANCEL_VOID = 'CANCEL_VOID', // 取消作废
   DOWNLOAD = 'DOWNLOAD', // 下载
+  FREEZE = 'FREEZE', // 冻结
+  UNFREEZE = 'UNFREEZE', // 解冻
 }
 
 export enum PersonalExportStatusEnum {

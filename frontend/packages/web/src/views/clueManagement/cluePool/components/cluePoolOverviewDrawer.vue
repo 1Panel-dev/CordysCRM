@@ -110,46 +110,50 @@
   const claimLoading = ref(false);
   const distributeLoading = ref(false);
 
-  const buttonList: ActionsItem[] = [
-    {
-      label: t('common.claim'),
-      key: 'claim',
-      permission: ['CLUE_MANAGEMENT_POOL:PICK'],
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      popConfirmProps: {
-        loading: claimLoading.value,
-        title: t('clue.claimOverviewTip'),
-        positiveText: t('common.claim'),
-        iconType: 'primary',
-      },
-    },
-    {
-      label: t('common.distribute'),
-      key: 'distribute',
-      permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      popConfirmProps: {
-        loading: distributeLoading.value,
-        title: t('common.distribute'),
-        positiveText: t('common.confirm'),
-        iconType: 'primary',
-      },
-      popSlotContent: 'distributePopContent',
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
-      text: false,
-      ghost: true,
-      danger: true,
-      class: 'n-btn-outline-primary',
-    },
-  ];
+  const buttonList = computed<ActionsItem[]>(() =>
+    (
+      [
+        {
+          label: t('common.claim'),
+          key: 'claim',
+          permission: ['CLUE_MANAGEMENT_POOL:PICK'],
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+          popConfirmProps: {
+            loading: claimLoading.value,
+            title: t('clue.claimOverviewTip'),
+            positiveText: t('common.claim'),
+            iconType: 'primary',
+          },
+        },
+        {
+          label: t('common.distribute'),
+          key: 'distribute',
+          permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
+          text: false,
+          ghost: true,
+          class: 'n-btn-outline-primary',
+          popConfirmProps: {
+            loading: distributeLoading.value,
+            title: t('common.distribute'),
+            positiveText: t('common.confirm'),
+            iconType: 'primary',
+          },
+          popSlotContent: 'distributePopContent',
+        },
+        {
+          label: t('common.delete'),
+          key: 'delete',
+          permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
+          text: false,
+          ghost: true,
+          danger: true,
+          class: 'n-btn-outline-primary',
+        },
+      ] as ActionsItem[]
+    ).filter((item) => !props.detail?.frozen || !['claim', 'distribute'].includes(item.key || ''))
+  );
 
   const distributeFormRef = ref<InstanceType<typeof TransferForm>>();
   const distributeForm = ref<TransferParams>({

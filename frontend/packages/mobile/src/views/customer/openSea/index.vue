@@ -78,6 +78,7 @@
   });
   const actions = [
     {
+      key: 'pick',
       label: t('common.pick'),
       icon: 'iconicon_user_add',
       permission: ['CUSTOMER_MANAGEMENT_POOL:PICK'],
@@ -100,6 +101,7 @@
       },
     },
     {
+      key: 'distribute',
       label: t('common.distribute'),
       icon: 'iconicon_swap',
       permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],

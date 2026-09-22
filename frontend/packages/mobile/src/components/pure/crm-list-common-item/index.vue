@@ -47,7 +47,7 @@
           {{ `${props.resourceType === 'customer' ? t('menu.customer') : t('menu.clue')}${t('common.frozen')}` }}
         </div>
       </div>
-      <div class="freeze-reason">{{ item.freezeReason }}</div>
+      <div class="w-full break-words text-left">{{ item.freezeReason }}</div>
       <div class="flex w-full items-center justify-between text-[12px]">
         <div class="text-[var(--text-n4)]">
           {{ t('common.unfreezeTime') }}
@@ -71,6 +71,7 @@
   const { t } = useI18n();
 
   export interface CrmListCommonItemActionsItem {
+    key?: string;
     label: string;
     icon: string;
     permission: string[];
@@ -117,9 +118,13 @@
   }
 
   const actionList = computed(() => {
-    return props.actions?.filter((e) =>
-      e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission)
-    );
+    return props.actions?.filter((e) => {
+      if (props.item.frozen && ['pick', 'distribute'].includes(e.key || '')) {
+        return false;
+      }
+
+      return e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission);
+    });
   });
 
   const frozenPopupShow = ref(false);
