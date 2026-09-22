@@ -537,7 +537,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
             }
           );
         },
-        reconnect() {
+        reconnect(context) {
           const lastSequence = entry.streamSession.lastSequence;
 
           return options.apis.reconnectAgentChat(
@@ -547,6 +547,7 @@ export default function useAgentChatWorkbench(options: UseAgentChatWorkbenchOpti
               lastSequence,
             },
             {
+              signal: context.signal,
               onSession(sessionId, conversationId) {
                 entry.sessionId = sessionId;
 
