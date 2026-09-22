@@ -138,6 +138,7 @@
 
   const actions = [
     {
+      key: 'pick',
       label: t('common.pick'),
       icon: 'iconicon_user_add',
       permission: ['CLUE_MANAGEMENT_POOL:PICK'],
@@ -146,6 +147,7 @@
       },
     },
     {
+      key: 'distribute',
       label: t('common.distribute'),
       icon: 'iconicon_swap',
       permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],

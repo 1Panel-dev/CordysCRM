@@ -575,29 +575,37 @@
       name: (row: any) => {
         return h(
           'div',
-          { class: 'flex items-center gap-[12px]' },
+          { class: 'flex max-w-full items-center gap-[12px]' },
           {
             default: () => [
-              props.isLimitShowDetail && row.hasPermission === false
-                ? h(CrmNameTooltip, { text: row.name })
-                : h(
-                    CrmTableButton,
-                    {
-                      onClick: () => {
-                        activeCustomerId.value = row.id;
-                        openSea.value = row.poolId ?? openSea.value;
-                        showOverviewDrawer.value = true;
+              h(
+                'div',
+                { class: 'min-w-0 flex-1 overflow-hidden' },
+                props.isLimitShowDetail && row.hasPermission === false
+                  ? h(CrmNameTooltip, { text: row.name })
+                  : h(
+                      CrmTableButton,
+                      {
+                        onClick: () => {
+                          activeCustomerId.value = row.id;
+                          openSea.value = row.poolId ?? openSea.value;
+                          showOverviewDrawer.value = true;
+                        },
                       },
-                    },
-                    { default: () => row.name, trigger: () => row.name }
-                  ),
+                      { default: () => row.name, trigger: () => row.name }
+                    )
+              ),
               row.frozen
-                ? h(CrmFreezeTag, {
-                    resourceType: 'customer',
-                    freezeType: row.unfreezeTime ? 'custom' : 'freezeForever',
-                    unfreezeTime: row.unfreezeTime,
-                    freezeReason: row.freezeReason,
-                  })
+                ? h(
+                    'div',
+                    { class: 'flex-shrink-0' },
+                    h(CrmFreezeTag, {
+                      resourceType: 'customer',
+                      freezeType: row.unfreezeTime ? 'custom' : 'freezeForever',
+                      unfreezeTime: row.unfreezeTime,
+                      freezeReason: row.freezeReason,
+                    })
+                  )
                 : null,
             ],
           }

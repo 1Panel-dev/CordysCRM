@@ -8,7 +8,12 @@
     <template #title>
       <div class="crm-modal-title one-line-text flex items-center">
         {{ props.type === 'freeze' ? t('common.freeze') : t('common.unfreeze') }}
-        <div class="text-[var(--text-n4)]">({{ props.resourceName }})</div>
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <div class="one-line-text text-[var(--text-n4)]">({{ props.resourceName }})</div>
+          </template>
+          {{ props.resourceName }}
+        </n-tooltip>
       </div>
     </template>
     <template v-if="props.type === 'freeze'">
@@ -26,7 +31,14 @@
           v-if="form.freezeType === 'custom'"
           :label="t('common.freezeTime')"
           path="time"
-          :rule="[{ required: true, message: t('common.notNull', { value: t('common.freezeTime') }) }]"
+          :rule="[
+            {
+              required: true,
+              message: t('common.notNull', { value: t('common.freezeTime') }),
+              trigger: 'blur',
+              type: 'number',
+            },
+          ]"
           required
         >
           <n-input-group>
@@ -44,7 +56,9 @@
         <n-form-item
           :label="t('common.freezeReason')"
           path="reason"
-          :rule="[{ required: true, message: t('common.notNull', { value: t('common.freezeReason') }) }]"
+          :rule="[
+            { required: true, message: t('common.notNull', { value: t('common.freezeReason') }), trigger: 'blur' },
+          ]"
           required
         >
           <n-input v-model:value="form.reason" type="textarea" :maxlength="300" show-count clearable />
@@ -66,7 +80,18 @@
 </template>
 
 <script setup lang="ts">
-  import { type FormInst, NAlert, NForm, NFormItem, NInput, NInputGroup, NTabPane, NTabs, useMessage } from 'naive-ui';
+  import {
+    type FormInst,
+    NAlert,
+    NForm,
+    NFormItem,
+    NInput,
+    NInputGroup,
+    NTabPane,
+    NTabs,
+    NTooltip,
+    useMessage,
+  } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -165,6 +190,15 @@
       }
     }
   }
+
+  watch(
+    () => show.value,
+    (val) => {
+      if (!val) {
+        resetForm();
+      }
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>
