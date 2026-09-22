@@ -2021,7 +2021,7 @@
         .filter((i) => i.dataSource && i.formKey === FormDesignKeyEnum.CONTRACT)
         .map((item) => ({
           ...item,
-          value: item.dataSource,
+          value: item.formKey,
         }));
     }
     if (props.formKey === FormDesignKeyEnum.BUSINESS) {
@@ -2029,7 +2029,7 @@
         .filter((i) => i.dataSource && i.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION)
         .map((item) => ({
           ...item,
-          value: item.dataSource,
+          value: item.formKey,
         }));
     }
     if (props.formKey === FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD) {
@@ -2042,7 +2042,7 @@
         )
         .map((item) => ({
           ...item,
-          value: item.dataSource,
+          value: item.formKey,
         }));
     }
     if (props.formKey === FormDesignKeyEnum.CONTRACT) {
@@ -2060,7 +2060,7 @@
         )
         .map((item) => ({
           ...item,
-          value: item.dataSource,
+          value: item.formKey,
         }));
     }
     if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
@@ -2078,7 +2078,7 @@
         )
         .map((item) => ({
           ...item,
-          value: item.dataSource,
+          value: item.formKey,
         }));
     }
     return [];

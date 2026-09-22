@@ -39,3 +39,19 @@ export function getDataSourceFormKey(
 
   return map[dataSourceType as FieldDataSourceTypeEnum] || fallback;
 }
+
+export function getDataSourceType(
+  formKey: FormDesignKeyEnum | undefined | string,
+  map: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>>,
+  fallback?: FieldDataSourceTypeEnum
+) {
+  if (!formKey) {
+    return fallback;
+  }
+
+  return (
+    (Object.entries(map).find(([, mappedFormKey]) => mappedFormKey === formKey)?.[0] as
+      | FieldDataSourceTypeEnum
+      | undefined) || fallback
+  );
+}

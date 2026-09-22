@@ -11,7 +11,7 @@
       :tooltip-position="props.tooltipPosition"
     >
       <template #divider="{ item }">
-        <CrmFormCreateDivider :field-config="item.fieldInfo" class="!m-0 w-full" />
+        <CrmFormCreateDivider v-if="item.fieldInfo" :field-config="item.fieldInfo" class="!m-0 w-full" />
       </template>
       <template #image="{ item }">
         <n-image-group v-if="item.value?.length">
@@ -36,15 +36,15 @@
             {{ item.label }}
           </div>
           <CrmSingleText
-            v-if="editableByPermission.includes(item.fieldInfo.id)"
-            v-model:value="formDetail[item.fieldInfo.id]"
+            v-if="item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)"
+            v-model:value="formDetail[item.fieldInfo?.id]"
             :field-config="{
               ...item.fieldInfo,
               showLabel: false,
             }"
-            :path="item.fieldInfo.id"
+            :path="item.fieldInfo?.id"
             isDescriptionRender
-            :feedback="feedbackMap[item.fieldInfo.id]"
+            :feedback="feedbackMap[item.fieldInfo?.id]"
             needInitDetail
             class="flex-1"
           />
@@ -60,16 +60,16 @@
             {{ item.label }}
           </div>
           <CrmTextarea
-            v-if="editableByPermission.includes(item.fieldInfo.id)"
-            v-model:value="formDetail[item.fieldInfo.id]"
+            v-if="item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)"
+            v-model:value="formDetail[item.fieldInfo?.id]"
             :field-config="{
               ...item.fieldInfo,
               showLabel: false,
             }"
-            :path="item.fieldInfo.id"
+            :path="item.fieldInfo?.id"
             :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
             isDescriptionRender
-            :feedback="feedbackMap[item.fieldInfo.id]"
+            :feedback="feedbackMap[item.fieldInfo?.id]"
             needInitDetail
             class="flex-1"
           />
@@ -173,24 +173,24 @@
           </div>
           <CrmDateTime
             v-if="
-              editableByPermission.includes(item.fieldInfo.id) ||
-              (item.fieldInfo.businessKey === 'expectedEndTime' && !item.fieldInfo.resourceFieldId)
+              (item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)) ||
+              (item.fieldInfo?.businessKey === 'expectedEndTime' && !item.fieldInfo?.resourceFieldId)
             "
-            v-model:value="formDetail[item.fieldInfo.id]"
+            v-model:value="formDetail[item.fieldInfo?.id]"
             :field-config="{
               ...item.fieldInfo,
               showLabel: false,
             }"
-            :path="item.fieldInfo.id"
+            :path="item.fieldInfo?.id"
             :disabled="
-              item.fieldInfo.businessKey === 'expectedEndTime' && !item.fieldInfo.resourceFieldId
-                ? !item.fieldInfo.editable
-                : !editableByPermission.includes(item.fieldInfo.id)
+              item.fieldInfo?.businessKey === 'expectedEndTime' && !item.fieldInfo?.resourceFieldId
+                ? !item.fieldInfo?.editable
+                : !editableByPermission.includes(item.fieldInfo?.id)
             "
             isDescriptionRender
-            :feedback="feedbackMap[item.fieldInfo.id]"
+            :feedback="feedbackMap[item.fieldInfo?.id]"
             needInitDetail
-            @change="editableByPermission.includes(item.fieldInfo.id) ? undefined : handleFormChange()"
+            @change="editableByPermission.includes(item.fieldInfo?.id) ? undefined : handleFormChange()"
           />
           <div v-else>{{ item.value || '-' }}</div>
         </div>
@@ -201,15 +201,15 @@
             {{ item.label }}
           </div>
           <CrmSelect
-            v-if="editableByPermission.includes(item.fieldInfo.id)"
-            v-model:value="formDetail[item.fieldInfo.id]"
+            v-if="item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)"
+            v-model:value="formDetail[item.fieldInfo?.id]"
             :field-config="{
               ...item.fieldInfo,
               showLabel: false,
             }"
-            :path="item.fieldInfo.id"
+            :path="item.fieldInfo?.id"
             isDescriptionRender
-            :feedback="feedbackMap[item.fieldInfo.id]"
+            :feedback="feedbackMap[item.fieldInfo?.id]"
             class="w-[180px]"
             needInitDetail
             @update:value="handleFieldChange(item.fieldInfo, $event)"
@@ -229,15 +229,15 @@
             {{ item.label }}
           </div>
           <CrmInputNumber
-            v-if="editableByPermission.includes(item.fieldInfo.id)"
-            v-model:value="formDetail[item.fieldInfo.id]"
+            v-if="item.fieldInfo && editableByPermission.includes(item.fieldInfo?.id)"
+            v-model:value="formDetail[item.fieldInfo?.id]"
             :field-config="{
               ...item.fieldInfo,
               showLabel: false,
             }"
-            :path="item.fieldInfo.id"
+            :path="item.fieldInfo?.id"
             isDescriptionRender
-            :feedback="feedbackMap[item.fieldInfo.id]"
+            :feedback="feedbackMap[item.fieldInfo?.id]"
             needInitDetail
           />
           <div v-else>{{ isNotEmpty(item.value) ? item.value : '-' }}</div>
@@ -262,9 +262,9 @@
           <CrmSubTable
             :parent-id="item.key || ''"
             :value="item.value as Record<string, any>[] || []"
-            :sub-fields="item.fieldInfo.subFields"
-            :fixed-column="item.fieldInfo.fixedColumn"
-            :sum-columns="item.fieldInfo.sumColumns"
+            :sub-fields="item.fieldInfo?.subFields || []"
+            :fixed-column="item.fieldInfo?.fixedColumn"
+            :sum-columns="item.fieldInfo?.sumColumns"
             :optionMap="item.optionMap"
             readonly
           />
@@ -278,9 +278,9 @@
           <CrmSubTable
             :parent-id="item.key || ''"
             :value="item.value as Record<string, any>[] || []"
-            :sub-fields="item.fieldInfo.subFields"
-            :fixed-column="item.fieldInfo.fixedColumn"
-            :sum-columns="item.fieldInfo.sumColumns"
+            :sub-fields="item.fieldInfo?.subFields || []"
+            :fixed-column="item.fieldInfo?.fixedColumn"
+            :sum-columns="item.fieldInfo?.sumColumns"
             :optionMap="item.optionMap"
             readonly
           />
@@ -292,9 +292,10 @@
             {{ item.label }}
           </div>
           <div class="flex items-center gap-[8px]">
-            {{ item.value || '-' }}
+            {{ item.value || item.fieldInfo?.emptyResultMode }}
             <CrmPopConfirm
-              v-model:show="popShow[item.fieldInfo.id]"
+              v-if="item.fieldInfo"
+              v-model:show="popShow[item.fieldInfo?.id]"
               :title="t('crmFormCreate.reCalculation')"
               icon-type="warning"
               :content="t('crmFormCreate.reCalculationTip')"
@@ -302,7 +303,7 @@
               trigger="click"
               :negative-text="t('common.cancel')"
               placement="bottom-end"
-              @confirm="handleReCalculation(item.fieldInfo.id, item)"
+              @confirm="handleReCalculation(item.fieldInfo?.id, item)"
             >
               <n-button type="warning" quaternary>
                 <template #icon><CrmIcon type="iconicon_error_circle_filled" /></template>
@@ -465,15 +466,17 @@
     return descriptions.value
       .filter(
         (item) =>
-          !props.hiddenFields?.includes(item.fieldInfo.id) &&
-          !hiddenFieldByPermission.value?.includes(item.fieldInfo.id) &&
+          item.fieldInfo &&
+          !props.hiddenFields?.includes(item.fieldInfo?.id) &&
+          !hiddenFieldByPermission.value?.includes(item.fieldInfo?.id) &&
           item.fieldInfo?.show !== false
       )
       .map((item) => {
         // 独占一行
         if (
+          item.fieldInfo &&
           [FieldTypeEnum.TEXTAREA, FieldTypeEnum.DIVIDER, FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(
-            item.fieldInfo.type
+            item.fieldInfo?.type
           )
         ) {
           const extraClass = props.column && props.column > 1 ? '!w-full' : '';
@@ -658,7 +661,7 @@
   };
 
   function canOpenDataSource(item: Description) {
-    const config = dataSourceConfig[item.fieldInfo.dataSourceType as FieldDataSourceTypeEnum];
+    const config = dataSourceConfig[item.fieldInfo?.dataSourceType as FieldDataSourceTypeEnum];
 
     if (!config) return false;
 
@@ -666,18 +669,18 @@
   }
 
   function openDataSource(item: Description, value?: string) {
-    const config = dataSourceConfig[item.fieldInfo.dataSourceType as FieldDataSourceTypeEnum];
+    const config = dataSourceConfig[item.fieldInfo?.dataSourceType as FieldDataSourceTypeEnum];
 
     if (!config) return;
-    const option = item.fieldInfo.initialOptions?.find((i: { id: string; name: string }) => i.name === value);
+    const option = item.fieldInfo?.initialOptions?.find((i: { id: string; name: string }) => i.name === value);
 
-    const id = option?.id ?? formDetail.value[item.fieldInfo.id];
+    const id = option?.id ?? formDetail.value[item.fieldInfo?.id || ''];
     config.open(id);
   }
 
   // 打开链接
   function openLink(item: any) {
-    if (item.fieldInfo.openMode === 'openInCurrent') {
+    if (item.fieldInfo?.openMode === 'openInCurrent') {
       window.location.href = item.value;
     } else {
       window.open(item.value, '_blank');
@@ -700,9 +703,9 @@
         (file: AttachmentInfo) => file.id !== id
       );
     }
-    formDetail.value[activeDescItem.value?.fieldInfo.id] = formDetail.value[activeDescItem.value?.fieldInfo.id].filter(
-      (e: string) => e !== id
-    );
+    formDetail.value[activeDescItem.value?.fieldInfo?.id || ''] = formDetail.value[
+      activeDescItem.value?.fieldInfo?.id || ''
+    ].filter((e: string) => e !== id);
     handleFormChange();
   }
 
@@ -735,8 +738,8 @@
     await initFormConfig();
     await initFormDetail(true);
     descriptions.value.forEach((e) => {
-      if (e.fieldInfo.type === FieldTypeEnum.STATISTIC) {
-        popShow.value[e.fieldInfo.id] = false;
+      if (e.fieldInfo?.type === FieldTypeEnum.STATISTIC) {
+        popShow.value[e.fieldInfo?.id || ''] = false;
       }
     });
     emit('init', collaborationType.value, sourceName.value, detail.value, formConfig.value);
