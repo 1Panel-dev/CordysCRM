@@ -2707,8 +2707,6 @@ public class ModuleFormService {
      * 关联表单和字段。已有合法标签会被保留，缺失的内置标签按枚举顺序补回。</p>
      */
     public void initInternalDetailTabs() {
-        LocaleContextHolder.setLocale(Locale.US);
-
         List<String> internalFormKeys = Arrays.stream(InternalDetailTab.values())
                 .map(InternalDetailTab::getFormKey)
                 .distinct()
