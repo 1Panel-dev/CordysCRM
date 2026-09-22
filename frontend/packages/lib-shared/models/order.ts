@@ -20,6 +20,7 @@ export interface OrderItem {
   id: string;
   name: string;
   approved?: boolean;
+  submitterId?: string;
   contractName: string;
   contractId: string;
   moduleFields: ModuleField[]; // 自定义字段
