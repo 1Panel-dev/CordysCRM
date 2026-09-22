@@ -36,7 +36,7 @@
         </CrmEditableText>
       </div>
     </template>
-    <template v-if="visible">
+    <template v-if="canRenderFormContent">
       <BasicForm
         v-show="activeTab === 'basic'"
         ref="basicFormRef"
@@ -149,6 +149,8 @@
   const unsaved = ref(false);
   const userInteracted = ref(false); // 防止没编辑就弹出提示
   const loading = ref(false);
+  const detailLoaded = ref(false);
+  const canRenderFormContent = computed(() => visible.value && (!props.sourceId || detailLoaded.value));
 
   function markUnsaved() {
     if (!props.readonly && !props.isDetail && userInteracted.value) {
@@ -165,6 +167,7 @@
   function closeDrawer() {
     unsaved.value = false;
     userInteracted.value = false;
+    detailLoaded.value = false;
     visible.value = false;
     form.value = cloneDeep(initForm);
     detailOptionMap.value = {};
@@ -284,6 +287,8 @@
 
   async function getDetail(val: string) {
     try {
+      detailLoaded.value = false;
+      loading.value = true;
       const result = await approvalProcessDetail(val);
 
       detailOptionMap.value = result.optionMap ?? {};
@@ -294,6 +299,7 @@
         basicConfig,
         moreConfig,
       };
+      detailLoaded.value = true;
       editingName.value = result.name;
       nextTick(() => {
         approvalFlowDesignRef.value?.setProcessData(result);
@@ -362,12 +368,14 @@
       if (!val) {
         activeTab.value = 'basic';
         userInteracted.value = false;
+        detailLoaded.value = false;
         return;
       }
 
       if (!props.sourceId) {
         unsaved.value = false;
         userInteracted.value = false;
+        detailLoaded.value = false;
       }
     }
   );
