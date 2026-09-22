@@ -315,6 +315,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
         if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
             Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
             getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+            getResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(getResponse.getId()));
         }
         return getResponse;
     }
@@ -595,6 +596,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
             if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
                 Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
                 response.setFirstApproved(firstNodeApproved.get(response.getId()));
+                response.setSubmitterId(baseService.getApprovingResourceSubmitterId(response.getId()));
             }
         }
         response.setApproved(contract.getApproved());
@@ -662,6 +664,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
 
         List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(ContractListResponse::getId).toList();
         Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        // 提审人仅存在于审批中的合同, 非审批中状态无需查询审批实例, 统一返回空
+        Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
 
         list.forEach(item -> {
             item.setOwnerName(userNameMap.get(item.getOwner()));
@@ -675,6 +679,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
             List<BaseModuleFieldValue> contractFields = resolvefieldValueMap.get(item.getId());
             item.setModuleFields(contractFields);
             item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
+            item.setSubmitterId(submitterIdMap.get(item.getId()));
         });
         return baseService.setCreateAndUpdateUserName(list);
     }

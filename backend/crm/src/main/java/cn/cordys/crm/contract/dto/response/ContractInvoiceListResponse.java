@@ -45,4 +45,7 @@ public class ContractInvoiceListResponse extends ContractInvoice {
 
 	@Schema(description = "审批第一个节点是否通过")
 	private Boolean firstApproved;
+
+	@Schema(description = "提审人ID")
+	private String submitterId;
 }

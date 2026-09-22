@@ -244,6 +244,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
 		if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
 			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
 			response.setFirstApproved(firstNodeApproved.get(response.getId()));
+			response.setSubmitterId(baseService.getApprovingResourceSubmitterId(response.getId()));
 		}
         response.setApproved(opportunityQuotation.getApproved());
         return response;
@@ -291,6 +292,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
 		if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
 			Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
 			response.setFirstApproved(firstNodeApproved.get(response.getId()));
+			response.setSubmitterId(baseService.getApprovingResourceSubmitterId(response.getId()));
 		}
         response.setApproved(opportunityQuotation.getApproved());
         return response;
@@ -754,6 +756,8 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
 		// 审批相关
 		List<String> approvingResourceIds = listData.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(OpportunityQuotationListResponse::getId).toList();
 		Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, organizationId);
+		// 提审人仅存在于审批中的报价单, 非审批中状态无需查询审批实例, 统一返回空
+		Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
         listData.forEach(item -> {
             item.setModuleFields(resolvefieldValueMap.get(item.getId()));
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getCreateUser());
@@ -762,6 +766,7 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
                 item.setDepartmentName(userDeptDTO.getDeptName());
             }
 			item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
+			item.setSubmitterId(submitterIdMap.get(item.getId()));
         });
         return baseService.setCreateAndUpdateUserName(listData);
     }

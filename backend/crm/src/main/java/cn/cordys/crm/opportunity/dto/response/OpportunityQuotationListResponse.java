@@ -72,4 +72,7 @@ public class OpportunityQuotationListResponse {
     @Schema(description = "是否审批通过过")
     private Boolean approved;
 
+	@Schema(description = "提审人ID")
+	private String submitterId;
+
 }
