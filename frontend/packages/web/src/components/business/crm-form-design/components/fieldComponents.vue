@@ -71,7 +71,7 @@
 
   const { t } = useI18n();
 
-  const realAdvancedFields: FormCreateField[] = [];
+  let realAdvancedFields: FormCreateField[] = [];
   if (
     [
       FormDesignKeyEnum.PRICE,
@@ -101,6 +101,19 @@
         realAdvancedFields.push(field);
       }
     });
+  }
+  if (
+    ![
+      FormDesignKeyEnum.CUSTOMER,
+      FormDesignKeyEnum.BUSINESS,
+      FormDesignKeyEnum.CONTRACT,
+      FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
+      FormDesignKeyEnum.CONTRACT_PAYMENT,
+      FormDesignKeyEnum.ORDER,
+      FormDesignKeyEnum.INVOICE,
+    ].includes(props.formKey)
+  ) {
+    realAdvancedFields = realAdvancedFields.filter((field) => field.type !== FieldTypeEnum.STATISTIC);
   }
 
   function getFieldDisable(item: FormCreateField) {
