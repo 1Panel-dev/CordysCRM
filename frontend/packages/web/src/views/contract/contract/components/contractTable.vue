@@ -49,7 +49,7 @@
         @adv-search="handleAdvSearch"
         @keyword-search="searchData"
       />
-      <n-tabs v-model:value="activeShowType" type="segment" size="large" class="show-type-tabs">
+      <n-tabs v-if="!props.hideBoard" v-model:value="activeShowType" type="segment" size="large" class="show-type-tabs">
         <n-tab-pane name="table" class="hidden">
           <template #tab><CrmIcon type="iconicon_list" /></template>
         </n-tab-pane>
@@ -60,7 +60,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.detailTabResourceId"
+        v-if="!props.detailTabResourceId && !props.hideBoard"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.CONTRACT"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -185,7 +185,6 @@
   import { CirculationTypeEnum } from '@lib/shared/enums/opportunityEnum.js';
   import { ProcessStatusEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import useLocale from '@lib/shared/locale/useLocale';
   import { abbreviateNumber, characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { ContractItem } from '@lib/shared/models/contract';
@@ -252,6 +251,7 @@
     detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
+    hideBoard?: boolean;
   }>();
   const emit = defineEmits<{
     (

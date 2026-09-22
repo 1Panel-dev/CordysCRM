@@ -62,7 +62,7 @@
         @keyword-search="searchByKeyword"
       />
       <n-tabs
-        v-if="!props.isCustomerTab && !props.hiddenAdvanceFilter"
+        v-if="!props.isCustomerTab && !props.hiddenAdvanceFilter && !props.hideBoard"
         v-model:value="activeShowType"
         type="segment"
         size="large"
@@ -78,7 +78,7 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.isCustomerTab && !props.hiddenAdvanceFilter && !props.detailTabResourceId"
+        v-if="!props.isCustomerTab && !props.hiddenAdvanceFilter && !props.detailTabResourceId && !props.hideBoard"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.BUSINESS"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -246,6 +246,7 @@
     detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
+    hideBoard?: boolean;
   }>();
   const emit = defineEmits<{
     (

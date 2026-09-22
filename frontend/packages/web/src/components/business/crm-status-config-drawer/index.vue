@@ -201,7 +201,7 @@
                       },
                     ]"
                     class="w-[150px]"
-                    @update-value="() => item.fieldValue === ''"
+                    @update-value="() => (item.fieldValue = null)"
                   />
                   <n-date-picker
                     v-model:value="item.fieldValue"
@@ -617,6 +617,7 @@
                   : tc.fieldValue,
               required: tc.required,
               valueType: tc.valueType,
+              dateDefaultType: tc.dateDefaultType,
             })),
           })),
         })),
@@ -835,7 +836,7 @@
           ].includes(e.type) &&
             !e.resourceFieldId &&
             e.editable) ||
-          (e.type === FieldTypeEnum.INPUT && e.defaultValueType === 'custom')
+          (!e.resourceFieldId && e.type === FieldTypeEnum.INPUT && e.defaultValueType === 'custom')
       )
       .map((e) => ({
         label: e.name,

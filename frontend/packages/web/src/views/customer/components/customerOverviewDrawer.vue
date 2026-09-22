@@ -93,6 +93,7 @@
             is-customer-tab
             :form-key="FormDesignKeyEnum.CUSTOMER_OPPORTUNITY"
             :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+            hideBoard
           />
         </div>
         <div v-if="activeTab === 'collaborator'" class="h-full px-[24px] pt-[24px]">
@@ -121,7 +122,7 @@
         </div>
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
-            <component :is="item.table.component" v-bind="item.table.props" />
+            <component :is="item.table.component" v-bind="item.table.props" hideBoard />
           </div>
         </template>
       </CrmCard>

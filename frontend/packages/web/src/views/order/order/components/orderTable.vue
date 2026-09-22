@@ -61,7 +61,13 @@
         @keyword-search="searchData"
       />
       <n-tabs
-        v-if="!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter && !props.detailTabResourceId"
+        v-if="
+          !props.isContractTab &&
+          !props.isCustomerTab &&
+          !props.hiddenAdvanceFilter &&
+          !props.detailTabResourceId &&
+          !props.hideBoard
+        "
         v-model:value="activeShowType"
         type="segment"
         size="large"
@@ -77,7 +83,13 @@
     </template>
     <template #view>
       <CrmViewSelect
-        v-if="!props.isContractTab && !props.isCustomerTab && !props.hiddenAdvanceFilter && !props.detailTabResourceId"
+        v-if="
+          !props.isContractTab &&
+          !props.isCustomerTab &&
+          !props.hiddenAdvanceFilter &&
+          !props.detailTabResourceId &&
+          !props.hideBoard
+        "
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.ORDER"
         :custom-fields-config-list="customFieldsFilterConfig"
@@ -233,6 +245,7 @@
     detailTabPageFormId?: string;
     tableKey?: string;
     hideOperationColumn?: boolean;
+    hideBoard?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'openContractDrawer', params: { id: string }): void;
