@@ -58,6 +58,7 @@
   import { NScrollbar, NTooltip } from 'naive-ui';
 
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
+  import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
   export interface Description {
     label: string;
@@ -83,6 +84,7 @@
     tagProps?: {
       labelKey?: string;
     };
+    fieldInfo?: FormCreateField;
     [key: string]: any;
   }
 

@@ -702,6 +702,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           label: field.title,
           value: formatInternalFieldValue(field.key, form[field.key]),
           fieldInfo: {
+            ...field,
             name: field.title,
             type: FieldTypeEnum.INPUT,
           },

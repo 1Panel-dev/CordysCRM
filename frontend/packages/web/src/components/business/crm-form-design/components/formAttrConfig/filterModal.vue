@@ -33,6 +33,7 @@
   import {
     getCustomDataSourceName,
     getDataSourceFormKey,
+    getDataSourceType,
     isCustomDataSourceType,
   } from '@/components/business/crm-data-source-select/utils';
   import { dataSourceFilterFormKeyMap } from '@/components/business/crm-form-create/config';
@@ -75,7 +76,9 @@
     cloneDeep(props.fieldConfig[props.combineSearchFieldKey || 'combineSearch']) || cloneDeep(defaultFormModel)
   );
   const dataSourceType = computed(() =>
-    props.isStatistic ? props.fieldConfig.targetFormId : props.fieldConfig.dataSourceType
+    props.isStatistic
+      ? getDataSourceType(props.fieldConfig.targetFormId, dataSourceFilterFormKeyMap)
+      : props.fieldConfig.dataSourceType
   );
   const isCustomForm = computed(() => isCustomDataSourceType(dataSourceType.value));
   const formKey = computed<FormDesignKeyEnum>(
