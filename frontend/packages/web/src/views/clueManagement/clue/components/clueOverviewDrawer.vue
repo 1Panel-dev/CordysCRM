@@ -71,7 +71,7 @@
         </div>
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
-            <component :is="item.table.component" v-bind="item.table.props" />
+            <component :is="item.table.component" v-bind="item.table.props" hideBoard />
           </div>
         </template>
       </CrmCard>
