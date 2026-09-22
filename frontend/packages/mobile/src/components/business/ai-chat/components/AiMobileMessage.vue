@@ -152,6 +152,7 @@
   import AiMobileTextBlock from '../blocks/AiMobileTextBlock.vue';
   import AiMobileThoughtBlock from '../blocks/AiMobileThoughtBlock.vue';
   import AiMobileAttachmentList from './AiMobileAttachmentList.vue';
+  import useAiModelOptions from '../composables/useAiModelOptions';
 
   import { cancelAgentChatFeedback, dislikeAgentChat, likeAgentChat } from '@/api/modules';
 
@@ -162,6 +163,7 @@
 
   const { t } = useI18n();
   const runtime = useAiChatRuntime();
+  const { selectedModel } = useAiModelOptions();
 
   const isUser = computed(() => props.message.role === 'user');
   const renderableParts = computed(() =>
@@ -294,7 +296,7 @@
   }
 
   async function handleRetry() {
-    await runtime.retry(props.message.id);
+    await runtime.retry(props.message.id, { model: selectedModel.value ?? undefined });
   }
 
   async function handleLikeMessage() {

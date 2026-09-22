@@ -2,7 +2,7 @@ import { computed, markRaw, ref, shallowRef, watch } from 'vue';
 
 import type { AgentChatConfirmData, AgentChatConfirmRequest } from '@lib/shared/models/ai';
 
-import type { AiChatAttachment, AiChatMessage, AiChatMeta, AiChatSubmitPayload } from '../types';
+import type { AiChatAttachment, AiChatMessage, AiChatMeta, AiChatSendOptions, AiChatSubmitPayload } from '../types';
 import type { AiChatRuntime, CreateAiChatRuntimeOptions } from './types';
 import { getAiChatMessageText } from '../utils/message';
 import { Chat } from '@ai-sdk/vue';
@@ -290,14 +290,17 @@ export default function createAiChatRuntime(options: CreateAiChatRuntimeOptions 
     await chat.value.resumeStream();
   }
 
-  async function retry(messageId?: string): Promise<void> {
+  async function retry(messageId?: string, retryOptions: AiChatSendOptions = {}): Promise<void> {
     if (loading.value) {
       return;
     }
 
+    const metadata = getRetryMetadata(messageId);
+
     await chat.value.regenerate({
       messageId,
-      metadata: getRetryMetadata(messageId),
+      // 历史消息没有保存模型元数据时，使用界面当前选择的模型；内存消息仍优先沿用原模型。
+      metadata: retryOptions.model && !metadata?.model ? { ...metadata, model: retryOptions.model } : metadata,
     });
   }
 
