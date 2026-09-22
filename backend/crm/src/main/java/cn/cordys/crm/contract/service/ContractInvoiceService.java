@@ -436,6 +436,7 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
             Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
             getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+            getResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(getResponse.getId()));
         }
         getResponse.setApproved(contractInvoice.getApproved());
         return getResponse;
@@ -460,6 +461,7 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
                 Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
                 getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+                getResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(getResponse.getId()));
             }
             getResponse.setApproved(contractInvoice.getApproved());
             return getResponse;
@@ -496,6 +498,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
 
         List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(ContractInvoiceListResponse::getId).toList();
         Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        // 提审人仅存在于审批中的发票, 非审批中状态无需查询审批实例, 统一返回空
+        Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
 
         list.forEach(item -> {
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getOwner());
@@ -511,6 +515,7 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             List<BaseModuleFieldValue> invoiceFields = resolvefieldValueMap.get(item.getId());
             item.setModuleFields(invoiceFields);
             item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
+            item.setSubmitterId(submitterIdMap.get(item.getId()));
         });
         return baseService.setCreateUpdateOwnerUserName(list);
     }

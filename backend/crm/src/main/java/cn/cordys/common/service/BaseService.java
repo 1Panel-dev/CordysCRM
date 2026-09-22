@@ -743,6 +743,36 @@ public class BaseService {
 		return firstNodeApproved;
 	}
 
+	/**
+	 * 获取审批中的业务资源对应的提审人
+	 * <p>
+	 * 仅审批中(APPROVING)的资源存在进行中的审批实例, 没有实例的资源不会出现在结果中。
+	 *
+	 * @param resourceIds 资源ID集合
+	 * @return 资源ID -> 提审人ID
+	 */
+	public Map<String, String> getApprovingResourceSubmitterIds(List<String> resourceIds) {
+		if (CollectionUtils.isEmpty(resourceIds)) {
+			return Map.of();
+		}
+		return approvalInstanceService.getLatestInstances(resourceIds).stream()
+				.filter(instance -> StringUtils.isNotBlank(instance.getSubmitterId()))
+				.collect(Collectors.toMap(ApprovalInstance::getResourceId, ApprovalInstance::getSubmitterId));
+	}
+
+	/**
+	 * 获取审批中业务资源的提审人, 详情场景使用
+	 *
+	 * @param resourceId 资源ID
+	 * @return 提审人ID, 无进行中的审批实例时返回 null
+	 */
+	public String getApprovingResourceSubmitterId(String resourceId) {
+		if (StringUtils.isBlank(resourceId)) {
+			return null;
+		}
+		return getApprovingResourceSubmitterIds(List.of(resourceId)).get(resourceId);
+	}
+
 
 	/**
 	 * 当前节点是否第一个审批节点

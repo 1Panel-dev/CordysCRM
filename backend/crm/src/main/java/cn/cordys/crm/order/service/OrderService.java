@@ -309,6 +309,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         if (Strings.CI.equals(getResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
             Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(getResponse.getId()), orgId);
             getResponse.setFirstApproved(firstNodeApproved.get(getResponse.getId()));
+            getResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(getResponse.getId()));
         }
         return getResponse;
     }
@@ -583,6 +584,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
                 Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(response.getId()), orgId);
                 response.setFirstApproved(firstNodeApproved.get(response.getId()));
+                response.setSubmitterId(baseService.getApprovingResourceSubmitterId(response.getId()));
             }
         }
         response.setApproved(order.getApproved());
@@ -818,6 +820,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
         List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(OrderListResponse::getId).toList();
         Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        // 提审人仅存在于审批中的订单, 非审批中状态无需查询审批实例, 统一返回空
+        Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
 
         list.forEach(item -> {
             UserDeptDTO userDeptDTO = userDeptMap.get(item.getOwner());
@@ -830,6 +834,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             List<BaseModuleFieldValue> orderFields = resolvefieldValueMap.get(item.getId());
             item.setModuleFields(orderFields);
             item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
+            item.setSubmitterId(submitterIdMap.get(item.getId()));
         });
         return baseService.setCreateUpdateOwnerUserName(list);
     }

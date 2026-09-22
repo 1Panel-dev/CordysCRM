@@ -155,12 +155,15 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         CustomFormDataFieldService.setFormKey(formId);
         List<String> approvingResourceIds = list.stream().filter(item -> Strings.CI.contains(item.getApprovalStatus(), ApprovalStatus.APPROVING.name())).map(CustomFormDataListResponse::getId).toList();
         Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        // 提审人仅存在于审批中的表单数据, 非审批中状态无需查询审批实例, 统一返回空
+        Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
         try {
             list = buildList(list, formId, orgId);
             Map<String, List<OptionDTO>> optionMap = buildOptionMap(formId, orgId, list);
             list.forEach(item -> {
                 item.setIsAdmin(isAdminUser(dataScope, userId, item.getOwner()));
                 item.setFirstApproved(firstNodeApprovedMap.get(item.getId()));
+                item.setSubmitterId(submitterIdMap.get(item.getId()));
             });
             return PageUtils.setPageInfoWithOption(page, list, optionMap);
         } finally {
@@ -257,6 +260,7 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         if (Strings.CI.equals(resp.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
             Map<String, Boolean> firstNodeApproved = baseService.getApprovingResourceFirstNodeApproved(List.of(resp.getId()), orgId);
             resp.setFirstApproved(firstNodeApproved.get(resp.getId()));
+            resp.setSubmitterId(baseService.getApprovingResourceSubmitterId(resp.getId()));
         }
 
         return resp;
