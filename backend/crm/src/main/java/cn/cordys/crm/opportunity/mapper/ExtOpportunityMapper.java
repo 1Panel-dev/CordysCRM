@@ -3,6 +3,7 @@ package cn.cordys.crm.opportunity.mapper;
 
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import cn.cordys.crm.opportunity.domain.Opportunity;
@@ -21,7 +22,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 
-public interface ExtOpportunityMapper {
+public interface ExtOpportunityMapper extends StatisticSqlMapper {
 
 
     List<OpportunityListResponse> list(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId,

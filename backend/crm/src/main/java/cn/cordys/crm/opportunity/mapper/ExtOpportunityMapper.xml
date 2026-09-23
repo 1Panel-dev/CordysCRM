@@ -1073,4 +1073,60 @@
             id = #{opportunity.id}
         </where>
     </update>
+
+    <!--
+        统计字段聚合: 本表作为统计目标, 把关联到某条宿主记录的 N 行数据按统计类型聚合。
+
+        与列表页共用同一套条件片段(fieldConditionJoin + combine), 所以统计范围条件的物理含义
+        与列表页高级搜索完全一致 —— 同名条件在本表上落到哪个列由本文件的 condition 片段决定,
+        统计字段不再自己猜一套。别名也必须跟列表页一致用 combine_<i>:
+        CommonMapper.condition 的工商信息分支写死了 combine_0, 换前缀那一支就解析不了。
+
+        谓词只锚在主表别名上, 组织隔离口径与列表页相同。
+    -->
+    <select id="selectStatisticAggregate" resultType="java.math.BigDecimal">
+        select
+        <include refid="cn.cordys.common.mapper.CommonMapper.statisticAggregateHead">
+            <property name="mainTableAlias" value="o"/>
+        </include>
+        from opportunity o
+        <include refid="cn.cordys.common.mapper.CommonMapper.statisticRelationJoin">
+            <property name="mainTableAlias" value="o"/>
+            <property name="valueFieldTable" value="opportunity_field"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.scopeCondition.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where o.organization_id = #{request.orgId}
+        <if test="request.relatedBusinessKey != null and request.relatedBusinessKey != ''">
+            and o.`${request.relatedBusinessKey}` = #{request.dataId}
+        </if>
+        <include refid="combine">
+            <property name="combineSearch" value="request.scopeCondition"/>
+        </include>
+    </select>
+
+    <!--
+        统计字段「更新范围」的游标分页: 宿主就是本表, 条件就是本表的高级搜索结构,
+        复用列表页同一套条件片段, 保证「刷新时算的行」与「列表页看到的行」口径一致。
+
+        刻意不加列表页的业务谓词(共享池、协作人等): 更新范围只描述「哪些存量数据要算」,
+        带上业务谓词会让统计结果取决于用户是从哪个入口进的列表页。
+    -->
+    <select id="selectStatisticHostDataIds" resultType="java.lang.String">
+        select o.id
+        from opportunity o
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.scopeCondition.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        where o.organization_id = #{request.orgId}
+        <include refid="combine">
+            <property name="combineSearch" value="request.scopeCondition"/>
+        </include>
+        <include refid="cn.cordys.common.mapper.CommonMapper.statisticCursorPage">
+            <property name="mainTableAlias" value="o"/>
+        </include>
+    </select>
 </mapper>

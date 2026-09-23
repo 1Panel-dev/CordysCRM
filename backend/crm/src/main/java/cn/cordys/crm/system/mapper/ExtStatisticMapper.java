@@ -1,25 +1,26 @@
 package cn.cordys.crm.system.mapper;
 
-import cn.cordys.common.dto.condition.FilterDBCondition;
 import cn.cordys.crm.system.dto.StatisticFieldSourceDTO;
 import org.apache.ibatis.annotations.Param;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
 /**
- * 统计字段刷新用的通用 SQL。
+ * 统计字段刷新用的通用 SQL: 字段配置反查 + 字段值读写。
  *
- * <p>统计字段的本质是「跨表单聚合」: 宿主表单的每条数据, 都要去目标表单里按关联字段捞一批数据做
- * SUM/COUNT/AVG。这套动作对每个模块都是一样的, 区别只有物理表名, 所以这里用动态表名实现,
- * 不再按模块复制十几份 SQL。</p>
+ * <p>这里只放「与表单无关」的语句 —— 表名、列名全是调用方传进来的参数, 不依赖任何一张表单的字段定义。
+ * 曾经的筛选与聚合也在这里, 用一套动态表名的通用片段渲染所有表单; 那个前提是错的:
+ * 同一个条件名在不同表单上落到哪个列只有那张表单的 Mapper 知道
+ * (「products」在线索/商机上是主表上的 JSON 数组列, 在价格上是子表, 而「departmentId」在每个表单上
+ * 都要 join 不同的表), 一套渲染必然有一部分表单算错, 而且是静默算错。</p>
+ *
+ * <p>聚合语句现在按表单下放到各资源 Mapper, 复用各表单列表页已有的 condition / fieldConditionJoin /
+ * combine 片段; 公用的部分在 {@code CommonMapper} 里。分发入口是
+ * {@code StatisticSqlMapperRegistry}, 接口是 {@code cn.cordys.common.statistic.StatisticSqlMapper}。</p>
  *
  * <p>表名全部来自 {@code FieldSourceType#getTableName()}:
  * 数据表 {@code <table>}、自定义字段表 {@code <table>_field}、大字段表 {@code <table>_field_blob}。</p>
- *
- * <p>筛选条件复用 {@code CommonMapper} 里已有的 {@code condition / moduleFieldCondition /
- * refFieldConditionJoin / searchMode} 片段, 保证统计口径与列表页的高级搜索完全一致。</p>
  *
  * @author song-cc-rock
  */
@@ -45,75 +46,6 @@ public interface ExtStatisticMapper {
     List<StatisticFieldSourceDTO> selectStatisticFields(@Param("orgId") String orgId,
                                                         @Param("fieldType") String fieldType,
                                                         @Param("hostFormKeys") Collection<String> hostFormKeys);
-
-    /**
-     * 游标分页查询宿主表单的数据ID (按主键升序)。
-     *
-     * <p>用游标而不是 offset: 表单数据量大时 offset 分页在大偏移下会越翻越慢,
-     * 游标分页每页都是主键索引上的一次范围扫描。</p>
-     *
-     * @param dataTable      宿主表单数据表名
-     * @param fieldTable     宿主表单自定义字段表名
-     * @param fieldBlobTable 宿主表单大字段表名
-     * @param orgId          组织ID
-     * @param lastId         上一页最后一条ID, 首页传空
-     * @param limit          每页条数
-     * @param conditions     更新范围的筛选条件(高级搜索结构), 为空表示不筛选
-     * @param searchMode     筛选条件之间的连接方式: AND / OR
-     *
-     * @return 数据ID集合
-     */
-    List<String> selectDataIdsByCursor(@Param("dataTable") String dataTable,
-                                       @Param("fieldTable") String fieldTable,
-                                       @Param("fieldBlobTable") String fieldBlobTable,
-                                       @Param("orgId") String orgId,
-                                       @Param("lastId") String lastId,
-                                       @Param("limit") int limit,
-                                       @Param("conditions") List<FilterDBCondition> conditions,
-                                       @Param("searchMode") String searchMode);
-
-    /**
-     * 聚合目标表单中关联到指定记录的数据。
-     *
-     * <p>关联字段和被统计字段各有两种存法, 二选一, 都由调用方判定后传参:</p>
-     * <ul>
-     *   <li>业务字段(定义在主表上的标准字段): 值在目标表单主表的列上, 字段值表里没有它的行。
-     *       关联值传 {@code relatedBusinessKey}, 被统计值传 {@code statisticBusinessKey};</li>
-     *   <li>自定义字段: 值在字段值表里, 关联值传 {@code relatedFieldId}, 被统计值传 {@code statisticFieldId}。</li>
-     * </ul>
-     *
-     * <p>两者都是业务字段时整条语句不会碰字段值表 —— 这是统计字段最常见的配置
-     * (例如「合同的客户」关联 + 「合同总金额」求和), 也是它最便宜的执行路径。</p>
-     *
-     * @param targetTable          目标表单数据表名, 关联字段、被统计字段与组织隔离都在这张表上
-     * @param fieldTable           目标表单自定义字段表名, 关联字段或被统计字段为自定义字段时才用到
-     * @param fieldBlobTable       目标表单大字段表名
-     * @param orgId                组织ID
-     * @param relatedFieldId       目标表单中指向宿主表单的数据源字段ID, 关联字段是业务字段时传空
-     * @param relatedBusinessKey   关联字段在主表上的列名, 自定义关联字段时传空
-     * @param statisticFieldId     被统计的自定义字段ID(数值/计算/统计字段), COUNT 或业务字段时传空
-     * @param statisticBusinessKey 被统计的业务字段在主表上的列名, 自定义字段时传空
-     * @param dataId               宿主表单的数据ID, 即关联字段要等于的值
-     * @param statisticType        SUM / COUNT / AVG
-     * @param avgSkipEmpty         AVG 时空值是否跳过: true 不计入分母, false 当 0 计入
-     * @param conditions           统计范围筛选条件(数据源字段的字段对字段比较结构), 为空表示不筛选
-     * @param searchMode           筛选条件之间的连接方式: AND / OR
-     *
-     * @return 聚合结果, 没有命中数据时 SUM/AVG 返回 null, COUNT 返回 0
-     */
-    BigDecimal selectAggregate(@Param("targetTable") String targetTable,
-                               @Param("fieldTable") String fieldTable,
-                               @Param("fieldBlobTable") String fieldBlobTable,
-                               @Param("orgId") String orgId,
-                               @Param("relatedFieldId") String relatedFieldId,
-                               @Param("relatedBusinessKey") String relatedBusinessKey,
-                               @Param("statisticFieldId") String statisticFieldId,
-                               @Param("statisticBusinessKey") String statisticBusinessKey,
-                               @Param("dataId") String dataId,
-                               @Param("statisticType") String statisticType,
-                               @Param("avgSkipEmpty") boolean avgSkipEmpty,
-                               @Param("conditions") List<FilterDBCondition> conditions,
-                               @Param("searchMode") String searchMode);
 
     /**
      * 查询目标表单某条数据在「主表列」上的值, 用于业务字段。

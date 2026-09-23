@@ -1,6 +1,7 @@
 package cn.cordys.crm.contract.mapper;
 
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.contract.domain.ContractInvoice;
 import cn.cordys.crm.contract.dto.request.ContractInvoicePageRequest;
 import cn.cordys.crm.contract.dto.response.ContractInvoiceGetResponse;
@@ -10,7 +11,7 @@ import org.apache.ibatis.annotations.Param;
 import java.math.BigDecimal;
 import java.util.List;
 
-public interface ExtContractInvoiceMapper {
+public interface ExtContractInvoiceMapper extends StatisticSqlMapper {
 
 
     List<ContractInvoiceListResponse> list(@Param("request") ContractInvoicePageRequest request, @Param("orgId") String orgId,

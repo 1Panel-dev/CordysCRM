@@ -1,6 +1,7 @@
 package cn.cordys.crm.follow.mapper;
 
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.customer.dto.request.CustomerMergeRequest;
 import cn.cordys.crm.follow.domain.FollowUpPlan;
 import cn.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
@@ -11,7 +12,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface ExtFollowUpPlanMapper {
+public interface ExtFollowUpPlanMapper extends StatisticSqlMapper {
 
     int updateCommentCount(@Param("id") String id, @Param("orgId") String orgId, @Param("commentCount") long commentCount);
 

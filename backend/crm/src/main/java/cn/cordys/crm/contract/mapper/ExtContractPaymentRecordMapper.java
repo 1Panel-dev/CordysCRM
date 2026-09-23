@@ -1,6 +1,7 @@
 package cn.cordys.crm.contract.mapper;
 
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.contract.domain.ContractPaymentRecord;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordStatisticRequest;
@@ -14,7 +15,7 @@ import java.util.List;
 /**
  * @author song-cc-rock
  */
-public interface ExtContractPaymentRecordMapper {
+public interface ExtContractPaymentRecordMapper extends StatisticSqlMapper {
 
     /**
      * 合同回款记录列表

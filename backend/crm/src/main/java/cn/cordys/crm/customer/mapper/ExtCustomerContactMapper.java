@@ -2,6 +2,7 @@ package cn.cordys.crm.customer.mapper;
 
 import cn.cordys.common.dto.*;
 import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.customer.domain.CustomerContact;
 import cn.cordys.crm.customer.dto.request.ContactUniqueRequest;
 import cn.cordys.crm.customer.dto.request.CustomerContactPageRequest;
@@ -18,7 +19,7 @@ import java.util.List;
  * @author jianxing
  * @date 2025-02-24 11:06:10
  */
-public interface ExtCustomerContactMapper {
+public interface ExtCustomerContactMapper extends StatisticSqlMapper {
 
     List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
                                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
