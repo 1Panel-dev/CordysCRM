@@ -35,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -185,6 +186,23 @@ public class PoolClueControllerTests extends BaseTest {
         pickRequest.setPoolId(testPoolId);
         MvcResult result = this.requestPost(PICK, pickRequest).andExpect(status().is5xxServerError()).andReturn();
         Assertions.assertTrue(result.getResponse().getContentAsString().contains(Translator.getWithArgs("pool.resource.frozen", frozenClue.getName())));
+
+        Clue anotherFrozenClue = createClue();
+        anotherFrozenClue.setName("another-frozen-clue");
+        anotherFrozenClue.setFrozen(true);
+        anotherFrozenClue.setFreezeReason("暂停联系");
+        clueMapper.insert(anotherFrozenClue);
+        PoolBatchAssignRequest batchAssignRequest = new PoolBatchAssignRequest();
+        batchAssignRequest.setBatchIds(List.of(frozenClue.getId(), anotherFrozenClue.getId()));
+        batchAssignRequest.setAssignUserId("cc");
+        MvcResult batchResult = this.requestPost(BATCH_ASSIGN, batchAssignRequest)
+                .andExpect(status().isBadRequest()).andReturn();
+        Map<?, ?> messageDetail = (Map<?, ?>) parseResponse(batchResult).get("messageDetail");
+        Assertions.assertEquals(2, messageDetail.size());
+        Assertions.assertEquals(Translator.getWithArgs("pool.resource.frozen", frozenClue.getName()),
+                messageDetail.get(frozenClue.getId()));
+        Assertions.assertEquals(Translator.getWithArgs("pool.resource.frozen", anotherFrozenClue.getName()),
+                messageDetail.get(anotherFrozenClue.getId()));
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_FREEZE, FREEZE, freezeRequest);
 
         PoolUnfreezeRequest unfreezeRequest = new PoolUnfreezeRequest();

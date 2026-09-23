@@ -13,6 +13,11 @@ public class GenericException extends RuntimeException {
     protected IResultCode errorCode;
 
     /**
+     * 结构化错误详情。
+     */
+    protected Object messageDetail;
+
+    /**
      * 构造方法，接受错误信息。
      *
      * @param message 错误信息
@@ -72,6 +77,17 @@ public class GenericException extends RuntimeException {
     }
 
     /**
+     * 构造方法，接受错误代码和结构化错误详情。
+     *
+     * @param errorCode     错误代码
+     * @param messageDetail 结构化错误详情
+     */
+    public GenericException(IResultCode errorCode, Object messageDetail) {
+        this(errorCode);
+        this.messageDetail = messageDetail;
+    }
+
+    /**
      * 构造方法，接受自定义错误信息和异常对象。
      *
      * @param message 错误信息
@@ -88,6 +104,15 @@ public class GenericException extends RuntimeException {
      */
     public IResultCode getErrorCode() {
         return errorCode;
+    }
+
+    /**
+     * 获取结构化错误详情。
+     *
+     * @return 错误详情
+     */
+    public Object getMessageDetail() {
+        return messageDetail;
     }
 
     /**

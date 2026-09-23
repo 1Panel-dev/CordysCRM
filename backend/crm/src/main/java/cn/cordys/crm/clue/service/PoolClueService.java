@@ -13,6 +13,7 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
@@ -269,7 +270,7 @@ public class PoolClueService {
      * @param currentOrgId 当前组织ID
      */
     public void batchPick(PoolBatchPickRequest request, String currentUser, String currentOrgId) {
-        request.getBatchIds().forEach(this::validateNotFrozen);
+        validateBatchNotFrozen(request.getBatchIds());
         CluePool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
         LambdaQueryWrapper<CluePoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
@@ -291,7 +292,7 @@ public class PoolClueService {
      * @param currentOrgId 当前组织ID
      */
     public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId, String currentUser) {
-        request.getBatchIds().forEach(this::validateNotFrozen);
+        validateBatchNotFrozen(request.getBatchIds());
         validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
         request.getBatchIds().forEach(id -> ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
     }
@@ -528,6 +529,30 @@ public class PoolClueService {
             throw new GenericException(Translator.getWithArgs("pool.resource.frozen", clue.getName()));
         }
         unfreezeExpired(clue, now);
+    }
+
+    private void validateBatchNotFrozen(List<String> ids) {
+        Map<String, Clue> clueMap = clueMapper.selectByIds(ids).stream()
+                .collect(Collectors.toMap(Clue::getId, Function.identity()));
+        for (String id : ids) {
+            if (!clueMap.containsKey(id)) {
+                throw new IllegalArgumentException(Translator.get("clue.not.exist"));
+            }
+        }
+
+        long now = System.currentTimeMillis();
+        Map<String, String> messageDetail = new LinkedHashMap<>();
+        ids.forEach(id -> {
+            Clue clue = clueMap.get(id);
+            if (isFrozen(clue, now)) {
+                messageDetail.put(id, Translator.getWithArgs("pool.resource.frozen", clue.getName()));
+            } else {
+                unfreezeExpired(clue, now);
+            }
+        });
+        if (!messageDetail.isEmpty()) {
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, messageDetail);
+        }
     }
 
     private boolean isFrozen(Clue clue, long now) {

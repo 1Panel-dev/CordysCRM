@@ -121,6 +121,7 @@ public class RestControllerExceptionHandler {
         int code = errorCode.getCode();
         String message = errorCode.getMessage();
         message = Translator.get(message, message);
+        Object messageDetail = e.getMessageDetail() == null ? e.getMessage() : e.getMessageDetail();
 
         if (errorCode instanceof CrmHttpResultCode) {
             // 如果是 CrmHttpResultCode 类型，使用其状态码的后三位作为 HTTP 状态码
@@ -128,11 +129,11 @@ public class RestControllerExceptionHandler {
                 message = getNotFoundMessage(message);
             }
             return ResponseEntity.status(code % 1000)
-                    .body(ResultHolder.error(code, message, e.getMessage()));
+                    .body(ResultHolder.error(code, message, messageDetail));
         } else {
             // 其他类型的错误，返回 500 状态码
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ResultHolder.error(code, Translator.get(message, message), e.getMessage()));
+                    .body(ResultHolder.error(code, Translator.get(message, message), messageDetail));
         }
     }
 
