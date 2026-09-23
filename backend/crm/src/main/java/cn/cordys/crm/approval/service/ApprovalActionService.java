@@ -351,12 +351,16 @@ public class ApprovalActionService {
 	private void appendBackTasks(ApprovalReturnBackRequest backRequest, String userId, String currentOrgId) {
 		ApprovalInstance instance = approvalInstanceMapper.selectByPrimaryKey(backRequest.getInstanceId());
 		String returnToNodeId = backRequest.getReturnToFlowNodeId();
+		ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(returnToNodeId);
+		if (approvalNodeApprover != null && Strings.CI.equalsAny(approvalNodeApprover.getApprovalType(),
+				ApprovalTypeEnum.AUTO_PASS.name(), ApprovalTypeEnum.AUTO_REJECT.name())) {
+			throw new GenericException(Translator.get("no.back.auto.approval"));
+		}
 		if (StringUtils.isNotBlank(backRequest.getReturnToTaskId())) {
 			appendBackSignTasks(backRequest, instance, userId, currentOrgId);
 			return;
 		}
 		List<String> approvers = approvalFlowService.getCurrentNodeApproverList(instance, returnToNodeId, currentOrgId);
-		ApprovalNodeApprover approvalNodeApprover = approvalNodeApproverMapper.selectByPrimaryKey(returnToNodeId);
 		List<ApprovalTask> approvalTasks = getNodeApproverTasks(returnToNodeId, approvers, null,
 				SameSubmitterActionEnum.valueOf(approvalNodeApprover.getSameSubmitterAction()), MultiApproverModeEnum.valueOf(approvalNodeApprover.getMultiApproverMode()),
 				instance, userId, ApprovalTaskType.NL.name(), currentOrgId);
