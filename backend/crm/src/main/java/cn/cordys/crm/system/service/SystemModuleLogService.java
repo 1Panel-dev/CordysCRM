@@ -181,19 +181,19 @@ public class SystemModuleLogService extends BaseModuleLogService {
                             String dateDefaultType = "";
                             for (CirculationFieldValue fieldValue : circulationFieldValues) {
                                 BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldValue.getFieldId())).findFirst().orElse(null);
-                                if (Strings.CI.equals(baseField.getType(), FieldType.DATE_TIME.name())) {
-                                    switch (fieldValue.getDateDefaultType()) {
-                                        case "custom":
-                                            dateDefaultType = Translator.get("CUSTOM");
-                                            break;
-                                        case "current":
-                                            dateDefaultType = Translator.get("CURRENT");
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
                                 if (baseField != null) {
+                                    if (Strings.CI.equals(baseField.getType(), FieldType.DATE_TIME.name())) {
+                                        switch (fieldValue.getDateDefaultType()) {
+                                            case "custom":
+                                                dateDefaultType = Translator.get("CUSTOM");
+                                                break;
+                                            case "current":
+                                                dateDefaultType = Translator.get("CURRENT");
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    }
                                     String s = baseField.getName() + "|" +
                                             Translator.get(fieldValue.getValueType()) + "|" + dateDefaultType +
                                             ((Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) && (fieldValue.getFieldValue() != null)) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "|" +
