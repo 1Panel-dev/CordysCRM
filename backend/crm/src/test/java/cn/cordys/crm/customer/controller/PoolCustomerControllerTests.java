@@ -40,6 +40,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -224,6 +225,23 @@ public class PoolCustomerControllerTests extends BaseTest {
         pickRequest.setPoolId(testPoolId);
         MvcResult result = this.requestPost(PICK, pickRequest).andExpect(status().is5xxServerError()).andReturn();
         Assertions.assertTrue(result.getResponse().getContentAsString().contains(Translator.getWithArgs("pool.resource.frozen", frozenCustomer.getName())));
+
+        Customer anotherFrozenCustomer = createCustomer();
+        anotherFrozenCustomer.setName("another-frozen-customer");
+        anotherFrozenCustomer.setFrozen(true);
+        anotherFrozenCustomer.setFreezeReason("暂停联系");
+        customerMapper.insert(anotherFrozenCustomer);
+        PoolBatchPickRequest batchPickRequest = new PoolBatchPickRequest();
+        batchPickRequest.setBatchIds(List.of(frozenCustomer.getId(), anotherFrozenCustomer.getId()));
+        batchPickRequest.setPoolId(testPoolId);
+        MvcResult batchResult = this.requestPost(BATCH_PICK, batchPickRequest)
+                .andExpect(status().isBadRequest()).andReturn();
+        Map<?, ?> messageDetail = (Map<?, ?>) parseResponse(batchResult).get("messageDetail");
+        Assertions.assertEquals(2, messageDetail.size());
+        Assertions.assertEquals(Translator.getWithArgs("pool.resource.frozen", frozenCustomer.getName()),
+                messageDetail.get(frozenCustomer.getId()));
+        Assertions.assertEquals(Translator.getWithArgs("pool.resource.frozen", anotherFrozenCustomer.getName()),
+                messageDetail.get(anotherFrozenCustomer.getId()));
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_FREEZE, FREEZE, freezeRequest);
 
         PoolUnfreezeRequest unfreezeRequest = new PoolUnfreezeRequest();

@@ -16,6 +16,7 @@ import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.chart.ChartResult;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.mapper.CommonMapper;
+import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.utils.EnumUtils;
@@ -285,7 +286,7 @@ public class PoolCustomerService {
      * @param currentOrgId 当前组织ID
      */
     public void batchPick(PoolBatchPickRequest request, String currentUser, String currentOrgId) {
-        request.getBatchIds().forEach(this::validateNotFrozen);
+        validateBatchNotFrozen(request.getBatchIds());
         CustomerPool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
         validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
         var pickRuleWrapper = new LambdaQueryWrapper<CustomerPoolPickRule>();
@@ -307,7 +308,7 @@ public class PoolCustomerService {
      * @param currentOrgId 当前组织ID
      */
     public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId, String currentUser) {
-        request.getBatchIds().forEach(this::validateNotFrozen);
+        validateBatchNotFrozen(request.getBatchIds());
         validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
         request.getBatchIds().forEach(id -> ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
     }
@@ -579,6 +580,30 @@ public class PoolCustomerService {
             throw new GenericException(Translator.getWithArgs("pool.resource.frozen", customer.getName()));
         }
         unfreezeExpired(customer, now);
+    }
+
+    private void validateBatchNotFrozen(List<String> ids) {
+        Map<String, Customer> customerMap = customerMapper.selectByIds(ids).stream()
+                .collect(Collectors.toMap(Customer::getId, Function.identity()));
+        for (String id : ids) {
+            if (!customerMap.containsKey(id)) {
+                throw new IllegalArgumentException(Translator.get("customer.not.exist"));
+            }
+        }
+
+        long now = System.currentTimeMillis();
+        Map<String, String> messageDetail = new LinkedHashMap<>();
+        ids.forEach(id -> {
+            Customer customer = customerMap.get(id);
+            if (isFrozen(customer, now)) {
+                messageDetail.put(id, Translator.getWithArgs("pool.resource.frozen", customer.getName()));
+            } else {
+                unfreezeExpired(customer, now);
+            }
+        });
+        if (!messageDetail.isEmpty()) {
+            throw new GenericException(CrmHttpResultCode.VALIDATE_FAILED, messageDetail);
+        }
     }
 
     private boolean isFrozen(Customer customer, long now) {
