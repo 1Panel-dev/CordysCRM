@@ -2,7 +2,7 @@
   <CrmDrawer v-model:show="show" :title="t('workbench.dataOverview.myTasks')" :width="1200" :footer="false" no-padding>
     <div class="task-wrapper">
       <div class="task-class">
-        <div class="p-[24px]">
+        <n-scrollbar class="p-[24px]">
           <n-collapse class="pl-[16px]" :default-expanded-names="[props.type || 'pending']">
             <n-collapse-item
               v-for="item in collapseItems"
@@ -34,7 +34,7 @@
               </template>
             </n-collapse-item>
           </n-collapse>
-        </div>
+        </n-scrollbar>
       </div>
       <div class="task-content p-[24px]">
         <div class="mb-[16px] flex w-full items-center justify-between">
@@ -144,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NCheckbox, NCollapse, NCollapseItem } from 'naive-ui';
+  import { NButton, NCheckbox, NCollapse, NCollapseItem, NScrollbar } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { type ApprovalListTypeEnum, ApprovalResourceTypeEnum } from '@lib/shared/enums/process';
@@ -487,7 +487,7 @@
     .task-class {
       width: 268px;
       border-right: 1px solid var(--text-n8);
-      @apply h-full;
+      @apply h-full overflow-hidden;
       .task-count {
         color: var(--text-n4);
       }
