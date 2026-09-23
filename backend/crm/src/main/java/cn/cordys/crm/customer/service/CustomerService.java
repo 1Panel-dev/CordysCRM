@@ -29,6 +29,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.constants.CustomerResultCode;
 import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.request.*;
@@ -66,6 +67,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.*;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -609,6 +611,11 @@ public class CustomerService {
     }
 
     public void deleteCustomerResource(List<String> ids) {
+        // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等下面全部删完才准。
+        // 挂在这里而不是两个公开入口上: 客户删除、客户批量删除、公海里的两种删除最后都走这一处,
+        // 而且捕获时客户还在、重算时已被本方法删掉, 级联进来的重算会被统计字段服务侧的存在性判断挡掉。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CUSTOMER.getKey(), ids, OrganizationContext.getOrganizationId());
         // 删除客户
         customerMapper.deleteByIds(ids);
         // 删除客户模块字段
@@ -623,6 +630,7 @@ public class CustomerService {
         followUpRecordService.deleteByCustomerIds(ids);
         // 删除跟进计划
         followUpPlanService.deleteByCustomerIds(ids);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
     }
 
     public void checkResourceRef(List<String> ids) {

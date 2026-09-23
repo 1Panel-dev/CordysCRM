@@ -85,6 +85,7 @@ import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StageAdvancedConfigService;
 import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -488,6 +489,9 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             throw new GenericException(CrmHttpResultCode.NOT_FOUND);
         }
 
+        // 删除会同时毁掉关联字段的值, 所以「这个订单关联了谁」只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.ORDER.getKey(), List.of(id), orgId);
         orderFieldService.deleteByResourceId(id);
         orderMapper.deleteByPrimaryKey(id);
 
@@ -495,6 +499,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         LambdaQueryWrapper<OrderSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(OrderSnapshot::getOrderId, id);
         snapshotBaseMapper.deleteByLambda(wrapper);
+        // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         // 添加日志上下文
         OperationLogContext.setResourceName(order.getName());
     }
@@ -536,11 +542,18 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             return;
         }
 
+        // 捕的是审批分流之后真正要删的 deleteIds, 不是 permittedIds —— 走审批的那批此刻并没删掉,
+        // 捕了就是白捕, 而且审批通过后还会由审批侧再删一次, 那次自会重算。
+        // 删除会同时毁掉关联字段的值, 所以只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.ORDER.getKey(), deleteIds, orgId);
         orderFieldService.deleteByResourceIds(deleteIds);
         orderMapper.deleteByIds(deleteIds);
         LambdaQueryWrapper<OrderSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(OrderSnapshot::getOrderId, deleteIds);
         snapshotBaseMapper.deleteByLambda(wrapper);
+        // 删完再重算, 此时被删的那批已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         List<LogDTO> logs = permittedOrders.stream()
                 .filter(order -> deleteIds.contains(order.getId()))

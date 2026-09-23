@@ -80,6 +80,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -590,6 +591,9 @@ public class ClueService {
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
+        // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等下面全部删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CLUE.getKey(), List.of(id), orgId);
         // 删除客户
         clueMapper.deleteByPrimaryKey(id);
         // 删除客户模块字段
@@ -600,6 +604,7 @@ public class ClueService {
         followUpRecordService.deleteByClueIds(List.of(id));
         // 删除跟进计划
         followUpPlanService.deleteByClueIds(List.of(id));
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 设置操作对象
         OperationLogContext.setResourceName(clue.getName());
@@ -641,6 +646,9 @@ public class ClueService {
     public void batchDelete(List<String> ids, String userId, String orgId) {
         List<Clue> clues = clueMapper.selectByIds(ids);
 
+        // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等下面全部删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CLUE.getKey(), ids, orgId);
         // 删除客户
         clueMapper.deleteByIds(ids);
         // 删除客户模块字段
@@ -651,6 +659,7 @@ public class ClueService {
         followUpRecordService.deleteByClueIds(ids);
         // 删除跟进计划
         followUpPlanService.deleteByClueIds(ids);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 消息通知
         clues.forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,

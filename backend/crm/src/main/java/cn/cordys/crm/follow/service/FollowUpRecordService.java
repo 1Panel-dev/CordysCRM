@@ -19,6 +19,7 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.constants.FollowUpPlanType;
@@ -36,6 +37,7 @@ import cn.cordys.crm.system.dto.response.UserResponse;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.github.pagehelper.Page;
@@ -515,8 +517,13 @@ public class FollowUpRecordService extends BaseFollowUpService {
         if (ids.isEmpty()) {
             return;
         }
+        // 删除会同时带走关联字段的值, 所以「这些记录关联了谁」只能删前先捕; 重算又要等删完才准。
+        // 放在这里而不是三个公开入口上: 删除、按客户级联、按线索级联最后都汇到这一处。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.FOLLOW_RECORD.getKey(), ids, OrganizationContext.getOrganizationId());
         followUpRecordFieldService.deleteByResourceIds(ids);
         followUpRecordMapper.deleteByIds(ids);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
     }
 
     private List<FollowUpRecord> getByCustomerIds(List<String> customerIds) {

@@ -80,6 +80,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.mapper.ExtStageAdvancedConfigMapper;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.*;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -524,11 +525,18 @@ public class ContractService extends BaseExportService implements ApprovalResour
             return;
         }
 
+        // 捕的是审批分流之后真正要删的 deleteIds, 不是 permittedIds —— 走审批的那批此刻并没删掉,
+        // 捕了就是白捕, 而且审批通过后还会由审批侧再删一次, 那次自会重算。
+        // 删除会同时毁掉关联字段的值, 所以只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CONTRACT.getKey(), deleteIds, orgId);
         contractFieldService.deleteByResourceIds(deleteIds);
         contractMapper.deleteByIds(deleteIds);
         LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(ContractSnapshot::getContractId, deleteIds);
         snapshotBaseMapper.deleteByLambda(wrapper);
+        // 删完再重算, 此时被删的那批已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         List<LogDTO> logs = permittedContracts.stream()
                 .filter(contract -> deleteIds.contains(contract.getId()))
@@ -553,6 +561,9 @@ public class ContractService extends BaseExportService implements ApprovalResour
         }
         checkContractRelated(id);
 
+        // 删除会同时毁掉关联字段的值, 所以「这份合同关联了谁」只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CONTRACT.getKey(), List.of(id), orgId);
         contractFieldService.deleteByResourceId(id);
         contractMapper.deleteByPrimaryKey(id);
 
@@ -560,6 +571,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
         LambdaQueryWrapper<ContractSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContractSnapshot::getContractId, id);
         snapshotBaseMapper.deleteByLambda(wrapper);
+        // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         // 添加日志上下文
         OperationLogContext.setResourceName(contract.getName());
     }

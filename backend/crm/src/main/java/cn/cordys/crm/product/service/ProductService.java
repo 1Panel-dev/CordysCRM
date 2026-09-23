@@ -21,6 +21,7 @@ import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.product.domain.Product;
 import cn.cordys.crm.product.domain.ProductField;
 import cn.cordys.crm.product.domain.ProductFieldBlob;
@@ -45,6 +46,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -274,10 +276,14 @@ public class ProductService {
     @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Product product = productBaseMapper.selectByPrimaryKey(id);
+        // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等删完才准
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.PRODUCT.getKey(), List.of(id), OrganizationContext.getOrganizationId());
         // 删除产品
         productBaseMapper.deleteByPrimaryKey(id);
         // 删除产品模块字段
         productFieldService.deleteByResourceId(id);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         // 添加日志上下文
         OperationLogContext.setResourceName(product.getName());
     }
@@ -301,8 +307,12 @@ public class ProductService {
         if (products == null || products.isEmpty()) {
             return;
         }
+        // 统计字段: 捕获放在这里而不是方法开头 —— 上面已经过滤掉了查不到的产品, 只该为真正会删掉的抓
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.PRODUCT.getKey(), ids, OrganizationContext.getOrganizationId());
         productBaseMapper.deleteByIds(ids);
         productFieldService.deleteByResourceIds(ids);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         List<LogDTO> logs = products.stream()
                 .map(p -> {
