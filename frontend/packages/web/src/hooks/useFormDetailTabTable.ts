@@ -105,8 +105,8 @@ export default function useFormDetailTabTable() {
     }
 
     const commonProps = {
-      readonly: true,
-      hideOperationColumn: true,
+      readonly: false,
+      hideOperationColumn: false,
       detailTabResourceId: resourceId,
       detailTabPageFormId: pageFormId,
       detailTabQuery: {

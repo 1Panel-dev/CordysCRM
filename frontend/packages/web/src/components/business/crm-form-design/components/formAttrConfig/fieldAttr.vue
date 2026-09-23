@@ -1223,6 +1223,7 @@
             :options="statisticTargetFormOptions"
             filterable
             :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+            :fallback-option="fallbackOption"
             @update-value="handleStatisticTargetFormChange"
           />
         </div>
@@ -1251,6 +1252,7 @@
             :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
             :options="statisticFieldOptions"
             :status="!fieldConfig.statisticFieldId ? 'error' : undefined"
+            :fallback-option="fallbackOption"
           />
           <div v-if="!fieldConfig.statisticFieldId" class="text-[12px] text-[var(--error-red)]">
             {{ t('common.notNull', { value: t('crmFormDesign.statisticsField') }) }}
@@ -1307,11 +1309,11 @@
             class="flex"
             :disabled="!!fieldConfig.resourceFieldId"
           >
-            <n-radio-button value="SKIP" class="flex-1 text-center">
-              {{ t('crmFormDesign.notCalculation') }}
-            </n-radio-button>
             <n-radio-button value="DEFAULT_ZERO" class="flex-1 text-center">
               {{ t('crmFormDesign.statisticsDefaultZero') }}
+            </n-radio-button>
+            <n-radio-button value="SKIP" class="flex-1 text-center">
+              {{ t('crmFormDesign.notCalculation') }}
             </n-radio-button>
           </n-radio-group>
         </div>
@@ -1391,7 +1393,7 @@
             <n-button
               type="default"
               class="outline--secondary flex-1"
-              :disabled="!fieldConfig.isNew || !!fieldConfig.resourceFieldId"
+              :disabled="!!fieldConfig.resourceFieldId"
               @click="() => (showStatisticUpdateRangeFilter = true)"
             >
               {{

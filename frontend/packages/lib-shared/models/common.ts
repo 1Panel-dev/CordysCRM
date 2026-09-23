@@ -134,5 +134,5 @@ export interface ChartResponseDataItem {
 
 export interface ModuleField {
   fieldId: string;
-  fieldValue: string | string[];
+  fieldValue: string | number | string[];
 }
