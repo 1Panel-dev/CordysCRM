@@ -552,7 +552,101 @@
             on ${tablePrefix}.user_id = ${mainTablePrefix}.owner
         </if>
     </sql>
-    
+
+    <!--
+        统计字段聚合时的取值来源: 业务字段取目标表单主表自己的列, 自定义字段取字段值表(别名 stat)。
+
+        调用方必须传 mainTableAlias: 各表单主表的别名不同(c/ct/ci/o/...), 不能由片段写死。
+        stat 只在「有取值这回事(非 COUNT)且取值走字段值表」时才被引用, 与 statisticRelationJoin
+        的 join 一一对应, 少一个就会拼出「引用了 stat 却没 join」的语句。
+
+        主表列名由 Java 侧从 BusinessModuleField 闭集解析并校过字符集, ${} 拼的是列名不是值。
+    -->
+    <sql id="statisticValue">
+        <choose>
+            <when test="request.statisticBusinessKey != null and request.statisticBusinessKey != ''">
+                ${mainTableAlias}.`${request.statisticBusinessKey}`
+            </when>
+            <otherwise>
+                stat.field_value
+            </otherwise>
+        </choose>
+    </sql>
+
+    <!--
+        统计口径。COUNT 数的是关联数据条数, 加了 join 会放大行数, 所以必须 distinct;
+        AVG 的空值口径分「跳过空值」与「空值当 0」两种, 后者用 ifnull 把 NULL 补成 0 才进分母。
+
+        +0 是为了做数值转换: 字段值表里的数值存的是字符串, 不转换 MySQL 会按字典序算。
+        调用方必须传 mainTableAlias, 并把它透传给 statisticValue(嵌套 include 不继承属性)。
+    -->
+    <sql id="statisticAggregateHead">
+        <choose>
+            <when test="request.statisticType == 'COUNT'">
+                count(distinct ${mainTableAlias}.id)
+            </when>
+            <when test="request.statisticType == 'AVG' and request.avgSkipEmpty">
+                avg(<include refid="cn.cordys.common.mapper.CommonMapper.statisticValue">
+                    <property name="mainTableAlias" value="${mainTableAlias}"/>
+                </include> + 0)
+            </when>
+            <when test="request.statisticType == 'AVG'">
+                avg(ifnull(<include refid="cn.cordys.common.mapper.CommonMapper.statisticValue">
+                    <property name="mainTableAlias" value="${mainTableAlias}"/>
+                </include> + 0, 0))
+            </when>
+            <otherwise>
+                sum(<include refid="cn.cordys.common.mapper.CommonMapper.statisticValue">
+                    <property name="mainTableAlias" value="${mainTableAlias}"/>
+                </include> + 0)
+            </otherwise>
+        </choose>
+    </sql>
+
+    <!--
+        被统计数据的来源: 目标表单里「关联字段指向宿主数据ID」的那些行。
+
+        关联字段与被统计字段各有两种存法, 决定了要不要碰字段值表:
+          (业务关联, 业务取值)     字段值表一次都不碰
+          (业务关联, 自定义取值)   字段值表一次, 只用来取值(stat)
+          (自定义关联, 业务取值)   字段值表一次, 只用来找关联行(rel)
+          (自定义关联, 自定义取值) 字段值表两次
+        业务字段在字段值表里根本没有它的行, 多 join 一次只会 join 出空。
+
+        COUNT 数的是行数, 根本不取值, 所以连取值那一支都不建: count(distinct id) 虽然不会被
+        join 放大, 但白 join 一张大表还是要按行去查一次字段值表索引。
+
+        调用方必须传 mainTableAlias 与 valueFieldTable(即目标表单的字段值表名)。
+    -->
+    <sql id="statisticRelationJoin">
+        <if test="request.relatedBusinessKey == null or request.relatedBusinessKey == ''">
+            inner join ${valueFieldTable} rel
+            on rel.resource_id = ${mainTableAlias}.id
+            and rel.field_id = #{request.relatedFieldId}
+            and rel.field_value = #{request.dataId}
+        </if>
+        <if test="(request.statisticBusinessKey == null or request.statisticBusinessKey == '') and request.statisticType != 'COUNT'">
+            left join ${valueFieldTable} stat
+            on stat.resource_id = ${mainTableAlias}.id and stat.field_id = #{request.statisticFieldId}
+        </if>
+    </sql>
+
+    <!--
+        统计字段「更新范围」的游标分页尾巴。
+
+        只 select 主键, 让这一页尽量走聚簇索引; 用 id > lastId 而不是 offset, 大数据量下每页代价恒定。
+
+        放在 where 与条件谓词之后: order by / limit 必须收在整条语句的最后。
+        调用方必须传 mainTableAlias。
+    -->
+    <sql id="statisticCursorPage">
+        <if test="request.lastId != null and request.lastId != ''">
+            and ${mainTableAlias}.id &gt; #{request.lastId}
+        </if>
+        order by ${mainTableAlias}.id
+        limit #{request.limit}
+    </sql>
+
     <sql id="refFieldConditionJoin">
         <if test="!condition.refMainCustomField">
             <if test="!condition.customField">

@@ -86,7 +86,6 @@ public class FilterCondition {
         return Strings.CS.equalsAny(operator, CombineConditionOperator.IN.name(), CombineConditionOperator.NOT_IN.name(), CombineConditionOperator.BETWEEN.name(), CombineConditionOperator.DYNAMICS.name());
     }
 
-
     public Object getCombineValue() {
         if (Strings.CI.equals(operator, CombineConditionOperator.DYNAMICS.name())) {
             // value 转为string 类型
@@ -371,7 +370,6 @@ public class FilterCondition {
         }
         return operator;
     }
-
 
     private long getTimestamp(LocalDateTime today) {
         // 使用系统默认时区

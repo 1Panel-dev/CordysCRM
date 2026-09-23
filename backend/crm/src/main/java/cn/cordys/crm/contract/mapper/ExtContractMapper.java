@@ -3,6 +3,7 @@ package cn.cordys.crm.contract.mapper;
 import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractGetResponse;
@@ -13,7 +14,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface ExtContractMapper {
+public interface ExtContractMapper extends StatisticSqlMapper {
 
 
     List<ContractListResponse> list(@Param("request") ContractPageRequest request, @Param("orgId") String orgId,

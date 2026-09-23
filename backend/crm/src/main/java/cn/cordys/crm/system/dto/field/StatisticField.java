@@ -55,9 +55,21 @@ public class StatisticField extends BaseField {
     private String dataScope;
 
     /**
-     * 过滤的是「目标表单」中的关联数据, 条件结构为数据源字段的字段对字段比较结构
-     * ({@code searchMode + conditions[{leftFieldId, leftFieldType, operator, matchType, rightFieldId, rightFieldCustomValue}]}),
-     * 与 {@link #updateScopeCondition} 的高级搜索结构不同, 两者不可互换。
+     * 过滤的是「目标表单」中的关联数据, 与 {@link #updateScopeCondition} 一样, 存的都是设计器筛选弹窗
+     * ({@code filterModal.vue}) 产出的「字段对字段」结构:
+     * {@code {searchMode, conditions[{leftFieldId, leftFieldType, operator, matchType, rightFieldId,
+     * rightFieldCustom, rightFieldCustomValue, rightFieldType}]}}。
+     *
+     * <p><b>为什么这里不是 {@code CombineSearch}</b>: 两套结构的键名对不上, 而筛选弹窗的
+     * {@code MATCH_FIELD}(匹配字段)需要把「右侧字段ID」翻成取值引用对象, 那不是绑定能做的事。
+     * 若直接声明成 {@code CombineSearch}, Jackson 在绑定期就把 {@code leftFieldId} 丢掉,
+     * 转换器再没有原料可读, 条件会整条消失。所以这里按原样收下, 由
+     * {@code StatisticConditionConverter#toCombineSearch} 在拼 SQL 之前转一次。</p>
+     *
+     * <p><b>右值取自宿主记录时</b>(设计器里的「匹配字段」), 转换后的 {@code value} 里存的不是字面量而是一个
+     * 引用对象 {@code {"refFieldId": 宿主字段ID, "refFieldType": 宿主字段类型}} ——
+     * 保存配置时宿主记录还不存在, 拿不到值, 只能先记下「去哪个字段取」, 刷新时按每条数据现取。
+     * 详见 {@code StatisticFieldService#scopeCondition}。</p>
      */
     @Schema(description = "符合条件时的过滤条件, 同数据源字段 combineSearch")
     private Map<String, Object> combineSearch;
@@ -67,9 +79,15 @@ public class StatisticField extends BaseField {
     private String updateScope;
 
     /**
-     * 过滤的是「当前表单」自身的存量数据, 条件结构为该表单高级搜索的
-     * {@code CombineSearch} ({@code searchMode + conditions[{name, value, operator, type, multipleValue}]}),
-     * 与 {@link #combineSearch} 的字段对字段结构不同, 两者不可互换。
+     * 过滤的是「当前表单」自身的存量数据。
+     *
+     * <p>存储结构与 {@link #combineSearch} 相同(同一个筛选弹窗产出、同一个 {@code DataSourceFilterCombine}
+     * 类型), 转换也是同一个 {@code StatisticConditionConverter}, 区别只在作用对象: 这个筛的是宿主表单
+     * 自己有哪些数据要算, 那个筛的是每条宿主记录关联过来的哪些数据参与计算。</p>
+     *
+     * <p><b>但两者的能力并不对称</b>: 更新范围是在一条 SQL 里对整个宿主表判定的, 没有「逐条数据现取右值」
+     * 这一步, 所以弹窗的「匹配字段」(右值取自本表单另一个字段)在这里用不了, 会在解析时被丢掉并记日志
+     * (见 {@code StatisticFieldService#parseHostCondition})。</p>
      */
     @Schema(description = "符合数据范围计算时的过滤条件, 同该表单高级搜索筛选条件")
     private Map<String, Object> updateScopeCondition;

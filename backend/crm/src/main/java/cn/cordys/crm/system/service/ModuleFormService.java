@@ -18,6 +18,7 @@ import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.resolver.field.TextMultipleResolver;
 import cn.cordys.common.resolver.field.TextResolver;
+import cn.cordys.common.statistic.StatisticConditionConverter;
 import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.FieldSourceServiceProvider;
 import cn.cordys.common.uid.IDGenerator;
@@ -2197,8 +2198,14 @@ public class ModuleFormService {
             }
         }
 
+        // 统计范围条件存的是设计器筛选弹窗的「字段对字段」结构, 这里与刷新时一样先转成 CombineSearch:
+        // 它的 getConditions() 已经按 valid() 过了一遍, 判空等价于「一条能用的条件都没有」,
+        // 比只看结构是不是空更严 —— 只有左字段没有操作符之类的半成品配置也会被拦下来,
+        // 不会存进去然后刷新时静默当成「不过滤」。
+        // 复用同一个转换器而不是另写一套判空: 校验通过就意味着刷新时真的能拼出条件, 两边不会走偏。
         if (Strings.CS.equals(field.getDataScope(), StatisticDataScope.CONDITION.name())
-                && MapUtils.isEmpty(field.getCombineSearch())) {
+                && CollectionUtils.isEmpty(StatisticConditionConverter
+                .toCombineSearch(field.getCombineSearch()).getConditions())) {
             throw new GenericException(Translator.getWithArgs("module.form.statistic.data.scope.required", name));
         }
         if (Strings.CS.equals(field.getUpdateScope(), StatisticUpdateScope.CONDITION.name())

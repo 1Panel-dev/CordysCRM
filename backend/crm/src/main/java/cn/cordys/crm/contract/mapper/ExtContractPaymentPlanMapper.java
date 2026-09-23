@@ -1,6 +1,7 @@
 package cn.cordys.crm.contract.mapper;
 
 import cn.cordys.common.dto.DeptDataPermissionDTO;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.contract.domain.ContractPaymentPlan;
 import cn.cordys.crm.contract.dto.request.ContractPaymentPlanPageRequest;
 import cn.cordys.crm.contract.dto.response.ContractPaymentPlanListResponse;
@@ -14,7 +15,7 @@ import java.util.List;
  * @author jianxing
  * @date 2025-11-21 15:11:29
  */
-public interface ExtContractPaymentPlanMapper {
+public interface ExtContractPaymentPlanMapper extends StatisticSqlMapper {
     List<ContractPaymentPlanListResponse> list(@Param("request") ContractPaymentPlanPageRequest request, @Param("userId") String userId,
                                                @Param("orgId") String orgId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 

@@ -1,6 +1,7 @@
 package cn.cordys.crm.product.mapper;
 
 import cn.cordys.common.dto.BatchUpdateDbParam;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.product.domain.ProductPrice;
 import cn.cordys.crm.product.domain.ProductPriceField;
 import cn.cordys.crm.product.dto.request.ProductPricePageRequest;
@@ -12,7 +13,7 @@ import java.util.List;
 /**
  * @author song-cc-rock
  */
-public interface ExtProductPriceMapper {
+public interface ExtProductPriceMapper extends StatisticSqlMapper {
 
     /**
      * 查询价格列表

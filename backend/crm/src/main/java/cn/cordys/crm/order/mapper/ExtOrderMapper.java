@@ -3,6 +3,7 @@ package cn.cordys.crm.order.mapper;
 import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.BaseCondition;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.order.dto.request.OrderPageRequest;
 import cn.cordys.crm.order.dto.response.OrderGetResponse;
@@ -12,7 +13,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface ExtOrderMapper {
+public interface ExtOrderMapper extends StatisticSqlMapper {
 
 
     List<OrderListResponse> list(@Param("request") OrderPageRequest request, @Param("orgId") String orgId,

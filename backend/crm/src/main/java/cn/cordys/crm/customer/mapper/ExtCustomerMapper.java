@@ -5,6 +5,7 @@ import cn.cordys.common.dto.BatchUpdateDbParam;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.chart.ChartResult;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import cn.cordys.crm.customer.dto.request.CustomerChartAnalysisDbRequest;
@@ -24,7 +25,7 @@ import java.util.List;
  * @author jianxing
  * @date 2025-02-08 17:42:41
  */
-public interface ExtCustomerMapper {
+public interface ExtCustomerMapper extends StatisticSqlMapper {
 
     List<CustomerListResponse> list(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
                                     @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);

@@ -6,10 +6,13 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.condition.BaseCondition;
 import cn.cordys.common.dto.condition.CombineSearch;
 import cn.cordys.common.dto.condition.FilterCondition;
-import cn.cordys.common.dto.condition.FilterDBCondition;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
+import cn.cordys.common.statistic.StatisticAggregateRequest;
+import cn.cordys.common.statistic.StatisticConditionConverter;
+import cn.cordys.common.statistic.StatisticCursorRequest;
+import cn.cordys.common.statistic.StatisticSqlMapper;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.CaseFormatUtils;
 import cn.cordys.common.util.JSON;
@@ -43,6 +46,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,9 +74,9 @@ import java.util.stream.Collectors;
  * <p>统计值写回宿主的字段值表({@code <table>_field}), 与普通自定义字段同表同格式,
  * 读取时由 {@code StatisticResolver} 格式化展示。</p>
  *
- * <p><b>已知边界</b>: 「统计范围」为「符合条件」({@code dataScope = CONDITION}) 的字段暂不参与刷新,
- * 原因见 {@link #buildContext}; 关联字段值发生变更时, 变更前指向的那条宿主记录不会被自动重算,
- * 原因见 {@link #refreshByRelatedDataChange}。</p>
+ * <p><b>已知边界</b>: 关联字段值发生变更时, 变更前指向的那条宿主记录不会被自动重算,
+ * 原因见 {@link #refreshByRelatedDataChange}; 「统计范围」为「符合条件」时右值取不到的条件会被整条丢掉,
+ * 口径见 {@link #resolveScopeConditions}。</p>
  */
 @Slf4j
 @Service
@@ -109,9 +113,12 @@ public class StatisticFieldService {
     private static final Pattern COLUMN_NAME_PATTERN = Pattern.compile("^[a-z][a-z0-9_]*$");
 
     /**
-     * 部门是虚拟字段, 各模块的取数方式不同(通常要 join sys_organization_user), 这里没有通用实现。
+     * 统计范围条件的右值取自宿主记录时, {@code value} 里用来记引用字段ID的键名。
+     *
+     * <p>{@link FilterCondition} 没有地方放「值来自哪个字段」, 而宿主记录的值在保存配置时还不存在,
+     * 配置里只能先存一个引用对象, 刷新时再按每条数据把值换进去。详见 {@link #scopeCondition}。</p>
      */
-    private static final String VIRTUAL_DEPARTMENT_COLUMN = "department_id";
+    private static final String REF_FIELD_ID = "refFieldId";
 
     /**
      * 标准模块表单的物理表名, 取自各模块主实体的 {@code @Table} 注解。
@@ -167,6 +174,9 @@ public class StatisticFieldService {
 
     @Resource
     private ExtStatisticMapper extStatisticMapper;
+
+    @Resource
+    private StatisticSqlMapperRegistry statisticSqlMapperRegistry;
 
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
@@ -294,25 +304,26 @@ public class StatisticFieldService {
         }
 
         String hostFieldTable = hostDataTable + FIELD_TABLE_SUFFIX;
-        String hostBlobTable = hostDataTable + BLOB_TABLE_SUFFIX;
 
-        // 2) 更新范围条件就是宿主表单的高级搜索结构, 复用列表页同一套条件解析,
-        //    保证「刷新时算的行」与「列表页看到的行」是同一个口径。
-        List<FilterDBCondition> hostConditions = Collections.emptyList();
-        String hostSearchMode = CombineSearch.SearchMode.AND.name();
+        // 2) 更新范围条件描述的是宿主表单自己的数据, 与列表页高级搜索是同一个口径:
+        //    先由 parseHostCondition 把配置里的弹窗结构转过来, 再复用列表页同一套条件解析,
+        //    保证「刷新时算的行」与「列表页看到的行」对得上。
+        //    非「符合条件」时给一个空的 CombineSearch 而不是 null: 条件片段里有 `${conditions}.size() > 0`
+        //    这样的判断, 传 null 会让 OGNL 直接抛, 而不是短路成「不过滤」。
+        CombineSearch hostCondition = new CombineSearch();
         if (updateScope == StatisticUpdateScope.CONDITION) {
-            CombineSearch hostCombineSearch = parseHostCondition(field.getUpdateScopeCondition(), hostFormKey);
-            hostConditions = toDbConditions(hostCombineSearch.getConditions());
-            hostSearchMode = hostCombineSearch.getSearchMode();
+            hostCondition = parseHostCondition(field.getUpdateScopeCondition(), hostFormKey);
         }
+
+        // 2.1) 宿主侧的取数语句由宿主表单自己的 Mapper 提供: 条件里的名字是宿主表单上的字段,
+        //      哪个名字对应哪个列、要不要 join 部门表, 只有那张表单的 Mapper 知道。
+        StatisticSqlMapper hostMapper = statisticSqlMapperRegistry.get(hostFormKey);
 
         // 3) 目标表单的聚合上下文只构建一次: 里面的解析都与具体数据无关,
         //    放到每条数据里做会白白放大几倍开销。
+        //    构建不出来时 buildContext 直接抛, 由调用方的按字段 try/catch 兜住 —— 比返回 null 让这里
+        //    静默 return 好: 用户手动刷新时能看到原因, 而不是「点了没反应」。
         StatisticRefreshContext context = buildContext(field, hostDataTable);
-        if (context == null) {
-            // buildContext 已经打过日志说明原因
-            return;
-        }
 
         long start = System.currentTimeMillis();
         int total = 0;
@@ -322,9 +333,13 @@ public class StatisticFieldService {
         Deque<Future<RefreshResult>> inFlight = new ArrayDeque<>(MAX_PARALLEL_PAGE);
         String lastId = null;
         while (true) {
-            List<String> dataIds = extStatisticMapper.selectDataIdsByCursor(
-                    hostDataTable, hostFieldTable, hostBlobTable, orgId, lastId, PAGE_SIZE,
-                    hostConditions, hostSearchMode);
+            // 每页一份请求对象: 游标位置是这一页独有的, 逐页新建比复用同一个实例再改字段更难写错
+            StatisticCursorRequest cursorRequest = new StatisticCursorRequest();
+            cursorRequest.setOrgId(orgId);
+            cursorRequest.setLastId(lastId);
+            cursorRequest.setLimit(PAGE_SIZE);
+            cursorRequest.setScopeCondition(hostCondition);
+            List<String> dataIds = hostMapper.selectStatisticHostDataIds(cursorRequest);
             if (CollectionUtils.isEmpty(dataIds)) {
                 break;
             }
@@ -394,13 +409,24 @@ public class StatisticFieldService {
      * @return 实际落库的值, 返回 null 表示按空值处理(值行被清掉, 前端显示「-」)
      */
     private BigDecimal refreshOneRecord(StatisticRefreshContext context, String dataId, String orgId) {
-        BigDecimal value = extStatisticMapper.selectAggregate(
-                context.targetTable, context.targetFieldTable, context.targetBlobTable,
-                orgId, context.relatedFieldId, context.relatedBusinessKey,
-                context.statisticFieldId, context.statisticBusinessKey,
-                dataId, context.statisticType, context.avgSkipEmpty, Collections.emptyList(),
-                CombineSearch.SearchMode.AND.name());
-        // 走代理调用, 让 writeStatisticValue 上的 @Transactional 生效(直接 this 调用不走代理)
+        // 1) 统计范围条件按当前这条数据现算: 其中「右值取自宿主记录」的那类条件, 每条数据的值都不一样。
+        //    每条数据一份请求对象, 不能改上下文里那份模板 —— 一页数据是并行刷的, 几个线程共用同一个上下文,
+        //    改共享对象会串值。
+        StatisticAggregateRequest request = new StatisticAggregateRequest();
+        request.setOrgId(orgId);
+        request.setDataId(dataId);
+        request.setRelatedFieldId(context.relatedFieldId);
+        request.setRelatedBusinessKey(context.relatedBusinessKey);
+        request.setStatisticFieldId(context.statisticFieldId);
+        request.setStatisticBusinessKey(context.statisticBusinessKey);
+        request.setStatisticType(context.statisticType);
+        request.setAvgSkipEmpty(context.avgSkipEmpty);
+        request.setScopeCondition(resolveScopeConditions(context, dataId));
+
+        // 2) 聚合语句由目标表单自己的 Mapper 提供: 统计范围条件里的名字是目标表单上的字段,
+        //    同一个名字(如 products)在线索上是 JSON 数组列、在价格上是子表, 一套通用渲染必然猜错。
+        BigDecimal value = statisticSqlMapperRegistry.get(context.targetFormKey).selectStatisticAggregate(request);
+        // 3) 走代理调用, 让 writeStatisticValue 上的 @Transactional 生效(直接 this 调用不走代理)
         return self.writeStatisticValue(context, dataId, value);
     }
 
@@ -489,11 +515,8 @@ public class StatisticFieldService {
                         continue;
                     }
 
+                    // 构建不出来会抛, 由下面的 catch 兜住
                     StatisticRefreshContext context = buildContext(ref.field(), ref.hostDataTable());
-                    if (context == null) {
-                        // buildContext 已经打过日志说明原因
-                        continue;
-                    }
 
                     // 5) 只重算被关联的那一条宿主记录, 不要退化成整张宿主表单重算 ——
                     //    四个入口共用 refreshOneRecord, 口径与批量刷新完全一致。
@@ -553,11 +576,8 @@ public class StatisticFieldService {
         try {
             for (StatisticField field : fields) {
                 try {
+                    // 构建不出来会抛, 由下面的 catch 兜住
                     StatisticRefreshContext context = buildContext(field, hostDataTable);
-                    if (context == null) {
-                        // buildContext 已经打过日志说明原因
-                        continue;
-                    }
                     // 4) 复用 refreshOneRecord, 不在这里另写一份聚合逻辑, 四个入口必须共用同一份计算口径。
                     //    6) 新建记录时统计目标通常为空(还没有目标数据指向本记录), 这一步的价值在于按
                     //    emptyResultMode 把空值落成 0 或空, 把字段值行先建出来, 避免详情页一直显示「未计算」。
@@ -643,11 +663,8 @@ public class StatisticFieldService {
         }
 
         // 7) 只重算这一条。复用 refreshOneRecord 而不是另写一份聚合, 四个入口必须共用同一份计算口径。
+        //    构建不出来会抛, 不吞: 用户点了刷新就必须得到反馈, 不能静默什么都不做。
         StatisticRefreshContext context = buildContext(field, hostDataTable);
-        if (context == null) {
-            // buildContext 已经打过日志说明原因
-            return null;
-        }
         return refreshOneRecord(context, resourceId, orgId);
     }
 
@@ -841,33 +858,25 @@ public class StatisticFieldService {
     /**
      * 构建一个统计字段的刷新上下文。
      *
-     * @return 上下文; 该字段当前无法刷新时返回 null (已记日志)
+     * <p>字段配置本身有毛病(目标表单不支持、关联字段被删之类)时直接抛:
+     * 批量刷新的三个入口都在按字段的 try/catch 里, 会把这一个字段记下来继续跑别的;
+     * 手动刷新不吞, 让用户看到原因。</p>
+     *
+     * @return 刷新上下文, 不为 null
      */
     private StatisticRefreshContext buildContext(StatisticField field, String hostDataTable) {
         String targetFormKey = field.getTargetFormId();
-        String targetTable = FORM_KEY_TABLE.get(targetFormKey);
-        if (targetTable == null) {
+        // 目标表单必须能反查到物理表: 这张表同时是「哪些表单支持统计字段」的判据, 拿不到就直接失败,
+        // 不要放进去让它在刷新时变成一条查不出东西的语句。
+        if (FORM_KEY_TABLE.get(targetFormKey) == null) {
             // 自定义表单暂时不能作为统计目标, 保存时已经拦过, 这里是兜底
             throw new GenericException("统计字段的目标表单不支持: " + targetFormKey);
-        }
-
-        if (enumValue(StatisticDataScope.class, field.getDataScope()) == StatisticDataScope.CONDITION) {
-            // 统计范围条件用的是数据源字段的字段对字段比较结构
-            // ({matchType, leftFieldId, leftFieldType, operator, rightFieldId, rightFieldCustom, rightFieldCustomValue}),
-            // 其中 leftFieldType 可能是 DATA_SOURCE(显示字段, 要走 refFieldConditionJoin),
-            // matchType 的取值语义后端也没有对应实现 —— 后端目前完全没有这套结构的 SQL,
-            // 只有前端用它过滤数据源候选项。硬凑一个过滤会算出偏大的值且没人能发现, 所以这里不做刷新。
-            log.error("统计范围暂不支持「符合条件」, 跳过该字段刷新: formKey={}, fieldId={}",
-                    targetFormKey, field.getId());
-            return null;
         }
 
         StatisticRefreshContext context = new StatisticRefreshContext();
         context.field = field;
         context.hostDataTable = hostDataTable;
-        context.targetTable = targetTable;
-        context.targetFieldTable = targetTable + FIELD_TABLE_SUFFIX;
-        context.targetBlobTable = targetTable + BLOB_TABLE_SUFFIX;
+        context.targetFormKey = targetFormKey;
         context.relatedFieldId = field.getRelatedFieldId();
         // 关联字段也有两种存法, 与下面被统计字段的判断完全对称:
         // 数据源字段如果是标准模块上的「客户」「合同」这类业务字段, 关联关系就落在主表列上
@@ -887,7 +896,200 @@ public class StatisticFieldService {
             // 不区分的话, 统计业务字段会被当成自定义字段去 join 一个不存在的值行, SUM/AVG 恒为空。
             context.statisticBusinessKey = resolveBusinessKey(field.getStatisticFieldId());
         }
+
+        // 统计范围: 「全部」不过滤, 「符合条件」按配置的条件过滤目标表单里关联过来的数据。
+        // 配置里存的是筛选弹窗的「字段对字段」结构, 先转成列表页高级搜索的 CombineSearch;
+        // 再把「右值取自宿主字段」的条件解析成取值方式, 真正拼成 SQL 条件是逐条数据做的,
+        // 原因见 resolveScopeConditions。
+        context.scopeCondition = new CombineSearch();
+        context.scopeRefSources = Collections.emptyMap();
+        if (enumValue(StatisticDataScope.class, field.getDataScope()) == StatisticDataScope.CONDITION) {
+            Map<String, HostValueSource> refSources = new HashMap<>();
+            context.scopeCondition = scopeCondition(
+                    StatisticConditionConverter.toCombineSearch(field.getCombineSearch()), field.getId(), refSources);
+            context.scopeRefSources = refSources;
+        }
         return context;
+    }
+
+    /**
+     * 预处理统计范围条件(统计范围 = 「符合条件」)。
+     *
+     * <p>入参是已经转好的 {@link CombineSearch}, 与列表页高级搜索、与「更新范围条件」完全同构,
+     * 区别只在 {@code name} 指的是「目标表单」上的字段 —— 过滤的是目标表单里关联过来的哪些数据,
+     * 而不是宿主的哪些数据要算(那是更新范围的事)。所以除了右值的来源, 这里不做任何结构转换;
+     * 配置里那份「字段对字段」结构的转换在调用点, 由
+     * {@link StatisticConditionConverter#toCombineSearch} 完成。</p>
+     *
+     * <p><b>右值取自宿主记录时</b>: 保存配置的时候宿主记录还不存在, 拿不到值, 配置里只能存一个引用
+     * ({@code value} 是 {@code {"refFieldId": 宿主字段ID}} 这样的对象)。这里把引用解析成
+     * 「去宿主表单的哪一列取值」, 路子与 {@link #resolveBusinessKey(String)} 一致:
+     * 业务字段的值在宿主主表列上, 自定义字段的值在字段值表里, 还要再分是不是大字段。
+     * 认错一种就会恒取不到值, 条件被丢掉, 统计值静默偏大。</p>
+     *
+     * <p>引用字段不存在(被删了)时整条条件丢掉: 与前端数据源候选项的口径一致, 取不到值就筛掉,
+     * 不拼 {@code col = null} 这种恒不成立的条件。</p>
+     *
+     * <p><b>为什么不在这里一并解析成 SQL 条件</b>: 右值随数据变, 而
+     * {@link ConditionFilterUtils#parseCondition} 是把值一起解析进去的。按当前数据的值逐条重新解析,
+     * 代价是每条数据都要重建一次目标表单配置; 所以这里只把「右值从哪来」定下来,
+     * 真正的解析留到 {@link #resolveScopeConditions}。</p>
+     *
+     * @param combineSearch 统计范围条件, 已由 {@link StatisticConditionConverter} 从配置的弹窗结构转好
+     * @param fieldId       统计字段ID, 仅用于日志
+     * @param refSources    出参: 引用字段ID -> 它在宿主表单上的取值方式
+     *
+     * @return 引用字段仍存在的条件; 配置为空时返回空条件(等同于不过滤)
+     */
+    private CombineSearch scopeCondition(CombineSearch combineSearch, String fieldId,
+                                         Map<String, HostValueSource> refSources) {
+        if (combineSearch == null || CollectionUtils.isEmpty(combineSearch.getConditions())) {
+            // 保存时校验过「符合条件」必须带条件, 但历史数据或直接改库可能破坏这个前提
+            log.warn("统计范围声明为「符合条件」却没有任何条件, 按不过滤处理: fieldId={}", fieldId);
+            return new CombineSearch();
+        }
+
+        List<FilterCondition> conditions = new ArrayList<>(combineSearch.getConditions().size());
+        for (FilterCondition condition : combineSearch.getConditions()) {
+            String refFieldId = refFieldId(condition.getValue());
+            if (refFieldId != null && !refSources.containsKey(refFieldId)) {
+                HostValueSource source = resolveRefSource(refFieldId);
+                if (source == null) {
+                    // 引用字段被删了, 这条条件取不到值。丢掉并留痕: 留着会拼出恒不成立的条件,
+                    // 统计值偏小, 而且从结果上看不出是配置问题。
+                    log.warn("统计范围条件的取值字段不存在, 已忽略该条件: fieldId={}, refFieldId={}", fieldId, refFieldId);
+                    continue;
+                }
+                refSources.put(refFieldId, source);
+            }
+            // 条件对象本身不改, 逐条数据时各复制一份再换右值 —— 一页数据是并行刷的, 共用同一个上下文
+            conditions.add(condition);
+        }
+
+        CombineSearch scope = new CombineSearch();
+        scope.setSearchMode(combineSearch.getSearchMode());
+        scope.setConditions(conditions);
+        return scope;
+    }
+
+    /**
+     * 取条件右值里的引用字段ID。
+     *
+     * <p>右值取自宿主记录时存的是一个对象, 其余情况是普通字面量, 靠这一点区分。</p>
+     *
+     * <p>之所以塞在 {@code value} 里而不是给 {@link FilterCondition} 加字段:
+     * 那个类是列表页高级搜索共用的, 加一个只在统计字段里有意义的字段会污染其它场景;
+     * 而条件里的值本来就是 {@code Object}, 存一个引用对象不破坏任何既有解析。</p>
+     *
+     * @return 引用字段ID; 右值是字面量时返回 null
+     */
+    private static String refFieldId(Object value) {
+        return value instanceof Map<?, ?> ref ? stringValue(ref.get(REF_FIELD_ID)) : null;
+    }
+
+    /**
+     * 解析一个引用字段在宿主表单上的取值方式。
+     *
+     * @return 取值方式; 字段不存在时返回 null (调用方会丢掉这条条件)
+     */
+    private HostValueSource resolveRefSource(String refFieldId) {
+        ModuleField hostField = moduleFieldMapper.selectByPrimaryKey(refFieldId);
+        if (hostField == null) {
+            return null;
+        }
+        // 主表列名判 null 会让取值回落到字段值表, 与 readRelatedValue 里「认不出来就当自定义字段」的口径一致
+        return new HostValueSource(businessKeyOf(hostField.getInternalKey(), refFieldId), refFieldId,
+                BaseField.isBlob(hostField.getType()));
+    }
+
+    /**
+     * 把统计范围条件解析成可以直接拼 SQL 的形式, 右值按当前这条数据现取。
+     *
+     * <p><b>为什么要逐条数据做一次</b>: 条件右值可能取自宿主记录(字段对字段比较), 每条数据的值都不同,
+     * 而 {@link ConditionFilterUtils#parseCondition} 是把值一起解析进去的。
+     * 复用同一份解析而不是另写一套, 是为了让「统计范围」与列表页、与数据源字段的候选项过滤
+     * 永远对同一个字面量得出同一个结果。</p>
+     *
+     * <p><b>右值取不到时整条条件丢掉</b>: 与前端数据源候选项的口径一致 ——
+     * 那边也是取不到值就把这条条件筛掉({@code dataSource.vue} 的 {@code getParams})。
+     * 不丢的话会拼出 {@code col = null} 这种恒不成立的条件, 统计值偏小, 而且看不出是配置问题。
+     * 这是一个刻意的取舍: 它和列表页一致, 但「匹配字段」为空时确实等价于「不过滤」。</p>
+     *
+     * <p><b>注意</b>: 成员字段条件里的 {@code CURRENT_USER} 由 {@code ConditionFilterUtils} 换成当前登录用户,
+     * 而批量刷新跑在线程池里拿不到会话, 会被换成 null(条件失效)。更新范围条件走的是同一个方法,
+     * 两边行为一致。</p>
+     *
+     * @return 解析后的条件; 没有条件时返回一个空的 CombineSearch(等同于不过滤), 不为 null ——
+     *         各表单的条件片段里都写着 {@code ${conditions}.size() > 0}, 传 null 会直接抛。
+     */
+    private CombineSearch resolveScopeConditions(StatisticRefreshContext context, String dataId) {
+        if (CollectionUtils.isEmpty(context.scopeCondition.getConditions())) {
+            return new CombineSearch();
+        }
+
+        List<FilterCondition> conditions = new ArrayList<>(context.scopeCondition.getConditions().size());
+        for (FilterCondition condition : context.scopeCondition.getConditions()) {
+            FilterCondition resolved = copyOf(condition);
+            String refFieldId = refFieldId(condition.getValue());
+            if (refFieldId != null) {
+                // 引用宿主字段的条件: 值换成这条数据自己的值。其余字段(name/operator/type/multipleValue)
+                // 描述的是「拿目标表单的哪一列怎么比」, 对同一条统计字段的所有数据都一样, 原样带过去。
+                resolved.setValue(readHostFieldValue(context.hostDataTable, context.scopeRefSources.get(refFieldId), dataId));
+            }
+            conditions.add(resolved);
+        }
+
+        CombineSearch combineSearch = new CombineSearch();
+        combineSearch.setSearchMode(context.scopeCondition.getSearchMode());
+        combineSearch.setConditions(conditions);
+        BaseCondition baseCondition = new BaseCondition();
+        baseCondition.setCombineSearch(combineSearch);
+        // formKey 传目标表单: name 是目标表单上的字段, 物理列名、显示字段要 join 哪张主表都由它决定。
+        // 依赖组织上下文, 调用方已经设置好。
+        ConditionFilterUtils.parseCondition(baseCondition, context.targetFormKey);
+        // 返回解析后的那份: 它已经是各表单条件片段要的形态 —— 字段名是驼峰的业务键或字段ID、customField /
+        // blob / refFiled 这些标志位都已填好。这里不能再把业务键转成下划线列名: 各表单的 condition 片段
+        // 是按驼峰名匹配的(condition.name == 'followTime'), 一转就全都命中不了, 会静默落到按字段值表查的分支上。
+        // getConditions() 会再按 valid() 过一遍, 值取不到的条件(以及相对时间解析后为空的)在这里被丢掉。
+        return baseCondition.getCombineSearch();
+    }
+
+    /**
+     * 复制一份条件对象。
+     *
+     * <p>逐条数据都要换右值, 而上下文里那份模板是一页数据并行共用的 ——
+     * 就地改会把上一条数据的条件带到下一条上, 值会串。</p>
+     */
+    private static FilterCondition copyOf(FilterCondition condition) {
+        FilterCondition copy = new FilterCondition();
+        copy.setName(condition.getName());
+        copy.setOperator(condition.getOperator());
+        copy.setType(condition.getType());
+        copy.setMultipleValue(condition.getMultipleValue());
+        copy.setValue(condition.getValue());
+        copy.setContainChildIds(condition.getContainChildIds());
+        return copy;
+    }
+
+    /**
+     * 读宿主记录上某个字段的值, 作为统计范围条件的右值。
+     *
+     * <p>与 {@link #readRelatedValue} 是同一个路子: 业务字段读主表列, 自定义字段读字段值表。</p>
+     *
+     * @return 字段值; 字段没有值或行不存在时返回 null
+     */
+    private String readHostFieldValue(String hostDataTable, HostValueSource source, String dataId) {
+        if (source == null) {
+            // 构建上下文时已经把取不到值的条件筛掉了, 走到这里说明映射缺了条目, 属于内部不一致
+            log.warn("统计范围条件找不到取值方式, 按取不到值处理: dataId={}", dataId);
+            return null;
+        }
+        if (source.column() != null) {
+            return extStatisticMapper.selectBusinessFieldValue(hostDataTable, source.column(), dataId);
+        }
+        return extStatisticMapper.selectFieldValue(
+                hostDataTable + FIELD_TABLE_SUFFIX, hostDataTable + BLOB_TABLE_SUFFIX,
+                source.fieldId(), dataId, source.blob());
     }
 
     /**
@@ -955,7 +1157,14 @@ public class StatisticFieldService {
     /**
      * 解析宿主表单的更新范围条件。
      *
-     * <p>结构就是该表单高级搜索的 {@code CombineSearch}, 直接复用列表页同一套解析。</p>
+     * <p>配置里存的是设计器筛选弹窗的「字段对字段」结构, 与统计范围条件同一套
+     * (见 {@link StatisticConditionConverter}), 所以先转成高级搜索的 {@link CombineSearch},
+     * 再复用列表页同一套解析。</p>
+     *
+     * <p><b>弹窗的「匹配字段」在这里只能丢掉</b>: 更新范围是在一条 SQL 里对整个宿主表判定的
+     * (右值不随数据变, 所以条件只解析一次), 没有统计范围那种「逐条数据现取右值」的机会,
+     * 右值引用变不成谓词。丢的时候必须留痕 —— 不丢的话右值会以 Map 的形式进到绑定参数里,
+     * 刷新直接报错, 而配置和日志里都看不出是哪条条件的问题。</p>
      *
      * @return 解析并补全后的 CombineSearch; 条件为空时返回一个空的 CombineSearch (等同于不过滤)
      */
@@ -965,10 +1174,25 @@ public class StatisticFieldService {
             log.warn("统计字段更新范围声明为「符合条件」却没有任何条件, 按不过滤处理: formKey={}", hostFormKey);
             return new CombineSearch();
         }
-        CombineSearch combineSearch = JSON.parseObject(JSON.toJSONString(rawCondition), CombineSearch.class);
-        if (combineSearch == null) {
+
+        CombineSearch combineSearch = StatisticConditionConverter.toCombineSearch(rawCondition);
+        List<FilterCondition> usable = new ArrayList<>();
+        for (FilterCondition condition : combineSearch.getConditions()) {
+            // 右值是对象 = 弹窗里的「匹配字段」留下的取值引用。按结构判断而不是按 refFieldId 有没有值判断:
+            // 右侧字段被选空的引用(操作符选「为空」时前端允许)一样是引用, 一样变不成谓词。
+            if (condition.getValue() instanceof Map) {
+                log.warn("统计字段更新范围不支持「匹配字段」条件, 已忽略该条件: formKey={}, field={}",
+                        hostFormKey, condition.getName());
+                continue;
+            }
+            usable.add(condition);
+        }
+        if (usable.isEmpty()) {
+            log.warn("统计字段更新范围的条件没有一条能用在 SQL 里, 按不过滤处理: formKey={}", hostFormKey);
             return new CombineSearch();
         }
+        combineSearch.setConditions(usable);
+
         BaseCondition baseCondition = new BaseCondition();
         baseCondition.setCombineSearch(combineSearch);
         // parseCondition 内部会按 formKey 自己取表单配置(依赖组织上下文, 调用方已经设置),
@@ -976,39 +1200,6 @@ public class StatisticFieldService {
         // 不自己实现一遍才不会和列表页产生口径差。
         ConditionFilterUtils.parseCondition(baseCondition, hostFormKey);
         return combineSearch;
-    }
-
-    /**
-     * 把条件规整成可以直接拼 SQL 的形式。
-     *
-     * <p>{@code ConditionFilterUtils.parseCondition} 产出的已经是 {@link FilterDBCondition},
-     * 这里只做两件事: 业务字段的名称转成物理列名, 以及拦掉没有通用实现的虚拟字段。</p>
-     *
-     * <p>业务字段的名称来自 {@code BaseField#idOrBusinessKey()}, 是驼峰形式(如 {@code customerId}),
-     * 而各模块的物理列是下划线形式(如 {@code customer_id}), 需要转换; 自定义字段的名称就是字段ID,
-     * 直接当成 field_id 使用, 不能转换。</p>
-     */
-    private List<FilterDBCondition> toDbConditions(List<FilterCondition> conditions) {
-        if (CollectionUtils.isEmpty(conditions)) {
-            return Collections.emptyList();
-        }
-        List<FilterDBCondition> dbConditions = new ArrayList<>(conditions.size());
-        for (FilterCondition condition : conditions) {
-            FilterDBCondition dbCondition = condition instanceof FilterDBCondition converted
-                    ? converted
-                    : JSON.parseObject(JSON.toJSONString(condition), FilterDBCondition.class);
-            if (!Boolean.TRUE.equals(dbCondition.getCustomField()) && !Boolean.TRUE.equals(dbCondition.getRefFiled())) {
-                String column = CaseFormatUtils.camelToUnderscore(dbCondition.getName());
-                if (VIRTUAL_DEPARTMENT_COLUMN.equals(column)) {
-                    // 抛出去由调用方按字段粒度 catch: 宁可这个字段不刷新,
-                    // 也不要按一个错的筛选范围算出一个"看起来对"的值。
-                    throw new GenericException("统计字段的更新范围不支持按部门筛选: " + dbCondition.getName());
-                }
-                dbCondition.setName(column);
-            }
-            dbConditions.add(dbCondition);
-        }
-        return dbConditions;
     }
 
     /**
@@ -1044,6 +1235,26 @@ public class StatisticFieldService {
     }
 
     /**
+     * 统计范围条件里「右值取自宿主记录的某个字段」时, 去宿主表单的哪儿取值。
+     *
+     * <p>按字段ID查一次字段表得到, 而不是读宿主表单配置: 一个统计字段每次刷新只解析一次引用,
+     * 用主键定位一行比重建整份表单配置便宜得多。</p>
+     *
+     * @param column  引用字段是业务字段时它在宿主主表上的列名, 否则为 null
+     * @param fieldId 引用字段ID, 仅 {@code column} 为 null 时有意义
+     * @param blob    引用字段是否是大字段, 决定读字段值表还是大字段值表
+     */
+    private record HostValueSource(String column, String fieldId, boolean blob) {
+    }
+
+    /**
+     * 取字符串形式的配置值 (JSON 反序列化出来的可能是任何类型)。
+     */
+    private static String stringValue(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    /**
      * 一个统计字段 + 它所在的宿主表单。
      *
      * <p>「统计目标是谁」写在统计字段自己的配置里, 但刷新时要算的列在宿主表单上,
@@ -1063,9 +1274,13 @@ public class StatisticFieldService {
 
         private StatisticField field;
         private String hostDataTable;
-        private String targetTable;
-        private String targetFieldTable;
-        private String targetBlobTable;
+        /**
+         * 目标表单Key。
+         *
+         * <p>解析统计范围条件时要用: 左字段是目标表单上的字段, 物理列名、显示字段要 join 哪张主表,
+         * 都得按目标表单的表单配置来。</p>
+         */
+        private String targetFormKey;
         private String relatedFieldId;
         /** 关联字段是业务字段时, 它在目标表单主表上的列名; 是自定义字段时为 null。为 null 时 SQL 才去 join 字段值表。 */
         private String relatedBusinessKey;
@@ -1085,5 +1300,17 @@ public class StatisticFieldService {
         private String statisticType;
         private boolean avgSkipEmpty;
         private String emptyResultMode;
+        /**
+         * 统计范围条件(统计范围 = 「符合条件」); 「全部」时是空条件。
+         *
+         * <p>存的是配置里的原始形态而不是解析后的 SQL 形态, 因为右值可能取自宿主记录、要按每条宿主数据现取,
+         * 见 {@link #resolveScopeConditions}。这里只把「引用字段去哪儿取值」提前解析好放在
+         * {@link #scopeRefSources} 里。这份条件是只读的, 每条数据各复制一份再换右值。</p>
+         */
+        private CombineSearch scopeCondition;
+        /**
+         * 引用字段ID -> 它在宿主表单上的取值方式, 即 {@link #scopeCondition} 里那些右值取自宿主记录的条件。
+         */
+        private Map<String, HostValueSource> scopeRefSources;
     }
 }
