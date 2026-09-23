@@ -167,7 +167,13 @@
     </n-form>
 
     <n-spin :show="syncSettingsLoading">
-      <n-form v-show="activeSettingTab === 'sync'" :model="syncForm" label-placement="top">
+      <n-form
+        v-show="activeSettingTab === 'sync'"
+        ref="syncFormRef"
+        :model="syncForm"
+        :rules="syncRules"
+        label-placement="top"
+      >
         <div class="mb-[16px] flex items-center gap-[8px]">
           <n-switch v-model:value="syncForm.enable" :rubber-band="false" />
           <span class="text-[var(--text-n1)]">
@@ -212,7 +218,7 @@
             </div>
           </n-form-item>
 
-          <n-form-item path="syncScope" :label="t('system.business.syncSettings.scope')">
+          <n-form-item path="syncDepartmentIds" :label="t('system.business.syncSettings.scope')">
             <template #label>
               <div class="flex items-center gap-[4px]">
                 <span>{{ t('system.business.syncSettings.scope') }}</span>
@@ -664,6 +670,24 @@
 
   const syncSettingsLoading = ref(false);
   const selectedDepartments = ref<SelectedUsersItem[]>([]);
+  const syncFormRef = ref<FormInst | null>(null);
+  const syncRules = computed<FormRules>(() => ({
+    syncDepartmentIds: [
+      {
+        trigger: ['change', 'blur'],
+        validator() {
+          if (
+            syncForm.value.enable &&
+            syncForm.value.syncScope === 'DEPARTMENT' &&
+            !syncForm.value.syncDepartmentIds.length
+          ) {
+            return new Error(t('system.business.syncSettings.selectDepartment'));
+          }
+          return true;
+        },
+      },
+    ],
+  }));
 
   async function patchSelectedDepartments(ids: string[]) {
     if (!ids.length) {
@@ -716,6 +740,7 @@
 
   async function handleSaveSyncSettings() {
     try {
+      await syncFormRef.value?.validate();
       loading.value = true;
       const syncScope = syncForm.value.syncScope === 'DEPARTMENT' ? syncForm.value.syncDepartmentIds : [];
       await saveSyncScheduleConfig({
