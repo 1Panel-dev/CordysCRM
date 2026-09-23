@@ -42,9 +42,9 @@
         </div>
       </div>
       <div v-else class="rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[12px]">
-        <span>
+        <div>
           {{ typeLabel }}
-        </span>
+        </div>
         <span>
           {{ props.detail?.detail }}
         </span>
