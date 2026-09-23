@@ -22,7 +22,6 @@ import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.aspect.HitApprovalAspect;
 import cn.cordys.crm.approval.constants.ApprovalNodeTypeEnum;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
-import cn.cordys.crm.approval.constants.ApprovalTaskType;
 import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
 import cn.cordys.crm.approval.domain.*;
 import cn.cordys.crm.approval.dto.*;
@@ -1203,38 +1202,22 @@ public class ApprovalResourceService {
             }
         }
 
-        // 最终都需校验资源权限
+        // 既不是提交人也未参与审批时，再校验资源权限
         return hasResourcePermission(resourceId, userId, orgId);
     }
 
     /**
-     * 校验用户是否是当前审批人（包括当前节点的待审批任务和抄送任务）
+     * 校验用户是否参与过当前审批实例（包括审批任务和抄送任务）
      */
     private boolean hasApprovalTaskPermission(ApprovalInstance instance, String userId) {
-        if (instance == null || StringUtils.isBlank(instance.getCurrentNodeId())) {
+        if (instance == null) {
             return false;
         }
 
-        // 查询当前节点的所有审批中任务
         LambdaQueryWrapper<ApprovalTask> taskWrapper = new LambdaQueryWrapper<>();
         taskWrapper.eq(ApprovalTask::getInstanceId, instance.getId())
-                .eq(ApprovalTask::getNodeId, instance.getCurrentNodeId())
-                .nq(ApprovalTask::getType, ApprovalTaskType.CC.name());
-        List<ApprovalTask> tasks = approvalTaskMapper.selectListByLambda(taskWrapper);
-
-        // 检查是否有待自己审批的任务
-        for (ApprovalTask task : tasks) {
-            if (userId.equals(task.getApproverId()) && ApprovalStatus.APPROVING.name().equals(task.getStatus())) {
-                return true;
-            }
-        }
-
-        // 查询抄送给当前用户的任务
-        LambdaQueryWrapper<ApprovalTask> ccWrapper = new LambdaQueryWrapper<>();
-        ccWrapper.eq(ApprovalTask::getInstanceId, instance.getId())
-                .eq(ApprovalTask::getApproverId, userId)
-                .eq(ApprovalTask::getType, ApprovalTaskType.CC.name());
-        return !approvalTaskMapper.selectListByLambda(ccWrapper).isEmpty();
+                .eq(ApprovalTask::getApproverId, userId);
+        return !approvalTaskMapper.selectListByLambda(taskWrapper).isEmpty();
     }
 
     /**
