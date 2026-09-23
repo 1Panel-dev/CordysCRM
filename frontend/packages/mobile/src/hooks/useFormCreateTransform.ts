@@ -98,7 +98,9 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
       if (options) {
         // 若字段值是选项值，则取选项值的name
         if (Array.isArray(field.fieldValue)) {
-          customFieldAttr[field.fieldId] = options.filter((e) => field.fieldValue.includes(e.id)).map((e) => e.name);
+          customFieldAttr[field.fieldId] = options
+            .filter((e) => (field.fieldValue as string[]).includes(e.id))
+            .map((e) => e.name);
         } else {
           customFieldAttr[field.fieldId] = options.find((e) => e.id === field.fieldValue)?.name;
         }

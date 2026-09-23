@@ -303,7 +303,7 @@
               trigger="click"
               :negative-text="t('common.cancel')"
               placement="bottom-end"
-              @confirm="handleReCalculation(item.fieldInfo?.id, item)"
+              @confirm="handleReCalculation(item.fieldInfo, item)"
             >
               <n-button type="warning" quaternary>
                 <template #icon><CrmIcon type="iconicon_error_circle_filled" /></template>
@@ -335,6 +335,7 @@
   import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ApprovalFieldPermissionModeEnum } from '@lib/shared/enums/process';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatNumberValueToString } from '@lib/shared/method/formCreate.js';
   import { isNotEmpty } from '@lib/shared/method/is.js';
   import { CollaborationType } from '@lib/shared/models/customer';
   import type { FormConfig } from '@lib/shared/models/system/module';
@@ -710,13 +711,13 @@
   }
 
   const popShow = ref<Record<string, boolean>>({});
-  async function handleReCalculation(fieldId: string, value: Description) {
+  async function handleReCalculation(field: FormCreateField, value: Description) {
     try {
-      const res = await refreshStatistic(props.sourceId, fieldId);
-      value.value = res !== null ? res.toString() : '';
-      popShow.value[fieldId] = false;
+      const res = await refreshStatistic(props.sourceId, field.id);
+      value.value = formatNumberValueToString(res, field);
+      popShow.value[field.id] = false;
       Message.success(t('common.refreshSuccess'));
-      emit('refresh', { id: fieldId });
+      emit('refresh', { id: field.id });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

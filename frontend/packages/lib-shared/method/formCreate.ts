@@ -192,12 +192,12 @@ export function getDisplayFieldText(field: FormCreateField, fieldValue: any) {
   return currentOption ? currentOption.label : fieldValue;
 }
 
-export function parseModuleFieldValue(item: FormCreateField, fieldValue: string | string[], options?: any[]) {
+export function parseModuleFieldValue(item: FormCreateField, fieldValue: string | number | string[], options?: any[]) {
   if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
     return '-';
   }
   const { t } = useI18n();
-  let value: string | string[] = fieldValue;
+  let value: string | number | string[] = fieldValue;
   if (options) {
     // 若字段值是选项值，则取选项值的name
     if (Array.isArray(fieldValue)) {
@@ -240,6 +240,7 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
     value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
   } else if (item.type === FieldTypeEnum.INPUT_NUMBER || item.type === FieldTypeEnum.STATISTIC) {
     value = formatNumberValueToString(fieldValue as unknown as number, item);
+    console.log(fieldValue, item);
     if (value.includes('NaN') || value.includes('%%')) {
       value = fieldValue.toString();
     }
@@ -324,6 +325,7 @@ export function transformData({
   const memberFieldIds: string[] = [];
   const departmentFieldIds: string[] = [];
   const timeFieldIds: string[] = [];
+  const numberFieldIds: string[] = [];
   const fieldOptionMap: Record<string, any[]> = {};
 
   fields.forEach((field) => {
@@ -338,6 +340,8 @@ export function transformData({
       memberFieldIds.push(fieldId);
     } else if (field.type === FieldTypeEnum.DEPARTMENT || field.type === FieldTypeEnum.DEPARTMENT_MULTIPLE) {
       departmentFieldIds.push(fieldId);
+    } else if ([FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.STATISTIC].includes(field.type)) {
+      numberFieldIds.push(fieldId);
     } else if (field.type === FieldTypeEnum.DATE_TIME) {
       timeFieldIds.push(fieldId);
     } else if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type) && needParseSubTable) {
@@ -403,6 +407,9 @@ export function transformData({
       } else if (timeFieldIds.includes(fieldId)) {
         // 时间类型字段，格式化时间显示
         businessFieldAttr[fieldId] = formatTimeValue(item[fieldId], field.dateType);
+      } else if (numberFieldIds.includes(fieldId)) {
+        // 数字类型字段，格式化数字显示
+        businessFieldAttr[fieldId] = formatNumberValueToString(item[fieldId], field);
       } else if (options && options.length > 0) {
         let name: string | string[] = '';
         if (item[fieldId] === '' || item[fieldId] === null) {
@@ -476,6 +483,12 @@ export function transformData({
       customFieldAttr[field.fieldId] = formatTimeValue(
         field.fieldValue as string,
         fields.find((f) => f.id === field.fieldId)?.dateType
+      );
+    } else if (numberFieldIds.includes(field.fieldId)) {
+      // 数字类型字段，格式化数字显示
+      customFieldAttr[field.fieldId] = formatNumberValueToString(
+        field.fieldValue as number,
+        fields.find((f) => f.id === field.fieldId) as FormCreateField
       );
     } else if (options && options.length > 0) {
       let name: string | string[] = '';
