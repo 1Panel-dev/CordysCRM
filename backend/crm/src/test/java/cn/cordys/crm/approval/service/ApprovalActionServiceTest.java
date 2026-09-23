@@ -1,13 +1,17 @@
 package cn.cordys.crm.approval.service;
 
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.uid.impl.DefaultUidGenerator;
 import cn.cordys.common.uid.worker.WorkerIdAssigner;
 import cn.cordys.common.util.CommonBeanFactory;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.constants.ApprovalAddSignType;
 import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.approval.constants.ApprovalTaskType;
+import cn.cordys.crm.approval.constants.ApprovalTypeEnum;
 import cn.cordys.crm.approval.domain.ApprovalAddSignTask;
 import cn.cordys.crm.approval.domain.ApprovalInstance;
+import cn.cordys.crm.approval.domain.ApprovalNodeApprover;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.request.ApprovalReturnBackRequest;
 import cn.cordys.crm.approval.mapper.ExtApprovalInstanceMapper;
@@ -20,25 +24,32 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class ApprovalActionServiceTest {
 
 	private static ApplicationContext previousContext;
+	private static MessageSource previousMessageSource;
 
 	private ApprovalActionService service;
 	private BaseMapper<ApprovalInstance> instanceMapper;
 	private BaseMapper<ApprovalTask> taskMapper;
 	private BaseMapper<ApprovalAddSignTask> addSignTaskMapper;
+	private BaseMapper<ApprovalNodeApprover> nodeApproverMapper;
 	private ExtApprovalInstanceMapper extInstanceMapper;
 	private ExtApprovalTaskMapper extTaskMapper;
 	private ApprovalFlowService approvalFlowService;
@@ -46,6 +57,10 @@ class ApprovalActionServiceTest {
 	@BeforeAll
 	static void initIdGenerator() {
 		previousContext = (ApplicationContext) ReflectionTestUtils.getField(CommonBeanFactory.class, "context");
+		previousMessageSource = (MessageSource) ReflectionTestUtils.getField(Translator.class, "messageSource");
+		StaticMessageSource messageSource = new StaticMessageSource();
+		messageSource.addMessage("no.back.auto.approval", LocaleContextHolder.getLocale(), "自动节点无法退回!");
+		ReflectionTestUtils.setField(Translator.class, "messageSource", messageSource);
 		DefaultUidGenerator generator = new DefaultUidGenerator();
 		ReflectionTestUtils.setField(generator, "workerIdAssigner", (WorkerIdAssigner) () -> 1L);
 		generator.init();
@@ -57,6 +72,7 @@ class ApprovalActionServiceTest {
 	@AfterAll
 	static void restoreContext() {
 		new CommonBeanFactory().setApplicationContext(previousContext);
+		ReflectionTestUtils.setField(Translator.class, "messageSource", previousMessageSource);
 	}
 
 	@BeforeEach
@@ -66,15 +82,38 @@ class ApprovalActionServiceTest {
 		instanceMapper = mock(BaseMapper.class);
 		taskMapper = mock(BaseMapper.class);
 		addSignTaskMapper = mock(BaseMapper.class);
+		nodeApproverMapper = mock(BaseMapper.class);
 		extInstanceMapper = mock(ExtApprovalInstanceMapper.class);
 		extTaskMapper = mock(ExtApprovalTaskMapper.class);
 		approvalFlowService = mock(ApprovalFlowService.class);
 		ReflectionTestUtils.setField(service, "approvalInstanceMapper", instanceMapper);
 		ReflectionTestUtils.setField(service, "approvalTaskMapper", taskMapper);
 		ReflectionTestUtils.setField(service, "approvalAddSignTaskMapper", addSignTaskMapper);
+		ReflectionTestUtils.setField(service, "approvalNodeApproverMapper", nodeApproverMapper);
 		ReflectionTestUtils.setField(service, "extApprovalInstanceMapper", extInstanceMapper);
 		ReflectionTestUtils.setField(service, "extApprovalTaskMapper", extTaskMapper);
 		ReflectionTestUtils.setField(service, "approvalFlowService", approvalFlowService);
+	}
+
+	@Test
+	void backToAutomaticNodeReturnsFriendlyMessage() {
+		ApprovalInstance instance = new ApprovalInstance();
+		instance.setId("instance-1");
+		when(instanceMapper.selectByPrimaryKey("instance-1")).thenReturn(instance);
+
+		ApprovalNodeApprover nodeApprover = new ApprovalNodeApprover();
+		when(nodeApproverMapper.selectByPrimaryKey("AUTO001")).thenReturn(nodeApprover);
+		ApprovalReturnBackRequest request = new ApprovalReturnBackRequest();
+		request.setInstanceId("instance-1");
+		request.setReturnToNodeId("AUTO001");
+
+		for (ApprovalTypeEnum type : List.of(ApprovalTypeEnum.AUTO_PASS, ApprovalTypeEnum.AUTO_REJECT)) {
+			nodeApprover.setApprovalType(type.name());
+			GenericException exception = assertThrows(GenericException.class,
+					() -> ReflectionTestUtils.invokeMethod(service, "appendBackTasks", request, "submitter", "org-1"));
+			assertEquals("自动节点无法退回!", exception.getMessage());
+		}
+		verifyNoInteractions(approvalFlowService);
 	}
 
 	@Test
