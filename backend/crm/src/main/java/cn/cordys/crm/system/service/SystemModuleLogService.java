@@ -8,9 +8,11 @@ import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.contract.mapper.ExtContractStageConfigMapper;
+import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.order.mapper.ExtOrderStageConfigMapper;
 import cn.cordys.crm.search.constants.SearchModuleEnum;
 import cn.cordys.crm.system.constants.CirculationFieldValueTypeEnum;
+import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.dto.ScopeNameDTO;
@@ -43,9 +45,11 @@ public class SystemModuleLogService extends BaseModuleLogService {
     @Resource
     private ExtContractStageConfigMapper extContractStageConfigMapper;
     @Resource
+    private ExtOpportunityStageConfigMapper extOpportunityStageConfigMapper;
+    @Resource
     private ModuleFormCacheService moduleFormCacheService;
     private List<BaseField> fields;
-    private List<StageConfigResponse> stageConfigList;
+    private List<? extends StageConfigResponse> stageConfigList;
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
@@ -111,10 +115,24 @@ public class SystemModuleLogService extends BaseModuleLogService {
                 searchSetting(differ);
             }
 
-            if (Strings.CS.equalsAny(differ.getColumn(), "orderSetting", "contractSetting")) {
+            if (Strings.CS.equalsAny(differ.getColumn(), "orderSetting", "contractSetting", "opportunitySetting")) {
                 differ.setColumnName(Translator.get("advanced_circulation_setting"));
-                differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, Strings.CI.equals(differ.getColumn(), "orderSetting") ? FormKey.ORDER.getKey() : FormKey.CONTRACT.getKey())));
-                differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, Strings.CI.equals(differ.getColumn(), "orderSetting") ? FormKey.ORDER.getKey() : FormKey.CONTRACT.getKey()).toString()));
+                switch (differ.getColumn()) {
+                    case "orderSetting":
+                        differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.ORDER.getKey())));
+                        differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, FormKey.ORDER.getKey()).toString()));
+                        break;
+                    case "contractSetting":
+                        differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.CONTRACT.getKey())));
+                        differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, FormKey.CONTRACT.getKey()).toString()));
+                        break;
+                    case "opportunitySetting":
+                        differ.setNewValueName(String.join(", ", handleConfig(differ.getNewValue(), orgId, FormKey.OPPORTUNITY.getKey())));
+                        differ.setOldValueName(String.join(", ", handleConfig(differ.getOldValue(), orgId, FormKey.OPPORTUNITY.getKey()).toString()));
+                        break;
+                    default:
+                        break;
+                }
             }
 
             if (Strings.CS.equals("circulationType", differ.getColumn())) {
@@ -145,7 +163,7 @@ public class SystemModuleLogService extends BaseModuleLogService {
                     } else if (Strings.CI.equals(formKey, FormKey.CONTRACT.getKey())) {
                         stageConfigList = extContractStageConfigMapper.getStageConfigList(orgId);
                     } else {
-
+                        stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
                     }
                     fields = moduleFormCacheService.getBusinessFormConfig(formKey, orgId).getFields();
 
@@ -160,17 +178,33 @@ public class SystemModuleLogService extends BaseModuleLogService {
                             String title = Translator.get("advanced_circulation_condition") + "\n" +
                                     Translator.get("advanced_circulation_condition_field") + "|" + Translator.get("advanced_circulation_condition_type") + "|" + Translator.get("advanced_circulation_condition_default_value") + "|" + Translator.get("isRequired");
                             String data = "";
+                            String dateDefaultType = "";
                             for (CirculationFieldValue fieldValue : circulationFieldValues) {
                                 BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldValue.getFieldId())).findFirst().orElse(null);
+                                if (Strings.CI.equals(baseField.getType(), FieldType.DATE_TIME.name())) {
+                                    switch (fieldValue.getDateDefaultType()) {
+                                        case "custom":
+                                            dateDefaultType = Translator.get("CUSTOM");
+                                            break;
+                                        case "current":
+                                            dateDefaultType = Translator.get("CURRENT");
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
                                 if (baseField != null) {
-                                    String s = baseField.getName() + "|" + Translator.get(fieldValue.getValueType()) + "|" + ((Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) && (fieldValue.getFieldValue() != null)) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "|" + Translator.get(fieldValue.getRequired().toString());
+                                    String s = baseField.getName() + "|" +
+                                            Translator.get(fieldValue.getValueType()) + "|" + dateDefaultType +
+                                            ((Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) && (fieldValue.getFieldValue() != null)) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "|" +
+                                            Translator.get(fieldValue.getRequired().toString());
                                     data = (data + s) + "\n";
                                 }
                             }
                             ;
                             newValuesList.add(stageName + "\n" + title + "\n" + data);
                         } else {
-                            newValuesList.add(stageName+"\n");
+                            newValuesList.add(stageName + "\n");
                         }
                     });
                 }
