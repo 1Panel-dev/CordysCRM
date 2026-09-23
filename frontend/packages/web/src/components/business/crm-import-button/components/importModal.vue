@@ -98,6 +98,7 @@
     title?: string; // 标题
     descriptionTip?: string; // 描述提示内容
     downloadTemplateApi?: () => Promise<any>; // 下载模板Api
+    templateFileName?: string; // 静态模板下载文件名
     hideImportUpdates?: boolean;
     hideImportUpdatesTooltip?: boolean;
   }>();
@@ -140,7 +141,9 @@
         downloadByteFile(res.data, fileName);
       } else {
         const lang = currentLocale.value === 'zh-CN' ? 'cn' : 'en';
-        window.open(`/templates/user_import_${lang}.xlsx`, '_blank');
+        const res = await fetch(`/templates/user_import_${lang}.xlsx`);
+        const blob = await res.blob();
+        downloadByteFile(blob, props.templateFileName ?? `user_import_${lang}.xlsx`);
       }
     } catch (error) {
       // eslint-disable-next-line no-console
