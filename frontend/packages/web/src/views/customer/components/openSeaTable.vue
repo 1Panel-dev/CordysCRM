@@ -499,7 +499,9 @@
   const activeRow = ref();
 
   function openFreezeModal(name: string, type: 'freeze' | 'unfreeze') {
-    activeRow.value = { name, id: activeCustomerId.value };
+    if (!activeRow.value && activeCustomerId.value) {
+      activeRow.value = { name, id: activeCustomerId.value };
+    }
     freezeType.value = type;
     freezeModalShow.value = true;
   }

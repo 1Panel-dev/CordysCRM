@@ -456,10 +456,12 @@
   const activeClue = ref<Partial<CluePoolListItem>>();
 
   function openFreezeModal(type: 'freeze' | 'unfreeze') {
-    activeRow.value = {
-      id: activeClue.value?.id,
-      name: activeClue.value?.name,
-    };
+    if (!activeRow.value && activeClue.value) {
+      activeRow.value = {
+        id: activeClue.value?.id,
+        name: activeClue.value?.name,
+      };
+    }
     freezeType.value = type;
     freezeModalShow.value = true;
   }
