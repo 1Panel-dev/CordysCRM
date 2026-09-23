@@ -8,6 +8,6 @@ import lombok.Data;
 public class ImportRequest {
 
     @NotBlank
-    @Schema(description = "导入类型")
+    @Schema(description = "导入类型：ADD 表示导入新建，UPDATE 表示导入更新", allowableValues = {"ADD", "UPDATE"})
     private String importType;
 }
