@@ -93,6 +93,8 @@
 
   const emit = defineEmits<{
     (e: 'remove'): void;
+    (e: 'freeze'): void;
+    (e: 'unfreeze'): void;
   }>();
 
   const { openModal } = useModal();
@@ -143,6 +145,20 @@
           popSlotContent: 'distributePopContent',
         },
         {
+          label: t('common.freeze'),
+          key: 'freeze',
+          text: false,
+          ghost: true,
+          permission: ['CLUE_MANAGEMENT_POOL:FREEZE'],
+        },
+        {
+          label: t('common.unfreeze'),
+          key: 'unfreeze',
+          text: false,
+          ghost: true,
+          permission: ['CLUE_MANAGEMENT_POOL:FREEZE'],
+        },
+        {
           label: t('common.delete'),
           key: 'delete',
           permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
@@ -152,7 +168,9 @@
           class: 'n-btn-outline-primary',
         },
       ] as ActionsItem[]
-    ).filter((item) => !props.detail?.frozen || !['claim', 'distribute'].includes(item.key || ''))
+    ).filter((item) =>
+      props.detail?.frozen ? !['claim', 'distribute', 'freeze'].includes(item.key || '') : item.key !== 'unfreeze'
+    )
   );
 
   const distributeFormRef = ref<InstanceType<typeof TransferForm>>();
@@ -250,6 +268,12 @@
         break;
       case 'delete':
         handleDelete();
+        break;
+      case 'freeze':
+        emit('freeze');
+        break;
+      case 'unfreeze':
+        emit('unfreeze');
         break;
       default:
         break;

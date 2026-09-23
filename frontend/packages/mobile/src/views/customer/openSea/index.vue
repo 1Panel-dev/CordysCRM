@@ -28,12 +28,12 @@
       </van-button>
     </div>
     <CrmList
-      v-if="openSeaList.length"
       ref="crmListRef"
       :list-params="listParams"
       :load-list-api="getOpenSeaCustomerList"
       class="p-[16px]"
       :item-gap="16"
+      :immediateCheck="false"
     >
       <template #item="{ item }">
         <CrmListCommonItem
