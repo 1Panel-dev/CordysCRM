@@ -27,6 +27,7 @@ export default {
   'org.testConnectionSuccess': '连接测试通过',
   'org.testConnectionError': '连接测试失败',
   'org.importAlertDesc': '上传前请先按 Excel 模版中的格式编辑内容',
+  'org.userImportTemplateFileName': '成员导入模板.xlsx',
   'org.downloadTemplate': '下载Excel模板',
   'org.formExcelImport': '从 Excel 文件导入',
   'org.validateTemplate': '校验模版',
