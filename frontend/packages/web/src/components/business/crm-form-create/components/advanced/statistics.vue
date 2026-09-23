@@ -49,6 +49,7 @@
       :disabled="true"
       :need-init-detail="props.needInitDetail"
       pureInput
+      longFloat
     />
   </n-form-item>
 </template>

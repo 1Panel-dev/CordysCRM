@@ -8,7 +8,7 @@
     :disabled="props.fieldConfig.editable === false || props.disabled || !!props.fieldConfig.resourceFieldId"
     :parse="parse"
     :format="format"
-    :precision="props.fieldConfig.precision"
+    :precision="props.longFloat ? props.fieldConfig.precision || 13 : props.fieldConfig.precision"
     clearable
     class="w-full"
     @update-value="($event:number | null) => emit('change', $event)"
@@ -77,6 +77,7 @@
     ignoreRule?: boolean;
     disabled?: boolean;
     pureInput?: boolean; // 是否是纯输入框，主要用于公式计算结果渲染
+    longFloat?: boolean; // 是否是长浮点数，是的话且没设置保留位数时就保留最长小数位
   }>();
   const emit = defineEmits<{
     (e: 'change', value: number | null): void;
@@ -120,7 +121,15 @@
         const [integerPart, decimalPart] = val.toFixed(props.fieldConfig.precision).split('.');
         return `${integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}.${decimalPart}`;
       }
+      if (props.longFloat && !props.fieldConfig.precision) {
+        const [integerPart, decimalPart] = val.toFixed(13).split('.');
+        return `${integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}.${decimalPart}`;
+      }
       return val.toLocaleString('en-US');
+    }
+    if (props.longFloat && !props.fieldConfig.precision) {
+      const floatVal = typeof val === 'number' ? val.toFixed(13) : Number(val).toFixed(13);
+      return Number(floatVal) === val ? val : floatVal;
     }
     return typeof val === 'number'
       ? val.toFixed(props.fieldConfig.precision || 0)
