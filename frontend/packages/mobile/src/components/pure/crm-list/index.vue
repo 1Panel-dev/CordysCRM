@@ -5,11 +5,12 @@
       <van-list
         v-model:loading="loading"
         v-model:error="error"
-        :error-text="props.errorText ?? t('common.listLoadErrorTip')"
+        :error-text="error ? props.errorText || t('common.listLoadErrorTip') : undefined"
         :finished="finished"
         :finished-text="list.length === 0 ? '' : t('common.listFinishedTip')"
         class="flex flex-col"
         :class="`gap-[${itemGap}px]`"
+        :immediate-check="props.immediateCheck"
         @load="loadList"
       >
         <template v-for="item in list" :key="item.id">
@@ -39,6 +40,7 @@
     transform?: (item: any, optionMap?: Record<string, any[]>) => Record<string, any>;
     closeInitLoad?: boolean; // 关闭首次加载
     notShowLoadingToast?: boolean;
+    immediateCheck?: boolean; // 是否立即检查是否需要加载数据, 适用于列表高度不够时, 不会触发load事件
   }>();
   const emit = defineEmits<{
     (e: 'refresh'): void;
@@ -68,7 +70,7 @@
       }
       if (!props.loadListApi) {
         list.value = props.transform ? list.value.map((e: any) => props.transform!(e)) : list.value;
-        originData.value = list.value;
+        originData.value = cloneDeep(list.value);
         finished.value = true;
         return;
       }
@@ -104,7 +106,9 @@
       }
       finished.value = props.noPageNation || data.total <= currentPage.value * 20;
       error.value = false;
-      originData.value = cloneDeep(list.value);
+      nextTick(() => {
+        originData.value = cloneDeep(list.value);
+      });
     } catch (_error: any) {
       // eslint-disable-next-line no-console
       console.log(_error);
@@ -128,11 +132,15 @@
       }
       return;
     }
-    const lowerCaseVal = props.keyword.trim()?.toLowerCase();
-    const keys = Array.isArray(keywordKeys) ? keywordKeys : [keywordKeys];
-    list.value = originData.value.filter((item) => {
-      return keys.some((key) => item[key]?.toString().toLowerCase().includes(lowerCaseVal));
-    });
+    if (props.loadListApi && !props.noPageNation) {
+      loadList(true);
+    } else {
+      const lowerCaseVal = props.keyword.trim()?.toLowerCase();
+      const keys = Array.isArray(keywordKeys) ? keywordKeys : [keywordKeys];
+      list.value = originData.value.filter((item) => {
+        return keys.some((key) => item[key]?.toString().toLowerCase().includes(lowerCaseVal));
+      });
+    }
   }
 
   async function handleRefresh() {

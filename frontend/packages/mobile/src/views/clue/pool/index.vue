@@ -36,6 +36,7 @@
       class="p-[16px]"
       :item-gap="16"
       :load-list-api="getCluePoolList"
+      :immediateCheck="false"
     >
       <template #item="{ item }">
         <CrmListCommonItem :item="item" :actions="actions" resource-type="lead" @click="goDetail"></CrmListCommonItem>

@@ -93,6 +93,8 @@
   const emit = defineEmits<{
     (e: 'change'): void;
     (e: 'delete'): void;
+    (e: 'freeze', name: string): void;
+    (e: 'unfreeze', name: string): void;
   }>();
 
   const { t } = useI18n();
@@ -147,6 +149,20 @@
           popSlotContent: 'distributePopContent',
         },
         {
+          label: t('common.freeze'),
+          key: 'freeze',
+          text: false,
+          ghost: true,
+          permission: ['CUSTOMER_MANAGEMENT_POOL:FREEZE'],
+        },
+        {
+          label: t('common.unfreeze'),
+          key: 'unfreeze',
+          text: false,
+          ghost: true,
+          permission: ['CUSTOMER_MANAGEMENT_POOL:FREEZE'],
+        },
+        {
           label: t('common.delete'),
           key: 'delete',
           text: false,
@@ -156,7 +172,9 @@
           permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
         },
       ] as ActionsItem[]
-    ).filter((item) => (frozen.value ? !['claim', 'distribute'].includes(item.key || '') : true));
+    ).filter((item) =>
+      frozen.value ? !['claim', 'distribute', 'freeze'].includes(item.key || '') : item.key !== 'unfreeze'
+    );
   });
 
   const activeTab = ref('followRecord');
@@ -253,6 +271,7 @@
     }
   }
 
+  const sourceName = ref('');
   function handleButtonSelect(key: string) {
     switch (key) {
       case 'delete':
@@ -264,12 +283,17 @@
       case 'pop-distribute':
         handleDistribute(props.sourceId);
         break;
+      case 'freeze':
+        emit('freeze', sourceName.value);
+        break;
+      case 'unfreeze':
+        emit('unfreeze', sourceName.value);
+        break;
       default:
         break;
     }
   }
 
-  const sourceName = ref('');
   const formViewSize = ref<FormViewSize>('large');
   function handleDescriptionInit(
     _collaborationType?: CollaborationType,

@@ -91,6 +91,8 @@
     :hidden-columns="hiddenColumns"
     @change="searchData(undefined, undefined, activeCustomerId)"
     @delete="removeItemFromList(activeCustomerId)"
+    @freeze="openFreezeModal($event, 'freeze')"
+    @unfreeze="openFreezeModal($event, 'unfreeze')"
   />
   <TransferModal
     v-model:show="showDistributeModal"
@@ -496,7 +498,14 @@
   const freezeType = ref<'freeze' | 'unfreeze'>('freeze');
   const activeRow = ref();
 
+  function openFreezeModal(name: string, type: 'freeze' | 'unfreeze') {
+    activeRow.value = { name, id: activeCustomerId.value };
+    freezeType.value = type;
+    freezeModalShow.value = true;
+  }
+
   function handleActionSelect(row: any, actionKey: string) {
+    activeRow.value = row;
     switch (actionKey) {
       case 'pop-claim':
         handleClaim(row);
@@ -508,14 +517,10 @@
         handleDelete(row);
         break;
       case 'freeze':
-        activeRow.value = row;
-        freezeType.value = 'freeze';
-        freezeModalShow.value = true;
+        openFreezeModal(row.name, 'freeze');
         break;
       case 'unfreeze':
-        activeRow.value = row;
-        freezeType.value = 'unfreeze';
-        freezeModalShow.value = true;
+        openFreezeModal(row.name, 'unfreeze');
         break;
       default:
         break;
@@ -625,7 +630,9 @@
   function handleSorterChange(sorter: SortParams) {
     if (openSea.value) {
       setLoadListParams({ keyword: keyword.value, poolId: openSea.value, viewId: activeTab.value });
-      propsEvent.value.sorterChange(sorter);
+      nextTick(() => {
+        propsEvent.value.sorterChange(sorter);
+      });
     }
   }
 

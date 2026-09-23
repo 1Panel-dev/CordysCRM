@@ -135,7 +135,9 @@
           } else if (!cf.required && field.rules.some((e) => e.key === 'required')) {
             rules = rules.filter((e) => e.key !== 'required');
           }
-          if (cf.valueType === CirculationValueTypeEnum.FIXED_VALUE) {
+          if (field.type === FieldTypeEnum.DATE_TIME && cf.dateDefaultType === 'current') {
+            formDetail.value[field.id] = new Date();
+          } else if (cf.valueType === CirculationValueTypeEnum.FIXED_VALUE) {
             formDetail.value[field.id] = initFieldValue(field, cf.fieldValue);
             const options = props.stageConfig?.optionMap?.[field.id]?.map((e: Record<string, any>) => ({
               id: e.id,
@@ -151,8 +153,6 @@
             } else {
               field.initialOptions = [];
             }
-          } else if (field.type === FieldTypeEnum.DATE_TIME && cf.dateDefaultType === 'current') {
-            formDetail.value[field.id] = new Date();
           }
           return {
             ...field,

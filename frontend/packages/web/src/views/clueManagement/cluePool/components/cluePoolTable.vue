@@ -90,6 +90,8 @@
     :detail="activeClue"
     :hidden-columns="hiddenColumns"
     @remove="removeItemFromList(activeClue?.id || '')"
+    @freeze="openFreezeModal('freeze')"
+    @unfreeze="openFreezeModal('unfreeze')"
   />
   <addOrEditPoolDrawer
     v-model:visible="drawerVisible"
@@ -451,8 +453,19 @@
   const freezeModalShow = ref(false);
   const freezeType = ref<'freeze' | 'unfreeze'>('freeze');
   const activeRow = ref();
+  const activeClue = ref<Partial<CluePoolListItem>>();
+
+  function openFreezeModal(type: 'freeze' | 'unfreeze') {
+    activeRow.value = {
+      id: activeClue.value?.id,
+      name: activeClue.value?.name,
+    };
+    freezeType.value = type;
+    freezeModalShow.value = true;
+  }
 
   function handleActionSelect(row: CluePoolListItem, actionKey: string) {
+    activeRow.value = row;
     switch (actionKey) {
       case 'pop-claim':
         handleClaim(row);
@@ -464,21 +477,16 @@
         handleDelete(row);
         break;
       case 'freeze':
-        activeRow.value = row;
-        freezeType.value = 'freeze';
-        freezeModalShow.value = true;
+        openFreezeModal('freeze');
         break;
       case 'unfreeze':
-        activeRow.value = row;
-        freezeType.value = 'unfreeze';
-        freezeModalShow.value = true;
+        openFreezeModal('unfreeze');
         break;
       default:
         break;
     }
   }
 
-  const activeClue = ref<Partial<CluePoolListItem>>();
   const activeTab = ref();
   const handleAdvanceFilter = ref<null | ((...args: any[]) => void)>(null);
   const handleSearchData = ref<null | ((...args: any[]) => void)>(null);
@@ -600,7 +608,9 @@
   function handleSorterChange(sorter: SortParams) {
     if (poolId.value) {
       setLoadListParams({ keyword: keyword.value, poolId: poolId.value, viewId: activeTab.value });
-      propsEvent.value.sorterChange(sorter);
+      nextTick(() => {
+        propsEvent.value.sorterChange(sorter);
+      });
     }
   }
 
