@@ -19,6 +19,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.TimeUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.constants.ClueStatus;
 import cn.cordys.crm.clue.domain.*;
 import cn.cordys.crm.clue.dto.CluePoolDTO;
@@ -49,6 +50,8 @@ import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
+import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.crm.system.service.UserExtendService;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
@@ -84,6 +87,8 @@ public class PoolClueService {
     private static final String AUTO_UNFREEZE_REASON = "冻结到期，自动解冻";
     @Resource
     private BaseMapper<Clue> clueMapper;
+    @Resource
+    private StatisticFieldService statisticFieldService;
     @Resource
     private ExtClueMapper extClueMapper;
     @Resource
@@ -253,9 +258,14 @@ public class PoolClueService {
     @OperationLog(module = LogModule.CLUE_POOL_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
+        // 统计字段: 公海删线索走的是这条路径, 不经过 ClueService, 所以这里要单独挂一次。
+        // 本类没有类级 @Transactional, 捕获、删除、重算各自独立提交 —— 删除失败时重算按「数据还在」的口径算, 值仍然是对的。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CLUE.getKey(), List.of(id), OrganizationContext.getOrganizationId());
         LambdaQueryWrapper<Clue> clueWrapper = new LambdaQueryWrapper<>();
         clueWrapper.eq(Clue::getId, id);
         clueMapper.deleteByLambda(clueWrapper);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 设置操作对象
         OperationLogContext.setResourceName(clue.getName());
@@ -303,9 +313,13 @@ public class PoolClueService {
      */
     public void batchDelete(List<String> ids, String userId, String orgId) {
         List<Clue> clues = clueMapper.selectByIds(ids);
+        // 统计字段: 见 delete —— 公海这条路不经过 ClueService
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CLUE.getKey(), ids, OrganizationContext.getOrganizationId());
         LambdaQueryWrapper<Clue> clueWrapper = new LambdaQueryWrapper<>();
         clueWrapper.in(Clue::getId, ids);
         clueMapper.deleteByLambda(clueWrapper);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         List<LogDTO> logs = clues.stream()
                 .map(clue ->

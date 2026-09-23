@@ -67,6 +67,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -351,6 +352,9 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             throw new GenericException(Translator.get("invoice.not.exist"));
         }
 
+        // 删除会同时毁掉关联字段的值, 所以「这张发票关联了谁」只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.INVOICE.getKey(), List.of(id), orgId);
         invoiceFieldService.deleteByResourceId(id);
         invoiceMapper.deleteByPrimaryKey(id);
 
@@ -358,6 +362,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         LambdaQueryWrapper<ContractInvoiceSnapshot> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ContractInvoiceSnapshot::getInvoiceId, id);
         snapshotBaseMapper.deleteByLambda(wrapper);
+        // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 添加日志上下文
         OperationLogContext.setResourceName(invoice.getName());
@@ -646,7 +652,14 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         List<ContractInvoice> deleteInvoices = permittedInvoices.stream()
                 .filter(i -> deleteIds.contains(i.getId()))
                 .toList();
+        // 捕的是审批分流之后真正要删的 deleteIds, 不是 permittedIds —— 走审批的那批此刻并没删掉,
+        // 捕了就是白捕, 而且审批通过后还会由审批侧再删一次, 那次自会重算。
+        // 删除会同时毁掉关联字段的值, 所以只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.INVOICE.getKey(), deleteIds, orgId);
         contractInvoiceMapper.deleteByIds(deleteIds);
+        // 删完再重算, 此时被删的那批已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         List<LogDTO> logs = deleteInvoices.stream()
                 .map(invoice ->

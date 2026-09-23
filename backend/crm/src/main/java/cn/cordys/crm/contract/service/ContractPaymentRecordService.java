@@ -26,6 +26,7 @@ import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordAddRequest;
 import cn.cordys.crm.contract.dto.request.ContractPaymentRecordPageRequest;
@@ -54,6 +55,7 @@ import cn.cordys.crm.system.service.ModuleFieldExtService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -198,8 +200,14 @@ public class ContractPaymentRecordService extends BaseExportService {
         if (oldRecord == null) {
             throw new GenericException(Translator.get("record.not.exist"));
         }
+        // 删除会同时毁掉关联字段的值, 所以「这条回款记录关联了谁」只能删前先捕; 重算又要等删完才准。
+        // 本方法拿不到 orgId 入参, 只能取上下文, 与其它没有 orgId 入参的删除方法一致。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CONTRACT_PAYMENT_RECORD.getKey(), List.of(id), OrganizationContext.getOrganizationId());
         contractPaymentRecordMapper.deleteByPrimaryKey(id);
         contractPaymentRecordFieldService.deleteByResourceId(id);
+        // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         OperationLogContext.setResourceName(oldRecord.getName());
     }
 

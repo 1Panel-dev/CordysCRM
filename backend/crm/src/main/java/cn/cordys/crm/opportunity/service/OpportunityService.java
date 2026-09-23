@@ -31,6 +31,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
@@ -67,6 +68,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.*;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -409,12 +411,17 @@ public class OpportunityService extends BaseExportService {
     @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(id);
+        // 删除会同时毁掉关联字段的值, 所以「这条商机关联了谁」只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.OPPORTUNITY.getKey(), List.of(id), orgId);
         Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
             opportunityMapper.deleteByPrimaryKey(opportunity.getId());
             opportunityFieldService.deleteByResourceId(opportunity.getId());
         }, () -> {
             throw new GenericException("opportunity_not_found");
         });
+        // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         // 添加日志上下文
         OperationLogContext.setResourceName(opportunity.getName());
 
@@ -485,8 +492,14 @@ public class OpportunityService extends BaseExportService {
         if (CollectionUtils.isEmpty(toDoIds)) {
             return;
         }
+        // 捕的是阶段过滤之后真正要删的 toDoIds, 不是入参 ids —— 成功阶段的商机不会被删, 拿它去捕等于白捕。
+        // 删除会同时毁掉关联字段的值, 所以只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.OPPORTUNITY.getKey(), toDoIds, orgId);
         opportunityMapper.deleteByIds(toDoIds);
         opportunityFieldService.deleteByResourceIds(toDoIds);
+        // 删完再重算, 此时被删的那批已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         List<LogDTO> logs = new ArrayList<>();
         opportunityList.forEach(opportunity -> {
             LogDTO logDTO = new LogDTO(opportunity.getOrganizationId(), opportunity.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY_INDEX, opportunity.getName());

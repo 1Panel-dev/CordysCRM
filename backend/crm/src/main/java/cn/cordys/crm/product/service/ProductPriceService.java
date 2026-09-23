@@ -24,6 +24,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.ServiceUtils;
 import cn.cordys.common.util.Translator;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationField;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotationFieldBlob;
 import cn.cordys.crm.product.domain.ProductPrice;
@@ -50,6 +51,7 @@ import cn.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import cn.cordys.crm.system.excel.listener.CustomFieldMergeCellEventListener;
 import cn.cordys.crm.system.service.*;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -302,8 +304,13 @@ public class ProductPriceService extends BaseExportService {
         }
 
         // 3. 删除主表和自定义字段表数据
+        // 删除会同时毁掉关联字段的值, 所以「这条价格表被谁关联了」只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.PRICE.getKey(), List.of(id), OrganizationContext.getOrganizationId());
         productPriceMapper.deleteByPrimaryKey(id);
         productPriceFieldService.deleteByResourceId(id);
+        // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 4. 记录日志上下文（用于审计）
         OperationLogContext.setResourceName(price.getName());

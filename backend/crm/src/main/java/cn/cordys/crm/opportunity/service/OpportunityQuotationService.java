@@ -55,6 +55,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -693,8 +694,13 @@ public class OpportunityQuotationService implements ApprovalResourceHandler {
             return;
         }
         checkQuotationLinked(id, "opportunity.quotation.already.associated");
+        // 删除会同时毁掉关联字段的值, 所以「这条报价单关联了谁」只能删前先捕; 重算又要等删完才准。
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.QUOTATION.getKey(), List.of(id), organizationId);
         opportunityQuotationFieldService.deleteByResourceId(id);
         opportunityQuotationMapper.deleteByPrimaryKey(id);
+        // 删完再重算, 此时被删的那条已经不在, 不会被统计进去。
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         //删除快照
         LambdaQueryWrapper<OpportunityQuotationSnapshot> wrapper = new LambdaQueryWrapper<>();

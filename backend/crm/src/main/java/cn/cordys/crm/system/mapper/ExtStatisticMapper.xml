@@ -64,6 +64,19 @@
         limit 1
     </select>
 
+    <!--
+        一批数据ID里还存在的那些: 删除后重算前剔掉已被级联删掉的宿主记录, 免得给不存在的记录写值行。
+        调用方已按宿主表单分组, 所以这里是单表主键 in。
+    -->
+    <select id="selectExistingDataIds" resultType="java.lang.String">
+        select id
+        from `${dataTable}`
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
     <delete id="deleteFieldValue">
         delete from `${fieldTable}` where field_id = #{fieldId} and resource_id = #{resourceId}
     </delete>

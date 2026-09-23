@@ -25,6 +25,7 @@ import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
+import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.customer.constants.CustomerCollaborationType;
 import cn.cordys.crm.customer.domain.*;
 import cn.cordys.crm.customer.dto.request.*;
@@ -55,6 +56,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -383,8 +385,12 @@ public class CustomerContactService {
         if (originCustomerContact == null) {
             return;
         }
+        // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等删完才准
+        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CONTACT.getKey(), List.of(id), OrganizationContext.getOrganizationId());
         customerContactMapper.deleteByPrimaryKey(id);
         customerContactFieldService.deleteByResourceId(id);
+        statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 设置操作对象
         OperationLogContext.setResourceName(originCustomerContact.getName());

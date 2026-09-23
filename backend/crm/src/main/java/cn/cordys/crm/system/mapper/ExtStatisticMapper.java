@@ -64,6 +64,25 @@ public interface ExtStatisticMapper {
                                     @Param("id") String id);
 
     /**
+     * 从一批数据ID里挑出还存在的那些, 用于删除后重算统计字段前把已经不存在的宿主记录剔掉。
+     *
+     * <p>为什么非得查一次: 删除会级联, 宿主很可能正躺在同一次删除里。以
+     * {@code CustomerService#deleteCustomerResource} 为例 —— 先删客户主行与 {@code customer_field},
+     * 再级联删跟进记录, 而跟进记录的宿主有可能正是这个客户(关联字段指回自己)。
+     * 重算发生在这时候就会给一条已经不存在的记录写值行, 而清 {@code customer_field} 的那步已经跑过去了,
+     * 孤儿行留得下来。</p>
+     *
+     * <p>一次查一个宿主表单(调用方按表单分组后传进来), 主键 {@code in}, 不为此再拆成逐条判断。</p>
+     *
+     * @param dataTable 宿主表单数据表名
+     * @param ids       待判断的数据ID集合
+     *
+     * @return 其中仍然存在的ID, 一个都没有时返回空集合
+     */
+    List<String> selectExistingDataIds(@Param("dataTable") String dataTable,
+                                       @Param("ids") Collection<String> ids);
+
+    /**
      * 查询宿主表单某条数据某个字段的值, 用于解析字段对字段比较条件里的「右值」。
      *
      * @param fieldTable   字段表名
