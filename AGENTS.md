@@ -28,4 +28,4 @@ Java 使用四空格缩进，包名统一置于 `cn.cordys` 下；类名使用 P
 
 ## 提交与拉取请求规范
 
-提交信息遵循 Commitlint 强制的 Conventional Commits，例如 `fix: correct invoice validation`、`feat: add customer filter` 或 `refactor: simplify AI conditions`。提交和 PR 应保持小而聚焦，并能独立合并；开发重要功能前先创建 Issue 讨论。PR 需说明变更原因和内容，确认测试结果，并说明文档影响。关联相关 Issue；涉及可见界面变化时附截图。Issue、测试夹具和 PR 中不得包含凭据、客户数据、IP 地址或未脱敏日志。
+提交信息遵循 Commitlint 强制的 Conventional Commits，例如 `fix: correct invoice validation`、`feat: add customer filter` 或 `refactor: simplify AI conditions`。提交主题保持单行英文；存在用户明确提供的附带正文时，主题与正文之间必须保留一个空行，再原样写入正文，正文可包含中文、Markdown 链接及 `--bug`、`--user` 等跟踪信息；没有正文时不添加空行。提交和 PR 应保持小而聚焦，并能独立合并；开发重要功能前先创建 Issue 讨论。PR 需说明变更原因和内容，确认测试结果，并说明文档影响。关联相关 Issue；涉及可见界面变化时附截图。Issue、测试夹具和 PR 中不得包含凭据、客户数据、IP 地址或未脱敏日志。
