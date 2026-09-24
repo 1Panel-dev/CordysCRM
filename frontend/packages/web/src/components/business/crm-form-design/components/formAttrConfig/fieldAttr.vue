@@ -1611,7 +1611,8 @@
     :form-key="props.formKey"
     :custom-data-source-forms="[]"
     combineSearchFieldKey="combineSearch"
-    isStatistic
+    field-source="statisticTarget"
+    match-value-only
     @save="handleStatisticRangeFilterSave"
   />
   <FilterModal
@@ -1622,7 +1623,7 @@
     :form-key="props.formKey"
     :custom-data-source-forms="[]"
     combineSearchFieldKey="updateScopeCondition"
-    isStatistic
+    field-source="currentForm"
     @save="handleStatisticUpdateRangeFilterSave"
   />
   <DataSourceDisplayFieldModal
