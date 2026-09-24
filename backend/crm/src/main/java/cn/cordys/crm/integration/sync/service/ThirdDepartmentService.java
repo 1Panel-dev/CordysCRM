@@ -1,9 +1,14 @@
 package cn.cordys.crm.integration.sync.service;
 
+import cn.cordys.aspectj.annotation.OperationLog;
 import cn.cordys.aspectj.constants.LogModule;
 import cn.cordys.aspectj.constants.LogType;
+import cn.cordys.aspectj.context.OperationLogContext;
+import cn.cordys.aspectj.dto.LogContextInfo;
 import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.constants.ThirdConfigTypeConstants;
+import cn.cordys.common.dto.OptionDTO;
+import cn.cordys.common.dto.stage.CirculationFieldValue;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.schedule.ScheduleService;
 import cn.cordys.common.uid.IDGenerator;
@@ -36,6 +41,7 @@ import cn.cordys.crm.system.notice.CommonNoticeSendService;
 import cn.cordys.crm.system.service.IntegrationConfigService;
 import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.utils.ScheduleUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -94,7 +100,7 @@ public class ThirdDepartmentService {
      */
     @Async
     public void syncUser(SyncUserRequest request, String operatorId, String orgId, Locale locale) {
-        syncUserAndDepartment(request.getSyncScope(), operatorId, orgId, request.getType(), locale);
+        syncUserAndDepartment(request.getSyncScope().stream().map(OptionDTO::getName).filter(Objects::nonNull).toList(), operatorId, orgId, request.getType(), locale);
     }
 
     public void syncUserAndDepartment(List<String> syncDepartmentIds, String operatorId, String orgId, String resourceType, Locale locale) {
@@ -425,10 +431,26 @@ public class ThirdDepartmentService {
      * @param userId
      * @param orgId
      */
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, resourceId = "{#userId}")
     public void scheduleConfig(SyncUserScheduleConfigRequest request, String userId, String orgId) {
         String cron = SyncCycleCron.getCron(request.getSyncCycle());
 
+        Map<String, String> originalVal = new HashMap<>(1);
+        Map<String, String> modifiedVal = new HashMap<>(1);
+
         Schedule schedule = scheduleService.getScheduleByResource(request.getResourceType(), orgId, SyncUserScheduleJob.class.getName());
+        if (schedule != null) {
+            originalVal.put("syncEnable", Translator.get("log.enable." + schedule.getEnable()));
+            originalVal.put("syncCycle", Translator.get(SyncCycleCron.getByCron(schedule.getValue()).name()));
+            List<OptionDTO> syncScope = JSON.parseObject(schedule.getConfig(), new TypeReference<List<OptionDTO>>() {
+            });
+            if (CollectionUtils.isNotEmpty(syncScope)) {
+                originalVal.put("syncScope", syncScope.stream().map(OptionDTO::getName).filter(Objects::nonNull).toList().toString());
+            } else {
+                originalVal.put("syncScope", Translator.get("ENTIRE_COMPANY"));
+            }
+        }
+
         Optional<Schedule> optional = Optional.ofNullable(schedule);
         optional.ifPresentOrElse(s -> {
             s.setValue(cron);
@@ -438,6 +460,13 @@ public class ThirdDepartmentService {
             s.setUpdateUser(userId);
             scheduleService.editSchedule(s);
             scheduleService.addOrUpdateCronJob(s, SyncUserScheduleJob.getJobKey(s.getKey()), SyncUserScheduleJob.getTriggerKey(s.getKey()), SyncUserScheduleJob.class);
+            modifiedVal.put("syncEnable", Translator.get("log.enable." + request.isEnable()));
+            modifiedVal.put("syncCycle", Translator.get(request.getSyncCycle()));
+            if (CollectionUtils.isNotEmpty(request.getSyncScope())) {
+                modifiedVal.put("syncScope", request.getSyncScope().stream().map(OptionDTO::getName).filter(Objects::nonNull).toList().toString());
+            } else {
+                modifiedVal.put("syncScope", Translator.get("ENTIRE_COMPANY"));
+            }
         }, () -> {
             Schedule addSchedule = new Schedule();
             String key = IDGenerator.nextStr();
@@ -455,7 +484,22 @@ public class ThirdDepartmentService {
             addSchedule.setConfig(JSON.toJSONString(request.getSyncScope()));
             scheduleService.addSchedule(addSchedule);
             scheduleService.addOrUpdateCronJob(addSchedule, SyncUserScheduleJob.getJobKey(key), SyncUserScheduleJob.getTriggerKey(key), SyncUserScheduleJob.class);
+
+            modifiedVal.put("syncEnable", Translator.get("log.enable." + request.isEnable()));
+            modifiedVal.put("syncCycle", request.getSyncCycle());
+            if (CollectionUtils.isNotEmpty(request.getSyncScope())) {
+                modifiedVal.put("syncScope", request.getSyncScope().stream().map(OptionDTO::getName).filter(Objects::nonNull).toList().toString());
+            } else {
+                modifiedVal.put("syncScope", Translator.get("ENTIRE_COMPANY"));
+            }
         });
+
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(originalVal)
+                .resourceName(Translator.get("syncSetting"))
+                .modifiedValue(modifiedVal)
+                .resourceId(userId)
+                .build());
     }
 
 
@@ -474,7 +518,7 @@ public class ThirdDepartmentService {
         response.setEnable(schedule.getEnable());
         response.setResourceType(schedule.getResourceType());
         response.setSyncCycle(SyncCycleCron.getByCron(schedule.getValue()).name());
-        response.setSyncConfig(JSON.parseObject(schedule.getConfig(), List.class));
+        response.setSyncScope(JSON.parseObject(schedule.getConfig(), new TypeReference<List<OptionDTO>>() {}));
         response.setNextTriggerTime(ScheduleUtils.getNextTriggerTime(schedule.getValue()));
         return response;
 

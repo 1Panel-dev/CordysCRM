@@ -1,9 +1,11 @@
 package cn.cordys.crm.system.job;
 
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.schedule.BaseScheduleJob;
 import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.crm.integration.sync.service.ThirdDepartmentService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobExecutionContext;
@@ -13,6 +15,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @Slf4j
 public class SyncUserScheduleJob extends BaseScheduleJob {
@@ -24,7 +27,9 @@ public class SyncUserScheduleJob extends BaseScheduleJob {
         assert thirdDepartmentService != null;
         List<String> departmentIds;
         if (StringUtils.isNotBlank(context.getJobDetail().getJobDataMap().getString("config"))) {
-            departmentIds = JSON.parseObject(context.getJobDetail().getJobDataMap().getString("config"), List.class);
+            List<OptionDTO> optionDTOS = JSON.parseObject(context.getJobDetail().getJobDataMap().getString("config"), new TypeReference<List<OptionDTO>>() {
+            });
+            departmentIds = optionDTOS.stream().map(OptionDTO::getName).filter(Objects::nonNull).toList();
         } else {
             departmentIds = null;
         }

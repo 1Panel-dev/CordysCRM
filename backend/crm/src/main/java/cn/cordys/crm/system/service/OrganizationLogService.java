@@ -102,6 +102,30 @@ public class OrganizationLogService extends BaseModuleLogService {
             if (Strings.CS.equals(differ.getColumn(), "email")) {
                 setName(differ);
             }
+
+            if (Strings.CS.equals(differ.getColumn(), "syncEnable")) {
+                differ.setColumnName(Translator.get("sync_enable"));
+                if (differ.getOldValue() != null) {
+                    differ.setOldValueName(differ.getOldValue().toString());
+                }
+                differ.setNewValueName(differ.getNewValue().toString());
+            }
+            if (Strings.CS.equals(differ.getColumn(), "syncScope")) {
+                differ.setColumnName(Translator.get("sync_scope"));
+                if (differ.getOldValue() != null) {
+                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                }
+                differ.setNewValueName(differ.getNewValue().toString());
+            }
+
+            if (Strings.CS.equals(differ.getColumn(), "syncCycle")) {
+                differ.setColumnName(Translator.get("syn_cycle"));
+                if (differ.getOldValue() != null) {
+                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                }
+                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+            }
+
         });
 
         return differences;
