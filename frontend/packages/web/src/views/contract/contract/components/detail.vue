@@ -535,6 +535,15 @@
     }
   }
 
+  watch(
+    () => activeTab.value,
+    () => {
+      if (activeTab.value === 'customer') {
+        formDescriptionRef.value?.initFormDescription();
+      }
+    }
+  );
+
   async function initStageConfig() {
     try {
       stageConfig.value = await getContractStatusConfig();

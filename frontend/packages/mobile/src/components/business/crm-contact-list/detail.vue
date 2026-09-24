@@ -1,7 +1,7 @@
 <template>
   <CrmPageWrapper :title="route.query.name?.toString() || ''">
     <div class="relative h-full bg-[var(--text-n9)] pt-[16px]">
-      <CrmDescription :description="descriptions" />
+      <CrmDescription :description="descriptions" :source-id="route.query.id?.toString() || ''" />
     </div>
     <template v-if="route.query.readonly?.toString() === 'N'" #footer>
       <CrmActionButtons

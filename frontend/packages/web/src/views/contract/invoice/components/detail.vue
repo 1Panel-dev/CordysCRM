@@ -296,6 +296,15 @@
     }
   }
 
+  watch(
+    () => activeTab.value,
+    () => {
+      if (activeTab.value === 'customer') {
+        formDescriptionRef.value?.initFormDescription();
+      }
+    }
+  );
+
   function handleRevoke() {
     revokeByResourceId(props.sourceId, {
       onSuccess: () => {

@@ -2105,6 +2105,13 @@
           label: field.name,
           value: field.id,
         }));
+      if (
+        (fieldConfig.value.statisticFieldId &&
+          !statisticFieldOptions.value.some((item) => item.value === fieldConfig.value.statisticFieldId)) ||
+        fieldConfig.value.statisticFieldId === undefined
+      ) {
+        fieldConfig.value.statisticFieldId = statisticFieldOptions.value[0]?.value as string;
+      }
       fieldConfig.value.relatedFieldId = res.fields.find(
         (e) => e.businessKey && getDataSourceFormKey(e.dataSourceType, formKeyMap) === props.formKey
       )?.id;
@@ -2484,7 +2491,7 @@
   }
 
   function handleStatisticTargetFormChange() {
-    fieldConfig.value.statisticFieldId = '';
+    fieldConfig.value.statisticFieldId = undefined;
     fieldConfig.value.combineSearch = {
       searchMode: 'OR', // 默认搜索模式
       conditions: [],

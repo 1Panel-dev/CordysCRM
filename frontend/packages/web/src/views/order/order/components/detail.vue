@@ -462,6 +462,16 @@
   });
 
   const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+
+  watch(
+    () => activeTab.value,
+    () => {
+      if (activeTab.value === 'customer') {
+        formDescriptionRef.value?.initFormDescription();
+      }
+    }
+  );
+
   async function handleSaveApproval(callback: () => Promise<any>, hasFieldPermission: boolean) {
     if (hasFieldPermission) {
       formDescriptionRef.value?.handleFormChange(async () => {

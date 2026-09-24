@@ -5,6 +5,7 @@ import link from './link.vue';
 import location from './location.vue';
 import phone from './phone.vue';
 import serialNumber from './serialNumber.vue';
+import statistic from './statistics.vue';
 import upload from './upload.vue';
 
 export default {
@@ -16,4 +17,5 @@ export default {
   link,
   file,
   industry,
+  statistic,
 };

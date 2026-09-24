@@ -22,7 +22,7 @@
               :field-config="item.resourceFieldId ? { ...item, rules: [] } : item"
               :form-detail="formDetail"
               :origin-form-detail="originFormDetail"
-              :source-id="item.type === FieldTypeEnum.STATISTIC ? props.sourceId : undefined"
+              :source-id="props.sourceId"
               :path="item.id"
               :need-init-detail="needInitDetail"
               :form-config="formConfig"
@@ -57,7 +57,7 @@
 <script setup lang="ts">
   import { h } from 'vue';
   import { FormInst, NButton, NForm, NFormItem, NInput, NScrollbar, useMessage } from 'naive-ui';
-  import { cloneDeep, isEqual } from 'lodash-es';
+  import { cloneDeep } from 'lodash-es';
   import dayjs from 'dayjs';
 
   import {

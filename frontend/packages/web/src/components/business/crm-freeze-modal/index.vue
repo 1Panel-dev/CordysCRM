@@ -41,6 +41,21 @@
           ]"
           required
         >
+          <template #label>
+            <div class="flex items-center gap-[8px]">
+              {{ t('common.freezeTime') }}
+              <n-tooltip trigger="hover">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_help_circle"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                    size="16px"
+                  />
+                </template>
+                {{ t('common.freezeBiggestDay') }}
+              </n-tooltip>
+            </div>
+          </template>
           <n-input-group>
             <CrmInputNumber v-model:value="form.time" :min="1" :max="1000" :precision="0" :step="1" />
             <div

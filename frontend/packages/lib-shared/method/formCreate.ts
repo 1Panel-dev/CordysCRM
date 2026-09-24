@@ -240,7 +240,6 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
     value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
   } else if (item.type === FieldTypeEnum.INPUT_NUMBER || item.type === FieldTypeEnum.STATISTIC) {
     value = formatNumberValueToString(fieldValue as unknown as number, item);
-    console.log(fieldValue, item);
     if (value.includes('NaN') || value.includes('%%')) {
       value = fieldValue.toString();
     }
@@ -410,6 +409,9 @@ export function transformData({
       } else if (numberFieldIds.includes(fieldId)) {
         // 数字类型字段，格式化数字显示
         businessFieldAttr[fieldId] = formatNumberValueToString(item[fieldId], field);
+        if (typeof item[fieldId] === 'string' && (item[fieldId].includes('NaN') || item[fieldId].includes('%%'))) {
+          businessFieldAttr[fieldId] = item[fieldId].toString();
+        }
       } else if (options && options.length > 0) {
         let name: string | string[] = '';
         if (item[fieldId] === '' || item[fieldId] === null) {
@@ -490,6 +492,12 @@ export function transformData({
         field.fieldValue as number,
         fields.find((f) => f.id === field.fieldId) as FormCreateField
       );
+      if (
+        typeof field.fieldValue === 'string' &&
+        (field.fieldValue.includes('NaN') || field.fieldValue.includes('%%'))
+      ) {
+        customFieldAttr[field.fieldId] = field.fieldValue.toString();
+      }
     } else if (options && options.length > 0) {
       let name: string | string[] = '';
       if (dataSourceFieldIds.includes(field.fieldId)) {
@@ -543,7 +551,6 @@ export function transformData({
       }
     }
   });
-
   return {
     ...item,
     ...customFieldAttr,

@@ -41,6 +41,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
         <div v-show="activeTab === 'paymentPlan'" class="h-full p-[24px]">
           <CrmFormDescription
+            ref="formDescriptionRef"
             :form-key="FormDesignKeyEnum.CONTRACT_PAYMENT"
             :source-id="props.sourceId"
             :column="2"
@@ -156,6 +157,16 @@
     (list) => {
       if (!list.some((item) => item.name === activeTab.value)) {
         activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
+
+  const formDescriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+  watch(
+    () => activeTab.value,
+    () => {
+      if (activeTab.value === 'customer') {
+        formDescriptionRef.value?.initFormDescription();
       }
     }
   );

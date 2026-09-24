@@ -1,7 +1,7 @@
 <template>
   <CrmPageWrapper :title="t('common.detail')">
     <div class="bg-[var(--text-n9)] py-[16px]">
-      <CrmDescription :description="descriptions" />
+      <CrmDescription :description="descriptions" :source-id="sourceId" />
     </div>
     <div class="bg-[var(--text-n9)] px-[16px] pt-0">
       <div class="bg-[var(--text-n10)] p-[16px]">

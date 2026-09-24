@@ -8,7 +8,7 @@
           </div>
         </template>
         <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
-          <CrmDescription :description="descriptions" />
+          <CrmDescription :description="descriptions" :source-id="sourceId" />
         </div>
         <CrmContactList
           v-else-if="tab.name === 'contact'"

@@ -25,7 +25,7 @@
               @load-detail="() => initStage(true)"
             />
           </div>
-          <CrmDescription :description="descriptions" />
+          <CrmDescription :description="descriptions" :source-id="sourceId" />
         </div>
         <CrmContactList
           v-else-if="tab.name === 'contact'"

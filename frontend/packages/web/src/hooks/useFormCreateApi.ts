@@ -664,6 +664,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   async function initFormDescription(formData?: FormDetail) {
     try {
+      loading.value = true;
       let form = cloneDeep(formData || ({} as FormDetail));
       if (!formData) {
         const asyncApi = getFormDetailApiMap[props.formKey.value];

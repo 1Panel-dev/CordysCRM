@@ -478,7 +478,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               ellipsis: {
                 tooltip: true,
               },
-              render: (row: any) => formatNumberValueToString(row[key], field),
+              render: (row: any) => row[key],
               sortOrder: false,
               sorter: sorter && !field.resourceFieldId,
               filedType: field.type,

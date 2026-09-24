@@ -388,4 +388,5 @@ export default {
   'common.unfreezeTip':
     'After unfreezing, the {type} will immediately resume its claimable status, and this operation will be logged.',
   'common.refreshSuccess': 'Refresh successful',
+  'common.freezeBiggestDay': 'Maximum 1000 days',
 };

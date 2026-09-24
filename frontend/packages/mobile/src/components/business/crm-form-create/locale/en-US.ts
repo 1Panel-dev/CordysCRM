@@ -33,4 +33,8 @@ export default {
   'formCreate.advanced.uploadFileTip': 'Supports {type}, single file size within {size}',
   'formCreate.advanced.limitCount': ', maximum limit is {count}',
   'formCreate.advanced.selectIndustry': 'Please select an industry',
+  'formCreate.advanced.reCalculationSuccess': 'Re-calculation successful',
+  'formCreate.advanced.reCalculation': 'Re-calculate',
+  'formCreate.advanced.reCalculationTip':
+    'This will re-calculate the value of this field and other related fields in the current record',
 };

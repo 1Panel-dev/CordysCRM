@@ -33,4 +33,7 @@ export default {
   'formCreate.advanced.uploadFileTip': '支持 {type}，单个大小 {size} 以内',
   'formCreate.advanced.limitCount': '，最大限制 {count} 个',
   'formCreate.advanced.selectIndustry': '请选择行业',
+  'formCreate.advanced.reCalculationSuccess': '重新计算成功',
+  'formCreate.advanced.reCalculation': '重新计算',
+  'formCreate.advanced.reCalculationTip': '会重新计算该字段值和本条数据相关的其他字段',
 };
