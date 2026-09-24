@@ -75,6 +75,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView'];
     SerialNumber: typeof import('./src/components/business/crm-form-create/components/advanced/serialNumber.vue')['default'];
     SingleText: typeof import('./src/components/business/crm-form-create/components/basic/singleText.vue')['default'];
+    Statistics: typeof import('./src/components/business/crm-form-create/components/advanced/statistics.vue')['default'];
     Textarea: typeof import('./src/components/business/crm-form-create/components/basic/textarea.vue')['default'];
     Upload: typeof import('./src/components/business/crm-form-create/components/advanced/upload.vue')['default'];
     VanBadge: typeof import('vant/es')['Badge'];

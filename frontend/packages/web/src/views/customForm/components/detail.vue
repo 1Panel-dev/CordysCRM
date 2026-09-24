@@ -287,6 +287,16 @@
       }
     }
   );
+
+  watch(
+    () => activeTab.value,
+    () => {
+      if (activeTab.value === 'customer') {
+        formDescriptionRef.value?.initFormDescription();
+      }
+    }
+  );
+
   // 删除
   function handleDelete() {
     openModal({

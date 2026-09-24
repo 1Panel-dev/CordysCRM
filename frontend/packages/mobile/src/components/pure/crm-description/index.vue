@@ -20,6 +20,15 @@
             />
             <div v-else>-</div>
           </div>
+          <template v-else-if="item.fieldInfo && item.fieldInfo.type === FieldTypeEnum.STATISTIC">
+            <div class="crm-description-label">{{ item.label }}</div>
+            <div class="crm-description-value flex gap-[16px]">
+              {{ item.value }}
+              <van-button size="mini" type="warning" @click="handleReCalculation(item)">
+                {{ t('formCreate.advanced.reCalculation') }}
+              </van-button>
+            </div>
+          </template>
           <template v-else>
             <div class="crm-description-label">{{ item.label }}</div>
             <div class="crm-description-value">
@@ -68,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-  import { showImagePreview } from 'vant';
+  import { showConfirmDialog, showImagePreview, showToast } from 'vant';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
@@ -79,6 +88,8 @@
   import CrmFileListPop from '@/components/business/crm-file-list-pop/index.vue';
 
   import { AttachmentInfo, type FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
+  import { refreshStatistic } from '@/api/modules';
+  import { formatNumberValueToString } from '@lib/shared/method/formCreate';
 
   export interface CrmDescriptionItem {
     label: string;
@@ -97,6 +108,7 @@
   const { t } = useI18n();
 
   const props = defineProps<{
+    sourceId: string;
     description: CrmDescriptionItem[];
   }>();
 
@@ -123,6 +135,37 @@
 
   function handleDeleteFile(id: string) {
     activeFileList.value = activeFileList.value.filter((file) => file.id !== id);
+  }
+
+  function handleReCalculation(item: CrmDescriptionItem) {
+    showConfirmDialog({
+      title: t('formCreate.advanced.reCalculation'),
+      message: t('formCreate.advanced.reCalculationTip'),
+      confirmButtonText: t('common.confirm'),
+      confirmButtonColor: 'var(--warning-yellow)',
+      beforeClose: async (action) => {
+        if (action === 'confirm') {
+          if (!item.fieldInfo) {
+            return Promise.resolve(false);
+          }
+          try {
+            const res = await refreshStatistic(props.sourceId, item.fieldInfo.id);
+            item.value = formatNumberValueToString(res, item.fieldInfo);
+            showToast({
+              message: t('formCreate.advanced.reCalculationSuccess'),
+              type: 'success',
+            });
+            return Promise.resolve(true);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+            return Promise.resolve(false);
+          }
+        } else {
+          return Promise.resolve(true);
+        }
+      },
+    });
   }
 </script>
 

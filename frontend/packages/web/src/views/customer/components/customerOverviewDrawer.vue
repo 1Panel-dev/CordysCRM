@@ -386,7 +386,15 @@
     }
   );
 
-  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
+  watch(
+    () => activeTab.value,
+    () => {
+      if (activeTab.value === 'customer') {
+        descriptionRef.value?.initFormDescription();
+      }
+    }
+  );
+
   const formCreateDrawerVisible = ref(false);
   const transferForm = ref<any>({
     owner: null,

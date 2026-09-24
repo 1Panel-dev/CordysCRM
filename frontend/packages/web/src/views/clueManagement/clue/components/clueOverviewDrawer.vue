@@ -36,6 +36,7 @@
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 64 : 0" no-content-padding>
         <div v-show="activeTab === 'clue'" class="h-full overflow-hidden">
           <CrmFormDescription
+            ref="descriptionRef"
             :refresh-key="refreshKey"
             :form-key="FormDesignKeyEnum.CLUE"
             :source-id="sourceId"
@@ -383,6 +384,16 @@
     (list) => {
       if (!list.some((item) => item.name === activeTab.value)) {
         activeTab.value = list[0]?.name as string;
+      }
+    }
+  );
+
+  const descriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
+  watch(
+    () => activeTab.value,
+    () => {
+      if (activeTab.value === 'customer') {
+        descriptionRef.value?.initFormDescription();
       }
     }
   );

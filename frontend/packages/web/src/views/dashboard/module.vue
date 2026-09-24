@@ -61,6 +61,7 @@
       const res = await getDEToken(true);
       params.embeddedToken = res.token;
       iframeSrc.value = `${res.url}/#/chart-view`;
+      loading.value = false;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error initializing dashboard:', error);

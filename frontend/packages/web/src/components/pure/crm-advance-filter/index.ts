@@ -69,6 +69,7 @@ export const operatorOptionsMap: Record<string, { value: string; label: string }
   [FieldTypeEnum.ATTACHMENT]: [CONTAINS, NO_CONTAINS, EMPTY, NOT_EMPTY],
   [FieldTypeEnum.INDUSTRY]: COMMON_SELECTION_OPERATORS,
   [FieldTypeEnum.FORMULA]: [EQUAL, GT, LT, GE, LE, EMPTY],
+  [FieldTypeEnum.STATISTIC]: [EQUAL, GT, LT, GE, LE, EMPTY],
 };
 
 export const scopeOptions = [

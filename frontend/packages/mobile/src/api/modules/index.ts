@@ -478,6 +478,7 @@ export const {
   batchUpdateCustomFormData,
   batchDeleteCustomFormData,
   deleteCustomFormData,
+  refreshStatistic,
 } = useCustomFormApi(CDR);
 
 export const {

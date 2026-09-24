@@ -12,6 +12,7 @@
             :origin-form-detail="originFormDetail"
             :form-detail="formDetail"
             :need-init-detail="route.query.needInitDetail === 'Y'"
+            :source-id="route.query.id"
             @change="($event: any) => handleFieldChange($event, item)"
           />
         </template>
@@ -152,6 +153,9 @@
     }
     if (type === FieldTypeEnum.INDUSTRY) {
       return CrmFormCreateComponents.advancedComponents.industry;
+    }
+    if (type === FieldTypeEnum.STATISTIC) {
+      return CrmFormCreateComponents.advancedComponents.statistic;
     }
   }
 

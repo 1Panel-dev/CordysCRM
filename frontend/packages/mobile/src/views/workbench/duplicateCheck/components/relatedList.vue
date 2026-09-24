@@ -17,7 +17,7 @@
         class="rounded-[var(--border-radius-small)] !bg-[var(--text-n9)] py-[16px]"
         @click="goDetail(listItem, props.searchTableKey === FormDesignKeyEnum.SEARCH_ADVANCED_CONTACT)"
       >
-        <CrmDescription :description="getDescriptions(listItem)">
+        <CrmDescription :description="getDescriptions(listItem)" :source-id="listItem.id">
           <template #createTime="{ item }">
             {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
           </template>
@@ -51,7 +51,6 @@
   import dayjs from 'dayjs';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CommonList } from '@lib/shared/models/common';
 
   import CrmDescription, { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
@@ -72,7 +71,6 @@
     transformData?: (i: any) => Record<string, any>;
   }>();
 
-  const { t } = useI18n();
   const router = useRouter();
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
