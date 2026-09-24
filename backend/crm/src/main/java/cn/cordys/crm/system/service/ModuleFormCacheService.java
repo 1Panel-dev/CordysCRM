@@ -105,6 +105,9 @@ public class ModuleFormCacheService {
         ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
         businessModuleFormConfig.setFormProp(config.getFormProp());
 
+        // 配置中持久化的是关联 ID，读取时以当前表单、字段名称刷新 Option 回显。
+        moduleFormService.resolveDetailTabs(formKey, organizationId, config.getFormProp());
+
 		// 提前加载价格表子表格字段作为引用集合
 		List<BaseField> subFields = moduleFieldService.getSubFieldsBySourceType(FieldSourceType.PRICE.name());
 		Map<String, BaseField> refPriceSubFieldMap = subFields.stream().collect(Collectors.toMap(BaseField::getId, Function.identity(), (p, n) -> p));

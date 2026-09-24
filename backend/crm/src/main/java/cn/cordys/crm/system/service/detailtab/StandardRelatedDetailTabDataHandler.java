@@ -7,10 +7,12 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.BasePageRequest;
 import cn.cordys.common.dto.DeptDataPermissionDTO;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
@@ -159,6 +161,9 @@ public class StandardRelatedDetailTabDataHandler implements DetailTabDataHandler
     private void replaceSearchBusinessKey(DetailTabQueryContext context) {
         String fieldId = context.tab().getRelatedField().getIdAsString();
         ModuleField moduleField = moduleFieldBaseMapper.selectByPrimaryKey(fieldId);
+        if (moduleField == null) {
+            throw new GenericException(Translator.get("module.tab.not_exist"));
+        }
         if (StringUtils.isNotBlank(moduleField.getInternalKey())) {
             BusinessModuleField[] values = BusinessModuleField.values();
             for (BusinessModuleField value : values) {
