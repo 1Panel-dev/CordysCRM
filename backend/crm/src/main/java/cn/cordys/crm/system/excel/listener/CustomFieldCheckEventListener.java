@@ -100,6 +100,8 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
 
     private final List<String> subFields = new ArrayList<>();
 
+    protected Map<String, String> subTable = new HashMap<>();
+
     public CustomFieldCheckEventListener(List<BaseField> fields, String sourceTable, String fieldTable, String currentOrg, String importType) {
         this(fields, sourceTable, fieldTable, currentOrg, null, null, importType);
     }
@@ -121,6 +123,7 @@ public class CustomFieldCheckEventListener extends AnalysisEventListener<Map<Int
                     setNumberMax(f, subField.getName());
                     if (f instanceof DatasourceField priceSource) {
                         if (Strings.CI.equals(priceSource.getDataSourceType(), "PRICE")) {
+                            this.subTable.put(subField.getId(), subField.getName() + "_" + f.getName());
                             Set<String> ids = priceSource.getShowFields().stream()
                                     .map(subfield -> priceSource.getId() + "_ref_" + subfield)
                                     .collect(Collectors.toSet());
