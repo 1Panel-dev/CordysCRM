@@ -85,7 +85,7 @@ import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StageAdvancedConfigService;
 import cn.cordys.crm.system.service.StatisticFieldService;
-import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -416,10 +416,14 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             order.setApprovalStatus(oldOrder.getApprovalStatus());
             //判断总金额
             setAmount(request.getAmount(), order);
+            // 统计字段: 关联字段在下面会被覆盖, 改之前先把它当前指向的宿主捕下来 ——
+            // 改成别的关联对象时, 变更前那条宿主的统计值会偏大, 而改完就再也查不出它了
+            StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
+                    FormKey.ORDER.getKey(), List.of(request.getId()), orgId);
             updateFields(moduleFields, order, orgId, userId);
             orderMapper.update(order);
-            // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
-            statisticFieldService.refreshByRelatedDataChange(FormKey.ORDER.getKey(), request.getId(), orgId);
+            // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
+            statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
             //删除快照
             LambdaQueryWrapper<OrderSnapshot> delWrapper = new LambdaQueryWrapper<>();
             delWrapper.eq(OrderSnapshot::getOrderId, request.getId());
@@ -490,7 +494,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         }
 
         // 删除会同时毁掉关联字段的值, 所以「这个订单关联了谁」只能删前先捕; 重算又要等删完才准。
-        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                 FormKey.ORDER.getKey(), List.of(id), orgId);
         orderFieldService.deleteByResourceId(id);
         orderMapper.deleteByPrimaryKey(id);
@@ -545,7 +549,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         // 捕的是审批分流之后真正要删的 deleteIds, 不是 permittedIds —— 走审批的那批此刻并没删掉,
         // 捕了就是白捕, 而且审批通过后还会由审批侧再删一次, 那次自会重算。
         // 删除会同时毁掉关联字段的值, 所以只能删前先捕; 重算又要等删完才准。
-        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                 FormKey.ORDER.getKey(), deleteIds, orgId);
         orderFieldService.deleteByResourceIds(deleteIds);
         orderMapper.deleteByIds(deleteIds);
@@ -1000,7 +1004,14 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         filteredRequest.setFieldId(request.getFieldId());
         filteredRequest.setFieldValue(request.getFieldValue());
 
+        // 统计字段: 批量编辑只改一个字段, 改的若是关联字段, 下面这批订单的关联关系会整批换人 ——
+        // 换之前它们指向的宿主得先捕下来, 否则那些宿主的统计值会一直偏大; 改的不是关联字段时
+        // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
+                FormKey.ORDER.getKey(), request.getFieldId(), permittedIds, orgId);
         orderFieldService.batchUpdate(filteredRequest, field, permittedOrders, Order.class, LogModule.ORDER_INDEX, extOrderMapper::batchUpdate, userId, orgId);
+        // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
+        statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
 
         ModuleFormConfigDTO moduleFormConfigDTO = getFormConfig(orgId);
         ModuleFormConfigDTO saveModuleFormConfigDTO = JSON.parseObject(JSON.toJSONString(moduleFormConfigDTO), ModuleFormConfigDTO.class);
