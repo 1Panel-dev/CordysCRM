@@ -44,16 +44,7 @@
           <n-form-item :path="`conditions[${listIndex}].matchType`" class="block w-[105px]">
             <n-select
               v-model:value="item.matchType"
-              :options="[
-                {
-                  label: t('crmFormDesign.dataSourceFilterMatchingFields'),
-                  value: 'MATCH_FIELD',
-                },
-                {
-                  label: t('crmFormDesign.dataSourceFilterMatchingValue'),
-                  value: 'MATCH_VALUE',
-                },
-              ]"
+              :options="matchTypeOptions"
               :disabled="!item.leftFieldId"
               :fallback-option="() => fallbackOption(item.leftFieldId)"
               @update-value="(val) => matchTypeChange(val as DataSourceMatchType, listIndex)"
@@ -286,6 +277,7 @@
     leftFields: FormCreateField[];
     rightFields: FormCreateField[];
     dataIndexPlaceholder: string;
+    matchValueOnly?: boolean;
   }>();
 
   const formModel = defineModel<DataSourceFilterCombine>('formModel', {
@@ -338,6 +330,20 @@
 
   const isMatchValue = (matchType?: string) => ['MATCH_VALUE'].includes(matchType || '');
 
+  const matchTypeOptions = computed(() => {
+    const options = [
+      {
+        label: t('crmFormDesign.dataSourceFilterMatchingFields'),
+        value: 'MATCH_FIELD',
+      },
+      {
+        label: t('crmFormDesign.dataSourceFilterMatchingValue'),
+        value: 'MATCH_VALUE',
+      },
+    ];
+    return props.matchValueOnly ? options.filter((option) => option.value === 'MATCH_VALUE') : options;
+  });
+
   function getFieldDisplayType(field?: FormCreateField) {
     if (field?.type === FieldTypeEnum.FORMULA) {
       return field.formulaResultFormat === 'number' ? FieldTypeEnum.INPUT_NUMBER : FieldTypeEnum.INPUT;
@@ -387,6 +393,8 @@
     currentFormList[index].leftFieldType = leftFieldType;
     currentFormList[index].rightFieldId = undefined;
     currentFormList[index].rightFieldType = FieldTypeEnum.INPUT;
+    currentFormList[index].matchType = props.matchValueOnly ? 'MATCH_VALUE' : currentFormList[index].matchType;
+    currentFormList[index].rightFieldCustom = props.matchValueOnly || isMatchValue(currentFormList[index].matchType);
     changeMatchTypeDefaultValue(currentFormList[index]);
   };
 
@@ -558,10 +566,10 @@
         leftFieldType: FieldTypeEnum.INPUT,
         operator: undefined,
         rightFieldId: undefined,
-        rightFieldCustom: false,
+        rightFieldCustom: props.matchValueOnly,
         rightFieldCustomValue: '',
         rightFieldType: FieldTypeEnum.INPUT, // 默认右侧字段类型为输入框
-        matchType: 'MATCH_FIELD' as DataSourceMatchType,
+        matchType: (props.matchValueOnly ? 'MATCH_VALUE' : 'MATCH_FIELD') as DataSourceMatchType,
       };
       formModel.value.conditions.push(item);
     });
