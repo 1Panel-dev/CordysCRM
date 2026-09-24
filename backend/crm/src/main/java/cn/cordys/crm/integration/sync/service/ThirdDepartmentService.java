@@ -304,7 +304,7 @@ public class ThirdDepartmentService {
      * 记录同步操作日志
      */
     private void logSyncOperation(LogService logService, String orgId, String operatorId) {
-        String detail = Translator.get("log.syncOrganization");
+        String detail = Translator.get("log.syncOrganization", LocaleContextHolder.getLocale());
         LogDTO logDTO = new LogDTO(orgId, operatorId, operatorId,
                 LogType.SYNC, LogModule.SYSTEM_ORGANIZATION, detail);
         logDTO.setDetail(detail);
