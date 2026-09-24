@@ -24,6 +24,9 @@ export interface ViewChartResult extends ConditionParams {
 
 export const STORAGE_VIEW_CHART_KEY = 'viewChartParams';
 
+// 按数字类型提交的字段: 统计字段的值是聚合出的数字, 取值与数字字段保持一致
+const NUMBER_VALUE_FIELD_TYPES = [FieldTypeEnum.INPUT_NUMBER, FieldTypeEnum.STATISTIC];
+
 export default function useViewChartParams() {
   const route = useRoute();
   // 获取整个存储的参数
@@ -67,8 +70,9 @@ export default function useViewChartParams() {
 
       const list: FilterFormItem[] = (formModel.list || []) as FilterFormItem[];
 
+      // 数字类字段(数值、统计)回填时统一转成数字, 与筛选弹窗中数字输入框提交的类型保持一致
       const filterFormList = list.map((e) => {
-        if (e.type === FieldTypeEnum.INPUT_NUMBER) {
+        if (NUMBER_VALUE_FIELD_TYPES.includes(e.type)) {
           return { ...e, value: e.operator === OperatorEnum.EMPTY ? '' : Number(e.value) };
         }
         return e;
