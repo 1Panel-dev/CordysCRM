@@ -235,7 +235,7 @@
               </div>
             </template>
             <div class="w-full">
-              <n-radio-group v-model:value="syncForm.syncScope">
+              <n-radio-group v-model:value="syncForm.syncScopeMode">
                 <n-radio-button value="ALL">
                   {{ t('system.business.syncSettings.allCompany') }}
                 </n-radio-button>
@@ -244,7 +244,7 @@
                 </n-radio-button>
               </n-radio-group>
               <CrmUserTagSelector
-                v-if="syncForm.syncScope === 'DEPARTMENT'"
+                v-if="syncForm.syncScopeMode === 'DEPARTMENT'"
                 v-model:value="syncForm.syncDepartmentIds"
                 v-model:selected-list="selectedDepartments"
                 class="mt-[8px]"
@@ -547,7 +547,7 @@
       enable: false,
       syncFrequency: 'DAY',
       syncWeekday: 'MONDAY',
-      syncScope: 'ALL',
+      syncScopeMode: 'ALL',
       syncDepartmentIds: [],
     };
   }
@@ -646,28 +646,6 @@
     return mapThirdDepartmentTree(tree);
   }
 
-  // 用于回显
-  function findSelectedDepartments(nodes: CrmTreeNodeData[], ids: string[]) {
-    const selected: SelectedUsersItem[] = [];
-    const idSet = new Set(ids);
-    const walk = (tree: CrmTreeNodeData[]) => {
-      tree.forEach((node) => {
-        const nodeId = node.id ? String(node.id) : '';
-        if (nodeId && idSet.has(nodeId)) {
-          selected.push({
-            id: nodeId,
-            name: String(node.name || node.label || nodeId),
-          });
-        }
-        if (node.children?.length) {
-          walk(node.children as CrmTreeNodeData[]);
-        }
-      });
-    };
-    walk(nodes);
-    return selected;
-  }
-
   const syncSettingsLoading = ref(false);
   const selectedDepartments = ref<SelectedUsersItem[]>([]);
   const syncFormRef = ref<FormInst | null>(null);
@@ -678,7 +656,7 @@
         validator() {
           if (
             syncForm.value.enable &&
-            syncForm.value.syncScope === 'DEPARTMENT' &&
+            syncForm.value.syncScopeMode === 'DEPARTMENT' &&
             !syncForm.value.syncDepartmentIds.length
           ) {
             return new Error(t('system.business.syncSettings.selectDepartment'));
@@ -689,19 +667,15 @@
     ],
   }));
 
-  async function patchSelectedDepartments(ids: string[]) {
-    if (!ids.length) {
-      selectedDepartments.value = [];
-      return;
-    }
-    try {
-      const departments = await fetchSyncDepartmentTree();
-      selectedDepartments.value = findSelectedDepartments(departments, ids);
-    } catch (e) {
-      selectedDepartments.value = ids.map((id) => ({ id, name: id }));
-      // eslint-disable-next-line no-console
-      console.log(e);
-    }
+  function getSyncScopeOptions() {
+    const selectedDepartmentMap = new Map(selectedDepartments.value.map((department) => [department.id, department]));
+    return syncForm.value.syncDepartmentIds.map((id) => {
+      const department = selectedDepartmentMap.get(id);
+      return {
+        id,
+        name: department?.name || id,
+      };
+    });
   }
 
   async function fetchSyncSettings() {
@@ -713,7 +687,8 @@
     try {
       syncSettingsLoading.value = true;
       const config = await getSyncScheduleConfig(form.value.type);
-      const syncConfig = config.syncConfig ?? [];
+      const syncScope = config.syncScope ?? [];
+      const syncDepartmentIds = syncScope.map((option) => option.id);
       const isWeekly = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].includes(
         config.syncCycle || ''
       );
@@ -721,10 +696,10 @@
         enable: !!config.enable,
         syncFrequency: isWeekly ? 'WEEKLY' : ((config.syncCycle || 'DAY') as SyncFrequency),
         syncWeekday: isWeekly ? (config.syncCycle as SyncWeekday) : 'MONDAY',
-        syncScope: syncConfig.length ? 'DEPARTMENT' : 'ALL',
-        syncDepartmentIds: syncConfig,
+        syncScopeMode: syncDepartmentIds.length ? 'DEPARTMENT' : 'ALL',
+        syncDepartmentIds,
       };
-      await patchSelectedDepartments(syncConfig);
+      selectedDepartments.value = syncScope;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
@@ -742,7 +717,7 @@
     try {
       await syncFormRef.value?.validate();
       loading.value = true;
-      const syncScope = syncForm.value.syncScope === 'DEPARTMENT' ? syncForm.value.syncDepartmentIds : [];
+      const syncScope = syncForm.value.syncScopeMode === 'DEPARTMENT' ? getSyncScopeOptions() : [];
       await saveSyncScheduleConfig({
         enable: syncForm.value.enable,
         syncCycle: getSyncCycle(),
