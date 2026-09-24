@@ -3,6 +3,7 @@ package cn.cordys.crm.system.service;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.LinkScenarioKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
+import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.dto.stage.CirculationFieldValue;
 import cn.cordys.common.dto.stage.StageConfigResponse;
 import cn.cordys.common.util.JSON;
@@ -17,6 +18,8 @@ import cn.cordys.crm.system.domain.ModuleField;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.dto.ScopeNameDTO;
 import cn.cordys.crm.system.dto.field.base.BaseField;
+import cn.cordys.crm.system.dto.form.FormDetailTab;
+import cn.cordys.crm.system.dto.form.FormProp;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -53,6 +56,7 @@ public class SystemModuleLogService extends BaseModuleLogService {
 
     @Override
     public List<JsonDifferenceDTO> handleLogField(List<JsonDifferenceDTO> differences, String orgId) {
+        List<JsonDifferenceDTO> detailTabDifferences = new ArrayList<>();
         differences.forEach(differ -> {
             if (isLinkFormKey(differ.getColumn()) && differ.getColumn().split(LINK_KEY_SPILT).length == 2) {
                 String[] splitKey = differ.getColumn().split(LINK_KEY_SPILT);
@@ -87,6 +91,15 @@ public class SystemModuleLogService extends BaseModuleLogService {
             if (Strings.CS.equals("formProp", differ.getColumn())) {
                 differ.setColumnName(Translator.get("log.form.prop"));
                 handleFormPropLogDetail(differ);
+                // 标签页属于 formProp，但需要独立展示，避免只修改标签页时前后文本相同。
+                JsonDifferenceDTO detailTabDifference = buildDetailTabDifference(differ);
+                if (detailTabDifference != null) {
+                    detailTabDifferences.add(detailTabDifference);
+                }
+                if (Objects.equals(differ.getOldValueName(), differ.getNewValueName())) {
+                    differ.setOldValueName(null);
+                    differ.setNewValueName(null);
+                }
             }
 
 
@@ -144,7 +157,56 @@ public class SystemModuleLogService extends BaseModuleLogService {
         });
 
         differences.removeIf(differ -> differ.getOldValueName() == null && differ.getNewValueName() == null);
+        differences.addAll(detailTabDifferences);
         return differences;
+    }
+
+    private JsonDifferenceDTO buildDetailTabDifference(JsonDifferenceDTO formPropDifference) {
+        FormProp oldProp = parseFormProp(formPropDifference.getOldValue());
+        FormProp newProp = parseFormProp(formPropDifference.getNewValue());
+        List<FormDetailTab> oldTabs = oldProp == null ? null : oldProp.getDetailTabs();
+        List<FormDetailTab> newTabs = newProp == null ? null : newProp.getDetailTabs();
+        if (Objects.equals(oldTabs, newTabs)
+                || ((oldTabs == null || oldTabs.isEmpty()) && (newTabs == null || newTabs.isEmpty()))) {
+            return null;
+        }
+
+        JsonDifferenceDTO difference = new JsonDifferenceDTO();
+        difference.setColumn("detailTabs");
+        difference.setColumnName(Translator.get("log.form.detailTabs"));
+        difference.setOldValue(oldTabs);
+        difference.setNewValue(newTabs);
+        difference.setOldValueName(formatDetailTabs(oldTabs));
+        difference.setNewValueName(formatDetailTabs(newTabs));
+        difference.setType(formPropDifference.getType());
+        return difference;
+    }
+
+    private FormProp parseFormProp(Object value) {
+        return value == null ? null : JSON.parseObject(JSON.toJSONString(value), FormProp.class);
+    }
+
+    private String formatDetailTabs(List<FormDetailTab> tabs) {
+        if (tabs == null) {
+            return "";
+        }
+        return tabs.stream().map(tab -> {
+            List<String> details = new ArrayList<>();
+            if (tab.getRelatedForm() != null) {
+                details.add(optionName(tab.getRelatedForm()));
+            }
+            if (tab.getRelatedField() != null) {
+                details.add(optionName(tab.getRelatedField()));
+            }
+            details.add(Translator.get(Boolean.FALSE.equals(tab.getEnable()) ? "log.enable.false" : "log.enable.true"));
+            details.add(0, tab.getName());
+            return String.join(" - ", details);
+        }).collect(Collectors.joining("\n"));
+    }
+
+    private String optionName(OptionDTO option) {
+        return option.getName() != null && !option.getName().isBlank()
+                ? option.getName() : Objects.toString(option.getId(), "");
     }
 
     private List<String> handleConfig(Object value, String orgId, String formKey) {
