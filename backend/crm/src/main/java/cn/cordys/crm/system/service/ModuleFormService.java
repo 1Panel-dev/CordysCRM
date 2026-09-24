@@ -2130,6 +2130,7 @@ public class ModuleFormService {
     private void checkStatisticFields(String formKey, List<BaseField> fields, String orgId) {
         List<StatisticField> statisticFields = fields.stream()
                 .filter(StatisticField.class::isInstance)
+                .filter(field -> !field.getId().contains("ref")) // 显示字段不校验
                 .map(StatisticField.class::cast)
                 .toList();
         if (CollectionUtils.isEmpty(statisticFields)) {
