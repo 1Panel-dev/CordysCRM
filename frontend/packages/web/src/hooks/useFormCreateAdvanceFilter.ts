@@ -8,11 +8,17 @@ export default function useFormCreateFilter() {
   const customFieldsFilterConfig = ref<FilterFormItem[]>([]);
   // 获取配置属性
   function getFilterListConfig(res: FormDesignConfigDetailParams, addDefaultKeyAsId = false) {
+    // 筛选下拉的第三列展示类型: 公式字段按计算结果格式区分文本/数字;
+    // 统计字段的值由后端聚合得出, 本身就是数字, 因此与数字字段一致按数字输入框渲染,
+    // 否则渲染成文本输入框, 提交给后端的 value 会是字符串而不是数字
     const getFilterDisplayType = (field: FormCreateField) => {
-      if (field.type !== FieldTypeEnum.FORMULA) {
-        return field.type;
+      if (field.type === FieldTypeEnum.FORMULA) {
+        return field.formulaResultFormat === 'number' ? FieldTypeEnum.INPUT_NUMBER : FieldTypeEnum.INPUT;
       }
-      return field.formulaResultFormat === 'number' ? FieldTypeEnum.INPUT_NUMBER : FieldTypeEnum.INPUT;
+      if (field.type === FieldTypeEnum.STATISTIC) {
+        return FieldTypeEnum.INPUT_NUMBER;
+      }
+      return field.type;
     };
 
     const getConfigProps = (field: FormCreateField) => {
