@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.dto.request;
 
+import cn.cordys.common.dto.OptionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -15,5 +16,5 @@ public class SyncUserRequest {
     private String type;
 
     @Schema(description = "同步范围ids")
-    private List<String> syncScope = new ArrayList<>();
+    private List<OptionDTO> syncScope = new ArrayList<>();
 }

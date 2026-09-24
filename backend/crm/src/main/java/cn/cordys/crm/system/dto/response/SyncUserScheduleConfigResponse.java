@@ -1,5 +1,6 @@
 package cn.cordys.crm.system.dto.response;
 
+import cn.cordys.common.dto.OptionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -18,7 +19,7 @@ public class SyncUserScheduleConfigResponse {
     private String syncCycle;
 
     @Schema(description = "同步范围")
-    private List<String> syncConfig = new ArrayList<>();
+    private List<OptionDTO> syncScope = new ArrayList<>();
 
     @Schema(description = "资源类型：当前第三方平台类型")
     private String resourceType;
