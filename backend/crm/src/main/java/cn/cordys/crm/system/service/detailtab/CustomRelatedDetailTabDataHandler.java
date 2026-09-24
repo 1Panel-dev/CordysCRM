@@ -3,12 +3,16 @@ package cn.cordys.crm.system.service.detailtab;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.dto.condition.FilterCondition;
+import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.crm.form.dto.request.CustomFormDataPageRequest;
 import cn.cordys.crm.form.service.CustomFormDataService;
+import cn.cordys.crm.system.domain.ModuleField;
+import cn.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +34,8 @@ public class CustomRelatedDetailTabDataHandler implements DetailTabDataHandler {
     private ResourcePermissionService resourcePermissionService;
     @Resource
     private CustomFormDataService customFormDataService;
+    @Resource
+    private BaseMapper<ModuleField> moduleFieldBaseMapper;
 
     /**
      * 处理自定义表单的查询
@@ -53,6 +59,10 @@ public class CustomRelatedDetailTabDataHandler implements DetailTabDataHandler {
 
         String relatedFormId = context.tab().getRelatedForm().getIdAsString();
         String relatedFieldId = context.tab().getRelatedField().getIdAsString();
+        ModuleField moduleField = moduleFieldBaseMapper.selectByPrimaryKey(relatedFieldId);
+        if (moduleField == null) {
+            throw new GenericException(Translator.get("module.tab.not_exist"));
+        }
         CustomFormDataPageRequest request = BeanUtils.copyBean(new CustomFormDataPageRequest(), context.request());
         request.setCustomFormId(relatedFormId);
         // 详情页不接受客户端视图条件，避免视图配置改变固定关联查询的语义。

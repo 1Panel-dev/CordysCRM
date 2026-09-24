@@ -605,7 +605,7 @@ public class ModuleFormService {
         formProp.setDetailTabs(tabs);
     }
 
-    private void resolveDetailTabs(String formKey, String organizationId, FormProp formProp) {
+    public void resolveDetailTabs(String formKey, String organizationId, FormProp formProp) {
         if (formProp == null) {
             return;
         }
