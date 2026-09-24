@@ -276,7 +276,6 @@ public class ThirdDepartment {
             }
             parent.getChildren().add(department);
         }
-        sortDepartmentTree(roots);
 
         return roots;
     }
