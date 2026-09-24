@@ -1624,6 +1624,7 @@
     :custom-data-source-forms="[]"
     combineSearchFieldKey="updateScopeCondition"
     field-source="currentForm"
+    match-value-only
     @save="handleStatisticUpdateRangeFilterSave"
   />
   <DataSourceDisplayFieldModal
