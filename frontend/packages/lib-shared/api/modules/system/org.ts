@@ -38,8 +38,7 @@ import type {
   MemberItem,
   MemberParams,
   SetCommanderParams,
-  SyncUserScheduleConfigRequest,
-  SyncUserScheduleConfigResponse,
+  SyncUserScheduleConfig,
   ThirdDepartmentNode,
   UpdateDepartmentItemParams,
   UserTableQueryParams,
@@ -135,11 +134,11 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 用户(员工)-获取同步组织架构定时任务配置
   function getSyncScheduleConfig(type: string) {
-    return CDR.get<SyncUserScheduleConfigResponse>({ url: `${syncScheduleConfigUrl}/${type}` });
+    return CDR.get<SyncUserScheduleConfig>({ url: `${syncScheduleConfigUrl}/${type}` });
   }
 
   // 用户(员工)-保存同步组织架构定时任务配置
-  function saveSyncScheduleConfig(data: SyncUserScheduleConfigRequest) {
+  function saveSyncScheduleConfig(data: SyncUserScheduleConfig) {
     return CDR.post({ url: syncScheduleConfigUrl, data });
   }
 

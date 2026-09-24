@@ -1,6 +1,7 @@
 import type { TableQueryParams } from '../common';
 import { UserInfo } from '../user';
 import { SelectedUsersItem } from '@lib/shared/models/system/module';
+import type { OptionDTO } from '@lib/shared/models/system/business';
 
 // 添加部门
 export interface DepartmentItemParams {
@@ -125,18 +126,11 @@ export interface ThirdDepartmentNode {
   children?: ThirdDepartmentNode[];
 }
 
-export interface SyncUserScheduleConfigRequest {
+export interface SyncUserScheduleConfig {
   enable: boolean;
   syncCycle: SyncCycle;
-  syncScope: string[];
+  syncScope: OptionDTO[];
   resourceType: string;
-}
-
-export interface SyncUserScheduleConfigResponse {
-  enable?: boolean;
-  syncCycle?: SyncCycle;
-  syncConfig?: string[];
-  resourceType?: string;
   nextTriggerTime?: number;
 }
 
@@ -144,6 +138,6 @@ export interface SyncUserScheduleForm {
   enable: boolean;
   syncFrequency: SyncFrequency;
   syncWeekday: SyncWeekday;
-  syncScope: 'ALL' | 'DEPARTMENT';
+  syncScopeMode: 'ALL' | 'DEPARTMENT';
   syncDepartmentIds: string[];
 }
