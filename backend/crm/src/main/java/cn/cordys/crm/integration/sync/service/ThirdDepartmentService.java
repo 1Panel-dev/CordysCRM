@@ -437,12 +437,13 @@ public class ThirdDepartmentService {
             s.setResourceType(request.getResourceType());
             s.setUpdateUser(userId);
             scheduleService.editSchedule(s);
-            scheduleService.addOrUpdateCronJob(s, SyncUserScheduleJob.getJobKey(orgId), SyncUserScheduleJob.getTriggerKey(orgId), SyncUserScheduleJob.class);
+            scheduleService.addOrUpdateCronJob(s, SyncUserScheduleJob.getJobKey(s.getKey()), SyncUserScheduleJob.getTriggerKey(s.getKey()), SyncUserScheduleJob.class);
         }, () -> {
             Schedule addSchedule = new Schedule();
+            String key = IDGenerator.nextStr();
             addSchedule.setName("组织架构同步定时任务");
             addSchedule.setResourceId(orgId);
-            addSchedule.setKey(IDGenerator.nextStr());
+            addSchedule.setKey(key);
             addSchedule.setEnable(request.isEnable());
             addSchedule.setCreateUser(userId);
             addSchedule.setUpdateUser(userId);
@@ -453,7 +454,7 @@ public class ThirdDepartmentService {
             addSchedule.setOrganizationId(orgId);
             addSchedule.setConfig(JSON.toJSONString(request.getSyncScope()));
             scheduleService.addSchedule(addSchedule);
-            scheduleService.addOrUpdateCronJob(addSchedule, SyncUserScheduleJob.getJobKey(orgId), SyncUserScheduleJob.getTriggerKey(orgId), SyncUserScheduleJob.class);
+            scheduleService.addOrUpdateCronJob(addSchedule, SyncUserScheduleJob.getJobKey(key), SyncUserScheduleJob.getTriggerKey(key), SyncUserScheduleJob.class);
         });
     }
 

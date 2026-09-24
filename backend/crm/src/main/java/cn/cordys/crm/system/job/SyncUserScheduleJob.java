@@ -38,11 +38,11 @@ public class SyncUserScheduleJob extends BaseScheduleJob {
     }
 
 
-    public static JobKey getJobKey(String resourceId) {
-        return new JobKey(resourceId, SyncUserScheduleJob.class.getName());
+    public static JobKey getJobKey(String key) {
+        return new JobKey(key, SyncUserScheduleJob.class.getName());
     }
 
-    public static TriggerKey getTriggerKey(String resourceId) {
-        return new TriggerKey(resourceId, SyncUserScheduleJob.class.getName());
+    public static TriggerKey getTriggerKey(String key) {
+        return new TriggerKey(key, SyncUserScheduleJob.class.getName());
     }
 }
