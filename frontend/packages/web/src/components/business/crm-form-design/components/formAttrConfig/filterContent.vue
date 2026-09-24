@@ -41,7 +41,11 @@
               @update:value="changeMatchTypeDefaultValue(item)"
             />
           </n-form-item>
-          <n-form-item :path="`conditions[${listIndex}].matchType`" class="block w-[105px]">
+          <n-form-item
+            v-if="!props.matchValueOnly"
+            :path="`conditions[${listIndex}].matchType`"
+            class="block w-[105px]"
+          >
             <n-select
               v-model:value="item.matchType"
               :options="matchTypeOptions"
