@@ -56,7 +56,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
-import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -352,6 +352,11 @@ public class CustomerContactService {
         // 获取模块字段
         List<BaseModuleFieldValue> originCustomerFields = customerContactFieldService.getModuleFieldValuesByResourceId(request.getId());
 
+        // 统计字段: 关联字段在下面会被覆盖, 改之前先把它当前指向的宿主捕下来 ——
+        // 改成别的关联对象时, 变更前那条宿主的统计值会偏大, 而改完就再也查不出它了
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
+                FormKey.CONTACT.getKey(), List.of(request.getId()), orgId);
+
         if (BooleanUtils.isTrue(request.getAgentInvoke())) {
             customerContactFieldService.updateModuleFieldByAgent(customerContact, originCustomerFields, request.getModuleFields(), orgId, userId);
         } else {
@@ -360,8 +365,8 @@ public class CustomerContactService {
         }
 
         customerContactMapper.update(customerContact);
-        // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
-        statisticFieldService.refreshByRelatedDataChange(FormKey.CONTACT.getKey(), request.getId(), orgId);
+        // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
+        statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
 
         customerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
         baseService.handleUpdateLog(originCustomerContact, customerContact, originCustomerFields, request.getModuleFields(), originCustomerContact.getId(), originCustomerContact.getName());
@@ -386,7 +391,7 @@ public class CustomerContactService {
             return;
         }
         // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等删完才准
-        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                 FormKey.CONTACT.getKey(), List.of(id), OrganizationContext.getOrganizationId());
         customerContactMapper.deleteByPrimaryKey(id);
         customerContactFieldService.deleteByResourceId(id);
@@ -785,7 +790,14 @@ public class CustomerContactService {
 
         List<CustomerContact> originCustomerContacts = customerContactMapper.selectByIds(request.getIds());
 
+        // 统计字段: 批量编辑只改一个字段, 改的若是关联字段, 下面这批联系人的关联关系会整批换人 ——
+        // 换之前它们指向的宿主得先捕下来, 否则那些宿主的统计值会一直偏大; 改的不是关联字段时
+        // 这一步在服务内部直接短路, 只多一次反查
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
+                FormKey.CONTACT.getKey(), request.getFieldId(), request.getIds(), organizationId);
         customerContactFieldService.batchUpdate(request, field, originCustomerContacts, CustomerContact.class, LogModule.CUSTOMER_CONTACT, extCustomerContactMapper::batchUpdate, userId, organizationId);
+        // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
+        statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
     }
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {

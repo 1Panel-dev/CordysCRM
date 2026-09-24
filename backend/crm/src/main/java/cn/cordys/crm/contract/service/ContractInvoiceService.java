@@ -67,7 +67,7 @@ import cn.cordys.crm.system.service.LogService;
 import cn.cordys.crm.system.service.ModuleFormCacheService;
 import cn.cordys.crm.system.service.ModuleFormService;
 import cn.cordys.crm.system.service.StatisticFieldService;
-import cn.cordys.crm.system.service.StatisticFieldService.StatisticDeleteScope;
+import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -286,10 +286,14 @@ public class ContractInvoiceService extends BaseExportService implements Approva
             invoice.setCreateTime(originContractInvoice.getCreateTime());
             invoice.setApprovalStatus(originContractInvoice.getApprovalStatus());
 
+            // 统计字段: 关联字段在下面会被覆盖, 改之前先把它当前指向的宿主捕下来 ——
+            // 改成别的关联对象时, 变更前那条宿主的统计值会偏大, 而改完就再也查不出它了
+            StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
+                    FormKey.INVOICE.getKey(), List.of(request.getId()), orgId);
             updateFields(moduleFields, invoice, orgId, userId);
             invoiceMapper.update(invoice);
-            // 统计字段: 关联字段的值可能被改掉了, 被关联记录的统计值要跟着重算
-            statisticFieldService.refreshByRelatedDataChange(FormKey.INVOICE.getKey(), request.getId(), orgId);
+            // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
+            statisticFieldService.refreshAfterRelatedChange(statisticScope, List.of(request.getId()));
             //删除快照
             LambdaQueryWrapper<ContractInvoiceSnapshot> delWrapper = new LambdaQueryWrapper<>();
             delWrapper.eq(ContractInvoiceSnapshot::getInvoiceId, request.getId());
@@ -353,7 +357,7 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         }
 
         // 删除会同时毁掉关联字段的值, 所以「这张发票关联了谁」只能删前先捕; 重算又要等删完才准。
-        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                 FormKey.INVOICE.getKey(), List.of(id), orgId);
         invoiceFieldService.deleteByResourceId(id);
         invoiceMapper.deleteByPrimaryKey(id);
@@ -655,7 +659,7 @@ public class ContractInvoiceService extends BaseExportService implements Approva
         // 捕的是审批分流之后真正要删的 deleteIds, 不是 permittedIds —— 走审批的那批此刻并没删掉,
         // 捕了就是白捕, 而且审批通过后还会由审批侧再删一次, 那次自会重算。
         // 删除会同时毁掉关联字段的值, 所以只能删前先捕; 重算又要等删完才准。
-        StatisticDeleteScope statisticScope = statisticFieldService.captureRelatedHosts(
+        StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
                 FormKey.INVOICE.getKey(), deleteIds, orgId);
         contractInvoiceMapper.deleteByIds(deleteIds);
         // 删完再重算, 此时被删的那批已经不在, 不会被统计进去。

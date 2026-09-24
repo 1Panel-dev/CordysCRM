@@ -65,24 +65,30 @@ import java.util.stream.Collectors;
  * 统计字段刷新服务。
  *
  * <p>统计字段的值来源于「目标表单中通过数据源单选字段关联到当前记录的 N 条数据」, 与公式字段由前端
- * 计算提交不同, 统计值只能由后端聚合后写回, 因此需要五个触发入口:</p>
+ * 计算提交不同, 统计值只能由后端聚合后写回, 因此需要六个触发入口:</p>
  * <ol>
  *   <li>保存表单配置时, 先对比新旧统计字段配置, 有变化才异步刷新该表单的存量数据
  *       ({@link #refreshOnConfigSave});</li>
- *   <li>目标表单新增或变更关联数据时自动刷新被关联记录 ({@link #refreshByRelatedDataChange});</li>
- *   <li>目标表单删除关联数据时自动刷新被关联记录 ({@link #captureRelatedHosts} +
- *       {@link #refreshAfterRelatedDelete}, 两个方法成对使用, 见其 javadoc);</li>
+ *   <li>目标表单<b>新增</b>关联数据时刷新被关联记录 ({@link #refreshByRelatedDataChange}) ——
+ *       新数据没有「变更前」的关联关系, 读到当前的关联值刷一条就够了;</li>
+ *   <li>目标表单<b>变更</b>关联数据时刷新被关联记录, 关联关系变更<b>前后</b>的两条宿主记录都要算
+ *       ({@link #captureRelatedHosts} / {@link #captureRelatedHostsForFieldChange} +
+ *       {@link #refreshAfterRelatedChange}, 成对使用, 覆盖单条编辑与批量编辑);</li>
+ *   <li>目标表单<b>删除</b>关联数据时刷新被关联记录 ({@link #captureRelatedHosts} +
+ *       {@link #refreshAfterRelatedDelete}, 成对使用, 见其 javadoc);</li>
  *   <li>各模块新增资源后, 刷新该条记录上的全部统计字段 ({@link #refreshDataStatisticFields});</li>
  *   <li>用户在详情页/编辑页手动刷新某条数据上的某个统计字段 ({@link #refreshField})。</li>
  * </ol>
  *
+ * <p>第 3、4 两个入口的形状一样, 都是「写入前捕获、写入后重算」: 关联值本身就是被写入毁掉的东西,
+ * 而重算又必须在写入之后做, 两个时间点无法合并, 只能拿写入前的快照补上「变更前被关联的是谁」。</p>
+ *
  * <p>统计值写回宿主的字段值表({@code <table>_field}), 与普通自定义字段同表同格式,
  * 读取时由 {@code StatisticResolver} 格式化展示。</p>
  *
- * <p><b>已知边界</b>: 关联字段值发生变更时, 变更前指向的那条宿主记录不会被自动重算,
- * 原因见 {@link #refreshByRelatedDataChange}; 删除路径只能覆盖捕获那一刻还存在的宿主记录,
- * 捕获与重算之间的时间窗见 {@link #captureRelatedHosts}; 「统计范围」为「符合条件」时
- * 右值取不到的条件会被整条丢掉, 口径见 {@link #resolveScopeConditions}。</p>
+ * <p><b>已知边界</b>: 变更与删除两条路径都只能覆盖捕获那一刻还存在的宿主记录, 捕获与重算之间的
+ * 时间窗见 {@link #captureRelatedHosts}; 「统计范围」为「符合条件」时右值取不到的条件会被整条丢掉,
+ * 口径见 {@link #resolveScopeConditions}。</p>
  */
 @Slf4j
 @Service
@@ -125,6 +131,21 @@ public class StatisticFieldService {
      * 配置里只能先存一个引用对象, 刷新时再按每条数据把值换进去。详见 {@link #scopeCondition}。</p>
      */
     private static final String REF_FIELD_ID = "refFieldId";
+
+    /**
+     * 统计范围条件里记「拿目标表单的哪个字段比」的键名, 设计器筛选弹窗产出的结构。
+     *
+     * <p>与 {@link #CONDITION_NAME} 是同一件事的两种存法: 这个键名给的是弹窗结构
+     * ({@code {searchMode, conditions[{leftFieldId, ...}]}}), {@code name} 给的是高级搜索结构。
+     * 两种配置都可能出现在库里(详见 {@code StatisticConditionConverter#toCondition}), 所以两个都认。</p>
+     */
+    private static final String CONDITION_LEFT_FIELD_ID = "leftFieldId";
+
+    /**
+     * 统计范围条件里记字段ID的另一个键名, 高级搜索结构({@link FilterCondition#getName()})。见
+     * {@link #CONDITION_LEFT_FIELD_ID}。
+     */
+    private static final String CONDITION_NAME = "name";
 
     /**
      * 标准模块表单的物理表名, 取自各模块主实体的 {@code @Table} 注解。
@@ -480,12 +501,12 @@ public class StatisticFieldService {
     }
 
     /**
-     * 目标表单的关联数据新增或变更后, 自动刷新被关联记录的统计字段。
+     * 目标表单的关联数据<b>新增</b>后, 自动刷新被关联记录的统计字段。
      *
-     * <p><b>已知边界</b>: 只拿得到变更「之后」的数据, 拿不到变更前的关联值。所以关联字段从 A 改成 B 时,
-     * 只有 B 这条宿主记录会被重算, A 那条会一直停在旧值上, 直到 A 自己再被编辑一次或有人手动刷新。
-     * 想在改关联关系时同时兜住 A, 需要在字段值被覆盖「之前」把旧值读出来一并传进来;
-     * 退而求其次改成整张宿主表单重算的代价与「保存表单配置」相同, 放在这条高频路径上不可接受。</p>
+     * <p><b>只用于新增</b>: 这条路径拿不到、也不需要「变更前」的关联值 —— 记录是刚建的, 之前谁都没关联过。
+     * 数据被<b>编辑</b>(含批量编辑)时改走 {@link #captureRelatedHosts} +
+     * {@link #refreshAfterRelatedChange}: 关联字段从 A 改成 B 时, 只按写入后的值刷新会漏掉 A,
+     * A 上那条统计值会一直停在旧值上。</p>
      *
      * @param targetFormKey 发生变更的数据所属表单Key
      * @param targetDataId  发生变更的数据ID
@@ -544,55 +565,113 @@ public class StatisticFieldService {
      * 而重算又必须发生在删除<b>之后</b>, 否则被删的那条还会被算进去。两个时间点无法合并,
      * 只能在删除前把宿主ID捕出来、删除后拿这份快照去重算。</p>
      *
-     * <p><b>调用方式</b>是两条语句夹住删除本身:</p>
+     * <p>单条编辑与删除走这里; 批量编辑走 {@link #captureRelatedHostsForFieldChange}
+     * (多一个字段过滤, 见其 javadoc), 两者共用一个方法体。</p>
+     *
+     * <p><b>调用方式</b>是两条语句夹住写入本身:</p>
      * <pre>
-     * StatisticDeleteScope scope = service.captureRelatedHosts(formKey, reallyDeletedIds, orgId);
-     * // ...原有删除语句...
-     * service.refreshAfterRelatedDelete(scope);
+     * StatisticHostScope scope = service.captureRelatedHosts(formKey, reallyWrittenIds, orgId);
+     * // ...原有删除/更新语句...
+     * service.refreshAfterRelatedDelete(scope);          // 删除
+     * service.refreshAfterRelatedChange(scope, ids);     // 编辑
      * </pre>
      *
-     * <p><b>已知边界</b>: 只捕得到调用这一刻还存在的关联关系。删除与重算之间的时间窗里,
-     * 若有人改动了这些目标数据的关联字段, 重算用的是改动前的关系(改动本身会触发
-     * {@link #refreshByRelatedDataChange} 覆盖掉新宿主, 两边的差异最终会收敛)。
-     * 另外捕获是逐条读关联值(N 条 × M 个统计字段次查询): 删除是低频人工操作, 不为此新增批量取值语句。</p>
+     * <p><b>已知边界</b>: 只捕得到调用这一刻还存在的关联关系。捕获与重算之间的时间窗里,
+     * 若有人改动了这些目标数据的关联字段, 重算用的是改动前的关系(改动本身会触发变更入口
+     * 覆盖掉新宿主, 两边的差异最终会收敛)。</p>
      *
-     * @param targetFormKey  被删数据所属表单Key
-     * @param targetDataIds  实际会被删掉的数据ID(不是请求里的ID —— 批量删往往先按阶段/权限过滤掉一部分)
-     * @param orgId          组织ID
+     * <p><b>为什么整个方法体都是 fail-safe 的</b>: 捕获阶段排在调用方的写入<b>之前</b>,
+     * 它抛出去就等于把这次编辑/删除整条带下去 —— 而它做的只是派生数据的准备工作。
+     * 所以反查、读表单配置、解析字段全部包在 try 里, 出任何问题都退化成「本次不重算」:
+     * 统计值偏大还能靠详情页的刷新按钮或重存一次表单配置补回来, 写入失败没有补的机会。</p>
+     *
+     * @param targetFormKey 被删数据所属表单Key
+     * @param targetDataIds 实际会被删掉的数据ID(不是请求里的ID —— 批量删往往先按阶段/权限过滤掉一部分)
+     * @param orgId         组织ID
      *
      * @return 重算范围, 交给 {@link #refreshAfterRelatedDelete}; 没有统计字段引用这个表单时是空的
      */
-    public StatisticDeleteScope captureRelatedHosts(String targetFormKey, Collection<String> targetDataIds,
-                                                    String orgId) {
-        // 1) 反查: 统计目标就是 targetFormKey 的统计字段。一个都没有就直接返回 ——
-        //    绝大多数表单不是统计目标, 这条路径必须足够便宜, 否则会拖慢每一次数据删除。
-        List<StatisticFieldRef> refs = findStatisticFieldsByTargetForm(targetFormKey, orgId);
-        if (refs.isEmpty() || CollectionUtils.isEmpty(targetDataIds)) {
-            return new StatisticDeleteScope(targetFormKey, orgId, Collections.emptyList());
-        }
+    public StatisticHostScope captureRelatedHosts(String targetFormKey, Collection<String> targetDataIds,
+                                                  String orgId) {
+        return capture(targetFormKey, null, targetDataIds, orgId);
+    }
 
-        // 2) 反查只保证「有字段把我当目标」, 不保证这个目标是个标准模块表单。真出现这种配置
-        //    (保存时没拦住、或直接改了库), 下面会拿着空表名逐条去查并抛出 N 条错误日志, 不如在这里说清楚。
-        String targetDataTable = FORM_KEY_TABLE.get(targetFormKey);
-        if (targetDataTable == null) {
-            log.warn("统计字段的目标表单不是标准模块表单, 删除后无法重算: targetFormKey={}", targetFormKey);
-            return new StatisticDeleteScope(targetFormKey, orgId, Collections.emptyList());
-        }
+    /**
+     * 捕获「这批数据被改之前, 它们关联着哪些宿主记录」, <b>必须在写入之前调用</b>。
+     *
+     * <p>与 {@link #captureRelatedHosts} 只差一个 {@code changedFieldId}: 批量编辑一次只改一个字段,
+     * 改的如果与统计值无关(既不是关联字段, 也不是被统计字段、统计范围里用到的字段, 见
+     * {@link #affectsStatisticValue}), 统计值<b>不可能</b>变化, 变更前后的宿主是同一批 ——
+     * 那就没必要按行数把关联值逐条读出来。这个判断放在这里而不是让调用方自己判, 是为了让「改的是哪个字段」
+     * 只可能有一个来源: 捕获时用它过滤, 重算时从 scope 里读同一个值再过滤一遍。</p>
+     *
+     * <p><b>为什么这个短路非有不可</b>: 不短路的话, 每一次批量编辑(哪怕改的只是备注)都要为选中的每一行
+     * 做一遍关联值点查, 而且变更路径要做两轮(变更前、变更后各一轮)。短路之后, 最常见的
+     * 「改一个跟统计无关的字段」退化成一次反查, 与「这张表单根本没有统计字段」一样便宜。</p>
+     *
+     * <p><b>已知边界</b>: 捕获是逐条读关联值(N 条 × M 个统计字段次查询)。真去改关联字段时躲不掉 ——
+     * 旧宿主只能一条条读出来。批量编辑是低频人工操作, 不为此新增批量取值语句。</p>
+     *
+     * @param targetFormKey  被改数据所属表单Key
+     * @param changedFieldId 本次批量编辑改的那个字段ID; 为空时退化成不做字段过滤(与删除同口径)
+     * @param targetDataIds  实际会被改动的数据ID(合同/订单等先按权限过滤, 要用过滤后的那份)
+     * @param orgId          组织ID
+     *
+     * @return 重算范围, 交给 {@link #refreshAfterRelatedChange}
+     */
+    public StatisticHostScope captureRelatedHostsForFieldChange(String targetFormKey, String changedFieldId,
+                                                                Collection<String> targetDataIds, String orgId) {
+        return capture(targetFormKey, changedFieldId, targetDataIds, orgId);
+    }
 
+    /**
+     * 捕获的公共实现, 两个入口只差是否需要按字段过滤。
+     *
+     * @param changedFieldId 为空表示不按字段过滤(删除、单条编辑)
+     */
+    private StatisticHostScope capture(String targetFormKey, String changedFieldId,
+                                       Collection<String> targetDataIds, String orgId) {
         String originOrgId = OrganizationContext.getOrganizationId();
         OrganizationContext.setOrganizationId(orgId);
         try {
-            // 3) 目标表单的字段配置只取一次(走缓存): 用来判断关联字段是不是大字段, 决定从哪张表读值。
+            // 1) 反查: 统计目标就是 targetFormKey 的统计字段。一个都没有就直接返回 ——
+            //    绝大多数表单不是统计目标, 这条路径必须足够便宜, 否则会拖慢每一次写入。
+            List<StatisticFieldRef> refs = findStatisticFieldsByTargetForm(targetFormKey, orgId);
+            if (refs.isEmpty() || CollectionUtils.isEmpty(targetDataIds)) {
+                return new StatisticHostScope(targetFormKey, orgId, changedFieldId, Collections.emptyList());
+            }
+
+            // 2) 批量编辑的字段过滤: 改的字段与这个统计字段的值无关时, 统计值不可能变。
+            //    有关的一共三类字段(见 affectsStatisticValue) —— 关联字段、被统计字段、统计范围条件里用到的字段。
+            //    对这里的判断来说三者一视同仁: 它们的ID都来自目标表单的表单配置, 与请求里的 fieldId 同一个ID空间。
+            if (StringUtils.isNotBlank(changedFieldId)) {
+                refs = refs.stream()
+                        .filter(ref -> affectsStatisticValue(ref.field(), changedFieldId))
+                        .toList();
+                if (refs.isEmpty()) {
+                    return new StatisticHostScope(targetFormKey, orgId, changedFieldId, Collections.emptyList());
+                }
+            }
+
+            // 3) 反查只保证「有字段把我当目标」, 不保证这个目标是个标准模块表单。真出现这种配置
+            //    (保存时没拦住、或直接改了库), 下面会拿着空表名逐条去查并抛出 N 条错误日志, 不如在这里说清楚。
+            String targetDataTable = FORM_KEY_TABLE.get(targetFormKey);
+            if (targetDataTable == null) {
+                log.warn("统计字段的目标表单不是标准模块表单, 变更/删除后无法重算: targetFormKey={}", targetFormKey);
+                return new StatisticHostScope(targetFormKey, orgId, changedFieldId, Collections.emptyList());
+            }
+
+            // 4) 目标表单的字段配置只取一次(走缓存): 用来判断关联字段是不是大字段, 决定从哪张表读值。
             Map<String, BaseField> targetFields = toFieldMap(moduleFormCacheService.getConfig(targetFormKey, orgId));
 
-            // 4) 按 (统计字段, 宿主记录) 去重。批量删除时多条数据指向同一个宿主是常态,
+            // 5) 按 (统计字段, 宿主记录) 去重。批量操作时多条数据指向同一个宿主是常态,
             //    不去重的话刷新阶段会把同一条宿主记录重算好几遍, 而结果是完全一样的。
             //    HostRecord 是 record, 值相等即同一个宿主, 直接靠集合去重。
             Set<HostRecord> hosts = new LinkedHashSet<>();
             for (StatisticFieldRef ref : refs) {
                 for (String targetDataId : targetDataIds) {
                     try {
-                        // 5) 与变更入口同一份取值逻辑: 关联字段读不出来就是没关联任何宿主, 跳过。
+                        // 6) 与新增入口同一份取值逻辑: 关联字段读不出来就是没关联任何宿主, 跳过。
                         String hostDataId = readRelatedValue(targetDataTable, targetDataId,
                                 targetFields.get(ref.field().getRelatedFieldId()));
                         if (StringUtils.isBlank(hostDataId)) {
@@ -601,31 +680,89 @@ public class StatisticFieldService {
                         hosts.add(new HostRecord(ref.hostFormKey(), ref.hostDataTable(),
                                 ref.field(), hostDataId));
                     } catch (Exception e) {
-                        // 6) 捕不到某一条不影响其余的: 顶多这条数据关联的宿主值偏大,
-                        //    比「整次删除因为派生数据失败而失败」轻得多
-                        log.error("删除前捕获统计字段宿主失败: targetFormKey={}, hostFormKey={}, fieldId={}, dataId={}",
+                        // 7) 捕不到某一条不影响其余的: 顶多这条数据关联的宿主值偏大,
+                        //    比「整次写入因为派生数据失败而失败」轻得多
+                        log.error("写入前捕获统计字段宿主失败: targetFormKey={}, hostFormKey={}, fieldId={}, dataId={}",
                                 targetFormKey, ref.hostFormKey(), ref.field().getId(), targetDataId, e);
                     }
                 }
             }
-            return new StatisticDeleteScope(targetFormKey, orgId, List.copyOf(hosts));
+            return new StatisticHostScope(targetFormKey, orgId, changedFieldId, List.copyOf(hosts));
         } catch (Exception e) {
-            // 7) 上面那个 try/catch 只兜得住「某一条读不出来」; 读表单配置、解析字段这类成片失败会落到这里。
-            //    捕获是纯派生数据的准备工作, 失败时宁可这一批统计值不更新, 也不能把调用方的删除整条带下去 ——
-            //    值偏大还能靠详情页的刷新按钮或重存一次表单配置补回来, 删除失败没有补的机会。
-            log.error("删除前捕获统计字段宿主失败, 本次删除不重算统计值: targetFormKey={}", targetFormKey, e);
-            return new StatisticDeleteScope(targetFormKey, orgId, Collections.emptyList());
+            // 8) 上面那个 try/catch 只兜得住「某一条读不出来」; 反查、读表单配置、解析字段这类成片失败会落到这里。
+            //    捕获是纯派生数据的准备工作, 失败时宁可这一批统计值不更新, 也不能把调用方的写入整条带下去 ——
+            //    统计值偏了还能靠详情页的刷新按钮或重存一次表单配置补回来, 写入失败没有补的机会。
+            log.error("写入前捕获统计字段宿主失败, 本次不重算统计值: targetFormKey={}", targetFormKey, e);
+            return new StatisticHostScope(targetFormKey, orgId, changedFieldId, Collections.emptyList());
         } finally {
             OrganizationContext.setOrganizationId(originOrgId);
         }
     }
 
     /**
+     * 改目标表单上的 {@code changedFieldId}, 会不会改变这个统计字段算出来的值。
+     *
+     * <p>统计值由「哪些数据算在内」与「算进去的每条各是多少」两部分决定, 对应到配置上是三类字段:</p>
+     * <ul>
+     *   <li><b>关联字段</b>({@code relatedFieldId}): 改它等于把这条数据从一条宿主挪到另一条宿主,
+     *       新旧两边都要重算;</li>
+     *   <li><b>被统计字段</b>({@code statisticFieldId}): 关联关系没动, 但聚合进去的那个数变了 ——
+     *       宿主照旧要重算。COUNT 没有这个字段, 比较恒不成立;</li>
+     *   <li><b>统计范围条件里用到的字段</b>({@code combineSearch}): 条件比的就是目标表单上的列,
+     *       列值一改, 这条数据还算不算在内也跟着变。</li>
+     * </ul>
+     *
+     * <p>不属于这三类时返回 false。这是批量编辑的绝大多数场景(改备注、改标签), 一次都不该多查。</p>
+     *
+     * @param field          统计字段配置(来自宿主表单)
+     * @param changedFieldId 本次批量编辑改的字段ID
+     */
+    private static boolean affectsStatisticValue(StatisticField field, String changedFieldId) {
+        if (StringUtils.equals(changedFieldId, field.getRelatedFieldId())) {
+            return true;
+        }
+        if (StringUtils.equals(changedFieldId, field.getStatisticFieldId())) {
+            return true;
+        }
+        return conditionFieldIds(field.getCombineSearch()).contains(changedFieldId);
+    }
+
+    /**
+     * 统计范围的条件里出现过的目标表单字段ID。
+     *
+     * <p>不按结构解析这份配置, 只按 key 递归地捞: 设计器筛选弹窗产出的结构里叫 {@code leftFieldId},
+     * 历史上按高级搜索结构存过的老配置里叫 {@code name}, 两种都收。多收只会让本该重算的宿主多算一次
+     * (重算是先删后插的, 同样的结果再算一遍还是一样), 漏收才会让统计值停在旧值上 ——
+     * 所以这里刻意宽松, 顺带也就不必跟着条件结构的演进去改。</p>
+     */
+    private static Set<String> conditionFieldIds(Map<String, Object> combineSearch) {
+        Set<String> fieldIds = new HashSet<>();
+        collectConditionFieldIds(combineSearch, fieldIds);
+        return fieldIds;
+    }
+
+    private static void collectConditionFieldIds(Object node, Set<String> fieldIds) {
+        if (node instanceof Map<?, ?> map) {
+            collectConditionFieldId(map.get(CONDITION_LEFT_FIELD_ID), fieldIds);
+            collectConditionFieldId(map.get(CONDITION_NAME), fieldIds);
+            map.values().forEach(value -> collectConditionFieldIds(value, fieldIds));
+        } else if (node instanceof Collection<?> values) {
+            values.forEach(value -> collectConditionFieldIds(value, fieldIds));
+        }
+    }
+
+    private static void collectConditionFieldId(Object value, Set<String> fieldIds) {
+        if (value instanceof String fieldId && StringUtils.isNotBlank(fieldId)) {
+            fieldIds.add(fieldId);
+        }
+    }
+
+    /**
      * 重算 {@link #captureRelatedHosts} 捕获到的宿主记录, <b>必须在删除之后调用</b>。
      *
-     * <p>与 {@link #refreshByRelatedDataChange} 的差别只在「宿主记录ID是怎么来的」——
-     * 一个读关联字段当前的值, 一个用删除前捕获的快照。拿到宿主ID之后算与写的动作完全一样,
-     * 两者都落在 {@link #refreshOneRecord} 上。</p>
+     * <p>与 {@link #refreshAfterRelatedChange} 的差别只在重算范围怎么来: 删除之后那些记录已经不存在了,
+     * 用写入前的快照就够了; 编辑之后关联关系可能换了人, 所以还要再捕一次取并集。
+     * 拿到范围之后算与写的动作完全一样, 都落在 {@link #refreshHosts} 上。</p>
      *
      * <p><b>为什么刷新前要判宿主还在不在</b>: 删除会级联, 宿主记录本身很可能正躺在同一次删除里。
      * 以 {@code CustomerService#deleteCustomerResource} 为例 —— 它先删客户主行与 {@code customer_field},
@@ -638,7 +775,76 @@ public class StatisticFieldService {
      * @param scope {@link #captureRelatedHosts} 的返回值; 传 null 或空范围时什么都不做
      */
     @Transactional(rollbackFor = Exception.class)
-    public void refreshAfterRelatedDelete(StatisticDeleteScope scope) {
+    public void refreshAfterRelatedDelete(StatisticHostScope scope) {
+        refreshHosts(scope);
+    }
+
+    /**
+     * 重算「关联关系被改动」影响到的宿主记录, <b>必须在写入之后调用</b>。
+     *
+     * <p><b>与删除路径的差别</b>: 删除只需要重算写入前捕到的那一批; 而把关联字段从 A 改成 B 之后,
+     * A 那边少了一条、B 那边多了一条, <b>两条宿主记录都变了</b>, 只按写入后的值刷新会把 A 永久漏掉。
+     * 所以这里在写入后再捕一次, 与写入前那份取<b>并集</b>一起重算。</p>
+     *
+     * <p><b>调用方式</b>是两条语句夹住写入本身:</p>
+     * <pre>
+     * StatisticHostScope scope = service.captureRelatedHosts(formKey, ids, orgId);
+     * // ...原有 UPDATE 语句...
+     * service.refreshAfterRelatedChange(scope, ids);
+     * </pre>
+     *
+     * <p>顺带兜住了两个原本会漏掉的场景: 关联字段被<b>清空</b>时, 写入后读不到宿主
+     * (新增入口遇到空值直接跳过), 只有写入前捕到的那份能把它算回 0; 关联关系压根没动时,
+     * 并集里的两份是同一批 record, 去重后与只刷一次等价。批量编辑走
+     * {@link #captureRelatedHostsForFieldChange} 时, 两次捕获都带同一个字段过滤条件 ——
+     * 改的字段与统计值无关时两边都直接返回空范围, 整体塌缩成一次反查。</p>
+     *
+     * <p><b>写入后那次捕获失败不用在这里兜</b>: {@link #captureRelatedHosts} 整段是 fail-safe 的,
+     * 失败时给回一个空范围, 并集里只剩写入前那份, 退化成「旧宿主照刷, 新宿主这次漏掉」——
+     * 再包一层 try/catch 只会把这条口径写在两个地方。</p>
+     *
+     * @param scope         {@link #captureRelatedHosts} /
+     *                      {@link #captureRelatedHostsForFieldChange} 的返回值; 传 null 时什么都不做
+     * @param targetDataIds 与捕获时同一份数据ID(实际被写入的那些, 不是请求里的全部)
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void refreshAfterRelatedChange(StatisticHostScope scope, Collection<String> targetDataIds) {
+        if (scope == null) {
+            return;
+        }
+        // 捕获用的是 scope 里的 targetFormKey / orgId / changedFieldId, 不再从入参传一遍:
+        // 两个阶段必须同一份口径, 少一个入参就少一次传错的机会。
+        StatisticHostScope current = capture(scope.targetFormKey(), scope.changedFieldId(), targetDataIds,
+                scope.orgId());
+        // 并集重新包一个同口径的 scope: 重算阶段只认「一批宿主记录」, 不关心它们来自哪一次捕获。
+        refreshHosts(new StatisticHostScope(scope.targetFormKey(), scope.orgId(), scope.changedFieldId(),
+                unionHosts(current, scope)));
+    }
+
+    /**
+     * 写入前、写入后两份捕获的并集, <b>新捕到的排在前面</b>。
+     *
+     * <p>HostRecord 是 record, 两条记录值相等即同一个宿主, 所以「关联关系没变」时并集收敛成一条,
+     * 不会把同一条宿主记录重算两遍。</p>
+     *
+     * <p>顺序不是随意的: {@link #refreshHosts} 按统计字段分组后拿 {@code group.getFirst()} 去建刷新上下文,
+     * 把新捕获的放前面, 万一两次捕获之间这张表单的配置刚被保存过, 用的也是新的那份字段定义。</p>
+     */
+    private static List<HostRecord> unionHosts(StatisticHostScope current, StatisticHostScope previous) {
+        Set<HostRecord> hosts = new LinkedHashSet<>(current.hosts());
+        hosts.addAll(previous.hosts());
+        return List.copyOf(hosts);
+    }
+
+    /**
+     * 重算一批宿主记录, 变更与删除两个入口共用这一份。
+     *
+     * <p>拿到宿主ID之后算与写的动作完全一样, 差别只在宿主ID是「写入前捕的快照」还是
+     * 「写入后重读的当前值 + 快照」—— 那是调用方的事, 到这里已经合并成一张表了。</p>
+     *
+     * @param scope 重算范围; 传 null 或空范围时什么都不做
+     */
+    private void refreshHosts(StatisticHostScope scope) {
         // 1) 没捕到东西就是没影响任何统计字段
         if (scope == null || CollectionUtils.isEmpty(scope.hosts())) {
             return;
@@ -650,7 +856,7 @@ public class StatisticFieldService {
             // 2) 按统计字段分组: 同一个字段的多条宿主记录共用一份刷新上下文。
             //    上下文只由「字段 + 宿主表单」决定, 与具体是哪条宿主数据无关(见 buildContext 与
             //    resolveScopeConditions 里那份模板的用法), 放到每条数据里重建会白跑几倍的字段查询 ——
-            //    与 refreshFieldData「一页只建一次上下文」是同一条理由, 而删除是成批的、编辑是单条的。
+            //    与 refreshFieldData「一页只建一次上下文」是同一条理由, 而写入是成批的、编辑是单条的。
             Map<String, List<HostRecord>> byField = scope.hosts().stream()
                     .collect(Collectors.groupingBy(host -> host.hostField().getId(), LinkedHashMap::new,
                             Collectors.toList()));
@@ -669,7 +875,7 @@ public class StatisticFieldService {
                 try {
                     context = buildContext(first.hostField(), first.hostDataTable());
                 } catch (Exception e) {
-                    log.error("关联数据删除后构建统计字段刷新上下文失败: targetFormKey={}, hostFormKey={}, fieldId={}",
+                    log.error("关联数据变更/删除后构建统计字段刷新上下文失败: targetFormKey={}, hostFormKey={}, fieldId={}",
                             scope.targetFormKey(), first.hostFormKey(), first.hostField().getId(), e);
                     continue;
                 }
@@ -685,8 +891,8 @@ public class StatisticFieldService {
                         // 5) 这条 catch 兜得住的是「算不出来」—— 建上下文、聚合查询失败都只影响这一条,
                         //    其余的照常刷。写回失败是另一回事: writeStatisticValue 上有 @Transactional,
                         //    它把外层事务标记成 rollback-only 之后这里再吞掉异常, 外层提交时仍会失败,
-                        //    也就是说「删除与重算同生共死」。这是刻意的, 不要把这条注释当成更强的承诺。
-                        log.error("关联数据删除后刷新统计字段失败: targetFormKey={}, hostFormKey={}, fieldId={}, dataId={}",
+                        //    也就是说「写入与重算同生共死」。这是刻意的, 不要把这条注释当成更强的承诺。
+                        log.error("关联数据变更/删除后刷新统计字段失败: targetFormKey={}, hostFormKey={}, fieldId={}, dataId={}",
                                 scope.targetFormKey(), host.hostFormKey(), host.hostField().getId(),
                                 host.hostDataId(), e);
                     }
@@ -700,8 +906,8 @@ public class StatisticFieldService {
     /**
      * 重算一条已经定位到宿主记录ID的统计字段, 失败由调用方各自记日志。
      *
-     * <p>变更入口是单条的, 所以在这里建上下文; 删除入口是成批的, 按字段建一次就够了,
-     * 直接调 {@link #refreshOneRecord}(见 {@link #refreshAfterRelatedDelete})。</p>
+     * <p>新增入口是单条的, 所以在这里建上下文; 变更/删除入口是成批的, 按字段建一次就够了,
+     * 直接调 {@link #refreshOneRecord}(见 {@link #refreshHosts})。</p>
      */
     private void refreshHostRecord(StatisticField hostField, String hostDataTable, String hostDataId, String orgId) {
         // 构建不出来会抛, 由调用方的 catch 兜住
@@ -1457,29 +1663,45 @@ public class StatisticFieldService {
     }
 
     /**
-     * 删除目标数据时预先捕获下来的重算范围。
+     * 目标数据被变更/删除之前预先捕获下来的重算范围。
      *
      * <p>这是个只有 {@link StatisticFieldService} 能解读的不透明句柄: 调用方拿到之后原样传回来即可,
      * 不需要(也不该)去读里面的内容。之所以要有个类型而不是分散的那几个参数, 是因为捕获与重算
-     * 两个阶段之间隔着删除语句, 中间还可能有级联删除改动数据库 —— 参数越少越不容易传错。</p>
+     * 两个阶段之间隔着写入语句, 中间还可能有级联删除改动数据库 —— 参数越少越不容易传错。</p>
      *
      * <p>orgId 存在句柄里而不是重算时再传一遍: 两个阶段必须同组织, 多一个入参就多一次传错的机会。</p>
      *
-     * <p>字段名刻意避开 target: 这个类里 {@code target*} 一律指「被删的那一方」
+     * <p>字段名刻意避开 target: 这个类里 {@code target*} 一律指「被改/被删的那一方」
      * ({@code targetFormKey} / {@code targetDataId}), 而这里是反过来要重算的宿主侧。</p>
      *
-     * @param targetFormKey 被删数据所属表单Key, 仅用于日志
-     * @param orgId         组织ID
-     * @param hosts         待重算的宿主记录, 已按 (统计字段, 宿主记录) 去重
+     * @param targetFormKey  被改/被删数据所属表单Key, 仅用于日志
+     * @param orgId          组织ID
+     * @param changedFieldId 本次改动的字段ID, 只有批量编辑给得出(一次只改一个字段),
+     *                       删除与单条编辑为 null 即不按字段过滤; 见
+     *                       {@link #captureRelatedHostsForFieldChange}
+     * @param hosts          待重算的宿主记录, 已按 (统计字段, 宿主记录) 去重
      */
-    public record StatisticDeleteScope(String targetFormKey, String orgId, List<HostRecord> hosts) {
+    public record StatisticHostScope(String targetFormKey, String orgId, String changedFieldId,
+                                     List<HostRecord> hosts) {
+
+        /**
+         * 删除与单条编辑用的构造。
+         *
+         * <p>这两条路径说不出「改的是哪个字段」(删除没有字段, 单条编辑一次写一整组), 也就没有字段过滤。</p>
+         */
+        public StatisticHostScope(String targetFormKey, String orgId, List<HostRecord> hosts) {
+            this(targetFormKey, orgId, null, hosts);
+        }
     }
 
     /**
      * 一条待重算的宿主记录。
      *
-     * <p>把统计字段与宿主记录ID绑在一起: 同一次删除会影响多个统计字段, 也可能影响多条宿主记录,
+     * <p>把统计字段与宿主记录ID绑在一起: 同一次变更/删除会影响多个统计字段, 也可能影响多条宿主记录,
      * 刷新阶段要的是这两个的组合, 而不是两张独立的表。</p>
+     *
+     * <p>之所以是 record: 捕获阶段按它去重(值相等即同一个宿主), 变更路径还要拿变更前、变更后的两份
+     * 求并集, 靠的就是这里没写 {@code equals} 而是用编译期生成的按值比较。</p>
      *
      * @param hostFormKey   宿主表单Key, 用于日志
      * @param hostDataTable 宿主表单数据表名, 同时用于判断宿主是否已被级联删除
