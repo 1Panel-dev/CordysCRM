@@ -105,8 +105,10 @@ public class LarkUser {
         private Boolean isFrozen;
         @JsonProperty("is_resigned")
         private Boolean isResigned;
-        @JsonProperty("is_unjoined")
-        private Boolean isUnjoined;
+        @JsonProperty("is_unjoin")
+        private Boolean isUnjoin;
+        @JsonProperty("is_exited")
+        private Boolean isExited;
     }
 
     @Data
