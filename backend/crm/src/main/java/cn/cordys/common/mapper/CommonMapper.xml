@@ -604,6 +604,9 @@
          <if test="subRowId != null and subRowId != ''">
           and t.row_id = #{subRowId}
         </if>
+        <if test="refSubId != null and refSubId != ''">
+            and t.ref_sub_id = #{refSubId}
+        </if>
     </select>
 
     <update id="updateCustomerField">
