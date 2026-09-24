@@ -217,8 +217,14 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                 if (CollectionUtils.isNotEmpty(commonBizIds) && commonBizIds.size() == 1) {
                     BaseResourceSubField resourceField = new BaseResourceSubField();
                     if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
+                        String finalV = v;
+                        String refSubId = subTable.entrySet().stream()
+                                .filter(e -> e.getValue() != null && e.getValue().equals(finalV))
+                                .map(Map.Entry::getKey)
+                                .findFirst()
+                                .orElse(null);
                         BaseResourceSubField baseResourceSubField = new BaseResourceSubField();
-                        baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), "price_sub", (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null);
+                        baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), "price_sub", (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null, refSubId);
                         if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
                             resourceField.setId(baseResourceSubField.getId());
                         } else {
@@ -254,9 +260,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                     if (Strings.CI.equals(importType, ImportType.UPDATE.name())) {
                         BaseResourceSubField baseResourceSubField = new BaseResourceSubField();
                         if (field.isBlob()) {
-                            baseResourceSubField = commonMapper.getResourceField(fieldTableBlob, id.get().toString(), field.idOrBusinessKey(), (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null);
+                            baseResourceSubField = commonMapper.getResourceField(fieldTableBlob, id.get().toString(), field.idOrBusinessKey(), (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null, null);
                         } else {
-                            baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey(), (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null);
+                            baseResourceSubField = commonMapper.getResourceField(fieldTable, id.get().toString(), field.idOrBusinessKey(), (maxHeadRow > 1 && refSubMap.containsKey(v)) ? subRowId : null, null);
                         }
                         if (baseResourceSubField != null && StringUtils.isNotBlank(baseResourceSubField.getId())) {
                             resourceField.setId(baseResourceSubField.getId());
