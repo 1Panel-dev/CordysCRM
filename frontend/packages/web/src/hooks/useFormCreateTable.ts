@@ -528,10 +528,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             sorter: !noSorterType.includes(field.type) && !field.resourceFieldId ? sorter : false,
             filedType: field.type,
             resourceFieldId: field.resourceFieldId,
-            render: (row: any) =>
-              (!row[key] || ['-', '0'].includes(row[key])) && field.type === FieldTypeEnum.STATISTIC
-                ? field.emptyResultMode
-                : row[key],
+            render: (row: any) => (row[key] === null && field.type === FieldTypeEnum.STATISTIC ? '-' : row[key]),
           };
         });
 

@@ -752,7 +752,7 @@ export const statisticsDefaultFieldConfig: FormCreateField = {
   relatedFieldId: '',
   statisticType: 'SUM',
   dataScope: 'ALL',
-  emptyResultMode: '-',
+  emptyResultMode: 'EMPTY',
   avgEmptyValueMode: 'DEFAULT_ZERO',
   updateScope: 'NONE',
   numberFormat: 'number',

@@ -225,23 +225,27 @@
 
       let fieldColumns: DisplayFieldItem[] = [];
       if (isBusinessTitleSource.value) {
-        fieldColumns = res.fields.map((item) => ({
-          ...item,
-          key: item.id,
-          title: t(item.name),
-          columnType: ColumnTypeEnum.CUSTOM,
-          name: t(item.name),
-          type: FieldTypeEnum.INPUT,
-          fieldWidth: 1,
-          showLabel: true,
-        }));
+        fieldColumns = res.fields
+          .filter((item) => item.readable)
+          .map((item) => ({
+            ...item,
+            key: item.id,
+            title: t(item.name),
+            columnType: ColumnTypeEnum.CUSTOM,
+            name: t(item.name),
+            type: FieldTypeEnum.INPUT,
+            fieldWidth: 1,
+            showLabel: true,
+          }));
       } else {
-        fieldColumns = res.fields.map((item) => ({
-          key: item.id,
-          title: item.name,
-          columnType: item.subTableFieldId ? ColumnTypeEnum.SUB_TABLE : ColumnTypeEnum.CUSTOM,
-          ...item,
-        }));
+        fieldColumns = res.fields
+          .filter((item) => item.readable)
+          .map((item) => ({
+            key: item.id,
+            title: item.name,
+            columnType: item.subTableFieldId ? ColumnTypeEnum.SUB_TABLE : ColumnTypeEnum.CUSTOM,
+            ...item,
+          }));
       }
 
       customList.value = fieldColumns.filter((item) => item.columnType === ColumnTypeEnum.CUSTOM);

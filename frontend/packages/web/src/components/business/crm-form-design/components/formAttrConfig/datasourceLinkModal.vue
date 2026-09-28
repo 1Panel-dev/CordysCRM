@@ -386,16 +386,17 @@
       const res = await getFieldDisplayList(formFieldKey);
 
       linkFieldOptions.value = res.fields
-        .filter((e) =>
-          [
-            FieldTypeEnum.DATA_SOURCE,
-            FieldTypeEnum.DATA_SOURCE_MULTIPLE,
-            FieldTypeEnum.MEMBER,
-            FieldTypeEnum.MEMBER_MULTIPLE,
-            FieldTypeEnum.DEPARTMENT,
-            FieldTypeEnum.DEPARTMENT_MULTIPLE,
-            FieldTypeEnum.LOCATION,
-          ].includes(e.type)
+        .filter(
+          (e) =>
+            [
+              FieldTypeEnum.DATA_SOURCE,
+              FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+              FieldTypeEnum.MEMBER,
+              FieldTypeEnum.MEMBER_MULTIPLE,
+              FieldTypeEnum.DEPARTMENT,
+              FieldTypeEnum.DEPARTMENT_MULTIPLE,
+              FieldTypeEnum.LOCATION,
+            ].includes(e.type) && e.readable
         )
         .map((item) => {
           return {
