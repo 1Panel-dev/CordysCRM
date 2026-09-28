@@ -830,7 +830,8 @@
     }
   }
 
-  const platFormName = computed(() => platFormNameMap[appStore.activePlatformResource.syncResource]);
+  const activeSyncResource = computed(() => appStore.activePlatformResource.syncResource || CompanyTypeEnum.WECOM);
+  const platFormName = computed(() => platFormNameMap[activeSyncResource.value]);
 
   // 同步二次确认
   function handleSyncConfirm() {
@@ -1202,13 +1203,13 @@
       const res = await getConfigSynchronization();
       if (res) {
         const platFormConfig = res.find(
-          (item) => platformType.includes(item.type) && item.type === appStore.activePlatformResource.syncResource
+          (item) => platformType.includes(item.type) && item.type === activeSyncResource.value
         );
         currentIntegration.value = {
-          type: appStore.activePlatformResource.syncResource,
+          type: activeSyncResource.value,
           verify: platFormConfig?.verify || false,
           config: {
-            ...defaultThirdPartyConfigMap[appStore.activePlatformResource.syncResource],
+            ...defaultThirdPartyConfigMap[activeSyncResource.value],
             ...platFormConfig?.config,
           },
         };
@@ -1230,7 +1231,8 @@
     }
   );
 
-  onBeforeMount(() => {
+  onBeforeMount(async () => {
+    await appStore.initThirdPartyResource();
     // TODO license 先放开
     // if (isHasConfigPermission.value && licenseStore.hasLicense()) {
     //   initIntegration();
