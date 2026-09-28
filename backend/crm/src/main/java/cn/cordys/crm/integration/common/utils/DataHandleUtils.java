@@ -517,7 +517,7 @@ public class DataHandleUtils {
         orgUser.setOrganizationId(orgId);
         orgUser.setUserId(id);
         orgUser.setResourceUserId(thirdUser.getUserId());
-        orgUser.setEnable(true);
+        orgUser.setEnable(thirdUser.getStatus());
         orgUser.setPosition(thirdUser.getPosition());
         orgUser.setCreateTime(timestamp);
         orgUser.setCreateUser(operatorId);
