@@ -136,7 +136,7 @@
             rules = rules.filter((e) => e.key !== 'required');
           }
           if (field.type === FieldTypeEnum.DATE_TIME && cf.dateDefaultType === 'current') {
-            formDetail.value[field.id] = new Date();
+            formDetail.value[field.id] = Date.now();
           } else if (cf.valueType === CirculationValueTypeEnum.FIXED_VALUE) {
             formDetail.value[field.id] = initFieldValue(field, cf.fieldValue);
             const options = props.stageConfig?.optionMap?.[field.id]?.map((e: Record<string, any>) => ({
