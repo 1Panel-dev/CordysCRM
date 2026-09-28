@@ -1,6 +1,6 @@
 <template>
   <van-field
-    v-model="displayValue"
+    v-model:model-value="displayValue"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :name="props.fieldConfig.id"
     :rules="props.fieldConfig.rules as FieldRule[]"
@@ -28,12 +28,12 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'change', value?: number | null): void;
+    (e: 'change', value?: number | string | null): void;
   }>();
 
   const { t } = useI18n();
 
-  const value = defineModel<number | null>('value', {
+  const value = defineModel<number | string | null>('value', {
     default: null,
   });
 
@@ -69,8 +69,8 @@
       clean = clean.substring(0, dotIndex + 1) + clean.substring(dotIndex + 1).replace(/\./g, '');
     }
 
-    let num = Number(clean);
-    if (Number.isNaN(num)) {
+    let num: number | string = Number(clean);
+    if (Number.isNaN(Number(displayValue.value))) {
       value.value = null;
       emit('change', null);
       return;
@@ -90,6 +90,12 @@
 
     const precision = props.fieldConfig.precision ?? 0;
     num = Number(num.toFixed(precision));
+    if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
+      num = num.toLocaleString('en-US', {
+        minimumFractionDigits: props.fieldConfig.precision ?? 0,
+        maximumFractionDigits: props.fieldConfig.precision ?? 0,
+      });
+    }
 
     // 更新真实值
     value.value = num;

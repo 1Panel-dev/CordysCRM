@@ -28,20 +28,25 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CommonList } from '@lib/shared/models/common';
 
-  const props = defineProps<{
-    keyword?: string;
-    class?: string;
-    listParams?: Record<string, any>;
-    itemGap?: number;
-    noPageNation?: boolean;
-    errorText?: string;
-    isReturnNativeResponse?: boolean;
-    loadListApi?: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
-    transform?: (item: any, optionMap?: Record<string, any[]>) => Record<string, any>;
-    closeInitLoad?: boolean; // 关闭首次加载
-    notShowLoadingToast?: boolean;
-    immediateCheck?: boolean; // 是否立即检查是否需要加载数据, 适用于列表高度不够时, 不会触发load事件
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      keyword?: string;
+      class?: string;
+      listParams?: Record<string, any>;
+      itemGap?: number;
+      noPageNation?: boolean;
+      errorText?: string;
+      isReturnNativeResponse?: boolean;
+      loadListApi?: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
+      transform?: (item: any, optionMap?: Record<string, any[]>) => Record<string, any>;
+      closeInitLoad?: boolean; // 关闭首次加载
+      notShowLoadingToast?: boolean;
+      immediateCheck?: boolean; // 是否立即检查是否需要加载数据, 适用于列表高度不够时, 不会触发load事件
+    }>(),
+    {
+      immediateCheck: true,
+    }
+  );
   const emit = defineEmits<{
     (e: 'refresh'): void;
   }>();
