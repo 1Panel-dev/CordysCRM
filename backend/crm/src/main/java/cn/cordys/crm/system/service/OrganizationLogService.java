@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.service;
 
-import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.JsonDifferenceDTO;
 import cn.cordys.common.util.Translator;
 import jakarta.annotation.Resource;
@@ -8,11 +7,9 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -113,7 +110,7 @@ public class OrganizationLogService extends BaseModuleLogService {
             if (Strings.CS.equals(differ.getColumn(), "syncScope")) {
                 differ.setColumnName(Translator.get("sync_scope"));
                 if (differ.getOldValue() != null) {
-                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                    differ.setOldValueName(differ.getOldValue().toString());
                 }
                 differ.setNewValueName(differ.getNewValue().toString());
             }
@@ -121,9 +118,9 @@ public class OrganizationLogService extends BaseModuleLogService {
             if (Strings.CS.equals(differ.getColumn(), "syncCycle")) {
                 differ.setColumnName(Translator.get("syn_cycle"));
                 if (differ.getOldValue() != null) {
-                    differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                    differ.setOldValueName(differ.getOldValue().toString());
                 }
-                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+                differ.setNewValueName(differ.getNewValue().toString());
             }
 
         });
