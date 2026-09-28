@@ -241,30 +241,34 @@ public class SystemModuleLogService extends BaseModuleLogService {
                                     Translator.get("advanced_circulation_condition_field") + "|" + Translator.get("advanced_circulation_condition_type") + "|" + Translator.get("advanced_circulation_condition_default_value") + "|" + Translator.get("isRequired");
                             String data = "";
                             String dateDefaultType = "";
-                            for (CirculationFieldValue fieldValue : circulationFieldValues) {
-                                BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldValue.getFieldId())).findFirst().orElse(null);
-                                if (baseField != null) {
-                                    if (Strings.CI.equals(baseField.getType(), FieldType.DATE_TIME.name())) {
-                                        switch (fieldValue.getDateDefaultType()) {
-                                            case "custom":
-                                                dateDefaultType = Translator.get("CUSTOM");
-                                                break;
-                                            case "current":
-                                                dateDefaultType = Translator.get("CURRENT");
-                                                break;
-                                            default:
-                                                break;
+                            try{
+                                for (CirculationFieldValue fieldValue : circulationFieldValues) {
+                                    BaseField baseField = fields.stream().filter(field -> Strings.CI.equals(field.getId(), fieldValue.getFieldId())).findFirst().orElse(null);
+                                    if (baseField != null) {
+                                        if (Strings.CI.equals(baseField.getType(), FieldType.DATE_TIME.name())) {
+                                            switch (fieldValue.getDateDefaultType()) {
+                                                case "custom":
+                                                    dateDefaultType = Translator.get("CUSTOM");
+                                                    break;
+                                                case "current":
+                                                    dateDefaultType = Translator.get("CURRENT");
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
                                         }
+                                        String s = baseField.getName() + "|" +
+                                                Translator.get(fieldValue.getValueType()) + "|" + dateDefaultType +
+                                                ((Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) && (fieldValue.getFieldValue() != null)) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "|" +
+                                                Translator.get(fieldValue.getRequired().toString());
+                                        data = (data + s) + "\n";
                                     }
-                                    String s = baseField.getName() + "|" +
-                                            Translator.get(fieldValue.getValueType()) + "|" + dateDefaultType +
-                                            ((Strings.CI.equals(fieldValue.getValueType(), CirculationFieldValueTypeEnum.FIXED_VALUE.name()) && (fieldValue.getFieldValue() != null)) ? transformFieldValue(baseField, fieldValue.getFieldValue()) : "") + "|" +
-                                            Translator.get(fieldValue.getRequired().toString());
-                                    data = (data + s) + "\n";
                                 }
+                                newValuesList.add(stageName + "\n" + title + "\n" + data);
+                            }catch (Exception e) {
+                                log.error("handleConfig error: ", e);
+                                newValuesList.add(stageName + "\n");
                             }
-                            ;
-                            newValuesList.add(stageName + "\n" + title + "\n" + data);
                         } else {
                             newValuesList.add(stageName + "\n");
                         }
@@ -273,7 +277,7 @@ public class SystemModuleLogService extends BaseModuleLogService {
 
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                return newValuesList;
+                //return newValuesList;
             }
         }
         return newValuesList;
