@@ -277,15 +277,19 @@ public class ThirdDepartment {
             parent.getChildren().add(department);
         }
 
+        sortDepartmentTree(roots);
         return roots;
     }
 
+    /**
+     * 按 order 倒序排列部门树: order 值大的排在前面, 与第三方部门接口的语义一致。
+     */
     private static void sortDepartmentTree(List<ThirdDepartment> departments) {
         if (departments == null || departments.isEmpty()) {
             return;
         }
 
-        departments.sort(Comparator.comparing(ThirdDepartment::getOrder, Comparator.nullsLast(Comparator.naturalOrder())));
+        departments.sort(Comparator.comparing(ThirdDepartment::getOrder, Comparator.nullsLast(Comparator.reverseOrder())));
 
         for (ThirdDepartment department : departments) {
             sortDepartmentTree(department.getChildren());
