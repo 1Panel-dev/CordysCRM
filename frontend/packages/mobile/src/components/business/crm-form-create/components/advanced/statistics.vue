@@ -8,7 +8,7 @@
     :disabled="true"
   >
     <template #button>
-      <van-button size="mini" type="warning" @click="handleReCalculation">
+      <van-button v-if="props.sourceId" size="mini" type="warning" plain @click="handleReCalculation">
         {{ t('formCreate.advanced.reCalculation') }}
       </van-button>
     </template>

@@ -294,7 +294,7 @@
           <div class="flex items-center gap-[8px]">
             {{ item.value || item.fieldInfo?.emptyResultMode }}
             <CrmPopConfirm
-              v-if="item.fieldInfo"
+              v-if="item.fieldInfo && !item.fieldInfo.resourceFieldId"
               v-model:show="popShow[item.fieldInfo?.id]"
               :title="t('crmFormCreate.reCalculation')"
               icon-type="warning"
@@ -714,7 +714,11 @@
   async function handleReCalculation(field: FormCreateField, value: Description) {
     try {
       const res = await refreshStatistic(props.sourceId, field.id);
-      value.value = formatNumberValueToString(res, field);
+      if (!res) {
+        value.value = field.emptyResultMode as string;
+      } else {
+        value.value = formatNumberValueToString(res, field);
+      }
       popShow.value[field.id] = false;
       Message.success(t('common.refreshSuccess'));
       emit('refresh', { id: field.id });

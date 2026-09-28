@@ -102,17 +102,7 @@
       }
     });
   }
-  if (
-    ![
-      FormDesignKeyEnum.CUSTOMER,
-      FormDesignKeyEnum.BUSINESS,
-      FormDesignKeyEnum.CONTRACT,
-      FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD,
-      FormDesignKeyEnum.CONTRACT_PAYMENT,
-      FormDesignKeyEnum.ORDER,
-      FormDesignKeyEnum.INVOICE,
-    ].includes(props.formKey)
-  ) {
+  if (![FormDesignKeyEnum.CUSTOMER, FormDesignKeyEnum.BUSINESS, FormDesignKeyEnum.CONTRACT].includes(props.formKey)) {
     realAdvancedFields = realAdvancedFields.filter((field) => field.type !== FieldTypeEnum.STATISTIC);
   }
 
