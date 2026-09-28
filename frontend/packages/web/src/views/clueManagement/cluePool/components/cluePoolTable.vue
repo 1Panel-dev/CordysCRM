@@ -607,12 +607,16 @@
 
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
+  const hasPageInit = ref(false);
   function handleSorterChange(sorter: SortParams) {
     if (poolId.value) {
+      hasPageInit.value = true;
       setLoadListParams({ keyword: keyword.value, poolId: poolId.value, viewId: activeTab.value });
       nextTick(() => {
         propsEvent.value.sorterChange(sorter);
       });
+    } else {
+      hasPageInit.value = false;
     }
   }
 
@@ -667,6 +671,14 @@
     try {
       cluePoolOptions.value = await getPoolOptions();
       poolId.value = cluePoolOptions.value[0]?.id || '';
+      if (!hasPageInit.value) {
+        setLoadListParams({
+          keyword: keyword.value,
+          viewId: activeTab.value,
+          poolId: poolId.value,
+        });
+        nextTick(() => loadList());
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);

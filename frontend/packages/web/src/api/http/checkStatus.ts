@@ -5,6 +5,8 @@ import useUser from '@/hooks/useUser';
 import router from '@/router';
 import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
 
+import type { VNodeChild } from 'vue';
+
 export default function checkStatus(
   status: number,
   msg: string,
@@ -19,7 +21,7 @@ export default function checkStatus(
   });
   const { t } = useI18n();
   const { logout, isLoginPage, isWhiteListPage } = useUser();
-  let errMessage = '';
+  let errMessage: string | VNodeChild[] = '';
   switch (status) {
     case 400:
       errMessage = `${msg}`;
@@ -75,14 +77,12 @@ export default function checkStatus(
 
   if (msgDetail && !noErrorTip) {
     if (typeof msgDetail === 'object') {
-      errMessage = Object.values(msgDetail)
-        .map((e) => e)
-        .join('\n');
+      errMessage = Object.values(msgDetail).map((e) => h('div', {}, { default: () => e }));
     } else {
       errMessage = msgDetail;
     }
     message.destroyAll();
-    message.error(errMessage);
+    message.error(() => h('div', {}, { default: () => errMessage }));
   } else if (errMessage && !noErrorTip) {
     message.destroyAll();
     message.error(errMessage);
