@@ -179,7 +179,7 @@ public class LarkDepartmentService {
                 .status(larkUser.getStatus().getIsActivated()
                         && !larkUser.getStatus().getIsFrozen()
                         && !larkUser.getStatus().getIsResigned()
-                        && !larkUser.getStatus().getIsUnjoin()
+                        && larkUser.getStatus().getIsUnjoin()
                         && !larkUser.getStatus().getIsExited())
                 .avatar(Optional.ofNullable(larkUser.getAvatar())
                         .map(LarkUser.LarkUserAvatar::getAvatar240)
