@@ -229,7 +229,6 @@ public class ModuleFormService {
         List<BaseField> flattenFields = flattenFormAllFieldsWithSubId(config);
         // 设置业务字段参数
         businessModuleFormConfig.setFields(flattenFields.stream()
-                .filter(BaseField::canDisplay)
                 .filter(f -> StringUtils.isEmpty(f.getResourceFieldId()))
                 .peek(this::setFieldBusinessParam)
                 .collect(Collectors.toList())
