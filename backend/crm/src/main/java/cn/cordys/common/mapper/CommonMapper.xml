@@ -574,10 +574,28 @@
     </sql>
 
     <!--
+        参与聚合的「数值」表达式: 把上面那个取值表达式转成 DECIMAL, 转换与取值分成两段。
+
+        必须转成 DECIMAL, 不能靠 `+ 0` 做隐式转换 —— 字段值表里的数值存的是 VARCHAR,
+        `'2222.22' + 0` 会先按 DOUBLE 解释, 三个这样的值加起来得到 5555.549999999999 而不是 5555.55,
+        而金额这类数据一旦带上二进制误差, 落库后就没法再修正了。业务字段虽然本来就是
+        DECIMAL(20,10), 也一并走这里, 两条分支出来的类型才是同一个。
+
+        DECIMAL(32,10) 的取法: 小数位与业务字段的 DECIMAL(20,10) 对齐, 整数位留到 22 位,
+        比业务字段宽一档 —— 超出这个范围的值会被 MySQL 截断到边界(只是警告), 留足余量就不会碰到;
+        小数位再多也只会被四舍五入到第 10 位, 而业务字段本来就只精确到第 10 位。
+    -->
+    <sql id="statisticDecimalValue">
+        cast(<include refid="cn.cordys.common.mapper.CommonMapper.statisticValue">
+            <property name="mainTableAlias" value="${mainTableAlias}"/>
+        </include> as decimal(32, 10))
+    </sql>
+
+    <!--
         统计口径。COUNT 数的是关联数据条数, 加了 join 会放大行数, 所以必须 distinct;
         AVG 的空值口径分「跳过空值」与「空值当 0」两种, 后者用 ifnull 把 NULL 补成 0 才进分母。
 
-        +0 是为了做数值转换: 字段值表里的数值存的是字符串, 不转换 MySQL 会按字典序算。
+        取值统一走 statisticDecimalValue: 数值转换与精度问题都在那一段里说明。
         调用方必须传 mainTableAlias, 并把它透传给 statisticValue(嵌套 include 不继承属性)。
     -->
     <sql id="statisticAggregateHead">
@@ -586,19 +604,19 @@
                 count(distinct ${mainTableAlias}.id)
             </when>
             <when test="request.statisticType == 'AVG' and request.avgSkipEmpty">
-                avg(<include refid="cn.cordys.common.mapper.CommonMapper.statisticValue">
+                avg(<include refid="cn.cordys.common.mapper.CommonMapper.statisticDecimalValue">
                     <property name="mainTableAlias" value="${mainTableAlias}"/>
-                </include> + 0)
+                </include>)
             </when>
             <when test="request.statisticType == 'AVG'">
-                avg(ifnull(<include refid="cn.cordys.common.mapper.CommonMapper.statisticValue">
+                avg(ifnull(<include refid="cn.cordys.common.mapper.CommonMapper.statisticDecimalValue">
                     <property name="mainTableAlias" value="${mainTableAlias}"/>
-                </include> + 0, 0))
+                </include>, 0))
             </when>
             <otherwise>
-                sum(<include refid="cn.cordys.common.mapper.CommonMapper.statisticValue">
+                sum(<include refid="cn.cordys.common.mapper.CommonMapper.statisticDecimalValue">
                     <property name="mainTableAlias" value="${mainTableAlias}"/>
-                </include> + 0)
+                </include>)
             </otherwise>
         </choose>
     </sql>
