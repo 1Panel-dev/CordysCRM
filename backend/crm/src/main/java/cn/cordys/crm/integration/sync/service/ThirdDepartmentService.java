@@ -324,7 +324,7 @@ public class ThirdDepartmentService {
         try {
             // 设置通知参数
             Map<String, Object> paramMap = new HashMap<>();
-            paramMap.put("name", Translator.get("message.sync_organization_structure"));
+            paramMap.put("name", Translator.get("message.sync_organization_structure", LocaleContextHolder.getLocale()));
             paramMap.put("syncType", getSyncTypeName(type));
             paramMap.put("organizationId", orgId);
 
@@ -518,7 +518,8 @@ public class ThirdDepartmentService {
         response.setEnable(schedule.getEnable());
         response.setResourceType(schedule.getResourceType());
         response.setSyncCycle(SyncCycleCron.getByCron(schedule.getValue()).name());
-        response.setSyncScope(JSON.parseObject(schedule.getConfig(), new TypeReference<List<OptionDTO>>() {}));
+        response.setSyncScope(JSON.parseObject(schedule.getConfig(), new TypeReference<List<OptionDTO>>() {
+        }));
         response.setNextTriggerTime(ScheduleUtils.getNextTriggerTime(schedule.getValue()));
         return response;
 
