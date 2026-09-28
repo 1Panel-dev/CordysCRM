@@ -299,7 +299,7 @@
   watch(
     () => activeTab.value,
     () => {
-      if (activeTab.value === 'customer') {
+      if (activeTab.value === 'invoice') {
         formDescriptionRef.value?.initFormDescription();
       }
     }

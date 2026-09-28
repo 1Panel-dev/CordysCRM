@@ -42,7 +42,7 @@
       v-html="props.fieldConfig.description"
     ></div>
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
-    <n-input v-if="!value" :value="props.fieldConfig.emptyResultMode" type="text" disabled></n-input>
+    <n-input v-if="value === null" value="-" type="text" disabled></n-input>
     <CrmInputNumber
       v-else
       v-model:value="value"

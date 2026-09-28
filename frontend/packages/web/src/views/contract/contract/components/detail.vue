@@ -538,7 +538,7 @@
   watch(
     () => activeTab.value,
     () => {
-      if (activeTab.value === 'customer') {
+      if (activeTab.value === 'contract') {
         formDescriptionRef.value?.initFormDescription();
       }
     }

@@ -239,8 +239,8 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
   } else if (item.type === FieldTypeEnum.INDUSTRY) {
     value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
   } else if (item.type === FieldTypeEnum.INPUT_NUMBER || item.type === FieldTypeEnum.STATISTIC) {
-    if (!value && item.type === FieldTypeEnum.STATISTIC) {
-      value = item.emptyResultMode as string;
+    if (value === null && item.type === FieldTypeEnum.STATISTIC) {
+      value = '-';
     } else {
       value = formatNumberValueToString(fieldValue as unknown as number, item);
       if (value.includes('NaN') || value.includes('%%')) {
@@ -412,11 +412,8 @@ export function transformData({
         businessFieldAttr[fieldId] = formatTimeValue(item[fieldId], field.dateType);
       } else if (numberFieldIds.includes(fieldId)) {
         // 数字类型字段，格式化数字显示
-        if (
-          !item[fieldId] ||
-          (['-', '0'].includes(item[fieldId] as string) && field.type === FieldTypeEnum.STATISTIC)
-        ) {
-          businessFieldAttr[fieldId] = item.emptyResultMode as string;
+        if (item[fieldId] === null && field.type === FieldTypeEnum.STATISTIC) {
+          businessFieldAttr[fieldId] = '-';
         } else {
           businessFieldAttr[fieldId] = formatNumberValueToString(item[fieldId], field);
           if (typeof item[fieldId] === 'string' && (item[fieldId].includes('NaN') || item[fieldId].includes('%%'))) {
@@ -500,11 +497,8 @@ export function transformData({
     } else if (numberFieldIds.includes(field.fieldId)) {
       // 数字类型字段，格式化数字显示
       const fieldConfig = fields.find((f) => f.id === field.fieldId) as FormCreateField;
-      if (
-        (!field.fieldValue || ['-', '0'].includes(field.fieldValue as string)) &&
-        fieldConfig.type === FieldTypeEnum.STATISTIC
-      ) {
-        customFieldAttr[field.fieldId] = fieldConfig.emptyResultMode as string;
+      if (field.fieldValue === null && fieldConfig.type === FieldTypeEnum.STATISTIC) {
+        customFieldAttr[field.fieldId] = '-';
       } else {
         customFieldAttr[field.fieldId] = formatNumberValueToString(field.fieldValue as number, fieldConfig);
         if (

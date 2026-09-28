@@ -1327,10 +1327,10 @@
             class="flex"
             :disabled="!!fieldConfig.resourceFieldId"
           >
-            <n-radio-button value="-" class="flex-1 text-center">
+            <n-radio-button value="EMPTY" class="flex-1 text-center">
               {{ t('crmFormDesign.statisticsDefaultEmpty') }}
             </n-radio-button>
-            <n-radio-button value="0" class="flex-1 text-center">
+            <n-radio-button value="ZERO" class="flex-1 text-center">
               {{ t('crmFormDesign.statisticsDefaultZero') }}
             </n-radio-button>
           </n-radio-group>

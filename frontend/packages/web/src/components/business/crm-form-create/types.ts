@@ -75,7 +75,7 @@ export interface DataSourceSubFieldLinkField extends DataSourceLinkField {
 
 export type StatisticType = 'SUM' | 'AVG' | 'COUNT';
 export type StatisticRange = 'ALL' | 'CONDITION';
-export type StatisticWhenNull = '-' | '0';
+export type StatisticWhenNull = 'EMPTY' | 'ZERO';
 export type StatisticFieldWhenNull = 'SKIP' | 'DEFAULT_ZERO';
 export type StatisticUpdateRange = 'NONE' | 'ALL' | 'CONDITION';
 

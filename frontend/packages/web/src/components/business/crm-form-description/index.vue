@@ -292,7 +292,7 @@
             {{ item.label }}
           </div>
           <div class="flex items-center gap-[8px]">
-            {{ item.value || item.fieldInfo?.emptyResultMode }}
+            {{ item.value === null ? '-' : item.value }}
             <CrmPopConfirm
               v-if="item.fieldInfo && !item.fieldInfo.resourceFieldId"
               v-model:show="popShow[item.fieldInfo?.id]"
@@ -714,8 +714,8 @@
   async function handleReCalculation(field: FormCreateField, value: Description) {
     try {
       const res = await refreshStatistic(props.sourceId, field.id);
-      if (!res) {
-        value.value = field.emptyResultMode as string;
+      if (res === null) {
+        value.value = '-';
       } else {
         value.value = formatNumberValueToString(res, field);
       }
