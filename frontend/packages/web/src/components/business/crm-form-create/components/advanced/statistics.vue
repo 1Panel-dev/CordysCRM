@@ -18,7 +18,7 @@
         </div>
         <div v-else class="h-[22px]"></div>
         <CrmPopConfirm
-          v-if="!props.isDesignRender && props.sourceId"
+          v-if="!props.isDesignRender && props.sourceId && !props.fieldConfig.resourceFieldId"
           v-model:show="popShow"
           :title="t('crmFormCreate.reCalculation')"
           icon-type="warning"
@@ -29,7 +29,7 @@
           placement="bottom-end"
           @confirm="handleReCalculation()"
         >
-          <n-button type="warning" quaternary>
+          <n-button type="warning" class="pointer-events-auto" quaternary @click.stop>
             <template #icon><CrmIcon type="iconicon_error_circle_filled" /></template>
             {{ t('crmFormCreate.reCalculation') }}
           </n-button>
@@ -42,7 +42,9 @@
       v-html="props.fieldConfig.description"
     ></div>
     <n-divider v-if="props.isSubTableField && !props.isSubTableRender" class="!my-0" />
+    <n-input v-if="!value" :value="props.fieldConfig.emptyResultMode" type="text" disabled></n-input>
     <CrmInputNumber
+      v-else
       v-model:value="value"
       :path="props.path"
       :field-config="props.fieldConfig"
@@ -55,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDivider, NFormItem, useMessage } from 'naive-ui';
+  import { NButton, NDivider, NFormItem, NInput, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FormConfig } from '@lib/shared/models/system/module';
@@ -106,6 +108,9 @@
 
 <style lang="less" scoped>
   .crm-form-create-statistic {
+    :deep(.n-form-item-label) {
+      @apply pointer-events-none;
+    }
     :deep(.n-form-item-label__text) {
       width: 100%;
     }

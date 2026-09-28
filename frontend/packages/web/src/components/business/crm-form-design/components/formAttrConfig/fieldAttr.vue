@@ -2018,32 +2018,9 @@
   });
 
   const statisticTargetFormOptions = computed<DataSourceOption[]>(() => {
-    if (
-      [FormDesignKeyEnum.CONTRACT_PAYMENT, FormDesignKeyEnum.INVOICE, FormDesignKeyEnum.ORDER].includes(props.formKey)
-    ) {
-      return fullFormSettingList
-        .filter((i) => i.dataSource && i.formKey === FormDesignKeyEnum.CONTRACT)
-        .map((item) => ({
-          ...item,
-          value: item.formKey,
-        }));
-    }
     if (props.formKey === FormDesignKeyEnum.BUSINESS) {
       return fullFormSettingList
         .filter((i) => i.dataSource && i.formKey === FormDesignKeyEnum.OPPORTUNITY_QUOTATION)
-        .map((item) => ({
-          ...item,
-          value: item.formKey,
-        }));
-    }
-    if (props.formKey === FormDesignKeyEnum.CONTRACT_PAYMENT_RECORD) {
-      return fullFormSettingList
-        .filter(
-          (i) =>
-            i.dataSource &&
-            i.formKey &&
-            [FormDesignKeyEnum.CONTRACT, FormDesignKeyEnum.CONTRACT_PAYMENT].includes(i.formKey)
-        )
         .map((item) => ({
           ...item,
           value: item.formKey,
@@ -2073,12 +2050,7 @@
           (i) =>
             i.dataSource &&
             i.formKey &&
-            [
-              FormDesignKeyEnum.BUSINESS,
-              FormDesignKeyEnum.CONTRACT,
-              FormDesignKeyEnum.ORDER,
-              FormDesignKeyEnum.INVOICE,
-            ].includes(i.formKey)
+            [FormDesignKeyEnum.BUSINESS, FormDesignKeyEnum.CONTRACT, FormDesignKeyEnum.ORDER].includes(i.formKey)
         )
         .map((item) => ({
           ...item,
@@ -2108,9 +2080,10 @@
           value: field.id,
         }));
       if (
-        (fieldConfig.value.statisticFieldId &&
+        fieldConfig.value.isNew &&
+        ((fieldConfig.value.statisticFieldId &&
           !statisticFieldOptions.value.some((item) => item.value === fieldConfig.value.statisticFieldId)) ||
-        fieldConfig.value.statisticFieldId === undefined
+          fieldConfig.value.statisticFieldId === undefined)
       ) {
         fieldConfig.value.statisticFieldId = statisticFieldOptions.value[0]?.value as string;
       }
@@ -2136,7 +2109,8 @@
       if (
         customFormInit.value &&
         fieldConfig.value &&
-        !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId)
+        !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId) &&
+        fieldConfig.value.isNew
       ) {
         fieldConfig.value.targetFormId = statisticTargetFormOptions.value[0]?.value as FieldDataSourceTypeEnum;
       }
@@ -2158,7 +2132,8 @@
       if (
         customFormInit.value &&
         fieldConfig.value &&
-        !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId)
+        !statisticTargetFormOptions.value.some((item) => item.value === fieldConfig.value.targetFormId) &&
+        fieldConfig.value.isNew
       ) {
         fieldConfig.value.targetFormId = statisticTargetFormOptions.value[0]?.value as FieldDataSourceTypeEnum;
       }

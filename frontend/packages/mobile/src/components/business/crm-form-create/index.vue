@@ -170,14 +170,20 @@
     try {
       await formRef.value?.validate();
       const result = cloneDeep(formDetail.value);
-      mobileFieldList.value.forEach((item) => {
+      fieldList.value.forEach((item) => {
+        if (!item.mobile) {
+          console.log(result[item.id]);
+        }
         if (item.type === FieldTypeEnum.DATA_SOURCE && Array.isArray(result[item.id])) {
           // 处理数据源字段，单选传单个值
-          result[item.id] = result[item.id]?.[0];
+          result[item.id] = result[item.id]?.[0] || '';
         }
         if (item.type === FieldTypeEnum.PHONE) {
           // 去空格
           result[item.id] = result[item.id]?.replace(/[\s\uFEFF\xA0]+/g, '');
+        }
+        if (item.type === FieldTypeEnum.INPUT_NUMBER && result[item.id] === '-') {
+          result[item.id] = null;
         }
       });
       saveForm(result, () => router.back());

@@ -466,6 +466,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     ) {
       return value ? [value] : [];
     }
+    if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(field.type)) {
+      return value || [];
+    }
     return value;
   }
 
@@ -505,6 +508,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
           if (field) {
             formDetail.value[item.id] = initFieldValue(item, field.fieldValue);
+          } else {
+            formDetail.value[item.id] = initFieldValue(item, '');
           }
           const options = res.optionMap?.[item.id];
           if (

@@ -239,9 +239,13 @@ export function parseModuleFieldValue(item: FormCreateField, fieldValue: string 
   } else if (item.type === FieldTypeEnum.INDUSTRY) {
     value = fieldValue ? getIndustryPath(fieldValue as string) : '-';
   } else if (item.type === FieldTypeEnum.INPUT_NUMBER || item.type === FieldTypeEnum.STATISTIC) {
-    value = formatNumberValueToString(fieldValue as unknown as number, item);
-    if (value.includes('NaN') || value.includes('%%')) {
-      value = fieldValue.toString();
+    if (!value && item.type === FieldTypeEnum.STATISTIC) {
+      value = item.emptyResultMode as string;
+    } else {
+      value = formatNumberValueToString(fieldValue as unknown as number, item);
+      if (value.includes('NaN') || value.includes('%%')) {
+        value = fieldValue.toString();
+      }
     }
   } else if (item.type === FieldTypeEnum.DATE_TIME) {
     value = formatTimeValue(fieldValue as string, item.dateType);
@@ -408,9 +412,16 @@ export function transformData({
         businessFieldAttr[fieldId] = formatTimeValue(item[fieldId], field.dateType);
       } else if (numberFieldIds.includes(fieldId)) {
         // 数字类型字段，格式化数字显示
-        businessFieldAttr[fieldId] = formatNumberValueToString(item[fieldId], field);
-        if (typeof item[fieldId] === 'string' && (item[fieldId].includes('NaN') || item[fieldId].includes('%%'))) {
-          businessFieldAttr[fieldId] = item[fieldId].toString();
+        if (
+          !item[fieldId] ||
+          (['-', '0'].includes(item[fieldId] as string) && field.type === FieldTypeEnum.STATISTIC)
+        ) {
+          businessFieldAttr[fieldId] = item.emptyResultMode as string;
+        } else {
+          businessFieldAttr[fieldId] = formatNumberValueToString(item[fieldId], field);
+          if (typeof item[fieldId] === 'string' && (item[fieldId].includes('NaN') || item[fieldId].includes('%%'))) {
+            businessFieldAttr[fieldId] = item[fieldId].toString();
+          }
         }
       } else if (options && options.length > 0) {
         let name: string | string[] = '';
@@ -488,15 +499,20 @@ export function transformData({
       );
     } else if (numberFieldIds.includes(field.fieldId)) {
       // 数字类型字段，格式化数字显示
-      customFieldAttr[field.fieldId] = formatNumberValueToString(
-        field.fieldValue as number,
-        fields.find((f) => f.id === field.fieldId) as FormCreateField
-      );
+      const fieldConfig = fields.find((f) => f.id === field.fieldId) as FormCreateField;
       if (
-        typeof field.fieldValue === 'string' &&
-        (field.fieldValue.includes('NaN') || field.fieldValue.includes('%%'))
+        (!field.fieldValue || ['-', '0'].includes(field.fieldValue as string)) &&
+        fieldConfig.type === FieldTypeEnum.STATISTIC
       ) {
-        customFieldAttr[field.fieldId] = field.fieldValue.toString();
+        customFieldAttr[field.fieldId] = fieldConfig.emptyResultMode as string;
+      } else {
+        customFieldAttr[field.fieldId] = formatNumberValueToString(field.fieldValue as number, fieldConfig);
+        if (
+          typeof field.fieldValue === 'string' &&
+          (field.fieldValue.includes('NaN') || field.fieldValue.includes('%%'))
+        ) {
+          customFieldAttr[field.fieldId] = field.fieldValue.toString();
+        }
       }
     } else if (options && options.length > 0) {
       let name: string | string[] = '';
