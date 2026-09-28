@@ -537,7 +537,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         } else if (item.type === FieldTypeEnum.ATTACHMENT) {
           item.initialOptions = res.attachmentMap?.[item.id];
         } else if (item.type === FieldTypeEnum.INPUT_NUMBER || item.type === FieldTypeEnum.STATISTIC) {
-          formDetail.value[item.id] = formatNumberValueToString(formDetail.value[item.businessKey || item.id], item);
+          formDetail.value[item.businessKey || item.id] = formatNumberValueToString(
+            formDetail.value[item.businessKey || item.id],
+            item
+          );
         }
         return item;
       });

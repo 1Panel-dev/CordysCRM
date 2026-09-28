@@ -171,9 +171,6 @@
       await formRef.value?.validate();
       const result = cloneDeep(formDetail.value);
       fieldList.value.forEach((item) => {
-        if (!item.mobile) {
-          console.log(result[item.id]);
-        }
         if (item.type === FieldTypeEnum.DATA_SOURCE && Array.isArray(result[item.id])) {
           // 处理数据源字段，单选传单个值
           result[item.id] = result[item.id]?.[0] || '';
@@ -184,6 +181,9 @@
         }
         if (item.type === FieldTypeEnum.INPUT_NUMBER && result[item.id] === '-') {
           result[item.id] = null;
+        }
+        if ([FieldTypeEnum.SUB_PRICE, FieldTypeEnum.SUB_PRODUCT].includes(item.type)) {
+          result[item.id] = result[item.id] || [];
         }
       });
       saveForm(result, () => router.back());
