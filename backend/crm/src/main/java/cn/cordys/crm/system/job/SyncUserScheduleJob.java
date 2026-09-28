@@ -29,7 +29,7 @@ public class SyncUserScheduleJob extends BaseScheduleJob {
         if (StringUtils.isNotBlank(context.getJobDetail().getJobDataMap().getString("config"))) {
             List<OptionDTO> optionDTOS = JSON.parseObject(context.getJobDetail().getJobDataMap().getString("config"), new TypeReference<List<OptionDTO>>() {
             });
-            departmentIds = optionDTOS.stream().map(OptionDTO::getName).filter(Objects::nonNull).toList();
+            departmentIds = optionDTOS.stream().map(OptionDTO::getId).filter(Objects::nonNull).map(String::valueOf).toList();
         } else {
             departmentIds = null;
         }
