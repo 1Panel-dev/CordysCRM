@@ -292,7 +292,7 @@
             {{ item.label }}
           </div>
           <div class="flex items-center gap-[8px]">
-            {{ item.value === null ? '-' : item.value }}
+            {{ item.value === null || item.value === undefined ? '-' : item.value }}
             <CrmPopConfirm
               v-if="item.fieldInfo && !item.fieldInfo.resourceFieldId"
               v-model:show="popShow[item.fieldInfo?.id]"

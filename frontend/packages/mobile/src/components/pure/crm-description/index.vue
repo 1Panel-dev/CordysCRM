@@ -23,7 +23,7 @@
           <template v-else-if="item.fieldInfo && item.fieldInfo.type === FieldTypeEnum.STATISTIC">
             <div class="crm-description-label">{{ item.label }}</div>
             <div class="crm-description-value flex gap-[16px]">
-              {{ item.value === null ? '-' : item.value }}
+              {{ item.value === null || item.value === undefined ? '-' : item.value }}
               <van-button size="mini" type="warning" plain @click="handleReCalculation(item)">
                 {{ t('formCreate.advanced.reCalculation') }}
               </van-button>
