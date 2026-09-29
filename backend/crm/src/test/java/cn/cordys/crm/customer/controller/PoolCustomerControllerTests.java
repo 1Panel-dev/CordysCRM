@@ -134,13 +134,15 @@ public class PoolCustomerControllerTests extends BaseTest {
         request.setPoolId(testPoolId);
         MvcResult mvcResult = this.requestPost(PICK, request).andExpect(status().is5xxServerError()).andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.getWithArgs("customer.capacity.over", 0));
-        customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
+        // 清理测试组织的库容，避免残留限制影响后续用例。
+        customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<CustomerCapacity>()
+                .eq(CustomerCapacity::getOrganizationId, DEFAULT_ORGANIZATION_ID));
         CustomerPoolPickRule pickRule = createPickRule();
         pickRule.setLimitOnNumber(false);
         pickRule.setPoolId(testPoolId);
         customerPoolPickRuleMapper.insert(pickRule);
         this.requestPost(PICK, request);
-        customerPoolPickRuleMapper.deleteByLambda(new LambdaQueryWrapper<>());
+        customerPoolPickRuleMapper.deleteByPrimaryKey(pickRule.getId());
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK, PICK, request);
 
         resetPoolCustomer();
@@ -278,7 +280,8 @@ public class PoolCustomerControllerTests extends BaseTest {
         rule.setLimitOnNumber(true);
         rule.setPickNumber(1);
         customerPoolPickRuleMapper.insert(rule);
-        customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
+        customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<CustomerCapacity>()
+                .eq(CustomerCapacity::getOrganizationId, DEFAULT_ORGANIZATION_ID));
         PoolBatchPickRequest request = new PoolBatchPickRequest();
         request.setBatchIds(List.of(testDataId));
         request.setPoolId(testPoolId);
