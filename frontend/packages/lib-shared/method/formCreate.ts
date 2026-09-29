@@ -412,7 +412,7 @@ export function transformData({
         businessFieldAttr[fieldId] = formatTimeValue(item[fieldId], field.dateType);
       } else if (numberFieldIds.includes(fieldId)) {
         // 数字类型字段，格式化数字显示
-        if (item[fieldId] === null && field.type === FieldTypeEnum.STATISTIC) {
+        if ((item[fieldId] === null || item[fieldId] === undefined) && field.type === FieldTypeEnum.STATISTIC) {
           businessFieldAttr[fieldId] = '-';
         } else {
           businessFieldAttr[fieldId] = formatNumberValueToString(item[fieldId], field);
@@ -558,6 +558,12 @@ export function transformData({
       // 避免将 0 有效计算结果误判为空
       if (customFieldAttr[fieldId] === undefined || customFieldAttr[fieldId] === null) {
         customFieldAttr[fieldId] = undefined;
+      }
+      if (
+        (customFieldAttr[fieldId] === undefined || customFieldAttr[fieldId] === null) &&
+        field.type === FieldTypeEnum.STATISTIC
+      ) {
+        customFieldAttr[fieldId] = '-';
       }
     }
   });

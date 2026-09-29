@@ -90,15 +90,17 @@
 
     const precision = props.fieldConfig.precision ?? 0;
     num = Number(num.toFixed(precision));
+    // 更新真实值
+    value.value = num;
+    // 更新显示值（千分位/小数位）
     if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
-      num = num.toLocaleString('en-US', {
+      displayValue.value = num.toLocaleString('en-US', {
         minimumFractionDigits: props.fieldConfig.precision ?? 0,
         maximumFractionDigits: props.fieldConfig.precision ?? 0,
       });
+    } else {
+      displayValue.value = String(num);
     }
-
-    // 更新真实值
-    value.value = num;
     emit('change', num);
   }
 
