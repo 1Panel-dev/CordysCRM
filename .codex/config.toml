@@ -4,11 +4,15 @@
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 
-# 明确项目根目录，并为根目录 AGENTS.md 预留足够读取空间。
-project_root_markers = [".git", "pom.xml"]
+# Maven 子模块都有 pom.xml，不能用它截断仓库级配置和指南的发现。
+# .git 同时适用于普通检出和 Git worktree。
+project_root_markers = [".git"]
 project_doc_max_bytes = 32768
 
+# 模型、推理级别、审批审核方式和外部工具连接沿用个人或组织配置。
+# 团队开发约定由 AGENTS.md 入口加载，不写入 developer_instructions。
+
 [sandbox_workspace_write]
-# 依赖下载和其他联网命令必须通过显式提权审批。
+# 依赖下载等联网命令通过当前环境的提权审批；不扩大默认写入范围。
 network_access = false
 

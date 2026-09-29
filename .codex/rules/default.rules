@@ -1,11 +1,11 @@
-# Cordys CRM 项目级命令策略。
-# 规则仅在仓库被信任后加载；多条规则命中时采用最严格的决定。
+# Cordys CRM 沙箱外命令规则；trusted 项目在启动时加载。
+# prefix_rule 按 argv 前缀匹配，最严格决定优先：forbidden > prompt > allow。
+# 下方 match / not_match 会由 Codex 原生规则引擎校验。
 
-# 禁止可能直接丢失本地工作的 Git 命令。
 prefix_rule(
     pattern = ["git", "reset", "--hard"],
     decision = "forbidden",
-    justification = "禁止使用 git reset --hard，以免覆盖贡献者的未提交修改",
+    justification = "禁止覆盖未提交工作；先用 git diff 查看差异，再按文件处理",
     match = ["git reset --hard", "git reset --hard HEAD~1"],
     not_match = ["git reset --soft HEAD~1", "git reset HEAD file.txt"],
 )
@@ -13,32 +13,35 @@ prefix_rule(
 prefix_rule(
     pattern = ["git", "clean"],
     decision = "forbidden",
-    justification = "禁止使用 git clean，以免永久删除未跟踪文件",
+    justification = "禁止批量删除未跟踪文件；用 git status --short 检查并仅处理任务产生的文件",
     match = ["git clean -fd", "git clean -fdx"],
     not_match = ["git status --short"],
 )
 
-# 以下操作会修改远程仓库或发布制品，必须获得明确批准。
+# Git 参数可置于子命令前；统一审查沙箱外 Git，避免 -C / -c 绕过 push 规则。
 prefix_rule(
-    pattern = ["git", "push"],
+    pattern = ["git"],
     decision = "prompt",
-    justification = "推送会修改远程仓库，执行前需要确认",
-    match = ["git push", "git push origin feature/example"],
+    justification = "沙箱外 Git 可能修改受保护的 .git 或远程仓库，须遵循当前授权和审批策略",
+    match = ["git push", "git -C . push origin codex/example", "git reset HEAD --hard"],
+    not_match = ["rg --files"],
 )
 
+# 发布目标可出现在 --dir / --filter 等参数之后；仅限制沙箱外执行。
 prefix_rule(
-    pattern = [["npm", "pnpm"], "publish"],
+    pattern = [["npm", "pnpm"]],
     decision = "prompt",
-    justification = "发布前端包会产生外部影响，执行前需要确认",
-    match = ["npm publish", "pnpm publish"],
-    not_match = ["pnpm build", "pnpm install"],
+    justification = "沙箱外包管理命令可能联网或发布制品；本地检查和构建应优先在沙箱内运行",
+    match = ["npm publish", "pnpm --dir frontend publish", "pnpm --filter @cordys/web publish"],
+    not_match = ["node --version"],
 )
 
+# Maven goals 和选项可任意组合，不枚举 deploy 的所有排列。
+# Windows 示例必须引用路径，避免内联示例解析时吞掉反斜杠。
 prefix_rule(
-    pattern = [["./mvnw", ".\\mvnw.cmd", "mvn"], "deploy"],
+    pattern = [["./mvnw", "mvn", "mvnw.cmd", ".\\mvnw.cmd"]],
     decision = "prompt",
-    justification = "Maven deploy 会发布制品，执行前需要确认",
-    match = ["./mvnw deploy", ".\\mvnw.cmd deploy", "mvn deploy"],
-    not_match = ["./mvnw test", "./mvnw clean package"],
+    justification = "沙箱外 Maven 可能联网或发布制品；本地测试和构建应优先在沙箱内运行",
+    match = ["./mvnw -f backend/pom.xml clean deploy", "mvn deploy", "mvnw.cmd deploy", '".\\mvnw.cmd" deploy'],
+    not_match = ["java -version"],
 )
-
