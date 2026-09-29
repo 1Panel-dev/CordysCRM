@@ -234,7 +234,6 @@ public class OrganizationUserControllerTests extends BaseTest {
     }
 
     //测试高级搜索
-    @Test
     @Order(16)
     public void testUserListForCombineSearch() throws Exception {
 

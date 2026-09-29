@@ -36,7 +36,6 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.DisabledAccountException;
 import org.springframework.stereotype.Service;
@@ -101,12 +100,12 @@ public class SSOService {
 
         // 创建登录请求
         LoginRequest loginRequest = createLoginRequest(
-                name,
+                enableUser.getId(),
                 enableUser.getPassword(),
                 ThirdConfigTypeConstants.WECOM.name()
         );
         loginRequest.setLoginAddress(ip);
-        return userLoginService.login(loginRequest);
+        return userLoginService.loginVerified(loginRequest);
     }
 
     public SessionUser exchangeWeComOauth2(String code, String ip) {
@@ -174,8 +173,7 @@ public class SSOService {
                 authenticateType
         );
         loginRequest.setLoginAddress(ip);
-        SecurityUtils.getSubject().getSession().setAttribute("authenticate", authenticateType);
-        return userLoginService.login(loginRequest);
+        return userLoginService.loginVerified(loginRequest);
     }
 
     private SessionUser getDingTalkSessionUser(String code, DingTalkThirdConfigRequest dingTalkConfig, String authenticateType, String ip) {
@@ -208,8 +206,7 @@ public class SSOService {
         );
 
         loginRequest.setLoginAddress(ip);
-        SecurityUtils.getSubject().getSession().setAttribute("authenticate", authenticateType);
-        return userLoginService.login(loginRequest);
+        return userLoginService.loginVerified(loginRequest);
     }
 
     // 辅助方法
@@ -462,8 +459,7 @@ public class SSOService {
         );
 
         loginRequest.setLoginAddress(ip);
-        SecurityUtils.getSubject().getSession().setAttribute("authenticate", loginType);
-        return userLoginService.login(loginRequest);
+        return userLoginService.loginVerified(loginRequest);
     }
 
     public SessionUser exchangeLarkOauth2(String code, Boolean isMobile, String ip) {

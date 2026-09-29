@@ -59,7 +59,7 @@ public class ShiroConfig {
     @Bean
     public ShiroFilterFactoryBean shiroFilterFactoryBean(final DefaultWebSecurityManager sessionManager) {
         final var bean = new ShiroFilterFactoryBean();
-        bean.setLoginUrl("/");
+        bean.setLoginUrl("/login");
         bean.setSecurityManager(sessionManager);
         bean.setUnauthorizedUrl("/403");
         bean.setSuccessUrl("/");
@@ -85,6 +85,9 @@ public class ShiroConfig {
         String pattern = "apikey, csrf, authc";
         final Filter preApiKey = CommonBeanFactory.getFilter();
         if (preApiKey != null) {
+            // 文档保持公开读取，但不能通过访问文档建立管理员会话。
+            chain.put("/swagger-ui/**", "anon");
+            chain.put("/v3/api-docs/**", "anon");
             filters.put("preApikey", preApiKey);
             pattern = "preApikey, " + pattern;
         }

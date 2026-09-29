@@ -1,8 +1,8 @@
 package cn.cordys.common.security.realm;
 
 
-import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.security.VerifiedUserToken;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.system.service.UserLoginService;
 import cn.cordys.security.SessionConstants;
@@ -11,9 +11,9 @@ import cn.cordys.security.SessionUtils;
 import cn.cordys.security.UserDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
+import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.session.Session;
@@ -54,23 +54,25 @@ public class LocalRealm extends AuthorizingRealm {
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
-        UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
-        Session session = SecurityUtils.getSubject().getSession();
-        String login = (String) session.getAttribute("authenticate");
-
-        String userId = token.getUsername();
-        String password = String.valueOf(token.getPassword());
-
-        if (Strings.CS.equals(login, UserSource.LOCAL.name())) {
-            return loginLocalMode(userId, password);
+        // 密码令牌始终校验密码，不允许会话状态切换成免密认证。
+        if (authenticationToken instanceof UsernamePasswordToken token) {
+            return loginLocalMode(token.getUsername(), String.valueOf(token.getPassword()));
+        }
+        if (!(authenticationToken instanceof VerifiedUserToken token)) {
+            throw new UnsupportedTokenException();
         }
 
-        UserDTO user = getUserWithOutAuthenticate(userId);
-        userId = user.getId();
+        UserDTO user = getUserWithOutAuthenticate(token.userId());
+        Session session = SecurityUtils.getSubject().getSession();
         SessionUser sessionUser = SessionUser.fromUser(user, (String) session.getId());
         session.setAttribute(SessionConstants.ATTR_USER, sessionUser);
-        return new SimpleAuthenticationInfo(userId, password, getName());
+        return new SimpleAuthenticationInfo(user.getId(), token.getCredentials(), getName());
 
+    }
+
+    @Override
+    public boolean supports(AuthenticationToken token) {
+        return token instanceof UsernamePasswordToken || token instanceof VerifiedUserToken;
     }
 
     @Override

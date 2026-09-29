@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.web.filter.authc.AnonymousFilter;
 import org.apache.shiro.web.util.WebUtils;
 
@@ -17,8 +16,6 @@ import org.apache.shiro.web.util.WebUtils;
  * 继承 AnonymousFilter 支持 API 密钥认证和常规会话认证。
  */
 public class ApiKeyFilter extends AnonymousFilter {
-
-    private static final String NO_PASSWORD = "no_pass"; // 默认的密码，用于 API 密钥认证
 
     /**
      * 在处理请求之前调用。该方法检查请求是否使用 API 密钥。
@@ -44,8 +41,8 @@ public class ApiKeyFilter extends AnonymousFilter {
         if (!SecurityUtils.getSubject().isAuthenticated()) {
             String userId = CommonBeanFactory.getUser(httpRequest);
             if (StringUtils.isNotBlank(userId)) {
-                // 使用 API 密钥中的用户 ID 进行认证，密码设置为默认值
-                SecurityUtils.getSubject().login(new UsernamePasswordToken(userId, NO_PASSWORD));
+                // getUser 验证 API Key 后才允许建立免密身份。
+                SecurityUtils.getSubject().login(new VerifiedUserToken(userId));
             }
         }
 

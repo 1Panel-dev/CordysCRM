@@ -1,6 +1,5 @@
 package cn.cordys.crm.system.controller;
 
-import cn.cordys.common.constants.UserSource;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.request.LoginRequest;
 import cn.cordys.common.util.Translator;
@@ -112,8 +111,6 @@ public class LoginController {
                 throw new GenericException(Translator.get("please_logout_current_user"));
             }
         }
-        // 设置认证方式为 LOCAL
-        SecurityUtils.getSubject().getSession().setAttribute("authenticate", UserSource.LOCAL.name());
         request.setLoginAddress(IpUtils.getClientIpAddress(httpServletRequest));
         SessionUser su = userLoginService.login(request);
 
