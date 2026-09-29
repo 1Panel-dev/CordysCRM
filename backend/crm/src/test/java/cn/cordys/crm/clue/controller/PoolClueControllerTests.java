@@ -128,13 +128,15 @@ public class PoolClueControllerTests extends BaseTest {
         request.setPoolId(testPoolId);
         MvcResult mvcResult = this.requestPost(PICK, request).andExpect(status().is5xxServerError()).andReturn();
         assert mvcResult.getResponse().getContentAsString().contains(Translator.getWithArgs("customer.capacity.over", 0));
-        clueCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
+        // 清理测试组织的库容，避免残留限制影响后续用例。
+        clueCapacityMapper.deleteByLambda(new LambdaQueryWrapper<ClueCapacity>()
+                .eq(ClueCapacity::getOrganizationId, DEFAULT_ORGANIZATION_ID));
         CluePoolPickRule pickRule = createPickRule();
         pickRule.setLimitOnNumber(false);
         pickRule.setPoolId(testPoolId);
         cluePoolPickRuleMapper.insert(pickRule);
         this.requestPost(PICK, request);
-        cluePoolPickRuleMapper.deleteByLambda(new LambdaQueryWrapper<>());
+        cluePoolPickRuleMapper.deleteByPrimaryKey(pickRule.getId());
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_PICK, PICK, request);
 
         resetPoolClue();
@@ -239,7 +241,8 @@ public class PoolClueControllerTests extends BaseTest {
         rule.setLimitOnNumber(true);
         rule.setPickNumber(1);
         cluePoolPickRuleMapper.insert(rule);
-        clueCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
+        clueCapacityMapper.deleteByLambda(new LambdaQueryWrapper<ClueCapacity>()
+                .eq(ClueCapacity::getOrganizationId, DEFAULT_ORGANIZATION_ID));
         PoolBatchPickRequest request = new PoolBatchPickRequest();
         request.setBatchIds(List.of(testDataId));
         request.setPoolId(testPoolId);

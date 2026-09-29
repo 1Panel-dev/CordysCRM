@@ -185,6 +185,7 @@ public class LambdaQueryWrapper<T> {
 
     /**
      * 添加 IN 条件。
+     * 空集合或 null 生成恒假条件，避免扩大查询或删除范围。
      *
      * @param column    列名的 Lambda 表达式
      * @param valueList 值的集合
@@ -193,6 +194,7 @@ public class LambdaQueryWrapper<T> {
      */
     public LambdaQueryWrapper<T> in(XFunction<T, ?> column, List<?> valueList) {
         if (valueList == null || valueList.isEmpty()) {
+            addCondition("1 = 0");
             return this;
         }
 
