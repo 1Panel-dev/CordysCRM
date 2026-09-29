@@ -117,11 +117,11 @@
     @refresh="handleRefresh"
   />
   <CrmFreezeModal
-    v-if="activeRow && poolId"
+    v-if="activeClue && poolId"
     v-model:show="freezeModalShow"
     :type="freezeType"
-    :resource-name="activeRow.name"
-    :resource-id="activeRow.id"
+    :resource-name="activeClue.name!"
+    :resource-id="activeClue.id!"
     :pool-id="poolId"
     resource-type="lead"
     @success="handleItemRefresh"
@@ -452,22 +452,15 @@
 
   const freezeModalShow = ref(false);
   const freezeType = ref<'freeze' | 'unfreeze'>('freeze');
-  const activeRow = ref();
   const activeClue = ref<Partial<CluePoolListItem>>();
 
   function openFreezeModal(type: 'freeze' | 'unfreeze') {
-    if (!activeRow.value && activeClue.value) {
-      activeRow.value = {
-        id: activeClue.value?.id,
-        name: activeClue.value?.name,
-      };
-    }
     freezeType.value = type;
     freezeModalShow.value = true;
   }
 
   function handleActionSelect(row: CluePoolListItem, actionKey: string) {
-    activeRow.value = row;
+    activeClue.value = row;
     switch (actionKey) {
       case 'pop-claim':
         handleClaim(row);

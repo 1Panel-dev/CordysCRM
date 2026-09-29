@@ -86,11 +86,11 @@
   />
   <openSeaOverviewDrawer
     v-model:show="showOverviewDrawer"
-    :source-id="activeCustomerId"
+    :source-id="activeRow.id"
     :pool-id="openSea"
     :hidden-columns="hiddenColumns"
-    @change="searchData(undefined, undefined, activeCustomerId)"
-    @delete="removeItemFromList(activeCustomerId)"
+    @change="searchData(undefined, undefined, activeRow.id)"
+    @delete="removeItemFromList(activeRow.id)"
     @freeze="openFreezeModal($event, 'freeze')"
     @unfreeze="openFreezeModal($event, 'unfreeze')"
   />
@@ -209,7 +209,6 @@
   const drawerVisible = ref(false);
   const openSeaRow = ref<any>({});
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
-  const activeCustomerId = ref('');
   const showOverviewDrawer = ref(false);
   const batchTableQueryParams = ref<TableQueryParams>({});
   const activeTab = ref();
@@ -499,9 +498,7 @@
   const activeRow = ref();
 
   function openFreezeModal(name: string, type: 'freeze' | 'unfreeze') {
-    if (!activeRow.value && activeCustomerId.value) {
-      activeRow.value = { name, id: activeCustomerId.value };
-    }
+    activeRow.value.name = name;
     freezeType.value = type;
     freezeModalShow.value = true;
   }
@@ -594,7 +591,7 @@
                       CrmTableButton,
                       {
                         onClick: () => {
-                          activeCustomerId.value = row.id;
+                          activeRow.value = row;
                           openSea.value = row.poolId ?? openSea.value;
                           showOverviewDrawer.value = true;
                         },
@@ -788,7 +785,9 @@
     });
 
     if (route.query.id) {
-      activeCustomerId.value = route.query.id as string;
+      activeRow.value = {
+        id: route.query.poolId as string,
+      };
       openSea.value = route.query.poolId as string;
       showOverviewDrawer.value = true;
     }
