@@ -5,20 +5,19 @@ on:
     paths:
       - "backend/**"
       - "pom.xml"
+      - ".github/workflows/codecov.yml"
 
-name: Code Coverage
+name: Maven Build
 
 permissions:
-  pull-requests: write
+  contents: read
 
 jobs:
   generic_handler:
-    name: Code Coverage
+    name: Maven Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GH_TOKEN }}
 
       # Cache Maven dependencies
       - name: Cache Maven dependencies
@@ -36,11 +35,8 @@ jobs:
           java-version: 21
           check-latest: false
 
-      - name: Build with Maven - other
-        run: mvn -B package -DskipAntRunForJenkins --file pom.xml -pl '!frontend'
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: 1Panel-dev/CordysCRM
+      # Keep Surefire's argLine defined when the JaCoCo agent is disabled.
+      - name: Test and package with Maven
+        run: >-
+          mvn -B clean package -Djacoco.skip=true -DargLine=
+          -DskipAntRunForJenkins --file pom.xml -pl '!frontend'

@@ -9,7 +9,6 @@ import org.apache.ibatis.jdbc.AbstractSQL;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 
@@ -78,6 +77,7 @@ public interface BaseMapper<E> {
      * @param criteria 删除的条件
      *
      * @return 删除的行数
+     * @throws IllegalArgumentException 如果未提供任何删除条件
      */
     @DeleteProvider(type = DeleteByCriteriaSqlProvider.class, method = "invoke")
     Integer delete(E criteria);
@@ -86,6 +86,7 @@ public interface BaseMapper<E> {
      * 使用 LambdaQueryWrapper 批量删除。
      *
      * @param wrapper LambdaQueryWrapper 删除条件
+     * @throws IllegalArgumentException 如果 wrapper 未包含任何条件
      */
     @DeleteProvider(type = DeleteByLambdaSqlProvider.class, method = "invoke")
     void deleteByLambda(@Param("wrapper") LambdaQueryWrapper<E> wrapper);
@@ -286,6 +287,10 @@ public interface BaseMapper<E> {
     class DeleteByCriteriaSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
         public String sql(Object criteria) {
+            if (Stream.of(table.getFields()).allMatch(field -> value(criteria, field) == null)) {
+                throw new IllegalArgumentException("Delete conditions cannot be empty");
+            }
+
             StringBuilder sql = new StringBuilder();
             sql.append("<script>");
             sql.append("DELETE ");
@@ -299,13 +304,13 @@ public interface BaseMapper<E> {
         @Override
         public String sql(Object criteria) {
             LambdaQueryWrapper<?> wrapper = (LambdaQueryWrapper<?>) criteria;
-
-            SQL sql = new SQL().DELETE_FROM(table.getTableName());
+            String whereClause = wrapper.getWhereClause();
+            if (StringUtils.isBlank(whereClause)) {
+                throw new IllegalArgumentException("Delete conditions cannot be empty");
+            }
 
             // 将 LambdaQueryWrapper 的条件解析为 WHERE 子句
-            Optional.ofNullable(wrapper.getWhereClause())
-                    .filter(StringUtils::isNotBlank)
-                    .ifPresent(sql::WHERE);
+            SQL sql = new SQL().DELETE_FROM(table.getTableName()).WHERE(whereClause);
 
             return String.format("<script>%s</script>", sql);
         }
