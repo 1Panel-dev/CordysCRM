@@ -6,6 +6,7 @@ import cn.cordys.common.dto.RoleDataScopeDTO;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.request.LoginRequest;
+import cn.cordys.common.security.VerifiedUserToken;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.CodingUtils;
 import cn.cordys.common.util.JSON;
@@ -94,8 +95,19 @@ public class UserLoginService {
         String username = StringUtils.trim(request.getUsername());
         String password = StringUtils.trim(request.getPassword());
 
+        return login(request, new UsernamePasswordToken(username, password));
+    }
+
+    /**
+     * 外部认证成功后的登录入口，只能由已验证授权码的 SSO 服务调用。
+     * 请求中的 authenticate 字段和会话属性均不能作为免密登录依据。
+     */
+    public SessionUser loginVerified(LoginRequest request) {
+        return login(request, new VerifiedUserToken(StringUtils.trim(request.getUsername())));
+    }
+
+    private SessionUser login(LoginRequest request, AuthenticationToken token) {
         Subject subject = SecurityUtils.getSubject();
-        UsernamePasswordToken token = new UsernamePasswordToken(username, password);
 
         try {
             subject.login(token);
