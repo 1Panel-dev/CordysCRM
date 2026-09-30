@@ -5,8 +5,10 @@ import cn.cordys.aspectj.dto.LogDTO;
 import cn.cordys.common.context.CustomFunction;
 import cn.cordys.common.context.ExportTaskFunction;
 import cn.cordys.common.domain.BaseModuleFieldValue;
+import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.*;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.formula.FormulaEngine;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.uid.IDGenerator;
@@ -15,13 +17,11 @@ import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.SubListUtils;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.system.constants.ExportConstants;
 import cn.cordys.crm.system.constants.FieldType;
 import cn.cordys.crm.system.domain.ExportTask;
-import cn.cordys.crm.system.dto.field.DatasourceField;
-import cn.cordys.crm.system.dto.field.DepartmentField;
-import cn.cordys.crm.system.dto.field.MemberField;
-import cn.cordys.crm.system.dto.field.SelectField;
+import cn.cordys.crm.system.dto.field.*;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.field.base.SubField;
@@ -48,6 +48,8 @@ import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.io.File;
@@ -80,6 +82,8 @@ public abstract class BaseExportService {
     private LogService logService;
     @Resource
     private ExportTaskService exportTaskService;
+    @Resource
+    private FormulaEngine formulaEngine;
 
     public Map<String, BaseField> getFieldConfigMap(String formKey, String orgId) {
         return Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
@@ -1094,6 +1098,54 @@ public abstract class BaseExportService {
         FieldExportMeta meta = metaMap.get(businessKey);
         if (meta != null && meta.getField() != null) {
             sysMap.put(businessKey, transformFieldValue(meta.getResolver(), meta.getField(), rawValue, new HashMap<>()));
+        }
+    }
+
+
+    /**
+     * 取当前表单中「公式里引用了流水号字段」的计算字段。
+     */
+    public List<BaseField> serialNumberFormulaFields(List<BaseField> fields, BaseField serialField) {
+        return fields.stream()
+                .filter(field -> StringUtils.isBlank(field.getResourceFieldId()))
+                .filter(field -> field instanceof InputField inputField
+                        && StringUtils.isNotBlank(inputField.getFormula())
+                        && Strings.CI.equals(inputField.getDefaultValueType(),"formula")
+                        && formulaEngine.referencedFieldIds(inputField.getFormula()).contains(serialField.getId()))
+                .toList();
+    }
+
+
+    /**
+     * 公式中的占位符替换成真实流水号。
+     *
+     * @param resource       业务实体(Order/ContractPaymentRecord 等)
+     * @param serialField    当前表单自己的流水号字段
+     * @param formulaFields  引用了该流水号字段的公式类型字段
+     * @param resourceFields 该实体的字段值行
+     * @param serialNo       已生成的流水号
+     */
+    public <K> void fillSerialNumberFormulas(K resource, BaseField serialField, List<BaseField> formulaFields,
+                                             List<BaseResourceSubField> resourceFields, String serialNo) {
+        String placeholder = "${" + serialField.getName() + "}";
+        BeanWrapper resourceWrapper = new BeanWrapperImpl(resource);
+        Object resourceId = resourceWrapper.getPropertyValue("id");
+        for (BaseField field : formulaFields) {
+            if (field.hasBusinessKey()) {
+                Object value = resourceWrapper.getPropertyValue(field.getBusinessKey());
+                if (value != null) {
+                    resourceWrapper.setPropertyValue(field.getBusinessKey(), value.toString().replace(placeholder, serialNo));
+                }
+                continue;
+            }
+            BaseResourceSubField resourceField = resourceFields.stream()
+                    .filter(item -> Objects.equals(resourceId, item.getResourceId())
+                            && StringUtils.equals(field.getId(), item.getFieldId()))
+                    .findFirst()
+                    .orElse(null);
+            if (resourceField != null && resourceField.getFieldValue() != null) {
+                resourceField.setFieldValue(resourceField.getFieldValue().toString().replace(placeholder, serialNo));
+            }
         }
     }
 }
