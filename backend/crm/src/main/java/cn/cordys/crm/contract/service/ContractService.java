@@ -29,10 +29,7 @@ import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.SerialNumGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
-import cn.cordys.common.util.BeanUtils;
-import cn.cordys.common.util.CommonBeanFactory;
-import cn.cordys.common.util.JSON;
-import cn.cordys.common.util.Translator;
+import cn.cordys.common.util.*;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.approval.annotation.HitApproval;
 import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
@@ -64,6 +61,7 @@ import cn.cordys.crm.system.constants.*;
 import cn.cordys.crm.system.domain.MessageTaskConfig;
 import cn.cordys.crm.system.domain.StageAdvancedConfig;
 import cn.cordys.crm.system.dto.MessageTaskConfigDTO;
+import cn.cordys.crm.system.dto.field.InputField;
 import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.request.ImportRequest;
@@ -100,6 +98,8 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -1462,11 +1462,16 @@ public class ContractService extends BaseExportService implements ApprovalResour
             switch (importType) {
                 case ADD -> {
                     Optional<BaseField> serialOptional = fields.stream().filter(field -> Strings.CI.equals(field.getInternalKey(), BusinessModuleField.CONTRACT_NO.getKey())).findAny();
+                    //获取当前表单中公式类型输入字段公式包含合同编号的所有字段（排除显示字段中的字段）
+                    List<BaseField> formulaFields = serialOptional.map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
                     for (int i = 0; i < contracts.size(); i++) {
                         Contract contract = contracts.get(i);
                         if (serialOptional.isPresent()) {
-                            List<String> serialNumberRules = ((SerialNumberField) serialOptional.get()).getSerialNumberRules();
-                            contract.setNumber(serialNumGenerator.generateByRules(serialNumberRules, currentOrg, FormKey.CONTRACT.getKey()));
+                            String serialNo = serialNumGenerator.generateByRules(
+                                    serialNumberRules(contract, (SerialNumberField) serialOptional.get()),
+                                    currentOrg, FormKey.CONTRACT.getKey());
+                            contract.setNumber(serialNo);
+                            fillSerialNumberFormulas(contract, serialOptional.get(), formulaFields, contractFields, serialNo);
                         }
                         contract.setApprovalStatus(ApprovalStatus.NONE.name());
                         contract.setStage(stageConfigList.getFirst().getId());
@@ -1589,5 +1594,63 @@ public class ContractService extends BaseExportService implements ApprovalResour
                 request.getImportType()
         );
 
+    }
+
+
+    /**
+     * 生成流水号的规则: 前缀从合同名称里截取。
+     * 名称里没有占位符时不替换前缀, 沿用字段自身配置的规则
+     */
+    private List<String> serialNumberRules(Contract contract, SerialNumberField serialField) {
+        String placeholder = "${" + serialField.getName() + "}";
+        if (!StringUtils.contains(contract.getName(), placeholder)) {
+            return serialField.getSerialNumberRules();
+        }
+        return serialField.getSerialNumberRules(serialNumberPrefix(contract.getName(), placeholder));
+    }
+
+    /**
+     * 截出占位符前面的前缀: 取占位符之前、最后一个 "-" 之后的部分。
+     * 名称里没有占位符时返回空串。
+     */
+    private String serialNumberPrefix(String name, String placeholder) {
+        if (StringUtils.isBlank(name) || !name.contains(placeholder)) {
+            return StringUtils.EMPTY;
+        }
+        String before = name.substring(0, name.indexOf(placeholder));
+        return before.substring(before.lastIndexOf('-') + 1);
+    }
+
+    /**
+     *  占位符替换成真实流水号
+     */
+    private void fillSerialNumberFormulas(Contract contract, BaseField serialField, List<BaseField> formulaFields,
+                                          List<BaseResourceSubField> contractFields, String serialNo) {
+        String placeholder = "${" + serialField.getName() + "}";
+        String prefixedPlaceholder = serialNumberPrefix(contract.getName(), placeholder) + placeholder;
+        BeanWrapper contractWrapper = new BeanWrapperImpl(contract);
+        for (BaseField field : formulaFields) {
+            if (field.hasBusinessKey()) {
+                Object value = contractWrapper.getPropertyValue(field.getBusinessKey());
+                if (value != null) {
+                    contractWrapper.setPropertyValue(field.getBusinessKey(),
+                            replaceSerialPlaceholder(value.toString(), prefixedPlaceholder, placeholder, serialNo));
+                }
+                continue;
+            }
+            BaseResourceSubField contractField = contractFields.stream()
+                    .filter(item -> StringUtils.equals(contract.getId(), item.getResourceId())
+                            && StringUtils.equals(field.getId(), item.getFieldId()))
+                    .findFirst()
+                    .orElse(null);
+            if (contractField != null && contractField.getFieldValue() != null) {
+                contractField.setFieldValue(replaceSerialPlaceholder(
+                        contractField.getFieldValue().toString(), prefixedPlaceholder, placeholder, serialNo));
+            }
+        }
+    }
+
+    private String replaceSerialPlaceholder(String value, String prefixedPlaceholder, String placeholder, String serialNo) {
+        return value.replace(prefixedPlaceholder, serialNo).replace(placeholder, serialNo);
     }
 }
