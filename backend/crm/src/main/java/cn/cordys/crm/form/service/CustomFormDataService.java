@@ -13,6 +13,7 @@ import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.domain.BaseResourceSubField;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.exception.GenericException;
+import cn.cordys.common.formula.FormulaEngine;
 import cn.cordys.common.mapper.CommonMapper;
 import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
@@ -20,6 +21,7 @@ import cn.cordys.common.permission.ResourcePermissionService;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
+import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.service.BaseResourceFieldService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.uid.IDGenerator;
@@ -46,6 +48,8 @@ import cn.cordys.crm.form.dto.response.CustomFormDataListResponse;
 import cn.cordys.crm.form.mapper.ExtCustomFormDataMapper;
 import cn.cordys.crm.system.constants.ImportType;
 import cn.cordys.crm.system.domain.ModuleForm;
+import cn.cordys.crm.system.dto.field.InputField;
+import cn.cordys.crm.system.dto.field.SerialNumberField;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -77,6 +81,8 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,7 +95,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class CustomFormDataService implements ApprovalResourceHandler {
+public class CustomFormDataService extends BaseExportService implements ApprovalResourceHandler {
 
     /**
      * 自定义表单数据的批量编辑/删除审批权限标识（与 ApprovalFlowService.getCustomFormDataApprovalPermission 保持一致）
@@ -115,6 +121,8 @@ public class CustomFormDataService implements ApprovalResourceHandler {
     private ModuleFormService moduleFormService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private FormulaEngine formulaEngine;
     @Resource
     private BaseMapper<ModuleForm> moduleFormMapper;
     @Resource
@@ -890,6 +898,9 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                 ImportType importType = EnumUtils.valueOf(ImportType.class, request.getImportType());
                 switch (importType) {
                     case ADD -> {
+                        // 自定义表单的流水号是用户自己加的字段(不是系统字段)
+                        Optional<BaseField> serialOptional = fields.stream().filter(BaseField::isSerialNumber).findAny();
+                        List<BaseField> formulaFields = serialOptional.map(serial -> serialNumberFormulaFields(fields, serial)).orElseGet(List::of);
                         dataList.forEach(data -> {
                             data.setCustomFormId(request.getCustomFormId());
                             data.setOrganizationId(orgId);
@@ -897,6 +908,12 @@ public class CustomFormDataService implements ApprovalResourceHandler {
                             if (StringUtils.isBlank(data.getOwner())) {
                                 data.setOwner(userId);
                             }
+                            serialOptional.ifPresent(serialField -> {
+                                String serialNo = serialNumberValue(fieldList, data.getId(), serialField);
+                                if (serialNo != null) {
+                                    fillSerialNumberFormulas(data, serialField, formulaFields, fieldList, serialNo);
+                                }
+                            });
                             logs.add(new LogDTO(orgId, data.getId(), userId, LogType.ADD, LogModule.CUSTOM_FORM_DATA, data.getName()));
                         });
                         customFormDataMapper.batchInsert(dataList);
@@ -1056,5 +1073,19 @@ public class CustomFormDataService implements ApprovalResourceHandler {
         return fields.stream()
                 .filter(f -> !f.getFieldId().contains(BaseResourceFieldService.REF_UNDERLINE))
                 .toList();
+    }
+
+    /**
+     * 获取已经生成的流水号值
+     */
+    private String serialNumberValue(List<BaseResourceSubField> dataFields, String dataId, BaseField serialField) {
+        return dataFields.stream()
+                .filter(field -> StringUtils.equals(dataId, field.getResourceId())
+                        && StringUtils.equals(serialField.idOrBusinessKey(), field.getFieldId()))
+                .map(BaseResourceSubField::getFieldValue)
+                .filter(Objects::nonNull)
+                .map(Object::toString)
+                .findFirst()
+                .orElse(null);
     }
 }
