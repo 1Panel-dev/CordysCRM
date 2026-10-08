@@ -21,6 +21,7 @@
       :fixed-column="props.fieldConfig.fixedColumn"
       :sumColumns="props.fieldConfig.sumColumns"
       :disabled="props.fieldConfig.editable === false || !!props.fieldConfig.resourceFieldId"
+      :draggable="props.formKey === FormDesignKeyEnum.PRICE && props.fieldConfig.type === FieldTypeEnum.SUB_PRODUCT"
       @change="emit('change', $event)"
     />
   </n-form-item>
@@ -29,6 +30,8 @@
 <script setup lang="ts">
   import { NFormItem } from 'naive-ui';
 
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+
   import CrmSubTable from '@/components/business/crm-sub-table/index.vue';
 
   import { FormCreateField } from '../../types';
@@ -36,6 +39,7 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
+    formKey?: FormDesignKeyEnum;
     formDetail?: Record<string, any>;
     needInitDetail?: boolean; // 判断是否编辑情况
   }>();
