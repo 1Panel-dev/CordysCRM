@@ -1014,7 +1014,8 @@ public class CustomFormDataService extends BaseExportService implements Approval
                 }
             };
             CustomFieldImportEventListener<CustomFormData> eventListener = new CustomFieldImportEventListener<>(fields, CustomFormData.class, orgId, userId,
-                    "custom_form_data_field", "custom_form_data_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), request.getImportType());
+                    "custom_form_data_field", "custom_form_data_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
+                    request.getImportType(), request.getCustomFormId());
             FastExcelFactory.read(file.getInputStream(), eventListener)
                     .headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())

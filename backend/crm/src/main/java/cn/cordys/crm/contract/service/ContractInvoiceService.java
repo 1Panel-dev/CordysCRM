@@ -1109,7 +1109,8 @@ public class ContractInvoiceService extends BaseExportService implements Approva
                 });
             };
             CustomFieldImportEventListener<ContractInvoice> eventListener = new CustomFieldImportEventListener<>(fields, ContractInvoice.class, currentOrg, currentUser,
-                    "contract_invoice_field", "contract_invoice_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), request.getImportType());
+                    "contract_invoice_field", "contract_invoice_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
+                    request.getImportType(), FormKey.INVOICE.getKey());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();

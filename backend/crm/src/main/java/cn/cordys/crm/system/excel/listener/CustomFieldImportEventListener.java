@@ -58,6 +58,10 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
      */
     private final Class<T> entityClass;
     /**
+     * 流水号计数器所属的表单，允许导入入口覆盖默认实体名。
+     */
+    private final String serialFormKey;
+    /**
      * method cache
      */
     private final Map<String, Method> methodCache = new HashMap<>();
@@ -91,8 +95,20 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable, String fieldTableBlob,
                                           CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
                                           Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap, String importType) {
+        this(fields, clazz, currentOrg, operator, fieldTable, fieldTableBlob, consumer, batchSize,
+                mergeCellMap, mergeRowDataMap, importType, clazz.getSimpleName().toLowerCase());
+    }
+
+    /**
+     * 使用指定表单的流水号计数器，供导入与新建共用序列。
+     */
+    public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator, String fieldTable, String fieldTableBlob,
+                                          CustomImportAfterDoConsumer<T, BaseResourceSubField> consumer, int batchSize,
+                                          Map<Integer, List<CellExtra>> mergeCellMap, Map<Integer, Map<Integer, String>> mergeRowDataMap,
+                                          String importType, String serialFormKey) {
         super(fields, EntityTableMapper.generateTableName(clazz), fieldTable, currentOrg, mergeCellMap, mergeRowDataMap, importType);
         this.entityClass = clazz;
+        this.serialFormKey = serialFormKey;
         this.operator = operator;
         this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
         this.productPriceService = CommonBeanFactory.getBean(ProductPriceService.class);
@@ -111,7 +127,9 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
         super.invokeHeadMap(headMap, context);
         if (Strings.CI.equals(importType, ImportType.ADD.name())) {
-            Optional<BaseField> anySerial = this.fieldMap.values().stream().filter(BaseField::isSerialNumber).findAny();
+            // 业务流水号由对应服务在导入后处理生成，避免同一条记录重复取号。
+            Optional<BaseField> anySerial = this.fieldMap.values().stream()
+                    .filter(field -> field.isSerialNumber() && !field.hasBusinessKey()).findAny();
             anySerial.ifPresent(field -> serialField = field);
         }
     }
@@ -297,7 +315,7 @@ public class CustomFieldImportEventListener<T> extends CustomFieldCheckEventList
                     serialResource.setResourceId(id.get().toString());
                     serialResource.setFieldId(serialField.idOrBusinessKey());
                     String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) serialField).getSerialNumberRules(),
-                            currentOrg, entityClass.getSimpleName().toLowerCase());
+                            currentOrg, serialFormKey);
                     serialResource.setFieldValue(serialNo);
                     if (refSubMap.containsKey(serialField.getName())) {
                         serialResource.setRefSubId(refSubMap.get(serialField.getName()));
