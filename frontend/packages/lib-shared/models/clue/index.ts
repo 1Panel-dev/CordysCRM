@@ -59,7 +59,7 @@ export interface CluePoolListItem extends ClueListItem {
   recyclePoolName: string; // 默认回收公海名称
   frozen: boolean;
   freezeReason: string;
-  unfreezeTime: number;
+  unfreezeTime: number | null;
 }
 
 export interface PickClueParams {
