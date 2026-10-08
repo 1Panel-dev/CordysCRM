@@ -37,7 +37,7 @@
     resourceType: 'customer' | 'lead';
     freezeType: 'custom' | 'freezeForever';
     freezeReason: string;
-    unfreezeTime: number;
+    unfreezeTime: number | null;
   }>();
 
   const { t } = useI18n();

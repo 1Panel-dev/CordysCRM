@@ -232,7 +232,7 @@ export interface CustomerOpenSeaListItem {
   recycleRule: RecycleRule;
   frozen: boolean;
   freezeReason: string;
-  unfreezeTime: number;
+  unfreezeTime: number | null;
 }
 
 export type FollowDetailItemType<T> = T;
