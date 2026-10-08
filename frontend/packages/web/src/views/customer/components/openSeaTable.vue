@@ -85,6 +85,7 @@
     @saved="searchData(undefined, undefined, openSeaRow?.id)"
   />
   <openSeaOverviewDrawer
+    v-if="activeRow"
     v-model:show="showOverviewDrawer"
     :source-id="activeRow.id"
     :pool-id="openSea"
@@ -786,9 +787,11 @@
 
     if (route.query.id) {
       activeRow.value = {
-        id: route.query.poolId as string,
+        id: route.query.id as string,
       };
-      openSea.value = route.query.poolId as string;
+      if (route.query.poolId) {
+        openSea.value = route.query.poolId as string;
+      }
       showOverviewDrawer.value = true;
     }
   });
