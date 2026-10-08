@@ -1,7 +1,10 @@
 <template>
   <n-data-table
+    ref="tableRef"
     :columns="realColumns"
     :data="data || []"
+    :row-key="getSubTableRowKey"
+    :row-props="rowProps"
     :paging="false"
     :pagination="false"
     :scroll-x="scrollXWidth"
@@ -53,6 +56,7 @@
 
   import { FormCreateField } from '../crm-form-create/types';
   import { RowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
+  import Sortable from 'sortablejs';
 
   const props = defineProps<{
     parentId: string;
@@ -64,6 +68,7 @@
     readonly?: boolean;
     optionMap?: Record<string, any[]>;
     disabled?: boolean;
+    draggable?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: Record<string, any>[]): void;
@@ -866,6 +871,25 @@
       },
       ...renderColumns.value,
     ];
+    if (!props.readonly && props.draggable) {
+      cols.splice(0, 0, {
+        fixed: 'left',
+        key: SpecialColumnEnum.DRAG,
+        title: '',
+        width: 40,
+        resizable: false,
+        render: () =>
+          h(
+            'div',
+            { class: 'crm-sub-table-data-draggable-handle' },
+            h(CrmIcon, {
+              type: 'iconicon_move',
+              size: 14,
+              class: 'text-[var(--text-n4)]',
+            })
+          ),
+      });
+    }
     if (!props.readonly) {
       cols.push({
         title: '',
@@ -897,6 +921,59 @@
     }
     return cols as TableColumns;
   });
+
+  const tableRef = ref<InstanceType<typeof NDataTable> | null>(null);
+  const sortable = ref<Sortable | null>(null);
+  function getSubTableRowKey(row: Record<string, any>, rowIndex?: number) {
+    return row.id || `sub-table-row-${rowIndex ?? data.value.indexOf(row)}`;
+  }
+
+  function rowProps(row: Record<string, any>, rowIndex: number) {
+    return {
+      'data-id': getSubTableRowKey(row, rowIndex),
+    } as any;
+  }
+
+  function destroySortable() {
+    if (sortable.value) {
+      sortable.value.destroy();
+      sortable.value = null;
+    }
+  }
+
+  function initSortable() {
+    destroySortable();
+    if (props.readonly || !props.draggable) return;
+
+    nextTick(() => {
+      const tableEl = (tableRef.value as any)?.$el as HTMLElement | undefined;
+      const handle = tableEl?.querySelector('.crm-sub-table-data-draggable-handle');
+      const el = handle?.closest('tbody') as HTMLElement | null;
+      if (!el) return;
+
+      sortable.value = Sortable.create(el, {
+        ghostClass: 'sortable-ghost',
+        handle: '.crm-sub-table-data-draggable-handle',
+        setData(dataTransfer) {
+          dataTransfer.setData('Text', '');
+        },
+        onEnd: ({ oldIndex, newIndex, to }) => {
+          if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) return;
+
+          const rowMap = new Map(data.value.map((row, index) => [String(getSubTableRowKey(row, index)), row]));
+          const orderedRows = Array.from(to.children)
+            .map((rowEl) => rowMap.get(String((rowEl as HTMLElement).dataset.id)))
+            .filter((row): row is Record<string, any> => !!row);
+
+          if (orderedRows.length !== data.value.length) return;
+
+          data.value.splice(0, data.value.length, ...orderedRows);
+          emit('change', data.value);
+        },
+      });
+    });
+  }
+
   const scrollXWidth = computed(() =>
     props.readonly
       ? undefined
@@ -952,6 +1029,18 @@
       immediate: true,
     }
   );
+
+  watch([() => data.value.length, () => props.readonly, () => props.draggable], () => {
+    initSortable();
+  });
+
+  onMounted(() => {
+    initSortable();
+  });
+
+  onBeforeUnmount(() => {
+    destroySortable();
+  });
 </script>
 
 <style lang="less">
@@ -976,6 +1065,11 @@
       padding: 8px 4px;
       line-height: normal;
       vertical-align: middle;
+    }
+    .crm-sub-table-data-draggable-handle {
+      cursor: move;
+
+      @apply flex items-center justify-center;
     }
     .n-form-item-blank--error + .n-form-item-feedback-wrapper {
       @apply block;

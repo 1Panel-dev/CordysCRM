@@ -25,19 +25,20 @@
         </CrmTab>
       </CrmCard>
       <CrmCard contentHeight="100%" hide-footer :special-height="showDetailTabs ? 80 : 0" no-content-padding>
-        <CrmFormDescription
-          v-show="activeTab === 'price'"
-          ref="descriptionRef"
-          :form-key="FormDesignKeyEnum.PRICE"
-          :source-id="props.id"
-          :column="3"
-          label-width="auto"
-          value-align="start"
-          tooltip-position="top-start"
-          :readonly="!hasAnyPermission(['PRICE:UPDATE'])"
-          class="p-[24px]"
-          @init="handleDescriptionInit"
-        />
+        <div v-show="activeTab === 'price'" class="h-full">
+          <CrmFormDescription
+            ref="descriptionRef"
+            :form-key="FormDesignKeyEnum.PRICE"
+            :source-id="props.id"
+            :column="3"
+            label-width="auto"
+            value-align="start"
+            tooltip-position="top-start"
+            :readonly="!hasAnyPermission(['PRICE:UPDATE'])"
+            class="p-[24px]"
+            @init="handleDescriptionInit"
+          />
+        </div>
         <template v-for="item in customDetailTabTableList" :key="String(item.tab.name)">
           <div v-if="activeTab === item.tab.name" class="h-full px-[24px] pt-[24px]">
             <component :is="item.table.component" v-bind="item.table.props" hideBoard />
