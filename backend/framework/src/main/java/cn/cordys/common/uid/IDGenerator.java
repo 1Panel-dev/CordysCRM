@@ -16,7 +16,7 @@ public class IDGenerator {
      * @return 保留时间和全部随机位的数字 ID
      */
     public static BigInteger nextNum() {
-        return new BigInteger(nextStr(), 16);
+        return new BigInteger(UUID(), 16);
     }
 
     /**
@@ -27,6 +27,10 @@ public class IDGenerator {
      * @return 不含连字符的 UUIDv7
      */
     public static String nextStr() {
+        return nextNum().toString();
+    }
+
+    private static String UUID() {
         // randomUUID 使用 SecureRandom；保留 74 位随机数和 RFC variant，仅替换时间与版本位。
         UUID random = UUID.randomUUID();
         long mostSignificantBits = (System.currentTimeMillis() << 16) | 0x7000L
