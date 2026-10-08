@@ -659,7 +659,8 @@ public class ProductPriceService extends BaseExportService {
                 2000,
                 mergeCellMap,
                 mergeRowDataMap,
-                request.getImportType()
+                request.getImportType(),
+                FormKey.PRICE.getKey()
         );
     }
 

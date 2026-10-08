@@ -641,7 +641,8 @@ public class ContractPaymentPlanService extends BaseExportService {
                 }
             };
             CustomFieldImportEventListener<ContractPaymentPlan> eventListener = new CustomFieldImportEventListener<>(fields, ContractPaymentPlan.class, currentOrg, currentUser,
-                    "contract_payment_plan_field", "contract_payment_plan_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(), request.getImportType());
+                    "contract_payment_plan_field", "contract_payment_plan_field_blob", afterDo, 2000, mergeCellEventListener.getMergeCellMap(), mergeCellEventListener.getMergeRowDataMap(),
+                    request.getImportType(), FormKey.CONTRACT_PAYMENT_PLAN.getKey());
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(headRowNumber).ignoreEmptyRow(true).sheet().doRead();
             return ImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccessCount()).failCount(eventListener.getErrList().size()).build();
