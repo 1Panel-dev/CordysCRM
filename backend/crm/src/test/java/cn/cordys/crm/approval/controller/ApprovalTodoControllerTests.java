@@ -1,6 +1,7 @@
 package cn.cordys.crm.approval.controller;
 
 import cn.cordys.common.pager.Pager;
+import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.crm.approval.domain.ApprovalTask;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
 import cn.cordys.crm.approval.service.ApprovalTodoService;
@@ -17,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -186,5 +188,28 @@ class ApprovalTodoControllerTests extends BaseTest {
         List<ApprovalTask> remain = approvalTaskMapper.selectListByLambda(new LambdaQueryWrapper<ApprovalTask>()
                 .in(ApprovalTask::getInstanceId, List.of("todo_list_inst_contract", "todo_list_inst_quote")));
         Assertions.assertTrue(remain.isEmpty());
+    }
+
+    @Test
+    @Order(9)
+    @Transactional
+    void persistsUuidV7ApproverId() {
+        String approverId = IDGenerator.nextStr();
+        ApprovalTask task = new ApprovalTask();
+        task.setId(IDGenerator.nextStr());
+        task.setNodeId("uuid-v7-node");
+        task.setNodeRound(1);
+        task.setInstanceId("uuid-v7-instance");
+        task.setApproverId(approverId);
+        task.setStatus("PENDING");
+        task.setCreateTime(System.currentTimeMillis());
+        task.setUpdateTime(task.getCreateTime());
+        task.setCreateUser(approverId);
+        task.setUpdateUser(approverId);
+
+        approvalTaskMapper.insert(task);
+
+        Assertions.assertEquals(32, approverId.length());
+        Assertions.assertEquals(approverId, approvalTaskMapper.selectByPrimaryKey(task.getId()).getApproverId());
     }
 }
