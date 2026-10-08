@@ -132,6 +132,9 @@ public class ApprovalResourceService {
     public static final String NULL_POST_CONFIG = "null";
 
     static {
+        FORM_APPROVAL_TABLE.put(FormKey.CLUE.getKey(), "clue");
+        FORM_APPROVAL_TABLE.put(FormKey.CUSTOMER.getKey(), "customer");
+        FORM_APPROVAL_TABLE.put(FormKey.OPPORTUNITY.getKey(), "opportunity");
         FORM_APPROVAL_TABLE.put(FormKey.QUOTATION.getKey(), "opportunity_quotation");
         FORM_APPROVAL_TABLE.put(FormKey.CONTRACT.getKey(), "contract");
         FORM_APPROVAL_TABLE.put(FormKey.INVOICE.getKey(), "contract_invoice");
@@ -364,6 +367,9 @@ public class ApprovalResourceService {
             return LogModule.CUSTOM_FORM_DATA;
         }
         return switch (formKey) {
+            case CLUE -> LogModule.CLUE_INDEX;
+            case CUSTOMER -> LogModule.CUSTOMER_INDEX;
+            case OPPORTUNITY -> LogModule.OPPORTUNITY_INDEX;
             case QUOTATION -> LogModule.OPPORTUNITY_QUOTATION;
             case CONTRACT -> LogModule.CONTRACT_INDEX;
             case INVOICE -> LogModule.CONTRACT_INVOICE;
@@ -738,6 +744,9 @@ public class ApprovalResourceService {
             return Translator.get("module.resource_type.custom_form");
         }
         return switch (formKey) {
+            case CLUE -> Translator.get("module.resource_type.clue");
+            case CUSTOMER -> Translator.get("module.resource_type.customer");
+            case OPPORTUNITY -> Translator.get("module.resource_type.opportunity");
             case QUOTATION -> Translator.get("module.resource_type.quotation");
             case CONTRACT -> Translator.get("module.resource_type.contract");
             case INVOICE -> Translator.get("module.resource_type.invoice");
@@ -1280,6 +1289,9 @@ public class ApprovalResourceService {
             return PermissionConstants.CUSTOM_FORM_READ;
         }
         return switch (key) {
+            case CLUE -> PermissionConstants.CLUE_MANAGEMENT_READ;
+            case CUSTOMER -> PermissionConstants.CUSTOMER_MANAGEMENT_READ;
+            case OPPORTUNITY -> PermissionConstants.OPPORTUNITY_MANAGEMENT_READ;
             case QUOTATION -> PermissionConstants.OPPORTUNITY_QUOTATION_READ;
             case CONTRACT -> PermissionConstants.CONTRACT_READ;
             case INVOICE -> PermissionConstants.CONTRACT_INVOICE_READ;

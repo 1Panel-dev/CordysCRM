@@ -51,4 +51,10 @@ public class Customer extends BaseModel {
 
     @Schema(description = "自动解冻时间，永久冻结时为空")
     private Long unfreezeTime;
+
+    @Schema(description = "审批状态")
+    private String approvalStatus;
+
+    @Schema(description = "是否审批通过过")
+    private Boolean approved;
 }

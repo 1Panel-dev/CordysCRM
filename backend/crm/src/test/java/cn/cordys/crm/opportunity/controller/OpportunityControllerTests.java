@@ -6,6 +6,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.ExportHeadDTO;
 import cn.cordys.common.dto.ResourceTabEnableDTO;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.opportunity.domain.Opportunity;
@@ -188,6 +189,7 @@ public class OpportunityControllerTests extends BaseTest {
         opportunity.setName("batch-delete-test");
         opportunity.setOwner(InternalUser.ADMIN.getValue());
         opportunity.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        opportunity.setApprovalStatus(ApprovalStatus.NONE.name());
         opportunityMapper.insert(opportunity);
         this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of(opportunity.getId()));
         Assertions.assertNull(opportunityMapper.selectByPrimaryKey(opportunity.getId()));

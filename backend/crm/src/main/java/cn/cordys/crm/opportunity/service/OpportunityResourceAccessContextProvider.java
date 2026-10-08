@@ -31,6 +31,7 @@ public class OpportunityResourceAccessContextProvider implements ResourceAccessC
         }
         ResourceAccessContext context = new ResourceAccessContext();
         context.setOwnerId(opportunity.getOwner());
+        context.setApprovalStatus(opportunity.getApprovalStatus());
         return context;
     }
 

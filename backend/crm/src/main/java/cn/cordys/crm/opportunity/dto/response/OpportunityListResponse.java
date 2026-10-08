@@ -105,4 +105,16 @@ public class OpportunityListResponse {
 
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
+
+    @Schema(description = "审批状态")
+    private String approvalStatus;
+
+    @Schema(description = "是否已审批通过")
+    private Boolean approved;
+
+    @Schema(description = "审批第一个节点是否通过")
+    private Boolean firstApproved;
+
+    @Schema(description = "提审人ID")
+    private String submitterId;
 }

@@ -136,7 +136,7 @@ public class CustomerController {
     @CsPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "删除客户")
     public void delete(@PathVariable String id) {
-        customerService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        customerService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/transfer")

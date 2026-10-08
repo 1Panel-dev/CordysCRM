@@ -1,10 +1,12 @@
 package cn.cordys.crm.clue.service;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.dto.ExportFieldParam;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.BaseExportService;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.clue.dto.request.CluePageRequest;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import cn.cordys.crm.clue.mapper.ExtClueMapper;
@@ -35,6 +37,8 @@ public class ClueExportService extends BaseExportService {
     private ClueService clueService;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
@@ -55,12 +59,17 @@ public class ClueExportService extends BaseExportService {
         var orgId = exportParam.getOrgId();
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
+        List<ClueListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            return extClueMapper.getListByIds(exportParam.getSelectIds());
+            exportList = extClueMapper.getListByIds(exportParam.getSelectIds());
+        } else {
+            var request = (CluePageRequest) exportParam.getPageRequest();
+            PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
+            exportList = extClueMapper.list(request, orgId, userId, deptDataPermission, false);
         }
-        var request = (CluePageRequest) exportParam.getPageRequest();
-        PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
-        return extClueMapper.list(request, orgId, userId, deptDataPermission, false);
+        // 按审批流状态权限过滤, 无导出权限的状态不导出
+        return filterApprovalExportPermission(exportList, orgId, FormKey.CLUE.getKey(),
+                ClueListResponse::getId, ClueListResponse::getApprovalStatus, approvalFlowService);
     }
 
     private Map<String, List<OptionDTO>> buildOptionMap(List<ClueListResponse> dataList,

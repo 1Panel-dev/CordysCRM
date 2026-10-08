@@ -7,6 +7,7 @@ import cn.cordys.common.dto.ExportFieldParam;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.service.BaseExportService;
 import cn.cordys.common.utils.OpportunityFieldUtils;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.opportunity.dto.response.OpportunityStageResponse;
@@ -41,6 +42,8 @@ public class OpportunityExportService extends BaseExportService {
     private OpportunityService opportunityService;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
@@ -74,12 +77,17 @@ public class OpportunityExportService extends BaseExportService {
         var orgId = exportParam.getOrgId();
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
+        List<OpportunityListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            return extOpportunityMapper.getListByIds(exportParam.getSelectIds());
+            exportList = extOpportunityMapper.getListByIds(exportParam.getSelectIds());
+        } else {
+            var request = (OpportunityPageRequest) exportParam.getPageRequest();
+            PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
+            exportList = extOpportunityMapper.list(request, orgId, userId, deptDataPermission, false);
         }
-        var request = (OpportunityPageRequest) exportParam.getPageRequest();
-        PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
-        return extOpportunityMapper.list(request, orgId, userId, deptDataPermission, false);
+        // 按审批流状态权限过滤, 无导出权限的状态不导出
+        return filterApprovalExportPermission(exportList, orgId, FormKey.OPPORTUNITY.getKey(),
+                OpportunityListResponse::getId, OpportunityListResponse::getApprovalStatus, approvalFlowService);
     }
 
     private Map<String, List<OptionDTO>> buildOptionMap(List<OpportunityListResponse> dataList,

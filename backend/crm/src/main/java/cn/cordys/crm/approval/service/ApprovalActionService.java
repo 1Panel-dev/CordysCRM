@@ -1373,6 +1373,18 @@ public class ApprovalActionService {
 			event = NotificationConstants.Event.CUSTOM_FORM_DATA_APPROVAL;
 		} else {
 			switch (formKey) {
+				case CLUE -> {
+					module = NotificationConstants.Module.CLUE;
+					event = NotificationConstants.Event.CLUE_APPROVAL;
+				}
+				case CUSTOMER -> {
+					module = NotificationConstants.Module.CUSTOMER;
+					event = NotificationConstants.Event.CUSTOMER_APPROVAL;
+				}
+				case OPPORTUNITY -> {
+					module = NotificationConstants.Module.OPPORTUNITY;
+					event = NotificationConstants.Event.BUSINESS_APPROVAL;
+				}
 				case QUOTATION -> {
 					module = NotificationConstants.Module.OPPORTUNITY;
 					event = NotificationConstants.Event.BUSINESS_QUOTATION_APPROVAL;
@@ -1417,6 +1429,15 @@ public class ApprovalActionService {
 			return LogModule.CUSTOM_FORM_DATA;
 		}
 		switch (formKey) {
+			case CLUE -> {
+				return LogModule.CLUE_INDEX;
+			}
+			case CUSTOMER -> {
+				return LogModule.CUSTOMER_INDEX;
+			}
+			case OPPORTUNITY -> {
+				return LogModule.OPPORTUNITY_INDEX;
+			}
 			case QUOTATION -> {
 				return LogModule.OPPORTUNITY_QUOTATION;
 			}

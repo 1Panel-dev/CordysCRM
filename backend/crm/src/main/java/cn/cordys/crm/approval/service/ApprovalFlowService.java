@@ -441,7 +441,7 @@ public class ApprovalFlowService {
     }
 
     /**
-     * 校验审批流表单类型：标准可审批表单类型(quotation/contract/invoice/order)直接放行；
+     * 校验审批流表单类型：标准可审批表单类型(clue/customer/opportunity/quotation/contract/invoice/order)直接放行；
      * 非标准值视为自定义表单ID，需校验同组织下存在对应自定义表单。
      */
     private void validateFormType(String formType, String organizationId) {
@@ -449,8 +449,9 @@ public class ApprovalFlowService {
             throw new GenericException(Translator.get("module.form.illegal"));
         }
         for (ApprovalFormTypeEnum type : new ApprovalFormTypeEnum[]{
-                ApprovalFormTypeEnum.QUOTATION, ApprovalFormTypeEnum.CONTRACT,
-                ApprovalFormTypeEnum.INVOICE, ApprovalFormTypeEnum.ORDER}) {
+                ApprovalFormTypeEnum.CLUE, ApprovalFormTypeEnum.CUSTOMER,
+                ApprovalFormTypeEnum.OPPORTUNITY, ApprovalFormTypeEnum.QUOTATION,
+                ApprovalFormTypeEnum.CONTRACT, ApprovalFormTypeEnum.INVOICE, ApprovalFormTypeEnum.ORDER}) {
             if (type.getValue().equals(formType)) {
                 return;
             }
@@ -1562,6 +1563,9 @@ public class ApprovalFlowService {
      */
     private String getFlowFormDisplayName(FormKey formKey) {
         return switch (formKey) {
+            case CLUE -> Translator.get("module.resource_type.clue");
+            case CUSTOMER -> Translator.get("module.resource_type.customer");
+            case OPPORTUNITY -> Translator.get("module.resource_type.opportunity");
             case QUOTATION -> Translator.get("module.resource_type.quotation");
             case CONTRACT -> Translator.get("module.resource_type.contract");
             case INVOICE -> Translator.get("module.resource_type.invoice");

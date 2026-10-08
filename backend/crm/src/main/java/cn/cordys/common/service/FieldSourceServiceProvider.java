@@ -85,6 +85,9 @@ public class FieldSourceServiceProvider {
 		SERVICE_MAP.put(FieldSourceType.PAYMENT_PLAN, paymentPlanService);
 		SERVICE_MAP.put(FieldSourceType.INVOICE, invoiceService);
 
+		APPROVAL_FORM_SERVICE_MAP.put(FormKey.CLUE.getKey(), clueService);
+		APPROVAL_FORM_SERVICE_MAP.put(FormKey.CUSTOMER.getKey(), customerService);
+		APPROVAL_FORM_SERVICE_MAP.put(FormKey.OPPORTUNITY.getKey(), opportunityService);
 		APPROVAL_FORM_SERVICE_MAP.put(FormKey.QUOTATION.getKey(), opportunityQuotationService);
 		APPROVAL_FORM_SERVICE_MAP.put(FormKey.CONTRACT.getKey(), contractService);
 		APPROVAL_FORM_SERVICE_MAP.put(FormKey.INVOICE.getKey(), invoiceService);

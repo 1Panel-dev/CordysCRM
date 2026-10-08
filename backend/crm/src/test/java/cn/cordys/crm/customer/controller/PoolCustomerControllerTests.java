@@ -6,6 +6,7 @@ import cn.cordys.common.dto.ExportSelectRequest;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.customer.domain.Customer;
@@ -98,10 +99,12 @@ public class PoolCustomerControllerTests extends BaseTest {
 
         Customer customer = createCustomer();
         testDataId = customer.getId();
+        customer.setApprovalStatus(ApprovalStatus.NONE.name());
         Customer ownCustomer = createCustomer();
         CustomerCapacity capacity = createCapacity();
         ownCustomer.setInSharedPool(false);
         ownCustomer.setOwner("admin");
+        ownCustomer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerMapper.batchInsert(List.of(ownCustomer, customer));
         customerCapacityMapper.insert(capacity);
     }
@@ -232,6 +235,7 @@ public class PoolCustomerControllerTests extends BaseTest {
         anotherFrozenCustomer.setName("another-frozen-customer");
         anotherFrozenCustomer.setFrozen(true);
         anotherFrozenCustomer.setFreezeReason("暂停联系");
+        anotherFrozenCustomer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerMapper.insert(anotherFrozenCustomer);
         PoolBatchPickRequest batchPickRequest = new PoolBatchPickRequest();
         batchPickRequest.setBatchIds(List.of(frozenCustomer.getId(), anotherFrozenCustomer.getId()));
@@ -275,6 +279,7 @@ public class PoolCustomerControllerTests extends BaseTest {
         Customer customer = createCustomer();
         customer.setOwner("admin");
         customer.setInSharedPool(false);
+        customer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerMapper.insert(customer);
         CustomerPoolPickRule rule = createPickRule();
         rule.setLimitOnNumber(true);
@@ -304,6 +309,7 @@ public class PoolCustomerControllerTests extends BaseTest {
     @Order(11)
     void batchDeleteSuccess() throws Exception {
         Customer customer = createCustomer();
+        customer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerMapper.insert(customer);
         PoolBatchRequest request = new PoolBatchRequest();
         request.setBatchIds(List.of(customer.getId()));

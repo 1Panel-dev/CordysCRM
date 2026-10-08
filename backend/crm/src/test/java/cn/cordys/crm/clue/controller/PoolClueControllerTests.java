@@ -4,6 +4,7 @@ import cn.cordys.common.constants.PermissionConstants;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.clue.domain.ClueCapacity;
@@ -93,10 +94,12 @@ public class PoolClueControllerTests extends BaseTest {
 
         Clue clue = createClue();
         testDataId = clue.getId();
+        clue.setApprovalStatus(ApprovalStatus.NONE.name());
         Clue ownClue = createClue();
         ClueCapacity capacity = createCapacity();
         ownClue.setInSharedPool(false);
         ownClue.setOwner("admin");
+        ownClue.setApprovalStatus(ApprovalStatus.NONE.name());
         clueMapper.batchInsert(List.of(ownClue, clue));
         clueCapacityMapper.insert(capacity);
     }
@@ -193,6 +196,7 @@ public class PoolClueControllerTests extends BaseTest {
         anotherFrozenClue.setName("another-frozen-clue");
         anotherFrozenClue.setFrozen(true);
         anotherFrozenClue.setFreezeReason("暂停联系");
+        anotherFrozenClue.setApprovalStatus(ApprovalStatus.NONE.name());
         clueMapper.insert(anotherFrozenClue);
         PoolBatchAssignRequest batchAssignRequest = new PoolBatchAssignRequest();
         batchAssignRequest.setBatchIds(List.of(frozenClue.getId(), anotherFrozenClue.getId()));
@@ -236,6 +240,7 @@ public class PoolClueControllerTests extends BaseTest {
         Clue clue = createClue();
         clue.setOwner("admin");
         clue.setInSharedPool(false);
+        clue.setApprovalStatus(ApprovalStatus.NONE.name());
         clueMapper.insert(clue);
         CluePoolPickRule rule = createPickRule();
         rule.setLimitOnNumber(true);
@@ -269,6 +274,7 @@ public class PoolClueControllerTests extends BaseTest {
     @Order(11)
     void batchDeleteSuccess() throws Exception {
         Clue clue = createClue();
+        clue.setApprovalStatus(ApprovalStatus.NONE.name());
         clueMapper.insert(clue);
         this.requestPostWithOk(BATCH_DELETE, List.of(clue.getId()));
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE, BATCH_DELETE, List.of(clue.getId()));

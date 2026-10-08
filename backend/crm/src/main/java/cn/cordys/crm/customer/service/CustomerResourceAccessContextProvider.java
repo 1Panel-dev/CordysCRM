@@ -31,6 +31,7 @@ public class CustomerResourceAccessContextProvider implements ResourceAccessCont
         }
         var context = new ResourceAccessContext();
         context.setOwnerId(customer.getOwner());
+        context.setApprovalStatus(customer.getApprovalStatus());
         return context;
     }
 

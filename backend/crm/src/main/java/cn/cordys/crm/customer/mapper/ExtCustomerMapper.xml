@@ -20,7 +20,7 @@
 
     <select id="list" resultType="cn.cordys.crm.customer.dto.response.CustomerListResponse">
         select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
-               c.follower, c.follow_time, c.reason_id, <include refid="freezeColumns"/>
+               c.follower, c.follow_time, c.reason_id, c.approval_status, c.approved, <include refid="freezeColumns"/>
                 <if test="dataPermission != null and dataPermission.visible">
                     ,cc.collaboration_type
                 </if>
@@ -203,7 +203,7 @@
 
     <select id="sourceList" resultType="cn.cordys.crm.customer.dto.response.CustomerListResponse">
         select distinct c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
-        c.follower, c.follow_time, c.reason_id, <include refid="freezeColumns"/>
+        c.follower, c.follow_time, c.reason_id, c.approval_status, c.approved, <include refid="freezeColumns"/>
         from customer c left join customer_collaboration cc on c.id = cc.customer_id and cc.user_id = #{userId}
 
         <include refid="fieldConditionJoin">
@@ -266,7 +266,7 @@
                 order by
                 <choose>
                     <when test="${sort}.name in
-                        {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time', 'reason_id'}">
+                        {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time', 'reason_id', 'approval_status'}">
                         c.${sortName} ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
@@ -302,7 +302,7 @@
                     </when>
                     <otherwise>
                         <if test="condition.name not in
-                            {'name', 'owner', 'createTime', 'updateTime', 'follower', 'followTime', 'createUser', 'updateUser', 'departmentId'}">
+                            {'name', 'owner', 'createTime', 'updateTime', 'follower', 'followTime', 'createUser', 'updateUser', 'departmentId', 'approvalStatus'}">
                             <if test="condition.blob">
                                 left join customer_field_blob ${tablePrefix}_${i}
                                 on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -330,7 +330,7 @@
                     left join sys_organization_user sou_sort on c.owner = sou_sort.user_id
                 </when>
                 <when test="${sort}.name not in
-                    {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time', 'reason_id'}">
+                    {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time', 'reason_id', 'approval_status'}">
                     left join customer_field sort_table
                     on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
                     left join sys_module_field module_table on sort_table.field_id = module_table.id
@@ -477,6 +477,12 @@
                             <property name="column" value="c.reason_id"/>
                         </include>
                     </when>
+                    <when test="condition.name == 'approvalStatus'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="c.approval_status"/>
+                        </include>
+                    </when>
                     <otherwise>
                         <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
                             <property name="condition" value="condition"/>
@@ -604,7 +610,7 @@
 
     <select id="getListByIds" resultType="cn.cordys.crm.customer.dto.response.CustomerListResponse">
         select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
-               c.follower, c.follow_time, c.in_shared_pool, c.organization_id, c.reason_id, <include refid="freezeColumns"/>
+               c.follower, c.follow_time, c.in_shared_pool, c.organization_id, c.reason_id, c.approval_status, c.approved, <include refid="freezeColumns"/>
         from customer c
         where c.id in
         <foreach collection="ids" item="id" open="(" close=")" separator=",">

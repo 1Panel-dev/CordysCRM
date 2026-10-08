@@ -12,9 +12,12 @@ import cn.cordys.crm.approval.dto.request.ApprovalTodoPageRequest;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoItemResponse;
 import cn.cordys.crm.approval.dto.response.ApprovalTodoTypeCount;
 import cn.cordys.crm.approval.mapper.ExtApprovalTaskMapper;
+import cn.cordys.crm.clue.domain.Clue;
 import cn.cordys.crm.contract.domain.Contract;
 import cn.cordys.crm.contract.domain.ContractInvoice;
+import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.form.domain.CustomFormData;
+import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.domain.OpportunityQuotation;
 import cn.cordys.crm.order.domain.Order;
 import cn.cordys.crm.system.domain.User;
@@ -41,6 +44,12 @@ public class ApprovalTodoService {
     private BaseMapper<ApprovalInstance> approvalInstanceMapper;
     @Resource
     private BaseMapper<User> userMapper;
+    @Resource
+    private BaseMapper<Opportunity> opportunityMapper;
+    @Resource
+    private BaseMapper<Clue> clueMapper;
+    @Resource
+    private BaseMapper<Customer> customerMapper;
     @Resource
     private BaseMapper<OpportunityQuotation> quotationMapper;
     @Resource
@@ -86,8 +95,8 @@ public class ApprovalTodoService {
 
     /**
      * 待我审批统计。返回 key 与 {@link ApprovalFlowService#getFlowFormOptions} 保持一致：
-     * 标准表单为 quotation/contract/order/invoice，自定义表单为 customFormId；value 为对应待审批数量，
-     * 无待处理的表单返回 0。
+     * 标准表单为 clue/customer/opportunity/quotation/contract/invoice/order，自定义表单为 customFormId；
+     * value 为对应待审批数量，无待处理的表单返回 0。
      */
     public Map<String, Integer> getPendingCount(String userId) {
         // 未登录用户直接返回空统计。
@@ -238,6 +247,12 @@ public class ApprovalTodoService {
         typeResourceIds.forEach((formType, ids) -> {
             List<String> distinctIds = ids.stream().distinct().toList();
             switch (formType) {
+                case CLUE -> resourceNameMap.put(formType, clueMapper.selectByIds(distinctIds).stream()
+                        .collect(Collectors.toMap(Clue::getId, Clue::getName, (prev, next) -> prev)));
+                case CUSTOMER -> resourceNameMap.put(formType, customerMapper.selectByIds(distinctIds).stream()
+                        .collect(Collectors.toMap(Customer::getId, Customer::getName, (prev, next) -> prev)));
+                case OPPORTUNITY -> resourceNameMap.put(formType, opportunityMapper.selectByIds(distinctIds).stream()
+                        .collect(Collectors.toMap(Opportunity::getId, Opportunity::getName, (prev, next) -> prev)));
                 case QUOTATION -> resourceNameMap.put(formType, quotationMapper.selectByIds(distinctIds).stream()
                         .collect(Collectors.toMap(OpportunityQuotation::getId, OpportunityQuotation::getName, (prev, next) -> prev)));
                 case CONTRACT -> resourceNameMap.put(formType, contractMapper.selectByIds(distinctIds).stream()
@@ -248,6 +263,9 @@ public class ApprovalTodoService {
                         .collect(Collectors.toMap(ContractInvoice::getId, ContractInvoice::getName, (prev, next) -> prev)));
                 case CUSTOM_FORM -> resourceNameMap.put(formType, customFormDataMapper.selectByIds(distinctIds).stream()
                         .collect(Collectors.toMap(CustomFormData::getId, CustomFormData::getName, (prev, next) -> prev)));
+                default -> {
+                    // 无对应资源表，忽略
+                }
             }
         });
         return resourceNameMap;
@@ -265,6 +283,9 @@ public class ApprovalTodoService {
         }
         // 兼容旧值或别名写法。
         return switch (type.toLowerCase()) {
+            case "clue" -> ApprovalFormTypeEnum.CLUE;
+            case "customer" -> ApprovalFormTypeEnum.CUSTOMER;
+            case "opportunity" -> ApprovalFormTypeEnum.OPPORTUNITY;
             case "quotation" -> ApprovalFormTypeEnum.QUOTATION;
             case "contract" -> ApprovalFormTypeEnum.CONTRACT;
             case "order" -> ApprovalFormTypeEnum.ORDER;
@@ -309,6 +330,27 @@ public class ApprovalTodoService {
         }
         // 按资源名称模糊匹配资源表，构造资源类型到资源ID的映射。
         Map<ApprovalFormTypeEnum, List<String>> resourceIdsByType = new EnumMap<>(ApprovalFormTypeEnum.class);
+        LambdaQueryWrapper<Clue> clueWrapper = new LambdaQueryWrapper<>();
+        clueWrapper.like(Clue::getName, resourceName);
+        List<String> clueIds = clueMapper.selectListByLambda(clueWrapper).stream()
+                .map(Clue::getId).filter(StringUtils::isNotBlank).toList();
+        if (!clueIds.isEmpty()) {
+            resourceIdsByType.put(ApprovalFormTypeEnum.CLUE, clueIds);
+        }
+        LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
+        customerWrapper.like(Customer::getName, resourceName);
+        List<String> customerIds = customerMapper.selectListByLambda(customerWrapper).stream()
+                .map(Customer::getId).filter(StringUtils::isNotBlank).toList();
+        if (!customerIds.isEmpty()) {
+            resourceIdsByType.put(ApprovalFormTypeEnum.CUSTOMER, customerIds);
+        }
+        LambdaQueryWrapper<Opportunity> opportunityWrapper = new LambdaQueryWrapper<>();
+        opportunityWrapper.like(Opportunity::getName, resourceName);
+        List<String> opportunityIds = opportunityMapper.selectListByLambda(opportunityWrapper).stream()
+                .map(Opportunity::getId).filter(StringUtils::isNotBlank).toList();
+        if (!opportunityIds.isEmpty()) {
+            resourceIdsByType.put(ApprovalFormTypeEnum.OPPORTUNITY, opportunityIds);
+        }
         LambdaQueryWrapper<OpportunityQuotation> quotationWrapper = new LambdaQueryWrapper<>();
         quotationWrapper.like(OpportunityQuotation::getName, resourceName);
         List<String> quotationIds = quotationMapper.selectListByLambda(quotationWrapper).stream()
@@ -356,6 +398,9 @@ public class ApprovalTodoService {
             if (formType != ApprovalFormTypeEnum.CUSTOM_FORM) {
                 // 标准表单类型按 type 别名过滤；自定义表单 type 为 customFormId，直接按 resourceId 匹配
                 List<String> aliases = switch (formType) {
+                    case CLUE -> List.of("clue");
+                    case CUSTOMER -> List.of("customer");
+                    case OPPORTUNITY -> List.of("opportunity");
                     case QUOTATION -> List.of("quotation", "quote");
                     case CONTRACT -> List.of("contract");
                     case ORDER -> List.of("order");

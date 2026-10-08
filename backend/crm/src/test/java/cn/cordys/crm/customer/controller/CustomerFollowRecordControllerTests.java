@@ -4,6 +4,7 @@ package cn.cordys.crm.customer.controller;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.domain.FollowUpRecord;
@@ -76,6 +77,7 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
         customer.setCreateUser(InternalUser.ADMIN.getValue());
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setUpdateUser(InternalUser.ADMIN.getValue());
+        customer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerMapper.insert(customer);
         customerId = customer.getId();
         return customer;
