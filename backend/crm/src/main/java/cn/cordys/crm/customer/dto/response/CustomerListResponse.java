@@ -96,4 +96,16 @@ public class CustomerListResponse {
 
     @Schema(description = "协作类型(只读/协作),为空则不是协作人员")
     private String collaborationType;
+
+    @Schema(description = "审批状态")
+    private String approvalStatus;
+
+    @Schema(description = "是否已审批通过")
+    private Boolean approved;
+
+    @Schema(description = "审批第一个节点是否通过")
+    private Boolean firstApproved;
+
+    @Schema(description = "提审人ID")
+    private String submitterId;
 }

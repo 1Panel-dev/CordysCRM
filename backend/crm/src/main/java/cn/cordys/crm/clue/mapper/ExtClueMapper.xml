@@ -20,6 +20,7 @@
         select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user,
                c.update_user, c.collection_time, c.contact, c.phone, c.stage, c.pool_id,
                c.follower, c.follow_time, c.last_stage, c.transition_type, c.products, c.reason_id,
+               c.approval_status, c.approved,
                <include refid="freezeColumns"/>
         from `clue` c
 
@@ -236,6 +237,9 @@
                     <when test="${sort}.name == 'reason_id'">
                         c.`reason_id` ${sortType}, c.id ASC
                     </when>
+                    <when test="${sort}.name == 'approval_status'">
+                        c.`approval_status` ${sortType}, c.id ASC
+                    </when>
                     <otherwise>
                         CASE
                         WHEN module_table.type = 'INPUT_NUMBER' OR module_table.type = 'FORMULA' OR module_table.type = 'STATISTIC'
@@ -268,7 +272,8 @@
                         <if test="condition.name != 'name' and condition.name != 'owner' and condition.name != 'follower'
                             and condition.name != 'followTime' and condition.name != 'createTime' and condition.name != 'collectionTime'
                             and condition.name != 'updateUser' and condition.name != 'createUser'
-                            and condition.name != 'updateTime' and condition.name != 'phone' and condition.name != 'reasonId' and condition.name != 'departmentId'">
+                            and condition.name != 'updateTime' and condition.name != 'phone' and condition.name != 'reasonId' and condition.name != 'departmentId'
+                            and condition.name != 'approvalStatus'">
                             <if test="condition.blob">
                                 left join clue_field_blob ${tablePrefix}_${i}
                                 on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -291,7 +296,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'name', 'owner', 'contact', 'phone', 'update_user', 'create_time', 'update_time',
-                'create_user', 'follow_time', 'follower','department_id','collection_time', 'reason_id'}">
+                'create_user', 'follow_time', 'follower','department_id','collection_time', 'reason_id', 'approval_status'}">
             <bind name="sortName" value="${sort}.name"/>
             left join clue_field sort_table
             on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -464,6 +469,12 @@
                             <property name="column" value="c.reason_id"/>
                         </include>
                     </when>
+                    <when test="condition.name == 'approvalStatus'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="c.approval_status"/>
+                        </include>
+                    </when>
                     <otherwise>
                         <include refid="cn.cordys.common.mapper.CommonMapper.moduleFieldCondition">
                             <property name="condition" value="condition"/>
@@ -529,6 +540,7 @@
         select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user,
                c.update_user, c.collection_time, c.contact, c.phone, c.stage, c.pool_id,
                c.follower, c.follow_time, c.last_stage, c.transition_type, c.products, c.reason_id,
+               c.approval_status, c.approved,
                <include refid="freezeColumns"/>
         from `clue` c
         where id in

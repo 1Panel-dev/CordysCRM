@@ -1,7 +1,9 @@
 package cn.cordys.crm.customer.service;
 
+import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.dto.ExportDTO;
 import cn.cordys.common.service.BaseExportService;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
 import cn.cordys.crm.customer.dto.request.CustomerPageRequest;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerMapper;
@@ -25,6 +27,8 @@ public class CustomerExportService extends BaseExportService {
     private ExtCustomerMapper extCustomerMapper;
     @Resource
     private CustomerService customerService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     @Override
     protected MergeResult getExportMergeData(String taskId, ExportDTO exportParam) {
@@ -44,11 +48,16 @@ public class CustomerExportService extends BaseExportService {
         var orgId = exportParam.getOrgId();
         var userId = exportParam.getUserId();
         var deptDataPermission = exportParam.getDeptDataPermission();
+        List<CustomerListResponse> exportList;
         if (CollectionUtils.isNotEmpty(exportParam.getSelectIds())) {
-            return extCustomerMapper.getListByIds(exportParam.getSelectIds());
+            exportList = extCustomerMapper.getListByIds(exportParam.getSelectIds());
+        } else {
+            var request = (CustomerPageRequest) exportParam.getPageRequest();
+            PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
+            exportList = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
         }
-        var request = (CustomerPageRequest) exportParam.getPageRequest();
-        PageHelper.startPage(request.getCurrent(), request.getPageSize(), false);
-        return extCustomerMapper.list(request, orgId, userId, deptDataPermission);
+        // 按审批流状态权限过滤, 无导出权限的状态不导出
+        return filterApprovalExportPermission(exportList, orgId, FormKey.CUSTOMER.getKey(),
+                CustomerListResponse::getId, CustomerListResponse::getApprovalStatus, approvalFlowService);
     }
 }

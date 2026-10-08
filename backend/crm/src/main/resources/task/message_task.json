@@ -66,6 +66,13 @@
         "emailEnable": false,
         "sysEnable": false,
         "weComEnable": false
+      },
+      {
+        "event": "CUSTOMER_APPROVAL",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       }
     ]
   },
@@ -136,6 +143,13 @@
         "emailEnable": false,
         "sysEnable": false,
         "weComEnable": false
+      },
+      {
+        "event": "CLUE_APPROVAL",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
       }
     ]
   },
@@ -174,6 +188,13 @@
       },
       {
         "event": "BUSINESS_QUOTATION_APPROVAL",
+        "eventName": "",
+        "emailEnable": false,
+        "sysEnable": false,
+        "weComEnable": false
+      },
+      {
+        "event": "BUSINESS_APPROVAL",
         "eventName": "",
         "emailEnable": false,
         "sysEnable": false,

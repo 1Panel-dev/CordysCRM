@@ -3,6 +3,7 @@ package cn.cordys.crm.opportunity.controller;
 import cn.cordys.common.constants.InternalUser;
 import cn.cordys.common.domain.BaseModuleFieldValue;
 import cn.cordys.common.uid.IDGenerator;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.follow.constants.FollowUpPlanStatusType;
@@ -115,6 +116,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         customer.setCreateUser(InternalUser.ADMIN.getValue());
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setUpdateUser(InternalUser.ADMIN.getValue());
+        customer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerMapper.insert(customer);
         customerId = customer.getId();
         return customer;
@@ -172,6 +174,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setOrganizationId("100001");
         customer.setInSharedPool(false);
+        customer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerMapper.insert(customer);
 
         Opportunity opportunity = new Opportunity();
@@ -188,6 +191,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         opportunity.setUpdateUser("admin");
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setExpectedEndTime(System.currentTimeMillis());
+        opportunity.setApprovalStatus(ApprovalStatus.NONE.name());
         opportunityMapper.insert(opportunity);
         followUpPlanRemindListener.followUpPlanRemind();
 

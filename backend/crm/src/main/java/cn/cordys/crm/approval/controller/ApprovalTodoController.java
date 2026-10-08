@@ -47,7 +47,7 @@ public class ApprovalTodoController {
     }
 
     @GetMapping("/pending/count")
-    @Operation(summary = "审核代办-待我审批统计", description = "返回值：key 与 getFlowFormOptions 保持一致（标准表单为 quotation/contract/order/invoice，自定义表单为 customFormId），value 为对应待审批数量")
+    @Operation(summary = "审核代办-待我审批统计", description = "返回值：key 与 getFlowFormOptions 保持一致（标准表单为 clue/customer/opportunity/quotation/contract/order/invoice，自定义表单为 customFormId），value 为对应待审批数量")
     public Map<String, Integer> pendingCount() {
         return approvalTodoService.getPendingCount(SessionUtils.getUserId());
     }

@@ -2,6 +2,7 @@ package cn.cordys.crm.system.controller;
 
 
 import cn.cordys.crm.approval.constants.ApprovalState;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractPaymentPlanStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
@@ -191,6 +192,7 @@ public class AddNoticeExpireTests {
         opportunity.setUpdateUser("admin");
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setOrganizationId("100001");
+        opportunity.setApprovalStatus(ApprovalStatus.NONE.name());
         opportunityBaseMapper.insert(opportunity);
 
         Customer customer = new Customer();
@@ -205,6 +207,7 @@ public class AddNoticeExpireTests {
         customer.setUpdateUser("admin");
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setOrganizationId("100001");
+        customer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerBaseMapper.insert(customer);
 
         User user = new User();

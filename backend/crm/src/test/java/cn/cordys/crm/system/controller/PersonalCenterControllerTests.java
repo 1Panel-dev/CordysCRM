@@ -3,6 +3,7 @@ package cn.cordys.crm.system.controller;
 import cn.cordys.common.pager.Pager;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.util.CodingUtils;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerContact;
@@ -177,6 +178,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setUpdateUser("admin");
         opportunity.setExpectedEndTime(System.currentTimeMillis());
+        opportunity.setApprovalStatus(ApprovalStatus.NONE.name());
         opportunityBaseMapper.insert(opportunity);
 
         Customer customer = new Customer();
@@ -189,6 +191,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setUpdateUser("admin");
         customer.setInSharedPool(false);
+        customer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerBaseMapper.insert(customer);
 
         CustomerContact customerContact = new CustomerContact();

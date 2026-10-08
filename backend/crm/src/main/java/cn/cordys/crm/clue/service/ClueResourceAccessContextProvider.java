@@ -31,6 +31,7 @@ public class ClueResourceAccessContextProvider implements ResourceAccessContextP
         }
         ResourceAccessContext context = new ResourceAccessContext();
         context.setOwnerId(clue.getOwner());
+        context.setApprovalStatus(clue.getApprovalStatus());
         return context;
     }
 

@@ -7,6 +7,7 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.util.BeanUtils;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
 import cn.cordys.crm.base.BaseTest;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.domain.CustomerPool;
@@ -119,6 +120,7 @@ public class CustomerPoolControllerTests extends BaseTest {
         // insert free customer on the pool, then delete it
         Customer freeCustomer = createFreeCustomer();
         freeCustomer.setPoolId(testCustomerPool.getId());
+        freeCustomer.setApprovalStatus(ApprovalStatus.NONE.name());
         customerMapper.insert(freeCustomer);
         this.requestGet("/account-pool/no-pick/" + testCustomerPool.getId());
         // pick customer, delete the pool

@@ -78,6 +78,10 @@ public class NotificationConstants {
         //跟进计划到期
         @Schema(description = "message.customer_follow_up_plan_due")
         String CUSTOMER_FOLLOW_UP_PLAN_DUE = "CUSTOMER_FOLLOW_UP_PLAN_DUE";
+
+        @Schema(description = "message.customer_approval")
+        String CUSTOMER_APPROVAL = "CUSTOMER_APPROVAL";
+
         //----线索管理----
         //新建线索
         @Schema(description = "message.clue_add")
@@ -106,6 +110,10 @@ public class NotificationConstants {
         //跟进计划到期
         @Schema(description = "message.clue_follow_up_plan_due")
         String CLUE_FOLLOW_UP_PLAN_DUE = "CLUE_FOLLOW_UP_PLAN_DUE";
+
+        @Schema(description = "message.clue_approval")
+        String CLUE_APPROVAL = "CLUE_APPROVAL";
+
         //-------商机管理----
         //新建商机
         @Schema(description = "message.business_add")
@@ -122,6 +130,9 @@ public class NotificationConstants {
 
         @Schema(description = "message.business_quotation_approval")
         String BUSINESS_QUOTATION_APPROVAL = "BUSINESS_QUOTATION_APPROVAL";
+
+        @Schema(description = "message.business_approval")
+        String BUSINESS_APPROVAL = "BUSINESS_APPROVAL";
 
         @Schema(description = "message.business_quotation_deleted")
         String BUSINESS_QUOTATION_DELETED = "BUSINESS_QUOTATION_DELETED";
@@ -353,6 +364,15 @@ public class NotificationConstants {
 
         @Schema(description = "message.approval_result_text")
         String BUSINESS_QUOTATION_APPROVAL_TEXT = "BUSINESS_QUOTATION_APPROVAL_TEXT";
+
+        @Schema(description = "message.approval_result_text")
+        String BUSINESS_APPROVAL_TEXT = "BUSINESS_APPROVAL_TEXT";
+
+        @Schema(description = "message.approval_result_text")
+        String CLUE_APPROVAL_TEXT = "CLUE_APPROVAL_TEXT";
+
+        @Schema(description = "message.approval_result_text")
+        String CUSTOMER_APPROVAL_TEXT = "CUSTOMER_APPROVAL_TEXT";
 
 		@Schema(description = "message.approval_todo_text")
 		String APPROVAL_TODO_TEXT = "APPROVAL_TODO_TEXT";

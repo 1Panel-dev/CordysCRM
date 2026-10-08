@@ -9,6 +9,12 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum ApprovalFormTypeEnum implements ValueEnum<String> {
 
+    /** 线索 */
+    CLUE("CLU-APV", "CLUE_MANAGEMENT_CLUE", "clue"),
+    /** 客户 */
+    CUSTOMER("CUS-APV", "CUSTOMER_MANAGEMENT_CUSTOMER", "customer"),
+    /** 商机 */
+    OPPORTUNITY("OPP-APV", "OPPORTUNITY_MANAGEMENT_OPPORTUNITY", "opportunity"),
     /** 报价 */
     QUOTATION("QTE-APV", "OPPORTUNITY_MANAGEMENT_QUOTATION", "quotation"),
     /** 合同 */

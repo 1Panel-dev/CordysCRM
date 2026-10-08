@@ -106,7 +106,7 @@ public class OpportunityController {
     @Operation(summary = "删除商机")
     @CsPermission(value = PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE, resourceId = "{#id}", formType = FormKeyConstants.OPPORTUNITY)
     public void deleteOpportunity(@PathVariable String id) {
-        opportunityService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        opportunityService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

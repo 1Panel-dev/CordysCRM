@@ -115,7 +115,7 @@ public class ClueController {
     @CsPermission(value = PermissionConstants.CLUE_MANAGEMENT_DELETE, resourceId = "{#id}", formType = FormKeyConstants.CLUE)
     @Operation(summary = "删除线索")
     public void delete(@PathVariable String id) {
-        clueService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        clueService.deleteWithApprovalCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/transition/account")

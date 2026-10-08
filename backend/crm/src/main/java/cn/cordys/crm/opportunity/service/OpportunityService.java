@@ -20,6 +20,8 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.response.result.CrmHttpResultCode;
 import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseExportService;
@@ -28,10 +30,22 @@ import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
 import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalResourceUpdateType;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.customer.domain.Customer;
 import cn.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import cn.cordys.crm.customer.mapper.ExtCustomerContactMapper;
@@ -102,7 +116,7 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class OpportunityService extends BaseExportService {
+public class OpportunityService extends BaseExportService implements ApprovalResourceHandler {
 
     public static final String SUCCESS = "SUCCESS";
     public static final Long DEFAULT_POS = 1L;
@@ -152,6 +166,8 @@ public class OpportunityService extends BaseExportService {
     private DataScopeService dataScopeService;
     @Resource
     private StageAdvancedConfigService stageAdvancedConfigService;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
                                                                DeptDataPermissionDTO deptDataPermission, Boolean source) {
@@ -255,6 +271,13 @@ public class OpportunityService extends BaseExportService {
         List<Dict> dictList = dictConf.getDictList();
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
+        // 审批中才需要提审人与首节点是否已通过, 其余状态不查审批实例, 统一留空
+        List<String> approvingResourceIds = list.stream()
+                .filter(item -> Strings.CI.equals(item.getApprovalStatus(), ApprovalStatus.APPROVING.name()))
+                .map(OpportunityListResponse::getId).toList();
+        Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
+
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> opportunityFields = fvMap.get(opportunityListResponse.getId());
@@ -268,6 +291,9 @@ public class OpportunityService extends BaseExportService {
             opportunityListResponse.setUpdateUserName(userNameMap.get(opportunityListResponse.getUpdateUser()));
             opportunityListResponse.setOwnerName(userNameMap.get(opportunityListResponse.getOwner()));
             opportunityListResponse.setContactName(contactMap.get(opportunityListResponse.getContactId()));
+
+            opportunityListResponse.setFirstApproved(firstNodeApprovedMap.get(opportunityListResponse.getId()));
+            opportunityListResponse.setSubmitterId(submitterIdMap.get(opportunityListResponse.getId()));
 
             UserDeptDTO userDeptDTO = userDeptMap.get(opportunityListResponse.getOwner());
             if (userDeptDTO != null) {
@@ -290,6 +316,7 @@ public class OpportunityService extends BaseExportService {
      * @return
      */
     @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.ADD)
+    @HitApproval(formKey = FormKey.OPPORTUNITY, executeType = ExecuteTimingEnum.CREATE, operatorId = "{#operatorId}")
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
         productService.checkProductList(request.getProducts());
         List<OpportunityStageResponse> stageConfigList = extOpportunityStageConfigMapper.getStageConfigList(orgId);
@@ -314,6 +341,8 @@ public class OpportunityService extends BaseExportService {
         opportunity.setExpectedEndTime(request.getExpectedEndTime());
         opportunity.setFollower(request.getFollower());
         opportunity.setFollowTime(request.getFollowTime());
+        opportunity.setApprovalStatus(ApprovalStatus.NONE.name());
+        opportunity.setApproved(false);
         if (StringUtils.isBlank(request.getOwner())) {
             opportunity.setOwner(operatorId);
         }
@@ -349,6 +378,7 @@ public class OpportunityService extends BaseExportService {
      * @param orgId
      */
     @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @HitApproval(formKey = FormKey.OPPORTUNITY, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
     public Opportunity update(OpportunityUpdateRequest request, String userId, String orgId) {
         Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(oldOpportunity).ifPresentOrElse(item -> {
@@ -356,6 +386,9 @@ public class OpportunityService extends BaseExportService {
             productService.checkProductList(request.getProducts());
             //更新商机
             Opportunity updateOpportunity = newOpportunity(newOpportunity, request, userId);
+            // 保留审批状态, 编辑不改变审批状态
+            updateOpportunity.setApprovalStatus(item.getApprovalStatus());
+            updateOpportunity.setApproved(item.getApproved());
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
             // 统计字段: 关联字段在下面会被覆盖, 改之前先把它当前指向的宿主捕下来 ——
@@ -406,6 +439,18 @@ public class OpportunityService extends BaseExportService {
         opportunityFieldService.saveModuleField(opportunity, orgId, userId, moduleFields, true);
     }
 
+
+    /**
+     * 删除商机（带审批校验）
+     *
+     * @param id     商机ID
+     * @param userId 用户ID
+     * @param orgId  组织ID
+     */
+    @HitApproval(formKey = FormKey.OPPORTUNITY, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        delete(id, userId, orgId);
+    }
 
     /**
      * 删除商机
@@ -488,36 +533,67 @@ public class OpportunityService extends BaseExportService {
      * @param userId
      */
     public void batchDelete(List<String> ids, String userId, String orgId) {
+        List<Opportunity> selectedList = opportunityMapper.selectByIds(ids);
+        // 状态权限校验: 过滤出当前用户有权删除的商机
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.OPPORTUNITY.getValue(),
+                selectedList,
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE,
+                orgId,
+                Opportunity::getId,
+                Opportunity::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return;
+        }
+
         LambdaQueryWrapper<Opportunity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(Opportunity::getId, ids);
+        wrapper.in(Opportunity::getId, permittedIds);
         wrapper.nq(Opportunity::getStage, SUCCESS);
         List<Opportunity> opportunityList = opportunityMapper.selectListByLambda(wrapper);
         List<String> toDoIds = opportunityList.stream().map(Opportunity::getId).toList();
         if (CollectionUtils.isEmpty(toDoIds)) {
             return;
         }
-        // 捕的是阶段过滤之后真正要删的 toDoIds, 不是入参 ids —— 成功阶段的商机不会被删, 拿它去捕等于白捕。
+
+        // 命中删除审批流的商机不直接删除, 走审批
+        Map<String, String> nameMap = opportunityList.stream()
+                .collect(Collectors.toMap(Opportunity::getId, Opportunity::getName, (a, b) -> a));
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApproval(
+                toDoIds, FormKey.OPPORTUNITY, orgId, userId, nameMap);
+        List<String> deleteIds = toDoIds.stream().filter(id -> !approvalIds.contains(id)).toList();
+        if (CollectionUtils.isEmpty(deleteIds)) {
+            return;
+        }
+
+        // 捕的是审批分流之后真正要删的 deleteIds, 不是 toDoIds —— 走审批的那批此刻并没删掉,
+        // 捕了就是白捕, 而且审批通过后还会由审批侧再删一次, 那次自会重算。
         // 删除会同时毁掉关联字段的值, 所以只能删前先捕; 重算又要等删完才准。
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
-                FormKey.OPPORTUNITY.getKey(), toDoIds, orgId);
-        opportunityMapper.deleteByIds(toDoIds);
-        opportunityFieldService.deleteByResourceIds(toDoIds);
+                FormKey.OPPORTUNITY.getKey(), deleteIds, orgId);
+        opportunityMapper.deleteByIds(deleteIds);
+        opportunityFieldService.deleteByResourceIds(deleteIds);
         // 删完再重算, 此时被删的那批已经不在, 不会被统计进去。
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
         List<LogDTO> logs = new ArrayList<>();
-        opportunityList.forEach(opportunity -> {
-            LogDTO logDTO = new LogDTO(opportunity.getOrganizationId(), opportunity.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY_INDEX, opportunity.getName());
-            logDTO.setOriginalValue(opportunity);
-            logs.add(logDTO);
-        });
+        opportunityList.stream()
+                .filter(opportunity -> deleteIds.contains(opportunity.getId()))
+                .forEach(opportunity -> {
+                    LogDTO logDTO = new LogDTO(opportunity.getOrganizationId(), opportunity.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY_INDEX, opportunity.getName());
+                    logDTO.setOriginalValue(opportunity);
+                    logs.add(logDTO);
+                });
         logService.batchAdd(logs);
 
         // 消息通知
-        opportunityList.forEach(opportunity ->
-                commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                        NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
-                        orgId, List.of(opportunity.getOwner()), true)
-        );
+        opportunityList.stream()
+                .filter(opportunity -> deleteIds.contains(opportunity.getId()))
+                .forEach(opportunity ->
+                        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                                NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
+                                orgId, List.of(opportunity.getOwner()), true)
+                );
     }
 
 
@@ -578,6 +654,13 @@ public class OpportunityService extends BaseExportService {
         List<Dict> dictList = dictConf.getDictList();
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
         response.setFailureReason(dictMap.get(response.getFailureReason()));
+
+        // 审批中才需要提审人与首节点是否已通过, 其余状态不查审批实例
+        if (Strings.CI.equals(response.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+            Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(List.of(id), response.getOrganizationId());
+            response.setFirstApproved(firstNodeApprovedMap.get(id));
+            response.setSubmitterId(baseService.getApprovingResourceSubmitterId(id));
+        }
 
 
         ModuleFormConfigDTO customerFormConfig = getFormConfig(response.getOrganizationId());
@@ -1013,10 +1096,25 @@ public class OpportunityService extends BaseExportService {
 
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = opportunityFieldService.getAndCheckField(request.getFieldId(), organizationId);
+        List<Opportunity> originOpportunities = opportunityMapper.selectByIds(request.getIds());
+        // 状态权限校验: 过滤出当前用户有权编辑的商机。放在各分支之前, 是因为下面还有一条走批量转移
+        // 的路径, 它同样是一次编辑 —— 否则处在无权编辑状态(如审批中)的商机会从这条路径绕过去
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.OPPORTUNITY.getValue(),
+                originOpportunities,
+                PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE,
+                organizationId,
+                Opportunity::getId,
+                Opportunity::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            throw new GenericException(Translator.get("no.operation.permission"));
+        }
+
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey())) {
             // 修改负责人，走批量转移接口
             OpportunityTransferRequest batchTransferRequest = new OpportunityTransferRequest();
-            batchTransferRequest.setIds(request.getIds());
+            batchTransferRequest.setIds(permittedIds);
             batchTransferRequest.setOwner(request.getFieldValue().toString());
             transfer(batchTransferRequest, userId, organizationId);
             return;
@@ -1026,16 +1124,25 @@ public class OpportunityService extends BaseExportService {
             productService.checkProductList((List<String>) request.getFieldValue());
         }
 
-        List<Opportunity> originOpportunities = opportunityMapper.selectByIds(request.getIds());
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.OPPORTUNITY, organizationId, userId, field.getName(), request.getFieldValue());
+        List<Opportunity> permittedOpportunities = originOpportunities.stream()
+                .filter(opportunity -> permittedIds.contains(opportunity.getId()))
+                .toList();
+
+        ResourceBatchEditRequest filteredRequest = new ResourceBatchEditRequest();
+        filteredRequest.setIds(permittedIds);
+        filteredRequest.setFieldId(request.getFieldId());
+        filteredRequest.setFieldValue(request.getFieldValue());
 
         // 统计字段: 批量编辑只改一个字段, 改的若是关联字段, 下面这批商机的关联关系会整批换人 ——
         // 换之前它们指向的宿主得先捕下来, 否则那些宿主的统计值会一直偏大; 改的不是关联字段时
-        // 这一步在服务内部直接短路, 只多一次反查
+        // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
-                FormKey.OPPORTUNITY.getKey(), request.getFieldId(), request.getIds(), organizationId);
-        opportunityFieldService.batchUpdate(request, field, originOpportunities, Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, organizationId);
+                FormKey.OPPORTUNITY.getKey(), request.getFieldId(), permittedIds, organizationId);
+        opportunityFieldService.batchUpdate(filteredRequest, field, permittedOpportunities, Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, organizationId);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
-        statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
+        statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
     }
 
 
@@ -1078,6 +1185,129 @@ public class OpportunityService extends BaseExportService {
         dragOpportunity.setUpdateTime(System.currentTimeMillis());
         opportunityMapper.updateById(dragOpportunity);
         updateField(dragOpportunity, request.getFields(), userId);
+    }
+
+    @Override
+    public FormKey getFormKey() {
+        return FormKey.OPPORTUNITY;
+    }
+
+    /**
+     * 更新业务快照审批状态
+     * <p>
+     * 商机没有业务快照表，编辑回退统一走框架的 {@code approval_resource_snapshot}，此处无需处理。
+     *
+     * @param param 参数
+     */
+    @Override
+    public void updateSnapshotApprovalStatus(ResourceSnapshotApprovalParam param) {
+        // 商机无业务快照
+    }
+
+    @Override
+    public String getPreUpdateSnapshotData(String resourceId, String userId, String orgId) {
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(resourceId);
+        if (opportunity == null) {
+            return null;
+        }
+        List<BaseModuleFieldValue> opportunityFields = opportunityFieldService.getModuleFieldValuesByResourceId(resourceId);
+        OpportunityUpdateRequest snapshotReq = BeanUtils.copyBean(new OpportunityUpdateRequest(), opportunity);
+        snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
+        ModuleFormConfigDTO opportunityFormConfig = getFormConfig(opportunity.getOrganizationId());
+        // 获取模块字段
+        moduleFormService.processBusinessFieldValues(snapshotReq, opportunityFields, opportunityFormConfig);
+        return JSON.toJSONString(snapshotReq);
+    }
+
+    @Override
+    public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
+        try {
+            OpportunityUpdateRequest request = JSON.parseObject(snapshotData, OpportunityUpdateRequest.class);
+            if (request == null) {
+                return;
+            }
+            CommonBeanFactory.getBean(OpportunityService.class).update(request, userId, orgId);
+        } catch (Exception e) {
+            log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
+        }
+    }
+
+    /**
+     * ⚠️反射调用: 由审批执行后置操作统一调用, 勿修改
+     *
+     * @param postFieldParam 参数
+     */
+    @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
+        ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
+        Map<String, BaseField> fieldConfigMap = formConfig.getFields().stream()
+                .collect(Collectors.toMap(BaseField::getId, Function.identity(), (a, b) -> a));
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(postFieldParam.getResourceId());
+        if (opportunity == null) {
+            return;
+        }
+        // 保存原始数据用于日志记录
+        Opportunity originOpportunity = BeanUtils.copyBean(new Opportunity(), opportunity);
+        List<BaseModuleFieldValue> originFields = opportunityFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
+        List<OpportunityField> opportunityFields = new ArrayList<>();
+        List<OpportunityFieldBlob> opportunityFieldBlobs = new ArrayList<>();
+
+        for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
+            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
+                continue;
+            }
+            BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+            if (fieldConfig.hasBusinessKey()) {
+                // 业务主表字段
+                opportunityFieldService.setResourceFieldValue(opportunity, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+            } else {
+                // 自定义字段
+                if (fieldConfig.isBlob()) {
+                    opportunityFieldService.getResourceFieldBlobMapper().deleteByLambda(new LambdaQueryWrapper<OpportunityFieldBlob>()
+                            .eq(OpportunityFieldBlob::getFieldId, fieldUpdateParam.getFieldId())
+                            .eq(OpportunityFieldBlob::getResourceId, postFieldParam.getResourceId()));
+                    OpportunityFieldBlob field = new OpportunityFieldBlob();
+                    field.setId(IDGenerator.nextStr());
+                    field.setResourceId(postFieldParam.getResourceId());
+                    field.setFieldId(fieldUpdateParam.getFieldId());
+                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    opportunityFieldBlobs.add(field);
+                } else {
+                    opportunityFieldService.getResourceFieldMapper().deleteByLambda(new LambdaQueryWrapper<OpportunityField>()
+                            .eq(OpportunityField::getFieldId, fieldUpdateParam.getFieldId())
+                            .eq(OpportunityField::getResourceId, postFieldParam.getResourceId()));
+                    OpportunityField field = new OpportunityField();
+                    field.setId(IDGenerator.nextStr());
+                    field.setResourceId(postFieldParam.getResourceId());
+                    field.setFieldId(fieldUpdateParam.getFieldId());
+                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    opportunityFields.add(field);
+                }
+            }
+        }
+        opportunityMapper.updateById(opportunity);
+        if (CollectionUtils.isNotEmpty(opportunityFields)) {
+            opportunityFieldService.getResourceFieldMapper().batchInsert(opportunityFields);
+        }
+        if (CollectionUtils.isNotEmpty(opportunityFieldBlobs)) {
+            opportunityFieldService.getResourceFieldBlobMapper().batchInsert(opportunityFieldBlobs);
+        }
+        // 记录审批后置字段更新日志
+        baseService.handleUpdateLogWithSubTable(originOpportunity, opportunity, originFields,
+                opportunityFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
+                postFieldParam.getResourceId(), opportunity.getName(), Translator.get("products_info"), formConfig);
+        // 从 OperationLogContext 中获取日志信息并手动记录
+        LogContextInfo contextInfo = OperationLogContext.getContext();
+        if (contextInfo != null) {
+            String orgId = OrganizationContext.getOrganizationId();
+            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.OPPORTUNITY_INDEX, opportunity.getName());
+            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+            logService.add(logDTO);
+            OperationLogContext.clear();
+        }
     }
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {

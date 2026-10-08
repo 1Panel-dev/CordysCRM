@@ -3,6 +3,7 @@ package cn.cordys.crm.clue.utils;
 import cn.cordys.common.constants.BusinessModuleField;
 import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.util.TimeUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.clue.dto.response.ClueListResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,9 @@ public class ClueFieldUtils {
         systemFieldMap.put("reservedDays", data.getReservedDays());
         systemFieldMap.put("recyclePoolName", data.getRecyclePoolName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
+        if (StringUtils.isNotBlank(data.getApprovalStatus())) {
+            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+        }
         return systemFieldMap;
     }
 

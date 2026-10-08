@@ -5,6 +5,7 @@ import cn.cordys.common.dto.OptionDTO;
 import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.util.TimeUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import cn.cordys.crm.system.dto.field.base.BaseField;
 import org.apache.commons.collections.CollectionUtils;
@@ -29,6 +30,10 @@ public class OpportunityFieldUtils {
         systemFieldMap.put("expectedEndTime", TimeUtils.getDateStr(data.getExpectedEndTime()));
         systemFieldMap.put("actualEndTime", TimeUtils.getDateStr(data.getActualEndTime()));
         systemFieldMap.put("failureReason", data.getFailureReason());
+
+        if (StringUtils.isNotBlank(data.getApprovalStatus())) {
+            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+        }
 
         if (fieldConfigMap != null) {
             BaseField possible = fieldConfigMap.values().stream().filter(field -> Strings.CI.equals(field.getBusinessKey(), "possible")).findFirst().orElse(null);

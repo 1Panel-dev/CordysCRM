@@ -20,15 +20,30 @@ import cn.cordys.common.pager.PageUtils;
 import cn.cordys.common.pager.PagerWithOption;
 import cn.cordys.common.permission.PermissionCache;
 import cn.cordys.common.permission.PermissionUtils;
+import cn.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import cn.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import cn.cordys.common.service.BaseChartService;
 import cn.cordys.common.service.BaseService;
 import cn.cordys.common.service.DataScopeService;
 import cn.cordys.common.uid.IDGenerator;
 import cn.cordys.common.uid.utils.EnumUtils;
 import cn.cordys.common.util.BeanUtils;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.JSON;
 import cn.cordys.common.util.Translator;
 import cn.cordys.common.utils.ConditionFilterUtils;
+import cn.cordys.context.OrganizationContext;
+import cn.cordys.crm.approval.annotation.HitApproval;
+import cn.cordys.crm.approval.constants.ApprovalFormTypeEnum;
+import cn.cordys.crm.approval.constants.ApprovalResourceUpdateType;
+import cn.cordys.crm.approval.constants.ApprovalStatus;
+import cn.cordys.crm.approval.constants.ExecuteTimingEnum;
+import cn.cordys.crm.approval.dto.ResourceApprovalFieldUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceApprovalPostUpdateParam;
+import cn.cordys.crm.approval.dto.ResourceSnapshotApprovalParam;
+import cn.cordys.crm.approval.handler.ApprovalResourceHandler;
+import cn.cordys.crm.approval.service.ApprovalFlowService;
+import cn.cordys.crm.approval.service.ApprovalResourceService;
 import cn.cordys.crm.clue.constants.ClueStatus;
 import cn.cordys.crm.clue.domain.*;
 import cn.cordys.crm.clue.dto.ClueFollowDTO;
@@ -115,7 +130,7 @@ import java.util.stream.Stream;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class ClueService {
+public class ClueService implements ApprovalResourceHandler {
 
     @Resource
     private BaseMapper<Clue> clueMapper;
@@ -195,6 +210,8 @@ public class ClueService {
     private BaseMapper<FollowUpPlanFieldBlob> followUpPlanFieldBlobMapper;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private ApprovalFlowService approvalFlowService;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission, Boolean source) {
@@ -282,6 +299,13 @@ public class ClueService {
         List<Dict> dictList = dictConf.getDictList();
         Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
 
+        // 审批中才需要提审人与首节点是否已通过, 其余状态不查审批实例, 统一留空
+        List<String> approvingResourceIds = list.stream()
+                .filter(item -> Strings.CI.equals(item.getApprovalStatus(), ApprovalStatus.APPROVING.name()))
+                .map(ClueListResponse::getId).toList();
+        Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(approvingResourceIds, orgId);
+        Map<String, String> submitterIdMap = baseService.getApprovingResourceSubmitterIds(approvingResourceIds);
+
         list.forEach(clueListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> clueFields = caseCustomFiledMap.get(clueListResponse.getId());
@@ -304,6 +328,8 @@ public class ClueService {
             clueListResponse.setCreateUserName(userNameMap.get(clueListResponse.getCreateUser()));
             clueListResponse.setUpdateUserName(userNameMap.get(clueListResponse.getUpdateUser()));
             clueListResponse.setOwnerName(userNameMap.get(clueListResponse.getOwner()));
+            clueListResponse.setFirstApproved(firstNodeApprovedMap.get(clueListResponse.getId()));
+            clueListResponse.setSubmitterId(submitterIdMap.get(clueListResponse.getId()));
             if (StringUtils.isNotBlank(clueListResponse.getReasonId())) {
                 clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
             }
@@ -386,6 +412,13 @@ public class ClueService {
             clueGetResponse.setReasonName(dictMap.get(clueGetResponse.getReasonId()));
         }
 
+        // 审批中才需要提审人与首节点是否已通过, 其余状态不查审批实例
+        if (Strings.CI.equals(clueGetResponse.getApprovalStatus(), ApprovalStatus.APPROVING.name())) {
+            Map<String, Boolean> firstNodeApprovedMap = baseService.getApprovingResourceFirstNodeApproved(List.of(id), clue.getOrganizationId());
+            clueGetResponse.setFirstApproved(firstNodeApprovedMap.get(id));
+            clueGetResponse.setSubmitterId(baseService.getApprovingResourceSubmitterId(id));
+        }
+
         // 附件信息
         clueGetResponse.setAttachmentMap(moduleFormService.getAttachmentMap(customerFormConfig, clueFields));
 
@@ -437,6 +470,7 @@ public class ClueService {
     }
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD)
+    @HitApproval(formKey = FormKey.CLUE, executeType = ExecuteTimingEnum.CREATE, operatorId = "{#userId}")
     public Clue add(ClueAddRequest request, String userId, String orgId) {
         productService.checkProductList(request.getProducts());
         Clue clue = BeanUtils.copyBean(new Clue(), request);
@@ -454,6 +488,8 @@ public class ClueService {
         clue.setStage(ClueStatus.NEW.name());
         clue.setInSharedPool(false);
         clue.setFrozen(false);
+        clue.setApprovalStatus(ApprovalStatus.NONE.name());
+        clue.setApproved(false);
 
         //保存自定义字段
         clueFieldService.saveModuleField(clue, orgId, userId, request.getModuleFields(), false);
@@ -473,6 +509,7 @@ public class ClueService {
     }
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @HitApproval(formKey = FormKey.CLUE, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
     public Clue update(ClueUpdateRequest request, String userId, String orgId) {
         productService.checkProductList(request.getProducts());
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
@@ -483,6 +520,9 @@ public class ClueService {
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
+        // 保留审批状态, 编辑不改变审批状态
+        clue.setApprovalStatus(originClue.getApprovalStatus());
+        clue.setApproved(originClue.getApproved());
 
         if (StringUtils.isNotBlank(request.getOwner())) {
             if (!Strings.CS.equals(request.getOwner(), originClue.getOwner())) {
@@ -593,6 +633,18 @@ public class ClueService {
     }
 
 
+    /**
+     * 删除线索（带审批校验）
+     *
+     * @param id     线索ID
+     * @param userId 用户ID
+     * @param orgId  组织ID
+     */
+    @HitApproval(formKey = FormKey.CLUE, executeType = ExecuteTimingEnum.DELETE, resourceId = "{#id}", operatorId = "{#userId}")
+    public void deleteWithApprovalCheck(String id, String userId, String orgId) {
+        delete(id, userId, orgId);
+    }
+
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
@@ -650,26 +702,57 @@ public class ClueService {
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
         List<Clue> clues = clueMapper.selectByIds(ids);
+        // 状态权限校验: 过滤出当前用户有权删除的线索
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CLUE.getValue(),
+                clues,
+                PermissionConstants.CLUE_MANAGEMENT_DELETE,
+                orgId,
+                Clue::getId,
+                Clue::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            return;
+        }
+
+        List<Clue> permittedClues = clues.stream().filter(clue -> permittedIds.contains(clue.getId())).toList();
+        List<String> toDoIds = permittedClues.stream().map(Clue::getId).toList();
+        if (CollectionUtils.isEmpty(toDoIds)) {
+            return;
+        }
+
+        // 命中删除审批流的线索不直接删除, 走审批
+        Map<String, String> nameMap = permittedClues.stream()
+                .collect(Collectors.toMap(Clue::getId, Clue::getName, (a, b) -> a));
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        List<String> approvalIds = approvalResourceService.batchDeleteTriggerApproval(
+                toDoIds, FormKey.CLUE, orgId, userId, nameMap);
+        List<String> deleteIds = toDoIds.stream().filter(id -> !approvalIds.contains(id)).toList();
+        if (CollectionUtils.isEmpty(deleteIds)) {
+            return;
+        }
 
         // 统计字段: 删除会一并带走关联字段的值, 宿主关系只能删前先捕; 重算要等下面全部删完才准。
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHosts(
-                FormKey.CLUE.getKey(), ids, orgId);
+                FormKey.CLUE.getKey(), deleteIds, orgId);
         // 删除客户
-        clueMapper.deleteByIds(ids);
+        clueMapper.deleteByIds(deleteIds);
         // 删除客户模块字段
-        clueFieldService.deleteByResourceIds(ids);
+        clueFieldService.deleteByResourceIds(deleteIds);
         // 删除责任人历史
-        clueOwnerHistoryService.deleteByClueIds(ids);
+        clueOwnerHistoryService.deleteByClueIds(deleteIds);
         // 删除跟进记录
-        followUpRecordService.deleteByClueIds(ids);
+        followUpRecordService.deleteByClueIds(deleteIds);
         // 删除跟进计划
-        followUpPlanService.deleteByClueIds(ids);
+        followUpPlanService.deleteByClueIds(deleteIds);
         statisticFieldService.refreshAfterRelatedDelete(statisticScope);
 
         // 消息通知
-        clues.forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
-                orgId, List.of(clue.getOwner()), true));
+        permittedClues.stream()
+                .filter(clue -> deleteIds.contains(clue.getId()))
+                .forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                        NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
+                        orgId, List.of(clue.getOwner()), true));
     }
 
     private List<String> getOwners(List<Clue> clues) {
@@ -1326,10 +1409,25 @@ public class ClueService {
     @SuppressWarnings("unchecked")
     public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = clueFieldService.getAndCheckField(request.getFieldId(), organizationId);
+        List<Clue> originClues = clueMapper.selectByIds(request.getIds());
+        // 状态权限校验: 过滤出当前用户有权编辑的线索。放在各分支之前, 是因为下面还有一条走批量转移
+        // 的路径, 它同样是一次编辑 —— 否则处在无权编辑状态(如审批中)的线索会从这条路径绕过去
+        List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
+                ApprovalFormTypeEnum.CLUE.getValue(),
+                originClues,
+                PermissionConstants.CLUE_MANAGEMENT_UPDATE,
+                organizationId,
+                Clue::getId,
+                Clue::getApprovalStatus
+        );
+        if (CollectionUtils.isEmpty(permittedIds)) {
+            throw new GenericException(Translator.get("no.operation.permission"));
+        }
+
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
             // 修改负责人，走批量转移接口
             ClueBatchTransferRequest batchTransferRequest = new ClueBatchTransferRequest();
-            batchTransferRequest.setIds(request.getIds());
+            batchTransferRequest.setIds(permittedIds);
             batchTransferRequest.setOwner(request.getFieldValue().toString());
             batchTransfer(batchTransferRequest, userId, organizationId);
             return;
@@ -1339,16 +1437,25 @@ public class ClueService {
             productService.checkProductList((List<String>) request.getFieldValue());
         }
 
-        List<Clue> originClues = clueMapper.selectByIds(request.getIds());
+        ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
+        approvalResourceService.batchEditTriggerApproval(permittedIds, request.getFieldId(), FormKey.CLUE, organizationId, userId, field.getName(), request.getFieldValue());
+        List<Clue> permittedClues = originClues.stream()
+                .filter(clue -> permittedIds.contains(clue.getId()))
+                .toList();
+
+        ResourceBatchEditRequest filteredRequest = new ResourceBatchEditRequest();
+        filteredRequest.setIds(permittedIds);
+        filteredRequest.setFieldId(request.getFieldId());
+        filteredRequest.setFieldValue(request.getFieldValue());
 
         // 统计字段: 批量编辑只改一个字段, 改的若是关联字段, 下面这批线索的关联关系会整批换人 ——
         // 换之前它们指向的宿主得先捕下来, 否则那些宿主的统计值会一直偏大; 改的不是关联字段时
-        // 这一步在服务内部直接短路, 只多一次反查
+        // 这一步在服务内部直接短路, 只多一次反查。用 permittedIds: 没权限的那些根本没被写
         StatisticHostScope statisticScope = statisticFieldService.captureRelatedHostsForFieldChange(
-                FormKey.CLUE.getKey(), request.getFieldId(), request.getIds(), organizationId);
-        clueFieldService.batchUpdate(request, field, originClues, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
+                FormKey.CLUE.getKey(), request.getFieldId(), permittedIds, organizationId);
+        clueFieldService.batchUpdate(filteredRequest, field, permittedClues, Clue.class, LogModule.CLUE_INDEX, extClueMapper::batchUpdate, userId, organizationId);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
-        statisticFieldService.refreshAfterRelatedChange(statisticScope, request.getIds());
+        statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
     }
 
     public List<ChartResult> chart(ChartAnalysisRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -1455,6 +1562,129 @@ public class ClueService {
             updateCustomer.setFollower(clue.getFollower());
             updateCustomer.setFollowTime(clueFollowTime);
             customerMapper.updateById(updateCustomer);
+        }
+    }
+
+    @Override
+    public FormKey getFormKey() {
+        return FormKey.CLUE;
+    }
+
+    /**
+     * 更新业务快照审批状态
+     * <p>
+     * 线索没有业务快照表，编辑回退统一走框架的 {@code approval_resource_snapshot}，此处无需处理。
+     *
+     * @param param 参数
+     */
+    @Override
+    public void updateSnapshotApprovalStatus(ResourceSnapshotApprovalParam param) {
+        // 线索无业务快照
+    }
+
+    @Override
+    public String getPreUpdateSnapshotData(String resourceId, String userId, String orgId) {
+        Clue clue = clueMapper.selectByPrimaryKey(resourceId);
+        if (clue == null) {
+            return null;
+        }
+        List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(resourceId);
+        ClueUpdateRequest snapshotReq = BeanUtils.copyBean(new ClueUpdateRequest(), clue);
+        snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
+        ModuleFormConfigDTO clueFormConfig = getFormConfig(clue.getOrganizationId());
+        // 获取模块字段
+        moduleFormService.processBusinessFieldValues(snapshotReq, clueFields, clueFormConfig);
+        return JSON.toJSONString(snapshotReq);
+    }
+
+    @Override
+    public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
+        try {
+            ClueUpdateRequest request = JSON.parseObject(snapshotData, ClueUpdateRequest.class);
+            if (request == null) {
+                return;
+            }
+            CommonBeanFactory.getBean(ClueService.class).update(request, userId, orgId);
+        } catch (Exception e) {
+            log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
+        }
+    }
+
+    /**
+     * ⚠️反射调用: 由审批执行后置操作统一调用, 勿修改
+     *
+     * @param postFieldParam 参数
+     */
+    @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void updateApprovalPostField(ResourceApprovalPostUpdateParam postFieldParam) {
+        ModuleFormConfigDTO formConfig = getFormConfig(OrganizationContext.getOrganizationId());
+        Map<String, BaseField> fieldConfigMap = formConfig.getFields().stream()
+                .collect(Collectors.toMap(BaseField::getId, Function.identity(), (a, b) -> a));
+        Clue clue = clueMapper.selectByPrimaryKey(postFieldParam.getResourceId());
+        if (clue == null) {
+            return;
+        }
+        // 保存原始数据用于日志记录
+        Clue originClue = BeanUtils.copyBean(new Clue(), clue);
+        List<BaseModuleFieldValue> originFields = clueFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId());
+        List<ClueField> clueFields = new ArrayList<>();
+        List<ClueFieldBlob> clueFieldBlobs = new ArrayList<>();
+
+        for (ResourceApprovalFieldUpdateParam fieldUpdateParam : postFieldParam.getFields()) {
+            if (!fieldConfigMap.containsKey(fieldUpdateParam.getFieldId()) || fieldUpdateParam.getFieldValue() == null) {
+                continue;
+            }
+            BaseField fieldConfig = fieldConfigMap.get(fieldUpdateParam.getFieldId());
+            AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+            if (fieldConfig.hasBusinessKey()) {
+                // 业务主表字段
+                clueFieldService.setResourceFieldValue(clue, fieldConfig.getBusinessKey(), fieldUpdateParam.getFieldValue());
+            } else {
+                // 自定义字段
+                if (fieldConfig.isBlob()) {
+                    clueFieldService.getResourceFieldBlobMapper().deleteByLambda(new LambdaQueryWrapper<ClueFieldBlob>()
+                            .eq(ClueFieldBlob::getFieldId, fieldUpdateParam.getFieldId())
+                            .eq(ClueFieldBlob::getResourceId, postFieldParam.getResourceId()));
+                    ClueFieldBlob field = new ClueFieldBlob();
+                    field.setId(IDGenerator.nextStr());
+                    field.setResourceId(postFieldParam.getResourceId());
+                    field.setFieldId(fieldUpdateParam.getFieldId());
+                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    clueFieldBlobs.add(field);
+                } else {
+                    clueFieldService.getResourceFieldMapper().deleteByLambda(new LambdaQueryWrapper<ClueField>()
+                            .eq(ClueField::getFieldId, fieldUpdateParam.getFieldId())
+                            .eq(ClueField::getResourceId, postFieldParam.getResourceId()));
+                    ClueField field = new ClueField();
+                    field.setId(IDGenerator.nextStr());
+                    field.setResourceId(postFieldParam.getResourceId());
+                    field.setFieldId(fieldUpdateParam.getFieldId());
+                    field.setFieldValue(customFieldResolver.convertToString(fieldConfig, fieldUpdateParam.getFieldValue()));
+                    clueFields.add(field);
+                }
+            }
+        }
+        clueMapper.updateById(clue);
+        if (CollectionUtils.isNotEmpty(clueFields)) {
+            clueFieldService.getResourceFieldMapper().batchInsert(clueFields);
+        }
+        if (CollectionUtils.isNotEmpty(clueFieldBlobs)) {
+            clueFieldService.getResourceFieldBlobMapper().batchInsert(clueFieldBlobs);
+        }
+        // 记录审批后置字段更新日志
+        baseService.handleUpdateLog(originClue, clue, originFields,
+                clueFieldService.getModuleFieldValuesByResourceId(postFieldParam.getResourceId()),
+                postFieldParam.getResourceId(), clue.getName());
+        // 从 OperationLogContext 中获取日志信息并手动记录
+        LogContextInfo contextInfo = OperationLogContext.getContext();
+        if (contextInfo != null) {
+            String orgId = OrganizationContext.getOrganizationId();
+            LogDTO logDTO = new LogDTO(orgId, postFieldParam.getResourceId(), postFieldParam.getOperator(), LogType.UPDATE, LogModule.CLUE_INDEX, clue.getName());
+            logDTO.setOriginalValue(contextInfo.getOriginalValue());
+            logDTO.setModifiedValue(contextInfo.getModifiedValue());
+            logService.add(logDTO);
+            OperationLogContext.clear();
         }
     }
 }

@@ -1,7 +1,9 @@
 package cn.cordys.crm.customer.utils;
 
 import cn.cordys.common.util.TimeUtils;
+import cn.cordys.common.util.Translator;
 import cn.cordys.crm.customer.dto.response.CustomerListResponse;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedHashMap;
 
@@ -21,6 +23,9 @@ public class CustomerFieldUtils {
         systemFieldMap.put("reservedDays", data.getReservedDays());
         systemFieldMap.put("recyclePoolName", data.getRecyclePoolName());
         systemFieldMap.put("departmentId", data.getDepartmentName());
+        if (StringUtils.isNotBlank(data.getApprovalStatus())) {
+            systemFieldMap.put("approvalStatus", Translator.get("contract.approval_status." + data.getApprovalStatus().toLowerCase()));
+        }
         return systemFieldMap;
     }
 

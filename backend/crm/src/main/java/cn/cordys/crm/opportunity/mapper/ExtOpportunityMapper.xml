@@ -28,6 +28,8 @@
             o.expected_end_time,
             o.actual_end_time,
             o.failure_reason,
+            o.approval_status,
+            o.approved,
             osc.name AS stageName
         FROM
             opportunity o
@@ -317,6 +319,9 @@
                     <when test="${sort}.name == 'department_id'">
                         souc_sort.`id` ${sortType},  o.id ASC
                     </when>
+                    <when test="${sort}.name == 'approval_status'">
+                        o.`approval_status` ${sortType},  o.id ASC
+                    </when>
 
                     <otherwise>
                         CASE
@@ -370,7 +375,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'name', 'owner', 'customer_id', 'stage', 'amount', 'possible', 'products', 'contact_id', 'follow_time', 'follower',
-                 'update_user', 'create_time', 'update_time', 'create_user', 'follower_name', 'department_id', 'expected_end_time', 'actual_end_time', 'failure_reason'}">
+                 'update_user', 'create_time', 'update_time', 'create_user', 'follower_name', 'department_id', 'expected_end_time', 'actual_end_time', 'failure_reason', 'approval_status'}">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
             on o.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -574,6 +579,12 @@
                             <property name="column" value="o.failure_reason"/>
                         </include>
                     </when>
+                    <when test="condition.name == 'approvalStatus'">
+                        <include refid="cn.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="o.approval_status"/>
+                        </include>
+                    </when>
                     <when test="condition.name == 'createUser'">
                         <include refid="cn.cordys.common.mapper.CommonMapper.condition">
                             <property name="condition" value="condition"/>
@@ -652,6 +663,8 @@
             o.expected_end_time,
             o.actual_end_time,
             o.failure_reason,
+            o.approval_status,
+            o.approved,
             osc.name AS stageName,
             o.organization_id
         FROM
@@ -722,7 +735,9 @@
     o.contact_id,
     o.expected_end_time,
     o.actual_end_time,
-    o.failure_reason
+    o.failure_reason,
+    o.approval_status,
+    o.approved
     FROM
     opportunity o
     LEFT JOIN customer c ON o.customer_id = c.id
