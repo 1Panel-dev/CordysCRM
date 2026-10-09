@@ -77,11 +77,15 @@
             and c.name like concat('%', #{request.keyword},'%')
         </if>
 
+        <if test="request.viewId == 'CLUE_TRANSITION'">
+            and (c.transition_id is not null and c.transition_type is not null)
+        </if>
+
         <if test="request.viewId == 'CUSTOMER_TRANSITION'">
             and c.transition_type = 'CUSTOMER'
         </if>
 
-        <if test="request.viewId != 'CUSTOMER_TRANSITION'">
+        <if test="request.viewId != 'CUSTOMER_TRANSITION' and request.viewId != 'CLUE_TRANSITION'">
             and (c.transition_type != 'CUSTOMER' or c.transition_type is null)
         </if>
 
@@ -168,11 +172,15 @@
             and c.owner = #{userId}
         </if>
 
+        <if test="request.viewId == 'CLUE_TRANSITION'">
+            and (c.transition_id is not null and c.transition_type is not null)
+        </if>
+
         <if test="request.viewId == 'CUSTOMER_TRANSITION'">
             and c.transition_type = 'CUSTOMER'
         </if>
 
-        <if test="request.viewId != 'CUSTOMER_TRANSITION'">
+        <if test="request.viewId != 'CUSTOMER_TRANSITION' and request.viewId != 'CLUE_TRANSITION'">
             and (c.transition_type != 'CUSTOMER' or c.transition_type is null)
         </if>
 
