@@ -584,7 +584,16 @@ public class ApprovalFlowService {
      */
     private String generateFlowNumber(String formType, String organizationId) {
         String prefix = getNumberPrefix(formType);
-        String key = "approval_flow_num:" + organizationId + ":" + formType;
+        boolean customForm = ApprovalFormTypeEnum.getByValue(formType) == ApprovalFormTypeEnum.CUSTOM_FORM;
+        String numberFormType = customForm ? ApprovalFormTypeEnum.CUSTOM_FORM.getValue() : formType;
+        String key = "approval_flow_num:" + organizationId + ":" + numberFormType;
+
+        // 自定义表单共用计数器，首次使用时接续历史编号；并发初始化不能覆盖已有计数。
+        if (customForm && !Boolean.TRUE.equals(stringRedisTemplate.hasKey(key))) {
+            long maxSequence = extApprovalFlowMapper.getMaxNumberSequence(organizationId, prefix);
+            stringRedisTemplate.opsForValue().setIfAbsent(key, Long.toString(maxSequence));
+        }
+
         long seq = stringRedisTemplate.opsForValue().increment(key);
         return String.format("%s-%05d", prefix, seq);
     }
