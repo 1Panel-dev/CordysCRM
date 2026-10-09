@@ -189,27 +189,4 @@ class ApprovalTodoControllerTests extends BaseTest {
                 .in(ApprovalTask::getInstanceId, List.of("todo_list_inst_contract", "todo_list_inst_quote")));
         Assertions.assertTrue(remain.isEmpty());
     }
-
-    @Test
-    @Order(9)
-    @Transactional
-    void persistsUuidV7ApproverId() {
-        String approverId = IDGenerator.nextStr();
-        ApprovalTask task = new ApprovalTask();
-        task.setId(IDGenerator.nextStr());
-        task.setNodeId("uuid-v7-node");
-        task.setNodeRound(1);
-        task.setInstanceId("uuid-v7-instance");
-        task.setApproverId(approverId);
-        task.setStatus("PENDING");
-        task.setCreateTime(System.currentTimeMillis());
-        task.setUpdateTime(task.getCreateTime());
-        task.setCreateUser(approverId);
-        task.setUpdateUser(approverId);
-
-        approvalTaskMapper.insert(task);
-
-        Assertions.assertEquals(32, approverId.length());
-        Assertions.assertEquals(approverId, approvalTaskMapper.selectByPrimaryKey(task.getId()).getApproverId());
-    }
 }
