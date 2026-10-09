@@ -34,4 +34,29 @@
         where internal = 1
     </select>
 
+
+    <select id="selectNextPos" resultType="java.lang.Long">
+        select pos from sys_role where organization_id = #{orgId}
+        order by pos desc limit 1
+    </select>
+
+
+    <select id="selectList" resultType="cn.cordys.crm.system.domain.Role">
+        select id, name, internal, data_scope, organization_id, pos
+        from sys_role
+        where organization_id = #{orgId}
+        order by pos asc
+    </select>
+
+
+    <update id="moveUpNavigation" parameterType="java.lang.Long">
+        update sys_role set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end}
+    </update>
+
+
+    <update id="moveDownNavigation" parameterType="java.lang.Long">
+        update sys_role set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end}
+    </update>
+
+
 </mapper>

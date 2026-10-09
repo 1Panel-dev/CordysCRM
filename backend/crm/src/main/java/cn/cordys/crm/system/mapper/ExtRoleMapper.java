@@ -19,4 +19,12 @@ public interface ExtRoleMapper {
     List<String> getInternalRoleIds();
 
     List<OptionDTO> getIdNameByIds(@Param("ids") List<String> ids);
+
+    Long selectNextPos(@Param("orgId") String orgId);
+
+    List<Role> selectList(@Param("orgId")String orgId);
+
+    void moveUpNavigation(@Param("start") Long start, @Param("end") Long end);
+
+    void moveDownNavigation(@Param("start") Long start, @Param("end") Long end);
 }
