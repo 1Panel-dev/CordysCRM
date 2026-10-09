@@ -29,5 +29,9 @@ SET pos = (SELECT rn
                  FROM sys_role) t2
            WHERE t2.id = sys_role.id);
 
+-- 待办/已办/我发起的/抄送列表按提审时快照展示资源名称, 不再 join 各业务表。
+ALTER TABLE approval_instance
+    ADD COLUMN resource_name VARCHAR(255) NULL COMMENT '资源名称(提审时快照)';
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

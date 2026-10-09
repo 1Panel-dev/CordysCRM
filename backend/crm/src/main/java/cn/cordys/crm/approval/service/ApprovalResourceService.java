@@ -611,6 +611,8 @@ public class ApprovalResourceService {
         instance.setType(param.getFormKey());
         instance.setApprovalStatus(ApprovalStatus.APPROVING.name());
         instance.setResourceId(param.getResourceId());
+        // 资源名称按提审时快照落库, 待办/已办等列表据此展示, 避免每次查询 join 业务表
+        instance.setResourceName(resolveResourceName(param.getFormKey(), param.getResourceId()));
         instance.setSubmitterId(currentUserId);
         instance.setSubmitTime(System.currentTimeMillis());
         instance.setCreateUser(currentUserId);
@@ -621,6 +623,25 @@ public class ApprovalResourceService {
         instance.setExecuteTime(param.getExecuteTimingEnum().name());
         instance.setUpdateFields(param.getUpdateFields());
         return instance;
+    }
+
+    /**
+     * 解析待快照的资源名称
+     * <p>
+     * 自定义表单表单类型为 customFormId, 解析不到 FormKey 时按 custom_form_data 取名称;
+     * 解析失败不影响提审, 仅记录日志。
+     *
+     * @param formType   表单类型(标准表单为 FormKey key, 自定义表单为 customFormId)
+     * @param resourceId 资源ID
+     * @return 资源名称, 解析失败返回 null
+     */
+    private String resolveResourceName(String formType, String resourceId) {
+        try {
+            return getInstanceResourceName(resolveApprovalFormKey(formType), resourceId);
+        } catch (Exception e) {
+            log.warn("快照资源名称失败, formType={}, resourceId={}, error={}", formType, resourceId, e.getMessage());
+            return null;
+        }
     }
 
     /**
