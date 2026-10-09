@@ -3,6 +3,13 @@
 
 <mapper namespace="cn.cordys.crm.approval.mapper.ExtApprovalFlowMapper">
 
+    <select id="getMaxNumberSequence" resultType="long">
+        SELECT COALESCE(MAX(CAST(SUBSTRING_INDEX(number, '-', -1) AS UNSIGNED)), 0)
+        FROM approval_flow
+        WHERE organization_id = #{organizationId}
+        AND number LIKE CONCAT(#{prefix}, '-%')
+    </select>
+
     <select id="list" resultType="cn.cordys.crm.approval.dto.response.ApprovalFlowListResponse">
         SELECT
             af.id,
