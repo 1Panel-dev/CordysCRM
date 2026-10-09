@@ -27,6 +27,10 @@ public enum InternalUserView {
      */
     DEPARTMENT,
     /**
+     * 已转线索视图
+     */
+    CLUE_TRANSITION,
+    /**
      * 协作客户视图
      */
     CUSTOMER_COLLABORATION,
