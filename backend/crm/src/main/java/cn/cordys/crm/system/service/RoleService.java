@@ -21,6 +21,7 @@ import cn.cordys.crm.system.domain.RolePermission;
 import cn.cordys.crm.system.domain.RoleScopeDept;
 import cn.cordys.crm.system.domain.UserRole;
 import cn.cordys.crm.system.dto.log.RoleLogDTO;
+import cn.cordys.crm.system.dto.request.ModuleSortRequest;
 import cn.cordys.crm.system.dto.request.PermissionUpdateRequest;
 import cn.cordys.crm.system.dto.request.RoleAddRequest;
 import cn.cordys.crm.system.dto.request.RoleUpdateRequest;
@@ -79,16 +80,13 @@ public class RoleService {
     }
 
     public List<RoleListResponse> getRoleListResponses(String orgId) {
-        Role role = new Role();
-        role.setOrganizationId(orgId);
-        List<Role> roles = roleMapper.select(role);
+
+        List<Role> roles = extRoleMapper.selectList(orgId);
         List<RoleListResponse> roleListResponseList = JSON.parseArray(JSON.toJSONString(roles), RoleListResponse.class);
         // 翻译内置角色名称
         roleListResponseList.stream()
                 .filter(RoleListResponse::getInternal)
                 .forEach(this::translateInternalRole);
-        // 按创建时间排序
-        roleListResponseList.sort(Comparator.comparingLong(RoleListResponse::getCreateTime));
         return roleListResponseList;
     }
 
@@ -96,7 +94,6 @@ public class RoleService {
      * 翻译内置角色名
      *
      * @param role
-     *
      * @return
      */
     public Role translateInternalRole(Role role) {
@@ -110,7 +107,6 @@ public class RoleService {
      * 翻译内置角色名
      *
      * @param roleKey
-     *
      * @return
      */
     public String translateInternalRole(String roleKey) {
@@ -161,12 +157,14 @@ public class RoleService {
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.ADD, resourceName = "{#request.name}")
     public Role add(RoleAddRequest request, String userId, String orgId) {
         Role role = BeanUtils.copyBean(new Role(), request);
+        Long nextPos = getNextPos(orgId);
         role.setId(IDGenerator.nextStr());
         role.setCreateTime(System.currentTimeMillis());
         role.setUpdateTime(System.currentTimeMillis());
         role.setUpdateUser(userId);
         role.setCreateUser(userId);
         role.setInternal(false);
+        role.setPos(nextPos);
         role.setOrganizationId(orgId);
         // 创建默认仅可查看本人数据
         role.setDataScope(Optional.ofNullable(request.getDataScope()).orElse(RoleDataScope.SELF.name()));
@@ -190,6 +188,11 @@ public class RoleService {
         );
 
         return role;
+    }
+
+    private Long getNextPos(String orgId) {
+        Long pos = extRoleMapper.selectNextPos(orgId);
+        return pos == null ? 1 : pos + 1;
     }
 
     private List<RoleScopeDept> getRoleScopeDept(String roleId, List<String> deptIds) {
@@ -445,7 +448,6 @@ public class RoleService {
      * 翻译默认的权限名称
      *
      * @param permissionId
-     *
      * @return
      */
     public String translateDefaultPermissionName(String permissionId) {
@@ -459,7 +461,6 @@ public class RoleService {
      * 查询用户组对应的权限ID
      *
      * @param roleId
-     *
      * @return
      */
     public Set<String> getPermissionIdSetByRoleId(String roleId) {
@@ -472,7 +473,6 @@ public class RoleService {
      * 查询用户组对应的权限列表
      *
      * @param roleId
-     *
      * @return
      */
     public List<RolePermission> getRolePermissionByRoleId(String roleId) {
@@ -584,5 +584,58 @@ public class RoleService {
         LambdaQueryWrapper<RolePermission> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(RolePermission::getRoleId, roleIds);
         return rolePermissionMapper.selectListByLambda(wrapper);
+    }
+
+
+    /**
+     * 角色权限排序
+     *
+     * @param request
+     * @param userId
+     */
+    @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.UPDATE, operator = "{#currentUser}")
+    public void sort(ModuleSortRequest request, String userId) {
+        Role role = roleMapper.selectByPrimaryKey(request.getDragModuleId());
+        if (role == null) {
+            throw new GenericException("role.not_exist");
+        }
+
+        List<String> beforeKeys = getRoleSortKeys(role.getOrganizationId());
+        if (request.getStart() < request.getEnd()) {
+            // start < end, 区间模块上移, pos - 1
+            extRoleMapper.moveUpNavigation(request.getStart(), request.getEnd());
+        } else {
+            // start > end, 区间模块下移, pos + 1
+            extRoleMapper.moveDownNavigation(request.getEnd(), request.getStart());
+        }
+
+        Role dragRole = new Role();
+        dragRole.setId(request.getDragModuleId());
+        dragRole.setPos(request.getEnd());
+        dragRole.setUpdateUser(userId);
+        dragRole.setUpdateTime(System.currentTimeMillis());
+        roleMapper.updateById(dragRole);
+
+        List<String> afterKeys = getRoleSortKeys(role.getOrganizationId());
+
+        //添加日志上下文
+        Map<String, List<String>> originalVal = new HashMap<>(1);
+        originalVal.put("roleSort", beforeKeys);
+        Map<String, List<String>> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("roleSort", afterKeys);
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(originalVal)
+                .resourceName(Translator.get("permission.system.role.name"))
+                .modifiedValue(modifiedVal)
+                .resourceId(role.getId())
+                .build());
+
+    }
+
+    private List<String> getRoleSortKeys(String orgId) {
+        List<RoleListResponse> roleListResponses = getRoleListResponses(orgId);
+        return roleListResponses.stream()
+                .map(RoleListResponse::getName)
+                .toList();
     }
 }

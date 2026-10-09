@@ -20,5 +20,14 @@ ALTER TABLE customer ADD COLUMN approved TINYINT(1) DEFAULT 0 NULL COMMENT 'æ˜¯å
 
 CREATE INDEX idx_approval_status ON customer (approval_status);
 
+
+ALTER TABLE sys_role ADD COLUMN pos BIGINT DEFAULT NULL;
+
+UPDATE sys_role
+SET pos = (SELECT rn
+           FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY create_time) as rn
+                 FROM sys_role) t2
+           WHERE t2.id = sys_role.id);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

@@ -30,4 +30,7 @@ public class Role extends BaseModel {
 
     @Schema(description = "组织id")
     private String organizationId;
+
+    @Schema(description = "pos")
+    private Long pos;
 }
