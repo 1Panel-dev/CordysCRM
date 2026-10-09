@@ -54,6 +54,7 @@ import cn.cordys.crm.order.domain.OrderField;
 import cn.cordys.crm.order.domain.OrderFieldBlob;
 import cn.cordys.crm.order.domain.OrderSnapshot;
 import cn.cordys.crm.order.dto.request.OrderAddRequest;
+import cn.cordys.crm.order.dto.request.OrderApprovalSnapshotRequest;
 import cn.cordys.crm.order.dto.request.OrderPageRequest;
 import cn.cordys.crm.order.dto.request.OrderStageRequest;
 import cn.cordys.crm.order.dto.request.OrderUpdateRequest;
@@ -912,6 +913,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
 
     @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}")
     public void updateStage(OrderStageRequest request, String userId, String orgId) {
         Order order = orderMapper.selectByPrimaryKey(request.getId());
         if (order == null) {
@@ -1128,6 +1130,8 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
 
     /**
      * 阶段看板排序
+     * <p>
+     * 阶段未变化时只是同列排序, 不触发审批; 跨列换阶段属于业务阶段变更, 走编辑审批流。
      *
      * @param request
      * @param userId
@@ -1138,6 +1142,48 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
         if (order == null) {
             throw new GenericException(Translator.get("order_not_exist"));
         }
+        if (Strings.CI.equals(order.getStage(), request.getStage())) {
+            doSort(request, order, userId);
+            return;
+        }
+        // 自调用不走代理, 需从容器取代理对象才能命中审批切面
+        CommonBeanFactory.getBean(OrderService.class).sortWithApproval(request, userId);
+    }
+
+    /**
+     * 跨列换阶段的看板排序: 阶段变更需命中编辑审批流, 排序本身照常写入
+     *
+     * @param request
+     * @param userId
+     */
+    @OperationLog(module = LogModule.ORDER_INDEX, type = LogType.UPDATE, resourceId = "{#request.dragNodeId}")
+    @HitApproval(formKey = FormKey.ORDER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.dragNodeId}", operatorId = "{#userId}")
+    public void sortWithApproval(StageSortRequest request, String userId) {
+        Order order = orderMapper.selectByPrimaryKey(request.getDragNodeId());
+        if (order == null) {
+            throw new GenericException(Translator.get("order_not_exist"));
+        }
+        final Map<String, String> stageMap = extOrderStageConfigMapper.getStageConfigList(order.getOrganizationId()).stream()
+                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+
+        doSort(request, order, userId);
+
+        // 阶段变更记录: 审批实例按变更字段匹配节点条件时依赖此处写入的日志上下文
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("orderStage", stageMap.get(order.getStage()));
+        final Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("orderStage", stageMap.get(request.getStage()));
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(order.getName())
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
+                        .build()
+        );
+    }
+
+    private void doSort(StageSortRequest request, Order order, String userId) {
         Long pos = DEFAULT_POS;
         if (StringUtils.isNotBlank(request.getDropNodeId())) {
             //放入节点
@@ -1186,7 +1232,7 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
             return null;
         }
         List<BaseModuleFieldValue> orderFields = orderFieldService.getModuleFieldValuesByResourceId(resourceId);
-        OrderUpdateRequest snapshotReq = BeanUtils.copyBean(new OrderUpdateRequest(), order);
+        OrderApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new OrderApprovalSnapshotRequest(), order);
         snapshotReq.setAmount(order.getAmount() != null ? order.getAmount().toString() : null);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
         ModuleFormConfigDTO orderFormConfig = getFormConfig(order.getOrganizationId());
@@ -1198,14 +1244,37 @@ public class OrderService extends BaseExportService implements ApprovalResourceH
     @Override
     public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
         try {
-            OrderUpdateRequest request = JSON.parseObject(snapshotData, OrderUpdateRequest.class);
+            OrderApprovalSnapshotRequest request = JSON.parseObject(snapshotData, OrderApprovalSnapshotRequest.class);
             if (request == null) {
                 return;
             }
             CommonBeanFactory.getBean(OrderService.class).update(request, userId, orgId);
+            // 阶段变更不走编辑接口, 需按快照单独回退
+            revertStage(request, userId);
         } catch (Exception e) {
             log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
         }
+    }
+
+    /**
+     * 回退阶段变更
+     * <p>
+     * 阶段不在编辑请求的可变更字段内, 编辑回退不会带上阶段, 故按编辑前快照单独还原。
+     *
+     * @param request 编辑前快照
+     * @param userId  用户ID
+     */
+    private void revertStage(OrderApprovalSnapshotRequest request, String userId) {
+        if (request == null || StringUtils.isBlank(request.getStage())) {
+            return;
+        }
+        Order current = orderMapper.selectByPrimaryKey(request.getId());
+        if (current == null || Strings.CI.equals(current.getStage(), request.getStage())) {
+            return;
+        }
+        extOrderMapper.revertStageByApproval(request.getId(), request.getStage(), userId, System.currentTimeMillis());
+        // 编辑回退时刷新的业务快照里还带着变更后的阶段, 按回退后的数据再刷一次
+        updateFieldAndSnapshot(current, List.of(), userId);
     }
 
 

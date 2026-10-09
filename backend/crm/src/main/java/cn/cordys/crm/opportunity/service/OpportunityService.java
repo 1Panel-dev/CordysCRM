@@ -86,7 +86,6 @@ import cn.cordys.crm.system.service.StatisticFieldService.StatisticHostScope;
 import cn.cordys.excel.utils.EasyExcelExporter;
 import cn.cordys.mybatis.BaseMapper;
 import cn.cordys.mybatis.lambda.LambdaQueryWrapper;
-import cn.cordys.security.SessionUtils;
 import cn.idev.excel.FastExcelFactory;
 import cn.idev.excel.enums.CellExtraTypeEnum;
 import com.github.pagehelper.Page;
@@ -742,11 +741,12 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
      * 标记商机阶段
      *
      * @param request
+     * @param userId
      * @param orgId
      */
     @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
-    public void updateStage(OpportunityStageRequest request, String orgId) {
-        String userId = SessionUtils.getUserId();
+    @HitApproval(formKey = FormKey.OPPORTUNITY, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}")
+    public void updateStage(OpportunityStageRequest request, String userId, String orgId) {
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(orgId)
                 || !PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)) {
             throw new GenericException(CrmHttpResultCode.FORBIDDEN);
@@ -1148,6 +1148,8 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
 
     /**
      * 阶段看板拖拽排序
+     * <p>
+     * 阶段未变化时只是同列排序, 不触发审批; 跨列换阶段属于业务阶段变更, 走编辑审批流。
      *
      * @param request
      * @param userId
@@ -1158,6 +1160,49 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
         if (opportunity == null) {
             throw new GenericException(Translator.get("opportunity_not_found"));
         }
+        if (Strings.CI.equals(opportunity.getStage(), request.getStage())) {
+            doSort(request, opportunity, userId);
+            return;
+        }
+        // 自调用不走代理, 需从容器取代理对象才能命中审批切面
+        CommonBeanFactory.getBean(OpportunityService.class).sortWithApproval(request, userId);
+    }
+
+    /**
+     * 跨列换阶段的看板排序: 阶段变更需命中编辑审批流, 排序本身照常写入
+     *
+     * @param request
+     * @param userId
+     */
+    @OperationLog(module = LogModule.OPPORTUNITY_INDEX, type = LogType.UPDATE, resourceId = "{#request.dragNodeId}")
+    @HitApproval(formKey = FormKey.OPPORTUNITY, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.dragNodeId}", operatorId = "{#userId}")
+    public void sortWithApproval(StageSortRequest request, String userId) {
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getDragNodeId());
+        if (opportunity == null) {
+            throw new GenericException(Translator.get("opportunity_not_found"));
+        }
+        final Map<String, String> stageMap = extOpportunityStageConfigMapper
+                .getStageConfigList(opportunity.getOrganizationId()).stream()
+                .collect(Collectors.toMap(OpportunityStageResponse::getId, OpportunityStageResponse::getName));
+
+        doSort(request, opportunity, userId);
+
+        // 阶段变更记录: 审批实例按变更字段匹配节点条件时依赖此处写入的日志上下文
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("stage", stageMap.get(opportunity.getStage()));
+        final Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("stage", stageMap.get(request.getStage()));
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(opportunity.getName())
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
+                        .build()
+        );
+    }
+
+    private void doSort(StageSortRequest request, Opportunity opportunity, String userId) {
         Long pos = DEFAULT_POS;
         if (StringUtils.isNotBlank(request.getDropNodeId())) {
             //放入节点
@@ -1211,7 +1256,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
             return null;
         }
         List<BaseModuleFieldValue> opportunityFields = opportunityFieldService.getModuleFieldValuesByResourceId(resourceId);
-        OpportunityUpdateRequest snapshotReq = BeanUtils.copyBean(new OpportunityUpdateRequest(), opportunity);
+        OpportunityApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new OpportunityApprovalSnapshotRequest(), opportunity);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
         ModuleFormConfigDTO opportunityFormConfig = getFormConfig(opportunity.getOrganizationId());
         // 获取模块字段
@@ -1222,14 +1267,43 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
     @Override
     public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
         try {
-            OpportunityUpdateRequest request = JSON.parseObject(snapshotData, OpportunityUpdateRequest.class);
+            OpportunityApprovalSnapshotRequest request = JSON.parseObject(snapshotData, OpportunityApprovalSnapshotRequest.class);
             if (request == null) {
                 return;
             }
             CommonBeanFactory.getBean(OpportunityService.class).update(request, userId, orgId);
+            // 阶段变更不走编辑接口, 需按快照单独回退
+            revertStage(request, userId, orgId);
         } catch (Exception e) {
             log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
         }
+    }
+
+    /**
+     * 回退阶段变更
+     * <p>
+     * 阶段不在编辑请求的可变更字段内, 编辑回退不会带上阶段, 故按编辑前快照单独还原;
+     * 回到非结束阶段时同时清空结束时间与失败原因。
+     *
+     * @param request 编辑前快照
+     * @param userId  用户ID
+     * @param orgId   组织ID
+     */
+    private void revertStage(OpportunityApprovalSnapshotRequest request, String userId, String orgId) {
+        if (request == null || StringUtils.isBlank(request.getStage())) {
+            return;
+        }
+        Opportunity current = opportunityMapper.selectByPrimaryKey(request.getId());
+        if (current == null || Strings.CI.equals(current.getStage(), request.getStage())) {
+            return;
+        }
+        boolean endStage = extOpportunityStageConfigMapper.getStageConfigList(orgId).stream()
+                .anyMatch(cfg -> Strings.CI.equals(cfg.getId(), request.getStage())
+                        && Strings.CI.equals(cfg.getType(), OpportunityStageType.END.name()));
+        extOpportunityMapper.revertStageByApproval(request.getId(), request.getStage(), current.getStage(),
+                endStage ? current.getActualEndTime() : null,
+                endStage ? current.getFailureReason() : null,
+                userId, System.currentTimeMillis());
     }
 
     /**

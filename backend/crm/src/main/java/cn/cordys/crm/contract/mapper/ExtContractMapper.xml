@@ -530,6 +530,15 @@
         where id = #{id}
     </update>
 
+    <update id="revertStageByApproval">
+        update contract
+        set stage       = #{stage},
+            void_reason = #{voidReason},
+            update_user = #{userId},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
     <update id="batchUpdate">
         UPDATE contract
         <set>

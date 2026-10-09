@@ -562,6 +562,14 @@
         update sales_order set approval_status = 'NONE' where approval_status = 'APPROVING';
     </update>
 
+    <update id="revertStageByApproval">
+        update sales_order
+        set stage       = #{stage},
+            update_user = #{userId},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
     <update id="updateOrder">
         update sales_order
         <set>

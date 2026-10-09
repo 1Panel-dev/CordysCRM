@@ -38,4 +38,15 @@ public interface ExtOrderMapper extends StatisticSqlMapper {
     void updateOldApprovalStatusNone();
 
     void updateOrder(@Param("order") Order order);
+
+    /**
+     * 审批驳回/撤回时回退阶段
+     *
+     * @param id         订单ID
+     * @param stage      回退到的阶段
+     * @param userId     用户ID
+     * @param updateTime 更新时间
+     */
+    void revertStageByApproval(@Param("id") String id, @Param("stage") String stage, @Param("userId") String userId,
+                               @Param("updateTime") long updateTime);
 }

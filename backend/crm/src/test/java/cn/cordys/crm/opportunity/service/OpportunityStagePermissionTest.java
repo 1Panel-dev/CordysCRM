@@ -3,9 +3,11 @@ package cn.cordys.crm.opportunity.service;
 import cn.cordys.aspectj.context.OperationLogContext;
 import cn.cordys.common.constants.FormKey;
 import cn.cordys.common.constants.PermissionConstants;
+import cn.cordys.common.dto.stage.StageSortRequest;
 import cn.cordys.common.exception.GenericException;
 import cn.cordys.common.permission.PermissionUtils;
 import cn.cordys.common.service.DataScopeService;
+import cn.cordys.common.util.CommonBeanFactory;
 import cn.cordys.common.util.Translator;
 import cn.cordys.crm.opportunity.domain.Opportunity;
 import cn.cordys.crm.opportunity.dto.request.OpportunityStageRequest;
@@ -14,7 +16,6 @@ import cn.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import cn.cordys.crm.opportunity.mapper.ExtOpportunityStageConfigMapper;
 import cn.cordys.crm.system.service.StageAdvancedConfigService;
 import cn.cordys.mybatis.BaseMapper;
-import cn.cordys.security.SessionUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,6 @@ class OpportunityStagePermissionTest {
     private final StageAdvancedConfigService stageAdvancedConfigService = mock(StageAdvancedConfigService.class);
     private final Opportunity opportunity = new Opportunity();
     private final OpportunityStageRequest request = new OpportunityStageRequest();
-    private MockedStatic<SessionUtils> session;
     private MockedStatic<PermissionUtils> permissions;
     private MockedStatic<Translator> translator;
 
@@ -48,10 +48,8 @@ class OpportunityStagePermissionTest {
         ReflectionTestUtils.setField(service, "extOpportunityStageConfigMapper", stages);
         ReflectionTestUtils.setField(service, "extOpportunityMapper", extMapper);
         ReflectionTestUtils.setField(service, "stageAdvancedConfigService", stageAdvancedConfigService);
-        session = mockStatic(SessionUtils.class);
         permissions = mockStatic(PermissionUtils.class);
         translator = mockStatic(Translator.class, invocation -> invocation.getArgument(0));
-        session.when(SessionUtils::getUserId).thenReturn("sales-user");
         permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE))
                 .thenReturn(true);
         opportunity.setId("test-opportunity");
@@ -79,13 +77,12 @@ class OpportunityStagePermissionTest {
         OperationLogContext.clear();
         translator.close();
         permissions.close();
-        session.close();
     }
 
     @Test
     void selfScopeCannotUpdateAnotherOwnersOpportunity() {
         opportunity.setOwner("other-sales-user");
-        assertThrows(GenericException.class, () -> service.updateStage(request, "test-org"));
+        assertThrows(GenericException.class, () -> service.updateStage(request, "sales-user", "test-org"));
         verify(mapper, never()).update(any(Opportunity.class));
         verifyNoInteractions(stages, extMapper);
     }
@@ -93,15 +90,14 @@ class OpportunityStagePermissionTest {
     @Test
     void crossOrganizationIsDeniedEvenForAnAllowedOwner() {
         opportunity.setOrganizationId("other-org");
-        assertThrows(GenericException.class, () -> service.updateStage(request, "test-org"));
+        assertThrows(GenericException.class, () -> service.updateStage(request, "sales-user", "test-org"));
         verify(mapper, never()).update(any(Opportunity.class));
         verifyNoInteractions(dataScope, stages, extMapper);
     }
 
     @Test
     void anonymousCallerIsDeniedBeforeLoadingOpportunity() {
-        session.when(SessionUtils::getUserId).thenReturn(null);
-        assertThrows(GenericException.class, () -> service.updateStage(request, "test-org"));
+        assertThrows(GenericException.class, () -> service.updateStage(request, null, "test-org"));
         verifyNoInteractions(mapper, dataScope, stages, extMapper);
     }
 
@@ -111,21 +107,21 @@ class OpportunityStagePermissionTest {
                 .thenReturn(false);
         permissions.when(() -> PermissionUtils.hasPermission(PermissionConstants.OPPORTUNITY_MANAGEMENT_RESIGN))
                 .thenReturn(true);
-        assertThrows(GenericException.class, () -> service.updateStage(request, "test-org"));
+        assertThrows(GenericException.class, () -> service.updateStage(request, "sales-user", "test-org"));
         verifyNoInteractions(mapper, dataScope, stages, extMapper);
     }
 
     @Test
     void unknownStageIsRejectedBeforeWriting() {
         request.setStage("unknown-stage");
-        assertThrows(GenericException.class, () -> service.updateStage(request, "test-org"));
+        assertThrows(GenericException.class, () -> service.updateStage(request, "sales-user", "test-org"));
         verify(mapper, never()).update(any(Opportunity.class));
         verifyNoInteractions(extMapper);
     }
 
     @Test
     void ownerCanWinOpportunity() {
-        service.updateStage(request, "test-org");
+        service.updateStage(request, "sales-user", "test-org");
         ArgumentCaptor<Opportunity> saved = ArgumentCaptor.forClass(Opportunity.class);
         verify(mapper).update(saved.capture());
         assertEquals("SUCCESS", saved.getValue().getStage());
@@ -138,7 +134,7 @@ class OpportunityStagePermissionTest {
     void disallowedTransitionDoesNotWriteOpportunity() {
         when(stageAdvancedConfigService.checkStage("CREATE", "SUCCESS", FormKey.OPPORTUNITY.getKey()))
                 .thenReturn(false);
-        service.updateStage(request, "test-org");
+        service.updateStage(request, "sales-user", "test-org");
         verify(mapper, never()).update(any(Opportunity.class));
         verifyNoInteractions(extMapper);
     }
@@ -148,7 +144,42 @@ class OpportunityStagePermissionTest {
         opportunity.setOwner("team-member");
         when(dataScope.hasDataPermission("sales-user", "test-org", "team-member",
                 PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)).thenReturn(true);
-        service.updateStage(request, "test-org");
+        service.updateStage(request, "sales-user", "test-org");
         verify(mapper).update(any(Opportunity.class));
+    }
+
+    @Test
+    void dragAcrossStagesGoesThroughTheApprovalEntryPoint() {
+        try (MockedStatic<CommonBeanFactory> beanFactory = mockStatic(CommonBeanFactory.class)) {
+            beanFactory.when(() -> CommonBeanFactory.getBean(OpportunityService.class)).thenReturn(service);
+            service.sort(sortRequest("SUCCESS"), "sales-user");
+
+            beanFactory.verify(() -> CommonBeanFactory.getBean(OpportunityService.class));
+        }
+        ArgumentCaptor<Opportunity> saved = ArgumentCaptor.forClass(Opportunity.class);
+        verify(mapper).updateById(saved.capture());
+        assertEquals("SUCCESS", saved.getValue().getStage());
+        assertEquals("CREATE", saved.getValue().getLastStage());
+    }
+
+    @Test
+    void dragInsideTheSameStageOnlySorts() {
+        when(stageAdvancedConfigService.checkStage("CREATE", "CREATE", FormKey.OPPORTUNITY.getKey()))
+                .thenReturn(true);
+        try (MockedStatic<CommonBeanFactory> beanFactory = mockStatic(CommonBeanFactory.class)) {
+            service.sort(sortRequest("CREATE"), "sales-user");
+
+            beanFactory.verifyNoInteractions();
+        }
+        ArgumentCaptor<Opportunity> saved = ArgumentCaptor.forClass(Opportunity.class);
+        verify(mapper).updateById(saved.capture());
+        assertEquals("CREATE", saved.getValue().getStage());
+    }
+
+    private StageSortRequest sortRequest(String stage) {
+        StageSortRequest sortRequest = new StageSortRequest();
+        sortRequest.setDragNodeId(opportunity.getId());
+        sortRequest.setStage(stage);
+        return sortRequest;
     }
 }

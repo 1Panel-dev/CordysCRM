@@ -32,6 +32,18 @@ public interface ExtContractMapper extends StatisticSqlMapper {
 
     void updateStage(@Param("id") String id, @Param("stage") String stage, @Param("userId") String userId, @Param("updateTime") long updateTime);
 
+    /**
+     * 审批驳回/撤回时回退阶段
+     *
+     * @param id         合同ID
+     * @param stage      回退到的阶段
+     * @param voidReason 作废原因, 回退到非作废阶段时为 null
+     * @param userId     用户ID
+     * @param updateTime 更新时间
+     */
+    void revertStageByApproval(@Param("id") String id, @Param("stage") String stage, @Param("voidReason") String voidReason,
+                               @Param("userId") String userId, @Param("updateTime") long updateTime);
+
     List<Contract> selectByTimestamp(@Param("organizationId") String organizationId, @Param("timestampOld") long timestampOld, @Param("timestamp") long timestamp);
 
     void batchUpdate(@Param("request") BatchUpdateDbParam request);

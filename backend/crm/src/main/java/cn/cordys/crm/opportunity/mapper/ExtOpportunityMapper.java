@@ -67,6 +67,21 @@ public interface ExtOpportunityMapper extends StatisticSqlMapper {
      */
     void updateIncludeNullById(@Param("opportunity") Opportunity opportunity);
 
+    /**
+     * 审批驳回/撤回时回退阶段
+     *
+     * @param id             商机ID
+     * @param stage          回退到的阶段
+     * @param lastStage      回退后的上一阶段(即当前阶段)
+     * @param actualEndTime  结束时间, 回退到非结束阶段时为 null
+     * @param failureReason  失败原因, 回退到非结束阶段时为 null
+     * @param userId         用户ID
+     * @param updateTime     更新时间
+     */
+    void revertStageByApproval(@Param("id") String id, @Param("stage") String stage, @Param("lastStage") String lastStage,
+                               @Param("actualEndTime") Long actualEndTime, @Param("failureReason") String failureReason,
+                               @Param("userId") String userId, @Param("updateTime") long updateTime);
+
     void batchUpdate(@Param("request") BatchUpdateDbParam request);
 
     void moveUpOpportunity(@Param("start") Long start, @Param("end") Long end, @Param("stage") String stage);

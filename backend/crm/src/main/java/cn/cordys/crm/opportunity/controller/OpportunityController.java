@@ -137,7 +137,7 @@ public class OpportunityController {
     @RequiresPermissions(value = {PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_RESIGN}, logical = Logical.OR)
     @Operation(summary = "更新商机阶段")
     public void updateStage(@Validated @RequestBody OpportunityStageRequest request) {
-        opportunityService.updateStage(request, OrganizationContext.getOrganizationId());
+        opportunityService.updateStage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
