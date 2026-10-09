@@ -9,10 +9,7 @@ import cn.cordys.common.pager.Pager;
 import cn.cordys.common.permission.PermissionDefinitionItem;
 import cn.cordys.context.OrganizationContext;
 import cn.cordys.crm.system.domain.Role;
-import cn.cordys.crm.system.dto.request.RoleAddRequest;
-import cn.cordys.crm.system.dto.request.RoleUpdateRequest;
-import cn.cordys.crm.system.dto.request.RoleUserPageRequest;
-import cn.cordys.crm.system.dto.request.RoleUserRelateRequest;
+import cn.cordys.crm.system.dto.request.*;
 import cn.cordys.crm.system.dto.response.RoleGetResponse;
 import cn.cordys.crm.system.dto.response.RoleListResponse;
 import cn.cordys.crm.system.dto.response.RoleUserListResponse;
@@ -146,5 +143,13 @@ public class RoleController {
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_REMOVE_USER)
     public void batchDeleteRoleUser(@RequestBody List<String> ids) {
         userRoleService.batchDeleteRoleUser(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping("/sort")
+    @Operation(summary = "角色权限排序")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_UPDATE)
+    public void sortRole(@Validated @RequestBody ModuleSortRequest request) {
+        roleService.sort(request, SessionUtils.getUserId());
     }
 }
