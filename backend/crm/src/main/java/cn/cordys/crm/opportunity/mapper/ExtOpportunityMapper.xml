@@ -957,6 +957,17 @@
                                update_user = #{opportunity.updateUser}, update_time = #{opportunity.updateTime}
         where id = #{opportunity.id}
     </update>
+    <update id="revertStageByApproval">
+        update opportunity
+        set stage           = #{stage},
+            last_stage      = #{lastStage},
+            actual_end_time = #{actualEndTime},
+            failure_reason  = #{failureReason},
+            update_user     = #{userId},
+            update_time     = #{updateTime}
+        where id = #{id}
+    </update>
+
     <update id="batchUpdate">
         UPDATE opportunity
         <set>

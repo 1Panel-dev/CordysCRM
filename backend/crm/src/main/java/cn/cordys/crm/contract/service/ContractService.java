@@ -46,6 +46,7 @@ import cn.cordys.crm.contract.constants.ContractApprovalStatus;
 import cn.cordys.crm.contract.constants.ContractStage;
 import cn.cordys.crm.contract.domain.*;
 import cn.cordys.crm.contract.dto.request.ContractAddRequest;
+import cn.cordys.crm.contract.dto.request.ContractApprovalSnapshotRequest;
 import cn.cordys.crm.contract.dto.request.ContractPageRequest;
 import cn.cordys.crm.contract.dto.request.ContractStageRequest;
 import cn.cordys.crm.contract.dto.request.ContractUpdateRequest;
@@ -741,6 +742,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
      * @param userId
      */
     @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", operatorId = "{#userId}")
     public void updateStage(ContractStageRequest request, String userId, String orgId) {
         Contract contract = contractMapper.selectByPrimaryKey(request.getId());
         if (contract == null) {
@@ -884,7 +886,7 @@ public class ContractService extends BaseExportService implements ApprovalResour
             return null;
         }
         List<BaseModuleFieldValue> contractFields = contractFieldService.getModuleFieldValuesByResourceId(resourceId);
-        ContractUpdateRequest snapshotReq = BeanUtils.copyBean(new ContractUpdateRequest(), contract);
+        ContractApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new ContractApprovalSnapshotRequest(), contract);
         snapshotReq.setAmount(contract.getAmount() != null ? contract.getAmount().toString() : null);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
         ModuleFormConfigDTO contractFormConfig = getFormConfig(contract.getOrganizationId());
@@ -897,14 +899,40 @@ public class ContractService extends BaseExportService implements ApprovalResour
     @Override
     public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
         try {
-            ContractUpdateRequest request = JSON.parseObject(snapshotData, ContractUpdateRequest.class);
+            ContractApprovalSnapshotRequest request = JSON.parseObject(snapshotData, ContractApprovalSnapshotRequest.class);
             if (request == null) {
                 return;
             }
             CommonBeanFactory.getBean(ContractService.class).update(request, userId, orgId);
+            // 阶段变更不走编辑接口, 需按快照单独回退
+            revertStage(request, userId);
         } catch (Exception e) {
             log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
         }
+    }
+
+    /**
+     * 回退阶段变更
+     * <p>
+     * 阶段不在编辑请求的可变更字段内, 编辑回退不会带上阶段, 故按编辑前快照单独还原;
+     * 回到非作废阶段时同时清空作废原因。
+     *
+     * @param request 编辑前快照
+     * @param userId  用户ID
+     */
+    private void revertStage(ContractApprovalSnapshotRequest request, String userId) {
+        if (request == null || StringUtils.isBlank(request.getStage())) {
+            return;
+        }
+        Contract current = contractMapper.selectByPrimaryKey(request.getId());
+        if (current == null || Strings.CI.equals(current.getStage(), request.getStage())) {
+            return;
+        }
+        boolean voidStage = Strings.CI.equals(request.getStage(), ContractStage.VOID.name());
+        extContractMapper.revertStageByApproval(request.getId(), request.getStage(),
+                voidStage ? current.getVoidReason() : null, userId, System.currentTimeMillis());
+        // 编辑回退时刷新的业务快照里还带着变更后的阶段, 按回退后的数据再刷一次
+        updateFieldAndSnapshot(current, List.of(), userId);
     }
 
     /**
@@ -1251,6 +1279,8 @@ public class ContractService extends BaseExportService implements ApprovalResour
 
     /**
      * 阶段看板排序
+     * <p>
+     * 阶段未变化时只是同列排序, 不触发审批; 跨列换阶段属于业务阶段变更, 走编辑审批流。
      *
      * @param request
      * @param userId
@@ -1261,6 +1291,48 @@ public class ContractService extends BaseExportService implements ApprovalResour
         if (contract == null) {
             throw new GenericException(Translator.get("contract.not.exist"));
         }
+        if (Strings.CI.equals(contract.getStage(), request.getStage())) {
+            doSort(request, contract, userId);
+            return;
+        }
+        // 自调用不走代理, 需从容器取代理对象才能命中审批切面
+        CommonBeanFactory.getBean(ContractService.class).sortWithApproval(request, userId);
+    }
+
+    /**
+     * 跨列换阶段的看板排序: 阶段变更需命中编辑审批流, 排序本身照常写入
+     *
+     * @param request
+     * @param userId
+     */
+    @OperationLog(module = LogModule.CONTRACT_INDEX, type = LogType.UPDATE, resourceId = "{#request.dragNodeId}")
+    @HitApproval(formKey = FormKey.CONTRACT, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.dragNodeId}", operatorId = "{#userId}")
+    public void sortWithApproval(StageSortRequest request, String userId) {
+        Contract contract = contractMapper.selectByPrimaryKey(request.getDragNodeId());
+        if (contract == null) {
+            throw new GenericException(Translator.get("contract.not.exist"));
+        }
+        final Map<String, String> stageMap = extContractStageConfigMapper.getStageConfigList(contract.getOrganizationId()).stream()
+                .collect(Collectors.toMap(StageConfigResponse::getId, StageConfigResponse::getName));
+
+        doSort(request, contract, userId);
+
+        // 阶段变更记录: 审批实例按变更字段匹配节点条件时依赖此处写入的日志上下文
+        final Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("contractStage", stageMap.get(contract.getStage()));
+        final Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("contractStage", stageMap.get(request.getStage()));
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(contract.getName())
+                        .originalValue(originalVal)
+                        .modifiedValue(modifiedVal)
+                        .build()
+        );
+    }
+
+    private void doSort(StageSortRequest request, Contract contract, String userId) {
         Long pos = DEFAULT_POS;
         if (StringUtils.isNotBlank(request.getDropNodeId())) {
             //放入节点
