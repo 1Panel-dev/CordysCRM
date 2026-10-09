@@ -14,12 +14,12 @@ INSERT INTO approval_flow_version (
     'approval_flow_test_001', 'approval_flow_test_main_001', 1736240043000, 'admin', '100001'
 );
 
-INSERT INTO approval_instance (`id`, `flow_version_id`, `type`, `resource_id`, `submitter_id`, `current_node_id`, `approval_status`, `submit_time`, `approval_time`,`create_time`, `update_time`, `create_user`, `update_user`)
+INSERT INTO approval_instance (`id`, `flow_version_id`, `type`, `resource_id`, `resource_name`, `submitter_id`, `current_node_id`, `approval_status`, `submit_time`, `approval_time`,`create_time`, `update_time`, `create_user`, `update_user`)
 VALUES
-    ('todo_processed_inst_001', 'approval_flow_test_001', 'contract', 'todo_processed_resource_001', 'admin', 'node_done_1', 'APPROVED', 1736240043609, 1736241043609, 1736240043609, 1736241043609, 'admin', 'admin'),
-    ('todo_processed_inst_002', 'approval_flow_test_001', 'quotation', 'todo_processed_resource_002', 'admin', 'node_done_2', 'APPROVED', 1736241043609, 1736242043609, 1736241043609, 1736242043609, 'admin', 'admin'),
-    ('todo_processed_inst_003', 'approval_flow_test_001', 'order', 'todo_processed_resource_003', 'admin', 'node_done_3', 'REJECTED', 1736242043609, 1736243043609, 1736242043609, 1736243043609, 'admin', 'admin'),
-    ('todo_processed_inst_004', 'approval_flow_test_001', 'invoice', 'todo_processed_resource_004', 'admin', 'node_done_4', 'CANCELED', 1736243043609, 1736244043609, 1736243043609, 1736244043609, 'admin', 'admin');
+    ('todo_processed_inst_001', 'approval_flow_test_001', 'contract', 'todo_processed_resource_001', 'Todo Processed Contract', 'admin', 'node_done_1', 'APPROVED', 1736240043609, 1736241043609, 1736240043609, 1736241043609, 'admin', 'admin'),
+    ('todo_processed_inst_002', 'approval_flow_test_001', 'quotation', 'todo_processed_resource_002', 'Todo Processed Quotation', 'admin', 'node_done_2', 'APPROVED', 1736241043609, 1736242043609, 1736241043609, 1736242043609, 'admin', 'admin'),
+    ('todo_processed_inst_003', 'approval_flow_test_001', 'order', 'todo_processed_resource_003', 'Todo Processed Order', 'admin', 'node_done_3', 'REJECTED', 1736242043609, 1736243043609, 1736242043609, 1736243043609, 'admin', 'admin'),
+    ('todo_processed_inst_004', 'approval_flow_test_001', 'invoice', 'todo_processed_resource_004', 'Todo Processed Invoice', 'admin', 'node_done_4', 'CANCELED', 1736243043609, 1736244043609, 1736243043609, 1736244043609, 'admin', 'admin');
 
 INSERT INTO approval_task (`id`, `node_id`, `node_round`, `instance_id`, `approver_id`, `status`, `type`, `action`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES

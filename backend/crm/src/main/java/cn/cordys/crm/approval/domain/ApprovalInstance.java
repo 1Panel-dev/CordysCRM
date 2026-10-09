@@ -23,6 +23,9 @@ public class ApprovalInstance extends BaseModel {
     @Schema(description = "审批的数据ID")
     private String resourceId;
 
+    @Schema(description = "资源名称(提审时快照)")
+    private String resourceName;
+
     @Schema(description = "提交人ID")
     private String submitterId;
 
