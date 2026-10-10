@@ -28,6 +28,7 @@ export const GetCustomerContactFormConfigUrl = '/account/contact/module/form'; /
 export const GetCustomerContactUrl = '/account/contact/get'; // 获取客户联系人详情
 export const EnableCustomerContactUrl = '/account/contact/enable'; // 启用客户联系人
 export const DeleteCustomerContactUrl = '/account/contact/delete'; // 删除客户联系人
+export const BatchDeleteCustomerContactUrl = '/account/contact/batch/delete'; // 批量删除客户联系人
 export const CheckOpportunityContactUrl = '/account/contact/opportunity/check'; // 是否绑定商机
 export const ContactListUnderCustomerUrl = '/account/contact/list'; // 客户下的联系人列表
 export const UpdateCustomerOpenSeaUrl = '/account-pool/update'; // 编辑公海

@@ -20,6 +20,7 @@ export default {
     'After deletion, the contact cannot be queried and cannot be recovered. Please proceed with caution!',
   'customer.contact.deleteTitle':
     'There is a bound business opportunity, please change the contact person for the business opportunity binding before deleting it!',
+  'customer.contact.batchDeleteTitleTip': 'Delete the {number} selected contacts?',
   'customer.recycleOpenSea': 'Recycle Open Sea',
   'customer.collectionTime': 'Collection time',
   'customer.remainingVesting': 'Remaining vesting',

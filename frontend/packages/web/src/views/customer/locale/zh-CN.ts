@@ -18,6 +18,7 @@ export default {
   'customer.moveSuccess': '移入成功',
   'customer.contact.deleteContentTip': '删除后，将无法查询到该联系人且不可恢复，请谨慎操作！',
   'customer.contact.deleteTitle': '存在绑定的商机，请更换商机绑定联系人后再删除！',
+  'customer.contact.batchDeleteTitleTip': '确认删除选中的 {number} 个联系人吗？',
   'customer.recycleOpenSea': '回收公海',
   'customer.collectionTime': '领取时间',
   'customer.remainingVesting': '剩余归属',
