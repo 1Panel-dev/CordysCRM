@@ -284,6 +284,7 @@ public class DataAccessLayer implements ApplicationContextAware {
                 sqlSession.clearCache();
                 return entities.size();
             } catch (Exception e) {
+                log.error("批量插入失败", e);
                 throw new RuntimeException("批量插入失败", e);
             }
         }

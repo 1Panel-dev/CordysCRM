@@ -472,6 +472,28 @@
         where id = #{id}
     </update>
 
+    <!-- 客户负责人变更时, 挂在原负责人名下的联系人会被整批改派; 转移/编辑前按此谓词取出 id 记进快照 -->
+    <select id="listOwnedContactIds" resultType="java.lang.String">
+        select id
+        from customer_contact
+        where customer_id = #{customerId}
+          and organization_id = #{orgId}
+          and owner = #{owner}
+    </select>
+
+    <!-- 审批回退时按快照记录的 id 精确还原, 只动这次真正被改派的联系人;
+         带 customer_id/organization_id 是为了防备快照与资源错配 -->
+    <update id="updateContactOwnerByIds">
+        update customer_contact
+        set owner = #{newOwner}
+        where customer_id = #{customerId}
+          and organization_id = #{orgId}
+          and id in
+        <foreach collection="contactIds" item="contactId" open="(" close=")" separator=",">
+            #{contactId}
+        </foreach>
+    </update>
+
 
     <select id="getListByIds" resultType="cn.cordys.crm.customer.dto.response.CustomerContactListResponse">
         select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,

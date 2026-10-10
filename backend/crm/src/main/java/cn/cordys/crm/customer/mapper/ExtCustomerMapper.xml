@@ -18,6 +18,12 @@
         </foreach>
     </update>
 
+    <update id="revertTransferByApproval">
+        update customer
+        set collection_time = #{collectionTime}
+        where id = #{id}
+    </update>
+
     <select id="list" resultType="cn.cordys.crm.customer.dto.response.CustomerListResponse">
         select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
                c.follower, c.follow_time, c.reason_id, c.approval_status, c.approved, <include refid="freezeColumns"/>

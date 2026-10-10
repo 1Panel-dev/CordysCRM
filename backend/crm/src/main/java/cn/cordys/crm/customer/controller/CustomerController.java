@@ -37,6 +37,7 @@ import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -142,15 +143,15 @@ public class CustomerController {
     @PostMapping("/batch/transfer")
     @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_TRANSFER, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "批量转移客户")
-    public void batchTransfer(@RequestBody CustomerBatchTransferRequest request) {
-        customerService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchTransfer(@RequestBody CustomerBatchTransferRequest request) {
+        return customerService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
     @CsBatchPermission(value = PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, resourceId = "{#request.ids}", formType = FormKeyConstants.CUSTOMER)
     @Operation(summary = "批量更新客户")
-    public void batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
-        customerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectReasonResponse batchUpdate(@Validated @RequestBody ResourceBatchEditRequest request) {
+        return customerService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/delete")

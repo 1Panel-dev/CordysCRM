@@ -119,6 +119,20 @@ public class CustomerOwnerHistoryService {
         extCustomerOwnerMapper.batchAdd(transferRequest, userId);
     }
 
+    /**
+     * 删除转移写入的那条负责人变更记录
+     * <p>
+     * 转移时 batchAdd 会抄下转移前的负责人与领取时间写一条记录, 这两个值也正好在编辑前快照里,
+     * 因此按它们定位就能精确命中这次转移写入的那条; 取最新一条是为了不误删同一负责人历史上更早的记录。
+     *
+     * @param customerId     客户ID
+     * @param owner          转移前的负责人
+     * @param collectionTime 转移前的领取时间
+     */
+    public void deleteTransferHistory(String customerId, String owner, Long collectionTime) {
+        extCustomerOwnerMapper.deleteTransferHistory(customerId, owner, collectionTime);
+    }
+
     public void deleteByCustomerIds(List<String> customerIds) {
         var wrapper = new LambdaQueryWrapper<CustomerOwner>();
         wrapper.in(CustomerOwner::getCustomerId, customerIds);

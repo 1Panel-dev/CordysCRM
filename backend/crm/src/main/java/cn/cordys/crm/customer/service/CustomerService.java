@@ -71,6 +71,7 @@ import cn.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.PoolReasonRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.BatchAffectResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -521,7 +522,10 @@ public class CustomerService implements ApprovalResourceHandler {
     @HitApproval(formKey = FormKey.CUSTOMER, executeType = ExecuteTimingEnum.UPDATE, resourceId = "{#request.id}", updateType = "{#request.updateType}", operatorId = "{#userId}", comment = "{#request.comment}")
     public Customer update(CustomerUpdateRequest request, String userId, String orgId) {
         Customer originCustomer = customerMapper.selectByPrimaryKey(request.getId());
-        if (!Strings.CS.equals(originCustomer.getOwner(), request.getOwner())) {
+        // 审批回退是把客户还给原负责人, 不是一次新的分配, 不该受负责人容量限制;
+        // 若在这里抛异常, 会被 revertToSnapshot 的 catch 吞掉, 业务数据会原地不动
+        if (!Strings.CS.equals(originCustomer.getOwner(), request.getOwner())
+                && !isApprovalRevert(request.getUpdateType())) {
             poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
         }
 
@@ -535,11 +539,14 @@ public class CustomerService implements ApprovalResourceHandler {
         if (StringUtils.isNotBlank(request.getOwner())) {
             if (!Strings.CS.equals(request.getOwner(), originCustomer.getOwner())) {
                 //客户负责人变更，联系人同步更新
-                customerContactService.updateContactOwner(request.getId(), request.getOwner(), originCustomer.getOwner(), orgId);
+                syncContactOwnerOnOwnerChange(request, originCustomer, orgId);
 
 
                 // 如果责任人有修改，则添加责任人历史
-                customerOwnerHistoryService.add(originCustomer, userId, false);
+                // 审批回退的负责人变更是回退动作本身, 不再记一条, 否则历史里会残留一次并未真正发生的负责人变更
+                if (!isApprovalRevert(request.getUpdateType())) {
+                    customerOwnerHistoryService.add(originCustomer, userId, false);
+                }
                 sendTransferNotice(List.of(originCustomer), request.getOwner(), userId, orgId);
                 // 重置领取时间
                 customer.setCollectionTime(System.currentTimeMillis());
@@ -607,10 +614,30 @@ public class CustomerService implements ApprovalResourceHandler {
                 orgId, List.of(originCustomer.getOwner()), true);
     }
 
-    public void batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
+    public BatchAffectReasonResponse batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
+        if (CollectionUtils.isEmpty(originCustomers)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
+                    .errorMessages(Translator.get("customer.not.exist")).build();
+        }
         long processCount = originCustomers.stream().filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner())).count();
         poolCustomerService.validateCapacity((int) processCount, request.getOwner(), orgId);
+
+        // 转移 SQL 只写负责人真正发生变化的客户, 审批同样只对这些客户触发, 避免给原本就是这个负责人的客户凭空建一条审批
+        List<String> changedIds = originCustomers.stream()
+                .filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner()))
+                .map(Customer::getId)
+                .toList();
+        // 快照须在转移前落库, 否则审批驳回/撤回时回退到的是转移后的负责人
+        CommonBeanFactory.getBean(ApprovalResourceService.class).batchTransferTriggerApproval(
+                changedIds, BusinessModuleField.CUSTOMER_OWNER, FormKey.CUSTOMER, orgId, userId, request.getOwner());
+
+        // 客户负责人变更, 联系人负责人要跟着走, 与单个编辑(CustomerService#update)保持一致;
+        // 在这里取值, 此时客户行还没被转移 SQL 改写, 拿到的仍是原负责人
+        originCustomers.stream()
+                .filter(customer -> !Strings.CS.equals(customer.getOwner(), request.getOwner()))
+                .forEach(customer -> customerContactService.updateContactOwner(
+                        customer.getId(), request.getOwner(), customer.getOwner(), orgId));
 
         // 添加责任人历史
         customerOwnerHistoryService.batchAdd(request, userId);
@@ -632,6 +659,50 @@ public class CustomerService implements ApprovalResourceHandler {
         logService.batchAdd(logs);
 
         sendTransferNotice(originCustomers, request.getOwner(), userId, orgId);
+
+        // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里有查不到的客户
+        return BatchAffectReasonResponse.builder()
+                .success((int) processCount)
+                .fail(CollectionUtils.size(request.getIds()) - originCustomers.size())
+                .skip(originCustomers.size() - (int) processCount)
+                .errorMessages(Translator.get("batch.transfer.reason"))
+                .build();
+    }
+
+    /**
+     * 是否为审批驳回/撤回触发的回退更新
+     * <p>
+     * 回退复用的是编辑接口, 但语义是"把数据还原回去"而非一次新的编辑:
+     * 不该占用负责人容量, 也不该再产生一条负责人变更记录。
+     *
+     * @param updateType 更新类型
+     * @return true 表示这是回退
+     */
+    private boolean isApprovalRevert(String updateType) {
+        return ApprovalResourceUpdateType.APPROVAL.getValue().equals(updateType);
+    }
+
+    /**
+     * 客户负责人变更时同步联系人负责人
+     * <p>
+     * 正常编辑/转移是把原负责人名下的联系人整批改派给新负责人, 按负责人反查即可;
+     * 审批回退方向相反, 必须按编辑前快照记录的 id 逐个还原 —— 若同样按负责人反查, 会把本来
+     * 就挂在新负责人名下的联系人一并拖回原负责人。升级前落库的旧快照没记 id, 只能退回近似还原。
+     *
+     * @param request        编辑请求, 回退时其运行时类型是编辑前快照
+     * @param originCustomer 变更前的客户
+     * @param orgId          组织ID
+     */
+    private void syncContactOwnerOnOwnerChange(CustomerUpdateRequest request, Customer originCustomer, String orgId) {
+        if (isApprovalRevert(request.getUpdateType()) && request instanceof CustomerApprovalSnapshotRequest snapshot
+                && snapshot.getContactIds() != null) {
+            // 快照已经记下这次改派了谁(空集合表示一个都没有), 只按 id 还原; 空集合不生成 in () 这种非法 SQL
+            if (CollectionUtils.isNotEmpty(snapshot.getContactIds())) {
+                customerContactService.updateContactOwnerByIds(request.getId(), snapshot.getContactIds(), request.getOwner(), orgId);
+            }
+            return;
+        }
+        customerContactService.updateContactOwner(request.getId(), request.getOwner(), originCustomer.getOwner(), orgId);
     }
 
     private void sendTransferNotice(List<Customer> originCustomers, String toUser, String userId, String orgId) {
@@ -1028,9 +1099,13 @@ public class CustomerService implements ApprovalResourceHandler {
         }
     }
 
-    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = customerFieldService.getAndCheckField(request.getFieldId(), organizationId);
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
+        if (CollectionUtils.isEmpty(originCustomers)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
+                    .errorMessages(Translator.get("customer.not.exist")).build();
+        }
         // 状态权限校验: 过滤出当前用户有权编辑的客户。放在各分支之前, 是因为下面还有一条走批量转移
         // 的路径, 它同样是一次编辑 —— 否则处在无权编辑状态(如审批中)的客户会从这条路径绕过去
         List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
@@ -1042,7 +1117,8 @@ public class CustomerService implements ApprovalResourceHandler {
                 Customer::getApprovalStatus
         );
         if (CollectionUtils.isEmpty(permittedIds)) {
-            throw new GenericException(Translator.get("no.operation.permission"));
+            return BatchAffectReasonResponse.builder().success(0).fail(originCustomers.size()).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
         }
 
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
@@ -1050,8 +1126,7 @@ public class CustomerService implements ApprovalResourceHandler {
             CustomerBatchTransferRequest batchTransferRequest = new CustomerBatchTransferRequest();
             batchTransferRequest.setIds(permittedIds);
             batchTransferRequest.setOwner(request.getFieldValue().toString());
-            batchTransfer(batchTransferRequest, userId, organizationId);
-            return;
+            return batchTransfer(batchTransferRequest, userId, organizationId);
         }
 
         ApprovalResourceService approvalResourceService = CommonBeanFactory.getBean(ApprovalResourceService.class);
@@ -1073,6 +1148,13 @@ public class CustomerService implements ApprovalResourceHandler {
         customerFieldService.batchUpdate(filteredRequest, field, permittedCustomers, Customer.class, LogModule.CUSTOMER_INDEX, extCustomerMapper::batchUpdate, userId, organizationId);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
+
+        return BatchAffectReasonResponse.builder()
+                .success(permittedIds.size())
+                .fail(originCustomers.size() - permittedIds.size())
+                .skip(0)
+                .errorMessages(Translator.get("batch.update.reason"))
+                .build();
     }
 
     /**
@@ -1310,8 +1392,11 @@ public class CustomerService implements ApprovalResourceHandler {
             return null;
         }
         List<BaseModuleFieldValue> customerFields = customerFieldService.getModuleFieldValuesByResourceId(resourceId);
-        CustomerUpdateRequest snapshotReq = BeanUtils.copyBean(new CustomerUpdateRequest(), customer);
+        CustomerApprovalSnapshotRequest snapshotReq = BeanUtils.copyBean(new CustomerApprovalSnapshotRequest(), customer);
         snapshotReq.setUpdateType(ApprovalResourceUpdateType.APPROVAL.getValue());
+        // 负责人变更会把这批联系人整批改派, 回退要按 id 精确还原, 先记下当前挂在负责人名下的联系人
+        snapshotReq.setContactIds(customerContactService.listOwnedContactIds(
+                customer.getId(), customer.getOwner(), customer.getOrganizationId()));
         ModuleFormConfigDTO customerFormConfig = getFormConfig(customer.getOrganizationId());
         // 获取模块字段
         moduleFormService.processBusinessFieldValues(snapshotReq, customerFields, customerFormConfig);
@@ -1321,14 +1406,38 @@ public class CustomerService implements ApprovalResourceHandler {
     @Override
     public void revertToSnapshot(String resourceId, String userId, String orgId, String snapshotData) {
         try {
-            CustomerUpdateRequest request = JSON.parseObject(snapshotData, CustomerUpdateRequest.class);
+            CustomerApprovalSnapshotRequest request = JSON.parseObject(snapshotData, CustomerApprovalSnapshotRequest.class);
             if (request == null) {
                 return;
             }
             CommonBeanFactory.getBean(CustomerService.class).update(request, userId, orgId);
+            // 编辑回退的负责人变更分支会把领取时间重置为回退时间, 转移前的领取时间只能按快照单独还原
+            revertTransfer(request);
+            // 转移时 batchAdd 按转移前的负责人+领取时间写了一条变更记录, 回退要把它删掉,
+            // 否则历史里会残留一次并未真正生效的负责人变更
+            customerOwnerHistoryService.deleteTransferHistory(request.getId(), request.getOwner(), request.getCollectionTime());
         } catch (Exception e) {
             log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
         }
+    }
+
+    /**
+     * 回退转移重置的领取时间
+     * <p>
+     * 快照没有领取时间(升级前落库的旧快照, 或转移前本就没有领取时间)时不回退,
+     * 避免把转移写入的领取时间清空。
+     *
+     * @param request 编辑前快照
+     */
+    private void revertTransfer(CustomerApprovalSnapshotRequest request) {
+        if (request.getCollectionTime() == null) {
+            return;
+        }
+        Customer current = customerMapper.selectByPrimaryKey(request.getId());
+        if (current == null || Objects.equals(current.getCollectionTime(), request.getCollectionTime())) {
+            return;
+        }
+        extCustomerMapper.revertTransferByApproval(request.getId(), request.getCollectionTime());
     }
 
     /**

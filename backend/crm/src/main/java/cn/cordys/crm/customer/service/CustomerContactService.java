@@ -593,6 +593,33 @@ public class CustomerContactService {
     }
 
     /**
+     * 查询客户下挂在指定负责人名下的联系人ID
+     * <p>
+     * 客户负责人变更时这些联系人会被整批改派, 编辑前记进快照供审批驳回/撤回时精确还原。
+     *
+     * @param customerId 客户ID
+     * @param owner      负责人
+     * @param orgId      组织ID
+     *
+     * @return 联系人ID集合
+     */
+    public List<String> listOwnedContactIds(String customerId, String owner, String orgId) {
+        return extCustomerContactMapper.listOwnedContactIds(customerId, owner, orgId);
+    }
+
+    /**
+     * 按 id 精确还原联系人负责人
+     *
+     * @param customerId 客户ID
+     * @param contactIds 联系人ID集合
+     * @param newOwner   还原后的负责人
+     * @param orgId      组织ID
+     */
+    public void updateContactOwnerByIds(String customerId, List<String> contactIds, String newOwner, String orgId) {
+        extCustomerContactMapper.updateContactOwnerByIds(customerId, contactIds, newOwner, orgId);
+    }
+
+    /**
      * 更新公海客户联系人
      *
      * @param customerId 客户ID

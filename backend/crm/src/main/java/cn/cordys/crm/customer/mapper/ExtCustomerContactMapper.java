@@ -61,6 +61,30 @@ public interface ExtCustomerContactMapper extends StatisticSqlMapper {
 
     void updateContactById(@Param("id") String id, @Param("owner") String owner);
 
+    /**
+     * 查询客户下挂在指定负责人名下的联系人ID
+     * <p>
+     * 客户负责人变更时, 这些联系人会整批改派给新负责人; 编辑前把它们记进快照,
+     * 审批驳回/撤回时才能按 id 精确还原。
+     *
+     * @param customerId 客户ID
+     * @param owner      负责人
+     * @param orgId      组织ID
+     *
+     * @return 联系人ID集合
+     */
+    List<String> listOwnedContactIds(@Param("customerId") String customerId, @Param("owner") String owner, @Param("orgId") String orgId);
+
+    /**
+     * 按 id 精确还原联系人负责人
+     *
+     * @param customerId 客户ID
+     * @param contactIds 联系人ID集合
+     * @param newOwner   还原后的负责人
+     * @param orgId      组织ID
+     */
+    void updateContactOwnerByIds(@Param("customerId") String customerId, @Param("contactIds") List<String> contactIds, @Param("newOwner") String newOwner, @Param("orgId") String orgId);
+
     List<CustomerContactListResponse> getListByIds(@Param("ids") List<String> ids);
 
     List<OptionDTO> getContactOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);

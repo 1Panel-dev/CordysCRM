@@ -72,6 +72,7 @@ import cn.cordys.crm.system.dto.field.base.BaseField;
 import cn.cordys.crm.system.dto.field.base.OptionProp;
 import cn.cordys.crm.system.dto.request.ImportRequest;
 import cn.cordys.crm.system.dto.request.ResourceBatchEditRequest;
+import cn.cordys.crm.system.dto.response.BatchAffectReasonResponse;
 import cn.cordys.crm.system.dto.response.ImportResponse;
 import cn.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import cn.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -383,6 +384,12 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
         Optional.ofNullable(oldOpportunity).ifPresentOrElse(item -> {
             Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), item);
             productService.checkProductList(request.getProducts());
+            // 负责人变更不是普通字段改动, 与商机转移(OpportunityService#transfer)保持一致:
+            // 关联联系人的负责人要跟着走, 并通知新负责人
+            if (StringUtils.isNotBlank(request.getOwner()) && !Strings.CS.equals(request.getOwner(), item.getOwner())) {
+                syncContactOwner(request.getContactId(), request.getOwner());
+                sendTransferNotice(List.of(item), request.getOwner(), userId, orgId);
+            }
             //更新商机
             Opportunity updateOpportunity = newOpportunity(newOpportunity, request, userId);
             // 保留审批状态, 编辑不改变审批状态
@@ -486,16 +493,25 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
      * @param userId  用户ID
      * @param orgId   组织ID
      */
-    public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
+    public BatchAffectReasonResponse transfer(OpportunityTransferRequest request, String userId, String orgId) {
         List<Opportunity> opportunityList = opportunityMapper.selectByIds(request.getIds());
         if (CollectionUtils.isEmpty(opportunityList)) {
-            return;
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
+                    .errorMessages(Translator.get("opportunity.not.exist")).build();
         }
-        List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
+        // 转移 SQL 只写负责人真正发生变化的商机, 审批同样只对这些商机触发, 避免给原本就是这个负责人的商机凭空建一条审批
+        List<String> changedIds = opportunityList.stream()
+                .filter(opportunity -> !Strings.CS.equals(opportunity.getOwner(), request.getOwner()))
+                .map(Opportunity::getId)
+                .toList();
+        // 快照须在转移前落库, 否则审批驳回/撤回时回退到的是转移后的负责人
+        CommonBeanFactory.getBean(ApprovalResourceService.class).batchTransferTriggerApproval(
+                changedIds, BusinessModuleField.OPPORTUNITY_OWNER, FormKey.OPPORTUNITY, orgId, userId, request.getOwner());
+
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtOpportunityMapper batchUpdateMapper = sqlSession.getMapper(ExtOpportunityMapper.class);
-        for (int i = 0; i < ids.size(); i++) {
-            batchUpdateMapper.transfer(request.getOwner(), userId, ids.get(i), System.currentTimeMillis());
+        for (int i = 0; i < changedIds.size(); i++) {
+            batchUpdateMapper.transfer(request.getOwner(), userId, changedIds.get(i), System.currentTimeMillis());
         }
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
@@ -511,12 +527,23 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
             logDTO.setOriginalValue(originCustomer);
             logDTO.setModifiedValue(modifieCustomer);
             logs.add(logDTO);
-
-            extCustomerContactMapper.updateContactById(opportunity.getContactId(), request.getOwner());
         });
+
+        // 商机负责人变更, 联系人负责人要跟着走; 只处理负责人真正变化的商机, 与转移 SQL 的范围保持一致
+        opportunityList.stream()
+                .filter(opportunity -> !Strings.CS.equals(opportunity.getOwner(), request.getOwner()))
+                .forEach(opportunity -> syncContactOwner(opportunity.getContactId(), request.getOwner()));
 
         logService.batchAdd(logs);
         sendTransferNotice(opportunityList, request.getOwner(), userId, orgId);
+
+        // success: 真的换了负责人; skip: 负责人本来就是目标负责人; fail: 入参里有查不到的商机
+        return BatchAffectReasonResponse.builder()
+                .success(changedIds.size())
+                .fail(CollectionUtils.size(request.getIds()) - opportunityList.size())
+                .skip(opportunityList.size() - changedIds.size())
+                .errorMessages(Translator.get("batch.transfer.reason"))
+                .build();
     }
 
     private void sendTransferNotice(List<Opportunity> opportunityList, String toUser, String userId, String orgId) {
@@ -1094,9 +1121,13 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
         }
     }
 
-    public void batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
+    public BatchAffectReasonResponse batchUpdate(ResourceBatchEditRequest request, String userId, String organizationId) {
         BaseField field = opportunityFieldService.getAndCheckField(request.getFieldId(), organizationId);
         List<Opportunity> originOpportunities = opportunityMapper.selectByIds(request.getIds());
+        if (CollectionUtils.isEmpty(originOpportunities)) {
+            return BatchAffectReasonResponse.builder().success(0).fail(0).skip(0)
+                    .errorMessages(Translator.get("opportunity.not.exist")).build();
+        }
         // 状态权限校验: 过滤出当前用户有权编辑的商机。放在各分支之前, 是因为下面还有一条走批量转移
         // 的路径, 它同样是一次编辑 —— 否则处在无权编辑状态(如审批中)的商机会从这条路径绕过去
         List<String> permittedIds = approvalFlowService.filterResourcesWithPermission(
@@ -1108,7 +1139,8 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
                 Opportunity::getApprovalStatus
         );
         if (CollectionUtils.isEmpty(permittedIds)) {
-            throw new GenericException(Translator.get("no.operation.permission"));
+            return BatchAffectReasonResponse.builder().success(0).fail(originOpportunities.size()).skip(0)
+                    .errorMessages(Translator.get("no.operation.permission")).build();
         }
 
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey())) {
@@ -1116,8 +1148,7 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
             OpportunityTransferRequest batchTransferRequest = new OpportunityTransferRequest();
             batchTransferRequest.setIds(permittedIds);
             batchTransferRequest.setOwner(request.getFieldValue().toString());
-            transfer(batchTransferRequest, userId, organizationId);
-            return;
+            return transfer(batchTransferRequest, userId, organizationId);
         }
 
         if (Strings.CS.equals(field.getBusinessKey(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
@@ -1143,6 +1174,13 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
         opportunityFieldService.batchUpdate(filteredRequest, field, permittedOpportunities, Opportunity.class, LogModule.OPPORTUNITY_INDEX, extOpportunityMapper::batchUpdate, userId, organizationId);
         // 统计字段: 改前改后关联到的宿主记录都要重算(关联没动时这两批是同一批, 去重后只算一次)
         statisticFieldService.refreshAfterRelatedChange(statisticScope, permittedIds);
+
+        return BatchAffectReasonResponse.builder()
+                .success(permittedIds.size())
+                .fail(originOpportunities.size() - permittedIds.size())
+                .skip(0)
+                .errorMessages(Translator.get("batch.update.reason"))
+                .build();
     }
 
 
@@ -1277,6 +1315,23 @@ public class OpportunityService extends BaseExportService implements ApprovalRes
         } catch (Exception e) {
             log.error("审批回退还原业务数据失败, resourceId:{}", resourceId, e);
         }
+    }
+
+    /**
+     * 商机负责人变更时同步关联联系人的负责人
+     * <p>
+     * 商机只关联一个联系人, 因此跟随负责人走的就是商机当前关联的这一个, 不涉及"改派一批"。
+     * 编辑与转移都走这里; 编辑回退也是负责人变更, 复用同一条路径即可把联系人还给原负责人,
+     * 无需另做按 id 的精确还原。没关联联系人(历史数据)时无事可做。
+     *
+     * @param contactId 商机关联的联系人ID
+     * @param owner     商机负责人
+     */
+    private void syncContactOwner(String contactId, String owner) {
+        if (StringUtils.isBlank(contactId)) {
+            return;
+        }
+        extCustomerContactMapper.updateContactById(contactId, owner);
     }
 
     /**
